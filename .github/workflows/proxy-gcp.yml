@@ -1,0 +1,38 @@
+name: Proxy GCP CI
+
+on:
+  pull_request:
+    paths:
+      - 'proxy/**'
+      - '.github/workflows/proxy-gcp.yml'
+  push:
+    branches:
+      - release/1.0.0
+    paths:
+      - 'proxy/**'
+      - '.github/workflows/proxy-gcp.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate-proxy-gcp:
+    name: KMIP Proxy Google Cloud Provider Integration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install Rust toolchain
+        run: rustup toolchain install stable --profile minimal --component rustfmt --component clippy
+
+      - name: Check code formatting
+        run: cargo fmt --manifest-path proxy/kmipkit-proxy/Cargo.toml --check
+
+      - name: Lint with Clippy (GCP feature)
+        run: cargo clippy --manifest-path proxy/kmipkit-proxy/Cargo.toml --all-targets --features gcp -- -D warnings
+
+      - name: Run unit and integration tests (GCP feature)
+        run: cargo test --manifest-path proxy/kmipkit-proxy/Cargo.toml --features gcp

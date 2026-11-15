@@ -1,0 +1,17 @@
+{
+  "catalog_id": "KMIPKIT-TEST-CN01-2-62",
+  "official_label": "TC-MDO-2-21",
+  "status": "derived-local-not-official",
+  "sample_values_synthetic": true,
+  "source_references": [
+    "OASIS KMIP Test Cases v2.1 CN01 \u00a72.62",
+    "OASIS KMIP Specification v2.1 \u00a76.1.28 Tables 247\u2013249"
+  ],
+  "limitations": "The official XML and exact search criteria are unavailable. The empty Attributes Structure is a synthetic client-visible Locate envelope only; object matching, metadata-only versus key-material selection, and server results are not represented.",
+  "request_operations": [
+    "Locate"
+  ],
+  "request_payload_ttlv_hex": [
+    "42 00 79 01 00 00 00 08 42 01 25 01 00 00 00 00"
+  ]
+}

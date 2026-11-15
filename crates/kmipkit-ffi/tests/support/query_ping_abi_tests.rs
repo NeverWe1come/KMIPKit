@@ -1,0 +1,969 @@
+use super::*;
+
+#[cfg(feature = "coverage-c-consumer")]
+#[link(name = "kmipkit_client_abi_c_consumer", kind = "static")]
+unsafe extern "C" {
+    fn kmipkit_client_abi_consumer_response_ttlv_handles(
+        item: *mut kmipkit_client_batch_item_response_t,
+        expected_payload_present: u8,
+        expected_payload_item_count: u64,
+        expected_integer_path: *const u32,
+        expected_integer_path_length: u64,
+        expected_integer: i32,
+    ) -> i32;
+    fn kmipkit_client_abi_consumer_query_typed_fields(
+        item: *mut kmipkit_client_batch_item_response_t,
+    ) -> i32;
+}
+
+const QUERY_OPERATION: u32 = 0x0000_0018;
+
+fn query_status(
+    functions: *const u32,
+    function_count: u64,
+    has_object_groups: u8,
+    object_groups: *const kmipkit_byte_span_v1_t,
+    object_group_count: u64,
+) -> i32 {
+    let mut item = ptr::dangling_mut();
+    let status = kmipkit_client_batch_item_query(
+        functions,
+        function_count,
+        has_object_groups,
+        object_groups,
+        object_group_count,
+        &raw mut item,
+    );
+    if status == SUCCESS {
+        assert!(!item.is_null());
+        kmipkit_client_batch_item_release(item);
+    } else {
+        assert!(item.is_null());
+    }
+    status
+}
+
+fn query_status_with_limits(
+    limits: *mut kmipkit_codec_limits_t,
+    functions: *const u32,
+    function_count: u64,
+    has_object_groups: u8,
+    object_groups: *const kmipkit_byte_span_v1_t,
+    object_group_count: u64,
+) -> i32 {
+    let mut item = ptr::dangling_mut();
+    let status = kmipkit_client_batch_item_query_with_limits(
+        limits,
+        functions,
+        function_count,
+        has_object_groups,
+        object_groups,
+        object_group_count,
+        &raw mut item,
+    );
+    if status == SUCCESS {
+        assert!(!item.is_null());
+        kmipkit_client_batch_item_release(item);
+    } else {
+        assert!(item.is_null());
+    }
+    status
+}
+
+fn custom_query_status(
+    max_message_bytes: u64,
+    max_structure_depth: u64,
+    max_elements: u64,
+    functions: *const u32,
+    function_count: u64,
+    has_object_groups: u8,
+    object_groups: *const kmipkit_byte_span_v1_t,
+    object_group_count: u64,
+) -> i32 {
+    let mut limits = ptr::null_mut();
+    assert_eq!(
+        kmipkit_codec_limits_create(
+            max_message_bytes,
+            max_structure_depth,
+            max_elements,
+            &raw mut limits,
+        ),
+        SUCCESS
+    );
+    let status = query_status_with_limits(
+        limits,
+        functions,
+        function_count,
+        has_object_groups,
+        object_groups,
+        object_group_count,
+    );
+    kmipkit_codec_limits_release(limits);
+    status
+}
+
+#[test]
+fn ffi_query_builder_applies_codec_limits_before_copying_and_accepts_custom_limits() {
+    let functions = vec![1_u32; 100_001];
+    let group = b"group";
+    let groups = vec![byte_span(group); 100_001];
+    assert_eq!(
+        query_status(
+            functions.as_ptr(),
+            functions.len() as u64,
+            1,
+            groups.as_ptr(),
+            groups.len() as u64,
+        ),
+        ERROR_RESOURCE_LIMIT,
+        "the compatibility constructor enforces default limits"
+    );
+    assert_eq!(
+        custom_query_status(
+            8 * 1024 * 1024,
+            3,
+            400_000,
+            functions.as_ptr(),
+            functions.len() as u64,
+            1,
+            groups.as_ptr(),
+            groups.len() as u64,
+        ),
+        ERROR_RESOURCE_LIMIT,
+        "Object Groups require four levels in the complete Request Message"
+    );
+    assert_eq!(
+        custom_query_status(
+            8 * 1024 * 1024,
+            2,
+            400_000,
+            functions.as_ptr(),
+            functions.len() as u64,
+            0,
+            ptr::null(),
+            0,
+        ),
+        ERROR_RESOURCE_LIMIT,
+        "a Query without Object Groups requires three message structure levels"
+    );
+    let mut defaults = ptr::null_mut();
+    assert_eq!(kmipkit_codec_limits_defaults(&raw mut defaults), SUCCESS);
+    assert_eq!(
+        query_status_with_limits(
+            defaults,
+            functions.as_ptr(),
+            functions.len() as u64,
+            1,
+            groups.as_ptr(),
+            groups.len() as u64,
+        ),
+        ERROR_RESOURCE_LIMIT
+    );
+    kmipkit_codec_limits_release(defaults);
+
+    let mut custom = ptr::null_mut();
+    assert_eq!(
+        kmipkit_codec_limits_create(8 * 1024 * 1024, 64, 400_000, &raw mut custom),
+        SUCCESS
+    );
+    assert_eq!(
+        query_status_with_limits(
+            custom,
+            functions.as_ptr(),
+            functions.len() as u64,
+            1,
+            groups.as_ptr(),
+            groups.len() as u64,
+        ),
+        SUCCESS
+    );
+    kmipkit_codec_limits_release(custom);
+}
+
+#[test]
+fn ffi_query_preflight_rejects_object_groups_over_the_element_budget() {
+    let function = QUERY_OPERATION;
+    let group = b"group";
+    let groups = [byte_span(group)];
+
+    assert_eq!(
+        custom_query_status(1024, 4, 3, &function, 1, 1, groups.as_ptr(), 1,),
+        ERROR_RESOURCE_LIMIT,
+        "the function fits, but the Object Groups structure and member exceed the budget"
+    );
+}
+
+#[test]
+fn ffi_query_preflight_rejects_encoded_size_after_object_groups_are_added() {
+    let function = QUERY_OPERATION;
+    let group = b"group";
+    let groups = [byte_span(group)];
+
+    assert_eq!(
+        custom_query_status(40, 4, 100, &function, 1, 1, groups.as_ptr(), 1,),
+        ERROR_RESOURCE_LIMIT,
+        "the Query functions fit, but the complete payload with Object Groups does not"
+    );
+}
+
+#[test]
+fn ffi_query_builder_accepts_present_empty_object_groups_at_exact_ttlv_size() {
+    let function = QUERY_OPERATION;
+
+    assert_eq!(
+        custom_query_status(32, 4, 3, &function, 1, 1, ptr::null(), 0),
+        SUCCESS,
+        "Request Payload, Query Function, and empty Object Groups occupy 32 TTLV bytes"
+    );
+}
+
+#[test]
+fn ffi_query_builder_rejects_text_string_length_above_ttlv_item_length_limit() {
+    let function = QUERY_OPERATION;
+    let oversized_group = kmipkit_byte_span_v1_t {
+        data: ptr::null(),
+        length: u64::from(u32::MAX) + 1,
+    };
+
+    assert_eq!(
+        custom_query_status(
+            u64::MAX,
+            64,
+            100,
+            &function,
+            1,
+            1,
+            &raw const oversized_group,
+            1,
+        ),
+        ERROR_RESOURCE_LIMIT,
+        "Text String Item Length is a four-byte unsigned TTLV field"
+    );
+}
+
+fn successful_response_item(
+    request: ClientRequest,
+    operation: u32,
+    batch_item_id: &[u8],
+    response_fields: Vec<Vec<u8>>,
+) -> *mut kmipkit_client_batch_item_response_t {
+    let response = execute_single_abi_response(
+        request,
+        batch_item_id,
+        successful_cryptographic_response(operation, batch_item_id, response_fields),
+    )
+    .unwrap_or_else(|error| {
+        panic!("successful response for operation {operation} failed validation: {error:?}")
+    });
+    let response_handle = make_handle(
+        Kind::ClientBatchResponse,
+        HandleValue::ClientBatchResponse(Arc::new(response)),
+    );
+    let mut item = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_response_item_at(response_handle, 0, &raw mut item),
+        SUCCESS
+    );
+    kmipkit_client_batch_response_release(response_handle);
+    item
+}
+
+fn failed_query_without_payload_item() -> *mut kmipkit_client_batch_item_response_t {
+    let protocol_version = ttlv_structure(
+        0x0042_0069,
+        [ttlv_integer(0x0042_006a, 2), ttlv_integer(0x0042_006b, 1)],
+    );
+    let header = ttlv_structure(
+        0x0042_007a,
+        [
+            protocol_version,
+            ttlv_datetime(0x0042_0092, 1),
+            ttlv_integer(0x0042_000d, 1),
+        ],
+    );
+    let response_item = ttlv_structure(
+        0x0042_000f,
+        [
+            ttlv_enumeration(0x0042_005c, QUERY_OPERATION),
+            ttlv_item(0x0042_0093, 0x08, b"no-payload"),
+            ttlv_enumeration(0x0042_007f, 1),
+            ttlv_enumeration(0x0042_007e, 6),
+        ],
+    );
+    let response = execute_single_abi_response(
+        ClientRequest::query(QueryRequest::new([QueryFunction::from_raw(1)])),
+        b"no-payload",
+        ttlv_structure(0x0042_007b, [header, response_item]),
+    )
+    .expect("failed Query response without a payload is valid");
+    let response_handle = make_handle(
+        Kind::ClientBatchResponse,
+        HandleValue::ClientBatchResponse(Arc::new(response)),
+    );
+    let mut item = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_response_item_at(response_handle, 0, &raw mut item),
+        SUCCESS
+    );
+    kmipkit_client_batch_response_release(response_handle);
+    item
+}
+
+#[test]
+fn ffi_ping_and_query_constructors_cover_empty_and_counted_inputs() {
+    let mut ping = ptr::null_mut();
+    assert_eq!(kmipkit_client_batch_item_ping(&raw mut ping), SUCCESS);
+    assert!(!ping.is_null());
+    kmipkit_client_batch_item_release(ping);
+
+    assert_eq!(
+        query_status(ptr::null(), 0, 0, ptr::null(), 0),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(
+        query_status(ptr::null(), 0, 1, ptr::null(), 0),
+        ERROR_INVALID_INPUT
+    );
+
+    let functions = [1, 0x8000_0001, 1];
+    let first_group = b"group-a";
+    let second_group = b"group-a";
+    let groups = [byte_span(first_group), byte_span(second_group)];
+    assert_eq!(
+        query_status(
+            functions.as_ptr(),
+            functions.len() as u64,
+            1,
+            groups.as_ptr(),
+            groups.len() as u64,
+        ),
+        SUCCESS
+    );
+}
+
+#[test]
+fn ffi_query_constructor_accepts_absent_object_groups() {
+    let function = QUERY_OPERATION;
+
+    assert_eq!(
+        query_status(&function, 1, 0, ptr::null(), 0),
+        SUCCESS,
+        "an absent optional Object Groups field is valid"
+    );
+}
+
+#[test]
+fn ffi_query_preflight_rejects_parent_structure_length_overflow_before_copying() {
+    let length = u64::from(u32::MAX) - 7;
+    let spans = [kmipkit_byte_span_v1_t {
+        data: ptr::null(),
+        length,
+    }];
+    assert_eq!(
+        custom_query_status(
+            u64::MAX,
+            64,
+            u64::MAX,
+            [1].as_ptr(),
+            1,
+            1,
+            spans.as_ptr(),
+            1,
+        ),
+        ERROR_RESOURCE_LIMIT,
+        "Object Groups parent Item Length must be checked before dereferencing the span"
+    );
+}
+
+#[test]
+fn ffi_query_constructor_rejects_invalid_flags_pointers_and_limits() {
+    let functions = [1_u32];
+    let dangling_functions = ptr::NonNull::<u32>::dangling().as_ptr();
+    let dangling_groups = ptr::NonNull::<kmipkit_byte_span_v1_t>::dangling().as_ptr();
+
+    assert_eq!(
+        query_status(ptr::null(), 1, 0, ptr::null(), 0),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(
+        query_status(functions.as_ptr(), 1, 0, dangling_groups, 1,),
+        ERROR_INVALID_INPUT,
+        "Object Groups cannot be supplied when the presence flag is clear"
+    );
+    assert_eq!(
+        query_status(functions.as_ptr(), 1, 2, ptr::null(), 0),
+        ERROR_INVALID_INPUT,
+        "presence flags are fixed-width booleans"
+    );
+    assert_eq!(
+        query_status(functions.as_ptr(), 1, 1, ptr::null(), 1),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(
+        query_status(dangling_functions, u64::MAX, 0, ptr::null(), 0,),
+        ERROR_RESOURCE_LIMIT
+    );
+    assert_eq!(
+        query_status(functions.as_ptr(), 1, 1, dangling_groups, u64::MAX,),
+        ERROR_RESOURCE_LIMIT
+    );
+
+    let missing_bytes = [kmipkit_byte_span_v1_t {
+        data: ptr::null(),
+        length: 1,
+    }];
+    assert_eq!(
+        query_status(functions.as_ptr(), 1, 1, missing_bytes.as_ptr(), 1),
+        ERROR_INVALID_INPUT
+    );
+}
+
+#[test]
+fn ffi_query_constructor_rejects_malformed_object_group_utf8_after_preflight() {
+    let function = QUERY_OPERATION;
+    let malformed_group = [b'g', 0xc3, 0x28];
+    let groups = [byte_span(&malformed_group)];
+
+    assert_eq!(
+        custom_query_status(1024, 4, 100, &function, 1, 1, groups.as_ptr(), 1,),
+        ERROR_INVALID_INPUT,
+        "object group bytes must be valid UTF-8 after passing size preflight"
+    );
+}
+
+#[test]
+fn ffi_query_constructor_accepts_large_ordered_function_and_group_arrays() {
+    let values = vec![1_u32; 100_001];
+    let group = b"group";
+    let group_span = byte_span(group);
+    let groups = vec![group_span; 100_001];
+
+    assert_eq!(
+        custom_query_status(
+            8 * 1024 * 1024,
+            64,
+            400_000,
+            values.as_ptr(),
+            values.len() as u64,
+            1,
+            groups.as_ptr(),
+            groups.len() as u64,
+        ),
+        SUCCESS,
+        "the configurable codec element limit, not a fixed adapter count, governs Query"
+    );
+}
+
+#[test]
+fn ffi_query_constructor_accepts_object_group_larger_than_default_message_limit() {
+    let functions = [1_u32];
+    let group = vec![b'g'; 16 * 1024 * 1024 + 1];
+    let group_span = [byte_span(&group)];
+
+    assert_eq!(
+        custom_query_status(
+            32 * 1024 * 1024,
+            64,
+            100_000,
+            functions.as_ptr(),
+            1,
+            1,
+            group_span.as_ptr(),
+            1,
+        ),
+        SUCCESS,
+        "Query input construction remains configurable; execution applies CodecLimits"
+    );
+}
+
+#[test]
+#[allow(clippy::too_many_lines)]
+fn ffi_ping_response_presence_and_query_ttlv_copy_are_typed_and_lossless() {
+    let ping = successful_response_item(
+        ClientRequest::ping(),
+        0x0000_003b,
+        b"ping-result",
+        Vec::new(),
+    );
+    let query = successful_response_item(
+        ClientRequest::query(QueryRequest::new([QueryFunction::from_raw(1)])),
+        QUERY_OPERATION,
+        b"query-result",
+        vec![
+            ttlv_enumeration(0x0042_005c, 0x0000_003b),
+            ttlv_item(0x0042_0003, 0x07, b"namespace-a"),
+            ttlv_item(0x0054_1234, 0x07, b"vendor-extension"),
+            ttlv_enumeration(0x0042_005c, 0xf123_4567),
+            ttlv_enumeration(0x0042_0057, 7),
+            ttlv_structure(
+                0x0042_0088,
+                [ttlv_item(0x0054_0001, 0x07, b"server-extension")],
+            ),
+            ttlv_item(0x0042_0003, 0x07, b"namespace-b"),
+            ttlv_item(0x0042_009d, 0x07, b"vendor-a"),
+            ttlv_structure(0x0042_015f, []),
+        ],
+    );
+
+    let mut present = u8::MAX;
+    assert_eq!(
+        kmipkit_client_batch_item_response_ping(ping, &raw mut present),
+        SUCCESS
+    );
+    assert_eq!(present, 1);
+
+    present = u8::MAX;
+    assert_eq!(
+        kmipkit_client_batch_item_response_ping(query, &raw mut present),
+        SUCCESS
+    );
+    assert_eq!(present, 0);
+
+    let mut query_ttlv = ptr::dangling_mut();
+    present = u8::MAX;
+    assert_eq!(
+        kmipkit_client_batch_item_response_query_ttlv(query, &raw mut present, &raw mut query_ttlv,),
+        SUCCESS
+    );
+    assert_eq!(present, 1);
+    assert!(!query_ttlv.is_null());
+
+    let mut view = ptr::null_mut();
+    assert_eq!(
+        kmipkit_ttlv_structure_view(query_ttlv, &raw mut view),
+        SUCCESS
+    );
+    let mut item_count = u64::MAX;
+    assert_eq!(
+        kmipkit_ttlv_structure_view_item_count(view, &raw mut item_count),
+        SUCCESS
+    );
+    assert_eq!(
+        item_count, 9,
+        "typed standard, repeated, nested vendor, and unknown Query fields are copied"
+    );
+    let mut query_field_present = u8::MAX;
+    let mut query_field_count = u64::MAX;
+    assert_eq!(
+        kmipkit_client_batch_item_response_query_field_count(
+            query,
+            &raw mut query_field_present,
+            &raw mut query_field_count,
+        ),
+        SUCCESS
+    );
+    assert_eq!(query_field_present, 1);
+    assert_eq!(query_field_count, 9);
+    let mut field_present = u8::MAX;
+    let mut field_tag = u32::MAX;
+    let mut field_kind = u8::MAX;
+    let mut field_enumeration = u32::MAX;
+    let mut field_item = ptr::dangling_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_query_field_at(
+            query,
+            99,
+            &raw mut field_present,
+            &raw mut field_tag,
+            &raw mut field_kind,
+            &raw mut field_enumeration,
+            &raw mut field_item,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(field_present, 0);
+    assert_eq!(field_tag, 0);
+    assert_eq!(field_kind, 0);
+    assert_eq!(field_enumeration, 0);
+    assert!(field_item.is_null());
+    #[cfg(feature = "coverage-c-consumer")]
+    // SAFETY: The compiled C consumer borrows the live response and releases only its own copies.
+    assert_eq!(
+        unsafe { kmipkit_client_abi_consumer_query_typed_fields(query) },
+        0
+    );
+    kmipkit_ttlv_structure_view_release(view);
+    kmipkit_ttlv_structure_release(query_ttlv);
+
+    query_ttlv = ptr::dangling_mut();
+    present = u8::MAX;
+    assert_eq!(
+        kmipkit_client_batch_item_response_query_ttlv(ping, &raw mut present, &raw mut query_ttlv,),
+        SUCCESS
+    );
+    assert_eq!(present, 0);
+    assert!(query_ttlv.is_null());
+
+    query_field_present = u8::MAX;
+    query_field_count = u64::MAX;
+    assert_eq!(
+        kmipkit_client_batch_item_response_query_field_count(
+            ping,
+            &raw mut query_field_present,
+            &raw mut query_field_count,
+        ),
+        SUCCESS
+    );
+    assert_eq!(query_field_present, 0);
+    assert_eq!(query_field_count, 0);
+    field_present = u8::MAX;
+    field_tag = u32::MAX;
+    field_kind = u8::MAX;
+    field_enumeration = u32::MAX;
+    field_item = ptr::dangling_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_query_field_at(
+            ping,
+            0,
+            &raw mut field_present,
+            &raw mut field_tag,
+            &raw mut field_kind,
+            &raw mut field_enumeration,
+            &raw mut field_item,
+        ),
+        SUCCESS
+    );
+    assert_eq!(field_present, 0);
+    assert_eq!(field_tag, 0);
+    assert_eq!(field_kind, 0);
+    assert_eq!(field_enumeration, 0);
+    assert!(field_item.is_null());
+
+    present = u8::MAX;
+    query_ttlv = ptr::dangling_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_query_ttlv(
+            ptr::null_mut(),
+            &raw mut present,
+            &raw mut query_ttlv,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(present, 0);
+    assert!(query_ttlv.is_null());
+
+    let response_handle = reference_handle(query, Kind::ClientBatchItemResponse)
+        .expect("the Query result handle remains registered");
+    let HandleValue::ClientBatchItemResponse { response, .. } = &response_handle.value else {
+        panic!("the Query result handle stores a batch response and item index");
+    };
+    let invalid_index = make_handle(
+        Kind::ClientBatchItemResponse,
+        HandleValue::ClientBatchItemResponse {
+            response: Arc::clone(response),
+            index: usize::MAX,
+        },
+    );
+    present = u8::MAX;
+    assert_eq!(
+        kmipkit_client_batch_item_response_ping(invalid_index, &raw mut present),
+        ERROR_INTERNAL
+    );
+    assert_eq!(present, 0);
+
+    present = u8::MAX;
+    query_ttlv = ptr::dangling_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_query_ttlv(
+            invalid_index,
+            &raw mut present,
+            &raw mut query_ttlv,
+        ),
+        ERROR_INTERNAL
+    );
+    assert_eq!(present, 0);
+    assert!(query_ttlv.is_null());
+
+    kmipkit_client_batch_item_response_release(invalid_index);
+    kmipkit_client_batch_item_response_release(query);
+    kmipkit_client_batch_item_response_release(ping);
+}
+
+#[test]
+fn ffi_query_response_rejects_duplicate_singleton_before_field_access() {
+    let batch_item_id = b"query-duplicate-singleton";
+    let response = successful_cryptographic_response(
+        QUERY_OPERATION,
+        batch_item_id,
+        vec![
+            ttlv_item(0x0042_009d, 0x07, b"vendor-a"),
+            ttlv_item(0x0042_009d, 0x07, b"vendor-b"),
+            ttlv_structure(0x0042_015f, []),
+        ],
+    );
+    assert!(
+        execute_single_abi_response(
+            ClientRequest::query(QueryRequest::new([QueryFunction::from_raw(1)])),
+            batch_item_id,
+            response,
+        )
+        .is_err()
+    );
+}
+
+#[test]
+fn ffi_query_field_count_distinguishes_empty_payload_from_no_payload() {
+    let empty_payload = successful_response_item(
+        ClientRequest::query(QueryRequest::new([QueryFunction::from_raw(1)])),
+        QUERY_OPERATION,
+        b"empty-query-payload",
+        Vec::new(),
+    );
+    let absent_payload = failed_query_without_payload_item();
+
+    for (item, expected_payload_present) in [(empty_payload, 1), (absent_payload, 0)] {
+        let mut query_present = u8::MAX;
+        let mut field_count = u64::MAX;
+        assert_eq!(
+            kmipkit_client_batch_item_response_query_field_count(
+                item,
+                &raw mut query_present,
+                &raw mut field_count,
+            ),
+            SUCCESS
+        );
+        assert_eq!(
+            query_present, 1,
+            "the batch result remains a Query response"
+        );
+        assert_eq!(field_count, 0, "both forms contain zero typed fields");
+
+        let mut payload_present = u8::MAX;
+        let mut payload = ptr::dangling_mut();
+        assert_eq!(
+            kmipkit_client_batch_item_response_raw_ttlv(
+                item,
+                &raw mut payload_present,
+                &raw mut payload,
+            ),
+            SUCCESS
+        );
+        assert_eq!(payload_present, expected_payload_present);
+        if expected_payload_present == 1 {
+            assert!(!payload.is_null());
+            let mut view = ptr::null_mut();
+            assert_eq!(kmipkit_ttlv_structure_view(payload, &raw mut view), SUCCESS);
+            let mut count = u64::MAX;
+            assert_eq!(
+                kmipkit_ttlv_structure_view_item_count(view, &raw mut count),
+                SUCCESS
+            );
+            assert_eq!(count, 0);
+            kmipkit_ttlv_structure_view_release(view);
+            kmipkit_ttlv_structure_release(payload);
+        } else {
+            assert!(payload.is_null());
+        }
+        kmipkit_client_batch_item_response_release(item);
+    }
+}
+
+#[test]
+fn ffi_batch_response_exposes_owned_raw_payload_and_header_ttlv() {
+    let query = successful_response_item(
+        ClientRequest::query(QueryRequest::new([QueryFunction::from_raw(1)])),
+        QUERY_OPERATION,
+        b"query-owned-raw",
+        vec![
+            ttlv_enumeration(0x0042_005c, 0x0000_003b),
+            ttlv_structure(0x0042_015f, []),
+            ttlv_structure(0x0042_0012, [ttlv_integer(0x0042_0057, 7)]),
+        ],
+    );
+
+    let mut payload_present = u8::MAX;
+    let mut payload = ptr::dangling_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_raw_ttlv(
+            query,
+            &raw mut payload_present,
+            &raw mut payload,
+        ),
+        SUCCESS
+    );
+    assert_eq!(payload_present, 1);
+    assert!(!payload.is_null());
+
+    let mut header_present = u8::MAX;
+    let mut header = ptr::dangling_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_header_ttlv(
+            query,
+            &raw mut header_present,
+            &raw mut header,
+        ),
+        SUCCESS
+    );
+    assert_eq!(header_present, 1);
+    assert!(!header.is_null());
+
+    // The copies remain valid after their source response handle is released.
+    kmipkit_client_batch_item_response_release(query);
+    let mut payload_view = ptr::null_mut();
+    assert_eq!(
+        kmipkit_ttlv_structure_view(payload, &raw mut payload_view),
+        SUCCESS
+    );
+    let mut child_count = u64::MAX;
+    assert_eq!(
+        kmipkit_ttlv_structure_view_item_count(payload_view, &raw mut child_count),
+        SUCCESS
+    );
+    assert_eq!(child_count, 3);
+    kmipkit_ttlv_structure_view_release(payload_view);
+
+    let mut header_view = ptr::null_mut();
+    assert_eq!(
+        kmipkit_ttlv_structure_view(header, &raw mut header_view),
+        SUCCESS
+    );
+    let mut header_count = u64::MAX;
+    assert_eq!(
+        kmipkit_ttlv_structure_view_item_count(header_view, &raw mut header_count),
+        SUCCESS
+    );
+    assert!(header_count > 0);
+    kmipkit_ttlv_structure_view_release(header_view);
+    kmipkit_ttlv_structure_release(payload);
+    kmipkit_ttlv_structure_release(header);
+
+    let ping = failed_query_without_payload_item();
+    payload_present = u8::MAX;
+    payload = ptr::dangling_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_raw_ttlv(
+            ping,
+            &raw mut payload_present,
+            &raw mut payload,
+        ),
+        SUCCESS
+    );
+    assert_eq!(payload_present, 0);
+    assert!(payload.is_null());
+    kmipkit_client_batch_item_response_release(ping);
+}
+
+#[cfg(feature = "coverage-c-consumer")]
+#[test]
+fn compiled_c_consumer_navigates_response_vendor_ttlv_in_nested_structures() {
+    let query = successful_response_item(
+        ClientRequest::query(QueryRequest::new([QueryFunction::from_raw(1)])),
+        QUERY_OPERATION,
+        b"compiled-c-consumer",
+        vec![
+            ttlv_enumeration(0x0042_005c, 0x0000_003b),
+            ttlv_structure(0x0042_015f, []),
+            ttlv_structure(0x0042_0012, [ttlv_integer(0x0042_0057, 7)]),
+        ],
+    );
+    // SAFETY: The C consumer takes ownership of this live result handle and releases it.
+    assert_eq!(
+        unsafe {
+            kmipkit_client_abi_consumer_response_ttlv_handles(query, 1, 3, ptr::null(), 0, 0)
+        },
+        0
+    );
+
+    let server_information_path = [0x0042_0088, 0x0054_0001, 0x0054_0002];
+    let server_information = successful_response_item(
+        ClientRequest::query(QueryRequest::new([QueryFunction::from_raw(3)])),
+        QUERY_OPERATION,
+        b"c-server-information",
+        vec![
+            ttlv_structure(
+                0x0042_0088,
+                [ttlv_structure(
+                    0x0054_0001,
+                    [ttlv_integer(0x0054_0002, 0x1234)],
+                )],
+            ),
+            ttlv_structure(0x0042_015f, []),
+        ],
+    );
+    // SAFETY: The C consumer takes ownership and releases the result handle.
+    assert_eq!(
+        unsafe {
+            kmipkit_client_abi_consumer_response_ttlv_handles(
+                server_information,
+                1,
+                2,
+                server_information_path.as_ptr(),
+                server_information_path.len() as u64,
+                0x1234,
+            )
+        },
+        0
+    );
+
+    let key_block_path = [0x0042_008f, 0x0042_0040, 0x0054_0001, 0x0054_0002];
+    let get_response = successful_response_item(
+        ClientRequest::get(GetRequest::new().with_unique_identifier(
+            kmipkit_protocol::UniqueIdentifier::TextString("c-get-request".to_owned()),
+        )),
+        0x0000_000a,
+        b"c-key-block",
+        vec![
+            ttlv_enumeration(0x0042_0057, 2),
+            ttlv_item(0x0042_0094, 0x07, b"c-get-object"),
+            ttlv_structure(
+                0x0042_008f,
+                [ttlv_structure(
+                    0x0042_0040,
+                    [
+                        ttlv_enumeration(0x0042_0042, 1),
+                        ttlv_structure(
+                            0x0042_0045,
+                            [ttlv_item(0x0042_0043, 0x08, b"key-material")],
+                        ),
+                        ttlv_structure(0x0054_0001, [ttlv_integer(0x0054_0002, 0x5678)]),
+                    ],
+                )],
+            ),
+        ],
+    );
+    // SAFETY: The C consumer takes ownership and releases the result handle.
+    assert_eq!(
+        unsafe {
+            kmipkit_client_abi_consumer_response_ttlv_handles(
+                get_response,
+                1,
+                3,
+                key_block_path.as_ptr(),
+                key_block_path.len() as u64,
+                0x5678,
+            )
+        },
+        0
+    );
+
+    let failure = failed_query_without_payload_item();
+    // SAFETY: The C consumer takes ownership of this live result handle and releases it.
+    assert_eq!(
+        unsafe {
+            kmipkit_client_abi_consumer_response_ttlv_handles(failure, 0, 0, ptr::null(), 0, 0)
+        },
+        0
+    );
+}
+
+#[test]
+fn query_field_copy_builds_only_the_requested_ttlv_item() {
+    let text =
+        kmipkit_protocol::QueryResponseField::VendorIdentification("KMIPKit vendor".to_owned());
+    let copied = super::clone_query_response_field_item(&text)
+        .unwrap()
+        .expect("text Query fields have a TTLV Item");
+
+    assert_eq!(copied.tag().raw(), text.tag());
+    assert!(copied.with_value(|value| matches!(
+        value,
+        kmipkit_ttlv::ValueView::TextString(value) if value == "KMIPKit vendor"
+    )));
+
+    let enumeration = kmipkit_protocol::QueryResponseField::Operation(0xfeed_beef);
+    assert!(
+        super::clone_query_response_field_item(&enumeration)
+            .unwrap()
+            .is_none()
+    );
+}

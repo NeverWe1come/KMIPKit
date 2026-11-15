@@ -1,0 +1,413 @@
+{
+  "data": [
+    {
+      "files": [
+        {
+          "branches": [
+            [
+              2,
+              9,
+              2,
+              13,
+              1,
+              1,
+              0,
+              0,
+              4
+            ],
+            [
+              9,
+              12,
+              9,
+              28,
+              1,
+              1,
+              0,
+              0,
+              4
+            ]
+          ],
+          "expansions": [],
+          "filename": "bindings/java/native/kmipkit_jni.cpp",
+          "mcdc_records": [],
+          "segments": [
+            [
+              1,
+              24,
+              2,
+              true,
+              true,
+              false
+            ],
+            [
+              2,
+              9,
+              2,
+              true,
+              true,
+              false
+            ],
+            [
+              2,
+              13,
+              2,
+              true,
+              false,
+              false
+            ],
+            [
+              2,
+              14,
+              1,
+              true,
+              false,
+              true
+            ],
+            [
+              2,
+              15,
+              1,
+              true,
+              true,
+              false
+            ],
+            [
+              4,
+              6,
+              1,
+              true,
+              false,
+              true
+            ],
+            [
+              5,
+              5,
+              1,
+              true,
+              true,
+              false
+            ],
+            [
+              5,
+              17,
+              2,
+              true,
+              false,
+              false
+            ],
+            [
+              6,
+              2,
+              0,
+              false,
+              false,
+              false
+            ],
+            [
+              8,
+              28,
+              2,
+              true,
+              true,
+              false
+            ],
+            [
+              9,
+              12,
+              2,
+              true,
+              true,
+              false
+            ],
+            [
+              9,
+              28,
+              2,
+              true,
+              false,
+              false
+            ],
+            [
+              9,
+              30,
+              1,
+              true,
+              false,
+              true
+            ],
+            [
+              9,
+              31,
+              1,
+              true,
+              true,
+              false
+            ],
+            [
+              9,
+              32,
+              2,
+              true,
+              false,
+              false
+            ],
+            [
+              9,
+              35,
+              1,
+              true,
+              true,
+              false
+            ],
+            [
+              9,
+              36,
+              2,
+              true,
+              false,
+              false
+            ],
+            [
+              10,
+              2,
+              0,
+              false,
+              false,
+              false
+            ]
+          ],
+          "summary": {
+            "branches": {
+              "count": 4,
+              "covered": 4,
+              "notcovered": 0,
+              "percent": 100
+            },
+            "functions": {
+              "count": 2,
+              "covered": 2,
+              "percent": 100
+            },
+            "instantiations": {
+              "count": 2,
+              "covered": 2,
+              "percent": 100
+            },
+            "lines": {
+              "count": 9,
+              "covered": 9,
+              "percent": 100
+            },
+            "mcdc": {
+              "count": 0,
+              "covered": 0,
+              "notcovered": 0,
+              "percent": 0
+            },
+            "regions": {
+              "count": 8,
+              "covered": 8,
+              "notcovered": 0,
+              "percent": 100
+            }
+          }
+        }
+      ],
+      "functions": [
+        {
+          "branches": [
+            [
+              2,
+              9,
+              2,
+              13,
+              1,
+              1,
+              0,
+              0,
+              4
+            ]
+          ],
+          "count": 2,
+          "filenames": [
+            "bindings/java/native/kmipkit_jni.cpp"
+          ],
+          "mcdc_records": [],
+          "name": "_Z6chooseb",
+          "regions": [
+            [
+              1,
+              24,
+              6,
+              2,
+              2,
+              0,
+              0,
+              0
+            ],
+            [
+              2,
+              9,
+              2,
+              13,
+              2,
+              0,
+              0,
+              0
+            ],
+            [
+              2,
+              14,
+              2,
+              15,
+              1,
+              0,
+              0,
+              3
+            ],
+            [
+              2,
+              15,
+              4,
+              6,
+              1,
+              0,
+              0,
+              0
+            ],
+            [
+              4,
+              6,
+              5,
+              5,
+              1,
+              0,
+              0,
+              3
+            ],
+            [
+              5,
+              5,
+              5,
+              17,
+              1,
+              0,
+              0,
+              0
+            ]
+          ]
+        },
+        {
+          "branches": [
+            [
+              9,
+              12,
+              9,
+              28,
+              1,
+              1,
+              0,
+              0,
+              4
+            ]
+          ],
+          "count": 2,
+          "filenames": [
+            "bindings/java/native/kmipkit_jni.cpp"
+          ],
+          "mcdc_records": [],
+          "name": "main",
+          "regions": [
+            [
+              8,
+              28,
+              10,
+              2,
+              2,
+              0,
+              0,
+              0
+            ],
+            [
+              9,
+              12,
+              9,
+              28,
+              2,
+              0,
+              0,
+              0
+            ],
+            [
+              9,
+              30,
+              9,
+              31,
+              1,
+              0,
+              0,
+              3
+            ],
+            [
+              9,
+              31,
+              9,
+              32,
+              1,
+              0,
+              0,
+              0
+            ],
+            [
+              9,
+              35,
+              9,
+              36,
+              1,
+              0,
+              0,
+              0
+            ]
+          ]
+        }
+      ],
+      "totals": {
+        "branches": {
+          "count": 4,
+          "covered": 4,
+          "notcovered": 0,
+          "percent": 100
+        },
+        "functions": {
+          "count": 2,
+          "covered": 2,
+          "percent": 100
+        },
+        "instantiations": {
+          "count": 2,
+          "covered": 2,
+          "percent": 100
+        },
+        "lines": {
+          "count": 9,
+          "covered": 9,
+          "percent": 100
+        },
+        "mcdc": {
+          "count": 0,
+          "covered": 0,
+          "notcovered": 0,
+          "percent": 0
+        },
+        "regions": {
+          "count": 8,
+          "covered": 8,
+          "notcovered": 0,
+          "percent": 100
+        }
+      }
+    }
+  ],
+  "type": "llvm.coverage.json.export",
+  "version": "2.0.1"
+}

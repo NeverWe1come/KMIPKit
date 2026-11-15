@@ -1,0 +1,121 @@
+{
+  "schema_version": "1.0",
+  "server": {
+    "id": "utimaco-eskm",
+    "vendor": "Utimaco",
+    "product": "Enterprise Secure Key Manager (ESKM)",
+    "version": "5.3",
+    "kmip_versions": ["2.1", "2.0", "1.4"]
+  },
+  "transports": {
+    "raw_tls": {
+      "supported": true,
+      "default_port": 5696
+    },
+    "https": {
+      "supported": false
+    }
+  },
+  "encodings": {
+    "TTLV": {
+      "supported": true,
+      "transports": ["raw_tls"]
+    },
+    "JSON": {
+      "supported": false,
+      "transports": []
+    },
+    "XML": {
+      "supported": false,
+      "transports": []
+    }
+  },
+  "authentication": {
+    "mtls_client_cert": true,
+    "username_password": true
+  },
+  "features": {
+    "batching": true,
+    "asynchronous_operations": true,
+    "id_placeholder": true
+  },
+  "operations": {
+    "Discover Versions": { "supported": true },
+    "Query": { "supported": true },
+    "Create": { "supported": true },
+    "Create Key Pair": { "supported": true },
+    "Create Split Key": { "supported": false },
+    "Join Split Key": { "supported": false },
+    "Register": { "supported": true },
+    "Import": { "supported": true },
+    "Export": { "supported": true },
+    "Get": { "supported": true },
+    "Locate": { "supported": true },
+    "Check": { "supported": true },
+    "Activate": { "supported": true },
+    "Revoke": { "supported": true },
+    "Destroy": { "supported": true },
+    "Archive": { "supported": true },
+    "Recover": { "supported": true },
+    "Encrypt": { "supported": true },
+    "Decrypt": { "supported": true },
+    "Sign": { "supported": true },
+    "Signature Verify": { "supported": true },
+    "MAC": { "supported": true },
+    "MAC Verify": { "supported": true },
+    "Hash": { "supported": true },
+    "Derive Key": { "supported": true },
+    "RNG Retrieve": { "supported": true },
+    "RNG Seed": { "supported": false },
+    "Get Attributes": { "supported": true },
+    "Get Attribute List": { "supported": true },
+    "Add Attribute": { "supported": true },
+    "Modify Attribute": { "supported": true },
+    "Set Attribute": { "supported": true },
+    "Delete Attribute": { "supported": true },
+    "Ping": { "supported": true }
+  },
+  "managed_objects": {
+    "Symmetric Key": { "supported": true },
+    "Public Key": { "supported": true },
+    "Private Key": { "supported": true },
+    "Certificate": { "supported": true },
+    "Secret Data": { "supported": true },
+    "Opaque Object": { "supported": true },
+    "Split Key": { "supported": false },
+    "PGP Key": { "supported": false },
+    "Certificate Request": { "supported": true }
+  },
+  "attributes": {
+    "Cryptographic Algorithm": { "supported": true, "read": true, "create": true, "modify": false, "delete": false },
+    "Cryptographic Length": { "supported": true, "read": true, "create": true, "modify": false, "delete": false },
+    "Cryptographic Usage Mask": { "supported": true, "read": true, "create": true, "modify": false, "delete": false },
+    "Name": { "supported": true, "read": true, "create": true, "modify": true, "delete": true },
+    "Comment": { "supported": true, "read": true, "create": true, "modify": true, "delete": true },
+    "State": { "supported": true, "read": true, "create": false, "modify": false, "delete": false },
+    "Unique Identifier": { "supported": true, "read": true, "create": false, "modify": false, "delete": false }
+  },
+  "cryptographic_algorithms": {
+    "AES": {
+      "supported": true,
+      "lengths": [128, 192, 256],
+      "modes": ["CBC", "GCM", "ECB", "CTR"]
+    },
+    "RSA": {
+      "supported": true,
+      "lengths": [2048, 3072, 4096]
+    },
+    "ECDSA": {
+      "supported": true,
+      "lengths": [256, 384, 521],
+      "curves": ["P_256", "P_384", "P_521"]
+    },
+    "HMAC_SHA256": {
+      "supported": true,
+      "lengths": [256]
+    },
+    "SHA_256": {
+      "supported": true
+    }
+  }
+}

@@ -1,0 +1,8 @@
+[project]
+name = "kmipkit-0053-python-consumer"
+version = "0.1.0"
+requires-python = ">=3.12,<3.13"
+dependencies = ["kmipkit==1.0.0"]
+
+[tool.uv.sources]
+kmipkit = { path = "../../../../bindings/python", editable = true }

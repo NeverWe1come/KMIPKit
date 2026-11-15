@@ -1,0 +1,255 @@
+# KMIP interoperability server matrix
+
+Status: research and integration-test planning, not a conformance claim
+
+Research checked: 2026-10-11
+
+This document keeps separate what a server publicly declares for each KMIP
+operation and what KMIPKit has actually exercised against a server. A declared
+operation is not an integration-test result. A passing integration test proves
+interoperability only for the recorded operation, payload, transport, product
+version, and configuration.
+
+This matrix is specifically an evidence ledger for KMIP 2.1 server
+interoperability. The approved 1.0 scope also includes TTLV (default), JSON,
+and XML, plus client-initiated and the approved server-to-client operations.
+KMIPKIT-0066 and ADR-0021 advanced the five §6.2 operations, HTTPS listener,
+and role handling into scope; KMIPKIT-0069–0071 and ADR-0022 add bounded
+modern-version support. A vendor's published operation list or this matrix's
+candidate status is not a KMIPKit integration result. Encoding, operation,
+version, endpoint role, product version, and configuration must be recorded
+for each run. The normative KMIP 2.1 inventory follows Specification §§6.1
+(57 client-to-server headings) and 6.2 (5 server-to-client headings);
+duplicate operation names are shown once per direction.
+
+## Published operation support: Cosmian KMS and PyKMIP
+
+The first column is the operation heading in KMIP 2.1. “Yes” means the product’s public operation list marks it supported; “No” means the published matrix explicitly marks it unimplemented; “Undocumented” means no positive or negative claim was found in the cited operation list. These labels do not prove that every object type, algorithm, attribute combination, permission, or profile works.
+
+| KMIP 2.1 operation | Cosmian KMS 5.28.0 | PyKMIP server |
+| --- | --- | --- |
+| Activate (C→S, §6.1.1) | Yes¹ / test pending | Yes³ / blocked at KMIP 2.1 |
+| Add Attribute (C→S, §6.1.2) | Yes¹ / test pending | Undocumented³ / blocked at KMIP 2.1 |
+| Adjust Attribute (C→S, §6.1.3) | Undocumented¹ / probe | Undocumented³ / blocked at KMIP 2.1 |
+| Archive (C→S, §6.1.4) | No¹ / rejection test only | Undocumented³ / blocked at KMIP 2.1 |
+| Cancel (C→S, §6.1.5) | No¹ / rejection test only | Undocumented³ / blocked at KMIP 2.1 |
+| Certify (C→S, §6.1.6) | Yes¹ / test pending | Undocumented³ / blocked at KMIP 2.1 |
+| Check (C→S, §6.1.7) | Yes¹ / test pending | Undocumented³ / blocked at KMIP 2.1 |
+| Create (C→S, §6.1.8) | Yes¹ / test pending | Yes³ / blocked at KMIP 2.1 |
+| Create Key Pair (C→S, §6.1.9) | Yes¹ / test pending | Yes³ / blocked at KMIP 2.1 |
+| Create Split Key (C→S, §6.1.10) | Yes¹ / test pending | Undocumented³ / blocked at KMIP 2.1 |
+| Decrypt (C→S, §6.1.11) | Yes¹ / test pending | Yes³ / blocked at KMIP 2.1 |
+| Delegated Login (C→S, §6.1.12) | Undocumented¹ / probe | Undocumented³ / blocked at KMIP 2.1 |
+| Delete Attribute (C→S, §6.1.13) | Yes¹ / test pending | Yes³ / blocked at KMIP 2.1 |
+| Derive Key (C→S, §6.1.14) | Yes¹ / test pending | Yes³ / blocked at KMIP 2.1 |
+| Destroy (C→S, §6.1.15) | Yes¹ / test pending | Yes³ / blocked at KMIP 2.1 |
+| Discover Versions (C→S, §6.1.16) | Yes¹ / test pending | Yes³ / blocked at KMIP 2.1 |
+| Encrypt (C→S, §6.1.17) | Yes¹ / test pending | Yes³ / blocked at KMIP 2.1 |
+| Export (C→S, §6.1.18) | Yes¹ / test pending | Undocumented³ / blocked at KMIP 2.1 |
+| Get (C→S, §6.1.19) | Yes¹ / test pending | Yes³ / blocked at KMIP 2.1 |
+| Get Attributes (C→S, §6.1.20) | Yes¹ / test pending | Yes³ / blocked at KMIP 2.1 |
+| Get Attribute List (C→S, §6.1.21) | Yes¹ / test pending | Yes³ / blocked at KMIP 2.1 |
+| Get Constraints (C→S, §6.1.22) | Undocumented¹ / probe | Undocumented³ / blocked at KMIP 2.1 |
+| Get Usage Allocation (C→S, §6.1.23) | No¹ / rejection test only | Undocumented³ / blocked at KMIP 2.1 |
+| Hash (C→S, §6.1.24) | Yes¹ / test pending | Undocumented³ / blocked at KMIP 2.1 |
+| Import (C→S, §6.1.25) | Yes¹ / test pending | Undocumented³ / blocked at KMIP 2.1 |
+| Interop (C→S, §6.1.26) | Undocumented¹ / probe | Undocumented³ / blocked at KMIP 2.1 |
+| Join Split Key (C→S, §6.1.27) | Yes¹ / test pending | Undocumented³ / blocked at KMIP 2.1 |
+| Locate (C→S, §6.1.28) | Yes¹ / test pending | Yes³ / blocked at KMIP 2.1 |
+| Log (C→S, §6.1.29) | Undocumented¹ / probe | Undocumented³ / blocked at KMIP 2.1 |
+| Login (C→S, §6.1.30) | Undocumented¹ / probe | Undocumented³ / blocked at KMIP 2.1 |
+| Logout (C→S, §6.1.31) | Undocumented¹ / probe | Undocumented³ / blocked at KMIP 2.1 |
+| MAC (C→S, §6.1.32) | Yes¹ / test pending | Yes³ / blocked at KMIP 2.1 |
+| MAC Verify (C→S, §6.1.33) | Yes¹ / test pending | Undocumented³ / blocked at KMIP 2.1 |
+| Modify Attribute (C→S, §6.1.34) | Undocumented¹ / probe | Yes³ / blocked at KMIP 2.1 |
+| Obtain Lease (C→S, §6.1.35) | No¹ / rejection test only | Undocumented³ / blocked at KMIP 2.1 |
+| Ping (C→S, §6.1.36) | Undocumented¹ / probe | Undocumented³ / blocked at KMIP 2.1 |
+| PKCS#11 (C→S, §6.1.37) | Undocumented¹ / probe | Undocumented³ / blocked at KMIP 2.1 |
+| Poll (C→S, §6.1.38) | No¹ / rejection test only | Undocumented³ / blocked at KMIP 2.1 |
+| Process (C→S, §6.1.39) | Undocumented¹ / probe | Undocumented³ / blocked at KMIP 2.1 |
+| Query (C→S, §6.1.40) | Yes¹ / test pending | Yes³ / blocked at KMIP 2.1 |
+| Query Asynchronous Requests (C→S, §6.1.41) | Undocumented¹ / probe | Undocumented³ / blocked at KMIP 2.1 |
+| Recover (C→S, §6.1.42) | No¹ / rejection test only | Undocumented³ / blocked at KMIP 2.1 |
+| Register (C→S, §6.1.43) | Yes¹ / test pending | Yes³ / blocked at KMIP 2.1 |
+| Revoke (C→S, §6.1.44) | Yes¹ / test pending | Yes³ / blocked at KMIP 2.1 |
+| Re-certify (C→S, §6.1.45) | No¹ / rejection test only | Undocumented³ / blocked at KMIP 2.1 |
+| Re-key (C→S, §6.1.46) | Yes¹ / test pending | Undocumented³ / blocked at KMIP 2.1 |
+| Re-key Key Pair (C→S, §6.1.47) | Yes¹ / test pending | Undocumented³ / blocked at KMIP 2.1 |
+| Re-Provision (C→S, §6.1.48) | Undocumented¹ / probe | Undocumented³ / blocked at KMIP 2.1 |
+| RNG Retrieve (C→S, §6.1.49) | Yes¹ / test pending | Undocumented³ / blocked at KMIP 2.1 |
+| RNG Seed (C→S, §6.1.50) | Yes¹ / test pending | Undocumented³ / blocked at KMIP 2.1 |
+| Set Attribute (C→S, §6.1.51) | Yes¹,² / test pending | Yes³ / blocked at KMIP 2.1 |
+| Set Constraints (C→S, §6.1.52) | Undocumented¹ / probe | Undocumented³ / blocked at KMIP 2.1 |
+| Set Defaults (C→S, §6.1.53) | Undocumented¹ / probe | Undocumented³ / blocked at KMIP 2.1 |
+| Set Endpoint Role (C→S, §6.1.54) | Undocumented¹ / probe | Undocumented³ / blocked at KMIP 2.1 |
+| Sign (C→S, §6.1.55) | Yes¹ / test pending | Yes³ / blocked at KMIP 2.1 |
+| Signature Verify (C→S, §6.1.56) | Yes¹ / test pending | Yes³ / blocked at KMIP 2.1 |
+| Validate (C→S, §6.1.57) | Yes¹ / test pending | Undocumented³ / blocked at KMIP 2.1 |
+| Discover Versions (S→C, §6.2.1) | Undocumented; direction not distinguished¹ / test pending | Undocumented; direction not distinguished³ / test pending |
+| Notify (S→C, §6.2.2) | No¹ / rejection test only | Undocumented³ / test pending |
+| Put (S→C, §6.2.3) | No¹ / rejection test only | Undocumented³ / test pending |
+| Query (S→C, §6.2.4) | Undocumented¹ / test pending | Undocumented; direction not distinguished³ / test pending |
+| Set Endpoint Role (S→C, §6.2.5) | Undocumented¹ / test pending | Undocumented³ / test pending |
+
+**Legend and interpretation**
+
+**Testability suffixes in the cells:** `test pending` means no matching
+KMIPKit-to-server result is recorded yet. `rejection test only` means the
+server explicitly documents the operation as unimplemented; this is a
+candidate negative test, not a passing KMIPKit integration result. `probe`
+means published operation support is undocumented; check the results ledger
+for any live probe. `blocked at KMIP 2.1` marks PyKMIP's version ceiling.
+Server-to-client operations and role handling are in the approved KMIPKit 1.0
+scope, but server-specific test outcomes remain pending until run and recorded.
+
+- **Yes¹ / No¹ / Undocumented¹** come from the [Cosmian 5.28.0 KMIP support matrix](https://github.com/Cosmian/kms/blob/5.28.0/documentation/docs/kmip_support/support.md). Cosmian marks `Set Attribute (Modify)` as supported in KMIP 2.0 and 2.1; because the specification has separate `Modify Attribute` and `Set Attribute` headings, the row above records only the explicit `Set Attribute` entry and does not infer support for `Modify Attribute`.
+- **Yes³** means PyKMIP’s [server operation list](https://github.com/OpenKMIP/PyKMIP/blob/master/docs/source/server.rst) names the operation. **Undocumented³** means it is absent from that list, not proof that a request is rejected.
+- PyKMIP’s version enum currently exposes KMIP up to 2.0, not 2.1 ([source](https://github.com/OpenKMIP/PyKMIP/blob/master/kmip/core/enums.py)). Therefore PyKMIP is useful as a local KMIP reference server, but it cannot provide a strict KMIP 2.1 positive integration target for KMIPKit 1.0.
+- Cosmian KMS 5.28.0 declares KMIP 2.1 support. Its [binary socket listener](https://github.com/Cosmian/kms/blob/5.28.0/documentation/docs/configuration/tls.md) accepts binary KMIP on port 5696, requires TLS and client certificate authentication, and can be restricted to TLS 1.3. This is the relevant path for KMIPKit’s raw TTLV/mTLS transport. The HTTP `/kmip/2_1` endpoint carries **JSON TTLV**, so it is not a substitute for testing KMIPKit’s binary TTLV transport ([API docs](https://github.com/Cosmian/kms/blob/5.28.0/documentation/docs/integrations/openapi.md)).
+- The Cosmian 5.28.0 license is [Business Source License 1.1](https://github.com/Cosmian/kms/blob/5.28.0/LICENSE); its terms allow non-production use. Confirm the exact license terms for any redistribution or use beyond local tests.
+- KMIPKIT-0066 and ADR-0021 include the five S→C operations, HTTPS listener,
+  and Set Endpoint Role transitions in the approved 1.0 scope. The published
+  vendor support lists do not establish that a vendor supports these directions.
+  The cells identify documented vendor claims or missing documentation; they do
+  not claim that KMIPKit has run the corresponding positive or negative tests.
+
+## Candidate servers and test-result matrix
+
+Products marked as KMIP 2.1 candidates are targets for future access requests or local setup. A server advertising KMIP 2.1 does not guarantee every operation; operation results remain pending until measured. Products whose public documentation tops out below 2.1 are retained as market references, but the current KMIPKit 1.0 client must not be downgraded to make them appear compatible.
+
+| Candidate | Published version evidence | Local/test access assessment | Use in KMIPKit 1.0 |
+| --- | --- | --- | --- |
+| Cosmian KMS 5.28.0 | KMIP 2.1 | Can be self-hosted; non-production use allowed by the release license | **Primary local target**; configure raw binary listener for TLS 1.3 and mTLS |
+| IBM Guardium Key Lifecycle Manager 5.1 | KMIP 2.1 listed in the vendor support matrix | Access/license or vendor test arrangement to be confirmed | **Priority external target** |
+| Entrust KeyControl (10.3.1 documentation) | KMIP 2.1 listed by vendor | Access/license or vendor test arrangement to be confirmed | **Priority external target** |
+| Utimaco ESKM | Vendor integration documentation names KMIP 2.1 | Appliance/license or vendor test arrangement to be confirmed | **Priority external target** |
+| PyKMIP (upstream master) | Server code advertises versions only up to KMIP 2.0 | Free, locally hosted, intended for testing/demo | Useful for lower-version/manual experiments; not a KMIP 2.1 positive target |
+| Thales CipherTrust Manager 2.24 | Its current KMIP reference documents objects/operations against KMIP 1.4 | Trial/licensing terms apply; verify current access conditions | Not compatible with KMIPKit 1.0’s fixed 2.1 version |
+| Fortanix DSM | Public coverage lists KMIP 1.0–1.4 | Access/licensing to be confirmed | Not compatible with KMIPKit 1.0’s fixed 2.1 version |
+| Oracle Key Vault 21.x | Public administrator documentation lists KMIP 1.1 profiles | Commercial access to be confirmed | Not compatible with KMIPKit 1.0’s fixed 2.1 version |
+
+The following test matrix is the results ledger. No cell currently records a
+successful test; `FAIL` cells record observed incompatible behavior. `Pending`
+means test execution is still required; `Pending (access; operation support
+unverified)` means access/configuration is outstanding and no per-operation
+result is known; `Pending (access + HSM; ...)` additionally requires the
+HSM-backed GKLM setup; `Not applicable` means the target does not advertise
+KMIP 2.1 and is excluded from a strict KMIP 2.1 interoperability result;
+`—` marks a direction for which the current vendor test record is not
+applicable or not represented in the recorded matrix.
+
+| KMIPKit (operation) | Cosmian 5.28.0 | PyKMIP | IBM GKLM 5.1 | IBM GKLM 5.1 + Thales Luna HSM client 7.x/10.x | IBM GKLM 5.1 + Entrust nShield 13.3.2 / Connect XC 12.60 | Entrust KeyControl | Utimaco ESKM | Thales CipherTrust | Fortanix DSM | Oracle Key Vault |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Activate (§6.1.1) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Add Attribute (§6.1.2) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Adjust Attribute (§6.1.3) | Pending (support unconfirmed) | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Archive (§6.1.4) | Pending (expected rejection) | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Cancel (§6.1.5) | Pending (expected rejection) | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Certify (§6.1.6) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Check (§6.1.7) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Create (§6.1.8) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Create Key Pair (§6.1.9) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Create Split Key (§6.1.10) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Decrypt (§6.1.11) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Delegated Login (§6.1.12) | FAIL (5.28.0: Failure/Invalid Message omitted Operation; 2026-10-11) | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Delete Attribute (§6.1.13) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Derive Key (§6.1.14) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Destroy (§6.1.15) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Discover Versions (§6.1.16) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Encrypt (§6.1.17) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Export (§6.1.18) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Get (§6.1.19) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Get Attributes (§6.1.20) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Get Attribute List (§6.1.21) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Get Constraints (§6.1.22) | Pending (support unconfirmed) | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Get Usage Allocation (§6.1.23) | Pending (expected rejection) | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Hash (§6.1.24) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Import (§6.1.25) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Interop (§6.1.26) | Pending (support unconfirmed) | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Join Split Key (§6.1.27) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Locate (§6.1.28) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Log (§6.1.29) | Pending (support unconfirmed) | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Login (§6.1.30) | FAIL (5.28.0: Failure/Invalid Message omitted Operation; 2026-10-11) | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Logout (§6.1.31) | FAIL (5.28.0: Failure/Invalid Message omitted Operation; 2026-10-11) | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| MAC (§6.1.32) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| MAC Verify (§6.1.33) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Modify Attribute (§6.1.34) | Pending (support unconfirmed) | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Obtain Lease (§6.1.35) | Pending (expected rejection) | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Ping (§6.1.36) | Pending (support unconfirmed) | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| PKCS#11 (§6.1.37) | Pending (support unconfirmed) | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Poll (§6.1.38) | Pending (expected rejection) | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Process (§6.1.39) | Pending (support unconfirmed) | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Query (§6.1.40) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Query Asynchronous Requests (§6.1.41) | Pending (support unconfirmed) | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Recover (§6.1.42) | Pending (expected rejection) | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Register (§6.1.43) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Revoke (§6.1.44) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Re-certify (§6.1.45) | Pending (expected rejection) | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Re-key (§6.1.46) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Re-key Key Pair (§6.1.47) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Re-Provision (§6.1.48) | Pending (support unconfirmed) | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| RNG Retrieve (§6.1.49) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| RNG Seed (§6.1.50) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Set Attribute (§6.1.51) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Set Constraints (§6.1.52) | Pending (support unconfirmed) | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Set Defaults (§6.1.53) | Pending (support unconfirmed) | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Set Endpoint Role (§6.1.54) | Pending (role-transition test not recorded) | Not applicable: max 2.0 | Pending (access; role-transition test not recorded) | Pending (access + HSM; role-transition test not recorded) | Pending (access + HSM; role-transition test not recorded) | Pending (access; role-transition test not recorded) | Pending (access; role-transition test not recorded) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Sign (§6.1.55) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Signature Verify (§6.1.56) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Validate (§6.1.57) | Pending | Not applicable: max 2.0 | Pending (access; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access + HSM; operation support unverified) | Pending (access; operation support unverified) | Pending (access; operation support unverified) | Not applicable: up to 1.4 | Not applicable: up to 1.4 | Not applicable: 1.1 profiles |
+| Discover Versions (S→C, §6.2.1) | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending |
+| Notify (S→C, §6.2.2) | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending |
+| Put (S→C, §6.2.3) | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending |
+| Query (S→C, §6.2.4) | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending |
+| Set Endpoint Role (S→C, §6.2.5) | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending |
+The Luna and nShield columns are backend configurations, not separate KMIP endpoints. IBM lists the supported Luna client generations and nShield models in its [GKLM support matrix](https://www.ibm.com/support/pages/ibm-guardium-key-lifecycle-manager-support-matrix); any result must identify the exact HSM model and firmware while connecting to the GKLM KMIP listener.
+
+## Recording an actual result
+
+When an integration test is run, replace only the matching `Pending` cell with a concise result and link the executable test/evidence. Keep the product build, image/package digest where available, server configuration, TLS version, certificate setup, operation payload, response status/reason, date, and any known workaround in the test report. Record a negative response as a negative interoperability result only when the test expected that server behavior; do not call an unsupported operation “successful” merely because the server returned an error safely.
+
+Suggested result values: `OK` (assertions passed), `FAIL` (unexpected behavior), `SKIP` (not run, with reason), and `N/A` (not applicable to this server, version, or configuration; include the reason). `OK` applies only to the exact recorded case; it does not claim profile conformance or certification.
+
+For KMIPKIT-0039, the Get Constraints (§6.1.22), Get Usage Allocation (§6.1.23), Set Constraints (§6.1.52), and Set Defaults (§6.1.53) result rows remain `Pending` for every server because no live exchange for these operations has been measured. When testing, record the exact KMIPKit commit, server product/build and image or package digest, listener and server configuration, transport and negotiated TLS version, client-certificate setup, operation and request table, response status/reason and delivery state, UTC run date, outcome, and any workaround. The explicit Usage Allocation guard is local client accounting; it is not a server interoperability result. Set Endpoint Role and the server-to-client operation rows are in scope but remain pending until their external results are measured and recorded.
+
+On 2026-10-11, the pinned Cosmian KMS 5.28.0 image was started with the local mTLS test certificates. Separate credential-session probes for Delegated Login (§6.1.12), Login (§6.1.30), and Logout (§6.1.31) sent binary TTLV/TLS requests. Each received Failure/Invalid Message without the Operation field, which OASIS KMIP 2.1 §8.6, Table 399 requires when the request batch item includes Operation. KMIPKit rejected each response after response delivery began and retained its generic TTLV for inspection. These are `FAIL` interoperability results for credential-session operations; they are unrelated to KMIPKIT-0039 and do not change its four still-pending result rows above. PyKMIP's current version enum lists KMIP 2.0 as its latest version and does not list 2.1, so it is not a strict KMIP 2.1 integration target. The two-independent-implementation release gate remains open. The focused live probes are in `crates/kmipkit-client/tests/credential_sessions_cosmian.rs` and remain ignored in ordinary test runs.
+
+For KMIPKIT-0040, the PKCS#11 (§6.1.37, Tables 273–275) row remains
+`Pending` for every KMIP 2.1 server. The Rust protocol and fake-transport tests
+are source-derived local evidence only; no live PKCS#11 exchange was executed
+for this increment. No configured pair of independent KMIP 2.1 implementations
+with PKCS#11 forwarding support was available for this work. This leaves the
+T022 two-server release gate open. When access is available, record the exact
+client/server builds, TLS transport, caller-selected interface/function and
+parameter profile, result/delivery state, UTC date and workaround, without
+recording secret parameters, correlation values or raw KMIP bodies.
+
+## Sources
+
+- [OASIS KMIP Specification 2.1, §§6.1–6.2](https://docs.oasis-open.org/kmip/kmip-spec/v2.1/os/kmip-spec-v2.1-os.html); the repository’s pinned copy and source status are indexed in [the KMIP 2.1 source inventory](../../specification/oasis/kmip-2.1/README.md).
+- [Cosmian KMS 5.28.0 operation matrix](https://github.com/Cosmian/kms/blob/5.28.0/documentation/docs/kmip_support/support.md), [binary TLS configuration](https://github.com/Cosmian/kms/blob/5.28.0/documentation/docs/configuration/tls.md), [HTTP KMIP transport notes](https://github.com/Cosmian/kms/blob/5.28.0/documentation/docs/integrations/openapi.md), and [license](https://github.com/Cosmian/kms/blob/5.28.0/LICENSE).
+- [PyKMIP server operation list](https://github.com/OpenKMIP/PyKMIP/blob/master/docs/source/server.rst) and [KMIP version enum](https://github.com/OpenKMIP/PyKMIP/blob/master/kmip/core/enums.py).
+- [IBM GKLM support matrix](https://www.ibm.com/support/pages/ibm-guardium-key-lifecycle-manager-support-matrix) (KMIP versions and supported HSMs).
+- [Entrust KeyControl KMIP server documentation](https://docs.hytrust.com/DataControl/10.3.1/Online/Content/Books/Admin-Guide/KC-System-Config/Admin-Keys-and-KMIP/KMIP-Client-and-Server-Config.html).
+- [Utimaco ESKM integration documentation](https://integration-guides.utimaco.com/mysql-and-eskm/1.0.0/eskm).
+- [Thales CipherTrust Manager KMIP reference](https://docs-cybersec.thalesgroup.com/bundle/latest-cdsp-cm/page/reference/kmip-ref/index.html).
+- [Fortanix DSM KMIP coverage](https://support.fortanix.com/docs/what-kmip-coverage-do-we-provide).
+- [Oracle Key Vault 21.x KMIP profiles](https://docs.oracle.com/en/database/oracle/key-vault/21.10/okvag/okv_intro.html).
+
+Vendor capabilities, documentation URLs, product access, and licensing can change. Recheck them when arranging an external test. Vendor-supported versions are recorded as the vendor’s published statement, not independently validated KMIP behavior.
+
+
+## KMIPKIT-0042 diagnostics implementation evidence
+
+The Interop (section 6.1.26), Log (section 6.1.29) and Validate (section 6.1.57)
+Rust protocol/client implementation has source-derived payload and fake
+transport tests. These exercise one exchange, results, Pending, redaction and
+delivery metadata; they are not server integration results. No new server
+run or passing interoperability cell is recorded by this feature. The existing
+Cosmian cells remain pending and the separate two-independent-KMIP-2.1-server
+release gate remains open. Missing access, unsupported operations or unavailable
+fixtures must be recorded as their actual blocked/SKIP/N/A outcome rather than
+counted as a passing test. Interop production availability is a server-side
+restriction, not a KMIPKit availability promise. See
+[028 evidence](../../specs/028-diagnostics-interop/implementation-evidence.md)
+for local commands and dependency status.

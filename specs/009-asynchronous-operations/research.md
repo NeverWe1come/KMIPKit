@@ -1,0 +1,80 @@
+# Research: KMIP 2.1 Client Asynchronous Operations
+
+**Feature**: [spec.md](spec.md)
+**Normative source**: pinned OASIS KMIP Specification v2.1, `specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html`.
+
+## Decisions
+
+### Preserve correlation values as opaque bytes
+
+- **Decision**: Retain the exact server-provided Asynchronous Correlation Value and expose Pending values only through KMIPKIT-0007's explicit borrowed accessor. Keep KMIPKit-owned Pending storage zeroizing and do not create ordinary unzeroized duplicates. Place the same bytes into caller-selected Poll, Cancel, or Process request payloads. Preserve arbitrary bytes, including NUL and non-UTF-8 values; do not parse or normalize them. Query filter input stays caller-owned; any copy KMIPKit creates is redacted and zeroized.
+- **Evidence**: §9.1/Table 400 and §9.19/Table 424 identify the server-generated value as the value used in subsequent Poll/Cancel requests. §6.1.5/Table 176, §6.1.38/Table 276, and §6.1.39/Table 278 require it in their respective payloads. Existing KMIPKIT-0006/0007 models preserve generic TTLV and own Pending's value in zeroizing memory.
+- **Alternatives rejected**: Treating the value as a string or deriving it from Client Correlation Value/Unique Batch Item ID would change protocol data and could associate a result with a different operation. Exposing an ordinary owned clone would weaken the accepted 0007 secret-lifetime contract.
+
+### Poll Pending is the original operation's state, not a polling instruction
+
+- **Decision**: A Poll Pending response is surfaced to the caller as a Pending outcome with no original-operation payload and the response's required correlation value. It does not automatically issue another Poll. On successful terminal completion, expose the original operation's response payload generically until a typed model exists; terminal Failure exposes status/Result Reason without a payload.
+- **Evidence**: §6.1.38 says an incomplete operation yields no payload and Result Status Pending; successful completion carries the payload the original operation would have returned synchronously. §6.1.38 also says the response to Poll is not itself asynchronous. §8.6/Table 399 requires an Asynchronous Correlation Value when Result Status is Pending and defines the general failure response shape.
+- A terminal Failure uses the general Response Batch Item failure shape: expose its status and Result Reason with no response payload. It is not a successful completion payload and is not another Pending outcome.
+- **Alternatives rejected**: Decoding every successful completion as the currently supported Discover Versions response would misrepresent payloads for other original operations. Treating every completed Poll as requiring a payload would mis-handle a terminal Failure. An automatic polling loop is outside the product contract and would hide request count, timing, and delivery-state decisions from callers.
+
+### Keep Process distinct and one-shot
+
+- **Decision**: Expose Process as its own operation and outcome. Request correlation comes from the explicit pending outcome. A caller makes one Process request; any later Poll or handling of a Pending Process response requires another explicit caller action.
+- **Evidence**: §6.1.39/Table 278 defines a dedicated Process request and Table 279 has no Process response-payload members. §8.6/Table 399 requires a Response Payload for every non-Failure result, so a Pending Process response must carry that empty structure while Failure has no payload. The Process prose says the server changes processing so the next Poll does not return Pending; this may affect other items when Batch Order Option is true (default). The clause does not state that Process itself cannot be returned asynchronously.
+- **Alternatives rejected**: Treating Process as Poll or as a local wait helper would erase its server-side operation semantics. Assuming Process always completes synchronously is unsupported by the cited clause.
+
+### Reject asynchronous Cancel responses
+
+- **Decision**: Reject a Cancel response with Result Status Pending, even if the original operation allowed asynchronous execution.
+- **Evidence**: §6.1.5 explicitly states that the response to Cancel cannot be asynchronous; Table 177 defines the synchronous response payload.
+- **Alternatives rejected**: Reusing the generic client's Pending allowance for Cancel would contradict the operation-specific prohibition.
+
+### Protect Query filter correlation values
+
+- **Decision**: Apply the existing asynchronous correlation-value redaction and zeroization policy to values supplied in Query Asynchronous Requests filters, as well as server-provided Pending values. Caller-owned filter input storage remains the caller's responsibility; any copy KMIPKit retains is zeroizing and has no ordinary unzeroized duplicate.
+- **Evidence**: The filter values are the same protocol Asynchronous Correlation Value data described in §7.1/Table 352. KMIPKIT-0007 and ADR-0014 treat correlation values as sensitive diagnostic data.
+- **Alternatives rejected**: Protecting only values stored in a Pending outcome would leave caller-supplied values in request Debug/error/log paths and KMIPKit-owned buffers. Claiming to zeroize caller-owned input storage would exceed KMIPKit's ownership contract.
+
+### Query response interpretation and generic fallback
+
+- **Initial conservative decision**: Implement a typed Query Asynchronous Requests request and expose its response through generic TTLV until the Table 286 context had a reviewed interpretation.
+- **Initial evidence**: In §6.1.41, Table 285 is explicitly the Query request payload. The prose describes reporting outstanding requests. Table 286 follows as the response payload and includes a repeatable `Asynchronous Request` row, but its printed caption is “PKCS#11 Response Payload”; the following Table 287 is explicitly Query Asynchronous Requests errors. Section 7.2/Table 353 defines the Asynchronous Request structure. The original catalog entry recorded competing interpretations as open `KMIPKIT-DISC-039`/`source_defect`.
+- **Accepted interpretation**: `KMIPKIT-DEC-015` records the contextual reading: Table 286 is the response table in §6.1.41, its row defines an optional, repeatable Asynchronous Request item, and its caption is a copied label. The source caption is preserved; this is not an OASIS erratum.
+- **Alternative rejected**: Treating the caption as intentional and the table as misplaced would conflict with §6.1.41's operation prose, the request/response/error table sequence, the named response item, and §7.2's structure definition.
+- **Implementation gate**: DEC-015 resolves the source interpretation. Typed response implementation still follows this feature's implementation and review workflow. No formal conformance claim follows from the interpretation alone.
+
+### Accepted project interpretation for KMIPKIT-DISC-039
+
+- **Interpretation**: The “PKCS#11 Response Payload” caption on Table 286 is a copied label; the table's semantic position and content describe the Query Asynchronous Requests response. In §6.1.41, the operation prose says the server reports outstanding asynchronous requests, Table 285 gives that operation's request payload, Table 286 follows as its response payload, and Table 287 gives its operation-specific errors (§6.1.41, Tables 285–287, pp. 116–117). Table 286's repeatable `Asynchronous Request` member matches the structure named and defined in §7.2/Table 353 (p. 142). The same “PKCS#11 Request Payload,” “PKCS#11 Response Payload,” and “PKCS#11 Errors” labels occur together in §6.1.37, Tables 273–275 (pp. 111–112), consistent with the Table 286 caption having been copied from that earlier operation. The `Asynchronous Request` tag is also listed in §11.56/Table 487 (p. 214).
+- **Proposal history**: The official OASIS [29 August 2019 KMIP TC minutes](https://wiki-static.oasis-open.org/kmip/MeetingMinutes/29Aug2019) record review and approval of the Query Asynch changes for inclusion in KMIP 2.1. The [original Query Asynch proposal](https://groups.oasis-open.org/higherlogic/ws/public/download/65832/kmip-spec-v2.0-wd01-Query-Asynch-v2.pdf), §6.1.52/Table 312 (p. 131), captions the corresponding response table “Query Asynchronous Requests Response Payload” and contains the same repeatable `Asynchronous Request` member. This is evidence of the approved proposal's intended operation-specific caption, while the published KMIP 2.1 Standard still prints “PKCS#11 Response Payload” for Table 286. The proposal history does not constitute a published OASIS erratum or supersede the pinned Standard.
+- **Status and gate**: The maintainer's standing instruction delegates this contextual KMIP 2.1 interpretation to the implementer. Accepted decision `KMIPKIT-DEC-015` is a KMIPKit project interpretation, not an OASIS erratum; it does not amend the pinned OASIS source. Typed implementation is tracked separately in KMIPKIT-0043 T035. This decision does not establish formal conformance or change the review state of the rest of this draft specification and its reviewer-owned checklists.
+
+### Record the Process field's missing catalog requirement
+
+- **Decision**: Trace Table 278's required client request field to `KMIPKIT-CLAUSE-SPEC-6.1.39-002` and a stable project requirement ID in this spec; keep the missing catalog requirement ID open and track a separate catalog workflow correction.
+- **Evidence**: The pinned source table marks Asynchronous Correlation Value required. Current catalog clauses classify the prose and rows, but does not assign a client requirement ID to that field.
+- **Alternatives rejected**: Treating absence of a catalog ID as permission to omit the required field would violate Table 278. Hand-editing generated catalog JSON here would violate repository generation rules and mix an inventory correction into an operation feature.
+
+## Existing architecture evidence
+
+- **KMIPKIT-0006**: Generic request/response envelopes preserve ordered TTLV; Pending exposes the response correlation value only through a callback-scoped borrowed view; Poll/Cancel/Process semantics are deferred to KMIPKIT-0009.
+- **KMIPKIT-0007**: `Client::execute` performs one synchronous exchange for a closed typed request set, associates response items, validates whether Pending was permitted, and returns delivery-aware errors. Initial Pending execution is currently typed only for Discover Versions.
+- **ADR-0014**: `kmipkit-transport::Transport::exchange` is synchronous, bounded, and no-retry. The typed client does not accept arbitrary public transport injection. Request/response ownership and zeroization limitations are explicit.
+- **Scope consequence**: Generic original-operation payloads are required for useful Poll completion before all operation-specific response types are implemented. The production transport constructor is owned by its separate transport/configuration feature; this feature exercises deterministic semantics through the existing private fake-transport seam.
+
+## Normative source map
+
+| Section/table | Client-visible behavior in this feature | Server-only behavior not claimed as client conformance |
+|---|---|---|
+| §6.1.5, Tables 176–178 | Send required correlation; parse echo and Cancellation Result; preserve unknown result value | Whether the server cancels and which result it returns |
+| §6.1.38, Tables 276–277; §8.6, Table 399 | Send required correlation; accept Pending/no payload or terminal original-operation status/reason; successful completion carries its payload and Failure has no payload; do not recursively poll | When work completes and which successful payload is returned |
+| §6.1.39, Tables 278–280 | Send required correlation; represent empty response and operation result | Change in server processing mode and effects on other ordered batch items |
+| §6.1.41, Tables 285–287 | Encode optional filters and preserve generic response | Which outstanding requests the server reports and the unresolved typed response mapping |
+| §7.1, Table 352; §7.2, Table 353 | Preserve query filter and generic asynchronous-request subtrees | DEC-015 records the response interpretation; generic response access remains in this feature, with typed mapping tracked in KMIPKIT-0043 T035 |
+| §8.6, Table 399 | Validate/retain a correlation value on Pending response items | Server's production of required response members |
+| §9.1, Table 400; §9.19, Table 424 | Reuse exact server-provided correlation bytes for explicit continuation | Server choice of synchronous/asynchronous execution |
+
+## Test evidence status
+
+The current catalog does not link requirement-specific official Test Case IDs for these rows. The feature therefore defines derived tests from exact cited clauses and TTLV tables; it must not call them official conformance vectors. The official fixture references tracked elsewhere as `KMIPKIT-DISC-036` are unavailable locally. The implementation phase must record the exact derived fixture source and test path for every FR and must retain those limits in documentation.

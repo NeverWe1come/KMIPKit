@@ -1,0 +1,2 @@
+# Preserve the exact OASIS download, including its mixed line endings.
+*.xml -text -diff

@@ -1,0 +1,7 @@
+# Requirement Traceability
+
+| Requirement | Normative / project source | Implementation | Verification |
+|---|---|---|---|
+| KMIPKIT-0089-FR-001 | KMIP 2.0 §11.54 Table 446; §§6.1.12, 6.1.29–6.1.30 Tables 184–185, 235–236; §§7.28–7.29 Tables 348–349; §7.33 Table 353; pinned source SHA-256 in `spec.md` | `crates/kmipkit-protocol/src/version_gate.rs::VersionGate::tag_span` | `crates/kmipkit-protocol/tests/unit/version_foundation_tests.rs::test_version_gate_validates_tags`; `crates/kmipkit-client/tests/unit/login_execution_tests.rs::login_kmip_20_session_tags_pass_version_gate`; `crates/kmipkit-client/tests/unit/logout_execution_tests.rs::logout_kmip_20_ticket_tags_pass_version_gate`; `crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs::delegated_login_kmip_20_rights_tags_pass_version_gate` |
+| KMIPKIT-0089-FR-002 | KMIP 2.1 §11.56 Tag Enumeration; `specification/catalog/kmip-2.1.json` assignments 0x420168–0x420172; KMIP 3.0 §11.58 Table 605 | `crates/kmipkit-protocol/src/version_gate.rs::VersionGate::tag_span` | `crates/kmipkit-protocol/tests/unit/version_foundation_tests.rs::test_version_gate_validates_tags`; `crates/kmipkit-protocol/tests/unit/version_foundation_tests.rs::test_version_gate_uses_exact_kmip_30_tag_assignments` |
+| KMIPKIT-0089-FR-003 | KMIP 2.0 §§6.1.12, 6.1.29–6.1.30 Tables 184–185, 235–236; §11.54 Table 446 | Existing typed requests and client pre-send validation in `crates/kmipkit-client/src/execute.rs` | Client tests listed for FR-001, with explicit KMIP 2.0 batch version and response header |

@@ -1,0 +1,364 @@
+# Operaciones Hash, MAC y firma
+
+KMIPKit envía peticiones Hash, MAC, MAC Verify, Sign y Signature Verify a un
+servidor KMIP 2.1. No calcula hashes ni MAC, no firma y no verifica datos de
+forma local. Cada llamada explícita a `Client` realiza un intercambio; el
+cliente no reintenta, divide datos ni continúa una operación multiparte por su
+cuenta. Los campos siguen la especificación OASIS KMIP v2.1 §§6.1.24, 6.1.32,
+6.1.33, 6.1.55 y 6.1.56, Tablas 235–237, 259–264 y 334–339.
+
+## Parámetros criptográficos tipados
+
+`CryptographicParametersBuilder` ofrece setters tipados para los 18 miembros
+de KMIP v2.1 §4.16, Tabla 59. Emite los campos conocidos en el orden requerido
+por la tabla, independientemente del orden de las llamadas. Las enumeraciones
+se reciben como valores raw para conservar valores futuros y de fabricantes.
+El modelo también conserva los miembros TTLV desconocidos y permite
+consultarlos mediante `with_ttlv`. El constructor no elige un algoritmo ni una
+política de protección por el llamador.
+
+```rust,kmipkit-test
+use kmipkit_protocol::named_values_generated::values::enumeration::cryptographic_algorithm;
+use kmipkit_protocol::{CryptographicParametersBuilder, EncryptRequest, ProtocolError};
+
+#[allow(dead_code)]
+fn crear_peticion_encrypt_tipada() -> Result<EncryptRequest, ProtocolError> {
+    let parameters = CryptographicParametersBuilder::new()
+        .with_random_iv(true)
+        .with_cryptographic_algorithm(cryptographic_algorithm::AES)
+        .build()?;
+    Ok(EncryptRequest::new(None, None).with_typed_cryptographic_parameters(parameters))
+}
+
+fn main() {}
+```
+
+`P Source` es entrada secreta: el builder toma posesión de sus bytes y KMIPKit
+limpia su copia al liberarla. El acceso por callback solo presta los bytes
+durante la vida del callback. Las copias que cree la aplicación quedan fuera
+de esa garantía. La salida `Debug` solo incluye metadatos.
+
+El mismo modelo está disponible en C, Java y Python. C usa un registro ABI
+versionado con indicadores de presencia explícitos; Java y Python proporcionan
+builders con setters idiomáticos. Los valores Enumeration siguen siendo
+abiertos y sus lectores devuelven el número raw, incluso si es futuro o de
+fabricante.
+
+```c
+#include <stdint.h>
+#include "kmipkit.h"
+
+int leer_parametros(void) {
+    kmipkit_cryptographic_parameters_fields_v1_t fields = {0};
+    kmipkit_cryptographic_parameters_fields_v1_t readback = {0};
+    kmipkit_cryptographic_parameters_t *parameters = 0;
+    int32_t status = 0;
+
+    fields.struct_size = (uint32_t)sizeof(fields);
+    fields.abi_version = 1;
+    fields.cryptographic_algorithm_present = 1;
+    fields.cryptographic_algorithm = UINT32_C(0xe1230001);
+    readback.struct_size = (uint32_t)sizeof(readback);
+    readback.abi_version = 1;
+
+    status = kmipkit_cryptographic_parameters_from_fields_v1(&fields, &parameters);
+    if (status == 0) {
+        status = kmipkit_cryptographic_parameters_read_fields_v1(parameters, &readback);
+    }
+    if (status == 0 &&
+        (readback.cryptographic_algorithm_present != 1 ||
+         readback.cryptographic_algorithm != UINT32_C(0xe1230001))) {
+        status = 1;
+    }
+    kmipkit_cryptographic_parameters_release(parameters);
+    return status;
+}
+```
+
+```java
+import org.kmipkit.protocol.CryptographicParameters;
+
+final class ParametersExample {
+    public static void main(String[] args) {
+        try (var parameters = CryptographicParameters.builder()
+                .cryptographicAlgorithm(0xe1230001L)
+                .build()) {
+            if (parameters.cryptographicAlgorithm().orElseThrow() != 0xe1230001L) {
+                throw new AssertionError("Enumeration raw value changed");
+            }
+        }
+    }
+}
+```
+
+```python
+from kmipkit.cryptographic_parameters import CryptographicParameters
+
+with CryptographicParameters.builder() as builder:
+    with builder.cryptographic_algorithm(0xE123_0001).build() as parameters:
+        assert parameters.cryptographic_algorithm() == 0xE123_0001
+```
+
+Para incluir estos parámetros en Encrypt o Decrypt, conviértelos a una
+estructura TTLV: Java y Python ofrecen `intoTtlv()` y `into_ttlv()`; C usa
+`kmipkit_cryptographic_parameters_into_ttlv`. Estas conversiones consumen el
+handle tipado. Los constructores de elementos de operación C, Java y Python
+reciben actualmente una estructura TTLV genérica para este campo.
+
+En Java, `pSource()` devuelve un `byte[]` independiente propiedad del llamador;
+borra esa copia cuando ya no la necesites. En Python, `p_source()` devuelve un
+`bytes` inmutable que el runtime no puede poner a cero de forma determinista.
+KMIPKit limpia las copias que conserva en sus handles al cerrarlos, pero esa
+garantía no alcanza las copias externas ni el buffer original del llamador.
+En C, el puntero `p_source` de la salida es prestado y solo es válido mientras
+siga vivo el handle `CryptographicParameters`; cópialo antes de liberar el
+handle si debes conservarlo.
+
+## Construir y enviar peticiones
+
+Elige las claves y los parámetros criptográficos según la política de la
+aplicación y las capacidades del servidor. Los wrappers de enumeración
+abiertos conservan el valor KMIP exacto. El ejemplo usa SHA-256 (valor 6 de
+Hashing Algorithm en §11.21) para Hash; para MAC, Sign y las verificaciones,
+indica estructuras elegidas por el llamador u omítelas solo cuando el servidor
+pueda obtenerlas del objeto.
+
+```rust,kmipkit-test
+use kmipkit_client::{Client, ClientBatchItemResponse, ClientError};
+use kmipkit_protocol::{
+    HashRequest, HashingAlgorithm, MacRequest, MacVerifyRequest, OperationData,
+    SecretBytes, SignRequest, SignatureVerifyRequest, UniqueIdentifier,
+    VerificationResponseContext,
+};
+use kmipkit_ttlv::codec::CodecLimits;
+use kmipkit_ttlv::{Item, RawTag, Structure, Value};
+
+fn hash_parameters() -> Structure {
+    let tag = RawTag::new(0x0042_0038)
+        .expect("Hashing Algorithm es un tag KMIP de 24 bits")
+        .try_checked()
+        .expect("Hashing Algorithm está asignado");
+    let item = Item::new(
+        tag,
+        Value::enumeration(HashingAlgorithm::from_raw(6).raw()),
+    )
+    .expect("la enumeración es un valor TTLV válido");
+    let mut parameters = Structure::new();
+    parameters
+        .try_push(item)
+        .expect("un elemento cabe en Cryptographic Parameters");
+    parameters
+}
+
+#[allow(dead_code)]
+fn solicitar_hash(
+    client: &mut Client,
+    limits: &CodecLimits,
+) -> Result<ClientBatchItemResponse, ClientError> {
+    let request = HashRequest::new(hash_parameters()).with_data(
+        OperationData::ByteString(SecretBytes::new(b"hash-input-example".to_vec())),
+    );
+    client.hash(request, limits)
+}
+
+#[allow(dead_code)]
+fn solicitar_mac(
+    client: &mut Client,
+    limits: &CodecLimits,
+    key_id: String,
+    parameters: Option<Structure>,
+) -> Result<ClientBatchItemResponse, ClientError> {
+    let mut request = MacRequest::new()
+        .with_unique_identifier(UniqueIdentifier::TextString(key_id))
+        .with_data(OperationData::ByteString(SecretBytes::new(
+            b"mac-input-example".to_vec(),
+        )));
+    if let Some(parameters) = parameters {
+        request = request.with_cryptographic_parameters(parameters);
+    }
+    client.mac(request, limits)
+}
+
+#[allow(dead_code)]
+fn solicitar_mac_verify(
+    client: &mut Client,
+    limits: &CodecLimits,
+    key_id: String,
+    parameters: Option<Structure>,
+) -> Result<ClientBatchItemResponse, ClientError> {
+    let mut request = MacVerifyRequest::new()
+        .with_unique_identifier(UniqueIdentifier::TextString(key_id))
+        .with_data(OperationData::ByteString(SecretBytes::new(
+            b"original-data-example".to_vec(),
+        )))
+        .with_mac_data(SecretBytes::new(b"mac-data-example".to_vec()));
+    if let Some(parameters) = parameters {
+        request = request.with_cryptographic_parameters(parameters);
+    }
+    client.mac_verify(request, limits)
+}
+
+#[allow(dead_code)]
+fn solicitar_firma(
+    client: &mut Client,
+    limits: &CodecLimits,
+    key_id: String,
+    parameters: Option<Structure>,
+) -> Result<ClientBatchItemResponse, ClientError> {
+    let mut request = SignRequest::new()
+        .with_unique_identifier(UniqueIdentifier::TextString(key_id))
+        .with_data(OperationData::ByteString(SecretBytes::new(
+            b"sign-input-example".to_vec(),
+        )));
+    if let Some(parameters) = parameters {
+        request = request.with_cryptographic_parameters(parameters);
+    }
+    client.sign(request, limits)
+}
+
+#[allow(dead_code)]
+fn solicitar_verificacion_de_firma(
+    client: &mut Client,
+    limits: &CodecLimits,
+    key_id: String,
+    parameters: Option<Structure>,
+) -> Result<ClientBatchItemResponse, ClientError> {
+    let mut request = SignatureVerifyRequest::new()
+        .with_unique_identifier(UniqueIdentifier::TextString(key_id))
+        .with_data(OperationData::ByteString(SecretBytes::new(
+            b"original-data-example".to_vec(),
+        )))
+        .with_signature_data(SecretBytes::new(b"signature-data-example".to_vec()));
+    if let Some(parameters) = parameters {
+        request = request.with_cryptographic_parameters(parameters);
+    }
+    client.signature_verify(request, limits)
+}
+
+#[allow(dead_code)]
+fn iniciar_hash_multiparte(
+    client: &mut Client,
+    limits: &CodecLimits,
+) -> Result<ClientBatchItemResponse, ClientError> {
+    client.hash(
+        HashRequest::new(hash_parameters()).with_init_indicator(true),
+        limits,
+    )
+}
+
+#[allow(dead_code)]
+fn hash_final_part(
+    client: &mut Client,
+    limits: &CodecLimits,
+    correlation_from_prior_response: SecretBytes,
+) -> Result<ClientBatchItemResponse, ClientError> {
+    let request = HashRequest::new(hash_parameters())
+        .with_correlation_value(correlation_from_prior_response)
+        .with_final_indicator(true);
+    client.hash(request, limits)
+}
+
+#[allow(dead_code)]
+fn longitud_hash(response: &ClientBatchItemResponse) -> Option<usize> {
+    response
+        .outcome()
+        .response()
+        .hash()
+        .and_then(|value| value.data())
+        .map(|bytes| bytes.with_bytes(<[u8]>::len))
+}
+
+#[allow(dead_code)]
+fn longitud_mac(response: &ClientBatchItemResponse) -> Option<usize> {
+    response
+        .outcome()
+        .response()
+        .mac()
+        .and_then(|value| value.mac_data())
+        .map(|bytes| bytes.with_bytes(<[u8]>::len))
+}
+
+#[allow(dead_code)]
+fn longitud_firma(response: &ClientBatchItemResponse) -> Option<usize> {
+    response
+        .outcome()
+        .response()
+        .sign()
+        .and_then(|value| value.signature_data())
+        .map(|bytes| bytes.with_bytes(<[u8]>::len))
+}
+
+#[allow(dead_code)]
+fn verification_result(response: &ClientBatchItemResponse) -> (u32, Option<u32>) {
+    let status = response.outcome().result().status().raw();
+    let indicator = response
+        .outcome()
+        .response()
+        .mac_verify()
+        .and_then(|value| value.validity_indicator())
+        .map(|value| value.raw());
+    (status, indicator)
+}
+
+#[allow(dead_code)]
+fn longitud_de_datos_recuperados(
+    response: &ClientBatchItemResponse,
+) -> Option<usize> {
+    response
+        .outcome()
+        .response()
+        .signature_verify()
+        .and_then(|value| value.recovered_data())
+        .map(|bytes| bytes.with_bytes(<[u8]>::len))
+}
+
+#[allow(dead_code)]
+fn contexto_para_conversion_directa(
+    request: &SignatureVerifyRequest,
+) -> VerificationResponseContext {
+    request.verification_response_context()
+}
+
+fn main() {}
+```
+
+El ejemplo multiparte es una petición Hash final elegida por el llamador.
+Pasa el valor opaco Correlation Value obtenido del intercambio anterior;
+KMIPKit no lo conserva ni lo reutiliza automáticamente. Los campos Data de las
+operaciones multiparte siguen ausentes como exigen sus tablas.
+
+## Leer resultados y errores
+
+Comprueba Result Status de KMIP antes de usar los datos específicos de la
+operación. Un fallo del servidor sigue siendo un resultado de operación
+completado. Un fallo de transporte, validación local o decodificación devuelve
+`ClientError` con la mejor evidencia disponible sobre el envío. Operation
+Pending permanece explícito para que el llamador decida cómo continuar; nunca
+provoca un Poll automático.
+
+MAC Verify y Signature Verify exponen el valor bruto de Validity Indicator.
+`Valid`, `Invalid`, `Unknown` y los valores futuros siguen siendo resultados de
+operación y no se convierten en decisiones criptográficas locales. Signature
+Verify también puede exponer Data recuperados mediante un callback prestado de
+`SecretBytes`.
+
+`KMIPKIT-DISC-048` sigue abierto: las Tablas 263 y 338 omiten Validity
+Indicator en toda respuesta multiparte, mientras que §§6.1.33 y 6.1.56 lo
+exigen en la respuesta multiparte final. La API tipada lo exige para una sola
+parte, lo rechaza en partes no finales y acepta ambas formas en la parte final
+sin afirmar conformidad del servidor. Usa `verification_response_context()` o
+`try_from_response_item_with_context` al convertir una respuesta fuera del
+cliente; el conversor conveniente asume una sola parte.
+
+Los builders redactan su salida Debug y guardan los bytes sensibles en
+`SecretBytes`, que los pone a cero al liberarse. `with_bytes` presta los
+valores recibidos a un callback; las copias del llamador quedan fuera de la
+garantía de puesta a cero de KMIPKit. No registres payloads TTLV en bruto ni
+copies secretos a cadenas ordinarias.
+
+En el binding de Python, los builders de entradas sensibles de operaciones
+limpian los arrays CFFI que poseen cuando termina su llamada nativa síncrona,
+también si devuelve un error. Los constructores TTLV variables BigInteger,
+TextString y ByteString también limpian sus arrays de staging. Estas rutas no
+modifican la entrada del llamador. Los valores inmutables `bytes` y `str` y
+otras copias del runtime quedan fuera de la puesta a cero determinista.

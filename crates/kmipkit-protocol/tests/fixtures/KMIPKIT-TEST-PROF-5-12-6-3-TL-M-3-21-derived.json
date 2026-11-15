@@ -1,0 +1,21 @@
+{
+  "catalog_id": "KMIPKIT-TEST-PROF-5-12-6-3",
+  "official_label": "TL-M-3-21",
+  "status": "derived-local-not-official",
+  "sample_values_synthetic": true,
+  "source_references": [
+    "OASIS KMIP Profiles v2.1 \u00a75.12.2",
+    "OASIS KMIP Profiles v2.1 \u00a75.12.6.3",
+    "KMIP Specification v2.1 \u00a76.1.19 Tables 220\u2013222",
+    "KMIP Specification v2.1 \u00a76.1.28 Tables 247\u2013249"
+  ],
+  "limitations": "The profile XML is unavailable. LIBRARY-LTO is a profile-listed namespace; A1B2 and the unique identifier are synthetic samples. This covers only client Locate/Get payload structure and does not claim Tape Library profile conformance or a server match/result.",
+  "request_operations": [
+    "Locate",
+    "Get"
+  ],
+  "request_payload_ttlv_hex": [
+    "42 00 79 01 00 00 00 38 42 01 25 01 00 00 00 30 42 00 04 01 00 00 00 28 42 00 03 07 00 00 00 0b 4c 49 42 52 41 52 59 2d 4c 54 4f 00 00 00 00 00 42 00 02 07 00 00 00 04 41 31 42 32 00 00 00 00",
+    "42 00 79 01 00 00 00 20 42 00 94 07 00 00 00 12 64 65 72 69 76 65 64 2d 6c 6f 63 61 74 65 64 2d 69 64 00 00 00 00 00 00"
+  ]
+}

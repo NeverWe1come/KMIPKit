@@ -1,0 +1,82 @@
+{
+  "formatVersion": 1,
+  "scope": "opt-in-kmip-3.0-working-draft-request-routes",
+  "defaultProtocolVersion": "2.1",
+  "profileConformanceClaim": false,
+  "source": {
+    "document": "OASIS KMIP Specification Version 3.0 Working Draft",
+    "path": "specification/oasis/kmip-3.0/upstream/kmip-spec-v3.0.html",
+    "sha256": "a7d5e58e63acd9be33fab08b76039fc8db4e072fdbdf4a280ea5b743bae5682b",
+    "inventory": "specification/oasis/kmip-3.0/SOURCES.md"
+  },
+  "baseManifest": {
+    "path": "specification/api/public-api.json",
+    "operationScope": "client_1_0",
+    "expectedOperationCount": 56
+  },
+  "operations": [
+    {
+      "operation": "CreateGroup",
+      "operationCode": 60,
+      "source": "§6.1.10, Table 280",
+      "rust": "kmipkit_client::ClientBatchItem::create_group_draft",
+      "c": "client_batch_item_create_group",
+      "java": "org.kmipkit.extensions.ClientBatchItem.createGroup",
+      "python": "kmipkit.extensions.client_batch_item_create_group"
+    },
+    {
+      "operation": "Obliterate",
+      "operationCode": 61,
+      "source": "§6.1.41, Table 374",
+      "rust": "kmipkit_client::ClientBatchItem::obliterate_draft",
+      "c": "client_batch_item_obliterate",
+      "java": "org.kmipkit.extensions.ClientBatchItem.obliterate",
+      "python": "kmipkit.extensions.client_batch_item_obliterate"
+    },
+    {
+      "operation": "CreateUser",
+      "operationCode": 62,
+      "source": "§6.1.13, Table 290",
+      "rust": "kmipkit_client::ClientBatchItem::create_user_draft",
+      "c": "client_batch_item_create_user",
+      "java": "org.kmipkit.extensions.ClientBatchItem.createUser",
+      "python": "kmipkit.extensions.client_batch_item_create_user"
+    },
+    {
+      "operation": "CreateCredential",
+      "operationCode": 63,
+      "source": "§6.1.9, Table 277",
+      "rust": "kmipkit_client::ClientBatchItem::create_credential_draft",
+      "c": "client_batch_item_create_credential",
+      "java": "org.kmipkit.extensions.ClientBatchItem.createCredential",
+      "python": "kmipkit.extensions.client_batch_item_create_credential"
+    },
+    {
+      "operation": "Deactivate",
+      "operationCode": 64,
+      "source": "§6.1.14, Table 293",
+      "rust": "kmipkit_client::ClientBatchItem::deactivate_draft",
+      "c": "client_batch_item_deactivate",
+      "java": "org.kmipkit.extensions.ClientBatchItem.deactivate",
+      "python": "kmipkit.extensions.client_batch_item_deactivate"
+    },
+    {
+      "operation": "Encapsulate",
+      "operationCode": 65,
+      "source": "§6.1.22, Table 317",
+      "rust": "kmipkit_client::ClientBatchItem::encapsulate_draft",
+      "c": "client_batch_item_encapsulate",
+      "java": "org.kmipkit.extensions.ClientBatchItem.encapsulate",
+      "python": "kmipkit.extensions.client_batch_item_encapsulate"
+    },
+    {
+      "operation": "Decapsulate",
+      "operationCode": 66,
+      "source": "§6.1.15, Table 296",
+      "rust": "kmipkit_client::ClientBatchItem::decapsulate_draft",
+      "c": "client_batch_item_decapsulate",
+      "java": "org.kmipkit.extensions.ClientBatchItem.decapsulate",
+      "python": "kmipkit.extensions.client_batch_item_decapsulate"
+    }
+  ]
+}

@@ -6,6 +6,79 @@ Tests demonstrate protocol correctness, parser robustness, cross-language
 parity, ABI stability, interoperability, and safe failure. Coverage is a gate,
 not a substitute for behavior and requirement traceability.
 
+## Pull-request CI selection
+
+Every pull request gets a new impact-classifier job. It compares the exact
+base commit with the merge commit for that run; results from earlier commits
+are never reused. A documentation-only change runs documentation and
+traceability contracts plus the final Summary. Isolated Java or Python changes
+run that language's tests on Linux, Windows, and macOS and its own coverage
+gate. C consumer changes run the C checks on all three platforms, the C FFI
+sanitizer, and the Rust/FFI coverage scopes. JNI changes run Java/JNI checks on
+all three platforms, the JNI sanitizer, and JNI coverage. Mixed changes combine
+these checks.
+
+Changes to shared Rust code, CI, scripts, manifests, generators, normative
+inputs, unknown paths, or classifier errors select the full pull-request CI.
+The final Summary lists every job and explains why a skipped job was not
+selected. The scheduled workflow is unchanged. Selective execution does not
+change the thresholds below; every selected report remains required, and a
+missing or malformed selected report fails the gate.
+
+Full pull-request CI starts with a visible Linux fast-preflight containing
+focused classifier and normative-catalog tests. Failure appears in the final
+Summary and prevents the Script Contracts matrix from starting. After a
+successful preflight, each cross-platform Script Contracts job also runs the
+most recently failing normative-catalog regression before its full Python
+contract suites. This gives that known failure an early signal while the full
+matrix and catalog suite on Linux, Windows, and macOS remain authoritative.
+Python `unittest` discovery stops at the first failed test, and the matrix
+cancels its remaining operating-system jobs after a failure. These preflights
+shorten the failure signal without changing the checks required for a passing
+full-CI run.
+
+## Static analysis services
+
+The separate CodeQL workflow scans Rust, C/C++, Java, and Python on pushes to
+`master` and `release/*`, same-repository pull requests into those branches,
+and its weekly schedule. It uses advanced setup; GitHub's CodeQL default setup
+must be disabled in repository settings before this workflow can upload SARIF.
+The CodeQL job does not run for fork pull requests because SARIF upload needs
+`security-events: write`. Fork contributions still use the unprivileged CI
+workflow described above.
+
+The `zizmor` workflow audits GitHub Actions workflow files for unsafe
+expressions, credential exposure, excessive token permissions, and risky action
+references. It uploads findings to GitHub code scanning on pushes and
+same-repository pull requests targeting `master` or `release/*`, and on a
+weekly schedule. The action and scanner versions are pinned. Fork pull
+requests skip this privileged upload job.
+
+SonarQube Cloud already analyzes the public project `NeverWe1come_KMIPKit`
+in organization `neverwe1come` automatically and reports its quality gate as
+the `SonarCloud Code Analysis` GitHub check on pull requests. This integration
+needs no Actions token or repository workflow. Its automatic analysis covers
+the default branch and pull requests, but [does not analyze other branches or
+Rust](https://docs.sonarsource.com/sonarqube-cloud/analyzing-source-code/automatic-analysis).
+In particular, its passing PR check does not mean that `release/1.0.0` or Rust
+was scanned. The current [long-lived branch pattern](https://docs.sonarsource.com/sonarqube-cloud/managing-your-projects/project-analysis/long-lived-branch-pattern)
+`(branch|release)-.*`
+matches `release-...`, not `release/...`; `^(branch-|release/).*$` would match
+the release branch name. That pattern only classifies a branch once it has
+been analyzed; it does not trigger branch analysis. The organization's current
+Free plan [supports analysis of the main branch only](https://docs.sonarsource.com/sonarqube-cloud/administering-sonarcloud/managing-subscription/subscription-plans).
+SonarQube for OSS is a free plan for public open-source projects that supports
+branch analysis, but activating it is a separate organization-level decision.
+
+Do not run SonarScanner against the same project while automatic analysis is
+enabled: SonarQube Cloud rejects concurrent CI-based analysis. The automatic
+scan does not import the test coverage collected by this repository's CI; the
+coverage gate below remains authoritative. Analyzing release branches and
+Rust in Sonar requires a separately reviewed switch to CI-based analysis,
+including disabling automatic analysis, confirming a plan that supports
+branch analysis, and provisioning a scan token through the repository's
+normal secret process.
+
 ## Test layers
 
 ### Unit tests
@@ -31,13 +104,62 @@ unknown values, malformed structures, trailing/incomplete frames, and limits.
 
 Generate bounded valid TTLV values and assert encode/decode properties. Use
 shrinking to retain minimal failures. Property tests begin in the foundation;
-coverage-guided fuzzing follows later.
+coverage-guided fuzzing complements them for parser and extension-schema
+validation.
+
+### Extension schema fuzzing
+
+The `extension_schema` libFuzzer target decodes at most 4 KiB of input with a
+64-Structure and 512-Item limit, then validates any decoded root Structure
+against a fixed nested extension schema. Schema mismatches are expected; a
+panic, partial value, or limit bypass is not. Run it with the repository's
+nightly toolchain and pinned `cargo-fuzz` 0.13.2 installed:
+
+```text
+cargo +nightly install cargo-fuzz --version 0.13.2 --locked
+cargo +nightly fuzz run extension_schema -- -runs=1000 -max_len=4096 -timeout=5
+```
+
+Pull-request CI runs the same bounded smoke campaign in `fuzz-smoke`. Keep
+minimized crashes under `fuzz/artifacts/extension_schema/` for triage, and
+promote any regression input into a deterministic protocol test before fixing
+it.
 
 ### Client tests
 
 A deterministic fake transport verifies exact sent bytes, response handling,
 connection invalidation, delivery state, timeouts, batch outcomes, pending
 operations, and redaction without network I/O.
+
+The shared error contract has focused external integration suites:
+
+- `crates/kmipkit-protocol/tests/result_contract.rs` checks all assigned
+  Result Status and Result Reason values generated from the normative catalog,
+  unknown-value retention, the §9.18 Success/Failure reason invariant, and
+  exact optional Result Message text. Error-format tests verify that server
+  text and arbitrary protocol causes remain redacted.
+- `crates/kmipkit-transport/tests/delivery_state.rs` checks the write-started,
+  zero-byte-read, and first-response-byte boundaries and verifies that an
+  arbitrary transport cause is dropped and unreachable from the public chain.
+- `crates/kmipkit-client/tests/error_contract.rs` checks local failure
+  categories, safe cause and delivery metadata, secret sentinels, source
+  destruction, and redaction of a complete server Result Message.
+- `crates/kmipkit/tests/error_api.rs` exercises the same result and delivery
+  contracts through the public facade.
+
+Regenerate assigned result-value lookup tables with
+`python -B tools/normative_catalog/generate_result_values.py --repo-root . --write`.
+CI runs the same generator in `--check` mode after validating the normative
+catalog. Generated Rust output must not be edited by hand.
+
+The protocol crate's recognized-attribute TTLV type lookup is generated from
+each catalog attribute's `source_encoding` and tag parent with
+`python -B tools/normative_catalog/generate_attribute_types.py --repo-root . --write`.
+`AttributeSet` validates those declared types while preserving unknown tags,
+unknown Enumeration values, repeated items, and their wire order. The distinct
+Table 150 Vendor Attribute remains validated by its dedicated structure rules.
+CI runs this generator in `--check` mode so the committed Rust lookup cannot
+drift from the reviewed catalog.
 
 ### Transport tests
 
@@ -50,6 +172,14 @@ framing, forbidden redirect/compression behavior, and connection reuse.
 - Compile and execute a C consumer.
 - Run panic-containment and memory ownership tests.
 - Run sanitizer jobs for the FFI surface.
+- Pull-request CI runs the Linux C consumer through the Rust ABI under
+  AddressSanitizer in `ffi-sanitizer-c` and runs the JNI zeroizing-owner test
+  under AddressSanitizer and UndefinedBehaviorSanitizer in
+  `ffi-sanitizer-jni`.
+- Pull-request CI checks generated API and cross-adapter fixture outputs and
+  runs the extension fixture generator's rejection tests in `script-contracts`
+  using the Python 3.12 executable inside the uv-managed `VIRTUAL_ENV` and the
+  pinned `tools/api_manifest/requirements-test.txt`.
 - Test Java from the packaged native JAR.
 - Test Python from the built wheel in a clean environment.
 - Run shared behavioral vectors through Rust, C, Java, and Python.
@@ -61,16 +191,289 @@ open source implementation runs in CI. A second may use a licensed or manual
 environment. Record server product, version, transport, profile, operation,
 result, and known workaround.
 
+The [KMIP server interoperability matrix](kmip-interoperability.md) records
+published operation claims and candidate servers separately from executed
+KMIPKit integration-test results.
+
 ## Coverage
 
-- TTLV/protocol: 95 percent line minimum.
-- Transport/FFI/bindings: 85 percent line minimum.
-- Workspace: 90 percent line minimum.
-- Changed code: 95 percent line minimum.
+- `kmipkit-ttlv` and `kmipkit-protocol`: 90 percent line minimum each.
+- `kmipkit-transport`, `kmipkit-ffi`, Java, Python, and JNI: 85 percent
+  line minimum for each separately measured scope.
+- Rust workspace: 90 percent line minimum.
+- Changed production code across Rust, Java, Python, and JNI: 90 percent line
+  minimum.
 - Normative requirement traceability: 100 percent.
 
-Use `cargo llvm-cov`. Report branch coverage initially and promote it to a gate
-after tool reliability is proven. Exclusions require a documented reason.
+The generated Java `ExtensionRegistryApi.java` and `PublicApi.java` files contain
+only compile-time manifest metadata and private constructors; they have no
+executable adapter behavior, so JaCoCo cannot report source lines for them.
+The coverage gate excludes only these exact files from raw Java line coverage.
+Their generated bytes remain checked by the API manifest generator tests and
+the repository's `python -B tools/api_manifest/generate.py --check` CI step.
+Generated Java files that contain executable adapter code remain in coverage.
+
+Use `cargo llvm-cov`. CI collects LLVM JSON coverage on Linux, Windows, and
+macOS for the checked-out pull-request merge commit. The changed-code gate
+compares that exact tree with the pull-request base, derives executable Rust
+line counts from LLVM file segments across the three reports, and checks added
+Java, Python, and JNI source lines against their own collector reports. It
+validates the parsed line and covered-line totals as lower bounds against each
+file's LLVM summary while checking function code-region schemas, file references, and
+each code region's start line against the file segment map. The parser checks
+region start lines because a region may span structural source lines that have
+no executable code. LLVM sums line summaries by source-level function group,
+while file segments merge coverage by physical source location; shared lines
+can make the summary larger than the unique segment line map. Thresholds use
+the physical line map and first reconcile per-function region coverage at
+shared physical lines. Any remaining summary-reported uncovered-line residual
+counts as uncovered. Residuals from each platform are summed because
+platform-specific code may omit different source lines. For changed files, the
+same residual is included in changed-code coverage so an omitted uncovered
+line cannot become `not applicable`. Region data explains covered and
+uncovered duplicate groups at a mapped physical line; unexplained summary
+reserves are conservative because LLVM does not report their physical
+locations. Missing region start lines fail closed. This preserves
+nested-region counts and prevents missing function records from hiding
+uncovered lines. It requires at least 90 percent changed executable-line
+coverage. Each Rust crate is gated separately: `kmipkit-ttlv` and
+`kmipkit-protocol` at 90 percent, and `kmipkit-transport` and `kmipkit-ffi`
+at 85 percent. The Rust workspace gate is 90 percent and includes Rust
+production crates only.
+An LLVM report that repeats a workspace source path across export mappings
+fails closed until those mappings can be reconciled independently; function
+regions from distinct `CoverageMapping` objects are never combined to explain
+one another's summaries.
+
+### Adapter and FFI coverage
+
+The coverage aggregator also requires JaCoCo XML reports from Linux and
+Windows at `coverage-java-linux/jacoco.xml` and
+`coverage-java-windows/jacoco.xml`, one coverage.py Cobertura report at
+`coverage-python/coverage.xml`, and one LLVM JSON report at
+`coverage-jni/coverage.json` whenever these source trees exist. It checks each
+scope independently at 85 percent, then includes all reported production
+lines in the 90 percent changed-code gate. Adapter report paths must resolve to
+the source checkout, and every selected production source must be present in
+its report.
+
+JaCoCo 0.8.12 measures compiled Java product code below
+`bindings/java/src/main/java/org/kmipkit`; its Maven check enforces 85 percent
+line coverage. Test classes are compiled under `src/test/java` and examples
+remain under `bindings/java/examples`, so neither is product coverage input.
+Generated Java package code remains included. JaCoCo measures JVM bytecode;
+it does not measure the native JNI implementation.
+
+Python uses the single exact-pinned test/build requirements set in
+`bindings/python/requirements-coverage.txt`: coverage 7.10.6, pytest-cov
+6.2.1, pytest 8.4.2, CFFI 1.17.1, and Maturin 1.9.4. The committed
+coverage.py configuration selects `kmipkit` as the measured source package
+and excludes the two Maturin-generated CFFI wrappers:
+`kmipkit/_native_ffi/__init__.py` and `kmipkit/_native_ffi/ffi.py`. They are created during
+package installation, ignored by Git, and absent from the clean checkout used
+by the aggregate job. Their behavior remains exercised through Python API
+parity tests and the CFFI, C consumer, and JNI integration suites. It also
+excludes the catalog-generated `kmipkit/protocol_values.py` table: the pinned
+catalog generator verifies its exact contents, and Python binding tests cover
+known and unknown enum values and mask bits. All other handwritten and checked-in generated Python modules under
+`bindings/python/src/kmipkit` remain in the 85 percent gate. In particular,
+`_generated/public_api.py` is imported and validated by
+`tests/test_generated_api_manifest.py`, so the generated API declaration
+metadata is included in the coverage report. Tests and example consumers live
+outside that package and are not measured as product code.
+Cross-platform adapter CI pins uv 0.12.23, installs CPython 3.12 through uv,
+and activates a clean virtual environment before installing this requirements
+set. This provides the same Python minor version across GitHub-hosted platforms. The C consumer CI pins CMake 3.31.6
+and Ninja 1.13.2 and selects Ninja explicitly on every platform, so the build
+does not depend on the runner image's default CMake generator.
+
+The Linux adapter-coverage job also measures the checked-in normative attribute
+type generator separately from the adapter aggregate. It runs the focused
+`tools.normative_catalog.tests.test_generate_attribute_types` suite under the
+pinned coverage.py 7.10.6 and enforces at least 90 percent line coverage for
+`tools/normative_catalog/generate_attribute_types.py`. This makes changes to
+the catalog-to-runtime mapping generator subject to the repository's changed
+code coverage requirement without counting tooling as a runtime adapter.
+
+The Rust C ABI implementation, including generated Rust FFI code, is measured
+by `cargo llvm-cov` in `kmipkit-ffi`. Its Linux-only `coverage-c-consumer`
+feature compiles the existing public C consumer test into the Rust integration
+test binary and calls it under the same coverage process. This keeps the
+behavior assertions in C while making their Rust ABI calls visible to LLVM.
+The ordinary CMake consumer test still runs in the language-bindings job. The
+coverage build uses the exact-pinned `cc` 1.6.0 build dependency only when the
+coverage feature is enabled. The generated named-value C header contains
+`static inline` lookup functions, but C headers are not part of the aggregate
+raw line-coverage inputs. Their behavior is compiled and exercised by the
+`kmipkit_named_values_consumer` C test, and the exact generated header is
+checked with `python -B tools/normative_catalog/generate_named_values.py --repo-root . --check`.
+The handwritten JNI implementation in
+`bindings/java/native/kmipkit_jni.cpp` is compiled with LLVM source-based
+coverage instrumentation and measured from its own report; JaCoCo and Rust
+coverage do not count those C++ lines. The JNI collector is Linux-only and
+requires LLVM/Clang 20.1.8. Rust raw coverage also excludes the generated
+`crates/kmipkit-protocol/src/profiles_generated.rs` metadata file: its header
+states that it contains no executable conformance rules. CI checks its bytes
+with `python -B tools/normative_catalog/generate_profiles.py --repo-root . --check`,
+and profile selection and readiness tests exercise its metadata consumers. It
+also excludes `crates/kmipkit-protocol/src/named_values_generated.rs`,
+`bindings/c/include/kmipkit_named_value_helpers_generated.h`,
+`bindings/java/src/main/java/org/kmipkit/protocol/KmipValues.java`, and
+`bindings/python/src/kmipkit/protocol_values.py` for the same catalog-generated
+reason: the named-value generator checks exact output and consumer tests
+exercise lookup behavior. The exact generated
+`crates/kmipkit-protocol/src/typed_attributes_generated.rs` file is excluded for
+the same reason: its 62 marker implementations are mechanically rendered from
+the pinned catalog into the shared typed-attribute conversion contract. The
+generator check verifies every generated marker, tests compare every generated
+tag constant against the catalog, and runtime tests cover each distinct TTLV
+value category. The handwritten `typed_attributes.rs` implementation remains
+subject to the changed-code coverage threshold. These are exact path
+exclusions; handwritten adapter and protocol code remains subject to the
+existing coverage gates.
+
+The aggregate job requires these inputs at the report root:
+
+```text
+coverage-reports/
+  coverage-ubuntu/coverage.json
+  coverage-windows/coverage.json
+  coverage-macos/coverage.json
+  coverage-ffi/coverage.json
+  coverage-java-linux/jacoco.xml
+  coverage-java-windows/jacoco.xml
+  coverage-python/coverage.xml
+  coverage-jni/coverage.json
+```
+
+Collect them with the following commands. Run the Rust commands in each
+platform matrix job; cargo-llvm-cov is pinned at 0.9.1. The Python commands
+run in the Python 3.12 environment provisioned by CI or an active Python 3.12
+virtual environment.
+
+```sh
+cargo llvm-cov --workspace --all-features --locked --json --output-path coverage-raw.json
+python scripts/coverage_gate.py normalize --workspace . --input coverage-raw.json --output coverage.json
+
+# Run on both Linux and Windows; preserve each report under its platform name.
+mvn -B -f bindings/java/pom.xml clean verify
+mkdir -p coverage-reports/coverage-java-linux
+cp bindings/java/target/site/jacoco/jacoco.xml coverage-reports/coverage-java-linux/jacoco.xml
+# On Windows, use PowerShell: New-Item -ItemType Directory -Force coverage-reports/coverage-java-windows
+# Then copy bindings/java/target/site/jacoco/jacoco.xml to coverage-reports/coverage-java-windows/jacoco.xml
+
+python -m pip install -r bindings/python/requirements-coverage.txt
+python -m pip install --no-build-isolation --editable bindings/python
+python -m pytest -q bindings/python/tests --cov=kmipkit --cov-config=bindings/python/pyproject.toml --cov-report=xml:coverage-reports/coverage-python/coverage.xml
+
+# Linux only; requires clang/LLVM 20.1.8 and runs the Java suite against instrumented JNI.
+bash scripts/collect_jni_coverage.sh target/coverage-jni
+
+# Linux only; runs the C ABI consumer against the instrumented Rust library.
+bash scripts/collect_ffi_coverage.sh target/coverage-ffi
+
+mkdir -p coverage-reports/coverage-jni coverage-reports/coverage-ffi
+cp target/coverage-jni/coverage.json coverage-reports/coverage-jni/coverage.json
+cp target/coverage-ffi/coverage.json coverage-reports/coverage-ffi/coverage.json
+python scripts/coverage_gate.py aggregate --workspace . --report-dir coverage-reports --base <full-base-sha> --merge <full-merge-sha>
+```
+
+The pull-request workflow's Linux `coverage` job runs the C ABI collector and
+uploads `coverage-ffi`. Java coverage runs on Linux and Windows and uploads one
+JaCoCo report per platform; the Linux adapter jobs collect Python and JNI
+coverage. The aggregator unions Java line hits across both operating systems.
+The `coverage-gate` job requires successful Rust and adapter collection,
+downloads all eight coverage artifacts into `coverage-reports`, and runs the aggregate command with the pull request
+base and merge commit SHAs shown above. A local aggregate run must supply real
+reports from Ubuntu, Windows, and macOS; missing platform or adapter artifacts
+fail closed.
+
+The normalizer accepts LLVM JSON export schema 2.0.x for the pinned JNI
+collector (LLVM 20.1.8) and schemas 3.0.x and 3.1.x for Rust coverage.
+Schema 2.0.x is accepted only with a captured native fixture; other major or
+minor versions fail closed until their consumed file, segment, region, and
+summary fields have been checked and covered by a fixture. LLVM 20.1.8's
+export command has no include-filename option, so the Linux JNI collector
+excludes only the JDK `jni.h` wrapper declarations when they resolve under
+`/usr/lib/jvm/<jdk>/include` or GitHub-hosted
+`/opt/hostedtoolcache/Java_<distribution>/<version>/<architecture>/include`,
+plus `bindings/c/include/kmipkit.h` declarations. The Rust `kmipkit-ffi` sources
+measure the C ABI implementation separately; these headers contain no
+handwritten JNI implementation. Every other reported source path is retained
+and checked by the normalizer, so the JNI denominator includes the actual
+`bindings/java/native/kmipkit_jni.cpp` lines and fails closed on unexpected
+headers.
+
+The changed-code metric is `not applicable` when a pull request changes no
+executable production lines; the package and workspace gates still apply.
+Coverage is `unavailable` only when a complete Rust scan finds no production
+function bodies and no Java, Python, or JNI production package exists. Adapter
+source files conservatively require measured coverage even when Rust has no
+function bodies. Each required platform then uploads an explicit unavailable
+status only for the complete no-code case. Unreadable or unclassifiable source
+requires coverage, inline `#[cfg(test)]`
+modules fail preflight, and missing or malformed reports fail once production
+code is eligible. Keep tests in crate-level external test directories outside
+`src/`. Every Rust file under `src/` is included regardless of its name or
+nested directory; for example, a file named `parser_tests.rs` can still be
+selected as a production module with `#[path]`. Generated source may be excluded
+only with a documented reason.
+
+CI attempts branch coverage separately with nightly Rust only on a daily
+schedule; it does not run on pull requests. That job is informational and
+cannot gate pull-request success; promote branch coverage to a required check
+only in a separately reviewed change after its reliability has been
+demonstrated. Reproduce the local source, workflow-contract, and coverage
+parser checks with:
+
+```powershell
+pwsh -File .\scripts\tests\Test-Wsl.ps1
+python -m unittest discover -s scripts/tests -p 'test_*.py' -v
+```
+
+## Cargo dependency policy
+
+Run the complete dependency-policy check from the repository root in
+PowerShell with:
+
+```powershell
+pwsh -File .\scripts\Test-DependencyPolicy.ps1
+```
+
+The runner installs and verifies the exact `cargo-deny` **0.20.2** release,
+then checks the root and fuzz Cargo workspaces separately against their
+committed lockfiles. It includes all features, development dependencies, and
+all resolved target-specific edges; it does not filter Cargo metadata by the
+policy runner's host platform. The runner validates its observed `rustc -vV`
+host triple and fails if the triple is absent from the reviewed CI runner set.
+For each successful workspace check it attempts an online RustSec advisory
+database refresh and reports that invocation's database commit SHA and ISO
+timestamp. The refresh evidence is per workspace, and cached-only or failed
+refreshes do not count as a passing fresh scan. The command checks lockfile
+hashes and fails if policy execution changes either lockfile.
+
+An unexcepted license, advisory, source, ban, duplicate, wildcard, invalid
+path, tool, host, or database-evidence finding fails the run. Policy exceptions
+require an exact, reviewed, expiring record and a matching cargo-deny entry;
+see the [dependency-policy guide](../security/dependency-policy.md) for the
+record fields, evidence, renewal, and removal process. Automated license
+metadata checks are not a complete legal audit and do not validate license
+terms against every package source file.
+
+The daily scheduled dependency review scans the configured active release ref.
+GitHub starts scheduled workflow runs from the repository's default branch,
+so this workflow change becomes active for scheduled runs only after it is
+integrated into that default branch. The schedule then checks out the
+configured release ref and reports the scanned commit with root and fuzz
+RustSec evidence separately.
+
+## CI run summaries
+
+Every pull-request and scheduled run includes a final **CI summary / at a glance** job. The workflow run Summary shows whether required checks passed, the event, ref, commit, run link, and outcomes for every check that applies to that event. Checks belonging to the other event type are marked not applicable. Failed, cancelled, missing, or unexpectedly skipped required checks remain failures in the final summary.
+
+Every job ends with a diagnosis step that runs after earlier steps succeed or fail. Its text appears in both the job Summary and the final step log. A failure diagnosis names each failed step, the job and matrix values where applicable, and what kind of check failed; it points to the original step log for compiler, test, sanitizer, artifact, or policy output. The original logs are preserved and are not copied into summaries. Matrix jobs report their diagnosis in the failed leg's job Summary. If checkout or the diagnostic renderer itself fails, a concise fallback explains that limitation.
+
+The run Summary lists all required pull-request checks, including language bindings, FFI sanitizers, fuzzing, coverage adapters, and dependency policy. It adds available single-job diagnoses and directs matrix failures to their failed job-leg Summary. A downstream check that was skipped because an upstream job failed is identified as such. The coverage gate keeps its own job Summary with measured percentages and thresholds, an explicit reason when coverage is unavailable and no threshold is claimed, or a failure diagnosis. Scheduled branch coverage remains informational and does not affect the required result. The changes preserve the commands, triggers, runner routing, and thresholds; explicit exit-code checks ensure a later command cannot hide an earlier failure in the multi-command Python binding step.
 
 ## CI levels
 
@@ -79,7 +482,9 @@ after tool reliability is proven. Exclusions require a documented reason.
 - Formatting and linting.
 - MSRV and stable Rust tests.
 - Linux, Windows, and macOS tests.
-- Coverage and traceability.
+- Coverage and traceability, including the coverage gate summary.
+- Final at-a-glance run summary with relevant job-group outcomes.
+- Per-job final diagnosis in each applicable job Summary and final step log.
 - Documentation with warnings denied.
 - Affected ABI and adapter tests.
 - Dependency, advisory, source, and license policy.
@@ -100,6 +505,23 @@ after tool reliability is proven. Exclusions require a documented reason.
 - ABI and public API comparisons.
 - Signatures, hashes, SBOM, and provenance.
 - Independent security review findings resolved or explicitly accepted.
+
+### Self-hosted Linux runner
+
+For pull requests whose head branch is in this repository, Linux jobs run on
+the repository's self-hosted Linux ARM64 runner. Pull requests from forks use
+GitHub-hosted Linux runners so fork-controlled code never runs on the persistent
+runner at home. Windows and macOS jobs remain GitHub-hosted, preserving the
+three-platform checks and coverage reports. The scheduled informational
+branch-coverage job also uses the self-hosted Linux ARM64 runner.
+
+The self-hosted runner must have the default `self-hosted`, `Linux`, and
+`ARM64` labels and remain online while jobs are queued. Its execution account
+needs Git, Python 3, PowerShell 7, Rustup, a C toolchain/linker, and Cargo's
+`bin` directory on the service `PATH`. The workflow installs the required Rust
+toolchains and `cargo-llvm-cov`. Run the runner as an unprivileged account and
+install it as a system service for unattended pull-request and scheduled jobs.
+Do not store production credentials or sensitive files on the runner.
 
 ## Fuzzing
 

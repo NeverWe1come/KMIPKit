@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kmipkit.org/schemas/coverage-matrix-row.schema.json",
+  "title": "KMIPKit Interoperability Coverage Obligation",
+  "type": "object",
+  "required": [
+    "case_id", "language", "route_id", "target_id", "protocol_version",
+    "encoding", "transport", "mode", "public_api_symbol", "artifact_commit",
+    "execution_status", "evidence_collected", "action", "execution_route_id",
+    "execution_api_symbol"
+  ],
+  "properties": {
+    "case_id": { "type": "string", "minLength": 1 },
+    "language": { "enum": ["rust", "c", "java", "python"] },
+    "route_id": { "type": "string", "minLength": 1 },
+    "target_id": { "type": "string", "minLength": 1 },
+    "workflow_step_index": { "type": "integer", "minimum": 0 },
+    "workflow_operation": { "type": "string", "minLength": 1 },
+    "workflow_item_index": { "type": "integer", "minimum": 0 },
+    "protocol_version": { "enum": ["2.0", "2.1"] },
+    "encoding": { "enum": ["TTLV", "JSON", "XML"] },
+    "transport": { "oneOf": [{ "type": "null" }, { "enum": ["raw_tls", "https"] }] },
+    "mode": { "enum": ["local", "network"] },
+    "public_api_symbol": { "type": "string", "minLength": 1 },
+    "artifact_commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "execution_status": { "const": "required" },
+    "evidence_collected": { "const": false },
+    "action": { "enum": ["construct", "encode", "send", "decode"] },
+    "execution_route_id": { "oneOf": [{ "type": "null" }, { "type": "string", "minLength": 1 }] },
+    "execution_api_symbol": { "oneOf": [{ "type": "null" }, { "type": "string", "minLength": 1 }] }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "mode": { "const": "local" } } },
+      "then": {
+        "properties": { "encoding": { "const": "TTLV" }, "transport": { "type": "null" },
+                      "execution_route_id": { "type": "null" }, "execution_api_symbol": { "type": "null" } }
+      }
+    },
+    {
+      "if": { "properties": { "mode": { "const": "network" } } },
+      "then": {
+        "properties": { "transport": { "enum": ["raw_tls", "https"] },
+                      "execution_route_id": { "type": "string", "minLength": 1 },
+                      "execution_api_symbol": { "type": "string", "minLength": 1 } }
+      }
+    },
+    {
+      "if": { "required": ["workflow_step_index"] },
+      "then": { "required": ["workflow_operation"] }
+    }
+  ],
+  "additionalProperties": false
+}

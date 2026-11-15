@@ -1,0 +1,783 @@
+//! Borrowed validation contract and operation identity mapping for typed requests.
+
+use crate::{
+    ActivateRequest, ArchiveRequest, CancelRequest, CheckRequest, DelegatedLoginRequest,
+    DestroyRequest, DiscoverVersionsRequest, GetAttributeListRequest, GetConstraintsRequest,
+    GetRequest, GetUsageAllocationRequest, ImportRequest, JoinSplitKeyRequest, LocateRequest,
+    LoginRequest, LogoutRequest, ObtainLeaseRequest, PingRequest, Pkcs11Request, PollRequest,
+    ProcessRequest, QueryAsyncRequestsRequest, QueryRequest, RecoverRequest, RngRetrieveRequest,
+    RngSeedRequest, SetConstraintsRequest, SetDefaultsRequest, ValidationReport,
+};
+
+use super::schema::RequestPayloadSchema;
+
+/// Borrowed validation contract for a typed client-initiated KMIP request.
+///
+/// Implementations identify the exact Request Payload schema and inspect the
+/// request without consuming or cloning it. The report covers locally
+/// decidable operation semantics; [`crate::validate_structure`] separately
+/// checks a generic TTLV tree against an explicitly selected schema. A valid
+/// report does not establish complete KMIP conformance or server acceptance.
+/// No report establishes server capability, authorization, state, or policy.
+pub trait ValidateKmipRequest {
+    /// The OASIS Request Payload schema for this operation.
+    const SCHEMA: RequestPayloadSchema;
+
+    /// Validates locally decidable constraints without consuming the request.
+    #[must_use]
+    fn validate(&self) -> ValidationReport;
+}
+
+fn validate_nested_request_field(
+    structure: &kmipkit_ttlv::Structure,
+    schema: crate::NestedStructureSchema,
+    field: &'static str,
+) -> ValidationReport {
+    crate::validation::validate_nested_structure_with_prefix(
+        &structure.view(),
+        schema,
+        &crate::ValidationPath::root()
+            .field("Request Payload")
+            .field(field),
+    )
+}
+
+macro_rules! impl_typed_request_validation {
+    ($($request:ty => $schema:ident),+ $(,)?) => {
+        $(
+            impl ValidateKmipRequest for $request {
+                const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::$schema;
+
+                fn validate(&self) -> ValidationReport {
+                    // These operations have no additional locally decidable
+                    // cross-field rule in the audited KMIP 2.1 request tables.
+                    // Their typed fields preserve the selected wire values;
+                    // remote object state and server policy remain remote.
+                    let _ = self;
+                    ValidationReport::default()
+                }
+            }
+        )+
+    };
+}
+
+impl_typed_request_validation! {
+    ActivateRequest => Activate,
+    ArchiveRequest => Archive,
+    CancelRequest => Cancel,
+    CheckRequest => Check,
+    DestroyRequest => Destroy,
+    DiscoverVersionsRequest => DiscoverVersions,
+    GetAttributeListRequest => GetAttributeList,
+    GetConstraintsRequest => GetConstraints,
+    GetUsageAllocationRequest => GetUsageAllocation,
+    LocateRequest => Locate,
+    LogoutRequest => Logout,
+    ObtainLeaseRequest => ObtainLease,
+    PingRequest => Ping,
+    PollRequest => Poll,
+    ProcessRequest => Process,
+    QueryAsyncRequestsRequest => QueryAsyncRequests,
+    RecoverRequest => Recover,
+    RngRetrieveRequest => RngRetrieve,
+    RngSeedRequest => RngSeed,
+}
+
+impl ValidateKmipRequest for crate::AdjustAttributeRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::AdjustAttribute;
+
+    fn validate(&self) -> ValidationReport {
+        let mut report = validate_attribute_reference_name(
+            self.attribute_reference(),
+            "KMIPKIT-0051-R005",
+            crate::ValidationPath::root()
+                .field("Request Payload")
+                .field("Attribute Reference"),
+        );
+        report.append(validate_attribute_reference_mutation(
+            self.attribute_reference(),
+            crate::attribute::ClientAttributeMutation::Adjust,
+            "Attribute Reference",
+        ));
+        report
+    }
+}
+
+impl ValidateKmipRequest for crate::DeleteAttributeRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::DeleteAttribute;
+
+    fn validate(&self) -> ValidationReport {
+        let mut report = ValidationReport::default();
+        if let Some(current) = self.current_attribute() {
+            report.append(validate_catalogued_attribute_type(
+                current.item(),
+                "Current Attribute",
+            ));
+            report.append(validate_vendor_attribute_shape(
+                current.item(),
+                "Current Attribute",
+            ));
+            report.append(validate_attribute_item_mutation(
+                current.item(),
+                crate::attribute::ClientAttributeMutation::Delete,
+                "Current Attribute",
+            ));
+        }
+        if let Some(reference) = self.attribute_reference() {
+            report.append(validate_attribute_reference_name(
+                reference,
+                "KMIPKIT-0051-R051",
+                crate::ValidationPath::root()
+                    .field("Request Payload")
+                    .field("Attribute Reference"),
+            ));
+            report.append(validate_attribute_reference_mutation(
+                reference,
+                crate::attribute::ClientAttributeMutation::Delete,
+                "Attribute Reference",
+            ));
+        }
+        report
+    }
+}
+
+impl ValidateKmipRequest for crate::SetAttributeRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::SetAttribute;
+
+    fn validate(&self) -> ValidationReport {
+        let mut report =
+            validate_vendor_attribute_shape(self.new_attribute().item(), "New Attribute");
+        report.append(validate_catalogued_attribute_type(
+            self.new_attribute().item(),
+            "New Attribute",
+        ));
+        report.append(validate_attribute_item_mutation(
+            self.new_attribute().item(),
+            crate::attribute::ClientAttributeMutation::Set,
+            "New Attribute",
+        ));
+        report
+    }
+}
+
+impl ValidateKmipRequest for crate::AddAttributeRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::AddAttribute;
+
+    fn validate(&self) -> ValidationReport {
+        let attribute = self.new_attribute().item();
+        let mut report = validate_vendor_attribute_shape(attribute, "New Attribute");
+        report.append(validate_catalogued_attribute_type(
+            attribute,
+            "New Attribute",
+        ));
+        report.append(validate_usage_limits_count(
+            attribute,
+            "New Attribute.Usage Limits.Usage Limits Count",
+        ));
+        report.append(validate_attribute_item_mutation(
+            attribute,
+            crate::attribute::ClientAttributeMutation::Add,
+            "New Attribute",
+        ));
+        report
+    }
+}
+
+impl ValidateKmipRequest for crate::ModifyAttributeRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::ModifyAttribute;
+
+    fn validate(&self) -> ValidationReport {
+        let attribute = self.new_attribute().item();
+        let mut report = validate_vendor_attribute_shape(attribute, "New Attribute");
+        report.append(validate_catalogued_attribute_type(
+            attribute,
+            "New Attribute",
+        ));
+        report.append(validate_usage_limits_count(
+            attribute,
+            "New Attribute.Usage Limits.Usage Limits Count",
+        ));
+        if let Some(current) = self.current_attribute() {
+            report.append(validate_catalogued_attribute_type(
+                current.item(),
+                "Current Attribute",
+            ));
+            report.append(validate_vendor_attribute_shape(
+                current.item(),
+                "Current Attribute",
+            ));
+            report.append(validate_attribute_item_mutation(
+                current.item(),
+                crate::attribute::ClientAttributeMutation::Modify,
+                "Current Attribute",
+            ));
+        }
+        report.append(validate_attribute_item_mutation(
+            attribute,
+            crate::attribute::ClientAttributeMutation::Modify,
+            "New Attribute",
+        ));
+        report
+    }
+}
+
+fn validate_attribute_item_mutation(
+    item: &kmipkit_ttlv::Item,
+    mutation: crate::attribute::ClientAttributeMutation,
+    field: &'static str,
+) -> ValidationReport {
+    const VENDOR_ATTRIBUTE: u32 = 0x0042_0008;
+    const VENDOR_IDENTIFICATION: u32 = 0x0042_009D;
+    const ORIGINAL_CREATION_DATE: u32 = 0x0042_00BC;
+    const USAGE_LIMITS: u32 = 0x0042_0095;
+
+    let source_section = if item.tag().raw() == ORIGINAL_CREATION_DATE
+        && mutation == crate::attribute::ClientAttributeMutation::Add
+    {
+        // KMIP v2.1 §4.38 permits the client to supply this attribute later
+        // through Add Attribute when it was omitted during object creation.
+        // Whether it is already present is state-dependent and belongs to the
+        // server or an explicitly selected profile validator.
+        None
+    } else if item.tag().raw() == VENDOR_ATTRIBUTE {
+        item.with_value(|value| match value {
+            kmipkit_ttlv::ValueView::Structure(fields) => fields
+                .children()
+                .iter()
+                .find(|field| field.tag().raw() == VENDOR_IDENTIFICATION)
+                .and_then(|field| {
+                    field.with_value(|value| match value {
+                        kmipkit_ttlv::ValueView::TextString(vendor) => {
+                            crate::attribute::client_vendor_attribute_mutation_source_section(
+                                vendor, mutation,
+                            )
+                        }
+                        _ => None,
+                    })
+                }),
+            _ => None,
+        })
+    } else if item.tag().raw() == USAGE_LIMITS
+        && matches!(
+            mutation,
+            crate::attribute::ClientAttributeMutation::Add
+                | crate::attribute::ClientAttributeMutation::Modify
+        )
+    {
+        // The Count prohibition is narrower than the Usage Limits attribute;
+        // the dedicated check rejects only structures that actually supply it.
+        None
+    } else {
+        crate::attribute::client_attribute_mutation_source_section(item.tag().raw(), mutation)
+    };
+
+    source_section.map_or_else(ValidationReport::default, |reference| {
+        attribute_mutation_issue(field, item.tag().raw(), reference)
+    })
+}
+
+fn validate_vendor_attribute_shape(
+    item: &kmipkit_ttlv::Item,
+    field: &'static str,
+) -> ValidationReport {
+    const VENDOR_ATTRIBUTE: u32 = 0x0042_0008;
+    if item.tag().raw() != VENDOR_ATTRIBUTE {
+        return ValidationReport::default();
+    }
+    let valid = item.with_value(|value| match value {
+        kmipkit_ttlv::ValueView::Structure(structure) => {
+            crate::attribute::validate_vendor_attribute(&structure).is_ok()
+        }
+        _ => false,
+    });
+    if valid {
+        return ValidationReport::default();
+    }
+    crate::validation::issue_report(
+        "KMIPKIT-0051-R283",
+        crate::ValidationPath::root()
+            .field("Request Payload")
+            .field(field)
+            .field("Vendor Attribute"),
+        crate::ValidationSourceRef::Oasis {
+            document: "KMIP v2.1",
+            reference: "§4.60, Table 150",
+        },
+    )
+}
+
+fn validate_catalogued_attribute_type(
+    item: &kmipkit_ttlv::Item,
+    field: &'static str,
+) -> ValidationReport {
+    if crate::attribute::validate_catalogued_item_type(item).is_ok() {
+        return ValidationReport::default();
+    }
+    let Some((attribute_name, source_section)) =
+        crate::attribute::catalogued_attribute_type_source(item.tag().raw())
+    else {
+        return ValidationReport::default();
+    };
+    crate::validation::issue_report(
+        "KMIPKIT-0051-R284",
+        crate::ValidationPath::root()
+            .field("Request Payload")
+            .field(field)
+            .field(attribute_name),
+        crate::ValidationSourceRef::Oasis {
+            document: "KMIP v2.1",
+            reference: source_section,
+        },
+    )
+}
+
+fn validate_attribute_reference_mutation(
+    reference: &crate::AttributeReference,
+    mutation: crate::attribute::ClientAttributeMutation,
+    field: &'static str,
+) -> ValidationReport {
+    let source_section = if let Some(tag) = reference.tag_value() {
+        crate::attribute::client_attribute_mutation_source_section(tag, mutation)
+    } else {
+        reference.name_parts().and_then(|(vendor, _)| {
+            crate::attribute::client_vendor_attribute_mutation_source_section(vendor, mutation)
+        })
+    };
+    source_section.map_or_else(ValidationReport::default, |source| {
+        let tag = reference.tag_value().unwrap_or(0x0042_0008);
+        attribute_mutation_issue(field, tag, source)
+    })
+}
+
+fn validate_attribute_reference_name(
+    reference: &crate::AttributeReference,
+    rule: &'static str,
+    path: crate::ValidationPath,
+) -> ValidationReport {
+    let Some((vendor_identification, _)) = reference.name_parts() else {
+        return ValidationReport::default();
+    };
+    if crate::attribute_reference::vendor_identification_is_valid(vendor_identification) {
+        return ValidationReport::default();
+    }
+    crate::validation::issue_report(
+        rule,
+        path.field("Vendor Identification"),
+        crate::ValidationSourceRef::Oasis {
+            document: "KMIP v2.1",
+            reference: "§5.5, Table 161",
+        },
+    )
+}
+
+fn attribute_mutation_issue(
+    field: &'static str,
+    tag: u32,
+    reference: &'static str,
+) -> ValidationReport {
+    crate::validation::issue_report(
+        "KMIPKIT-0051-R282",
+        crate::ValidationPath::root()
+            .field("Request Payload")
+            .field(field)
+            .tag(tag),
+        crate::ValidationSourceRef::Oasis {
+            document: "KMIP v2.1",
+            reference,
+        },
+    )
+}
+
+fn validate_usage_limits_count(
+    attribute: &kmipkit_ttlv::Item,
+    field_path: &'static str,
+) -> ValidationReport {
+    const USAGE_LIMITS: u32 = 0x0042_0095;
+    const USAGE_LIMITS_COUNT: u32 = 0x0042_0096;
+
+    let has_count = attribute.tag().raw() == USAGE_LIMITS
+        && attribute.with_value(|value| match value {
+            kmipkit_ttlv::ValueView::Structure(fields) => fields
+                .children()
+                .iter()
+                .any(|field| field.tag().raw() == USAGE_LIMITS_COUNT),
+            _ => false,
+        });
+    if has_count {
+        crate::validation::request_issue_report(
+            "KMIPKIT-0051-R281",
+            field_path,
+            crate::ValidationSourceRef::Oasis {
+                document: "KMIP v2.1",
+                reference: "§4.59; §7.40, Table 392",
+            },
+        )
+    } else {
+        ValidationReport::default()
+    }
+}
+
+impl ValidateKmipRequest for GetRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::Get;
+
+    fn validate(&self) -> ValidationReport {
+        let Some(specification) = self.key_wrapping_specification() else {
+            return ValidationReport::default();
+        };
+        validate_nested_request_field(
+            specification,
+            crate::NestedStructureSchema::KeyWrappingSpecification,
+            "Key Wrapping Specification",
+        )
+    }
+}
+
+impl ValidateKmipRequest for crate::GetAttributesRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::GetAttributes;
+
+    fn validate(&self) -> ValidationReport {
+        let mut report = ValidationReport::default();
+        for (index, reference) in self.attribute_references().iter().enumerate() {
+            report.append(validate_attribute_reference_name(
+                reference,
+                "KMIPKIT-0051-R078",
+                crate::ValidationPath::root()
+                    .field("Request Payload")
+                    .field("Attribute Reference")
+                    .index(index),
+            ));
+        }
+        report
+    }
+}
+
+impl ValidateKmipRequest for LoginRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::Login;
+
+    fn validate(&self) -> ValidationReport {
+        self.usage_limits()
+            .map_or_else(ValidationReport::default, |usage_limits| {
+                validate_nested_request_field(
+                    usage_limits,
+                    crate::NestedStructureSchema::UsageLimits,
+                    "Usage Limits",
+                )
+            })
+    }
+}
+
+impl ValidateKmipRequest for DelegatedLoginRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::DelegatedLogin;
+
+    fn validate(&self) -> ValidationReport {
+        let mut report = validate_nested_request_field(
+            self.rights(),
+            crate::NestedStructureSchema::Rights,
+            "Rights",
+        );
+        if let Some(usage_limits) = self.usage_limits() {
+            report.append(validate_nested_request_field(
+                usage_limits,
+                crate::NestedStructureSchema::UsageLimits,
+                "Usage Limits",
+            ));
+        }
+        report
+    }
+}
+
+impl ValidateKmipRequest for ImportRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::Import;
+
+    fn validate(&self) -> ValidationReport {
+        let object = self.object();
+        let mut report = if object.item_type() != kmipkit_ttlv::ItemType::Structure
+            || !crate::managed_object::object_tag_matches_type(
+                self.object_type(),
+                object.tag().raw(),
+            ) {
+            crate::validation::request_issue_report(
+                "KMIPKIT-0051-R092",
+                "Any Object",
+                crate::ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§6.1.25, Table 238",
+                },
+            )
+        } else {
+            ValidationReport::default()
+        };
+        report.append(object.with_value(|value| {
+            match value {
+                kmipkit_ttlv::ValueView::Structure(object_structure) => {
+                    super::nested::validate_managed_object(
+                        &object_structure,
+                        object.tag().raw(),
+                        &crate::ValidationPath::root()
+                            .field("Request Payload")
+                            .field("Any Object"),
+                    )
+                }
+                _ => ValidationReport::default(),
+            }
+        }));
+        report
+    }
+}
+
+macro_rules! impl_crypto_request_validation {
+    ($request:ty => $schema:ident, $check:ident, $field:literal, $reference:literal) => {
+        impl ValidateKmipRequest for $request {
+            const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::$schema;
+
+            fn validate(&self) -> ValidationReport {
+                let mut report = ValidationReport::default();
+                if self.$check().is_err() {
+                    report.append(crate::validation::request_issue_report(
+                        "KMIPKIT-0051-P005",
+                        $field,
+                        crate::ValidationSourceRef::Oasis {
+                            document: "KMIP v2.1",
+                            reference: $reference,
+                        },
+                    ));
+                }
+                if let Some(parameters) = self.cryptographic_parameters() {
+                    report.append(validate_nested_request_field(
+                        parameters,
+                        crate::NestedStructureSchema::CryptographicParameters,
+                        "Cryptographic Parameters",
+                    ));
+                }
+                report
+            }
+        }
+    };
+}
+
+impl ValidateKmipRequest for crate::EncryptRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::Encrypt;
+
+    fn validate(&self) -> ValidationReport {
+        let mut report = ValidationReport::default();
+        if self.invalid_initial_only_aead_fields() {
+            report.append(crate::validation::request_issue_report(
+                "KMIPKIT-0051-R066",
+                "Authenticated Encryption Additional Data",
+                crate::ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§6.1.17, Table 214",
+                },
+            ));
+        }
+        if self.validate_multipart_shape().is_err() && !self.invalid_initial_only_aead_fields() {
+            report.append(crate::validation::request_issue_report(
+                "KMIPKIT-0051-P005",
+                "Data",
+                crate::ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§6.1.17, Table 214",
+                },
+            ));
+        }
+        if let Some(parameters) = self.cryptographic_parameters() {
+            report.append(validate_nested_request_field(
+                parameters,
+                crate::NestedStructureSchema::CryptographicParameters,
+                "Cryptographic Parameters",
+            ));
+        }
+        report
+    }
+}
+
+impl ValidateKmipRequest for crate::DecryptRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::Decrypt;
+
+    fn validate(&self) -> ValidationReport {
+        let mut report = ValidationReport::default();
+        let (additional_data, authentication_tag) = self.invalid_initial_only_aead_fields();
+        if additional_data {
+            report.append(crate::validation::request_issue_report(
+                "KMIPKIT-0051-R043",
+                "Authenticated Encryption Additional Data",
+                crate::ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§6.1.11, Table 196",
+                },
+            ));
+        }
+        if authentication_tag {
+            report.append(crate::validation::request_issue_report(
+                "KMIPKIT-0051-R044",
+                "Authenticated Encryption Tag",
+                crate::ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§6.1.11, Table 196",
+                },
+            ));
+        }
+        if self.validate_multipart_shape().is_err() && !(additional_data || authentication_tag) {
+            report.append(crate::validation::request_issue_report(
+                "KMIPKIT-0051-P005",
+                "Data",
+                crate::ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§6.1.11, Table 196",
+                },
+            ));
+        }
+        if let Some(parameters) = self.cryptographic_parameters() {
+            report.append(validate_nested_request_field(
+                parameters,
+                crate::NestedStructureSchema::CryptographicParameters,
+                "Cryptographic Parameters",
+            ));
+        }
+        report
+    }
+}
+impl_crypto_request_validation!(
+    crate::MacRequest => Mac,
+    validate_multipart_shape,
+    "Data",
+    "§6.1.32, Table 259"
+);
+impl_crypto_request_validation!(
+    crate::MacVerifyRequest => MacVerify,
+    validate_multipart_shape,
+    "MAC Data",
+    "§6.1.33, Table 262"
+);
+impl_crypto_request_validation!(
+    crate::SignRequest => Sign,
+    validate_multipart_shape,
+    "Data",
+    "§6.1.55, Table 334"
+);
+impl_crypto_request_validation!(
+    crate::SignatureVerifyRequest => SignatureVerify,
+    validate_multipart_shape,
+    "Signature Data",
+    "§6.1.56, Table 337"
+);
+impl ValidateKmipRequest for QueryRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::Query;
+
+    fn validate(&self) -> ValidationReport {
+        if !self.has_query_functions() {
+            crate::validation::request_issue_report(
+                "KMIPKIT-0051-P005",
+                "Query Function",
+                crate::ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§6.1.40, Table 282",
+                },
+            )
+        } else if !self.has_valid_query_function_values() {
+            crate::validation::request_issue_report(
+                "KMIPKIT-0051-P005",
+                "Query Function",
+                crate::ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§11.44, Table 476",
+                },
+            )
+        } else {
+            ValidationReport::default()
+        }
+    }
+}
+
+impl ValidateKmipRequest for JoinSplitKeyRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::JoinSplitKey;
+
+    fn validate(&self) -> ValidationReport {
+        match self.validate_request_shape() {
+            Ok(()) => ValidationReport::default(),
+            Err(crate::join_split_key::JoinSplitKeyValidationFailure::Attributes) => {
+                crate::validation::request_issue_report(
+                    "KMIPKIT-0051-P005",
+                    "Attributes",
+                    crate::ValidationSourceRef::Oasis {
+                        document: "KMIP v2.1",
+                        reference: "§4, Table 46; §6.1.27, Table 244",
+                    },
+                )
+            }
+            Err(crate::join_split_key::JoinSplitKeyValidationFailure::References) => {
+                crate::validation::request_issue_report(
+                    "KMIPKIT-0051-P005",
+                    "Unique Identifier",
+                    crate::ValidationSourceRef::Oasis {
+                        document: "KMIP v2.1",
+                        reference: "§6.1.27, Table 244; §2.8, Table 9",
+                    },
+                )
+            }
+        }
+    }
+}
+
+impl ValidateKmipRequest for Pkcs11Request {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::Pkcs11;
+
+    fn validate(&self) -> ValidationReport {
+        let (field, reference) = match self.validate_request_shape() {
+            Ok(()) => return ValidationReport::default(),
+            Err(crate::pkcs11::Pkcs11RequestValidationFailure::Interface) => {
+                ("PKCS#11 Interface", "§6.1.37, Table 273; §7.28, Table 380")
+            }
+            Err(crate::pkcs11::Pkcs11RequestValidationFailure::Function) => {
+                ("PKCS#11 Function", "§6.1.37, Table 273; §7.26, Table 378")
+            }
+            Err(crate::pkcs11::Pkcs11RequestValidationFailure::InputParameters) => (
+                "PKCS#11 Input Parameters",
+                "§6.1.37, Table 273; §7.27, Table 379",
+            ),
+            Err(crate::pkcs11::Pkcs11RequestValidationFailure::ExtensionCollision) => {
+                ("Request Payload", "§6.1.37, Table 273")
+            }
+        };
+        crate::validation::request_issue_report(
+            "KMIPKIT-0051-P005",
+            field,
+            crate::ValidationSourceRef::Oasis {
+                document: "KMIP v2.1",
+                reference,
+            },
+        )
+    }
+}
+
+impl ValidateKmipRequest for SetConstraintsRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::SetConstraints;
+
+    fn validate(&self) -> ValidationReport {
+        crate::validation::validate_nested_structure_with_prefix(
+            &self.constraints(),
+            crate::NestedStructureSchema::Constraints,
+            &crate::ValidationPath::root()
+                .field("Request Payload")
+                .field("Constraints"),
+        )
+    }
+}
+
+impl ValidateKmipRequest for SetDefaultsRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::SetDefaults;
+
+    fn validate(&self) -> ValidationReport {
+        let mut report = ValidationReport::default();
+        if let Some(defaults) = self.defaults_information() {
+            report.append(crate::validation::validate_nested_structure_with_prefix(
+                &defaults,
+                crate::NestedStructureSchema::DefaultsInformation,
+                &crate::ValidationPath::root()
+                    .field("Request Payload")
+                    .field("Defaults Information"),
+            ));
+        }
+        report
+    }
+}

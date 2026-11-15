@@ -1,0 +1,3 @@
+# Case: KMIPKit rejects an empty Big Integer as an explicit local value-validity rule.
+# Attribution: KMIPKit requirement KMIPKIT-0005-FR-006 rejects an empty Big Integer; the OASIS Key Management Interoperability Protocol Specification Version 2.1, Section 10.1.2, does not define a non-empty minimum.
+42 00 2c 04 00 00 00 00

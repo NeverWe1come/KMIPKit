@@ -1,0 +1,11 @@
+error[E0597]: `structure` does not live long enough
+ --> tests/ui/structure_view_borrows_owner.rs:7:9
+  |
+5 |     let view = {
+  |         ---- borrow later stored here
+6 |         let structure = Structure::new();
+  |             --------- binding `structure` declared here
+7 |         structure.view()
+  |         ^^^^^^^^^ borrowed value does not live long enough
+8 |     };
+  |     - `structure` dropped here while still borrowed

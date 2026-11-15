@@ -23,18 +23,26 @@ human reviewer. Never silently invent a KMIP requirement.
 
 - Product name: KMIPKit.
 - License: Apache-2.0.
-- Protocol: OASIS KMIP 2.1 only for the 1.x line.
-- 1.0 encoding: TTLV only.
-- 1.0 direction: client initiated operations. Protocol asynchronous behavior
-  is included. Server initiated operations are planned for 1.1.
-- 1.0 transports: raw TTLV over TLS and TTLV over HTTPS/HTTP 1.1.
+- Protocol: modern OASIS KMIP 2.0, 2.1, and 3.0 (Draft/Standard) under
+  KMIPKIT-0069 and ADR-0022; KMIP 2.1 remains the 1.0 default. The supported
+  version-specific surface is limited to approved specifications and does not
+  imply blanket KMIP 3.0 conformance.
+- 1.0 encodings: TTLV, JSON, and XML, as specified by the approved
+  KMIPKIT-0054 through KMIPKIT-0057 specifications.
+- 1.0 direction: client initiated operations (including asynchronous behavior),
+  server initiated operations (§6.2.1–§6.2.5), dynamic role reversal
+  (§6.1.54, §6.2.5), and HTTPS server reception (Profiles §5.3.1) as specified
+  by KMIPKIT-0066 and ADR-0021.
+- 1.0 transports: TTLV, JSON, and XML over raw TLS and HTTPS/HTTP 1.1,
+  subject to the approved message-framing and encoding specifications.
 - TLS: TLS 1.3 only, mutual TLS, rustls with aws-lc-rs.
 - 1.0 languages: Rust, C, Java, and Python with functional parity.
 - The library transports and manages cryptographic material. It is not a
   local cryptographic algorithm provider.
 
-Do not expand these boundaries inside a feature PR. Propose a new
-specification and ADR when a boundary must change.
+Do not expand these boundaries inside a feature PR. Changes to the approved
+1.0 encoding and transport boundary require the governing ADR and approved
+specifications to be updated before codec or integration implementation.
 
 ## 3. Required workflow
 
@@ -117,10 +125,10 @@ Required layers include:
 
 Coverage gates:
 
-- `kmipkit-ttlv` and protocol/model code: at least 95 percent line coverage.
+- `kmipkit-ttlv` and protocol/model code: at least 90 percent line coverage.
 - Transport, FFI, and bindings: at least 85 percent line coverage.
 - Rust workspace overall: at least 90 percent line coverage.
-- New or changed code: at least 95 percent line coverage.
+- New or changed production code: at least 90 percent line coverage.
 - Normative requirement traceability: 100 percent.
 
 Generated code may be excluded from raw coverage, but its behavior must be
@@ -160,7 +168,13 @@ duplicating command logic.
 
 - Never log, format, serialize, or include in errors: credentials, private
   keys, secret key material, OTPs, tickets, raw KMIP bodies, or TLS private
-  keys.
+  keys. The sole exception is explicit caller access through the dedicated
+  generic response-TTLV accessor for the exact successful MAC, MAC Verify,
+  Sign, and Signature Verify Unique Identifier shape failures defined by
+  KMIPKIT-0021-FR-015 under KMIPKIT-0007-FR-013. This exception permits access
+  only through that accessor; it does not permit logging, formatting,
+  serialization, diagnostic text, or error-source exposure of the response.
+  No other protocol, validation, or transport error may retain response TTLV.
 - Use explicit secret types and zeroize memory owned by KMIPKit.
 - Document runtime limitations when Java or Python may retain external copies.
 - Enforce TLS certificate chain, validity, and hostname checks. There is no

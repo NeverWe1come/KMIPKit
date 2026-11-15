@@ -1,0 +1,59 @@
+error[E0277]: the trait bound `Value: Clone` is not satisfied
+ --> tests/ui/no_clone.rs:8:22
+  |
+8 |     requires_clone::<Value>();
+  |                      ^^^^^ the trait `Clone` is not implemented for `Value`
+  |
+note: required by a bound in `requires_clone`
+ --> tests/ui/no_clone.rs:5:22
+  |
+5 | fn requires_clone<T: Clone>() {}
+  |                      ^^^^^ required by this bound in `requires_clone`
+
+error[E0277]: the trait bound `ValueView<'static>: Clone` is not satisfied
+ --> tests/ui/no_clone.rs:9:22
+  |
+9 |     requires_clone::<ValueView<'static>>();
+  |                      ^^^^^^^^^^^^^^^^^^ the trait `Clone` is not implemented for `ValueView<'static>`
+  |
+note: required by a bound in `requires_clone`
+ --> tests/ui/no_clone.rs:5:22
+  |
+5 | fn requires_clone<T: Clone>() {}
+  |                      ^^^^^ required by this bound in `requires_clone`
+
+error[E0277]: the trait bound `StructureView<'static>: Clone` is not satisfied
+  --> tests/ui/no_clone.rs:10:22
+   |
+10 |     requires_clone::<StructureView<'static>>();
+   |                      ^^^^^^^^^^^^^^^^^^^^^^ the trait `Clone` is not implemented for `StructureView<'static>`
+   |
+note: required by a bound in `requires_clone`
+  --> tests/ui/no_clone.rs:5:22
+   |
+ 5 | fn requires_clone<T: Clone>() {}
+   |                      ^^^^^ required by this bound in `requires_clone`
+
+error[E0277]: the trait bound `Item: Clone` is not satisfied
+  --> tests/ui/no_clone.rs:11:22
+   |
+11 |     requires_clone::<Item>();
+   |                      ^^^^ the trait `Clone` is not implemented for `Item`
+   |
+note: required by a bound in `requires_clone`
+  --> tests/ui/no_clone.rs:5:22
+   |
+ 5 | fn requires_clone<T: Clone>() {}
+   |                      ^^^^^ required by this bound in `requires_clone`
+
+error[E0277]: the trait bound `kmipkit_ttlv::Structure: Clone` is not satisfied
+  --> tests/ui/no_clone.rs:12:22
+   |
+12 |     requires_clone::<Structure>();
+   |                      ^^^^^^^^^ the trait `Clone` is not implemented for `kmipkit_ttlv::Structure`
+   |
+note: required by a bound in `requires_clone`
+  --> tests/ui/no_clone.rs:5:22
+   |
+ 5 | fn requires_clone<T: Clone>() {}
+   |                      ^^^^^ required by this bound in `requires_clone`

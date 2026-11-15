@@ -1,0 +1,23 @@
+[graph]
+all-features = true
+
+[advisories]
+unsound = "all"
+unmaintained = "all"
+yanked = "deny"
+
+[bans]
+multiple-versions = "deny"
+multiple-versions-include-dev = true
+wildcards = "deny"
+deny = ["native-tls", "openssl", "openssl-sys"]
+
+[licenses]
+include-dev = true
+allow = ["Apache-2.0", "MIT", "Unicode-3.0", "Unlicense"]
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+required-git-spec = "rev"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]

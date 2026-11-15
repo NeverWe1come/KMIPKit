@@ -1,0 +1,1335 @@
+//! End-to-end tests for the synchronous `Client::execute` lifecycle boundary.
+//!
+//! These are derived project-policy tests, not official OASIS vectors. The
+//! Pending Asynchronous Correlation Value is required immediately by OASIS
+//! KMIP v2.1 §8.6, Table 399, catalog element
+//! `KMIPKIT-ELEM-MESSAGE-FIELD-8-6-ASYNCHRONOUS-CORRELATION-VALUE`; §9.19 and
+//! `KMIPKIT-REQ-SPEC-9.19-002` concern its later use by Poll. Discover Versions
+//! has no secret payload and does not resolve ADR-0012 OD-006, which remains a
+//! gate for the first secret-bearing operation.
+//!
+//! Traceability: `KMIPKIT-0007-FR-005`, `-FR-008`, `-FR-011`, `-FR-012`,
+//! `-FR-013`, `-FR-017`; `KMIPKIT-0007-SC-002`, `-SC-004`, `-SC-005`,
+//! `-SC-008`; ADR-0012; `AGENTS.md` §8.
+
+use std::cell::{Cell, RefCell};
+use std::error::Error;
+use std::fmt::Write as _;
+use std::rc::Rc;
+
+use kmipkit_protocol::{
+    AttributeSet, CreateRequest, EndpointRole, HashRequest, ImportRequest, InteropRequest,
+    ObjectType, OperationData, Pkcs11Request, SecretBytes, SecretText, SetDefaultsRequest,
+    SetEndpointRoleRequest,
+};
+use kmipkit_test_support::{ExchangeScript, ScriptedTransport};
+use kmipkit_transport::{RequestDeliveryState, Transport, TransportError, TransportResponse};
+use kmipkit_ttlv::codec::{CodecLimits, decode};
+use kmipkit_ttlv::{Item, RawTag, Structure, Value, ValueView};
+use serde_json::Value as JsonValue;
+
+use crate::ClientErrorCategory;
+use crate::execute::{
+    Client, ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientRequest, ZeroizationObserver,
+};
+use crate::execute_test_support::{ResponseItemFixture, response_bytes};
+
+const CORRELATION_VALUE: &[u8] = b"KMIP_ASYNC_CORRELATION_SENTINEL_73";
+const CORRELATION_PREFIX: &str = "KMIP_ASYNC_CORRELATION";
+const BATCH_ITEM: u32 = 0x0042_000F;
+const UNIQUE_BATCH_ITEM_ID: u32 = 0x0042_0093;
+
+#[derive(Clone)]
+struct SharedScriptedTransport {
+    fake: Rc<RefCell<ScriptedTransport>>,
+    request_owner_observer: Option<ZeroizationObserver>,
+    owner_live_when_exchange_returns: Rc<Cell<bool>>,
+}
+
+impl Transport for SharedScriptedTransport {
+    fn exchange(
+        &mut self,
+        request: &[u8],
+        max_response_bytes: usize,
+    ) -> Result<TransportResponse, TransportError> {
+        let result = self.fake.borrow_mut().exchange(request, max_response_bytes);
+        if let Some(observer) = &self.request_owner_observer {
+            self.owner_live_when_exchange_returns
+                .set(observer.result().is_none());
+        }
+        result
+    }
+}
+
+fn client_for(
+    script: ExchangeScript,
+    request_observer: Option<ZeroizationObserver>,
+) -> (Client, Rc<RefCell<ScriptedTransport>>, Rc<Cell<bool>>) {
+    let fake = Rc::new(RefCell::new(ScriptedTransport::new(script)));
+    let owner_live = Rc::new(Cell::new(false));
+    let transport = SharedScriptedTransport {
+        fake: Rc::clone(&fake),
+        request_owner_observer: request_observer.clone(),
+        owner_live_when_exchange_returns: Rc::clone(&owner_live),
+    };
+    let client = if let Some(observer) = request_observer {
+        Client::for_test_with_request_observer(transport, observer)
+    } else {
+        Client::for_test(transport)
+    };
+    (client, fake, owner_live)
+}
+
+fn discover_versions_batch(asynchronous_indicator: Option<u32>) -> ClientBatch {
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::discover_versions()));
+    match asynchronous_indicator {
+        Some(value) => batch.with_asynchronous_indicator(value),
+        None => batch,
+    }
+}
+
+#[test]
+fn public_batch_and_result_accessors_preserve_order_and_redact_identifiers() {
+    let id = b"PUBLIC_BATCH_ID_SENTINEL".to_vec();
+    let first = ClientBatchItem::new(ClientRequest::discover_versions())
+        .with_unique_batch_item_id(id.clone());
+    let second = ClientBatchItem::new(ClientRequest::discover_versions());
+    assert!(matches!(
+        first.request(),
+        ClientRequest::DiscoverVersions(_)
+    ));
+    assert_eq!(first.unique_batch_item_id(), Some(id.as_slice()));
+    assert_eq!(second.unique_batch_item_id(), None);
+    assert!(!format!("{first:?}").contains("PUBLIC_BATCH_ID_SENTINEL"));
+
+    let mut request = ClientBatch::from_items([first]);
+    request.push(second);
+    let request = request
+        .with_request_time_stamp(1_700_000_000)
+        .with_batch_order_option(true);
+    assert_eq!(request.items().len(), 2);
+    assert_eq!(request.request_time_stamp(), Some(1_700_000_000));
+    assert!(format!("{request:?}").contains("item_count: 2"));
+    assert!(!format!("{request:?}").contains("PUBLIC_BATCH_ID_SENTINEL"));
+    assert_eq!(request.to_string(), "ClientBatch (2 items)");
+
+    let mut extension = ResponseItemFixture::success(Some(&id));
+    extension.extension_criticality = Some(false);
+    let response = response_bytes((2, 1), &[extension]);
+    let (mut client, _, _) = client_for(
+        ExchangeScript::Success {
+            response,
+            request_write_chunks: Vec::new(),
+        },
+        None,
+    );
+    let result = client
+        .execute(
+            ClientBatch::new(
+                ClientBatchItem::new(ClientRequest::discover_versions())
+                    .with_unique_batch_item_id(id.clone()),
+            ),
+            &CodecLimits::defaults(),
+        )
+        .expect("the fixture is a valid completed response with a non-critical extension");
+
+    assert_eq!(result.len(), 1);
+    assert!(!result.is_empty());
+    assert!(result.get(1).is_none());
+    let mut results = result.iter();
+    let item = results.next().expect("one associated response exists");
+    assert_eq!(item.unique_batch_item_id(), Some(id.as_slice()));
+    assert_eq!(item.extensions().len(), 1);
+    assert!(!format!("{item:?}").contains("PUBLIC_BATCH_ID_SENTINEL"));
+    assert!(format!("{item:?}").contains("extension_count: 1"));
+    assert_eq!(results.len(), 0);
+    assert!(!format!("{result:?}").contains("PUBLIC_BATCH_ID_SENTINEL"));
+    assert!(format!("{result:?}").contains("item_count: 1"));
+    assert_eq!(
+        item.extensions()[0].with_ttlv(|view| view.children().len()),
+        3
+    );
+    assert_eq!(
+        format!("{:?}", item.extensions()[0]),
+        "ClientMessageExtension([REDACTED])"
+    );
+
+    let outcome = item.outcome();
+    assert!(matches!(
+        outcome,
+        crate::execute::ClientBatchOutcome::Completed(_)
+    ));
+    assert_eq!(outcome.asynchronous_correlation_value(), None);
+    assert_eq!(outcome.result().status().raw(), 0);
+    assert!(format!("{outcome:?}").starts_with("Completed("));
+    assert!(outcome.to_string().starts_with("Completed("));
+}
+
+#[test]
+fn single_item_request_may_include_or_omit_unique_batch_item_id() {
+    // OASIS KMIP Profiles v2.1 §4.1.2, locator 7; KMIPKIT-REQ-PROF-4.1.2-007.
+    let cases: [Option<&[u8]>; 2] = [None, Some(b"single-item-id")];
+
+    for expected_id in cases {
+        let response = response_bytes((2, 1), &[ResponseItemFixture::success(expected_id)]);
+        let (mut client, fake, captured) =
+            crate::asynchronous_execution_test_support::client_for(ExchangeScript::Success {
+                response,
+                request_write_chunks: Vec::new(),
+            });
+        let mut request_item = ClientBatchItem::new(ClientRequest::discover_versions());
+        if let Some(id) = expected_id {
+            request_item = request_item.with_unique_batch_item_id(id.to_vec());
+        }
+
+        client
+            .execute(ClientBatch::new(request_item), &CodecLimits::defaults())
+            .expect("the matching single-item response completes the fake exchange");
+
+        assert_eq!(fake.borrow().exchange_count(), 1);
+        let captured = captured.borrow();
+        let encoded = captured
+            .as_ref()
+            .expect("the fake transport captures the encoded request");
+        if expected_id.is_none() {
+            let expected_hex = concat!(
+                "42007801000000984200770100000048420069010000002042006A0200000004",
+                "000000020000000042006B020000000400000001000000004200D30600000008",
+                "000000000000000142000D0200000004000000010000000042000F0100000040",
+                "42005C05000000040000001E0000000042007901000000284200690100000020",
+                "42006A0200000004000000020000000042006B02000000040000000100000000"
+            );
+            let (hex_pairs, _) = expected_hex.as_bytes().as_chunks::<2>();
+            let expected_bytes = hex_pairs
+                .iter()
+                .map(|pair| {
+                    let pair = std::str::from_utf8(pair).expect("hex fixture is ASCII");
+                    u8::from_str_radix(pair, 16).expect("hex fixture has valid digits")
+                })
+                .collect::<Vec<_>>();
+            assert_eq!(encoded.as_slice(), expected_bytes);
+        }
+        let message = decode(encoded.as_slice()).expect("the captured request is valid TTLV");
+        let (field_count, encoded_ids) = unique_batch_item_ids(&message);
+
+        assert_eq!(field_count, usize::from(expected_id.is_some()));
+        assert_eq!(
+            encoded_ids,
+            expected_id
+                .map(<[u8]>::to_vec)
+                .into_iter()
+                .collect::<Vec<_>>()
+        );
+    }
+}
+
+fn unique_batch_item_ids(message: &Item) -> (usize, Vec<Vec<u8>>) {
+    message.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            return (0, Vec::new());
+        };
+        let Some(batch_item) = message
+            .children()
+            .iter()
+            .find(|child| child.tag().raw() == BATCH_ITEM)
+        else {
+            return (0, Vec::new());
+        };
+        batch_item.with_value(|value| {
+            let ValueView::Structure(batch_item) = value else {
+                return (0, Vec::new());
+            };
+            let fields = batch_item
+                .children()
+                .iter()
+                .filter(|child| child.tag().raw() == UNIQUE_BATCH_ITEM_ID)
+                .collect::<Vec<_>>();
+            let ids = fields
+                .iter()
+                .filter_map(|field| {
+                    field.with_value(|value| match value {
+                        ValueView::ByteString(id) => Some(id.to_vec()),
+                        _ => None,
+                    })
+                })
+                .collect();
+            (fields.len(), ids)
+        })
+    })
+}
+
+#[test]
+fn invalid_batch_and_option_inputs_are_rejected_before_exchange() {
+    let item = || ClientBatchItem::new(ClientRequest::discover_versions());
+    let with_ids = || {
+        ClientBatch::from_items([
+            item().with_unique_batch_item_id(b"first".to_vec()),
+            item().with_unique_batch_item_id(b"second".to_vec()),
+        ])
+    };
+    let invalid_batches = [
+        ClientBatch::from_items(std::iter::empty::<ClientBatchItem>()),
+        ClientBatch::from_items([item(), item()]),
+        ClientBatch::from_items([
+            item().with_unique_batch_item_id(b"duplicate".to_vec()),
+            item().with_unique_batch_item_id(b"duplicate".to_vec()),
+        ]),
+        ClientBatch::new(item()).with_asynchronous_indicator(0),
+        ClientBatch::new(item()).with_batch_error_continuation_option(2),
+        with_ids()
+            .with_batch_error_continuation_option(1)
+            .with_batch_error_continuation_option(2),
+        with_ids().with_batch_error_continuation_option(0),
+    ];
+
+    for batch in invalid_batches {
+        let (mut client, fake, _) = client_for(
+            ExchangeScript::Success {
+                response: response_bytes((2, 1), &[ResponseItemFixture::success(None)]),
+                request_write_chunks: Vec::new(),
+            },
+            None,
+        );
+        let error = client
+            .execute(batch, &CodecLimits::defaults())
+            .expect_err("invalid batch input is rejected before serialization or exchange");
+
+        assert_eq!(error.category(), ClientErrorCategory::Validation);
+        assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+        assert_eq!(
+            error
+                .cause_category()
+                .map(|cause| cause.to_string())
+                .as_deref(),
+            Some("invalid input")
+        );
+        assert_eq!(
+            error.source().map(ToString::to_string).as_deref(),
+            Some("invalid input")
+        );
+        assert!(error.to_string().contains("client validation failure"));
+        assert_eq!(fake.borrow().exchange_count(), 0);
+        assert_eq!(fake.borrow().write_call_count(), 0);
+    }
+}
+
+#[test]
+fn typed_request_preflight_uses_borrowed_protocol_validation() {
+    let comment = RawTag::new(0x0042_00fd)
+        .expect("Comment is a valid raw tag")
+        .try_checked()
+        .expect("Comment is an allocated KMIP tag");
+    let attributes = AttributeSet::try_new([
+        Item::new(comment, Value::text_string("first".to_owned()))
+            .expect("first Comment is valid TTLV"),
+        Item::new(comment, Value::text_string("second".to_owned()))
+            .expect("second Comment is valid TTLV"),
+    ])
+    .expect("generic AttributeSet preserves operation-level repetitions");
+    let request = ClientRequest::Create(CreateRequest::new(ObjectType::from_raw(7), attributes));
+
+    assert!(request.validate_local_shape().is_err());
+}
+
+#[test]
+fn deferred_set_endpoint_role_preserves_open_values_in_validation_report() {
+    // KMIP 2.1 §6.1.54, Table 331 defines Endpoint Role as a required
+    // Enumeration; KMIPKIT-0051 scopes pre-send rules to the 56 client_1_0
+    // operations, while this operation is deferred to 1.1.
+    let request = ClientRequest::SetEndpointRole(SetEndpointRoleRequest::new(
+        EndpointRole::from_raw(0x8000_1234),
+    ));
+
+    assert!(request.validation_report().is_valid());
+}
+
+#[test]
+fn invalid_typed_request_is_not_encoded_or_written() {
+    const CANARY: &str = "PREFLIGHT_CANARY";
+    let comment = RawTag::new(0x0042_00fd)
+        .expect("Comment is a valid raw tag")
+        .try_checked()
+        .expect("Comment is an allocated KMIP tag");
+    let attributes = AttributeSet::try_new([
+        Item::new(comment, Value::text_string(CANARY.to_owned()))
+            .expect("first Comment is valid TTLV"),
+        Item::new(comment, Value::text_string(CANARY.to_owned()))
+            .expect("second Comment is valid TTLV"),
+    ])
+    .expect("generic AttributeSet preserves operation-level repetitions");
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::Create(
+        CreateRequest::new(ObjectType::from_raw(7), attributes),
+    )));
+    let (mut client, fake, _) = client_for(
+        ExchangeScript::Success {
+            response: response_bytes((2, 1), &[ResponseItemFixture::success(None)]),
+            request_write_chunks: Vec::new(),
+        },
+        None,
+    );
+
+    let error = client
+        .execute(batch, &CodecLimits::defaults())
+        .expect_err("invalid typed input must fail before transport exchange");
+
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(fake.borrow().exchange_count(), 0);
+    assert_eq!(fake.borrow().write_call_count(), 0);
+    let display = error.to_string();
+    let debug = format!("{error:?}");
+    let mut canary_hex = String::new();
+    for byte in CANARY.as_bytes() {
+        write!(&mut canary_hex, "{byte:02X}").expect("writing to a String is infallible");
+    }
+    assert!(!display.contains(CANARY));
+    assert!(!debug.contains(CANARY));
+    assert!(!display.contains(&canary_hex));
+    assert!(!debug.contains(&canary_hex));
+}
+
+#[test]
+fn split_key_with_out_of_range_part_identifier_is_not_sent() {
+    let item = |tag, value| {
+        Item::new(
+            RawTag::new(tag)
+                .expect("fixture tag is a valid raw tag")
+                .try_checked()
+                .expect("fixture tag is allocated by KMIP"),
+            value,
+        )
+        .expect("fixture item is valid TTLV")
+    };
+    let structure = |items: Vec<Item>| {
+        let mut value = Structure::new();
+        for item in items {
+            value.try_push(item).expect("fixture fits TTLV limits");
+        }
+        value
+    };
+    let key_block = structure(vec![
+        item(0x0042_0042, Value::enumeration(1)),
+        item(
+            0x0042_0045,
+            Value::structure(structure(vec![item(
+                0x0042_0043,
+                Value::byte_string(vec![0xA5]),
+            )])),
+        ),
+    ]);
+    let split_key = item(
+        0x0042_0089,
+        Value::structure(structure(vec![
+            item(0x0042_008B, Value::integer(2)),
+            item(0x0042_0044, Value::integer(0)),
+            item(0x0042_008C, Value::integer(2)),
+            item(0x0042_008A, Value::enumeration(1)),
+            item(0x0042_0040, Value::structure(key_block)),
+        ])),
+    );
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::Import(
+        ImportRequest::new(
+            kmipkit_protocol::UniqueIdentifier::TextString("object-id".to_owned()),
+            ObjectType::from_raw(5),
+            AttributeSet::new(),
+            split_key,
+        ),
+    )));
+    let (mut client, fake, _) = client_for(
+        ExchangeScript::Success {
+            response: response_bytes((2, 1), &[ResponseItemFixture::success(None)]),
+            request_write_chunks: Vec::new(),
+        },
+        None,
+    );
+
+    let error = client
+        .execute(batch, &CodecLimits::defaults())
+        .expect_err("an out-of-range Split Key part identifier must fail preflight");
+
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(fake.borrow().exchange_count(), 0);
+    assert_eq!(fake.borrow().write_call_count(), 0);
+    assert_eq!(error.category(), ClientErrorCategory::Validation);
+}
+
+#[test]
+fn malformed_pkcs11_function_is_not_sent() {
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::Pkcs11(
+        Pkcs11Request::new(Structure::new()),
+    )));
+    let (mut client, fake, _) = client_for(
+        ExchangeScript::Success {
+            response: response_bytes((2, 1), &[ResponseItemFixture::success(None)]),
+            request_write_chunks: Vec::new(),
+        },
+        None,
+    );
+
+    let error = client
+        .execute(batch, &CodecLimits::defaults())
+        .expect_err("malformed PKCS#11 Function is rejected during typed preflight");
+
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(error.category(), ClientErrorCategory::Validation);
+    assert_eq!(fake.borrow().exchange_count(), 0);
+    assert_eq!(fake.borrow().write_call_count(), 0);
+}
+
+#[test]
+fn malformed_hash_parameters_are_not_sent() {
+    const BLOCK_CIPHER_MODE: u32 = 0x0042_0011;
+    const HASHING_ALGORITHM: u32 = 0x0042_0038;
+    const CANARY: &[u8] = b"HASH_PREFLIGHT_SECRET_CANARY";
+
+    let mut parameters = Structure::new();
+    parameters
+        .try_push(
+            Item::new(
+                RawTag::new(HASHING_ALGORITHM)
+                    .expect("Hashing Algorithm tag is valid")
+                    .try_checked()
+                    .expect("Hashing Algorithm is allocated"),
+                Value::enumeration(6),
+            )
+            .expect("Hashing Algorithm is valid TTLV"),
+        )
+        .expect("parameters fixture is valid generic TTLV");
+    parameters
+        .try_push(
+            Item::new(
+                RawTag::new(BLOCK_CIPHER_MODE)
+                    .expect("Block Cipher Mode tag is valid")
+                    .try_checked()
+                    .expect("Block Cipher Mode is allocated"),
+                Value::enumeration(9),
+            )
+            .expect("Block Cipher Mode is valid TTLV"),
+        )
+        .expect("parameters fixture is valid generic TTLV");
+    let request = ClientRequest::Hash(
+        HashRequest::new(parameters)
+            .with_data(OperationData::ByteString(SecretBytes::new(CANARY.to_vec()))),
+    );
+    let batch = ClientBatch::new(ClientBatchItem::new(request));
+    let (mut client, fake, _) = client_for(
+        ExchangeScript::Success {
+            response: response_bytes((2, 1), &[ResponseItemFixture::success(None)]),
+            request_write_chunks: Vec::new(),
+        },
+        None,
+    );
+
+    let error = client
+        .execute(batch, &CodecLimits::defaults())
+        .expect_err("invalid nested Hash parameters must fail preflight");
+
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(fake.borrow().exchange_count(), 0);
+    assert_eq!(fake.borrow().write_call_count(), 0);
+    assert!(!error.to_string().contains("HASH_PREFLIGHT_SECRET_CANARY"));
+    assert!(!format!("{error:?}").contains("HASH_PREFLIGHT_SECRET_CANARY"));
+}
+
+#[test]
+fn diagnostic_extension_cannot_override_interop_fields_before_transport() {
+    const INTEROP_FUNCTION: u32 = 0x0042_0160;
+    const CANARY: &str = "INTEROP_EXTENSION_PREFLIGHT_CANARY";
+    let extension = Item::new(
+        RawTag::new(INTEROP_FUNCTION)
+            .expect("Interop Function tag is valid")
+            .try_checked()
+            .expect("Interop Function is allocated"),
+        Value::text_string(CANARY.to_owned()),
+    )
+    .expect("extension fixture is valid TTLV");
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::Interop(
+        InteropRequest::new(1, SecretText::new("synthetic-id".to_owned()))
+            .with_extension(extension),
+    )));
+    let (mut client, fake, _) = client_for(
+        ExchangeScript::Success {
+            response: response_bytes((2, 1), &[ResponseItemFixture::success(None)]),
+            request_write_chunks: Vec::new(),
+        },
+        None,
+    );
+
+    let error = client
+        .execute(batch, &CodecLimits::defaults())
+        .expect_err("an extension cannot override a defined Interop field");
+
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(fake.borrow().exchange_count(), 0);
+    assert_eq!(fake.borrow().write_call_count(), 0);
+    assert!(!error.to_string().contains(CANARY));
+    assert!(!format!("{error:?}").contains(CANARY));
+}
+
+#[test]
+fn malformed_pkcs11_function_canary_is_redacted_before_transport() {
+    const FUNCTION: u32 = 0x0042_015A;
+    const CANARY: &str = "PREFLIGHT_SECRET_CANARY_0051";
+
+    let mut function = Structure::new();
+    function
+        .try_push(
+            Item::new(
+                RawTag::new(FUNCTION)
+                    .expect("PKCS#11 Function is a valid tag")
+                    .try_checked()
+                    .expect("PKCS#11 Function is allocated"),
+                Value::text_string(CANARY.to_owned()),
+            )
+            .expect("malformed PKCS#11 Function is still valid generic TTLV"),
+        )
+        .expect("function fixture is valid generic TTLV");
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::Pkcs11(
+        Pkcs11Request::new(function),
+    )));
+    let (mut client, fake, _) = client_for(
+        ExchangeScript::Success {
+            response: response_bytes((2, 1), &[ResponseItemFixture::success(None)]),
+            request_write_chunks: Vec::new(),
+        },
+        None,
+    );
+
+    let error = client
+        .execute(batch, &CodecLimits::defaults())
+        .expect_err("malformed PKCS#11 Function is rejected during typed preflight");
+
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(error.category(), ClientErrorCategory::Validation);
+    assert_eq!(fake.borrow().exchange_count(), 0);
+    assert_eq!(fake.borrow().write_call_count(), 0);
+    assert!(!error.to_string().contains(CANARY));
+    assert!(!format!("{error:?}").contains(CANARY));
+}
+
+#[test]
+fn malformed_nested_defaults_are_not_sent() {
+    const OBJECT_DEFAULTS: u32 = 0x0042_0153;
+    const OBJECT_TYPE: u32 = 0x0042_0057;
+
+    let mut object_defaults = Structure::new();
+    object_defaults
+        .try_push(
+            Item::new(
+                RawTag::new(OBJECT_TYPE)
+                    .expect("Object Type tag is valid")
+                    .try_checked()
+                    .expect("Object Type is allocated"),
+                Value::enumeration(2),
+            )
+            .expect("Object Type is valid TTLV"),
+        )
+        .expect("Object Defaults fixture is valid generic TTLV");
+    let mut defaults_information = Structure::new();
+    defaults_information
+        .try_push(
+            Item::new(
+                RawTag::new(OBJECT_DEFAULTS)
+                    .expect("Object Defaults tag is valid")
+                    .try_checked()
+                    .expect("Object Defaults is allocated"),
+                Value::structure(object_defaults),
+            )
+            .expect("Object Defaults is a valid Structure"),
+        )
+        .expect("Defaults Information fixture is valid generic TTLV");
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::SetDefaults(
+        SetDefaultsRequest::new().with_defaults_information(defaults_information),
+    )));
+    let (mut client, fake, _) = client_for(
+        ExchangeScript::Success {
+            response: response_bytes((2, 1), &[ResponseItemFixture::success(None)]),
+            request_write_chunks: Vec::new(),
+        },
+        None,
+    );
+
+    let error = client
+        .execute(batch, &CodecLimits::defaults())
+        .expect_err("missing required nested Attributes is rejected before encoding");
+
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(error.category(), ClientErrorCategory::Validation);
+    assert_eq!(fake.borrow().exchange_count(), 0);
+    assert_eq!(fake.borrow().write_call_count(), 0);
+}
+
+fn pending_response() -> Vec<u8> {
+    response_bytes(
+        (2, 1),
+        &[ResponseItemFixture::pending(None, CORRELATION_VALUE)],
+    )
+}
+
+#[test]
+fn present_empty_pending_correlation_value_is_preserved() {
+    let response = response_bytes((2, 1), &[ResponseItemFixture::pending(None, b"")]);
+    let (mut client, fake, _) = client_for(
+        ExchangeScript::Success {
+            response,
+            request_write_chunks: Vec::new(),
+        },
+        None,
+    );
+
+    let result = client
+        .execute(discover_versions_batch(Some(2)), &CodecLimits::defaults())
+        .expect("a present Byte String correlation value is valid even when empty");
+    let outcome = result.get(0).expect("one result").outcome();
+
+    assert_eq!(outcome.asynchronous_correlation_value(), Some(&[][..]));
+    assert_eq!(outcome.result().status().raw(), 2);
+    assert!(format!("{outcome:?}").starts_with("Pending("));
+    assert!(outcome.to_string().starts_with("Pending("));
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn success_after_partial_writes_performs_one_exchange_and_returns_pending() {
+    let (mut client, fake, _) = client_for(
+        ExchangeScript::Success {
+            response: pending_response(),
+            request_write_chunks: vec![2, 3],
+        },
+        None,
+    );
+    let result = client
+        .execute(discover_versions_batch(Some(2)), &CodecLimits::defaults())
+        .expect("scripted Discover Versions Pending response is valid");
+
+    assert_eq!(fake.borrow().exchange_count(), 1);
+    assert!(fake.borrow().write_call_count() >= 2);
+    let outcome = &result.get(0).expect("one result exists").outcome();
+    assert!(outcome.asynchronous_correlation_value().is_some());
+}
+
+#[test]
+fn successful_empty_discover_versions_list_is_preserved() {
+    let response = response_bytes(
+        (2, 1),
+        &[ResponseItemFixture::success(None).with_empty_supported_versions()],
+    );
+    let (mut client, fake, _) = client_for(
+        ExchangeScript::Success {
+            response,
+            request_write_chunks: Vec::new(),
+        },
+        None,
+    );
+
+    let result = client
+        .execute(discover_versions_batch(None), &CodecLimits::defaults())
+        .expect("empty Discover Versions result list is valid");
+
+    let outcome = result.get(0).expect("one result").outcome();
+    assert_eq!(
+        result
+            .get(0)
+            .expect("one result")
+            .discover_versions_supported_versions(),
+        Some(&[][..])
+    );
+    let response_view = outcome.response();
+    assert_eq!(response_view.result(), outcome.result());
+    assert_eq!(response_view.supported_versions(), Some(&[][..]));
+    assert!(response_view.discover_versions().is_some());
+    assert!(response_view.create().is_none());
+    assert!(response_view.create_key_pair().is_none());
+    assert!(response_view.create_split_key().is_none());
+    assert!(response_view.add_attribute().is_none());
+    assert!(response_view.adjust_attribute().is_none());
+    assert!(response_view.delete_attribute().is_none());
+    assert!(response_view.modify_attribute().is_none());
+    assert!(response_view.set_attribute().is_none());
+    assert!(response_view.get_attributes().is_none());
+    assert!(response_view.get_attribute_list().is_none());
+    assert_eq!(format!("{response_view:?}"), "DiscoverVersions");
+
+    assert_eq!(
+        result
+            .get(0)
+            .expect("one result")
+            .outcome()
+            .discover_versions_response()
+            .expect("completed Discover Versions response stays typed")
+            .supported_versions(),
+        Some(&[][..])
+    );
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn server_failure_result_is_preserved_as_a_completed_operation_result() {
+    let response = response_bytes((2, 1), &[ResponseItemFixture::failure(None)]);
+    let (mut client, _, _) = client_for(
+        ExchangeScript::Success {
+            response,
+            request_write_chunks: Vec::new(),
+        },
+        None,
+    );
+
+    let result = client
+        .execute(discover_versions_batch(None), &CodecLimits::defaults())
+        .expect("a valid KMIP Failure is an operation result");
+    let outcome = result.get(0).expect("one result").outcome();
+
+    assert_eq!(
+        outcome.operation(),
+        crate::ClientOperation::DiscoverVersions
+    );
+    assert_eq!(outcome.result().status().raw(), 1);
+    assert_eq!(outcome.asynchronous_correlation_value(), None);
+    assert_eq!(
+        result
+            .get(0)
+            .expect("one result")
+            .discover_versions_supported_versions(),
+        None
+    );
+    let response_view = outcome.response();
+    assert_eq!(response_view.result(), outcome.result());
+    assert_eq!(response_view.supported_versions(), None);
+    assert!(response_view.discover_versions().is_some());
+    assert!(outcome.create_response().is_none());
+    assert!(outcome.create_key_pair_response().is_none());
+    assert!(outcome.create_split_key_response().is_none());
+    assert!(format!("{outcome:?}").starts_with("Completed("));
+    assert_eq!(
+        outcome
+            .discover_versions_response()
+            .expect("completed Discover Versions response stays typed")
+            .supported_versions(),
+        None
+    );
+    assert!(response_view.create().is_none());
+    assert!(response_view.create_key_pair().is_none());
+    assert!(response_view.create_split_key().is_none());
+    assert!(response_view.add_attribute().is_none());
+    assert!(response_view.adjust_attribute().is_none());
+    assert!(response_view.delete_attribute().is_none());
+    assert!(response_view.modify_attribute().is_none());
+    assert!(response_view.set_attribute().is_none());
+    assert!(response_view.get_attributes().is_none());
+    assert!(response_view.get_attribute_list().is_none());
+    assert_eq!(format!("{response_view:?}"), "DiscoverVersions");
+}
+
+#[test]
+fn reordered_response_batch_is_associated_by_unique_id_and_returned_in_request_order() {
+    let request = ClientBatch::from_items([
+        ClientBatchItem::new(ClientRequest::discover_versions())
+            .with_unique_batch_item_id(b"request-a".to_vec()),
+        ClientBatchItem::new(ClientRequest::discover_versions())
+            .with_unique_batch_item_id(b"request-b".to_vec()),
+    ]);
+    let response = response_bytes(
+        (2, 1),
+        &[
+            ResponseItemFixture::success(Some(b"request-b")),
+            ResponseItemFixture::success(Some(b"request-a")),
+        ],
+    );
+    let (mut client, _, _) = client_for(
+        ExchangeScript::Success {
+            response,
+            request_write_chunks: Vec::new(),
+        },
+        None,
+    );
+
+    let result = client
+        .execute(request, &CodecLimits::defaults())
+        .expect("reordered response items are associated by their unique IDs");
+
+    assert_eq!(result.len(), 2);
+    assert_eq!(
+        result.get(0).and_then(|item| item.unique_batch_item_id()),
+        Some(&b"request-a"[..])
+    );
+    assert_eq!(
+        result.get(1).and_then(|item| item.unique_batch_item_id()),
+        Some(&b"request-b"[..])
+    );
+}
+
+#[test]
+fn mixed_completed_and_pending_results_preserve_exact_pending_correlation_value() {
+    let request = ClientBatch::from_items([
+        ClientBatchItem::new(ClientRequest::discover_versions())
+            .with_unique_batch_item_id(b"request-a".to_vec()),
+        ClientBatchItem::new(ClientRequest::discover_versions())
+            .with_unique_batch_item_id(b"request-b".to_vec()),
+    ])
+    .with_asynchronous_indicator(2);
+    let response = response_bytes(
+        (2, 1),
+        &[
+            ResponseItemFixture::pending(Some(b"request-b"), CORRELATION_VALUE),
+            ResponseItemFixture::success(Some(b"request-a")),
+        ],
+    );
+    let (mut client, _, _) = client_for(
+        ExchangeScript::Success {
+            response,
+            request_write_chunks: Vec::new(),
+        },
+        None,
+    );
+
+    let result = client
+        .execute(request, &CodecLimits::defaults())
+        .expect("permitted mixed results retain their request association");
+
+    assert!(
+        result
+            .get(0)
+            .expect("first result")
+            .outcome()
+            .asynchronous_correlation_value()
+            .is_none()
+    );
+    assert_eq!(
+        result
+            .get(1)
+            .expect("second result")
+            .outcome()
+            .asynchronous_correlation_value(),
+        Some(CORRELATION_VALUE)
+    );
+}
+
+// This end-to-end scenario keeps the complete shared batch contract together.
+#[allow(clippy::too_many_lines)]
+#[test]
+fn ordered_mixed_batch_outcomes_preserve_ids_and_use_one_exchange() {
+    let fixture: JsonValue = serde_json::from_str(include_str!(
+        "../../../../tests/fixtures/api/shared-capability-parity.json"
+    ))
+    .expect("shared API parity fixture is valid JSON");
+    let case = fixture["cases"]
+        .as_array()
+        .expect("shared fixture cases are an array")
+        .iter()
+        .find(|case| case["id"] == "batch.ordered-completed-pending-failed.v1")
+        .expect("shared ordered batch case exists");
+    let discover_versions_case = fixture["cases"]
+        .as_array()
+        .expect("shared fixture cases are an array")
+        .iter()
+        .find(|case| case["id"] == "discover-versions.supported-versions.v1")
+        .expect("shared Discover Versions case exists");
+    let discover_expected = &discover_versions_case["expectedOutput"];
+    let expected_supported_versions = discover_expected["supportedVersions"]
+        .as_array()
+        .expect("Discover Versions fixture versions are an array")
+        .iter()
+        .map(|version| {
+            (
+                i32::try_from(
+                    version["major"]
+                        .as_i64()
+                        .expect("fixture version major is an integer"),
+                )
+                .expect("fixture version major fits i32"),
+                i32::try_from(
+                    version["minor"]
+                        .as_i64()
+                        .expect("fixture version minor is an integer"),
+                )
+                .expect("fixture version minor fits i32"),
+            )
+        })
+        .collect::<Vec<_>>();
+    assert!(
+        discover_expected["preservesSourceOrderAndRepetitions"]
+            .as_bool()
+            .expect("fixture repetition contract is boolean")
+    );
+    let input_ids = case["input"]["uniqueBatchItemIds"]
+        .as_array()
+        .expect("batch fixture IDs are an array")
+        .iter()
+        .map(|id| decode_fixture_hex(id.as_str().expect("batch fixture ID is hex")))
+        .collect::<Vec<_>>();
+    let expected = &case["expectedOutput"];
+    let expected_ids = expected["uniqueBatchItemIds"]
+        .as_array()
+        .expect("expected batch IDs are an array")
+        .iter()
+        .map(|id| decode_fixture_hex(id.as_str().expect("expected batch ID is hex")))
+        .collect::<Vec<_>>();
+    let expected_statuses = expected["resultStatuses"]
+        .as_array()
+        .expect("expected batch statuses are an array")
+        .iter()
+        .map(|status| status.as_str().expect("batch status is text").to_owned())
+        .collect::<Vec<_>>();
+    assert_eq!(input_ids, expected_ids, "request and result IDs agree");
+    assert_eq!(input_ids.len(), expected_statuses.len());
+    assert_eq!(expected["automaticFollowUp"], false);
+
+    let correlation = decode_fixture_hex(
+        expected["correlationValueHex"]
+            .as_str()
+            .expect("pending correlation value is hex"),
+    );
+    let response_items = expected_statuses
+        .iter()
+        .zip(&expected_ids)
+        .enumerate()
+        .map(|(index, (status, id))| match status.as_str() {
+            "Success" if index == 0 => ResponseItemFixture::success(Some(id))
+                .with_supported_versions(expected_supported_versions.clone()),
+            "Success" => ResponseItemFixture::success(Some(id)),
+            "Operation Pending" => ResponseItemFixture::pending(Some(id), &correlation),
+            "Operation Failed" => ResponseItemFixture::failure(Some(id)),
+            other => panic!("unsupported batch result status {other}"),
+        })
+        .collect::<Vec<_>>();
+    let request = ClientBatch::from_items(input_ids.iter().map(|id| {
+        ClientBatchItem::new(ClientRequest::discover_versions())
+            .with_unique_batch_item_id(id.clone())
+    }))
+    .with_asynchronous_indicator(2);
+    let response = response_bytes((2, 1), &response_items);
+    let (mut client, fake, _) = client_for(
+        ExchangeScript::Success {
+            response,
+            request_write_chunks: Vec::new(),
+        },
+        None,
+    );
+
+    let result = client
+        .execute(request, &CodecLimits::defaults())
+        .expect("one mixed batch response is returned without follow-up exchanges");
+
+    let expected_count = expected["itemIndexes"]
+        .as_array()
+        .expect("expected item indexes are an array")
+        .len();
+    assert_eq!(result.len(), expected_count);
+    assert_eq!(
+        fake.borrow().exchange_count(),
+        usize::try_from(
+            expected["transportExchangeCount"]
+                .as_u64()
+                .expect("transport exchange count is unsigned")
+        )
+        .expect("transport exchange count fits usize")
+    );
+    let expected_pending_count = usize::try_from(
+        expected["pendingCount"]
+            .as_u64()
+            .expect("pending count is unsigned"),
+    )
+    .expect("pending count fits usize");
+    let mut actual_pending_count = 0;
+    for (index, expected_id) in expected_ids.iter().enumerate() {
+        let item = result
+            .get(index)
+            .expect("each request has an ordered result");
+        assert_eq!(item.unique_batch_item_id(), Some(expected_id.as_slice()));
+        let status = expected_statuses[index].as_str();
+        let expected_code = match status {
+            "Success" => 0,
+            "Operation Pending" => 2,
+            "Operation Failed" => 1,
+            other => panic!("unsupported batch result status {other}"),
+        };
+        assert_eq!(item.outcome().result().status().raw(), expected_code);
+        match (status, item.outcome()) {
+            ("Success", ClientBatchOutcome::Completed(_)) => {
+                let supported_versions = item
+                    .discover_versions_supported_versions()
+                    .expect("successful Discover Versions response has a present list");
+                let actual_versions = supported_versions
+                    .iter()
+                    .map(|version| (version.major(), version.minor()))
+                    .collect::<Vec<_>>();
+                assert_eq!(actual_versions, expected_supported_versions);
+            }
+            ("Operation Pending", ClientBatchOutcome::Pending(pending)) => {
+                actual_pending_count += 1;
+                assert_eq!(pending.asynchronous_correlation_value(), correlation);
+                assert_eq!(item.discover_versions_supported_versions(), None);
+            }
+            ("Operation Failed", ClientBatchOutcome::Completed(_)) => {}
+            (expected_status, _) => panic!("unexpected outcome for {expected_status}"),
+        }
+    }
+    assert_eq!(actual_pending_count, expected_pending_count);
+}
+
+fn decode_fixture_hex(value: &str) -> Vec<u8> {
+    assert_eq!(value.len() % 2, 0, "fixture hexadecimal has whole bytes");
+    let (pairs, remainder) = value.as_bytes().as_chunks::<2>();
+    assert!(remainder.is_empty(), "fixture hex has whole bytes");
+    pairs
+        .iter()
+        .map(|digits| {
+            let pair = std::str::from_utf8(digits).expect("fixture hex digits are ASCII");
+            u8::from_str_radix(pair, 16).expect("fixture byte is valid hexadecimal")
+        })
+        .collect()
+}
+
+#[test]
+fn noncritical_response_extension_is_preserved_and_critical_extension_is_rejected() {
+    let mut noncritical = ResponseItemFixture::success(None);
+    noncritical.extension_criticality = Some(false);
+    let response = response_bytes((2, 1), &[noncritical]);
+    let (mut client, _, _) = client_for(
+        ExchangeScript::Success {
+            response,
+            request_write_chunks: Vec::new(),
+        },
+        None,
+    );
+    let result = client
+        .execute(discover_versions_batch(None), &CodecLimits::defaults())
+        .expect("unknown non-critical extension is preserved");
+    assert_eq!(result.get(0).expect("one result").extensions().len(), 1);
+    assert_eq!(
+        result.get(0).expect("one result").extensions()[0]
+            .with_ttlv(|extension| extension.children().len()),
+        3
+    );
+
+    let mut critical = ResponseItemFixture::success(None);
+    critical.extension_criticality = Some(true);
+    let response = response_bytes((2, 1), &[critical]);
+    let (mut client, _, _) = client_for(
+        ExchangeScript::Success {
+            response,
+            request_write_chunks: Vec::new(),
+        },
+        None,
+    );
+    let error = client
+        .execute(discover_versions_batch(None), &CodecLimits::defaults())
+        .expect_err("unknown critical extension is rejected");
+    assert_eq!(error.category(), crate::ClientErrorCategory::Protocol);
+    assert_eq!(
+        error.delivery_state(),
+        Some(RequestDeliveryState::ResponseStarted)
+    );
+}
+
+#[test]
+fn unsupported_response_version_is_rejected_after_the_response_starts() {
+    let response = response_bytes((2, 0), &[ResponseItemFixture::success(None)]);
+    let (mut client, _, _) = client_for(
+        ExchangeScript::Success {
+            response,
+            request_write_chunks: Vec::new(),
+        },
+        None,
+    );
+
+    let error = client
+        .execute(discover_versions_batch(None), &CodecLimits::defaults())
+        .expect_err("response version outside KMIP 2.1 is rejected");
+
+    assert_eq!(error.category(), crate::ClientErrorCategory::Protocol);
+    assert_eq!(
+        error.delivery_state(),
+        Some(RequestDeliveryState::ResponseStarted)
+    );
+}
+
+#[test]
+fn unoffered_typed_discover_versions_result_is_rejected_with_delivery_evidence() {
+    let response = response_bytes(
+        (2, 1),
+        &[ResponseItemFixture::success(None).with_supported_version((3, 0))],
+    );
+    let (mut client, _, _) = client_for(
+        ExchangeScript::Success {
+            response,
+            request_write_chunks: Vec::new(),
+        },
+        None,
+    );
+
+    let error = client
+        .execute(discover_versions_batch(None), &CodecLimits::defaults())
+        .expect_err("the result cannot advertise a version not included in the request");
+
+    assert_eq!(error.category(), ClientErrorCategory::Protocol);
+    assert_eq!(
+        error.delivery_state(),
+        Some(RequestDeliveryState::ResponseStarted)
+    );
+    assert!(error.to_string().contains("invalid protocol value"));
+}
+
+#[test]
+fn failure_before_write_reports_not_sent_and_does_not_retry() {
+    let (mut client, fake, _) = client_for(ExchangeScript::FailBeforeWrite, None);
+    let error = client
+        .execute(discover_versions_batch(None), &CodecLimits::defaults())
+        .expect_err("scripted transport fails before writing");
+
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(fake.borrow().exchange_count(), 1);
+    assert_eq!(fake.borrow().write_call_count(), 0);
+}
+
+#[test]
+fn failure_after_partial_write_reports_possibly_sent_and_does_not_retry() {
+    let (mut client, fake, _) = client_for(
+        ExchangeScript::FailAfterPartialWrite { written_bytes: 2 },
+        None,
+    );
+    let error = client
+        .execute(discover_versions_batch(None), &CodecLimits::defaults())
+        .expect_err("scripted transport fails after a partial write");
+
+    assert_eq!(
+        error.delivery_state(),
+        Some(RequestDeliveryState::PossiblySent)
+    );
+    assert_eq!(fake.borrow().exchange_count(), 1);
+    assert_eq!(fake.borrow().write_call_count(), 1);
+    assert!(fake.borrow().written_byte_count() > 0);
+}
+
+#[test]
+fn failure_after_response_started_preserves_state_and_redacts_error_chain() {
+    let partial_response = CORRELATION_VALUE.to_vec();
+    let (mut client, fake, _) = client_for(
+        ExchangeScript::FailAfterPartialRead {
+            written_bytes: 2,
+            response_bytes: partial_response,
+        },
+        None,
+    );
+    let error = client
+        .execute(discover_versions_batch(None), &CodecLimits::defaults())
+        .expect_err("scripted transport fails after response reception starts");
+    let mut source = error.source();
+    let mut source_chain_redacts = true;
+    while let Some(error_source) = source {
+        source_chain_redacts &= !format!("{error_source:?}").contains(CORRELATION_PREFIX)
+            && !error_source.to_string().contains(CORRELATION_PREFIX);
+        source = error_source.source();
+    }
+
+    assert_eq!(
+        error.delivery_state(),
+        Some(RequestDeliveryState::ResponseStarted)
+    );
+    assert!(!format!("{error:?}").contains(CORRELATION_PREFIX));
+    assert!(!error.to_string().contains(CORRELATION_PREFIX));
+    assert!(source_chain_redacts);
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn pending_correlation_is_exact_borrowed_and_redacted_from_formatted_output() {
+    let (mut client, fake, _) = client_for(
+        ExchangeScript::Success {
+            response: pending_response(),
+            request_write_chunks: vec![2, 3],
+        },
+        None,
+    );
+    let result = client
+        .execute(discover_versions_batch(Some(2)), &CodecLimits::defaults())
+        .expect("scripted Pending response is valid");
+    let outcome = result.get(0).expect("one result exists").outcome();
+
+    assert_eq!(
+        outcome.asynchronous_correlation_value(),
+        Some(CORRELATION_VALUE)
+    );
+    assert!(!format!("{outcome:?}").contains(CORRELATION_PREFIX));
+    assert!(!outcome.to_string().contains(CORRELATION_PREFIX));
+    assert_eq!(fake.borrow().captured_logs(), &[] as &[String]);
+}
+
+#[test]
+fn request_owner_is_live_through_exchange_and_zeroized_before_release() {
+    let request_observer = ZeroizationObserver::new(None);
+    let (mut client, fake, owner_live) = client_for(
+        ExchangeScript::Success {
+            response: response_bytes((2, 1), &[ResponseItemFixture::success(None)]),
+            request_write_chunks: vec![2, 3],
+        },
+        Some(request_observer.clone()),
+    );
+
+    client
+        .execute(discover_versions_batch(None), &CodecLimits::defaults())
+        .expect("scripted Discover Versions success is valid");
+
+    assert!(owner_live.get());
+    assert_eq!(request_observer.result(), Some(true));
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn pending_correlation_owner_zeroizes_before_release() {
+    let request_observer = ZeroizationObserver::new(None);
+    let pending_observer = ZeroizationObserver::new(None);
+    let fake = Rc::new(RefCell::new(ScriptedTransport::new(
+        ExchangeScript::Success {
+            response: pending_response(),
+            request_write_chunks: vec![2, 3],
+        },
+    )));
+    let owner_live = Rc::new(Cell::new(false));
+    let transport = SharedScriptedTransport {
+        fake: Rc::clone(&fake),
+        request_owner_observer: Some(request_observer.clone()),
+        owner_live_when_exchange_returns: Rc::clone(&owner_live),
+    };
+    let mut client = Client::for_test_with_lifecycle_observers(
+        transport,
+        request_observer,
+        pending_observer.clone(),
+    );
+    let result = client
+        .execute(discover_versions_batch(Some(2)), &CodecLimits::defaults())
+        .expect("scripted Pending response is valid");
+    assert!(owner_live.get());
+    assert_eq!(fake.borrow().exchange_count(), 1);
+
+    drop(result);
+
+    assert_eq!(pending_observer.result(), Some(true));
+}
+
+#[test]
+fn calling_typed_validation_report_does_not_change_valid_request_wire_bytes() {
+    fn execute_and_capture(validate_first: bool) -> Vec<u8> {
+        let item = ClientBatchItem::new(ClientRequest::discover_versions());
+        if validate_first {
+            let report = item.request().validation_report();
+            assert!(report.is_valid());
+            assert_eq!(report.issues().len(), 0);
+        }
+        let batch = ClientBatch::new(item);
+        let (mut client, _, captured) =
+            crate::asynchronous_execution_test_support::client_for(ExchangeScript::Success {
+                response: response_bytes((2, 1), &[ResponseItemFixture::success(None)]),
+                request_write_chunks: Vec::new(),
+            });
+        client
+            .execute(batch, &CodecLimits::defaults())
+            .expect("Discover Versions remains a valid request after local inspection");
+        captured
+            .borrow()
+            .as_deref()
+            .expect("fake transport captured the request bytes")
+            .clone()
+    }
+
+    assert_eq!(execute_and_capture(true), execute_and_capture(false));
+}

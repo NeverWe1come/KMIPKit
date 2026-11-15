@@ -1,0 +1,14 @@
+apiVersion: v2
+name: kmipkit-proxy
+description: Stateless KMIP 2.0/2.1/3.0 Proxy Bridge for AWS, Azure, Google Cloud, and Oracle OCI KMS
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - kmip
+  - security
+  - kms
+  - proxy
+  - cloud
+maintainers:
+  - name: KMIPKit Team

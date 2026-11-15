@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "kmipkit-proxy.fullname" . }}-config
+  labels:
+    app.kubernetes.io/name: kmipkit-proxy
+    app.kubernetes.io/instance: {{ .Release.Name }}
+data:
+  proxy.toml: |
+    [listener]
+    bind_addr = "{{ .Values.config.listener.bindAddr }}"
+    tls_cert_path = "{{ .Values.config.listener.tlsCertPath }}"
+    tls_key_path = "{{ .Values.config.listener.tlsKeyPath }}"
+    client_ca_path = "{{ .Values.config.listener.clientCaPath }}"
+
+    [limits]
+    max_message_bytes = {{ .Values.config.limits.maxMessageBytes }}
+    max_depth = {{ .Values.config.limits.maxDepth }}
+    max_items = {{ .Values.config.limits.maxItems }}
+
+    [cache]
+    ttl_secs = {{ .Values.config.cache.ttlSecs }}
+    max_capacity = {{ .Values.config.cache.maxCapacity }}
+
+    [backend]
+    provider = "{{ .Values.config.provider }}"

@@ -26,10 +26,10 @@ dependencies, security considerations, tests, and documentation effects.
 A specification is split when it contains independently useful outcomes or
 requires unrelated modules. Dependent specifications execute in order.
 
-## Foundation phase
+## Shared foundation (integrated)
 
-One continuous agent develops the foundation so that shared contracts do not
-diverge. Foundation acceptance includes:
+The foundation acceptance work is integrated in `release/1.0.0`; it no longer
+blocks independent feature work. The accepted foundation covered:
 
 - Workspace and CI.
 - Normative catalog and generation.
@@ -42,8 +42,9 @@ diverge. Foundation acceptance includes:
 - Minimal C ABI vertical slice.
 - Coverage and conformance harness.
 
-After human acceptance, independent agents may implement specifications in
-parallel when they do not share unstable modules.
+New feature work may proceed from approved specifications when the relevant
+shared modules and contracts are stable. Parallel work still requires separate
+worktrees and no overlapping mutable boundaries.
 
 ## Branch and worktree flow
 
@@ -72,6 +73,34 @@ master
 The PR records commands, expected failure reason, results, and final evidence.
 The permanent verification record maps requirements to tests. Raw logs are
 kept only when needed to explain a failure.
+
+## Protected release evidence prerequisites
+
+The `release-summary` job evaluates current profile readiness only after a
+push to a protected `release/1.0.0` branch. A repository administrator must
+configure the `release-evidence` Actions environment to allow deployments
+from `release/1.0.0` only, then add:
+
+- Environment variable `PROFILE_EVIDENCE_APP_CLIENT_ID` with the GitHub App's
+  client ID.
+- Environment secret `PROFILE_EVIDENCE_APP_PRIVATE_KEY` with that App's
+  private key.
+
+Install the App on `NeverWe1come/KMIPKit` with repository
+`Administration: read` as its only permission. The workflow requests an
+installation token scoped to this repository and uses it only to query the
+current protection policy for `release/1.0.0`. The environment restriction
+keeps its private key unavailable to pull-request and scheduled runs. The
+workflow must fail closed if the environment, credentials, App permission,
+branch protection, or required policy settings are missing or insufficient.
+
+Configure branch protection to require at least one approving review, dismiss
+stale approvals, enforce rules for administrators, disable force pushes and
+deletions, and leave the pull-request bypass lists for users, teams, and Apps
+empty. The API response is checked on each eligible push; a prior successful
+check is not reused. This setup is an administrator-owned repository control;
+agents document and verify it but do not change repository protections,
+credentials, or secrets.
 
 ## Agent handoff
 

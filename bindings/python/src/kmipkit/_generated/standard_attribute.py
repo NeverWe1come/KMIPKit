@@ -1,0 +1,81 @@
+"""Generated catalog of OASIS KMIP 2.1 direct object attributes."""
+
+from enum import Enum
+
+
+class StandardAttribute(Enum):
+    """Assigned tag, TTLV value kind, and source multiplicity for an attribute."""
+    ACTIVATION_DATE = (0x420001, "DateTime", "No")
+    APPLICATION_SPECIFIC_INFORMATION = (0x420004, "Structure", "Yes")
+    ARCHIVE_DATE = (0x420005, "DateTime", "No")
+    VENDOR_ATTRIBUTE = (0x420008, "Structure", None)
+    CERTIFICATE_TYPE = (0x42001D, "Enumeration", "No")
+    COMPROMISE_DATE = (0x420020, "DateTime", "No")
+    COMPROMISE_OCCURRENCE_DATE = (0x420021, "DateTime", "No")
+    CONTACT_INFORMATION = (0x420022, "TextString", "No")
+    CRYPTOGRAPHIC_ALGORITHM = (0x420028, "Enumeration", "No")
+    CRYPTOGRAPHIC_DOMAIN_PARAMETERS = (0x420029, "Structure", "No")
+    CRYPTOGRAPHIC_LENGTH = (0x42002A, "Integer", "No")
+    CRYPTOGRAPHIC_PARAMETERS = (0x42002B, "Structure", "Yes")
+    CRYPTOGRAPHIC_USAGE_MASK = (0x42002C, "Integer", "No")
+    DEACTIVATION_DATE = (0x42002F, "DateTime", "No")
+    DESTROY_DATE = (0x420033, "DateTime", "No")
+    DIGEST = (0x420034, "Structure", "Yes")
+    INITIAL_DATE = (0x420039, "DateTime", "No")
+    KEY_FORMAT_TYPE = (0x420042, "Enumeration", "No")
+    LAST_CHANGE_DATE = (0x420048, "DateTime", "No")
+    LEASE_TIME = (0x420049, "Interval", "No")
+    LINK = (0x42004A, "Structure", "Yes")
+    NAME = (0x420053, "Structure", "Yes")
+    OBJECT_GROUP = (0x420056, "TextString", "Yes")
+    OBJECT_TYPE = (0x420057, "Enumeration", "No")
+    OPAQUE_DATA_TYPE = (0x420059, "Enumeration", "No")
+    PROCESS_START_DATE = (0x420067, "DateTime", "No")
+    PROTECT_STOP_DATE = (0x420068, "DateTime", "No")
+    REVOCATION_REASON = (0x420081, "Structure", "No")
+    STATE = (0x42008D, "Enumeration", "No")
+    UNIQUE_IDENTIFIER = (0x420094, "UniqueIdentifier", "No")
+    USAGE_LIMITS = (0x420095, "Structure", "No")
+    FRESH = (0x4200A8, "Boolean", "No")
+    CERTIFICATE_LENGTH = (0x4200AD, "Integer", "No")
+    DIGITAL_SIGNATURE_ALGORITHM = (0x4200AE, "Enumeration", "Yes for PGP keys. No for X.509 certificates.")
+    X509_CERTIFICATE_IDENTIFIER = (0x4200B5, "Structure", "No")
+    X509_CERTIFICATE_ISSUER = (0x4200B6, "Structure", "No")
+    X509_CERTIFICATE_SUBJECT = (0x4200B7, "Structure", "No")
+    KEY_VALUE_LOCATION = (0x4200B8, "Structure", "Yes")
+    KEY_VALUE_PRESENT = (0x4200BB, "Boolean", "No")
+    ORIGINAL_CREATION_DATE = (0x4200BC, "DateTime", "No")
+    ALTERNATIVE_NAME = (0x4200BF, "Structure", "Yes")
+    RANDOM_NUMBER_GENERATOR = (0x4200DE, "Structure", "No")
+    PKCS12_FRIENDLY_NAME = (0x4200FB, "TextString", "No")
+    DESCRIPTION = (0x4200FC, "TextString", "No")
+    COMMENT = (0x4200FD, "TextString", "No")
+    SENSITIVE = (0x420120, "Boolean", "No")
+    ALWAYS_SENSITIVE = (0x420121, "Boolean", "No")
+    EXTRACTABLE = (0x420122, "Boolean", "No")
+    NEVER_EXTRACTABLE = (0x420123, "Boolean", "No")
+    SHORT_UNIQUE_IDENTIFIER = (0x420136, "ByteString", "No")
+    NIST_KEY_TYPE = (0x42013A, "Enumeration", "Yes")
+    PROTECTION_LEVEL = (0x420145, "Enumeration", "No")
+    PROTECTION_PERIOD = (0x420146, "Interval", "No")
+    QUANTUM_SAFE = (0x420147, "Boolean", "No")
+    PROTECTION_STORAGE_MASK = (0x42015E, "Integer", "No")
+    ROTATE_INTERVAL = (0x42016A, "Interval", "No")
+    ROTATE_AUTOMATIC = (0x42016B, "Boolean", "No")
+    ROTATE_OFFSET = (0x42016C, "Interval", "No")
+    ROTATE_DATE = (0x42016D, "DateTime", "No")
+    ROTATE_GENERATION = (0x42016E, "Integer", "No")
+    ROTATE_NAME = (0x42016F, "Structure", "No")
+    ROTATE_LATEST = (0x420172, "Boolean", "No")
+
+    @property
+    def tag(self) -> int:
+        return self.value[0]
+
+    @property
+    def value_kind(self) -> str:
+        return self.value[1]
+
+    @property
+    def source_multiplicity(self) -> str | None:
+        return self.value[2]

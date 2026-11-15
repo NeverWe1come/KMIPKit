@@ -1,8 +1,8 @@
 # Rust workspace and PowerShell commands
 
-KMIPKit is a Cargo workspace. Its seven crates separate protocol-independent
+KMIPKit is a Cargo workspace. Its eight crates separate protocol-independent
 TTLV handling, KMIP models, I/O, client orchestration, the supported Rust API,
-the C ABI, and test support. The workspace uses Rust 2024, MSRV 1.94, shared
+the C ABI, shared test support, and a standalone test server. The workspace uses Rust 2024, MSRV 1.94, shared
 package metadata, a central dependency graph, and shared lint settings.
 
 ## Crate responsibilities
@@ -16,6 +16,7 @@ package metadata, a central dependency graph, and shared lint settings.
 | `kmipkit` | Supported high-level Rust API | Public |
 | `kmipkit-ffi` | Stable C ABI and native library targets | Private workspace crate |
 | `kmipkit-test-support` | Shared test fixtures and helpers | Private workspace crate |
+| `kmipkit-test-server` | Standalone KMIP peer for integration and listener tests | Private workspace crate |
 
 Internal dependencies flow downward. `kmipkit-ttlv` is transport independent;
 protocol code performs no I/O; bindings do not implement KMIP semantics.
@@ -72,13 +73,65 @@ cargo clippy --workspace --all-targets --all-features -- -D warnings
 cargo test --workspace --all-features
 ```
 
+Run the complete dependency-policy check from PowerShell at the repository
+root with the single command:
+
+```powershell
+pwsh -File .\scripts\Test-DependencyPolicy.ps1
+```
+
+It uses the reviewed `cargo-deny` 0.20.2 tool and checks both the root and fuzz
+workspaces, their committed lockfiles, all features, development dependencies,
+and every target-specific edge in their resolved graphs. Advisory checks run
+online and print separate RustSec database commit and timestamp evidence for
+each workspace. The command fails on policy violations, failed or
+cached-only advisory refresh, invalid path dependencies, missing or stale
+lockfiles, an unreviewed runner host, or absent evidence; it preserves both
+lockfiles. See the [dependency-policy guide](../security/dependency-policy.md)
+for exception review and license-evidence limitations.
+
 `cargo build` produces development artifacts under `target/`. The command
 `cargo doc --workspace --no-deps` builds crate documentation. The lockfile is
 committed so workspace dependency resolution remains reviewable and reproducible.
 
-## Current implementation boundary
+## Run workspace tests through WSL from PowerShell
 
-The crates currently contain crate-level documentation and compile-time lint
-policy only. They do not yet implement KMIP values, operations, encoding,
-transport, or C symbols. Each behavior is added through an approved feature
-specification and its tests.
+On Windows, KMIPKit supports running the Rust suite in an existing WSL2 Ubuntu
+distribution. Use PowerShell 7.3 or newer, WSL2, and Rust 1.94.0 installed in
+that distribution. From the repository root, run:
+
+```powershell
+pwsh -File .\scripts\Test-Wsl.ps1
+```
+
+The command requires exactly one installed Ubuntu distribution. If more than
+one is installed, select one by its exact registered name:
+
+```powershell
+pwsh -File .\scripts\Test-Wsl.ps1 -Distribution Ubuntu-26.04
+```
+
+The runner converts the current checkout path with `wslpath`, sets it as the
+WSL working directory with `wsl.exe --cd`, and calls Cargo through
+`wsl.exe --exec`. It returns Cargo's exit status and preserves its output. It
+does not install Rust, create or convert a distribution, or modify host
+configuration. Install missing prerequisites manually and rerun the command.
+
+For script and coverage-gate tests, run:
+
+```powershell
+pwsh -File .\scripts\tests\Test-Wsl.ps1
+python -m unittest discover -s scripts/tests -p 'test_*.py' -v
+```
+
+## Implementation and release status
+
+The release branch contains working implementations across the listed layers,
+language bindings, multi-encoding client paths, and server-to-client listener
+support. See the dated [project status](../project-status.md) and the
+[architecture overview](../architecture/overview.md) for the reviewed
+snapshot. Code presence does not imply every requirement, profile, external
+server combination, or release package has passed its acceptance evidence.
+
+Every further behavior change still requires an approved feature
+specification and its verification evidence.

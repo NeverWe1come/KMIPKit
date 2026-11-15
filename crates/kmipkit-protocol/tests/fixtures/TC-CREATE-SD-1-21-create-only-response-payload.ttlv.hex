@@ -1,0 +1,6 @@
+# Derived TTLV Response Payload from the Create batch item in TC-CREATE-SD-1-21.
+# $UNIQUE_IDENTIFIER_0 is replaced by the deterministic test value "id-001".
+# The adjacent Get batch item is intentionally excluded.
+42 00 7c 01 00 00 00 20
+42 00 57 05 00 00 00 04 00 00 00 07 00 00 00 00
+42 00 94 07 00 00 00 06 69 64 2d 30 30 31 00 00

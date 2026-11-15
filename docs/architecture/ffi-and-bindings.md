@@ -7,21 +7,150 @@ The C ABI is the shared boundary for C, Java, Python, and later adapters.
 - Prefix every exported symbol with `kmipkit_`.
 - Use fixed width integers and explicit pointer lengths.
 - Expose opaque handles, never Rust layouts.
-- Version public structures with `struct_size` and `abi_version`.
+- Version public structures with `struct_size` and `abi_version`. Callers set
+  `struct_size` to the byte size of the concrete versioned structure and
+  `abi_version` to its declared ABI revision; these fields are C ABI metadata,
+  not KMIPKit facade values.
 - Provide version and capability query functions.
 - Return a stable status code and use output parameters.
 - Provide detailed last-error access per thread.
 - Catch every Rust panic at each exported function.
 - Keep 1.x ABI additions backward compatible.
 
+The extension-registry limits v1 value is passed to the C defaults, validation,
+and registry-creation entry points. Callers initialize `struct_size` to exactly
+`sizeof(kmipkit_extension_registry_limits_v1_t)` and `abi_version` to `1`.
+These entry points reject a null pointer, a different size, or an unsupported
+ABI version before reading or writing the limit fields. The defaults function
+preserves the initialized metadata fields while filling the twelve values.
+
+### Runtime metadata and error snapshots
+
+`kmipkit_version_get` returns the synchronized package version as three
+`uint32_t` components and the stable C ABI revision (`1` for the initial 1.x
+ABI). `kmipkit_capability_is_available` accepts a UTF-8 capability ID and
+returns `1` only when the generated manifest declares a non-blocked C mapping;
+this does not imply that a remote KMIP server supports the capability. The
+identifier is limited to 128 UTF-8 bytes in all four language facades; an
+oversized identifier produces the shared validation/resource-limit failure.
+
+`kmipkit_last_error_get` copies the calling thread's most recent nonzero C
+status and safe metadata without clearing it. `kmipkit_last_error_clear` resets
+that snapshot. `kmipkit_last_error_profile_validation_error_get_v1` returns an
+owned detail handle when the snapshot contains profile-validation details; it
+returns success with a null handle when those optional details are absent and
+does not change the last-error snapshot. The category values are `0` none, `1`
+validation, `2` protocol,
+`3` transport, `4` server result, and `5` other. Cause values currently
+exposed by the C surface are `0` none, `1` invalid input, `2` protocol invalid
+value, `3` protocol invalid encoding, `4` other protocol, `5` transport I/O,
+`6` TLS, `7` HTTP, `8` timeout, `9` other transport, and `10` other. Delivery
+values are `0` none, `1` not sent, `2` possibly sent, and `3` response started.
+Client execution status `8` means protocol (category `2`), status `9` means
+transport (category `3`), and status `10` means a complete server result
+(category `4`). Protocol and transport failures include the strongest observed
+delivery state; a complete server result uses `0`. Status values remain the
+existing `KMIPKIT_ERROR_*` codes and are independent from category/cause
+values. `KMIPKIT_ERROR_INTERNAL` (`7`) is the fixed fallback when a Rust panic
+is caught at an exported boundary; its snapshot uses category `5` (other),
+cause `10` (other), and delivery `0` (none). Bindings map it to their generic
+base exception types. This generic fallback is an FFI boundary behavior, not a
+Rust client `Result` category. The Java and Python base exception classes remain
+public binding types and runtime superclasses; the API manifest records their
+exact declarations, the Python base `category` property, and the C fallback
+constant as exclusions from product-error parity. The `internal` error-category
+mapping remains blocked, while status `7` remains in the stable C ABI. Typed
+client error categories continue to map through the shared status, category,
+cause, and delivery metadata. The returned status and snapshot do not contain
+the panic payload. KMIPKit does not change Rust’s process-wide panic hook; an
+embedder’s hook may observe panic details, so KMIPKit panic messages must never
+include secrets. Snapshots contain no source strings or request payloads.
+
 ## Memory ownership
 
 - Input memory is borrowed only for the duration of the call.
 - Results are Rust-owned handles or buffers with matching free functions.
 - Callers never use the platform allocator to release Rust memory.
+- Opaque handle pointer values are process-local tokens backed by a Rust
+  live-handle table. A per-library random HMAC-SHA-256 key drives an eight-round
+  Feistel permutation over the pointer-width domain; cycle walking excludes null
+  and high-bit values required to keep handles representable as positive Java
+  `long` values. Each walk is limited to 128 permutation steps and returns
+  `KMIPKIT_ERROR_RESOURCE_LIMIT` if it cannot find an in-range token; the
+  sequence is consumed on that failure. The internal sequence is monotonic, but
+  its tokens are keyed and are never reused, including after release. KMIPKit
+  reads only address bits as table keys and never dereferences a caller-supplied
+  handle. Tokens are opaque identifiers, not an isolation boundary: callers
+  that obtain a valid token can reuse it. Callers must not persist handles over
+  process restarts or transfer them between library images. Independent images
+  use separate registries, but their numeric tokens can theoretically collide.
+- Each lookup validates that the token is live and has the expected handle
+  kind before reading its payload. Accessors and consuming operations return
+  `KMIPKIT_ERROR_INVALID_INPUT` for forged, stale, null, or wrong-kind handles.
+  The void release functions ignore those invalid values and repeated release.
+  The table serializes lookup, consumption, and release; a successful lookup
+  retains an `Arc` owner for the duration of the operation.
 - Text is UTF-8 with an explicit length.
-- Borrowed views with parent-dependent lifetimes are avoided.
+- Borrowed views with parent-dependent lifetimes are avoided except for the
+  zero-copy C spans returned by `ClientBatchItemResponse` accessors. The child
+  item-response handle retains the response owner, so each span is valid only
+  while the item-response handle remains open and remains unchanged throughout
+  that lifetime, including after the parent batch-response handle is closed.
+  Copy the bytes to keep them longer before releasing the item-response handle.
+- The UTF-8 pointer/length spans in `kmipkit_profile_validation_error_view_v1_t`
+  borrow from the owned profile-validation error handle. They remain valid until
+  `kmipkit_profile_validation_error_release` closes that handle; changing or
+  clearing the thread-local error snapshot does not change them. Copy the bytes
+  before releasing the detail handle to keep them longer.
 - Secret outputs use zeroizing opaque handles.
+- C secret callback spans are valid only until the synchronous callback
+  returns. A callback must not retain the pointer, use it asynchronously, or
+  unwind or jump across the ABI; no registry lock is held while it runs.
+- Java and Python secret callbacks use temporary runtime copies. The Java
+  bridge wipes its temporary byte and character arrays. Python byte callbacks
+  expose a read-only view over a temporary `bytearray`, then release the view
+  and wipe the array; `memoryview.obj` can mutate that temporary copy during
+  the callback without changing the native owner. Python text callbacks create
+  an immutable `str`, which cannot be reliably erased. Deliberate application
+  copies remain outside KMIPKit's zeroization guarantee.
+
+### Profile readiness and catalog ABI
+
+`kmipkit_profile_readiness_evaluate_v1` borrows the profile span and evidence
+record array only for the duration of the call. The profile identifier is at
+most 4 KiB of UTF-8, the array contains at most 100,000 records, and the
+profile identifier plus all requirement identifiers must fit within 16 MiB of
+UTF-8 input. The ABI checks versions, lengths, record flags, aggregate bounds,
+and UTF-8 before cloning values into the canonical Rust evaluator. C callers
+must still provide aligned pointers to readable spans and records and, for
+each nonempty span, readable storage of the stated length. The output handle
+slot must be aligned and writable. The ABI can reject null pointers and
+invalid metadata, but cannot establish that arbitrary caller addresses refer
+to accessible memory. The output slot must be disjoint from the profile span,
+record array, and every input span's backing storage; callers must not modify
+input records or span bytes during the call.
+
+An unknown profile returns success with a null output handle. Otherwise the
+readiness handle owns its snapshot. Initialize each versioned view with its
+exact `struct_size` and ABI version 1 before calling
+`kmipkit_profile_readiness_view_get_v1` or
+`kmipkit_profile_readiness_blocker_at_v1`; these output records must be aligned
+and readable and writable because the ABI first reads their version metadata.
+Text spans in those views borrow from the live readiness handle. Copy any span
+that must outlive the handle, then call
+`kmipkit_profile_readiness_release`; released views are invalid. Output view
+storage must not alias the handle's storage or any borrowed span being read.
+The caller must serialize release against accessors and span reads; it must
+not release a handle concurrently with either.
+
+The profile catalog count/index functions return generated static metadata.
+Their row views must be aligned, readable, writable, and initialized with the
+exact v1 size and version. Text spans returned for catalog rows and relations
+refer to static generated data and remain valid for the process lifetime; they
+are not allocated buffers and must not be freed. Java copies these spans into
+immutable records and lists. Python copies them into frozen records and tuples.
+Neither the catalog nor a local readiness snapshot executes profile rules,
+publishes a claim, or establishes KMIP conformance.
 
 ## Generated and manual portions
 
@@ -32,9 +161,45 @@ repetitive operation builders, accessors, constants, and declarations.
 The generated Rust exports are the input to cbindgen. Generated outputs are
 checked in and CI verifies deterministic regeneration and compatibility.
 
+### Public C declarations and symbol inventory
+
+The v2 [public API manifest](../../specification/api/public-api.json) owns the
+C declaration inventory. Its generated [public C header](../../bindings/c/include/kmipkit.h)
+contains only C mappings in the manifest's `declared` or `verified` state;
+blocked rows remain inventory records and do not create callable declarations.
+The [binding export report](../../specs/043-public-api-bindings/reports/binding-export-report-2026-11-07.json)
+records the observed C, Java, and Python exports and their reconciliation with
+the manifest. Regenerate or validate that inventory with the pinned commands
+in [the export audit guide](../../tools/api_manifest/binding-export-audit.md).
+Run this C source-level check from the repository root:
+
+```sh
+python -B tools/api_manifest/audit_binding_exports.py --repo-root . --c-only --check
+```
+
+CI additionally audits the compiled C library on Windows, Linux, and macOS.
+
+## PKCS#11 public mapping
+
+The KMIP 2.1 PKCS#11 request and response have public Rust, C, Java, and Python
+API mappings under OASIS KMIP v2.1 §6.1.37, Tables 273–275. The KMIPKIT-0040
+specification remains **Approved for implementation**; the maintainer's direct
+instruction dated 2026-10-20 authorized implementation without changing its
+formal acceptance status (`formalAcceptance: false`). Manifest state
+`verified` records implemented mappings and parity evidence, not formal
+acceptance, complete KMIP conformance, Profile support, or interoperability.
+
+Function and Return Code are represented by the typed operation model;
+Interface and parameter structures remain opaque TTLV values. The bindings
+preserve unknown members and order, optional absence, and the complete response
+TTLV while applying the existing redaction and ownership rules. Java/JNI and
+Python/CFFI expose caller-owned response data and document runtime copy limits.
+The default Rust, C, Java, and Python builds include these public APIs. The
+compiled C and JNI export checks require their manifest-backed symbols.
+
 ## C distribution
 
-- C11 headers under `include/kmipkit/` with an umbrella `kmipkit.h`.
+- C11 public umbrella header: [`kmipkit.h`](../../bindings/c/include/kmipkit.h).
 - C++ compatibility through `extern "C"`.
 - Dynamic and static libraries.
 - Linux SONAME `libkmipkit.so.1`.
@@ -50,9 +215,10 @@ checked in and CI verifies deterministic regeneration and compatibility.
 - Hand-written idiomatic facade and resource management.
 - Generated repetitive models and JNI declarations.
 - Minimal JNI bridge into the stable C ABI.
-- Unchecked exception hierarchy rooted at `KmipKitException`.
+- Unchecked exception hierarchy rooted at `KmipException`.
 - JSpecify nullness annotations.
-- `AutoCloseable` clients and secret values.
+- `AutoCloseable` wrappers for library-owned native handles; repeated close calls are safe.
+- JSpecify annotations are exposed as an API dependency so Java consumers compile against the documented nullness contract.
 - Platform native JARs selected automatically.
 - SLF4J integration for redacted structured events.
 
@@ -77,11 +243,26 @@ download executable code at runtime.
 
 Java selects the OS and architecture, verifies the bundled SHA-256, extracts
 atomically to a private location, and loads with `System.load`. Python loads
-the library adjacent to the installed wheel. Both may accept an explicit
-administrator-provided native path and fail fast on ABI mismatch.
+the single regular `.dll`, `.dylib`, or `.so` file beside the generated CFFI
+declarations. Symlinks and ambiguous or missing package-local libraries are
+rejected. Python accepts only the explicit `KMIPKIT_NATIVE_LIBRARY`
+environment variable as an administrator path override. When set, that path
+replaces the bundled selection; a missing or incompatible override fails
+without falling back to the bundled library. Before exposing the FFI, Python
+calls `kmipkit_version_get` and requires ABI version 1. Neither loader searches
+other directories or downloads executable code.
+Java also accepts an explicit administrator-provided native path. Both fail
+fast on ABI mismatch.
 
 ## Parity gate
 
 A 1.0 feature is complete only when Rust, C, Java, and Python expose equivalent
 high level, typed, and generic TTLV capability with tests and documentation.
 Language APIs remain idiomatic; parity concerns semantics rather than spelling.
+Typed request and response messages use one checked-in executable fixture
+consumed by Rust, a compiled C caller, Java 17/JNI, and Python 3.12/CFFI. It
+asserts the same ordered fields, open raw values and bit-mask bits, omitted
+versus effective defaults, batch association, extension contents, safe
+validation kind/index and redaction, and owner/view release behavior in each
+consumer. The fixture is a library-surface contract, not KMIP server
+interoperability evidence.

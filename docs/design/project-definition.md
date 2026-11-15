@@ -1,22 +1,29 @@
 # KMIPKit project definition
 
-Status: approved design baseline
+Status: approved design baseline, as amended by the constitution and accepted ADRs
 Date: 2026-10-03
 Owner: NeverWe1come
 
+For the implementation and release-evidence snapshot, see
+[`../project-status.md`](../project-status.md). This definition records the
+approved target; code presence and release readiness are tracked separately.
+
 ## 1. Purpose
 
-KMIPKit will be an open source client library for OASIS Key Management
-Interoperability Protocol 2.1. The project has two goals:
+KMIPKit will be an open source client library for modern OASIS Key Management
+Interoperability Protocol versions 2.0, 2.1, and 3.0 under the approved
+multi-version architecture. KMIP 2.1 remains the 1.0 default; version-specific
+support follows KMIPKIT-0069 through KMIPKIT-0071 and does not imply blanket
+KMIP 3.0 conformance. The project has two goals:
 
-1. Build a rigorous, traceable understanding of KMIP 2.1.
+1. Build a rigorous, traceable understanding of the supported KMIP editions.
 2. Provide a production quality, multi-language client that makes KMIP usable
    without requiring every application developer to understand the wire
    protocol.
 
-The differentiator is the combination of complete KMIP 2.1 client coverage,
-a Rust core, a stable C ABI, idiomatic language APIs, high level operations,
-and evidence based conformance.
+The differentiator is the combination of complete client coverage for each
+approved target edition, a Rust core, a stable C ABI, idiomatic language APIs,
+high level operations, and evidence based conformance.
 
 ## 2. Release scope
 
@@ -24,14 +31,14 @@ and evidence based conformance.
 
 Version 1.0.0 includes:
 
-- KMIP 2.1 only.
-- TTLV encoding only.
+- KMIP 2.1 as the default, with the version-specific KMIP 2.0 and 3.0 support
+  expressly defined by KMIPKIT-0069 through KMIPKIT-0071.
+- TTLV, JSON, and XML encodings, with TTLV as the default.
 - Every operation initiated by a KMIP client.
 - KMIP protocol asynchronous semantics, including pending results and their
   follow-up operations.
 - Batch messages and a high level batch API.
-- Raw binary TTLV over TLS.
-- Binary TTLV over HTTPS with HTTP/1.1.
+- TTLV, JSON, and XML over raw TLS and HTTPS with HTTP/1.1.
 - TLS 1.3 and mutual TLS.
 - Synchronous/blocking client APIs.
 - Rust, C, Java, and Python with functional parity.
@@ -41,28 +48,37 @@ Version 1.0.0 includes:
 
 Version 1.0.0 excludes:
 
-- Server initiated operations.
-- JSON and XML encodings.
 - Rust async/await APIs.
-- Automatic retries, failover, connection pools, proxy support, and
-  capability caching.
+- Automatic KMIP request retries. Failed requests report delivery state; a
+  later caller-initiated request may reconnect.
+- Automatic endpoint failover, connection pools, and capability caching.
 - Local cryptographic algorithm implementations.
 - Dynamic executable plugins.
 - PKCS#11, HSM, operating system, and language runtime TLS key providers.
 
 ### 2.2 Later releases
 
-- 1.1.0: server initiated operations.
+- KMIP 1.x is excluded from the client library. The test server may retain
+  compatibility adapters for test purposes.
 - Additional idiomatic adapters, prioritized as Go, C++, C#, and JavaScript.
-- Later compatible 1.x releases: JSON, XML, optional async APIs, additional
-  transports and operational facilities.
+- Optional async/await APIs, additional transports, and operational facilities
+  require their own approved specifications. Any retry or proxy behavior must
+  preserve the security invariants in `AGENTS.md` and the accepted ADRs.
 - A new major version is reserved for public API or ABI incompatibility.
+
+Server-to-client operations, role handling, JSON/XML encodings, and the
+catalogued modern multi-version foundation have been advanced into the
+approved 1.0 boundary by later decisions. See the constitution amendments and
+ADR-0018, ADR-0021, and ADR-0022; earlier release-scope statements do not
+supersede them.
 
 ## 3. Completeness
 
-Completeness means every applicable KMIP 2.1 client operation, object,
-attribute, message structure, option, and value can be represented and used.
-Server policy determines whether an individual request is accepted.
+Completeness means every applicable client operation, object, attribute,
+message structure, option, and value for each approved KMIP edition can be
+represented and used. Version-specific support is bounded by the governing
+specifications. Server policy determines whether an individual request is
+accepted.
 
 The library does not preemptively reject legitimate standard options because
 a particular server might not support them. It validates protocol invariants
@@ -98,7 +114,10 @@ algorithm, key length, usage, mode, padding, and export policy remain explicit.
 
 - The Rust client is synchronous.
 - KMIP protocol asynchronous results are fully supported.
-- A client is thread safe and owns one reusable connection.
+- A client is thread safe and serializes calls through one worker. It may
+  reuse a healthy HTTPS connection; raw TLS opens one connection per exchange
+  and closes it after exactly one complete KMIP response document. TTLV is
+  framed by its header; JSON/XML completion follows their bounded parsers.
 - Concurrent calls on one client are serialized.
 - Applications create multiple clients for parallel network operations.
 - No request is retried automatically.
@@ -111,6 +130,9 @@ algorithm, key length, usage, mode, padding, and export policy remain explicit.
 - 0-RTT, redirects, HTTP compression, proxies, TLS key logging, and automatic
   network revocation lookup are disabled.
 - Explicit CRL input is supported.
+- TLS 1.3 resumption tickets stay in memory within one client configuration,
+  expire after at most one hour, and inherit the full handshake's peer and
+  trust/CRL decision. Rebuilding the client applies changed trust inputs.
 - Secret types minimize copies and zeroize owned memory.
 - Logs and errors redact credentials, keys, raw bodies, and sensitive data.
 - Decoder resource limits are enforced before allocation.
@@ -152,10 +174,11 @@ files.
 - No panic based production control flow.
 - Public APIs documented.
 - Normative traceability: 100 percent.
-- TTLV and protocol line coverage: at least 95 percent.
+- TTLV and protocol/model line coverage: at least 90 percent.
 - Transport, FFI, and bindings: at least 85 percent.
 - Workspace overall: at least 90 percent.
-- Changed code: at least 95 percent.
+- New or changed production code: at least 90 percent.
+- Normative requirement traceability: 100 percent.
 - Two independent real KMIP implementations tested before 1.0.
 - Independent security review before 1.0.
 
@@ -165,7 +188,7 @@ files.
 - Windows x86_64 MSVC, Windows 10 or Server 2019 and newer.
 - macOS x86_64 and aarch64, macOS 12 and newer.
 - Java 17 and newer.
-- Python 3.12 and newer.
+- Python 3.12 only for the 1.0 package.
 
 Musl, Alpine, Windows ARM64, and additional platforms are later work.
 
@@ -183,7 +206,6 @@ Musl, Alpine, Windows ARM64, and additional platforms are later work.
 
 - Apache-2.0.
 - DCO sign-off; no CLA initially.
-- Private repository until 1.0.0.
 - Human maintainer owns approval and merging.
 - External OASIS material retains its notices and is not relicensed.
 - KMIPKit is independent and does not claim OASIS endorsement.

@@ -1,0 +1,13 @@
+error[E0308]: mismatched types
+ --> tests/ui/extension_boundary/unregistered_validated_value.rs:5:46
+  |
+5 |     let _ = client_request_message_extension(value, true);
+  |             -------------------------------- ^^^^^ expected `RegisteredExtensionValue`, found `ValidatedExtensionValue`
+  |             |
+  |             arguments to this function are incorrect
+  |
+note: function defined here
+ --> src/extension_registry.rs
+  |
+  | pub fn client_request_message_extension(
+  |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

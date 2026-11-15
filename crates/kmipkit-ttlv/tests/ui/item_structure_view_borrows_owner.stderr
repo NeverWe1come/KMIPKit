@@ -1,0 +1,10 @@
+error[E0515]: cannot return value referencing local variable `item`
+  --> tests/ui/item_structure_view_borrows_owner.rs:10:5
+   |
+10 |       item.as_structure()
+   |       ^---
+   |       |
+   |  _____`item` is borrowed here
+   | |
+11 | |         .expect("the item contains a Structure")
+   | |________________________________________________^ returns a value referencing data owned by the current function

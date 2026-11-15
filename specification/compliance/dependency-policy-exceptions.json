@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "exceptions": [
+    {
+      "id": "KMIPKIT-0011-EX-003",
+      "kind": "duplicate",
+      "package": "syn",
+      "version": "2.0.119",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "rationale": "This version is required by serde_derive and KMIPKit test dependencies. The same graph requires syn 3 for tokio-macros.",
+      "mitigation": "Reassess the exact proc-macro graph when serde, JNI, or test dependencies change; remove this exception when upstream requirements converge. Do not downgrade syn below the versions required by the current graph. Expire this exception by 2026-12-31.",
+      "owner": "KMIPKit maintainers",
+      "reviewed_by": "NeverWe1come",
+      "reviewed_on": "2026-10-07",
+      "expires_on": "2026-12-31",
+      "approval_ref": "https://github.com/NeverWe1come/KMIPKit/pull/50"
+    },
+    {
+      "id": "KMIPKIT-0011-EX-004",
+      "kind": "duplicate",
+      "package": "syn",
+      "version": "3.0.9",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "rationale": "This version is required by tokio-macros. The same graph requires syn 2 for serde_derive and KMIPKit test dependencies.",
+      "mitigation": "Reassess the exact proc-macro graph when Tokio or test dependencies change; remove this exception when upstream requirements converge. Do not downgrade syn below the versions required by the current graph. Expire this exception by 2026-12-31.",
+      "owner": "KMIPKit maintainers",
+      "reviewed_by": "NeverWe1come",
+      "reviewed_on": "2026-10-07",
+      "expires_on": "2026-12-31",
+      "approval_ref": "https://github.com/NeverWe1come/KMIPKit/pull/50"
+    }
+  ]
+}

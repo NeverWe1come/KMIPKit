@@ -1,0 +1,203 @@
+# KMIPKIT-0005 delegated authorization record
+
+**Recorded**: 2026-10-05
+**Authorization source**: KMIPKit maintainer instruction in this Codex conversation
+**Status**: Authorized for the bounded specification and implementation work below
+
+## Authorization
+
+On 2026-10-05, the maintainer directly instructed Codex to execute the
+complete KMIPKIT-0005 plan autonomously without requesting further approval
+or manual intervention, and later authorized creating the pull request from
+the terminal. This is delegated maintainer authorization for the bounded
+scope and decisions recorded here. The repository contract still reserves
+human approval, merge, and publication. This record does not claim that the
+maintainer separately reviewed each artifact or that an independent human
+security audit has occurred.
+
+## Approved scope and decisions
+
+1. Approve `specs/005-ttlv-wire-codec/spec.md` and its implementation contract
+   for a public bounded TTLV decoder and immutable per-call limits, plus a
+   private `kmipkit-client` writer and zeroizing owner. KMIPKIT-0005 must not
+   add `Client::execute`, a production writer callsite, or a permit.
+2. Accept ADR-0011's KMIPKit policy to reject received Reserved Tags before
+   generic Item construction. T001 records this as accepted KMIPKit policy decision
+   `KMIPKIT-DEC-001`, links it to `KMIPKIT-DISC-037`, and cites OASIS KMIP
+   Specification v2.1 §11.56 for the Tag-range source context before validating
+   and regenerating the catalog report ahead of T006. Section 11.56 does not
+   prescribe receiver rejection; this decision neither reinterprets nor
+   deviates from `KMIPKIT-REQ-SPEC-11.56-001`. T012 later adds only applicable
+   implementation and test traceability for normative requirements assigned
+   to this codec; it does not defer or repeat the project-policy disposition.
+3. Accept ADR-0012's narrow policy for temporary outbound TTLV that carries an
+   explicitly caller-requested typed operation. In KMIPKIT-0005 this permits
+   only a private, uncalled writer/owner. The first client feature/spec owns
+   the closed typed request API, execute-owned permit, sole production mint
+   and writer callsite, and owner-through-transport integration test. That
+   candidate PR must include both the callsite and test; CI must pass the test
+   against that candidate before merge, enablement, or any secret-bearing
+   send. The release branch must contain no production callsite or
+   secret-bearing send before that gate passes.
+4. Resolve KMIPKIT-0005-OD-001 as bounded preflight and fallible
+   decoder-owned scratch/payload reservations. Existing model allocations via
+   `Box::new` and `Vec::push` may abort on OOM; this feature does not change
+   those constructors and does not claim recovery from every allocation
+   failure.
+5. Accept the dependency-review dispositions in
+   `dependency-review.md`: use the reviewed scopes and exact package
+   selections, retain `zeroize` 1.9.0's performance caveat, and keep
+   test-only Serde at 1.0.228 for current lock/tree alignment. Recheck the
+   exact package graph and features before editing the client manifest.
+6. Keep `KMIPKIT-REQ-SPEC-10.1.2-001` as an explicit global follow-on gap until
+   every applicable client Structure has approved typed-spec ownership,
+   implementation, and executable field-order verification. Do not claim
+   complete roadmap traceability from KMIPKIT-0005 alone.
+
+## Independent review evidence and boundaries
+
+- The independent dependency review and delegated package dispositions are
+  recorded in `dependency-review.md`.
+- The independent QA review identified the prerequisite ordering gate
+  (T001 must close `KMIPKIT-DISC-037` and regenerate the catalog report before
+  T006), inline OASIS attribution for normative cases, safe test-only
+  zeroization observation, and stale reviewer-owned checklist notes. This
+  task records the ordering in the plan and tasks, updates the test-case
+  requirements, and appends checklist reconciliation notes without changing
+  reviewer-owned checkboxes.
+- The independent security/design review found no clear mismatch in the cited
+  OASIS KMIP 2.1 §§10.1.1–10.1.5, 11.23, and 11.56. It required preserving
+  the existing `Box::new`/`Vec::push` OOM-abort limitation and the first-client
+  production callsite plus candidate-CI integration gate; both remain explicit
+  in the approved contract and plan.
+
+These were independent agent reviews, not a qualified human security audit.
+The roadmap's independent human security review before 1.0 remains required.
+No exact upstream source under `specification/oasis/` is modified.
+
+## Approved artifact revisions
+
+The following SHA-256 digests identify the delegated scope snapshot and
+its decision, catalog, generated-report, feature, and architecture
+artifacts. They bind the worktree state recorded here; the digest for this
+file is intentionally omitted to avoid a self-referential record. The feature branch is
+`feature/KMIPKIT-0005-ttlv-wire-codec` at `10ccc99180760ff34778b35db9b99db81fef38f5`;
+it contains active `release/1.0.0` head
+`849b46f772fd7cbcea2f42393cdbcf58e92cac94` as an ancestor. The working tree
+was verified against those refs on 2026-10-05. Task progress is included below.
+
+## Execution update — 2026-10-05
+
+After the maintainer reported that intervening PRs were merged, a terminal GitHub API check confirmed PRs #14–#29 were closed as merged. This feature branch integrated `origin/release/1.0.0` at `d46e13dfdd83ac05e4b58d24af5b928e355e092d` in merge commit `bd27ebc`. The catalog merge preserves `KMIPKIT-DEC-001` / `KMIPKIT-DISC-037` and the merged credential corrections and open `KMIPKIT-DISC-041` / `KMIPKIT-DISC-042`; the generated coverage report was regenerated from the validated catalog. The catalog regression test now accepts discrepancies resolved by an accepted decision while requiring unresolved rows to remain open. Validation, report verification, source audit, immutable-source check, generators, and all catalog tests pass. T003 and T004 are complete after clean scoped reviews; the T004 observer regression was corrected with separate Red/Green commits. These changes do not expand the approved scope. The artifact digests below reflect the merged release and completed T004 task state.
+
+| Artifact | SHA-256 |
+| --- | --- |
+| `spec.md` | `01C75CE5DD645FDBC1ED227698ACBE3F54657BE4ABB13C4CFD63285DE5B87832` |
+| `plan.md` | `BD027496A530B0D6C22A36CF1EFB7F25DFAA473D69929EEF5C97B3D526555294` |
+| `research.md` | `2C519C123A47B01F1E1C7997EDF99584324A592E488EC8CB0EEF23991ABBECE6` |
+| `data-model.md` | `5AAC5218210EDF98D37CB4AB5DB39A3D8B8E00F3D8ADF4E88AAE34553450AD95` |
+| `contracts/rust-ttlv-codec.md` | `728BABDA1F12996AC47A617999E0FDF7FF0F884B87A73AE51C3D3509942F5CEA` |
+| `quickstart.md` | `8AB455C58E907DA26931217CCC6DFA4EA0F45E34A5775FA8F74926E9883F85F1` |
+| `dependency-review.md` | `60FE528D34DCB30F8F83BC6176B91E8522B4A6FA9CA1A5875B32697E9F0206B4` |
+| `tasks.md` | `E8A9FB122CC504B15A97B754DF235AD97620B06230221FC5120CCF95A181947F` |
+| `docs/adr/0011-reserved-tag-decoding-policy.md` | `3A5C0589554B2080835EC7F10F1D537B297CFF9B60F21E89F03869DE428A1D2A` |
+| `docs/adr/0012-caller-requested-wire-encoding-policy.md` | `130C4CAD7AFC9985BC816286F8652729B392425C5E510DCAB9285223E827F333` |
+| `docs/adr/README.md` | `EA965F505F893CAA505E6A783ECE6BF5488AE61B77D3E4A37192B2E8B34F4ECC` |
+| `docs/architecture/overview.md` | `EB435926FB747C950B1D3418C436D91D70E5690D08B4F499183C9A0636337C55` |
+| `docs/architecture/public-api.md` | `5F10D0CD4DA8C7EA012969795BED3AFDA62DD9DF88A7EAB251EC7B4561A26139` |
+| `docs/adr/0010-tag-allocation-precedence.md` | `2A85D69BCE2D7CF3439E3FF4CE900BD1C6CF100DEDA37FDDB13292C5601E7473` |
+| `specification/catalog/kmip-2.1.json` | `06D10D118F4D877033BD0D83EEC7C9345C350823149714236BAB2F6094694F53` |
+| `specification/catalog/coverage-report.md` | `9C36100B581D9E94DEB3E842A5521639EB49649229A0013100462DAB6ECFA578` |
+
+## Execution update — T005
+
+T005 Red is complete in DCO-signed commit `0937633685d44aaa921e13aec3449d6cce319f40`. The decoder test module is private and test-only; all 33 Red cases compiled and failed at behavioral assertions against the intentionally incomplete seam. The independent review recorded PASS for scope and test quality with no blockers. It confirmed the assigned and extension Tag fixtures, OASIS attribution, and padding extent semantics; the reviewer did not rerun commands. The task report retains the command evidence and review limitations. T006 is now unblocked; its Green work will promote the private seam to the production decoder and public facade, preserving the approved one-item, bounded, payload-redacted contract.
+
+| Updated artifact | SHA-256 |
+| --- | --- |
+| `tasks.md` | `4EA2A97243B9D025D79CA2BA05C348D859A1DF3BD31E0B50132D29CD8A717C89` |
+
+## Execution update — T006
+
+T006's checked decoder and public `codec::decode` facade are implemented in Green commit `6419a4304a05e3607e0c088d9d64eb9080f04817`. The documentation and normative-attribution follow-up is `71534fda7f74a14e1ecdb12187ed26b9ce51e54b`. Independent review returned PASS after verifying the parser's limits/bounds and resolving three documentation/traceability findings; it did not run tests. The root agent independently reran formatting, Clippy, all-feature crate check, the full `kmipkit-ttlv` test suite (82 passed), rustdoc generation, and diff check on Windows; all passed. The complete evidence and review record are in `task-6-report.md` and `task-6-review.md`. T007 remains next and will refactor the decoder without adding T010 configurable limits.
+
+| Updated artifact | SHA-256 |
+| --- | --- |
+| `tasks.md` | `66FBAECA316C3AE7CF2281DF8673060DFA5DA78A700AEED37F9A09A042AAA9DB` |
+
+## Execution update — T007
+
+T007 Refactor is implemented in DCO-signed commit `f576a82d98cbd4c121cbef67392121ebad6ce4e2`; its evidence is in `task-7-report.md`. The independent static review returned PASS in `task-7-review.md`, confirming validation order, error categories/offsets, payload redaction, public API paths, and scope. I independently reran format, Clippy with warnings denied, all-feature check, all 82 TTLV crate tests, rustdoc generation, and diff check on Windows; all passed. `AllocationFailed` and the defensive `ModelConstraint` mapping have no deterministic direct test injection, documented without adding production hooks. T008 is next.
+
+| Updated artifact | SHA-256 |
+| --- | --- |
+| `tasks.md` | `0FCD80EB4A573699933D7716CB9B50466885152DDFB48EB9365D5832F3D35CCE` |
+
+## Execution update — T008
+
+T008's deterministic encoder-to-decoder round-trip tests are in DCO-signed commit `06fcdf8f193e3608f51bfa99541ff316d2cefa10`; the evidence and independent review are in `task-8-report.md` and `task-8-review.md`. Review returned PASS with no findings. I independently reran formatting, client Clippy with warnings denied, all-feature client check, all 40 client unit/integration tests, client rustdoc, and diff check on Windows; all passed. The generated test runs 88 fixed-seed bounded roots across all eleven Item Types; dedicated Big Integer vectors cover positive/negative unaligned sign extension and aligned exact preservation. T009 decoder-limit Red is next.
+
+| Updated artifact | SHA-256 |
+| --- | --- |
+| `tasks.md` | `9E55EA51D12689D472942E530F2420C3F820E2BE78973037A0F7BD049B8E43B2` |
+
+## Execution update — T009
+
+T009 Red is implemented in DCO-signed commit `b3bd550a8360a2fbe69a5cbf82072d8c707607e0`; report and independent static review are in `task-9-report.md` and `task-9-review.md`. Review returned PASS. I independently ran the directed Red command: two control tests passed and nine limit/overflow/pre-allocation assertions failed as intended, all as behavioral failures without compile or panic failures. The implementer's format, Clippy, all-feature check, test-binary compile, and diff checks also passed. T010 will promote the private candidate seams to the immutable public limits API and production decoder.
+
+| Updated artifact | SHA-256 |
+| --- | --- |
+| `tasks.md` | `30498F68A7FC0AB988F33A2B88B46B57671DA4BC22660470A6E774CA8C815BFE` |
+
+## Execution update — T010
+
+T010 Green is implemented in DCO-signed commit `302b8c60a75e22b9d590f1253c949d5369627f36`; the verification report is in `task-10-report.md` and the independent static review is in `task-10-review.md` (PASS, no findings). I independently reproduced formatting, Clippy with warnings denied for both affected crates, all-feature checks for both crates, all 100 TTLV tests and 41 client tests, warning-free rustdoc for both crates, and `git diff --check`; all passed. The public API covers configured zero/lowered/raised limits, including inputs above the default byte and Item caps. The private writer uses the same borrowed `CodecLimits` instance and remains without a production callsite. T011 is next.
+
+| Updated artifact | SHA-256 |
+| --- | --- |
+| `tasks.md` | `0C801349167EF570567FB861C6D229003957E355644672AB07A1B1F0D27E8EEE` |
+
+## Execution update — T011
+
+T011 Refactor is implemented in DCO-signed commit `1e904459b1addda85c7b702400fab58cf038dce8`; the verification report and independent static review are in `task-11-report.md` and `task-11-review.md` (PASS, no findings). The refactor documents the decoder's current accounting/error order and encoder's preflight/reserve/write sequence, without moving decoder checks or changing error kinds/offsets. Bounded tests use the real `CodecLimits` adapter and observe the production reservation/copy boundaries under `cfg(test)`. I independently reran formatting, Clippy and all-feature checks for both crates, all 100 TTLV tests and 42 client tests, warning-free rustdoc for both crates, and `git diff --check`; all passed. T012 is next.
+
+| Updated artifact | SHA-256 |
+| --- | --- |
+| `tasks.md` | `4E128B2E7ECB05FFDF08C7158FFCEE10396E5581AB31E92A9F72661274588705` |
+
+## Execution update — T012
+
+T012's catalog and extension-Tag characterization test are in DCO-signed commit `60e2014b6a81a0285b23013278996c45af443009`; its report and independent static review are in `task-12-report.md` and `task-12-review.md` (PASS, no findings). Exactly five applicable requirements gained implementation/test references; the generic Structure-order requirement remains explicitly unassigned until typed ownership and executable order checks cover every applicable Structure. No official Test Case IDs or 100% roadmap coverage are claimed. I independently reran catalog validation, report check, both generated-code checks, all 162 catalog tests (7 skipped), formatting, both crates' Clippy/all-feature checks/tests/docs, the focused `0x54` test, and diff check; all passed. The validator reports 4 sources, 1,411 clauses, and 4,021 records. T013 is next.
+
+| Updated artifact | SHA-256 |
+| --- | --- |
+| `tasks.md` | `37F3E21F24959585C7EF7C46F15B8CF7E0A3C6F00403B863211FD7B98D8117F5` |
+
+## Execution update — T013
+
+T013's executable quickstart and public doctest are in DCO-signed commit `0131fc042f643fe93172e649f7538113d062ff95`; the exact-clause attribution correction is in `92b90a4257a2d6ed3e1d07ed992268f583963504`. Independent static review passed with no actionable findings (see `task-13-review.md`). I independently reran the doctests (2 passed), formatting, and diff checks. The reviewed example remains documentation-only; no public encoder example or behavior change was added. The review clarified that T013 was complete; T014 is next.
+
+| Updated artifact | SHA-256 |
+| --- | --- |
+| `tasks.md` | `8A550F3CBA332C337B4FA1CCC0E14EB86EB959093EDD85BC28DA7A56384BC58E` |
+
+## Execution update — T014
+
+T014's attributed fixture corpus and executable test are in DCO-signed commit `64e17379c7bba621a44c7c5e649c1a9f2cd510d5`; the bounded standalone fuzz package and target are in `5cf185a418df98493654e4bf3cd9318dc18c6265`; the evidence report is `0e38886a5a1d6853e5ed5bb8a3b0b7340ecc1347`. Independent static reviews of fixtures and fuzz wiring both passed. I independently reproduced formatting, 102 `kmipkit-ttlv` tests/doctests, Clippy with warnings denied, locked fuzz-package metadata, and diff checks. The implementer ran stable WSL compile/Clippy and 1,000 bounded libFuzzer iterations using 22 temporary binary seeds; no crash or corpus artifact remains. T015 is next.
+
+| Updated artifact | SHA-256 |
+| --- | --- |
+| `tasks.md` | `317F9ABB2AC51F83B934671EC12FC422653CE0CDD6CBBC1915C072484FC3513D` |
+
+## Execution update — T015
+
+T015's policy/owner verification is recorded in `task-15-report.md`. I reran the focused private writer suite (37 passed), decoder fixture/malformed/public API/redaction suites (21 passed), client Clippy with warnings denied, formatting, and diff checks. Static audit confirmed the private zeroizing owner and immutable accessor, test-verified payload-free errors and zero-copy preflight, same-instance limits borrowing, and no `Client::execute`, permit, public encoder export, or production callsite in KMIPKIT-0005. The decoder keeps typed payload values as modeled but does not retain or re-emit the complete original message. No transport lifecycle or request-path claim is made; T016 follows.
+
+| Updated artifact | SHA-256 |
+| --- | --- |
+| `tasks.md` | `49EE1B9F238806A8518C7D6C2A6DF20EE16A1B16647A8AEE26394BAE22DC0E25` |
+
+This authorization does not authorize agents to approve or merge their PRs,
+push to `master` or `release/*`, publish a release, or bypass the first-client
+integration gate. Human approval and merge remain governed by the repository
+constitution and `AGENTS.md`.

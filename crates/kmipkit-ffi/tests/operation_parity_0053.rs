@@ -1,0 +1,33 @@
+#![cfg(feature = "coverage-c-consumer")]
+
+#[path = "support/ffi_link_exports.rs"]
+mod ffi_link_exports;
+use ffi_link_exports::{kmipkit_client_batch_create, kmipkit_client_batch_release};
+
+#[link(name = "kmipkit_operation_parity_0053_consumer", kind = "static")]
+unsafe extern "C" {
+    fn kmipkit_operation_parity_0053_all_56() -> i32;
+}
+
+#[link(name = "kmipkit_client_abi_c_consumer", kind = "static")]
+unsafe extern "C" {}
+
+#[test]
+fn compiled_c_consumer_invokes_all_56_client_operation_routes() {
+    kmipkit_ffi::__coverage_consumer_test_link_anchor();
+
+    let mut batch = core::ptr::null_mut();
+    // SAFETY: the null output is writable, and the created batch is released below.
+    assert_eq!(unsafe { kmipkit_client_batch_create(&raw mut batch) }, 0);
+    assert!(!batch.is_null());
+    // SAFETY: `batch` is the live handle returned by the ABI constructor.
+    unsafe { kmipkit_client_batch_release(batch) };
+
+    // SAFETY: the C consumer owns and releases every handle it creates.
+    let result = unsafe { kmipkit_operation_parity_0053_all_56() };
+
+    assert_eq!(
+        result, 48,
+        "the matrix must encode 48 generic operation items; the other four synchronous factories are checked by the C helper consumer and negative results identify the first failing route"
+    );
+}

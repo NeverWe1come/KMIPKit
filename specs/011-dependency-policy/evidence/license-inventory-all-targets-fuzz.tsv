@@ -1,0 +1,14 @@
+crate	Apache-2.0	LGPL-2.1-or-later	MIT	NCSA	Unlicensed
+arbitrary@1.4.2	X	-	X	-	-
+cc@1.6.0	X	-	X	-	-
+cfg-if@1.0.5	X	-	X	-	-
+find-msvc-tools@0.1.14	X	-	X	-	-
+getrandom@0.4.3	X	-	X	-	-
+jobserver@0.1.35	X	-	X	-	-
+kmipkit-ttlv@0.1.0	X	-	-	-	-
+kmipkit-ttlv-fuzz@0.0.0	-	-	-	-	X
+libc@0.2.190	X	-	X	-	-
+libfuzzer-sys@0.4.12	X	-	X	X	-
+r-efi@6.0.0	X	X	X	-	-
+shlex@2.0.1	X	-	X	-	-
+zeroize@1.9.0	X	-	X	-	-

@@ -1,0 +1,19 @@
+{
+  "catalog_id": "KMIPKIT-TEST-CN01-2-63",
+  "official_label": "TC-MDO-3-21",
+  "status": "derived-local-not-official",
+  "sample_values_synthetic": true,
+  "source_references": [
+    "OASIS KMIP Test Cases v2.1 CN01 \u00a72.63",
+    "OASIS KMIP Specification v2.1 \u00a74.27 Table 82",
+    "OASIS KMIP Specification v2.1 \u00a711.27 Table 463",
+    "OASIS KMIP Specification v2.1 \u00a76.1.28 Tables 247\u2013249"
+  ],
+  "limitations": "The official XML and URL value are unavailable. The URI-shaped URL uses the reserved example.invalid domain and is synthetic; no object match or server result is represented.",
+  "request_operations": [
+    "Locate"
+  ],
+  "request_payload_ttlv_hex": [
+    "42 00 79 01 00 00 00 50 42 01 25 01 00 00 00 48 42 00 b8 01 00 00 00 40 42 00 b9 07 00 00 00 24 68 74 74 70 73 3a 2f 2f 65 78 61 6d 70 6c 65 2e 69 6e 76 61 6c 69 64 2f 6b 65 79 2d 6d 61 74 65 72 69 61 6c 00 00 00 00 42 00 ba 05 00 00 00 04 00 00 00 02 00 00 00 00"
+  ]
+}
