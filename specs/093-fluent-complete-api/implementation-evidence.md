@@ -53,3 +53,11 @@
 - Updated the shared T102 declaration snapshot to 16,816 and recorded the
   KMIPKIT-0124 additions that account for the increase.
 - The focused reproduction command above passes (`Ran 1 test`, `OK`).
+
+### Refactor
+
+- Split the current public-manifest count assertions from the historical Rust
+  audit totals so future approved public API additions do not obscure the
+  unchanged Rust audit snapshot.
+- `python3 -B -m unittest tools.api_manifest.tests.test_t102_pkcs11_request_trait_exclusions`
+  passes all 7 tests.
