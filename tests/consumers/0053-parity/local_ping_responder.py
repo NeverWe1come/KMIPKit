@@ -17,6 +17,11 @@ _AAD = b"fluent context"
 _AUTH_TAG = b"fixture-auth-tag"
 _PAIR_PRIVATE_ID = b"fluent-private-key"
 _PAIR_PUBLIC_ID = b"fluent-public-key"
+_EXPERT_KEY_NAME = b"fluent-expert-key"
+_EXPERT_KEY_ID = b"fluent-expert-key"
+_EXPERT_VENDOR = b"KMIPKit.Example"
+_EXPERT_ATTRIBUTE = b"purpose"
+_EXPERT_VALUE = b"fluent expert journey"
 _SIGN_INPUT = b"fluent sign input"
 _SIGNATURE = b"fixture signature"
 
@@ -69,7 +74,7 @@ def _response(
         payload = _structure(
             0x42007C,
             _item(0x420057, 5, struct.pack(">I", 2)),
-            _item(0x420094, 7, b"fluent-key"),
+            _item(0x420094, 7, unique_identifier or b"fluent-key"),
         )
     elif operation == 2:
         payload = _structure(
@@ -81,7 +86,7 @@ def _response(
         payload = _structure(
             0x42007C,
             _item(0x420057, 5, struct.pack(">I", 2)),
-            _item(0x420094, 7, b"fluent-key"),
+            _item(0x420094, 7, unique_identifier or b"fluent-key"),
             _structure(0x42008F),
         )
     elif operation == 20:
@@ -201,17 +206,34 @@ def _requested_identifier(
     operation: int,
     fields: list[tuple[int, int, bytes]],
 ) -> bytes | None:
-    if operation != 20:
+    if operation not in (10, 20):
         return None
     payloads = [value for tag, kind, value in fields if tag == 0x420079 and kind == 1]
     if len(payloads) != 1:
-        raise RuntimeError("Destroy request must contain one Request Payload")
+        raise RuntimeError("Get or Destroy request must contain one Request Payload")
     identifiers = [
         value for tag, kind, value in _children(payloads[0]) if tag == 0x420094 and kind == 7
     ]
     if len(identifiers) != 1:
-        raise RuntimeError("Destroy request must contain one Unique Identifier")
+        raise RuntimeError("Get or Destroy request must contain one Unique Identifier")
     return identifiers[0]
+
+
+def _requested_name(
+    operation: int,
+    fields: list[tuple[int, int, bytes]],
+) -> bytes | None:
+    if operation != 1:
+        return None
+    payloads = [value for tag, kind, value in fields if tag == 0x420079 and kind == 1]
+    if len(payloads) != 1:
+        return None
+    names = [
+        value
+        for tag, kind, value in _flatten(_children(payloads[0]))
+        if tag == 0x420098 and kind == 7
+    ]
+    return names[0] if len(names) == 1 else None
 
 
 def _validate_operation(
@@ -240,6 +262,24 @@ def _validate_operation(
             raise RuntimeError("Create Cryptographic Length was not 256 bits")
         if values.get(0x42002C) != (2, struct.pack(">i", 12)):
             raise RuntimeError("Create Cryptographic Usage Mask was not explicit")
+        if any(
+            tag == 0x420098 and kind == 7 and value == _EXPERT_KEY_NAME
+            for tag, kind, value in flattened_payload
+        ):
+            vendor_attributes = [
+                value
+                for tag, kind, value in flattened_payload
+                if tag == 0x420008 and kind == 1
+            ]
+            if len(vendor_attributes) != 1:
+                raise RuntimeError("expert Create omitted the expected Vendor Attribute")
+            vendor_fields = _children(vendor_attributes[0])
+            if vendor_fields != [
+                (0x42009D, 7, _EXPERT_VENDOR),
+                (0x42000A, 7, _EXPERT_ATTRIBUTE),
+                (0x42000B, 7, _EXPERT_VALUE),
+            ]:
+                raise RuntimeError("expert Create encoded an unexpected Vendor Attribute")
     elif operation == 2:
         payload = _children(payloads[0])
         groups = {
@@ -261,10 +301,10 @@ def _validate_operation(
     elif operation in (10, 20):
         payload = _children(payloads[0])
         identifiers = [value for tag, kind, value in payload if tag == 0x420094 and kind == 7]
-        if operation == 10 and identifiers != [b"fluent-key"]:
+        if operation == 10 and identifiers not in ([b"fluent-key"], [_EXPERT_KEY_ID]):
             raise RuntimeError("Get did not use the returned Unique Identifier")
         if operation == 20 and identifiers not in (
-            [b"fluent-key"], [_PAIR_PRIVATE_ID], [_PAIR_PUBLIC_ID]
+            [b"fluent-key"], [_PAIR_PRIVATE_ID], [_PAIR_PUBLIC_ID], [_EXPERT_KEY_ID]
         ):
             raise RuntimeError("Destroy did not use a returned Unique Identifier")
     elif operation in (0x1F, 0x20):
@@ -387,6 +427,9 @@ def main() -> None:
                             f"{connection_index + 1}: expected {expected:#x}, got {operation:#x}"
                         )
                     _validate_operation(operation, fields, header_fields)
+                    response_identifier = _requested_identifier(operation, fields)
+                    if operation == 1:
+                        response_identifier = _requested_name(operation, fields)
                     asynchronous_destroy = operation == 20 and _has_async_indicator(header_fields)
                     pending = asynchronous_destroy and async_destroy_count == 0
                     failed = asynchronous_destroy and async_destroy_count == 1
@@ -397,7 +440,7 @@ def main() -> None:
                             operation,
                             pending,
                             failed,
-                            _requested_identifier(operation, fields),
+                            response_identifier,
                         )
                     )
         finally:

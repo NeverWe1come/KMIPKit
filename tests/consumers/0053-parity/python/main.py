@@ -334,6 +334,63 @@ def main() -> None:
                 print(
                     "python: fluent ECDSA key pair, Sign, and Destroy verified over TLS 1.3/mTLS"
                 )
+
+                with ttlv.ttlv_value_text_string(b"fluent expert journey", limits) as vendor_value:
+                    vendor_value_item = _item(0x0054_0001, vendor_value, limits)
+                    try:
+                        with kmip_client.request().create_symmetric_key() as builder:
+                            expert_created = (
+                                builder.aes_256()
+                                .usage_mask(
+                                    protocol_values.CryptographicUsageMask.ENCRYPT
+                                    | protocol_values.CryptographicUsageMask.DECRYPT
+                                )
+                                .name("fluent-expert-key")
+                                .add_vendor_attribute(
+                                    "KMIPKit.Example", "purpose", vendor_value_item
+                                )
+                                .execute(limits)
+                            )
+                        lifecycle_results.append(expert_created)
+                    finally:
+                        vendor_value_item.close()
+
+                expert_create_item = expert_created.items[0]
+                assert expert_create_item.operation == protocol_values.Operation.CREATE
+                assert expert_create_item.outcome is client.BatchOutcome.COMPLETED
+                assert expert_create_item.result_status == 0
+                assert expert_create_item.create_object_type == 2
+                expert_identifier = expert_create_item.unique_identifier
+                assert expert_identifier == extensions.UniqueIdentifier.text_string(
+                    "fluent-expert-key"
+                )
+
+                expert_retrieved = kmip_client.request().get(expert_identifier).execute(limits)
+                lifecycle_results.append(expert_retrieved)
+                expert_get_item = expert_retrieved.items[0]
+                assert expert_get_item.operation == protocol_values.Operation.GET
+                assert expert_get_item.outcome is client.BatchOutcome.COMPLETED
+                assert expert_get_item.result_status == 0
+                expert_get_response = expert_get_item.get_response()
+                assert expert_get_response is not None
+                try:
+                    assert expert_get_response.unique_identifier == expert_identifier
+                    assert expert_get_response.object is not None
+                finally:
+                    expert_get_response.close()
+
+                expert_destroyed = kmip_client.request().destroy(expert_identifier).execute(limits)
+                lifecycle_results.append(expert_destroyed)
+                expert_destroy_item = expert_destroyed.items[0]
+                assert expert_destroy_item.operation == protocol_values.Operation.DESTROY
+                assert expert_destroy_item.outcome is client.BatchOutcome.COMPLETED
+                assert expert_destroy_item.result_status == 0
+                expert_destroy_response = expert_destroy_item.destroy_response
+                assert expert_destroy_response is not None
+                assert expert_destroy_response.unique_identifier == expert_identifier
+                print(
+                    "python: fluent Vendor Attribute Create/Get/Destroy verified over TLS 1.3/mTLS"
+                )
             finally:
                 for lifecycle_result in lifecycle_results:
                     lifecycle_result.close()

@@ -28,6 +28,10 @@ EXPECTED_LINES = (
     "rust: Ping result and raw TTLV verified",
     "c: Ping result and raw TTLV verified",
     "python: Ping result and raw TTLV verified",
+    "rust: fluent Vendor Attribute Create/Get/Destroy verified over TLS 1.3/mTLS",
+    "c: fluent Vendor Attribute Create/Get/Destroy verified over TLS 1.3/mTLS",
+    "java: fluent Vendor Attribute Create/Get/Destroy verified over TLS 1.3/mTLS",
+    "python: fluent Vendor Attribute Create/Get/Destroy verified over TLS 1.3/mTLS",
     "rust: fluent ECDSA key pair, Sign, and Destroy verified over TLS 1.3/mTLS",
     "c: fluent ECDSA key pair, Sign, and Destroy verified over TLS 1.3/mTLS",
     "java: fluent ECDSA key pair, Sign, and Destroy verified over TLS 1.3/mTLS",
@@ -87,14 +91,15 @@ class ExecutePingConsumerTests(unittest.TestCase):
             _item(0x420097, 5, struct.pack(">I", 1)),
             _item(0x420098, 7, b"fluent-expert-key"),
         )
-        payload = _structure(
-            0x420079,
+        attributes = _structure(
+            0x420125,
             _item(0x420057, 5, struct.pack(">I", 2)),
             _item(0x420028, 5, struct.pack(">I", 3)),
             _item(0x42002A, 2, struct.pack(">i", 256)),
             _item(0x42002C, 2, struct.pack(">i", 12)),
             name,
         )
+        payload = _structure(0x420079, attributes)
 
         with self.assertRaisesRegex(RuntimeError, "expert Create omitted the expected Vendor Attribute"):
             _validate_operation(1, [(0x420079, 1, payload[8:])], [])
@@ -105,8 +110,8 @@ class ExecutePingConsumerTests(unittest.TestCase):
             _item(0x42000A, 7, b"purpose"),
             _item(0x42000B, 7, b"fluent expert journey"),
         )
-        valid_payload = _structure(
-            0x420079,
+        valid_attributes = _structure(
+            0x420125,
             _item(0x420057, 5, struct.pack(">I", 2)),
             _item(0x420028, 5, struct.pack(">I", 3)),
             _item(0x42002A, 2, struct.pack(">i", 256)),
@@ -114,6 +119,7 @@ class ExecutePingConsumerTests(unittest.TestCase):
             name,
             vendor_attribute,
         )
+        valid_payload = _structure(0x420079, valid_attributes)
         _validate_operation(1, [(0x420079, 1, valid_payload[8:])], [])
 
     def test_fixture_parses_ping_from_a_request_message(self) -> None:

@@ -270,6 +270,55 @@ fn execute_fluent_key_pair_signing(
     Ok(())
 }
 
+fn execute_fluent_expert_attributes(
+    client: &mut Client,
+    limits: &CodecLimits,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let attribute_value = item(
+        0x0042_000B,
+        Value::text_string("fluent expert journey".to_owned()),
+    )?;
+    let created = client
+        .request()
+        .create_symmetric_key()
+        .aes_256()
+        .usage_mask(CryptographicUsageMask::ENCRYPT | CryptographicUsageMask::DECRYPT)
+        .name("fluent-expert-key")
+        .vendor_attribute("KMIPKit.Example", "purpose", &attribute_value)
+        .execute(limits)?;
+    let identifier = match created.outcome() {
+        ClientBatchOutcome::CreateCompleted(response)
+            if response.result().status().raw() == 0
+                && response.object_type().is_some() => response
+                    .unique_identifier()
+                    .ok_or("expert Create response omitted its identifier")?
+                    .clone(),
+        outcome => return Err(format!("unexpected expert Create outcome: {outcome:?}").into()),
+    };
+    if identifier != kmipkit::protocol::UniqueIdentifier::from("fluent-expert-key") {
+        return Err("expert Create did not return its requested key identifier".into());
+    }
+
+    let retrieved = client.request().get(identifier.clone()).execute(limits)?;
+    match retrieved.outcome() {
+        ClientBatchOutcome::GetCompleted(response)
+            if response.result().status().raw() == 0
+                && response.unique_identifier() == Some(&identifier)
+                && response.object().is_some() => {}
+        outcome => return Err(format!("unexpected expert Get outcome: {outcome:?}").into()),
+    }
+
+    let destroyed = client.request().destroy(identifier.clone()).execute(limits)?;
+    match destroyed.outcome() {
+        ClientBatchOutcome::Destroy(response)
+            if response.result().status().raw() == 0
+                && response.unique_identifier() == Some(&identifier) => {}
+        outcome => return Err(format!("unexpected expert Destroy outcome: {outcome:?}").into()),
+    }
+    println!("rust: fluent Vendor Attribute Create/Get/Destroy verified over TLS 1.3/mTLS");
+    Ok(())
+}
+
 fn demonstrate_client_request() -> Result<(), Box<dyn std::error::Error>> {
     let request = ClientRequest::ping();
     let validation_report = request.validation_report();
@@ -340,5 +389,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("rust: Ping result and raw TTLV verified");
     execute_fluent_lifecycle(&mut client, &limits)?;
     execute_fluent_key_pair_signing(&mut client, &limits)?;
+    execute_fluent_expert_attributes(&mut client, &limits)?;
     Ok(())
 }

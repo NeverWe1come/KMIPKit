@@ -48,6 +48,22 @@ static int32_t enum_item(uint32_t raw_tag, uint32_t raw_value,
     return status;
 }
 
+static int32_t text_item(uint32_t raw_tag, const uint8_t *text, uint64_t text_length,
+                         kmipkit_codec_limits_t *limits, kmipkit_ttlv_item_t **out_item) {
+    kmipkit_ttlv_value_t *value = 0;
+    kmipkit_raw_tag_t *raw = 0;
+    kmipkit_tag_t *tag = 0;
+    int32_t status = kmipkit_ttlv_value_text_string(limits, text, text_length, &value);
+    if (status == 0) status = kmipkit_ttlv_raw_tag_create(raw_tag, &raw);
+    if (status == 0) status = kmipkit_ttlv_raw_tag_try_checked(raw, &tag);
+    if (status == 0) status = kmipkit_ttlv_item_create(tag, value, limits, out_item);
+    if (status == 0) value = 0;
+    kmipkit_ttlv_value_release(value);
+    kmipkit_tag_release(tag);
+    kmipkit_raw_tag_release(raw);
+    return status;
+}
+
 static int32_t build_synthetic_ping_response(kmipkit_codec_limits_t *limits,
                                             kmipkit_ttlv_structure_t **out_root) {
     kmipkit_ttlv_structure_t *version = 0;
@@ -431,6 +447,112 @@ static int32_t verify_fluent_key_pair_signing(
     return status;
 }
 
+static int32_t verify_fluent_expert_attributes(
+    kmipkit_client_t *client,
+    kmipkit_codec_limits_t *limits) {
+    static const uint8_t vendor[] = "KMIPKit.Example";
+    static const uint8_t attribute_name[] = "purpose";
+    static const uint8_t attribute_value[] = "fluent expert journey";
+    static const uint8_t key_name[] = "fluent-expert-key";
+    kmipkit_symmetric_key_builder_t *builder = 0;
+    kmipkit_ttlv_item_t *value_item = 0;
+    kmipkit_client_batch_response_t *create_response = 0;
+    kmipkit_client_batch_item_response_t *create_item = 0;
+    kmipkit_client_batch_response_t *get_response = 0;
+    kmipkit_client_batch_item_response_t *get_item = 0;
+    kmipkit_client_batch_response_t *destroy_response = 0;
+    kmipkit_client_batch_item_response_t *destroy_item = 0;
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    kmipkit_unique_identifier_v1_t response_identifier = {0};
+    kmipkit_client_batch_item_metadata_v1_t metadata = {0};
+    kmipkit_ttlv_structure_t *object = 0;
+    uint8_t present = 0;
+    uint8_t payload_present = 0;
+    uint32_t object_type = UINT32_MAX;
+    const char *failure_phase = "create expert attribute value";
+    int32_t status = text_item(UINT32_C(0x42000b), attribute_value,
+                               (uint64_t)(sizeof(attribute_value) - 1), limits, &value_item);
+    if (status == 0) status = kmipkit_symmetric_key_builder_create(&builder);
+    if (status == 0) status = kmipkit_symmetric_key_builder_set_algorithm(
+        builder, KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES);
+    if (status == 0) status = kmipkit_symmetric_key_builder_set_length(builder, INT32_C(256));
+    if (status == 0) status = kmipkit_symmetric_key_builder_set_usage_mask(
+        builder, (int32_t)(KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_ENCRYPT |
+                           KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_DECRYPT));
+    if (status == 0) status = kmipkit_symmetric_key_builder_set_name(
+        builder, key_name, (uint64_t)(sizeof(key_name) - 1));
+    if (status == 0) status = kmipkit_symmetric_key_builder_add_vendor_attribute(
+        builder, vendor, (uint64_t)(sizeof(vendor) - 1), attribute_name,
+        (uint64_t)(sizeof(attribute_name) - 1), value_item);
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = UINT32_C(1);
+    if (status == 0) {
+        failure_phase = "execute expert Create";
+        status = kmipkit_symmetric_key_builder_execute_v1(builder, client, limits, &create_response);
+    }
+    if (status == 0) status = kmipkit_client_batch_response_item_at(
+        create_response, UINT64_C(0), &create_item);
+    metadata.struct_size = (uint32_t)sizeof(metadata);
+    metadata.abi_version = UINT32_C(1);
+    if (status == 0) status = kmipkit_client_batch_item_response_metadata_v1(create_item, &metadata);
+    if (status == 0 && metadata.result_status != UINT32_C(0)) status = 4;
+    if (status == 0) status = kmipkit_client_batch_item_response_create(
+        create_item, &present, &object_type, &identifier);
+    if (status == 0 && (!present || object_type != KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY ||
+            identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
+            identifier.text_length != (uint64_t)(sizeof(key_name) - 1) ||
+            memcmp(identifier.text_data, key_name, (size_t)identifier.text_length) != 0)) status = 4;
+    if (status == 0) {
+        failure_phase = "Get expert key";
+        status = kmipkit_client_get_by_id_v1(client, &identifier, limits, &get_response);
+    }
+    if (status == 0) status = kmipkit_client_batch_response_item_at(
+        get_response, UINT64_C(0), &get_item);
+    if (status == 0) status = kmipkit_client_batch_item_response_metadata_v1(get_item, &metadata);
+    if (status == 0 && metadata.result_status != UINT32_C(0)) status = 4;
+    response_identifier.struct_size = (uint32_t)sizeof(response_identifier);
+    response_identifier.abi_version = UINT32_C(1);
+    if (status == 0) status = kmipkit_client_batch_item_response_get(
+        get_item, &present, &payload_present, &object_type, &response_identifier, &object);
+    if (status == 0 && (!present || !payload_present || object == 0 ||
+            response_identifier.kind != identifier.kind ||
+            response_identifier.text_length != identifier.text_length ||
+            memcmp(response_identifier.text_data, identifier.text_data,
+                   (size_t)identifier.text_length) != 0)) status = 4;
+    if (status == 0) {
+        failure_phase = "Destroy expert key";
+        status = kmipkit_client_destroy_by_id_v1(client, &identifier, limits, &destroy_response);
+    }
+    if (status == 0) status = kmipkit_client_batch_response_item_at(
+        destroy_response, UINT64_C(0), &destroy_item);
+    if (status == 0) status = kmipkit_client_batch_item_response_metadata_v1(destroy_item, &metadata);
+    if (status == 0 && metadata.result_status != UINT32_C(0)) status = 4;
+    response_identifier.struct_size = (uint32_t)sizeof(response_identifier);
+    response_identifier.abi_version = UINT32_C(1);
+    if (status == 0) status = kmipkit_client_batch_item_response_destroy(
+        destroy_item, &present, &response_identifier);
+    if (status == 0 && (!present || response_identifier.kind != identifier.kind ||
+            response_identifier.text_length != identifier.text_length ||
+            memcmp(response_identifier.text_data, identifier.text_data,
+                   (size_t)identifier.text_length) != 0)) status = 4;
+    if (status == 0) {
+        puts("c: fluent Vendor Attribute Create/Get/Destroy verified over TLS 1.3/mTLS");
+    } else {
+        fprintf(stderr, "C expert attribute journey failed during %s (status=%" PRId32 ")\n",
+                failure_phase, status);
+    }
+    kmipkit_ttlv_structure_release(object);
+    kmipkit_client_batch_item_response_release(destroy_item);
+    kmipkit_client_batch_response_release(destroy_response);
+    kmipkit_client_batch_item_response_release(get_item);
+    kmipkit_client_batch_response_release(get_response);
+    kmipkit_client_batch_item_response_release(create_item);
+    kmipkit_client_batch_response_release(create_response);
+    kmipkit_ttlv_item_release(value_item);
+    kmipkit_symmetric_key_builder_release(builder);
+    return status;
+}
+
 int main(void) {
     static const uint8_t comment[] = "local example";
     static const uint8_t username[] = "demo-user";
@@ -747,6 +869,7 @@ int main(void) {
     }
     if (status != 0) fprintf(stderr, "C symmetric Destroy failed (status=%" PRId32 ")\n", status);
     if (status == 0) status = verify_fluent_key_pair_signing(client, limits);
+    if (status == 0) status = verify_fluent_expert_attributes(client, limits);
     if (status == 0) puts("c: fluent Create/Get/Destroy verified over TLS 1.3/mTLS");
 
     kmipkit_ttlv_value_release(value);

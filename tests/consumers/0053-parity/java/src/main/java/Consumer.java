@@ -335,6 +335,54 @@ public final class Consumer {
                 }
                 System.out.println(
                         "java: fluent ECDSA key pair, Sign, and Destroy verified over TLS 1.3/mTLS");
+
+                UniqueIdentifier expertIdentifier;
+                try (RawTag raw = RawTag.fromRaw(0x540001);
+                        Tag tag = raw.checked();
+                        TtlvValue vendorValue = TtlvValue.TextString(
+                                "fluent expert journey".getBytes(StandardCharsets.UTF_8), limits);
+                        TtlvItem vendorValueItem = TtlvItem.create(tag, vendorValue, limits);
+                        SymmetricKeyBuilder builder = kmipClient.request().createSymmetricKey()
+                                .aes256()
+                                .usageMask((int) (KmipValues.CryptographicUsageMask.ENCRYPT
+                                        | KmipValues.CryptographicUsageMask.DECRYPT))
+                                .name("fluent-expert-key");
+                        ClientBatchResponse created = builder
+                                .vendorAttribute("KMIPKit.Example", "purpose", vendorValueItem)
+                                .execute(limits);
+                        ClientBatchItemResult itemResult = created.itemAt(0)) {
+                    var response = itemResult.createResponse().orElseThrow();
+                    if (!itemResult.outcomeKind().isCompleted() || itemResult.resultStatus() != 0
+                            || response.objectType() != 2
+                            || !response.uniqueIdentifier().text().equals("fluent-expert-key")) {
+                        throw new IllegalStateException(
+                                "expert-attribute Create did not return its typed response");
+                    }
+                    expertIdentifier = response.uniqueIdentifier();
+                }
+                try (ClientBatchResponse retrieved = kmipClient.request().get(expertIdentifier).execute(limits);
+                        ClientBatchItemResult itemResult = retrieved.itemAt(0);
+                        var response = itemResult.getResponse().orElseThrow()) {
+                    response.object().orElseThrow();
+                    if (!itemResult.outcomeKind().isCompleted() || itemResult.resultStatus() != 0
+                            || !response.uniqueIdentifier().orElseThrow().text()
+                                    .equals(expertIdentifier.text())) {
+                        throw new IllegalStateException(
+                                "expert-attribute Get did not return the typed identifier");
+                    }
+                }
+                try (ClientBatchResponse destroyed = kmipClient.request().destroy(expertIdentifier)
+                                .execute(limits);
+                        ClientBatchItemResult itemResult = destroyed.itemAt(0)) {
+                    if (!itemResult.outcomeKind().isCompleted() || itemResult.resultStatus() != 0
+                            || !itemResult.destroyResponse().orElseThrow().uniqueIdentifier()
+                                    .text().equals(expertIdentifier.text())) {
+                        throw new IllegalStateException(
+                                "expert-attribute Destroy did not return its typed identifier");
+                    }
+                }
+                System.out.println(
+                        "java: fluent Vendor Attribute Create/Get/Destroy verified over TLS 1.3/mTLS");
             }
         }
     }
