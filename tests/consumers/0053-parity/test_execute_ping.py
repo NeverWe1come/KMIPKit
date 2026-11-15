@@ -12,7 +12,7 @@ import tempfile
 import time
 import unittest
 
-from local_ping_responder import _is_ping_request, _item, _structure
+from local_ping_responder import _children, _item, _request_operation, _response, _structure
 
 
 CONSUMER_ROOT = Path(__file__).resolve().parent
@@ -25,15 +25,35 @@ EXPECTED_LINES = (
 
 
 class ExecutePingConsumerTests(unittest.TestCase):
-    def test_fixture_accepts_exactly_one_ping_operation(self) -> None:
+    def test_fixture_returns_distinct_identifiers_for_create_key_pair(self) -> None:
+        root = _children(_response(0x02)[8:])
+        response_items = [value for tag, kind, value in root if tag == 0x42000F and kind == 1]
+        self.assertEqual(len(response_items), 1)
+        response_fields = _children(response_items[0])
+        response_payloads = [
+            value for tag, kind, value in response_fields if tag == 0x42007C and kind == 1
+        ]
+        self.assertEqual(len(response_payloads), 1)
+        identifiers = {
+            tag: value
+            for tag, kind, value in _children(response_payloads[0])
+            if kind == 7 and tag in (0x420066, 0x42006F)
+        }
+        self.assertEqual(
+            identifiers,
+            {0x420066: b"fluent-private-key", 0x42006F: b"fluent-public-key"},
+        )
+
+    def test_fixture_parses_ping_from_a_request_message(self) -> None:
         operation = _item(0x42005C, 5, struct.pack(">I", 0x3B))
-        other_operation = _item(0x42005C, 5, struct.pack(">I", 0x18))
-        ping_item = _structure(0x42000F, operation)
-        query_item = _structure(0x42000F, other_operation)
-        self.assertTrue(_is_ping_request(_structure(0x420078, ping_item)))
-        self.assertFalse(_is_ping_request(_structure(0x420078, ping_item, query_item)))
-        multiple_operations = _structure(0x42000F, operation, other_operation)
-        self.assertFalse(_is_ping_request(_structure(0x420078, multiple_operations)))
+        ping_item = _structure(
+            0x42000F,
+            operation,
+            _structure(0x420079),
+        )
+        request_header = _structure(0x420077, _item(0x42000D, 2, struct.pack(">i", 1)))
+        request_message = _structure(0x420078, request_header, ping_item)
+        self.assertEqual(_request_operation(request_message)[0], 0x3B)
 
     def test_fixture_records_its_process_id_for_runner_cleanup(self) -> None:
         repository_root = CONSUMER_ROOT.parents[2]
