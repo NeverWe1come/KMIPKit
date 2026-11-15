@@ -13,6 +13,37 @@ use crate::fluent::{
     SetAttributeBuilder,
 };
 
+#[test]
+fn add_attribute_builder_constructs_the_existing_typed_request() {
+    let mut client = failed_request_client();
+    let request = client
+        .request()
+        .add_attribute()
+        .unique_identifier("key-42")
+        .attribute(
+            Attribute::<typed::Description>::new("managed by fluent".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        )
+        .build_request()
+        .expect("the fluent Add Attribute request is valid");
+
+    assert_eq!(request.unique_identifier(), Some("key-42"));
+    assert_eq!(
+        request.new_attribute().item().tag().raw(),
+        typed::Description::TAG
+    );
+    assert!(request.new_attribute().item().with_value(|value| matches!(
+        value,
+        ValueView::TextString(text) if text == "managed by fluent"
+    )));
+}
+
+#[test]
+fn add_attribute_builder_rejects_a_missing_required_new_attribute() {
+    let mut client = failed_request_client();
+    assert!(client.request().add_attribute().validate().is_err());
+}
+
 fn item(raw_tag: u32, value: Value) -> Item {
     Item::new(
         RawTag::new(raw_tag)
