@@ -137,19 +137,25 @@ La API de alto nivel no expone el intercambio de bytes del transporte. Los resul
 
 ## Ejemplos ejecutables
 
-Ejecuta el [quickstart de KMIPKIT-0053](../../../specs/053-api-parity-facade/quickstart.md)
-desde la raíz del repositorio para compilar y ejecutar consumidores externos de
-los cuatro paquetes. Los programas construyen y validan localmente una petición
-Ping, adjuntan una Authentication de demostración y analizan un árbol TTLV de
-respuesta sintético. No contactan con un servidor KMIP. Consulta los fuentes
-completos de [Rust](../../../tests/consumers/0053-parity/rust/src/main.rs),
+Ejecuta `bash tests/consumers/0053-parity/verify.sh` desde la raíz del
+repositorio (Windows: `pwsh -File tests/consumers/0053-parity/verify.ps1`) para
+compilar y ejecutar los consumidores de Rust, C, Java y Python contra una
+fixture local TLS 1.3 que exige TLS mutuo. Los consumidores recorren Create/Get/
+Destroy de una clave simétrica, Encrypt/Decrypt con parámetros AES-GCM explícitos
+y Create Key Pair ECDSA, Sign y Destroy de los dos identificadores devueltos.
+Java también comprueba los resultados Success, Pending y Failure del ciclo de
+vida. La fixture comprueba las operaciones y campos seleccionados de la petición
+y devuelve respuestas KMIP codificadas; esto verifica las rutas del cliente
+contra la fixture controlada, no contra un KMS externo. Consulta los fuentes de
+[Rust](../../../tests/consumers/0053-parity/rust/src/main.rs),
 [C](../../../tests/consumers/0053-parity/c/main.c),
 [Java](../../../tests/consumers/0053-parity/java/src/main/java/Consumer.java)
-y [Python](../../../tests/consumers/0053-parity/python/main.py).
-Los ejemplos acceden al TTLV genérico de la respuesta. C, Java y Python también
-exponen lectores tipados con comprobación de identidad de operación para
-Cancel, Poll, Process y Query Async; las pruebas de paridad asociadas están
-registradas en la [tarea T078](../../../specs/053-api-parity-facade/tasks.md).
+y [Python](../../../tests/consumers/0053-parity/python/main.py). Estos son los
+tres primeros de los cinco recorridos progresivos de KMIPKIT-0093; todavía
+quedan los atributos expertos y el batch con ID Placeholder. C, Java y Python
+también exponen lectores tipados que comprueban la identidad de operación para
+Cancel, Poll, Process y Query Async; sus pruebas de paridad están registradas
+en la [tarea T078](../../../specs/053-api-parity-facade/tasks.md).
 
 ## Representaciones explícitas de la respuesta completa
 

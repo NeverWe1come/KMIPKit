@@ -235,3 +235,42 @@
   usage. The API manifest generator remains the source for all checked-in
   generated outputs.
 
+## KMIPKIT-0093 Create Key Pair and signing TLS journey
+
+### Red
+
+- Extended the external-consumer acceptance check to require an ECDSA
+  Create-Key-Pair/Sign/Destroy journey in all four languages. Before the
+  fixture response and consumer paths were added, each consumer was missing the
+  required journey marker.
+- Added a focused fixture test requiring Destroy to echo the Unique Identifier
+  from the request. It failed before the responder accepted and returned the
+  request identifier.
+
+### Green
+
+- The loopback fixture now validates ECDSA, the explicit 256-bit length, the
+  private Sign and public Verify masks, and the Sign request's SHA-256/ECDSA
+  parameters. It returns distinct private/public identifiers and fixture
+  Signature Data, and echoes each Destroy request identifier.
+- Each language creates the pair, reads both typed identifiers, signs the same
+  explicit input, checks the typed Signature Data, and destroys both keys.
+  C initializes the versioned output records before reading typed response
+  fields; Python reads the typed Destroy response and wipes its signature copy
+  even when an assertion fails.
+- The fixture consumer runner checks the full 41-request operation sequence
+  over TLS 1.3/mTLS and rebuilds the editable Python CFFI package against the
+  current workspace before execution. `bash tests/consumers/0053-parity/verify.sh`
+  passes on the current worktree, with all four languages completing the key
+  pair journey.
+
+### Refactor
+
+- Updated the English and Spanish user guides to distinguish these controlled
+  TLS exchanges from synthetic response parsing and external-KMS
+  interoperability. The same docs record that the expert-attribute and batch
+  ID Placeholder journeys remain for the five-journey acceptance criterion.
+- Updated FR-004, FR-011, and FR-013 traceability to reflect the exercised
+  four-language path while preserving the remaining operation-matrix and
+  closeout work.
+
