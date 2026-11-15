@@ -150,3 +150,41 @@ Los ejemplos acceden al TTLV genérico de la respuesta. C, Java y Python tambié
 exponen lectores tipados con comprobación de identidad de operación para
 Cancel, Poll, Process y Query Async; las pruebas de paridad asociadas están
 registradas en la [tarea T078](../../../specs/053-api-parity-facade/tasks.md).
+
+## Representaciones explícitas de la respuesta completa
+
+Los métodos de inspección de un elemento representan el **ResponseMessage
+completo retenido**: la cabecera común y todos los elementos del lote en su
+orden original, incluidos los valores de fabricante conservados. Selecciona
+`ttlv_hex` / `ttlvHex`, `json` o `xml` y proporciona `CodecLimits` explícitamente.
+El hexadecimal TTLV usa mayúsculas y una representación canónica del modelo;
+no garantiza reproducir el relleno original de la red. Los cuatro lenguajes
+usan el mismo modelo Rust. La inspección no envía, consulta operaciones
+pendientes, reintenta ni cambia el resultado de la respuesta.
+
+| Lenguaje | Método explícito | Propietario y liberación |
+|---|---|---|
+| C | `kmipkit_client_batch_item_response_ttlv_hex`, `_json`, `_xml` | `kmipkit_secret_bytes_t *`; acceso mediante `kmipkit_secret_bytes_with_bytes` y liberación con `kmipkit_secret_bytes_release` |
+| Java | `ClientBatchItemResult.ttlvHex(limits)`, `.json(limits)`, `.xml(limits)` | `SecretBytes`; usa `withBytes` dentro de try-with-resources |
+| Python | `BatchItemResult.ttlv_hex(limits)`, `.json(limits)`, `.xml(limits)` | `credentials.SecretBytes`; usa `with_bytes` dentro de un gestor de contexto |
+
+El propietario contiene bytes UTF-8 y sigue siendo válido después de cerrar
+la respuesta original. Los propietarios y los errores omiten el contenido en
+sus representaciones de diagnóstico. C devuelve un puntero nulo ante un error.
+Los handles no válidos usan la categoría existente de entrada inválida; los
+límites del códec y los fallos de asignación usan límite de recursos; los
+árboles retenidos inválidos usan entrada inválida y los fallos de representación
+del códec usan un error interno sin contenido. Java y Python
+conservan estas categorías en sus excepciones.
+
+La memoria nativa se sobrescribe al liberarla. Las copias temporales de Java y
+Python se borran al terminar el callback, incluso si lanza una excepción. Las
+cadenas `String` o `str`, los bytes inmutables y otras copias creadas por el
+usuario quedan bajo su responsabilidad: KMIPKit no puede garantizar que el
+runtime las borre. Evita registrar estas representaciones, que pueden contener
+material de claves y credenciales.
+
+El límite de inspección `max_message_bytes` se aplica a la salida final solicitada.
+El hexadecimal TTLV canónico ocupa exactamente el doble que el TTLV binario.
+Un límite suficiente para el mensaje binario puede rechazar su vista hexadecimal;
+se acepta un límite igual a la longitud completa de esa representación.

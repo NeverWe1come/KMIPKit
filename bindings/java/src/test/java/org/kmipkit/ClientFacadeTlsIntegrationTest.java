@@ -72,6 +72,8 @@ import org.kmipkit.extensions.TransportConfiguration;
 import org.kmipkit.extensions.WireEncoding;
 import org.kmipkit.extensions.UniqueIdentifier;
 import org.kmipkit.extensions.UsageAllocationContext;
+import org.kmipkit.client.KmipClient;
+import org.kmipkit.client.SymmetricKeyRequest;
 import org.kmipkit.internal.NativeHandle;
 import org.kmipkit.ttlv.CodecLimits;
 import org.kmipkit.ttlv.RawTag;
@@ -736,6 +738,8 @@ final class ClientFacadeTlsIntegrationTest {
         byte[] logoutId = "logout-fixture".getBytes(StandardCharsets.US_ASCII);
         byte[] request;
         TtlvStructure retainedQueryRaw;
+        org.kmipkit.credentials.SecretBytes retainedResponseView;
+        ClientBatchItemResult retainedResult;
         try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
                         List.of(), ExtensionRegistryLimits.defaults());
                 ClientConfiguration extensions = ClientConfiguration.create(registry);
@@ -757,6 +761,48 @@ final class ClientFacadeTlsIntegrationTest {
                     ClientBatchItemResult pingResult = response.itemAt(0);
                     ClientBatchItemResult queryResult = response.itemAt(1);
                     ClientBatchItemResult logoutResult = response.itemAt(2)) {
+                // KMIPKIT-0095-FR-001..005; KMIP 2.1 §§8.4–8.6 retains the full ordered batch.
+                try (var hex = queryResult.ttlvHex(CodecLimits.defaults());
+                        var json = queryResult.json(CodecLimits.defaults());
+                        var xml = queryResult.xml(CodecLimits.defaults())) {
+                    boolean identical = Arrays.equals(HexFormat.of().withUpperCase()
+                            .formatHex(pingQueryLogoutResponseMessage()).getBytes(StandardCharsets.US_ASCII),
+                            hex.withBytes(byte[]::clone));
+                    assertTrue(identical, "canonical rendering preserves the complete response");
+                    int binaryLength = pingQueryLogoutResponseMessage().length;
+                    CodecLimits binaryOnly = CodecLimits.create(binaryLength, 64, 100_000);
+                    assertThrows(ResourceLimitException.class, () -> {
+                        try (var unexpectedlyRendered = queryResult.ttlvHex(binaryOnly)) {
+                            // Closing a wrongly accepted owner keeps the Red path deterministic.
+                        }
+                    });
+                    int hexLength = Math.multiplyExact(binaryLength, 2);
+                    try (var exact = queryResult.ttlvHex(CodecLimits.create(hexLength, 64, 100_000))) {
+                        int actualLength = exact.withBytes(bytes -> bytes.length);
+                        assertEquals(hexLength, actualLength);
+                    }
+                    for (var owner : List.of(json, xml)) {
+                        owner.withBytes(bytes -> {
+                            String text = new String(bytes, StandardCharsets.UTF_8);
+                            assertTrue(text.indexOf("ResponseHeader") < text.indexOf("BatchItem"));
+                            String hexadecimalText = text.toUpperCase(java.util.Locale.ROOT);
+                            int pingPosition = hexadecimalText.indexOf(HexFormat.of().withUpperCase().formatHex(pingId));
+                            int queryPosition = hexadecimalText.indexOf(HexFormat.of().withUpperCase().formatHex(queryId));
+                            assertTrue(pingPosition >= 0 && pingPosition < queryPosition);
+                            return null;
+                        });
+                        assertFalse(owner.toString().contains("FixtureVendor"));
+                        byte[][] temporary = new byte[1][];
+                        owner.withBytes(bytes -> { temporary[0] = bytes; return null; });
+                        assertArrayEquals(new byte[temporary[0].length], temporary[0]);
+                    }
+                    for (CodecLimits restricted : List.of(CodecLimits.create(32, 64, 100_000),
+                            CodecLimits.create(16_777_216, 1, 100_000), CodecLimits.create(16_777_216, 64, 1))) {
+                        assertThrows(ResourceLimitException.class, () -> queryResult.ttlvHex(restricted));
+                        assertThrows(ResourceLimitException.class, () -> queryResult.json(restricted));
+                        assertThrows(ResourceLimitException.class, () -> queryResult.xml(restricted));
+                    }
+                }
                 NativeBridgeCoverageTest.assertResponseMappers(pingResult, "pingResponse");
                 NativeBridgeCoverageTest.assertResponseMappers(queryResult, "queryResponse");
                 NativeBridgeCoverageTest.assertResponseMappers(logoutResult, "logoutResponse");
@@ -773,6 +819,8 @@ final class ClientFacadeTlsIntegrationTest {
                 assertEquals(0x2e, logoutResult.operation());
                 assertEquals(Boolean.TRUE, logoutResult.logoutResponse().orElseThrow());
                 retainedQueryRaw = queryResult.raw().orElseThrow();
+                retainedResponseView = queryResult.json(CodecLimits.defaults());
+                retainedResult = response.itemAt(1);
                 try (TtlvStructure responseHeader = queryResult.responseHeaderTtlv();
                         TtlvStructureView headerView = responseHeader.view()) {
                     assertTrue(headerView.itemCount() > 0);
@@ -828,6 +876,21 @@ final class ClientFacadeTlsIntegrationTest {
             listener.close();
         }
 
+        try (retainedResult; var afterClose = retainedResult.xml(CodecLimits.defaults())) {
+            assertEquals(Boolean.TRUE, afterClose.withBytes(bytes -> bytes.length > 0),
+                    "response rendering works after the client and transport have closed");
+        }
+        try (retainedResponseView) {
+            byte[][] exceptionalCopy = new byte[1][];
+            assertThrows(IllegalStateException.class, () -> retainedResponseView.withBytes(bytes -> {
+                exceptionalCopy[0] = bytes;
+                throw new IllegalStateException("callback failed");
+            }));
+            assertArrayEquals(new byte[exceptionalCopy[0].length], exceptionalCopy[0]);
+            assertEquals(Boolean.TRUE, retainedResponseView.withBytes(bytes -> bytes.length > 0),
+                    "rendered owner survives closing the client and source response");
+        }
+        assertThrows(InvalidInputException.class, () -> retainedResponseView.withBytes(bytes -> null));
         assertContains(request, enumeration(0x42005c, 0x3b));
         assertContains(request, enumeration(0x42005c, 0x18));
         assertContains(request, item(0x420093, 8, pingId));
@@ -3947,6 +4010,78 @@ final class ClientFacadeTlsIntegrationTest {
         assertTrue(peer.isDone());
     }
 
+    @Test
+    void fluentClientConveniencesReturnSuccessfulTypedResponsesOverMutualTls() throws Exception {
+        byte[] serverCertificatePem = testFixture("server-cert.pem");
+        byte[] serverPrivateKeyPem = testFixture("server-key.pem");
+        byte[] clientCertificatePem = testFixture("client-cert.pem");
+        byte[] clientPrivateKeyPem = testFixture("client-key.pem");
+        X509Certificate clientCertificate = testCertificate(clientCertificatePem);
+        SSLServerSocket listener = deterministicMtlsListener(
+                serverCertificatePem, serverPrivateKeyPem, clientCertificate);
+        FutureTask<List<byte[]>> peer = new FutureTask<>(() -> serveResponses(listener,
+                fluentClientResponseMessage(1), fluentClientResponseMessage(1),
+                fluentClientResponseMessage(10), fluentClientResponseMessage(10),
+                fluentClientResponseMessage(20), fluentClientResponseMessage(20),
+                discoverVersionsResponseMessage(1), discoverVersionsResponseMessage(1)));
+        Thread peerThread = new Thread(peer, "kmipkit-java-fluent-client-fixture");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                        List.of(), ExtensionRegistryLimits.defaults());
+                ClientConfiguration extensions = ClientConfiguration.create(registry);
+                TransportConfiguration transport = TransportConfiguration.builder()
+                        .rawTls("127.0.0.1", listener.getLocalPort())
+                        .clientIdentityPem(new byte[][] {clientCertificatePem}, clientPrivateKeyPem)
+                        .trustCertificatesPem(new byte[][] {serverCertificatePem})
+                        .timeouts(TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(8)))
+                        .build();
+                KmipClient client = KmipClient.create(extensions, transport)) {
+            CodecLimits limits = CodecLimits.defaults();
+            UniqueIdentifier id = UniqueIdentifier.textString("fluent-id");
+            try (ClientBatchResponse response = client.createSymmetricKey(
+                    SymmetricKeyRequest.named(3, 256, 12, "fluent-key"), limits)) {
+                assertEquals(1, response.itemCount());
+            }
+            try (ClientBatchResponse response = client.createSymmetricKey(
+                    SymmetricKeyRequest.unnamed(3, 256, 12), limits, RequestOptions.defaults())) {
+                assertEquals(1, response.itemCount());
+            }
+            try (ClientBatchResponse response = client.getById(id, limits)) {
+                assertEquals(1, response.itemCount());
+            }
+            try (ClientBatchResponse response = client.getById(id, limits, RequestOptions.defaults())) {
+                assertEquals(1, response.itemCount());
+            }
+            try (ClientBatchResponse response = client.destroyById(id, limits)) {
+                assertEquals(1, response.itemCount());
+            }
+            try (ClientBatchResponse response = client.destroyById(id, limits, RequestOptions.defaults())) {
+                assertEquals(1, response.itemCount());
+            }
+            try (ClientBatch batch = ClientBatch.create()) {
+                batch.add(ClientBatchItem.discoverVersions().withUniqueBatchItemId(uniqueBatchItemId(0)));
+                try (ClientBatchResponse response = client.execute(batch, limits)) {
+                    assertEquals(1, response.itemCount());
+                }
+            }
+            try (ClientBatch batch = ClientBatch.create()) {
+                batch.add(ClientBatchItem.discoverVersions().withUniqueBatchItemId(uniqueBatchItemId(0)));
+                try (ClientBatchResponse response = client.executeWithOptions(
+                        batch, limits, RequestOptions.defaults())) {
+                    assertEquals(1, response.itemCount());
+                }
+            }
+        } finally {
+            listener.close();
+        }
+        assertEquals(8, peer.get(15, TimeUnit.SECONDS).size());
+    }
+
     // OASIS KMIP Specification v2.1 §6.1.52, Tables 325–327.
     @Test
     void setConstraintsResponseUsesNativeJniBridgeAndExposesTtlvOnlyOnSuccess() throws Exception {
@@ -6633,6 +6768,25 @@ final class ClientFacadeTlsIntegrationTest {
                 item(0x420093, 8, uniqueBatchItemId(0)),
                 enumeration(0x42007f, 0),
                 payload);
+        return structure(0x42007b, header, responseItem);
+    }
+
+    private static byte[] fluentClientResponseMessage(int operation) throws Exception {
+        byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
+                item(0x42006b, 2, integer(1)));
+        byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
+                item(0x42000d, 2, integer(1)));
+        byte[] identifier = item(0x420094, 7, "fluent-id".getBytes(StandardCharsets.US_ASCII));
+        byte[] payload = switch (operation) {
+            case 1 -> structure(0x42007c, enumeration(0x420057, 2), identifier);
+            case 10 -> structure(0x42007c, enumeration(0x420057, 2), identifier,
+                    structure(0x42008f, structure(0x420040,
+                            item(0x420045, 8, "fluent-key-material".getBytes(StandardCharsets.US_ASCII)))));
+            case 20 -> structure(0x42007c, identifier);
+            default -> throw new IllegalArgumentException("unsupported fluent operation: " + operation);
+        };
+        byte[] responseItem = structure(0x42000f, enumeration(0x42005c, operation),
+                enumeration(0x42007f, 0), payload);
         return structure(0x42007b, header, responseItem);
     }
 

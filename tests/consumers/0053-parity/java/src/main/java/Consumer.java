@@ -1,6 +1,8 @@
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
-import org.kmipkit.extensions.Client;
+import org.kmipkit.client.KmipClient;
+import org.kmipkit.client.SymmetricKeyRequest;
 import org.kmipkit.extensions.ClientBatchItemResult;
 import org.kmipkit.extensions.ClientBatchResponse;
 import org.kmipkit.extensions.ClientConfiguration;
@@ -11,6 +13,8 @@ import org.kmipkit.credentials.Authentication;
 import org.kmipkit.credentials.Credential;
 import org.kmipkit.extensions.ClientBatch;
 import org.kmipkit.extensions.ClientBatchItem;
+import org.kmipkit.extensions.RequestOptions;
+import org.kmipkit.extensions.UniqueIdentifier;
 import org.kmipkit.message.ResponseMessage;
 import org.kmipkit.protocol.CryptographicParameters;
 import org.kmipkit.ttlv.CodecLimits;
@@ -126,19 +130,59 @@ public final class Consumer {
                                     TransportConfiguration.Encoding.PEM)
                             .tlsServerName("localhost")
                             .build();
-                    Client kmipClient = Client.create(configuration, transport);
-                    ClientBatch batch = ClientBatch.create()) {
-                batch.add(ClientBatchItem.ping());
-                try (ClientBatchResponse result = kmipClient.execute(batch, limits);
-                        ClientBatchItemResult itemResult = result.itemAt(0);
-                        TtlvStructure raw = itemResult.raw().orElseThrow();
-                        var rawView = raw.view()) {
-                    if (itemResult.pingResponse().orElse(false) != Boolean.TRUE
-                            || itemResult.resultStatus() != 0 || rawView.itemCount() != 0) {
-                        throw new IllegalStateException("executed Ping result or raw TTLV mismatch");
+                    KmipClient kmipClient = KmipClient.create(configuration, transport)) {
+                UniqueIdentifier identifier;
+                try (ClientBatchResponse created = kmipClient.createSymmetricKey(
+                                SymmetricKeyRequest.named(3, 256, 12, "fluent-key"), limits,
+                                RequestOptions.defaults());
+                        ClientBatchItemResult itemResult = created.itemAt(0)) {
+                    if (!itemResult.outcomeKind().isCompleted() || itemResult.resultStatus() != 0) {
+                        throw new IllegalStateException("Create did not complete successfully");
                     }
-                    System.out.println("java: Ping result and raw TTLV verified");
+                    identifier = itemResult.createResponse().orElseThrow().uniqueIdentifier();
                 }
+                try (ClientBatchResponse retrieved = kmipClient.request().get(identifier)
+                                .asynchronousIndicator(1).withOptions(RequestOptions.defaults()).execute(limits);
+                        ClientBatchItemResult itemResult = retrieved.itemAt(0);
+                        var response = itemResult.getResponse().orElseThrow()) {
+                    if (!itemResult.outcomeKind().isCompleted() || itemResult.resultStatus() != 0
+                            || !response.uniqueIdentifier().orElseThrow().text().equals(identifier.text())
+                            || response.object().isEmpty()) {
+                        throw new IllegalStateException("Get did not return the created object");
+                    }
+                }
+                try (ClientBatchResponse destroyed = kmipClient.destroyById(
+                                identifier, limits, RequestOptions.defaults());
+                        ClientBatchItemResult itemResult = destroyed.itemAt(0)) {
+                    if (!itemResult.outcomeKind().isCompleted() || itemResult.resultStatus() != 0
+                            || !itemResult.destroyResponse().orElseThrow().uniqueIdentifier()
+                                    .text().equals(identifier.text())) {
+                        throw new IllegalStateException("Destroy did not return the created identifier");
+                    }
+                }
+                try (ClientBatchResponse pending = kmipClient.request().destroy(identifier)
+                                .asynchronousIndicator(1).execute(limits);
+                        ClientBatchItemResult itemResult = pending.itemAt(0)) {
+                    byte[] correlation = itemResult.pendingCorrelationValue().orElseThrow();
+                    try {
+                        if (!itemResult.outcomeKind().isPending() || itemResult.resultStatus() != 2
+                                || !Arrays.equals(correlation, "destroy-pending-id".getBytes())) {
+                            throw new IllegalStateException("Pending outcome or correlation was not preserved");
+                        }
+                    } finally {
+                        Arrays.fill(correlation, (byte) 0);
+                    }
+                }
+                try (ClientBatchResponse failed = kmipClient.request().destroy(identifier)
+                                .asynchronousIndicator(1).execute(limits);
+                        ClientBatchItemResult itemResult = failed.itemAt(0)) {
+                    if (!itemResult.outcomeKind().isCompleted() || itemResult.resultStatus() != 1
+                            || itemResult.destroyResponse().isPresent()
+                            || !itemResult.resultMessage().orElseThrow().equals("fixture rejected destroy")) {
+                        throw new IllegalStateException("Failure outcome was not preserved");
+                    }
+                }
+                System.out.println("java: fluent lifecycle Success/Pending/Failure outcomes verified");
             }
         }
     }

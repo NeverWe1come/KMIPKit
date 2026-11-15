@@ -153,12 +153,25 @@ REQUEST_CONSTRUCTION_REQUIREMENTS = {
 }
 BLOCKED_BEFORE = 224
 BLOCKED_AFTER = 221
+KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS = {
+    "rust-observed-kmipkit-0096-attribute-at-root",
+    "rust-observed-kmipkit-0096-attribute-at-module",
+    "T096:java-fluent-crypto:attribute-item-at",
+    "T096:fluent-python:attribute-item-at",
+}
 # The non-target snapshot includes subsequent approved T102 manifest slices.
 # Includes the reviewed 0047 release stack and complete 0048/0049 inventories.
 # Snapshot includes final 0049 and exact 0050 constructor mappings.
 # The snapshot includes the approved KMIPKIT-0052 async typed-reader routes.
 # The snapshot includes the final KMIPKIT-0053 verified operation surfaces.
-DECLARATIONS_SHA256 = "6698c04883baa2c397b18b55a767614769a18434fd728e71229890fe8b99b3ec"
+# The snapshot includes approved KMIPKIT-0099 Create Split Key and KMIPKIT-0100
+# Register declarations, KMIPKIT-0101 lifecycle declarations, and KMIPKIT-0102
+# Rust plus KMIPKIT-0103 C, KMIPKIT-0104 Java, and KMIPKIT-0105 Python fluent
+# cryptographic operation builders; KMIPKIT-0095 adds response rendering and
+# KMIPKIT-0108 attribute-read declarations and KMIPKIT-0109 attribute builders;
+# this inventory also includes the approved KMIPKIT-0093 reconciliation and
+# narrowed T101 mappings.
+DECLARATIONS_SHA256 = "7200cf9573fe2c93d9e53b5d8a8cb381b364553312e4da4aec95c47edc492920"
 OPERATIONS_SHA256 = "2a6eb9fb6823b3456b3fb10b6d4af8477be9f1a1f68c06c252bb4873b272f3bc"
 
 
@@ -370,7 +383,7 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
             PKCS11_REQUEST_EXTENSIONS_C_DECLARATION_ID,
         } | PKCS11_REQUEST_EXTENSION_IDS | {
             target["id"] for target in REQUEST_CONSTRUCTION_TARGETS
-        }
+        } | KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS
         other_declarations = copy.deepcopy([
             row for row in self.manifest["publicDeclarations"] if row["declarationId"] not in target_ids
         ])
