@@ -182,7 +182,7 @@ class T102ProfileContextStateTraitBatchTests(unittest.TestCase):
             row for row in self.catalog["profiles"]
             if row["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT"
         )
-        self.assertEqual(baseline["claim_state"], "evidence_incomplete")
+        self.assertEqual(baseline["claim_state"], "evidence_complete")
 
     def test_manifest_totals_reflect_current_t102_trait_batches(self) -> None:
         candidates = sum(

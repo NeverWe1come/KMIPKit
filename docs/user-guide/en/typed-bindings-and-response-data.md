@@ -148,3 +148,38 @@ and [Python](../../../tests/consumers/0053-parity/python/main.py).
 The examples exercise generic response TTLV access. C, Java, and Python also
 expose typed readers that check operation identity for Cancel, Poll, Process,
 and Query Async; their parity tests are recorded in [task T078](../../../specs/053-api-parity-facade/tasks.md).
+
+## Explicit full response representations
+
+The response item inspection methods render the **complete retained
+ResponseMessage**: the common header followed by all batch items in source
+order, including retained vendor values. Select `ttlv_hex` / `ttlvHex`, `json`,
+or `xml` and pass `CodecLimits` explicitly. TTLV hex is canonical uppercase;
+these are model representations, not a promise to reproduce network padding.
+Rendering uses the same Rust model in all four languages and never sends,
+polls, retries, or changes the response outcome.
+
+| Language | Explicit rendering | Owned result and release |
+|---|---|---|
+| C | `kmipkit_client_batch_item_response_ttlv_hex`, `_json`, `_xml` | `kmipkit_secret_bytes_t *`; inspect with `kmipkit_secret_bytes_with_bytes`, release with `kmipkit_secret_bytes_release` |
+| Java | `ClientBatchItemResult.ttlvHex(limits)`, `.json(limits)`, `.xml(limits)` | `SecretBytes`; use `withBytes` inside try-with-resources |
+| Python | `BatchItemResult.ttlv_hex(limits)`, `.json(limits)`, `.xml(limits)` | `credentials.SecretBytes`; use `with_bytes` inside a context manager |
+
+Each owner contains UTF-8 bytes and survives closing the source response.
+Owners and diagnostic errors redact their content. C output handles are null
+on failure. Invalid handles use the existing invalid-input status; codec limit
+or allocation failures use the resource-limit status; invalid retained trees
+use invalid-input, and codec representation failures use the payload-free
+internal status. The corresponding Java and Python
+exceptions follow these same categories.
+
+The native allocation is zeroized on release. Java and Python callback copies
+are cleared when the callback returns, including exceptional returns. A caller
+that creates a `String`, `str`, immutable bytes, or another copy owns that copy;
+KMIPKit cannot guarantee its erasure by the language runtime. Do not log
+rendered responses: they can contain key material and credentials.
+
+The `max_message_bytes` inspection limit bounds the final requested output.
+Canonical TTLV hexadecimal needs exactly twice the binary TTLV byte length.
+A cap large enough for the binary message can therefore reject its hex view;
+a cap equal to the complete hexadecimal length is accepted.

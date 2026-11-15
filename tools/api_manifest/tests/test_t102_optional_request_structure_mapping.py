@@ -192,7 +192,14 @@ PKCS11_REQUEST_SETTER_IDS = {
 # Includes the reviewed 0047 release stack and complete 0048/0049 inventories.
 # Snapshot includes final 0049 and exact 0050 constructor mappings.
 # The snapshot includes the approved KMIPKIT-0052 async typed-reader routes.
-OTHER_DECLARATIONS_SHA256 = "ca4eb5018b316f7380113426704bdcbd90413227ecf735274f5252802866d9ac"
+# It also includes approved KMIPKIT-0099 Create Split Key and KMIPKIT-0100
+# Register declarations, lifecycle declarations, KMIPKIT-0102 Rust, KMIPKIT-0103
+# C, KMIPKIT-0104 Java, and KMIPKIT-0105 Python crypto facades; KMIPKIT-0095
+# response views; KMIPKIT-0096 expert attributes; KMIPKIT-0093 reconciliation;
+# and KMIPKIT-0108/0109 attribute operations and bindings. KMIPKIT-0124 adds
+# 28 KMIP 3.0 fluent and 16 asynchronous batch declarations, which also map
+# asynchronous constructors onto four existing operation rows.
+OTHER_DECLARATIONS_SHA256 = "2b273eaa642065b0a98763be540c703dcf38255703260043a67b8f01b1663b97"
 OTHER_OPERATIONS_SHA256 = "2ea94003f2877d0e6d84271d67d9add6f48a5c5b7a837c48b22fe40f41022d39"
 def canonical_sha256(value: object) -> str:
     encoded = json.dumps(
@@ -402,7 +409,7 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
                     },
                 )
         other_declarations = without_0047_versioned_values(other_declarations)
-        self.assertEqual("5354bf97f55cdd8d65090b2d40edcd1ba1091106a65c43539716ee2239bb9966", canonical_sha256(other_declarations))
+        self.assertEqual(OTHER_DECLARATIONS_SHA256, canonical_sha256(other_declarations))
 
         other_operations = copy.deepcopy(self.manifest["operations"])
         for operation in other_operations:
@@ -438,7 +445,7 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
                     if evidence_id not in RECERTIFY_OPERATION_ADDED_EVIDENCE
                 ]
         self.assertEqual(
-            "a1e58fe7e76de32113a53d5ad14e6c40ca822a8e51a6cc53deb99f67b5486663",
+            "327bd4ccc9eb3c600fe49eed482a9f47840d555c4066560a39af67520dcf5b9a",
             canonical_sha256(other_operations),
         )
 

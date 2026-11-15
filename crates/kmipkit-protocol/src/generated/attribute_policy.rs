@@ -16,6 +16,8 @@ pub(super) struct AttributePolicy {
     pub(super) tag: u32,
     pub(super) element_id: &'static str,
     pub(super) name: &'static str,
+    pub(super) min_version: (u8, u8),
+    pub(super) max_version: Option<(u8, u8)>,
     pub(super) source_refs: &'static [SourceRef],
     pub(super) source_policy_table: &'static str,
     pub(super) source_initially_set_by: &'static str,
@@ -37,7 +39,7 @@ pub(super) enum AttributeMultiplicity {
 impl AttributePolicy {
     pub(super) const fn multiplicity(self) -> AttributeMultiplicity {
         match self.tag {
-            0x42_00_04 | 0x42_00_2B | 0x42_00_34 | 0x42_00_4A | 0x42_00_53 | 0x42_00_56 | 0x42_00_B8 | 0x42_00_BF | 0x42_01_3A => AttributeMultiplicity::Multiple,
+            0x42_00_04 | 0x42_00_2B | 0x42_00_34 | 0x42_00_4A | 0x42_00_53 | 0x42_00_56 | 0x42_00_B8 | 0x42_00_BF | 0x42_01_3A | 0x42_01_90 | 0x42_01_92 | 0x42_01_93 | 0x42_01_95 | 0x42_01_A0 | 0x42_01_A5 | 0x42_01_B3 | 0x42_01_B4 | 0x42_01_B5 | 0x42_01_BC => AttributeMultiplicity::Multiple,
             0x42_00_AE => AttributeMultiplicity::PgpKeyOrX509Certificate,
             _ => AttributeMultiplicity::Single,
         }
@@ -67,6 +69,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_01,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-ACTIVATION-DATE",
         name: "Activation Date",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.1" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -97,6 +101,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_04,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-APPLICATION-SPECIFIC-INFORMATION",
         name: "Application Specific Information",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.4" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -115,6 +121,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_05,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-ARCHIVE-DATE",
         name: "Archive Date",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.5" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -133,6 +141,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_1D,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-TYPE",
         name: "Certificate Type",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.7" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -164,6 +174,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_20,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-COMPROMISE-DATE",
         name: "Compromise Date",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.10" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -182,6 +194,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_21,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-COMPROMISE-OCCURRENCE-DATE",
         name: "Compromise Occurrence Date",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.11" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -200,6 +214,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_22,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-CONTACT-INFORMATION",
         name: "Contact Information",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.12" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -215,9 +231,30 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         ],
     },
     AttributePolicy {
+        tag: 0x42_00_24,
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-CREDENTIAL-TYPE",
+        name: "Credential Type",
+        min_version: (3, 0),
+        max_version: None,
+        source_refs: &[
+            SourceRef { source_id: "kmip-3.0", section: "4.14" },
+        ],
+        source_policy_table: "§4.14",
+        source_initially_set_by: "Server",
+        source_modifiable_by_client: "No",
+        source_deletable_by_client: "No",
+        source_always_required: "No",
+        source_operation_restrictions: &[
+        ],
+        source_conditional_rules: &[
+        ],
+    },
+    AttributePolicy {
         tag: 0x42_00_28,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-ALGORITHM",
         name: "Cryptographic Algorithm",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.13" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -248,6 +285,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_29,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-DOMAIN-PARAMETERS",
         name: "Cryptographic Domain Parameters",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.14" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -266,6 +305,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_2A,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-LENGTH",
         name: "Cryptographic Length",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.15" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -296,6 +337,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_2B,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-PARAMETERS",
         name: "Cryptographic Parameters",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.16" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -314,6 +357,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_2C,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-USAGE-MASK",
         name: "Cryptographic Usage Mask",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.17" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -338,6 +383,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_2F,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-DEACTIVATION-DATE",
         name: "Deactivation Date",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.18" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -368,6 +415,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_33,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-DESTROY-DATE",
         name: "Destroy Date",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.20" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -386,6 +435,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_34,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-DIGEST",
         name: "Digest",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.21" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -416,6 +467,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_39,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-INITIAL-DATE",
         name: "Initial Date",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.25" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -447,6 +500,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_42,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-KEY-FORMAT-TYPE",
         name: "Key Format Type",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.26" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -469,9 +524,30 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         ],
     },
     AttributePolicy {
+        tag: 0x42_00_44,
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-KEY-PART-IDENTIFIER",
+        name: "Key Part Identifier",
+        min_version: (3, 0),
+        max_version: None,
+        source_refs: &[
+            SourceRef { source_id: "kmip-3.0", section: "4.30" },
+        ],
+        source_policy_table: "§4.30",
+        source_initially_set_by: "Client",
+        source_modifiable_by_client: "No",
+        source_deletable_by_client: "No",
+        source_always_required: "No",
+        source_operation_restrictions: &[
+        ],
+        source_conditional_rules: &[
+        ],
+    },
+    AttributePolicy {
         tag: 0x42_00_48,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-LAST-CHANGE-DATE",
         name: "Last Change Date",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.29" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -497,6 +573,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_49,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-LEASE-TIME",
         name: "Lease Time",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.30" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -548,6 +626,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_4A,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-LINK",
         name: "Link",
+        min_version: (2, 0),
+        max_version: Some((2, 1)),
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.31" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -566,6 +646,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_53,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-NAME",
         name: "Name",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.32" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -584,6 +666,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_56,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-OBJECT-GROUP",
         name: "Object Group",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.35" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -602,6 +686,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_57,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-OBJECT-TYPE",
         name: "Object Type",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.36" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -633,6 +719,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_59,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-OPAQUE-DATA-TYPE",
         name: "Opaque Data Type",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.37" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -664,6 +752,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_67,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-PROCESS-START-DATE",
         name: "Process Start Date",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.40" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -694,6 +784,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_68,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-PROTECT-STOP-DATE",
         name: "Protect Stop Date",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.41" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -724,6 +816,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_81,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-REVOCATION-REASON",
         name: "Revocation Reason",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.47" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -739,9 +833,68 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         ],
     },
     AttributePolicy {
+        tag: 0x42_00_8A,
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-SPLIT-KEY-METHOD",
+        name: "Split Key Method",
+        min_version: (3, 0),
+        max_version: None,
+        source_refs: &[
+            SourceRef { source_id: "kmip-3.0", section: "4.64" },
+        ],
+        source_policy_table: "§4.64",
+        source_initially_set_by: "Client",
+        source_modifiable_by_client: "No",
+        source_deletable_by_client: "No",
+        source_always_required: "No",
+        source_operation_restrictions: &[
+        ],
+        source_conditional_rules: &[
+        ],
+    },
+    AttributePolicy {
+        tag: 0x42_00_8B,
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-SPLIT-KEY-PARTS",
+        name: "Split Key Parts",
+        min_version: (3, 0),
+        max_version: None,
+        source_refs: &[
+            SourceRef { source_id: "kmip-3.0", section: "4.65" },
+        ],
+        source_policy_table: "§4.65",
+        source_initially_set_by: "Client",
+        source_modifiable_by_client: "No",
+        source_deletable_by_client: "No",
+        source_always_required: "No",
+        source_operation_restrictions: &[
+        ],
+        source_conditional_rules: &[
+        ],
+    },
+    AttributePolicy {
+        tag: 0x42_00_8C,
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-SPLIT-KEY-THRESHOLD",
+        name: "Split Key Threshold",
+        min_version: (3, 0),
+        max_version: None,
+        source_refs: &[
+            SourceRef { source_id: "kmip-3.0", section: "4.66" },
+        ],
+        source_policy_table: "§4.66",
+        source_initially_set_by: "Client",
+        source_modifiable_by_client: "No",
+        source_deletable_by_client: "No",
+        source_always_required: "No",
+        source_operation_restrictions: &[
+        ],
+        source_conditional_rules: &[
+        ],
+    },
+    AttributePolicy {
         tag: 0x42_00_8D,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-STATE",
         name: "State",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.57" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -785,6 +938,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_94,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER",
         name: "Unique Identifier",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.58" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -816,6 +971,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_95,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-USAGE-LIMITS",
         name: "Usage Limits",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.59" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "7.40" },
@@ -860,6 +1017,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_A8,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-FRESH",
         name: "Fresh",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.24" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -885,6 +1044,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_AD,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-LENGTH",
         name: "Certificate Length",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.8" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -916,6 +1077,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_AE,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-DIGITAL-SIGNATURE-ALGORITHM",
         name: "Digital Signature Algorithm",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.22" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -947,6 +1110,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_B5,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-X-509-CERTIFICATE-IDENTIFIER",
         name: "X.509 Certificate Identifier",
+        min_version: (2, 0),
+        max_version: Some((2, 1)),
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.61" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -978,6 +1143,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_B6,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-X-509-CERTIFICATE-ISSUER",
         name: "X.509 Certificate Issuer",
+        min_version: (2, 0),
+        max_version: Some((2, 1)),
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.62" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -1009,6 +1176,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_B7,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-X-509-CERTIFICATE-SUBJECT",
         name: "X.509 Certificate Subject",
+        min_version: (2, 0),
+        max_version: Some((2, 1)),
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.63" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -1040,6 +1209,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_B8,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-KEY-VALUE-LOCATION",
         name: "Key Value Location",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.27" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -1058,6 +1229,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_BB,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-KEY-VALUE-PRESENT",
         name: "Key Value Present",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.28" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -1088,6 +1261,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_BC,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-ORIGINAL-CREATION-DATE",
         name: "Original Creation Date",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.38" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -1112,6 +1287,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_BF,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-ALTERNATIVE-NAME",
         name: "Alternative Name",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.2" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -1130,6 +1307,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_DE,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-RANDOM-NUMBER-GENERATOR",
         name: "Random Number Generator",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.46" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -1154,6 +1333,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_FB,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-PKCS-12-FRIENDLY-NAME",
         name: "PKCS#12 Friendly Name",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.39" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -1172,6 +1353,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_FC,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-DESCRIPTION",
         name: "Description",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.19" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -1190,6 +1373,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_00_FD,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-COMMENT",
         name: "Comment",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.9" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -1208,6 +1393,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_01_20,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-SENSITIVE",
         name: "Sensitive",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.55" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -1233,6 +1420,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_01_21,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-ALWAYS-SENSITIVE",
         name: "Always Sensitive",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.3" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -1258,6 +1447,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_01_22,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-EXTRACTABLE",
         name: "Extractable",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.23" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -1283,6 +1474,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_01_23,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-NEVER-EXTRACTABLE",
         name: "Never Extractable",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.33" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -1308,6 +1501,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_01_36,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-SHORT-UNIQUE-IDENTIFIER",
         name: "Short Unique Identifier",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.56" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -1339,6 +1534,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_01_3A,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-NIST-KEY-TYPE",
         name: "NIST Key Type",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.34" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -1363,6 +1560,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_01_45,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-PROTECTION-LEVEL",
         name: "Protection Level",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.42" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -1381,6 +1580,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_01_46,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-PROTECTION-PERIOD",
         name: "Protection Period",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.43" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -1399,6 +1600,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_01_47,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-QUANTUM-SAFE",
         name: "Quantum Safe",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.45" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -1417,6 +1620,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_01_5E,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-PROTECTION-STORAGE-MASK",
         name: "Protection Storage Mask",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.44" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -1442,6 +1647,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_01_6A,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-INTERVAL",
         name: "Rotate Interval",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.51" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -1460,6 +1667,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_01_6B,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-AUTOMATIC",
         name: "Rotate Automatic",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.48" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -1478,6 +1687,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_01_6C,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-OFFSET",
         name: "Rotate Offset",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.54" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -1496,6 +1707,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_01_6D,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-DATE",
         name: "Rotate Date",
+        min_version: (2, 0),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.49" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -1514,6 +1727,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_01_6E,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-GENERATION",
         name: "Rotate Generation",
+        min_version: (2, 1),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.50" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -1532,6 +1747,8 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_01_6F,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-NAME",
         name: "Rotate Name",
+        min_version: (2, 1),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.53" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
@@ -1550,12 +1767,622 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_01_72,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-LATEST",
         name: "Rotate Latest",
+        min_version: (2, 1),
+        max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.52" },
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "11.56" },
         ],
         source_policy_table: "Table 134",
         source_initially_set_by: "Server",
+        source_modifiable_by_client: "No",
+        source_deletable_by_client: "No",
+        source_always_required: "No",
+        source_operation_restrictions: &[
+        ],
+        source_conditional_rules: &[
+        ],
+    },
+    AttributePolicy {
+        tag: 0x42_01_90,
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-CERTIFICATE-LINK",
+        name: "Certificate Link",
+        min_version: (3, 0),
+        max_version: None,
+        source_refs: &[
+            SourceRef { source_id: "kmip-3.0", section: "4.35.1" },
+        ],
+        source_policy_table: "§4.35.1",
+        source_initially_set_by: "Client or Server",
+        source_modifiable_by_client: "Yes",
+        source_deletable_by_client: "Yes",
+        source_always_required: "No",
+        source_operation_restrictions: &[
+        ],
+        source_conditional_rules: &[
+        ],
+    },
+    AttributePolicy {
+        tag: 0x42_01_91,
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-CHILD-LINK",
+        name: "Child Link",
+        min_version: (3, 0),
+        max_version: None,
+        source_refs: &[
+            SourceRef { source_id: "kmip-3.0", section: "4.35.3" },
+        ],
+        source_policy_table: "§4.35.3",
+        source_initially_set_by: "Client or Server",
+        source_modifiable_by_client: "Yes",
+        source_deletable_by_client: "Yes",
+        source_always_required: "No",
+        source_operation_restrictions: &[
+        ],
+        source_conditional_rules: &[
+        ],
+    },
+    AttributePolicy {
+        tag: 0x42_01_92,
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-DERIVATION-BASE-OBJECT-LINK",
+        name: "Derivation Base Object Link",
+        min_version: (3, 0),
+        max_version: None,
+        source_refs: &[
+            SourceRef { source_id: "kmip-3.0", section: "4.35.5" },
+        ],
+        source_policy_table: "§4.35.5",
+        source_initially_set_by: "Client or Server",
+        source_modifiable_by_client: "Yes",
+        source_deletable_by_client: "Yes",
+        source_always_required: "No",
+        source_operation_restrictions: &[
+        ],
+        source_conditional_rules: &[
+        ],
+    },
+    AttributePolicy {
+        tag: 0x42_01_93,
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-DERIVED-OBJECT-LINK",
+        name: "Derived Object Link",
+        min_version: (3, 0),
+        max_version: None,
+        source_refs: &[
+            SourceRef { source_id: "kmip-3.0", section: "4.35.6" },
+        ],
+        source_policy_table: "§4.35.6",
+        source_initially_set_by: "Client or Server",
+        source_modifiable_by_client: "Yes",
+        source_deletable_by_client: "Yes",
+        source_always_required: "No",
+        source_operation_restrictions: &[
+        ],
+        source_conditional_rules: &[
+        ],
+    },
+    AttributePolicy {
+        tag: 0x42_01_94,
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-NEXT-LINK",
+        name: "Next Link",
+        min_version: (3, 0),
+        max_version: None,
+        source_refs: &[
+            SourceRef { source_id: "kmip-3.0", section: "4.35.9" },
+        ],
+        source_policy_table: "§4.35.9",
+        source_initially_set_by: "Client or Server",
+        source_modifiable_by_client: "Yes",
+        source_deletable_by_client: "Yes",
+        source_always_required: "No",
+        source_operation_restrictions: &[
+        ],
+        source_conditional_rules: &[
+        ],
+    },
+    AttributePolicy {
+        tag: 0x42_01_95,
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-PARENT-LINK",
+        name: "Parent Link",
+        min_version: (3, 0),
+        max_version: None,
+        source_refs: &[
+            SourceRef { source_id: "kmip-3.0", section: "4.35.10" },
+        ],
+        source_policy_table: "§4.35.10",
+        source_initially_set_by: "Client or Server",
+        source_modifiable_by_client: "Yes",
+        source_deletable_by_client: "Yes",
+        source_always_required: "No",
+        source_operation_restrictions: &[
+        ],
+        source_conditional_rules: &[
+        ],
+    },
+    AttributePolicy {
+        tag: 0x42_01_96,
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-PKCS-12-CERTIFICATE-LINK",
+        name: "PKCS#12 Certificate Link",
+        min_version: (3, 0),
+        max_version: None,
+        source_refs: &[
+            SourceRef { source_id: "kmip-3.0", section: "4.35.12" },
+        ],
+        source_policy_table: "§4.35.12",
+        source_initially_set_by: "Client or Server",
+        source_modifiable_by_client: "Yes",
+        source_deletable_by_client: "Yes",
+        source_always_required: "No",
+        source_operation_restrictions: &[
+        ],
+        source_conditional_rules: &[
+        ],
+    },
+    AttributePolicy {
+        tag: 0x42_01_97,
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-PKCS-12-PASSWORD-LINK",
+        name: "PKCS#12 Password Link",
+        min_version: (3, 0),
+        max_version: None,
+        source_refs: &[
+            SourceRef { source_id: "kmip-3.0", section: "4.35.13" },
+        ],
+        source_policy_table: "§4.35.13",
+        source_initially_set_by: "Client or Server",
+        source_modifiable_by_client: "Yes",
+        source_deletable_by_client: "Yes",
+        source_always_required: "No",
+        source_operation_restrictions: &[
+        ],
+        source_conditional_rules: &[
+        ],
+    },
+    AttributePolicy {
+        tag: 0x42_01_98,
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-PREVIOUS-LINK",
+        name: "Previous Link",
+        min_version: (3, 0),
+        max_version: None,
+        source_refs: &[
+            SourceRef { source_id: "kmip-3.0", section: "4.35.14" },
+        ],
+        source_policy_table: "§4.35.14",
+        source_initially_set_by: "Client or Server",
+        source_modifiable_by_client: "Yes",
+        source_deletable_by_client: "Yes",
+        source_always_required: "No",
+        source_operation_restrictions: &[
+        ],
+        source_conditional_rules: &[
+        ],
+    },
+    AttributePolicy {
+        tag: 0x42_01_99,
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-PRIVATE-KEY-LINK",
+        name: "Private Key Link",
+        min_version: (3, 0),
+        max_version: None,
+        source_refs: &[
+            SourceRef { source_id: "kmip-3.0", section: "4.35.15" },
+        ],
+        source_policy_table: "§4.35.15",
+        source_initially_set_by: "Client or Server",
+        source_modifiable_by_client: "Yes",
+        source_deletable_by_client: "Yes",
+        source_always_required: "No",
+        source_operation_restrictions: &[
+        ],
+        source_conditional_rules: &[
+        ],
+    },
+    AttributePolicy {
+        tag: 0x42_01_9A,
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-PUBLIC-KEY-LINK",
+        name: "Public Key Link",
+        min_version: (3, 0),
+        max_version: None,
+        source_refs: &[
+            SourceRef { source_id: "kmip-3.0", section: "4.35.16" },
+        ],
+        source_policy_table: "§4.35.16",
+        source_initially_set_by: "Client or Server",
+        source_modifiable_by_client: "Yes",
+        source_deletable_by_client: "Yes",
+        source_always_required: "No",
+        source_operation_restrictions: &[
+        ],
+        source_conditional_rules: &[
+        ],
+    },
+    AttributePolicy {
+        tag: 0x42_01_9B,
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-REPLACED-OBJECT-LINK",
+        name: "Replaced Object Link",
+        min_version: (3, 0),
+        max_version: None,
+        source_refs: &[
+            SourceRef { source_id: "kmip-3.0", section: "4.35.17" },
+        ],
+        source_policy_table: "§4.35.17",
+        source_initially_set_by: "Client or Server",
+        source_modifiable_by_client: "Yes",
+        source_deletable_by_client: "Yes",
+        source_always_required: "No",
+        source_operation_restrictions: &[
+        ],
+        source_conditional_rules: &[
+        ],
+    },
+    AttributePolicy {
+        tag: 0x42_01_9C,
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-REPLACEMENT-OBJECT-LINK",
+        name: "Replacement Object Link",
+        min_version: (3, 0),
+        max_version: None,
+        source_refs: &[
+            SourceRef { source_id: "kmip-3.0", section: "4.35.18" },
+        ],
+        source_policy_table: "§4.35.18",
+        source_initially_set_by: "Client or Server",
+        source_modifiable_by_client: "Yes",
+        source_deletable_by_client: "Yes",
+        source_always_required: "No",
+        source_operation_restrictions: &[
+        ],
+        source_conditional_rules: &[
+        ],
+    },
+    AttributePolicy {
+        tag: 0x42_01_9D,
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-WRAPPING-KEY-LINK",
+        name: "Wrapping Key Link",
+        min_version: (3, 0),
+        max_version: None,
+        source_refs: &[
+            SourceRef { source_id: "kmip-3.0", section: "4.35.20" },
+        ],
+        source_policy_table: "§4.35.20",
+        source_initially_set_by: "Client or Server",
+        source_modifiable_by_client: "Yes",
+        source_deletable_by_client: "Yes",
+        source_always_required: "No",
+        source_operation_restrictions: &[
+        ],
+        source_conditional_rules: &[
+        ],
+    },
+    AttributePolicy {
+        tag: 0x42_01_9E,
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-OBJECT-CLASS",
+        name: "Object Class",
+        min_version: (3, 0),
+        max_version: None,
+        source_refs: &[
+            SourceRef { source_id: "kmip-3.0", section: "4.40" },
+        ],
+        source_policy_table: "§4.40",
+        source_initially_set_by: "Client or Server",
+        source_modifiable_by_client: "No",
+        source_deletable_by_client: "No",
+        source_always_required: "No",
+        source_operation_restrictions: &[
+        ],
+        source_conditional_rules: &[
+        ],
+    },
+    AttributePolicy {
+        tag: 0x42_01_A0,
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-CREDENTIAL-LINK",
+        name: "Credential Link",
+        min_version: (3, 0),
+        max_version: None,
+        source_refs: &[
+            SourceRef { source_id: "kmip-3.0", section: "4.35.4" },
+        ],
+        source_policy_table: "§4.35.4",
+        source_initially_set_by: "Client or Server",
+        source_modifiable_by_client: "Yes",
+        source_deletable_by_client: "Yes",
+        source_always_required: "No",
+        source_operation_restrictions: &[
+        ],
+        source_conditional_rules: &[
+        ],
+    },
+    AttributePolicy {
+        tag: 0x42_01_A5,
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-PASSWORD-LINK",
+        name: "Password Link",
+        min_version: (3, 0),
+        max_version: None,
+        source_refs: &[
+            SourceRef { source_id: "kmip-3.0", section: "4.35.11" },
+        ],
+        source_policy_table: "§4.35.11",
+        source_initially_set_by: "Client or Server",
+        source_modifiable_by_client: "Yes",
+        source_deletable_by_client: "Yes",
+        source_always_required: "No",
+        source_operation_restrictions: &[
+        ],
+        source_conditional_rules: &[
+        ],
+    },
+    AttributePolicy {
+        tag: 0x42_01_AE,
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-OTP-COUNTER",
+        name: "OTP Counter",
+        min_version: (3, 0),
+        max_version: None,
+        source_refs: &[
+            SourceRef { source_id: "kmip-3.0", section: "4.44" },
+        ],
+        source_policy_table: "§4.44",
+        source_initially_set_by: "Server",
+        source_modifiable_by_client: "No",
+        source_deletable_by_client: "No",
+        source_always_required: "No",
+        source_operation_restrictions: &[
+        ],
+        source_conditional_rules: &[
+        ],
+    },
+    AttributePolicy {
+        tag: 0x42_01_B3,
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-GROUP-LINK",
+        name: "Group Link",
+        min_version: (3, 0),
+        max_version: None,
+        source_refs: &[
+            SourceRef { source_id: "kmip-3.0", section: "4.35.7" },
+        ],
+        source_policy_table: "§4.35.7",
+        source_initially_set_by: "Client or Server",
+        source_modifiable_by_client: "Yes",
+        source_deletable_by_client: "Yes",
+        source_always_required: "No",
+        source_operation_restrictions: &[
+        ],
+        source_conditional_rules: &[
+        ],
+    },
+    AttributePolicy {
+        tag: 0x42_01_B4,
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-SPLIT-KEY-BASE-LINK",
+        name: "Split Key Base Link",
+        min_version: (3, 0),
+        max_version: None,
+        source_refs: &[
+            SourceRef { source_id: "kmip-3.0", section: "4.35.19" },
+        ],
+        source_policy_table: "§4.35.19",
+        source_initially_set_by: "Client or Server",
+        source_modifiable_by_client: "Yes",
+        source_deletable_by_client: "Yes",
+        source_always_required: "No",
+        source_operation_restrictions: &[
+        ],
+        source_conditional_rules: &[
+        ],
+    },
+    AttributePolicy {
+        tag: 0x42_01_B5,
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-JOINED-SPLIT-KEY-PARTS-LINK",
+        name: "Joined Split Key Parts Link",
+        min_version: (3, 0),
+        max_version: None,
+        source_refs: &[
+            SourceRef { source_id: "kmip-3.0", section: "4.35.8" },
+        ],
+        source_policy_table: "§4.35.8",
+        source_initially_set_by: "Client or Server",
+        source_modifiable_by_client: "Yes",
+        source_deletable_by_client: "Yes",
+        source_always_required: "No",
+        source_operation_restrictions: &[
+        ],
+        source_conditional_rules: &[
+        ],
+    },
+    AttributePolicy {
+        tag: 0x42_01_B6,
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-SPLIT-KEY-POLYNOMIAL",
+        name: "Split Key Polynomial",
+        min_version: (3, 0),
+        max_version: None,
+        source_refs: &[
+            SourceRef { source_id: "kmip-3.0", section: "4.63" },
+        ],
+        source_policy_table: "§4.63",
+        source_initially_set_by: "Client",
+        source_modifiable_by_client: "No",
+        source_deletable_by_client: "No",
+        source_always_required: "No",
+        source_operation_restrictions: &[
+        ],
+        source_conditional_rules: &[
+        ],
+    },
+    AttributePolicy {
+        tag: 0x42_01_B8,
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-DEACTIVATION-REASON",
+        name: "Deactivation Reason",
+        min_version: (3, 0),
+        max_version: None,
+        source_refs: &[
+            SourceRef { source_id: "kmip-3.0", section: "4.21" },
+        ],
+        source_policy_table: "§4.21",
+        source_initially_set_by: "Client or Server",
+        source_modifiable_by_client: "No",
+        source_deletable_by_client: "No",
+        source_always_required: "No",
+        source_operation_restrictions: &[
+        ],
+        source_conditional_rules: &[
+        ],
+    },
+    AttributePolicy {
+        tag: 0x42_01_BA,
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-CERTIFICATE-SUBJECT-DN",
+        name: "Certificate Subject DN",
+        min_version: (3, 0),
+        max_version: None,
+        source_refs: &[
+            SourceRef { source_id: "kmip-3.0", section: "4.7" },
+        ],
+        source_policy_table: "§4.7",
+        source_initially_set_by: "Server",
+        source_modifiable_by_client: "No",
+        source_deletable_by_client: "No",
+        source_always_required: "No",
+        source_operation_restrictions: &[
+        ],
+        source_conditional_rules: &[
+        ],
+    },
+    AttributePolicy {
+        tag: 0x42_01_BB,
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-CERTIFICATE-ISSUER-DN",
+        name: "Certificate Issuer DN",
+        min_version: (3, 0),
+        max_version: None,
+        source_refs: &[
+            SourceRef { source_id: "kmip-3.0", section: "4.7" },
+        ],
+        source_policy_table: "§4.7",
+        source_initially_set_by: "Server",
+        source_modifiable_by_client: "No",
+        source_deletable_by_client: "No",
+        source_always_required: "No",
+        source_operation_restrictions: &[
+        ],
+        source_conditional_rules: &[
+        ],
+    },
+    AttributePolicy {
+        tag: 0x42_01_BC,
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-CERTIFICATE-REQUEST-LINK",
+        name: "Certificate Request Link",
+        min_version: (3, 0),
+        max_version: None,
+        source_refs: &[
+            SourceRef { source_id: "kmip-3.0", section: "4.35.2" },
+        ],
+        source_policy_table: "§4.35.2",
+        source_initially_set_by: "Client or Server",
+        source_modifiable_by_client: "Yes",
+        source_deletable_by_client: "Yes",
+        source_always_required: "No",
+        source_operation_restrictions: &[
+        ],
+        source_conditional_rules: &[
+        ],
+    },
+    AttributePolicy {
+        tag: 0x42_01_BD,
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-CERTIFY-COUNTER",
+        name: "Certify Counter",
+        min_version: (3, 0),
+        max_version: None,
+        source_refs: &[
+            SourceRef { source_id: "kmip-3.0", section: "4.13.1" },
+        ],
+        source_policy_table: "§4.13.1",
+        source_initially_set_by: "Server",
+        source_modifiable_by_client: "No",
+        source_deletable_by_client: "No",
+        source_always_required: "No",
+        source_operation_restrictions: &[
+        ],
+        source_conditional_rules: &[
+        ],
+    },
+    AttributePolicy {
+        tag: 0x42_01_BE,
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-DECRYPT-COUNTER",
+        name: "Decrypt Counter",
+        min_version: (3, 0),
+        max_version: None,
+        source_refs: &[
+            SourceRef { source_id: "kmip-3.0", section: "4.13.2" },
+        ],
+        source_policy_table: "§4.13.2",
+        source_initially_set_by: "Server",
+        source_modifiable_by_client: "No",
+        source_deletable_by_client: "No",
+        source_always_required: "No",
+        source_operation_restrictions: &[
+        ],
+        source_conditional_rules: &[
+        ],
+    },
+    AttributePolicy {
+        tag: 0x42_01_BF,
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-ENCRYPT-COUNTER",
+        name: "Encrypt Counter",
+        min_version: (3, 0),
+        max_version: None,
+        source_refs: &[
+            SourceRef { source_id: "kmip-3.0", section: "4.13.3" },
+        ],
+        source_policy_table: "§4.13.3",
+        source_initially_set_by: "Server",
+        source_modifiable_by_client: "No",
+        source_deletable_by_client: "No",
+        source_always_required: "No",
+        source_operation_restrictions: &[
+        ],
+        source_conditional_rules: &[
+        ],
+    },
+    AttributePolicy {
+        tag: 0x42_01_C0,
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-SIGN-COUNTER",
+        name: "Sign Counter",
+        min_version: (3, 0),
+        max_version: None,
+        source_refs: &[
+            SourceRef { source_id: "kmip-3.0", section: "4.13.4" },
+        ],
+        source_policy_table: "§4.13.4",
+        source_initially_set_by: "Server",
+        source_modifiable_by_client: "No",
+        source_deletable_by_client: "No",
+        source_always_required: "No",
+        source_operation_restrictions: &[
+        ],
+        source_conditional_rules: &[
+        ],
+    },
+    AttributePolicy {
+        tag: 0x42_01_C1,
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-SIGNATURE-VERIFY-COUNTER",
+        name: "Signature Verify Counter",
+        min_version: (3, 0),
+        max_version: None,
+        source_refs: &[
+            SourceRef { source_id: "kmip-3.0", section: "4.13.5" },
+        ],
+        source_policy_table: "§4.13.5",
+        source_initially_set_by: "Server",
+        source_modifiable_by_client: "No",
+        source_deletable_by_client: "No",
+        source_always_required: "No",
+        source_operation_restrictions: &[
+        ],
+        source_conditional_rules: &[
+        ],
+    },
+    AttributePolicy {
+        tag: 0x42_01_C2,
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-NIST-SECURITY-CATEGORY",
+        name: "NIST Security Category",
+        min_version: (3, 0),
+        max_version: None,
+        source_refs: &[
+            SourceRef { source_id: "kmip-3.0", section: "4.39" },
+        ],
+        source_policy_table: "§4.39",
+        source_initially_set_by: "Client or Server",
         source_modifiable_by_client: "No",
         source_deletable_by_client: "No",
         source_always_required: "No",

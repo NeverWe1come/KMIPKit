@@ -38,27 +38,55 @@ pub enum LinkType {
     Pkcs12Password,
     /// Wrapping Key Link.
     WrappingKey,
+    /// Certificate Request Link (KMIP 3.0+).
+    CertificateRequest,
+    /// Credential Link (KMIP 3.0+).
+    Credential,
+    /// Group Link (KMIP 3.0+).
+    Group,
+    /// Joined Split Key Parts Link (KMIP 3.0+).
+    JoinedSplitKeyParts,
+    /// Password Link (KMIP 3.0+).
+    Password,
+    /// Split Key Base Link (KMIP 3.0+).
+    SplitKeyBase,
 }
 
 impl LinkType {
-    /// Returns the exact KMIP 2.1 §11.28, Table 465 Link Type value.
+    /// Returns the exact KMIP 2.1 §11.28, Table 465 Link Type value when one exists.
+    #[must_use]
+    pub const fn try_v2_enumeration(self) -> Option<u32> {
+        match self {
+            Self::Certificate => Some(0x0000_0101),
+            Self::PublicKey => Some(0x0000_0102),
+            Self::PrivateKey => Some(0x0000_0103),
+            Self::DerivationBaseObject => Some(0x0000_0104),
+            Self::DerivedKey => Some(0x0000_0105),
+            Self::ReplacementObject => Some(0x0000_0106),
+            Self::ReplacedObject => Some(0x0000_0107),
+            Self::Parent => Some(0x0000_0108),
+            Self::Child => Some(0x0000_0109),
+            Self::Previous => Some(0x0000_010A),
+            Self::Next => Some(0x0000_010B),
+            Self::Pkcs12Certificate => Some(0x0000_010C),
+            Self::Pkcs12Password => Some(0x0000_010D),
+            Self::WrappingKey => Some(0x0000_010E),
+            Self::CertificateRequest
+            | Self::Credential
+            | Self::Group
+            | Self::JoinedSplitKeyParts
+            | Self::Password
+            | Self::SplitKeyBase => None,
+        }
+    }
+
+    /// Returns the exact KMIP 2.1 §11.28, Table 465 Link Type value, or `0` for
+    /// KMIP 3.0-only link types (prefer [`Self::try_v2_enumeration`]).
     #[must_use]
     pub const fn v2_enumeration(self) -> u32 {
-        match self {
-            Self::Certificate => 0x0000_0101,
-            Self::PublicKey => 0x0000_0102,
-            Self::PrivateKey => 0x0000_0103,
-            Self::DerivationBaseObject => 0x0000_0104,
-            Self::DerivedKey => 0x0000_0105,
-            Self::ReplacementObject => 0x0000_0106,
-            Self::ReplacedObject => 0x0000_0107,
-            Self::Parent => 0x0000_0108,
-            Self::Child => 0x0000_0109,
-            Self::Previous => 0x0000_010A,
-            Self::Next => 0x0000_010B,
-            Self::Pkcs12Certificate => 0x0000_010C,
-            Self::Pkcs12Password => 0x0000_010D,
-            Self::WrappingKey => 0x0000_010E,
+        match self.try_v2_enumeration() {
+            Some(value) => value,
+            None => 0,
         }
     }
 
@@ -80,6 +108,12 @@ impl LinkType {
             Self::ReplacedObject => 0x0042_019B,
             Self::ReplacementObject => 0x0042_019C,
             Self::WrappingKey => 0x0042_019D,
+            Self::Credential => 0x0042_01A0,
+            Self::Password => 0x0042_01A5,
+            Self::Group => 0x0042_01B3,
+            Self::SplitKeyBase => 0x0042_01B4,
+            Self::JoinedSplitKeyParts => 0x0042_01B5,
+            Self::CertificateRequest => 0x0042_01BC,
         }
     }
 
@@ -123,6 +157,12 @@ impl LinkType {
             0x0042_019B => Some(Self::ReplacedObject),
             0x0042_019C => Some(Self::ReplacementObject),
             0x0042_019D => Some(Self::WrappingKey),
+            0x0042_01A0 => Some(Self::Credential),
+            0x0042_01A5 => Some(Self::Password),
+            0x0042_01B3 => Some(Self::Group),
+            0x0042_01B4 => Some(Self::SplitKeyBase),
+            0x0042_01B5 => Some(Self::JoinedSplitKeyParts),
+            0x0042_01BC => Some(Self::CertificateRequest),
             _ => None,
         }
     }
@@ -204,6 +244,9 @@ impl LinkNormalizer {
     pub fn normalize_to_v2(typed_link: &Item) -> Result<Item, String> {
         let link_type = LinkType::from_v3_tag(typed_link.tag().raw())
             .ok_or_else(|| "KMIP 3.0 link tag has no KMIP 2.1 Link Type equivalent".to_string())?;
+        let v2_enum = link_type
+            .try_v2_enumeration()
+            .ok_or_else(|| "KMIP 3.0 link tag has no KMIP 2.1 Link Type equivalent".to_string())?;
         let linked_identifier = typed_link
             .with_value(|value| copy_identifier(&value))
             .map_err(|()| "KMIP 3.0 link identifier has no KMIP 2.1 representation".to_string())?;
@@ -214,11 +257,8 @@ impl LinkNormalizer {
         let mut structure = Structure::new();
         structure
             .try_push(
-                Item::new(
-                    link_type_tag,
-                    Value::enumeration(link_type.v2_enumeration()),
-                )
-                .map_err(|_| "KMIP 2.1 Link Type is invalid".to_string())?,
+                Item::new(link_type_tag, Value::enumeration(v2_enum))
+                    .map_err(|_| "KMIP 2.1 Link Type is invalid".to_string())?,
             )
             .map_err(|_| "KMIP 2.1 Link Structure is invalid".to_string())?;
         structure

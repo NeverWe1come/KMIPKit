@@ -9,7 +9,7 @@ struct Consumer {
     warnings_as_errors: bool,
 }
 
-const CONSUMERS: [Consumer; 13] = [
+const CONSUMERS: [Consumer; 14] = [
     Consumer {
         source: "bindings/c/tests/extension_registry.c",
         library: "kmipkit_extension_registry_c_consumer",
@@ -100,6 +100,13 @@ const CONSUMERS: [Consumer; 13] = [
         entry_point: None,
         include_generated_header: false,
         warnings_as_errors: false,
+    },
+    Consumer {
+        source: "bindings/c/tests/fluent_crypto_consumer.c",
+        library: "kmipkit_fluent_crypto_consumer",
+        entry_point: None,
+        include_generated_header: false,
+        warnings_as_errors: true,
     },
 ];
 

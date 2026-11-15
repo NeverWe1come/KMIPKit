@@ -19,7 +19,7 @@ use crate::secret::SecretBufferObserver;
 use crate::timeout::DeadlineIo;
 use crate::tls::{self, TlsClientConfig};
 #[path = "wire_framing.rs"]
-mod wire_framing;
+pub(crate) mod wire_framing;
 #[cfg(test)]
 use crate::worker::WorkerSpawnerForTest;
 #[cfg(test)]

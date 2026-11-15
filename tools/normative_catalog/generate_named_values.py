@@ -161,13 +161,7 @@ def _wire_integer(element: dict[str, Any]) -> int:
     return value
 
 
-def load_versioned_values(root: Path) -> VersionedCatalog:
-    """Load version deltas only after verifying their pinned local sources."""
-    raw = safe_read_bytes(root, VERSIONED_CATALOG_PATH, max_bytes=MAX_BYTES)
-    document = json.loads(raw)
-    if not isinstance(document, dict) or document.get("formatVersion") != 1:
-        raise ValueError("versioned values catalog has an unsupported format")
-    sources = document.get("sources")
+def _verify_versioned_value_sources(root: Path, sources: Any) -> None:
     if not isinstance(sources, dict) or set(sources) != set(PINNED_VERSION_SOURCES):
         raise ValueError("versioned values catalog source inventory is incomplete")
     for source_id, (expected_path, expected_hash) in PINNED_VERSION_SOURCES.items():
@@ -180,12 +174,26 @@ def load_versioned_values(root: Path) -> VersionedCatalog:
         if hashlib.sha256(source_bytes).hexdigest() != expected_hash:
             raise ValueError(f"pinned source checksum does not match for {source_id}")
 
+
+def load_versioned_values(root: Path) -> VersionedCatalog:
+    """Load version deltas only after verifying their pinned local sources."""
+    raw = safe_read_bytes(root, VERSIONED_CATALOG_PATH, max_bytes=MAX_BYTES)
+    document = json.loads(raw)
+    if not isinstance(document, dict) or document.get("formatVersion") != 1:
+        raise ValueError("versioned values catalog has an unsupported format")
+    _verify_versioned_value_sources(root, document.get("sources"))
+
     versions = document.get("versions")
-    if not isinstance(versions, dict) or set(versions) != {"v2_1", "v3_0"}:
-        raise ValueError("versioned values catalog must contain only the reviewed v2_1 and v3_0 deltas")
+    if not isinstance(versions, dict) or set(versions) != {"v2_0", "v2_1", "v3_0"}:
+        raise ValueError("versioned values catalog must contain only the reviewed v2_0, v2_1, and v3_0 deltas")
     groups: list[VersionedNamedGroup] = []
-    for version in ("v2_1", "v3_0"):
-        source_id = "kmip-2.1" if version == "v2_1" else "kmip-3.0"
+    version_sources = {
+        "v2_0": "kmip-2.0",
+        "v2_1": "kmip-2.1",
+        "v3_0": "kmip-3.0",
+    }
+    for version in ("v2_0", "v2_1", "v3_0"):
+        source_id = version_sources[version]
         raw_groups = versions[version]
         if not isinstance(raw_groups, list):
             raise ValueError(f"{version} versioned groups must be an array")
@@ -200,7 +208,7 @@ def load_versioned_values(root: Path) -> VersionedCatalog:
             table = raw_group.get("table")
             raw_values = raw_group.get("values")
             if (
-                kind != "enumeration"
+                kind not in ("enumeration", "bitmask")
                 or not isinstance(name, str)
                 or not name
                 or reference != source_id
@@ -580,25 +588,48 @@ def render_versioned_outputs(versioned: VersionedCatalog) -> dict[str, str]:
     java: list[str] = ["    // Exact assigned values added by later KMIP editions."]
     c: list[str] = ["/* Exact assigned values added by later KMIP editions. */"]
     python: list[str] = ["", "# Exact assigned values added by later KMIP editions."]
-    for version in ("v2_1", "v3_0"):
+    for version in ("v2_0", "v2_1", "v3_0"):
         groups = [group for group in versioned.groups if group.version == version]
-        rust.extend([f"        /// Values assigned in KMIP {version.replace('_', '.') }.", f"        pub mod {version} {{", "            pub mod enumeration {"])
-        for group in groups:
-            rust.extend([f"                /// KMIP {group.name} values from §{group.section}, Table {group.table}.", f"                pub mod {group.identifier} {{"])
-            for value in group.values:
-                rust.append(
-                    f"                    /// `{value.name}`; {group.source_id} §{group.section}, Table {group.table}."
-                )
-                rust.append(
-                    f"                    pub const {value.identifier}: u32 = {_rust_u32_literal(value.value)};"
-                )
-            rust.extend(["                    /// Returns the assigned name for a known value.", "                    #[must_use]", "                    pub const fn name(raw: u32) -> Option<&'static str> {", "                        match raw {"])
-            for value in group.values:
-                rust.append(
-                    f"                            {_rust_u32_literal(value.value)} => Some({json.dumps(value.name, ensure_ascii=False)}),"
-                )
-            rust.extend(["                            _ => None,", "                        }", "                    }", "                }"])
-        rust.extend(["            }", "        }"])
+        enum_groups = [group for group in groups if group.kind == "enumeration"]
+        bitmask_groups = [group for group in groups if group.kind == "bitmask"]
+        rust.extend([f"        /// Values assigned in KMIP {version.replace('_', '.') }.", f"        pub mod {version} {{"])
+        if enum_groups:
+            rust.append("            pub mod enumeration {")
+            for group in enum_groups:
+                rust.extend([f"                /// KMIP {group.name} values from §{group.section}, Table {group.table}.", f"                pub mod {group.identifier} {{"])
+                for value in group.values:
+                    rust.append(
+                        f"                    /// `{value.name}`; {group.source_id} §{group.section}, Table {group.table}."
+                    )
+                    rust.append(
+                        f"                    pub const {value.identifier}: u32 = {_rust_u32_literal(value.value)};"
+                    )
+                rust.extend(["                    /// Returns the assigned name for a known value.", "                    #[must_use]", "                    pub const fn name(raw: u32) -> Option<&'static str> {", "                        match raw {"])
+                for value in group.values:
+                    rust.append(
+                        f"                            {_rust_u32_literal(value.value)} => Some({json.dumps(value.name, ensure_ascii=False)}),"
+                    )
+                rust.extend(["                            _ => None,", "                        }", "                    }", "                }"])
+            rust.append("            }")
+        if bitmask_groups:
+            rust.append("            pub mod bitmask {")
+            for group in bitmask_groups:
+                rust.extend([f"                /// KMIP {group.name} bits from §{group.section}, Table {group.table}.", f"                pub mod {group.identifier} {{"])
+                for value in group.values:
+                    rust.append(
+                        f"                    /// `{value.name}`; {group.source_id} §{group.section}, Table {group.table}."
+                    )
+                    rust.append(
+                        f"                    pub const {value.identifier}: u32 = {_rust_u32_literal(value.value)};"
+                    )
+                rust.extend(["                    /// Returns the assigned name for a known bit.", "                    #[must_use]", "                    pub const fn name(raw: u32) -> Option<&'static str> {", "                        match raw {"])
+                for value in group.values:
+                    rust.append(
+                        f"                            {_rust_u32_literal(value.value)} => Some({json.dumps(value.name, ensure_ascii=False)}),"
+                    )
+                rust.extend(["                            _ => None,", "                        }", "                    }", "                }"])
+            rust.append("            }")
+        rust.append("        }")
         for group in groups:
             prefix = f"{version.upper()}_{group.identifier.upper()}"
             c.extend(

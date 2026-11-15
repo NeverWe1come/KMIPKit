@@ -795,10 +795,10 @@ impl ProfileReadinessBlocker {
 ///     .expect("Baseline Client is in the generated catalog");
 ///
 /// assert!(readiness.target_selected());
-/// assert!(!readiness.runtime_validation_available());
+/// assert!(readiness.runtime_validation_available());
 /// assert_eq!(readiness.effective_state(), "evidence_incomplete");
 /// assert!(!readiness.published_claim());
-/// assert!(readiness
+/// assert!(!readiness
 ///     .blockers()
 ///     .contains(&ProfileReadinessBlocker::RuntimeValidationUnavailable));
 /// ```

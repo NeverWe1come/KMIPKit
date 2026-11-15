@@ -866,6 +866,9 @@ struct BoundaryAudit {
     permit_calls: usize,
     writer_calls: usize,
     codec_dispatch_calls: Vec<String>,
+    execution_ttlv_writer_calls: usize,
+    inspection_ttlv_writer_calls: usize,
+    inspection_codec_dispatch_calls: Vec<String>,
     misplaced_permit_calls: usize,
     misplaced_writer_calls: usize,
     misplaced_exchange_calls: usize,
@@ -904,6 +907,31 @@ impl BoundaryAudit {
                 if root == "crate"
                     && matches!(codec.as_str(), "json_encoding" | "xml_codec")
                     && function == "encode")
+    }
+
+    fn is_inspection_codec_dispatch_call(&self, segments: &[String]) -> bool {
+        self.is_source_root(Path::new("wire_encoder.rs"))
+            && self.current_function.as_deref() == Some("render_for_inspection")
+            && self.current_impl_type.is_none()
+            && matches!(segments,
+                [root, codec, function]
+                if root == "crate"
+                    && matches!(codec.as_str(), "json_encoding" | "xml_codec")
+                    && function == "encode")
+    }
+
+    fn is_inspection_ttlv_writer_call(&self, segments: &[String]) -> bool {
+        self.is_source_root(Path::new("wire_encoder.rs"))
+            && self.current_function.as_deref() == Some("render_for_inspection")
+            && self.current_impl_type.is_none()
+            && matches!(segments, [function] if function == "encode_item_inner")
+    }
+
+    fn is_execution_ttlv_writer_call(&self, segments: &[String]) -> bool {
+        self.is_source_root(Path::new("wire_encoder.rs"))
+            && self.current_function.as_deref() == Some("encode_for_execute")
+            && self.current_impl_type.is_none()
+            && matches!(segments, [function] if function == "encode_item_inner")
     }
 
     fn is_source_root(&self, source_path: &Path) -> bool {
@@ -1001,19 +1029,30 @@ impl BoundaryAudit {
             impl_type,
             signature,
         );
+        let fluent_root_scope = self.is_source_root(Path::new("fluent.rs"));
+        let fluent_catalogued_attribute =
+            is_exact_fluent_catalogued_attribute(fluent_root_scope, impl_type, signature);
+        let fluent_explicit_attribute_item =
+            is_exact_fluent_explicit_attribute_item(fluent_root_scope, impl_type, signature);
+        let fluent_explicit_value =
+            is_exact_fluent_operation_ttlv_value(fluent_root_scope, impl_type, signature)
+                || is_exact_fluent_builder_explicit_value(fluent_root_scope, impl_type, signature)
+                || is_exact_fluent_crypto_secret_input(fluent_root_scope, impl_type, signature);
         let s2c_root_scope = self.is_source_root(Path::new("server_to_client.rs"));
         let server_request_dispatcher =
             is_exact_server_request_dispatch(s2c_root_scope, impl_type, signature);
         let approved_generic_signature = extension_view_callback
             || error_response_ttlv_callback
             || async_outcome_callback
-            || error_validation_source;
+            || error_validation_source
+            || fluent_catalogued_attribute
+            || fluent_explicit_value;
         if has_public_type_or_const_generics(signature) && !approved_generic_signature {
             finder
                 .violations
                 .insert(PublicTypeViolation::CallerConversion);
         }
-        if !error_validation_source {
+        if !approved_generic_signature {
             finder.visit_generics(&signature.generics);
         }
         for (index, argument) in signature.inputs.iter().enumerate() {
@@ -1028,6 +1067,12 @@ impl BoundaryAudit {
                     || registry_value_validation && index == 2
                     || registry_inspect && index == 2
                     || server_request_dispatcher && index == 2
+                    || fluent_explicit_attribute_item
+                        && (signature.ident == "attribute_item" && index == 1
+                            || signature.ident == "vendor_attribute" && index == 3
+                            || signature.ident == "attribute_at" && index == 2
+                            || signature.ident == "object_item" && index == 2)
+                    || fluent_explicit_value && index == 1
                 {
                     continue;
                 }
@@ -1367,6 +1412,20 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
             if self.is_codec_dispatch_call(&segments) {
                 self.codec_dispatch_calls.push(segments[1].clone());
                 self.record_repeatable_sensitive_call();
+            } else if self.is_inspection_codec_dispatch_call(&segments) {
+                self.inspection_codec_dispatch_calls
+                    .push(segments[1].clone());
+                self.record_repeatable_sensitive_call();
+            } else if is_inspection_ttlv_writer_target(&segments) {
+                if self.is_inspection_ttlv_writer_call(&segments) {
+                    self.inspection_ttlv_writer_calls += 1;
+                    self.record_repeatable_sensitive_call();
+                } else if self.is_execution_ttlv_writer_call(&segments) {
+                    self.execution_ttlv_writer_calls += 1;
+                    self.record_repeatable_sensitive_call();
+                } else {
+                    self.reject("TTLV inspection writer called outside its canonical renderer");
+                }
             } else if is_writer_target(&segments) {
                 self.writer_calls += 1;
                 self.record_repeatable_sensitive_call();
@@ -2199,6 +2258,602 @@ fn has_public_type_or_const_generics(signature: &syn::Signature) -> bool {
     })
 }
 
+fn is_exact_fluent_catalogued_attribute(
+    fluent_root_scope: bool,
+    impl_type: Option<&str>,
+    signature: &syn::Signature,
+) -> bool {
+    let supported_method = match impl_type {
+        Some("CreateSymmetricKeyBuilder" | "CreateSplitKeyBuilder") => {
+            signature.ident == "attribute"
+        }
+        Some("RegisterBuilder") => signature.ident == "attribute",
+        Some("CreateKeyPairBuilder") => matches!(
+            signature.ident.to_string().as_str(),
+            "common_attribute" | "private_attribute" | "public_attribute"
+        ),
+        _ => false,
+    };
+    if !fluent_root_scope
+        || !supported_method
+        || signature.generics.params.len() != 1
+        || signature.generics.where_clause.is_some()
+        || signature.asyncness.is_some()
+        || signature.constness.is_some()
+        || signature.unsafety.is_some()
+        || signature.abi.is_some()
+        || signature.variadic.is_some()
+        || signature.inputs.len() != 2
+        || !matches!(&signature.output, syn::ReturnType::Type(_, output) if is_plain_type_path(output, "Self"))
+    {
+        return false;
+    }
+    let generic_is_attribute_definition = matches!(
+        signature.generics.params.first(),
+        Some(syn::GenericParam::Type(parameter))
+            if parameter.ident == "D"
+                && parameter.attrs.is_empty()
+                && parameter.colon_token.is_some()
+                && parameter.bounds.len() == 1
+                && parameter.eq_token.is_none()
+                && parameter.default.is_none()
+                && matches!(parameter.bounds.first(), Some(syn::TypeParamBound::Trait(bound))
+                    if bound.path.is_ident("AttributeDefinition"))
+    );
+    let receiver_is_value_self = matches!(
+        signature.inputs.first(),
+        Some(syn::FnArg::Receiver(receiver))
+            if receiver.reference.is_none()
+                && receiver.colon_token.is_none()
+                && receiver.attrs.is_empty()
+    );
+    let attribute_is_typed = matches!(
+        signature.inputs.get(1),
+        Some(syn::FnArg::Typed(argument))
+            if matches!(argument.ty.as_ref(), Type::Path(path)
+                if path.qself.is_none()
+                    && path.path.segments.len() == 1
+                    && path.path.segments[0].ident == "Attribute"
+                    && matches!(&path.path.segments[0].arguments,
+                        syn::PathArguments::AngleBracketed(arguments)
+                            if arguments.args.len() == 1
+                                && matches!(arguments.args.first(),
+                                    Some(syn::GenericArgument::Type(ty))
+                                        if is_plain_type_path(ty, "D"))))
+    );
+    generic_is_attribute_definition && receiver_is_value_self && attribute_is_typed
+}
+
+fn is_exact_fluent_explicit_attribute_item(
+    fluent_root_scope: bool,
+    impl_type: Option<&str>,
+    signature: &syn::Signature,
+) -> bool {
+    if !fluent_root_scope
+        || impl_type.is_none_or(|name| {
+            !matches!(
+                name,
+                "CreateSymmetricKeyBuilder" | "CreateSplitKeyBuilder" | "RegisterBuilder"
+            )
+        })
+        || !matches!(
+            signature.ident.to_string().as_str(),
+            "attribute_item" | "vendor_attribute" | "attribute_at" | "object_item"
+        )
+        || !signature.generics.params.is_empty()
+        || signature.generics.where_clause.is_some()
+        || signature.asyncness.is_some()
+        || signature.constness.is_some()
+        || signature.unsafety.is_some()
+        || signature.abi.is_some()
+        || signature.variadic.is_some()
+        || !matches!(&signature.output, syn::ReturnType::Type(_, output) if is_plain_type_path(output, "Self"))
+    {
+        return false;
+    }
+    let is_receiver = |argument: Option<&syn::FnArg>| {
+        matches!(
+            argument,
+            Some(syn::FnArg::Receiver(receiver))
+                if receiver.reference.is_none()
+                    && receiver.colon_token.is_none()
+                    && receiver.attrs.is_empty()
+        )
+    };
+    let is_item = |argument: Option<&syn::FnArg>| {
+        matches!(argument, Some(syn::FnArg::Typed(argument))
+            if is_plain_type_path(&argument.ty, "Item"))
+    };
+    let is_item_reference = |argument: Option<&syn::FnArg>| {
+        matches!(argument, Some(syn::FnArg::Typed(argument))
+            if matches!(argument.ty.as_ref(), Type::Reference(reference)
+                if reference.lifetime.is_none()
+                    && reference.mutability.is_none()
+                    && is_plain_type_path(reference.elem.as_ref(), "Item")))
+    };
+    if signature.ident == "attribute_item" {
+        return signature.inputs.len() == 2
+            && is_receiver(signature.inputs.first())
+            && is_item(signature.inputs.get(1));
+    }
+    if signature.ident == "attribute_at" {
+        return signature.inputs.len() == 3
+            && is_receiver(signature.inputs.first())
+            && matches!(signature.inputs.get(1), Some(syn::FnArg::Typed(argument))
+                if is_plain_type_path(&argument.ty, "FluentAttributePosition"))
+            && is_item(signature.inputs.get(2));
+    }
+    if signature.ident == "object_item" {
+        return impl_type == Some("RegisterBuilder")
+            && signature.inputs.len() == 3
+            && is_receiver(signature.inputs.first())
+            && matches!(signature.inputs.get(1), Some(syn::FnArg::Typed(argument))
+                if is_plain_type_path(&argument.ty, "ObjectType"))
+            && is_item(signature.inputs.get(2));
+    }
+    signature.inputs.len() == 4
+        && is_receiver(signature.inputs.first())
+        && matches!(signature.inputs.get(1), Some(syn::FnArg::Typed(argument))
+            if is_plain_reference_to_str(&argument.ty))
+        && matches!(signature.inputs.get(2), Some(syn::FnArg::Typed(argument))
+            if is_plain_reference_to_str(&argument.ty))
+        && is_item_reference(signature.inputs.get(3))
+}
+
+fn is_exact_fluent_builder_explicit_value(
+    fluent_root_scope: bool,
+    impl_type: Option<&str>,
+    signature: &syn::Signature,
+) -> bool {
+    let supported_method = matches!(
+        (impl_type, signature.ident.to_string().as_str()),
+        (
+            Some("CreateSplitKeyBuilder"),
+            "prime_field_size" | "protection_storage_masks"
+        ) | (Some("RegisterBuilder"), "protection_storage_masks")
+    );
+    if !fluent_root_scope
+        || !supported_method
+        || !signature.generics.params.is_empty()
+        || signature.generics.where_clause.is_some()
+        || signature.asyncness.is_some()
+        || signature.constness.is_some()
+        || signature.unsafety.is_some()
+        || signature.abi.is_some()
+        || signature.variadic.is_some()
+        || signature.inputs.len() != 2
+        || !matches!(&signature.output, syn::ReturnType::Type(_, output) if is_plain_type_path(output, "Self"))
+        || !matches!(
+            signature.inputs.first(),
+            Some(syn::FnArg::Receiver(receiver))
+                if receiver.reference.is_none()
+                    && receiver.colon_token.is_none()
+                    && receiver.attrs.is_empty()
+        )
+    {
+        return false;
+    }
+    let Some(syn::FnArg::Typed(argument)) = signature.inputs.get(1) else {
+        return false;
+    };
+    if !argument.attrs.is_empty() {
+        return false;
+    }
+    match signature.ident.to_string().as_str() {
+        "prime_field_size" => matches!(argument.ty.as_ref(), Type::Path(path)
+            if path.qself.is_none()
+                && path.path.leading_colon.is_none()
+                && path.path.segments.len() == 1
+                && path.path.segments[0].ident == "Vec"
+                && matches!(&path.path.segments[0].arguments,
+                    syn::PathArguments::AngleBracketed(arguments)
+                        if arguments.args.len() == 1
+                            && matches!(arguments.args.first(),
+                                Some(syn::GenericArgument::Type(ty))
+                                    if is_plain_type_path(ty, "u8")))),
+        "protection_storage_masks" => {
+            matches!(impl_type, Some("CreateSplitKeyBuilder" | "RegisterBuilder"))
+                && is_plain_type_path(&argument.ty, "Structure")
+        }
+        _ => false,
+    }
+}
+
+fn is_exact_fluent_operation_ttlv_value(
+    fluent_root_scope: bool,
+    impl_type: Option<&str>,
+    signature: &syn::Signature,
+) -> bool {
+    let expected_argument = match (impl_type, signature.ident.to_string().as_str()) {
+        (Some("LocateBuilder"), "attributes")
+        | (
+            Some("RekeyKeyPairBuilder"),
+            "common_attributes" | "private_key_attributes" | "public_key_attributes",
+        ) => "AttributeSet",
+        (Some("RekeyBuilder" | "RecertifyBuilder"), "attributes" | "protection_storage_masks")
+        | (
+            Some("RekeyKeyPairBuilder"),
+            "common_protection_storage_masks"
+            | "private_protection_storage_masks"
+            | "public_protection_storage_masks",
+        )
+        | (
+            Some(
+                "EncryptBuilder"
+                | "DecryptBuilder"
+                | "SignBuilder"
+                | "SignatureVerifyBuilder"
+                | "MacBuilder"
+                | "MacVerifyBuilder"
+                | "HashBuilder",
+            ),
+            "cryptographic_parameters_structure",
+        ) => "Structure",
+        _ => return false,
+    };
+    fluent_root_scope
+        && signature.generics.params.is_empty()
+        && signature.generics.where_clause.is_none()
+        && signature.asyncness.is_none()
+        && signature.constness.is_none()
+        && signature.unsafety.is_none()
+        && signature.abi.is_none()
+        && signature.variadic.is_none()
+        && signature.inputs.len() == 2
+        && matches!(&signature.output, syn::ReturnType::Type(_, output) if is_plain_type_path(output, "Self"))
+        && matches!(
+            signature.inputs.first(),
+            Some(syn::FnArg::Receiver(receiver))
+                if receiver.reference.is_none()
+                    && receiver.colon_token.is_none()
+                    && receiver.attrs.is_empty()
+        )
+        && matches!(
+            signature.inputs.get(1),
+            Some(syn::FnArg::Typed(argument))
+                if argument.attrs.is_empty() && is_plain_type_path(&argument.ty, expected_argument)
+        )
+}
+
+fn is_exact_fluent_crypto_secret_input(
+    fluent_root_scope: bool,
+    impl_type: Option<&str>,
+    signature: &syn::Signature,
+) -> bool {
+    let method = signature.ident.to_string();
+    let supported_method = matches!(
+        (impl_type, method.as_str()),
+        (
+            Some("EncryptBuilder"),
+            "data"
+                | "iv_counter_nonce"
+                | "correlation_value"
+                | "authenticated_encryption_additional_data"
+        ) | (
+            Some("DecryptBuilder"),
+            "data"
+                | "iv_counter_nonce"
+                | "correlation_value"
+                | "authenticated_encryption_additional_data"
+                | "authenticated_encryption_tag"
+        ) | (
+            Some("SignBuilder"),
+            "data" | "digested_data" | "correlation_value"
+        ) | (
+            Some("SignatureVerifyBuilder"),
+            "data" | "digested_data" | "signature_data" | "correlation_value"
+        ) | (
+            Some("MacBuilder" | "HashBuilder"),
+            "data" | "correlation_value"
+        ) | (
+            Some("MacVerifyBuilder"),
+            "data" | "mac_data" | "correlation_value"
+        )
+    );
+    if !fluent_root_scope
+        || !supported_method
+        || !signature.generics.params.is_empty()
+        || signature.generics.where_clause.is_some()
+        || signature.asyncness.is_some()
+        || signature.constness.is_some()
+        || signature.unsafety.is_some()
+        || signature.abi.is_some()
+        || signature.variadic.is_some()
+        || signature.inputs.len() != 2
+        || !matches!(&signature.output, syn::ReturnType::Type(_, output) if is_plain_type_path(output, "Self"))
+        || !matches!(
+            signature.inputs.first(),
+            Some(syn::FnArg::Receiver(receiver))
+                if receiver.reference.is_none()
+                    && receiver.colon_token.is_none()
+                    && receiver.attrs.is_empty()
+        )
+    {
+        return false;
+    }
+    let Some(syn::FnArg::Typed(argument)) = signature.inputs.get(1) else {
+        return false;
+    };
+    if !argument.attrs.is_empty() {
+        return false;
+    }
+    matches!(argument.ty.as_ref(), Type::Path(path)
+        if path.qself.is_none()
+            && path.path.leading_colon.is_none()
+            && path.path.segments.len() == 1
+            && path.path.segments[0].ident == "Vec"
+            && matches!(&path.path.segments[0].arguments,
+                syn::PathArguments::AngleBracketed(arguments)
+                    if arguments.args.len() == 1
+                        && matches!(arguments.args.first(),
+                            Some(syn::GenericArgument::Type(ty))
+                                if is_plain_type_path(ty, "u8"))))
+}
+
+fn is_plain_reference_to_str(ty: &Type) -> bool {
+    matches!(ty, Type::Reference(reference)
+        if reference.lifetime.is_none()
+            && reference.mutability.is_none()
+            && is_plain_type_path(&reference.elem, "str"))
+}
+
+#[test]
+fn fluent_builder_signature_exceptions_are_exact_and_method_scoped() {
+    let catalogued = syn::parse_str::<syn::Signature>(
+        "fn attribute<D: AttributeDefinition>(self, attribute: Attribute<D>) -> Self",
+    )
+    .unwrap();
+    assert!(is_exact_fluent_catalogued_attribute(
+        true,
+        Some("CreateSplitKeyBuilder"),
+        &catalogued
+    ));
+    assert!(!is_exact_fluent_catalogued_attribute(
+        false,
+        Some("CreateSplitKeyBuilder"),
+        &catalogued
+    ));
+    assert!(!is_exact_fluent_catalogued_attribute(
+        true,
+        Some("OtherBuilder"),
+        &catalogued
+    ));
+    assert!(is_exact_fluent_catalogued_attribute(
+        true,
+        Some("RegisterBuilder"),
+        &catalogued
+    ));
+
+    for signature in [
+        "fn attribute_item(self, item: Item) -> Self",
+        "fn vendor_attribute(self, vendor: &str, name: &str, value: &Item) -> Self",
+        "fn attribute_at(self, position: FluentAttributePosition, item: Item) -> Self",
+        "fn object_item(self, object_type: ObjectType, object: Item) -> Self",
+    ] {
+        let signature = syn::parse_str::<syn::Signature>(signature).unwrap();
+        assert!(is_exact_fluent_explicit_attribute_item(
+            true,
+            Some("RegisterBuilder"),
+            &signature
+        ));
+        assert!(!is_exact_fluent_explicit_attribute_item(
+            true,
+            Some("OtherBuilder"),
+            &signature
+        ));
+    }
+
+    for signature in [
+        "fn prime_field_size(self, value: Vec<u8>) -> Self",
+        "fn protection_storage_masks(self, masks: Structure) -> Self",
+    ] {
+        let signature = syn::parse_str::<syn::Signature>(signature).unwrap();
+        assert!(is_exact_fluent_builder_explicit_value(
+            true,
+            Some("CreateSplitKeyBuilder"),
+            &signature
+        ));
+        assert!(!is_exact_fluent_builder_explicit_value(
+            false,
+            Some("CreateSplitKeyBuilder"),
+            &signature
+        ));
+        assert!(!is_exact_fluent_builder_explicit_value(
+            true,
+            Some("OtherBuilder"),
+            &signature
+        ));
+    }
+
+    let register_masks = syn::parse_str::<syn::Signature>(
+        "fn protection_storage_masks(self, masks: Structure) -> Self",
+    )
+    .unwrap();
+    assert!(is_exact_fluent_builder_explicit_value(
+        true,
+        Some("RegisterBuilder"),
+        &register_masks
+    ));
+    let register_prime_field =
+        syn::parse_str::<syn::Signature>("fn prime_field_size(self, value: Vec<u8>) -> Self")
+            .unwrap();
+    assert!(!is_exact_fluent_builder_explicit_value(
+        true,
+        Some("RegisterBuilder"),
+        &register_prime_field
+    ));
+
+    for signature in [
+        "fn raw_bytes(self, value: Vec<u8>) -> Self",
+        "fn prime_field_size(self, value: Vec<u16>) -> Self",
+        "fn protection_storage_masks(self, masks: Item) -> Self",
+    ] {
+        let signature = syn::parse_str::<syn::Signature>(signature).unwrap();
+        assert!(!is_exact_fluent_builder_explicit_value(
+            true,
+            Some("CreateSplitKeyBuilder"),
+            &signature
+        ));
+    }
+
+    let unbounded_object =
+        syn::parse_str::<syn::Signature>("fn object_item(self, object: Item) -> Self").unwrap();
+    assert!(!is_exact_fluent_explicit_attribute_item(
+        true,
+        Some("RegisterBuilder"),
+        &unbounded_object
+    ));
+}
+
+#[test]
+fn fluent_operation_ttlv_inputs_are_exact_and_method_scoped() {
+    for (impl_type, signature) in [
+        (
+            "LocateBuilder",
+            "fn attributes(self, value: AttributeSet) -> Self",
+        ),
+        (
+            "RekeyBuilder",
+            "fn attributes(self, value: Structure) -> Self",
+        ),
+        (
+            "RekeyBuilder",
+            "fn protection_storage_masks(self, value: Structure) -> Self",
+        ),
+        (
+            "RekeyKeyPairBuilder",
+            "fn private_key_attributes(self, value: AttributeSet) -> Self",
+        ),
+        (
+            "RekeyKeyPairBuilder",
+            "fn common_protection_storage_masks(self, value: Structure) -> Self",
+        ),
+        (
+            "RecertifyBuilder",
+            "fn protection_storage_masks(self, value: Structure) -> Self",
+        ),
+        (
+            "EncryptBuilder",
+            "fn cryptographic_parameters_structure(self, value: Structure) -> Self",
+        ),
+        (
+            "DecryptBuilder",
+            "fn cryptographic_parameters_structure(self, value: Structure) -> Self",
+        ),
+        (
+            "SignBuilder",
+            "fn cryptographic_parameters_structure(self, value: Structure) -> Self",
+        ),
+        (
+            "SignatureVerifyBuilder",
+            "fn cryptographic_parameters_structure(self, value: Structure) -> Self",
+        ),
+        (
+            "MacBuilder",
+            "fn cryptographic_parameters_structure(self, value: Structure) -> Self",
+        ),
+        (
+            "MacVerifyBuilder",
+            "fn cryptographic_parameters_structure(self, value: Structure) -> Self",
+        ),
+        (
+            "HashBuilder",
+            "fn cryptographic_parameters_structure(self, value: Structure) -> Self",
+        ),
+    ] {
+        let signature = syn::parse_str::<syn::Signature>(signature).unwrap();
+        assert!(is_exact_fluent_operation_ttlv_value(
+            true,
+            Some(impl_type),
+            &signature
+        ));
+        assert!(!is_exact_fluent_operation_ttlv_value(
+            false,
+            Some(impl_type),
+            &signature
+        ));
+        assert!(!is_exact_fluent_operation_ttlv_value(
+            true,
+            Some("OtherBuilder"),
+            &signature
+        ));
+    }
+
+    for (impl_type, signature) in [
+        ("LocateBuilder", "fn attributes(self, value: Item) -> Self"),
+        (
+            "RekeyBuilder",
+            "fn attributes(self, value: Vec<Item>) -> Self",
+        ),
+        (
+            "RekeyKeyPairBuilder",
+            "fn private_key_attributes(self, value: Structure) -> Self",
+        ),
+        (
+            "RecertifyBuilder",
+            "fn attributes<T>(self, value: Structure) -> Self",
+        ),
+    ] {
+        let signature = syn::parse_str::<syn::Signature>(signature).unwrap();
+        assert!(!is_exact_fluent_operation_ttlv_value(
+            true,
+            Some(impl_type),
+            &signature
+        ));
+    }
+}
+
+#[test]
+fn fluent_crypto_secret_inputs_are_exact_and_method_scoped() {
+    for (impl_type, method) in [
+        ("EncryptBuilder", "data"),
+        ("EncryptBuilder", "iv_counter_nonce"),
+        ("EncryptBuilder", "correlation_value"),
+        ("EncryptBuilder", "authenticated_encryption_additional_data"),
+        ("DecryptBuilder", "authenticated_encryption_tag"),
+        ("SignBuilder", "digested_data"),
+        ("SignatureVerifyBuilder", "signature_data"),
+        ("MacVerifyBuilder", "mac_data"),
+        ("HashBuilder", "data"),
+    ] {
+        let signature =
+            syn::parse_str::<syn::Signature>(&format!("fn {method}(self, value: Vec<u8>) -> Self"))
+                .unwrap();
+        assert!(is_exact_fluent_crypto_secret_input(
+            true,
+            Some(impl_type),
+            &signature
+        ));
+        assert!(!is_exact_fluent_crypto_secret_input(
+            false,
+            Some(impl_type),
+            &signature
+        ));
+        assert!(!is_exact_fluent_crypto_secret_input(
+            true,
+            Some("OtherBuilder"),
+            &signature
+        ));
+    }
+
+    for (impl_type, signature) in [
+        ("EncryptBuilder", "fn data(self, value: Vec<u16>) -> Self"),
+        ("SignBuilder", "fn data<T>(self, value: Vec<u8>) -> Self"),
+        ("HashBuilder", "fn arbitrary(self, value: Vec<u8>) -> Self"),
+        (
+            "DecryptBuilder",
+            "fn authenticated_encryption_tag(self, value: Structure) -> Self",
+        ),
+    ] {
+        let signature = syn::parse_str::<syn::Signature>(signature).unwrap();
+        assert!(!is_exact_fluent_crypto_secret_input(
+            true,
+            Some(impl_type),
+            &signature
+        ));
+    }
+}
+
 fn is_exact_error_validation_source(
     error_root_scope: bool,
     impl_type: Option<&str>,
@@ -2823,6 +3478,12 @@ fn is_writer_target(segments: &[String]) -> bool {
         segments.last().map(String::as_str),
         Some("encode" | "encode_for_execute" | "encode_raw")
     )
+}
+
+fn is_inspection_ttlv_writer_target(segments: &[String]) -> bool {
+    segments
+        .last()
+        .is_some_and(|segment| segment == "encode_item_inner")
 }
 
 fn is_writer_call(segments: &[String]) -> bool {
@@ -3628,6 +4289,21 @@ fn production_source_inventory_is_complete_and_execute_owns_the_only_writer_perm
     assert_eq!(audit.misplaced_permit_calls, 0);
     assert_eq!(audit.misplaced_writer_calls, 0);
     assert_eq!(audit.codec_dispatch_calls.len(), 2);
+    assert_eq!(audit.inspection_ttlv_writer_calls, 1);
+    assert_eq!(audit.execution_ttlv_writer_calls, 1);
+    assert_eq!(audit.inspection_codec_dispatch_calls.len(), 2);
+    assert!(
+        audit
+            .inspection_codec_dispatch_calls
+            .iter()
+            .any(|codec| codec == "json_encoding")
+    );
+    assert!(
+        audit
+            .inspection_codec_dispatch_calls
+            .iter()
+            .any(|codec| codec == "xml_codec")
+    );
     assert!(
         audit
             .codec_dispatch_calls
@@ -3679,6 +4355,42 @@ fn text_codec_dispatch_exception_is_limited_to_the_permitted_writer_scope() {
             );
         }
     }
+}
+
+#[test]
+fn response_inspection_codec_dispatch_is_limited_to_its_private_renderer() {
+    for codec in ["json_encoding", "xml_codec"] {
+        let source =
+            format!("fn render_for_inspection() {{ crate::{codec}::encode(item, limits); }}");
+        let parsed = syn::parse_file(&source).expect("inspection dispatch fixture parses");
+        let mut accepted = BoundaryAudit::default();
+        accepted.visit_source_file(&parsed, Path::new("wire_encoder.rs"));
+        assert!(!accepted.is_rejected());
+        assert_eq!(accepted.inspection_codec_dispatch_calls, [codec]);
+
+        let mut wrong_file = BoundaryAudit::default();
+        wrong_file.visit_source_file(&parsed, Path::new("execute.rs"));
+        assert!(wrong_file.is_rejected());
+
+        let wrong_function = source.replace("render_for_inspection", "other");
+        let parsed = syn::parse_file(&wrong_function).expect("wrong-scope fixture parses");
+        let mut rejected = BoundaryAudit::default();
+        rejected.visit_source_file(&parsed, Path::new("wire_encoder.rs"));
+        assert!(rejected.is_rejected());
+    }
+
+    let ttlv = syn::parse_file("fn render_for_inspection() { encode_item_inner(item, limits); }")
+        .expect("TTLV inspection fixture parses");
+    let mut accepted = BoundaryAudit::default();
+    accepted.visit_source_file(&ttlv, Path::new("wire_encoder.rs"));
+    assert!(!accepted.is_rejected());
+    assert_eq!(accepted.inspection_ttlv_writer_calls, 1);
+
+    let wrong_ttlv = syn::parse_file("fn other() { encode_item_inner(item, limits); }")
+        .expect("wrong TTLV inspection fixture parses");
+    let mut rejected = BoundaryAudit::default();
+    rejected.visit_source_file(&wrong_ttlv, Path::new("wire_encoder.rs"));
+    assert!(rejected.is_rejected());
 }
 
 #[test]
