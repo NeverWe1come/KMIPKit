@@ -12,12 +12,18 @@ import struct
 
 _AES_GCM_JOURNEY_OPERATIONS = (1, 10, 20, 1, 0x1F, 0x20, 20)
 _KEY_PAIR_JOURNEY_OPERATIONS = (2, 0x21, 0x22)
-_CONSUMER_JOURNEY_OPERATIONS = _AES_GCM_JOURNEY_OPERATIONS + _KEY_PAIR_JOURNEY_OPERATIONS
+_EXPERT_ATTRIBUTE_JOURNEY_OPERATIONS = (1, 20)
+_CONSUMER_JOURNEY_OPERATIONS = (
+    _AES_GCM_JOURNEY_OPERATIONS
+    + _KEY_PAIR_JOURNEY_OPERATIONS
+    + _EXPERT_ATTRIBUTE_JOURNEY_OPERATIONS
+)
 EXPECTED_CONSUMER_OPERATIONS = _CONSUMER_JOURNEY_OPERATIONS * 4
 LIFECYCLE_IDENTIFIER = b"fluent-key"
 AES_GCM_IDENTIFIER = b"fluent-aes-gcm-key"
 PRIVATE_KEY_IDENTIFIER = b"fluent-signing-private"
 PUBLIC_KEY_IDENTIFIER = b"fluent-verification-public"
+EXPERT_ATTRIBUTE_IDENTIFIER = b"fluent-expert-attributes"
 AES_GCM_PLAINTEXT = bytes.fromhex("4b4d49504b6974204145532d47434d206a6f75726e6579")
 AES_GCM_CIPHERTEXT = bytes.fromhex("0c4f9f4b8e8cb63bcc04c4a6f6aa354de9b9f2469e1e26")
 AES_GCM_IV = bytes.fromhex("000102030405060708090a0b")
@@ -213,6 +219,16 @@ def _validate_operation(
             raise RuntimeError("Create Cryptographic Length was not 256 bits")
         if values.get(0x42002C) != (2, struct.pack(">i", 12)):
             raise RuntimeError("Create Cryptographic Usage Mask was not explicit")
+        if expected_identifier == EXPERT_ATTRIBUTE_IDENTIFIER:
+            object_groups = [
+                (kind, value)
+                for tag, kind, value in flattened_payload
+                if tag == 0x420056
+            ]
+            if object_groups != [(7, b"fluent-expert-group")]:
+                raise RuntimeError(
+                    "Expert attribute journey must send the catalogued Object Group Text String"
+                )
     elif operation in (10, 20):
         payload = _children(payloads[0])
         identifiers = [value for tag, kind, value in payload if tag == 0x420094 and kind == 7]
@@ -341,6 +357,7 @@ def main() -> None:
                     journey_offset = connection_index % len(_CONSUMER_JOURNEY_OPERATIONS)
                     expected_identifier = (
                         AES_GCM_IDENTIFIER if 3 <= journey_offset < 7
+                        else EXPERT_ATTRIBUTE_IDENTIFIER if journey_offset >= 10
                         else LIFECYCLE_IDENTIFIER if journey_offset < 3
                         else b""
                     )

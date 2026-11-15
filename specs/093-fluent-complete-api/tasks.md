@@ -69,7 +69,9 @@ Dependent work branches from the unmerged parent head while review is pending.
     four consumers.
   - [x] F001.3 ECDSA: Create Key Pair, Sign and Signature Verify in all four
     consumers, with typed private/public IDs and fixture signature checks.
-  - [ ] F001.4 Expert attributes in all four consumers.
+  - [x] F001.4 Expert attributes in all four consumers; fixture validates the
+    catalogued Object Group Text String and the wrong-type path fails before
+    transport.
   - [ ] F001.5 Batch ID Placeholder in all four consumers.
 - [ ] F002 Run all required format, Clippy, Rust/C/Java/Python, sanitizer,
   coverage, traceability and generated-export gates.

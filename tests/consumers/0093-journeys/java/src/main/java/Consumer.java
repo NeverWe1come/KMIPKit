@@ -24,6 +24,7 @@ import org.kmipkit.ttlv.TtlvItem;
 import org.kmipkit.ttlv.TtlvValue;
 import org.kmipkit.ttlv.TypedAttribute;
 import org.kmipkit.ttlv.StandardAttribute;
+import org.kmipkit.ttlv.TypedAttributeValueTypeMismatchException;
 
 public final class Consumer {
     private static final byte[] AES_GCM_PLAINTEXT = "KMIPKit AES-GCM journey".getBytes(java.nio.charset.StandardCharsets.UTF_8);
@@ -101,6 +102,7 @@ public final class Consumer {
             System.out.println("java: fluent Create/Get/Destroy journey verified");
             executeAesGcmJourney(kmipClient, limits);
             executeKeyPairSignatureJourney(kmipClient, limits);
+            executeExpertAttributeJourney(kmipClient, limits);
         }
     }
 
@@ -250,5 +252,63 @@ public final class Consumer {
             Arrays.fill(signature, (byte) 0);
         }
         System.out.println("java: fluent Create Key Pair/Sign/Signature Verify journey verified");
+    }
+
+    private static void executeExpertAttributeJourney(KmipClient client, CodecLimits limits) {
+        try (RawTag raw = RawTag.fromRaw(StandardAttribute.OBJECT_GROUP.tag());
+                Tag objectGroupTag = raw.checked();
+                TtlvValue wrongValue = TtlvValue.Integer(1);
+                SymmetricKeyBuilder invalid = client.request().createSymmetricKey()) {
+            boolean rejected = false;
+            try {
+                invalid.aes256().usageMask((int) (
+                                KmipValues.CryptographicUsageMask.ENCRYPT
+                                        | KmipValues.CryptographicUsageMask.DECRYPT))
+                        .name("fluent-invalid-expert-attributes")
+                        .cataloguedAttribute(objectGroupTag, wrongValue);
+            } catch (TypedAttributeValueTypeMismatchException expected) {
+                if (expected.getCause() != null
+                        || expected.toString().contains("fluent-invalid-expert-attributes")) {
+                    throw new IllegalStateException("wrong-type Object Group error is not safely redacted");
+                }
+                rejected = true;
+            }
+            if (!rejected) {
+                throw new IllegalStateException("wrong-type Object Group was accepted by the fluent builder");
+            }
+        }
+
+        UniqueIdentifier identifier;
+        try (RawTag raw = RawTag.fromRaw(StandardAttribute.OBJECT_GROUP.tag());
+                Tag objectGroupTag = raw.checked();
+                TtlvValue objectGroup = TtlvValue.TextString(
+                        "fluent-expert-group".getBytes(java.nio.charset.StandardCharsets.UTF_8), limits);
+                SymmetricKeyBuilder builder = client.request().createSymmetricKey();
+                ClientBatchResponse created = builder.aes256().usageMask((int) (
+                                KmipValues.CryptographicUsageMask.ENCRYPT
+                                        | KmipValues.CryptographicUsageMask.DECRYPT))
+                        .name("fluent-expert-attributes")
+                        .cataloguedAttribute(objectGroupTag, objectGroup)
+                        .execute(limits);
+                ClientBatchItemResult item = created.itemAt(0)) {
+            if (!item.outcomeKind().isCompleted() || item.resultStatus() != 0) {
+                throw new IllegalStateException("Expert attribute Create did not complete successfully");
+            }
+            identifier = item.createResponse().orElseThrow().uniqueIdentifier();
+            if (!identifier.text().equals("fluent-expert-attributes")) {
+                throw new IllegalStateException("Expert attribute Create returned an unexpected identifier");
+            }
+        }
+
+        try (ClientBatchResponse destroyed = client.request().destroy(identifier)
+                        .withOptions(RequestOptions.defaults()).execute(limits);
+                ClientBatchItemResult item = destroyed.itemAt(0)) {
+            if (!item.outcomeKind().isCompleted() || item.resultStatus() != 0
+                    || !item.destroyResponse().orElseThrow().uniqueIdentifier()
+                            .text().equals(identifier.text())) {
+                throw new IllegalStateException("Expert attribute Destroy did not preserve its identifier");
+            }
+        }
+        System.out.println("java: fluent catalogued expert-attribute journey verified");
     }
 }

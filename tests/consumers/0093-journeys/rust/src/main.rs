@@ -1,5 +1,5 @@
 use kmipkit::{
-    Client, CryptographicUsageMask,
+    Client, CryptographicUsageMask, RequestDeliveryState,
     client_config::ClientConfiguration,
     protocol::{
         Attribute, CryptographicParameters, CryptographicParametersBuilder, UniqueIdentifier,
@@ -271,6 +271,59 @@ fn execute_key_pair_signature_journey(
     Ok(())
 }
 
+fn execute_expert_attribute_journey(
+    client: &mut Client,
+    limits: &CodecLimits,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let invalid_item = Item::new(
+        RawTag::new(0x420056)?.try_checked()?,
+        Value::integer(1),
+    )?;
+    let invalid = client
+        .request()
+        .create_symmetric_key()
+        .aes_256()
+        .usage_mask(CryptographicUsageMask::ENCRYPT | CryptographicUsageMask::DECRYPT)
+        .name("fluent-invalid-expert-attributes")
+        .attribute_item(invalid_item)
+        .execute(limits);
+    match invalid {
+        Err(error) if error.delivery_state() == Some(RequestDeliveryState::NotSent) => {}
+        _ => return Err("wrong-type Object Group was not rejected before transport".into()),
+    }
+
+    let created = client
+        .request()
+        .create_symmetric_key()
+        .aes_256()
+        .usage_mask(CryptographicUsageMask::ENCRYPT | CryptographicUsageMask::DECRYPT)
+        .name("fluent-expert-attributes")
+        .attribute(Attribute::<typed::ObjectGroup>::new(
+            "fluent-expert-group".to_owned(),
+        )?)
+        .execute(limits)?;
+    let identifier = created
+        .outcome()
+        .create_response()
+        .and_then(|response| response.unique_identifier())
+        .cloned()
+        .ok_or("expert attribute Create omitted its typed Unique Identifier")?;
+    if identifier != UniqueIdentifier::from("fluent-expert-attributes") {
+        return Err("expert attribute Create returned an unexpected identifier".into());
+    }
+
+    let destroyed = client.request().destroy(identifier.clone()).execute(limits)?;
+    let response = destroyed
+        .outcome()
+        .destroy_response()
+        .ok_or("expert attribute Destroy omitted its typed response")?;
+    if response.result().status().raw() != 0 || response.unique_identifier() != Some(&identifier) {
+        return Err("expert attribute Destroy did not preserve its identifier".into());
+    }
+    println!("rust: fluent catalogued expert-attribute journey verified");
+    Ok(())
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let port: u16 = std::env::var("KMIPKIT_CONSUMER_TEST_PORT")?.parse()?;
     let fixtures = std::path::PathBuf::from(std::env::var("KMIPKIT_CONSUMER_TEST_FIXTURES")?);
@@ -293,5 +346,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let limits = CodecLimits::defaults();
     execute_fluent_key_lifecycle(&mut client, &limits)?;
     execute_aes_gcm_journey(&mut client, &limits)?;
-    execute_key_pair_signature_journey(&mut client, &limits)
+    execute_key_pair_signature_journey(&mut client, &limits)?;
+    execute_expert_attribute_journey(&mut client, &limits)
 }

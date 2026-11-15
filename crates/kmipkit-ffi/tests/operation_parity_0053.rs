@@ -1,5 +1,8 @@
 #![cfg(feature = "coverage-c-consumer")]
 
+// Link the exported C symbols through Cargo, independently of its artifact layout.
+use kmipkit_ffi as _;
+
 #[link(name = "kmipkit_operation_parity_0053_consumer", kind = "static")]
 unsafe extern "C" {
     fn kmipkit_operation_parity_0053_all_56() -> i32;

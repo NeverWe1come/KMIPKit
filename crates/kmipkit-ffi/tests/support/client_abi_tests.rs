@@ -10114,6 +10114,45 @@ fn ffi_symmetric_builder_validation_delivery_preserves_internal_failure_metadata
 }
 
 #[test]
+fn ffi_catalogued_builder_type_failure_reports_not_sent() {
+    // KMIPKIT-0096-FR-003; KMIP v2.1 sections 4-5; validation precedes transport.
+    let builder: *mut kmipkit_symmetric_key_builder_t = make_handle(
+        Kind::SymmetricKeyBuilder,
+        HandleValue::SymmetricKeyBuilder(Mutex::new(Some(
+            kmipkit_client::fluent::CreateSymmetricKeyBuilder::detached(),
+        ))),
+    );
+    let value: *mut kmipkit_ttlv_value_t =
+        make_handle(Kind::Value, HandleValue::Value(Value::integer(1)));
+
+    assert_eq!(
+        super::fluent::kmipkit_symmetric_key_builder_add_catalogued_attribute(
+            builder,
+            0x0042_0056,
+            value,
+        ),
+        ERROR_TYPED_ATTRIBUTE_VALUE_TYPE_MISMATCH
+    );
+    let (mut status, mut category, mut cause, mut delivery) = (0, 0, 0, 0);
+    assert_eq!(
+        kmipkit_last_error_get(&mut status, &mut category, &mut cause, &mut delivery),
+        SUCCESS
+    );
+    assert_eq!(
+        (status, category, cause, delivery),
+        (
+            ERROR_TYPED_ATTRIBUTE_VALUE_TYPE_MISMATCH,
+            ERROR_CATEGORY_VALIDATION,
+            ERROR_CAUSE_INVALID_INPUT,
+            DELIVERY_STATE_NOT_SENT,
+        )
+    );
+
+    super::fluent::kmipkit_symmetric_key_builder_release(builder);
+    kmipkit_ttlv_value_release(value);
+}
+
+#[test]
 fn ffi_constructs_a_client_from_validated_https_configuration() {
     let pki = EphemeralPki::generate().expect("ephemeral PKI generation succeeds");
     let identity = pki.client_identity();
