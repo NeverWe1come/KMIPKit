@@ -115,7 +115,7 @@ def build_inventory(
         if operation_values.get(name) != wire_value:
             raise ValueError(f"KMIP 2.1 operation delta has no matching assigned value for {name}")
     route_keys: set[tuple[str, str, str]] = set()
-    seen_values: dict[str, str] = {}
+    operation_names_by_wire_value: dict[str, str] = {}
     rows: list[dict[str, Any]] = []
     for element in base_rows:
         name = element.get("name")
@@ -130,14 +130,14 @@ def build_inventory(
             raise ValueError(f"KMIP 2.1 operation {name} has no assigned wire value")
         if name in v21_values and v21_values[name] != wire_value.upper():
             raise ValueError(f"KMIP 2.1 operation assignment changed for {name}")
-        previous_name = seen_values.get(wire_value)
+        previous_name = operation_names_by_wire_value.get(wire_value)
         if previous_name is not None and previous_name != name:
             raise ValueError(f"duplicate KMIP 2.1 operation wire value: {wire_value}")
         route_key = (name, wire_value, element.get("direction"))
         if route_key in route_keys:
             raise ValueError(f"duplicate KMIP 2.1 operation route: {route_key}")
         route_keys.add(route_key)
-        seen_values[wire_value] = name
+        operation_names_by_wire_value[wire_value] = name
         rows.append({
             "name": name,
             "version": "2.1",
@@ -166,9 +166,9 @@ def build_inventory(
         if section is None:
             raise ValueError(f"KMIP 3.0 operation has no reviewed source section: {name}")
         wire_value = _normalize_wire_value(wire_value)
-        if wire_value in seen_values:
+        if wire_value in operation_names_by_wire_value:
             raise ValueError(f"duplicate operation assignment across versions: {wire_value}")
-        seen_values[wire_value] = name
+        operation_names_by_wire_value[wire_value] = name
         rows.append({
             "name": name,
             "version": "3.0",

@@ -397,3 +397,35 @@
   https_never_attributes_a_surplus_response_to_a_later_exchange -- --exact`
   passed 12 consecutive runs after the synchronization change.
 
+## KMIPKIT-0093 operation owner matrix validation follow-up
+
+### Red
+
+- Commit `6fd0618c2` adds a regression test that assigns Create the wire value
+  already used by another KMIP 2.1 operation. Before the fix,
+  the focused command failed because the generator did not raise the expected
+  `ValueError`:
+
+  ```text
+  python3 -B -m unittest tools.normative_catalog.tests.test_fluent_operation_inventory.FluentOperationInventoryTests.test_generator_rejects_one_wire_value_assigned_to_different_operations -v
+  ```
+
+### Green
+
+- Commit `fcef6948a` makes KMIP 2.1 operation assignments unique by operation
+  name while preserving legitimate repeated routes for the same operation in
+  opposite directions. KMIP 3.0 assignments remain unique across versions.
+- The complete matrix suite passes:
+  `python3 -B -m unittest tools.normative_catalog.tests.test_fluent_operation_inventory -v`
+  (9 tests). The deterministic matrix generation check passes:
+  `python3 -B tools/normative_catalog/generate_fluent_operation_inventory.py --check`.
+
+### Refactor
+
+- Renamed the assignment lookup to `operation_names_by_wire_value` so the
+  map's invariant is explicit at both the KMIP 2.1 and cross-version checks.
+  This changes no behavior. The same 9 tests and generation check pass after
+  the rename; `py_compile` and `git diff --check` also pass.
+- The full CI for the updated WIP PR head is still required; task M005 remains
+  open until every required check on that exact head completes successfully.
+
