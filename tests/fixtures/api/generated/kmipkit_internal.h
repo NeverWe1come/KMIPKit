@@ -3372,6 +3372,50 @@ int32_t kmipkit_client_get_attributes_v1(kmipkit_client_t * client, const kmipki
  * invalid_input when a NULL array has a nonzero count. */
 /* KMIPKIT-0109-FR-001, KMIPKIT-0109-FR-002, KMIPKIT-0109-FR-003, KMIPKIT-0109-FR-004, KMIPKIT-0109-FR-005, KMIPKIT-0109-FR-006 */
 int32_t kmipkit_client_get_attributes_with_options_v1(kmipkit_client_t * client, const kmipkit_unique_identifier_v1_t * unique_identifier, const kmipkit_attribute_reference_v1_t * attribute_references, uint64_t attribute_reference_count, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response);
+/* Creates an independent typed Cancel batch item from a borrowed request model (§6.1.5); the request remains caller-owned.
+ */
+/* KMIPKIT-0009-FR-001, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-011, KMIPKIT-0093-FR-012 */
+int32_t kmipkit_client_batch_item_cancel_from_request(kmipkit_cancel_request_t * request, kmipkit_client_batch_item_t ** out_item);
+/* Creates an independent typed Poll batch item from a borrowed request model (§6.1.38); the request remains caller-owned.
+ */
+/* KMIPKIT-0009-FR-001, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-011, KMIPKIT-0093-FR-012 */
+int32_t kmipkit_client_batch_item_poll_from_request(kmipkit_poll_request_t * request, kmipkit_client_batch_item_t ** out_item);
+/* Creates an independent typed Process batch item from a borrowed request model (§6.1.39); the request remains caller-owned.
+ */
+/* KMIPKIT-0009-FR-001, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-011, KMIPKIT-0093-FR-012 */
+int32_t kmipkit_client_batch_item_process_from_request(kmipkit_process_request_t * request, kmipkit_client_batch_item_t ** out_item);
+/* Creates an independent typed Query Asynchronous Requests batch item from a borrowed request model (§6.1.41); the request remains caller-owned.
+ */
+/* KMIPKIT-0009-FR-001, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-011, KMIPKIT-0093-FR-012 */
+int32_t kmipkit_client_batch_item_query_async_requests_from_request(kmipkit_query_async_requests_request_t * request, kmipkit_client_batch_item_t ** out_item);
+/* Creates an operation-specific typed KMIP 3.0 CreateGroup item from semantic fields (§6.1.10, Table 280); inputs are copied and borrowed handles remain caller-owned.
+ */
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011 */
+int32_t kmipkit_client_batch_item_create_group_from_attributes(kmipkit_attribute_set_t * attributes, kmipkit_client_batch_item_t ** out_item);
+/* Creates an operation-specific typed KMIP 3.0 CreateUser item from semantic fields (§6.1.13, Table 290); inputs are copied and borrowed handles remain caller-owned.
+ */
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011 */
+int32_t kmipkit_client_batch_item_create_user_from_attributes(kmipkit_attribute_set_t * attributes, kmipkit_client_batch_item_t ** out_item);
+/* Creates an operation-specific typed KMIP 3.0 Obliterate item from semantic fields (§6.1.41, Table 374); inputs are copied and borrowed handles remain caller-owned.
+ */
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011 */
+int32_t kmipkit_client_batch_item_obliterate_from_identifier(const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_client_batch_item_t ** out_item);
+/* Creates an operation-specific typed KMIP 3.0 Deactivate item from semantic fields (§6.1.14, Table 293); inputs are copied and borrowed handles remain caller-owned.
+ */
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011 */
+int32_t kmipkit_client_batch_item_deactivate_from_fields(const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_ttlv_structure_t * deactivation_reason, uint8_t has_deactivation_date, int64_t deactivation_date, kmipkit_client_batch_item_t ** out_item);
+/* Creates a typed KMIP 3.0 Create Credential item from explicit credential type, object type, validated Attributes, and a tagged TTLV object (§6.1.9, Table 277); borrowed inputs remain caller-owned.
+ */
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011 */
+int32_t kmipkit_client_batch_item_create_credential_from_fields(uint32_t credential_type_raw, uint32_t object_type_raw, kmipkit_attribute_set_t * attributes, kmipkit_ttlv_item_t * object, kmipkit_client_batch_item_t ** out_item);
+/* Creates a typed KMIP 3.0 Encapsulate item from a required Unique Identifier and optional Cryptographic Parameters and Attributes (§6.1.22, Table 317); borrowed inputs are copied and remain caller-owned.
+ */
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011 */
+int32_t kmipkit_client_batch_item_encapsulate_from_fields(const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_cryptographic_parameters_t * cryptographic_parameters, kmipkit_attribute_set_t * attributes, kmipkit_client_batch_item_t ** out_item);
+/* Creates a typed KMIP 3.0 Decapsulate item from a required Unique Identifier and ciphertext plus optional Cryptographic Parameters and Attributes (§6.1.15, Table 296); borrowed input bytes are copied before return.
+ */
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011 */
+int32_t kmipkit_client_batch_item_decapsulate_from_fields(const kmipkit_unique_identifier_v1_t * unique_identifier, const uint8_t * ciphertext, uint64_t ciphertext_length, kmipkit_cryptographic_parameters_t * cryptographic_parameters, kmipkit_attribute_set_t * attributes, kmipkit_client_batch_item_t ** out_item);
 /* KMIPKIT-0006-FR-021, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_message_extension_view_ttlv(kmipkit_message_extension_view_t * extension, kmipkit_ttlv_structure_t ** out_structure);
 /* KMIPKIT-0006-FR-017, KMIPKIT-0006-FR-018, KMIPKIT-0006-FR-019, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */

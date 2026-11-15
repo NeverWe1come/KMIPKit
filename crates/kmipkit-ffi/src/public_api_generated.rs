@@ -6,6 +6,7 @@ pub(crate) const C_AVAILABLE_CAPABILITIES: &[&str] = &[
     "client_asynchronous_operations",
     "client_batch_model",
     "client_execution",
+    "client_kmip30_typed_operations",
     "client_operation_identity",
     "client_profile_readiness",
     "client_profile_validation",
@@ -38081,5 +38082,60 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit-0047-rust-kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::result_reason::name",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::result_reason::name",
+    ),
+    (
+        "KMIPKIT-0093:async-batch-item:cancel:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItem::cancel",
+    ),
+    (
+        "KMIPKIT-0093:async-batch-item:poll:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItem::poll",
+    ),
+    (
+        "KMIPKIT-0093:async-batch-item:process:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItem::process",
+    ),
+    (
+        "KMIPKIT-0093:async-batch-item:query_async_requests:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItem::query_async_requests",
+    ),
+    (
+        "KMIPKIT-0093:kmip30:create_group:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItem::create_group",
+    ),
+    (
+        "KMIPKIT-0093:kmip30:create_user:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItem::create_user",
+    ),
+    (
+        "KMIPKIT-0093:kmip30:obliterate:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItem::obliterate",
+    ),
+    (
+        "KMIPKIT-0093:kmip30:deactivate:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItem::deactivate",
+    ),
+    (
+        "KMIPKIT-0093:kmip30:create_credential:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItem::create_credential",
+    ),
+    (
+        "KMIPKIT-0093:kmip30:encapsulate:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItem::encapsulate",
+    ),
+    (
+        "KMIPKIT-0093:kmip30:decapsulate:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItem::decapsulate",
     ),
 ];

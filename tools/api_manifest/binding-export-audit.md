@@ -13,7 +13,7 @@ later, and the platform's native symbol reader (`nm` on Unix):
 
 ```text
 python -B -m unittest tools.api_manifest.tests.test_binding_exports -v
-python -B tools/api_manifest/audit_binding_exports.py --repo-root . --report specs/043-public-api-bindings/reports/binding-export-report-2026-11-15-versioned-catalogs.json --check
+python -B tools/api_manifest/audit_binding_exports.py --repo-root . --report specs/043-public-api-bindings/reports/binding-export-report-2026-11-15-kmip30-async-bindings.json --check
 ```
 
 The runner builds `kmipkit-ffi` with `cargo build --locked --offline` into a new
@@ -194,3 +194,16 @@ after KMIPKIT-0122. Earlier dated reports remain historical snapshots.
 | C | yes | 2,124 | 2,064 | 2,064 | 60 | 0 | 0 | 0 | 0 | yes |
 | Java | yes | 3,168 | 2,468 | 2,468 | 700 | 0 | 0 | 0 | 0 | yes |
 | Python | yes | 3,688 | 2,679 | 2,679 | 1,009 | 0 | 0 | 0 | 0 | yes |
+
+## KMIP 3.0 and asynchronous binding delivery snapshot (2026-11-15)
+
+The current report is
+`specs/043-public-api-bindings/reports/binding-export-report-2026-11-15-kmip30-async-bindings.json`.
+It includes the KMIPKIT-0122 versioned catalog base and the KMIPKIT-0124
+KMIP 3.0 operation and asynchronous batch binding declarations.
+
+| Package | Scanner complete | Observed | Manifest declarations | Exact matches | Exact exclusions | Missing | Stale | Kind mismatches | Issues | `matchesManifest` |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| C | yes | 2,135 | 2,075 | 2,075 | 60 | 0 | 0 | 0 | 0 | yes |
+| Java | yes | 3,190 | 2,479 | 2,479 | 711 | 0 | 0 | 0 | 0 | yes |
+| Python | yes | 3,699 | 2,690 | 2,690 | 1,009 | 0 | 0 | 0 | 0 | yes |

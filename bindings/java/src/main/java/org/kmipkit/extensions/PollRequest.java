@@ -43,6 +43,10 @@ public final class PollRequest implements AutoCloseable {
                 NativeExtensionRegistry.pollRequestToTtlvPayload(value), this));
     }
 
+    NativeHandle nativeHandleOwner() {
+        return handle;
+    }
+
     @Override
     public void close() {
         handle.close();
