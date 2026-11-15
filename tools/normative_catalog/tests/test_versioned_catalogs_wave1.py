@@ -37,6 +37,29 @@ class VersionedCatalogsWave1Tests(unittest.TestCase):
         self.assertIn("E\tOTP Algorithm\t00000001\tHOTP\n", tsv)
         self.assertIn("M\t42019F\tObject Class Mask\n", tsv)
         self.assertIn("B\tObject Class Mask\t00000001\tUser\n", tsv)
+        self.assertIn("T\t4201B6\tSplit Key Polynomial\n", tsv)
+        self.assertIn("F\t4201B6\tSplit Key Polynomial\n", tsv)
+        self.assertIn("E\tSplit Key Polynomial\t00000001\tPolynomial-283\n", tsv)
+        self.assertIn("E\tSplit Key Polynomial\t00000002\tPolynomial-285\n", tsv)
+
+    def test_wire_names_fail_closed_on_unmapped_enumeration_tag(self) -> None:
+        catalog = json.loads((REPO_ROOT / "specification/catalog/kmip-2.1.json").read_text("utf-8"))
+        bad_versioned_tags = {
+            "tagEnumeration": {
+                "assignments": [
+                    {
+                        "name": "Corrupt Enum Tag",
+                        "wire_value": "0x4201FA",
+                        "introduced_in": "3.0",
+                        "source_encoding": "Enumeration",
+                    }
+                ]
+            }
+        }
+        with self.assertRaises(ValueError) as ctx:
+            generate_wire_names.render_tsv(catalog, versioned_tags=bad_versioned_tags)
+        self.assertIn("enumeration", str(ctx.exception).lower())
+
 
     def test_attribute_policy_includes_version_bounds_and_kmip30_attributes(self) -> None:
         catalog = json.loads((REPO_ROOT / "specification/catalog/kmip-2.1.json").read_text("utf-8"))
