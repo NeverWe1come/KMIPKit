@@ -527,3 +527,20 @@
 - The C, Java, and Python declarations remain generated or manifest-backed;
   the implementation adds no second transport or codec path.
 
+### Rebased T102 snapshot follow-up
+
+- Red commit `1616b8342` reproduced the post-rebase failure in
+  `test_non_target_declarations_and_operation_rows_match_snapshot`: the new
+  Set Attribute binding declarations changed the unrelated Certify fingerprint.
+  A focused run failed with expected hash `cd0161cb...` and observed hash
+  `a033de4a...`.
+- Green commit `065717e70` scopes the non-target exclusion to the Set Attribute
+  fluent parity and C ABI capability IDs. The C manifest rows use
+  `fluent_set_attribute_c_abi`, while the Rust, Java, and Python rows use
+  `fluent_set_attribute_parity`; both are already checked by the dedicated
+  exact-surface manifest contract.
+- `python3 -B -m unittest
+  tools.api_manifest.tests.test_t102_certify_request_builder_mapping.T102CertifyRequestBuilderMappingTests.test_non_target_declarations_and_operation_rows_match_snapshot
+  tools.api_manifest.tests.test_0093_set_attribute_builder_manifest -v`
+  passes all four assertions, and `git diff --check` passes.
+
