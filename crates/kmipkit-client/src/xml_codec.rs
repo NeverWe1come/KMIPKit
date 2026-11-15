@@ -12,14 +12,14 @@ mod names;
 mod preflight;
 mod values;
 
-pub(crate) fn decode(
+pub fn decode(
     bytes: &[u8],
     limits: &kmipkit_ttlv::codec::CodecLimits,
 ) -> Result<kmipkit_ttlv::Item, WireCodecError> {
     decoder::decode(bytes, limits)
 }
 
-pub(crate) fn encode(
+pub fn encode(
     item: &kmipkit_ttlv::Item,
     limits: &kmipkit_ttlv::codec::CodecLimits,
 ) -> Result<zeroize::Zeroizing<Vec<u8>>, WireCodecError> {

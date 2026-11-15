@@ -275,6 +275,14 @@ mod resolver;
 #[allow(dead_code)]
 mod worker;
 
+#[cfg(feature = "fuzzing")]
+#[doc(hidden)]
+pub mod __fuzz {
+    pub mod wire_framing {
+        pub use crate::raw_tls::wire_framing::TextDocumentFramer;
+    }
+}
+
 pub use config::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestOptions,
     RevocationListInput, TimeoutLimit, TimeoutPolicy, TlsVersionPolicy, TransportConfig,

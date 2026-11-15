@@ -65,6 +65,18 @@ mod wire_codec_common;
 #[allow(dead_code)] // The private codecs are connected by KMIPKIT-0057.
 mod xml_codec;
 
+#[cfg(feature = "fuzzing")]
+#[doc(hidden)]
+pub mod __fuzz {
+    pub mod json_encoding {
+        pub use crate::json_encoding::{decode, encode};
+    }
+    pub mod xml_codec {
+        pub use crate::xml_codec::{decode, encode};
+    }
+    pub use kmipkit_transport::__fuzz::wire_framing;
+}
+
 mod attribute_tags_generated;
 mod error;
 pub mod extension_registry;

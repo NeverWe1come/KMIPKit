@@ -19,7 +19,7 @@ const fn error(kind: WireCodecErrorKind) -> WireCodecError {
     WireCodecError::new(kind)
 }
 
-pub(crate) fn decode(bytes: &[u8], limits: &CodecLimits) -> Result<Item, WireCodecError> {
+pub fn decode(bytes: &[u8], limits: &CodecLimits) -> Result<Item, WireCodecError> {
     if bytes.len() > limits.max_message_bytes() {
         return Err(error(WireCodecErrorKind::LimitExceeded));
     }
@@ -34,7 +34,7 @@ pub(crate) fn decode(bytes: &[u8], limits: &CodecLimits) -> Result<Item, WireCod
     read_item(input, limits)
 }
 
-pub(crate) fn encode(
+pub fn encode(
     item: &Item,
     limits: &CodecLimits,
 ) -> Result<Zeroizing<Vec<u8>>, WireCodecError> {

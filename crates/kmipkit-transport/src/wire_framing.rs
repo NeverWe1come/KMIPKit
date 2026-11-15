@@ -8,7 +8,7 @@ use std::io;
 use crate::config::WireEncoding;
 
 #[derive(Debug)]
-pub(super) struct TextDocumentFramer {
+pub struct TextDocumentFramer {
     state: TextDocumentState,
 }
 
@@ -19,7 +19,7 @@ enum TextDocumentState {
 }
 
 impl TextDocumentFramer {
-    pub(super) fn new(encoding: WireEncoding) -> io::Result<Self> {
+    pub fn new(encoding: WireEncoding) -> io::Result<Self> {
         match encoding {
             WireEncoding::Json => Ok(Self {
                 state: TextDocumentState::Json(JsonDocumentFramer::default()),
@@ -31,14 +31,14 @@ impl TextDocumentFramer {
         }
     }
 
-    pub(super) fn feed(&mut self, byte: u8) -> io::Result<()> {
+    pub fn feed(&mut self, byte: u8) -> io::Result<()> {
         match &mut self.state {
             TextDocumentState::Json(framer) => framer.feed(byte),
             TextDocumentState::Xml(framer) => framer.feed(byte),
         }
     }
 
-    pub(super) fn is_complete(&self) -> bool {
+    pub fn is_complete(&self) -> bool {
         match &self.state {
             TextDocumentState::Json(framer) => framer.is_complete(),
             TextDocumentState::Xml(framer) => framer.is_complete(),

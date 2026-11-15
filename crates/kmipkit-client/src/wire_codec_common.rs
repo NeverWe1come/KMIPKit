@@ -2,7 +2,7 @@
 use std::fmt;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub(crate) enum WireCodecErrorKind {
+pub enum WireCodecErrorKind {
     InvalidDocument,
     InvalidValue,
     LimitExceeded,
@@ -10,16 +10,16 @@ pub(crate) enum WireCodecErrorKind {
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub(crate) struct WireCodecError {
+pub struct WireCodecError {
     kind: WireCodecErrorKind,
 }
 
 impl WireCodecError {
-    pub(crate) const fn new(kind: WireCodecErrorKind) -> Self {
+    pub const fn new(kind: WireCodecErrorKind) -> Self {
         Self { kind }
     }
 
-    pub(crate) const fn kind(self) -> WireCodecErrorKind {
+    pub const fn kind(self) -> WireCodecErrorKind {
         self.kind
     }
 }
