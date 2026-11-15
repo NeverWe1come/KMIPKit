@@ -83,6 +83,10 @@
   its shared `ClientResponseView` carries it. The suite fails
   `test_exact_operation_result_declarations_map_to_shared_metadata` for
   `KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN`.
+- The focused response-mapping test confirms the same missing FR-008 on 23
+  additional operation-result declarations; each paired response view has
+  that requirement and no other requirement-set difference. Reproduction:
+  `python3 -B -m unittest tools.api_manifest.tests.test_t102_operation_result_mappings -v`.
 
 ### Green
 
