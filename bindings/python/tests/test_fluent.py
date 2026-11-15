@@ -14,7 +14,7 @@ from _test_support import (
     require_tls13_mtls_peer,
     start_tls13_mtls_peer,
 )
-from kmipkit import client, errors, extensions, fluent, ttlv
+from kmipkit import attribute_operations, client, errors, extensions, fluent, protocol_values, ttlv
 from kmipkit.typed_attributes import StandardAttribute
 
 _FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
@@ -875,29 +875,15 @@ def test_request_namespace_exposes_typed_set_attribute_builder() -> None:
                 finally:
                     item.close()
 
-                with pytest.raises(errors.KmipKitError):
-                    builder.unique_identifier(None)  # type: ignore[arg-type]
-                with pytest.raises(errors.KmipKitError):
-                    builder.catalogued_attribute(None, description)  # type: ignore[arg-type]
-def test_request_namespace_exposes_typed_set_attribute_builder() -> None:
-    with ttlv.codec_limits_defaults() as limits:
-        with ttlv.ttlv_value_text_string(b"managed by the fluent API", limits) as description:
-            with fluent.Request(None).set_attribute() as builder:
-                assert isinstance(builder, fluent.SetAttributeBuilder)
-                with pytest.raises(errors.KmipKitError):
-                    builder.validate()
-                assert builder.unique_identifier("key-42") is builder
-                assert builder.catalogued_attribute(
-                    StandardAttribute.DESCRIPTION, description
-                ) is builder
-                assert builder.with_options(client.RequestOptions()) is builder
-                assert builder.asynchronous_indicator(3) is builder
-                builder.validate()
-                item = builder.build()
+                request = builder.build_request()
                 try:
-                    assert item.operation == protocol_values.Operation.SET_ATTRIBUTE
+                    assert isinstance(request, attribute_operations.SetAttributeRequest)
+                    with request.to_ttlv_payload() as payload:
+                        assert payload is not None
+                    with request.to_batch_item() as request_item:
+                        assert request_item.operation == protocol_values.Operation.SET_ATTRIBUTE
                 finally:
-                    item.close()
+                    request.close()
 
                 with pytest.raises(errors.KmipKitError):
                     builder.unique_identifier(None)  # type: ignore[arg-type]

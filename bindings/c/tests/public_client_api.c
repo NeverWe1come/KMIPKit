@@ -316,6 +316,8 @@ int kmipkit_public_set_attribute_builder_probe(void) {
     kmipkit_ttlv_value_t *value = NULL;
     kmipkit_ttlv_value_t *wrong_type = NULL;
     kmipkit_set_attribute_builder_t *builder = NULL;
+    kmipkit_set_attribute_request_t *request = NULL;
+    kmipkit_ttlv_structure_t *payload = NULL;
     kmipkit_client_batch_item_t *item = NULL;
     uint32_t operation = UINT32_C(0);
     int32_t status;
@@ -339,7 +341,25 @@ int kmipkit_public_set_attribute_builder_probe(void) {
         kmipkit_set_attribute_builder_set_asynchronous_indicator(builder, UINT32_C(3)) !=
             INT32_C(0) ||
         kmipkit_set_attribute_builder_validate(builder) != INT32_C(0) ||
-        kmipkit_set_attribute_builder_build_batch_item(builder, &item) != INT32_C(0) ||
+        kmipkit_set_attribute_builder_build_request(builder, &request) != INT32_C(0) ||
+        request == NULL ||
+        kmipkit_set_attribute_request_to_ttlv_payload(request, &payload) != INT32_C(0) ||
+        payload == NULL) {
+        status = 2;
+        goto cleanup;
+    }
+    kmipkit_ttlv_structure_release(payload);
+    payload = NULL;
+    if (kmipkit_client_batch_item_set_attribute_from_request(request, &item) != INT32_C(0) ||
+        item == NULL ||
+        kmipkit_client_batch_item_operation(item, &operation) != INT32_C(0) ||
+        operation != KMIPKIT_ENUMERATION_OPERATION_SET_ATTRIBUTE) {
+        status = 2;
+        goto cleanup;
+    }
+    kmipkit_client_batch_item_release(item);
+    item = NULL;
+    if (kmipkit_set_attribute_builder_build_batch_item(builder, &item) != INT32_C(0) ||
         item == NULL ||
         kmipkit_client_batch_item_operation(item, &operation) != INT32_C(0) ||
         operation != KMIPKIT_ENUMERATION_OPERATION_SET_ATTRIBUTE) {
@@ -350,6 +370,8 @@ int kmipkit_public_set_attribute_builder_probe(void) {
 
 cleanup:
     kmipkit_client_batch_item_release(item);
+    kmipkit_ttlv_structure_release(payload);
+    kmipkit_set_attribute_request_release(request);
     kmipkit_set_attribute_builder_release(builder);
     kmipkit_ttlv_value_release(wrong_type);
     kmipkit_ttlv_value_release(value);
