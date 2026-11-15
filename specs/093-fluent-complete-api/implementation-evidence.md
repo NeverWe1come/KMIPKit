@@ -180,6 +180,16 @@
 - The exact-head CI coverage gate has not yet run on these updates; its result
   remains pending and will be recorded before the PR leaves WIP.
 
+## KMIPKIT-0093 HTTPS surplus-response coverage follow-up
+
+### Red
+
+- CI for PR #226 at `b9ea45b53` failed the selected-scope coverage gate:
+  `Changed Rust code coverage 0/3 is below 90%`. The only changed production
+  path was a `#[cfg(test)]` helper in `crates/kmipkit-transport/src/https.rs`;
+  the source-included integration test passed but its helper lines were not
+  credited by the workspace coverage report.
+
 ## KMIPKIT-0093 C Create Key Pair builder
 
 ### Red
