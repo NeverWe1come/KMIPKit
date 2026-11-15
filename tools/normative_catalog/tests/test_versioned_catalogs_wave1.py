@@ -97,6 +97,13 @@ class VersionedCatalogsWave1Tests(unittest.TestCase):
         self.assertIn("Deactivation Reason Code", group_names_v30)
         self.assertIn("OTP Algorithm", group_names_v30)
         self.assertIn("Object Class Mask", group_names_v30)
+        self.assertIn("Credential Type", group_names_v30)
+        self.assertIn("Item Type", group_names_v30)
+        self.assertIn("Query Function", group_names_v30)
+        self.assertIn("Recommended Curve", group_names_v30)
+        self.assertIn("Revocation Reason Code", group_names_v30)
+        self.assertIn("Unique Identifier", group_names_v30)
+
 
     def test_kmip21_versioned_tags_and_rotate_attribute_policy_bounds(self) -> None:
         versioned_tags = json.loads(
