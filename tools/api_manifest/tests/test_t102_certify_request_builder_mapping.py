@@ -172,8 +172,9 @@ KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS = {
 # this inventory also includes the approved KMIPKIT-0093 reconciliation and
 # narrowed T101 mappings. KMIPKIT-0124 adds 28 KMIP 3.0 fluent and 16 async
 # batch declarations to this non-target snapshot; the async request constructors
-# add four-language mappings to the existing operation rows.
-DECLARATIONS_SHA256 = "fa7e93c2270750b7c32e283c7bff199aea5d2a79fb9b4697282b0ec314779559"
+# add four-language mappings to the existing operation rows. KMIPKIT-0093 adds
+# the four-language Create Key Pair builder declarations to the same inventory.
+DECLARATIONS_SHA256 = "cd0161cb18cebab547b01f651f618b034644ef1f72a38ca81ac1f51c39332668"
 OPERATIONS_SHA256 = "9ab6c670787f07c9faa301744d1654fdd071ceffc3b43936e6cb12add59094e2"
 
 
