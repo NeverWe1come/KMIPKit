@@ -2272,6 +2272,7 @@ fn is_exact_fluent_catalogued_attribute(
             signature.ident.to_string().as_str(),
             "common_attribute" | "private_attribute" | "public_attribute"
         ),
+        Some("SetAttributeBuilder") => signature.ident == "attribute",
         _ => false,
     };
     if !fluent_root_scope
@@ -2333,7 +2334,10 @@ fn is_exact_fluent_explicit_attribute_item(
         || impl_type.is_none_or(|name| {
             !matches!(
                 name,
-                "CreateSymmetricKeyBuilder" | "CreateSplitKeyBuilder" | "RegisterBuilder"
+                "CreateSymmetricKeyBuilder"
+                    | "CreateSplitKeyBuilder"
+                    | "RegisterBuilder"
+                    | "SetAttributeBuilder"
             )
         })
         || !matches!(
