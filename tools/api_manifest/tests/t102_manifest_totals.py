@@ -20,16 +20,19 @@ T102_BLOCKED_CANDIDATES = 0
 # Create Split Key declarations and 18 standard-trait exclusions; KMIPKIT-0100
 # adds 40 exact Rust Register declarations and 18 standard-trait exclusions;
 # KMIPKIT-0101 adds 188 exact Rust lifecycle declarations.
-# KMIPKIT-0093 reconciliation adds 1,614 explicit blocked declarations and
-# 3,467 reviewed Rust trait exclusions. KMIPKIT-0102 adds Rust fluent crypto
-# builders; KMIPKIT-0103 adds 27 C, KMIPKIT-0104 adds 121 Java, and KMIPKIT-0105
-# adds 148 Python fluent crypto declarations. KMIPKIT-0096 also adds one C
-# expert attribute insertion and one blocked Java insertion declaration.
+# KMIPKIT-0093 reconciliation adds 1,614 explicitly blocked declarations and
+# 3,467 reviewed Rust trait exclusions.
+# KMIPKIT-0102 adds the Rust fluent cryptographic operation builders.
+# KMIPKIT-0103 adds 27 C, KMIPKIT-0104 adds 121 Java, and KMIPKIT-0105 adds
+# 148 Python fluent crypto declarations. KMIPKIT-0096 also adds one C expert
+# attribute insertion and one blocked Java insertion declaration.
 # KMIPKIT-0095 adds 9 C/Java/Python response rendering declarations and 3 JNI exclusions.
 # KMIPKIT-0096 adds the Python expert attribute insertion declaration.
+# KMIPKIT-0107 Task 3 adds 37 C/Java/Python key-pair journey declarations.
+# KMIPKIT-0107 review fix 1 adds 3 typed common-attribute adapter declarations.
 # Update this full-manifest snapshot only when an approved feature intentionally
 # adds or removes declarations.
-T102_PUBLIC_DECLARATIONS = 16_358
+T102_PUBLIC_DECLARATIONS = 16_399
 T102_KMIP30_DRAFT_ROUTE_DECLARATIONS = 36
 T102_APPROVED_EXCLUSIONS = 22_614
 T102_RUST_AUDIT_MANIFEST = 3_287

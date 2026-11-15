@@ -194,3 +194,27 @@ after KMIPKIT-0095 T009. Earlier dated reports remain historical snapshots.
 | C | yes | 2,058 | 1,998 | 1,998 | 60 | 0 | 0 | 0 | 0 | yes |
 | Java | yes | 3,090 | 2,390 | 2,390 | 700 | 0 | 0 | 0 | 0 | yes |
 | Python | yes | 3,605 | 2,596 | 2,596 | 1,009 | 0 | 0 | 0 | 0 | yes |
+
+## Key-pair journey binding snapshot (2026-11-12)
+
+The current report includes the KMIPKIT-0107 Task 3 semantic C entry points
+and Java/Python Create Key Pair builders. It was generated with:
+
+```text
+python3 tools/api_manifest/audit_binding_exports.py --report specs/043-public-api-bindings/reports/binding-export-report-2026-11-12-key-pair-journeys.json --check
+```
+
+The prior response-view report remains historical evidence. This declaration
+audit complements the 40-exchange controlled TLS journey; it does not establish
+complete builder parity or external-KMS interoperability.
+
+| Package | Scanner complete | Observed | Manifest declarations | Exact matches | Exact exclusions | Missing | Stale | Kind mismatches | Issues | `matchesManifest` |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| C | yes | 2,072 | 2,012 | 2,012 | 60 | 0 | 0 | 0 | 0 | yes |
+| Java | yes | 3,102 | 2,402 | 2,402 | 700 | 0 | 0 | 0 | 0 | yes |
+| Python | yes | 3,620 | 2,611 | 2,611 | 1,009 | 0 | 0 | 0 | 0 | yes |
+
+The Task 3 review correction adds typed common-attribute adapters so the
+journey selects Recommended Curve P-256 explicitly inside Cryptographic Domain
+Parameters. The existing C v1 input layout is unchanged; the new C entry point
+borrows an independently constructed Attribute Set.

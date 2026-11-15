@@ -93,7 +93,11 @@ final class FluentCryptoApiShapeTest {
             assertEquals(39, hashItem.operation());
 
             encrypt.close();
+            sign.close();
+            signatureVerify.close();
             assertThrows(InvalidInputException.class, encrypt::build);
+            assertThrows(InvalidInputException.class, sign::build);
+            assertThrows(InvalidInputException.class, signatureVerify::build);
             assertThrows(InvalidInputException.class, () -> decrypt.data(null));
             assertThrows(InvalidInputException.class, () -> hash.withOptions(null));
             assertThrows(InvalidInputException.class, () -> sign.asynchronousIndicator(-1));
