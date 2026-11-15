@@ -79,3 +79,41 @@ fn async_operations_are_first_class_client_requests_and_batch_items() {
     let _: ClientRequest =
         ClientRequest::query_async_requests(QueryAsyncRequestsRequest::default());
 }
+
+#[test]
+fn typed_kmip30_batch_outcome_and_response_readers_exist() {
+    use kmipkit_client::{ClientBatchOutcome, Kmip30OperationResponse};
+    use kmipkit_protocol::{
+        CreateCredentialResponse, CreateGroupResponse, CreateUserResponse, DeactivateResponse,
+        DecapsulateResponse, EncapsulateResponse, ObliterateResponse, UniqueIdentifier,
+    };
+
+    let group_resp = CreateGroupResponse::new(UniqueIdentifier::TextString("group-1".to_owned()));
+    let outcome = ClientBatchOutcome::Kmip30(Kmip30OperationResponse::CreateGroup(group_resp));
+    assert!(outcome.create_group_response().is_some());
+    assert!(outcome.create_user_response().is_none());
+    assert!(outcome.create_credential_response().is_none());
+    assert!(outcome.obliterate_response().is_none());
+    assert!(outcome.deactivate_response().is_none());
+    assert!(outcome.encapsulate_response().is_none());
+    assert!(outcome.decapsulate_response().is_none());
+
+    let oblit_outcome =
+        ClientBatchOutcome::Kmip30(Kmip30OperationResponse::Obliterate(ObliterateResponse::new()));
+    assert!(oblit_outcome.obliterate_response().is_some());
+    assert!(oblit_outcome.create_group_response().is_none());
+
+    let encap_outcome = ClientBatchOutcome::Kmip30(Kmip30OperationResponse::Encapsulate(
+        EncapsulateResponse::new("pub-1", vec![1, 2, 3]),
+    ));
+    assert!(encap_outcome.encapsulate_response().is_some());
+    assert_eq!(
+        encap_outcome.encapsulate_response().unwrap().data(),
+        Some(&[1, 2, 3][..])
+    );
+
+    let decap_outcome = ClientBatchOutcome::Kmip30(Kmip30OperationResponse::Decapsulate(
+        DecapsulateResponse::new("priv-1"),
+    ));
+    assert!(decap_outcome.decapsulate_response().is_some());
+}
