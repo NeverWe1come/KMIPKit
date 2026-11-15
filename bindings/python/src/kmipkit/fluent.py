@@ -192,6 +192,42 @@ def _execute_direct_create(client: Client, request: Any, limits: ttlv.CodecLimit
     return _batch_result(output[0], limits)
 
 
+def _build_fluent_batch_item(
+    handle: Any, native_function: Any
+) -> extensions.ClientBatchItem:
+    output = ffi.new("kmipkit_client_batch_item_t **")
+    with _NATIVE_CALL_LOCK:
+        _raise_client_status(native_function(handle, output))
+    if output[0] == ffi.NULL:
+        errors.raise_for_status(7)
+    # The fluent facade and shared handle wrapper use separate CFFI declarations.
+    native_handle = _base_ffi.cast(
+        "kmipkit_client_batch_item_t *", int(ffi.cast("uintptr_t", output[0]))
+    )
+    return _wrap_owned_handle(extensions.ClientBatchItem, native_handle)
+
+
+def _execute_fluent_builder(
+    builder: Any,
+    limits: ttlv.CodecLimits,
+    client: Client | None,
+) -> BatchResult:
+    builder._ensure_open()
+    target = client or builder._client
+    if not isinstance(target, Client) or not isinstance(limits, ttlv.CodecLimits):
+        errors.raise_for_status(4)
+    batch = Batch.create()
+    try:
+        batch.add_item(builder.build())
+        if builder._asynchronous_indicator is not None:
+            batch.set_asynchronous_indicator(builder._asynchronous_indicator)
+        if builder._options is None:
+            return target.execute(batch, limits)
+        return target.execute_with_options(batch, limits, builder._options)
+    finally:
+        batch.close()
+
+
 class Request:
     """Scoped fluent namespace for the foundation lifecycle operations."""
 
@@ -505,36 +541,14 @@ class SymmetricKeyBuilder:
         self._ensure_open()
         if self._algorithm is None or self._length is None or self._usage_mask is None:
             errors.raise_for_status(4)
-        output = ffi.new("kmipkit_client_batch_item_t **")
-        with _NATIVE_CALL_LOCK:
-            _raise_client_status(lib.kmipkit_symmetric_key_builder_build_batch_item(self._handle, output))
-        if output[0] == ffi.NULL:
-            errors.raise_for_status(7)
-        # The fluent facade uses the client CFFI declarations while the shared
-        # handle wrapper is owned by the base ABI declarations. Bridge the
-        # opaque pointer by address, as Client.Batch.item_at does.
-        handle = _base_ffi.cast(
-            "kmipkit_client_batch_item_t *", int(ffi.cast("uintptr_t", output[0]))
+        return _build_fluent_batch_item(
+            self._handle, lib.kmipkit_symmetric_key_builder_build_batch_item
         )
-        return _wrap_owned_handle(extensions.ClientBatchItem, handle)
 
     to_batch_item = build
 
     def execute(self, limits: ttlv.CodecLimits, client: Client | None = None) -> BatchResult:
-        self._ensure_open()
-        target = client or self._client
-        if not isinstance(target, Client) or not isinstance(limits, ttlv.CodecLimits):
-            errors.raise_for_status(4)
-        batch = Batch.create()
-        try:
-            batch.add_item(self.build())
-            if self._asynchronous_indicator is not None:
-                batch.set_asynchronous_indicator(self._asynchronous_indicator)
-            if self._options is None:
-                return target.execute(batch, limits)
-            return target.execute_with_options(batch, limits, self._options)
-        finally:
-            batch.close()
+        return _execute_fluent_builder(self, limits, client)
 
     def close(self) -> None:
         if self._handle != ffi.NULL:
@@ -741,35 +755,14 @@ class CreateKeyPairBuilder:
 
     def build(self) -> extensions.ClientBatchItem:
         self._ensure_open()
-        output = ffi.new("kmipkit_client_batch_item_t **")
-        with _NATIVE_CALL_LOCK:
-            _raise_client_status(lib.kmipkit_create_key_pair_builder_build_batch_item(
-                self._handle, output
-            ))
-        if output[0] == ffi.NULL:
-            errors.raise_for_status(7)
-        handle = _base_ffi.cast(
-            "kmipkit_client_batch_item_t *", int(ffi.cast("uintptr_t", output[0]))
+        return _build_fluent_batch_item(
+            self._handle, lib.kmipkit_create_key_pair_builder_build_batch_item
         )
-        return _wrap_owned_handle(extensions.ClientBatchItem, handle)
 
     to_batch_item = build
 
     def execute(self, limits: ttlv.CodecLimits, client: Client | None = None) -> BatchResult:
-        self._ensure_open()
-        target = client or self._client
-        if not isinstance(target, Client) or not isinstance(limits, ttlv.CodecLimits):
-            errors.raise_for_status(4)
-        batch = Batch.create()
-        try:
-            batch.add_item(self.build())
-            if self._asynchronous_indicator is not None:
-                batch.set_asynchronous_indicator(self._asynchronous_indicator)
-            if self._options is None:
-                return target.execute(batch, limits)
-            return target.execute_with_options(batch, limits, self._options)
-        finally:
-            batch.close()
+        return _execute_fluent_builder(self, limits, client)
 
     def close(self) -> None:
         if self._handle != ffi.NULL:
