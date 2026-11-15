@@ -79,15 +79,16 @@ use crate::{
     kmipkit_request_header_view_t, kmipkit_request_message_t, kmipkit_request_options_v1_t,
     kmipkit_response_batch_item_view_t, kmipkit_response_header_view_t, kmipkit_response_message_t,
     kmipkit_revocation_reason_t, kmipkit_revoke_request_t, kmipkit_secret_bytes_t,
-    kmipkit_secret_text_t, kmipkit_set_attribute_request_t, kmipkit_split_key_reference_t,
-    kmipkit_symmetric_key_builder_t, kmipkit_symmetric_key_request_v1_t, kmipkit_tag_t,
-    kmipkit_timeout_limit_v1_t, kmipkit_transport_config_t, kmipkit_transport_config_v1_t,
-    kmipkit_transport_input_v1_t, kmipkit_ttlv_decode_error_v1_t, kmipkit_ttlv_item_t,
-    kmipkit_ttlv_item_view_t, kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t,
-    kmipkit_ttlv_structure_view_t, kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t,
-    kmipkit_unique_identifier_v1_t, kmipkit_usage_allocation_context_t,
-    kmipkit_username_and_password_credential_t, kmipkit_validated_extension_value_t,
-    kmipkit_validation_issue_view_v1_t, kmipkit_validation_report_t,
+    kmipkit_secret_text_t, kmipkit_set_attribute_builder_t, kmipkit_set_attribute_request_t,
+    kmipkit_split_key_reference_t, kmipkit_symmetric_key_builder_t,
+    kmipkit_symmetric_key_request_v1_t, kmipkit_tag_t, kmipkit_timeout_limit_v1_t,
+    kmipkit_transport_config_t, kmipkit_transport_config_v1_t, kmipkit_transport_input_v1_t,
+    kmipkit_ttlv_decode_error_v1_t, kmipkit_ttlv_item_t, kmipkit_ttlv_item_view_t,
+    kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t, kmipkit_ttlv_structure_view_t,
+    kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t, kmipkit_unique_identifier_v1_t,
+    kmipkit_usage_allocation_context_t, kmipkit_username_and_password_credential_t,
+    kmipkit_validated_extension_value_t, kmipkit_validation_issue_view_v1_t,
+    kmipkit_validation_report_t,
 };
 use kmipkit_client::UsageAllocationContext;
 use kmipkit_client::extension_registry as client_extension;
@@ -571,6 +572,7 @@ enum Kind {
     QueryAsyncRequestsRequest,
     SymmetricKeyBuilder,
     CreateKeyPairBuilder,
+    SetAttributeBuilder,
     CryptoOperationBuilder,
 }
 
@@ -610,6 +612,11 @@ struct CryptoOperationBuilder {
 
 struct CreateKeyPairBuilderState {
     builder: kmipkit_client::fluent::CreateKeyPairBuilder<'static>,
+    asynchronous_indicator: Option<u32>,
+}
+
+struct SetAttributeBuilderState {
+    builder: kmipkit_client::fluent::SetAttributeBuilder<'static>,
     asynchronous_indicator: Option<u32>,
 }
 
@@ -657,6 +664,7 @@ enum HandleValue {
     BatchItem(Box<ClientBatchItem>),
     SymmetricKeyBuilder(Mutex<Option<kmipkit_client::fluent::CreateSymmetricKeyBuilder<'static>>>),
     CreateKeyPairBuilder(Mutex<Option<CreateKeyPairBuilderState>>),
+    SetAttributeBuilder(Mutex<Option<SetAttributeBuilderState>>),
     CryptoOperationBuilder(Mutex<CryptoOperationBuilder>),
     BatchItemReadback(ClientBatchItemReadback),
     RegisterRequest(Box<RegisterRequest>),

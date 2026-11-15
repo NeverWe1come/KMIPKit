@@ -99,7 +99,10 @@ fn detached_set_attribute_builder_builds_without_a_client_and_refuses_execution(
         .build_request()
         .expect("detached builders construct the existing typed request");
     assert_eq!(request.unique_identifier(), Some("key-42"));
-    assert_eq!(request.new_attribute().item().tag().raw(), typed::Description::TAG);
+    assert_eq!(
+        request.new_attribute().item().tag().raw(),
+        typed::Description::TAG
+    );
 
     let error = SetAttributeBuilder::detached()
         .unique_identifier("key-42")

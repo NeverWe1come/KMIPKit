@@ -90,6 +90,21 @@ class FluentSetAttributeBuilderManifestTests(unittest.TestCase):
                      if row.get(language)},
                 )
 
+    def test_every_c_builder_function_is_declared_in_the_public_header(self) -> None:
+        expected_symbols = {
+            row["c"]["symbol"]
+            for row in self.manifest["functions"]
+            if row["id"].startswith("set_attribute_builder_")
+        }
+        declared_symbols = {
+            row["exportName"]
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "c-kmipkit"
+            and row.get("kind") == "c-symbol"
+            and row.get("declarationState") in {"declared", "verified"}
+        }
+        self.assertEqual(expected_symbols, expected_symbols & declared_symbols)
+
 
 if __name__ == "__main__":
     unittest.main()

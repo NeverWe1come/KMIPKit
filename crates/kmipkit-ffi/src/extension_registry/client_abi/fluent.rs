@@ -5,6 +5,7 @@ use std::sync::Arc;
 
 type SymmetricBuilder = kmipkit_client::fluent::CreateSymmetricKeyBuilder<'static>;
 type KeyPairBuilder = kmipkit_client::fluent::CreateKeyPairBuilder<'static>;
+type SetAttributeBuilder = kmipkit_client::fluent::SetAttributeBuilder<'static>;
 
 fn symmetric_builder_validation_status(operation: impl FnOnce() -> i32) -> i32 {
     let status = operation();
@@ -227,6 +228,37 @@ fn update_key_pair_builder(
     Ok(())
 }
 
+fn update_set_attribute_builder(
+    builder: *mut kmipkit_set_attribute_builder_t,
+    update: impl FnOnce(SetAttributeBuilder) -> SetAttributeBuilder,
+) -> FfiResult<()> {
+    let handle = reference_handle(builder, Kind::SetAttributeBuilder)?;
+    let HandleValue::SetAttributeBuilder(builder) = &handle.value else {
+        return Err(ERROR_INVALID_INPUT);
+    };
+    let mut slot = builder.lock().map_err(|_| ERROR_INTERNAL)?;
+    let mut current = slot.take().ok_or(ERROR_INVALID_INPUT)?;
+    current.builder = update(current.builder);
+    *slot = Some(current);
+    Ok(())
+}
+
+fn set_attribute_request(
+    builder: *mut kmipkit_set_attribute_builder_t,
+) -> FfiResult<(SetAttributeRequest, Option<u32>)> {
+    let handle = reference_handle(builder, Kind::SetAttributeBuilder)?;
+    let HandleValue::SetAttributeBuilder(builder) = &handle.value else {
+        return Err(ERROR_INVALID_INPUT);
+    };
+    let slot = builder.lock().map_err(|_| ERROR_INTERNAL)?;
+    let state = slot.as_ref().ok_or(ERROR_INVALID_INPUT)?;
+    let request = state
+        .builder
+        .build_request()
+        .map_err(|_| ERROR_INVALID_INPUT)?;
+    Ok((request, state.asynchronous_indicator))
+}
+
 fn key_pair_attribute_set(item: Item) -> FfiResult<AttributeSet> {
     AttributeSet::try_new([item]).map_err(|_| ERROR_INVALID_INPUT)
 }
@@ -307,6 +339,34 @@ fn execute_key_pair_builder(
     execute_fluent_item(
         client,
         ClientRequest::CreateKeyPair(request),
+        limits,
+        &options,
+        asynchronous_indicator,
+        out_response,
+    )
+}
+
+fn execute_set_attribute_builder(
+    builder: *mut kmipkit_set_attribute_builder_t,
+    client: *mut kmipkit_client_t,
+    limits: *mut kmipkit_codec_limits_t,
+    options: Option<&kmipkit_request_options_v1_t>,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    let (request, asynchronous_indicator) = match set_attribute_request(builder) {
+        Ok(parts) => parts,
+        Err(status) => return record_ffi_error(status),
+    };
+    let options = match options {
+        Some(options) => match super::request_options_from_v1(options) {
+            Ok(options) => options,
+            Err(status) => return record_ffi_error(status),
+        },
+        None => RequestOptions::default(),
+    };
+    execute_fluent_item(
+        client,
+        ClientRequest::SetAttribute(request),
         limits,
         &options,
         asynchronous_indicator,
@@ -1168,6 +1228,228 @@ pub extern "C" fn kmipkit_create_key_pair_builder_release(
     builder: *mut kmipkit_create_key_pair_builder_t,
 ) {
     ffi_entrypoint(|| release(builder, Kind::CreateKeyPairBuilder));
+}
+
+/// Creates a detached, reusable Set Attribute builder.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_set_attribute_builder_create(
+    out_builder: *mut *mut kmipkit_set_attribute_builder_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_builder);
+        *out = try_ffi!(try_make_handle(
+            Kind::SetAttributeBuilder,
+            HandleValue::SetAttributeBuilder(Mutex::new(Some(
+                super::super::SetAttributeBuilderState {
+                    builder: SetAttributeBuilder::detached(),
+                    asynchronous_indicator: None,
+                },
+            ))),
+        ));
+        SUCCESS
+    })
+}
+
+/// Sets an optional UTF-8 Unique Identifier.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_set_attribute_builder_set_unique_identifier(
+    builder: *mut kmipkit_set_attribute_builder_t,
+    value_data: *const u8,
+    value_length: u64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let value = match input_span(value_data, value_length, MAX_FFI_INPUT_BYTES) {
+            Ok(value) => match std::str::from_utf8(value) {
+                Ok(value) => value,
+                Err(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+            },
+            Err(status) => return record_ffi_error(status),
+        };
+        try_ffi!(update_set_attribute_builder(builder, |builder| {
+            builder.unique_identifier(value)
+        }));
+        SUCCESS
+    })
+}
+
+/// Adds one explicitly typed TTLV Item as the New Attribute.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_set_attribute_builder_add_attribute_item(
+    builder: *mut kmipkit_set_attribute_builder_t,
+    item: *mut kmipkit_ttlv_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let item = try_ffi!(super::super::copy_required_item_handle(item));
+        try_ffi!(update_set_attribute_builder(builder, |builder| {
+            builder.attribute_item(item)
+        }));
+        SUCCESS
+    })
+}
+
+/// Adds a catalogued primitive attribute after validating its TTLV type.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_set_attribute_builder_add_catalogued_attribute(
+    builder: *mut kmipkit_set_attribute_builder_t,
+    tag: u32,
+    value: *mut kmipkit_ttlv_value_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let item = try_ffi!(super::super::typed_attributes::catalogued_item_from_value(
+            tag,
+            value,
+            model_status,
+        ));
+        try_ffi!(update_set_attribute_builder(builder, |builder| {
+            builder.attribute_item(item)
+        }));
+        SUCCESS
+    })
+}
+
+/// Adds a KMIP Vendor Attribute with an explicit typed value Item.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_set_attribute_builder_add_vendor_attribute(
+    builder: *mut kmipkit_set_attribute_builder_t,
+    vendor_data: *const u8,
+    vendor_length: u64,
+    name_data: *const u8,
+    name_length: u64,
+    value: *mut kmipkit_ttlv_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let item = try_ffi!(key_pair_vendor_attribute(
+            vendor_data,
+            vendor_length,
+            name_data,
+            name_length,
+            value,
+        ));
+        try_ffi!(update_set_attribute_builder(builder, |builder| {
+            builder.attribute_item(item)
+        }));
+        SUCCESS
+    })
+}
+
+/// Sets the Request Header Asynchronous Indicator.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_set_attribute_builder_set_asynchronous_indicator(
+    builder: *mut kmipkit_set_attribute_builder_t,
+    value: u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let handle = try_ffi!(reference_handle(builder, Kind::SetAttributeBuilder));
+        let HandleValue::SetAttributeBuilder(builder) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(mut slot) = builder.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let Some(mut state) = slot.take() else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        state.builder = state.builder.with_asynchronous_indicator(value);
+        state.asynchronous_indicator = Some(value);
+        *slot = Some(state);
+        SUCCESS
+    })
+}
+
+/// Validates the typed Set Attribute request without transport.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_set_attribute_builder_validate(
+    builder: *mut kmipkit_set_attribute_builder_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        symmetric_builder_validation_status(|| match set_attribute_request(builder) {
+            Ok(_) => SUCCESS,
+            Err(status) => record_ffi_error(status),
+        })
+    })
+}
+
+/// Builds an independently owned typed Set Attribute request.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_set_attribute_builder_build_request(
+    builder: *mut kmipkit_set_attribute_builder_t,
+    out_request: *mut *mut kmipkit_set_attribute_request_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_request);
+        let (request, _) = match set_attribute_request(builder) {
+            Ok(parts) => parts,
+            Err(status) => return record_ffi_error(status),
+        };
+        *out = try_ffi!(try_make_handle(
+            Kind::SetAttributeRequest,
+            HandleValue::SetAttributeRequest(Box::new(request)),
+        ));
+        SUCCESS
+    })
+}
+
+/// Builds an independently owned typed Set Attribute batch item.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_set_attribute_builder_build_batch_item(
+    builder: *mut kmipkit_set_attribute_builder_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let (request, _) = match set_attribute_request(builder) {
+            Ok(parts) => parts,
+            Err(status) => return record_ffi_error(status),
+        };
+        *out = try_ffi!(try_make_handle(
+            Kind::BatchItem,
+            HandleValue::BatchItem(Box::new(ClientBatchItem::new(ClientRequest::SetAttribute(
+                request
+            ),))),
+        ));
+        SUCCESS
+    })
+}
+
+/// Executes the typed request with the client's default exchange options.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_set_attribute_builder_execute_v1(
+    builder: *mut kmipkit_set_attribute_builder_t,
+    client: *mut kmipkit_client_t,
+    limits: *mut kmipkit_codec_limits_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| execute_set_attribute_builder(builder, client, limits, None, out_response))
+}
+
+/// Executes the typed request with explicit exchange-local options.
+///
+/// # Safety
+/// `options` must reference an aligned, initialized v1 record.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_set_attribute_builder_execute_with_options_v1(
+    builder: *mut kmipkit_set_attribute_builder_t,
+    client: *mut kmipkit_client_t,
+    limits: *mut kmipkit_codec_limits_t,
+    options: *const kmipkit_request_options_v1_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if options.is_null() || !options.is_aligned() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        // SAFETY: The non-null aligned pointer must reference one readable v1 record.
+        let options = unsafe { &*options };
+        execute_set_attribute_builder(builder, client, limits, Some(options), out_response)
+    })
+}
+
+/// Releases the opaque Set Attribute builder.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_set_attribute_builder_release(
+    builder: *mut kmipkit_set_attribute_builder_t,
+) {
+    ffi_entrypoint(|| release(builder, Kind::SetAttributeBuilder));
 }
 
 /// Creates an opaque, reusable Create Symmetric Key builder.
