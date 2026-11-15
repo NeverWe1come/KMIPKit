@@ -33,3 +33,17 @@
   report assertions, keeping the blocked C declaration rule in one place.
 - Re-ran `python3 -B -m unittest tools.api_manifest.tests.test_c_api_docs -v`;
   all 4 tests pass.
+
+## KMIPKIT-0124 manifest snapshot repair
+
+### Red
+
+- On PR #223 head `f57660fa60be9d9c86161204333169e24d602136`, CI run
+  `43700578979` failed `Script contracts / windows-latest` in
+  `test_t102_slice_and_manifest_snapshots_remain_consistent`.
+- Reproduced with:
+  `python3 -B -m unittest tools.api_manifest.tests.test_t102_pkcs11_request_trait_exclusions.T102Pkcs11RequestTraitExclusionTests.test_t102_slice_and_manifest_snapshots_remain_consistent`
+- The test reported `AssertionError: 16816 != 16772`. Comparing the public API
+  manifest against the PR base identified 44 added declarations: 28 KMIP 3.0
+  fluent operations and 16 asynchronous batch bindings. The inherited T102
+  public-declaration total had not been refreshed for those approved additions.
