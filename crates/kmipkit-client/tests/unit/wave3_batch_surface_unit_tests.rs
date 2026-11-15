@@ -172,7 +172,10 @@ fn async_batch_item_poll_success_and_pending() {
         )
         .expect("successful Poll pending response");
     let pending_item = outcome_pending.get(0).expect("item");
-    assert!(matches!(pending_item.outcome(), ClientBatchOutcome::Pending(_)));
+    assert!(matches!(
+        pending_item.outcome(),
+        ClientBatchOutcome::Pending(_)
+    ));
     assert_pending_async_response(pending_item, ClientOperation::Poll);
 }
 
@@ -213,7 +216,10 @@ fn async_batch_item_process_success_and_pending() {
         )
         .expect("successful Process pending response");
     let pending_item = outcome_pending.get(0).expect("item");
-    assert!(matches!(pending_item.outcome(), ClientBatchOutcome::Pending(_)));
+    assert!(matches!(
+        pending_item.outcome(),
+        ClientBatchOutcome::Pending(_)
+    ));
     assert_pending_async_response(pending_item, ClientOperation::Process);
 }
 
@@ -272,7 +278,10 @@ fn async_batch_item_query_async_success_and_pending() {
         )
         .expect("successful QueryAsync pending response");
     let pending_item = outcome_pending.get(0).expect("item");
-    assert!(matches!(pending_item.outcome(), ClientBatchOutcome::Pending(_)));
+    assert!(matches!(
+        pending_item.outcome(),
+        ClientBatchOutcome::Pending(_)
+    ));
     assert_pending_async_response(pending_item, ClientOperation::QueryAsyncRequests);
 }
 
