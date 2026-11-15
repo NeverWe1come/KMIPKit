@@ -1,5 +1,6 @@
 from pathlib import Path
 import json
+import re
 import unittest
 from typing import Any
 
@@ -8,9 +9,31 @@ ROOT = Path(__file__).resolve().parents[3]
 DOC = ROOT / "docs" / "architecture" / "ffi-and-bindings.md"
 AUDIT_GUIDE = ROOT / "tools" / "api_manifest" / "binding-export-audit.md"
 AUDIT_REPORT_PATH = Path(
-    "specs/043-public-api-bindings/reports/binding-export-report-2026-11-15-versioned-catalogs.json"
+    "specs/043-public-api-bindings/reports/binding-export-report-2026-11-15-kmip30-async-bindings.json"
 )
 AUDIT_REPORT = ROOT / AUDIT_REPORT_PATH
+JAVA_CLIENT_BATCH_ITEM = ROOT / "bindings" / "java" / "src" / "main" / "java" / "org" / "kmipkit" / "extensions" / "ClientBatchItem.java"
+
+KMIP30_SEMANTIC_JAVA_METHODS = {
+    "createGroupFromAttributes",
+    "createUserFromAttributes",
+    "deactivateFromFields",
+    "obliterateFromIdentifier",
+}
+
+KMIP30_JNI_BRIDGE_EXCLUSIONS = {
+    "org.kmipkit.NativeExtensionRegistry.clientBatchItemCancelFromRequest",
+    "org.kmipkit.NativeExtensionRegistry.clientBatchItemCreateCredentialFromFields",
+    "org.kmipkit.NativeExtensionRegistry.clientBatchItemCreateGroupFromAttributes",
+    "org.kmipkit.NativeExtensionRegistry.clientBatchItemCreateUserFromAttributes",
+    "org.kmipkit.NativeExtensionRegistry.clientBatchItemDeactivateFromFields",
+    "org.kmipkit.NativeExtensionRegistry.clientBatchItemDecapsulateFromFields",
+    "org.kmipkit.NativeExtensionRegistry.clientBatchItemEncapsulateFromFields",
+    "org.kmipkit.NativeExtensionRegistry.clientBatchItemObliterateFromIdentifier",
+    "org.kmipkit.NativeExtensionRegistry.clientBatchItemPollFromRequest",
+    "org.kmipkit.NativeExtensionRegistry.clientBatchItemProcessFromRequest",
+    "org.kmipkit.NativeExtensionRegistry.clientBatchItemQueryAsyncRequestsFromRequest",
+}
 
 
 def _load_audit_report():
@@ -39,6 +62,31 @@ def _audited_declarations_by_package(
 
 
 class CApiDocumentationTests(unittest.TestCase):
+    def test_kmip30_semantic_java_methods_have_manifested_names(self) -> None:
+        source = JAVA_CLIENT_BATCH_ITEM.read_text(encoding="utf-8")
+        for method in KMIP30_SEMANTIC_JAVA_METHODS:
+            with self.subTest(method=method):
+                self.assertIsNotNone(
+                    re.search(
+                        rf"\bpublic\s+static\s+ClientBatchItem\s+{method}\s*\(",
+                        source,
+                    ),
+                    f"Java facade is missing manifested method {method}",
+                )
+
+    def test_kmip30_and_async_jni_bridges_have_exact_exclusions(self) -> None:
+        manifest = json.loads(
+            (ROOT / "specification" / "api" / "public-api.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        exclusions = {
+            row["exportName"]
+            for row in manifest["approvedExclusions"]
+            if row.get("packageId") == "java-kmipkit"
+        }
+        self.assertTrue(KMIP30_JNI_BRIDGE_EXCLUSIONS <= exclusions)
+
     def test_c_api_docs_point_to_the_generated_manifest_and_symbol_inventory(self) -> None:
         documentation = DOC.read_text(encoding="utf-8")
 

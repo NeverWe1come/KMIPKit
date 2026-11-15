@@ -59,6 +59,19 @@
   base counts but omits 11 KMIPKIT-0124 declarations in each binding package:
   C `2,075` versus `2,064`, Java `2,479` versus `2,468`, and Python `2,690`
   versus `2,679`.
+- The generated audit then identified 11 unclassified public JNI bridge methods
+  and four Java facade mappings that name `createGroupFromAttributes`,
+  `createUserFromAttributes`, `deactivateFromFields`, and
+  `obliterateFromIdentifier`, while the source exposes those typed operations
+  as overloaded draft method names. The exact bridge symbols need approved
+  internal exclusions, and the semantic facade names need to match the
+  approved manifest mappings.
+- Added manifest/documentation assertions and changed the Java consumer test to
+  call the manifested method names. Red evidence:
+  `python3 -B -m unittest tools.api_manifest.tests.test_c_api_docs -v` fails
+  with the stale Java audit and the new method/exclusion assertions;
+  `bash ./gradlew test --tests org.kmipkit.extensions.Kmip30SemanticBatchItemTest`
+  fails compilation because those four manifested semantic methods are absent.
 
 ### Green
 
