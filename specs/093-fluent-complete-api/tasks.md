@@ -60,6 +60,17 @@ Dependent work branches from the unmerged parent head while review is pending.
 - [ ] P001 Add failing Python consumer, type-shape and CFFI ownership tests.
 - [ ] P002 Implement Python facade and PEP 561 stubs; run Python checks.
 
+### Create Key Pair parity slice
+
+- [x] KPB001 Commit Red consumer and manifest checks for the C, Java, and
+  Python Create Key Pair builders.
+- [x] KPB002 Implement the C ABI, JNI facade, and Python CFFI facade on the
+  existing typed Rust request path; verify ownership and local validation.
+- [x] KPB003 Declare exact Rust/C/Java/Python exports, regenerate API outputs,
+  and update English and Spanish user guides and traceability evidence.
+- [ ] KPB004 Push the completed implementation and resolve every required CI
+  failure on the exact PR head before marking it ready for human review.
+
 ## End-to-end and closeout PR
 
 - [ ] F001 Add five progressive TLS 1.3/mTLS journeys in each language and

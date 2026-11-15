@@ -268,8 +268,69 @@ No usage mask, curve, key format, or protocol version is inferred by this
 builder. The client retains its configured version (2.1 by default); an explicit
 version override stays in `RequestOptions`. `with_options` supplies exchange
 options, and `with_asynchronous_indicator` explicitly selects the request-header
-indicator. This slice is Rust-only: equivalent C, Java, and Python builder
-mappings remain blocked in the manifest pending their binding specifications.
+indicator. The C, Java, and Python bindings provide matching Create Key Pair
+builders backed by the same typed request validation.
+
+## Fluent Create Key Pair in C
+
+C exposes a reusable opaque `kmipkit_create_key_pair_builder_t`. Set the
+algorithm and bit length explicitly, then choose the private and public usage
+masks and optional names. Call
+`kmipkit_create_key_pair_builder_validate` to check local inputs before
+constructing a typed `kmipkit_client_batch_item_t` with
+`kmipkit_create_key_pair_builder_build_batch_item`, or execute the one-item
+request through `kmipkit_create_key_pair_builder_execute_v1` and the existing
+client. The `_execute_with_options_v1` variant accepts exchange-local options.
+
+The builder keeps Common, Private Key, and Public Key Attributes separate.
+Catalogued primitive attributes are type-checked by the binding; unknown
+values require an explicitly typed TTLV Item, and the Vendor Attribute helpers
+construct the KMIP structure from the supplied vendor, name, and value. The
+caller owns the returned batch-item handle and releases it with
+`kmipkit_client_batch_item_release`; the builder is released with
+`kmipkit_create_key_pair_builder_release`. The ABI does not accept an arbitrary
+TTLV message for execution.
+
+The compiled C consumer exercises incomplete-input rejection, successful local
+validation, and typed batch-item construction in
+`bindings/c/tests/public_client_api.c`.
+
+## Fluent Create Key Pair in Java and Python
+
+Java and Python expose the builder from their request facades. Both require an
+explicit algorithm, bit length, and private/public usage masks. For example,
+select RSA with a 2048-bit key and signing-only private usage:
+
+```java
+try (var builder = client.request().createKeyPair()
+        .algorithm(KmipValues.CryptographicAlgorithm.RSA)
+        .length(2048)
+        .privateUsageMask((int) KmipValues.CryptographicUsageMask.SIGN)
+        .publicUsageMask((int) KmipValues.CryptographicUsageMask.VERIFY)) {
+    builder.validate();
+    try (var item = builder.build()) {
+        // Add the typed item to a ClientBatch, or call builder.execute(limits).
+    }
+}
+```
+
+```python
+from kmipkit import protocol_values
+
+with client.request().create_key_pair() as builder:
+    builder.algorithm(protocol_values.CryptographicAlgorithm.RSA) \
+        .length(2048) \
+        .private_usage_mask(protocol_values.CryptographicUsageMask.SIGN) \
+        .public_usage_mask(protocol_values.CryptographicUsageMask.VERIFY)
+    builder.validate()
+    item = builder.build()
+    item.close()
+```
+
+Each builder can validate locally, produce a typed batch item, or execute one
+typed exchange with the supplied codec limits. Catalogued attributes are
+validated against their TTLV type; unknown attributes require an explicitly
+typed TTLV item, and vendor attributes use dedicated KMIP constructors.
 
 
 ## Fluent Create Split Key in Rust

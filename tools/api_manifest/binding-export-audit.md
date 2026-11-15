@@ -204,6 +204,6 @@ KMIP 3.0 operation and asynchronous batch binding declarations.
 
 | Package | Scanner complete | Observed | Manifest declarations | Exact matches | Exact exclusions | Missing | Stale | Kind mismatches | Issues | `matchesManifest` |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| C | yes | 2,135 | 2,075 | 2,075 | 60 | 0 | 0 | 0 | 0 | yes |
-| Java | yes | 3,190 | 2,479 | 2,479 | 711 | 0 | 0 | 0 | 0 | yes |
-| Python | yes | 3,699 | 2,690 | 2,690 | 1,009 | 0 | 0 | 0 | 0 | yes |
+| C | yes | 2,158 | 2,098 | 2,098 | 60 | 0 | 0 | 0 | 0 | yes |
+| Java | yes | 3,214 | 2,503 | 2,503 | 711 | 0 | 0 | 0 | 0 | yes |
+| Python | yes | 3,726 | 2,717 | 2,717 | 1,009 | 0 | 0 | 0 | 0 | yes |

@@ -13,7 +13,7 @@ class CreateKeyPairBuilderManifestTests(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
 
-    def test_c_abi_is_declared_without_claiming_four_language_readiness(self) -> None:
+    def test_c_abi_stays_c_only_while_builder_parity_is_four_language(self) -> None:
         capability = next(
             row for row in self.manifest["capabilities"]
             if row["capabilityId"] == "fluent_create_key_pair_c_abi"
