@@ -1049,6 +1049,14 @@ def _declared_c_record_fields(
         if exclusion.get("packageId") == "c-kmipkit"
         and isinstance(exclusion.get("cType"), dict)
     )
+    c_records.extend(
+        declaration["cTypeLayout"]
+        for declaration in manifest.get("publicDeclarations", [])
+        if declaration.get("packageId") == "c-kmipkit"
+        and declaration.get("kind") == "type"
+        and declaration.get("declarationState") in {"declared", "verified"}
+        and isinstance(declaration.get("cTypeLayout"), dict)
+    )
     for c_record in c_records:
         c_name = c_record.get("name")
         if (

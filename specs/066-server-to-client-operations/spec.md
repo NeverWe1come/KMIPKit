@@ -1,5 +1,7 @@
 # Specification: Server-to-Client Operations and Role Inversion (KMIPKIT-0066)
 
+**Status**: Approved (merged into `release/1.0.0` by PR #134).
+
 ## 1. Overview and Purpose
 
 This specification governs the implementation of Server-to-Client operations and dynamic endpoint role inversion in `KMIPKit` in compliance with OASIS KMIP 2.1 §§6.1.54, 6.2.1–6.2.5 and KMIP Profiles v2.1 §5.3.1.

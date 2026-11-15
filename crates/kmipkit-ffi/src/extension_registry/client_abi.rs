@@ -10,6 +10,9 @@ mod fluent;
 #[path = "client_abi/fluent_crypto.rs"]
 mod fluent_crypto;
 
+#[path = "client_abi/server_listener.rs"]
+mod server_listener;
+
 #[cfg(test)]
 // These tests intentionally pass Rust references as raw C pointers and slice the byte above the
 // exact allocation bound to exercise the FFI's one-byte-over rejection path.
