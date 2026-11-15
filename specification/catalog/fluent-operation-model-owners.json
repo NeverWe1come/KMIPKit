@@ -1,0 +1,1540 @@
+{
+  "formatVersion": 1,
+  "owners": [
+    {
+      "version": "2.1",
+      "name": "Activate",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/activate.rs",
+        "type": "ActivateRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/activate.rs",
+        "type": "ActivateResponse"
+      },
+      "testEvidence": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LifecycleOperationMappingTest.java",
+        "bindings/python/tests/test_lifecycle_native_integration.py",
+        "bindings/python/tests/test_lifecycle_operations.py",
+        "crates/kmipkit-client/tests/unit/activate_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/lifecycle_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/activate_operation_tests.rs",
+        "tools/api_manifest/tests/test_lifecycle_parity_manifest.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Add Attribute",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/add_attribute.rs",
+        "type": "AddAttributeRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/add_attribute.rs",
+        "type": "AddAttributeResponse"
+      },
+      "testEvidence": [
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-ffi/tests/support/add_attribute_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/AddAttributeJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_add_attribute_operation.py",
+        "tools/api_manifest/tests/test_t076_client_mapping.py",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Adjust Attribute",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/adjust_attribute.rs",
+        "type": "AdjustAttributeRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/adjust_attribute.rs",
+        "type": "AdjustAttributeResponse"
+      },
+      "testEvidence": [
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-ffi/tests/support/adjust_attribute_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_add_attribute_operation.py",
+        "tools/api_manifest/tests/test_t076_client_mapping.py",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Archive",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/archive.rs",
+        "type": "ArchiveRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/archive.rs",
+        "type": "ArchiveResponse"
+      },
+      "testEvidence": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LifecycleOperationMappingTest.java",
+        "bindings/python/tests/test_lifecycle_native_integration.py",
+        "bindings/python/tests/test_lifecycle_operations.py",
+        "crates/kmipkit-client/tests/unit/archive_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/lifecycle_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/archive_operation_tests.rs",
+        "tools/api_manifest/tests/test_lifecycle_parity_manifest.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Cancel",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/cancel.rs",
+        "type": "CancelRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/cancel.rs",
+        "type": "CancelResponse"
+      },
+      "testEvidence": [
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_async_operation_mapping.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Certify",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/certify.rs",
+        "type": "CertifyRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/certify.rs",
+        "type": "CertifyResponse"
+      },
+      "testEvidence": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CertifyJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/CertifyResponseMappingTest.java",
+        "bindings/python/tests/test_certify_operation.py",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_certify_request_builder_mapping.py",
+        "tools/api_manifest/tests/test_t102_certify_request_identifier_member_mapping.py",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Check",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/check.rs",
+        "type": "CheckRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/check.rs",
+        "type": "CheckResponse"
+      },
+      "testEvidence": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CheckResponseMappingTest.java",
+        "bindings/python/tests/test_check_operation.py",
+        "crates/kmipkit-client/tests/unit/check_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/check_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_identifier_member_mapping.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Create",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/create.rs",
+        "type": "CreateRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/create.rs",
+        "type": "CreateResponse"
+      },
+      "testEvidence": [
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/create_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/CreationResultValueTest.java",
+        "bindings/python/tests/test_client.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Create Key Pair",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/create_key_pair.rs",
+        "type": "CreateKeyPairRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/create_key_pair.rs",
+        "type": "CreateKeyPairResponse"
+      },
+      "testEvidence": [
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/CreationResultValueTest.java",
+        "bindings/python/tests/test_client.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Create Split Key",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/create_split_key.rs",
+        "type": "CreateSplitKeyRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/create_split_key.rs",
+        "type": "CreateSplitKeyResponse"
+      },
+      "testEvidence": [
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/create_split_key_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/CreationResultValueTest.java",
+        "bindings/python/tests/test_client.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Decrypt",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/decrypt.rs",
+        "type": "DecryptRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/decrypt.rs",
+        "type": "DecryptResponse"
+      },
+      "testEvidence": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/encrypt_response_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/decrypt_response_tests.rs",
+        "tools/api_manifest/tests/test_encrypt_decrypt_parity_manifest.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Delegated Login",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/delegated_login.rs",
+        "type": "DelegatedLoginRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/delegated_login.rs",
+        "type": "DelegatedLoginResponse"
+      },
+      "testEvidence": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_credential_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_ticket_model_members_mapping.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Delete Attribute",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/delete_attribute.rs",
+        "type": "DeleteAttributeRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/delete_attribute.rs",
+        "type": "DeleteAttributeResponse"
+      },
+      "testEvidence": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_delete_attribute_operation.py",
+        "crates/kmipkit-ffi/tests/support/delete_attribute_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs",
+        "tools/api_manifest/tests/test_t076_client_mapping.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Derive Key",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/derive_key.rs",
+        "type": "DeriveKeyRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/derive_key.rs",
+        "type": "DeriveKeyResponse"
+      },
+      "testEvidence": [
+        "bindings/c/tests/operation_parity_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyMappingTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyResponseMappingTest.java",
+        "bindings/python/tests/test_derive_key_operation.py",
+        "crates/kmipkit-client/tests/unit/derive_key_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_derive_key_request_mapping.py",
+        "tools/api_manifest/tests/test_t102_derive_key_parameter_mapping.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Destroy",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/destroy.rs",
+        "type": "DestroyRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/destroy.rs",
+        "type": "DestroyResponse"
+      },
+      "testEvidence": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LifecycleOperationMappingTest.java",
+        "bindings/python/tests/test_lifecycle_native_integration.py",
+        "bindings/python/tests/test_lifecycle_operations.py",
+        "crates/kmipkit-client/tests/unit/destroy_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/lifecycle_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/destroy_operation_tests.rs",
+        "tools/api_manifest/tests/test_lifecycle_parity_manifest.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Discover Versions",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/discover_versions.rs",
+        "type": "DiscoverVersionsRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/discover_versions.rs",
+        "type": "DiscoverVersionsResponse"
+      },
+      "testEvidence": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/unit/discover_versions_tests.rs",
+        "tests/fixtures/api/shared-capability-parity.json"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Discover Versions",
+      "direction": "server_to_client",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/server_to_client/discover_versions.rs",
+        "type": "ServerDiscoverVersionsRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/server_to_client/discover_versions.rs",
+        "type": "ServerDiscoverVersionsResponse"
+      },
+      "testEvidence": [
+        "crates/kmipkit-client/tests/unit/server_to_client_tests.rs",
+        "crates/kmipkit-test-server/tests/s2c_integration.rs"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Encrypt",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/encrypt.rs",
+        "type": "EncryptRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/encrypt.rs",
+        "type": "EncryptResponse"
+      },
+      "testEvidence": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/encrypt_response_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/decrypt_response_tests.rs",
+        "tools/api_manifest/tests/test_encrypt_decrypt_parity_manifest.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Export",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/export.rs",
+        "type": "ExportRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/export.rs",
+        "type": "ExportResponse"
+      },
+      "testEvidence": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ExportResponseMappingTest.java",
+        "bindings/python/tests/test_export_operation.py",
+        "crates/kmipkit-client/tests/unit/export_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_transfer_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_export_request_identifier_member_mapping.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Get",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/get.rs",
+        "type": "GetRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/get.rs",
+        "type": "GetResponse"
+      },
+      "testEvidence": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Get Attribute List",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/get_attribute_list.rs",
+        "type": "GetAttributeListRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/get_attribute_list.rs",
+        "type": "GetAttributeListResponse"
+      },
+      "testEvidence": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetAttributeListJavaFacadeTest.java",
+        "bindings/python/tests/test_get_attribute_list_operation.py",
+        "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_attribute_list_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_attribute_list_tests.rs",
+        "tools/api_manifest/tests/test_get_attribute_list_parity_manifest.py",
+        "crates/kmipkit-protocol/src/attribute_reference.rs"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Get Attributes",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/get_attributes.rs",
+        "type": "GetAttributesRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/get_attributes.rs",
+        "type": "GetAttributesResponse"
+      },
+      "testEvidence": [
+        "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetAttributesJavaFacadeTest.java",
+        "bindings/python/tests/test_get_attributes_operation.py",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Get Constraints",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/get_constraints.rs",
+        "type": "GetConstraintsRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/get_constraints.rs",
+        "type": "GetConstraintsResponse"
+      },
+      "testEvidence": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/GetConstraintsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetConstraintsResponseMappingTest.java",
+        "bindings/python/tests/test_get_constraints_operation.py",
+        "crates/kmipkit-client/tests/unit/get_constraints_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_constraints_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_constraints_tests.rs",
+        "tools/api_manifest/tests/test_t102_policy_request_serializer_mapping.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Get Usage Allocation",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/get_usage_allocation.rs",
+        "type": "GetUsageAllocationRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/get_usage_allocation.rs",
+        "type": "GetUsageAllocationResponse"
+      },
+      "testEvidence": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/GetUsageAllocationJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetUsageAllocationResponseMappingTest.java",
+        "bindings/python/tests/test_get_usage_allocation_operation.py",
+        "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_usage_allocation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_usage_allocation_tests.rs",
+        "tools/api_manifest/tests/test_t102_get_usage_allocation_request_mapping.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Hash",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/hash.rs",
+        "type": "HashRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/hash.rs",
+        "type": "HashResponse"
+      },
+      "testEvidence": [
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/crypto_response_ttlv_c_consumer_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_hash_mac_signature_operations.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Import",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/import.rs",
+        "type": "ImportRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/import.rs",
+        "type": "ImportResponse"
+      },
+      "testEvidence": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ImportResponseMappingTest.java",
+        "bindings/python/tests/test_import_operation.py",
+        "crates/kmipkit-client/tests/unit/import_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_import_locate_request_member_mapping.py",
+        "tools/api_manifest/tests/test_t102_transfer_request_serializer_mapping.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Interop",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/interop.rs",
+        "type": "InteropRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/interop.rs",
+        "type": "InteropResponse"
+      },
+      "testEvidence": [
+        "crates/kmipkit-protocol/tests/unit/interop_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/interop_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/interop_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/InteropJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/InteropResponseMappingTest.java",
+        "bindings/python/tests/test_interop_operation.py",
+        "tools/api_manifest/tests/test_t102_diagnostics_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_interop_function_member_mapping.py",
+        "tools/api_manifest/tests/test_t102_interop_request_members_mapping.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Join Split Key",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/join_split_key.rs",
+        "type": "JoinSplitKeyRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/join_split_key.rs",
+        "type": "JoinSplitKeyResponse"
+      },
+      "testEvidence": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/JoinSplitKeyMappingTest.java",
+        "bindings/python/tests/test_join_split_key_operation.py",
+        "crates/kmipkit-client/tests/unit/join_split_key_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_join_split_key_request_member_mapping.py",
+        "tools/api_manifest/tests/test_t102_join_split_key_secret_data_type_mapping.py",
+        "tools/api_manifest/tests/test_t102_transfer_request_serializer_mapping.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Locate",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/locate.rs",
+        "type": "LocateRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/locate.rs",
+        "type": "LocateResponse"
+      },
+      "testEvidence": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_import_locate_request_member_mapping.py",
+        "tools/api_manifest/tests/test_t102_locate_request_builder_mapping.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Log",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/log.rs",
+        "type": "LogRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/log.rs",
+        "type": "LogResponse"
+      },
+      "testEvidence": [
+        "crates/kmipkit-protocol/tests/unit/log_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/log_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/log_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/LogJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LogResponseMappingTest.java",
+        "bindings/python/tests/test_log_operation.py",
+        "tools/api_manifest/tests/test_log_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_diagnostics_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_log_request_members_mapping.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Login",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/login.rs",
+        "type": "LoginRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/login.rs",
+        "type": "LoginResponse"
+      },
+      "testEvidence": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LoginMappingTest.java",
+        "bindings/python/tests/test_login.py",
+        "crates/kmipkit-client/tests/unit/login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs",
+        "tools/api_manifest/tests/test_login_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_credential_request_serializer_mapping.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Logout",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/logout.rs",
+        "type": "LogoutRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/logout.rs",
+        "type": "LogoutResponse"
+      },
+      "testEvidence": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LogoutMappingTest.java",
+        "bindings/python/tests/test_logout_operation.py",
+        "crates/kmipkit-client/tests/unit/logout_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/logout_operation_tests.rs",
+        "tools/api_manifest/tests/test_logout_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_credential_request_serializer_mapping.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "MAC",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/mac.rs",
+        "type": "MacRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/mac.rs",
+        "type": "MacResponse"
+      },
+      "testEvidence": [
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/crypto_response_ttlv_c_consumer_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_hash_mac_signature_operations.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "MAC Verify",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/mac_verify.rs",
+        "type": "MacVerifyRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/mac_verify.rs",
+        "type": "MacVerifyResponse"
+      },
+      "testEvidence": [
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/crypto_response_ttlv_c_consumer_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_hash_mac_signature_operations.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Modify Attribute",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/modify_attribute.rs",
+        "type": "ModifyAttributeRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/modify_attribute.rs",
+        "type": "ModifyAttributeResponse"
+      },
+      "testEvidence": [
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs",
+        "crates/kmipkit-ffi/tests/support/modify_attribute_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ModifyAttributeJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_modify_attribute_operation.py",
+        "tools/api_manifest/tests/test_t076_client_mapping.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Notify",
+      "direction": "server_to_client",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/server_to_client/notify.rs",
+        "type": "ServerNotifyRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/server_to_client/notify.rs",
+        "type": "ServerNotifyResponse"
+      },
+      "testEvidence": [
+        "crates/kmipkit-client/tests/unit/server_to_client_tests.rs",
+        "crates/kmipkit-test-server/tests/s2c_integration.rs"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Obtain Lease",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/obtain_lease.rs",
+        "type": "ObtainLeaseRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/obtain_lease.rs",
+        "type": "ObtainLeaseResponse"
+      },
+      "testEvidence": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ObtainLeaseMappingTest.java",
+        "bindings/python/tests/test_obtain_lease_operation.py",
+        "crates/kmipkit-client/tests/unit/obtain_lease_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs",
+        "tools/api_manifest/tests/test_obtain_lease_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_identifier_member_mapping.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "PKCS#11",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/pkcs11.rs",
+        "type": "Pkcs11Request"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/pkcs11.rs",
+        "type": "Pkcs11Response"
+      },
+      "testEvidence": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/Pkcs11MappingTest.java",
+        "bindings/python/tests/test_pkcs11_operation.py",
+        "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-ffi/tests/support/pkcs11_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs",
+        "tests/fixtures/api/pkcs11-parity.json",
+        "tools/api_manifest/tests/test_t102_pkcs11_request_serializer_mapping.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Ping",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/ping.rs",
+        "type": "PingRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/ping.rs",
+        "type": "PingResponse"
+      },
+      "testEvidence": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientBatchItemPingQueryMappingTest.java",
+        "bindings/python/tests/test_query_ping_operation.py",
+        "crates/kmipkit-client/tests/unit/ping_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs",
+        "tools/api_manifest/tests/test_ping_query_parity_manifest.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Poll",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/poll.rs",
+        "type": "PollRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/poll.rs",
+        "type": "PollResponse"
+      },
+      "testEvidence": [
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_async_operation_mapping.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Process",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/process.rs",
+        "type": "ProcessRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/process.rs",
+        "type": "ProcessResponse"
+      },
+      "testEvidence": [
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_async_operation_mapping.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Put",
+      "direction": "server_to_client",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/server_to_client/put.rs",
+        "type": "ServerPutRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/server_to_client/put.rs",
+        "type": "ServerPutResponse"
+      },
+      "testEvidence": [
+        "crates/kmipkit-client/tests/unit/server_to_client_tests.rs",
+        "crates/kmipkit-test-server/tests/s2c_integration.rs"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Query",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/query.rs",
+        "type": "QueryRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/query.rs",
+        "type": "QueryResponse"
+      },
+      "testEvidence": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientBatchItemPingQueryMappingTest.java",
+        "bindings/python/tests/test_query_ping_operation.py",
+        "crates/kmipkit-client/tests/unit/ping_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs",
+        "tools/api_manifest/tests/test_ping_query_parity_manifest.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Query",
+      "direction": "server_to_client",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/server_to_client/query.rs",
+        "type": "ServerQueryRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/server_to_client/query.rs",
+        "type": "ServerQueryResponse"
+      },
+      "testEvidence": [
+        "crates/kmipkit-client/tests/unit/server_to_client_tests.rs",
+        "crates/kmipkit-test-server/tests/s2c_integration.rs"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Query Asynchronous Requests",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/query_async_requests.rs",
+        "type": "QueryAsyncRequestsRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/query_async_requests.rs",
+        "type": "QueryAsyncRequestsResponse"
+      },
+      "testEvidence": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/unit/query_async_execution_tests.rs",
+        "tools/api_manifest/tests/test_manifest_v2.py",
+        "tools/api_manifest/tests/test_t076_client_mapping.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "RNG Retrieve",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/rng_retrieve.rs",
+        "type": "RngRetrieveRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/rng_retrieve.rs",
+        "type": "RngRetrieveResponse"
+      },
+      "testEvidence": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RngOperationMappingTest.java",
+        "bindings/python/tests/test_rng_operation.py",
+        "bindings/python/tests/test_rng_native_integration.py",
+        "crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_retrieve_operation_tests.rs",
+        "tools/api_manifest/tests/test_rng_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_approved_alias_mapping.py",
+        "tools/api_manifest/tests/test_t102_rng_pending_response_mapping.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "RNG Seed",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/rng_seed.rs",
+        "type": "RngSeedRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/rng_seed.rs",
+        "type": "RngSeedResponse"
+      },
+      "testEvidence": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RngOperationMappingTest.java",
+        "bindings/python/tests/test_rng_operation.py",
+        "bindings/python/tests/test_rng_native_integration.py",
+        "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs",
+        "tools/api_manifest/tests/test_rng_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_rng_pending_response_mapping.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Re-Provision",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/reprovision.rs",
+        "type": "ReProvisionRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/reprovision.rs",
+        "type": "ReProvisionResponse"
+      },
+      "testEvidence": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ReProvisionMappingTest.java",
+        "bindings/python/tests/test_reprovision_native_integration.py",
+        "bindings/python/tests/test_reprovision_operation.py",
+        "crates/kmipkit-client/tests/unit/reprovision_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/reprovision_operation_tests.rs",
+        "tools/api_manifest/tests/test_reprovision_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Re-certify",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/recertify.rs",
+        "type": "RecertifyRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/recertify.rs",
+        "type": "RecertifyResponse"
+      },
+      "testEvidence": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RecertifyMappingTest.java",
+        "bindings/python/tests/test_recertify_operation.py",
+        "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
+        "tools/api_manifest/tests/test_recertify_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_identifier_member_mapping.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Re-key",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/rekey.rs",
+        "type": "RekeyRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/rekey.rs",
+        "type": "RekeyResponse"
+      },
+      "testEvidence": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_native_integration.py",
+        "bindings/python/tests/test_rekey_operation.py",
+        "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
+        "tools/api_manifest/tests/test_rekey_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_identifier_member_mapping.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Re-key Key Pair",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/rekey_key_pair.rs",
+        "type": "RekeyKeyPairRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/rekey_key_pair.rs",
+        "type": "RekeyKeyPairResponse"
+      },
+      "testEvidence": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RekeyKeyPairMappingTest.java",
+        "bindings/python/tests/test_rekey_key_pair_native_integration.py",
+        "bindings/python/tests/test_rekey_key_pair_operation.py",
+        "crates/kmipkit-client/tests/unit/rekey_key_pair_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs",
+        "tools/api_manifest/tests/test_rekey_key_pair_parity_manifest.py",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "tools/api_manifest/tests/test_t102_join_split_key_secret_data_type_mapping.py",
+        "tools/api_manifest/tests/test_t102_rekey_key_pair_structure_mapping.py",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_identifier_member_mapping.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Recover",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/recover.rs",
+        "type": "RecoverRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/recover.rs",
+        "type": "RecoverResponse"
+      },
+      "testEvidence": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LifecycleOperationMappingTest.java",
+        "bindings/python/tests/test_lifecycle_native_integration.py",
+        "bindings/python/tests/test_lifecycle_operations.py",
+        "crates/kmipkit-client/tests/unit/recover_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/lifecycle_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/recover_operation_tests.rs",
+        "tools/api_manifest/tests/test_lifecycle_parity_manifest.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Register",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/register.rs",
+        "type": "RegisterRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/register.rs",
+        "type": "RegisterResponse"
+      },
+      "testEvidence": [
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RegisterMappingTest.java",
+        "bindings/python/tests/test_register_operation.py",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
+        "tools/api_manifest/tests/test_register_parity_manifest.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Revoke",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/revoke.rs",
+        "type": "RevokeRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/revoke.rs",
+        "type": "RevokeResponse"
+      },
+      "testEvidence": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RevokeMappingTest.java",
+        "bindings/python/tests/test_revoke_operation.py",
+        "crates/kmipkit-client/tests/unit/revoke_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/revoke_operation_tests.rs",
+        "tools/api_manifest/tests/test_revoke_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_revoke_request_member_mapping.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Set Attribute",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/set_attribute.rs",
+        "type": "SetAttributeRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/set_attribute.rs",
+        "type": "SetAttributeResponse"
+      },
+      "testEvidence": [
+        "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_attribute_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetAttributeJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_set_attribute_operation.py",
+        "tools/api_manifest/tests/test_t076_client_mapping.py",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Set Constraints",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/set_constraints.rs",
+        "type": "SetConstraintsRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/set_constraints.rs",
+        "type": "SetConstraintsResponse"
+      },
+      "testEvidence": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SetConstraintsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetConstraintsResponseMappingTest.java",
+        "bindings/python/tests/test_set_constraints_operation.py",
+        "crates/kmipkit-client/tests/unit/set_constraints_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_constraints_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_constraints_tests.rs",
+        "tools/api_manifest/tests/test_t102_policy_request_serializer_mapping.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Set Defaults",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/set_defaults.rs",
+        "type": "SetDefaultsRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/set_defaults.rs",
+        "type": "SetDefaultsResponse"
+      },
+      "testEvidence": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SetDefaultsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetDefaultsResponseMappingTest.java",
+        "bindings/python/tests/test_set_defaults_operation.py",
+        "bindings/python/tests/test_query_ping_operation.py",
+        "crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_defaults_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs",
+        "tools/api_manifest/tests/test_set_defaults_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_policy_request_serializer_mapping.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Set Endpoint Role",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/set_endpoint_role.rs",
+        "type": "SetEndpointRoleRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/set_endpoint_role.rs",
+        "type": "SetEndpointRoleResponse"
+      },
+      "testEvidence": [
+        "crates/kmipkit-client/tests/unit/server_to_client_tests.rs",
+        "crates/kmipkit-test-server/tests/s2c_integration.rs"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Set Endpoint Role",
+      "direction": "server_to_client",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/set_endpoint_role.rs",
+        "type": "SetEndpointRoleRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/set_endpoint_role.rs",
+        "type": "SetEndpointRoleResponse"
+      },
+      "testEvidence": [
+        "crates/kmipkit-client/tests/unit/server_to_client_tests.rs",
+        "crates/kmipkit-test-server/tests/s2c_integration.rs"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Sign",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/sign.rs",
+        "type": "SignRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/sign.rs",
+        "type": "SignResponse"
+      },
+      "testEvidence": [
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/crypto_response_ttlv_c_consumer_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_hash_mac_signature_operations.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Signature Verify",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/signature_verify.rs",
+        "type": "SignatureVerifyRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/signature_verify.rs",
+        "type": "SignatureVerifyResponse"
+      },
+      "testEvidence": [
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/crypto_response_ttlv_c_consumer_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_hash_mac_signature_operations.py"
+      ]
+    },
+    {
+      "version": "2.1",
+      "name": "Validate",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/validate.rs",
+        "type": "ValidateRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/validate.rs",
+        "type": "ValidateResponse"
+      },
+      "testEvidence": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ValidateJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ValidateResponseMappingTest.java",
+        "bindings/python/tests/test_validate_operation.py",
+        "crates/kmipkit-client/tests/unit/validate_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/validate_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs",
+        "specs/028-diagnostics-interop/traceability.md",
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs",
+        "tools/api_manifest/tests/test_validate_parity_manifest.py"
+      ]
+    },
+    {
+      "version": "3.0",
+      "name": "Create Credential",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/kmip30_operations.rs",
+        "type": "CreateCredentialRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/kmip30_operations.rs",
+        "type": "CreateCredentialResponse"
+      },
+      "testEvidence": [
+        "crates/kmipkit-protocol/tests/unit/kmip30_operations_tests.rs",
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs"
+      ]
+    },
+    {
+      "version": "3.0",
+      "name": "Create Group",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/kmip30_operations.rs",
+        "type": "CreateGroupRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/kmip30_operations.rs",
+        "type": "CreateGroupResponse"
+      },
+      "testEvidence": [
+        "crates/kmipkit-protocol/tests/unit/kmip30_operations_tests.rs",
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs"
+      ]
+    },
+    {
+      "version": "3.0",
+      "name": "Create User",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/kmip30_operations.rs",
+        "type": "CreateUserRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/kmip30_operations.rs",
+        "type": "CreateUserResponse"
+      },
+      "testEvidence": [
+        "crates/kmipkit-protocol/tests/unit/kmip30_operations_tests.rs",
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs"
+      ]
+    },
+    {
+      "version": "3.0",
+      "name": "Deactivate",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/kem.rs",
+        "type": "DeactivateRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/kem.rs",
+        "type": "DeactivateResponse"
+      },
+      "testEvidence": [
+        "crates/kmipkit-protocol/tests/unit/kem_tests.rs",
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs"
+      ]
+    },
+    {
+      "version": "3.0",
+      "name": "Decapsulate",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/kem.rs",
+        "type": "DecapsulateRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/kem.rs",
+        "type": "DecapsulateResponse"
+      },
+      "testEvidence": [
+        "crates/kmipkit-protocol/tests/unit/kem_tests.rs",
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs"
+      ]
+    },
+    {
+      "version": "3.0",
+      "name": "Encapsulate",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/kem.rs",
+        "type": "EncapsulateRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/kem.rs",
+        "type": "EncapsulateResponse"
+      },
+      "testEvidence": [
+        "crates/kmipkit-protocol/tests/unit/kem_tests.rs",
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs"
+      ]
+    },
+    {
+      "version": "3.0",
+      "name": "Obliterate",
+      "direction": "client_to_server",
+      "requestOwner": {
+        "path": "crates/kmipkit-protocol/src/kmip30_operations.rs",
+        "type": "ObliterateRequest"
+      },
+      "responseOwner": {
+        "path": "crates/kmipkit-protocol/src/kmip30_operations.rs",
+        "type": "ObliterateResponse"
+      },
+      "testEvidence": [
+        "crates/kmipkit-protocol/tests/unit/kmip30_operations_tests.rs",
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs"
+      ]
+    }
+  ]
+}

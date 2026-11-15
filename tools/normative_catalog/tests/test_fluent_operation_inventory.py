@@ -6,9 +6,13 @@ import json
 import unittest
 from pathlib import Path
 
+from tools.normative_catalog.generate_fluent_operation_inventory import build_inventory
+
 ROOT = Path(__file__).resolve().parents[3]
 BASE_CATALOG = ROOT / "specification/catalog/kmip-2.1.json"
 VERSIONED_VALUES = ROOT / "specification/catalog/kmip-versioned-values.json"
+MANIFEST = ROOT / "specification/api/public-api.json"
+MODEL_OWNERS = ROOT / "specification/catalog/fluent-operation-model-owners.json"
 OUTPUT = ROOT / "specification/catalog/fluent-operation-inventory.json"
 
 
@@ -44,6 +48,17 @@ class FluentOperationInventoryTests(unittest.TestCase):
         self.assertEqual(actual, expected)
         self.assertEqual(len(base_rows), 62)
 
+        version_2_1_additions = {
+            (value["name"], value["wire_value"].removeprefix("0x").upper().zfill(8))
+            for group in versioned["versions"]["v2_1"]
+            if group["name"] == "Operation"
+            for value in group["values"]
+        }
+        for row in base_rows:
+            assigned_key = (row["name"], row["wireValue"])
+            expected_earliest = "2.1" if assigned_key in version_2_1_additions else "2.0"
+            self.assertEqual(row["earliestVersion"], expected_earliest)
+
         expected_3 = {
             (value["name"], value["wire_value"])
             for group in versioned["versions"]["v3_0"]
@@ -72,6 +87,9 @@ class FluentOperationInventoryTests(unittest.TestCase):
                 "Decapsulate": "00000042",
             },
         )
+        self.assertTrue(
+            all(row["earliestVersion"] == "3.0" for row in operations if row["version"] == "3.0")
+        )
 
     def test_server_initiated_operations_are_not_client_send_routes(self) -> None:
         inventory = json.loads(OUTPUT.read_text(encoding="utf-8"))
@@ -89,7 +107,7 @@ class FluentOperationInventoryTests(unittest.TestCase):
                     self.assertEqual(set(owner), {"path", "type"})
                     self.assertRegex(
                         owner["path"],
-                        r"^crates/kmipkit-protocol/src/[a-z0-9_]+\.rs$",
+                        r"^crates/kmipkit-protocol/src/(?:[a-z0-9_]+/)*[a-z0-9_]+\.rs$",
                     )
                     self.assertRegex(owner["type"], r"^[A-Za-z][A-Za-z0-9]*$")
 
@@ -101,6 +119,57 @@ class FluentOperationInventoryTests(unittest.TestCase):
                             source,
                             rf"pub (?:struct|enum|type) {owner['type']}\b",
                         )
+                self.assertTrue(row["testEvidence"])
+                self.assertTrue(all(isinstance(path, str) for path in row["testEvidence"]))
+                if row["version"] == "2.1":
+                    self.assertTrue(all((ROOT / path).exists() for path in row["testEvidence"]))
+
+    def test_generator_rejects_missing_typed_owner_route(self) -> None:
+        base = json.loads(BASE_CATALOG.read_text(encoding="utf-8"))
+        versioned = json.loads(VERSIONED_VALUES.read_text(encoding="utf-8"))
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        owners = json.loads(MODEL_OWNERS.read_text(encoding="utf-8"))
+        owners["owners"].pop()
+        with self.assertRaisesRegex(ValueError, "typed operation owner coverage mismatch"):
+            build_inventory(base, versioned, manifest, owners)
+
+    def test_generator_rejects_duplicate_typed_owner_route(self) -> None:
+        base = json.loads(BASE_CATALOG.read_text(encoding="utf-8"))
+        versioned = json.loads(VERSIONED_VALUES.read_text(encoding="utf-8"))
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        owners = json.loads(MODEL_OWNERS.read_text(encoding="utf-8"))
+        owners["owners"].append(owners["owners"][0])
+        with self.assertRaisesRegex(ValueError, "duplicate typed operation owner route"):
+            build_inventory(base, versioned, manifest, owners)
+
+    def test_generator_rejects_owner_rows_without_test_evidence(self) -> None:
+        base = json.loads(BASE_CATALOG.read_text(encoding="utf-8"))
+        versioned = json.loads(VERSIONED_VALUES.read_text(encoding="utf-8"))
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        owners = json.loads(MODEL_OWNERS.read_text(encoding="utf-8"))
+        owners["owners"][0]["testEvidence"] = []
+        with self.assertRaisesRegex(ValueError, "test evidence is missing or invalid"):
+            build_inventory(base, versioned, manifest, owners)
+
+    def test_generator_rejects_stale_public_operation_test_evidence(self) -> None:
+        base = json.loads(BASE_CATALOG.read_text(encoding="utf-8"))
+        versioned = json.loads(VERSIONED_VALUES.read_text(encoding="utf-8"))
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        owners = json.loads(MODEL_OWNERS.read_text(encoding="utf-8"))
+        owners["owners"][0]["testEvidence"].pop()
+        with self.assertRaisesRegex(ValueError, "typed operation test evidence is stale"):
+            build_inventory(base, versioned, manifest, owners)
+
+
+    def test_generator_rejects_unmatched_kmip_2_1_version_delta(self) -> None:
+        base = json.loads(BASE_CATALOG.read_text(encoding="utf-8"))
+        versioned = json.loads(VERSIONED_VALUES.read_text(encoding="utf-8"))
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        owners = json.loads(MODEL_OWNERS.read_text(encoding="utf-8"))
+        next(group for group in versioned["versions"]["v2_1"]
+             if group["name"] == "Operation")["values"][0]["name"] = "Unassigned Operation"
+        with self.assertRaisesRegex(ValueError, "KMIP 2.1 operation delta has no matching assigned value"):
+            build_inventory(base, versioned, manifest, owners)
 
 
 if __name__ == "__main__":

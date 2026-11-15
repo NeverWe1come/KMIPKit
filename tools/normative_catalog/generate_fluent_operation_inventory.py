@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -18,8 +19,12 @@ else:
 BASE_PATH = "specification/catalog/kmip-2.1.json"
 VERSIONED_PATH = "specification/catalog/kmip-versioned-values.json"
 MANIFEST_PATH = "specification/api/public-api.json"
+MODEL_OWNERS_PATH = "specification/catalog/fluent-operation-model-owners.json"
 OUTPUT_PATH = "specification/catalog/fluent-operation-inventory.json"
 MAX_SOURCE_BYTES = 64 * 1024 * 1024
+OWNER_PATH_PATTERN = r"^crates/kmipkit-protocol/src/(?:[a-z0-9_]+/)*[a-z0-9_]+\.rs$"
+OWNER_TYPE_PATTERN = r"^[A-Za-z][A-Za-z0-9]*$"
+TEST_EVIDENCE_PATTERN = r"^(?:bindings|crates|specs|tests|tools)/[A-Za-z0-9_./-]+$"
 V3_OPERATION_SECTIONS = {
     "Create Credential": "6.1.9",
     "Create Group": "6.1.10",
@@ -54,12 +59,43 @@ def _v3_operations(document: dict[str, Any]) -> list[dict[str, Any]]:
     return values
 
 
+def _v21_operations(document: dict[str, Any]) -> list[dict[str, Any]]:
+    versions = document.get("versions")
+    groups = versions.get("v2_1") if isinstance(versions, dict) else None
+    if not isinstance(groups, list):
+        raise ValueError("versioned values catalog has no KMIP 2.1 groups")
+    operation_groups = [
+        group for group in groups
+        if isinstance(group, dict)
+        and group.get("kind") == "enumeration"
+        and group.get("name") == "Operation"
+    ]
+    if len(operation_groups) != 1:
+        raise ValueError("versioned values catalog must have one KMIP 2.1 Operation group")
+    values = operation_groups[0].get("values")
+    if not isinstance(values, list) or len(values) != 6:
+        raise ValueError("KMIP 2.1 operation delta must contain six assigned values")
+    return values
+
+
 def build_inventory(
     base_catalog: dict[str, Any],
     versioned_catalog: dict[str, Any],
     manifest: dict[str, Any],
+    model_owners: dict[str, Any],
 ) -> dict[str, Any]:
     """Join assigned operations with direction, owner clause and API scope."""
+    v21_values = {
+        value.get("name"): value.get("wire_value")
+        for value in _v21_operations(versioned_catalog)
+    }
+    if any(not isinstance(name, str) or not isinstance(raw, str)
+           for name, raw in v21_values.items()):
+        raise ValueError("malformed KMIP 2.1 operation assignment")
+    v21_values = {
+        name: raw.removeprefix("0x").upper().zfill(8)
+        for name, raw in v21_values.items()
+    }
     base_rows = [
         element for element in base_catalog.get("elements", [])
         if isinstance(element, dict) and element.get("kind") == "operation"
@@ -71,6 +107,9 @@ def build_inventory(
         and element.get("kind") == "enumeration_value"
         and "KMIPKIT-ELEM-ENUMERATION-OPERATION" in element.get("parent_element_ids", [])
     }
+    for name, wire_value in v21_values.items():
+        if operation_values.get(name) != wire_value:
+            raise ValueError(f"KMIP 2.1 operation delta has no matching assigned value for {name}")
     route_keys: set[tuple[str, str, str]] = set()
     seen_values: set[str] = set()
     rows: list[dict[str, Any]] = []
@@ -85,6 +124,8 @@ def build_inventory(
         wire_value = operation_values.get(name)
         if not isinstance(wire_value, str) or len(wire_value) != 8:
             raise ValueError(f"KMIP 2.1 operation {name} has no assigned wire value")
+        if name in v21_values and v21_values[name] != wire_value.upper():
+            raise ValueError(f"KMIP 2.1 operation assignment changed for {name}")
         if wire_value in seen_values and element.get("direction") not in {
             "client_to_server", "server_to_client"
         }:
@@ -97,6 +138,7 @@ def build_inventory(
         rows.append({
             "name": name,
             "version": "2.1",
+            "earliestVersion": "2.1" if name in v21_values else "2.0",
             "wireValue": wire_value.upper(),
             "direction": element.get("direction"),
             "scopeState": element.get("scope_state"),
@@ -127,6 +169,7 @@ def build_inventory(
         rows.append({
             "name": name,
             "version": "3.0",
+            "earliestVersion": "3.0",
             "wireValue": wire_value,
             "direction": "client_to_server",
             "scopeState": "client_3_0_draft",
@@ -141,10 +184,60 @@ def build_inventory(
         row["clientSend"] = row["direction"] == "client_to_server"
         row["listenerRoute"] = row["direction"] == "server_to_client"
 
+    owners = model_owners.get("owners")
+    if model_owners.get("formatVersion") != 1 or not isinstance(owners, list):
+        raise ValueError("typed operation owner catalog must use format version 1 and an owners array")
+    owner_by_route: dict[tuple[str, str, str], dict[str, Any]] = {}
+    for owner_row in owners:
+        if not isinstance(owner_row, dict):
+            raise ValueError("typed operation owner entry must be an object")
+        version, name, direction = (
+            owner_row.get("version"), owner_row.get("name"), owner_row.get("direction")
+        )
+        if not all(isinstance(value, str) for value in (version, name, direction)):
+            raise ValueError("typed operation owner entry must identify version, name, and direction")
+        route = (version, name, direction)
+        if route in owner_by_route:
+            raise ValueError(f"duplicate typed operation owner route: {route}")
+        for key in ("requestOwner", "responseOwner"):
+            owner = owner_row.get(key)
+            if not isinstance(owner, dict) or set(owner) != {"path", "type"}:
+                raise ValueError(f"typed operation owner {key} is malformed for {route}")
+            path, type_name = owner.get("path"), owner.get("type")
+            if (not isinstance(path, str) or re.fullmatch(OWNER_PATH_PATTERN, path) is None
+                    or not isinstance(type_name, str)
+                    or re.fullmatch(OWNER_TYPE_PATTERN, type_name) is None):
+                raise ValueError(f"typed operation owner {key} has an invalid path or type for {route}")
+        evidence = owner_row.get("testEvidence")
+        if (not isinstance(evidence, list) or not evidence
+                or any(not isinstance(path, str)
+                       or re.fullmatch(TEST_EVIDENCE_PATTERN, path) is None
+                       or ".." in Path(path).parts for path in evidence)):
+            raise ValueError(f"typed operation owner test evidence is missing or invalid for {route}")
+        owner_by_route[route] = owner_row
+
+    inventory_routes = {
+        (row["version"], row["name"], row["direction"]) for row in rows
+    }
+    owner_routes = set(owner_by_route)
+    if owner_routes != inventory_routes:
+        missing = sorted(inventory_routes - owner_routes)
+        extra = sorted(owner_routes - inventory_routes)
+        raise ValueError(f"typed operation owner coverage mismatch; missing={missing}, extra={extra}")
+    for row in rows:
+        owner = owner_by_route[(row["version"], row["name"], row["direction"])]
+        public = public_by_name.get(row["name"])
+        if row["version"] == "2.1" and row["direction"] == "client_to_server" and public:
+            if owner["testEvidence"] != public.get("parityEvidenceIds"):
+                raise ValueError(f"typed operation test evidence is stale for {row['name']}")
+        row["typedRequestOwner"] = owner["requestOwner"]
+        row["typedResponseOwner"] = owner["responseOwner"]
+        row["testEvidence"] = owner["testEvidence"]
+
     rows.sort(key=lambda row: (row["version"], int(row["wireValue"], 16)))
     return {
-        "formatVersion": 1,
-        "sources": [BASE_PATH, VERSIONED_PATH, MANIFEST_PATH],
+        "formatVersion": 2,
+        "sources": [BASE_PATH, VERSIONED_PATH, MANIFEST_PATH, MODEL_OWNERS_PATH],
         "operations": rows,
     }
 
@@ -154,6 +247,7 @@ def render(root: Path) -> bytes:
         _read_json(root, BASE_PATH),
         _read_json(root, VERSIONED_PATH, max_bytes=MAX_SOURCE_BYTES),
         _read_json(root, MANIFEST_PATH, max_bytes=MAX_SOURCE_BYTES),
+        _read_json(root, MODEL_OWNERS_PATH, max_bytes=MAX_SOURCE_BYTES),
     )
     return (json.dumps(inventory, indent=2, ensure_ascii=False) + "\n").encode()
 
