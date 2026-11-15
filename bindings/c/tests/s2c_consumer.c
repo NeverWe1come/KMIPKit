@@ -131,12 +131,6 @@ int32_t kmipkit_s2c_consumer_receives_put_and_sends_response(
     status = kmipkit_server_put_object_field_read(key_value, 0x00420043u, KMIPKIT_SERVER_PUT_READ_SECRET_BYTES,
         &present, &item_type, NULL, NULL, NULL, &secret, NULL);
     if (status != 0 || present != 1u || secret == NULL || item_type != 8u) { status = 108; goto cleanup; }
-    kmipkit_server_put_object_release(key_value);
-    key_value = NULL;
-    kmipkit_server_put_object_release(key_block);
-    key_block = NULL;
-    kmipkit_server_put_object_release(object);
-    object = NULL;
     if (kmipkit_secret_bytes_with_bytes(secret, NULL, NULL) != KMIPKIT_ERROR_INVALID_INPUT) {
         status = 109; goto cleanup;
     }
@@ -160,6 +154,25 @@ int32_t kmipkit_s2c_consumer_receives_put_and_sends_response(
     }
     status = kmipkit_secret_text_with_str(secret_text, kmipkit_check_test_secret_text, &secret_text_valid);
     if (status != 0 || secret_text_valid != 1u) { status = 116; goto cleanup; }
+    {
+        int32_t unused_integer = 31415;
+        kmipkit_server_put_object_t *unused_child = key_value;
+        kmipkit_secret_bytes_t *unused_secret = secret;
+        kmipkit_secret_text_t *unused_secret_text = secret_text;
+        status = kmipkit_server_put_object_field_read(key_block, 0x00420042u,
+            KMIPKIT_SERVER_PUT_READ_ENUMERATION, &present, &item_type, &key_format, &unused_integer,
+            &unused_child, &unused_secret, &unused_secret_text);
+        if (status != 0 || present != 1u || key_format != 1u || unused_integer != 31415 ||
+                unused_child != key_value || unused_secret != secret || unused_secret_text != secret_text) {
+            status = 158; goto cleanup;
+        }
+    }
+    kmipkit_server_put_object_release(key_value);
+    key_value = NULL;
+    kmipkit_server_put_object_release(key_block);
+    key_block = NULL;
+    kmipkit_server_put_object_release(object);
+    object = NULL;
     status = kmipkit_server_incoming_batch_item_at(batch, 2u, &unknown_request);
     if (status != 0) goto cleanup;
     status = kmipkit_server_request_item_put_object(unknown_request, &unknown_object);
