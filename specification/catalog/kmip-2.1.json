@@ -81198,12 +81198,18 @@
       ],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0010",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/locate.rs::LocateRequest::to_ttlv_payload"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/locate_alternative_name_negative.rs::given_empty_criteria_when_locate_payload_is_built_then_no_alternative_name_is_sent",
+        "crates/kmipkit-protocol/tests/locate_alternative_name_negative.rs::given_every_optional_field_when_locate_payload_is_built_then_no_alternative_name_is_sent",
+        "crates/kmipkit-protocol/tests/locate_alternative_name_negative.rs::given_caller_supplied_alternative_name_when_payload_is_built_then_it_is_forwarded_unchanged"
+      ],
       "negative_verification_required": true,
-      "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "decision_id": "KMIPKIT-DEC-035",
+      "status": "scoped_verified",
+      "review_note": "Pinned KMIP Profiles v2.1 \u00a75.12.3 prohibits a Tape Library client from using the Alternative Name barcode to locate an object for tape encryption or decryption. KMIPKit is a generic client: it sends only caller-supplied Locate criteria and never selects or derives one. The linked tests show that an empty or fully optioned Locate request carries no Alternative Name and that a caller-supplied one is forwarded unchanged, so the prohibition is owned by the Tape Library application under KMIPKIT-DEC-035. This verifies non-injection by the library only. No requirement-specific official Test Case ID is explicitly linked by the pinned sources, and this mapping makes no Tape Library profile-conformance claim."
     },
     {
       "requirement_id": "KMIPKIT-REQ-PROF-5.12.4-001",
@@ -138792,6 +138798,26 @@
       "approval_evidence": "Approved implementation_plan.md Wave 2 (KMIPKIT-0123) Baseline Client closure.",
       "approved_at": "2026-11-14",
       "consequence": "DeviceCredential validation accepts any non-empty subset of the six Table 412 members.",
+      "status": "accepted"
+    },
+    {
+      "decision_id": "KMIPKIT-DEC-041",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-profiles",
+          "section": "5.12.3"
+        }
+      ],
+      "requirement_ids": [
+        "KMIPKIT-REQ-PROF-5.12.3-003"
+      ],
+      "discrepancy_ids": [],
+      "policy_ids": [],
+      "interpretation": "For the Tape Library Client profile, the \\u00a75.12.3 prohibition on using the Alternative Name barcode to locate an object for tape encryption or decryption is owned by the Tape Library client application. KMIPKit is a generic client that forwards only caller-supplied Locate criteria and does not select criteria or assign Alternative Name. This is our recommended reading of an actor the source does not separate from the application.",
+      "approver": "KMIPKit maintainer, direct authorization in current task",
+      "approval_evidence": "The maintainer selected this closure (negative test plus catalog decision, no profile claim) in the KMIPKIT-0125 planning session.",
+      "approved_at": "2026-11-15",
+      "consequence": "No new validation or public API is added. The negative tests assert that KMIPKit injects no Alternative Name into Locate payloads and forwards a caller-supplied one unchanged. No Tape Library profile-conformance claim is made.",
       "status": "accepted"
     }
   ],
