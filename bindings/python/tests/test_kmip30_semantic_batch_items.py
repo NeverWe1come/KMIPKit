@@ -41,12 +41,24 @@ def test_system_object_operations_accept_semantic_inputs() -> None:
 
 def test_credential_and_kem_operations_accept_semantic_inputs() -> None:
     limits = ttlv.codec_limits_defaults()
-    with limits, ttlv.raw_tag_from_raw(0x004201A6) as raw_tag:
-        tag = ttlv.raw_tag_try_checked(raw_tag)
-        with tag, ttlv.ttlv_structure_create() as fields:
-            value = ttlv.ttlv_value_structure(fields, limits)
-            with value:
-                object_item = ttlv.ttlv_item_create(tag, value, limits)
+    with limits, ttlv.raw_tag_from_raw(0x004200A2) as identifier_raw_tag:
+        identifier_tag = ttlv.raw_tag_try_checked(identifier_raw_tag)
+        with identifier_tag, ttlv.ttlv_structure_create() as empty_fields:
+            identifier_value = ttlv.ttlv_value_text_string(b"device-id", limits)
+            with identifier_value:
+                identifier_item = ttlv.ttlv_item_create(
+                    identifier_tag, identifier_value, limits
+                )
+            with identifier_item:
+                fields = ttlv.ttlv_structure_with_item(
+                    empty_fields, identifier_item, limits
+                )
+            with fields, ttlv.raw_tag_from_raw(0x004201A6) as raw_tag:
+                tag = ttlv.raw_tag_try_checked(raw_tag)
+                with tag:
+                    value = ttlv.ttlv_value_structure(fields, limits)
+                    with value:
+                        object_item = ttlv.ttlv_item_create(tag, value, limits)
         with object_item:
             with ttlv.ttlv_structure_create() as source:
                 attributes = AttributeSet.try_new(source)
@@ -58,9 +70,19 @@ def test_credential_and_kem_operations_accept_semantic_inputs() -> None:
                     object_item,
                 ) as item:
                     assert item.operation == V3_0_OPERATION_CREATE_CREDENTIAL
-
-    identifier = extensions.UniqueIdentifier.text_string("kem-key")
-    with extensions.client_batch_item_encapsulate_from_fields(identifier) as item:
-        assert item.operation == V3_0_OPERATION_ENCAPSULATE
-    with extensions.client_batch_item_decapsulate_from_fields(identifier, b"12") as item:
-        assert item.operation == V3_0_OPERATION_DECAPSULATE
+                with pytest.raises(errors.InvalidInputError):
+                    extensions.client_batch_item_create_credential_from_fields(
+                        CredentialType.from_raw(CredentialType.DEVICE),
+                        13,
+                        attributes,
+                        object_item,
+                    )
+                identifier = extensions.UniqueIdentifier.text_string("kem-key")
+                with extensions.client_batch_item_encapsulate_from_fields(
+                    identifier, attributes=attributes
+                ) as item:
+                    assert item.operation == V3_0_OPERATION_ENCAPSULATE
+                with extensions.client_batch_item_decapsulate_from_fields(
+                    identifier, b"12", attributes=attributes
+                ) as item:
+                    assert item.operation == V3_0_OPERATION_DECAPSULATE

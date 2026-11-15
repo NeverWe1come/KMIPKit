@@ -38123,4 +38123,19 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-kmipkit-client",
         "kmipkit_client::ClientBatchItem::deactivate",
     ),
+    (
+        "KMIPKIT-0093:kmip30:create_credential:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItem::create_credential",
+    ),
+    (
+        "KMIPKIT-0093:kmip30:encapsulate:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItem::encapsulate",
+    ),
+    (
+        "KMIPKIT-0093:kmip30:decapsulate:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItem::decapsulate",
+    ),
 ];

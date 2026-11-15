@@ -47,6 +47,8 @@ from .async_operations import (
 
 if TYPE_CHECKING:
     from .attribute_operations import AttributeSet
+    from .credentials import CredentialType
+    from .cryptographic_parameters import CryptographicParameters
 
 
 @dataclass(frozen=True, slots=True)
@@ -160,6 +162,9 @@ _CLIENT_ABI_HANDLE_FUNCTIONS = frozenset(
         "kmipkit_client_batch_item_create_user_from_attributes",
         "kmipkit_client_batch_item_obliterate_from_identifier",
         "kmipkit_client_batch_item_deactivate_from_fields",
+        "kmipkit_client_batch_item_create_credential_from_fields",
+        "kmipkit_client_batch_item_encapsulate_from_fields",
+        "kmipkit_client_batch_item_decapsulate_from_fields",
     }
 )
 
@@ -1934,6 +1939,128 @@ def client_batch_item_deactivate_from_fields(
                 0 if date is None else date,
             ),
         )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_create_credential_from_fields(
+    credential_type: CredentialType,
+    object_type: int,
+    attributes: AttributeSet,
+    credential_object: ttlv.TtlvItem,
+) -> ClientBatchItem:
+    """Create a typed KMIP 3.0 Create Credential item from explicit fields."""
+    from .attribute_operations import AttributeSet
+    from .credentials import CredentialType
+
+    if not isinstance(credential_type, CredentialType):
+        errors.raise_for_status(4)
+    if not isinstance(attributes, AttributeSet) or not isinstance(credential_object, ttlv.TtlvItem):
+        errors.raise_for_status(4)
+    credential_type_raw = _integer_range(credential_type.raw(), 0, 0xFFFF_FFFF)
+    object_type_raw = _integer_range(object_type, 0, 0xFFFF_FFFF)
+    with _NATIVE_CALL_LOCK:
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_create_credential_from_fields",
+            (
+                credential_type_raw,
+                object_type_raw,
+                attributes._native_attribute_set(),
+                _client_native_item(credential_object),
+            ),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def _client_kem_parameters(value: CryptographicParameters | None) -> Any:
+    from .cryptographic_parameters import CryptographicParameters
+
+    if value is None:
+        return _client_ffi.NULL
+    if not isinstance(value, CryptographicParameters):
+        errors.raise_for_status(4)
+    return _client_ffi.cast(
+        "kmipkit_cryptographic_parameters_t *",
+        int(_client_ffi.cast("uintptr_t", value._pointer())),
+    )
+
+
+def client_batch_item_encapsulate_from_fields(
+    unique_identifier: UniqueIdentifier,
+    cryptographic_parameters: CryptographicParameters | None = None,
+    attributes: AttributeSet | None = None,
+) -> ClientBatchItem:
+    """Create a typed KMIP 3.0 Encapsulate item from semantic inputs."""
+    from .attribute_operations import AttributeSet
+
+    if not isinstance(unique_identifier, UniqueIdentifier):
+        errors.raise_for_status(4)
+    if attributes is not None and not isinstance(attributes, AttributeSet):
+        errors.raise_for_status(4)
+    with _staging_buffer_scope() as staging_buffers:
+        identifier = _client_native_unique_identifier(unique_identifier, staging_buffers)
+        with _NATIVE_CALL_LOCK:
+            parameters = _client_kem_parameters(cryptographic_parameters)
+            native_attributes = (
+                _client_ffi.NULL
+                if attributes is None
+                else attributes._native_attribute_set()
+            )
+            handle = _make_handle(
+                "kmipkit_client_batch_item_t",
+                "kmipkit_client_batch_item_encapsulate_from_fields",
+                (identifier, parameters, native_attributes),
+            )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_decapsulate_from_fields(
+    unique_identifier: UniqueIdentifier,
+    ciphertext: bytes | bytearray | memoryview,
+    cryptographic_parameters: CryptographicParameters | None = None,
+    attributes: AttributeSet | None = None,
+) -> ClientBatchItem:
+    """Create a typed KMIP 3.0 Decapsulate item from semantic inputs."""
+    from .attribute_operations import AttributeSet
+
+    if not isinstance(unique_identifier, UniqueIdentifier):
+        errors.raise_for_status(4)
+    if attributes is not None and not isinstance(attributes, AttributeSet):
+        errors.raise_for_status(4)
+    if not isinstance(ciphertext, (bytes, bytearray, memoryview)):
+        errors.raise_for_status(4)
+    with _staging_buffer_scope() as staging_buffers:
+        identifier = _client_native_unique_identifier(unique_identifier, staging_buffers)
+        raw_ciphertext, staged_ciphertext = _owned_bytes(
+            ciphertext, _MAX_OPERATION_INPUT_BYTES
+        )
+        staging_buffers.append(staged_ciphertext)
+        native_ciphertext = (
+            _client_ffi.NULL
+            if not raw_ciphertext
+            else _client_ffi.cast(
+                "const uint8_t *",
+                int(ffi.cast("uintptr_t", staged_ciphertext)),
+            )
+        )
+        with _NATIVE_CALL_LOCK:
+            parameters = _client_kem_parameters(cryptographic_parameters)
+            native_attributes = (
+                _client_ffi.NULL
+                if attributes is None
+                else attributes._native_attribute_set()
+            )
+            handle = _make_handle(
+                "kmipkit_client_batch_item_t",
+                "kmipkit_client_batch_item_decapsulate_from_fields",
+                (
+                    identifier,
+                    native_ciphertext,
+                    len(raw_ciphertext),
+                    parameters,
+                    native_attributes,
+                ),
+            )
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
@@ -3974,6 +4101,9 @@ __all__ = [
     "client_batch_item_create_user_from_attributes",
     "client_batch_item_obliterate_from_identifier",
     "client_batch_item_deactivate_from_fields",
+    "client_batch_item_create_credential_from_fields",
+    "client_batch_item_encapsulate_from_fields",
+    "client_batch_item_decapsulate_from_fields",
     "client_batch_item_create",
     "client_batch_item_create_key_pair",
     "client_batch_item_create_split_key",

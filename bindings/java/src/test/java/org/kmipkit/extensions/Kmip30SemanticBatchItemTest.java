@@ -1,8 +1,11 @@
 package org.kmipkit.extensions;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
+import org.kmipkit.InvalidInputException;
 import org.kmipkit.credentials.CredentialType;
 import org.kmipkit.protocol.KmipValues;
 import org.kmipkit.ttlv.CodecLimits;
@@ -35,21 +38,32 @@ final class Kmip30SemanticBatchItemTest {
     @Test
     void buildsCredentialAndKemOperationsFromTypedInputs() {
         CodecLimits limits = CodecLimits.defaults();
-        try (RawTag rawTag = RawTag.fromRaw(0x004201A6);
+        try (RawTag identifierRawTag = RawTag.fromRaw(0x004200A2);
+             Tag identifierTag = identifierRawTag.checked();
+             TtlvStructure emptyFields = TtlvStructure.create();
+             TtlvValue identifierValue = TtlvValue.TextString(
+                     "device-id".getBytes(StandardCharsets.UTF_8), limits);
+             TtlvItem identifierItem = TtlvItem.create(identifierTag, identifierValue, limits);
+             TtlvStructure fields = TtlvStructure.withItem(emptyFields, identifierItem, limits);
+             RawTag rawTag = RawTag.fromRaw(0x004201A6);
              Tag tag = rawTag.checked();
-             TtlvStructure fields = TtlvStructure.create();
              TtlvValue value = TtlvValue.structure(fields, limits);
              TtlvItem object = TtlvItem.create(tag, value, limits);
              TtlvStructure empty = TtlvStructure.create();
              AttributeSet attributes = AttributeSet.tryNew(empty);
-             ClientBatchItem createCredential = ClientBatchItem.createCredential(
+             ClientBatchItem createCredential = ClientBatchItem.createCredentialFromFields(
                      CredentialType.fromRaw(CredentialType.DEVICE),
                      KmipValues.V3_0_OBJECT_TYPE_DEVICE_CREDENTIAL, attributes, object);
-             ClientBatchItem encapsulate = ClientBatchItem.encapsulate(
-                     UniqueIdentifier.textString("kem-key"), null, null);
-             ClientBatchItem decapsulate = ClientBatchItem.decapsulate(
-                     UniqueIdentifier.textString("kem-key"), new byte[] {0x31, 0x32}, null, null)) {
+             ClientBatchItem encapsulate = ClientBatchItem.encapsulateFromFields(
+                     UniqueIdentifier.textString("kem-key"), null, attributes);
+             ClientBatchItem decapsulate = ClientBatchItem.decapsulateFromFields(
+                     UniqueIdentifier.textString("kem-key"), new byte[] {0x31, 0x32}, null, attributes)) {
             assertEquals(KmipValues.V3_0_OPERATION_CREATE_CREDENTIAL, createCredential.operation());
+            assertThrows(InvalidInputException.class, () ->
+                    ClientBatchItem.createCredentialFromFields(
+                            CredentialType.fromRaw(CredentialType.DEVICE),
+                            KmipValues.V3_0_OBJECT_TYPE_PASSWORD_CREDENTIAL,
+                            attributes, object));
             assertEquals(KmipValues.V3_0_OPERATION_ENCAPSULATE, encapsulate.operation());
             assertEquals(KmipValues.V3_0_OPERATION_DECAPSULATE, decapsulate.operation());
         }

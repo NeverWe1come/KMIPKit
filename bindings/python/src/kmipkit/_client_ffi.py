@@ -1471,6 +1471,24 @@ ffi.cdef(
         uint8_t has_deactivation_date,
         int64_t deactivation_date,
         kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_create_credential_from_fields(
+        uint32_t credential_type_raw,
+        uint32_t object_type_raw,
+        kmipkit_attribute_set_t *attributes,
+        kmipkit_ttlv_item_t *object,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_encapsulate_from_fields(
+        const kmipkit_unique_identifier_v1_t *unique_identifier,
+        kmipkit_cryptographic_parameters_t *cryptographic_parameters,
+        kmipkit_attribute_set_t *attributes,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_decapsulate_from_fields(
+        const kmipkit_unique_identifier_v1_t *unique_identifier,
+        const uint8_t *ciphertext,
+        uint64_t ciphertext_length,
+        kmipkit_cryptographic_parameters_t *cryptographic_parameters,
+        kmipkit_attribute_set_t *attributes,
+        kmipkit_client_batch_item_t **out_item);
     int32_t kmipkit_client_batch_item_query(
         const uint32_t *functions,
         uint64_t function_count,

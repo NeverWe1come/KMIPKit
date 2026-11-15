@@ -3330,6 +3330,18 @@ int32_t kmipkit_client_batch_item_obliterate_from_identifier(const kmipkit_uniqu
  */
 /* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011 */
 int32_t kmipkit_client_batch_item_deactivate_from_fields(const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_ttlv_structure_t * deactivation_reason, uint8_t has_deactivation_date, int64_t deactivation_date, kmipkit_client_batch_item_t ** out_item);
+/* Creates a typed KMIP 3.0 Create Credential item from explicit credential type, object type, validated Attributes, and a tagged TTLV object (§6.1.9, Table 277); borrowed inputs remain caller-owned.
+ */
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011 */
+int32_t kmipkit_client_batch_item_create_credential_from_fields(uint32_t credential_type_raw, uint32_t object_type_raw, kmipkit_attribute_set_t * attributes, kmipkit_ttlv_item_t * object, kmipkit_client_batch_item_t ** out_item);
+/* Creates a typed KMIP 3.0 Encapsulate item from a required Unique Identifier and optional Cryptographic Parameters and Attributes (§6.1.22, Table 317); borrowed inputs are copied and remain caller-owned.
+ */
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011 */
+int32_t kmipkit_client_batch_item_encapsulate_from_fields(const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_cryptographic_parameters_t * cryptographic_parameters, kmipkit_attribute_set_t * attributes, kmipkit_client_batch_item_t ** out_item);
+/* Creates a typed KMIP 3.0 Decapsulate item from a required Unique Identifier and ciphertext plus optional Cryptographic Parameters and Attributes (§6.1.15, Table 296); borrowed input bytes are copied before return.
+ */
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011 */
+int32_t kmipkit_client_batch_item_decapsulate_from_fields(const kmipkit_unique_identifier_v1_t * unique_identifier, const uint8_t * ciphertext, uint64_t ciphertext_length, kmipkit_cryptographic_parameters_t * cryptographic_parameters, kmipkit_attribute_set_t * attributes, kmipkit_client_batch_item_t ** out_item);
 /* KMIPKIT-0006-FR-021, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_message_extension_view_ttlv(kmipkit_message_extension_view_t * extension, kmipkit_ttlv_structure_t ** out_structure);
 /* KMIPKIT-0006-FR-017, KMIPKIT-0006-FR-018, KMIPKIT-0006-FR-019, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */

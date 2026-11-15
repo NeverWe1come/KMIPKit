@@ -319642,27 +319642,39 @@
       "capabilityState": "declared",
       "mappings": {
         "c": [
+          "kmipkit_client_batch_item_create_credential_from_fields",
           "kmipkit_client_batch_item_create_group_from_attributes",
           "kmipkit_client_batch_item_create_user_from_attributes",
           "kmipkit_client_batch_item_deactivate_from_fields",
+          "kmipkit_client_batch_item_decapsulate_from_fields",
+          "kmipkit_client_batch_item_encapsulate_from_fields",
           "kmipkit_client_batch_item_obliterate_from_identifier"
         ],
         "java": [
+          "org.kmipkit.extensions.ClientBatchItem.createCredentialFromFields",
           "org.kmipkit.extensions.ClientBatchItem.createGroupFromAttributes",
           "org.kmipkit.extensions.ClientBatchItem.createUserFromAttributes",
           "org.kmipkit.extensions.ClientBatchItem.deactivateFromFields",
+          "org.kmipkit.extensions.ClientBatchItem.decapsulateFromFields",
+          "org.kmipkit.extensions.ClientBatchItem.encapsulateFromFields",
           "org.kmipkit.extensions.ClientBatchItem.obliterateFromIdentifier"
         ],
         "python": [
+          "kmipkit.extensions.client_batch_item_create_credential_from_fields",
           "kmipkit.extensions.client_batch_item_create_group_from_attributes",
           "kmipkit.extensions.client_batch_item_create_user_from_attributes",
           "kmipkit.extensions.client_batch_item_deactivate_from_fields",
+          "kmipkit.extensions.client_batch_item_decapsulate_from_fields",
+          "kmipkit.extensions.client_batch_item_encapsulate_from_fields",
           "kmipkit.extensions.client_batch_item_obliterate_from_identifier"
         ],
         "rust": [
+          "kmipkit_client::ClientBatchItem::create_credential",
           "kmipkit_client::ClientBatchItem::create_group",
           "kmipkit_client::ClientBatchItem::create_user",
           "kmipkit_client::ClientBatchItem::deactivate",
+          "kmipkit_client::ClientBatchItem::decapsulate",
+          "kmipkit_client::ClientBatchItem::encapsulate",
           "kmipkit_client::ClientBatchItem::obliterate"
         ]
       },
@@ -370808,6 +370820,397 @@
           {
             "name": "request",
             "type": "DeactivateRequest"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "ClientBatchItem"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Creates a typed KMIP 3.0 Create Credential item from explicit credential type, object type, validated Attributes, and a tagged TTLV object (§6.1.9, Table 277); borrowed inputs remain caller-owned."
+        ],
+        "errorCategories": [
+          "internal",
+          "invalid_input",
+          "resource_limit"
+        ],
+        "parameters": [
+          {
+            "kind": "scalar",
+            "name": "credential_type_raw",
+            "type": "uint32_t"
+          },
+          {
+            "kind": "scalar",
+            "name": "object_type_raw",
+            "type": "uint32_t"
+          },
+          {
+            "kind": "handle",
+            "name": "attributes",
+            "ownership": "borrowed",
+            "type": "kmipkit_attribute_set_t *"
+          },
+          {
+            "kind": "handle",
+            "name": "object",
+            "ownership": "borrowed",
+            "type": "kmipkit_ttlv_item_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_item",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_client_batch_item_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_client_batch_item_create_credential_from_fields"
+      },
+      "id": "client_batch_item_create_credential_from_fields",
+      "java": {
+        "class": "ClientBatchItem",
+        "errorCategories": [
+          "internal",
+          "invalid_input",
+          "resource_limit"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemCreateCredentialFromFields",
+        "method": "createCredentialFromFields",
+        "package": "org.kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "credentialType",
+            "type": "CredentialType"
+          },
+          {
+            "name": "objectType",
+            "type": "long"
+          },
+          {
+            "name": "attributes",
+            "type": "AttributeSet"
+          },
+          {
+            "name": "credentialObject",
+            "type": "TtlvItem"
+          }
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_client_batch_item_create_credential_from_fields",
+        "errorCategories": [
+          "internal",
+          "invalid_input",
+          "resource_limit"
+        ],
+        "function": "client_batch_item_create_credential_from_fields",
+        "module": "kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "credential_type",
+            "type": "CredentialType"
+          },
+          {
+            "name": "object_type",
+            "type": "int"
+          },
+          {
+            "name": "attributes",
+            "type": "AttributeSet"
+          },
+          {
+            "name": "credential_object",
+            "type": "ttlv.TtlvItem"
+          }
+        ],
+        "returnType": "extensions.ClientBatchItem"
+      },
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "rust": {
+        "module": "kmipkit_client::ClientBatchItem",
+        "name": "create_credential",
+        "owner": "client",
+        "parameters": [
+          {
+            "name": "credential_type",
+            "type": "CredentialType"
+          },
+          {
+            "name": "object_type",
+            "type": "ObjectType"
+          },
+          {
+            "name": "attributes",
+            "type": "AttributeSet"
+          },
+          {
+            "name": "object",
+            "type": "Item"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "ClientBatchItem"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Creates a typed KMIP 3.0 Encapsulate item from a required Unique Identifier and optional Cryptographic Parameters and Attributes (§6.1.22, Table 317); borrowed inputs are copied and remain caller-owned."
+        ],
+        "errorCategories": [
+          "internal",
+          "invalid_input",
+          "resource_limit"
+        ],
+        "parameters": [
+          {
+            "direction": "input",
+            "kind": "versioned-value-pointer",
+            "name": "unique_identifier",
+            "ownership": "borrowed",
+            "type": "const kmipkit_unique_identifier_v1_t *"
+          },
+          {
+            "kind": "handle",
+            "name": "cryptographic_parameters",
+            "ownership": "borrowed",
+            "type": "kmipkit_cryptographic_parameters_t *"
+          },
+          {
+            "kind": "handle",
+            "name": "attributes",
+            "ownership": "borrowed",
+            "type": "kmipkit_attribute_set_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_item",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_client_batch_item_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_client_batch_item_encapsulate_from_fields"
+      },
+      "id": "client_batch_item_encapsulate_from_fields",
+      "java": {
+        "class": "ClientBatchItem",
+        "errorCategories": [
+          "internal",
+          "invalid_input",
+          "resource_limit"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemEncapsulateFromFields",
+        "method": "encapsulateFromFields",
+        "package": "org.kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "uniqueIdentifier",
+            "type": "UniqueIdentifier"
+          },
+          {
+            "name": "cryptographicParameters",
+            "nullable": true,
+            "type": "CryptographicParameters"
+          },
+          {
+            "name": "attributes",
+            "nullable": true,
+            "type": "AttributeSet"
+          }
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_client_batch_item_encapsulate_from_fields",
+        "errorCategories": [
+          "internal",
+          "invalid_input",
+          "resource_limit"
+        ],
+        "function": "client_batch_item_encapsulate_from_fields",
+        "module": "kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "unique_identifier",
+            "type": "UniqueIdentifier"
+          },
+          {
+            "name": "cryptographic_parameters",
+            "type": "CryptographicParameters | None"
+          },
+          {
+            "name": "attributes",
+            "type": "AttributeSet | None"
+          }
+        ],
+        "returnType": "extensions.ClientBatchItem"
+      },
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "rust": {
+        "module": "kmipkit_client::ClientBatchItem",
+        "name": "encapsulate",
+        "owner": "client",
+        "parameters": [
+          {
+            "name": "request",
+            "type": "EncapsulateRequest"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "ClientBatchItem"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Creates a typed KMIP 3.0 Decapsulate item from a required Unique Identifier and ciphertext plus optional Cryptographic Parameters and Attributes (§6.1.15, Table 296); borrowed input bytes are copied before return."
+        ],
+        "errorCategories": [
+          "internal",
+          "invalid_input",
+          "resource_limit"
+        ],
+        "parameters": [
+          {
+            "direction": "input",
+            "kind": "versioned-value-pointer",
+            "name": "unique_identifier",
+            "ownership": "borrowed",
+            "type": "const kmipkit_unique_identifier_v1_t *"
+          },
+          {
+            "byteLengthParameter": "ciphertext_length",
+            "byteLengthType": "uint64_t",
+            "encoding": "octets",
+            "kind": "byte-span",
+            "lengthUnit": "bytes",
+            "limitCheck": "before-dereference",
+            "maxBytes": 16777216,
+            "name": "ciphertext",
+            "nulTerminatedScan": false,
+            "type": "const uint8_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "ciphertext_length",
+            "type": "uint64_t"
+          },
+          {
+            "kind": "handle",
+            "name": "cryptographic_parameters",
+            "ownership": "borrowed",
+            "type": "kmipkit_cryptographic_parameters_t *"
+          },
+          {
+            "kind": "handle",
+            "name": "attributes",
+            "ownership": "borrowed",
+            "type": "kmipkit_attribute_set_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_item",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_client_batch_item_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_client_batch_item_decapsulate_from_fields"
+      },
+      "id": "client_batch_item_decapsulate_from_fields",
+      "java": {
+        "class": "ClientBatchItem",
+        "errorCategories": [
+          "internal",
+          "invalid_input",
+          "resource_limit"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemDecapsulateFromFields",
+        "method": "decapsulateFromFields",
+        "package": "org.kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "uniqueIdentifier",
+            "type": "UniqueIdentifier"
+          },
+          {
+            "name": "ciphertext",
+            "type": "byte[]"
+          },
+          {
+            "name": "cryptographicParameters",
+            "nullable": true,
+            "type": "CryptographicParameters"
+          },
+          {
+            "name": "attributes",
+            "nullable": true,
+            "type": "AttributeSet"
+          }
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_client_batch_item_decapsulate_from_fields",
+        "errorCategories": [
+          "internal",
+          "invalid_input",
+          "resource_limit"
+        ],
+        "function": "client_batch_item_decapsulate_from_fields",
+        "module": "kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "unique_identifier",
+            "type": "UniqueIdentifier"
+          },
+          {
+            "name": "ciphertext",
+            "type": "bytes | bytearray | memoryview"
+          },
+          {
+            "name": "cryptographic_parameters",
+            "type": "CryptographicParameters | None"
+          },
+          {
+            "name": "attributes",
+            "type": "AttributeSet | None"
+          }
+        ],
+        "returnType": "extensions.ClientBatchItem"
+      },
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "rust": {
+        "module": "kmipkit_client::ClientBatchItem",
+        "name": "decapsulate",
+        "owner": "client",
+        "parameters": [
+          {
+            "name": "request",
+            "type": "DecapsulateRequest"
           }
         ],
         "requestBoundary": "not-applicable",
@@ -1075399,6 +1075802,546 @@
         }
       },
       "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/public_client_api.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/Kmip30SemanticBatchItemTest.java",
+        "bindings/python/tests/test_kmip30_semantic_batch_items.py",
+        "crates/kmipkit-ffi/src/extension_registry/client_abi.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved in scope by the maintainer's direct 2026-11-11 instruction",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_kmip30_typed_operations",
+      "declarationId": "KMIPKIT-0093:kmip30:create_credential:rust",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::ClientBatchItem::create_credential",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_create_credential_from_fields",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.createCredentialFromFields",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_create_credential_from_fields",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchItem::create_credential",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/public_client_api.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/Kmip30SemanticBatchItemTest.java",
+        "bindings/python/tests/test_kmip30_semantic_batch_items.py",
+        "crates/kmipkit-ffi/src/extension_registry/client_abi.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved in scope by the maintainer's direct 2026-11-11 instruction",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_kmip30_typed_operations",
+      "declarationId": "KMIPKIT-0093:kmip30:create_credential:c",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client_batch_item_create_credential_from_fields",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_create_credential_from_fields",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.createCredentialFromFields",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_create_credential_from_fields",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchItem::create_credential",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/public_client_api.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/Kmip30SemanticBatchItemTest.java",
+        "bindings/python/tests/test_kmip30_semantic_batch_items.py",
+        "crates/kmipkit-ffi/src/extension_registry/client_abi.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved in scope by the maintainer's direct 2026-11-11 instruction",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_kmip30_typed_operations",
+      "declarationId": "KMIPKIT-0093:kmip30:create_credential:java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.extensions.ClientBatchItem.createCredentialFromFields",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_create_credential_from_fields",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.createCredentialFromFields",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_create_credential_from_fields",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchItem::create_credential",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/public_client_api.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/Kmip30SemanticBatchItemTest.java",
+        "bindings/python/tests/test_kmip30_semantic_batch_items.py",
+        "crates/kmipkit-ffi/src/extension_registry/client_abi.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved in scope by the maintainer's direct 2026-11-11 instruction",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_kmip30_typed_operations",
+      "declarationId": "KMIPKIT-0093:kmip30:create_credential:python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.extensions.client_batch_item_create_credential_from_fields",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_create_credential_from_fields",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.createCredentialFromFields",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_create_credential_from_fields",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchItem::create_credential",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/public_client_api.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/Kmip30SemanticBatchItemTest.java",
+        "bindings/python/tests/test_kmip30_semantic_batch_items.py",
+        "crates/kmipkit-ffi/src/extension_registry/client_abi.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved in scope by the maintainer's direct 2026-11-11 instruction",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_kmip30_typed_operations",
+      "declarationId": "KMIPKIT-0093:kmip30:encapsulate:rust",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::ClientBatchItem::encapsulate",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_encapsulate_from_fields",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.encapsulateFromFields",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_encapsulate_from_fields",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchItem::encapsulate",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/public_client_api.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/Kmip30SemanticBatchItemTest.java",
+        "bindings/python/tests/test_kmip30_semantic_batch_items.py",
+        "crates/kmipkit-ffi/src/extension_registry/client_abi.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved in scope by the maintainer's direct 2026-11-11 instruction",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_kmip30_typed_operations",
+      "declarationId": "KMIPKIT-0093:kmip30:encapsulate:c",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client_batch_item_encapsulate_from_fields",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_encapsulate_from_fields",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.encapsulateFromFields",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_encapsulate_from_fields",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchItem::encapsulate",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/public_client_api.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/Kmip30SemanticBatchItemTest.java",
+        "bindings/python/tests/test_kmip30_semantic_batch_items.py",
+        "crates/kmipkit-ffi/src/extension_registry/client_abi.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved in scope by the maintainer's direct 2026-11-11 instruction",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_kmip30_typed_operations",
+      "declarationId": "KMIPKIT-0093:kmip30:encapsulate:java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.extensions.ClientBatchItem.encapsulateFromFields",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_encapsulate_from_fields",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.encapsulateFromFields",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_encapsulate_from_fields",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchItem::encapsulate",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/public_client_api.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/Kmip30SemanticBatchItemTest.java",
+        "bindings/python/tests/test_kmip30_semantic_batch_items.py",
+        "crates/kmipkit-ffi/src/extension_registry/client_abi.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved in scope by the maintainer's direct 2026-11-11 instruction",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_kmip30_typed_operations",
+      "declarationId": "KMIPKIT-0093:kmip30:encapsulate:python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.extensions.client_batch_item_encapsulate_from_fields",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_encapsulate_from_fields",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.encapsulateFromFields",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_encapsulate_from_fields",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchItem::encapsulate",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/public_client_api.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/Kmip30SemanticBatchItemTest.java",
+        "bindings/python/tests/test_kmip30_semantic_batch_items.py",
+        "crates/kmipkit-ffi/src/extension_registry/client_abi.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved in scope by the maintainer's direct 2026-11-11 instruction",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_kmip30_typed_operations",
+      "declarationId": "KMIPKIT-0093:kmip30:decapsulate:rust",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::ClientBatchItem::decapsulate",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_decapsulate_from_fields",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.decapsulateFromFields",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_decapsulate_from_fields",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchItem::decapsulate",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/public_client_api.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/Kmip30SemanticBatchItemTest.java",
+        "bindings/python/tests/test_kmip30_semantic_batch_items.py",
+        "crates/kmipkit-ffi/src/extension_registry/client_abi.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved in scope by the maintainer's direct 2026-11-11 instruction",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_kmip30_typed_operations",
+      "declarationId": "KMIPKIT-0093:kmip30:decapsulate:c",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client_batch_item_decapsulate_from_fields",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_decapsulate_from_fields",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.decapsulateFromFields",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_decapsulate_from_fields",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchItem::decapsulate",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/public_client_api.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/Kmip30SemanticBatchItemTest.java",
+        "bindings/python/tests/test_kmip30_semantic_batch_items.py",
+        "crates/kmipkit-ffi/src/extension_registry/client_abi.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved in scope by the maintainer's direct 2026-11-11 instruction",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_kmip30_typed_operations",
+      "declarationId": "KMIPKIT-0093:kmip30:decapsulate:java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.extensions.ClientBatchItem.decapsulateFromFields",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_decapsulate_from_fields",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.decapsulateFromFields",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_decapsulate_from_fields",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchItem::decapsulate",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/public_client_api.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/Kmip30SemanticBatchItemTest.java",
+        "bindings/python/tests/test_kmip30_semantic_batch_items.py",
+        "crates/kmipkit-ffi/src/extension_registry/client_abi.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved in scope by the maintainer's direct 2026-11-11 instruction",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_kmip30_typed_operations",
+      "declarationId": "KMIPKIT-0093:kmip30:decapsulate:python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.extensions.client_batch_item_decapsulate_from_fields",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_decapsulate_from_fields",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.decapsulateFromFields",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_decapsulate_from_fields",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchItem::decapsulate",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
       "parityEvidenceIds": [
         "bindings/c/tests/public_client_api.c",
         "bindings/java/src/test/java/org/kmipkit/extensions/Kmip30SemanticBatchItemTest.java",

@@ -15,7 +15,9 @@ import java.util.function.LongUnaryOperator;
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.ResourceLimitException;
+import org.kmipkit.credentials.CredentialType;
 import org.kmipkit.internal.NativeHandle;
+import org.kmipkit.protocol.CryptographicParameters;
 import org.kmipkit.ttlv.CodecLimits;
 import org.kmipkit.ttlv.TtlvItem;
 import org.kmipkit.ttlv.TtlvValue;
@@ -352,6 +354,74 @@ public final class ClientBatchItem implements AutoCloseable {
                             uniqueIdentifier.nativeNumber(), handleOrNull(deactivationReason),
                             deactivationDate != null,
                             deactivationDate == null ? 0 : deactivationDate));
+            return new ClientBatchItem(value, List.of());
+        } finally {
+            clearNativeCopies(identifierText);
+        }
+    }
+
+    /** Creates a typed KMIP 3.0 Create Credential item from an explicit object and Attributes. */
+    public static ClientBatchItem createCredentialFromFields(
+            CredentialType credentialType,
+            long objectType,
+            AttributeSet attributes,
+            TtlvItem credentialObject) {
+        if (credentialType == null || attributes == null || credentialObject == null
+                || objectType < 0 || objectType > 0xffff_ffffL) {
+            throw new InvalidInputException("Create Credential inputs are invalid");
+        }
+        NativeExtensionRegistry.ensureLoaded();
+        long value = NativeHandle.withNativeHandles(() ->
+                NativeExtensionRegistry.clientBatchItemCreateCredentialFromFields(
+                        (int) credentialType.raw(), objectType,
+                        attributes.nativeHandleOwner().get(),
+                        credentialObject.nativeHandleOwner().get()));
+        return new ClientBatchItem(value, List.of());
+    }
+
+    /** Creates a typed KMIP 3.0 Encapsulate item from its semantic fields. */
+    public static ClientBatchItem encapsulateFromFields(
+            UniqueIdentifier uniqueIdentifier,
+            @Nullable CryptographicParameters cryptographicParameters,
+            @Nullable AttributeSet attributes) {
+        if (uniqueIdentifier == null) {
+            throw new InvalidInputException("Encapsulate Unique Identifier is required");
+        }
+        byte[] identifierText = uniqueIdentifier.nativeText();
+        try {
+            NativeExtensionRegistry.ensureLoaded();
+            long value = NativeHandle.withNativeHandles(() ->
+                    NativeExtensionRegistry.clientBatchItemEncapsulateFromFields(
+                            uniqueIdentifier.nativeKind(), identifierText,
+                            uniqueIdentifier.nativeNumber(),
+                            cryptographicParameters == null
+                                    ? 0 : cryptographicParameters.nativeHandleOwner().get(),
+                            attributes == null ? 0 : attributes.nativeHandleOwner().get()));
+            return new ClientBatchItem(value, List.of());
+        } finally {
+            clearNativeCopies(identifierText);
+        }
+    }
+
+    /** Creates a typed KMIP 3.0 Decapsulate item from its semantic fields. */
+    public static ClientBatchItem decapsulateFromFields(
+            UniqueIdentifier uniqueIdentifier,
+            byte[] ciphertext,
+            @Nullable CryptographicParameters cryptographicParameters,
+            @Nullable AttributeSet attributes) {
+        if (uniqueIdentifier == null || ciphertext == null) {
+            throw new InvalidInputException("Decapsulate inputs are invalid");
+        }
+        byte[] identifierText = uniqueIdentifier.nativeText();
+        try {
+            NativeExtensionRegistry.ensureLoaded();
+            long value = NativeHandle.withNativeHandles(() ->
+                    NativeExtensionRegistry.clientBatchItemDecapsulateFromFields(
+                            uniqueIdentifier.nativeKind(), identifierText,
+                            uniqueIdentifier.nativeNumber(), ciphertext,
+                            cryptographicParameters == null
+                                    ? 0 : cryptographicParameters.nativeHandleOwner().get(),
+                            attributes == null ? 0 : attributes.nativeHandleOwner().get()));
             return new ClientBatchItem(value, List.of());
         } finally {
             clearNativeCopies(identifierText);

@@ -44,6 +44,30 @@ fn copy_attribute_set_model(
     AttributeSet::try_new(items).map_err(|_| ERROR_INVALID_INPUT)
 }
 
+fn copy_optional_attribute_set_model(
+    attributes: *mut crate::kmipkit_attribute_set_t,
+) -> FfiResult<Option<AttributeSet>> {
+    if attributes.is_null() {
+        return Ok(None);
+    }
+    copy_attribute_set_model(attributes).map(Some)
+}
+
+fn copy_optional_cryptographic_parameters_structure(
+    parameters: *mut crate::kmipkit_cryptographic_parameters_t,
+) -> FfiResult<Option<Structure>> {
+    if parameters.is_null() {
+        return Ok(None);
+    }
+    let handle = reference_handle(parameters, Kind::CryptographicParameters)?;
+    let HandleValue::CryptographicParameters(source) = &handle.value else {
+        return Err(ERROR_INVALID_INPUT);
+    };
+    source
+        .with_ttlv(|view| clone_structure_view(&view))
+        .map(Some)
+}
+
 fn require_success_response_ttlv<T>(response_ttlv: Option<FfiResult<T>>) -> FfiResult<T> {
     match response_ttlv {
         Some(response_ttlv) => response_ttlv,
@@ -2901,6 +2925,118 @@ pub extern "C" fn kmipkit_client_batch_item_deactivate_from_fields(
             request = request.with_deactivation_date(deactivation_date);
         }
         *out = try_ffi!(batch_item_handle(ClientRequest::deactivate(request)));
+        SUCCESS
+    })
+}
+
+/// Creates a typed KMIP 3.0 Create Credential item from its explicit fields.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_create_credential_from_fields(
+    credential_type_raw: u32,
+    object_type_raw: u32,
+    attributes: *mut crate::kmipkit_attribute_set_t,
+    object: *mut crate::kmipkit_ttlv_item_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let attributes = try_ffi!(copy_attribute_set_model(attributes));
+        let object = try_ffi!(copy_required_item_handle(object));
+        let object = try_ffi!(
+            ManagedObject::try_from_item(ObjectType::from_raw(object_type_raw), object,).map_err(
+                |error| match error {
+                    ManagedObjectError::TtlvModelLimit => ERROR_RESOURCE_LIMIT,
+                    _ => ERROR_INVALID_INPUT,
+                }
+            )
+        );
+        let object = match object {
+            ManagedObject::Certificate(value) => CreateCredentialObject::Certificate(value),
+            ManagedObject::PasswordCredential(value) => {
+                CreateCredentialObject::PasswordCredential(value)
+            }
+            ManagedObject::DeviceCredential(value) => {
+                CreateCredentialObject::DeviceCredential(value)
+            }
+            ManagedObject::HashedPasswordCredential(value) => {
+                CreateCredentialObject::HashedPasswordCredential(value)
+            }
+            ManagedObject::OneTimePasswordCredential(value) => {
+                CreateCredentialObject::OneTimePasswordCredential(value)
+            }
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        let request = CreateCredentialRequest::new(
+            CredentialType::from_raw(credential_type_raw),
+            attributes,
+            object,
+        );
+        *out = try_ffi!(batch_item_handle(ClientRequest::create_credential(request)));
+        SUCCESS
+    })
+}
+
+/// Creates a typed KMIP 3.0 Encapsulate item from its semantic fields.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_encapsulate_from_fields(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    cryptographic_parameters: *mut crate::kmipkit_cryptographic_parameters_t,
+    attributes: *mut crate::kmipkit_attribute_set_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let identifier =
+            try_ffi!(copy_unique_identifier(unique_identifier)).ok_or(ERROR_INVALID_INPUT);
+        let identifier = try_ffi!(identifier);
+        let parameters = try_ffi!(copy_optional_cryptographic_parameters_structure(
+            cryptographic_parameters,
+        ));
+        let attributes = try_ffi!(copy_optional_attribute_set_model(attributes));
+        let mut request = EncapsulateRequest::new(identifier);
+        if let Some(parameters) = parameters {
+            request = request.with_cryptographic_parameters(parameters);
+        }
+        if let Some(attributes) = attributes {
+            request = request.with_attributes(attributes);
+        }
+        *out = try_ffi!(batch_item_handle(ClientRequest::encapsulate(request)));
+        SUCCESS
+    })
+}
+
+/// Creates a typed KMIP 3.0 Decapsulate item from its semantic fields.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_decapsulate_from_fields(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    ciphertext: *const u8,
+    ciphertext_length: u64,
+    cryptographic_parameters: *mut crate::kmipkit_cryptographic_parameters_t,
+    attributes: *mut crate::kmipkit_attribute_set_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let identifier =
+            try_ffi!(copy_unique_identifier(unique_identifier)).ok_or(ERROR_INVALID_INPUT);
+        let identifier = try_ffi!(identifier);
+        let ciphertext = try_ffi!(copy_transport_span(
+            ciphertext,
+            ciphertext_length,
+            MAX_FFI_INPUT_BYTES,
+        ));
+        let parameters = try_ffi!(copy_optional_cryptographic_parameters_structure(
+            cryptographic_parameters,
+        ));
+        let attributes = try_ffi!(copy_optional_attribute_set_model(attributes));
+        let mut request = DecapsulateRequest::new(identifier, ciphertext);
+        if let Some(parameters) = parameters {
+            request = request.with_cryptographic_parameters(parameters);
+        }
+        if let Some(attributes) = attributes {
+            request = request.with_attributes(attributes);
+        }
+        *out = try_ffi!(batch_item_handle(ClientRequest::decapsulate(request)));
         SUCCESS
     })
 }

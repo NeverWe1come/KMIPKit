@@ -433,6 +433,14 @@ public final class NativeExtensionRegistry {
     public static native long clientBatchItemDeactivateFromFields(
             int identifierKind, @Nullable byte[] identifierText, long identifierNumber,
             long deactivationReason, boolean hasDeactivationDate, long deactivationDate);
+    public static native long clientBatchItemCreateCredentialFromFields(
+            int credentialType, long objectType, long attributes, long credentialObject);
+    public static native long clientBatchItemEncapsulateFromFields(
+            int identifierKind, @Nullable byte[] identifierText, long identifierNumber,
+            long cryptographicParameters, long attributes);
+    public static native long clientBatchItemDecapsulateFromFields(
+            int identifierKind, @Nullable byte[] identifierText, long identifierNumber,
+            byte[] ciphertext, long cryptographicParameters, long attributes);
     public static native long cancelRequestCreate(byte[] correlationValue);
     public static native boolean withCancelRequestCorrelationValue(
             long request, Consumer<ByteBuffer> callback);
