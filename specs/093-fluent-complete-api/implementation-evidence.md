@@ -307,3 +307,44 @@
   Placeholder journey. The guide continues to distinguish controlled fixture
   responses from external-KMS interoperability evidence.
 
+## KMIPKIT-0093 ordered batch ID Placeholder TLS journey
+
+### Red
+
+- Added fixture tests for grouped operation sequences, Create→Get request
+  decoding, Batch Order Option validation, and response batches that retain
+  all typed results and their Unique Batch Item IDs.
+- Before the consumers had a batch journey, the end-to-end runner reached the
+  next Ping where it expected `Create, Get`. The first implementation attempt
+  was rejected locally with `RequestDeliveryState::NotSent`; tracing
+  `validate_batch` showed that every item in a multi-item batch must carry a
+  distinct Unique Batch Item ID.
+- The fixture initially looked for Batch Order Option under the wrong tag and
+  rejected the real request. The pinned typed model identifies this field as
+  `0x420010`; the corrected fixture now validates its eight-byte Boolean value.
+
+### Green
+
+- All four consumers now create a named AES-256 key and Get it in the same
+  ordered batch. Get omits Unique Identifier so the server resolves the
+  preceding ID Placeholder. Each item has a distinct Unique Batch Item ID;
+  the fixture echoes both IDs and returns typed Create and Get results.
+- The fixture requires the exact Create→Get order, Batch Order Option true,
+  the Create Name, omitted Get Unique Identifier, non-empty distinct batch
+  IDs, and both corresponding response IDs. The response Batch Count is two.
+- `python3 -B -m unittest discover -s tests/consumers/0053-parity -p test_execute_ping.py -v`
+  passes all 11 tests, including the 57-exchange TLS 1.3/mTLS run across Rust,
+  C, Java, and Python. An independent
+  `bash tests/consumers/0053-parity/verify.sh` run also passes all five journeys
+  in all four consumers.
+- `cargo +1.94 check --locked --manifest-path tests/consumers/0053-parity/rust/Cargo.toml`,
+  C11 `-Wall -Wextra -Werror -fsyntax-only`, Java consumer compilation,
+  Python `py_compile`, and `git diff --check` pass.
+
+### Refactor
+
+- Updated English and Spanish user guides, the consumer README, F001 task
+  status, and FR-013 traceability to describe all five completed progressive
+  journeys and the fixture's limits. The evidence remains limited to a
+  controlled fixture and does not claim external-KMS interoperability.
+

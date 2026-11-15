@@ -12,7 +12,7 @@
 | FR-010 inspection and diagnostics | KMIP 2.1 §§8–9; ADR-0018 encoding and response ownership; KMIPKIT-0007 | Explicit inspection only, redacted default formatting, and proof that encoding failures do not replace the typed operation result |
 | FR-011 four languages | KMIPKIT-0043, -0053; Constitution III | C/JNI/CFFI ownership, ABI audit, Java/Python typing, compiled consumers and parity matrix. Create Key Pair builders and typed response handling are exercised in compiled C, Java/JNI, Python/CFFI, and Rust consumers; the complete API parity matrix and global closeout gates remain open. |
 | FR-012 server direction | KMIP 2.1 §6.2, KMIPKIT-0066, ADR-0021 | Listener handler fixtures; no client send for server-only operation |
-| FR-013 journeys | KMIP 2.1 operation tables and Profiles §§5.3–5.5 | Rust, C, Java, and Python execute the symmetric-key lifecycle, explicit AES-GCM operations, ECDSA key-pair/signing, and a Vendor Attribute Create/Get/Destroy journey against the controlled TLS fixture. Batch ID Placeholder remains for the five-journey acceptance criterion. |
+| FR-013 journeys | KMIP 2.1 §§6.1.1, 6.1.19, 6.1.21, 6.1.28 and Profiles §§5.3–5.5 | Rust, C, Java, and Python execute all five progressive journeys against the controlled TLS fixture: symmetric-key lifecycle, explicit AES-GCM operations, ECDSA key-pair/signing, Vendor Attribute Create/Get/Destroy, and an ordered Create/Get batch where omitted Get Unique Identifier resolves the preceding ID Placeholder. |
 
 The next catalog slice expands this table to one row per assigned operation
 and one row per normative client requirement. A static count alone does not

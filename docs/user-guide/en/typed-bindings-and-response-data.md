@@ -147,13 +147,17 @@ checks Success, Pending, and Failure lifecycle outcomes. Each consumer also
 creates, retrieves, and destroys a key carrying a structurally valid Vendor
 Attribute built by its fluent API. The fixture checks the operation, vendor
 identifier, attribute name, value, and returned key identifier and responds
-with encoded KMIP responses. This verifies the client paths against the
-controlled fixture, not against an external KMS. The sources are [Rust](../../../tests/consumers/0053-parity/rust/src/main.rs),
+with encoded KMIP responses. Each consumer also sends one ordered batch with
+Create followed by Get and the Get Unique Identifier omitted. The fixture
+checks Batch Order Option, distinct Unique Batch Item IDs, and both typed
+results, so Get resolves the created key's ID Placeholder. This verifies the
+client paths against the controlled fixture, not against an external KMS. The
+sources are [Rust](../../../tests/consumers/0053-parity/rust/src/main.rs),
 [C](../../../tests/consumers/0053-parity/c/main.c),
 [Java](../../../tests/consumers/0053-parity/java/src/main/java/Consumer.java),
 and [Python](../../../tests/consumers/0053-parity/python/main.py). These are the
-first four of the five progressive KMIPKIT-0093 journeys; the batch ID
-Placeholder journey remains to be added. C, Java, and Python also expose
+five progressive KMIPKIT-0093 journeys, exercised in all four languages. C,
+Java, and Python also expose
 typed readers that check operation identity for Cancel, Poll, Process, and
 Query Async; their parity tests are recorded in [task T078](../../../specs/053-api-parity-facade/tasks.md).
 

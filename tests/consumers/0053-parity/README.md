@@ -14,8 +14,8 @@ identities. It validates decoded requests and returns encoded, predetermined
 KMIP responses. The fixture does not perform AES; this checks client
 construction and response handling, not cryptography or external KMIP
 interoperability. These consumers cover the symmetric-key, AES-GCM,
-key-pair/signing, and expert Vendor Attribute journeys. The batch-placeholder
-journey remains in the KMIPKIT-0093 closeout work.
+key-pair/signing, expert Vendor Attribute, and ordered batch ID Placeholder
+journeys in Rust, C, Java, and Python.
 
 Run all consumers on Windows with `./verify.ps1`, or on Linux/macOS with
 `./verify.sh`. The scripts build the native library, compile each consumer

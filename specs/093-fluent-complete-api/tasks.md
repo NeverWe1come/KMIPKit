@@ -73,10 +73,11 @@ Dependent work branches from the unmerged parent head while review is pending.
 
 ## End-to-end and closeout PR
 
-- [ ] F001 Add five progressive TLS 1.3/mTLS journeys in each language and
+- [x] F001 Add five progressive TLS 1.3/mTLS journeys in each language and
   assert the fixture's decoded request and encoded response.
   Progress: symmetric key, AES-GCM, key-pair/signing, and expert Vendor
-  Attribute journeys pass in all four consumers; batch ID Placeholder remains.
+  Attribute, and ordered batch ID Placeholder journeys pass in all four
+  consumers.
 - [ ] F002 Run all required format, Clippy, Rust/C/Java/Python, sanitizer,
   coverage, traceability and generated-export gates.
 - [ ] F003 Resolve every red CI job on its own PR head. Mark each PR ready only
