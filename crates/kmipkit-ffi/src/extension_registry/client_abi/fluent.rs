@@ -1118,7 +1118,7 @@ pub extern "C" fn kmipkit_create_key_pair_builder_execute_v1(
     limits: *mut kmipkit_codec_limits_t,
     out_response: *mut *mut kmipkit_client_batch_response_t,
 ) -> i32 {
-    execute_key_pair_builder(builder, client, limits, None, out_response)
+    ffi_entrypoint(|| execute_key_pair_builder(builder, client, limits, None, out_response))
 }
 
 /// Executes the typed request with explicit exchange-local options.
