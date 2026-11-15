@@ -502,3 +502,7 @@ mod server_to_client_tests;
 #[cfg(test)]
 #[path = "../tests/unit/set_endpoint_role_execution_tests.rs"]
 mod set_endpoint_role_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/test_support_tests.rs"]
+mod test_support_tests;
