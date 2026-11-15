@@ -144,15 +144,18 @@ fixture local TLS 1.3 que exige TLS mutuo. Los consumidores recorren Create/Get/
 Destroy de una clave simétrica, Encrypt/Decrypt con parámetros AES-GCM explícitos
 y Create Key Pair ECDSA, Sign y Destroy de los dos identificadores devueltos.
 Java también comprueba los resultados Success, Pending y Failure del ciclo de
-vida. La fixture comprueba las operaciones y campos seleccionados de la petición
-y devuelve respuestas KMIP codificadas; esto verifica las rutas del cliente
-contra la fixture controlada, no contra un KMS externo. Consulta los fuentes de
+vida. Cada consumidor también crea, obtiene y destruye una clave con un Vendor
+Attribute estructuralmente válido, construido mediante su API fluida. La fixture
+comprueba la operación, el identificador del fabricante, el nombre y valor del
+atributo y el identificador de clave devuelto, y responde con mensajes KMIP
+codificados. Esto verifica las rutas del cliente contra la fixture controlada,
+no contra un KMS externo. Consulta los fuentes de
 [Rust](../../../tests/consumers/0053-parity/rust/src/main.rs),
 [C](../../../tests/consumers/0053-parity/c/main.c),
 [Java](../../../tests/consumers/0053-parity/java/src/main/java/Consumer.java)
 y [Python](../../../tests/consumers/0053-parity/python/main.py). Estos son los
-tres primeros de los cinco recorridos progresivos de KMIPKIT-0093; todavía
-quedan los atributos expertos y el batch con ID Placeholder. C, Java y Python
+cuatro primeros de los cinco recorridos progresivos de KMIPKIT-0093; solo queda
+el batch con ID Placeholder. C, Java y Python
 también exponen lectores tipados que comprueban la identidad de operación para
 Cancel, Poll, Process y Query Async; sus pruebas de paridad están registradas
 en la [tarea T078](../../../specs/053-api-parity-facade/tasks.md).

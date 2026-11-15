@@ -143,15 +143,17 @@ the Rust, C, Java, and Python package consumers against a loopback TLS 1.3
 fixture that requires mutual TLS. The consumers exercise symmetric-key
 Create/Get/Destroy, explicit AES-GCM Encrypt/Decrypt parameters, and ECDSA
 Create Key Pair, Sign, and Destroy for both returned identifiers. Java also
-checks Success, Pending, and Failure lifecycle outcomes. The fixture checks
-the operations and selected request fields and returns encoded KMIP responses;
-this verifies the client paths against the controlled fixture, not against an
-external KMS. The sources are [Rust](../../../tests/consumers/0053-parity/rust/src/main.rs),
+checks Success, Pending, and Failure lifecycle outcomes. Each consumer also
+creates, retrieves, and destroys a key carrying a structurally valid Vendor
+Attribute built by its fluent API. The fixture checks the operation, vendor
+identifier, attribute name, value, and returned key identifier and responds
+with encoded KMIP responses. This verifies the client paths against the
+controlled fixture, not against an external KMS. The sources are [Rust](../../../tests/consumers/0053-parity/rust/src/main.rs),
 [C](../../../tests/consumers/0053-parity/c/main.c),
 [Java](../../../tests/consumers/0053-parity/java/src/main/java/Consumer.java),
 and [Python](../../../tests/consumers/0053-parity/python/main.py). These are the
-first three of the five progressive KMIPKIT-0093 journeys; expert attributes
-and batch ID Placeholder remain to be added. C, Java, and Python also expose
+first four of the five progressive KMIPKIT-0093 journeys; the batch ID
+Placeholder journey remains to be added. C, Java, and Python also expose
 typed readers that check operation identity for Cancel, Poll, Process, and
 Query Async; their parity tests are recorded in [task T078](../../../specs/053-api-parity-facade/tasks.md).
 

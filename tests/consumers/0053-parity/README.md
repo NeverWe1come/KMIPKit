@@ -13,9 +13,9 @@ TLS 1.3/mTLS fixture responder using the repository's disposable test
 identities. It validates decoded requests and returns encoded, predetermined
 KMIP responses. The fixture does not perform AES; this checks client
 construction and response handling, not cryptography or external KMIP
-interoperability. These consumers currently cover the symmetric-key and
-AES-GCM journeys; key-pair/signing, expert-attribute, and batch-placeholder
-journeys remain in the KMIPKIT-0093 closeout work.
+interoperability. These consumers cover the symmetric-key, AES-GCM,
+key-pair/signing, and expert Vendor Attribute journeys. The batch-placeholder
+journey remains in the KMIPKIT-0093 closeout work.
 
 Run all consumers on Windows with `./verify.ps1`, or on Linux/macOS with
 `./verify.sh`. The scripts build the native library, compile each consumer

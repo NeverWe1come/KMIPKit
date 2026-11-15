@@ -274,3 +274,36 @@
   four-language path while preserving the remaining operation-matrix and
   closeout work.
 
+## KMIPKIT-0093 expert Vendor Attribute TLS journey
+
+### Red
+
+- Added a fixture contract test that requires the named expert key's exact
+  Vendor Attribute structure and rejects a Create request that omits it:
+  `python3 -B -m unittest discover -s tests/consumers/0053-parity -p test_execute_ping.py -k fixture_requires_the_expert_vendor_attribute_on_the_named_key -v`.
+- Before the fixture validator enforced the contract, the test failed because
+  no `RuntimeError` was raised for the missing Vendor Attribute.
+- Running the new Java journey against the old 41-operation sequence also
+  failed at connection 12 because the fixture expected the old Destroy request
+  instead of the expert Create request.
+
+### Green
+
+- All four language consumers now create an AES-256 key with explicit
+  Encrypt/Decrypt usage and the Vendor Attribute (`KMIPKit.Example`, `purpose`,
+  TextString `fluent expert journey`), then verify typed Create, Get, and
+  Destroy responses for the returned `fluent-expert-key` identifier.
+- The TLS fixture validates the decoded Attribute beneath the Object
+  Attributes structure and echoes the request identifier in Get and Destroy
+  responses. The expected runner sequence now covers 53 TLS exchanges.
+- The focused fixture contract passes, and an independent run of
+  `bash tests/consumers/0053-parity/verify.sh` passed for Rust, C, Java, and
+  Python, including the new four-language Vendor Attribute journey.
+
+### Refactor
+
+- Updated the English and Spanish user guides, consumer README, and FR-013
+  traceability to describe four completed journeys and the remaining batch ID
+  Placeholder journey. The guide continues to distinguish controlled fixture
+  responses from external-KMS interoperability evidence.
+
