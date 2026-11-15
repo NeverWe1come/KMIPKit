@@ -65,6 +65,23 @@ class FluentSetAttributeBuilderManifestTests(unittest.TestCase):
             "kmipkit.fluent.SetAttributeBuilder.__exit__",
             "kmipkit.fluent.SetAttributeBuilder.__init__",
         }
+        expected_targets = {
+            "kmipkit.fluent.SetAttributeBuilder.__init__": {
+                "rust": "kmipkit_client::SetAttributeBuilder::detached",
+                "c": "kmipkit_set_attribute_builder_create",
+                "java": "org.kmipkit.fluent.FluentRequest.setAttribute",
+            },
+            "kmipkit.fluent.SetAttributeBuilder.__enter__": {
+                "rust": "kmipkit_client::SetAttributeBuilder",
+                "c": "kmipkit_set_attribute_builder_t",
+                "java": "org.kmipkit.fluent.SetAttributeBuilder",
+            },
+            "kmipkit.fluent.SetAttributeBuilder.__exit__": {
+                "rust": "kmipkit_client::SetAttributeBuilder",
+                "c": "kmipkit_set_attribute_builder_release",
+                "java": "org.kmipkit.fluent.SetAttributeBuilder.close",
+            },
+        }
         rows = [
             row
             for row in self.manifest["publicDeclarations"]
@@ -80,6 +97,10 @@ class FluentSetAttributeBuilderManifestTests(unittest.TestCase):
                     {"rust", "c", "java", "python"},
                     set(row["languageMappings"]),
                 )
+                for language, target in expected_targets[row["exportName"]].items():
+                    self.assertEqual(
+                        target, row["languageMappings"][language]["name"]
+                    )
 
     def test_fluent_builder_operations_are_declared_in_all_four_languages(self) -> None:
         functions = [

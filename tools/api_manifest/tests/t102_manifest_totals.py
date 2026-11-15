@@ -37,7 +37,7 @@ T102_BLOCKED_CANDIDATES = 0
 # adds or removes declarations.
 # The merged release inventory includes the KMIPKIT-0093 C key-pair, Rust
 # Set Attribute, and four-language binding declarations.
-T102_PUBLIC_DECLARATIONS = 17_346
+T102_PUBLIC_DECLARATIONS = 17_349
 T102_KMIP30_DRAFT_ROUTE_DECLARATIONS = 36
 T102_APPROVED_EXCLUSIONS = 22_679
 T102_RUST_AUDIT_MANIFEST = 3_287
