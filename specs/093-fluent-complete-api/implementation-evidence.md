@@ -72,6 +72,12 @@
   with the stale Java audit and the new method/exclusion assertions;
   `bash ./gradlew test --tests org.kmipkit.extensions.Kmip30SemanticBatchItemTest`
   fails compilation because those four manifested semantic methods are absent.
+- The expanded T102 run then exposed a traceability mismatch on the public
+  `kmipkit::protocol::LocateResponse::try_from_response_item` re-export:
+  its exact `rust-kmipkit` alias omits KMIPKIT-0093-FR-005 and FR-008 present
+  on the canonical `rust-kmipkit-protocol` declaration. Reproduction:
+  `python3 -B -m unittest discover --failfast -s tools/api_manifest/tests -p 'test_t102*.py'`
+  fails `test_locate_client_declarations_exclude_server_only_size_requirement`.
 
 ### Green
 
