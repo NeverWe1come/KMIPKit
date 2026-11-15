@@ -47,3 +47,9 @@
   manifest against the PR base identified 44 added declarations: 28 KMIP 3.0
   fluent operations and 16 asynchronous batch bindings. The inherited T102
   public-declaration total had not been refreshed for those approved additions.
+
+### Green
+
+- Updated the shared T102 declaration snapshot to 16,816 and recorded the
+  KMIPKIT-0124 additions that account for the increase.
+- The focused reproduction command above passes (`Ran 1 test`, `OK`).
