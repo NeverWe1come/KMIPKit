@@ -306648,6 +306648,193 @@
       "exportName": "kmipkit_ttlv::try_clone_value",
       "packageId": "rust-kmipkit-ttlv",
       "reason": "This exact doc-hidden Rust helper exists for the binding implementation to copy secret-bearing values safely. It is not a supported end-user operation; each binding already performs owned copies at its opaque-handle boundary."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/021 and KMIPKIT-0093-FR-011. This exact Cancel bridge dispatches a typed KMIPKit batch item through JNI; callers use the separately inventoried ClientBatchItem facade.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItem.java",
+        "specs/093-fluent-complete-api/spec.md"
+      ],
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemCancelFromRequest",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static native member is JNI handle plumbing used by the typed client batch facade; it provides no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/021 and KMIPKIT-0093-FR-011. This exact CreateCredential bridge dispatches a typed KMIPKit batch item through JNI; callers use the separately inventoried ClientBatchItem facade.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItem.java",
+        "specs/093-fluent-complete-api/spec.md"
+      ],
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemCreateCredentialFromFields",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static native member is JNI handle plumbing used by the typed client batch facade; it provides no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/021 and KMIPKIT-0093-FR-011. This exact CreateGroup bridge dispatches a typed KMIPKit batch item through JNI; callers use the separately inventoried ClientBatchItem facade.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItem.java",
+        "specs/093-fluent-complete-api/spec.md"
+      ],
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemCreateGroupFromAttributes",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static native member is JNI handle plumbing used by the typed client batch facade; it provides no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/021 and KMIPKIT-0093-FR-011. This exact CreateUser bridge dispatches a typed KMIPKit batch item through JNI; callers use the separately inventoried ClientBatchItem facade.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItem.java",
+        "specs/093-fluent-complete-api/spec.md"
+      ],
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemCreateUserFromAttributes",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static native member is JNI handle plumbing used by the typed client batch facade; it provides no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/021 and KMIPKIT-0093-FR-011. This exact Deactivate bridge dispatches a typed KMIPKit batch item through JNI; callers use the separately inventoried ClientBatchItem facade.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItem.java",
+        "specs/093-fluent-complete-api/spec.md"
+      ],
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemDeactivateFromFields",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static native member is JNI handle plumbing used by the typed client batch facade; it provides no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/021 and KMIPKIT-0093-FR-011. This exact Decapsulate bridge dispatches a typed KMIPKit batch item through JNI; callers use the separately inventoried ClientBatchItem facade.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItem.java",
+        "specs/093-fluent-complete-api/spec.md"
+      ],
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemDecapsulateFromFields",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static native member is JNI handle plumbing used by the typed client batch facade; it provides no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/021 and KMIPKIT-0093-FR-011. This exact Encapsulate bridge dispatches a typed KMIPKit batch item through JNI; callers use the separately inventoried ClientBatchItem facade.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItem.java",
+        "specs/093-fluent-complete-api/spec.md"
+      ],
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemEncapsulateFromFields",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static native member is JNI handle plumbing used by the typed client batch facade; it provides no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/021 and KMIPKIT-0093-FR-011. This exact Obliterate bridge dispatches a typed KMIPKit batch item through JNI; callers use the separately inventoried ClientBatchItem facade.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItem.java",
+        "specs/093-fluent-complete-api/spec.md"
+      ],
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemObliterateFromIdentifier",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static native member is JNI handle plumbing used by the typed client batch facade; it provides no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/021 and KMIPKIT-0093-FR-011. This exact Poll bridge dispatches a typed KMIPKit batch item through JNI; callers use the separately inventoried ClientBatchItem facade.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItem.java",
+        "specs/093-fluent-complete-api/spec.md"
+      ],
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemPollFromRequest",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static native member is JNI handle plumbing used by the typed client batch facade; it provides no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/021 and KMIPKIT-0093-FR-011. This exact Process bridge dispatches a typed KMIPKit batch item through JNI; callers use the separately inventoried ClientBatchItem facade.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItem.java",
+        "specs/093-fluent-complete-api/spec.md"
+      ],
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemProcessFromRequest",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static native member is JNI handle plumbing used by the typed client batch facade; it provides no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/021 and KMIPKIT-0093-FR-011. This exact QueryAsyncRequests bridge dispatches a typed KMIPKit batch item through JNI; callers use the separately inventoried ClientBatchItem facade.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItem.java",
+        "specs/093-fluent-complete-api/spec.md"
+      ],
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemQueryAsyncRequestsFromRequest",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static native member is JNI handle plumbing used by the typed client batch facade; it provides no independent Java product capability."
     }
   ],
   "capabilities": [
@@ -482347,7 +482534,8 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008"
       ]
     },
     {
@@ -485738,7 +485926,8 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008"
       ]
     },
     {
@@ -487185,7 +487374,8 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008"
       ]
     },
     {
@@ -487833,6 +488023,7 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.50-001"
       ]
     },
@@ -512423,7 +512614,8 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008"
       ]
     },
     {
@@ -514673,6 +514865,7 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.6-001",
         "KMIPKIT-REQ-SPEC-6.1.6-002-001",
         "KMIPKIT-REQ-SPEC-6.1.6-002-002",
@@ -516171,6 +516364,7 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.7-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-002",
@@ -518015,7 +518209,8 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008"
       ]
     },
     {
@@ -519687,6 +519882,7 @@
         "KMIPKIT-0037-FR-008",
         "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.14-001-001",
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
@@ -521092,7 +521288,8 @@
         "KMIPKIT-0037-FR-007",
         "KMIPKIT-0037-FR-008",
         "KMIPKIT-0043-FR-010",
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0093-FR-008"
       ]
     },
     {
@@ -524062,6 +524259,7 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.19-001",
         "KMIPKIT-REQ-SPEC-6.1.19-002"
       ]
@@ -526740,6 +526938,7 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.25-001",
         "KMIPKIT-REQ-SPEC-6.1.25-004",
         "KMIPKIT-REQ-SPEC-6.1.25-006"
@@ -529301,6 +529500,7 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.27-001",
         "KMIPKIT-REQ-SPEC-6.1.27-002-001",
         "KMIPKIT-REQ-SPEC-6.1.27-002-002",
@@ -531548,6 +531748,7 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.28-001",
         "KMIPKIT-REQ-SPEC-6.1.28-002",
         "KMIPKIT-REQ-SPEC-6.1.28-013-001",
@@ -533724,7 +533925,8 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008"
       ]
     },
     {
@@ -535944,6 +536146,7 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.35-001-001",
         "KMIPKIT-REQ-SPEC-6.1.35-001-002",
         "KMIPKIT-REQ-SPEC-6.1.35-002",
@@ -537319,7 +537522,8 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008"
       ]
     },
     {
@@ -538781,6 +538985,7 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.48-001",
         "KMIPKIT-REQ-SPEC-6.1.48-004",
         "KMIPKIT-REQ-SPEC-6.1.48-006"
@@ -540160,7 +540365,8 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008"
       ]
     },
     {
@@ -541203,6 +541409,7 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.43-001",
         "KMIPKIT-REQ-SPEC-6.1.43-005",
         "KMIPKIT-REQ-SPEC-6.1.43-007",
@@ -543272,6 +543479,7 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.47-001",
         "KMIPKIT-REQ-SPEC-6.1.47-004-001"
       ]
@@ -544061,6 +544269,7 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
         "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
@@ -546060,6 +546269,7 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.44-001",
         "KMIPKIT-REQ-SPEC-6.1.44-003-001",
         "KMIPKIT-REQ-SPEC-6.1.44-003-002"
@@ -546785,7 +546995,8 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008"
       ]
     },
     {
@@ -547433,6 +547644,7 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.50-001"
       ]
     },
@@ -729790,6 +730002,7 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.28-001",
         "KMIPKIT-REQ-SPEC-6.1.28-002",
         "KMIPKIT-REQ-SPEC-6.1.28-013-001",
@@ -729866,6 +730079,8 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.28-001",
         "KMIPKIT-REQ-SPEC-6.1.28-002",
         "KMIPKIT-REQ-SPEC-6.1.28-013-001",

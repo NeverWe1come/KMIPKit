@@ -296,13 +296,13 @@ public final class ClientBatchItem implements AutoCloseable {
     }
 
     /** Creates a typed KMIP 3.0 Create Group item from copied semantic Attributes. */
-    public static ClientBatchItem createGroup(AttributeSet attributes) {
+    public static ClientBatchItem createGroupFromAttributes(AttributeSet attributes) {
         return systemObjectFromAttributes(
                 attributes, "Create Group", NativeExtensionRegistry::clientBatchItemCreateGroupFromAttributes);
     }
 
     /** Creates a typed KMIP 3.0 Create User item from copied semantic Attributes. */
-    public static ClientBatchItem createUser(AttributeSet attributes) {
+    public static ClientBatchItem createUserFromAttributes(AttributeSet attributes) {
         return systemObjectFromAttributes(
                 attributes, "Create User", NativeExtensionRegistry::clientBatchItemCreateUserFromAttributes);
     }
@@ -320,7 +320,7 @@ public final class ClientBatchItem implements AutoCloseable {
     }
 
     /** Creates a typed KMIP 3.0 Obliterate item from its required Unique Identifier. */
-    public static ClientBatchItem obliterate(UniqueIdentifier uniqueIdentifier) {
+    public static ClientBatchItem obliterateFromIdentifier(UniqueIdentifier uniqueIdentifier) {
         if (uniqueIdentifier == null) {
             throw new InvalidInputException("Obliterate Unique Identifier is required");
         }
@@ -338,7 +338,7 @@ public final class ClientBatchItem implements AutoCloseable {
     }
 
     /** Creates a typed KMIP 3.0 Deactivate item with explicit optional fields. */
-    public static ClientBatchItem deactivate(
+    public static ClientBatchItem deactivateFromFields(
             UniqueIdentifier uniqueIdentifier,
             @Nullable TtlvStructure deactivationReason,
             @Nullable Long deactivationDate) {

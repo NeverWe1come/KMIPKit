@@ -109,3 +109,29 @@
   unchanged Rust audit snapshot.
 - `python3 -B -m unittest tools.api_manifest.tests.test_t102_pkcs11_request_trait_exclusions`
   passes all 7 tests.
+
+### Green follow-up after the response and export corrections
+
+- Regenerated the 12 public API manifest outputs with
+  `python3 -B tools/api_manifest/generate.py --write`; the subsequent
+  `python3 -B tools/api_manifest/generate.py --check` verified all 12 outputs.
+- Reconciled `LocateResponse::try_from_response_item` and
+  `LocateResponse::result` alias requirements with their canonical protocol
+  declarations. Added KMIPKIT-0093-FR-008 to the 25 operation-result
+  declarations whose paired response views already expose it.
+- Updated the non-target T102 fingerprints and exclusion count for the
+  KMIPKIT-0124 additions. The exact focused regression run
+  `python3 -B -m unittest tools.api_manifest.tests.test_t102_locate_request_builder_mapping tools.api_manifest.tests.test_t102_certify_request_builder_mapping tools.api_manifest.tests.test_t102_optional_request_structure_mapping.T102OptionalRequestStructureMappingTests.test_all_non_target_declarations_and_operations_match_the_pinned_snapshot tools.api_manifest.tests.test_t102_operation_result_mappings`
+  passes all 17 tests.
+- Renamed the Java semantic factories to the manifest names while retaining
+  the separate TTLV overloads. The focused Java test
+  `bash bindings/java/gradlew --project-dir bindings/java --no-daemon --console=plain --quiet test --tests org.kmipkit.extensions.Kmip30SemanticBatchItemTest`
+  passes.
+- The updated binding report records complete scans with no issues or missing,
+  stale, or kind-mismatched exports: C 2,135 observed / 2,075 matched, Java
+  3,190 / 2,479, and Python 3,699 / 2,690. The documented C and binding audit
+  consistency tests pass (`python3 -B -m unittest
+  tools.api_manifest.tests.test_c_api_docs -v`, 6 tests).
+- `git diff --check` passes. The full T102 discovery run was interrupted before
+  it returned a result; it is not counted as passing evidence.
+
