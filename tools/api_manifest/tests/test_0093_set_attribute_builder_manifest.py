@@ -42,9 +42,10 @@ class FluentSetAttributeBuilderManifestTests(unittest.TestCase):
             row
             for row in self.manifest["publicDeclarations"]
             if row.get("candidateSpecId") == "KMIPKIT-0093"
-            and "SetAttributeBuilder" in row["exportName"]
-            or row.get("candidateSpecId") == "KMIPKIT-0093"
-            and "RequestBuilder<'a>::set_attribute" in row["exportName"]
+            and (
+                "SetAttributeBuilder" in row["exportName"]
+                or "RequestBuilder<'a>::set_attribute" in row["exportName"]
+            )
         ]
         self.assertEqual(expected, {row["exportName"]: row["kind"] for row in rows})
         for row in rows:
@@ -52,7 +53,10 @@ class FluentSetAttributeBuilderManifestTests(unittest.TestCase):
                 self.assertEqual("rust-kmipkit-client", row["packageId"])
                 self.assertEqual("fluent_dx_api", row["capabilityId"])
                 self.assertEqual("four-language", row["parityScope"])
-                self.assertEqual(["KMIPKIT-0093-FR-004"], row["requirementIds"])
+                self.assertEqual(
+                    ["KMIPKIT-0093-FR-004", "KMIPKIT-0093-FR-006"],
+                    row["requirementIds"],
+                )
                 self.assertEqual("blocked", row["declarationState"])
                 self.assertIn("binding parity", row["blockedReason"])
                 self.assertNotIn("languageMappings", row)

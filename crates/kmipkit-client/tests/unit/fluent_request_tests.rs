@@ -67,12 +67,46 @@ fn set_attribute_builder_constructs_the_existing_typed_request() {
 }
 
 #[test]
+fn set_attribute_builder_builds_the_existing_typed_request() {
+    let mut client = failed_request_client();
+    let request = client
+        .request()
+        .set_attribute()
+        .attribute(
+            Attribute::<typed::Description>::new("managed by fluent".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        )
+        .build()
+        .expect("the fluent builder returns the typed request without sending it");
+
+    assert_eq!(request.unique_identifier(), None);
+    assert_eq!(
+        request.new_attribute().item().tag().raw(),
+        typed::Description::TAG
+    );
+}
+
+#[test]
 fn set_attribute_builder_rejects_missing_and_wrong_type_attributes_before_exchange() {
     let mut client = failed_request_client();
     assert_eq!(
         client.request().set_attribute().validate(),
         Err(FluentBuildError::MissingSetAttributeAttribute)
     );
+
+    let duplicate = client
+        .request()
+        .set_attribute()
+        .attribute(
+            Attribute::<typed::Description>::new("first".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        )
+        .attribute(
+            Attribute::<typed::Description>::new("second".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        )
+        .validate();
+    assert_eq!(duplicate, Err(FluentBuildError::InvalidAttributeValue));
 
     let (mut client, fake, _) = client_for(ExchangeScript::FailBeforeWrite);
     let error = client
@@ -293,6 +327,10 @@ fn fluent_build_errors_have_stable_user_facing_messages() {
         (
             FluentBuildError::InvalidAttributeValue,
             "fluent Object Attribute value is invalid",
+        ),
+        (
+            FluentBuildError::MissingSetAttributeAttribute,
+            "Set Attribute requires one New Attribute",
         ),
         (
             FluentBuildError::MessageExtensionTagNotObjectAttribute,

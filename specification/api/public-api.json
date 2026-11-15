@@ -391,6 +391,7 @@
     "KMIPKIT-0091-FR-016",
     "KMIPKIT-0093-FR-004",
     "KMIPKIT-0093-FR-005",
+    "KMIPKIT-0093-FR-006",
     "KMIPKIT-0093-FR-008",
     "KMIPKIT-0093-FR-009",
     "KMIPKIT-0093-FR-011",
@@ -486990,6 +486991,396 @@
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/python/tests/test_response_raw_navigation.py"
       ]
+    },
+    {
+      "declarationId": "kmipkit-0093-set-attribute-kmipkit_client-RequestBuilder-a-set_attribute",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RequestBuilder<'a>::set_attribute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "Equivalent C, Java, and Python fluent surfaces remain pending; binding parity is not yet complete for this Rust Set Attribute builder."
+    },
+    {
+      "declarationId": "kmipkit-0093-set-attribute-kmipkit_client-SetAttributeBuilder",
+      "packageId": "rust-kmipkit-client",
+      "kind": "type",
+      "exportName": "kmipkit_client::SetAttributeBuilder",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "Equivalent C, Java, and Python fluent surfaces remain pending; binding parity is not yet complete for this Rust Set Attribute builder."
+    },
+    {
+      "declarationId": "kmipkit-0093-set-attribute-kmipkit_client-SetAttributeBuilder-a-attribute",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::SetAttributeBuilder<'a>::attribute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "Equivalent C, Java, and Python fluent surfaces remain pending; binding parity is not yet complete for this Rust Set Attribute builder."
+    },
+    {
+      "declarationId": "kmipkit-0093-set-attribute-kmipkit_client-SetAttributeBuilder-a-attribute_item",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::SetAttributeBuilder<'a>::attribute_item",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "Equivalent C, Java, and Python fluent surfaces remain pending; binding parity is not yet complete for this Rust Set Attribute builder."
+    },
+    {
+      "declarationId": "kmipkit-0093-set-attribute-kmipkit_client-SetAttributeBuilder-a-build",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::SetAttributeBuilder<'a>::build",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "Equivalent C, Java, and Python fluent surfaces remain pending; binding parity is not yet complete for this Rust Set Attribute builder."
+    },
+    {
+      "declarationId": "kmipkit-0093-set-attribute-kmipkit_client-SetAttributeBuilder-a-build_request",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::SetAttributeBuilder<'a>::build_request",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "Equivalent C, Java, and Python fluent surfaces remain pending; binding parity is not yet complete for this Rust Set Attribute builder."
+    },
+    {
+      "declarationId": "kmipkit-0093-set-attribute-kmipkit_client-SetAttributeBuilder-a-execute",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::SetAttributeBuilder<'a>::execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "Equivalent C, Java, and Python fluent surfaces remain pending; binding parity is not yet complete for this Rust Set Attribute builder."
+    },
+    {
+      "declarationId": "kmipkit-0093-set-attribute-kmipkit_client-SetAttributeBuilder-a-to_batch_item",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::SetAttributeBuilder<'a>::to_batch_item",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "Equivalent C, Java, and Python fluent surfaces remain pending; binding parity is not yet complete for this Rust Set Attribute builder."
+    },
+    {
+      "declarationId": "kmipkit-0093-set-attribute-kmipkit_client-SetAttributeBuilder-a-unique_identifier",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::SetAttributeBuilder<'a>::unique_identifier",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "Equivalent C, Java, and Python fluent surfaces remain pending; binding parity is not yet complete for this Rust Set Attribute builder."
+    },
+    {
+      "declarationId": "kmipkit-0093-set-attribute-kmipkit_client-SetAttributeBuilder-a-validate",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::SetAttributeBuilder<'a>::validate",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "Equivalent C, Java, and Python fluent surfaces remain pending; binding parity is not yet complete for this Rust Set Attribute builder."
+    },
+    {
+      "declarationId": "kmipkit-0093-set-attribute-kmipkit_client-SetAttributeBuilder-a-vendor_attribute",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::SetAttributeBuilder<'a>::vendor_attribute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "Equivalent C, Java, and Python fluent surfaces remain pending; binding parity is not yet complete for this Rust Set Attribute builder."
+    },
+    {
+      "declarationId": "kmipkit-0093-set-attribute-kmipkit_client-SetAttributeBuilder-a-with_asynchronous_indicator",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::SetAttributeBuilder<'a>::with_asynchronous_indicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "Equivalent C, Java, and Python fluent surfaces remain pending; binding parity is not yet complete for this Rust Set Attribute builder."
+    },
+    {
+      "declarationId": "kmipkit-0093-set-attribute-kmipkit_client-SetAttributeBuilder-a-with_options",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::SetAttributeBuilder<'a>::with_options",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "Equivalent C, Java, and Python fluent surfaces remain pending; binding parity is not yet complete for this Rust Set Attribute builder."
+    },
+    {
+      "declarationId": "kmipkit-0093-set-attribute-kmipkit_client-fluent-RequestBuilder-a-set_attribute",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RequestBuilder<'a>::set_attribute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "Equivalent C, Java, and Python fluent surfaces remain pending; binding parity is not yet complete for this Rust Set Attribute builder."
+    },
+    {
+      "declarationId": "kmipkit-0093-set-attribute-kmipkit_client-fluent-SetAttributeBuilder",
+      "packageId": "rust-kmipkit-client",
+      "kind": "type",
+      "exportName": "kmipkit_client::fluent::SetAttributeBuilder",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "Equivalent C, Java, and Python fluent surfaces remain pending; binding parity is not yet complete for this Rust Set Attribute builder."
+    },
+    {
+      "declarationId": "kmipkit-0093-set-attribute-kmipkit_client-fluent-SetAttributeBuilder-a-attribute",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::SetAttributeBuilder<'a>::attribute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "Equivalent C, Java, and Python fluent surfaces remain pending; binding parity is not yet complete for this Rust Set Attribute builder."
+    },
+    {
+      "declarationId": "kmipkit-0093-set-attribute-kmipkit_client-fluent-SetAttributeBuilder-a-attribute_item",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::SetAttributeBuilder<'a>::attribute_item",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "Equivalent C, Java, and Python fluent surfaces remain pending; binding parity is not yet complete for this Rust Set Attribute builder."
+    },
+    {
+      "declarationId": "kmipkit-0093-set-attribute-kmipkit_client-fluent-SetAttributeBuilder-a-build",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::SetAttributeBuilder<'a>::build",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "Equivalent C, Java, and Python fluent surfaces remain pending; binding parity is not yet complete for this Rust Set Attribute builder."
+    },
+    {
+      "declarationId": "kmipkit-0093-set-attribute-kmipkit_client-fluent-SetAttributeBuilder-a-build_request",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::SetAttributeBuilder<'a>::build_request",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "Equivalent C, Java, and Python fluent surfaces remain pending; binding parity is not yet complete for this Rust Set Attribute builder."
+    },
+    {
+      "declarationId": "kmipkit-0093-set-attribute-kmipkit_client-fluent-SetAttributeBuilder-a-execute",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::SetAttributeBuilder<'a>::execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "Equivalent C, Java, and Python fluent surfaces remain pending; binding parity is not yet complete for this Rust Set Attribute builder."
+    },
+    {
+      "declarationId": "kmipkit-0093-set-attribute-kmipkit_client-fluent-SetAttributeBuilder-a-to_batch_item",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::SetAttributeBuilder<'a>::to_batch_item",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "Equivalent C, Java, and Python fluent surfaces remain pending; binding parity is not yet complete for this Rust Set Attribute builder."
+    },
+    {
+      "declarationId": "kmipkit-0093-set-attribute-kmipkit_client-fluent-SetAttributeBuilder-a-unique_identifier",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::SetAttributeBuilder<'a>::unique_identifier",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "Equivalent C, Java, and Python fluent surfaces remain pending; binding parity is not yet complete for this Rust Set Attribute builder."
+    },
+    {
+      "declarationId": "kmipkit-0093-set-attribute-kmipkit_client-fluent-SetAttributeBuilder-a-validate",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::SetAttributeBuilder<'a>::validate",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "Equivalent C, Java, and Python fluent surfaces remain pending; binding parity is not yet complete for this Rust Set Attribute builder."
+    },
+    {
+      "declarationId": "kmipkit-0093-set-attribute-kmipkit_client-fluent-SetAttributeBuilder-a-vendor_attribute",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::SetAttributeBuilder<'a>::vendor_attribute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "Equivalent C, Java, and Python fluent surfaces remain pending; binding parity is not yet complete for this Rust Set Attribute builder."
+    },
+    {
+      "declarationId": "kmipkit-0093-set-attribute-kmipkit_client-fluent-SetAttributeBuilder-a-with_asynchronous_indicator",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::SetAttributeBuilder<'a>::with_asynchronous_indicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "Equivalent C, Java, and Python fluent surfaces remain pending; binding parity is not yet complete for this Rust Set Attribute builder."
+    },
+    {
+      "declarationId": "kmipkit-0093-set-attribute-kmipkit_client-fluent-SetAttributeBuilder-a-with_options",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::SetAttributeBuilder<'a>::with_options",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "Equivalent C, Java, and Python fluent surfaces remain pending; binding parity is not yet complete for this Rust Set Attribute builder."
     },
     {
       "declarationId": "kmipkit-0095-json-c",
@@ -983255,6 +983646,114 @@
     },
     {
       "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::SetAttributeBuilder<'a> as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::SetAttributeBuilder<'a> as core::borrow::Borrow<kmipkit_client::fluent::SetAttributeBuilder<'a>>>::borrow",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::SetAttributeBuilder<'a> as core::borrow::BorrowMut<kmipkit_client::fluent::SetAttributeBuilder<'a>>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::SetAttributeBuilder<'a> as core::convert::From<kmipkit_client::fluent::SetAttributeBuilder<'a>>>::from",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::SetAttributeBuilder<'a> as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::SetAttributeBuilder<'a> as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::SetAttributeBuilder<'a> as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::SetAttributeBuilder<'a> as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::SetAttributeBuilder<'a> as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
       "exportName": "<kmipkit_client::SignBuilder<'a> as core::any::Any>::type_id",
       "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
       "approvalSource": {
@@ -987998,6 +988497,114 @@
     {
       "packageId": "rust-kmipkit-client",
       "exportName": "<kmipkit_client::fluent::RevokeBuilder<'a> as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::SetAttributeBuilder<'a> as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::SetAttributeBuilder<'a> as core::borrow::Borrow<kmipkit_client::fluent::SetAttributeBuilder<'a>>>::borrow",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::SetAttributeBuilder<'a> as core::borrow::BorrowMut<kmipkit_client::fluent::SetAttributeBuilder<'a>>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::SetAttributeBuilder<'a> as core::convert::From<kmipkit_client::fluent::SetAttributeBuilder<'a>>>::from",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::SetAttributeBuilder<'a> as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::SetAttributeBuilder<'a> as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::SetAttributeBuilder<'a> as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::SetAttributeBuilder<'a> as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::SetAttributeBuilder<'a> as core::convert::TryInto<U>>::try_into",
       "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
       "approvalSource": {
         "kind": "feature-specification",

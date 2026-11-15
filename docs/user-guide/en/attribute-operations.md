@@ -130,3 +130,34 @@ Response models expose the server's `KmipOperationResult`, including Result Stat
 Mutation policy checks reject only source-backed, unconditional prohibitions that can be determined from the supplied request. Those failures have delivery state `NotSent` and do not call the transport. State-dependent or unrecognized cases are sent to the server. Requests are not automatically retried. A `Pending` result retains its typed response and asynchronous correlation value; use the asynchronous workflow described in [Client execution](client-execution.md).
 
 The protocol tests exercise derived vectors and malformed inputs. They do not claim that every KMIP server supports every attribute or that an unavailable official OASIS test case has passed.
+
+## Fluent Set Attribute request
+
+Rust callers can build and send a Set Attribute request through the existing typed client without assembling the New Attribute TTLV structure or a batch by hand:
+
+```rust
+use std::error::Error;
+
+use kmipkit_client::Client;
+use kmipkit_protocol::{attribute::typed, Attribute};
+use kmipkit_ttlv::codec::CodecLimits;
+
+fn set_comment(client: &mut Client) -> Result<String, Box<dyn Error>> {
+    let response = client
+        .request()
+        .set_attribute()
+        .unique_identifier("object-id-17")
+        .attribute(Attribute::<typed::Comment>::new("managed by service".to_owned())?)
+        .execute(&CodecLimits::defaults())?;
+
+    response
+        .outcome()
+        .response()
+        .set_attribute()
+        .and_then(|result| result.unique_identifier())
+        .map(str::to_owned)
+        .ok_or_else(|| "Set Attribute did not return a successful identifier".into())
+}
+```
+
+The builder validates the catalogued value and operation payload locally, supports `build`, `validate`, and `to_batch_item` when the caller needs explicit control, and exposes `attribute_item` for an explicitly typed TTLV Item. Use `vendor_attribute` to construct a KMIP Vendor Attribute structure from its vendor identifier, name, and value. The request executes through the existing client in one exchange and does not poll or retry.
