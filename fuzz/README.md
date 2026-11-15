@@ -52,3 +52,30 @@ The executable OASIS-derived extension vectors cite KMIP Specification v2.1
 §§7.13/Table 365, 8.3/Table 396, 9.13/Table 418, 11.44/Table 476, and §11.56
 tag allocations in `tests/fixtures/extensions/oasis/` and
 `crates/kmipkit-protocol/tests/extension_oasis_vectors.rs`.
+
+## JSON codec and roundtrip
+
+`json_codec` decodes at most 4 KiB of untrusted JSON using bounded limits.
+Decoded items undergo roundtrip serialization and verification.
+
+```text
+cargo +nightly fuzz run json_codec -- -runs=1000 -max_len=4096 -timeout=5
+```
+
+## Transport wire framers and XML preflight
+
+`wire_and_xml_preflight` feeds incremental byte sequences to the allocation-free
+JSON and XML document boundary framers, and exercises XML preflight and decoding.
+
+```text
+cargo +nightly fuzz run wire_and_xml_preflight -- -runs=1000 -max_len=4096 -timeout=5
+```
+
+## Server-to-Client and multi-version negotiation
+
+`s2c_and_multi_version` fuzzes incoming Server-to-Client batch ingestion across TTLV,
+JSON, and XML encodings, as well as ProtocolVersion multi-version negotiation structures.
+
+```text
+cargo +nightly fuzz run s2c_and_multi_version -- -runs=1000 -max_len=4096 -timeout=5
+```

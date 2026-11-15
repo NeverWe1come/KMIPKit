@@ -37,7 +37,7 @@ mod sealed {
     pub trait Sealed {}
 }
 
-trait AttributeValueEncoding {
+pub(crate) trait AttributeValueEncoding {
     type Owned;
     type View<'a>;
 
@@ -57,7 +57,7 @@ macro_rules! project_attribute_view {
 macro_rules! define_attribute_value_encoding {
     ($(#[$attribute:meta])* $name:ident, $owned:ty, $view:ty, $constructor:ident, $variant:ident, $projection:ident) => {
         $(#[$attribute])*
-        struct $name;
+        pub(crate) struct $name;
 
         impl AttributeValueEncoding for $name {
             type Owned = $owned;
@@ -123,6 +123,16 @@ define_attribute_value_encoding!(
 );
 define_attribute_value_encoding!(IntegerEncoding, i32, i32, integer, Integer, copy);
 define_attribute_value_encoding!(IntervalEncoding, u32, u32, interval, Interval, copy);
+// This encoding is accepted by the generator for KMIP 3.0 counters.
+define_attribute_value_encoding!(
+    #[allow(dead_code)]
+    LongIntegerEncoding,
+    i64,
+    i64,
+    long_integer,
+    LongInteger,
+    copy
+);
 define_attribute_value_encoding!(
     StructureEncoding,
     Structure,

@@ -1101,6 +1101,10 @@ class WorkflowContractTests(unittest.TestCase):
         collector = (REPOSITORY_ROOT / "scripts" / "collect_ffi_coverage.sh").read_text(
             encoding="utf-8"
         )
+        self.assertIn("cargo llvm-cov \\", collector)
+        self.assertIn("-p kmipkit-ffi --all-targets --all-features --locked \\", collector)
+        self.assertIn("--all-targets", collector)
+        self.assertIn('--json --output-path "${raw_report}"', collector)
         normalized_collector = " ".join(collector.replace("\\\n", " ").split())
 
         self.assertIn(

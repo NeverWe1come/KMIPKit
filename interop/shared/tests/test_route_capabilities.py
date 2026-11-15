@@ -25,6 +25,14 @@ class RouteCapabilitiesTests(unittest.TestCase):
     def setUp(self):
         self.data = json.loads((SHARED / 'coverage/route-capabilities.json').read_text())
 
+    def _pinned_public_api(self):
+        source = self.module.source(
+            ROOT,
+            self.data['library_commit'],
+            'specification/api/public-api.json',
+        )
+        return json.loads(source)
+
     def test_manifest_and_generator_use_the_exact_release_commit(self):
         self.assertEqual(PINNED_RELEASE_COMMIT, self.module.PINNED_SOURCE_COMMIT)
         self.assertEqual(PINNED_RELEASE_COMMIT, self.data['library_commit'])
@@ -731,7 +739,7 @@ class RouteCapabilitiesTests(unittest.TestCase):
             self.assertTrue(symbol in symbols, symbol)
 
     def test_public_request_serializers_and_response_readers_are_routes(self):
-        api = json.loads((ROOT / 'specification/api/public-api.json').read_text())
+        api = self._pinned_public_api()
         routes = {(route['language'], route['public_api_symbol']): route for route in self.data['routes']}
         package_languages = {package['id']: package['language'] for package in api['publicPackages']}
         declared = {(package_languages[declaration['packageId']], declaration['exportName'])

@@ -2,20 +2,20 @@
 
 use crate::{ProtocolVersion, VersionGate, VersionGateError};
 
-const REGISTER_OPAQUE_CONTEXT: u32 = 0x0000_0036;
-const REGISTER_OPAQUE: u32 = 0x0000_0037;
-const SET_CONSTRAINTS: u32 = 0x0000_0038;
-const GET_CONSTRAINTS: u32 = 0x0000_0039;
-const EXPORT: u32 = 0x0000_003A;
-const IMPORT: u32 = 0x0000_003B;
+const SET_DEFAULTS: u32 = 0x0000_0036;
+const SET_CONSTRAINTS: u32 = 0x0000_0037;
+const GET_CONSTRAINTS: u32 = 0x0000_0038;
+const QUERY_ASYNCHRONOUS_REQUESTS: u32 = 0x0000_0039;
+const PROCESS: u32 = 0x0000_003A;
+const PING: u32 = 0x0000_003B;
 
 const CRYPTOGRAPHIC_ALGORITHM_TAG: u32 = 0x0042_0028;
 const CRYPTOGRAPHIC_LENGTH_TAG: u32 = 0x0042_002A;
 const CRYPTOGRAPHIC_PARAMETERS_TAG: u32 = 0x0042_002B;
 const CRYPTOGRAPHIC_USAGE_MASK_TAG: u32 = 0x0042_002C;
-const DIGEST_TAG: u32 = 0x0042_0032;
-const KEY_VALUE_PRESENT_TAG: u32 = 0x0042_00BF;
-const KEY_FORMAT_TYPE_TAG: u32 = 0x0042_0044;
+const DIGEST_TAG: u32 = 0x0042_0034;
+const KEY_VALUE_PRESENT_TAG: u32 = 0x0042_00BB;
+const KEY_FORMAT_TYPE_TAG: u32 = 0x0042_0042;
 
 #[test]
 fn kmip20_allows_standard_operations() {
@@ -57,12 +57,12 @@ fn kmip20_allows_standard_operations() {
 #[test]
 fn kmip20_prohibits_all_six_kmip21_operations() {
     let prohibited_ops = [
-        REGISTER_OPAQUE_CONTEXT,
-        REGISTER_OPAQUE,
+        SET_DEFAULTS,
         SET_CONSTRAINTS,
         GET_CONSTRAINTS,
-        EXPORT,
-        IMPORT,
+        QUERY_ASYNCHRONOUS_REQUESTS,
+        PROCESS,
+        PING,
     ];
 
     for op in prohibited_ops {

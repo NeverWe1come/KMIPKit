@@ -8,7 +8,7 @@ repository.workspace = true
 description = "KMIP client orchestration for KMIPKit"
 
 [features]
-test-support = []
+test-support = ["kmipkit-transport/test-support"]
 
 [dependencies]
 kmipkit-protocol.workspace = true

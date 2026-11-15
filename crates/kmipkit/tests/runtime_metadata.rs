@@ -22,6 +22,11 @@ fn capability_query_matches_manifest_ready_capabilities() {
         Ok(true)
     );
     assert_eq!(
+        kmipkit::capability_is_available("fluent_create_key_pair_parity"),
+        Ok(true)
+    );
+    assert_eq!(kmipkit::capability_is_available("fluent_dx_api"), Ok(true));
+    assert_eq!(
         kmipkit::capability_is_available("generic_ttlv_model"),
         Ok(true)
     );

@@ -7,3 +7,4 @@ edition = "2024"
 
 [dependencies]
 kmipkit = { path = "../../../../crates/kmipkit" }
+kmipkit-client = { path = "../../../../crates/kmipkit-client" }

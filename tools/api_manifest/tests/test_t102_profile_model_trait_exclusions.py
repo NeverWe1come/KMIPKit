@@ -141,7 +141,7 @@ T102_REQUIREMENTS = ("KMIPKIT-0043-FR-010", "KMIPKIT-0043-FR-021")
 # the out-of-scope state/context models while the trait inventory is reconciled.
 PROTECTED_API_SHA256 = "ef999d342d35d4a17c0f12f966f1a28824decf4820dc27269511243eba57a68c"
 PROTOCOL_REEXPORT_API_SHA256 = "d6d3f60a9707baa2ca55718370402a87c3c9ac269ebc696fe64d6c0e03726118"
-PROFILE_CATALOG_SHA256 = "034aa2e2456e9ac28a24314ee99f00005903978da8d24c5958e4833e748840fb"
+PROFILE_CATALOG_SHA256 = "d0d19aee2c3b24c914b4f12a45edd38ed0a65ccf0ea18816f608c3e7e5d029d0"
 T102_MAPPED_PROFILE_VALIDATION_ALIASES = {
     ("rust-kmipkit", "kmipkit::ProfileValidationSelection::validate"),
     ("rust-kmipkit-protocol", "kmipkit_protocol::ProfileValidationSelection::validate"),

@@ -9,11 +9,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.LongUnaryOperator;
 
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.ResourceLimitException;
+import org.kmipkit.credentials.CredentialType;
 import org.kmipkit.internal.NativeHandle;
+import org.kmipkit.protocol.CryptographicParameters;
 import org.kmipkit.ttlv.CodecLimits;
 import org.kmipkit.ttlv.TtlvItem;
 import org.kmipkit.ttlv.TtlvValue;
@@ -243,6 +247,185 @@ public final class ClientBatchItem implements AutoCloseable {
         long value = NativeHandle.withNativeHandles(() -> NativeExtensionRegistry.clientBatchItemCreate(
                 objectType, attributes.handle(), handleOrNull(protectionStorageMasks)));
         return new ClientBatchItem(value, List.of());
+    }
+
+    private static ClientBatchItem fromAsyncRequest(
+            NativeHandle request,
+            String invalidInputMessage,
+            Function<long[], Long> constructor) {
+        if (request == null) {
+            throw new InvalidInputException(invalidInputMessage);
+        }
+        NativeExtensionRegistry.ensureLoaded();
+        long value = NativeHandle.withValues(
+                new NativeHandle[] {request}, constructor);
+        return new ClientBatchItem(value, List.of());
+    }
+
+    /** Creates an independent Cancel batch item and keeps the request model caller-owned. */
+    public static ClientBatchItem cancel(CancelRequest request) {
+        return fromAsyncRequest(
+                request == null ? null : request.nativeHandleOwner(),
+                "Cancel request is invalid",
+                handles -> NativeExtensionRegistry.clientBatchItemCancelFromRequest(handles[0]));
+    }
+
+    /** Creates an independent Poll batch item and keeps the request model caller-owned. */
+    public static ClientBatchItem poll(PollRequest request) {
+        return fromAsyncRequest(
+                request == null ? null : request.nativeHandleOwner(),
+                "Poll request is invalid",
+                handles -> NativeExtensionRegistry.clientBatchItemPollFromRequest(handles[0]));
+    }
+
+    /** Creates an independent Process batch item and keeps the request model caller-owned. */
+    public static ClientBatchItem process(ProcessRequest request) {
+        return fromAsyncRequest(
+                request == null ? null : request.nativeHandleOwner(),
+                "Process request is invalid",
+                handles -> NativeExtensionRegistry.clientBatchItemProcessFromRequest(handles[0]));
+    }
+
+    /** Creates an independent Query Asynchronous Requests item and keeps the model caller-owned. */
+    public static ClientBatchItem queryAsyncRequests(QueryAsyncRequestsRequest request) {
+        return fromAsyncRequest(
+                request == null ? null : request.nativeHandleOwner(),
+                "Query Asynchronous Requests model is invalid",
+                handles -> NativeExtensionRegistry.clientBatchItemQueryAsyncRequestsFromRequest(
+                        handles[0]));
+    }
+
+    /** Creates a typed KMIP 3.0 Create Group item from copied semantic Attributes. */
+    public static ClientBatchItem createGroupFromAttributes(AttributeSet attributes) {
+        return systemObjectFromAttributes(
+                attributes, "Create Group", NativeExtensionRegistry::clientBatchItemCreateGroupFromAttributes);
+    }
+
+    /** Creates a typed KMIP 3.0 Create User item from copied semantic Attributes. */
+    public static ClientBatchItem createUserFromAttributes(AttributeSet attributes) {
+        return systemObjectFromAttributes(
+                attributes, "Create User", NativeExtensionRegistry::clientBatchItemCreateUserFromAttributes);
+    }
+
+    private static ClientBatchItem systemObjectFromAttributes(
+            AttributeSet attributes, String operation, LongUnaryOperator constructor) {
+        if (attributes == null) {
+            throw new InvalidInputException(operation + " Attributes are required");
+        }
+        NativeExtensionRegistry.ensureLoaded();
+        long value = NativeHandle.withNativeHandles(() -> NativeHandle.withValues(
+                new NativeHandle[] {attributes.nativeHandleOwner()},
+                handles -> constructor.applyAsLong(handles[0])));
+        return new ClientBatchItem(value, List.of());
+    }
+
+    /** Creates a typed KMIP 3.0 Obliterate item from its required Unique Identifier. */
+    public static ClientBatchItem obliterateFromIdentifier(UniqueIdentifier uniqueIdentifier) {
+        if (uniqueIdentifier == null) {
+            throw new InvalidInputException("Obliterate Unique Identifier is required");
+        }
+        byte[] identifierText = uniqueIdentifier.nativeText();
+        try {
+            NativeExtensionRegistry.ensureLoaded();
+            return new ClientBatchItem(
+                    NativeExtensionRegistry.clientBatchItemObliterateFromIdentifier(
+                            uniqueIdentifier.nativeKind(), identifierText,
+                            uniqueIdentifier.nativeNumber()),
+                    List.of());
+        } finally {
+            clearNativeCopies(identifierText);
+        }
+    }
+
+    /** Creates a typed KMIP 3.0 Deactivate item with explicit optional fields. */
+    public static ClientBatchItem deactivateFromFields(
+            UniqueIdentifier uniqueIdentifier,
+            @Nullable TtlvStructure deactivationReason,
+            @Nullable Long deactivationDate) {
+        if (uniqueIdentifier == null) {
+            throw new InvalidInputException("Deactivate Unique Identifier is required");
+        }
+        byte[] identifierText = uniqueIdentifier.nativeText();
+        try {
+            NativeExtensionRegistry.ensureLoaded();
+            long value = NativeHandle.withNativeHandles(() ->
+                    NativeExtensionRegistry.clientBatchItemDeactivateFromFields(
+                            uniqueIdentifier.nativeKind(), identifierText,
+                            uniqueIdentifier.nativeNumber(), handleOrNull(deactivationReason),
+                            deactivationDate != null,
+                            deactivationDate == null ? 0 : deactivationDate));
+            return new ClientBatchItem(value, List.of());
+        } finally {
+            clearNativeCopies(identifierText);
+        }
+    }
+
+    /** Creates a typed KMIP 3.0 Create Credential item from an explicit object and Attributes. */
+    public static ClientBatchItem createCredentialFromFields(
+            CredentialType credentialType,
+            long objectType,
+            AttributeSet attributes,
+            TtlvItem credentialObject) {
+        if (credentialType == null || attributes == null || credentialObject == null
+                || objectType < 0 || objectType > 0xffff_ffffL) {
+            throw new InvalidInputException("Create Credential inputs are invalid");
+        }
+        NativeExtensionRegistry.ensureLoaded();
+        long value = NativeHandle.withNativeHandles(() ->
+                NativeExtensionRegistry.clientBatchItemCreateCredentialFromFields(
+                        (int) credentialType.raw(), objectType,
+                        attributes.nativeHandleOwner().get(),
+                        credentialObject.nativeHandleOwner().get()));
+        return new ClientBatchItem(value, List.of());
+    }
+
+    /** Creates a typed KMIP 3.0 Encapsulate item from its semantic fields. */
+    public static ClientBatchItem encapsulateFromFields(
+            UniqueIdentifier uniqueIdentifier,
+            @Nullable CryptographicParameters cryptographicParameters,
+            @Nullable AttributeSet attributes) {
+        if (uniqueIdentifier == null) {
+            throw new InvalidInputException("Encapsulate Unique Identifier is required");
+        }
+        byte[] identifierText = uniqueIdentifier.nativeText();
+        try {
+            NativeExtensionRegistry.ensureLoaded();
+            long value = NativeHandle.withNativeHandles(() ->
+                    NativeExtensionRegistry.clientBatchItemEncapsulateFromFields(
+                            uniqueIdentifier.nativeKind(), identifierText,
+                            uniqueIdentifier.nativeNumber(),
+                            cryptographicParameters == null
+                                    ? 0 : cryptographicParameters.nativeHandleOwner().get(),
+                            attributes == null ? 0 : attributes.nativeHandleOwner().get()));
+            return new ClientBatchItem(value, List.of());
+        } finally {
+            clearNativeCopies(identifierText);
+        }
+    }
+
+    /** Creates a typed KMIP 3.0 Decapsulate item from its semantic fields. */
+    public static ClientBatchItem decapsulateFromFields(
+            UniqueIdentifier uniqueIdentifier,
+            byte[] ciphertext,
+            @Nullable CryptographicParameters cryptographicParameters,
+            @Nullable AttributeSet attributes) {
+        if (uniqueIdentifier == null || ciphertext == null) {
+            throw new InvalidInputException("Decapsulate inputs are invalid");
+        }
+        byte[] identifierText = uniqueIdentifier.nativeText();
+        try {
+            NativeExtensionRegistry.ensureLoaded();
+            long value = NativeHandle.withNativeHandles(() ->
+                    NativeExtensionRegistry.clientBatchItemDecapsulateFromFields(
+                            uniqueIdentifier.nativeKind(), identifierText,
+                            uniqueIdentifier.nativeNumber(), ciphertext,
+                            cryptographicParameters == null
+                                    ? 0 : cryptographicParameters.nativeHandleOwner().get(),
+                            attributes == null ? 0 : attributes.nativeHandleOwner().get()));
+            return new ClientBatchItem(value, List.of());
+        } finally {
+            clearNativeCopies(identifierText);
+        }
     }
 
     /** Creates an opt-in KMIP 3.0 draft Create Group route from ordered generic TTLV. */

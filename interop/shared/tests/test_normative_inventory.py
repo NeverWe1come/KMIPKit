@@ -22,6 +22,35 @@ class NormativeInventoryTests(unittest.TestCase):
         cls.source = json.loads(SOURCE_PATH.read_text(encoding="utf-8"))
         cls.targets = cls.catalog.get("normative_targets", [])
 
+    def test_ephemeral_message_field_preserves_its_boolean_source_encoding(self) -> None:
+        """KMIP 2.0 §8.3 Table 358 and KMIP 2.1 §8.3 Table 396 identify Ephemeral as Boolean."""
+        target_id = "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-EPHEMERAL"
+        source = next(element for element in self.source["elements"]
+                      if element["element_id"] == target_id)
+        target = next(item for item in self.targets if item["target_id"] == target_id)
+        case = next(item for item in self.catalog["test_cases"]
+                    if item["requires"].get("normative_target_id") == target_id)
+
+        self.assertEqual("Boolean", source.get("source_encoding"))
+        self.assertEqual("Boolean", target.get("source_encoding"))
+        self.assertEqual("Boolean", case["requires"].get("source_encoding"))
+
+    def test_new_attribute_payload_field_preserves_structure_encoding(self) -> None:
+        """OASIS KMIP §5.7 Tables 148/163 define New Attribute as a Structure."""
+        for version, target_id, operation_table, structure_table in (
+            ("2.0", "KMIPKIT-PAYLOAD-CLIENT-ADD-ATTRIBUTE-REQUEST-20-002", "152", "148"),
+            ("2.1", "KMIPKIT-PAYLOAD-CLIENT-ADD-ATTRIBUTE-REQUEST-21-002", "167", "163"),
+        ):
+            with self.subTest(version=version):
+                target = next(item for item in self.targets if item["target_id"] == target_id)
+                case = next(item for item in self.catalog["test_cases"]
+                            if item["requires"].get("normative_target_id") == target_id)
+
+                self.assertEqual("Structure", target.get("source_encoding"))
+                self.assertEqual("Structure", case["requires"].get("source_encoding"))
+                self.assertIn({"section": "5.7", "table": structure_table}, target["source_refs"])
+                self.assertIn({"section": "6.1.2", "table": operation_table}, target["source_refs"])
+
     def test_all_supported_normative_elements_have_versioned_targets(self) -> None:
         expected_kinds = {
             "operation", "object_type", "attribute", "tag", "enumeration_value",
