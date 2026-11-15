@@ -180,8 +180,9 @@ pub use kmipkit_client::{
     ClientBatchResponse, ClientCauseCategory, ClientError, ClientErrorCategory, ClientListener,
     ClientListenerConnection, ClientMessageExtension, ClientOperation, ClientOperationOutcome,
     ClientRequest, ClientResponseView, IncomingServerBatch, PendingOutcome, RequestOptions,
-    RoleReversedSession, ServerRequestDispatcher, ServerRequestHandler, ServerRequestItemPayload,
-    ServerRequestItemView, UsageAllocationContext, UsageAllocationContextError,
+    ResponseEncodingError, RoleReversedSession, ServerRequestDispatcher, ServerRequestHandler,
+    ServerRequestItemPayload, ServerRequestItemView, UsageAllocationContext,
+    UsageAllocationContextError,
 };
 pub use kmipkit_protocol::{
     CancelRequest, CodecContext, DelegatedLoginError, DelegatedLoginRequest,
