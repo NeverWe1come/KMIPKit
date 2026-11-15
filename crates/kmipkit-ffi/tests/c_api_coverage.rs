@@ -80,6 +80,20 @@ static TEMP_DIRECTORY_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
 unsafe extern "C" {
     fn kmipkit_public_client_surface_probe() -> i32;
+    fn kmipkit_public_crypto_builders_probe() -> i32;
+    fn kmipkit_public_positioned_attribute_probe() -> i32;
+    fn kmipkit_public_crypto_execute_tls_probe(
+        port: u16,
+        leaf_certificate: *const u8,
+        leaf_certificate_length: u64,
+        intermediate_certificate: *const u8,
+        intermediate_certificate_length: u64,
+        private_key: *const u8,
+        private_key_length: u64,
+        trust_root: *const u8,
+        trust_root_length: u64,
+        out_version_rejection_verified: *mut u8,
+    ) -> i32;
     fn kmipkit_public_fluent_builder_probe() -> i32;
     fn kmipkit_public_fluent_validation_probe() -> i32;
     fn kmipkit_public_fluent_lifecycle_probe(
@@ -93,6 +107,106 @@ unsafe extern "C" {
         trust_root: *const u8,
         trust_root_length: u64,
     ) -> i32;
+}
+
+#[test]
+fn public_c_fluent_crypto_builders_expose_semantic_opaque_constructors() {
+    // SAFETY: The compiled C consumer releases every temporary builder handle.
+    let status = unsafe { kmipkit_public_crypto_builders_probe() };
+    assert_eq!(
+        status, 0,
+        "public fluent C crypto declarations and ABI calls must agree"
+    );
+}
+
+#[test]
+fn public_c_fluent_builder_inserts_explicit_attributes_at_a_final_position() {
+    // SAFETY: The compiled C consumer releases every temporary builder and TTLV handle.
+    let status = unsafe { kmipkit_public_positioned_attribute_probe() };
+    assert_eq!(
+        status, 0,
+        "the C ABI must insert explicit attributes and reject out-of-range positions"
+    );
+}
+
+#[test]
+fn public_c_fluent_crypto_executes_all_seven_operations_over_mutual_tls() {
+    const OPERATIONS: [u32; 7] = [31, 32, 33, 34, 35, 36, 39];
+    let pki = EphemeralPki::generate().expect("ephemeral test PKI is generated");
+    let identity = pki.client_identity();
+    let certificates = identity.certificate_chain_der();
+    let private_key = zeroize::Zeroizing::new(identity.private_key_der().to_vec());
+    let listener =
+        TcpListener::bind(("127.0.0.1", 0)).expect("an ephemeral local TLS port is available");
+    let port = listener
+        .local_addr()
+        .expect("the TLS peer has an address")
+        .port();
+    listener
+        .set_nonblocking(true)
+        .expect("the TLS fixture accepts with a bounded wait");
+    let server_config = mtls_server_config(&pki);
+    let peer = thread::spawn(move || -> io::Result<()> {
+        let deadline = Instant::now() + Duration::from_secs(5);
+        for expected_operation in OPERATIONS {
+            let (stream, _) = loop {
+                match listener.accept() {
+                    Ok(accepted) => break accepted,
+                    Err(error) if error.kind() == io::ErrorKind::WouldBlock => {
+                        if Instant::now() >= deadline {
+                            return Err(io::Error::new(
+                                io::ErrorKind::TimedOut,
+                                "the fluent C crypto client did not send all seven requests",
+                            ));
+                        }
+                        thread::sleep(Duration::from_millis(5));
+                    }
+                    Err(error) => return Err(error),
+                }
+            };
+            stream.set_nonblocking(false)?;
+            stream.set_read_timeout(Some(Duration::from_secs(5)))?;
+            stream.set_write_timeout(Some(Duration::from_secs(5)))?;
+            let connection = ServerConnection::new(Arc::clone(&server_config))
+                .expect("the mutual-TLS server configuration is valid");
+            let mut tls = StreamOwned::new(connection, stream);
+            let request = read_ttlv_frame(&mut tls)?;
+            assert_fluent_crypto_request(&request, expected_operation);
+            tls.write_all(&fluent_crypto_response(expected_operation))?;
+            tls.flush()?;
+            let _ = tls.get_ref().shutdown(Shutdown::Both);
+        }
+        Ok(())
+    });
+
+    let mut version_rejection_verified = 0_u8;
+    // SAFETY: the PKI buffers remain live for this synchronous C call; the consumer owns and
+    // releases its builder, client, codec, response, and configuration handles.
+    let status = unsafe {
+        kmipkit_public_crypto_execute_tls_probe(
+            port,
+            certificates[0].as_ptr(),
+            u64::try_from(certificates[0].len()).expect("leaf certificate length fits"),
+            certificates[1].as_ptr(),
+            u64::try_from(certificates[1].len()).expect("intermediate certificate length fits"),
+            private_key.as_ptr(),
+            u64::try_from(private_key.len()).expect("private key length fits"),
+            pki.authority_certificate_der().as_ptr(),
+            u64::try_from(pki.authority_certificate_der().len())
+                .expect("trust certificate length fits"),
+            &raw mut version_rejection_verified,
+        )
+    };
+    let peer_result = peer.join().expect("the local TLS peer thread completes");
+    assert_eq!(
+        status, 0,
+        "C executes all seven typed crypto operations; peer result: {peer_result:?}"
+    );
+    peer_result.expect("the TLS fixture received exactly one request for every operation");
+    assert_eq!(
+        version_rejection_verified, 1,
+        "unsupported protocol versions are rejected before transport"
+    );
 }
 
 #[test]
@@ -283,6 +397,125 @@ fn fluent_lifecycle_response(operation: u32) -> Vec<u8> {
         ],
     );
     structure(0x0042_007B, [header, item])
+}
+
+fn assert_fluent_crypto_request(encoded: &[u8], operation: u32) {
+    let request = decode_test_request(encoded).expect("the request is valid TTLV");
+    request.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            panic!("the C client sends a Request Message structure");
+        };
+        let batch_items = message
+            .children()
+            .iter()
+            .filter(|item| item.tag().raw() == 0x0042_000F)
+            .collect::<Vec<_>>();
+        assert_eq!(batch_items.len(), 1, "each execute sends one batch item");
+        if operation == 31 {
+            let request_header = message
+                .children()
+                .iter()
+                .find(|item| item.tag().raw() == 0x0042_0077)
+                .expect("Encrypt carries a Request Header");
+            request_header.with_value(|value| {
+                let ValueView::Structure(header) = value else {
+                    panic!("the Request Header is a structure");
+                };
+                assert!(
+                    header.children().iter().any(|item| {
+                        item.tag().raw() == 0x0042_0007
+                        && item.with_value(|value| {
+                            matches!(value, ValueView::Enumeration(actual) if *actual == 2)
+                        })
+                    }),
+                    "the KMIP Async Indicator is an Enumeration separate from timeouts"
+                );
+            });
+        }
+        batch_items[0].with_value(|value| {
+            let ValueView::Structure(batch_item) = value else {
+                panic!("the Batch Item is a structure");
+            };
+            assert!(batch_item.children().iter().any(|item| {
+                item.tag().raw() == 0x0042_005C
+                    && item.with_value(|value| {
+                        matches!(value, ValueView::Enumeration(actual) if *actual == operation)
+                    })
+            }));
+        });
+        let expected_byte_strings = match operation {
+            31 | 36 => 3,
+            32 | 34 => 4,
+            33 | 35 | 39 => 2,
+            _ => panic!("the fixture operation is one of the seven approved operations"),
+        };
+        let mut actual_byte_strings = 0;
+        for child in message.children() {
+            assert_fluent_crypto_byte_strings(
+                child,
+                b"fluent crypto input",
+                &mut actual_byte_strings,
+            );
+        }
+        assert_eq!(
+            actual_byte_strings, expected_byte_strings,
+            "operation {operation}: every byte setter copies its value, and the latest Data setter wins"
+        );
+    });
+}
+
+fn assert_fluent_crypto_byte_strings(item: &Item, expected: &[u8], count: &mut usize) {
+    item.with_value(|value| match value {
+        ValueView::ByteString(bytes) => {
+            assert_eq!(
+                bytes, expected,
+                "all C-owned byte inputs retain their copied value"
+            );
+            *count += 1;
+        }
+        ValueView::Structure(structure) => {
+            for child in structure.children() {
+                assert_fluent_crypto_byte_strings(child, expected, count);
+            }
+        }
+        _ => {}
+    });
+}
+
+fn fluent_crypto_response(operation: u32) -> Vec<u8> {
+    let protocol_version = structure(
+        0x0042_0069,
+        [integer(0x0042_006A, 2), integer(0x0042_006B, 1)],
+    );
+    let header = structure(
+        0x0042_007A,
+        [
+            protocol_version,
+            date_time(0x0042_0092, 1),
+            integer(0x0042_000D, 1),
+        ],
+    );
+    let (status, mut fields) = match operation {
+        31 => (
+            2,
+            vec![
+                ttlv_item(0x0042_0006, 0x08, b"pending-correlation"),
+                structure(0x0042_007C, []),
+            ],
+        ),
+        39 => (
+            0,
+            vec![structure(
+                0x0042_007C,
+                [ttlv_item(0x0042_00C2, 0x08, b"sha256-digest")],
+            )],
+        ),
+        _ => (1, vec![enumeration(0x0042_007E, 256)]),
+    };
+    fields.insert(0, enumeration(0x0042_007F, status));
+    fields.insert(0, enumeration(0x0042_005C, operation));
+    let batch_item = structure(0x0042_000F, fields);
+    structure(0x0042_007B, [header, batch_item])
 }
 
 unsafe extern "C" {

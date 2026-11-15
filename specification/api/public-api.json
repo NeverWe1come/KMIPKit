@@ -432,6 +432,12 @@
     "KMIPKIT-0102-FR-005",
     "KMIPKIT-0102-FR-006",
     "KMIPKIT-0102-FR-007",
+    "KMIPKIT-0103-FR-001",
+    "KMIPKIT-0103-FR-002",
+    "KMIPKIT-0103-FR-003",
+    "KMIPKIT-0103-FR-004",
+    "KMIPKIT-0103-FR-005",
+    "KMIPKIT-0103-FR-006",
     "KMIPKIT-REQ-SPEC-4.16-001-001",
     "KMIPKIT-REQ-SPEC-4.16-001-002",
     "KMIPKIT-REQ-SPEC-4.16-002",
@@ -5415,6 +5421,34 @@
       "python": {
         "module": "kmipkit.fluent",
         "name": "SymmetricKeyRequest"
+      }
+    },
+    {
+      "id": "CryptoOperationBuilder",
+      "kind": "struct",
+      "requirementIds": [
+        "KMIPKIT-0103-FR-001",
+        "KMIPKIT-0103-FR-005"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::extension_registry",
+        "name": "kmipkit_crypto_operation_builder_t",
+        "owner": "client"
+      },
+      "c": {
+        "name": "kmipkit_crypto_operation_builder_t",
+        "kind": "opaque-handle",
+        "handleKind": "crypto_operation_builder",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_crypto_operation_builder_release"
+      },
+      "java": {
+        "package": "org.kmipkit.fluent",
+        "name": "CryptoOperationBuilder"
+      },
+      "python": {
+        "module": "kmipkit.fluent",
+        "name": "CryptoOperationBuilder"
       }
     }
   ],
@@ -746215,6 +746249,1375 @@
       "parityScope": "four-language",
       "candidateSpecId": "KMIPKIT-0102",
       "blockedReason": "This Rust-first delivery is implemented; C, Java, and Python mappings for these fluent cryptographic declarations remain pending under KMIPKIT-0093."
+    },
+    {
+      "declarationId": "kmipkit_crypto_operation_builder_build_batch_item:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_crypto_operation_builder_build_batch_item",
+      "capabilityId": "fluent_crypto_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0103-FR-004",
+        "KMIPKIT-0103-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/103-fluent-c-crypto-api/spec.md",
+        "status": "Approved",
+        "evidence": "Approved implementation slice of KMIPKIT-0093"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_crypto_operation_builder_build_batch_item"
+        }
+      },
+      "cSignature": {
+        "parameters": [
+          {
+            "name": "builder",
+            "kind": "handle",
+            "type": "kmipkit_crypto_operation_builder_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_item",
+            "kind": "output",
+            "type": "kmipkit_client_batch_item_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "documentation": [
+          "Builds a local typed batch item without sending a request."
+        ]
+      }
+    },
+    {
+      "declarationId": "kmipkit_crypto_operation_builder_execute_v1:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_crypto_operation_builder_execute_v1",
+      "capabilityId": "fluent_crypto_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0103-FR-004",
+        "KMIPKIT-0103-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/103-fluent-c-crypto-api/spec.md",
+        "status": "Approved",
+        "evidence": "Approved implementation slice of KMIPKIT-0093"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_crypto_operation_builder_execute_v1"
+        }
+      },
+      "cSignature": {
+        "parameters": [
+          {
+            "name": "builder",
+            "kind": "handle",
+            "type": "kmipkit_crypto_operation_builder_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "client",
+            "kind": "handle",
+            "type": "kmipkit_client_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_response",
+            "kind": "output",
+            "type": "kmipkit_client_batch_response_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "documentation": [
+          "Executes one typed request exchange and returns the typed batch response."
+        ]
+      }
+    },
+    {
+      "declarationId": "kmipkit_crypto_operation_builder_execute_with_options_v1:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_crypto_operation_builder_execute_with_options_v1",
+      "capabilityId": "fluent_crypto_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0103-FR-004",
+        "KMIPKIT-0103-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/103-fluent-c-crypto-api/spec.md",
+        "status": "Approved",
+        "evidence": "Approved implementation slice of KMIPKIT-0093"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_crypto_operation_builder_execute_with_options_v1"
+        }
+      },
+      "cSignature": {
+        "parameters": [
+          {
+            "name": "builder",
+            "kind": "handle",
+            "type": "kmipkit_crypto_operation_builder_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "client",
+            "kind": "handle",
+            "type": "kmipkit_client_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "options",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_request_options_v1_t *",
+            "direction": "input",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_response",
+            "kind": "output",
+            "type": "kmipkit_client_batch_response_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "documentation": [
+          "Executes one typed request exchange with exchange-local timeout options."
+        ]
+      }
+    },
+    {
+      "declarationId": "kmipkit_crypto_operation_builder_set_asynchronous_indicator:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_crypto_operation_builder_set_asynchronous_indicator",
+      "capabilityId": "fluent_crypto_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0103-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/103-fluent-c-crypto-api/spec.md",
+        "status": "Approved",
+        "evidence": "Approved implementation slice of KMIPKIT-0093"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_crypto_operation_builder_set_asynchronous_indicator"
+        }
+      },
+      "cSignature": {
+        "parameters": [
+          {
+            "name": "builder",
+            "kind": "handle",
+            "type": "kmipkit_crypto_operation_builder_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "value",
+            "kind": "scalar",
+            "type": "uint32_t"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "documentation": [
+          "Sets the Request Header Asynchronous Indicator independently of exchange options."
+        ]
+      }
+    },
+    {
+      "declarationId": "kmipkit_crypto_operation_builder_set_authenticated_encryption_additional_data:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_crypto_operation_builder_set_authenticated_encryption_additional_data",
+      "capabilityId": "fluent_crypto_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0103-FR-002",
+        "KMIPKIT-0103-FR-003"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/103-fluent-c-crypto-api/spec.md",
+        "status": "Approved",
+        "evidence": "Approved implementation slice of KMIPKIT-0093"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_crypto_operation_builder_set_authenticated_encryption_additional_data"
+        }
+      },
+      "cSignature": {
+        "parameters": [
+          {
+            "name": "builder",
+            "kind": "handle",
+            "type": "kmipkit_crypto_operation_builder_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "value",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_byte_span_v1_t *",
+            "direction": "input",
+            "ownership": "borrowed"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "documentation": [
+          "Copies authenticated-encryption additional data."
+        ]
+      }
+    },
+    {
+      "declarationId": "kmipkit_crypto_operation_builder_set_authenticated_encryption_tag:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_crypto_operation_builder_set_authenticated_encryption_tag",
+      "capabilityId": "fluent_crypto_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0103-FR-002",
+        "KMIPKIT-0103-FR-003"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/103-fluent-c-crypto-api/spec.md",
+        "status": "Approved",
+        "evidence": "Approved implementation slice of KMIPKIT-0093"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_crypto_operation_builder_set_authenticated_encryption_tag"
+        }
+      },
+      "cSignature": {
+        "parameters": [
+          {
+            "name": "builder",
+            "kind": "handle",
+            "type": "kmipkit_crypto_operation_builder_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "value",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_byte_span_v1_t *",
+            "direction": "input",
+            "ownership": "borrowed"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "documentation": [
+          "Copies the caller-supplied authenticated-encryption tag."
+        ]
+      }
+    },
+    {
+      "declarationId": "kmipkit_crypto_operation_builder_set_correlation_value:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_crypto_operation_builder_set_correlation_value",
+      "capabilityId": "fluent_crypto_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0103-FR-002",
+        "KMIPKIT-0103-FR-003"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/103-fluent-c-crypto-api/spec.md",
+        "status": "Approved",
+        "evidence": "Approved implementation slice of KMIPKIT-0093"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_crypto_operation_builder_set_correlation_value"
+        }
+      },
+      "cSignature": {
+        "parameters": [
+          {
+            "name": "builder",
+            "kind": "handle",
+            "type": "kmipkit_crypto_operation_builder_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "value",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_byte_span_v1_t *",
+            "direction": "input",
+            "ownership": "borrowed"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "documentation": [
+          "Copies the caller-supplied multipart correlation value."
+        ]
+      }
+    },
+    {
+      "declarationId": "kmipkit_crypto_operation_builder_set_cryptographic_parameters:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_crypto_operation_builder_set_cryptographic_parameters",
+      "capabilityId": "fluent_crypto_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0103-FR-002",
+        "KMIPKIT-0103-FR-003"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/103-fluent-c-crypto-api/spec.md",
+        "status": "Approved",
+        "evidence": "Approved implementation slice of KMIPKIT-0093"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_crypto_operation_builder_set_cryptographic_parameters"
+        }
+      },
+      "cSignature": {
+        "parameters": [
+          {
+            "name": "builder",
+            "kind": "handle",
+            "type": "kmipkit_crypto_operation_builder_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "parameters",
+            "kind": "handle",
+            "type": "kmipkit_cryptographic_parameters_t *",
+            "ownership": "borrowed"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "documentation": [
+          "Sets validated Cryptographic Parameters selected by the caller."
+        ]
+      }
+    },
+    {
+      "declarationId": "kmipkit_crypto_operation_builder_set_cryptographic_parameters_structure:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_crypto_operation_builder_set_cryptographic_parameters_structure",
+      "capabilityId": "fluent_crypto_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0103-FR-002",
+        "KMIPKIT-0103-FR-003"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/103-fluent-c-crypto-api/spec.md",
+        "status": "Approved",
+        "evidence": "Approved implementation slice of KMIPKIT-0093"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_crypto_operation_builder_set_cryptographic_parameters_structure"
+        }
+      },
+      "cSignature": {
+        "parameters": [
+          {
+            "name": "builder",
+            "kind": "handle",
+            "type": "kmipkit_crypto_operation_builder_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "parameters",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_structure_t *",
+            "ownership": "borrowed"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "documentation": [
+          "Sets an explicitly ordered Cryptographic Parameters Structure after validation."
+        ]
+      }
+    },
+    {
+      "declarationId": "kmipkit_crypto_operation_builder_set_data:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_crypto_operation_builder_set_data",
+      "capabilityId": "fluent_crypto_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0103-FR-002",
+        "KMIPKIT-0103-FR-003"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/103-fluent-c-crypto-api/spec.md",
+        "status": "Approved",
+        "evidence": "Approved implementation slice of KMIPKIT-0093"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_crypto_operation_builder_set_data"
+        }
+      },
+      "cSignature": {
+        "parameters": [
+          {
+            "name": "builder",
+            "kind": "handle",
+            "type": "kmipkit_crypto_operation_builder_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "data",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_byte_span_v1_t *",
+            "direction": "input",
+            "ownership": "borrowed"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "documentation": [
+          "Copies operation data into KMIPKit-owned zeroizing storage."
+        ]
+      }
+    },
+    {
+      "declarationId": "kmipkit_crypto_operation_builder_set_data_value:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_crypto_operation_builder_set_data_value",
+      "capabilityId": "fluent_crypto_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0103-FR-002",
+        "KMIPKIT-0103-FR-003"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/103-fluent-c-crypto-api/spec.md",
+        "status": "Approved",
+        "evidence": "Approved implementation slice of KMIPKIT-0093"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_crypto_operation_builder_set_data_value"
+        }
+      },
+      "cSignature": {
+        "parameters": [
+          {
+            "name": "builder",
+            "kind": "handle",
+            "type": "kmipkit_crypto_operation_builder_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "data",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_value_t *",
+            "ownership": "borrowed"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "documentation": [
+          "Sets an explicitly typed TTLV Data value for expert operation use."
+        ]
+      }
+    },
+    {
+      "declarationId": "kmipkit_crypto_operation_builder_set_digested_data:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_crypto_operation_builder_set_digested_data",
+      "capabilityId": "fluent_crypto_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0103-FR-002",
+        "KMIPKIT-0103-FR-003"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/103-fluent-c-crypto-api/spec.md",
+        "status": "Approved",
+        "evidence": "Approved implementation slice of KMIPKIT-0093"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_crypto_operation_builder_set_digested_data"
+        }
+      },
+      "cSignature": {
+        "parameters": [
+          {
+            "name": "builder",
+            "kind": "handle",
+            "type": "kmipkit_crypto_operation_builder_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "value",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_byte_span_v1_t *",
+            "direction": "input",
+            "ownership": "borrowed"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "documentation": [
+          "Copies caller-supplied precomputed digest bytes."
+        ]
+      }
+    },
+    {
+      "declarationId": "kmipkit_crypto_operation_builder_set_final_indicator:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_crypto_operation_builder_set_final_indicator",
+      "capabilityId": "fluent_crypto_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0103-FR-002",
+        "KMIPKIT-0103-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/103-fluent-c-crypto-api/spec.md",
+        "status": "Approved",
+        "evidence": "Approved implementation slice of KMIPKIT-0093"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_crypto_operation_builder_set_final_indicator"
+        }
+      },
+      "cSignature": {
+        "parameters": [
+          {
+            "name": "builder",
+            "kind": "handle",
+            "type": "kmipkit_crypto_operation_builder_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "value",
+            "kind": "scalar",
+            "type": "uint8_t"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "documentation": [
+          "Sets the caller-controlled multipart Final Indicator: 0 absent, 1 false, 2 true."
+        ]
+      }
+    },
+    {
+      "declarationId": "kmipkit_crypto_operation_builder_set_init_indicator:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_crypto_operation_builder_set_init_indicator",
+      "capabilityId": "fluent_crypto_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0103-FR-002",
+        "KMIPKIT-0103-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/103-fluent-c-crypto-api/spec.md",
+        "status": "Approved",
+        "evidence": "Approved implementation slice of KMIPKIT-0093"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_crypto_operation_builder_set_init_indicator"
+        }
+      },
+      "cSignature": {
+        "parameters": [
+          {
+            "name": "builder",
+            "kind": "handle",
+            "type": "kmipkit_crypto_operation_builder_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "value",
+            "kind": "scalar",
+            "type": "uint8_t"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "documentation": [
+          "Sets the caller-controlled multipart Init Indicator: 0 absent, 1 false, 2 true."
+        ]
+      }
+    },
+    {
+      "declarationId": "kmipkit_crypto_operation_builder_set_iv_counter_nonce:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_crypto_operation_builder_set_iv_counter_nonce",
+      "capabilityId": "fluent_crypto_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0103-FR-002",
+        "KMIPKIT-0103-FR-003"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/103-fluent-c-crypto-api/spec.md",
+        "status": "Approved",
+        "evidence": "Approved implementation slice of KMIPKIT-0093"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_crypto_operation_builder_set_iv_counter_nonce"
+        }
+      },
+      "cSignature": {
+        "parameters": [
+          {
+            "name": "builder",
+            "kind": "handle",
+            "type": "kmipkit_crypto_operation_builder_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "value",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_byte_span_v1_t *",
+            "direction": "input",
+            "ownership": "borrowed"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "documentation": [
+          "Copies the caller-selected IV, counter, or nonce bytes."
+        ]
+      }
+    },
+    {
+      "declarationId": "kmipkit_crypto_operation_builder_set_mac_data:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_crypto_operation_builder_set_mac_data",
+      "capabilityId": "fluent_crypto_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0103-FR-002",
+        "KMIPKIT-0103-FR-003"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/103-fluent-c-crypto-api/spec.md",
+        "status": "Approved",
+        "evidence": "Approved implementation slice of KMIPKIT-0093"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_crypto_operation_builder_set_mac_data"
+        }
+      },
+      "cSignature": {
+        "parameters": [
+          {
+            "name": "builder",
+            "kind": "handle",
+            "type": "kmipkit_crypto_operation_builder_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "value",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_byte_span_v1_t *",
+            "direction": "input",
+            "ownership": "borrowed"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "documentation": [
+          "Copies caller-supplied MAC bytes."
+        ]
+      }
+    },
+    {
+      "declarationId": "kmipkit_crypto_operation_builder_set_signature_data:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_crypto_operation_builder_set_signature_data",
+      "capabilityId": "fluent_crypto_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0103-FR-002",
+        "KMIPKIT-0103-FR-003"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/103-fluent-c-crypto-api/spec.md",
+        "status": "Approved",
+        "evidence": "Approved implementation slice of KMIPKIT-0093"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_crypto_operation_builder_set_signature_data"
+        }
+      },
+      "cSignature": {
+        "parameters": [
+          {
+            "name": "builder",
+            "kind": "handle",
+            "type": "kmipkit_crypto_operation_builder_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "value",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_byte_span_v1_t *",
+            "direction": "input",
+            "ownership": "borrowed"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "documentation": [
+          "Copies caller-supplied signature bytes."
+        ]
+      }
+    },
+    {
+      "declarationId": "kmipkit_crypto_operation_builder_set_unique_identifier:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_crypto_operation_builder_set_unique_identifier",
+      "capabilityId": "fluent_crypto_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0103-FR-001",
+        "KMIPKIT-0103-FR-002",
+        "KMIPKIT-0103-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/103-fluent-c-crypto-api/spec.md",
+        "status": "Approved",
+        "evidence": "Approved implementation slice of KMIPKIT-0093"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_crypto_operation_builder_set_unique_identifier"
+        }
+      },
+      "cSignature": {
+        "parameters": [
+          {
+            "name": "builder",
+            "kind": "handle",
+            "type": "kmipkit_crypto_operation_builder_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "identifier",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_unique_identifier_v1_t *",
+            "direction": "input",
+            "ownership": "borrowed"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "documentation": [
+          "Sets the caller-selected key identifier for a cryptographic operation."
+        ]
+      }
+    },
+    {
+      "declarationId": "kmipkit_crypto_operation_builder_t:c",
+      "packageId": "c-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit_crypto_operation_builder_t",
+      "capabilityId": "fluent_crypto_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0103-FR-001",
+        "KMIPKIT-0103-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/103-fluent-c-crypto-api/spec.md",
+        "status": "Approved",
+        "evidence": "Approved implementation slice of KMIPKIT-0093"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_crypto_operation_builder_t"
+        }
+      }
+    },
+    {
+      "declarationId": "kmipkit_decrypt_builder_create:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_decrypt_builder_create",
+      "capabilityId": "fluent_crypto_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0103-FR-001",
+        "KMIPKIT-0103-FR-005",
+        "KMIPKIT-0103-FR-006"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/103-fluent-c-crypto-api/spec.md",
+        "status": "Approved",
+        "evidence": "Approved implementation slice of KMIPKIT-0093"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_decrypt_builder_create"
+        }
+      },
+      "cSignature": {
+        "parameters": [
+          {
+            "name": "out_builder",
+            "kind": "output",
+            "type": "kmipkit_crypto_operation_builder_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "documentation": [
+          "Creates an opaque typed builder for one KMIP 2.1 cryptographic operation."
+        ]
+      }
+    },
+    {
+      "declarationId": "kmipkit_encrypt_builder_create:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_encrypt_builder_create",
+      "capabilityId": "fluent_crypto_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0103-FR-001",
+        "KMIPKIT-0103-FR-005",
+        "KMIPKIT-0103-FR-006"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/103-fluent-c-crypto-api/spec.md",
+        "status": "Approved",
+        "evidence": "Approved implementation slice of KMIPKIT-0093"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_encrypt_builder_create"
+        }
+      },
+      "cSignature": {
+        "parameters": [
+          {
+            "name": "out_builder",
+            "kind": "output",
+            "type": "kmipkit_crypto_operation_builder_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "documentation": [
+          "Creates an opaque typed builder for one KMIP 2.1 cryptographic operation."
+        ]
+      }
+    },
+    {
+      "declarationId": "kmipkit_hash_builder_create:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_hash_builder_create",
+      "capabilityId": "fluent_crypto_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0103-FR-001",
+        "KMIPKIT-0103-FR-005",
+        "KMIPKIT-0103-FR-006"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/103-fluent-c-crypto-api/spec.md",
+        "status": "Approved",
+        "evidence": "Approved implementation slice of KMIPKIT-0093"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_hash_builder_create"
+        }
+      },
+      "cSignature": {
+        "parameters": [
+          {
+            "name": "out_builder",
+            "kind": "output",
+            "type": "kmipkit_crypto_operation_builder_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "documentation": [
+          "Creates an opaque typed builder for one KMIP 2.1 cryptographic operation."
+        ]
+      }
+    },
+    {
+      "declarationId": "kmipkit_mac_builder_create:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_mac_builder_create",
+      "capabilityId": "fluent_crypto_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0103-FR-001",
+        "KMIPKIT-0103-FR-005",
+        "KMIPKIT-0103-FR-006"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/103-fluent-c-crypto-api/spec.md",
+        "status": "Approved",
+        "evidence": "Approved implementation slice of KMIPKIT-0093"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_mac_builder_create"
+        }
+      },
+      "cSignature": {
+        "parameters": [
+          {
+            "name": "out_builder",
+            "kind": "output",
+            "type": "kmipkit_crypto_operation_builder_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "documentation": [
+          "Creates an opaque typed builder for one KMIP 2.1 cryptographic operation."
+        ]
+      }
+    },
+    {
+      "declarationId": "kmipkit_mac_verify_builder_create:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_mac_verify_builder_create",
+      "capabilityId": "fluent_crypto_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0103-FR-001",
+        "KMIPKIT-0103-FR-005",
+        "KMIPKIT-0103-FR-006"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/103-fluent-c-crypto-api/spec.md",
+        "status": "Approved",
+        "evidence": "Approved implementation slice of KMIPKIT-0093"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_mac_verify_builder_create"
+        }
+      },
+      "cSignature": {
+        "parameters": [
+          {
+            "name": "out_builder",
+            "kind": "output",
+            "type": "kmipkit_crypto_operation_builder_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "documentation": [
+          "Creates an opaque typed builder for one KMIP 2.1 cryptographic operation."
+        ]
+      }
+    },
+    {
+      "declarationId": "kmipkit_sign_builder_create:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_sign_builder_create",
+      "capabilityId": "fluent_crypto_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0103-FR-001",
+        "KMIPKIT-0103-FR-005",
+        "KMIPKIT-0103-FR-006"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/103-fluent-c-crypto-api/spec.md",
+        "status": "Approved",
+        "evidence": "Approved implementation slice of KMIPKIT-0093"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_sign_builder_create"
+        }
+      },
+      "cSignature": {
+        "parameters": [
+          {
+            "name": "out_builder",
+            "kind": "output",
+            "type": "kmipkit_crypto_operation_builder_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "documentation": [
+          "Creates an opaque typed builder for one KMIP 2.1 cryptographic operation."
+        ]
+      }
+    },
+    {
+      "declarationId": "kmipkit_signature_verify_builder_create:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_signature_verify_builder_create",
+      "capabilityId": "fluent_crypto_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0103-FR-001",
+        "KMIPKIT-0103-FR-005",
+        "KMIPKIT-0103-FR-006"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/103-fluent-c-crypto-api/spec.md",
+        "status": "Approved",
+        "evidence": "Approved implementation slice of KMIPKIT-0093"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_signature_verify_builder_create"
+        }
+      },
+      "cSignature": {
+        "parameters": [
+          {
+            "name": "out_builder",
+            "kind": "output",
+            "type": "kmipkit_crypto_operation_builder_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "documentation": [
+          "Creates an opaque typed builder for one KMIP 2.1 cryptographic operation."
+        ]
+      }
+    },
+    {
+      "declarationId": "CryptoOperationBuilder:c-release",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_crypto_operation_builder_release",
+      "capabilityId": "fluent_crypto_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0103-FR-004",
+        "KMIPKIT-0103-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/103-fluent-c-crypto-api/spec.md",
+        "status": "Approved",
+        "evidence": "Approved implementation slice of KMIPKIT-0093"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_crypto_operation_builder_release"
+        }
+      },
+      "mappingSemantics": "native-handle-release"
+    },
+    {
+      "declarationId": "symmetric_key_builder_insert_attribute_item:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_symmetric_key_builder_insert_attribute_item",
+      "capabilityId": "fluent_expert_attributes_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0096-FR-002",
+        "KMIPKIT-0096-FR-003",
+        "KMIPKIT-0096-FR-004"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/096-fluent-expert-attributes/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation by the maintainer's direct"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_insert_attribute_item"
+        }
+      },
+      "cSignature": {
+        "parameters": [
+          {
+            "name": "builder",
+            "kind": "handle",
+            "type": "kmipkit_symmetric_key_builder_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "index",
+            "kind": "scalar",
+            "type": "uint64_t"
+          },
+          {
+            "name": "item",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_item_t *",
+            "ownership": "borrowed"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "documentation": [
+          "Inserts an explicit Object Attribute item at its final zero-based position. The item is copied and validated before request execution."
+        ]
+      }
     }
   ],
   "approvedExclusions": [
@@ -1060120,6 +1061523,28 @@
       }
     },
     {
+      "capabilityId": "fluent_expert_attributes_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0096-FR-002",
+        "KMIPKIT-0096-FR-003",
+        "KMIPKIT-0096-FR-004"
+      ],
+      "capabilityState": "declared",
+      "parityScope": "c-only",
+      "ownerSpecId": "KMIPKIT-0096",
+      "approvalEvidence": {
+        "kind": "feature-specification",
+        "path": "specs/096-fluent-expert-attributes/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation by the maintainer's direct"
+      },
+      "mappings": {
+        "c": [
+          "kmipkit_symmetric_key_builder_insert_attribute_item"
+        ]
+      }
+    },
+    {
       "capabilityId": "generic_ttlv_model",
       "requirementIds": [
         "KMIPKIT-0004-FR-001",
@@ -1069528,6 +1070953,57 @@
           "kmipkit_symmetric_key_request_v1_t.reserved_1",
           "kmipkit_symmetric_key_request_v1_t.reserved_2",
           "kmipkit_symmetric_key_request_v1_t.struct_size"
+        ]
+      }
+    },
+    {
+      "capabilityId": "fluent_crypto_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0103-FR-001",
+        "KMIPKIT-0103-FR-002",
+        "KMIPKIT-0103-FR-003",
+        "KMIPKIT-0103-FR-004",
+        "KMIPKIT-0103-FR-005",
+        "KMIPKIT-0103-FR-006"
+      ],
+      "capabilityState": "declared",
+      "parityScope": "c-only",
+      "ownerSpecId": "KMIPKIT-0103",
+      "approvalEvidence": {
+        "kind": "feature-specification",
+        "path": "specs/103-fluent-c-crypto-api/spec.md",
+        "status": "Approved",
+        "evidence": "Approved implementation slice of KMIPKIT-0093"
+      },
+      "mappings": {
+        "c": [
+          "kmipkit_crypto_operation_builder_build_batch_item",
+          "kmipkit_crypto_operation_builder_execute_v1",
+          "kmipkit_crypto_operation_builder_execute_with_options_v1",
+          "kmipkit_crypto_operation_builder_release",
+          "kmipkit_crypto_operation_builder_set_asynchronous_indicator",
+          "kmipkit_crypto_operation_builder_set_authenticated_encryption_additional_data",
+          "kmipkit_crypto_operation_builder_set_authenticated_encryption_tag",
+          "kmipkit_crypto_operation_builder_set_correlation_value",
+          "kmipkit_crypto_operation_builder_set_cryptographic_parameters",
+          "kmipkit_crypto_operation_builder_set_cryptographic_parameters_structure",
+          "kmipkit_crypto_operation_builder_set_data",
+          "kmipkit_crypto_operation_builder_set_data_value",
+          "kmipkit_crypto_operation_builder_set_digested_data",
+          "kmipkit_crypto_operation_builder_set_final_indicator",
+          "kmipkit_crypto_operation_builder_set_init_indicator",
+          "kmipkit_crypto_operation_builder_set_iv_counter_nonce",
+          "kmipkit_crypto_operation_builder_set_mac_data",
+          "kmipkit_crypto_operation_builder_set_signature_data",
+          "kmipkit_crypto_operation_builder_set_unique_identifier",
+          "kmipkit_crypto_operation_builder_t",
+          "kmipkit_decrypt_builder_create",
+          "kmipkit_encrypt_builder_create",
+          "kmipkit_hash_builder_create",
+          "kmipkit_mac_builder_create",
+          "kmipkit_mac_verify_builder_create",
+          "kmipkit_sign_builder_create",
+          "kmipkit_signature_verify_builder_create"
         ]
       }
     }

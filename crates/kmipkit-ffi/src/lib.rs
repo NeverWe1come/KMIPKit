@@ -232,6 +232,10 @@ pub struct kmipkit_symmetric_key_builder_t {
     _private: [u8; 0],
 }
 #[repr(C)]
+pub struct kmipkit_crypto_operation_builder_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
 pub struct kmipkit_register_request_t {
     _private: [u8; 0],
 }

@@ -128,7 +128,8 @@ pub unsafe extern "C" fn kmipkit_client_create_mtls_v1(
             kmipkit_client::extension_registry::ClientConfiguration::from_shared_registry(
                 configuration.shared_extension_registry(),
             )
-            .with_wire_encoding(configuration.wire_encoding());
+            .with_wire_encoding(configuration.wire_encoding())
+            .with_protocol_version(configuration.protocol_version());
         match kmipkit_client::Client::new(client_configuration, transport) {
             Ok(client) => {
                 *out = try_ffi!(try_make_handle(
@@ -142,11 +143,12 @@ pub unsafe extern "C" fn kmipkit_client_create_mtls_v1(
     })
 }
 
-fn execute_fluent_item(
+pub(super) fn execute_fluent_item(
     client: *mut kmipkit_client_t,
     request: ClientRequest,
     limits: *mut kmipkit_codec_limits_t,
     options: &RequestOptions,
+    asynchronous_indicator: Option<u32>,
     out_response: *mut *mut kmipkit_client_batch_response_t,
 ) -> i32 {
     ffi_entrypoint(|| {
@@ -162,11 +164,11 @@ fn execute_fluent_item(
         let Ok(mut client) = client.lock() else {
             return record_ffi_error(ERROR_INTERNAL);
         };
-        match client.execute_with_options(
-            ClientBatch::new(ClientBatchItem::new(request)),
-            limits,
-            options,
-        ) {
+        let mut batch = ClientBatch::new(ClientBatchItem::new(request));
+        if let Some(indicator) = asynchronous_indicator {
+            batch = batch.with_asynchronous_indicator(indicator);
+        }
+        match client.execute_with_options(batch, limits, options) {
             Ok(response) => {
                 *out = try_ffi!(try_make_handle(
                     Kind::ClientBatchResponse,
@@ -191,6 +193,16 @@ fn update_symmetric_builder(
     let current = slot.take().ok_or(ERROR_INVALID_INPUT)?;
     *slot = Some(update(current));
     Ok(())
+}
+
+fn validated_expert_attribute_item(item: *mut kmipkit_ttlv_item_t) -> FfiResult<Item> {
+    let item = super::super::copy_required_item_handle(item)?;
+    let tag = item.tag().raw();
+    if super::super::typed_attributes_catalog_generated::is_catalogued_attribute_tag(tag) {
+        super::super::typed_attributes::validate_typed_item(tag, item)
+    } else {
+        Ok(item)
+    }
 }
 
 fn symmetric_builder_request(
@@ -242,7 +254,7 @@ fn execute_simple_request(
         },
         None => RequestOptions::default(),
     };
-    execute_fluent_item(client, request, limits, &options, out_response)
+    execute_fluent_item(client, request, limits, &options, None, out_response)
 }
 
 /// Executes one semantic Create Symmetric Key request.
@@ -538,19 +550,31 @@ pub extern "C" fn kmipkit_symmetric_key_builder_add_attribute_item(
     item: *mut kmipkit_ttlv_item_t,
 ) -> i32 {
     ffi_entrypoint(|| {
-        let item = try_ffi!(super::super::copy_required_item_handle(item));
-        let raw_tag = item.tag().raw();
-        let item = if super::super::typed_attributes_catalog_generated::is_catalogued_attribute_tag(
-            raw_tag,
-        ) {
-            try_ffi!(super::super::typed_attributes::validate_typed_item(
-                raw_tag, item
-            ))
-        } else {
-            item
-        };
+        let item = try_ffi!(validated_expert_attribute_item(item));
         try_ffi!(update_symmetric_builder(builder, |builder| {
             builder.attribute_item(item)
+        }));
+        SUCCESS
+    })
+}
+
+/// Inserts an explicit expert attribute at its final Object Attributes index.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_symmetric_key_builder_insert_attribute_item(
+    builder: *mut kmipkit_symmetric_key_builder_t,
+    index: u64,
+    item: *mut kmipkit_ttlv_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let item = try_ffi!(validated_expert_attribute_item(item));
+        let Ok(index) = usize::try_from(index) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        try_ffi!(update_symmetric_builder(builder, |builder| {
+            builder.attribute_at(
+                kmipkit_client::fluent::FluentAttributePosition::ObjectAttributes { index },
+                item,
+            )
         }));
         SUCCESS
     })

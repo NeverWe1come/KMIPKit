@@ -139,7 +139,11 @@ transporte de ese intercambio.
 C ofrece las funciones directas para una operación
 `kmipkit_client_create_symmetric_key_v1`, `kmipkit_client_get_by_id_v1` y
 `kmipkit_client_destroy_by_id_v1`, además de un builder opaco de clave
-simétrica para atributos expertos. Para configurar raw TLS/mTLS de forma
+simétrica para atributos expertos. `kmipkit_symmetric_key_builder_insert_attribute_item`
+inserta un `Item` TTLV explícito en su posición, empezando desde cero, dentro
+de la lista final de Object Attributes; los tags catalogados conservan el tipo
+TTLV requerido y los tags de extensión desconocidos siguen siendo Items
+explícitos. Para configurar raw TLS/mTLS de forma
 compacta, `kmipkit_client_create_mtls_v1` acepta spans de certificados y clave;
 si no se indica un límite, usa 8 MiB para la petición. Lee los spans de
 certificados durante la construcción y el cliente devuelto es dueño de su
@@ -988,8 +992,79 @@ Sign, Signature Verify, MAC y MAC Verify usan los constructores respectivos
 los campos de las requests tipadas, incluidos los datos ya resumidos, la firma
 o el MAC, y el framing multipart cuando corresponda. El resultado asíncrono
 `Pending` y su valor de correlación permanecen visibles; el cliente no ejecuta
-Poll ni reintentos automáticos. La entrega 0102 actual solo cubre Rust y no
-afirma paridad de estas operaciones en los bindings.
+Poll ni reintentos automáticos. KMIPKIT-0102 añadió los builders de Rust.
+KMIPKIT-0103 añade builders específicos de operación para C para las siete
+operaciones. Las fachadas Java y Python se entregan en fases dependientes; esta
+incorporación a C todavía no implica paridad para esos bindings.
+
+## Operaciones criptográficas fluidas en C
+
+La API C ofrece builders opacos para Encrypt, Decrypt, Sign, Signature Verify,
+MAC, MAC Verify y Hash. Cada builder crea la request tipada existente y puede
+crear un elemento de batch local o ejecutar un intercambio con un cliente ya
+configurado. El binding C copia cada span de bytes de forma síncrona; el
+llamador conserva la propiedad de sus buffers y KMIPKit pone a cero las copias
+que posee. Los parámetros criptográficos, identificadores, datos, IV, tags,
+firmas, MAC y marcas multipart se suministran de forma explícita. La API no
+realiza criptografía local ni acepta TTLV arbitrario de request para enviarlo
+por la red.
+
+Suponiendo que `client`, un handle tipado `parameters`, `key_id` y los spans de
+entrada ya estén preparados, un intercambio Encrypt tiene esta forma:
+
+```c
+kmipkit_crypto_operation_builder_t *builder = NULL;
+kmipkit_client_batch_response_t *response = NULL;
+kmipkit_client_batch_item_response_t *item = NULL;
+kmipkit_client_batch_item_metadata_v2_t result = {0};
+int32_t status = kmipkit_encrypt_builder_create(&builder);
+
+if (status == INT32_C(0)) {
+    status = kmipkit_crypto_operation_builder_set_unique_identifier(builder, &key_id);
+}
+if (status == INT32_C(0)) {
+    status = kmipkit_crypto_operation_builder_set_cryptographic_parameters(
+        builder, parameters);
+}
+if (status == INT32_C(0)) {
+    status = kmipkit_crypto_operation_builder_set_iv_counter_nonce(builder, &iv);
+}
+if (status == INT32_C(0)) {
+    status = kmipkit_crypto_operation_builder_set_data(builder, &plaintext);
+}
+if (status == INT32_C(0)) {
+    status = kmipkit_crypto_operation_builder_set_asynchronous_indicator(
+        builder, KMIPKIT_ENUMERATION_ASYNCHRONOUS_INDICATOR_OPTIONAL);
+}
+if (status == INT32_C(0)) {
+    status = kmipkit_crypto_operation_builder_execute_with_options_v1(
+        builder, client, limits, &options, &response);
+}
+if (status == INT32_C(0)) {
+    status = kmipkit_client_batch_response_item_at(response, 0, &item);
+}
+result.struct_size = (uint32_t)sizeof(result);
+result.abi_version = 2;
+if (status == INT32_C(0)) {
+    status = kmipkit_client_batch_item_response_metadata_v2(item, &result);
+}
+/* Inspecciona result.result_status y result.outcome_kind antes de usar el resultado. */
+kmipkit_client_batch_item_response_release(item);
+kmipkit_client_batch_response_release(response);
+kmipkit_crypto_operation_builder_release(builder);
+```
+
+`outcome_kind` vale `1` para un resultado completado y `2` para `Pending`. En
+una respuesta Pending, llama a
+`kmipkit_client_batch_item_response_pending_correlation_value` mientras `item`
+siga vigente. La operación no ejecuta Poll ni reintenta automáticamente.
+Consulta el [consumidor C compilado](../../../bindings/c/tests/fluent_crypto_consumer.c)
+para ver la liberación de handles y ejemplos ejecutables de las siete
+operaciones. El campo asíncrono de KMIP 2.1 es una Enumeration: usa las
+constantes con nombre de `kmipkit.h` y configura los timeouts de intercambio por
+separado mediante `kmipkit_request_options_v1_t`. El constructor mTLS conserva
+la versión de protocolo seleccionada en su configuración y rechaza versiones
+no soportadas antes de abrir una conexión.
 
 ## Extensiones de mensaje
 
