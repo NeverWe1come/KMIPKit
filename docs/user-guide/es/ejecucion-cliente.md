@@ -179,11 +179,14 @@ estado y handles tipados propiedad del llamador. Get recibe el identificador
 devuelto por Create; los bindings no lo inventan localmente.
 
 Cada lenguaje tiene un recorrido TLS 1.3/mTLS limitado a loopback que envía
-Create, Get y Destroy a un peer controlado, lee el identificador de Create y lo
-usa en las peticiones siguientes. Esto comprueba la ruta del cliente y el
-intercambio tipado contra el fixture, no la interoperabilidad con un KMS
-externo. Pending sigue siendo un resultado explícito; el cliente no ejecuta
-Poll ni reintenta automáticamente.
+Create, Get, Encrypt, Decrypt y Destroy a un peer controlado. Lee el
+identificador de Create, selecciona los parámetros AES-GCM, el nonce y los datos
+adicionales autenticados, y pasa a Decrypt los campos tipados de la respuesta
+Encrypt del fixture. El fixture valida las peticiones decodificadas y devuelve
+respuestas KMIP codificadas predeterminadas; no ejecuta AES. Esto comprueba la
+ruta del cliente y el intercambio tipado, no la ejecución criptográfica ni la
+interoperabilidad con un KMS externo. Pending sigue siendo un resultado
+explícito; el cliente no ejecuta Poll ni reintenta automáticamente.
 
 ## Create Key Pair fluido en Rust
 
