@@ -853,3 +853,53 @@ def test_fluent_finalizer_swallows_shutdown_cleanup_errors(monkeypatch: pytest.M
 
 def test_legacy_extensions_remain_available() -> None:
     assert extensions.UniqueIdentifier.text_string("key-1").text == "key-1"
+
+
+def test_request_namespace_exposes_typed_set_attribute_builder() -> None:
+    with ttlv.codec_limits_defaults() as limits:
+        with ttlv.ttlv_value_text_string(b"managed by the fluent API", limits) as description:
+            with fluent.Request(None).set_attribute() as builder:
+                assert isinstance(builder, fluent.SetAttributeBuilder)
+                with pytest.raises(errors.KmipKitError):
+                    builder.validate()
+                assert builder.unique_identifier("key-42") is builder
+                assert builder.catalogued_attribute(
+                    StandardAttribute.DESCRIPTION, description
+                ) is builder
+                assert builder.with_options(client.RequestOptions()) is builder
+                assert builder.asynchronous_indicator(3) is builder
+                builder.validate()
+                item = builder.build()
+                try:
+                    assert item.operation == protocol_values.Operation.SET_ATTRIBUTE
+                finally:
+                    item.close()
+
+                with pytest.raises(errors.KmipKitError):
+                    builder.unique_identifier(None)  # type: ignore[arg-type]
+                with pytest.raises(errors.KmipKitError):
+                    builder.catalogued_attribute(None, description)  # type: ignore[arg-type]
+def test_request_namespace_exposes_typed_set_attribute_builder() -> None:
+    with ttlv.codec_limits_defaults() as limits:
+        with ttlv.ttlv_value_text_string(b"managed by the fluent API", limits) as description:
+            with fluent.Request(None).set_attribute() as builder:
+                assert isinstance(builder, fluent.SetAttributeBuilder)
+                with pytest.raises(errors.KmipKitError):
+                    builder.validate()
+                assert builder.unique_identifier("key-42") is builder
+                assert builder.catalogued_attribute(
+                    StandardAttribute.DESCRIPTION, description
+                ) is builder
+                assert builder.with_options(client.RequestOptions()) is builder
+                assert builder.asynchronous_indicator(3) is builder
+                builder.validate()
+                item = builder.build()
+                try:
+                    assert item.operation == protocol_values.Operation.SET_ATTRIBUTE
+                finally:
+                    item.close()
+
+                with pytest.raises(errors.KmipKitError):
+                    builder.unique_identifier(None)  # type: ignore[arg-type]
+                with pytest.raises(errors.KmipKitError):
+                    builder.catalogued_attribute(None, description)  # type: ignore[arg-type]
