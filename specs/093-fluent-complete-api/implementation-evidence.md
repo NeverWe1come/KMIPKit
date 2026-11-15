@@ -145,3 +145,38 @@
   tests, and the focused Java semantic batch-item test after that review; all
   pass.
 
+## KMIPKIT-0124 follow-up after exact-head CI run 43721677012
+
+### Red
+
+- The exact PR #223 head `f882f8d73d89ac81eeacddd115606e10552de0e5` failed
+  `Script contracts / ubuntu-latest` in
+  `test_internal_bridge_and_dataclass_artifacts_use_exact_exclusions` because
+  the expected JNI bridge inventory omitted 11 KMIPKIT-0124 bridge symbols.
+  Reproduction before the fix:
+  `python3 -m unittest tools.api_manifest.tests.test_binding_exports.BindingExportAuditTests.test_internal_bridge_and_dataclass_artifacts_use_exact_exclusions`.
+- Extending the expected inventory then exposed that the audit accepted the
+  older bridge requirements but not the approved KMIPKIT-0093-FR-011 ownership
+  evidence. The test failed at its exact evidence check until that requirement
+  was included.
+- The same run failed the changed-production coverage gate at 502/578 lines
+  (86.85%). Its macOS and Windows script-contract jobs were cancelled after the
+  Ubuntu matrix failure; they are not independent product failures.
+
+### Green
+
+- The exact bridge inventory now includes the 11 KMIPKIT-0124 JNI dispatch
+  methods, and the binding audit accepts their KMIPKIT-0093-FR-011 evidence.
+  The focused binding-export audit passes.
+- Async response tests now exercise typed response views, result access, and
+  Debug/Display rendering for Cancel, Poll, Process, and Query Async Requests;
+  pending async responses also exercise their typed borrowed views.
+  `cargo test -p kmipkit-client --lib --all-features async_batch_item_` passes
+  all 5 matching tests.
+- The Java semantic batch-item suite now checks rejection and messages for
+  missing inputs before JNI loading. The focused Gradle test
+  `bash bindings/java/gradlew --project-dir bindings/java --no-daemon --console=plain --quiet test --tests org.kmipkit.extensions.Kmip30SemanticBatchItemTest`
+  passes.
+- The exact-head CI coverage gate has not yet run on these updates; its result
+  remains pending and will be recorded before the PR leaves WIP.
+
