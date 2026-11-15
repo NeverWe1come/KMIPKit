@@ -398,6 +398,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & $python -B -m unittest tools.api_manifest.tests.test_binding_exports -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & $python -B -m unittest tools.api_manifest.tests.test_0095_response_view_bindings -v
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & $python -B -m unittest tools.api_manifest.tests.test_operation_readiness -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & $python -B -m unittest tools.api_manifest.tests.test_0053_operation_binding_matrix tools.api_manifest.tests.test_0053_validation_routes tools.api_manifest.tests.test_0053_kmip30_draft_api_catalog tools.api_manifest.tests.test_t102_macro_lot_partition -v
@@ -1051,6 +1053,12 @@ jobs:
       - name: Verify generated named protocol values
         id: verify-generated-named-protocol-values
         run: python3 -B tools/normative_catalog/generate_named_values.py --repo-root . --check
+
+      - name: Verify fluent operation inventory
+        id: verify-fluent-operation-inventory
+        run: |
+          python3 -B tools/normative_catalog/generate_fluent_operation_inventory.py --repo-root . --check
+          python3 -B -m unittest tools.normative_catalog.tests.test_fluent_operation_inventory -v
 
       - name: Set up Python 3.12 for normative generator coverage
         id: set-up-python-3-12-for-normative-generator-coverage

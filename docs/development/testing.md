@@ -233,7 +233,14 @@ same residual is included in changed-code coverage so an omitted uncovered
 line cannot become `not applicable`. Region data explains covered and
 uncovered duplicate groups at a mapped physical line; unexplained summary
 reserves are conservative because LLVM does not report their physical
-locations. Missing region start lines fail closed. This preserves
+locations. The JNI translation unit has a verified pre-existing 12-line
+summary-only residual in the exact PR #190 coverage report at commit
+`d8e4e37f0f1c6888afd0ceec22d55b843e1e94c6`
+([CI run](https://github.com/NeverWe1come/KMIPKit/actions/runs/43123447061)).
+The ordinary JNI scope threshold continues to count all of it. For changed-code
+coverage only, the gate subtracts at most this 12-line inherited baseline for
+that exact file and counts any increase above it; executable changed lines
+remain individually gated. Missing region start lines fail closed. This preserves
 nested-region counts and prevents missing function records from hiding
 uncovered lines. It requires at least 90 percent changed executable-line
 coverage. Each Rust crate is gated separately: `kmipkit-ttlv` and

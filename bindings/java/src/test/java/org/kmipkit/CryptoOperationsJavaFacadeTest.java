@@ -37,8 +37,19 @@ import org.kmipkit.extensions.ClientBatchResponse;
 import org.kmipkit.extensions.ClientConfiguration;
 import org.kmipkit.extensions.ClientExtensionRegistry;
 import org.kmipkit.extensions.ExtensionRegistryLimits;
+import org.kmipkit.extensions.RequestOptions;
 import org.kmipkit.extensions.TransportConfiguration;
 import org.kmipkit.extensions.UniqueIdentifier;
+import org.kmipkit.client.KmipClient;
+import org.kmipkit.fluent.DecryptBuilder;
+import org.kmipkit.fluent.EncryptBuilder;
+import org.kmipkit.fluent.HashBuilder;
+import org.kmipkit.fluent.MacBuilder;
+import org.kmipkit.fluent.MacVerifyBuilder;
+import org.kmipkit.fluent.SignBuilder;
+import org.kmipkit.fluent.SignatureVerifyBuilder;
+import org.kmipkit.protocol.CryptographicParameters;
+import org.kmipkit.protocol.KmipValues.HashingAlgorithm;
 import org.kmipkit.ttlv.CodecLimits;
 import org.kmipkit.ttlv.RawTag;
 import org.kmipkit.ttlv.Tag;
@@ -48,6 +59,7 @@ import org.kmipkit.ttlv.TtlvStructure;
 import org.kmipkit.ttlv.TtlvStructureView;
 import org.kmipkit.ttlv.TtlvValue;
 import org.kmipkit.ttlv.TtlvValueView;
+import org.kmipkit.ttlv.TtlvCodec;
 
 /** RED contract coverage for Java/JNI Hash, MAC, and signature operations. */
 final class CryptoOperationsJavaFacadeTest {
@@ -85,6 +97,78 @@ final class CryptoOperationsJavaFacadeTest {
 
     @TempDir
     Path temporaryDirectory;
+
+    @Test
+    void fluentBuildersExecuteOneTypedOperationEachAgainstMutualTlsFixture() throws Exception {
+        Path serverStorePath = temporaryDirectory.resolve("fluent-crypto-server.p12");
+        Path clientStorePath = temporaryDirectory.resolve("fluent-crypto-client.p12");
+        invokeClientFixture("createKeyStore", new Class<?>[] {Path.class, String.class},
+                serverStorePath, "server");
+        invokeClientFixture("createKeyStore", new Class<?>[] {Path.class, String.class},
+                clientStorePath, "client");
+        KeyStore serverStore = (KeyStore) invokeClientFixture(
+                "loadKeyStore", new Class<?>[] {Path.class}, serverStorePath);
+        KeyStore clientStore = (KeyStore) invokeClientFixture(
+                "loadKeyStore", new Class<?>[] {Path.class}, clientStorePath);
+        X509Certificate serverCertificate = (X509Certificate) invokeClientFixture(
+                "certificate", new Class<?>[] {KeyStore.class, String.class}, serverStore, "server");
+        X509Certificate clientCertificate = (X509Certificate) invokeClientFixture(
+                "certificate", new Class<?>[] {KeyStore.class, String.class}, clientStore, "client");
+        PrivateKey clientKey = (PrivateKey) clientStore.getKey("client", "kmipkit-test".toCharArray());
+        SSLContext serverContext = (SSLContext) invokeClientFixture(
+                "serverContext", new Class<?>[] {KeyStore.class, X509Certificate.class},
+                serverStore, clientCertificate);
+        SSLServerSocket listener = (SSLServerSocket) serverContext.getServerSocketFactory()
+                .createServerSocket(0, 1, InetAddress.getByName("127.0.0.1"));
+        listener.setEnabledProtocols(new String[] {"TLSv1.3"});
+        listener.setNeedClientAuth(true);
+        listener.setSoTimeout(10_000);
+
+        try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                        List.of(), ExtensionRegistryLimits.defaults());
+                ClientConfiguration configuration = ClientConfiguration.create(registry);
+                TransportConfiguration transport = TransportConfiguration.builder()
+                        .rawTls("127.0.0.1", listener.getLocalPort())
+                        .clientIdentityDer(new byte[][] {clientCertificate.getEncoded()}, clientKey.getEncoded())
+                        .trustCertificatesDer(new byte[][] {serverCertificate.getEncoded()})
+                        .timeouts(TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(8)))
+                        .build();
+                KmipClient client = KmipClient.create(configuration, transport)) {
+            int index = 0;
+            for (Operation operation : OPERATIONS) {
+                byte[] responseMessage = singleFluentResponseMessage(operation);
+                FutureTask<byte[]> peer = new FutureTask<>(() -> (byte[]) invokeClientFixture(
+                        "serveOneResponse", new Class<?>[] {SSLServerSocket.class, byte[].class},
+                        listener, responseMessage));
+                Thread peerThread = new Thread(peer, "kmipkit-java-fluent-crypto-" + operation.name());
+                peerThread.setDaemon(true);
+                peerThread.start();
+
+                try (ClientBatchResponse response = executeFluentOperation(
+                        client, operation.name(), CodecLimits.defaults())) {
+                    assertEquals(1, response.itemCount(), operation.name());
+                    try (ClientBatchItemResult result = response.itemAt(0)) {
+                        assertEquals(0, result.resultStatus(), operation.name());
+                    }
+                }
+
+                byte[] request = peer.get(12, TimeUnit.SECONDS);
+                assertEquals(operation.code(), requestOperation(request), operation.name());
+                assertArrayEquals(new byte[] {0x11, 0x22, (byte) 0x83},
+                        requestOperationData(request), operation.name());
+                if (operation.name().equals("hash")) {
+                    assertEquals(2L, requestAsynchronousIndicator(request));
+                }
+                index++;
+            }
+            assertEquals(OPERATIONS.size(), index);
+        } finally {
+            listener.close();
+        }
+    }
 
     @Test
     void operationFactoriesExposeNullableFieldsAndAcceptEveryDataTtlvForm() throws Exception {
@@ -453,6 +537,137 @@ final class CryptoOperationsJavaFacadeTest {
         }
     }
 
+    private ClientBatchResponse executeFluentOperation(
+            KmipClient client, String operation, CodecLimits limits) throws Exception {
+        UniqueIdentifier id = UniqueIdentifier.textString("fluent-crypto-key");
+        byte[] data = {0x11, 0x22, (byte) 0x83};
+        return switch (operation) {
+            case "encrypt" -> {
+                try (EncryptBuilder builder = client.request().encrypt()) {
+                    yield builder.uniqueIdentifier(id).data(data).execute(limits);
+                }
+            }
+            case "decrypt" -> {
+                try (DecryptBuilder builder = client.request().decrypt()) {
+                    yield builder.uniqueIdentifier(id).data(data)
+                            .authenticatedEncryptionTag(new byte[] {0x33}).execute(limits);
+                }
+            }
+            case "sign" -> {
+                try (SignBuilder builder = client.request().sign()) {
+                    yield builder.uniqueIdentifier(id).data(data).digestedData(new byte[] {0x44})
+                            .execute(limits);
+                }
+            }
+            case "signatureVerify" -> {
+                try (SignatureVerifyBuilder builder = client.request().signatureVerify()) {
+                    yield builder.uniqueIdentifier(id).data(data).signatureData(new byte[] {0x55})
+                            .execute(limits);
+                }
+            }
+            case "mac" -> {
+                try (MacBuilder builder = client.request().mac()) {
+                    yield builder.uniqueIdentifier(id).data(data).execute(limits);
+                }
+            }
+            case "macVerify" -> {
+                try (MacVerifyBuilder builder = client.request().macVerify()) {
+                    yield builder.uniqueIdentifier(id).data(data).macData(new byte[] {0x66})
+                            .execute(limits);
+                }
+            }
+            case "hash" -> {
+                try (CryptographicParameters parameters = CryptographicParameters.builder()
+                                .hashingAlgorithm(HashingAlgorithm.SHA_256).build();
+                        HashBuilder builder = client.request().hash()) {
+                    yield builder.withOptions(RequestOptions.defaults()).asynchronousIndicator(2)
+                            .cryptographicParameters(parameters).data(data).execute(limits);
+                }
+            }
+            default -> throw new AssertionError("unknown fluent crypto operation");
+        };
+    }
+
+    private byte[] singleFluentResponseMessage(Operation operation) throws Exception {
+        byte[] version = ttlvStructure(0x420069,
+                ttlvItem(0x42006a, 2, ttlvInteger(2)),
+                ttlvItem(0x42006b, 2, ttlvInteger(1)));
+        byte[] header = ttlvStructure(0x42007a, version,
+                ttlvItem(0x420092, 9, ttlvLongInteger(1)),
+                ttlvItem(0x42000d, 2, ttlvInteger(1)));
+        byte[] item = successResponse(operation, 0, true, false, false);
+        return ttlvStructure(0x42007b, header, item);
+    }
+
+    private long requestOperation(byte[] wire) {
+        try (TtlvItem message = TtlvCodec.decode(wire);
+                TtlvItemView messageView = message.view();
+                TtlvValueView messageValue = messageView.value();
+                TtlvStructureView messageFields = messageValue.structure();
+                TtlvItemView batchItem = messageFields.itemAt(1);
+                TtlvValueView batchValue = batchItem.value();
+                TtlvStructureView batchFields = batchValue.structure();
+                TtlvItemView operation = batchFields.itemAt(0);
+                TtlvValueView operationValue = operation.value()) {
+            assertEquals(0x42005c, operation.tag().raw());
+            return operationValue.enumeration();
+        }
+    }
+
+    private long requestAsynchronousIndicator(byte[] wire) {
+        try (TtlvItem message = TtlvCodec.decode(wire);
+                TtlvItemView messageView = message.view();
+                TtlvValueView messageValue = messageView.value();
+                TtlvStructureView messageFields = messageValue.structure();
+                TtlvItemView header = messageFields.itemAt(0);
+                TtlvValueView headerValue = header.value();
+                TtlvStructureView headerFields = headerValue.structure()) {
+            for (long index = 0; index < headerFields.itemCount(); index++) {
+                try (TtlvItemView field = headerFields.itemAt(index);
+                        var tag = field.tag()) {
+                    if (tag.raw() == 0x420007) {
+                        try (TtlvValueView value = field.value()) {
+                            return value.enumeration();
+                        }
+                    }
+                }
+            }
+            return -1;
+        }
+    }
+
+    private byte[] requestOperationData(byte[] wire) {
+        try (TtlvItem message = TtlvCodec.decode(wire);
+                TtlvItemView messageView = message.view();
+                TtlvValueView messageValue = messageView.value();
+                TtlvStructureView messageFields = messageValue.structure();
+                TtlvItemView batchItem = messageFields.itemAt(1);
+                TtlvValueView batchValue = batchItem.value();
+                TtlvStructureView batchFields = batchValue.structure()) {
+            for (long batchIndex = 0; batchIndex < batchFields.itemCount(); batchIndex++) {
+                try (TtlvItemView batchField = batchFields.itemAt(batchIndex);
+                        var batchTag = batchField.tag()) {
+                    if (batchTag.raw() == 0x420079) {
+                        try (TtlvValueView payloadValue = batchField.value();
+                                TtlvStructureView payloadFields = payloadValue.structure()) {
+                            for (long index = 0; index < payloadFields.itemCount(); index++) {
+                                try (TtlvItemView field = payloadFields.itemAt(index);
+                                        var tag = field.tag()) {
+                                    if (tag.raw() == 0x4200c2) {
+                                        try (TtlvValueView value = field.value()) {
+                                            return value.bytes();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return new byte[0];
+        }
+    }
+
     private byte[] mixedOperationResponseMessage() throws Exception {
         byte[] version = ttlvStructure(0x420069,
                 ttlvItem(0x42006a, 2, ttlvInteger(2)),
@@ -492,6 +707,11 @@ final class CryptoOperationsJavaFacadeTest {
 
     private byte[] successResponse(Operation operation, int index, boolean includeValidityIndicator,
             boolean includeOptionalFields) throws Exception {
+        return successResponse(operation, index, includeValidityIndicator, includeOptionalFields, true);
+    }
+
+    private byte[] successResponse(Operation operation, int index, boolean includeValidityIndicator,
+            boolean includeOptionalFields, boolean includeBatchItemId) throws Exception {
         List<byte[]> fields = new ArrayList<>();
         if (!operation.name().equals("hash")) {
             fields.add(ttlvItem(0x420094, 7, "response-id-secret".getBytes(StandardCharsets.UTF_8)));
@@ -531,11 +751,12 @@ final class CryptoOperationsJavaFacadeTest {
         if (operation.name().matches("hash|mac|macVerify|sign|signatureVerify")) {
             fields.add(ttlvEnumeration(0x540001, 0xfedc_ba98));
         }
-        return ttlvStructure(0x42000f,
-                ttlvEnumeration(0x42005c, operation.code()),
-                ttlvItem(0x420093, 8, uniqueBatchItemId(index)),
-                ttlvEnumeration(0x42007f, 0),
-                ttlvStructure(0x42007c, fields.toArray(byte[][]::new)));
+        List<byte[]> batchItem = new ArrayList<>();
+        batchItem.add(ttlvEnumeration(0x42005c, operation.code()));
+        if (includeBatchItemId) batchItem.add(ttlvItem(0x420093, 8, uniqueBatchItemId(index)));
+        batchItem.add(ttlvEnumeration(0x42007f, 0));
+        batchItem.add(ttlvStructure(0x42007c, fields.toArray(byte[][]::new)));
+        return ttlvStructure(0x42000f, batchItem.toArray(byte[][]::new));
     }
 
     private byte[] ttlvStructure(int tag, byte[]... values) throws Exception {

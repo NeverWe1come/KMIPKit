@@ -4326,6 +4326,59 @@ pub struct ClientBatchItemResponse {
     pending_owner_observer: Option<ZeroizationObserver>,
 }
 
+/// A payload-free failure while rendering a retained response for inspection.
+#[non_exhaustive]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum ResponseEncodingError {
+    /// The retained response tree could not be cloned within model limits.
+    InvalidResponseTree,
+    /// The requested representation exceeds the supplied codec limits.
+    LimitExceeded,
+    /// Memory could not be reserved for the representation.
+    AllocationFailed,
+    /// A retained field could not be represented by the selected codec.
+    EncodingFailed,
+}
+
+impl fmt::Display for ResponseEncodingError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str(match self {
+            Self::InvalidResponseTree => "retained response tree is invalid",
+            Self::LimitExceeded => "response representation exceeds configured limits",
+            Self::AllocationFailed => "unable to allocate response representation",
+            Self::EncodingFailed => "retained response cannot be represented by this encoding",
+        })
+    }
+}
+
+impl Error for ResponseEncodingError {}
+
+fn map_response_encoding_error(error: &private_wire_writer::EncodeError) -> ResponseEncodingError {
+    match error {
+        private_wire_writer::EncodeError::LimitExceeded => ResponseEncodingError::LimitExceeded,
+        private_wire_writer::EncodeError::AllocationFailed(_) => {
+            ResponseEncodingError::AllocationFailed
+        }
+        private_wire_writer::EncodeError::WireCodec(error) => match error.kind() {
+            crate::wire_codec_common::WireCodecErrorKind::LimitExceeded => {
+                ResponseEncodingError::LimitExceeded
+            }
+            crate::wire_codec_common::WireCodecErrorKind::AllocationFailed => {
+                ResponseEncodingError::AllocationFailed
+            }
+            crate::wire_codec_common::WireCodecErrorKind::InvalidDocument
+            | crate::wire_codec_common::WireCodecErrorKind::InvalidValue => {
+                ResponseEncodingError::EncodingFailed
+            }
+        },
+        _ => ResponseEncodingError::EncodingFailed,
+    }
+}
+
+#[cfg(test)]
+#[path = "../tests/unit/response_encoding_error_tests.rs"]
+mod response_encoding_error_tests;
+
 struct PendingClientBatchItemResponse {
     unique_batch_item_id: Option<Vec<u8>>,
     outcome: ClientBatchOutcome,
@@ -4370,6 +4423,67 @@ impl ClientBatchItemResponse {
     #[must_use]
     pub fn response_header_raw(&self) -> Option<StructureView<'_>> {
         self.response.header().raw()
+    }
+
+    fn render_response(
+        &self,
+        limits: &CodecLimits,
+        encoding: WireEncoding,
+    ) -> Result<Zeroizing<String>, ResponseEncodingError> {
+        let tree = self
+            .response
+            .with_ttlv(|view| view.try_clone())
+            .map_err(|_| ResponseEncodingError::InvalidResponseTree)?; // COVERAGE-EXCLUDE: ResponseMessage retains a Structure bounded to the same clone-depth limit.
+        let tag = RawTag::new(0x0042_007B)
+            .and_then(|raw| raw.try_checked())
+            .map_err(|_| ResponseEncodingError::InvalidResponseTree)?; // COVERAGE-EXCLUDE: 0x0042007B is the catalogued Message tag checked here as a constant.
+        let item = Item::new(tag, Value::structure(tree))
+            .map_err(|_| ResponseEncodingError::InvalidResponseTree)?; // COVERAGE-EXCLUDE: Item::new has no rejecting condition for a checked tag and owned Value.
+        private_wire_writer::render_for_inspection(&item, limits, encoding)
+            .map_err(|error| map_response_encoding_error(&error))
+    }
+
+    /// Returns canonical uppercase TTLV hex for the complete retained response.
+    ///
+    /// The returned zeroizing string contains all response fields, including
+    /// any secret values returned by the server. Use only for explicit
+    /// inspection; it is never included in diagnostics or Debug output.
+    ///
+    /// # Errors
+    ///
+    /// Returns a payload-free error if the retained tree is invalid, the
+    /// representation exceeds `limits`, or encoding cannot complete.
+    pub fn ttlv_hex(
+        &self,
+        limits: &CodecLimits,
+    ) -> Result<Zeroizing<String>, ResponseEncodingError> {
+        self.render_response(limits, WireEncoding::Ttlv)
+    }
+
+    /// Returns the complete retained response encoded as OASIS KMIP JSON.
+    ///
+    /// The returned zeroizing string may contain secrets returned by the
+    /// server and is not included in diagnostics or Debug output.
+    ///
+    /// # Errors
+    ///
+    /// Returns a payload-free error if the retained tree is invalid, the
+    /// representation exceeds `limits`, or encoding cannot complete.
+    pub fn json(&self, limits: &CodecLimits) -> Result<Zeroizing<String>, ResponseEncodingError> {
+        self.render_response(limits, WireEncoding::Json)
+    }
+
+    /// Returns the complete retained response encoded as OASIS KMIP XML.
+    ///
+    /// The returned zeroizing string may contain secrets returned by the
+    /// server and is not included in diagnostics or Debug output.
+    ///
+    /// # Errors
+    ///
+    /// Returns a payload-free error if the retained tree is invalid, the
+    /// representation exceeds `limits`, or encoding cannot complete.
+    pub fn xml(&self, limits: &CodecLimits) -> Result<Zeroizing<String>, ResponseEncodingError> {
+        self.render_response(limits, WireEncoding::Xml)
     }
 
     /// Lends the successful Discover Versions response list, when this item
@@ -6865,6 +6979,20 @@ impl Client {
         )
     }
 
+    pub(crate) fn execute_one_typed_request_with_async_indicator(
+        &mut self,
+        request: ClientRequest,
+        asynchronous_indicator: Option<u32>,
+        limits: &CodecLimits,
+        options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let mut batch = ClientBatch::new(ClientBatchItem::new(request));
+        if let Some(indicator) = asynchronous_indicator {
+            batch = batch.with_asynchronous_indicator(indicator);
+        }
+        self.execute_one_typed_batch(batch, limits, options)
+    }
+
     fn execute_one_typed_batch(
         &mut self,
         batch: ClientBatch,
@@ -8345,6 +8473,7 @@ fn push_batch_item_operation(
     push(batch_item, OPERATION, Value::enumeration(operation))
 }
 
+#[cfg(any(test, feature = "test-support"))]
 fn decode_batch_item_operation(bytes: &[u8]) -> Result<u32, ProtocolError> {
     const OPERATION_HEADER: [u8; 8] = [0x42, 0x00, 0x5c, 0x05, 0x00, 0x00, 0x00, 0x04];
     if bytes.get(8..8 + OPERATION_HEADER.len()) != Some(OPERATION_HEADER.as_slice()) {
@@ -8365,6 +8494,7 @@ fn decode_batch_item_operation(bytes: &[u8]) -> Result<u32, ProtocolError> {
     Ok(u32::from_be_bytes(raw))
 }
 
+#[cfg(any(test, feature = "test-support"))]
 fn decode_operation_enumeration(bytes: &[u8]) -> Result<[u8; 4], ProtocolError> {
     bytes.try_into().map_err(|_| {
         ProtocolError::new(

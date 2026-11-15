@@ -239,6 +239,56 @@ fn register_certificate(
 fn main() { let _example = register_certificate; }
 ```
 
+### Fluent Register in Rust
+
+`client.request().register()` accepts an existing typed `ManagedObject` and a
+prebuilt `AttributeSet`, validates the same Register rules as the procedural
+request, and can build a batch item or perform one exchange:
+
+```rust,kmipkit-test
+use std::error::Error;
+
+use kmipkit_client::{Client, ClientBatchItemResponse, ClientBatchOutcome};
+use kmipkit_protocol::attribute::typed;
+use kmipkit_protocol::{Attribute, AttributeSet, Certificate, ManagedObject, ObjectType};
+use kmipkit_ttlv::codec::CodecLimits;
+
+fn register_certificate(
+    client: &mut Client,
+    limits: &CodecLimits,
+) -> Result<ClientBatchItemResponse, Box<dyn Error>> {
+    let certificate = Certificate::try_new(1, vec![0x30, 0x00, 0x00])?;
+    let object = ManagedObject::try_from_item(ObjectType::from_raw(1), certificate.into_item())?;
+    let attributes = AttributeSet::try_new([
+        Attribute::<typed::CryptographicUsageMask>::new(3)?.into_item(),
+        Attribute::<typed::CertificateLength>::new(3)?.into_item(),
+        Attribute::<typed::CryptographicAlgorithm>::new(4)?.into_item(),
+        Attribute::<typed::CryptographicLength>::new(1024)?.into_item(),
+    ])?;
+
+    let result = client
+        .request()
+        .register()
+        .object(object)
+        .attributes(attributes)
+        .execute(limits)?;
+    if let ClientBatchOutcome::Register(response) = result.outcome() {
+        let _server_assigned_identifier = response.unique_identifier();
+    }
+    Ok(result)
+}
+
+fn main() { let _example = register_certificate; }
+```
+
+`object_item(ObjectType, Item)` is the explicit path for generic or future
+object types. Object Attributes can be added with typed attributes, a prebuilt
+set, explicit TTLV Items, or the dedicated Vendor Attribute constructor. An
+Opaque Object context remains an explicit caller choice. The builder delegates
+validation and version routing to the existing typed request and client; it
+does not choose key policy, retry, or Poll. C, Java, and Python fluent Register
+surfaces remain pending their binding deliveries.
+
 ### Registering an Opaque Object
 
 An Opaque Object is sent as the standard Opaque Object `Structure`. Its required

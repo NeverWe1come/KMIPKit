@@ -65,8 +65,10 @@ mod wire_codec_common;
 #[allow(dead_code)] // The private codecs are connected by KMIPKIT-0057.
 mod xml_codec;
 
+mod attribute_tags_generated;
 mod error;
 pub mod extension_registry;
+pub mod fluent;
 
 #[cfg(test)]
 #[path = "../tests/fixtures/extensions/extension_fixtures.generated.rs"]
@@ -165,6 +167,22 @@ mod cancel_execution_tests;
 #[cfg(test)]
 #[path = "../tests/unit/create_execution_tests.rs"]
 mod create_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/fluent_request_tests.rs"]
+mod fluent_request_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/fluent_create_key_pair_tests.rs"]
+mod fluent_create_key_pair_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/fluent_create_split_key_tests.rs"]
+mod fluent_create_split_key_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/fluent_register_tests.rs"]
+mod fluent_register_tests;
 
 #[cfg(test)]
 #[path = "../tests/unit/create_key_pair_execution_tests.rs"]
@@ -321,6 +339,18 @@ mod rekey_execution_tests;
 mod rekey_key_pair_execution_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/fluent_lifecycle_operation_tests.rs"]
+mod fluent_lifecycle_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/fluent_cryptographic_operation_tests.rs"]
+mod fluent_cryptographic_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/fluent_attribute_read_tests.rs"]
+mod fluent_attribute_read_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/reprovision_execution_tests.rs"]
 mod reprovision_execution_tests;
 
@@ -349,6 +379,15 @@ pub use execute::{
     Client, ClientBatch, ClientBatchItem, ClientBatchItemResponse, ClientBatchOutcome,
     ClientBatchResponse, ClientMessageExtension, ClientOperation, ClientOperationOutcome,
     ClientRequest, ClientResponseView, Kmip30OperationResponse, PendingOutcome,
+    ResponseEncodingError,
+};
+pub use fluent::{
+    ActivateBuilder, ArchiveBuilder, CreateKeyPairBuilder, CreateSplitKeyBuilder,
+    CreateSymmetricKeyBuilder, CryptographicUsageMask, DecryptBuilder, DestroyBuilder,
+    EncryptBuilder, FluentAttributePosition, FluentBuildError, GetAttributeListBuilder,
+    GetAttributesBuilder, GetBuilder, HashBuilder, LocateBuilder, MacBuilder, MacVerifyBuilder,
+    RecertifyBuilder, RecoverBuilder, RegisterBuilder, RekeyBuilder, RekeyKeyPairBuilder,
+    RequestBuilder, RevokeBuilder, SignBuilder, SignatureVerifyBuilder,
 };
 pub use kmipkit_protocol::{
     ProfileObjectState, ProfileTransport, ProfileValidationContext, ProfileValidationError,
