@@ -169,6 +169,10 @@ fn public_decode_errors_do_not_retain_or_format_input_payloads() {
 // KMIPKit requirements KMIPKIT-0005-FR-007 and FR-008 bound input size before
 // parsing or allocation; these are local resource policies, not OASIS clauses.
 #[test]
+#[cfg_attr(
+    miri,
+    ignore = "16 MiB stress allocation is verified natively; Miri verifies bounded limits and synthetic preflight"
+)]
 fn public_decoder_rejects_input_over_the_default_message_limit_before_parsing() {
     let oversized = vec![0; 16 * 1024 * 1024 + 1];
 
@@ -177,6 +181,10 @@ fn public_decoder_rejects_input_over_the_default_message_limit_before_parsing() 
 
 // KMIPKit requirement KMIPKIT-0005-FR-007 sets a 16 MiB default message cap.
 #[test]
+#[cfg_attr(
+    miri,
+    ignore = "16 MiB stress allocation is verified natively; Miri verifies bounded limits and synthetic preflight"
+)]
 fn public_decoder_accepts_an_item_at_the_default_message_limit() {
     let maximum = 16 * 1024 * 1024;
     let payload = vec![0xA5; maximum - 8];
@@ -211,6 +219,10 @@ fn public_decoder_enforces_the_default_structure_depth_limit() {
 // KMIPKit requirements KMIPKIT-0005-FR-007 and FR-008 count the root and every
 // descendant before accepting the complete tree.
 #[test]
+#[cfg_attr(
+    miri,
+    ignore = "100,000-item stress allocation is verified natively; Miri verifies bounded limits and synthetic preflight"
+)]
 fn public_decoder_enforces_the_default_item_count_limit() {
     let empty_child = item(ASSIGNED_TAG, 0x01, 0, &[]);
     let mut exactly_at_limit = Vec::with_capacity(8 + 8 * 99_999);
