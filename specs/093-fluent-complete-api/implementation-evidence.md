@@ -78,6 +78,11 @@
   on the canonical `rust-kmipkit-protocol` declaration. Reproduction:
   `python3 -B -m unittest discover --failfast -s tools/api_manifest/tests -p 'test_t102*.py'`
   fails `test_locate_client_declarations_exclude_server_only_size_requirement`.
+- Continuing the same T102 suite exposed a second response traceability gap:
+  `kmipkit::DelegatedLoginResponse::result` omits KMIPKIT-0093-FR-008, while
+  its shared `ClientResponseView` carries it. The suite fails
+  `test_exact_operation_result_declarations_map_to_shared_metadata` for
+  `KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN`.
 
 ### Green
 
