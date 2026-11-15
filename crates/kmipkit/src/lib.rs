@@ -150,6 +150,7 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
             | "ffi_runtime_metadata"
             | "fluent_create_key_pair_parity"
             | "fluent_dx_api"
+            | "fluent_set_attribute_parity"
             | "generic_ttlv_model"
             | "hashed_password_timestamp_sequence"
             | "kmip30_draft_routes"
