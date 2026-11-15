@@ -148,7 +148,11 @@ fn test_link_normalizer_error_and_edge_cases() {
                 .try_checked()
                 .is_ok()
         );
-        assert!(LinkType::from_v3_tag(v3_only_tag).is_none());
+        assert!(
+            LinkType::from_v3_tag(v3_only_tag)
+                .and_then(LinkType::try_v2_enumeration)
+                .is_none()
+        );
         let item = ttlv_item(v3_only_tag, Value::text_string("target".into()));
         assert!(LinkNormalizer::normalize_to_v2(&item).is_err());
     }

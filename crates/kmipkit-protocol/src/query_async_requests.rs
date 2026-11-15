@@ -2,17 +2,49 @@
 
 use std::fmt;
 
-use kmipkit_ttlv::{Structure, StructureView, Value};
+use kmipkit_ttlv::{Structure, StructureView, Value, ValueView};
 
 use crate::asynchronous::{
     AsynchronousOperationError, SecretBytes, item, operation_result, structure,
 };
-use crate::{KmipOperationResult, ProtocolError, ResponseBatchItemView};
+use crate::{
+    KmipOperationResult, ProtocolError, ResponseBatchItemView, ResultReason, ResultStatus,
+};
 
 const QUERY_ASYNCHRONOUS_REQUESTS_OPERATION: u32 = 0x0000_0039;
 const ASYNCHRONOUS_CORRELATION_VALUES: u32 = 0x0042_0176;
+const ASYNCHRONOUS_REQUEST: u32 = 0x0042_0172;
+const ASYNCHRONOUS_CORRELATION_VALUE_V21: u32 = 0x0042_0146;
+const ASYNCHRONOUS_CORRELATION_VALUE_V20: u32 = 0x0042_0006;
+const SUBMISSION_DATE: u32 = 0x0042_0174;
+const PROCESSING_STAGE: u32 = 0x0042_0175;
+const RESULT_STATUS: u32 = 0x0042_007F;
+const RESULT_REASON: u32 = 0x0042_007E;
+const RESULT_MESSAGE: u32 = 0x0042_007D;
+const BATCH_ITEM: u32 = 0x0042_000F;
 const OPERATIONS: u32 = 0x0042_014F;
 const OPERATION: u32 = 0x0042_005C;
+
+/// A typed Asynchronous Request entry from KMIP v2.1 §6.1.41, Table 286.
+#[derive(Debug)]
+pub struct AsynchronousRequestEntry {
+    /// Asynchronous Correlation Value bytes.
+    pub asynchronous_correlation_value: Vec<u8>,
+    /// Operation enumeration code.
+    pub operation: u32,
+    /// Submission Date timestamp.
+    pub submission_date: i64,
+    /// Processing Stage enumeration code.
+    pub processing_stage: u32,
+    /// Optional Result Status.
+    pub result_status: Option<ResultStatus>,
+    /// Optional Result Reason.
+    pub result_reason: Option<ResultReason>,
+    /// Optional Result Message.
+    pub result_message: Option<String>,
+    /// Optional Batch Item structure.
+    pub batch_item: Option<Structure>,
+}
 
 /// A typed Query Asynchronous Requests payload with optional lossless filters.
 ///
@@ -130,6 +162,141 @@ impl<'a> QueryAsyncRequestsResponse<'a> {
     ) -> Option<R> {
         self.item.with_response_payload(callback)
     }
+
+    /// Parses typed Asynchronous Request entries from the Response Payload.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`AsynchronousOperationError::MalformedResponsePayload`] when an
+    /// Asynchronous Request structure is missing required fields or uses invalid types.
+    pub fn asynchronous_requests(
+        &self,
+    ) -> Result<Vec<AsynchronousRequestEntry>, AsynchronousOperationError> {
+        let Some(parsed) = self.item.with_response_payload(|payload| {
+            let mut entries = Vec::new();
+            for child in payload.children() {
+                if child.tag().raw() != ASYNCHRONOUS_REQUEST {
+                    continue;
+                }
+                let mut entry_result = None;
+                child.with_value(|view| {
+                    let ValueView::Structure(req_struct) = view else {
+                        entry_result =
+                            Some(Err(AsynchronousOperationError::MalformedResponsePayload));
+                        return;
+                    };
+                    entry_result = Some(parse_asynchronous_request_entry(&req_struct));
+                });
+                entries.push(
+                    entry_result
+                        .unwrap_or(Err(AsynchronousOperationError::MalformedResponsePayload))?,
+                );
+            }
+            Ok(entries)
+        }) else {
+            return Ok(Vec::new());
+        };
+        parsed
+    }
+}
+
+fn parse_asynchronous_request_entry(
+    req_struct: &StructureView<'_>,
+) -> Result<AsynchronousRequestEntry, AsynchronousOperationError> {
+    let mut correlation: Option<Vec<u8>> = None;
+    let mut operation: Option<u32> = None;
+    let mut submission_date: Option<i64> = None;
+    let mut processing_stage: Option<u32> = None;
+    let mut result_status: Option<ResultStatus> = None;
+    let mut result_reason: Option<ResultReason> = None;
+    let mut result_message: Option<String> = None;
+    let mut batch_item: Option<Structure> = None;
+    let mut malformed = false;
+
+    for field in req_struct.children() {
+        field.with_value(|value| match field.tag().raw() {
+            ASYNCHRONOUS_CORRELATION_VALUE_V21 | ASYNCHRONOUS_CORRELATION_VALUE_V20
+                if correlation.is_none() =>
+            {
+                if let ValueView::ByteString(bytes) = value {
+                    correlation = Some(bytes.to_vec());
+                } else {
+                    malformed = true;
+                }
+            }
+            OPERATION if operation.is_none() => {
+                if let ValueView::Enumeration(raw) = value {
+                    operation = Some(*raw);
+                } else {
+                    malformed = true;
+                }
+            }
+            SUBMISSION_DATE if submission_date.is_none() => {
+                if let ValueView::DateTime(dt) = value {
+                    submission_date = Some(*dt);
+                } else {
+                    malformed = true;
+                }
+            }
+            PROCESSING_STAGE if processing_stage.is_none() => {
+                if let ValueView::Enumeration(raw) = value {
+                    processing_stage = Some(*raw);
+                } else {
+                    malformed = true;
+                }
+            }
+            RESULT_STATUS if result_status.is_none() => {
+                if let ValueView::Enumeration(raw) = value {
+                    result_status = Some(ResultStatus::from_raw(*raw));
+                } else {
+                    malformed = true;
+                }
+            }
+            RESULT_REASON if result_reason.is_none() => {
+                if let ValueView::Enumeration(raw) = value {
+                    result_reason = Some(ResultReason::from_raw(*raw));
+                } else {
+                    malformed = true;
+                }
+            }
+            RESULT_MESSAGE if result_message.is_none() => {
+                if let ValueView::TextString(text) = value {
+                    result_message = Some(text.to_owned());
+                } else {
+                    malformed = true;
+                }
+            }
+            BATCH_ITEM if batch_item.is_none() => {
+                if let ValueView::Structure(s) = value {
+                    match s.try_clone() {
+                        Ok(cloned) => batch_item = Some(cloned),
+                        Err(_) => malformed = true,
+                    }
+                } else {
+                    malformed = true;
+                }
+            }
+            _ => {}
+        });
+    }
+
+    if malformed {
+        return Err(AsynchronousOperationError::MalformedResponsePayload);
+    }
+
+    Ok(AsynchronousRequestEntry {
+        asynchronous_correlation_value: correlation
+            .ok_or(AsynchronousOperationError::MalformedResponsePayload)?,
+        operation: operation.ok_or(AsynchronousOperationError::MalformedResponsePayload)?,
+        submission_date: submission_date
+            .ok_or(AsynchronousOperationError::MalformedResponsePayload)?,
+        processing_stage: processing_stage
+            .ok_or(AsynchronousOperationError::MalformedResponsePayload)?,
+        result_status,
+        result_reason,
+        result_message,
+        batch_item,
+    })
 }
 
 impl fmt::Debug for QueryAsyncRequestsResponse<'_> {

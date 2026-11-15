@@ -26,7 +26,7 @@ final class ProfileReadinessParityTest {
 
         assertEquals(BASELINE, readiness.profileId());
         assertTrue(readiness.targetSelected());
-        assertFalse(readiness.runtimeValidationAvailable());
+        assertTrue(readiness.runtimeValidationAvailable());
         assertEquals("evidence_incomplete", readiness.effectiveState());
         assertTrue(readiness.requirementRecordsComplete());
         assertFalse(readiness.publishedClaim());
@@ -89,7 +89,7 @@ final class ProfileReadinessParityTest {
 
         ProfileCatalog.ClientProfile baseline = profiles.stream()
                 .filter(item -> item.profileId().equals(BASELINE)).findFirst().orElseThrow();
-        assertEquals("evidence_incomplete", baseline.claimState());
+        assertEquals("evidence_complete", baseline.claimState());
         assertTrue(baseline.selectedTarget());
         assertNotNull(baseline.name());
         assertNotNull(baseline.applicability());

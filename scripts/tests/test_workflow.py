@@ -706,7 +706,7 @@ class WorkflowContractTests(unittest.TestCase):
 
         jni_job = self.require_job(contents, "ffi-sanitizer-jni")
         self.assertIn("-fsanitize=address,undefined -fno-omit-frame-pointer", jni_job)
-        self.assertIn("bindings/java/native/tests/zeroizing_bytes_test.cpp", jni_job)
+        self.assertIn("bindings/java/native/tests/*.cpp", jni_job)
 
     def test_fuzz_smoke_job_runs_the_bounded_extension_schema_target(self) -> None:
         contents = self.require_workflow()
