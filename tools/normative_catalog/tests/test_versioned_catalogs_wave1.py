@@ -75,6 +75,49 @@ class VersionedCatalogsWave1Tests(unittest.TestCase):
         self.assertIn("OTP Algorithm", group_names_v30)
         self.assertIn("Object Class Mask", group_names_v30)
 
+    def test_kmip21_versioned_tags_and_rotate_attribute_policy_bounds(self) -> None:
+        versioned_tags = json.loads(
+            (REPO_ROOT / "specification/catalog/kmip-versioned-tags.json").read_text("utf-8")
+        )
+        v21_tags = versioned_tags.get("v2_1_tags", [])
+        self.assertEqual(len(v21_tags), 36)
+        tag_by_wire = {t["wire_value"].lower(): t for t in v21_tags}
+        self.assertEqual(tag_by_wire["0x420166"]["name"], "Object Groups")
+        self.assertEqual(tag_by_wire["0x420167"]["name"], "Object Types")
+        self.assertEqual(tag_by_wire["0x420168"]["name"], "Constraints")
+        self.assertEqual(tag_by_wire["0x420169"]["name"], "Constraint")
+        self.assertEqual(tag_by_wire["0x42016a"]["name"], "Rotate Interval")
+        self.assertTrue(tag_by_wire["0x42016a"].get("is_object_attribute"))
+        self.assertEqual(tag_by_wire["0x42016b"]["name"], "Rotate Automatic")
+        self.assertTrue(tag_by_wire["0x42016b"].get("is_object_attribute"))
+        self.assertEqual(tag_by_wire["0x42016c"]["name"], "Rotate Offset")
+        self.assertTrue(tag_by_wire["0x42016c"].get("is_object_attribute"))
+        self.assertEqual(tag_by_wire["0x42016d"]["name"], "Rotate Date")
+        self.assertTrue(tag_by_wire["0x42016d"].get("is_object_attribute"))
+        self.assertEqual(tag_by_wire["0x42016e"]["name"], "Rotate Generation")
+        self.assertTrue(tag_by_wire["0x42016e"].get("is_object_attribute"))
+        self.assertEqual(tag_by_wire["0x42016f"]["name"], "Rotate Name")
+        self.assertTrue(tag_by_wire["0x42016f"].get("is_object_attribute"))
+        self.assertEqual(tag_by_wire["0x420172"]["name"], "Rotate Latest")
+        self.assertTrue(tag_by_wire["0x420172"].get("is_object_attribute"))
+
+        catalog = json.loads((REPO_ROOT / "specification/catalog/kmip-2.1.json").read_text("utf-8"))
+        rust = generate_attribute_policy.render_rust(catalog, versioned_tags=versioned_tags)
+        for tag_hex, name in [
+            ("0x42_01_6A", "Rotate Interval"),
+            ("0x42_01_6B", "Rotate Automatic"),
+            ("0x42_01_6C", "Rotate Offset"),
+            ("0x42_01_6D", "Rotate Date"),
+            ("0x42_01_6E", "Rotate Generation"),
+            ("0x42_01_6F", "Rotate Name"),
+            ("0x42_01_72", "Rotate Latest"),
+        ]:
+            self.assertIn(
+                f'tag: {tag_hex},\n        element_id: "KMIPKIT-ELEM-ATTRIBUTE-{name.upper().replace(" ", "-")}",\n        name: "{name}",\n        min_version: (2, 1),',
+                rust,
+            )
+
+
 
 if __name__ == "__main__":
     unittest.main()
