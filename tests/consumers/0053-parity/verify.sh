@@ -12,8 +12,8 @@ responder_pid_file="$temporary_root/responder.pid"
 uv run --locked --python 3.12 --project "$consumer_root/python" python \
     "$consumer_root/local_ping_responder.py" \
     --ready-file "$ready_file" --pid-file "$responder_pid_file" \
-    --fixture-dir "$fixture_root" --connections 15 \
-    --expected-operations "0x3b,1,10,20,0x3b,1,10,20,1,10,20,0x3b,1,10,20" &
+    --fixture-dir "$fixture_root" --connections 17 \
+    --expected-operations "0x3b,1,10,20,0x3b,1,10,20,1,10,20,20,20,0x3b,1,10,20" &
 responder_pid=$!
 cleanup() {
     if [ -f "$responder_pid_file" ]; then

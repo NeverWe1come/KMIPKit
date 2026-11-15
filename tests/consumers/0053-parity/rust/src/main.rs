@@ -1,5 +1,6 @@
 use kmipkit::{
-    Client, ClientBatch, ClientBatchItem, ClientBatchResponse, ClientError, ClientRequest,
+    Client, ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientBatchResponse, ClientError,
+    ClientRequest,
     client_config::ClientConfiguration,
     protocol::{
         Attribute, Authentication, Credential, CryptographicParametersBuilder, KeyMaterial,
@@ -10,6 +11,7 @@ use kmipkit::{
     },
     ttlv::{Item, RawTag, Structure, Value, codec::CodecLimits},
 };
+use kmipkit_client::fluent::CryptographicUsageMask;
 
 const RESPONSE_HEADER: u32 = 0x0042_007A;
 const PROTOCOL_VERSION: u32 = 0x0042_0069;
@@ -76,6 +78,45 @@ fn execute_ping(
     limits: &CodecLimits,
 ) -> Result<ClientBatchResponse, ClientError> {
     client.execute(ClientBatch::new(ClientBatchItem::ping()), limits)
+}
+
+fn execute_fluent_lifecycle(
+    client: &mut Client,
+    limits: &CodecLimits,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let created = client
+        .request()
+        .create_symmetric_key()
+        .aes_256()
+        .usage_mask(CryptographicUsageMask::ENCRYPT | CryptographicUsageMask::DECRYPT)
+        .name("fluent-key")
+        .execute(limits)?;
+    let identifier = match created.outcome() {
+        ClientBatchOutcome::CreateCompleted(response) => response
+            .unique_identifier()
+            .ok_or("Create response did not return its identifier")?
+            .clone(),
+        outcome => return Err(format!("unexpected Create outcome: {outcome:?}").into()),
+    };
+
+    let retrieved = client.request().get(identifier.clone()).execute(limits)?;
+    match retrieved.outcome() {
+        ClientBatchOutcome::GetCompleted(response)
+            if response.result().status().raw() == 0
+                && response.unique_identifier() == Some(&identifier)
+                && response.object().is_some() => {}
+        outcome => return Err(format!("unexpected Get outcome: {outcome:?}").into()),
+    }
+
+    let destroyed = client.request().destroy(identifier.clone()).execute(limits)?;
+    match destroyed.outcome() {
+        ClientBatchOutcome::Destroy(response)
+            if response.result().status().raw() == 0
+                && response.unique_identifier() == Some(&identifier) => {}
+        outcome => return Err(format!("unexpected Destroy outcome: {outcome:?}").into()),
+    }
+    println!("rust: fluent Create/Get/Destroy verified over TLS 1.3/mTLS");
+    Ok(())
 }
 
 fn demonstrate_client_request() -> Result<(), Box<dyn std::error::Error>> {
@@ -146,5 +187,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let raw = item.raw().ok_or("Ping Response Payload is missing")?;
     assert_eq!(raw.children().len(), 0);
     println!("rust: Ping result and raw TTLV verified");
+    execute_fluent_lifecycle(&mut client, &limits)?;
     Ok(())
 }

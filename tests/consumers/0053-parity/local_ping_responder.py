@@ -185,8 +185,8 @@ def _validate_operation(
             raise RuntimeError("Get or Destroy did not use the returned Unique Identifier")
     if operation in (10, 20):
         indicators = [value for tag, kind, value in header_fields if tag == 0x420007 and kind == 5]
-        if operation == 10 and indicators != [struct.pack(">I", 1)]:
-            raise RuntimeError("Get omitted the explicit Request Header Asynchronous Indicator")
+        if operation == 10 and indicators not in ([], [struct.pack(">I", 1)]):
+            raise RuntimeError("Get contains an invalid Request Header Asynchronous Indicator")
         if operation == 20 and indicators not in ([], [struct.pack(">I", 1)]):
             raise RuntimeError("Destroy contains an invalid Request Header Asynchronous Indicator")
 

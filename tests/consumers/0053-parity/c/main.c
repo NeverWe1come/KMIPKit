@@ -122,16 +122,31 @@ int main(void) {
     kmipkit_client_t *client = 0;
     kmipkit_client_batch_response_t *client_response = 0;
     kmipkit_client_batch_item_response_t *client_item_response = 0;
+    kmipkit_client_batch_response_t *create_response = 0;
+    kmipkit_client_batch_item_response_t *create_item = 0;
+    kmipkit_client_batch_response_t *get_response = 0;
+    kmipkit_client_batch_item_response_t *get_item = 0;
+    kmipkit_client_batch_response_t *destroy_response = 0;
+    kmipkit_client_batch_item_response_t *destroy_item = 0;
     kmipkit_ttlv_structure_t *client_raw_payload = 0;
     kmipkit_ttlv_structure_view_t *client_raw_view = 0;
+    kmipkit_ttlv_structure_t *get_object = 0;
     kmipkit_transport_input_v1_t client_certificate = {0};
     kmipkit_transport_input_v1_t private_key = {0};
     kmipkit_transport_input_v1_t server_certificate = {0};
     kmipkit_transport_config_v1_t transport_values = {0};
     kmipkit_client_batch_item_metadata_v1_t client_metadata = {0};
+    kmipkit_symmetric_key_request_v1_t create_request = {0};
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    kmipkit_unique_identifier_v1_t destroy_identifier = {0};
     uint8_t valid = 0;
     uint8_t present = 0;
     uint8_t ping_present = 0;
+    uint8_t create_present = 0;
+    uint8_t get_present = 0;
+    uint8_t get_payload_present = 0;
+    uint8_t destroy_present = 0;
+    uint32_t object_type = UINT32_MAX;
     uint32_t result_status = UINT32_MAX;
     uint64_t count = UINT64_MAX;
     int32_t status = kmipkit_codec_limits_defaults(&limits);
@@ -320,6 +335,73 @@ int main(void) {
     if (status == 0 && count != 0) status = 4;
     if (status == 0) puts("c: Ping result and raw TTLV verified");
 
+    create_request.struct_size = (uint32_t)sizeof(create_request);
+    create_request.abi_version = UINT32_C(1);
+    create_request.cryptographic_algorithm = KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES;
+    create_request.cryptographic_length = INT32_C(256);
+    create_request.cryptographic_usage_mask = (int32_t)(
+        KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_ENCRYPT |
+        KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_DECRYPT);
+    create_request.name_present = UINT8_C(1);
+    create_request.name.data = (const uint8_t *)"fluent-key";
+    create_request.name.length = UINT64_C(10);
+    if (status == 0) {
+        status = kmipkit_client_create_symmetric_key_v1(
+            client, &create_request, limits, &create_response);
+    }
+    if (status == 0) {
+        status = kmipkit_client_batch_response_item_at(create_response, UINT64_C(0), &create_item);
+    }
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = UINT32_C(1);
+    if (status == 0) {
+        status = kmipkit_client_batch_item_response_create(
+            create_item, &create_present, &object_type, &identifier);
+    }
+    if (status == 0 && (!create_present ||
+            object_type != KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY ||
+            identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
+            identifier.text_length != UINT64_C(10) ||
+            memcmp(identifier.text_data, "fluent-key", (size_t)identifier.text_length) != 0)) {
+        status = 4;
+    }
+    if (status == 0) {
+        status = kmipkit_client_get_by_id_v1(client, &identifier, limits, &get_response);
+    }
+    if (status == 0) {
+        status = kmipkit_client_batch_response_item_at(get_response, UINT64_C(0), &get_item);
+    }
+    object_type = UINT32_MAX;
+    if (status == 0) {
+        status = kmipkit_client_batch_item_response_get(
+            get_item, &get_present, &get_payload_present, &object_type, &identifier, &get_object);
+    }
+    if (status == 0 && (!get_present || !get_payload_present ||
+            object_type != KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY || get_object == 0)) {
+        status = 4;
+    }
+    if (status == 0) {
+        status = kmipkit_client_destroy_by_id_v1(client, &identifier, limits, &destroy_response);
+    }
+    if (status == 0) {
+        status = kmipkit_client_batch_response_item_at(
+            destroy_response, UINT64_C(0), &destroy_item);
+    }
+    destroy_identifier.struct_size = (uint32_t)sizeof(destroy_identifier);
+    destroy_identifier.abi_version = UINT32_C(1);
+    if (status == 0) {
+        status = kmipkit_client_batch_item_response_destroy(
+            destroy_item, &destroy_present, &destroy_identifier);
+    }
+    if (status == 0 && (!destroy_present ||
+            destroy_identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
+            destroy_identifier.text_length != UINT64_C(10) ||
+            memcmp(destroy_identifier.text_data, "fluent-key",
+                   (size_t)destroy_identifier.text_length) != 0)) {
+        status = 4;
+    }
+    if (status == 0) puts("c: fluent Create/Get/Destroy verified over TLS 1.3/mTLS");
+
     kmipkit_ttlv_value_release(value);
     kmipkit_ttlv_item_release(typed_attribute);
     kmipkit_ttlv_item_release(fields[0]); kmipkit_ttlv_item_release(fields[1]);
@@ -339,6 +421,13 @@ int main(void) {
     kmipkit_ttlv_structure_release(client_raw_payload);
     kmipkit_client_batch_item_response_release(client_item_response);
     kmipkit_client_batch_response_release(client_response);
+    kmipkit_ttlv_structure_release(get_object);
+    kmipkit_client_batch_item_response_release(destroy_item);
+    kmipkit_client_batch_response_release(destroy_response);
+    kmipkit_client_batch_item_response_release(get_item);
+    kmipkit_client_batch_response_release(get_response);
+    kmipkit_client_batch_item_response_release(create_item);
+    kmipkit_client_batch_response_release(create_response);
     kmipkit_client_release(client);
     kmipkit_transport_config_release(transport_configuration);
     kmipkit_client_configuration_release(client_configuration);

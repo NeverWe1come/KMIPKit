@@ -34,8 +34,8 @@ try {
         '--ready-file', $readyFile,
         '--pid-file', $responderPidFile,
         '--fixture-dir', $fixtureRoot,
-        '--connections', '15',
-        '--expected-operations', '0x3b,1,10,20,0x3b,1,10,20,1,10,20,0x3b,1,10,20'
+        '--connections', '17',
+        '--expected-operations', '0x3b,1,10,20,0x3b,1,10,20,1,10,20,20,20,0x3b,1,10,20'
     ) | ForEach-Object { '"' + $_ + '"' }
     $server = Start-Process -FilePath 'uv' -ArgumentList ($serverArguments -join ' ') `
         -WindowStyle Hidden -PassThru -RedirectStandardError $serverErrorFile

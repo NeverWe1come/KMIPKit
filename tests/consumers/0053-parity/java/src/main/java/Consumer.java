@@ -2,7 +2,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import org.kmipkit.client.KmipClient;
-import org.kmipkit.client.SymmetricKeyRequest;
+import org.kmipkit.fluent.SymmetricKeyBuilder;
 import org.kmipkit.extensions.ClientBatchItemResult;
 import org.kmipkit.extensions.ClientBatchResponse;
 import org.kmipkit.extensions.ClientConfiguration;
@@ -17,6 +17,7 @@ import org.kmipkit.extensions.RequestOptions;
 import org.kmipkit.extensions.UniqueIdentifier;
 import org.kmipkit.message.ResponseMessage;
 import org.kmipkit.protocol.CryptographicParameters;
+import org.kmipkit.protocol.KmipValues;
 import org.kmipkit.ttlv.CodecLimits;
 import org.kmipkit.ttlv.KeyMaterial;
 import org.kmipkit.ttlv.ManagedObject;
@@ -132,9 +133,12 @@ public final class Consumer {
                             .build();
                     KmipClient kmipClient = KmipClient.create(configuration, transport)) {
                 UniqueIdentifier identifier;
-                try (ClientBatchResponse created = kmipClient.createSymmetricKey(
-                                SymmetricKeyRequest.named(3, 256, 12, "fluent-key"), limits,
-                                RequestOptions.defaults());
+                try (SymmetricKeyBuilder builder = kmipClient.request().createSymmetricKey()
+                                .aes256()
+                                .usageMask((int) (KmipValues.CryptographicUsageMask.ENCRYPT
+                                        | KmipValues.CryptographicUsageMask.DECRYPT))
+                                .name("fluent-key");
+                        ClientBatchResponse created = builder.execute(limits);
                         ClientBatchItemResult itemResult = created.itemAt(0)) {
                     if (!itemResult.outcomeKind().isCompleted() || itemResult.resultStatus() != 0) {
                         throw new IllegalStateException("Create did not complete successfully");

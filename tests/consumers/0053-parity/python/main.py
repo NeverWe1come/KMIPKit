@@ -10,6 +10,7 @@ from kmipkit import (
     extensions,
     managed_objects,
     messages,
+    protocol_values,
     ttlv,
     typed_attributes,
     validation,
@@ -152,6 +153,53 @@ def main() -> None:
                         raw.close()
                 finally:
                     result.close()
+
+            lifecycle_results: list[client.BatchResult] = []
+            try:
+                created = (
+                    kmip_client.request()
+                    .create_symmetric_key()
+                    .aes_256()
+                    .usage_mask(
+                        protocol_values.CryptographicUsageMask.ENCRYPT
+                        | protocol_values.CryptographicUsageMask.DECRYPT
+                    )
+                    .name("fluent-key")
+                    .execute(limits)
+                )
+                lifecycle_results.append(created)
+                create_item = created.items[0]
+                assert create_item.operation == 1
+                assert create_item.outcome is client.BatchOutcome.COMPLETED
+                assert create_item.result_status == 0
+                assert create_item.create_object_type == 2
+                identifier = create_item.unique_identifier
+                assert identifier == extensions.UniqueIdentifier.text_string("fluent-key")
+
+                retrieved = kmip_client.request().get(identifier).execute(limits)
+                lifecycle_results.append(retrieved)
+                get_item = retrieved.items[0]
+                assert get_item.operation == 10
+                assert get_item.outcome is client.BatchOutcome.COMPLETED
+                assert get_item.result_status == 0
+                get_response = get_item.get_response()
+                assert get_response is not None
+                assert get_response.unique_identifier == identifier
+                assert get_response.object is not None
+
+                destroyed = kmip_client.request().destroy(identifier).execute(limits)
+                lifecycle_results.append(destroyed)
+                destroy_item = destroyed.items[0]
+                assert destroy_item.operation == 20
+                assert destroy_item.outcome is client.BatchOutcome.COMPLETED
+                assert destroy_item.result_status == 0
+                destroy_response = destroy_item.destroy_response
+                assert destroy_response is not None
+                assert destroy_response.unique_identifier == identifier
+                print("python: fluent Create/Get/Destroy verified over TLS 1.3/mTLS")
+            finally:
+                for lifecycle_result in lifecycle_results:
+                    lifecycle_result.close()
 
 if __name__ == "__main__":
     main()
