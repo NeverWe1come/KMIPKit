@@ -144,7 +144,7 @@ class RouteMatrixTests(unittest.TestCase):
     def test_optional_request_header_fields_use_typed_request_fixtures(self):
         """OASIS KMIP 2.0/2.1 §8.2 defines optional Request Header branches (0092-FR-003)."""
         from artifact_support import INSTALL, ROOT
-        from route_ttlv import TreeAbi, encode
+        from route_ttlv import TreeAbi, encode, normalized
 
         catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
         tags = self.runner.catalog_tag_values(catalog)
@@ -197,6 +197,37 @@ class RouteMatrixTests(unittest.TestCase):
                     self.assertEqual((field[1], field[2]), (kind, value))
                     result = abi.roundtrip(encode(request))
                     self.assertIn('kmipkit_request_message_from_ttlv', result['invoked_symbols'])
+
+    def test_export_key_wrap_type_and_any_object_have_generic_ttlv_fixtures(self):
+        """OASIS KMIP 2.0 §6.1.18 Tables 202–203; KMIP 2.1 Tables 217–218."""
+        from artifact_support import INSTALL, ROOT
+        from route_ttlv import TreeAbi, encode
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        tags = self.runner.catalog_tag_values(catalog)
+        targets = {target['target_id']: target for target in catalog['normative_targets']}
+        case_ids = (
+            'test-norm-payload-client-export-request-20-003',
+            'test-norm-payload-client-export-request-21-003',
+            'test-norm-payload-client-export-response-20-004',
+            'test-norm-payload-client-export-response-21-004',
+        )
+        abi = TreeAbi(INSTALL / 'lib/libkmipkit_ffi.so')
+        for case_id in case_ids:
+            case = next(item for item in catalog['test_cases'] if item['case_id'] == case_id)
+            target = targets[case['requires']['normative_target_id']]
+            version = case['execution']['protocol_versions'][0]
+            with self.subTest(case_id=case_id):
+                fixtures = self.runner.generic_tree_fixtures(target, catalog, tags, version, case=case)
+                self.assertTrue(fixtures, f'{case_id} has no generic TTLV fixture')
+                result = abi.roundtrip(encode(fixtures[0]))
+                self.assertEqual(result['normalized_tree'], normalized(fixtures[0]))
+                self.assertIn('kmipkit_ttlv_item_create', result['invoked_symbols'])
+                self.assertIn('kmipkit_ttlv_decode', result['invoked_symbols'])
+                if 'request' in case_id:
+                    self.assertEqual(fixtures[0], (tags['Key Wrap Type'], 5, (1).to_bytes(4, 'big')))
+                else:
+                    self.assertEqual((fixtures[0][0], fixtures[0][1]), (tags['Symmetric Key'], 1))
 
     def test_request_message_context_fields_use_complete_parser_fixtures(self):
         """OASIS KMIP 2.0/2.1 §§8.1–8.3 define these Request Message branches (0092-FR-003)."""
