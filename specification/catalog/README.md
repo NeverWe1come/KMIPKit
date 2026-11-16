@@ -124,9 +124,9 @@ supplement does not change the scope or content of the comprehensive KMIP 2.1
 inventory above, and does not claim full KMIP 3.0 protocol support.
 
 [`kmip-versioned-tags.json`](kmip-versioned-tags.json) records all 60 exact
-KMIP 3.0 tag assignments from §11.58, Table 605. Its 17-entry `v2_1_tags`
-subset cross-checks tag names and introduction versions against the canonical
-KMIP 2.1 catalog, §11.56, Table 487. The 20 link assignments also retain their
+KMIP 3.0 tag assignments from §11.58, Table 605. Its 36-entry `v2_1_tags` set
+cross-checks all KMIP 2.1 tag names and introduction versions against the
+canonical KMIP 2.1 catalog, §11.56, Table 487. The 20 link assignments also retain their
 §4.35 definition references. The named-value generator exposes assigned
 KMIP 2.1 and 3.0 tags in Rust, C, Java, and Python; it emits no reserved or
 unassigned values. The `generate_ttlv_tags.py` tool verifies the pinned source
