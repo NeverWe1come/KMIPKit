@@ -448,4 +448,9 @@
   failed with `clippy::too_many_lines` at 357 lines. The new regression test
   `test_large_tag_lookup_is_split_into_clippy_sized_rust_functions` also fails
   because generated Rust has no chunked tag lookup helpers.
+- Adding the assigned tag declarations made the existing full-manifest snapshot
+  stale. `python3 -B -m unittest
+  tools.api_manifest.tests.test_t102_pkcs11_request_trait_exclusions.T102Pkcs11RequestTraitExclusionTests.test_t102_slice_and_manifest_snapshots_remain_consistent -v`
+  fails at the declaration total (`18895 != 16816`). The manifest now contains
+  2,077 KMIPKIT-0093 tag declarations; the approved exclusion total is unchanged.
 
