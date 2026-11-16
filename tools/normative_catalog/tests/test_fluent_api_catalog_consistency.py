@@ -97,15 +97,15 @@ class FluentApiCatalogConsistencyTests(unittest.TestCase):
             )
         )
 
-    def test_kmip_21_tag_supplement_matches_the_normative_name_and_value_pairs(self) -> None:
+    def test_kmip_21_tag_assignments_match_the_normative_name_and_value_pairs(self) -> None:
         normative_tags = {
             _numeric(row["wire_value"]): row["name"]
             for row in self.base["elements"]
             if row.get("kind") == "tag"
         }
-        supplement = self.tags["v2_1_tags"]
-        self.assertEqual(17, len(supplement))
-        for row in supplement:
+        assignments = self.tags["v2_1_tags"]
+        self.assertEqual(36, len(assignments))
+        for row in assignments:
             with self.subTest(tag=row["wire_value"]):
                 value = _numeric(row["wire_value"])
                 self.assertEqual(row["name"], normative_tags.get(value))
