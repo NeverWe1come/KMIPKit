@@ -7,7 +7,7 @@ from pathlib import Path
 import sys
 import tarfile
 
-PIN = "9692057c9ade474fb0c4e0b7130539da368eb794"
+PIN = "489fafc79ef89db2524eafa7a6c6482f5cf75d97"
 ROOT = Path(__file__).resolve().parents[3]
 LOCAL = ROOT / "interop/.local/rust-live"
 

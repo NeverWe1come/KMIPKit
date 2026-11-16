@@ -136,3 +136,51 @@ provenance verification and the >=90% coverage gate pass. The latest isolated
 coverage result is 92.67% (1858/2005 handwritten consumer lines). These are
 offline library and controlled-fixture results; no deployed KMS or
 cross-language parity claim is made.
+
+## KMIPKIT-0092 Rust route matrix on the release artifact
+
+The Rust route-matrix PR merges the updated shared route contract and consumes
+the exact `release/1.0.0` commit
+`9a16cc90a12205101d22a38501a5e74c665df4dc`. A clean rebuild of the installed
+Rust packages produced bundle SHA-256
+`026524f0b7b6229dcfcaa94effc5ef87d411c183e0d18e8ae38e3bd95bd94bd5`; the
+artifact verifier confirmed both values. The installer now rejects stale
+bundle provenance and rebuilds it, while the local test-server cache records
+the source commit it contains.
+
+Earlier route-gate output reported 99,535 passing cells, but the validator and
+test-server binaries at the default target paths could reuse stale Cargo
+dependency artifacts. That output is not accepted as evidence for the pinned
+release package. Consumer, coverage, and test-server target directories are now
+isolated by the verified source commit, and local commands and CI resolve their
+binaries from the matching provenance record.
+
+The clean-target controlled run confirms an actual release behavior gap in
+batch Stop: `route_protocol_invalid_value_failed`, with request delivery state
+`possibly_sent`. The peer observed two request items, a Stop continuation, and
+one response. The same normalized input passed only in a stale normal target
+that contained the unmerged implementation from commit `8281fef2e`; the exact
+release source at `9a16cc90a12205101d22a38501a5e74c665df4dc` rejects the
+partial response. The catalog expectation remains unchanged. Library PR #204
+contains the pending fix and must reach the release base before the full live
+suite and canonical network gate can pass. Across the 12 controlled
+version/encoding/transport combinations, the observed failures are confined
+to the Stop case; no vendor KMS was involved.
+
+The network-route test now persists peer observations and validates its report
+before asserting the client exit status. This keeps red protocol evidence
+schema-valid without changing the expected outcome. A fresh full route-gate run
+invoked all 49,051 local and response-accessor cells and all 50,484 network
+cells, with zero pending cells and valid schemas. The only failures were 144
+network cells, each `route_protocol_invalid_value_failed` for the Stop case
+with request delivery state `possibly_sent`; all local and response-accessor
+cells passed.
+
+Fresh checks on the commit-keyed release artifact: `cargo +1.94 fmt --check`,
+Clippy with `-D warnings`, 69 Rust unit tests, 3 CLI tests, 50 Python route
+matrix tests, artifact byte/provenance verification, and the local case
+generator passed. Twenty-seven live/parity tests passed with the two
+Stop-dependent test methods excluded. The complete 12-axis network method
+produced the 144 schema-valid Stop failures above. The coverage gate cannot
+finish until PR #204 updates the release artifact because it includes the same
+Stop-dependent live suite.
