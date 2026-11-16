@@ -11,7 +11,7 @@ network recipes. Library sources are unchanged.
 | KMIPKIT-0092-FR-002, FR-007, FR-009 | Per-cell evidence and explicit pending sidecar; duplicate protection; common schema and validator in CI. Incomplete recipes keep the gate failing. |
 | KMIPKIT-0092-FR-003 | Exact assigned scalar values, reserved-tag rejection, typed attributes, and cryptographic-parameter field/TTLV round trips are checked locally. Broader semantic branch/model recipes remain pending. No absent encoder/send/high-level API is fabricated. |
 | KMIPKIT-0092-FR-004 | Ordered, redacted tree digests are retained per cell. Cross-language digest normalization/parity is pending. |
-| KMIPKIT-0092-FR-005 | Controlled peers parse all six encoding/transport pairs, check recipe fields, numeric ordered results, lifecycle transitions and deletion. Check, Get Attribute List, Log, Revoke, and Interop response TTLV accessors are read and structurally checked. The C peer covers catalogued asynchronous Cancel results, KMIP 2.1 Poll/Cancel and Process/Poll interleavings, and Query filters whose intersection returns only the matching outstanding request; other asynchronous and positive operation recipes remain pending. |
+| KMIPKIT-0092-FR-005 | Controlled peers parse all six encoding/transport pairs, check recipe fields, numeric ordered results, lifecycle transitions and deletion. Check, Get Attribute List, Log, Revoke, Interop, and Export response TTLV accessors are read and structurally checked; Export checks all required response fields and its AES-128 attributes. The C peer covers catalogued asynchronous Cancel results, KMIP 2.1 Poll/Cancel and Process/Poll interleavings, and Query filters whose intersection returns only the matching outstanding request; other asynchronous and positive operation recipes remain pending. |
 | KMIPKIT-0092-FR-008 | Reports contain public identities, axes, digests, sanitized failure codes and numeric outcomes. Request bodies and fixture keys/tickets never enter evidence. |
 
 The exact OASIS document and section remain on each case in the generated shared
@@ -1075,3 +1075,26 @@ preserving their server-issued correlations.
   The matching completeness validator now reports
   `test-async-unknown-correlation-rejected` as the next missing recipe; PR
   #170 remains WIP.
+
+### C Export request and response routes
+
+OASIS KMIP v2.0 §6.1.18 Tables 202–203 and v2.1 §6.1.18 Tables 217–218
+define the Export payloads. The installed C consumer sends Create → Export →
+Revoke → Destroy with ID Placeholder identifiers, checks the typed Object
+Type, Unique Identifier, and AES-128 Attributes, and verifies the complete
+response TTLV and the Symmetric Key object shape. The controlled peer checks
+the exact Export request and all four required response fields; key bytes are
+not included in evidence or diagnostics.
+
+- Red commit `76f402452`: the focused test failed because Export had no
+  controlled-peer route recipe.
+- Green commit `f4aa1a690`: implemented the C request/response path and peer
+  recipe across both versions and all six encoding/transport combinations.
+- Verification: the focused test covers all 44 C cells for `test-op-export`,
+  including four generic TTLV cells, 36 constructor/send/decode cells, and four
+  typed/generic response-accessor cells. All 12 controlled-peer checks pass.
+  The C target builds, CTest `test_c_validator` passes, and
+  `PYTHONPATH=interop/c-kmip-validator/tests:interop/c-kmip-validator/tools
+  python3 -B -m unittest test_route_matrix -v` passes 159/159 on the final
+  source. The complete C matrix and exact-head CI remain open, so PR #170
+  remains WIP.

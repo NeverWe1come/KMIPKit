@@ -411,3 +411,31 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
   tests in 77.18 seconds, including the route matrix contracts and the
   KMIP 2.0/2.1 controlled TLS peers. Feature traceability passed 31/31 tests.
   Exact-head CI and the full C route matrix remain open.
+
+## Development evidence: C Export request and response routes
+
+- Normative scope: OASIS KMIP v2.0 §6.1.18 Tables 202–203 and v2.1 §6.1.18
+  Tables 217–218 define the Export Request and Response Payloads. The response
+  requires Object Type, Unique Identifier, Attributes, and Any Object. The
+  ordered Create/Export/Revoke/Destroy exchange exercises ID Placeholder use
+  and cleanup under §6.1 and §§8.2–8.6.
+- Red commit `76f402452`: the focused test failed because `test-op-export` had
+  no controlled-peer recipe.
+- Green commit `f4aa1a690`: the installed C consumer builds the typed Export request,
+  follows its Create with Export and cleanup, checks the typed response and
+  complete response TTLV, and returns the expected payload from a controlled
+  peer. The peer validates the four required response fields and the AES-128
+  attributes without including key bytes in diagnostics or evidence.
+- Refactor/documentation commit: record the scoped Export evidence, normative
+  payload fields, and remaining matrix gate in C implementation evidence and
+  requirement traceability.
+- The focused slice passes all 44 C cells for `test-op-export`: four local
+  generic TTLV cells, 36 constructor/send/decode cells across KMIP 2.0/2.1 and
+  TTLV/JSON/XML over raw TLS/HTTPS, and four response-accessor cells. All 12
+  controlled-peer checks pass and observe Create → Export → Revoke → Destroy
+  with cleanup returning fixture state to its initial value.
+- Verification: the focused Export test and CTest `test_c_validator` pass.
+  `PYTHONPATH=interop/c-kmip-validator/tests:interop/c-kmip-validator/tools
+  python3 -B -m unittest test_route_matrix -v` passes 159/159 on the final
+  source. The full installed C route matrix and exact-head CI remain open; this
+  operation slice does not close KMIPKIT-0092-FR-003 or FR-009 globally.

@@ -28,3 +28,15 @@ TLS/HTTPS. Its focused test checks 60 peer exchanges and 36 request-based
 construct/send/decode cells. This closes only that scenario slice: the latest
 exact-head CI on parent commit `3a21e925` still reports 25,723 C validator
 recipe cells pending, so the exhaustive route gate remains open.
+
+### C Export route slice
+
+For KMIPKIT-0092-FR-003 and FR-009, `test-op-export` now exercises all 44
+catalogued C cells: local generic TTLV decode/item construction, the installed
+typed Export constructor through six encoding/transport combinations for each
+protocol version, and both typed and generic response accessors. The controlled
+peer checks OASIS KMIP v2.0 §6.1.18 Tables 202–203 and v2.1 §6.1.18 Tables
+217–218, including all four required Export response payload fields, then
+observes Create → Export → Revoke → Destroy and cleanup. All 12 peer checks pass.
+This closes only the Export operation slice; the complete C route matrix and
+the FR-003/FR-009 gates remain open.
