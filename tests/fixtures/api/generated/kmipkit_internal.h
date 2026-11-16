@@ -13,6 +13,8 @@ typedef uint32_t kmipkit_credential_type_t;
 #define KMIPKIT_CREDENTIAL_TYPE_ONE_TIME_PASSWORD ((kmipkit_credential_type_t)4)
 #define KMIPKIT_CREDENTIAL_TYPE_HASHED_PASSWORD ((kmipkit_credential_type_t)5)
 #define KMIPKIT_CREDENTIAL_TYPE_TICKET ((kmipkit_credential_type_t)6)
+#define KMIPKIT_CREDENTIAL_TYPE_PASSWORD ((kmipkit_credential_type_t)7)
+#define KMIPKIT_CREDENTIAL_TYPE_CERTIFICATE ((kmipkit_credential_type_t)8)
 
 typedef uint32_t kmipkit_credential_validation_error_kind_t;
 #define KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_EMPTY_AUTHENTICATION ((kmipkit_credential_validation_error_kind_t)1)
@@ -3520,6 +3522,34 @@ int32_t kmipkit_client_batch_item_validation_report(kmipkit_client_batch_item_t 
  * invalid_input when a NULL array has a nonzero count. */
 /* KMIPKIT-0053-FR-006, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
 int32_t kmipkit_ttlv_structure_validation_report_v1(kmipkit_ttlv_structure_t * structure, const uint8_t * schema, uint64_t schema_length, kmipkit_validation_report_t ** out_report);
+/* Copies the returned unique identifier only from a successful CreateGroup result.
+ */
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011 */
+int32_t kmipkit_client_batch_item_response_create_group(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier);
+/* Copies the returned unique identifier only from a successful CreateUser result.
+ */
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011 */
+int32_t kmipkit_client_batch_item_response_create_user(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier);
+/* Copies the returned unique identifier only from a successful CreateCredential result.
+ */
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011 */
+int32_t kmipkit_client_batch_item_response_create_credential(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier);
+/* Reports whether this batch item has a successful Obliterate result.
+ */
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011 */
+int32_t kmipkit_client_batch_item_response_obliterate(kmipkit_client_batch_item_response_t * item, uint8_t * out_present);
+/* Copies the returned unique identifier only from a successful Deactivate result.
+ */
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011 */
+int32_t kmipkit_client_batch_item_response_deactivate(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier);
+/* Copies the returned unique identifier and optional data only from a successful Encapsulate result.
+ */
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011 */
+int32_t kmipkit_client_batch_item_response_encapsulate(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier, uint8_t * out_data_present, kmipkit_byte_span_v1_t * out_data);
+/* Copies the returned unique identifier only from a successful Decapsulate result.
+ */
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011 */
+int32_t kmipkit_client_batch_item_response_decapsulate(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier);
 /* Returns an owned snapshot of safe profile validation IDs when the calling thread's last error is a profile validation failure.
  * Returns success and writes a null handle when no profile validation details are present; this leaves the last-error snapshot unchanged.
  * The returned handle remains valid when the thread-local error snapshot changes and must be released with kmipkit_profile_validation_error_release.

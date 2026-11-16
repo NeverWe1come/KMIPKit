@@ -104,17 +104,17 @@ class TypedAttributeGeneratorTests(unittest.TestCase):
 
         self.assertEqual(62, java.count("(0x"))
         self.assertEqual(62, python.count(" = (0x"))
-        self.assertIn("ACTIVATION_DATE(0x420001, \"DateTime\", \"No\")", java)
+        self.assertIn("ACTIVATION_DATE(0x420001, \"DateTime\", \"No\", \"2.0\", null)", java)
         self.assertIn(
-            "APPLICATION_SPECIFIC_INFORMATION(0x420004, \"Structure\", \"Yes\")",
+            "APPLICATION_SPECIFIC_INFORMATION(0x420004, \"Structure\", \"Yes\", \"2.0\", null)",
             java,
         )
         self.assertIn(
             "DIGITAL_SIGNATURE_ALGORITHM(0x4200AE, \"Enumeration\", "
-            "\"Yes for PGP keys. No for X.509 certificates.\")",
+            "\"Yes for PGP keys. No for X.509 certificates.\", \"2.0\", null)",
             java,
         )
-        self.assertIn("ACTIVATION_DATE = (0x420001, \"DateTime\", \"No\")", python)
+        self.assertIn("ACTIVATION_DATE = (0x420001, \"DateTime\", \"No\", \"2.0\", None)", python)
         self.assertIn("def source_multiplicity(self) -> str | None:", python)
 
     def test_typed_attributes_expose_min_and_max_version_metadata(self) -> None:

@@ -291,7 +291,8 @@ def _merge_versioned_wire_data(
     mask_fam_map = dict(mask_families)
 
     if versioned_tags is not None:
-        assignments = versioned_tags.get("tagEnumeration", {}).get("assignments", [])
+        assignments = list(versioned_tags.get("tagEnumeration", {}).get("assignments", []))
+        assignments.extend(versioned_tags.get("v3_0_promoted_attributes", []))
         for a in assignments:
             raw = a["wire_value"]
             val = int(raw.removeprefix("0x").removeprefix("0X"), 16)
@@ -299,22 +300,18 @@ def _merge_versioned_wire_data(
             if val not in tag_map and name not in tag_name_set:
                 tag_map[val] = name
                 tag_name_set.add(name)
-            if a.get("source_encoding") == "Enumeration":
+            if a.get("source_encoding") == "Enumeration" or "enumeration_family" in a:
                 fam = a.get("enumeration_family")
-                if not fam:
+                if not isinstance(fam, str) or not fam.strip():
                     raise ValueError(f"Enumeration tag {name} ({raw}) has no enumeration_family")
                 if val not in enum_fam_map:
                     enum_fam_map[val] = fam
-            elif "enumeration_family" in a and val not in enum_fam_map:
-                enum_fam_map[val] = a["enumeration_family"]
-            if a.get("source_encoding") == "Bitmask":
+            if a.get("source_encoding") == "Bitmask" or a.get("is_bitmask") or "bitmask_family" in a:
                 fam = a.get("bitmask_family")
-                if not fam:
+                if not isinstance(fam, str) or not fam.strip():
                     raise ValueError(f"Bitmask tag {name} ({raw}) has no bitmask_family")
                 if val not in mask_fam_map:
                     mask_fam_map[val] = fam
-            elif "bitmask_family" in a and val not in mask_fam_map:
-                mask_fam_map[val] = a["bitmask_family"]
 
     enum_val_seen = {(f, v) for f, v, _ in enum_values}
     enum_name_seen = {(f, n) for f, _, n in enum_values}
