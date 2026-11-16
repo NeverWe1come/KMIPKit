@@ -417,4 +417,11 @@
 - The reviewed sources are the pinned KMIP Specification v2.1 §11.36/Table
   470 and §11.56/Table 487, and the pinned KMIP 3.0 draft §11.37/Table 584
   and §11.58/Table 605. The pinned OASIS source files remain unchanged.
+- Added a focused generation and manifest test for all 354 assigned KMIP 2.1
+  tags and 60 KMIP 3.0 tags across Rust, C, Java, and Python. The first run
+  exposed a test setup error (`StopIteration`) while locating the missing v3
+  Tag group; after correcting the assertion to report the missing group, the
+  focused test fails as expected: the existing KMIP 2.1 Tag enumeration has
+  zero generated values instead of 354. Reproduced with:
+  `python3 -B -m unittest tools.normative_catalog.tests.test_generate_named_values.NamedValueGeneratorTests.test_tag_enumeration_is_generated_for_all_supported_versions_and_languages -v`
 

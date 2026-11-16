@@ -14,6 +14,60 @@ ROOT = Path(__file__).resolve().parents[3]
 
 
 class NamedValueGeneratorTests(unittest.TestCase):
+    def test_tag_enumeration_is_generated_for_all_supported_versions_and_languages(self) -> None:
+        catalog = generate_named_values.load_validated_catalog(
+            generate_named_values.safe_read_bytes(
+                ROOT,
+                generate_named_values.CATALOG_PATH,
+                max_bytes=generate_named_values.MAX_BYTES,
+            ),
+            ROOT,
+            require_complete=True,
+        )
+        versioned = generate_named_values.load_versioned_values(ROOT)
+        values = generate_named_values.collect_values(catalog)
+        tag_group = next(group for group in values.enumerations if group.name == "Tag")
+        v3_tag_groups = [
+            group for group in versioned.groups
+            if group.version == "v3_0" and group.kind == "enumeration" and group.name == "Tag"
+        ]
+
+        self.assertEqual(354, len(tag_group.values))
+        self.assertEqual(1, len(v3_tag_groups))
+        v3_tag_group = v3_tag_groups[0]
+        self.assertEqual(60, len(v3_tag_group.values))
+
+        rendered = generate_named_values.render_outputs(values, versioned)
+        self.assertIn("pub const ACTIVATION_DATE: u32 = 0x0042_0001;", rendered["rust"])
+        self.assertIn("pub const CERTIFICATE_LINK: u32 = 0x0042_0190;", rendered["rust"])
+        self.assertIn("KMIPKIT_ENUMERATION_TAG_ACTIVATION_DATE", rendered["c"])
+        self.assertIn("KMIPKIT_V3_0_TAG_CERTIFICATE_LINK", rendered["c"])
+        self.assertIn("public static final long ACTIVATION_DATE = 0x00420001L;", rendered["java"])
+        self.assertIn("V3_0_TAG_CERTIFICATE_LINK = 0x00420190L", rendered["java"])
+        self.assertIn("ACTIVATION_DATE = 0x00420001", rendered["python"])
+        self.assertIn("V3_0_TAG_CERTIFICATE_LINK = 0x00420190", rendered["python"])
+
+        declarations, _ = reconcile_named_value_manifest.build_named_value_records(
+            catalog, versioned
+        )
+        certificate_link = next(
+            row for row in declarations
+            if row["exportName"].endswith("V3_0_TAG_CERTIFICATE_LINK")
+        )
+        self.assertEqual("four-language", certificate_link["parityScope"])
+        self.assertEqual(
+            {
+                "rust": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::tag::CERTIFICATE_LINK",
+                "c": "KMIPKIT_V3_0_TAG_CERTIFICATE_LINK",
+                "java": "org.kmipkit.protocol.KmipValues.V3_0_TAG_CERTIFICATE_LINK",
+                "python": "kmipkit.protocol_values.V3_0_TAG_CERTIFICATE_LINK",
+            },
+            {
+                language: mapping["name"]
+                for language, mapping in certificate_link["languageMappings"].items()
+            },
+        )
+
     def test_version_delta_catalog_maps_exact_kmip_2_1_and_3_0_assignments(self) -> None:
         versioned = generate_named_values.load_versioned_values(ROOT)
         rendered = generate_named_values.render_versioned_outputs(versioned)
