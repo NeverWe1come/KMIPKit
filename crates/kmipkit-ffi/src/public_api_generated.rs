@@ -17,6 +17,7 @@ pub(crate) const C_AVAILABLE_CAPABILITIES: &[&str] = &[
     "crypto_response_ttlv",
     "discover_versions_request_item",
     "ffi_runtime_metadata",
+    "fluent_add_attribute_parity",
     "fluent_create_key_pair_parity",
     "fluent_dx_api",
     "fluent_set_attribute_parity",
@@ -15743,6 +15744,136 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit-0052-response_header_view_raw_facade",
         "rust-kmipkit",
         "kmipkit::protocol::ResponseHeaderView<'a>::raw",
+    ),
+    (
+        "kmipkit-0093-add-attribute-kmipkit_client-AddAttributeBuilder",
+        "rust-kmipkit-client",
+        "kmipkit_client::AddAttributeBuilder",
+    ),
+    (
+        "kmipkit-0093-add-attribute-kmipkit_client-AddAttributeBuilder-a-attribute",
+        "rust-kmipkit-client",
+        "kmipkit_client::AddAttributeBuilder<'a>::attribute",
+    ),
+    (
+        "kmipkit-0093-add-attribute-kmipkit_client-AddAttributeBuilder-a-attribute_item",
+        "rust-kmipkit-client",
+        "kmipkit_client::AddAttributeBuilder<'a>::attribute_item",
+    ),
+    (
+        "kmipkit-0093-add-attribute-kmipkit_client-AddAttributeBuilder-a-build",
+        "rust-kmipkit-client",
+        "kmipkit_client::AddAttributeBuilder<'a>::build",
+    ),
+    (
+        "kmipkit-0093-add-attribute-kmipkit_client-AddAttributeBuilder-a-build_request",
+        "rust-kmipkit-client",
+        "kmipkit_client::AddAttributeBuilder<'a>::build_request",
+    ),
+    (
+        "kmipkit-0093-add-attribute-kmipkit_client-AddAttributeBuilder-a-execute",
+        "rust-kmipkit-client",
+        "kmipkit_client::AddAttributeBuilder<'a>::execute",
+    ),
+    (
+        "kmipkit-0093-add-attribute-kmipkit_client-AddAttributeBuilder-a-to_batch_item",
+        "rust-kmipkit-client",
+        "kmipkit_client::AddAttributeBuilder<'a>::to_batch_item",
+    ),
+    (
+        "kmipkit-0093-add-attribute-kmipkit_client-AddAttributeBuilder-a-unique_identifier",
+        "rust-kmipkit-client",
+        "kmipkit_client::AddAttributeBuilder<'a>::unique_identifier",
+    ),
+    (
+        "kmipkit-0093-add-attribute-kmipkit_client-AddAttributeBuilder-a-validate",
+        "rust-kmipkit-client",
+        "kmipkit_client::AddAttributeBuilder<'a>::validate",
+    ),
+    (
+        "kmipkit-0093-add-attribute-kmipkit_client-AddAttributeBuilder-a-vendor_attribute",
+        "rust-kmipkit-client",
+        "kmipkit_client::AddAttributeBuilder<'a>::vendor_attribute",
+    ),
+    (
+        "kmipkit-0093-add-attribute-kmipkit_client-AddAttributeBuilder-a-with_asynchronous_indicator",
+        "rust-kmipkit-client",
+        "kmipkit_client::AddAttributeBuilder<'a>::with_asynchronous_indicator",
+    ),
+    (
+        "kmipkit-0093-add-attribute-kmipkit_client-AddAttributeBuilder-a-with_options",
+        "rust-kmipkit-client",
+        "kmipkit_client::AddAttributeBuilder<'a>::with_options",
+    ),
+    (
+        "kmipkit-0093-add-attribute-kmipkit_client-RequestBuilder-a-add_attribute",
+        "rust-kmipkit-client",
+        "kmipkit_client::RequestBuilder<'a>::add_attribute",
+    ),
+    (
+        "kmipkit-0093-add-attribute-kmipkit_client-fluent-AddAttributeBuilder",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::AddAttributeBuilder",
+    ),
+    (
+        "kmipkit-0093-add-attribute-kmipkit_client-fluent-AddAttributeBuilder-a-attribute",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::AddAttributeBuilder<'a>::attribute",
+    ),
+    (
+        "kmipkit-0093-add-attribute-kmipkit_client-fluent-AddAttributeBuilder-a-attribute_item",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::AddAttributeBuilder<'a>::attribute_item",
+    ),
+    (
+        "kmipkit-0093-add-attribute-kmipkit_client-fluent-AddAttributeBuilder-a-build",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::AddAttributeBuilder<'a>::build",
+    ),
+    (
+        "kmipkit-0093-add-attribute-kmipkit_client-fluent-AddAttributeBuilder-a-build_request",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::AddAttributeBuilder<'a>::build_request",
+    ),
+    (
+        "kmipkit-0093-add-attribute-kmipkit_client-fluent-AddAttributeBuilder-a-execute",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::AddAttributeBuilder<'a>::execute",
+    ),
+    (
+        "kmipkit-0093-add-attribute-kmipkit_client-fluent-AddAttributeBuilder-a-to_batch_item",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::AddAttributeBuilder<'a>::to_batch_item",
+    ),
+    (
+        "kmipkit-0093-add-attribute-kmipkit_client-fluent-AddAttributeBuilder-a-unique_identifier",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::AddAttributeBuilder<'a>::unique_identifier",
+    ),
+    (
+        "kmipkit-0093-add-attribute-kmipkit_client-fluent-AddAttributeBuilder-a-validate",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::AddAttributeBuilder<'a>::validate",
+    ),
+    (
+        "kmipkit-0093-add-attribute-kmipkit_client-fluent-AddAttributeBuilder-a-vendor_attribute",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::AddAttributeBuilder<'a>::vendor_attribute",
+    ),
+    (
+        "kmipkit-0093-add-attribute-kmipkit_client-fluent-AddAttributeBuilder-a-with_asynchronous_indicator",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::AddAttributeBuilder<'a>::with_asynchronous_indicator",
+    ),
+    (
+        "kmipkit-0093-add-attribute-kmipkit_client-fluent-AddAttributeBuilder-a-with_options",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::AddAttributeBuilder<'a>::with_options",
+    ),
+    (
+        "kmipkit-0093-add-attribute-kmipkit_client-fluent-RequestBuilder-a-add_attribute",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::RequestBuilder<'a>::add_attribute",
     ),
     (
         "kmipkit-0093-set-attribute-kmipkit_client-RequestBuilder-a-set_attribute",
@@ -38859,6 +38990,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-ffffa789e03b00dd5d76",
         "rust-kmipkit",
         "kmipkit::ClientRequest::AdjustAttribute",
+    ),
+    (
+        "rust-observed-kmipkit-0093-add-attribute-detached",
+        "rust-kmipkit-client",
+        "kmipkit_client::AddAttributeBuilder::detached",
     ),
     (
         "rust-observed-kmipkit-0093-create-key-pair-detached",

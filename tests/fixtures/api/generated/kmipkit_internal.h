@@ -1002,6 +1002,7 @@ typedef uint32_t kmipkit_wire_encoding_t;
 /* C ABI record input for kmipkit_transport_config_v1_t.flags: bit set when target_uri is present. */
 #define KMIPKIT_TRANSPORT_CONFIG_FLAG_TARGET_URI ((uint32_t)2)
 
+typedef struct kmipkit_add_attribute_builder_t kmipkit_add_attribute_builder_t;
 typedef struct kmipkit_add_attribute_request_t kmipkit_add_attribute_request_t;
 typedef struct kmipkit_adjust_attribute_request_t kmipkit_adjust_attribute_request_t;
 typedef struct kmipkit_client_async_operation_metadata_v1_t kmipkit_client_async_operation_metadata_v1_t;
@@ -1499,6 +1500,7 @@ struct kmipkit_transport_config_v1_t {
     uint64_t max_request_bytes;
 };
 
+void kmipkit_add_attribute_builder_release(kmipkit_add_attribute_builder_t *handle);
 void kmipkit_add_attribute_request_release(kmipkit_add_attribute_request_t *handle);
 void kmipkit_adjust_attribute_request_release(kmipkit_adjust_attribute_request_t *handle);
 void kmipkit_attestation_credential_release(kmipkit_attestation_credential_t *handle);
@@ -1590,6 +1592,28 @@ void kmipkit_validation_report_release(kmipkit_validation_report_t *handle);
 #define KMIPKIT_ERROR_TYPED_ATTRIBUTE_TAG_MISMATCH ((int32_t)12)
 #define KMIPKIT_ERROR_TYPED_ATTRIBUTE_VALUE_TYPE_MISMATCH ((int32_t)13)
 
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005 */
+int32_t kmipkit_add_attribute_builder_add_attribute_item(kmipkit_add_attribute_builder_t * builder, kmipkit_ttlv_item_t * item);
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005 */
+int32_t kmipkit_add_attribute_builder_add_catalogued_attribute(kmipkit_add_attribute_builder_t * builder, uint32_t tag, kmipkit_ttlv_value_t * value);
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005 */
+int32_t kmipkit_add_attribute_builder_add_vendor_attribute(kmipkit_add_attribute_builder_t * builder, const uint8_t * vendor_data, uint64_t vendor_length, const uint8_t * name_data, uint64_t name_length, kmipkit_ttlv_item_t * attribute_value);
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005 */
+int32_t kmipkit_add_attribute_builder_build_batch_item(kmipkit_add_attribute_builder_t * builder, kmipkit_client_batch_item_t ** out_item);
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011 */
+int32_t kmipkit_add_attribute_builder_build_request(kmipkit_add_attribute_builder_t * builder, kmipkit_add_attribute_request_t ** out_request);
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005 */
+int32_t kmipkit_add_attribute_builder_create(kmipkit_add_attribute_builder_t ** out_builder);
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005 */
+int32_t kmipkit_add_attribute_builder_execute_v1(kmipkit_add_attribute_builder_t * builder, kmipkit_client_t * client, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005 */
+int32_t kmipkit_add_attribute_builder_execute_with_options_v1(kmipkit_add_attribute_builder_t * builder, kmipkit_client_t * client, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response);
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005 */
+int32_t kmipkit_add_attribute_builder_set_asynchronous_indicator(kmipkit_add_attribute_builder_t * builder, uint32_t value);
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005 */
+int32_t kmipkit_add_attribute_builder_set_unique_identifier(kmipkit_add_attribute_builder_t * builder, const uint8_t * value_data, uint64_t value_length);
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005 */
+int32_t kmipkit_add_attribute_builder_validate(kmipkit_add_attribute_builder_t * builder);
 /* Returns the fixed-order local API-level taxonomy as borrowed UTF-8 spans into static strings.
  * This query makes no network call and is distinct from the KMIP Discover Versions operation.
  * The result describes the KMIPKit API taxonomy only; it does not assert that every operation is mapped or complete.

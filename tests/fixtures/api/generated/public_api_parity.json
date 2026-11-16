@@ -309652,6 +309652,138 @@
         "path": "specs/093-fluent-complete-api/spec.md",
         "status": "Approved"
       },
+      "capabilityId": "fluent_add_attribute_c_abi",
+      "capabilityState": "declared",
+      "mappings": {
+        "c": [
+          "kmipkit_add_attribute_builder_add_attribute_item",
+          "kmipkit_add_attribute_builder_add_catalogued_attribute",
+          "kmipkit_add_attribute_builder_add_vendor_attribute",
+          "kmipkit_add_attribute_builder_build_batch_item",
+          "kmipkit_add_attribute_builder_build_request",
+          "kmipkit_add_attribute_builder_create",
+          "kmipkit_add_attribute_builder_execute_v1",
+          "kmipkit_add_attribute_builder_execute_with_options_v1",
+          "kmipkit_add_attribute_builder_release",
+          "kmipkit_add_attribute_builder_set_asynchronous_indicator",
+          "kmipkit_add_attribute_builder_set_unique_identifier",
+          "kmipkit_add_attribute_builder_t",
+          "kmipkit_add_attribute_builder_validate"
+        ]
+      },
+      "ownerSpecId": "KMIPKIT-0093",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "capabilityState": "declared",
+      "mappings": {
+        "c": [
+          "kmipkit_add_attribute_builder_add_attribute_item",
+          "kmipkit_add_attribute_builder_add_catalogued_attribute",
+          "kmipkit_add_attribute_builder_add_vendor_attribute",
+          "kmipkit_add_attribute_builder_build_batch_item",
+          "kmipkit_add_attribute_builder_build_request",
+          "kmipkit_add_attribute_builder_create",
+          "kmipkit_add_attribute_builder_execute_v1",
+          "kmipkit_add_attribute_builder_execute_with_options_v1",
+          "kmipkit_add_attribute_builder_release",
+          "kmipkit_add_attribute_builder_set_asynchronous_indicator",
+          "kmipkit_add_attribute_builder_set_unique_identifier",
+          "kmipkit_add_attribute_builder_t",
+          "kmipkit_add_attribute_builder_validate"
+        ],
+        "java": [
+          "org.kmipkit.fluent.AddAttributeBuilder",
+          "org.kmipkit.fluent.AddAttributeBuilder.asynchronousIndicator",
+          "org.kmipkit.fluent.AddAttributeBuilder.attributeItem",
+          "org.kmipkit.fluent.AddAttributeBuilder.build",
+          "org.kmipkit.fluent.AddAttributeBuilder.buildRequest",
+          "org.kmipkit.fluent.AddAttributeBuilder.cataloguedAttribute",
+          "org.kmipkit.fluent.AddAttributeBuilder.close",
+          "org.kmipkit.fluent.AddAttributeBuilder.execute",
+          "org.kmipkit.fluent.AddAttributeBuilder.toBatchItem",
+          "org.kmipkit.fluent.AddAttributeBuilder.uniqueIdentifier",
+          "org.kmipkit.fluent.AddAttributeBuilder.validate",
+          "org.kmipkit.fluent.AddAttributeBuilder.vendorAttribute",
+          "org.kmipkit.fluent.AddAttributeBuilder.withOptions",
+          "org.kmipkit.fluent.FluentRequest.addAttribute"
+        ],
+        "python": [
+          "kmipkit.fluent.AddAttributeBuilder",
+          "kmipkit.fluent.AddAttributeBuilder.__enter__",
+          "kmipkit.fluent.AddAttributeBuilder.__exit__",
+          "kmipkit.fluent.AddAttributeBuilder.__init__",
+          "kmipkit.fluent.AddAttributeBuilder.asynchronous_indicator",
+          "kmipkit.fluent.AddAttributeBuilder.attribute_item",
+          "kmipkit.fluent.AddAttributeBuilder.build",
+          "kmipkit.fluent.AddAttributeBuilder.build_request",
+          "kmipkit.fluent.AddAttributeBuilder.catalogued_attribute",
+          "kmipkit.fluent.AddAttributeBuilder.close",
+          "kmipkit.fluent.AddAttributeBuilder.execute",
+          "kmipkit.fluent.AddAttributeBuilder.to_batch_item",
+          "kmipkit.fluent.AddAttributeBuilder.unique_identifier",
+          "kmipkit.fluent.AddAttributeBuilder.validate",
+          "kmipkit.fluent.AddAttributeBuilder.vendor_attribute",
+          "kmipkit.fluent.AddAttributeBuilder.with_options",
+          "kmipkit.fluent.Request.add_attribute"
+        ],
+        "rust": [
+          "kmipkit_client::AddAttributeBuilder",
+          "kmipkit_client::AddAttributeBuilder::detached",
+          "kmipkit_client::AddAttributeBuilder<'a>::attribute",
+          "kmipkit_client::AddAttributeBuilder<'a>::attribute_item",
+          "kmipkit_client::AddAttributeBuilder<'a>::build",
+          "kmipkit_client::AddAttributeBuilder<'a>::build_request",
+          "kmipkit_client::AddAttributeBuilder<'a>::execute",
+          "kmipkit_client::AddAttributeBuilder<'a>::to_batch_item",
+          "kmipkit_client::AddAttributeBuilder<'a>::unique_identifier",
+          "kmipkit_client::AddAttributeBuilder<'a>::validate",
+          "kmipkit_client::AddAttributeBuilder<'a>::vendor_attribute",
+          "kmipkit_client::AddAttributeBuilder<'a>::with_asynchronous_indicator",
+          "kmipkit_client::AddAttributeBuilder<'a>::with_options",
+          "kmipkit_client::RequestBuilder<'a>::add_attribute",
+          "kmipkit_client::fluent::AddAttributeBuilder",
+          "kmipkit_client::fluent::AddAttributeBuilder<'a>::attribute",
+          "kmipkit_client::fluent::AddAttributeBuilder<'a>::attribute_item",
+          "kmipkit_client::fluent::AddAttributeBuilder<'a>::build",
+          "kmipkit_client::fluent::AddAttributeBuilder<'a>::build_request",
+          "kmipkit_client::fluent::AddAttributeBuilder<'a>::execute",
+          "kmipkit_client::fluent::AddAttributeBuilder<'a>::to_batch_item",
+          "kmipkit_client::fluent::AddAttributeBuilder<'a>::unique_identifier",
+          "kmipkit_client::fluent::AddAttributeBuilder<'a>::validate",
+          "kmipkit_client::fluent::AddAttributeBuilder<'a>::vendor_attribute",
+          "kmipkit_client::fluent::AddAttributeBuilder<'a>::with_asynchronous_indicator",
+          "kmipkit_client::fluent::AddAttributeBuilder<'a>::with_options",
+          "kmipkit_client::fluent::RequestBuilder<'a>::add_attribute"
+        ]
+      },
+      "ownerSpecId": "KMIPKIT-0093",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
       "capabilityId": "fluent_create_key_pair_c_abi",
       "capabilityState": "declared",
       "mappings": {
@@ -320894,6 +321026,878 @@
   ],
   "formatVersion": 2,
   "functions": [
+    {
+      "c": {
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "builder",
+            "ownership": "borrowed",
+            "type": "kmipkit_add_attribute_builder_t *"
+          },
+          {
+            "kind": "handle",
+            "name": "item",
+            "ownership": "borrowed",
+            "type": "kmipkit_ttlv_item_t *"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_add_attribute_builder_add_attribute_item"
+      },
+      "id": "add_attribute_builder_add_attribute_item",
+      "java": {
+        "class": "AddAttributeBuilder",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "method": "attributeItem",
+        "package": "org.kmipkit.fluent",
+        "parameters": [
+          {
+            "name": "item",
+            "type": "TtlvItem"
+          }
+        ],
+        "returnType": "AddAttributeBuilder"
+      },
+      "legacyRegistry": false,
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_add_attribute_builder_add_attribute_item",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "AddAttributeBuilder.attribute_item",
+        "module": "kmipkit.fluent",
+        "parameters": [
+          {
+            "name": "item",
+            "type": "ttlv.TtlvItem"
+          }
+        ],
+        "returnType": "AddAttributeBuilder"
+      },
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::AddAttributeBuilder",
+        "name": "attribute_item",
+        "owner": "client",
+        "parameters": [],
+        "requestBoundary": "not-applicable",
+        "returnType": "void"
+      }
+    },
+    {
+      "c": {
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "builder",
+            "ownership": "borrowed",
+            "type": "kmipkit_add_attribute_builder_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "tag",
+            "type": "uint32_t"
+          },
+          {
+            "kind": "handle",
+            "name": "value",
+            "ownership": "borrowed",
+            "type": "kmipkit_ttlv_value_t *"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_add_attribute_builder_add_catalogued_attribute"
+      },
+      "id": "add_attribute_builder_add_catalogued_attribute",
+      "java": {
+        "class": "AddAttributeBuilder",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "method": "cataloguedAttribute",
+        "package": "org.kmipkit.fluent",
+        "parameters": [
+          {
+            "name": "tag",
+            "type": "Tag"
+          },
+          {
+            "name": "value",
+            "type": "TtlvValue"
+          }
+        ],
+        "returnType": "AddAttributeBuilder"
+      },
+      "legacyRegistry": false,
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_add_attribute_builder_add_catalogued_attribute",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "AddAttributeBuilder.catalogued_attribute",
+        "module": "kmipkit.fluent",
+        "parameters": [
+          {
+            "name": "tag",
+            "type": "int"
+          },
+          {
+            "name": "value",
+            "type": "ttlv.Value"
+          }
+        ],
+        "returnType": "AddAttributeBuilder"
+      },
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::AddAttributeBuilder",
+        "name": "attribute_item",
+        "owner": "client",
+        "parameters": [],
+        "requestBoundary": "not-applicable",
+        "returnType": "void"
+      }
+    },
+    {
+      "c": {
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "builder",
+            "ownership": "borrowed",
+            "type": "kmipkit_add_attribute_builder_t *"
+          },
+          {
+            "byteLengthParameter": "vendor_length",
+            "byteLengthType": "uint64_t",
+            "encoding": "utf-8",
+            "kind": "byte-span",
+            "lengthUnit": "bytes",
+            "limitCheck": "before-dereference",
+            "maxBytes": 16777216,
+            "name": "vendor_data",
+            "nulTerminatedScan": false,
+            "type": "const uint8_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "vendor_length",
+            "type": "uint64_t"
+          },
+          {
+            "byteLengthParameter": "name_length",
+            "byteLengthType": "uint64_t",
+            "encoding": "utf-8",
+            "kind": "byte-span",
+            "lengthUnit": "bytes",
+            "limitCheck": "before-dereference",
+            "maxBytes": 16777216,
+            "name": "name_data",
+            "nulTerminatedScan": false,
+            "type": "const uint8_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "name_length",
+            "type": "uint64_t"
+          },
+          {
+            "kind": "handle",
+            "name": "attribute_value",
+            "ownership": "borrowed",
+            "type": "kmipkit_ttlv_item_t *"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_add_attribute_builder_add_vendor_attribute"
+      },
+      "id": "add_attribute_builder_add_vendor_attribute",
+      "java": {
+        "class": "AddAttributeBuilder",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "method": "vendorAttribute",
+        "package": "org.kmipkit.fluent",
+        "parameters": [
+          {
+            "name": "vendor",
+            "type": "String"
+          },
+          {
+            "name": "attributeName",
+            "type": "String"
+          },
+          {
+            "name": "value",
+            "type": "TtlvItem"
+          }
+        ],
+        "returnType": "AddAttributeBuilder"
+      },
+      "legacyRegistry": false,
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_add_attribute_builder_add_vendor_attribute",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "AddAttributeBuilder.vendor_attribute",
+        "module": "kmipkit.fluent",
+        "parameters": [
+          {
+            "name": "vendor_identification",
+            "type": "str"
+          },
+          {
+            "name": "attribute_name",
+            "type": "str"
+          },
+          {
+            "name": "value",
+            "type": "ttlv.TtlvItem"
+          }
+        ],
+        "returnType": "AddAttributeBuilder"
+      },
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::AddAttributeBuilder",
+        "name": "vendor_attribute",
+        "owner": "client",
+        "parameters": [],
+        "requestBoundary": "not-applicable",
+        "returnType": "void"
+      }
+    },
+    {
+      "c": {
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "builder",
+            "ownership": "borrowed",
+            "type": "kmipkit_add_attribute_builder_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_item",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_client_batch_item_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_add_attribute_builder_build_batch_item"
+      },
+      "id": "add_attribute_builder_build_batch_item",
+      "java": {
+        "class": "AddAttributeBuilder",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "method": "build",
+        "package": "org.kmipkit.fluent",
+        "parameters": [],
+        "returnType": "ClientBatchItem"
+      },
+      "legacyRegistry": false,
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_add_attribute_builder_build_batch_item",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "AddAttributeBuilder.build",
+        "module": "kmipkit.fluent",
+        "parameters": [],
+        "returnType": "ClientBatchItem"
+      },
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::AddAttributeBuilder",
+        "name": "to_batch_item",
+        "owner": "client",
+        "parameters": [],
+        "requestBoundary": "not-applicable",
+        "returnType": "ClientBatchItem"
+      }
+    },
+    {
+      "c": {
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "builder",
+            "ownership": "borrowed",
+            "type": "kmipkit_add_attribute_builder_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_request",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_add_attribute_request_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_add_attribute_builder_build_request"
+      },
+      "id": "add_attribute_builder_build_request",
+      "java": {
+        "class": "AddAttributeBuilder",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "method": "buildRequest",
+        "package": "org.kmipkit.fluent",
+        "parameters": [],
+        "returnType": "AddAttributeRequest"
+      },
+      "legacyRegistry": false,
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_add_attribute_builder_build_request",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "AddAttributeBuilder.build_request",
+        "module": "kmipkit.fluent",
+        "parameters": [],
+        "returnType": "AddAttributeRequest"
+      },
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::AddAttributeBuilder",
+        "name": "build_request",
+        "owner": "client",
+        "parameters": [],
+        "requestBoundary": "not-applicable",
+        "returnType": "AddAttributeRequest"
+      }
+    },
+    {
+      "c": {
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "output",
+            "name": "out_builder",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_add_attribute_builder_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_add_attribute_builder_create"
+      },
+      "id": "add_attribute_builder_create",
+      "java": {
+        "class": "FluentRequest",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "method": "addAttribute",
+        "package": "org.kmipkit.fluent",
+        "parameters": [],
+        "returnType": "AddAttributeBuilder"
+      },
+      "legacyRegistry": false,
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_add_attribute_builder_create",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "Request.add_attribute",
+        "module": "kmipkit.fluent",
+        "parameters": [],
+        "returnType": "AddAttributeBuilder"
+      },
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::AddAttributeBuilder",
+        "name": "detached",
+        "owner": "client",
+        "parameters": [],
+        "requestBoundary": "not-applicable",
+        "returnType": "AddAttributeBuilder"
+      }
+    },
+    {
+      "c": {
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "builder",
+            "ownership": "borrowed",
+            "type": "kmipkit_add_attribute_builder_t *"
+          },
+          {
+            "kind": "handle",
+            "name": "client",
+            "ownership": "borrowed",
+            "type": "kmipkit_client_t *"
+          },
+          {
+            "kind": "handle",
+            "name": "limits",
+            "ownership": "borrowed",
+            "type": "kmipkit_codec_limits_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_response",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_client_batch_response_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_add_attribute_builder_execute_v1"
+      },
+      "id": "add_attribute_builder_execute_v1",
+      "java": {
+        "class": "AddAttributeBuilder",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "method": "execute",
+        "package": "org.kmipkit.fluent",
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "returnType": "ClientBatchResponse"
+      },
+      "legacyRegistry": false,
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_add_attribute_builder_execute_v1",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "AddAttributeBuilder.execute",
+        "module": "kmipkit.fluent",
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "returnType": "ClientBatchResponse"
+      },
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::AddAttributeBuilder",
+        "name": "execute",
+        "owner": "client",
+        "parameters": [],
+        "requestBoundary": "not-applicable",
+        "returnType": "ClientBatchResponse"
+      }
+    },
+    {
+      "c": {
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "builder",
+            "ownership": "borrowed",
+            "type": "kmipkit_add_attribute_builder_t *"
+          },
+          {
+            "kind": "handle",
+            "name": "client",
+            "ownership": "borrowed",
+            "type": "kmipkit_client_t *"
+          },
+          {
+            "kind": "handle",
+            "name": "limits",
+            "ownership": "borrowed",
+            "type": "kmipkit_codec_limits_t *"
+          },
+          {
+            "kind": "input-value-pointer",
+            "name": "options",
+            "ownership": "borrowed",
+            "type": "const kmipkit_request_options_v1_t *",
+            "valueType": "kmipkit_request_options_v1_t"
+          },
+          {
+            "kind": "output",
+            "name": "out_response",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_client_batch_response_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_add_attribute_builder_execute_with_options_v1"
+      },
+      "id": "add_attribute_builder_execute_with_options_v1",
+      "java": {
+        "class": "AddAttributeBuilder",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "method": "executeWithOptions",
+        "package": "org.kmipkit.fluent",
+        "parameters": [
+          {
+            "name": "options",
+            "type": "RequestOptions"
+          }
+        ],
+        "returnType": "AddAttributeBuilder"
+      },
+      "legacyRegistry": false,
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_add_attribute_builder_execute_with_options_v1",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "AddAttributeBuilder.execute_with_options",
+        "module": "kmipkit.fluent",
+        "parameters": [
+          {
+            "name": "options",
+            "type": "RequestOptions"
+          }
+        ],
+        "returnType": "AddAttributeBuilder"
+      },
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::AddAttributeBuilder",
+        "name": "execute",
+        "owner": "client",
+        "parameters": [],
+        "requestBoundary": "not-applicable",
+        "returnType": "ClientBatchResponse"
+      }
+    },
+    {
+      "c": {
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "builder",
+            "ownership": "borrowed",
+            "type": "kmipkit_add_attribute_builder_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "value",
+            "type": "uint32_t"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_add_attribute_builder_set_asynchronous_indicator"
+      },
+      "id": "add_attribute_builder_set_asynchronous_indicator",
+      "java": {
+        "class": "AddAttributeBuilder",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "method": "asynchronousIndicator",
+        "package": "org.kmipkit.fluent",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "long"
+          }
+        ],
+        "returnType": "AddAttributeBuilder"
+      },
+      "legacyRegistry": false,
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_add_attribute_builder_set_asynchronous_indicator",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "AddAttributeBuilder.asynchronous_indicator",
+        "module": "kmipkit.fluent",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "int"
+          }
+        ],
+        "returnType": "AddAttributeBuilder"
+      },
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::AddAttributeBuilder",
+        "name": "with_asynchronous_indicator",
+        "owner": "client",
+        "parameters": [],
+        "requestBoundary": "not-applicable",
+        "returnType": "void"
+      }
+    },
+    {
+      "c": {
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "builder",
+            "ownership": "borrowed",
+            "type": "kmipkit_add_attribute_builder_t *"
+          },
+          {
+            "byteLengthParameter": "value_length",
+            "byteLengthType": "uint64_t",
+            "encoding": "utf-8",
+            "kind": "byte-span",
+            "lengthUnit": "bytes",
+            "limitCheck": "before-dereference",
+            "maxBytes": 16777216,
+            "name": "value_data",
+            "nulTerminatedScan": false,
+            "type": "const uint8_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "value_length",
+            "type": "uint64_t"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_add_attribute_builder_set_unique_identifier"
+      },
+      "id": "add_attribute_builder_set_unique_identifier",
+      "java": {
+        "class": "AddAttributeBuilder",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "method": "uniqueIdentifier",
+        "package": "org.kmipkit.fluent",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "String"
+          }
+        ],
+        "returnType": "AddAttributeBuilder"
+      },
+      "legacyRegistry": false,
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_add_attribute_builder_set_unique_identifier",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "AddAttributeBuilder.unique_identifier",
+        "module": "kmipkit.fluent",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "str"
+          }
+        ],
+        "returnType": "AddAttributeBuilder"
+      },
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::AddAttributeBuilder",
+        "name": "unique_identifier",
+        "owner": "client",
+        "parameters": [],
+        "requestBoundary": "not-applicable",
+        "returnType": "void"
+      }
+    },
+    {
+      "c": {
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "builder",
+            "ownership": "borrowed",
+            "type": "kmipkit_add_attribute_builder_t *"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_add_attribute_builder_validate"
+      },
+      "id": "add_attribute_builder_validate",
+      "java": {
+        "class": "AddAttributeBuilder",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "method": "validate",
+        "package": "org.kmipkit.fluent",
+        "parameters": [],
+        "returnType": "void"
+      },
+      "legacyRegistry": false,
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_add_attribute_builder_validate",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "AddAttributeBuilder.validate",
+        "module": "kmipkit.fluent",
+        "parameters": [],
+        "returnType": "void"
+      },
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::AddAttributeBuilder",
+        "name": "validate",
+        "owner": "client",
+        "parameters": [],
+        "requestBoundary": "not-applicable",
+        "returnType": "void"
+      }
+    },
     {
       "c": {
         "documentation": [
@@ -387688,6 +388692,984 @@
     },
     {
       "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "AddAttributeBuilder.asynchronousIndicator:java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.AddAttributeBuilder.asynchronousIndicator",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_set_asynchronous_indicator",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.asynchronousIndicator",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.asynchronous_indicator",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::AddAttributeBuilder<'a>::with_asynchronous_indicator",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "AddAttributeBuilder.asynchronous_indicator:python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.AddAttributeBuilder.asynchronous_indicator",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_set_asynchronous_indicator",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.asynchronousIndicator",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.asynchronous_indicator",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::AddAttributeBuilder<'a>::with_asynchronous_indicator",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "AddAttributeBuilder.attributeItem:java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.AddAttributeBuilder.attributeItem",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_add_attribute_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.attributeItem",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.attribute_item",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::AddAttributeBuilder<'a>::attribute_item",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "AddAttributeBuilder.attribute_item:python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.AddAttributeBuilder.attribute_item",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_add_attribute_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.attributeItem",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.attribute_item",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::AddAttributeBuilder<'a>::attribute_item",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "AddAttributeBuilder.build:java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.AddAttributeBuilder.build",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_build_batch_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.build",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.build",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::AddAttributeBuilder<'a>::to_batch_item",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "AddAttributeBuilder.build:python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.AddAttributeBuilder.build",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_build_batch_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.build",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.build",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::AddAttributeBuilder<'a>::to_batch_item",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "AddAttributeBuilder.buildRequest:java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.AddAttributeBuilder.buildRequest",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_build_request",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.buildRequest",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.build_request",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::AddAttributeBuilder<'a>::build_request",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/public_client_api.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/AddAttributeBuilderTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "crates/kmipkit-client/tests/unit/fluent_request_tests.rs",
+        "tools/api_manifest/tests/test_0093_add_attribute_builder_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "AddAttributeBuilder.build_request:python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.AddAttributeBuilder.build_request",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_build_request",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.buildRequest",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.build_request",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::AddAttributeBuilder<'a>::build_request",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/public_client_api.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/AddAttributeBuilderTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "crates/kmipkit-client/tests/unit/fluent_request_tests.rs",
+        "tools/api_manifest/tests/test_0093_add_attribute_builder_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "AddAttributeBuilder.cataloguedAttribute:java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.AddAttributeBuilder.cataloguedAttribute",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_add_catalogued_attribute",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.cataloguedAttribute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.catalogued_attribute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::AddAttributeBuilder<'a>::attribute",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "AddAttributeBuilder.catalogued_attribute:python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.AddAttributeBuilder.catalogued_attribute",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_add_catalogued_attribute",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.cataloguedAttribute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.catalogued_attribute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::AddAttributeBuilder<'a>::attribute",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "AddAttributeBuilder.execute:java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.AddAttributeBuilder.execute",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_execute_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.execute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.execute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::AddAttributeBuilder<'a>::execute",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "AddAttributeBuilder.execute:python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.AddAttributeBuilder.execute",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_execute_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.execute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.execute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::AddAttributeBuilder<'a>::execute",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "AddAttributeBuilder.toBatchItem:java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.AddAttributeBuilder.toBatchItem",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_build_batch_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.toBatchItem",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.to_batch_item",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::AddAttributeBuilder<'a>::to_batch_item",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "AddAttributeBuilder.to_batch_item:python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.AddAttributeBuilder.to_batch_item",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_build_batch_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.toBatchItem",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.to_batch_item",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::AddAttributeBuilder<'a>::to_batch_item",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "AddAttributeBuilder.uniqueIdentifier:java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.AddAttributeBuilder.uniqueIdentifier",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_set_unique_identifier",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.uniqueIdentifier",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.unique_identifier",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::AddAttributeBuilder<'a>::unique_identifier",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "AddAttributeBuilder.unique_identifier:python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.AddAttributeBuilder.unique_identifier",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_set_unique_identifier",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.uniqueIdentifier",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.unique_identifier",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::AddAttributeBuilder<'a>::unique_identifier",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "AddAttributeBuilder.validate:java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.AddAttributeBuilder.validate",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_validate",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.validate",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.validate",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::AddAttributeBuilder<'a>::validate",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "AddAttributeBuilder.validate:python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.AddAttributeBuilder.validate",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_validate",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.validate",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.validate",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::AddAttributeBuilder<'a>::validate",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "AddAttributeBuilder.vendorAttribute:java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.AddAttributeBuilder.vendorAttribute",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_add_vendor_attribute",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.vendorAttribute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.vendor_attribute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::AddAttributeBuilder<'a>::vendor_attribute",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "AddAttributeBuilder.vendor_attribute:python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.AddAttributeBuilder.vendor_attribute",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_add_vendor_attribute",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.vendorAttribute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.vendor_attribute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::AddAttributeBuilder<'a>::vendor_attribute",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "AddAttributeBuilder.withOptions:java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.AddAttributeBuilder.withOptions",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_execute_with_options_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.withOptions",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.with_options",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::AddAttributeBuilder<'a>::with_options",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "AddAttributeBuilder.with_options:python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.AddAttributeBuilder.with_options",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_execute_with_options_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.withOptions",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.with_options",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::AddAttributeBuilder<'a>::with_options",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_c_abi",
+      "declarationId": "AddAttributeBuilder:c",
+      "declarationState": "declared",
+      "exportName": "kmipkit_add_attribute_builder_t",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_t",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_c_abi",
+      "declarationId": "AddAttributeBuilder:c-release",
+      "declarationState": "declared",
+      "exportName": "kmipkit_add_attribute_builder_release",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_release",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "AddAttributeBuilder:java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.AddAttributeBuilder",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::AddAttributeBuilder",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "AddAttributeBuilder:python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.AddAttributeBuilder",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::AddAttributeBuilder",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
         "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
         "kind": "feature-specification",
         "path": "specs/008-credentials-attestation/spec.md",
@@ -396323,6 +398305,44 @@
         "KMIPKIT-0012-FR-007",
         "KMIPKIT-0012-FR-010",
         "KMIPKIT-0012-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "FluentRequest.addAttribute:java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.FluentRequest.addAttribute",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_create",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.FluentRequest.addAttribute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.Request.add_attribute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::AddAttributeBuilder::detached",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
       ]
     },
     {
@@ -420150,6 +422170,45 @@
         "path": "specs/093-fluent-complete-api/spec.md",
         "status": "Approved"
       },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "KMIPKIT-0093:java:org.kmipkit.fluent.AddAttributeBuilder.close",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.AddAttributeBuilder.close",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::AddAttributeBuilder",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
       "capabilityId": "fluent_create_key_pair_parity",
       "declarationId": "KMIPKIT-0093:java:org.kmipkit.fluent.CreateKeyPairBuilder",
       "declarationState": "declared",
@@ -422348,6 +424407,159 @@
         "crates/kmipkit-ffi/src/extension_registry/client_abi.rs",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs"
       ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "KMIPKIT-0093:python:kmipkit.fluent.AddAttributeBuilder.__enter__",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.AddAttributeBuilder.__enter__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.__enter__",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::AddAttributeBuilder",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "KMIPKIT-0093:python:kmipkit.fluent.AddAttributeBuilder.__exit__",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.AddAttributeBuilder.__exit__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.__exit__",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::AddAttributeBuilder",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "KMIPKIT-0093:python:kmipkit.fluent.AddAttributeBuilder.__init__",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.AddAttributeBuilder.__init__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_create",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.FluentRequest.addAttribute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.__init__",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::AddAttributeBuilder::detached",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "KMIPKIT-0093:python:kmipkit.fluent.AddAttributeBuilder.close",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.AddAttributeBuilder.close",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::AddAttributeBuilder",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "python-kmipkit",
       "parityScope": "four-language",
       "requirementIds": [
         "KMIPKIT-0093-FR-004",
@@ -427427,6 +429639,44 @@
         "KMIPKIT-0012-FR-010",
         "KMIPKIT-0012-FR-011",
         "KMIPKIT-0012-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "Request.add_attribute:python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.Request.add_attribute",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_create",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.FluentRequest.addAttribute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.Request.add_attribute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::AddAttributeBuilder::detached",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
       ]
     },
     {
@@ -553027,6 +555277,292 @@
       "requirementIds": [
         "KMIPKIT-0057-FR-001",
         "KMIPKIT-0057-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_c_abi",
+      "declarationId": "add_attribute_builder_add_attribute_item:c",
+      "declarationState": "declared",
+      "exportName": "kmipkit_add_attribute_builder_add_attribute_item",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_add_attribute_item",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_c_abi",
+      "declarationId": "add_attribute_builder_add_catalogued_attribute:c",
+      "declarationState": "declared",
+      "exportName": "kmipkit_add_attribute_builder_add_catalogued_attribute",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_add_catalogued_attribute",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_c_abi",
+      "declarationId": "add_attribute_builder_add_vendor_attribute:c",
+      "declarationState": "declared",
+      "exportName": "kmipkit_add_attribute_builder_add_vendor_attribute",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_add_vendor_attribute",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_c_abi",
+      "declarationId": "add_attribute_builder_build_batch_item:c",
+      "declarationState": "declared",
+      "exportName": "kmipkit_add_attribute_builder_build_batch_item",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_build_batch_item",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_c_abi",
+      "declarationId": "add_attribute_builder_build_request:c",
+      "declarationState": "declared",
+      "exportName": "kmipkit_add_attribute_builder_build_request",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_build_request",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_c_abi",
+      "declarationId": "add_attribute_builder_create:c",
+      "declarationState": "declared",
+      "exportName": "kmipkit_add_attribute_builder_create",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_create",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_c_abi",
+      "declarationId": "add_attribute_builder_execute_v1:c",
+      "declarationState": "declared",
+      "exportName": "kmipkit_add_attribute_builder_execute_v1",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_execute_v1",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_c_abi",
+      "declarationId": "add_attribute_builder_execute_with_options_v1:c",
+      "declarationState": "declared",
+      "exportName": "kmipkit_add_attribute_builder_execute_with_options_v1",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_execute_with_options_v1",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_c_abi",
+      "declarationId": "add_attribute_builder_set_asynchronous_indicator:c",
+      "declarationState": "declared",
+      "exportName": "kmipkit_add_attribute_builder_set_asynchronous_indicator",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_set_asynchronous_indicator",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_c_abi",
+      "declarationId": "add_attribute_builder_set_unique_identifier:c",
+      "declarationState": "declared",
+      "exportName": "kmipkit_add_attribute_builder_set_unique_identifier",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_set_unique_identifier",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_c_abi",
+      "declarationId": "add_attribute_builder_validate:c",
+      "declarationState": "declared",
+      "exportName": "kmipkit_add_attribute_builder_validate",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_validate",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
       ]
     },
     {
@@ -809420,6 +811956,1048 @@
       "requirementIds": [
         "KMIPKIT-0052-FR-006",
         "KMIPKIT-0052-FR-007"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "kmipkit-0093-add-attribute-kmipkit_client-AddAttributeBuilder",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::AddAttributeBuilder",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::AddAttributeBuilder",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "kmipkit-0093-add-attribute-kmipkit_client-AddAttributeBuilder-a-attribute",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::AddAttributeBuilder<'a>::attribute",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_add_catalogued_attribute",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.cataloguedAttribute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.catalogued_attribute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::AddAttributeBuilder<'a>::attribute",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "kmipkit-0093-add-attribute-kmipkit_client-AddAttributeBuilder-a-attribute_item",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::AddAttributeBuilder<'a>::attribute_item",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_add_attribute_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.attributeItem",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.attribute_item",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::AddAttributeBuilder<'a>::attribute_item",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "kmipkit-0093-add-attribute-kmipkit_client-AddAttributeBuilder-a-build",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::AddAttributeBuilder<'a>::build",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_build_request",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.buildRequest",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.build_request",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::AddAttributeBuilder<'a>::build",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/public_client_api.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/AddAttributeBuilderTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "crates/kmipkit-client/tests/unit/fluent_request_tests.rs",
+        "tools/api_manifest/tests/test_0093_add_attribute_builder_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-006",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "kmipkit-0093-add-attribute-kmipkit_client-AddAttributeBuilder-a-build_request",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::AddAttributeBuilder<'a>::build_request",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_build_request",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.buildRequest",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.build_request",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::AddAttributeBuilder<'a>::build_request",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/public_client_api.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/AddAttributeBuilderTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "crates/kmipkit-client/tests/unit/fluent_request_tests.rs",
+        "tools/api_manifest/tests/test_0093_add_attribute_builder_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-006",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "kmipkit-0093-add-attribute-kmipkit_client-AddAttributeBuilder-a-execute",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::AddAttributeBuilder<'a>::execute",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_execute_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.execute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.execute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::AddAttributeBuilder<'a>::execute",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "kmipkit-0093-add-attribute-kmipkit_client-AddAttributeBuilder-a-to_batch_item",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::AddAttributeBuilder<'a>::to_batch_item",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_build_batch_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.toBatchItem",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.to_batch_item",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::AddAttributeBuilder<'a>::to_batch_item",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "kmipkit-0093-add-attribute-kmipkit_client-AddAttributeBuilder-a-unique_identifier",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::AddAttributeBuilder<'a>::unique_identifier",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_set_unique_identifier",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.uniqueIdentifier",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.unique_identifier",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::AddAttributeBuilder<'a>::unique_identifier",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "kmipkit-0093-add-attribute-kmipkit_client-AddAttributeBuilder-a-validate",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::AddAttributeBuilder<'a>::validate",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_validate",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.validate",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.validate",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::AddAttributeBuilder<'a>::validate",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "kmipkit-0093-add-attribute-kmipkit_client-AddAttributeBuilder-a-vendor_attribute",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::AddAttributeBuilder<'a>::vendor_attribute",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_add_vendor_attribute",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.vendorAttribute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.vendor_attribute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::AddAttributeBuilder<'a>::vendor_attribute",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "kmipkit-0093-add-attribute-kmipkit_client-AddAttributeBuilder-a-with_asynchronous_indicator",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::AddAttributeBuilder<'a>::with_asynchronous_indicator",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_set_asynchronous_indicator",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.asynchronousIndicator",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.asynchronous_indicator",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::AddAttributeBuilder<'a>::with_asynchronous_indicator",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "kmipkit-0093-add-attribute-kmipkit_client-AddAttributeBuilder-a-with_options",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::AddAttributeBuilder<'a>::with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_execute_with_options_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.withOptions",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.with_options",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::AddAttributeBuilder<'a>::with_options",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "kmipkit-0093-add-attribute-kmipkit_client-RequestBuilder-a-add_attribute",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::RequestBuilder<'a>::add_attribute",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_create",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.FluentRequest.addAttribute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.Request.add_attribute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::RequestBuilder<'a>::add_attribute",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/public_client_api.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/AddAttributeBuilderTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "crates/kmipkit-client/tests/unit/fluent_request_tests.rs",
+        "tools/api_manifest/tests/test_0093_add_attribute_builder_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-006",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "kmipkit-0093-add-attribute-kmipkit_client-fluent-AddAttributeBuilder",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::fluent::AddAttributeBuilder",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::AddAttributeBuilder",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "kmipkit-0093-add-attribute-kmipkit_client-fluent-AddAttributeBuilder-a-attribute",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::fluent::AddAttributeBuilder<'a>::attribute",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_add_catalogued_attribute",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.cataloguedAttribute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.catalogued_attribute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::AddAttributeBuilder<'a>::attribute",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "kmipkit-0093-add-attribute-kmipkit_client-fluent-AddAttributeBuilder-a-attribute_item",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::fluent::AddAttributeBuilder<'a>::attribute_item",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_add_attribute_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.attributeItem",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.attribute_item",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::AddAttributeBuilder<'a>::attribute_item",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "kmipkit-0093-add-attribute-kmipkit_client-fluent-AddAttributeBuilder-a-build",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::fluent::AddAttributeBuilder<'a>::build",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_build_request",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.buildRequest",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.build_request",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::AddAttributeBuilder<'a>::build",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/public_client_api.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/AddAttributeBuilderTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "crates/kmipkit-client/tests/unit/fluent_request_tests.rs",
+        "tools/api_manifest/tests/test_0093_add_attribute_builder_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-006",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "kmipkit-0093-add-attribute-kmipkit_client-fluent-AddAttributeBuilder-a-build_request",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::fluent::AddAttributeBuilder<'a>::build_request",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_build_request",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.buildRequest",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.build_request",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::AddAttributeBuilder<'a>::build_request",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/public_client_api.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/AddAttributeBuilderTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "crates/kmipkit-client/tests/unit/fluent_request_tests.rs",
+        "tools/api_manifest/tests/test_0093_add_attribute_builder_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-006",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "kmipkit-0093-add-attribute-kmipkit_client-fluent-AddAttributeBuilder-a-execute",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::fluent::AddAttributeBuilder<'a>::execute",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_execute_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.execute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.execute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::AddAttributeBuilder<'a>::execute",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "kmipkit-0093-add-attribute-kmipkit_client-fluent-AddAttributeBuilder-a-to_batch_item",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::fluent::AddAttributeBuilder<'a>::to_batch_item",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_build_batch_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.toBatchItem",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.to_batch_item",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::AddAttributeBuilder<'a>::to_batch_item",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "kmipkit-0093-add-attribute-kmipkit_client-fluent-AddAttributeBuilder-a-unique_identifier",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::fluent::AddAttributeBuilder<'a>::unique_identifier",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_set_unique_identifier",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.uniqueIdentifier",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.unique_identifier",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::AddAttributeBuilder<'a>::unique_identifier",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "kmipkit-0093-add-attribute-kmipkit_client-fluent-AddAttributeBuilder-a-validate",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::fluent::AddAttributeBuilder<'a>::validate",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_validate",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.validate",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.validate",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::AddAttributeBuilder<'a>::validate",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "kmipkit-0093-add-attribute-kmipkit_client-fluent-AddAttributeBuilder-a-vendor_attribute",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::fluent::AddAttributeBuilder<'a>::vendor_attribute",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_add_vendor_attribute",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.vendorAttribute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.vendor_attribute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::AddAttributeBuilder<'a>::vendor_attribute",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "kmipkit-0093-add-attribute-kmipkit_client-fluent-AddAttributeBuilder-a-with_asynchronous_indicator",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::fluent::AddAttributeBuilder<'a>::with_asynchronous_indicator",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_set_asynchronous_indicator",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.asynchronousIndicator",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.asynchronous_indicator",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::AddAttributeBuilder<'a>::with_asynchronous_indicator",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "kmipkit-0093-add-attribute-kmipkit_client-fluent-AddAttributeBuilder-a-with_options",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::fluent::AddAttributeBuilder<'a>::with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_execute_with_options_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.AddAttributeBuilder.withOptions",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.AddAttributeBuilder.with_options",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::AddAttributeBuilder<'a>::with_options",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "kmipkit-0093-add-attribute-kmipkit_client-fluent-RequestBuilder-a-add_attribute",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::fluent::RequestBuilder<'a>::add_attribute",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_create",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.FluentRequest.addAttribute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.Request.add_attribute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::RequestBuilder<'a>::add_attribute",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/public_client_api.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/AddAttributeBuilderTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "crates/kmipkit-client/tests/unit/fluent_request_tests.rs",
+        "tools/api_manifest/tests/test_0093_add_attribute_builder_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-006",
+        "KMIPKIT-0093-FR-011"
       ]
     },
     {
@@ -1083773,6 +1087351,44 @@
         "path": "specs/093-fluent-complete-api/spec.md",
         "status": "Approved"
       },
+      "capabilityId": "fluent_add_attribute_parity",
+      "declarationId": "rust-observed-kmipkit-0093-add-attribute-detached",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::AddAttributeBuilder::detached",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_add_attribute_builder_create",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.FluentRequest.addAttribute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.Request.add_attribute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::AddAttributeBuilder::detached",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
       "capabilityId": "fluent_create_key_pair_parity",
       "declarationId": "rust-observed-kmipkit-0093-create-key-pair-detached",
       "declarationState": "declared",
@@ -1103360,6 +1106976,35 @@
     "zeroization": "KMIPKit-owned SecretBytes and SecretText allocations are zeroized on drop; moving them into TTLV transfers that allocation to the existing zeroizing TTLV owner. Secret-bearing encoded request bytes remain in the existing zeroizing owner through transport completion and are zeroized on drop. Registry declarations and diagnostics never contain extension payload bytes."
   },
   "types": [
+    {
+      "c": {
+        "handleKind": "add_attribute_builder",
+        "kind": "opaque-handle",
+        "name": "kmipkit_add_attribute_builder_t",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_add_attribute_builder_release"
+      },
+      "id": "AddAttributeBuilder",
+      "java": {
+        "name": "AddAttributeBuilder",
+        "package": "org.kmipkit.fluent"
+      },
+      "kind": "struct",
+      "python": {
+        "module": "kmipkit.fluent",
+        "name": "AddAttributeBuilder"
+      },
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent",
+        "name": "AddAttributeBuilder",
+        "owner": "client"
+      }
+    },
     {
       "c": {
         "handleKind": "add_attribute_request",

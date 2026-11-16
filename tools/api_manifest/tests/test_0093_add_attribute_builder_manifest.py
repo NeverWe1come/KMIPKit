@@ -47,7 +47,7 @@ class FluentAddAttributeBuilderManifestTests(unittest.TestCase):
     def test_opaque_builder_type_is_declared_for_all_four_languages(self) -> None:
         rows = [
             row for row in self.manifest["types"]
-            if row["id"] == "add_attribute_builder"
+            if row["id"] == "AddAttributeBuilder"
         ]
         self.assertEqual(1, len(rows))
         self.assertEqual(
