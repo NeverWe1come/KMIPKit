@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from typing import TYPE_CHECKING, Any, Self
 
 from . import attribute_operations, errors, extensions, ttlv
@@ -195,6 +195,29 @@ def _execute_direct_create(client: Client, request: Any, limits: ttlv.CodecLimit
     return _batch_result(output[0], limits)
 
 
+def _execute_single_item(
+    client: Client,
+    build: Callable[[], extensions.ClientBatchItem],
+    limits: ttlv.CodecLimits,
+    configured_options: RequestOptions | None,
+    asynchronous_indicator: int | None,
+    options: RequestOptions | None = None,
+) -> BatchResult:
+    if not isinstance(client, Client) or not isinstance(limits, ttlv.CodecLimits):
+        errors.raise_for_status(4)
+    if options is not None and not isinstance(options, RequestOptions):
+        errors.raise_for_status(4)
+    with Batch.create() as batch:
+        with build() as item:
+            batch.add_item(item)
+        if asynchronous_indicator is not None:
+            batch.set_asynchronous_indicator(asynchronous_indicator)
+        selected_options = options if options is not None else configured_options
+        if selected_options is not None:
+            return client.execute_with_options(batch, limits, selected_options)
+        return client.execute(batch, limits)
+
+
 def _build_fluent_batch_item(
     handle: Any, native_function: Any
 ) -> extensions.ClientBatchItem:
@@ -380,21 +403,14 @@ class LocateBuilder:
         limits: ttlv.CodecLimits,
         options: RequestOptions | None = None,
     ) -> BatchResult:
-        if not isinstance(self._client, Client) or not isinstance(
-            limits, ttlv.CodecLimits
-        ):
-            errors.raise_for_status(4)
-        if options is not None and not isinstance(options, RequestOptions):
-            errors.raise_for_status(4)
-        with Batch.create() as batch:
-            with self.build() as item:
-                batch.add_item(item)
-            if self._asynchronous_indicator is not None:
-                batch.set_asynchronous_indicator(self._asynchronous_indicator)
-            selected_options = options if options is not None else self._options
-            if selected_options is not None:
-                return self._client.execute_with_options(batch, limits, selected_options)
-            return self._client.execute(batch, limits)
+        return _execute_single_item(
+            self._client,
+            self.build,
+            limits,
+            self._options,
+            self._asynchronous_indicator,
+            options,
+        )
 
     def execute_with_options(
         self,
@@ -504,21 +520,14 @@ class RevokeBuilder:
         limits: ttlv.CodecLimits,
         options: RequestOptions | None = None,
     ) -> BatchResult:
-        if not isinstance(self._client, Client) or not isinstance(
-            limits, ttlv.CodecLimits
-        ):
-            errors.raise_for_status(4)
-        if options is not None and not isinstance(options, RequestOptions):
-            errors.raise_for_status(4)
-        with Batch.create() as batch:
-            with self.build() as item:
-                batch.add_item(item)
-            if self._asynchronous_indicator is not None:
-                batch.set_asynchronous_indicator(self._asynchronous_indicator)
-            selected_options = options if options is not None else self._options
-            if selected_options is not None:
-                return self._client.execute_with_options(batch, limits, selected_options)
-            return self._client.execute(batch, limits)
+        return _execute_single_item(
+            self._client,
+            self.build,
+            limits,
+            self._options,
+            self._asynchronous_indicator,
+            options,
+        )
 
     def execute_with_options(
         self,
