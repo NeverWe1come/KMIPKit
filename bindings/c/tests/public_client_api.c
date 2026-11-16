@@ -456,9 +456,19 @@ cleanup:
 int kmipkit_public_add_attribute_builder_probe(void) {
     static const uint8_t identifier[] = "key-42";
     static const uint8_t description[] = "managed by Add Attribute";
+    static const uint8_t vendor[] = "Vendor_Name.1";
+    static const uint8_t vendor_name[] = "region";
+    static const uint8_t invalid_utf8[] = {UINT8_C(0xFF)};
     kmipkit_codec_limits_t *limits = NULL;
     kmipkit_ttlv_value_t *value = NULL;
+    kmipkit_ttlv_item_t *attribute_item = NULL;
+    kmipkit_ttlv_item_t *vendor_item = NULL;
+    kmipkit_raw_tag_t *raw_tag = NULL;
+    kmipkit_tag_t *tag = NULL;
     kmipkit_add_attribute_builder_t *builder = NULL;
+    kmipkit_add_attribute_builder_t *item_builder = NULL;
+    kmipkit_add_attribute_builder_t *vendor_builder = NULL;
+    kmipkit_add_attribute_builder_t *empty_builder = NULL;
     kmipkit_add_attribute_request_t *request = NULL;
     kmipkit_ttlv_structure_t *payload = NULL;
     kmipkit_client_batch_item_t *item = NULL;
@@ -475,6 +485,13 @@ int kmipkit_public_add_attribute_builder_probe(void) {
     }
     if (kmipkit_add_attribute_builder_set_unique_identifier(
             builder, identifier, (uint64_t)(sizeof(identifier) - 1)) != INT32_C(0) ||
+        kmipkit_add_attribute_builder_set_unique_identifier(
+            builder, invalid_utf8, (uint64_t)sizeof(invalid_utf8)) !=
+            KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_add_attribute_builder_set_unique_identifier(
+            builder, NULL, UINT64_C(1)) != KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_add_attribute_builder_set_asynchronous_indicator(builder, UINT32_C(3)) !=
+            INT32_C(0) ||
         kmipkit_add_attribute_builder_add_catalogued_attribute(
             builder, KMIPKIT_STANDARD_ATTRIBUTE_DESCRIPTION, value) != INT32_C(0) ||
         kmipkit_add_attribute_builder_validate(builder) != INT32_C(0) ||
@@ -494,6 +511,72 @@ int kmipkit_public_add_attribute_builder_probe(void) {
         status = 3;
         goto cleanup;
     }
+    if (kmipkit_add_attribute_builder_execute_with_options_v1(
+            builder, NULL, NULL, NULL, &response) != KMIPKIT_ERROR_INVALID_INPUT ||
+        response != NULL) {
+        status = 4;
+        goto cleanup;
+    }
+
+    if (kmipkit_ttlv_value_text_string(
+            limits, description, (uint64_t)(sizeof(description) - 1), &value) != INT32_C(0) ||
+        kmipkit_ttlv_raw_tag_create(UINT32_C(0x4200FC), &raw_tag) != INT32_C(0) ||
+        kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag) != INT32_C(0) ||
+        kmipkit_ttlv_item_create(tag, value, limits, &attribute_item) != INT32_C(0)) {
+        status = 5;
+        goto cleanup;
+    }
+    value = NULL;
+    kmipkit_tag_release(tag);
+    tag = NULL;
+    kmipkit_raw_tag_release(raw_tag);
+    raw_tag = NULL;
+    if (kmipkit_add_attribute_builder_create(&item_builder) != INT32_C(0) ||
+        kmipkit_add_attribute_builder_set_unique_identifier(
+            item_builder, identifier, (uint64_t)(sizeof(identifier) - 1)) != INT32_C(0) ||
+        kmipkit_add_attribute_builder_add_attribute_item(item_builder, attribute_item) !=
+            INT32_C(0) ||
+        kmipkit_add_attribute_builder_validate(item_builder) != INT32_C(0)) {
+        status = 6;
+        goto cleanup;
+    }
+
+    if (kmipkit_ttlv_value_text_string(
+            limits, description, (uint64_t)(sizeof(description) - 1), &value) != INT32_C(0) ||
+        kmipkit_ttlv_raw_tag_create(UINT32_C(0x540001), &raw_tag) != INT32_C(0) ||
+        kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag) != INT32_C(0) ||
+        kmipkit_ttlv_item_create(tag, value, limits, &vendor_item) != INT32_C(0)) {
+        status = 7;
+        goto cleanup;
+    }
+    value = NULL;
+    kmipkit_tag_release(tag);
+    tag = NULL;
+    kmipkit_raw_tag_release(raw_tag);
+    raw_tag = NULL;
+    if (kmipkit_add_attribute_builder_create(&vendor_builder) != INT32_C(0) ||
+        kmipkit_add_attribute_builder_set_unique_identifier(
+            vendor_builder, identifier, (uint64_t)(sizeof(identifier) - 1)) != INT32_C(0) ||
+        kmipkit_add_attribute_builder_add_vendor_attribute(
+            vendor_builder, vendor, (uint64_t)(sizeof(vendor) - 1),
+            vendor_name, (uint64_t)(sizeof(vendor_name) - 1), vendor_item) != INT32_C(0) ||
+        kmipkit_add_attribute_builder_validate(vendor_builder) != INT32_C(0)) {
+        status = 8;
+        goto cleanup;
+    }
+
+    kmipkit_add_attribute_request_release(request);
+    request = NULL;
+    kmipkit_client_batch_item_release(item);
+    item = NULL;
+    if (kmipkit_add_attribute_builder_create(&empty_builder) != INT32_C(0) ||
+        kmipkit_add_attribute_builder_build_request(empty_builder, &request) !=
+            KMIPKIT_ERROR_INVALID_INPUT || request != NULL ||
+        kmipkit_add_attribute_builder_build_batch_item(empty_builder, &item) !=
+            KMIPKIT_ERROR_INVALID_INPUT || item != NULL) {
+        status = 9;
+        goto cleanup;
+    }
     status = 0;
 
 cleanup:
@@ -501,7 +584,14 @@ cleanup:
     kmipkit_client_batch_item_release(item);
     kmipkit_ttlv_structure_release(payload);
     kmipkit_add_attribute_request_release(request);
+    kmipkit_add_attribute_builder_release(empty_builder);
+    kmipkit_add_attribute_builder_release(vendor_builder);
+    kmipkit_add_attribute_builder_release(item_builder);
     kmipkit_add_attribute_builder_release(builder);
+    kmipkit_ttlv_item_release(vendor_item);
+    kmipkit_ttlv_item_release(attribute_item);
+    kmipkit_tag_release(tag);
+    kmipkit_raw_tag_release(raw_tag);
     kmipkit_ttlv_value_release(value);
     kmipkit_codec_limits_release(limits);
     return status;

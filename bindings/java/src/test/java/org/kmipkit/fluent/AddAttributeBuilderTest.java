@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Test;
+import org.kmipkit.ClientOperationException;
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.extensions.ClientBatchItem;
 import org.kmipkit.extensions.RequestOptions;
@@ -39,6 +40,10 @@ final class AddAttributeBuilderTest {
                 TtlvItem expertItem = TtlvItem.create(tag, expertValue, limits);
                 AddAttributeBuilder builder = new AddAttributeBuilder(null)) {
             assertThrows(InvalidInputException.class, builder::validate);
+            assertThrows(ClientOperationException.class, builder::buildRequest);
+            assertThrows(ClientOperationException.class, builder::build);
+            assertThrows(InvalidInputException.class,
+                    () -> NativeFluentRegistry.addAttributeBuilderSetAsynchronousIndicator(0, -1));
             assertSame(builder, builder.uniqueIdentifier("key-42"));
             assertSame(builder, builder.cataloguedAttribute(StandardAttribute.DESCRIPTION, description));
             assertSame(builder, builder.withOptions(RequestOptions.defaults()));

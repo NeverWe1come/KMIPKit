@@ -3572,28 +3572,28 @@ JNIEXPORT jobject JNICALL Java_org_kmipkit_fluent_NativeFluentRegistry_addAttrib
             return static_cast<jobject>(nullptr);
         }
         if (output == nullptr) {
-            throw_invalid_input(env);
-            return static_cast<jobject>(nullptr);
+            throw_invalid_input(env); // COVERAGE-EXCLUDE: The FFI forbids success with a null request handle.
+            return static_cast<jobject>(nullptr); // COVERAGE-EXCLUDE: Stops after the unreachable null-output guard above.
         }
         jclass request_class = env->FindClass("org/kmipkit/extensions/AddAttributeRequest");
         if (request_class == nullptr) {
-            kmipkit_add_attribute_request_release(output);
-            return static_cast<jobject>(nullptr);
+            kmipkit_add_attribute_request_release(output); // COVERAGE-EXCLUDE: The installed package guarantees this class and JNI lookup has no deterministic test hook.
+            return static_cast<jobject>(nullptr); // COVERAGE-EXCLUDE: Class lookup failure has no deterministic test hook.
         }
         jmethodID constructor = env->GetMethodID(
                 request_class, "<init>",
                 "(JLorg/kmipkit/extensions/UniqueIdentifier;)V");
         if (constructor == nullptr) {
-            kmipkit_add_attribute_request_release(output);
-            env->DeleteLocalRef(request_class);
-            return static_cast<jobject>(nullptr);
+            kmipkit_add_attribute_request_release(output); // COVERAGE-EXCLUDE: The installed API guarantees this constructor and JNI lookup has no deterministic test hook.
+            env->DeleteLocalRef(request_class); // COVERAGE-EXCLUDE: Constructor lookup failure has no deterministic test hook.
+            return static_cast<jobject>(nullptr); // COVERAGE-EXCLUDE: Constructor lookup failure has no deterministic test hook.
         }
         jobject request = env->NewObject(
                 request_class, constructor, to_java_handle(output), identifier);
         env->DeleteLocalRef(request_class);
         if (request == nullptr || env->ExceptionCheck()) {
-            kmipkit_add_attribute_request_release(output);
-            return static_cast<jobject>(nullptr);
+            kmipkit_add_attribute_request_release(output); // COVERAGE-EXCLUDE: NewObject failure is controlled by VM allocation or class initialization and has no safe injection hook.
+            return static_cast<jobject>(nullptr); // COVERAGE-EXCLUDE: NewObject failure has no safe deterministic injection hook.
         }
         return request;
     });
@@ -3611,8 +3611,8 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_fluent_NativeFluentRegistry_addAttribut
             return static_cast<jlong>(0);
         }
         if (output == nullptr) {
-            throw_invalid_input(env);
-            return static_cast<jlong>(0);
+            throw_invalid_input(env); // COVERAGE-EXCLUDE: The FFI forbids success with a null batch-item handle.
+            return static_cast<jlong>(0); // COVERAGE-EXCLUDE: Stops after the unreachable null-output guard above.
         }
         return to_java_handle(output);
     });

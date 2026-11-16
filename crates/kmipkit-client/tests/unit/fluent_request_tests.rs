@@ -404,8 +404,9 @@ fn add_attribute_builder_preserves_explicit_and_vendor_attribute_items() {
         .request()
         .add_attribute()
         .vendor_attribute("Vendor Name", "region", &value)
+        .vendor_attribute("Vendor_Name.1", "", &value)
         .validate();
-    assert_eq!(invalid_vendor, Err(FluentBuildError::InvalidRequest));
+    assert_eq!(invalid_vendor, Err(FluentBuildError::InvalidAttributeValue));
 }
 
 #[test]
