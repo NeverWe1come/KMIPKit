@@ -192,3 +192,11 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
   all 96 tests and `git diff --check` passed.
 - Refactor/documentation: the contract checks which test is covered without
   depending on whether the workflow names it directly or through a wildcard.
+
+## Development evidence: route manifest after KMIPKIT-0092 refresh
+
+- Red: after updating this stack to the refreshed KMIPKIT-0092 base, the
+  existing route-manifest check and `test_route_capabilities` failed because
+  the checked-in generated mapping no longer matched `public-api.json` in
+  `normative_target_ids`. The route tests reported 6 failures and 1 error; the
+  validation mismatch also masked several negative-test assertions.
