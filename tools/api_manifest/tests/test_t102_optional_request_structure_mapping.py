@@ -198,8 +198,11 @@ PKCS11_REQUEST_SETTER_IDS = {
 # response views; KMIPKIT-0096 expert attributes; KMIPKIT-0093 reconciliation;
 # and KMIPKIT-0108/0109 attribute operations and bindings. KMIPKIT-0124 adds
 # 28 KMIP 3.0 fluent and 16 asynchronous batch declarations, which also map
-# asynchronous constructors onto four existing operation rows.
-OTHER_DECLARATIONS_SHA256 = "565f3143d180ae1838020b0d9e4257254479de8a9d84c011b1ccc8e26277482e"
+# asynchronous constructors onto four existing operation rows. Delete
+# Attribute adds 77 ready declarations and two blocked Rust candidates. Its
+# operation row also gains the approved four-language fixture evidence.
+# Locate and Revoke add their 26 exact Rust root re-exports and Java signatures.
+OTHER_DECLARATIONS_SHA256 = "14b93221d43a9f7bbfca814505c9fd1d46c100f51e63170efb190c3fbdebbd94"
 OTHER_OPERATIONS_SHA256 = "2ea94003f2877d0e6d84271d67d9add6f48a5c5b7a837c48b22fe40f41022d39"
 def canonical_sha256(value: object) -> str:
     encoded = json.dumps(

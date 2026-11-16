@@ -176,8 +176,12 @@ EXPECTED = (
 # reconciliation; KMIPKIT-0096 Python expert attributes; and KMIPKIT-0108/0109
 # attribute reads and bindings. The prior fingerprint predates those additions.
 # KMIPKIT-0126 adds 37 versioned standard attributes and 7 KMIP 3.0 batch response readers.
-UNCHANGED_DECLARATIONS_SHA256 = "ad01e1cd0751323a615826066d6845422655472529bfbfce2da59ac5ccf59012"
-UNCHANGED_OPERATIONS_SHA256 = "9ee0f7c51c05a8abd96af7f6d3017f3ffb780c4262f231eaf3cb8c01a38147c7"
+# KMIPKIT-0093 adds all audited Rust declaration candidates, exact trait
+# exclusions, and the 28 execution-wrapper requirement links.
+# Locate and Revoke add their 26 exact Rust root re-exports and Java signatures.
+UNCHANGED_DECLARATIONS_SHA256 = "a4199a00a4d5b6c2d580d0d6307a08805798868ddfd34f3427809133b65eda21"
+# Delete Attribute records four-language fixture evidence on its operation row.
+UNCHANGED_OPERATIONS_SHA256 = "9f04e672ec202fb4acdb911879d5519b7c57238d77aa67574b8e5471cc6fea57"
 # T098's maintainer-approved reconciliation updates lifecycle approval evidence
 # and inherited requirement links outside the T102 declaration/operation rows.
 # The test separately pins those T098 records; this fingerprint covers the
@@ -186,8 +190,11 @@ UNCHANGED_OPERATIONS_SHA256 = "9ee0f7c51c05a8abd96af7f6d3017f3ffb780c4262f231eaf
 # exclusions, KMIPKIT-0101 through KMIPKIT-0105 declarations, and KMIPKIT-0093
 # reconciliation, including KMIPKIT-0096 expert attributes and KMIPKIT-0108/0109
 # attribute operations and bindings. R002's additive requirement links and C
-# copy caveat are normalized below and tested by the 0093 suite.
-OTHER_MANIFEST_SHA256 = "1bd232d17e7bae3d34cbd858447dd5d538aaae7b552a3969d7a36b03aa5a9bc6"
+# copy caveat are normalized below and tested by the 0093 suite. The full Rust
+# reconciliation adds 419 blocked candidates, 666 exact trait exclusions, and
+# the FR-005/FR-008 wrapper links. Delete Attribute adds 77 ready declarations,
+# two blocked Rust candidates, and 18 exact trait exclusions.
+OTHER_MANIFEST_SHA256 = "094ff8b1b6e6cfe41b156cfc12857e43d839f98106cb85c9905f5018a4e2586d"
 EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = T102_BLOCKED_CANDIDATES
 LOCATE_REQUEST_BUILDER_IDS = {
     "rust-observed-e07fce825be9d33278e1",

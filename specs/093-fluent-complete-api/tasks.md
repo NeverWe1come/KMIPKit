@@ -71,6 +71,42 @@ Dependent work branches from the unmerged parent head while review is pending.
 - [ ] KPB004 Push the completed implementation and resolve every required CI
   failure on the exact PR head before marking it ready for human review.
 
+### Add Attribute parity slice
+
+- [x] AAB001 Commit failing Rust, C consumer, Java consumer, Python consumer,
+  and public-manifest checks for one typed Add Attribute request.
+- [x] AAB002 Implement the Rust builder and C ABI on the existing typed
+  request path; return owned typed requests and batch items and preserve the
+  existing client error and delivery-state behavior.
+- [x] AAB003 Add Java/JNI and Python/CFFI builders, update the generated public
+  API inventory, and document the KMIP v2.1 §6.1.2 request in English and
+  Spanish.
+- [ ] AAB004 Run full binding, coverage, traceability, generation, and exact
+  head CI checks; resolve failures before review.
+
+### Delete Attribute parity slice
+
+- [x] DAB001 Commit failing C, Java, Python, and public-manifest checks for a
+  typed Delete Attribute builder.
+- [x] DAB002 Implement the Rust-backed C ABI, JNI, and CFFI builders for
+  catalogued values, explicit TTLV Items, vendor attributes, and references.
+- [x] DAB003 Declare and generate exact public exports; update the English and
+  Spanish guides and traceability for KMIP v2.1 §6.1.13.
+- [ ] DAB004 Run the complete required checks and resolve exact-head CI before
+  marking the PR ready for human review.
+
+### Locate and Revoke parity slice
+
+- [x] LRB001 Commit failing C, Java, Python, Rust option-boundary, and
+  public-manifest checks for typed Locate and Revoke builders.
+- [x] LRB002 Implement Rust builders and opaque C ABI builders over the
+  existing typed requests, retaining validation, options, and delivery state.
+- [x] LRB003 Add Java and Python facades, declare and generate exact public
+  exports, and update English/Spanish guides and traceability for KMIP v2.1
+  §§6.1.28 and 6.1.44.
+- [ ] LRB004 Run binding, coverage, traceability, generation, and exact-head CI
+  checks; resolve failures before requesting human review.
+
 ## End-to-end and closeout PR
 
 - [x] F001 Add five progressive TLS 1.3/mTLS journeys in each language and

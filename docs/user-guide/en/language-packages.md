@@ -246,7 +246,11 @@ and tolerates both response shapes described in §6.1.40 while
 `KMIPKIT-DISC-047` remains unresolved. These
 are API mappings, not server-conformance claims. Locate preserves optional request filters, server order,
 repeated Unique Identifiers, and the distinction between omitted and empty
-Located Items. The Get Usage Allocation mapping includes its optional identifier
+Located Items. Its fluent builder is available in Rust, C, Java, and Python;
+it accepts an `AttributeSet`, exposes the common result and offset selectors,
+and executes one typed request. Revoke also has a four-language fluent builder
+with an explicit reason and named optional identifier, audit-message, and
+compromise-date setters. The Get Usage Allocation mapping includes its optional identifier
 and signed count request, resolved identifier response, and common batch outcomes
 in Rust, C, Java, and Python. This mapping evidence does not claim full operation
 conformance. Re-certify maps the Table 300 request fields: optional Unique

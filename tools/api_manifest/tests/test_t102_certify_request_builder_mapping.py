@@ -172,8 +172,14 @@ KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS = {
 # this inventory also includes the approved KMIPKIT-0093 reconciliation and
 # narrowed T101 mappings. KMIPKIT-0124 adds 28 KMIP 3.0 fluent and 16 async
 # batch declarations to this non-target snapshot; the async request constructors
-# The non-target snapshot includes Create Key Pair declarations and KMIPKIT-0126 additions.
-DECLARATIONS_SHA256 = "895071e6d2ffcbc6e138b012ba3e9a5cef6634487d902d9959c9cb6df9760527"
+# add four-language mappings to the existing operation rows. KMIPKIT-0093 adds
+# the four-language Create Key Pair, Set Attribute, and Add Attribute builder
+# declarations and the complete Rust export reconciliation, including 419
+# blocked inventory candidates and 666 exact trait exclusions. Eight duplicate
+# KMIPKIT-0047 v3.0 paths are deduplicated. Delete Attribute adds 77 ready
+# declarations, two blocked Rust candidates, and 18 exact trait exclusions.
+# Locate and Revoke add their 26 exact Rust root re-exports and Java signatures.
+DECLARATIONS_SHA256 = "2840d255e34880a958fa9f382193fca9950498acc5622a867a5a17c5fc4179f0"
 OPERATIONS_SHA256 = "9ab6c670787f07c9faa301744d1654fdd071ceffc3b43936e6cb12add59094e2"
 
 
@@ -386,6 +392,49 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
         } | PKCS11_REQUEST_EXTENSION_IDS | {
             target["id"] for target in REQUEST_CONSTRUCTION_TARGETS
         } | KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS
+        # Set Attribute has its own exact-surface contract in the dedicated
+        # KMIPKIT-0093 test. Keep those declarations out of this unrelated
+        # Certify non-target snapshot as the fluent builder is introduced.
+        target_ids |= {
+            row["declarationId"]
+            for row in self.manifest["publicDeclarations"]
+            if (
+                (normalized_name := re.sub(r"[^a-z0-9]", "", row["exportName"].lower()))
+                and row.get("capabilityId") in {
+                    "fluent_set_attribute_parity",
+                    "fluent_set_attribute_c_abi",
+                }
+                and "setattribute" in normalized_name
+                and (
+                    "builder" in normalized_name
+                    or normalized_name.endswith("requestsetattribute")
+                )
+            )
+        }
+        target_ids |= {
+            row["declarationId"]
+            for row in self.manifest["publicDeclarations"]
+            if row.get("capabilityId") in {
+                "fluent_add_attribute_parity",
+                "fluent_add_attribute_c_abi",
+            }
+        }
+        # A few Rust implementation-facing declarations are intentionally
+        # inventoried as public binding surface instead of fluent parity. They
+        # still belong to the Add Attribute builder slice and should not
+        # perturb this unrelated Certify snapshot.
+        target_ids |= {
+            row["declarationId"]
+            for row in self.manifest["publicDeclarations"]
+            if row.get("capabilityId") == "public_binding_surface"
+            and row.get("exportName") in {
+                "kmipkit_client::AddAttributeBuilder::detached",
+                "kmipkit_client::fluent::AddAttributeBuilder<'a>::detached",
+                "kmipkit_client::FluentBuildError::MissingAddAttributeAttribute",
+                "kmipkit_client::fluent::FluentBuildError::MissingAddAttributeAttribute",
+                "kmipkit_client::fluent::SetAttributeBuilder<'a>::detached",
+            }
+        }
         other_declarations = copy.deepcopy([
             row for row in self.manifest["publicDeclarations"] if row["declarationId"] not in target_ids
         ])

@@ -91,8 +91,8 @@ RUST_ONLY_DECLARATIONS = {
 DRAFT_SPEC_IDS = {"KMIPKIT-0010"}
 # The 0047 release-stack and 0048 snapshots remain immutable historical evidence.
 _REPORTS_DIR = Path("specs") / "051-pre-send-validation" / "reports"
-RUST_REPORT_PATH = _REPORTS_DIR / "rust-export-report-2026-11-12.json"
-REPORT_PATH = _REPORTS_DIR / "shared-rust-inventory-2026-11-12.json"
+RUST_REPORT_PATH = _REPORTS_DIR / "rust-export-report-2026-11-16.json"
+REPORT_PATH = _REPORTS_DIR / "shared-rust-inventory-2026-11-16.json"
 _RUST_AUDIT_SPEC = importlib.util.spec_from_file_location(
     "audit_rust_exports", Path(__file__).with_name("audit_rust_exports.py")
 )
@@ -119,7 +119,8 @@ def _read_approved_owner(
         (
             path
             for path in (root / "specs").iterdir()
-            if path.is_dir() and path.name.startswith(owner_spec_id[9:])
+            if path.is_dir()
+            and re.match(rf"^{re.escape(owner_spec_id[9:])}(?:-|$)", path.name)
         ),
         None,
     )
