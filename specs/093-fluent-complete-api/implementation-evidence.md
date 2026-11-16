@@ -1028,3 +1028,20 @@
   mismatches; the compiled C consumer suite passes 4/4 tests.
 - Full exact-head CI remains required; G004 stays open and this PR stays WIP
   until the final head's applicable checks pass.
+
+### Windows capability inventory regression
+
+#### Red
+
+- CI run `43974169961` failed on Windows Rust stable (job `133676924176`) and
+  Rust 1.94 (job `133676924236`). The workspace test
+  `capability_query_only_reports_c_mapped_nonblocked_capabilities` found that
+  generated `C_AVAILABLE_CAPABILITIES` included the newly generated
+  `fluent_named_tag_values` capability, while the test's explicit expected
+  capability set omitted it. Both jobs passed formatting and Clippy; each ran
+  476 FFI tests with this one failure.
+- The focused Red is reproducible locally with
+  `cargo +1.94 test --locked -p kmipkit-ffi --lib --features
+  coverage-c-consumer
+  extension_registry::metadata_tests::capability_query_only_reports_c_mapped_nonblocked_capabilities
+  -- --exact --nocapture`.
