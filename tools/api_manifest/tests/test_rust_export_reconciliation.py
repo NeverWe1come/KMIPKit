@@ -34,6 +34,28 @@ def observed(package_id: str, export_name: str, kind: str = "associated-item") -
 
 
 class RustExportReconciliationTests(unittest.TestCase):
+    def test_explicit_owner_reassigns_existing_unresolved_rows_for_that_requirement(self):
+        requirement_id = "KMIPKIT-0093-FR-011"
+        declaration = RECONCILER.blocked_record(
+            observed("rust-kmipkit-protocol", "kmipkit_protocol::NewOperation::execute"),
+            {"capabilities": [], "approvedExclusions": [], "publicDeclarations": []},
+            requirement_id=requirement_id,
+        )
+        manifest = {
+            "capabilities": [],
+            "approvedExclusions": [],
+            "publicDeclarations": [declaration],
+        }
+
+        RECONCILER.reconcile(
+            manifest,
+            {"formatVersion": 1, "rustdocFormat": 57, "missingFromManifest": []},
+            candidate_spec_id="KMIPKIT-0093",
+            requirement_id=requirement_id,
+        )
+
+        self.assertEqual(manifest["publicDeclarations"][0]["candidateSpecId"], "KMIPKIT-0093")
+
     def test_export_key_is_the_package_and_export_path_pair(self):
         row = observed("rust-kmipkit-protocol", "kmipkit_protocol::Owner::method")
 
