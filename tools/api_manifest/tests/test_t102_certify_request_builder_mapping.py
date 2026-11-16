@@ -392,10 +392,17 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
         target_ids |= {
             row["declarationId"]
             for row in self.manifest["publicDeclarations"]
-            if row.get("candidateSpecId") == "KMIPKIT-0093"
-            and (
-                "SetAttributeBuilder" in row["exportName"]
-                or "RequestBuilder<'a>::set_attribute" in row["exportName"]
+            if (
+                (normalized_name := re.sub(r"[^a-z0-9]", "", row["exportName"].lower()))
+                and row.get("capabilityId") in {
+                    "fluent_set_attribute_parity",
+                    "fluent_set_attribute_c_abi",
+                }
+                and "setattribute" in normalized_name
+                and (
+                    "builder" in normalized_name
+                    or normalized_name.endswith("requestsetattribute")
+                )
             )
         }
         other_declarations = copy.deepcopy([
