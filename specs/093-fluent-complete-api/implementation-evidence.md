@@ -704,6 +704,28 @@
 - The next exact-head SonarCloud result must confirm duplication is at or below
   the 3% gate. PR #236 remains WIP until every required check is green.
 
+### Recheck Green
+
+- Commit `4a183689f` moves shared Add/Set mutation methods into private trait
+  defaults. Each concrete builder keeps its public inherent methods and
+  signatures, with explicit type-specific delegation so the closed production
+  AST can still inspect every public method. No macro-generated public code is
+  introduced.
+- The Set Attribute manifest audit now filters blocked duplicate module paths
+  while requiring every declared Rust path to map across the four languages.
+- `cargo test -p kmipkit-client --all-features --lib` passes all 929 tests;
+  the Add/Set/parity manifest suite passes all 30 tests; the public API
+  generator verifies all 12 outputs; workspace formatting and Clippy with all
+  targets/features and `-D warnings` pass; `git diff --check` passes.
+
+### Recheck Refactor
+
+- This keeps the builder types and Rust paths as concrete nominal types, avoids
+  adding a public generic helper type, and shares the repeated mutation logic
+  without relying on macros that the source audit rejects.
+- PR #236 remains WIP until a new exact-head SonarCloud analysis confirms the
+  3% duplication gate and every other required CI check is green.
+
 ### Recheck Red
 
 - The exact-head analysis for `8a878f1b4ba7d885fe10725a4503fe704a72c6d9`
