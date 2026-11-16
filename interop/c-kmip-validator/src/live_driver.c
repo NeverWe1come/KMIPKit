@@ -164,6 +164,34 @@ static bool create_rsa_key_attributes(kmip_live_client_t *client,
         client, KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_RSA, 2048, out_attributes);
 }
 
+static bool create_export_key_wrapping_specification(
+    kmip_live_client_t *client,
+    kmipkit_ttlv_structure_t **out_specification) {
+    kmipkit_ttlv_structure_t *key_information = NULL;
+    kmipkit_ttlv_value_t *value = NULL;
+    if (kmipkit_ttlv_structure_create(out_specification) != 0 ||
+        kmipkit_ttlv_structure_create(&key_information) != 0) {
+        if (*out_specification) kmipkit_ttlv_structure_release(*out_specification);
+        if (key_information) kmipkit_ttlv_structure_release(key_information);
+        *out_specification = NULL;
+        return false;
+    }
+    bool valid = kmipkit_ttlv_value_enumeration(
+        KMIPKIT_ENUMERATION_WRAPPING_METHOD_ENCRYPT, &value) == 0 &&
+        append_ttlv_value(client, out_specification, UINT32_C(0x42009E), &value) &&
+        append_secret_text(client, &key_information, UINT32_C(0x420094),
+                           "fixture-wrapping-key") &&
+        structure_into_value(client, &key_information, &value) &&
+        append_ttlv_value(client, out_specification, UINT32_C(0x420036), &value);
+    if (value) kmipkit_ttlv_value_release(value);
+    if (key_information) kmipkit_ttlv_structure_release(key_information);
+    if (!valid && *out_specification) {
+        kmipkit_ttlv_structure_release(*out_specification);
+        *out_specification = NULL;
+    }
+    return valid;
+}
+
 static bool item_view_has_tag(kmipkit_ttlv_item_view_t *item,
                               uint32_t expected_tag,
                               uint8_t expected_type,
@@ -5033,6 +5061,11 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     bool unsupported_version_boundary_workflow =
         strcmp(test_case->case_id, "test-v20-reject-get-constraints") == 0 ||
         strcmp(test_case->case_id, "test-v20-reject-ping") == 0;
+    bool export_workflow = strcmp(test_case->operation, "Export") == 0;
+    const char *export_request_field = getenv("KMIPKIT_C_EXPORT_REQUEST_FIELD");
+    const char *export_request_variant = getenv("KMIPKIT_C_EXPORT_REQUEST_VARIANT");
+    bool export_request_field_present = export_request_variant &&
+        strcmp(export_request_variant, "present") == 0;
     bool ping_boundary_workflow = strcmp(test_case->case_id, "test-v20-reject-ping") == 0;
     bool get_usage_allocation_uid_variant =
         strcmp(test_case->case_id,
@@ -5051,7 +5084,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         strcmp(test_case->case_id, "test-op-set-defaults") == 0;
     bool interop_workflow = strcmp(test_case->case_id, "test-op-interop") == 0;
     if (strcmp(test_case->mode, "local_model") == 0) {
-        if (!unsupported_version_boundary_workflow && !get_usage_allocation_uid_variant)
+        if (!unsupported_version_boundary_workflow && !get_usage_allocation_uid_variant &&
+            !export_workflow)
             return execute_local_model_case(test_case);
         if (strcmp(client->api_level, "typed-protocol") != 0) {
             return outcome_not_run(
@@ -5296,7 +5330,6 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         register_certificate_workflow ? KMIPKIT_ENUMERATION_OBJECT_TYPE_CERTIFICATE :
         KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY;
     bool revoke_workflow = strcmp(test_case->case_id, "test-op-revoke") == 0;
-    bool export_workflow = strcmp(test_case->case_id, "test-op-export") == 0;
     bool activate_workflow = strcmp(test_case->case_id, "test-op-activate") == 0;
     bool destroy_workflow = strcmp(test_case->case_id, "test-op-destroy") == 0;
     bool active_destroy_negative_workflow =
@@ -5616,8 +5649,37 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                 status = create_revocation_item(&placeholder, &item);
             } else if (export_workflow) {
                 request_construction_step = "Export target operation";
-                status = kmipkit_client_batch_item_export(
-                    &placeholder, 0, 0, 0, 0, 0, 0, NULL, &item);
+                bool export_identifier_present = !export_request_field ||
+                    strcmp(export_request_field, "Unique Identifier") != 0 ||
+                    export_request_field_present;
+                bool has_export_key_format = export_request_field_present &&
+                    export_request_field && strcmp(export_request_field, "Key Format Type") == 0;
+                bool has_export_key_wrap_type = export_request_field_present &&
+                    export_request_field && strcmp(export_request_field, "Key Wrap Type") == 0;
+                bool has_export_key_compression_type = export_request_field_present &&
+                    export_request_field && strcmp(export_request_field, "Key Compression Type") == 0;
+                bool has_export_wrapping_specification = export_request_field_present &&
+                    export_request_field && strcmp(export_request_field, "Key Wrapping Specification") == 0;
+                kmipkit_ttlv_structure_t *export_wrapping_specification = NULL;
+                if (has_export_wrapping_specification &&
+                    !create_export_key_wrapping_specification(client, &export_wrapping_specification)) {
+                    status = KMIPKIT_ERROR_INVALID_INPUT;
+                }
+                if (status == 0) {
+                    status = kmipkit_client_batch_item_export(
+                        export_identifier_present ? &placeholder : NULL,
+                        has_export_key_format ? 1U : 0U,
+                        has_export_key_format ? KMIPKIT_ENUMERATION_KEY_FORMAT_TYPE_RAW : 0U,
+                        has_export_key_wrap_type ? 1U : 0U,
+                        has_export_key_wrap_type ? KMIPKIT_ENUMERATION_KEY_WRAP_TYPE_NOT_WRAPPED : 0U,
+                        has_export_key_compression_type ? 1U : 0U,
+                        has_export_key_compression_type ?
+                            KMIPKIT_ENUMERATION_KEY_COMPRESSION_TYPE_EC_PUBLIC_KEY_TYPE_UNCOMPRESSED : 0U,
+                        export_wrapping_specification, &item);
+                }
+                if (export_wrapping_specification) {
+                    kmipkit_ttlv_structure_release(export_wrapping_specification);
+                }
             } else if (destroy_workflow) {
                 status = kmipkit_client_batch_item_destroy(&placeholder, &item);
             } else if (get_constraints_workflow) {
