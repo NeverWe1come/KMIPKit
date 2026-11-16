@@ -92,6 +92,17 @@ def _exclusion_id(package_id: str, export_name: str) -> str:
     return f"{SPEC_ID}:exclude:{digest}"
 
 
+def _is_scoped_blocked_candidate(row: dict[str, Any]) -> bool:
+    """Return whether a blocked declaration belongs to KMIPKIT-0053 FR-016."""
+    requirement_ids = row.get("requirementIds")
+    return (
+        row.get("declarationState") == "blocked"
+        and row.get("candidateSpecId") in OWNERS
+        and isinstance(requirement_ids, list)
+        and f"{SPEC_ID}-FR-016" in requirement_ids
+    )
+
+
 def _approval() -> dict[str, str]:
     return copy.deepcopy(APPROVAL_SOURCE)
 
@@ -270,7 +281,7 @@ def prepare_validation_routes(
         blocked = [
             row
             for row in manifest.get("publicDeclarations", [])
-            if row.get("declarationState") == "blocked" and row.get("candidateSpecId") in OWNERS
+            if _is_scoped_blocked_candidate(row)
         ]
     else:
         if (
@@ -283,7 +294,7 @@ def prepare_validation_routes(
         current_blocked = [
             row
             for row in manifest.get("publicDeclarations", [])
-            if row.get("declarationState") == "blocked" and row.get("candidateSpecId") in OWNERS
+            if _is_scoped_blocked_candidate(row)
         ]
         if current_blocked and {
             row["declarationId"] for row in current_blocked

@@ -239,6 +239,20 @@ def reconcile(manifest: dict[str, Any], report: dict[str, Any], *,
         existing_keys.add(key)
         existing_ids.add(row.get("declarationId"))
     declarations_by_key = {_export_key(row): row for row in declarations}
+    if candidate_spec_id is not None:
+        for row in declarations:
+            if (
+                row.get("declarationState") == "blocked"
+                and row.get("requirementIds") == [requirement_id]
+                and row.get("candidateSpecId") == "KMIPKIT-0043"
+                and "languageMappings" not in row
+                and "approvalSource" not in row
+            ):
+                # The 0043 fallback is valid only for declarations reconciled
+                # under 0043. When a caller supplies an explicit owner for a
+                # different requirement, repair rows produced by an earlier
+                # invocation that omitted --candidate-spec-id.
+                row["candidateSpecId"] = candidate_spec_id
     observed_conditional_keys: set[tuple[Any, Any]] = set()
     for item in conditional:
         if not isinstance(item, dict):
