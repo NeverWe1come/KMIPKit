@@ -203,6 +203,7 @@ def _execute_single_item(
     asynchronous_indicator: int | None,
     options: RequestOptions | None = None,
 ) -> BatchResult:
+    """Execute one typed item, preferring call-specific options over configured ones."""
     if not isinstance(client, Client) or not isinstance(limits, ttlv.CodecLimits):
         errors.raise_for_status(4)
     if options is not None and not isinstance(options, RequestOptions):
