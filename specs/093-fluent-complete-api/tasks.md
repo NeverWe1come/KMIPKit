@@ -18,9 +18,9 @@ Dependent work branches from the unmerged parent head while review is pending.
 
 ## Catalog and code generation PR
 
-- [ ] G001 Add a failing catalog test for all assigned operation and tag
+- [x] G001 Add a failing catalog test for all assigned operation and tag
   values, seven KMIP 3.0 codes, direction, version, and no invented codes.
-- [ ] G002 Record the failed command and commit the Red evidence.
+- [x] G002 Record the failed command and commit the Red evidence.
 - [ ] G003 Add declarative source input and deterministic Rust/C/Java/Python
   generation, preserving current symbols and updating the manifest.
 - [ ] G004 Run the focused test, generation check, export audit, and full CI;

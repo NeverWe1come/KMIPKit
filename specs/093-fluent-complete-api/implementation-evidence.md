@@ -397,3 +397,24 @@
   https_never_attributes_a_surplus_response_to_a_later_exchange -- --exact`
   passed 12 consecutive runs after the synchronization change.
 
+## Catalog and code generation
+
+### Red
+
+- Added `tools/normative_catalog/tests/test_fluent_api_catalog_consistency.py`
+  for the exact 59 distinct KMIP 2.1 operation codes across 62 direction
+  routes, the seven assigned KMIP 3.0 codes, their client-to-server direction,
+  the 60 exact KMIP 3.0 tag assignments, and cross-source tag name/value
+  consistency.
+- `python3 -B -m unittest
+  tools.normative_catalog.tests.test_fluent_api_catalog_consistency -v` fails
+  on 16 of 17 entries in `kmip-versioned-tags.json` `v2_1_tags`: the names at
+  `0x420166`–`0x420171` and `0x420173`–`0x420176` disagree with the pinned
+  KMIP Specification v2.1 §11.56, Table 487. The base normative catalog and
+  pinned source agree; the derived supplement contains the mismatches. The
+  other two checks pass, including the seven KMIP 3.0 operation values and 60
+  assigned tag values.
+- The reviewed sources are the pinned KMIP Specification v2.1 §11.36/Table
+  470 and §11.56/Table 487, and the pinned KMIP 3.0 draft §11.37/Table 584
+  and §11.58/Table 605. The pinned OASIS source files remain unchanged.
+
