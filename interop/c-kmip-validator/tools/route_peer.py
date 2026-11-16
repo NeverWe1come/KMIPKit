@@ -285,6 +285,18 @@ def request_payload_field_present(target, batch_item, targets, codec):
 
 def response_payload_field_present(target, batch_item, targets, codec):
     """Check a response payload field under its exact operation's batch item."""
+    if target.get('name') == 'Any Object (Section 2)':
+        operation = targets.get(target.get('operation_id'))
+        object_tag = codec.tags.get(normalize('Symmetric Key'))
+        payloads = [child for child in batch_item[2]
+                    if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1]
+        operation_value = (codec.values.get((codec.tag('Operation'), normalize(operation['name'])))
+                          if operation is not None else None)
+        return (target.get('role') == 'response' and operation is not None and
+                operation.get('kind') == 'operation' and object_tag is not None and
+                operation_value is not None and numbers(batch_item, codec.tag('Operation')) == [operation_value] and
+                len(payloads) == 1 and
+                any(child[0] == object_tag and child[1] == 1 for child in payloads[0][2]))
     return payload_field_present(target, batch_item, targets, codec,
                                  role='response', payload_tag=RESPONSE_PAYLOAD_TAG)
 
@@ -344,6 +356,14 @@ RECIPES = {
     'test-norm-payload-client-export-request-21-003': ((1, 43, 19, 20), 'export'),
     'test-norm-payload-client-export-request-21-004': ((1, 43, 19, 20), 'export'),
     'test-norm-payload-client-export-request-21-005': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-response-20-001': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-response-20-002': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-response-20-003': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-response-20-004': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-response-21-001': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-response-21-002': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-response-21-003': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-response-21-004': ((1, 43, 19, 20), 'export'),
     'test-op-register': ((3, 20), 'register'),
     'test-op-add-attribute': ((1, 13, 19, 20), 'add_attribute'),
     'test-norm-payload-client-add-attribute-request-20-002': ((1, 13, 19, 20), 'add_attribute'),
@@ -451,6 +471,14 @@ CONTROLLED_PEER_LOCAL_MODEL_CASES = frozenset({
     'test-norm-payload-client-export-request-21-003',
     'test-norm-payload-client-export-request-21-004',
     'test-norm-payload-client-export-request-21-005',
+    'test-norm-payload-client-export-response-20-001',
+    'test-norm-payload-client-export-response-20-002',
+    'test-norm-payload-client-export-response-20-003',
+    'test-norm-payload-client-export-response-20-004',
+    'test-norm-payload-client-export-response-21-001',
+    'test-norm-payload-client-export-response-21-002',
+    'test-norm-payload-client-export-response-21-003',
+    'test-norm-payload-client-export-response-21-004',
 })
 
 
@@ -2290,6 +2318,51 @@ def verify_export_response(response_tree):
         raise ValueError('fixture_export_response_any_object_mismatch')
 
 
+
+def export_response_field_tag(field_name):
+    """Resolve the fixture's exact tag for one Export response field."""
+    tags = {'Object Type': 0x420057, 'Unique Identifier': UNIQUE_IDENTIFIER_TAG,
+            'Attributes': 0x420125, 'Any Object (Section 2)': 0x42008F}
+    tag = tags.get(field_name)
+    if tag is None:
+        raise ValueError('fixture_export_response_field_unmapped')
+    return tag
+
+
+def omit_export_response_field(response_wire, field_name):
+    """Build a response fixture with one required Export field removed."""
+    response_tree = parse(response_wire)
+    export_items = [item for item in response_tree[2]
+                    if item[0] == BATCH_ITEM_TAG and item[1] == 1 and
+                    numbers(item, 0x42005C) == [43]]
+    payloads = [child for child in export_items[0][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1] if len(export_items) == 1 else []
+    if len(payloads) != 1:
+        raise ValueError('fixture_export_response_payload_missing')
+    fields = payloads[0][2]
+    tag = export_response_field_tag(field_name)
+    matching = [field for field in fields if field[0] == tag]
+    if len(matching) != 1:
+        raise ValueError('fixture_export_response_field_cardinality_mismatch')
+    fields.remove(matching[0])
+    return fixture_wire(response_tree)
+
+
+def verify_export_response_missing_field(response_tree, field_name):
+    """Confirm one required successful Export field is absent in the negative fixture."""
+    export_items = [item for item in response_tree[2]
+                    if item[0] == BATCH_ITEM_TAG and item[1] == 1 and
+                    numbers(item, 0x42005C) == [43]]
+    payloads = [child for child in export_items[0][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1] if len(export_items) == 1 else []
+    if len(payloads) != 1:
+        raise ValueError('fixture_export_response_payload_missing')
+    expected_tags = [0x420057, UNIQUE_IDENTIFIER_TAG, 0x420125, 0x42008F]
+    expected_tags.remove(export_response_field_tag(field_name))
+    if [field[0] for field in payloads[0][2]] != expected_tags:
+        raise ValueError('fixture_export_response_missing_field_mismatch')
+
+
 def verify_usage_allocation_identifier_variants(response_tree):
     items = [child for child in response_tree[2]
              if child[0] == BATCH_ITEM_TAG and child[1] == 1]
@@ -2410,6 +2483,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
          if case['case_id'] in {
              'test-norm-payload-client-get-usage-allocation-request-20-001',
              'test-norm-payload-client-get-usage-allocation-request-21-001'} else
+         ('present', 'missing_rejected') if case['case_id'].startswith(
+             'test-norm-payload-client-export-response-') else
          ('present', 'omitted') if case['case_id'].startswith(
              'test-norm-payload-client-export-request-') else
          ('direct', 'standalone') if case['case_id'] in {'test-op-get-attributes', 'test-op-get-attribute-list',
@@ -2917,6 +2992,13 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 if recipe[1] == 'rng_retrieve' else
                                                 len(byte_string_values(request_tree, 0x4200C2)[0])
                                                 if recipe[1] == 'rng_seed' else 16)
+                                        export_response_negative = (
+                                            case_id.startswith('test-norm-payload-client-export-response-') and
+                                            variant == 'missing_rejected' and
+                                            exchange_index == target_operation_exchange_index(recipe))
+                                        if export_response_negative:
+                                            response_wire = omit_export_response_field(
+                                                response_wire, case['requires']['field_name'])
                                         response_tree = parse(response_wire)
                                         if logout_recipe:
                                             verify_login_logout_response(response_tree, exchange_index)
@@ -3011,7 +3093,11 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         elif placeholder_chain_recipe:
                                             verify_placeholder_chain_response(response_tree, response_operations)
                                         elif recipe[1] == 'export':
-                                            verify_export_response(response_tree)
+                                            if export_response_negative:
+                                                verify_export_response_missing_field(
+                                                    response_tree, case['requires']['field_name'])
+                                            else:
+                                                verify_export_response(response_tree)
                                             verify_lifecycle(recipe[0], response_tree)
                                         elif recipe[1] == 'get_usage_allocation_uid_variants':
                                             verify_usage_allocation_identifier_variants(response_tree)
@@ -3132,8 +3218,15 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                 'policy_restricted'
                                 if peer_rejection and peer_rejection.get('result_reason') in (12, 57) else None)
                             expected_rejection_observed = reject_case and result_case.get('status') == expected_rejection_status
+                            response_rejection_observed = (
+                                case_id.startswith('test-norm-payload-client-export-response-') and
+                                variant == 'missing_rejected' and result_case.get('status') == 'failed' and
+                                'category=2 cause=2 delivery=3' in result_case.get('diagnostic', '') and
+                                result_case.get('consumer_library_correctness') == 'not_checked' and
+                                result_case.get('consumer_server_compatibility') == 'unknown')
                             case_passed = bool(result_case and (
-                                result_case.get('status') == 'passed' or expected_rejection_observed))
+                                result_case.get('status') == 'passed' or expected_rejection_observed or
+                                response_rejection_observed))
                             trace = [line.split('\t') for line in trace_path.read_text().splitlines()] if trace_path.exists() else []
                             called_symbols = {symbol for symbol, status in trace if status == '0'}
                             invoked_symbols = {symbol for symbol, _ in trace}
@@ -3180,7 +3273,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                     attribute_check['request_certificate_attribute_tags'] = [
                                         f'{item[0]:06X}' for item in register_attributes[2]]
                             checks.append({'case_id': case_id, 'constructor_variant': variant, 'protocol_version': version, 'encoding': encoding,
-                                           'transport': transport, 'status': 'passed' if observation and not code and run.returncode == 0 else 'failed',
+                                           'transport': transport, 'status': 'passed' if observation and not code and (run.returncode == 0 or response_rejection_observed) else 'failed',
                                            'consumer_case_status': (result.get('cases') or [{}])[0].get('status', 'missing'),
                                            'consumer_server_compatibility': (result.get('cases') or [{}])[0].get('server_compatibility', 'missing'),
                                            'consumer_library_correctness': (result.get('cases') or [{}])[0].get('library_correctness', 'missing'),
