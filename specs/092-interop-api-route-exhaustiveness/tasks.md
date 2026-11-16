@@ -177,3 +177,12 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
   `route_capabilities.py --check` passed with 1,491 routes pinned to library
   commit `489fafc79ef89db2524eafa7a6c6482f5cf75d97`.
 - Language-level execution remains required; T006, T007, and T009 stay open.
+
+## Development evidence: JNI sanitizer workflow contract after release refresh
+
+- Red: rebasing the route-matrix branch onto the refreshed KMIPKIT-0092 base
+  exposed `test_ffi_sanitizer_job_runs_the_c_consumer_under_address_sanitizer`:
+  it required the literal `bindings/java/native/tests/zeroizing_bytes_test.cpp`
+  in the workflow job, while the refreshed job runs every
+  `bindings/java/native/tests/*.cpp` file. The file is therefore executed, but
+  the test contract did not recognize the wildcard route.
