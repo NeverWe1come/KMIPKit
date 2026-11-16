@@ -166,43 +166,11 @@ EXPECTED = (
     ),
 )
 
-# Baseline fingerprints exclude response views and exact request-builder batches.
-# The non-target snapshots include subsequent approved T102 manifest slices.
-# They also include the 0047 release stack and reconciled 0048/0049/0050 inventories.
-# The snapshot includes the approved KMIPKIT-0052 async typed-reader routes.
-# It also includes the approved KMIPKIT-0099 Create Split Key and KMIPKIT-0100
-# Register declarations, lifecycle declarations, KMIPKIT-0102 crypto builders,
-# the KMIPKIT-0103 C and KMIPKIT-0104 Java crypto facades, and KMIPKIT-0093
-# inventory reconciliation. It also includes the approved KMIPKIT-0096 Python
-# expert-position slice, KMIPKIT-0114 C lifecycle helpers, and KMIPKIT-0093-FR-008
-# traceability on typed operation result declarations and Locate aliases, plus
-# the approved KMIPKIT-0115 Java/Python lifecycle facade declarations.
-UNCHANGED_DECLARATIONS_SHA256 = "2fe1ee6cf7c47b035ab462364b768ee760c4a38946b676ea91c8d7b1b94bd858"
-UNCHANGED_OPERATIONS_SHA256 = "c40b5d97f1cec90d39b5ed051e23a3645a15309fcda3fe352f12c090f98d94e7"
-# Register declarations, lifecycle declarations, KMIPKIT-0102 Rust, KMIPKIT-0103
-# C, KMIPKIT-0104 Java, and KMIPKIT-0105 Python crypto facades; KMIPKIT-0093
-# reconciliation; KMIPKIT-0096 Python expert attributes; and KMIPKIT-0108/0109
-# attribute reads and bindings. The prior fingerprint predates those additions.
-UNCHANGED_DECLARATIONS_SHA256 = "f0b363bd47c26a53d9e8f92b8415aacf98d3a19ea4038553f989e883edda83a4"
-UNCHANGED_OPERATIONS_SHA256 = "9ee0f7c51c05a8abd96af7f6d3017f3ffb780c4262f231eaf3cb8c01a38147c7"
-# T098's maintainer-approved reconciliation updates lifecycle approval evidence
-# and inherited requirement links outside the T102 declaration/operation rows.
-# The test separately pins those T098 records; this fingerprint covers the
-# resulting manifest baseline after the explicit T102 normalizations below.
-# The non-target snapshot includes the async reader routes, exact Python adapter
-# exclusions, KMIPKIT-0101/0102/0103/0104 declarations, and KMIPKIT-0093
-# reconciliation, including the approved KMIPKIT-0096 Python expert-position
-# slice. R002's additive requirement links and C copy caveat are normalized in
-# the snapshot comparison below and tested by the dedicated 0093 contract suite.
-# The fingerprint also includes the additive Rust CreateBuilder inventory,
-# KMIPKIT-0114 C lifecycle declarations, and KMIPKIT-0115 Java/Python lifecycle
-# declarations.
-OTHER_MANIFEST_SHA256 = "8ce5853dad95d92e29fce21c5bd92697ab528d8949f760146fec8be877020644"
-# exclusions, KMIPKIT-0101 through KMIPKIT-0105 declarations, and KMIPKIT-0093
-# reconciliation, including KMIPKIT-0096 expert attributes and KMIPKIT-0108/0109
-# attribute operations and bindings. R002's additive requirement links and C
-# copy caveat are normalized below and tested by the 0093 suite.
-OTHER_MANIFEST_SHA256 = "03c2de7b4aac4a0556b2a64965d704884166222bca8cf1e48ce9f610e6692069"
+# These fingerprints pin non-target records after the approved release stack,
+# the fluent feature stack, and KMIPKIT-0126 updates are combined.
+UNCHANGED_DECLARATIONS_SHA256 = "e1557d0da6085282a27cc2815a7ae4fb62775a1e78603d569f221af0efe6fd93"
+UNCHANGED_OPERATIONS_SHA256 = "15c294a44e22c32d9f35c027ce928bf3e5f18ed41eb224a4c0c630b12b549a63"
+OTHER_MANIFEST_SHA256 = "d03fa77668ae19c3bae98e042596f19f51ba6dac1b73be6f96ccd5c913f48560"
 EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = T102_BLOCKED_CANDIDATES
 LOCATE_REQUEST_BUILDER_IDS = {
     "rust-observed-e07fce825be9d33278e1",

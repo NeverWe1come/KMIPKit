@@ -15,6 +15,21 @@
     }
   },
   "versions": {
+    "v2_0": [
+      {
+        "kind": "enumeration",
+        "name": "Result Reason",
+        "sourceId": "kmip-2.0",
+        "section": "11.45",
+        "table": "457",
+        "values": [
+          {
+            "name": "Item Not Found",
+            "wire_value": "0x00000001"
+          }
+        ]
+      }
+    ],
     "v2_1": [
       {
         "kind": "enumeration",
@@ -23,12 +38,30 @@
         "section": "11.36",
         "table": "470",
         "values": [
-          {"name": "Set Defaults", "wire_value": "0x00000036"},
-          {"name": "Set Constraints", "wire_value": "0x00000037"},
-          {"name": "Get Constraints", "wire_value": "0x00000038"},
-          {"name": "Query Asynchronous Requests", "wire_value": "0x00000039"},
-          {"name": "Process", "wire_value": "0x0000003A"},
-          {"name": "Ping", "wire_value": "0x0000003B"}
+          {
+            "name": "Set Defaults",
+            "wire_value": "0x00000036"
+          },
+          {
+            "name": "Set Constraints",
+            "wire_value": "0x00000037"
+          },
+          {
+            "name": "Get Constraints",
+            "wire_value": "0x00000038"
+          },
+          {
+            "name": "Query Asynchronous Requests",
+            "wire_value": "0x00000039"
+          },
+          {
+            "name": "Process",
+            "wire_value": "0x0000003A"
+          },
+          {
+            "name": "Ping",
+            "wire_value": "0x0000003B"
+          }
         ]
       }
     ],
@@ -40,13 +73,34 @@
         "section": "11.37",
         "table": "584",
         "values": [
-          {"name": "Create Group", "wire_value": "0x0000003C"},
-          {"name": "Obliterate", "wire_value": "0x0000003D"},
-          {"name": "Create User", "wire_value": "0x0000003E"},
-          {"name": "Create Credential", "wire_value": "0x0000003F"},
-          {"name": "Deactivate", "wire_value": "0x00000040"},
-          {"name": "Encapsulate", "wire_value": "0x00000041"},
-          {"name": "Decapsulate", "wire_value": "0x00000042"}
+          {
+            "name": "Create Group",
+            "wire_value": "0x0000003C"
+          },
+          {
+            "name": "Obliterate",
+            "wire_value": "0x0000003D"
+          },
+          {
+            "name": "Create User",
+            "wire_value": "0x0000003E"
+          },
+          {
+            "name": "Create Credential",
+            "wire_value": "0x0000003F"
+          },
+          {
+            "name": "Deactivate",
+            "wire_value": "0x00000040"
+          },
+          {
+            "name": "Encapsulate",
+            "wire_value": "0x00000041"
+          },
+          {
+            "name": "Decapsulate",
+            "wire_value": "0x00000042"
+          }
         ]
       },
       {
@@ -56,8 +110,14 @@
         "section": "11.34",
         "table": "581",
         "values": [
-          {"name": "User", "wire_value": "0x00000001"},
-          {"name": "System", "wire_value": "0x00000002"}
+          {
+            "name": "User",
+            "wire_value": "0x00000001"
+          },
+          {
+            "name": "System",
+            "wire_value": "0x00000002"
+          }
         ]
       },
       {
@@ -67,12 +127,327 @@
         "section": "11.35",
         "table": "582",
         "values": [
-          {"name": "User", "wire_value": "0x0000000B"},
-          {"name": "Group", "wire_value": "0x0000000C"},
-          {"name": "Password Credential", "wire_value": "0x0000000D"},
-          {"name": "Device Credential", "wire_value": "0x0000000E"},
-          {"name": "One Time Password Credential", "wire_value": "0x0000000F"},
-          {"name": "Hashed Password Credential", "wire_value": "0x00000010"}
+          {
+            "name": "User",
+            "wire_value": "0x0000000B"
+          },
+          {
+            "name": "Group",
+            "wire_value": "0x0000000C"
+          },
+          {
+            "name": "Password Credential",
+            "wire_value": "0x0000000D"
+          },
+          {
+            "name": "Device Credential",
+            "wire_value": "0x0000000E"
+          },
+          {
+            "name": "One Time Password Credential",
+            "wire_value": "0x0000000F"
+          },
+          {
+            "name": "Hashed Password Credential",
+            "wire_value": "0x00000010"
+          }
+        ]
+      },
+      {
+        "kind": "enumeration",
+        "name": "Cryptographic Algorithm",
+        "sourceId": "kmip-3.0",
+        "section": "11.12",
+        "table": "552",
+        "values": [
+          {
+            "name": "ML-KEM-512",
+            "wire_value": "0x00000039"
+          },
+          {
+            "name": "ML-KEM-768",
+            "wire_value": "0x0000003A"
+          },
+          {
+            "name": "ML-KEM-1024",
+            "wire_value": "0x0000003B"
+          },
+          {
+            "name": "ML-DSA-44",
+            "wire_value": "0x0000003C"
+          },
+          {
+            "name": "ML-DSA-65",
+            "wire_value": "0x0000003D"
+          },
+          {
+            "name": "ML-DSA-87",
+            "wire_value": "0x0000003E"
+          },
+          {
+            "name": "SLH-DSA-SHA2-128s",
+            "wire_value": "0x0000003F"
+          },
+          {
+            "name": "SLH-DSA-SHA2-128f",
+            "wire_value": "0x00000040"
+          },
+          {
+            "name": "SLH-DSA-SHA2-192s",
+            "wire_value": "0x00000041"
+          },
+          {
+            "name": "SLH-DSA-SHA2-192f",
+            "wire_value": "0x00000042"
+          },
+          {
+            "name": "SLH-DSA-SHA2-256s",
+            "wire_value": "0x00000043"
+          },
+          {
+            "name": "SLH-DSA-SHA2-256f",
+            "wire_value": "0x00000044"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-128s",
+            "wire_value": "0x00000045"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-128f",
+            "wire_value": "0x00000046"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-192s",
+            "wire_value": "0x00000047"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-192f",
+            "wire_value": "0x00000048"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-256s",
+            "wire_value": "0x00000049"
+          },
+          {
+            "name": "SLH-DSA-SHAKE-256f",
+            "wire_value": "0x0000004A"
+          },
+          {
+            "name": "Hash-SLH-DSA-SHA2-128s-with-SHA256",
+            "wire_value": "0x0000004B"
+          },
+          {
+            "name": "Hash-SLH-DSA-SHA2-128f-with-SHA256",
+            "wire_value": "0x0000004C"
+          },
+          {
+            "name": "Hash-SLH-DSA-SHA2-192s-with-SHA512",
+            "wire_value": "0x0000004D"
+          },
+          {
+            "name": "Hash-SLH-DSA-SHA2-192f-with-SHA512",
+            "wire_value": "0x0000004E"
+          },
+          {
+            "name": "Hash-SLH-DSA-SHA2-256s-with-SHA512",
+            "wire_value": "0x0000004F"
+          },
+          {
+            "name": "Hash-SLH-DSA-SHA2-256f-with-SHA512",
+            "wire_value": "0x00000050"
+          },
+          {
+            "name": "Hash-SLH-DSA-SHAKE-128s-with-SHAKE128",
+            "wire_value": "0x00000051"
+          },
+          {
+            "name": "Hash-SLH-DSA-SHAKE-128f-with-SHAKE128",
+            "wire_value": "0x00000052"
+          },
+          {
+            "name": "Hash-SLH-DSA-SHAKE-192s-with-SHAKE256",
+            "wire_value": "0x00000053"
+          },
+          {
+            "name": "Hash-SLH-DSA-SHAKE-192f-with-SHAKE256",
+            "wire_value": "0x00000054"
+          },
+          {
+            "name": "Hash-SLH-DSA-SHAKE-256s-with-SHAKE256",
+            "wire_value": "0x00000055"
+          },
+          {
+            "name": "Hash-SLH-DSA-SHAKE-256f-with-SHAKE256",
+            "wire_value": "0x00000056"
+          },
+          {
+            "name": "Hash-ML-DSA-44-with-SHA512",
+            "wire_value": "0x00000057"
+          },
+          {
+            "name": "Hash-ML-DSA-65-with-SHA512",
+            "wire_value": "0x00000058"
+          },
+          {
+            "name": "Hash-ML-DSA-87-with-SHA512",
+            "wire_value": "0x00000059"
+          },
+          {
+            "name": "X25519",
+            "wire_value": "0x0000005A"
+          },
+          {
+            "name": "X448",
+            "wire_value": "0x0000005B"
+          },
+          {
+            "name": "X25519MLKEM768",
+            "wire_value": "0x0000005C"
+          },
+          {
+            "name": "SECP256R1MLKEM768",
+            "wire_value": "0x0000005D"
+          }
+        ]
+      },
+      {
+        "kind": "enumeration",
+        "name": "Data",
+        "sourceId": "kmip-3.0",
+        "section": "11.13",
+        "table": "553",
+        "values": [
+          {
+            "name": "Encapsulate",
+            "wire_value": "0x00000008"
+          },
+          {
+            "name": "Decapsulate",
+            "wire_value": "0x00000009"
+          }
+        ]
+      },
+      {
+        "kind": "enumeration",
+        "name": "Deactivation Reason Code",
+        "sourceId": "kmip-3.0",
+        "section": "11.14",
+        "table": "554",
+        "values": [
+          {
+            "name": "Unspecified",
+            "wire_value": "0x00000001"
+          },
+          {
+            "name": "Deactivation Date",
+            "wire_value": "0x00000002"
+          },
+          {
+            "name": "Protect Stop Date",
+            "wire_value": "0x00000003"
+          },
+          {
+            "name": "Usage Limit",
+            "wire_value": "0x00000004"
+          }
+        ]
+      },
+      {
+        "kind": "enumeration",
+        "name": "KEM Algorithm",
+        "sourceId": "kmip-3.0",
+        "section": "11.26",
+        "table": "572",
+        "values": [
+          {
+            "name": "RSASVE",
+            "wire_value": "0x00000001"
+          },
+          {
+            "name": "DHKEM",
+            "wire_value": "0x00000002"
+          },
+          {
+            "name": "MLKEM",
+            "wire_value": "0x00000003"
+          }
+        ]
+      },
+      {
+        "kind": "enumeration",
+        "name": "Key Format Type",
+        "sourceId": "kmip-3.0",
+        "section": "11.28",
+        "table": "575",
+        "values": [
+          {
+            "name": "Seed Private Key",
+            "wire_value": "0x00000018"
+          }
+        ]
+      },
+      {
+        "kind": "enumeration",
+        "name": "OTP Algorithm",
+        "sourceId": "kmip-3.0",
+        "section": "11.38",
+        "table": "586",
+        "values": [
+          {
+            "name": "HOTP",
+            "wire_value": "0x00000001"
+          },
+          {
+            "name": "TOTP",
+            "wire_value": "0x00000002"
+          }
+        ]
+      },
+      {
+        "kind": "enumeration",
+        "name": "Result Reason",
+        "sourceId": "kmip-3.0",
+        "section": "11.48",
+        "table": "594",
+        "values": [
+          {
+            "name": "Circular Link Error",
+            "wire_value": "0x0000004D"
+          }
+        ]
+      },
+      {
+        "kind": "bitmask",
+        "name": "Object Class Mask",
+        "sourceId": "kmip-3.0",
+        "section": "12.2",
+        "table": "616",
+        "values": [
+          {
+            "name": "User",
+            "wire_value": "0x00000001"
+          },
+          {
+            "name": "System",
+            "wire_value": "0x00000002"
+          }
+        ]
+      },
+      {
+        "kind": "enumeration",
+        "name": "Split Key Polynomial",
+        "sourceId": "kmip-3.0",
+        "section": "11.56",
+        "table": "603",
+        "values": [
+          {
+            "name": "Polynomial-283",
+            "wire_value": "0x00000001"
+          },
+          {
+            "name": "Polynomial-285",
+            "wire_value": "0x00000002"
+          }
         ]
       },
       {
@@ -82,8 +457,135 @@
         "section": "11.11",
         "table": "551",
         "values": [
-          {"name": "Password", "wire_value": "0x00000007"},
-          {"name": "Certificate", "wire_value": "0x00000008"}
+          {
+            "name": "Password",
+            "wire_value": "0x00000007"
+          },
+          {
+            "name": "Certificate",
+            "wire_value": "0x00000008"
+          }
+        ]
+      },
+      {
+        "kind": "enumeration",
+        "name": "Item Type",
+        "sourceId": "kmip-3.0",
+        "section": "11.25",
+        "table": "568",
+        "values": [
+          {
+            "name": "Identifier",
+            "wire_value": "0x0000000C"
+          },
+          {
+            "name": "Reference",
+            "wire_value": "0x0000000D"
+          },
+          {
+            "name": "Name Reference",
+            "wire_value": "0x0000000E"
+          }
+        ]
+      },
+      {
+        "kind": "enumeration",
+        "name": "Query Function",
+        "sourceId": "kmip-3.0",
+        "section": "11.46",
+        "table": "591",
+        "values": [
+          {
+            "name": "Query Credential Information",
+            "wire_value": "0x0000000F"
+          }
+        ]
+      },
+      {
+        "kind": "enumeration",
+        "name": "Recommended Curve",
+        "sourceId": "kmip-3.0",
+        "section": "11.47",
+        "table": "592",
+        "values": [
+          {
+            "name": "ANSIX9C2PNB176W1",
+            "wire_value": "0x00000047"
+          },
+          {
+            "name": "ANSIX9C2TNB191V4",
+            "wire_value": "0x00000048"
+          },
+          {
+            "name": "ANSIX9C2TNB191V5",
+            "wire_value": "0x00000049"
+          },
+          {
+            "name": "ANSIX9C2TNB239V4",
+            "wire_value": "0x0000004A"
+          },
+          {
+            "name": "ANSIX9C2TNB239V5",
+            "wire_value": "0x0000004B"
+          },
+          {
+            "name": "CURVE25519PH",
+            "wire_value": "0x0000004C"
+          },
+          {
+            "name": "CURVE448PH",
+            "wire_value": "0x0000004D"
+          },
+          {
+            "name": "OpenPGP Ed25519",
+            "wire_value": "0x0000004E"
+          },
+          {
+            "name": "OpenPGP Curve25519",
+            "wire_value": "0x0000004F"
+          }
+        ]
+      },
+      {
+        "kind": "enumeration",
+        "name": "Revocation Reason Code",
+        "sourceId": "kmip-3.0",
+        "section": "11.50",
+        "table": "595",
+        "values": [
+          {
+            "name": "Certificate Hold",
+            "wire_value": "0x00000008"
+          },
+          {
+            "name": "Remove From CRL",
+            "wire_value": "0x00000009"
+          },
+          {
+            "name": "AA Compromise",
+            "wire_value": "0x0000000A"
+          }
+        ]
+      },
+      {
+        "kind": "enumeration",
+        "name": "Unique Identifier",
+        "sourceId": "kmip-3.0",
+        "section": "11.60",
+        "table": "607",
+        "values": [
+          {
+            "name": "Create User",
+            "wire_value": "0x00000013"
+          },
+          {
+            "name": "Create Group",
+            "wire_value": "0x00000014"
+          },
+          {
+            "name": "Create Credential",
+            "wire_value": "0x00000015"
+          }
         ]
       }
     ]

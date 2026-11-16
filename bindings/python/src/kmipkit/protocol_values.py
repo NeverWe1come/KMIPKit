@@ -2750,16 +2750,6 @@ def v3_0_object_type_name(raw: int) -> str | None:
         0x00000010: 'Hashed Password Credential',
     }.get(raw)
 
-V3_0_CREDENTIAL_TYPE_PASSWORD = 0x00000007  # kmip-3.0 §11.11, Table 551
-V3_0_CREDENTIAL_TYPE_CERTIFICATE = 0x00000008  # kmip-3.0 §11.11, Table 551
-
-def v3_0_credential_type_name(raw: int) -> str | None:
-    """Return the assigned KMIP v3.0 Credential Type name."""
-    return {
-        0x00000007: 'Password',
-        0x00000008: 'Certificate',
-    }.get(raw)
-
 V3_0_CRYPTOGRAPHIC_ALGORITHM_ML_KEM_512 = 0x00000039  # kmip-3.0 §11.12, Table 552
 V3_0_CRYPTOGRAPHIC_ALGORITHM_ML_KEM_768 = 0x0000003A  # kmip-3.0 §11.12, Table 552
 V3_0_CRYPTOGRAPHIC_ALGORITHM_ML_KEM_1024 = 0x0000003B  # kmip-3.0 §11.12, Table 552
@@ -2910,4 +2900,92 @@ def v3_0_object_class_mask_name(raw: int) -> str | None:
     return {
         0x00000001: 'User',
         0x00000002: 'System',
+    }.get(raw)
+
+V3_0_SPLIT_KEY_POLYNOMIAL_POLYNOMIAL_283 = 0x00000001  # kmip-3.0 §11.56, Table 603
+V3_0_SPLIT_KEY_POLYNOMIAL_POLYNOMIAL_285 = 0x00000002  # kmip-3.0 §11.56, Table 603
+
+def v3_0_split_key_polynomial_name(raw: int) -> str | None:
+    """Return the assigned KMIP v3.0 Split Key Polynomial name."""
+    return {
+        0x00000001: 'Polynomial-283',
+        0x00000002: 'Polynomial-285',
+    }.get(raw)
+
+V3_0_CREDENTIAL_TYPE_PASSWORD = 0x00000007  # kmip-3.0 §11.11, Table 551
+V3_0_CREDENTIAL_TYPE_CERTIFICATE = 0x00000008  # kmip-3.0 §11.11, Table 551
+
+def v3_0_credential_type_name(raw: int) -> str | None:
+    """Return the assigned KMIP v3.0 Credential Type name."""
+    return {
+        0x00000007: 'Password',
+        0x00000008: 'Certificate',
+    }.get(raw)
+
+V3_0_ITEM_TYPE_IDENTIFIER = 0x0000000C  # kmip-3.0 §11.25, Table 568
+V3_0_ITEM_TYPE_REFERENCE = 0x0000000D  # kmip-3.0 §11.25, Table 568
+V3_0_ITEM_TYPE_NAME_REFERENCE = 0x0000000E  # kmip-3.0 §11.25, Table 568
+
+def v3_0_item_type_name(raw: int) -> str | None:
+    """Return the assigned KMIP v3.0 Item Type name."""
+    return {
+        0x0000000C: 'Identifier',
+        0x0000000D: 'Reference',
+        0x0000000E: 'Name Reference',
+    }.get(raw)
+
+V3_0_QUERY_FUNCTION_QUERY_CREDENTIAL_INFORMATION = 0x0000000F  # kmip-3.0 §11.46, Table 591
+
+def v3_0_query_function_name(raw: int) -> str | None:
+    """Return the assigned KMIP v3.0 Query Function name."""
+    return {
+        0x0000000F: 'Query Credential Information',
+    }.get(raw)
+
+V3_0_RECOMMENDED_CURVE_ANSIX9C2PNB176W1 = 0x00000047  # kmip-3.0 §11.47, Table 592
+V3_0_RECOMMENDED_CURVE_ANSIX9C2TNB191V4 = 0x00000048  # kmip-3.0 §11.47, Table 592
+V3_0_RECOMMENDED_CURVE_ANSIX9C2TNB191V5 = 0x00000049  # kmip-3.0 §11.47, Table 592
+V3_0_RECOMMENDED_CURVE_ANSIX9C2TNB239V4 = 0x0000004A  # kmip-3.0 §11.47, Table 592
+V3_0_RECOMMENDED_CURVE_ANSIX9C2TNB239V5 = 0x0000004B  # kmip-3.0 §11.47, Table 592
+V3_0_RECOMMENDED_CURVE_CURVE25519PH = 0x0000004C  # kmip-3.0 §11.47, Table 592
+V3_0_RECOMMENDED_CURVE_CURVE448PH = 0x0000004D  # kmip-3.0 §11.47, Table 592
+V3_0_RECOMMENDED_CURVE_OPENPGP_ED25519 = 0x0000004E  # kmip-3.0 §11.47, Table 592
+V3_0_RECOMMENDED_CURVE_OPENPGP_CURVE25519 = 0x0000004F  # kmip-3.0 §11.47, Table 592
+
+def v3_0_recommended_curve_name(raw: int) -> str | None:
+    """Return the assigned KMIP v3.0 Recommended Curve name."""
+    return {
+        0x00000047: 'ANSIX9C2PNB176W1',
+        0x00000048: 'ANSIX9C2TNB191V4',
+        0x00000049: 'ANSIX9C2TNB191V5',
+        0x0000004A: 'ANSIX9C2TNB239V4',
+        0x0000004B: 'ANSIX9C2TNB239V5',
+        0x0000004C: 'CURVE25519PH',
+        0x0000004D: 'CURVE448PH',
+        0x0000004E: 'OpenPGP Ed25519',
+        0x0000004F: 'OpenPGP Curve25519',
+    }.get(raw)
+
+V3_0_REVOCATION_REASON_CODE_CERTIFICATE_HOLD = 0x00000008  # kmip-3.0 §11.50, Table 595
+V3_0_REVOCATION_REASON_CODE_REMOVE_FROM_CRL = 0x00000009  # kmip-3.0 §11.50, Table 595
+V3_0_REVOCATION_REASON_CODE_AA_COMPROMISE = 0x0000000A  # kmip-3.0 §11.50, Table 595
+
+def v3_0_revocation_reason_code_name(raw: int) -> str | None:
+    """Return the assigned KMIP v3.0 Revocation Reason Code name."""
+    return {
+        0x00000008: 'Certificate Hold',
+        0x00000009: 'Remove From CRL',
+        0x0000000A: 'AA Compromise',
+    }.get(raw)
+
+V3_0_UNIQUE_IDENTIFIER_CREATE_USER = 0x00000013  # kmip-3.0 §11.60, Table 607
+V3_0_UNIQUE_IDENTIFIER_CREATE_GROUP = 0x00000014  # kmip-3.0 §11.60, Table 607
+V3_0_UNIQUE_IDENTIFIER_CREATE_CREDENTIAL = 0x00000015  # kmip-3.0 §11.60, Table 607
+
+def v3_0_unique_identifier_name(raw: int) -> str | None:
+    """Return the assigned KMIP v3.0 Unique Identifier name."""
+    return {
+        0x00000013: 'Create User',
+        0x00000014: 'Create Group',
+        0x00000015: 'Create Credential',
     }.get(raw)

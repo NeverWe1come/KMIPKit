@@ -7,7 +7,6 @@ import json
 import re
 import sys
 from html.parser import HTMLParser
-import sys
 from pathlib import Path
 from typing import Any
 
@@ -17,9 +16,6 @@ if __package__:
     from .validate import MAX_BYTES
 else:
     from generate_named_values import PINNED_VERSION_SOURCES, load_versioned_values
-    from .safe_io import PathSecurityError, atomic_write_bytes, safe_read_bytes
-    from .validate import MAX_BYTES
-else:
     from safe_io import PathSecurityError, atomic_write_bytes, safe_read_bytes
     from validate import MAX_BYTES
 
@@ -31,8 +27,6 @@ DRAFT_API_PATH = "specification/api/kmip-3.0-draft-api.json"
 OUTPUT_PATH = "specification/catalog/fluent-operation-inventory.json"
 MAX_SOURCE_BYTES = 64 * 1024 * 1024
 KMIP30_FLUENT_OPERATION_CODES = frozenset(range(0x3C, 0x43))
-OUTPUT_PATH = "specification/catalog/fluent-operation-inventory.json"
-MAX_SOURCE_BYTES = 64 * 1024 * 1024
 V3_OPERATION_SECTIONS = {
     "Create Credential": "6.1.9",
     "Create Group": "6.1.10",
@@ -105,14 +99,6 @@ def build_inventory(
         wire_value = operation_values.get(name)
         if not isinstance(wire_value, str) or len(wire_value) != 8:
             raise ValueError(f"KMIP 2.1 operation {name} has no assigned wire value")
-        section = refs[0].get("section")
-        wire_value = operation_values.get(name)
-        if not isinstance(wire_value, str) or len(wire_value) != 8:
-            raise ValueError(f"KMIP 2.1 operation {name} has no assigned wire value")
-        if wire_value in seen_values and element.get("direction") not in {
-            "client_to_server", "server_to_client"
-        }:
-            raise ValueError(f"duplicate KMIP 2.1 operation wire value: {wire_value}")
         route_key = (name, wire_value, element.get("direction"))
         if route_key in route_keys:
             raise ValueError(f"duplicate KMIP 2.1 operation route: {route_key}")
@@ -143,7 +129,6 @@ def build_inventory(
     if {int(value["wire_value"], 16) for value in v3_values} != set(range(60, 67)):
         raise ValueError("KMIP 3.0 operation assignment set is incomplete or reserved")
     for value in v3_values:
-    for value in _v3_operations(versioned_catalog):
         name = value.get("name")
         wire_value = value.get("wire_value")
         if not isinstance(name, str) or not isinstance(wire_value, str):
@@ -208,19 +193,6 @@ def build_inventory(
             "Existing executable test references, not recorded passing results "
             "or server capability claims."
         ),
-        })
-
-    for row in rows:
-        public = public_by_name.get(row["name"]) if row["direction"] == "client_to_server" else None
-        row["publicApiScope"] = public.get("scope") if public else None
-        row["publicApiState"] = public.get("apiState") if public else None
-        row["clientSend"] = row["direction"] == "client_to_server"
-        row["listenerRoute"] = row["direction"] == "server_to_client"
-
-    rows.sort(key=lambda row: (row["version"], int(row["wireValue"], 16)))
-    return {
-        "formatVersion": 1,
-        "sources": [BASE_PATH, VERSIONED_PATH, MANIFEST_PATH],
         "operations": rows,
     }
 
@@ -437,7 +409,6 @@ def _validate_evidence_files(root: Path, inventory: dict[str, Any]) -> None:
 def render(root: Path) -> bytes:
     # Reuse the existing checksum and versioned-catalog validation boundary.
     load_versioned_values(root)
-def render(root: Path) -> bytes:
     inventory = build_inventory(
         _read_json(root, BASE_PATH),
         _read_json(root, VERSIONED_PATH, max_bytes=MAX_SOURCE_BYTES),
@@ -446,7 +417,6 @@ def render(root: Path) -> bytes:
         _read_json(root, DRAFT_API_PATH),
     )
     _validate_evidence_files(root, inventory)
-    )
     return (json.dumps(inventory, indent=2, ensure_ascii=False) + "\n").encode()
 
 

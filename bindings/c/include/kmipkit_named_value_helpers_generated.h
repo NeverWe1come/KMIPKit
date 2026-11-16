@@ -1354,10 +1354,6 @@ static inline const char *KMIPKIT_V3_0_OBJECT_TYPE_name(uint32_t raw) {
     default: return 0;
     }
 }
-static inline const char *KMIPKIT_V3_0_CREDENTIAL_TYPE_name(uint32_t raw) {
-    switch (raw) {
-    case UINT32_C(0x00000007): return "Password";
-    case UINT32_C(0x00000008): return "Certificate";
 static inline const char *KMIPKIT_V3_0_CRYPTOGRAPHIC_ALGORITHM_name(uint32_t raw) {
     switch (raw) {
     case UINT32_C(0x00000039): return "ML-KEM-512";
@@ -1447,6 +1443,64 @@ static inline const char *KMIPKIT_V3_0_OBJECT_CLASS_MASK_name(uint32_t raw) {
     switch (raw) {
     case UINT32_C(0x00000001): return "User";
     case UINT32_C(0x00000002): return "System";
+    default: return 0;
+    }
+}
+static inline const char *KMIPKIT_V3_0_SPLIT_KEY_POLYNOMIAL_name(uint32_t raw) {
+    switch (raw) {
+    case UINT32_C(0x00000001): return "Polynomial-283";
+    case UINT32_C(0x00000002): return "Polynomial-285";
+    default: return 0;
+    }
+}
+static inline const char *KMIPKIT_V3_0_CREDENTIAL_TYPE_name(uint32_t raw) {
+    switch (raw) {
+    case UINT32_C(0x00000007): return "Password";
+    case UINT32_C(0x00000008): return "Certificate";
+    default: return 0;
+    }
+}
+static inline const char *KMIPKIT_V3_0_ITEM_TYPE_name(uint32_t raw) {
+    switch (raw) {
+    case UINT32_C(0x0000000C): return "Identifier";
+    case UINT32_C(0x0000000D): return "Reference";
+    case UINT32_C(0x0000000E): return "Name Reference";
+    default: return 0;
+    }
+}
+static inline const char *KMIPKIT_V3_0_QUERY_FUNCTION_name(uint32_t raw) {
+    switch (raw) {
+    case UINT32_C(0x0000000F): return "Query Credential Information";
+    default: return 0;
+    }
+}
+static inline const char *KMIPKIT_V3_0_RECOMMENDED_CURVE_name(uint32_t raw) {
+    switch (raw) {
+    case UINT32_C(0x00000047): return "ANSIX9C2PNB176W1";
+    case UINT32_C(0x00000048): return "ANSIX9C2TNB191V4";
+    case UINT32_C(0x00000049): return "ANSIX9C2TNB191V5";
+    case UINT32_C(0x0000004A): return "ANSIX9C2TNB239V4";
+    case UINT32_C(0x0000004B): return "ANSIX9C2TNB239V5";
+    case UINT32_C(0x0000004C): return "CURVE25519PH";
+    case UINT32_C(0x0000004D): return "CURVE448PH";
+    case UINT32_C(0x0000004E): return "OpenPGP Ed25519";
+    case UINT32_C(0x0000004F): return "OpenPGP Curve25519";
+    default: return 0;
+    }
+}
+static inline const char *KMIPKIT_V3_0_REVOCATION_REASON_CODE_name(uint32_t raw) {
+    switch (raw) {
+    case UINT32_C(0x00000008): return "Certificate Hold";
+    case UINT32_C(0x00000009): return "Remove From CRL";
+    case UINT32_C(0x0000000A): return "AA Compromise";
+    default: return 0;
+    }
+}
+static inline const char *KMIPKIT_V3_0_UNIQUE_IDENTIFIER_name(uint32_t raw) {
+    switch (raw) {
+    case UINT32_C(0x00000013): return "Create User";
+    case UINT32_C(0x00000014): return "Create Group";
+    case UINT32_C(0x00000015): return "Create Credential";
     default: return 0;
     }
 }

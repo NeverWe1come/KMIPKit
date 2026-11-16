@@ -41,6 +41,13 @@ class Wave3AttributeTypesTests(unittest.TestCase):
         definitions = generate_attribute_types.collect_typed_attributes(self.catalog)
         self.assertEqual(62, len(definitions))
 
+    def test_typed_attributes_with_versioned_tags_emits_all_ninety_nine(self) -> None:
+        definitions = generate_attribute_types.collect_typed_attributes(
+            self.catalog, self.versioned_tags
+        )
+        self.assertEqual(99, len(definitions))
+
+
 
 if __name__ == "__main__":
     unittest.main()

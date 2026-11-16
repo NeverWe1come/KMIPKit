@@ -188,26 +188,11 @@ PKCS11_REQUEST_SETTER_IDS = {
     "rust-observed-cc71aab290dc65b5928f",
     "rust-observed-573ae1d0de80ffa2884b",
 }
-# The non-target snapshot includes subsequent approved T102 manifest slices.
-# Includes the reviewed 0047 release stack and complete 0048/0049 inventories.
-# Snapshot includes final 0049 and exact 0050 constructor mappings.
-# The snapshot includes the approved KMIPKIT-0052 async typed-reader routes.
-# It also includes approved KMIPKIT-0099 Create Split Key and KMIPKIT-0100
-# Register declarations, lifecycle declarations, KMIPKIT-0102 crypto builders,
-# the KMIPKIT-0103 C and KMIPKIT-0104 Java crypto facades, and KMIPKIT-0093
-# inventory reconciliation, Rust CreateBuilder surface, KMIPKIT-0114 C lifecycle helpers,
-# KMIPKIT-0093-FR-008 traceability on typed operation results, Locate aliases
-# reconciled to canonical Rust declarations, and KMIPKIT-0115 lifecycle facades.
-OTHER_DECLARATIONS_SHA256 = "e2460dfc38c81f495b0ff4bef4bd778f731d9ce2dec24f888c0ca45067bc5f3f"
-OTHER_OPERATIONS_SHA256 = "067db1d52284ca16014aabdc0090e9a5236560498d63f2acd77f1c17180aff6f"
-# Register declarations, lifecycle declarations, KMIPKIT-0102 Rust, KMIPKIT-0103
-# C, KMIPKIT-0104 Java, and KMIPKIT-0105 Python crypto facades; KMIPKIT-0095
-# response views; KMIPKIT-0096 expert attributes; KMIPKIT-0093 reconciliation;
-# and KMIPKIT-0108/0109 attribute operations and bindings. KMIPKIT-0124 adds
-# 28 KMIP 3.0 fluent and 16 asynchronous batch declarations, which also map
-# asynchronous constructors onto four existing operation rows.
-OTHER_DECLARATIONS_SHA256 = "2b273eaa642065b0a98763be540c703dcf38255703260043a67b8f01b1663b97"
-OTHER_OPERATIONS_SHA256 = "2ea94003f2877d0e6d84271d67d9add6f48a5c5b7a837c48b22fe40f41022d39"
+# The non-target snapshot includes the approved fluent API stack, KMIP 3.0
+# declarations, async typed results, and the KMIPKIT-0126 audit remediation.
+OTHER_DECLARATIONS_SHA256 = "4586660bffe9546cab47bf14a2b924a132c175ebcdaa5c53ebfeda34b7e8c2b8"
+OTHER_OPERATIONS_SHA256 = "e5a9106cee22c4a218013882d1775a0f28292accdd5cab79e7d9040514c57332"
+
 def canonical_sha256(value: object) -> str:
     encoded = json.dumps(
         value,
@@ -395,7 +380,7 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
         # the capability inventory includes verified routes and explicit open
         # candidates rather than treating the whole category as blocked.
         for capability, count in (
-            ("typed_object_attributes", 544),
+            ("typed_object_attributes", 766),
             ("typed_managed_objects_and_key_material", 762),
         ):
             with self.subTest(stack_capability=capability):
@@ -407,7 +392,7 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
                 states = {row["declarationState"] for row in typed_rows}
                 self.assertTrue(states.issubset({"verified", "blocked"}))
                 self.assertEqual(
-                    {"verified": 544}
+                    {"verified": 766}
                     if capability == "typed_object_attributes"
                     else {"verified": 762},
                     {
@@ -453,7 +438,6 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
                 ]
         self.assertEqual(
             OTHER_OPERATIONS_SHA256,
-            "327bd4ccc9eb3c600fe49eed482a9f47840d555c4066560a39af67520dcf5b9a",
             canonical_sha256(other_operations),
         )
 

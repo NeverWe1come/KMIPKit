@@ -159,33 +159,10 @@ KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS = {
     "T096:java-fluent-crypto:attribute-item-at",
     "T096:fluent-python:attribute-item-at",
 }
-# The non-target snapshot includes subsequent approved T102 manifest slices.
-# Includes the reviewed 0047 release stack and complete 0048/0049 inventories.
-# Snapshot includes final 0049 and exact 0050 constructor mappings.
-# The snapshot includes the approved KMIPKIT-0052 async typed-reader routes.
-# The snapshot includes the final KMIPKIT-0053 verified operation surfaces.
-# The snapshot includes approved KMIPKIT-0099 Create Split Key and KMIPKIT-0100
-# Register declarations, KMIPKIT-0101 lifecycle declarations, and KMIPKIT-0102
-# fluent cryptographic operation builders.
-# Includes the approved KMIPKIT-0093 inventory reconciliation and Rust
-# CreateBuilder surface, the KMIPKIT-0114 C lifecycle helpers, the KMIPKIT-0115
-# Java/Python lifecycle facade, and KMIPKIT-0116 KMIP 3.0 fluent declarations,
-# Credential Type discriminator exports, and Rust public-surface inventory.
-# KMIPKIT-0093-FR-008 is traced on typed
-# operation result declarations and their Locate aliases.
-DECLARATIONS_SHA256 = "623e1f3bbdadefee605b795a3037a446238de4a0686967326ff01e10b9c44835"
-# The approved KMIPKIT-0114 C lifecycle helpers extend five operation rows.
-OPERATIONS_SHA256 = "574b163b50c24b128219f644956cc21c990879c1a5174486cd5b8b9d609597ff"
-# Rust plus KMIPKIT-0103 C, KMIPKIT-0104 Java, and KMIPKIT-0105 Python fluent
-# cryptographic operation builders; KMIPKIT-0095 adds response rendering and
-# KMIPKIT-0108 attribute-read declarations and KMIPKIT-0109 attribute builders;
-# this inventory also includes the approved KMIPKIT-0093 reconciliation and
-# narrowed T101 mappings. KMIPKIT-0124 adds 28 KMIP 3.0 fluent and 16 async
-# batch declarations to this non-target snapshot; the async request constructors
-# add four-language mappings to the existing operation rows.
-DECLARATIONS_SHA256 = "fa7e93c2270750b7c32e283c7bff199aea5d2a79fb9b4697282b0ec314779559"
-OPERATIONS_SHA256 = "9ab6c670787f07c9faa301744d1654fdd071ceffc3b43936e6cb12add59094e2"
-
+# The non-target snapshot includes the approved fluent API stack, KMIP 3.0
+# declarations, async typed results, and the KMIPKIT-0126 audit remediation.
+DECLARATIONS_SHA256 = "89ce60f364d59068792c6f66d3e73e247ab5100916e44da8519a4cbc950c092e"
+OPERATIONS_SHA256 = "e3302743fc6d209e82b32b1ec8f14c4f5fd11c9a588a51367a6350fb0c703de8"
 
 def canonical_sha256(value: object) -> str:
     encoded = json.dumps(value, ensure_ascii=False, separators=(",", ":"), sort_keys=True).encode("utf-8")
@@ -467,7 +444,7 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
         # Final T102 route resolution and predecessor stack additions remain
         # inside this exact non-target fingerprint.
         for capability, count in (
-            ("typed_object_attributes", 544),
+            ("typed_object_attributes", 766),
             ("typed_managed_objects_and_key_material", 762),
         ):
             with self.subTest(stack_capability=capability):
