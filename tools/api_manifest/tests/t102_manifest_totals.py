@@ -40,10 +40,10 @@ T102_BLOCKED_CANDIDATES = 0
 # duplicate KMIPKIT-0047 v3.0 value paths.
 # This stacked inventory also includes 28 Rust client execution-wrapper
 # requirement links and the KMIPKIT-0093 C key-pair, Rust Set Attribute, Add
-# Attribute, Delete Attribute, and four-language binding declarations. Delete
-# Attribute adds 77 ready declarations, two blocked Rust candidates, and 18
-# exact Rust trait exclusions.
-T102_PUBLIC_DECLARATIONS = 18_069
+# Attribute, Delete Attribute, Locate, Revoke, and four-language binding
+# declarations. Delete Attribute adds 77 ready declarations and two blocked
+# Rust candidates; Locate and Revoke add 57 declarations.
+T102_PUBLIC_DECLARATIONS = 18_126
 T102_KMIP30_DRAFT_ROUTE_DECLARATIONS = 36
 T102_APPROVED_EXCLUSIONS = 23_431
 # The November 1 report is immutable history; current totals are pinned by the
