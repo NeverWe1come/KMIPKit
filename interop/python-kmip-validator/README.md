@@ -137,6 +137,21 @@ catalog SHA-256:
 route-manifest SHA-256:
 `3fe892f7b2804e8c1b03f9dc01c8cc71038829f7ed5aaf38d546fea90ddc980a`.
 
+After the shared manifest moved to release commit
+`12496d646d11d4069b58bcc88fc76cc619211ec6`, the controlled response-view
+recipes were completed for `BatchItemResult.ttlv_hex`, `.json`, and `.xml`.
+Each view now executes against a real response from the controlled TLS peer;
+TTLV hex is checked against the complete response bytes, and JSON/XML retain
+the ordered `ResponseHeader` and `BatchItem` structure. The Python 3.12.13
+matrix verified **74,842/74,842** cells (45,664 local and 29,178
+controlled-peer network), with zero failed, pending, or duplicate cells. The
+independent shared validator accepted the report as complete. Run ID:
+`python-matrix-4e712f18-fea8-4c41-ad06-f7bf9f6478f5`. Artifact SHA-256:
+`18043fee5e92893bf4d3ac495552121ac8edc7cbc7f6e77472143e2b6ccb7d78`; route
+manifest SHA-256:
+`411aad566ee5f53e36d8db10a6f5792c6411559871fc53a52a9425dba9911cc8`.
+The complete Python validator suite passed all 133 tests in 369.480 seconds.
+
 The Batch Stop scenario references OASIS KMIP 2.0 §11.5, Table 396, and KMIP
 2.1 §11.5, Table 434. Its controlled peer returns one `Operation Failed`
 response and records that the later operation was not executed. KMIPKit's

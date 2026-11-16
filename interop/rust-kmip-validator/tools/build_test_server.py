@@ -41,7 +41,14 @@ tokio = { version = "=1.53.3", features = ["macros", "rt", "sync"] }
 [patch.crates-io]
 aws-lc-sys = { path = "../release-source/vendor/aws-lc-sys-0.45.0" }
 ''')
+shutil.copyfile(SOURCE / "Cargo.lock", HARNESS / "Cargo.lock")
+subprocess.run(["cargo", "+1.94", "metadata", "--offline", "--manifest-path",
+                str(HARNESS / "Cargo.toml"), "--format-version", "1"],
+               check=True, stdout=subprocess.DEVNULL)
 target = test_server_target_dir(ROOT)
-subprocess.run(["cargo", "+1.94", "build", "--manifest-path", str(HARNESS / "Cargo.toml"),
-                "--target-dir", str(target)], check=True)
+subprocess.run(
+    ["cargo", "+1.94", "build", "--locked", "--offline", "--manifest-path",
+     str(HARNESS / "Cargo.toml"), "--target-dir", str(target)],
+    check=True,
+)
 print(test_server_binary(ROOT))

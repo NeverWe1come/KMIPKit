@@ -54,3 +54,34 @@ artifact SHA-256
 `route_capabilities.py --check` accepts all 1,507 routes, and the Rust pin
 contract and formatting checks pass. Full controlled-peer CI remains the final
 verification for this refresh.
+
+## CI follow-up: pin alignment and response views (2026-11-16)
+
+CI on the previous #187 head found two independent gaps. The Rust validator
+still expected the old `489fafc...` artifact while the shared manifest and
+Java/Python validators used `12496d...`. The Python matrix left 186 cells
+pending because it declared, but did not invoke, the `BatchItemResult` full
+response TTLV-hex, JSON, and XML views.
+
+The Red test commit `32a6ba574` added a shared cross-language pin-parity
+contract and failed on the Rust mismatch. Green commit `76fd0cd92` aligned the
+Rust installer, verifier, test server, compile-time model identity, and tests
+to `12496d...`. Red commit `12d2dbb8a` added a controlled-TLS test for each
+Python response view and a pinned-lock test for the Rust test-server harness;
+the view test failed as a missing route recipe before its fix. The harness's
+first `--locked` build attempt also exposed that its generated lock selected
+`cc 1.11.2`, which is incompatible with the pinned release. The harness now
+seeds its lock from the pinned release, resolves the standalone harness
+offline, and builds with `--locked`, retaining the release's `cc 1.6.0`.
+
+Verification on the pinned Python wheel (`12496d...`, SHA-256
+`18043fee5e92893bf4d3ac495552121ac8edc7cbc7f6e77472143e2b6ccb7d78`): the
+three controlled-TLS response-view routes pass, and the full matrix plus the
+independent shared validator accept **74,842/74,842** cells with zero failed,
+pending, or duplicate events. Run ID:
+`python-matrix-4e712f18-fea8-4c41-ad06-f7bf9f6478f5`; route-manifest SHA-256
+`411aad566ee5f53e36d8db10a6f5792c6411559871fc53a52a9425dba9911cc8`. The
+Rust route-validator test suite passed 51 tests, and the pinned test-server
+harness built successfully. The Python validator suite passed all 133 tests in
+369.480 seconds. Exact-head CI for the updated PR stack remains required before
+removing WIP markers.

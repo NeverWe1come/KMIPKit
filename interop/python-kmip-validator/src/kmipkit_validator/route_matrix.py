@@ -1217,6 +1217,11 @@ _BATCH_RESULT_LIVE_ROUTES = {
     'kmipkit.client.BatchResult.item_at',
     'kmipkit.client.BatchResult.item_count',
 }
+_BATCH_ITEM_RESULT_RENDER_ROUTES = {
+    'kmipkit.client.BatchItemResult.json',
+    'kmipkit.client.BatchItemResult.ttlv_hex',
+    'kmipkit.client.BatchItemResult.xml',
+}
 _BATCH_ITEM_RESULT_EXTENSION_ROUTES = {
     'kmipkit.client.BatchItemResult.extension_count',
     'kmipkit.client.BatchItemResult.extension_ttlv_at',
@@ -1860,7 +1865,7 @@ def _async_outcome_response_cell(cell: dict, case: dict, target: dict,
 
 def _batch_result_live_cell(cell: dict, target: dict,
                             trace: CallTrace | None) -> dict:
-    """Read BatchResult and raw response views after a controlled Discover Versions exchange."""
+    """Read BatchResult views after a controlled Discover Versions exchange."""
     from .controlled_peer import ControlledTlsPeer, PKI
     from .driver import PythonKmipDriver
     from kmipkit import extensions, protocol_values, ttlv
@@ -1881,7 +1886,7 @@ def _batch_result_live_cell(cell: dict, target: dict,
                 'connect_timeout_seconds': 5, 'read_timeout_seconds': 5},
     }
     driver = None
-    batch = limits = response = None
+    batch = limits = response = response_view = None
     owned_structure = None
     try:
         driver = PythonKmipDriver(connection)
@@ -1908,6 +1913,33 @@ def _batch_result_live_cell(cell: dict, target: dict,
             if observed.operation != protocol_values.Operation.DISCOVER_VERSIONS:
                 raise ValueError('BatchResult.item_at changed batch item order')
             safe_observed = {'index': 0, 'operation': int(observed.operation)}
+        elif symbol in _BATCH_ITEM_RESULT_RENDER_ROUTES:
+            method_name = symbol.rsplit('.', 1)[-1]
+            response_view = getattr(item_result, method_name)(limits)
+            rendered = response_view.with_bytes(lambda view: bytes(view))
+            if method_name == 'ttlv_hex':
+                if (len(peer.responses) != 1
+                        or rendered != peer.responses[0].hex().upper().encode('ascii')):
+                    raise ValueError('BatchItemResult TTLV view changed the complete response')
+            elif method_name == 'json':
+                document = json.loads(rendered)
+                tags = [child.get('tag') for child in document.get('value', [])]
+                if document.get('tag') != 'ResponseMessage' or tags != [
+                        'ResponseHeader', 'BatchItem']:
+                    raise ValueError('BatchItemResult JSON view changed response structure')
+            else:
+                import xml.etree.ElementTree as ET
+
+                document = ET.fromstring(rendered)
+                tags = [child.tag for child in document]
+                if document.tag != 'ResponseMessage' or tags != [
+                        'ResponseHeader', 'BatchItem']:
+                    raise ValueError('BatchItemResult XML view changed response structure')
+            safe_observed = {
+                'rendered_sha256': hashlib.sha256(rendered).hexdigest(),
+                'rendered_byte_length': len(rendered),
+                'rendered_encoding': method_name,
+            }
         elif symbol.endswith('.response_header_ttlv'):
             owned_structure = item_result.response_header_ttlv()
             with ttlv.ttlv_structure_view(owned_structure) as view:
@@ -1945,6 +1977,8 @@ def _batch_result_live_cell(cell: dict, target: dict,
         response_digest = digest({'tree': response_tree, 'accessor': safe_observed,
                                   'target': target.get('target_id')})
     finally:
+        if response_view is not None:
+            response_view.close()
         if owned_structure is not None:
             owned_structure.close()
         if response is not None:
@@ -2224,6 +2258,8 @@ def execute_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | Non
         if (cell['public_api_symbol'] == 'kmipkit.client.BatchItemResult.supported_versions'
                 or cell['public_api_symbol'] in _BATCH_ITEM_RESULT_EXTENSION_ROUTES):
             return _positive_fixture_cell(cell, case, target, trace=trace)
+        if cell['public_api_symbol'] in _BATCH_ITEM_RESULT_RENDER_ROUTES:
+            return _batch_result_live_cell(cell, target, trace)
         if cell['public_api_symbol'].startswith('kmipkit.credentials.'):
             return _credential_cell(cell, case, target)
         if cell['public_api_symbol'].startswith('kmipkit.async_operations.'):
