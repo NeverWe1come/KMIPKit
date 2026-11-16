@@ -704,3 +704,13 @@
 - The next exact-head SonarCloud result must confirm duplication is at or below
   the 3% gate. PR #236 remains WIP until every required check is green.
 
+### Recheck Red
+
+- The exact-head analysis for `8a878f1b4ba7d885fe10725a4503fe704a72c6d9`
+  still fails SonarCloud: `new_duplicated_lines_density` is 5.4307% against a
+  3% limit across 1,602 new lines.
+- Sonar's duplication report locates a 60-line repeated Add/Set builder block
+  at `fluent.rs` lines 3139 and 3201. Sharing only their state mutation and
+  request execution therefore did not remove the duplicated public builder
+  methods.
+
