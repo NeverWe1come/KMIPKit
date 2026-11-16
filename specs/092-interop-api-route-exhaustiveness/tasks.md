@@ -186,3 +186,9 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
   in the workflow job, while the refreshed job runs every
   `bindings/java/native/tests/*.cpp` file. The file is therefore executed, but
   the test contract did not recognize the wildcard route.
+- Green commit `617c76414` accepts either the explicit source path or the
+  wildcard source set and separately verifies that the zeroization test exists.
+- Verification: `python3 -B -m unittest scripts.tests.test_workflow` passed
+  all 96 tests and `git diff --check` passed.
+- Refactor/documentation: the contract checks which test is covered without
+  depending on whether the workflow names it directly or through a wildcard.
