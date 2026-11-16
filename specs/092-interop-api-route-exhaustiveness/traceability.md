@@ -38,8 +38,10 @@ protocol version, and both typed and generic response accessors. The controlled
 peer checks OASIS KMIP v2.0 §6.1.18 Tables 202–203 and v2.1 §6.1.18 Tables
 217–218, including all four required Export response payload fields, then
 observes Create → Export → Revoke → Destroy and cleanup. All 12 peer checks pass.
-This closes only the Export operation slice; the complete C route matrix and
-the FR-003/FR-009 gates remain open.
+The ten request-payload cases pass 120 present/omitted checks; the eight
+response-payload cases pass 96 checks, including rejection after one required
+field is removed. This closes only these Export operation and payload slices;
+the complete C route matrix and the FR-003/FR-009 gates remain open.
 
 The common serializer/response-reader route assertion loads the API manifest
 from the exact `library_commit` recorded in `route-capabilities.json`, so

@@ -76,3 +76,38 @@ fixtures. Those results are not inferred from this Python-only run.
   SHA-256 `55fcd64afba189ab7d04978fafb841fc73c9e5afc1ef25c93cb2eb04f4fba4a9`,
   and route-manifest SHA-256
   `3fe892f7b2804e8c1b03f9dc01c8cc71038829f7ed5aaf38d546fea90ddc980a`.
+
+
+## C Export request and response payload variants
+
+- Normative scope: OASIS KMIP v2.0 §6.1.18 Tables 202–203 and v2.1
+  §6.1.18 Tables 217–218. This slice exercises all ten catalogued Export
+  request-field cases and the four required successful response fields:
+  Object Type, Unique Identifier, Attributes, and Any Object.
+- Installed artifact: `libkmipkit_ffi.so` SHA-256
+  `c93eb8f7daa60d3b6832d297887e99cd2101e4f9baf2d04f55ce4042ba4bb7a2`;
+  catalog SHA-256
+  `08c379fbad85d218a46edea6e0dab44ddd78b6c352ac21dc869b51793a53d6e9`;
+  route manifest SHA-256
+  `3fe892f7b2804e8c1b03f9dc01c8cc71038829f7ed5aaf38d546fea90ddc980a`.
+- Request Red — `4d4174e79`: the focused test observed zero checks because the
+  ten request-field cases had no controlled-peer recipes. Green — `367006d57`:
+  the installed C consumer constructs each request field with valid catalogued
+  values and exercises present and omitted variants over KMIP 2.0/2.1, TTLV,
+  JSON, and XML, raw TLS and HTTPS. The focused test passes 120/120 peer checks.
+- Response Red — `42f8238e4`: the focused test observed zero checks because the
+  eight field/version cases had no controlled-peer recipes. Green — `488fdf799`:
+  the fixture verifies each complete response and then removes exactly one
+  required field for the negative variant. The installed consumer rejects the
+  response after receiving it (`category=2 cause=2 delivery=3`). The focused
+  test passes 96/96 peer checks: 48 complete responses and 48 expected
+  rejections across all six encoding/transport combinations.
+- Refactor/documentation commit records the per-cell scope and immutable
+  artifact identities. Verification: both focused tests passed together with
+  `python3 -m unittest test_route_matrix.RouteMatrixTests.test_export_request_payload_fields_reach_installed_consumer test_route_matrix.RouteMatrixTests.test_export_response_payload_fields_reject_missing_required_branches`
+  (2 tests, 10.874 seconds); full CTest passed 7/7 tests in 90.78 seconds,
+  including all 161 C route-matrix contract tests and both controlled TLS peers.
+  `python3 -m py_compile` and `git diff --check` passed. These checks do not
+  close other pending Export cells or the
+  complete C route matrix. The full matrix must be regenerated for the exact
+  installed artifact and current branch head before FR-003/FR-009 can close.

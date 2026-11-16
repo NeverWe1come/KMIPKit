@@ -474,16 +474,23 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
 - Refactor/documentation commit: record the scoped Export evidence, normative
   payload fields, and remaining matrix gate in C implementation evidence and
   requirement traceability.
-- The focused slice passes all 44 C cells for `test-op-export`: four local
+- The operation slice passes all 44 C cells for `test-op-export`: four local
   generic TTLV cells, 36 constructor/send/decode cells across KMIP 2.0/2.1 and
   TTLV/JSON/XML over raw TLS/HTTPS, and four response-accessor cells. All 12
   controlled-peer checks pass and observe Create → Export → Revoke → Destroy
   with cleanup returning fixture state to its initial value.
-- Verification: the focused Export test and CTest `test_c_validator` pass.
-  `PYTHONPATH=interop/c-kmip-validator/tests:interop/c-kmip-validator/tools
-  python3 -B -m unittest test_route_matrix -v` passes 159/159 on the final
-  source. The full installed C route matrix and exact-head CI remain open; this
-  operation slice does not close KMIPKIT-0092-FR-003 or FR-009 globally.
+- Request payload Red `4d4174e79` failed with zero checks; Green `367006d57`
+  passes all 120 present/omitted peer checks for the ten catalogued request
+  fields across both protocol versions and all six encoding/transport pairs.
+  Response payload Red `42f8238e4` failed with zero checks; Green `488fdf799`
+  passes all 96 checks for eight field/version cases, including 48 expected
+  rejections after a required response field is removed.
+- Verification: the two focused payload tests pass (120/120 request checks and
+  96/96 response checks); full CTest passes 7/7 tests in 90.78 seconds, including
+  161 C route-matrix contract tests and both controlled TLS peers. `python3 -m
+  py_compile` and `git diff --check` pass.
+  The full installed C route matrix and exact-head CI remain open; these
+  operation/payload slices do not close KMIPKIT-0092-FR-003 or FR-009 globally.
 
 ## Development evidence: JNI sanitizer workflow contract after release refresh
 
