@@ -160,17 +160,20 @@ class FluentLocateRevokeManifestTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
         }
         expected_signatures = {
+            "org.kmipkit.fluent.FluentRequest.locate": {
+                "public org.kmipkit.fluent.LocateBuilder locate(org.kmipkit.extensions.AttributeSet)",
+            },
             "org.kmipkit.fluent.FluentRequest.revoke": {
                 "public org.kmipkit.fluent.RevokeBuilder revoke(long)",
                 "public org.kmipkit.fluent.RevokeBuilder revoke(long, java.lang.String)",
             },
             "org.kmipkit.fluent.LocateBuilder.execute": {
-                "public org.kmipkit.extensions.ClientBatchResponse execute(org.kmipkit.ttlv.CodecLimits)",
-                "public org.kmipkit.extensions.ClientBatchResponse execute(org.kmipkit.ttlv.CodecLimits, org.kmipkit.extensions.RequestOptions)",
+                "public org.kmipkit.extensions.ClientBatchResponse execute(org.kmipkit.ttlv.CodecLimits) throws org.kmipkit.ClientOperationException",
+                "public org.kmipkit.extensions.ClientBatchResponse execute(org.kmipkit.ttlv.CodecLimits, org.kmipkit.extensions.RequestOptions) throws org.kmipkit.ClientOperationException",
             },
             "org.kmipkit.fluent.RevokeBuilder.execute": {
-                "public org.kmipkit.extensions.ClientBatchResponse execute(org.kmipkit.ttlv.CodecLimits)",
-                "public org.kmipkit.extensions.ClientBatchResponse execute(org.kmipkit.ttlv.CodecLimits, org.kmipkit.extensions.RequestOptions)",
+                "public org.kmipkit.extensions.ClientBatchResponse execute(org.kmipkit.ttlv.CodecLimits) throws org.kmipkit.ClientOperationException",
+                "public org.kmipkit.extensions.ClientBatchResponse execute(org.kmipkit.ttlv.CodecLimits, org.kmipkit.extensions.RequestOptions) throws org.kmipkit.ClientOperationException",
             },
         }
         for export_name, signatures in expected_signatures.items():
