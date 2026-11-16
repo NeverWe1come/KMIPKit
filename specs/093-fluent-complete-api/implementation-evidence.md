@@ -180,3 +180,58 @@
 - The exact-head CI coverage gate has not yet run on these updates; its result
   remains pending and will be recorded before the PR leaves WIP.
 
+## KMIPKIT-0093 C Create Key Pair builder
+
+### Red
+
+- Added a compiled C consumer probe for the opaque builder and a second Red
+  check requiring local validation to reject missing algorithm and length.
+  The generated C header initially lacked the new declarations.
+
+### Green
+
+- Added the C opaque builder ABI for explicit algorithm, length, separate
+  private/public usage masks and names, grouped catalogued/expert/vendor
+  attributes, asynchronous indicator, local validation, typed batch-item
+  conversion, execution with exchange options, and release.
+- The Rust builder can be detached for FFI use; detached execution returns a
+  payload-free `NotSent` validation error. It uses the existing request
+  validation and typed execution paths.
+- Java now exposes `FluentRequest.createKeyPair()` and an `AutoCloseable`
+  builder with explicit choices, grouped attributes, local validation, typed
+  batch conversion, and execution through the existing client. Python exposes
+  the same request-facade flow and a context-managed builder backed by the C ABI.
+- Java and Python preserve the three attribute groups and provide catalogued
+  and vendor-specific attribute methods; unknown attributes require an
+  explicitly typed TTLV item.
+- `cargo +1.94 test -p kmipkit-client --all-features fluent_create_key_pair`
+  passes all 21 matching tests.
+- `cargo +1.94 test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage`
+  passes all 60 C ABI tests, including the incomplete/complete builder
+  validation and typed batch-item probe.
+- `bash bindings/java/gradlew test` succeeds, and the full Python suite passes
+  all 1,357 tests. The focused Java and Python builder tests exercise explicit
+  choices, validation, typed batch construction, and request-facade access.
+- `python3 -B -m unittest tools.api_manifest.tests.test_0093_c_key_pair_builder_manifest -v`
+  passes both tests. `python3 tools/api_manifest/generate.py --write` generated
+  12 outputs and the subsequent `--check` verified them.
+- Regenerated the current binding export report. All package inventories are
+  complete with zero missing, stale, kind-mismatched, or otherwise unclassified
+  exports: C 2,158 observed / 2,098 matched, Java 3,214 / 2,503, and Python
+  3,726 / 2,717. The Rust export audit found no Create Key Pair builder export
+  missing from the manifest; its repository-wide inventory still reports 180
+  other missing declarations and is not represented as complete here.
+- `cargo +1.94 fmt --all --check` passes. After correcting one
+  `manual_let_else` reported by Clippy, `cargo +1.94 clippy -p kmipkit-ffi
+  --all-targets --all-features -- -D warnings` passes.
+
+### Refactor
+
+- The C ABI remains separately declared as a C-only surface, while the shared
+  Create Key Pair builder capability maps exact declared exports in Rust, C,
+  Java, and Python. The binding audit enforces exact public export names.
+- Added English and Spanish user-guide coverage for C validation, ownership,
+  grouped attributes, typed batch construction, and Java/Python request-facade
+  usage. The API manifest generator remains the source for all checked-in
+  generated outputs.
+

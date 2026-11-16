@@ -35,7 +35,8 @@ T102_BLOCKED_CANDIDATES = 0
 # KMIPKIT-0126 adds 37 standard attribute declarations and 7 KMIP 3.0 batch response readers across 4 languages.
 # Update this full-manifest snapshot only when an approved feature intentionally
 # adds or removes declarations.
-T102_PUBLIC_DECLARATIONS = 17_202
+# The combined manifest includes KMIPKIT-0093 C key-pair builders and KMIPKIT-0126 additions.
+T102_PUBLIC_DECLARATIONS = 17_278
 T102_KMIP30_DRAFT_ROUTE_DECLARATIONS = 36
 T102_APPROVED_EXCLUSIONS = 22_661
 T102_RUST_AUDIT_MANIFEST = 3_287
