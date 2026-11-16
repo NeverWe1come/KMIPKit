@@ -26,6 +26,7 @@ GENERATOR = ROOT / "tools" / "api_manifest" / "generate.py"
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 SCHEMA = ROOT / "specification" / "api" / "public-api.schema.json"
 CATALOG = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+VERSIONED_TAGS = ROOT / "specification" / "catalog" / "kmip-versioned-tags.json"
 DRAFT_CATALOG = ROOT / "specification" / "api" / "kmip-3.0-draft-api.json"
 MINIMAL_FIXTURE = ROOT / "tools" / "api_manifest" / "tests" / "fixtures" / "registry-manifest.json"
 PUBLIC_API_V1_FIXTURE = ROOT / "tools" / "api_manifest" / "tests" / "fixtures" / "public-api-v1.json"
@@ -114,6 +115,8 @@ def _create_repo(parent: Path) -> Path:
     catalog_path = root / "specification" / "catalog" / CATALOG.name
     catalog_path.parent.mkdir(parents=True)
     shutil.copy2(CATALOG, catalog_path)
+    if VERSIONED_TAGS.is_file():
+        shutil.copy2(VERSIONED_TAGS, catalog_path.parent / VERSIONED_TAGS.name)
     if DRAFT_CATALOG.is_file():
         draft_catalog_path = api_dir / DRAFT_CATALOG.name
         shutil.copy2(DRAFT_CATALOG, draft_catalog_path)

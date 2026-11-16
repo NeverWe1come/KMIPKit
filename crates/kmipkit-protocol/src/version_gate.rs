@@ -209,9 +209,9 @@ impl VersionGate {
                 | 0x0042_002A // Cryptographic Length
                 | 0x0042_002B // Cryptographic Parameters
                 | 0x0042_002C // Cryptographic Usage Mask
-                | 0x0042_0032 // Digest
-                | 0x0042_00BF // Key Value Present
-                | 0x0042_0044 // Key Format Type
+                | 0x0042_0034 // Digest
+                | 0x0042_00BB // Key Value Present
+                | 0x0042_0042 // Key Format Type
                 => {
                     return Err(VersionGateError::AttributeMutationProhibitedInVersion {
                         tag,

@@ -173,7 +173,8 @@ KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS = {
 # narrowed T101 mappings. KMIPKIT-0124 adds 28 KMIP 3.0 fluent and 16 async
 # batch declarations to this non-target snapshot; the async request constructors
 # add four-language mappings to the existing operation rows.
-DECLARATIONS_SHA256 = "fa7e93c2270750b7c32e283c7bff199aea5d2a79fb9b4697282b0ec314779559"
+# KMIPKIT-0126 adds 37 versioned standard attributes and 7 KMIP 3.0 batch response readers.
+DECLARATIONS_SHA256 = "d0b02a15fe901014c07e949b995aae6c222c2690a2324b50433a87b5548a2575"
 OPERATIONS_SHA256 = "9ab6c670787f07c9faa301744d1654fdd071ceffc3b43936e6cb12add59094e2"
 
 
@@ -457,7 +458,7 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
         # Final T102 route resolution and predecessor stack additions remain
         # inside this exact non-target fingerprint.
         for capability, count in (
-            ("typed_object_attributes", 544),
+            ("typed_object_attributes", 766),
             ("typed_managed_objects_and_key_material", 762),
         ):
             with self.subTest(stack_capability=capability):

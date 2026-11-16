@@ -1647,7 +1647,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_01_6A,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-INTERVAL",
         name: "Rotate Interval",
-        min_version: (2, 0),
+        min_version: (2, 1),
         max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.51" },
@@ -1667,7 +1667,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_01_6B,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-AUTOMATIC",
         name: "Rotate Automatic",
-        min_version: (2, 0),
+        min_version: (2, 1),
         max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.48" },
@@ -1687,7 +1687,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_01_6C,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-OFFSET",
         name: "Rotate Offset",
-        min_version: (2, 0),
+        min_version: (2, 1),
         max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.54" },
@@ -1707,7 +1707,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         tag: 0x42_01_6D,
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-DATE",
         name: "Rotate Date",
-        min_version: (2, 0),
+        min_version: (2, 1),
         max_version: None,
         source_refs: &[
             SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.49" },
