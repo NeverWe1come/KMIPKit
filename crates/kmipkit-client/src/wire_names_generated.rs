@@ -481,6 +481,7 @@ F	42019E	Object Class
 F	4201A3	Cryptographic Algorithm
 F	4201A8	OTP Algorithm
 F	4201A9	Cryptographic Algorithm
+F	4201B6	Split Key Polynomial
 F	4201B9	Deactivation Reason Code
 F	4201C3	KEM Algorithm
 E	Adjustment Type	00000001	Increment
@@ -541,6 +542,8 @@ E	Credential Type	00000003	Attestation
 E	Credential Type	00000004	One Time Password
 E	Credential Type	00000005	Hashed Password
 E	Credential Type	00000006	Ticket
+E	Credential Type	00000007	Password
+E	Credential Type	00000008	Certificate
 E	Cryptographic Algorithm	00000001	DES
 E	Cryptographic Algorithm	00000002	3DES
 E	Cryptographic Algorithm	00000003	AES
@@ -730,6 +733,9 @@ E	Item Type	00000008	Byte String
 E	Item Type	00000009	Date Time
 E	Item Type	0000000A	Interval
 E	Item Type	0000000B	Date Time Extended
+E	Item Type	0000000C	Identifier
+E	Item Type	0000000D	Reference
+E	Item Type	0000000E	Name Reference
 E	KEM Algorithm	00000001	RSASVE
 E	KEM Algorithm	00000002	DHKEM
 E	KEM Algorithm	00000003	MLKEM
@@ -974,6 +980,7 @@ E	Query Function	0000000B	Query Capabilities
 E	Query Function	0000000C	Query Client Registration Methods
 E	Query Function	0000000D	Query Defaults Information
 E	Query Function	0000000E	Query Storage Protection Masks
+E	Query Function	0000000F	Query Credential Information
 E	RNG Algorithm	00000001	Unspecified
 E	RNG Algorithm	00000002	FIPS 186-2
 E	RNG Algorithm	00000003	DRBG
@@ -1053,6 +1060,15 @@ E	Recommended Curve	00000043	BRAINPOOLP512R1
 E	Recommended Curve	00000044	BRAINPOOLP512T1
 E	Recommended Curve	00000045	CURVE25519
 E	Recommended Curve	00000046	CURVE448
+E	Recommended Curve	00000047	ANSIX9C2PNB176W1
+E	Recommended Curve	00000048	ANSIX9C2TNB191V4
+E	Recommended Curve	00000049	ANSIX9C2TNB191V5
+E	Recommended Curve	0000004A	ANSIX9C2TNB239V4
+E	Recommended Curve	0000004B	ANSIX9C2TNB239V5
+E	Recommended Curve	0000004C	CURVE25519PH
+E	Recommended Curve	0000004D	CURVE448PH
+E	Recommended Curve	0000004E	OpenPGP Ed25519
+E	Recommended Curve	0000004F	OpenPGP Curve25519
 E	Result Reason	00000001	Item Not Found
 E	Result Reason	00000002	Response Too Large
 E	Result Reason	00000003	Authentication Not Successful
@@ -1136,6 +1152,9 @@ E	Revocation Reason Code	00000004	Affiliation Changed
 E	Revocation Reason Code	00000005	Superseded
 E	Revocation Reason Code	00000006	Cessation of Operation
 E	Revocation Reason Code	00000007	Privilege Withdrawn
+E	Revocation Reason Code	00000008	Certificate Hold
+E	Revocation Reason Code	00000009	Remove From CRL
+E	Revocation Reason Code	0000000A	AA Compromise
 E	Rotate Name Type	00000001	Uninterpreted Text String
 E	Rotate Name Type	00000002	URI
 E	Secret Data Type	00000001	Password
@@ -1147,6 +1166,8 @@ E	Split Key Method	00000001	XOR
 E	Split Key Method	00000002	Polynomial Sharing GF (2¹⁶)
 E	Split Key Method	00000003	Polynomial Sharing Prime Field
 E	Split Key Method	00000004	Polynomial Sharing GF (2⁸)
+E	Split Key Polynomial	00000001	Polynomial-283
+E	Split Key Polynomial	00000002	Polynomial-285
 E	State	00000001	Pre-Active
 E	State	00000002	Active
 E	State	00000003	Deactivated
@@ -1171,6 +1192,9 @@ E	Unique Identifier	0000000E	Re-certify
 E	Unique Identifier	0000000F	Re-key Key Pair
 E	Unique Identifier	00000010	Re-key Key Pair Private Key
 E	Unique Identifier	00000011	Re-key Key Pair Public Key
+E	Unique Identifier	00000013	Create User
+E	Unique Identifier	00000014	Create Group
+E	Unique Identifier	00000015	Create Credential
 E	Unwrap Mode	00000001	Unspecified
 E	Unwrap Mode	00000002	Processed
 E	Unwrap Mode	00000003	Not Processed

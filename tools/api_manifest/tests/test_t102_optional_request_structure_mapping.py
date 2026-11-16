@@ -199,7 +199,7 @@ PKCS11_REQUEST_SETTER_IDS = {
 # and KMIPKIT-0108/0109 attribute operations and bindings. KMIPKIT-0124 adds
 # 28 KMIP 3.0 fluent and 16 asynchronous batch declarations, which also map
 # asynchronous constructors onto four existing operation rows.
-OTHER_DECLARATIONS_SHA256 = "2b273eaa642065b0a98763be540c703dcf38255703260043a67b8f01b1663b97"
+OTHER_DECLARATIONS_SHA256 = "c7bf1c33ae8234f2ae4249c3ae1f0aac4288c448069d4d847aab7a9ca7212ffb"
 OTHER_OPERATIONS_SHA256 = "2ea94003f2877d0e6d84271d67d9add6f48a5c5b7a837c48b22fe40f41022d39"
 def canonical_sha256(value: object) -> str:
     encoded = json.dumps(
@@ -388,7 +388,7 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
         # the capability inventory includes verified routes and explicit open
         # candidates rather than treating the whole category as blocked.
         for capability, count in (
-            ("typed_object_attributes", 544),
+            ("typed_object_attributes", 766),
             ("typed_managed_objects_and_key_material", 762),
         ):
             with self.subTest(stack_capability=capability):
@@ -400,7 +400,7 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
                 states = {row["declarationState"] for row in typed_rows}
                 self.assertTrue(states.issubset({"verified", "blocked"}))
                 self.assertEqual(
-                    {"verified": 544}
+                    {"verified": 766}
                     if capability == "typed_object_attributes"
                     else {"verified": 762},
                     {

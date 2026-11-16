@@ -503,6 +503,191 @@
           "wireValue": "0x00000002"
         }
       ]
+    },
+    {
+      "version": "v3_0",
+      "kind": "enumeration",
+      "name": "Split Key Polynomial",
+      "sourceId": "kmip-3.0",
+      "section": "11.56",
+      "table": "603",
+      "assignedValues": [
+        {
+          "name": "Polynomial-283",
+          "identifier": "POLYNOMIAL_283",
+          "wireValue": "0x00000001"
+        },
+        {
+          "name": "Polynomial-285",
+          "identifier": "POLYNOMIAL_285",
+          "wireValue": "0x00000002"
+        }
+      ]
+    },
+    {
+      "version": "v3_0",
+      "kind": "enumeration",
+      "name": "Credential Type",
+      "sourceId": "kmip-3.0",
+      "section": "11.11",
+      "table": "551",
+      "assignedValues": [
+        {
+          "name": "Password",
+          "identifier": "PASSWORD",
+          "wireValue": "0x00000007"
+        },
+        {
+          "name": "Certificate",
+          "identifier": "CERTIFICATE",
+          "wireValue": "0x00000008"
+        }
+      ]
+    },
+    {
+      "version": "v3_0",
+      "kind": "enumeration",
+      "name": "Item Type",
+      "sourceId": "kmip-3.0",
+      "section": "11.25",
+      "table": "568",
+      "assignedValues": [
+        {
+          "name": "Identifier",
+          "identifier": "IDENTIFIER",
+          "wireValue": "0x0000000C"
+        },
+        {
+          "name": "Reference",
+          "identifier": "REFERENCE",
+          "wireValue": "0x0000000D"
+        },
+        {
+          "name": "Name Reference",
+          "identifier": "NAME_REFERENCE",
+          "wireValue": "0x0000000E"
+        }
+      ]
+    },
+    {
+      "version": "v3_0",
+      "kind": "enumeration",
+      "name": "Query Function",
+      "sourceId": "kmip-3.0",
+      "section": "11.46",
+      "table": "591",
+      "assignedValues": [
+        {
+          "name": "Query Credential Information",
+          "identifier": "QUERY_CREDENTIAL_INFORMATION",
+          "wireValue": "0x0000000F"
+        }
+      ]
+    },
+    {
+      "version": "v3_0",
+      "kind": "enumeration",
+      "name": "Recommended Curve",
+      "sourceId": "kmip-3.0",
+      "section": "11.47",
+      "table": "592",
+      "assignedValues": [
+        {
+          "name": "ANSIX9C2PNB176W1",
+          "identifier": "ANSIX9C2PNB176W1",
+          "wireValue": "0x00000047"
+        },
+        {
+          "name": "ANSIX9C2TNB191V4",
+          "identifier": "ANSIX9C2TNB191V4",
+          "wireValue": "0x00000048"
+        },
+        {
+          "name": "ANSIX9C2TNB191V5",
+          "identifier": "ANSIX9C2TNB191V5",
+          "wireValue": "0x00000049"
+        },
+        {
+          "name": "ANSIX9C2TNB239V4",
+          "identifier": "ANSIX9C2TNB239V4",
+          "wireValue": "0x0000004A"
+        },
+        {
+          "name": "ANSIX9C2TNB239V5",
+          "identifier": "ANSIX9C2TNB239V5",
+          "wireValue": "0x0000004B"
+        },
+        {
+          "name": "CURVE25519PH",
+          "identifier": "CURVE25519PH",
+          "wireValue": "0x0000004C"
+        },
+        {
+          "name": "CURVE448PH",
+          "identifier": "CURVE448PH",
+          "wireValue": "0x0000004D"
+        },
+        {
+          "name": "OpenPGP Ed25519",
+          "identifier": "OPENPGP_ED25519",
+          "wireValue": "0x0000004E"
+        },
+        {
+          "name": "OpenPGP Curve25519",
+          "identifier": "OPENPGP_CURVE25519",
+          "wireValue": "0x0000004F"
+        }
+      ]
+    },
+    {
+      "version": "v3_0",
+      "kind": "enumeration",
+      "name": "Revocation Reason Code",
+      "sourceId": "kmip-3.0",
+      "section": "11.50",
+      "table": "595",
+      "assignedValues": [
+        {
+          "name": "Certificate Hold",
+          "identifier": "CERTIFICATE_HOLD",
+          "wireValue": "0x00000008"
+        },
+        {
+          "name": "Remove From CRL",
+          "identifier": "REMOVE_FROM_CRL",
+          "wireValue": "0x00000009"
+        },
+        {
+          "name": "AA Compromise",
+          "identifier": "AA_COMPROMISE",
+          "wireValue": "0x0000000A"
+        }
+      ]
+    },
+    {
+      "version": "v3_0",
+      "kind": "enumeration",
+      "name": "Unique Identifier",
+      "sourceId": "kmip-3.0",
+      "section": "11.60",
+      "table": "607",
+      "assignedValues": [
+        {
+          "name": "Create User",
+          "identifier": "CREATE_USER",
+          "wireValue": "0x00000013"
+        },
+        {
+          "name": "Create Group",
+          "identifier": "CREATE_GROUP",
+          "wireValue": "0x00000014"
+        },
+        {
+          "name": "Create Credential",
+          "identifier": "CREATE_CREDENTIAL",
+          "wireValue": "0x00000015"
+        }
+      ]
     }
   ],
   "groups": [

@@ -365,15 +365,21 @@ fn client_kmip30_group_and_user_methods_execute_roundtrip() {
         ),
         request_write_chunks: Vec::new(),
     });
-    assert!(
-        client
-            .create_group_with_options(
-                CreateGroupRequest::new(AttributeSet::new()),
-                &CodecLimits::defaults(),
-                &v3_options
-            )
-            .is_ok()
-    );
+    let item = client
+        .create_group_with_options(
+            CreateGroupRequest::new(AttributeSet::new()),
+            &CodecLimits::defaults(),
+            &v3_options,
+        )
+        .expect("successful CreateGroup");
+    assert!(item.create_group_response().is_some());
+    assert!(item.obliterate_response().is_none());
+    assert!(item.create_user_response().is_none());
+    assert!(item.create_credential_response().is_none());
+    assert!(item.deactivate_response().is_none());
+    assert!(item.encapsulate_response().is_none());
+    assert!(item.decapsulate_response().is_none());
+    assert!(item.kmip30_response().is_some());
 
     let (mut client, _, _) = client_for(ExchangeScript::Success {
         response: asynchronous_response_bytes_with_version(
@@ -386,15 +392,15 @@ fn client_kmip30_group_and_user_methods_execute_roundtrip() {
         ),
         request_write_chunks: Vec::new(),
     });
-    assert!(
-        client
-            .obliterate_with_options(
-                ObliterateRequest::new(UniqueIdentifier::TextString("uid-1".to_owned())),
-                &CodecLimits::defaults(),
-                &v3_options
-            )
-            .is_ok()
-    );
+    let item = client
+        .obliterate_with_options(
+            ObliterateRequest::new(UniqueIdentifier::TextString("uid-1".to_owned())),
+            &CodecLimits::defaults(),
+            &v3_options,
+        )
+        .expect("successful Obliterate");
+    assert!(item.obliterate_response().is_some());
+    assert!(item.create_group_response().is_none());
 
     let (mut client, _, _) = client_for(ExchangeScript::Success {
         response: asynchronous_response_bytes_with_version(
@@ -407,15 +413,15 @@ fn client_kmip30_group_and_user_methods_execute_roundtrip() {
         ),
         request_write_chunks: Vec::new(),
     });
-    assert!(
-        client
-            .create_user_with_options(
-                CreateUserRequest::new(AttributeSet::new()),
-                &CodecLimits::defaults(),
-                &v3_options
-            )
-            .is_ok()
-    );
+    let item = client
+        .create_user_with_options(
+            CreateUserRequest::new(AttributeSet::new()),
+            &CodecLimits::defaults(),
+            &v3_options,
+        )
+        .expect("successful CreateUser");
+    assert!(item.create_user_response().is_some());
+    assert!(item.create_group_response().is_none());
 }
 
 #[test]
@@ -450,19 +456,19 @@ fn client_kmip30_credential_and_deactivate_methods_execute_roundtrip() {
         ),
         request_write_chunks: Vec::new(),
     });
-    assert!(
-        client
-            .create_credential_with_options(
-                CreateCredentialRequest::new(
-                    CredentialType::UsernameAndPassword,
-                    AttributeSet::new(),
-                    CreateCredentialObject::PasswordCredential(password),
-                ),
-                &CodecLimits::defaults(),
-                &v3_options
-            )
-            .is_ok()
-    );
+    let item = client
+        .create_credential_with_options(
+            CreateCredentialRequest::new(
+                CredentialType::UsernameAndPassword,
+                AttributeSet::new(),
+                CreateCredentialObject::PasswordCredential(password),
+            ),
+            &CodecLimits::defaults(),
+            &v3_options,
+        )
+        .expect("successful CreateCredential");
+    assert!(item.create_credential_response().is_some());
+    assert!(item.create_group_response().is_none());
 
     let (mut client, _, _) = client_for(ExchangeScript::Success {
         response: asynchronous_response_bytes_with_version(
@@ -475,15 +481,15 @@ fn client_kmip30_credential_and_deactivate_methods_execute_roundtrip() {
         ),
         request_write_chunks: Vec::new(),
     });
-    assert!(
-        client
-            .deactivate_with_options(
-                DeactivateRequest::new("uid-1"),
-                &CodecLimits::defaults(),
-                &v3_options
-            )
-            .is_ok()
-    );
+    let item = client
+        .deactivate_with_options(
+            DeactivateRequest::new("uid-1"),
+            &CodecLimits::defaults(),
+            &v3_options,
+        )
+        .expect("successful Deactivate");
+    assert!(item.deactivate_response().is_some());
+    assert!(item.create_group_response().is_none());
 }
 
 #[test]
@@ -516,15 +522,15 @@ fn client_kmip30_kem_methods_execute_roundtrip() {
         ),
         request_write_chunks: Vec::new(),
     });
-    assert!(
-        client
-            .encapsulate_with_options(
-                EncapsulateRequest::new("pub-1"),
-                &CodecLimits::defaults(),
-                &v3_options
-            )
-            .is_ok()
-    );
+    let item = client
+        .encapsulate_with_options(
+            EncapsulateRequest::new("pub-1"),
+            &CodecLimits::defaults(),
+            &v3_options,
+        )
+        .expect("successful Encapsulate");
+    assert!(item.encapsulate_response().is_some());
+    assert!(item.create_group_response().is_none());
 
     let (mut client, _, _) = client_for(ExchangeScript::Success {
         response: asynchronous_response_bytes_with_version(
@@ -537,15 +543,15 @@ fn client_kmip30_kem_methods_execute_roundtrip() {
         ),
         request_write_chunks: Vec::new(),
     });
-    assert!(
-        client
-            .decapsulate_with_options(
-                DecapsulateRequest::new("priv-1", vec![1, 2, 3]),
-                &CodecLimits::defaults(),
-                &v3_options
-            )
-            .is_ok()
-    );
+    let item = client
+        .decapsulate_with_options(
+            DecapsulateRequest::new("priv-1", vec![1, 2, 3]),
+            &CodecLimits::defaults(),
+            &v3_options,
+        )
+        .expect("successful Decapsulate");
+    assert!(item.decapsulate_response().is_some());
+    assert!(item.create_group_response().is_none());
 }
 
 #[test]

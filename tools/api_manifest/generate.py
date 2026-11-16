@@ -1728,7 +1728,7 @@ def _validate_standard_attribute_tag_mapping(
 
 
 def _validate_standard_attribute_catalog_values(
-    manifest: dict[str, Any], catalog: dict[str, Any]
+    manifest: dict[str, Any], catalog: dict[str, Any], root: Path | None = None
 ) -> None:
     """Require C tag metadata to match the assigned tags in the normative catalog."""
     elements = catalog.get("elements")
@@ -1795,6 +1795,31 @@ def _validate_standard_attribute_catalog_values(
             raise ManifestError("normative catalog duplicates a standard attribute C tag")
         expected[c_name] = tag
 
+    versioned_root = root or Path.cwd()
+    versioned_tags_path = versioned_root / "specification/catalog/kmip-versioned-tags.json"
+    if versioned_tags_path.exists():
+        versioned_tags = _load_json(
+            versioned_root,
+            "specification/catalog/kmip-versioned-tags.json",
+            MAX_CATALOG_BYTES,
+        )
+        if isinstance(versioned_tags, dict):
+            assignments = versioned_tags.get("tagEnumeration", {}).get("assignments", [])
+            promoted = versioned_tags.get("v3_0_promoted_attributes", [])
+            for entry in list(assignments) + list(promoted):
+                if isinstance(entry, dict) and (entry.get("is_object_attribute") is True or entry in promoted):
+                    source_name = entry.get("name")
+                    wire_value = entry.get("wire_value")
+                    if isinstance(source_name, str) and wire_value:
+                        words = re.findall(r"[A-Za-z]+|[0-9]+", source_name)
+                        marker = "".join(word if word.isdigit() else word[0].upper() + word[1:].lower() for word in words)
+                        constant = re.sub(r"(?<!^)(?=[A-Z])", "_", marker).upper()
+                        c_name = f"KMIPKIT_STANDARD_ATTRIBUTE_{constant}"
+                        tag = int(str(wire_value).removeprefix("0x").removeprefix("0X"), 16)
+                        if c_name in expected:
+                            raise ManifestError("normative catalog duplicates a standard attribute C tag")
+                        expected[c_name] = tag
+
     actual: dict[str, Any] = {}
     for declaration in manifest.get("publicDeclarations", []):
         if not isinstance(declaration, dict):
@@ -1802,7 +1827,11 @@ def _validate_standard_attribute_catalog_values(
         c_name = declaration.get("languageMappings", {}).get("c", {}).get("name")
         if c_name == "KMIPKIT_STANDARD_ATTRIBUTE_TAG":
             continue
-        if isinstance(c_name, str) and c_name.startswith("KMIPKIT_STANDARD_ATTRIBUTE_"):
+        if (
+            isinstance(c_name, str)
+            and c_name.startswith("KMIPKIT_STANDARD_ATTRIBUTE_")
+            and declaration.get("packageId") == "c-kmipkit"
+        ):
             actual[c_name] = declaration.get("cValue")
     has_ready_attribute_capability = any(
         isinstance(capability, dict)
@@ -1960,7 +1989,7 @@ def _validate_v2_manifest(
 ) -> None:
     """Validate v2 schema, normative catalog, references, and readiness together."""
     _validate_schema(manifest, schema)
-    _validate_standard_attribute_catalog_values(manifest, catalog)
+    _validate_standard_attribute_catalog_values(manifest, catalog, root)
     _validate_operation_inventory(manifest, catalog)
     _validate_references(manifest)
     if require_complete:

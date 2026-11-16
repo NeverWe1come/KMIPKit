@@ -394,7 +394,8 @@
         "source_multiplicity": "No",
         "source_modifiable_by_client": "No",
         "source_deletable_by_client": "No",
-        "source_initially_set_by": "Client"
+        "source_initially_set_by": "Client",
+        "enumeration_family": "Split Key Polynomial"
       },
       {
         "name": "Deactivation Message",
@@ -600,68 +601,165 @@
   },
   "v2_1_tags": [
     {
-      "name": "Default",
-      "wire_value": "0x420166",
-      "introduced_in": "2.1"
-    },
-    {
-      "name": "Defaults Information",
-      "wire_value": "0x420167",
-      "introduced_in": "2.1"
-    },
-    {
-      "name": "Deferral",
-      "wire_value": "0x420168",
+      "name": "Object Defaults",
+      "wire_value": "0x420153",
       "introduced_in": "2.1"
     },
     {
       "name": "Ephemeral",
+      "wire_value": "0x420154",
+      "introduced_in": "2.1"
+    },
+    {
+      "name": "Server Hashed Password",
+      "wire_value": "0x420155",
+      "introduced_in": "2.1"
+    },
+    {
+      "name": "One Time Password",
+      "wire_value": "0x420156",
+      "introduced_in": "2.1"
+    },
+    {
+      "name": "Hashed Password",
+      "wire_value": "0x420157",
+      "introduced_in": "2.1"
+    },
+    {
+      "name": "Adjustment Type",
+      "wire_value": "0x420158",
+      "introduced_in": "2.1"
+    },
+    {
+      "name": "PKCS#11 Interface",
+      "wire_value": "0x420159",
+      "introduced_in": "2.1"
+    },
+    {
+      "name": "PKCS#11 Function",
+      "wire_value": "0x42015A",
+      "introduced_in": "2.1"
+    },
+    {
+      "name": "PKCS#11 Input Parameters",
+      "wire_value": "0x42015B",
+      "introduced_in": "2.1"
+    },
+    {
+      "name": "PKCS#11 Output Parameters",
+      "wire_value": "0x42015C",
+      "introduced_in": "2.1"
+    },
+    {
+      "name": "PKCS#11 Return Code",
+      "wire_value": "0x42015D",
+      "introduced_in": "2.1"
+    },
+    {
+      "name": "Protection Storage Mask",
+      "wire_value": "0x42015E",
+      "introduced_in": "2.1"
+    },
+    {
+      "name": "Protection Storage Masks",
+      "wire_value": "0x42015F",
+      "introduced_in": "2.1"
+    },
+    {
+      "name": "Interop Function",
+      "wire_value": "0x420160",
+      "introduced_in": "2.1"
+    },
+    {
+      "name": "Interop Identifier",
+      "wire_value": "0x420161",
+      "introduced_in": "2.1"
+    },
+    {
+      "name": "Adjustment Value",
+      "wire_value": "0x420162",
+      "introduced_in": "2.1"
+    },
+    {
+      "name": "Common Protection Storage Masks",
+      "wire_value": "0x420163",
+      "introduced_in": "2.1"
+    },
+    {
+      "name": "Private Protection Storage Masks",
+      "wire_value": "0x420164",
+      "introduced_in": "2.1"
+    },
+    {
+      "name": "Public Protection Storage Masks",
+      "wire_value": "0x420165",
+      "introduced_in": "2.1"
+    },
+    {
+      "name": "Object Groups",
+      "wire_value": "0x420166",
+      "introduced_in": "2.1"
+    },
+    {
+      "name": "Object Types",
+      "wire_value": "0x420167",
+      "introduced_in": "2.1"
+    },
+    {
+      "name": "Constraints",
+      "wire_value": "0x420168",
+      "introduced_in": "2.1"
+    },
+    {
+      "name": "Constraint",
       "wire_value": "0x420169",
       "introduced_in": "2.1"
     },
     {
-      "name": "Object Defaults",
+      "name": "Rotate Interval",
       "wire_value": "0x42016A",
-      "introduced_in": "2.1"
-    },
-    {
-      "name": "Offset",
-      "wire_value": "0x42016B",
-      "introduced_in": "2.1"
-    },
-    {
-      "name": "Popup",
-      "wire_value": "0x42016C",
-      "introduced_in": "2.1"
-    },
-    {
-      "name": "Process",
-      "wire_value": "0x42016D",
-      "introduced_in": "2.1"
+      "introduced_in": "2.1",
+      "is_object_attribute": true
     },
     {
       "name": "Rotate Automatic",
-      "wire_value": "0x42016E",
+      "wire_value": "0x42016B",
+      "introduced_in": "2.1",
+      "is_object_attribute": true
+    },
+    {
+      "name": "Rotate Offset",
+      "wire_value": "0x42016C",
       "introduced_in": "2.1",
       "is_object_attribute": true
     },
     {
       "name": "Rotate Date",
-      "wire_value": "0x42016F",
+      "wire_value": "0x42016D",
       "introduced_in": "2.1",
       "is_object_attribute": true
     },
     {
       "name": "Rotate Generation",
-      "wire_value": "0x420170",
+      "wire_value": "0x42016E",
       "introduced_in": "2.1",
       "is_object_attribute": true
     },
     {
-      "name": "Rotate Interval",
-      "wire_value": "0x420171",
+      "name": "Rotate Name",
+      "wire_value": "0x42016F",
       "introduced_in": "2.1",
       "is_object_attribute": true
+    },
+    {
+      "name": "Rotate Name Value",
+      "wire_value": "0x420170",
+      "introduced_in": "2.1"
+    },
+    {
+      "name": "Rotate Name Type",
+      "wire_value": "0x420171",
+      "introduced_in": "2.1"
     },
     {
       "name": "Rotate Latest",
@@ -670,24 +768,22 @@
       "is_object_attribute": true
     },
     {
-      "name": "Rotate Name",
+      "name": "Asynchronous Request",
       "wire_value": "0x420173",
-      "introduced_in": "2.1",
-      "is_object_attribute": true
-    },
-    {
-      "name": "Rotate Offset",
-      "wire_value": "0x420174",
-      "introduced_in": "2.1",
-      "is_object_attribute": true
+      "introduced_in": "2.1"
     },
     {
       "name": "Submission Date",
-      "wire_value": "0x420175",
+      "wire_value": "0x420174",
       "introduced_in": "2.1"
     },
     {
       "name": "Processing Stage",
+      "wire_value": "0x420175",
+      "introduced_in": "2.1"
+    },
+    {
+      "name": "Asynchronous Correlation Values",
       "wire_value": "0x420176",
       "introduced_in": "2.1"
     }
@@ -702,7 +798,8 @@
       "source_multiplicity": "No",
       "source_modifiable_by_client": "No",
       "source_deletable_by_client": "No",
-      "source_initially_set_by": "Server"
+      "source_initially_set_by": "Server",
+      "enumeration_family": "Credential Type"
     },
     {
       "name": "Key Part Identifier",
@@ -724,7 +821,8 @@
       "source_multiplicity": "No",
       "source_modifiable_by_client": "No",
       "source_deletable_by_client": "No",
-      "source_initially_set_by": "Client"
+      "source_initially_set_by": "Client",
+      "enumeration_family": "Split Key Method"
     },
     {
       "name": "Split Key Parts",

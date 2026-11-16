@@ -283,7 +283,14 @@ def _versioned_policies(
     base_policies: list[dict[str, Any]],
     versioned_tags: dict[str, Any] | None,
 ) -> list[dict[str, Any]]:
-    v21_tags = {0x42_01_6E, 0x42_01_6F, 0x42_01_70, 0x42_01_71, 0x42_01_72, 0x42_01_73, 0x42_01_74}
+    if versioned_tags and "v2_1_tags" in versioned_tags:
+        v21_tags = {
+            int(e["wire_value"].removeprefix("0x").removeprefix("0X"), 16)
+            for e in versioned_tags["v2_1_tags"]
+            if e.get("is_object_attribute")
+        }
+    else:
+        v21_tags = {0x42_01_6A, 0x42_01_6B, 0x42_01_6C, 0x42_01_6D, 0x42_01_6E, 0x42_01_6F, 0x42_01_72}
     deprecated_in_v30 = {0x42_00_4A, 0x42_00_B5, 0x42_00_B6, 0x42_00_B7}
     merged: list[dict[str, Any]] = []
     seen_tags: set[int] = set()

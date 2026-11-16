@@ -299,9 +299,21 @@ def _merge_versioned_wire_data(
             if val not in tag_map and name not in tag_name_set:
                 tag_map[val] = name
                 tag_name_set.add(name)
-            if "enumeration_family" in a and val not in enum_fam_map:
+            if a.get("source_encoding") == "Enumeration":
+                fam = a.get("enumeration_family")
+                if not fam:
+                    raise ValueError(f"Enumeration tag {name} ({raw}) has no enumeration_family")
+                if val not in enum_fam_map:
+                    enum_fam_map[val] = fam
+            elif "enumeration_family" in a and val not in enum_fam_map:
                 enum_fam_map[val] = a["enumeration_family"]
-            if "bitmask_family" in a and val not in mask_fam_map:
+            if a.get("source_encoding") == "Bitmask":
+                fam = a.get("bitmask_family")
+                if not fam:
+                    raise ValueError(f"Bitmask tag {name} ({raw}) has no bitmask_family")
+                if val not in mask_fam_map:
+                    mask_fam_map[val] = fam
+            elif "bitmask_family" in a and val not in mask_fam_map:
                 mask_fam_map[val] = a["bitmask_family"]
 
     enum_val_seen = {(f, v) for f, v, _ in enum_values}
