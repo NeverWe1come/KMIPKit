@@ -454,3 +454,27 @@
   fails at the declaration total (`18895 != 16816`). The manifest now contains
   2,077 KMIPKIT-0093 tag declarations; the approved exclusion total is unchanged.
 
+### Green
+
+- Generation now adds the 354 assigned KMIP 2.1 tags from the canonical
+  catalog and the 60 assigned KMIP 3.0 tags from the checksum-validated
+  §11.58/Table 605 catalog. The corrected 17-entry KMIP 2.1 supplement matches
+  §11.56/Table 487; pinned upstream files are unchanged.
+- The reconciled manifest adds 2,077 declared Rust, C, Java, and Python tag
+  values and helper exports under `KMIPKIT-0093-FR-001` and `FR-002`. The public
+  manifest input bound is 72 MiB, and its pinned snapshot now records 18,895
+  declarations. KMIP 3.0 tag names remain explicitly versioned.
+- Rust lookups split the 354-value match into small private functions; the
+  generated source passes Clippy with warnings denied. New C, Java, Python, and
+  Rust consumer tests check exact 2.1/3.0 tag names and unknown-value behavior.
+- The bilingual package guides document the new names and version boundary.
+- Local verification passed: 23 catalog tests; 114 API-manifest generator
+  tests; 1,453 Rust protocol tests plus the tag integration test; C consumer
+  tests 4/4; Java tests 714 with one pre-existing skip; Python tests 1,356;
+  all four generated-output checks; and the C/Java/Python export audit. The
+  generated Rust audit maps every new tag path, but reports 193 other existing
+  Rust paths missing from the manifest; none of those paths are tag exports.
+  The full Rust export audit therefore remains incomplete outside this slice.
+- Exact-head CI has not run yet. G004 remains open until the WIP PR's required
+  checks pass and any failures are fixed.
+

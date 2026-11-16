@@ -28,12 +28,16 @@ else:
     from validate import MAX_BYTES, CatalogValidationError, load_validated_catalog
 
 MANIFEST_PATH = "specification/api/public-api.json"
-# Keep manifest reads bounded while allowing the current 48 MiB inventory and one measured growth increment.
-MAX_MANIFEST_BYTES = 64 * 1024 * 1024
+# Keep manifest reads bounded while allowing the approved tag inventory and
+# planned fluent API declaration growth.
+MAX_MANIFEST_BYTES = 72 * 1024 * 1024
 CAPABILITY_ID = "named_protocol_values"
 C_ONLY_MASK_CAPABILITY_ID = "named_protocol_mask_single_bit_lookup"
 SPEC_ID = "KMIPKIT-0047"
 REQUIREMENT_IDS = tuple(f"{SPEC_ID}-FR-{index:03}" for index in range(1, 11))
+TAG_SPEC_ID = "KMIPKIT-0093"
+TAG_REQUIREMENT_IDS = (f"{TAG_SPEC_ID}-FR-001", f"{TAG_SPEC_ID}-FR-002")
+TAG_CAPABILITY_ID = "fluent_named_tag_values"
 LANGUAGE_PACKAGES = {
     "rust": "rust-kmipkit",
     "c": "c-kmipkit",
@@ -43,6 +47,12 @@ LANGUAGE_PACKAGES = {
 APPROVAL_SOURCE = {
     "kind": "feature-specification",
     "path": "specs/047-named-protocol-values/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved",
+}
+TAG_APPROVAL_SOURCE = {
+    "kind": "feature-specification",
+    "path": "specs/093-fluent-complete-api/spec.md",
     "status": "Approved",
     "evidence": "**Status**: Approved",
 }
@@ -110,6 +120,8 @@ def _declaration(
     capability_id: str = CAPABILITY_ID,
     parity_scope: str = "four-language",
     package_id: str | None = None,
+    spec_id: str = SPEC_ID,
+    approval_source: dict[str, str] = APPROVAL_SOURCE,
 ) -> dict[str, Any]:
     kind = declaration_kind or (
         "macro"
@@ -123,7 +135,7 @@ def _declaration(
         else "function"
     )
     record: dict[str, Any] = {
-        "declarationId": f"kmipkit-0047-{language}-{export_name}",
+        "declarationId": f"kmipkit-{spec_id.rsplit('-', 1)[-1].lower()}-{language}-{export_name}",
         "packageId": package_id or LANGUAGE_PACKAGES[language],
         "kind": kind,
         "exportName": export_name,
@@ -131,7 +143,7 @@ def _declaration(
         "requirementIds": list(requirement_ids),
         "declarationState": "declared",
         "parityScope": parity_scope,
-        "approvalSource": APPROVAL_SOURCE,
+        "approvalSource": approval_source,
         "languageMappings": {
             key: {
                 "packageId": (
@@ -278,9 +290,12 @@ def build_named_value_records(
 
     seen_version_modules: set[str] = set()
     for group in (versioned.groups if versioned is not None else ()):
+        if group.name == "Tag":
+            continue
+        version_namespace = "bitmask" if group.kind == "bitmask" else "enumeration"
         group_path = (
             "kmipkit::protocol::named_values_generated::values::versions::"
-            f"{group.version}::enumeration::{group.identifier}"
+            f"{group.version}::{version_namespace}::{group.identifier}"
         )
         namespace_names = {
             "rust": group_path,
@@ -291,7 +306,7 @@ def build_named_value_records(
         for module_path in (
             "kmipkit::protocol::named_values_generated::values::versions",
             f"kmipkit::protocol::named_values_generated::values::versions::{group.version}",
-            f"kmipkit::protocol::named_values_generated::values::versions::{group.version}::enumeration",
+            f"kmipkit::protocol::named_values_generated::values::versions::{group.version}::{version_namespace}",
             group_path,
         ):
             if module_path in seen_version_modules:
@@ -340,6 +355,97 @@ def build_named_value_records(
                 language_names=names,
             )
 
+    tag_group = next(
+        (group for group in values.enumerations if group.name == "Tag"), None
+    )
+    if values.tag_values and tag_group is None:
+        raise ValueError("assigned tags have no catalogued Tag enumeration")
+    if tag_group is not None:
+        for value in values.tag_values:
+            names = _language_names("enumeration", tag_group, value.identifier)
+            for language, export_name in names.items():
+                _append_declaration(
+                    declarations,
+                    language,
+                    export_name,
+                    TAG_REQUIREMENT_IDS,
+                    c_value=value.value if language == "c" else None,
+                    declaration_kind="constant" if language == "rust" else None,
+                    language_names=names,
+                    capability_id=TAG_CAPABILITY_ID,
+                    spec_id=TAG_SPEC_ID,
+                    approval_source=TAG_APPROVAL_SOURCE,
+                )
+
+    v3_tag_groups = [
+        group
+        for group in (versioned.groups if versioned is not None else ())
+        if group.version == "v3_0" and group.name == "Tag"
+    ]
+    if len(v3_tag_groups) > 1:
+        raise ValueError("versioned tag catalog has duplicate KMIP 3.0 Tag groups")
+    for group in v3_tag_groups:
+        group_path = (
+            "kmipkit::protocol::named_values_generated::values::versions::"
+            f"{group.version}::enumeration::{group.identifier}"
+        )
+        namespace_names = {
+            "rust": group_path,
+            "c": "kmipkit_named_values_namespace_t",
+            "java": "org.kmipkit.protocol.KmipValues",
+            "python": "kmipkit.protocol_values",
+        }
+        _append_declaration(
+            declarations,
+            "rust",
+            group_path,
+            TAG_REQUIREMENT_IDS,
+            declaration_kind="module",
+            language_names=namespace_names,
+            capability_id=TAG_CAPABILITY_ID,
+            spec_id=TAG_SPEC_ID,
+            approval_source=TAG_APPROVAL_SOURCE,
+        )
+        prefix = f"{group.version.upper()}_{group.identifier.upper()}"
+        for value in group.values:
+            names = {
+                "rust": f"{group_path}::{value.identifier}",
+                "c": f"KMIPKIT_{prefix}_{value.identifier}",
+                "java": f"org.kmipkit.protocol.KmipValues.{prefix}_{value.identifier}",
+                "python": f"kmipkit.protocol_values.{prefix}_{value.identifier}",
+            }
+            for language, export_name in names.items():
+                _append_declaration(
+                    declarations,
+                    language,
+                    export_name,
+                    TAG_REQUIREMENT_IDS,
+                    c_value=value.value if language == "c" else None,
+                    declaration_kind="constant" if language == "rust" else None,
+                    language_names=names,
+                    capability_id=TAG_CAPABILITY_ID,
+                    spec_id=TAG_SPEC_ID,
+                    approval_source=TAG_APPROVAL_SOURCE,
+                )
+        names = {
+            "rust": f"{group_path}::name",
+            "c": f"KMIPKIT_{prefix}_name",
+            "java": f"org.kmipkit.protocol.KmipValues.{group.version}TagName",
+            "python": f"kmipkit.protocol_values.{group.version}_tag_name",
+        }
+        for language, export_name in names.items():
+            _append_declaration(
+                declarations,
+                language,
+                export_name,
+                TAG_REQUIREMENT_IDS,
+                is_c_helper=language == "c",
+                language_names=names,
+                capability_id=TAG_CAPABILITY_ID,
+                spec_id=TAG_SPEC_ID,
+                approval_source=TAG_APPROVAL_SOURCE,
+            )
+
     mappings = {
         language: sorted(
             {
@@ -359,10 +465,11 @@ def _upsert_capability(
     capabilities: list[dict[str, Any]], capability: dict[str, Any]
 ) -> list[dict[str, Any]]:
     capability_id = capability["capabilityId"]
+    owner_spec_id = capability.get("ownerSpecId", SPEC_ID)
     existing = [
         row for row in capabilities if row.get("capabilityId") == capability_id
     ]
-    if existing and existing[0].get("ownerSpecId") != SPEC_ID:
+    if existing and existing[0].get("ownerSpecId") != owner_spec_id:
         raise ValueError(
             f"{capability_id} differs from its deterministic approved mapping"
         )
@@ -378,6 +485,7 @@ def reconcile(manifest: dict[str, Any], declarations: list[dict[str, Any]], mapp
     updated = dict(manifest)
     requirements = set(updated["requirementIds"])
     requirements.update(REQUIREMENT_IDS)
+    requirements.update(TAG_REQUIREMENT_IDS)
     updated["requirementIds"] = sorted(requirements)
     existing_capabilities = list(updated["capabilities"])
     c_only_declarations = [
@@ -396,6 +504,32 @@ def reconcile(manifest: dict[str, Any], declarations: list[dict[str, Any]], mapp
             "mappings": mappings,
         }
     ]
+    tag_declarations = [
+        declaration
+        for declaration in declarations
+        if declaration.get("capabilityId") == TAG_CAPABILITY_ID
+    ]
+    if tag_declarations:
+        capability_records.append(
+            {
+                "capabilityId": TAG_CAPABILITY_ID,
+                "requirementIds": list(TAG_REQUIREMENT_IDS),
+                "capabilityState": "declared",
+                "parityScope": "four-language",
+                "ownerSpecId": TAG_SPEC_ID,
+                "approvalEvidence": TAG_APPROVAL_SOURCE,
+                "mappings": {
+                    language: sorted(
+                        {
+                            declaration["languageMappings"][language]["name"]
+                            for declaration in tag_declarations
+                            if language in declaration["languageMappings"]
+                        }
+                    )
+                    for language in LANGUAGE_PACKAGES
+                },
+            }
+        )
     if c_only_declarations:
         capability_records.append(
             {
@@ -420,12 +554,14 @@ def reconcile(manifest: dict[str, Any], declarations: list[dict[str, Any]], mapp
     updated["capabilities"] = existing_capabilities
 
     generated_ids = {row["declarationId"] for row in declarations}
+    generated_capabilities = {CAPABILITY_ID, C_ONLY_MASK_CAPABILITY_ID, TAG_CAPABILITY_ID}
     existing_declarations = [
         row
         for row in updated["publicDeclarations"]
         if not (
-            row.get("capabilityId") in {CAPABILITY_ID, C_ONLY_MASK_CAPABILITY_ID}
-            and row.get("approvalSource", {}).get("path") == APPROVAL_SOURCE["path"]
+            row.get("capabilityId") in generated_capabilities
+            and row.get("approvalSource", {}).get("path")
+            in {APPROVAL_SOURCE["path"], TAG_APPROVAL_SOURCE["path"]}
             and row.get("declarationId") not in generated_ids
         )
     ]

@@ -360,7 +360,7 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             self.assertEqual(preexisting_outputs, [])
 
     def test_manifest_input_limit_reserves_bounded_room_for_the_full_inventory(self) -> None:
-        self.assertEqual(generate.MAX_MANIFEST_BYTES, 56 * 1024 * 1024)
+        self.assertEqual(generate.MAX_MANIFEST_BYTES, 72 * 1024 * 1024)
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         serialized = json.dumps(manifest, ensure_ascii=False, indent=2).encode("utf-8")
         self.assertLessEqual(len(serialized), generate.MAX_MANIFEST_BYTES)

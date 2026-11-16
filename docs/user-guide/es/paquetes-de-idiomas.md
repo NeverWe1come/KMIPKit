@@ -163,6 +163,27 @@ disponibles; las funciones de consulta muestran los nombres conocidos sin
 modificar el valor bruto del llamador. Un valor con nombre no afirma que el
 servidor lo admita ni que un algoritmo sea apropiado.
 
+Los tags KMIP asignados usan los mismos espacios de nombres generados. Los
+tags de KMIP 2.1 están disponibles en `Tag`; las incorporaciones de KMIP 3.0
+usan un espacio de nombres de versión explícito:
+
+```rust
+use kmipkit::protocol::named_values_generated::values::{
+    enumeration::tag,
+    versions::v3_0::enumeration::tag as v3_tag,
+};
+
+assert_eq!(tag::name(tag::OBJECT_GROUPS), Some("Object Groups"));
+let certificate_link = v3_tag::CERTIFICATE_LINK;
+```
+
+C usa `KMIPKIT_ENUMERATION_TAG_OBJECT_GROUPS` y
+`KMIPKIT_V3_0_TAG_CERTIFICATE_LINK`. Java usa
+`KmipValues.Tag.OBJECT_GROUPS` y `KmipValues.V3_0_TAG_CERTIFICATE_LINK`;
+Python usa los mismos nombres en `protocol_values.Tag` y
+`protocol_values.V3_0_TAG_CERTIFICATE_LINK`. Solo se generan asignaciones
+exactas de los catálogos de versión revisados.
+
 ## Alcance actual de capacidades en el manifiesto
 
 Las etiquetas de estado de esta tabla se copian del manifiesto actual.
