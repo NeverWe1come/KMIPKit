@@ -453,6 +453,60 @@ cleanup:
     return status;
 }
 
+int kmipkit_public_add_attribute_builder_probe(void) {
+    static const uint8_t identifier[] = "key-42";
+    static const uint8_t description[] = "managed by Add Attribute";
+    kmipkit_codec_limits_t *limits = NULL;
+    kmipkit_ttlv_value_t *value = NULL;
+    kmipkit_add_attribute_builder_t *builder = NULL;
+    kmipkit_add_attribute_request_t *request = NULL;
+    kmipkit_ttlv_structure_t *payload = NULL;
+    kmipkit_client_batch_item_t *item = NULL;
+    kmipkit_client_batch_response_t *response = NULL;
+    uint32_t operation = UINT32_C(0);
+    int32_t status;
+
+    if (kmipkit_codec_limits_defaults(&limits) != INT32_C(0) ||
+        kmipkit_ttlv_value_text_string(
+            limits, description, (uint64_t)(sizeof(description) - 1), &value) != INT32_C(0) ||
+        kmipkit_add_attribute_builder_create(&builder) != INT32_C(0) || builder == NULL) {
+        status = 1;
+        goto cleanup;
+    }
+    if (kmipkit_add_attribute_builder_set_unique_identifier(
+            builder, identifier, (uint64_t)(sizeof(identifier) - 1)) != INT32_C(0) ||
+        kmipkit_add_attribute_builder_add_catalogued_attribute(
+            builder, KMIPKIT_STANDARD_ATTRIBUTE_DESCRIPTION, value) != INT32_C(0) ||
+        kmipkit_add_attribute_builder_validate(builder) != INT32_C(0) ||
+        kmipkit_add_attribute_builder_build_request(builder, &request) != INT32_C(0) ||
+        request == NULL ||
+        kmipkit_add_attribute_request_to_ttlv_payload(request, &payload) != INT32_C(0) ||
+        payload == NULL ||
+        kmipkit_add_attribute_builder_build_batch_item(builder, &item) != INT32_C(0) ||
+        item == NULL ||
+        kmipkit_client_batch_item_operation(item, &operation) != INT32_C(0) ||
+        operation != KMIPKIT_ENUMERATION_OPERATION_ADD_ATTRIBUTE) {
+        status = 2;
+        goto cleanup;
+    }
+    if (kmipkit_add_attribute_builder_execute_v1(
+            builder, NULL, NULL, &response) != KMIPKIT_ERROR_INVALID_INPUT || response != NULL) {
+        status = 3;
+        goto cleanup;
+    }
+    status = 0;
+
+cleanup:
+    kmipkit_client_batch_response_release(response);
+    kmipkit_client_batch_item_release(item);
+    kmipkit_ttlv_structure_release(payload);
+    kmipkit_add_attribute_request_release(request);
+    kmipkit_add_attribute_builder_release(builder);
+    kmipkit_ttlv_value_release(value);
+    kmipkit_codec_limits_release(limits);
+    return status;
+}
+
 int kmipkit_public_async_batch_items_probe(void) {
     static const uint8_t correlation[] = "async-request-id";
     kmipkit_cancel_request_t *cancel_request = NULL;
