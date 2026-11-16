@@ -13,7 +13,7 @@ later, and the platform's native symbol reader (`nm` on Unix):
 
 ```text
 python -B -m unittest tools.api_manifest.tests.test_binding_exports -v
-python -B tools/api_manifest/audit_binding_exports.py --repo-root . --report specs/043-public-api-bindings/reports/binding-export-report-2026-11-16-fluent-add-attribute.json --check
+python -B tools/api_manifest/audit_binding_exports.py --repo-root . --report specs/043-public-api-bindings/reports/binding-export-report-2026-11-16-fluent-locate-revoke.json --check
 ```
 
 The runner builds `kmipkit-ffi` with `cargo build --locked --offline` into a new
@@ -197,7 +197,7 @@ after KMIPKIT-0122. Earlier dated reports remain historical snapshots.
 
 ## Fluent Add Attribute, KMIP 3.0, and asynchronous binding delivery snapshot (2026-11-16)
 
-The current report is
+This snapshot was superseded by the later Locate and Revoke audit below. Its report was
 `specs/043-public-api-bindings/reports/binding-export-report-2026-11-16-fluent-add-attribute.json`.
 It includes the KMIPKIT-0122 versioned catalog base, KMIPKIT-0124 KMIP 3.0 and
 asynchronous batch declarations, and KMIPKIT-0093 fluent Add Attribute
@@ -209,3 +209,16 @@ overloads for both Add Attribute and Set Attribute.
 | C | yes | 2,184 | 2,124 | 2,124 | 60 | 0 | 0 | 0 | 0 | yes |
 | Java | yes | 3,242 | 2,531 | 2,531 | 711 | 0 | 0 | 0 | 0 | yes |
 | Python | yes | 3,760 | 2,751 | 2,751 | 1,009 | 0 | 0 | 0 | 0 | yes |
+
+## Fluent Locate and Revoke bindings snapshot (2026-11-16)
+
+The current report is
+`specs/043-public-api-bindings/reports/binding-export-report-2026-11-16-fluent-locate-revoke.json`.
+It reconciles the Locate and Revoke fluent bindings across C, Java, and Python,
+including the exact Java overload signatures and checked exceptions.
+
+| Package | Scanner complete | Observed | Manifest declarations | Exact matches | Exact exclusions | Missing | Stale | Kind mismatches | Issues | `matchesManifest` |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| C | yes | 2,288 | 2,228 | 2,228 | 60 | 0 | 0 | 0 | 0 | yes |
+| Java | yes | 3,351 | 2,640 | 2,640 | 711 | 0 | 0 | 0 | 0 | yes |
+| Python | yes | 3,913 | 2,904 | 2,904 | 1,009 | 0 | 0 | 0 | 0 | yes |

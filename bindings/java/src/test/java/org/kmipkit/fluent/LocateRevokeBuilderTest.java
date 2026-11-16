@@ -6,8 +6,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.kmipkit.InvalidInputException;
+import org.kmipkit.ClientOperationException;
 import org.kmipkit.client.KmipClient;
 import org.kmipkit.extensions.AttributeSet;
 import org.kmipkit.extensions.ClientBatchItem;
@@ -102,6 +108,58 @@ final class LocateRevokeBuilderTest {
                 assertEquals(8, locateItem.operation());
                 assertEquals(19, revokeItem.operation());
             }
+        }
+    }
+
+    @Test
+    void executionOverloadsReachTheClientAndPropagateLocalTlsFailure() throws Exception {
+        byte[] serverCertificate = fixture("server-cert.pem");
+        byte[] clientCertificate = fixture("client-cert.pem");
+        byte[] clientKey = fixture("client-key.pem");
+        try (ServerSocket listener = new ServerSocket(
+                0, 1, InetAddress.getByName("127.0.0.1"))) {
+            listener.setSoTimeout(15_000);
+            FutureTask<Void> peer = new FutureTask<>(() -> {
+                try (Socket ignored = listener.accept()) {
+                    // Closing the TCP peer makes TLS fail before a response can be trusted.
+                }
+                return null;
+            });
+            Thread peerThread = new Thread(peer, "kmipkit-java-locate-revoke-failure-peer");
+            peerThread.setDaemon(true);
+            peerThread.start();
+
+            try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                            List.of(), ExtensionRegistryLimits.defaults());
+                    ClientConfiguration configuration = ClientConfiguration.create(registry);
+                    TransportConfiguration transport = TransportConfiguration.builder()
+                            .rawTls("127.0.0.1", listener.getLocalPort())
+                            .clientIdentityPem(
+                                    new byte[][] {clientCertificate}, clientKey)
+                            .trustCertificatesPem(new byte[][] {serverCertificate})
+                            .build();
+                    KmipClient client = KmipClient.create(configuration, transport);
+                    TtlvStructure empty = TtlvStructure.create();
+                    AttributeSet attributes = AttributeSet.tryNew(empty)) {
+                CodecLimits limits = CodecLimits.defaults();
+                RequestOptions options = RequestOptions.defaults();
+                try (LocateBuilder locate = client.request().locate(attributes)
+                        .asynchronousIndicator(3)) {
+                    assertThrows(ClientOperationException.class, () -> locate.execute(limits));
+                    assertThrows(ClientOperationException.class, () -> locate.execute(limits, options));
+                    assertThrows(
+                            ClientOperationException.class,
+                            () -> locate.executeWithOptions(limits, options));
+                }
+                RevokeBuilder revoke = client.request().revoke(2, "controlled TLS failure")
+                        .asynchronousIndicator(4);
+                assertThrows(ClientOperationException.class, () -> revoke.execute(limits));
+                assertThrows(ClientOperationException.class, () -> revoke.execute(limits, options));
+                assertThrows(
+                        ClientOperationException.class,
+                        () -> revoke.executeWithOptions(limits, options));
+            }
+            peer.get(15, TimeUnit.SECONDS);
         }
     }
 

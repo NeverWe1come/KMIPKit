@@ -42,8 +42,8 @@ T102_BLOCKED_CANDIDATES = 0
 # requirement links and the KMIPKIT-0093 C key-pair, Rust Set Attribute, Add
 # Attribute, Delete Attribute, Locate, Revoke, and four-language binding
 # declarations. Delete Attribute adds 77 ready declarations and two blocked
-# Rust candidates; Locate and Revoke add 57 declarations.
-T102_PUBLIC_DECLARATIONS = 18_126
+# Rust candidates; Locate and Revoke add 57 declarations and 26 root re-exports.
+T102_PUBLIC_DECLARATIONS = 18_152
 T102_KMIP30_DRAFT_ROUTE_DECLARATIONS = 36
 T102_APPROVED_EXCLUSIONS = 23_431
 # The November 1 report is immutable history; current totals are pinned by the

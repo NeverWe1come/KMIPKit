@@ -742,6 +742,10 @@
 
 - Commits `c4577c319`, `caa751a84`, and `6d01681d0` add failing consumer,
   option-boundary, and API-manifest checks before the implementation.
+- Commit `8c1af13c4` pins the observed Java signatures for Locate and the two
+  `execute` overloads. The test failed against the manifest: Locate carried
+  Revoke signatures, and both execute overloads omitted
+  `throws ClientOperationException`.
 - The tests require typed Locate filters and Revoke reason/message/date,
   request options, pre-send rejection of unsupported versions and invalid
   dates, four-language declarations, and explicit public C ownership.
@@ -782,6 +786,26 @@
 - The parity inventory records that Java Locate/Revoke facades construct typed
   batch items directly instead of dispatching each C builder function through
   one-to-one JNI methods; the focused 28-test suite passes.
+- Corrected the Java signatures in the source manifest and declared the 26
+  existing Rust root re-exports for Locate/Revoke with their four-language
+  mappings. The C Locate handle now maps to `kmipkit_locate_builder_t`.
+- Refreshed the T102 non-target declaration fingerprints and public declaration
+  total for those manifest changes, then regenerated the 12 public API outputs.
+  The binding audit now reconciles C 2,228/2,228, Java 2,640/2,640, and Python
+  2,904/2,904 with no missing, stale, kind-mismatched, or signature-mismatched
+  declarations.
+- Added C consumer checks for invalid options, identifier alignment, message
+  spans, and Revoke validation; Java checks every Locate/Revoke execute overload
+  against a local peer that closes before TLS authentication; Python checks
+  default and options execution plus invalid builder state and optional inputs.
+  The 64-test C ABI coverage harness passes, `mvn --batch-mode --file
+  bindings/java/pom.xml clean verify` passes 726 tests (one skipped), and the
+  Python coverage suite passes 1,371 tests at 96.42%.
+- Recomputed selected-scope coverage with the prior CI's Rust platform and JNI
+  reports plus refreshed local C, Java, and Python reports. Changed production
+  coverage is 423/458 (92.36%), above the 90% gate; workspace coverage is
+  95.31%. New exact-head hosted CI remains required before this PR can leave
+  WIP.
 - Full workspace formatting, lint, coverage, and exact-head CI remain part of
   LRB004 and must pass before this PR can leave WIP.
 

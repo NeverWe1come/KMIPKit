@@ -178,7 +178,8 @@ KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS = {
 # blocked inventory candidates and 666 exact trait exclusions. Eight duplicate
 # KMIPKIT-0047 v3.0 paths are deduplicated. Delete Attribute adds 77 ready
 # declarations, two blocked Rust candidates, and 18 exact trait exclusions.
-DECLARATIONS_SHA256 = "53d17fcb0f42ac7836bb54bee6167bc57dd76f5f51dba011600c44b44885bdd2"
+# Locate and Revoke add their 26 exact Rust root re-exports and Java signatures.
+DECLARATIONS_SHA256 = "040ced10cfd68a68d2e4f08e4951bbf7188b998d151b78e1d88728186ceb0ed8"
 OPERATIONS_SHA256 = "11a39efdadf8e9c7791a8479e3d8b3ae05f82b8dee94e8d21ed2ff2192a147ac"
 
 

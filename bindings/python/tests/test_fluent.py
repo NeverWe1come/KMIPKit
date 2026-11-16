@@ -74,6 +74,9 @@ def test_locate_and_revoke_execute_forward_options_and_async_indicator(monkeypat
         def create(cls):
             return cls()
 
+        def __init__(self):
+            self.asynchronous_indicator = None
+
         def __enter__(self):
             return self
 
@@ -104,20 +107,24 @@ def test_locate_and_revoke_execute_forward_options_and_async_indicator(monkeypat
     with ttlv.codec_limits_defaults() as limits, ttlv.ttlv_structure_create() as empty_items:
         with attribute_operations.AttributeSet.try_new(empty_items) as attributes:
             with fluent.Request(fake_client).locate(attributes) as locate:
+                assert locate.execute(limits) == "default-result"
                 assert locate.with_options(configured_options) is locate
                 assert locate.asynchronous_indicator(3) is locate
                 assert locate.execute(limits) == "options-result"
                 assert locate.execute_with_options(limits, override_options) == "options-result"
 
         revoke = fluent.Request(fake_client).revoke(2, "rekey after compromise")
+        assert revoke.execute(limits) == "default-result"
         assert revoke.with_options(configured_options) is revoke
         assert revoke.asynchronous_indicator(4) is revoke
         assert revoke.execute(limits) == "options-result"
         assert revoke.execute_with_options(limits, override_options) == "options-result"
 
     assert [call[:3] for call in calls] == [
+        ("default", 8, None),
         ("options", 8, 3),
         ("options", 8, 3),
+        ("default", 19, None),
         ("options", 19, 4),
         ("options", 19, 4),
     ]
@@ -128,6 +135,34 @@ def test_locate_and_revoke_execute_forward_options_and_async_indicator(monkeypat
                 fluent.Request(fake_client).locate(attributes).with_options(object())
     with pytest.raises(errors.InvalidInputError):
         fluent.Request(fake_client).revoke(2).with_options(object())
+
+
+def test_locate_and_revoke_validate_builder_state_and_optional_inputs():
+    with pytest.raises(errors.InvalidInputError):
+        fluent.Request(None).locate(object())
+
+    with ttlv.ttlv_structure_create() as empty_items:
+        with attribute_operations.AttributeSet.try_new(empty_items) as attributes:
+            locate = fluent.Request(None).locate(attributes)
+            locate.validate()
+            locate.close()
+            with pytest.raises(errors.InvalidInputError):
+                locate.build()
+            with pytest.raises(errors.InvalidInputError):
+                locate.__enter__()
+
+    revoke = fluent.Request(None).revoke(2)
+    assert revoke.unique_identifier(None) is revoke
+    assert revoke.compromise_occurrence_date(None) is revoke
+    assert revoke.revocation_message("reviewed revocation") is revoke
+    revoke.validate()
+
+    with pytest.raises(errors.InvalidInputError):
+        revoke.unique_identifier(object())
+    with pytest.raises(errors.InvalidInputError):
+        revoke.revocation_message(object())
+    with pytest.raises(errors.InvalidInputError):
+        revoke.asynchronous_indicator(1 << 32)
 
 
 def test_delete_attribute_builder_builds_an_independent_typed_request():

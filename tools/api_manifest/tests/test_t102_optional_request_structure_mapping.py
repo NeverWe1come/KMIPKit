@@ -201,7 +201,8 @@ PKCS11_REQUEST_SETTER_IDS = {
 # asynchronous constructors onto four existing operation rows. Delete
 # Attribute adds 77 ready declarations and two blocked Rust candidates. Its
 # operation row also gains the approved four-language fixture evidence.
-OTHER_DECLARATIONS_SHA256 = "b947062289c8f25fd495311a789c3ac4ece7f17c15075c6d06a23b61c8812173"
+# Locate and Revoke add their 26 exact Rust root re-exports and Java signatures.
+OTHER_DECLARATIONS_SHA256 = "b937e9c4f291b2df8aec5f656bc6dd81c85c877d11fc10e88813f1b702899526"
 OTHER_OPERATIONS_SHA256 = "2ea94003f2877d0e6d84271d67d9add6f48a5c5b7a837c48b22fe40f41022d39"
 def canonical_sha256(value: object) -> str:
     encoded = json.dumps(
