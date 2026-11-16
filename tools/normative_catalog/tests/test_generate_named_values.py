@@ -196,10 +196,33 @@ class NamedValueGeneratorTests(unittest.TestCase):
             lookup["languageMappings"]["java"]["name"],
         )
 
+    def test_versioned_bitmask_public_values_use_the_bitmask_namespace(self) -> None:
+        catalog = generate_named_values.load_validated_catalog(
+            generate_named_values.safe_read_bytes(
+                ROOT,
+                generate_named_values.CATALOG_PATH,
+                max_bytes=generate_named_values.MAX_BYTES,
+            ),
+            ROOT,
+            require_complete=True,
+        )
+        declarations, _ = reconcile_named_value_manifest.build_named_value_records(
+            catalog, generate_named_values.load_versioned_values(ROOT)
+        )
+        expected = (
+            "kmipkit::protocol::named_values_generated::values::versions::"
+            "v3_0::bitmask::object_class_mask::USER"
+        )
+
+        self.assertTrue(
+            expected in {row["exportName"] for row in declarations},
+            "versioned bitmask declarations must use the generated bitmask namespace",
+        )
+
     def test_public_manifest_bound_covers_current_input_with_bounded_headroom(self) -> None:
         manifest_size = (ROOT / reconcile_named_value_manifest.MANIFEST_PATH).stat().st_size
 
-        self.assertEqual(64 * 1024 * 1024, reconcile_named_value_manifest.MAX_MANIFEST_BYTES)
+        self.assertEqual(72 * 1024 * 1024, reconcile_named_value_manifest.MAX_MANIFEST_BYTES)
         self.assertLessEqual(manifest_size, reconcile_named_value_manifest.MAX_MANIFEST_BYTES)
 
     def test_bitmask_java_helper_names_use_camel_case(self) -> None:

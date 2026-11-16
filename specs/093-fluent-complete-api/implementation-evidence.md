@@ -437,4 +437,10 @@
   fails at `6,672 != 6,666`, and the manifest validator independently rejects
   the duplicate public export path. This test is included in
   `test_tag_enumeration_is_generated_for_all_supported_versions_and_languages`.
+- The fresh Rust export audit also found eight previously unmapped KMIP 3.0
+  `Object Class Mask` paths: the generated values are under `versions::v3_0::bitmask`,
+  while the manifest generator recorded `versions::v3_0::enumeration`. The new
+  regression test `test_versioned_bitmask_public_values_use_the_bitmask_namespace`
+  fails on the expected `::bitmask::object_class_mask::USER` path. The audit
+  reported these eight declarations as not observed at the manifest path.
 
