@@ -14,6 +14,49 @@ ROOT = Path(__file__).resolve().parents[3]
 
 
 class NamedValueGeneratorTests(unittest.TestCase):
+    def test_assigned_tag_exports_are_reconciled_into_the_public_api_manifest(self) -> None:
+        catalog = generate_named_values.load_validated_catalog(
+            generate_named_values.safe_read_bytes(
+                ROOT,
+                generate_named_values.CATALOG_PATH,
+                max_bytes=generate_named_values.MAX_BYTES,
+            ),
+            ROOT,
+            require_complete=True,
+        )
+        versioned = generate_named_values.load_versioned_values(ROOT)
+        declarations, _ = reconcile_named_value_manifest.build_named_value_records(
+            catalog, versioned
+        )
+        expected = {
+            row["declarationId"]: row
+            for row in declarations
+            if row.get("capabilityId") == reconcile_named_value_manifest.TAG_CAPABILITY_ID
+            and row.get("packageId") == "c-kmipkit"
+        }
+        manifest = json.loads(
+            (ROOT / "specification/api/public-api.json").read_text(encoding="utf-8")
+        )
+        actual = {
+            row["declarationId"]: row
+            for row in manifest["publicDeclarations"]
+            if row.get("capabilityId") == reconcile_named_value_manifest.TAG_CAPABILITY_ID
+            and row.get("packageId") == "c-kmipkit"
+        }
+
+        missing = sorted(expected.keys() - actual.keys())
+        if missing:
+            self.fail(
+                f"Public API manifest is missing {len(missing)} generated C tag declarations: "
+                f"{missing[:5]}"
+            )
+        stale = sorted(actual.keys() - expected.keys())
+        if stale:
+            self.fail(f"Public API manifest has {len(stale)} stale C tag declarations: {stale[:5]}")
+        for declaration_id, declaration in expected.items():
+            with self.subTest(declaration=declaration_id):
+                self.assertEqual(declaration, actual[declaration_id])
+
     def test_tag_enumeration_is_generated_for_all_supported_versions_and_languages(self) -> None:
         catalog = generate_named_values.load_validated_catalog(
             generate_named_values.safe_read_bytes(
