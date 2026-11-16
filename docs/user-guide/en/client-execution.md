@@ -167,11 +167,14 @@ The direct calls return the existing status code and owned typed response
 handles. Get receives the identifier returned by Create; the bindings do not
 invent one locally.
 
-Each language has a loopback TLS 1.3/mTLS journey that sends Create, Get, and
-Destroy to a controlled peer, reads the identifier from Create, and supplies it
-to the following requests. This proves the client path and typed exchange
-against the fixture, not interoperability with an external KMS. Pending remains
-an explicit outcome; the client does not poll or retry automatically.
+Each language has a loopback TLS 1.3/mTLS journey that sends Create, Get,
+Encrypt, Decrypt, and Destroy to a controlled peer. It reads the identifier from
+Create, selects AES-GCM parameters, nonce, and additional authenticated data,
+and passes the fixture's typed Encrypt response fields to Decrypt. The fixture
+validates decoded requests and returns predetermined encoded responses; it does
+not perform AES. This proves the client path and typed exchange, not
+cryptographic execution or interoperability with an external KMS. Pending
+remains an explicit outcome; the client does not poll or retry automatically.
 
 ## Fluent Create Key Pair in Rust
 

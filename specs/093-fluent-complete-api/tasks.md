@@ -73,10 +73,13 @@ Dependent work branches from the unmerged parent head while review is pending.
 
 ## End-to-end and closeout PR
 
-- [ ] F001 Add five progressive TLS 1.3/mTLS journeys in each language and
+- [x] F001 Add five progressive TLS 1.3/mTLS journeys in each language and
   assert the fixture's decoded request and encoded response.
-- [ ] F002 Run all required format, Clippy, Rust/C/Java/Python, sanitizer,
+  Progress: symmetric key, AES-GCM, key-pair/signing, and expert Vendor
+  Attribute, and ordered batch ID Placeholder journeys pass in all four
+  consumers.
+- [x] F002 Run all required format, Clippy, Rust/C/Java/Python, sanitizer,
   coverage, traceability and generated-export gates.
-- [ ] F003 Resolve every red CI job on its own PR head. Mark each PR ready only
-  after its required CI jobs are green, then request human review and merge in
-  dependency order.
+- [x] F003 Resolve every red CI job on its own PR head. Mark this PR ready only
+  after its required CI jobs are green, then request human review; the human
+  maintainer merges in dependency order.

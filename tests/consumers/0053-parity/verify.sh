@@ -12,7 +12,8 @@ responder_pid_file="$temporary_root/responder.pid"
 uv run --locked --python 3.12 --project "$consumer_root/python" python \
     "$consumer_root/local_ping_responder.py" \
     --ready-file "$ready_file" --pid-file "$responder_pid_file" \
-    --fixture-dir "$fixture_root" --connections 8 &
+    --fixture-dir "$fixture_root" --connections 57 \
+    --expected-operations "0x3b;1;10;0x1f;0x20;20;2;0x21;20;20;1;10;20;1+10;0x3b;1;10;0x1f;0x20;20;2;0x21;20;20;1;10;20;1+10;1;10;0x1f;0x20;20;20;20;2;0x21;20;20;1;10;20;1+10;0x3b;1;10;0x1f;0x20;20;2;0x21;20;20;1;10;20;1+10" &
 responder_pid=$!
 cleanup() {
     if [ -f "$responder_pid_file" ]; then
@@ -62,4 +63,5 @@ mvn -q -f "$consumer_root/java/pom.xml" \
     "-Dkmipkit.nativeLibrary=$jni_library" compile exec:java
 
 uv run --locked --python 3.12 --project "$consumer_root/python" \
+    --reinstall-package kmipkit \
     python "$consumer_root/python/main.py"
