@@ -3222,8 +3222,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                 case_id.startswith('test-norm-payload-client-export-response-') and
                                 variant == 'missing_rejected' and result_case.get('status') == 'failed' and
                                 'category=2 cause=2 delivery=3' in result_case.get('diagnostic', '') and
-                                result_case.get('consumer_library_correctness') == 'not_checked' and
-                                result_case.get('consumer_server_compatibility') == 'unknown')
+                                result_case.get('library_correctness') == 'not_checked' and
+                                result_case.get('server_compatibility') == 'unknown')
                             case_passed = bool(result_case and (
                                 result_case.get('status') == 'passed' or expected_rejection_observed or
                                 response_rejection_observed))
