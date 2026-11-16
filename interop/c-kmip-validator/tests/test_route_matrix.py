@@ -144,7 +144,7 @@ class RouteMatrixTests(unittest.TestCase):
     def test_optional_request_header_fields_use_typed_request_fixtures(self):
         """OASIS KMIP 2.0/2.1 §8.2 defines optional Request Header branches (0092-FR-003)."""
         from artifact_support import INSTALL, ROOT
-        from route_ttlv import TreeAbi, encode, normalized
+        from route_ttlv import TreeAbi, encode
 
         catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
         tags = self.runner.catalog_tag_values(catalog)
@@ -201,7 +201,7 @@ class RouteMatrixTests(unittest.TestCase):
     def test_export_key_wrap_type_and_any_object_have_generic_ttlv_fixtures(self):
         """OASIS KMIP 2.0 §6.1.18 Tables 202–203; KMIP 2.1 Tables 217–218."""
         from artifact_support import INSTALL, ROOT
-        from route_ttlv import TreeAbi, encode
+        from route_ttlv import TreeAbi, encode, normalized
 
         catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
         tags = self.runner.catalog_tag_values(catalog)
