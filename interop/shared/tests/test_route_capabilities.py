@@ -5,6 +5,7 @@ import copy
 import importlib.util
 import json
 from pathlib import Path
+import re
 import unittest
 import sys
 import subprocess
@@ -418,6 +419,21 @@ class RouteCapabilitiesTests(unittest.TestCase):
             self.assertEqual([operation_id], route['operation_ids'], key)
             self.assertEqual(6, len(route['combinations']), key)
             self.assertEqual('construct', route['actions'][0], key)
+
+    def test_all_language_artifact_pins_match_shared_route_manifest(self):
+        expected = self.data['library_commit']
+        pins = {
+            'java': json.loads((ROOT / 'interop/java-kmip-validator/library-pin.json').read_text())['commit'],
+            'python': json.loads((ROOT / 'interop/python-kmip-validator/library-pin.json').read_text())['commit'],
+            'rust': re.search(
+                r'^PIN = "([0-9a-f]{40})"$',
+                (ROOT / 'interop/rust-kmip-validator/tools/install_artifact.py').read_text(),
+                re.MULTILINE,
+            ).group(1),
+        }
+        for language, pin in pins.items():
+            with self.subTest(language=language):
+                self.assertEqual(expected, pin)
 
     def test_rust_batch_item_route_inventory_matches_public_methods(self):
         inventory = self.module.construction_inventory(
