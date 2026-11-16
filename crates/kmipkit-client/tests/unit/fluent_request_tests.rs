@@ -9,8 +9,8 @@ use crate::asynchronous_execution_test_support::client_for;
 use crate::execute::{ClientBatchOutcome, ClientOperation, ClientRequest, encode_message_for_test};
 use crate::execute_test_support::{test_item, test_structure};
 use crate::fluent::{
-    CreateSymmetricKeyBuilder, CryptographicUsageMask, FluentAttributePosition, FluentBuildError,
-    SetAttributeBuilder,
+    AddAttributeBuilder, CreateSymmetricKeyBuilder, CryptographicUsageMask,
+    FluentAttributePosition, FluentBuildError, SetAttributeBuilder,
 };
 
 #[test]
@@ -41,7 +41,10 @@ fn add_attribute_builder_constructs_the_existing_typed_request() {
 #[test]
 fn add_attribute_builder_rejects_a_missing_required_new_attribute() {
     let mut client = failed_request_client();
-    assert!(client.request().add_attribute().validate().is_err());
+    assert_eq!(
+        client.request().add_attribute().validate(),
+        Err(FluentBuildError::MissingAddAttributeAttribute)
+    );
 }
 
 fn item(raw_tag: u32, value: Value) -> Item {
@@ -380,7 +383,10 @@ fn add_attribute_builder_preserves_explicit_and_vendor_attribute_items() {
     let extension = client
         .request()
         .add_attribute()
-        .attribute_item(item(0x0042_00FC, Value::text_string("extension".to_owned())))
+        .attribute_item(item(
+            0x0042_00FC,
+            Value::text_string("extension".to_owned()),
+        ))
         .build_request()
         .expect("an explicit allocated TTLV Item is preserved");
     assert_eq!(extension.new_attribute().item().tag().raw(), 0x0042_00FC);
@@ -393,6 +399,37 @@ fn add_attribute_builder_preserves_explicit_and_vendor_attribute_items() {
         .build_request()
         .expect("the vendor helper constructs a KMIP Vendor Attribute");
     assert_eq!(vendor.new_attribute().item().tag().raw(), 0x0042_0008);
+
+    let invalid_vendor = client
+        .request()
+        .add_attribute()
+        .vendor_attribute("Vendor Name", "region", &value)
+        .validate();
+    assert_eq!(invalid_vendor, Err(FluentBuildError::InvalidRequest));
+}
+
+#[test]
+fn detached_add_attribute_builder_builds_without_a_client_and_refuses_execution() {
+    let request = AddAttributeBuilder::detached()
+        .attribute(
+            Attribute::<typed::Description>::new("managed by fluent".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        )
+        .build()
+        .expect("a detached builder builds the existing typed request");
+    assert_eq!(request.unique_identifier(), None);
+
+    let error = AddAttributeBuilder::detached()
+        .attribute(
+            Attribute::<typed::Description>::new("managed by fluent".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        )
+        .execute(&CodecLimits::defaults())
+        .expect_err("a detached builder cannot execute without an explicit client");
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
 }
 
 #[test]
@@ -457,19 +494,21 @@ fn add_attribute_builder_rejects_wrong_type_and_duplicate_new_attributes_before_
     assert_eq!(fake.borrow().exchange_count(), 0);
 
     let mut client = failed_request_client();
-    assert!(client
-        .request()
-        .add_attribute()
-        .attribute(
-            Attribute::<typed::Description>::new("first".to_owned())
-                .expect("Description uses a catalogued Text String value"),
-        )
-        .attribute(
-            Attribute::<typed::Description>::new("second".to_owned())
-                .expect("Description uses a catalogued Text String value"),
-        )
-        .validate()
-        .is_err());
+    assert!(
+        client
+            .request()
+            .add_attribute()
+            .attribute(
+                Attribute::<typed::Description>::new("first".to_owned())
+                    .expect("Description uses a catalogued Text String value"),
+            )
+            .attribute(
+                Attribute::<typed::Description>::new("second".to_owned())
+                    .expect("Description uses a catalogued Text String value"),
+            )
+            .validate()
+            .is_err()
+    );
 }
 
 #[test]
@@ -523,6 +562,10 @@ fn fluent_build_errors_have_stable_user_facing_messages() {
         (
             FluentBuildError::MissingSetAttributeAttribute,
             "Set Attribute requires one New Attribute",
+        ),
+        (
+            FluentBuildError::MissingAddAttributeAttribute,
+            "Add Attribute requires one New Attribute",
         ),
         (
             FluentBuildError::MessageExtensionTagNotObjectAttribute,

@@ -6,15 +6,15 @@ use std::ops::BitOr;
 
 use kmipkit_protocol::attribute::typed;
 use kmipkit_protocol::{
-    ActivateRequest, ArchiveRequest, Attribute, AttributeDefinition, AttributeReference,
-    AttributeSet, AttributeSetError, CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest,
-    CryptographicAlgorithm, CryptographicParameters, DecryptRequest, DestroyRequest,
-    EncryptRequest, GetAttributeListRequest, GetAttributesRequest, GetRequest, HashRequest,
-    LocateRequest, MacRequest, MacVerifyRequest, ManagedObject, NewAttribute, ObjectGroupMember,
-    ObjectType, OpaqueObjectContext, OperationData, RecertifyRequest, RecoverRequest,
-    RegisterRequest, RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest,
-    SecretBytes, SetAttributeRequest, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
-    StorageStatusMask, UniqueIdentifier, ValidateKmipRequest,
+    ActivateRequest, AddAttributeRequest, ArchiveRequest, Attribute, AttributeDefinition,
+    AttributeReference, AttributeSet, AttributeSetError, CreateKeyPairRequest, CreateRequest,
+    CreateSplitKeyRequest, CryptographicAlgorithm, CryptographicParameters, DecryptRequest,
+    DestroyRequest, EncryptRequest, GetAttributeListRequest, GetAttributesRequest, GetRequest,
+    HashRequest, LocateRequest, MacRequest, MacVerifyRequest, ManagedObject, NewAttribute,
+    ObjectGroupMember, ObjectType, OpaqueObjectContext, OperationData, RecertifyRequest,
+    RecoverRequest, RegisterRequest, RekeyKeyPairRequest, RekeyRequest, RevocationReason,
+    RevokeRequest, SecretBytes, SetAttributeRequest, SignRequest, SignatureVerifyRequest,
+    SplitKeyMethod, StorageStatusMask, UniqueIdentifier, ValidateKmipRequest,
 };
 use kmipkit_transport::{RequestDeliveryState, RequestOptions};
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
@@ -108,6 +108,8 @@ pub enum FluentBuildError {
     InvalidRegisterObject,
     /// Set Attribute is missing its required New Attribute.
     MissingSetAttributeAttribute,
+    /// Add Attribute is missing its required New Attribute.
+    MissingAddAttributeAttribute,
     /// A catalogued attribute has an invalid TTLV type or structure.
     InvalidAttributeValue,
     /// Legacy compatibility error; explicit extension Items are retained as
@@ -151,6 +153,7 @@ impl fmt::Display for FluentBuildError {
             Self::MissingRegisterObject => "Register requires an object",
             Self::InvalidRegisterObject => "Register object or context is invalid",
             Self::MissingSetAttributeAttribute => "Set Attribute requires one New Attribute",
+            Self::MissingAddAttributeAttribute => "Add Attribute requires one New Attribute",
             Self::InvalidAttributeValue => "fluent Object Attribute value is invalid",
             Self::MessageExtensionTagNotObjectAttribute => {
                 "KMIP message extension tags are not Object Attributes"
@@ -231,6 +234,12 @@ impl<'a> RequestBuilder<'a> {
     #[must_use]
     pub fn set_attribute(self) -> SetAttributeBuilder<'a> {
         SetAttributeBuilder::new(Some(self.client))
+    }
+
+    /// Begins constructing an Add Attribute request with no Unique Identifier.
+    #[must_use]
+    pub fn add_attribute(self) -> AddAttributeBuilder<'a> {
+        AddAttributeBuilder::new(Some(self.client))
     }
 
     /// Begins a typed Get Attributes request with no Attribute References.
@@ -2880,6 +2889,182 @@ pub struct DestroyBuilder<'a> {
     request: DestroyRequest,
     options: Option<RequestOptions>,
     asynchronous_indicator: Option<u32>,
+}
+
+/// A fluent builder for the existing typed Add Attribute request.
+///
+/// The required New Attribute is one direct typed Item. Catalogued attributes
+/// can be supplied with [`Self::attribute`], unknown attributes require an
+/// explicit [`Self::attribute_item`], and Vendor Attribute uses its dedicated
+/// structure constructor.
+pub struct AddAttributeBuilder<'a> {
+    client: Option<&'a mut Client>,
+    unique_identifier: Option<String>,
+    new_attribute: Option<Item>,
+    attribute_error: Option<FluentBuildError>,
+    options: Option<RequestOptions>,
+    asynchronous_indicator: Option<u32>,
+}
+
+impl<'a> AddAttributeBuilder<'a> {
+    fn new(client: Option<&'a mut Client>) -> Self {
+        Self {
+            client,
+            unique_identifier: None,
+            new_attribute: None,
+            attribute_error: None,
+            options: None,
+            asynchronous_indicator: None,
+        }
+    }
+
+    /// Creates a detached builder for request construction and batch use.
+    #[must_use]
+    pub fn detached() -> Self {
+        Self::new(None)
+    }
+
+    /// Sets the optional exact text Unique Identifier.
+    #[must_use]
+    pub fn unique_identifier(mut self, value: &str) -> Self {
+        self.unique_identifier = Some(value.to_owned());
+        self
+    }
+
+    /// Sets one catalogued New Attribute with its typed value.
+    #[must_use]
+    pub fn attribute<D: AttributeDefinition>(self, attribute: Attribute<D>) -> Self {
+        self.attribute_item(attribute.into_item())
+    }
+
+    /// Sets one explicitly typed TTLV Item as the New Attribute.
+    #[must_use]
+    pub fn attribute_item(mut self, item: Item) -> Self {
+        if self.new_attribute.is_some() || self.attribute_error.is_some() {
+            self.attribute_error
+                .get_or_insert(FluentBuildError::InvalidAttributeValue);
+            return self;
+        }
+        if let Err(error) = validate_object_attribute_tag(&item) {
+            self.attribute_error = Some(error);
+            return self;
+        }
+        self.new_attribute = Some(item);
+        self
+    }
+
+    /// Builds a valid KMIP Vendor Attribute structure as the New Attribute.
+    #[must_use]
+    pub fn vendor_attribute(
+        mut self,
+        vendor_identification: &str,
+        attribute_name: &str,
+        attribute_value: &Item,
+    ) -> Self {
+        match make_vendor_attribute(vendor_identification, attribute_name, attribute_value) {
+            Ok(item) => self.attribute_item(item),
+            Err(error) => {
+                self.attribute_error.get_or_insert(error);
+                self
+            }
+        }
+    }
+
+    /// Sets exchange-local transport options.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.options = Some(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.asynchronous_indicator = Some(value);
+        self
+    }
+
+    fn construct_request(&self) -> Result<AddAttributeRequest, FluentBuildError> {
+        if let Some(error) = self.attribute_error {
+            return Err(error);
+        }
+        let item = self
+            .new_attribute
+            .as_ref()
+            .ok_or(FluentBuildError::MissingAddAttributeAttribute)?
+            .try_clone()
+            .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
+        let request =
+            AddAttributeRequest::new(self.unique_identifier.clone(), NewAttribute::new(item));
+        validate_fluent_request(&request)?;
+        Ok(request)
+    }
+
+    /// Validates the complete typed request without transport or consumption.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when the required New Attribute is absent or the
+    /// existing typed request validation rejects the supplied attribute.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        self.construct_request().map(|_| ())
+    }
+
+    /// Builds the existing typed Add Attribute request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when local attribute or typed request validation fails.
+    pub fn build_request(&self) -> Result<AddAttributeRequest, FluentBuildError> {
+        self.construct_request()
+    }
+
+    /// Builds the existing typed Add Attribute request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when local attribute or typed request validation fails.
+    pub fn build(self) -> Result<AddAttributeRequest, FluentBuildError> {
+        self.construct_request()
+    }
+
+    /// Converts the request to the existing typed batch item.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when local attribute or typed request validation fails.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        Ok(ClientBatchItem::new(ClientRequest::AddAttribute(
+            self.construct_request()?,
+        )))
+    }
+
+    /// Executes one typed Add Attribute exchange through the existing client.
+    ///
+    /// # Errors
+    ///
+    /// Returns a local `NotSent` validation error, or the existing protocol or
+    /// transport error with its delivery state.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let request = self
+            .construct_request()
+            .map_err(fluent_client_validation_error)?;
+        let Some(client) = self.client else {
+            return Err(fluent_client_validation_error(
+                FluentBuildError::MissingClientForExecution,
+            ));
+        };
+        execute_fluent_request(
+            client,
+            ClientRequest::AddAttribute(request),
+            self.asynchronous_indicator,
+            self.options,
+            limits,
+        )
+    }
 }
 
 /// A fluent builder for the existing typed Set Attribute request.
