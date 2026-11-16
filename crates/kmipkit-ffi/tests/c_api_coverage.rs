@@ -264,7 +264,6 @@ fn public_c_fluent_builder_covers_expert_attributes_options_and_validation() {
 
 #[test]
 fn public_c_fluent_client_executes_lifecycle_helpers_over_mutual_tls() {
-fn public_c_fluent_client_completes_create_get_destroy_over_mutual_tls() {
     const LIFECYCLE_ID: &[u8] = b"fluent-key-42";
     let pki = EphemeralPki::generate().expect("ephemeral test PKI is generated");
     let identity = pki.client_identity();
@@ -298,7 +297,6 @@ fn public_c_fluent_client_completes_create_get_destroy_over_mutual_tls() {
             (12, 20),
         ];
         for (stage, expected_operation) in expected {
-        for expected_operation in [1_u32, 10, 20] {
             let (stream, _) = loop {
                 match listener.accept() {
                     Ok(accepted) => break accepted,
@@ -307,7 +305,6 @@ fn public_c_fluent_client_completes_create_get_destroy_over_mutual_tls() {
                             return Err(io::Error::new(
                                 io::ErrorKind::TimedOut,
                                 "the C fluent client did not send all thirteen fixture requests",
-                                "the C fluent lifecycle did not send all three requests",
                             ));
                         }
                         thread::sleep(Duration::from_millis(5));
@@ -324,8 +321,6 @@ fn public_c_fluent_client_completes_create_get_destroy_over_mutual_tls() {
             let request = read_ttlv_frame(&mut tls)?;
             assert_fluent_lifecycle_request(&request, expected_operation, LIFECYCLE_ID, stage);
             tls.write_all(&fluent_lifecycle_response(stage))?;
-            assert_fluent_lifecycle_request(&request, expected_operation, LIFECYCLE_ID);
-            tls.write_all(&fluent_lifecycle_response(expected_operation))?;
             tls.flush()?;
             let _ = tls.get_ref().shutdown(Shutdown::Both);
         }
@@ -363,7 +358,6 @@ fn assert_fluent_lifecycle_request(
     stage: usize,
 ) {
     let is_locate = matches!(stage, 6 | 7);
-fn assert_fluent_lifecycle_request(encoded: &[u8], operation: u32, identifier: &[u8]) {
     let request = decode_test_request(encoded).expect("the request is valid TTLV");
     request.with_value(|value| {
         let ValueView::Structure(message) = value else {
@@ -386,16 +380,11 @@ fn assert_fluent_lifecycle_request(encoded: &[u8], operation: u32, identifier: &
                 }),
                 "expected KMIP operation {operation}, locate payload: {is_locate}"
             );
-            assert!(children.iter().any(|item| {
-                item.tag().raw() == 0x0042_005C
-                    && item.with_value(|value| matches!(value, ValueView::Enumeration(actual) if *actual == operation))
-            }));
             if operation != 1 {
                 let payload = children
                     .iter()
                     .find(|item| item.tag().raw() == 0x0042_0079)
                     .expect("non-Create operations carry a Request Payload");
-                    .expect("Get and Destroy carry a Request Payload");
                 payload.with_value(|value| {
                     let ValueView::Structure(payload) = value else {
                         panic!("the Request Payload is a structure");
@@ -491,17 +480,6 @@ fn fluent_lifecycle_get_response_payload() -> Vec<u8> {
 }
 
 fn fluent_lifecycle_response(stage: usize) -> Vec<u8> {
-                    assert!(payload.children().iter().any(|item| {
-                        item.tag().raw() == 0x0042_0094
-                            && item.with_value(|value| matches!(value, ValueView::TextString(actual) if actual.as_bytes() == identifier))
-                    }));
-                });
-            }
-        });
-    });
-}
-
-fn fluent_lifecycle_response(operation: u32) -> Vec<u8> {
     let protocol_version = structure(
         0x0042_0069,
         [integer(0x0042_006A, 2), integer(0x0042_006B, 1)],
@@ -572,38 +550,6 @@ fn fluent_lifecycle_response(operation: u32) -> Vec<u8> {
             ),
         ),
         _ => unreachable!("the lifecycle fixture stage is fixed by the test"),
-    let payload = match operation {
-        1 => structure(
-            0x0042_007C,
-            [
-                enumeration(0x0042_0057, 2),
-                ttlv_item(0x0042_0094, 0x07, b"fluent-key-42"),
-            ],
-        ),
-        10 => {
-            let key_block = structure(
-                0x0042_0040,
-                [
-                    enumeration(0x0042_0042, 1),
-                    structure(0x0042_0045, [ttlv_item(0x0042_0043, 0x08, &[0xA5; 32])]),
-                    enumeration(0x0042_0028, 3),
-                    integer(0x0042_002A, 256),
-                ],
-            );
-            structure(
-                0x0042_007C,
-                [
-                    enumeration(0x0042_0057, 2),
-                    ttlv_item(0x0042_0094, 0x07, b"fluent-key-42"),
-                    structure(0x0042_008F, [key_block]),
-                ],
-            )
-        }
-        20 => structure(
-            0x0042_007C,
-            [ttlv_item(0x0042_0094, 0x07, b"fluent-key-42")],
-        ),
-        _ => unreachable!("the lifecycle fixture only handles Create, Get, and Destroy"),
     };
     let item = structure(
         0x0042_000F,

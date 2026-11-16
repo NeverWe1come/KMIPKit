@@ -626,6 +626,13 @@ int kmipkit_public_kmip30_credential_kem_probe(void) {
     if (status != KMIPKIT_ERROR_INVALID_INPUT || item != NULL) {
         return 6;
     }
+    status = kmipkit_client_batch_item_create_credential_from_fields(
+        KMIPKIT_V3_0_CREDENTIAL_TYPE_PASSWORD,
+        KMIPKIT_V3_0_OBJECT_TYPE_DEVICE_CREDENTIAL,
+        attributes, object, &item);
+    if (status != KMIPKIT_ERROR_INVALID_INPUT || item != NULL) {
+        return 7;
+    }
 
     identifier.struct_size = (uint32_t)sizeof(identifier);
     identifier.abi_version = 1;
@@ -1246,8 +1253,6 @@ int kmipkit_public_fluent_lifecycle_probe(
 
     REQUIRE_LIFECYCLE_C_API(kmipkit_client_destroy_by_id_with_options_v1(
         client, &direct_identifier, limits, &request_options, &destroy_response), 17);
-    REQUIRE_LIFECYCLE_C_API(kmipkit_client_destroy_by_id_with_options_v1(
-        client, &identifier, limits, &request_options, &destroy_response), 17);
     REQUIRE_LIFECYCLE_C_API(kmipkit_client_batch_response_item_at(
         destroy_response, UINT64_C(0), &destroy_item), 18);
     REQUIRE_LIFECYCLE_C_API(kmipkit_client_batch_item_response_destroy(
