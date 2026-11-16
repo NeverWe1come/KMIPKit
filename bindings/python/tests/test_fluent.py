@@ -964,3 +964,67 @@ def test_set_attribute_builder_executes_default_and_override_options(
                 ).with_options(client.RequestOptions()).asynchronous_indicator(2)
                 assert builder.execute(limits) == "options result"
     assert calls == [("default", None), ("options", 2)]
+
+
+def test_request_namespace_exposes_typed_add_attribute_builder() -> None:
+    with ttlv.codec_limits_defaults() as limits:
+        with ttlv.ttlv_value_text_string(b"managed by the fluent API", limits) as description:
+            with fluent.Request(None).add_attribute() as builder:
+                assert isinstance(builder, fluent.AddAttributeBuilder)
+                with pytest.raises(errors.KmipKitError):
+                    builder.validate()
+                assert builder.unique_identifier("key-42") is builder
+                assert builder.catalogued_attribute(
+                    StandardAttribute.DESCRIPTION, description
+                ) is builder
+                assert builder.with_options(client.RequestOptions()) is builder
+                assert builder.asynchronous_indicator(3) is builder
+                builder.validate()
+                item = builder.build()
+                try:
+                    assert item.operation == protocol_values.Operation.ADD_ATTRIBUTE
+                finally:
+                    item.close()
+
+                request = builder.build_request()
+                try:
+                    assert isinstance(request, attribute_operations.AddAttributeRequest)
+                    with request.to_ttlv_payload() as payload:
+                        assert payload is not None
+                    with request.to_batch_item() as request_item:
+                        assert request_item.operation == protocol_values.Operation.ADD_ATTRIBUTE
+                finally:
+                    request.close()
+
+                with pytest.raises(errors.KmipKitError):
+                    builder.unique_identifier(None)  # type: ignore[arg-type]
+                with pytest.raises(errors.KmipKitError):
+                    builder.catalogued_attribute(None, description)  # type: ignore[arg-type]
+                with pytest.raises(errors.KmipKitError):
+                    builder.catalogued_attribute(StandardAttribute.DESCRIPTION, object())  # type: ignore[arg-type]
+                with pytest.raises(errors.KmipKitError):
+                    builder.attribute_item(object())  # type: ignore[arg-type]
+                with pytest.raises(errors.KmipKitError):
+                    builder.vendor_attribute("vendor", "region", object())  # type: ignore[arg-type]
+                with pytest.raises(errors.KmipKitError):
+                    builder.with_options(object())  # type: ignore[arg-type]
+                with pytest.raises(errors.KmipKitError):
+                    builder.asynchronous_indicator(-1)
+                with pytest.raises(errors.KmipKitError):
+                    builder.execute(limits)
+
+        with ttlv.raw_tag_from_raw(0x4200FC) as raw_tag:
+            with ttlv.raw_tag_try_checked(raw_tag) as tag:
+                with ttlv.ttlv_value_text_string(b"expert attribute", limits) as value:
+                    with ttlv.ttlv_item_create(tag, value, limits) as item:
+                        with fluent.Request(None).add_attribute() as builder:
+                            builder.unique_identifier("key-42").attribute_item(item)
+                            builder.validate()
+                        with fluent.Request(None).add_attribute() as builder:
+                            builder.unique_identifier("key-42").vendor_attribute(
+                                "Vendor_Name.1", "region", item
+                            )
+                            builder.validate()
+    with pytest.raises(RuntimeError, match="closed"):
+        builder.validate()
+
