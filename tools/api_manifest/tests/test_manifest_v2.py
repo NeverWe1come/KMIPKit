@@ -1192,6 +1192,12 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         with self.assertRaisesRegex(ManifestError, "duplicate public export path"):
             _validate_v2_readiness(manifest, ROOT)
 
+    def test_checked_in_manifest_has_unique_public_export_paths(self) -> None:
+        generate._validate_unique_public_export_identities(
+            self.checked_in_manifest["publicDeclarations"],
+            self.checked_in_manifest["approvedExclusions"],
+        )
+
     def test_readiness_rejects_duplicate_approved_exclusion_paths(self) -> None:
         manifest = json.loads(json.dumps(self.checked_in_manifest))
         exclusion = json.loads(json.dumps(manifest["approvedExclusions"][0]))
@@ -7087,7 +7093,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         )
         header_versioned_macros = set(
             re.findall(
-                r"^#define (KMIPKIT_V(?:2_1|3_0)_(?:OPERATION|OBJECT_TYPE|OBJECT_CLASS)_\w+)",
+                r"^#define (KMIPKIT_V(?:2_0|2_1|3_0)_[A-Z0-9_]+)",
                 header,
                 re.MULTILINE,
             )
