@@ -1424,9 +1424,9 @@
     "test-norm-credential-credential-hashed-password",
     "test-norm-credential-credential-username-and-password"
   ],
-  "executed_cells": 22935,
+  "executed_cells": 22953,
   "language": "java",
-  "library_commit": "489fafc79ef89db2524eafa7a6c6482f5cf75d97",
+  "library_commit": "12496d646d11d4069b58bcc88fc76cc619211ec6",
   "pending_case_ids": [
     "test-async-cancel-result-canceled",
     "test-async-cancel-result-completed",
@@ -3031,19 +3031,19 @@
     },
     {
       "case_id": "test-batch-continue-after-failure",
-      "pending_cells": 184
+      "pending_cells": 196
     },
     {
       "case_id": "test-batch-count-matches-items",
-      "pending_cells": 168
+      "pending_cells": 180
     },
     {
       "case_id": "test-batch-count-mismatch-rejected",
-      "pending_cells": 148
+      "pending_cells": 154
     },
     {
       "case_id": "test-batch-count-zero-rejected",
-      "pending_cells": 66
+      "pending_cells": 72
     },
     {
       "case_id": "test-batch-create-activate-destroy",
@@ -3051,27 +3051,27 @@
     },
     {
       "case_id": "test-batch-order-false-correlates-response-items",
-      "pending_cells": 190
+      "pending_cells": 202
     },
     {
       "case_id": "test-batch-order-omitted-defaults-true",
-      "pending_cells": 130
+      "pending_cells": 142
     },
     {
       "case_id": "test-batch-order-required-placeholder-resolution",
-      "pending_cells": 136
+      "pending_cells": 148
     },
     {
       "case_id": "test-batch-placeholder-chain-resolves",
-      "pending_cells": 168
+      "pending_cells": 180
     },
     {
       "case_id": "test-batch-placeholder-forward-reference-rejected",
-      "pending_cells": 104
+      "pending_cells": 110
     },
     {
       "case_id": "test-batch-placeholder-without-producer-rejected",
-      "pending_cells": 60
+      "pending_cells": 66
     },
     {
       "case_id": "test-batch-register-encrypt-decrypt-destroy",
@@ -3079,23 +3079,23 @@
     },
     {
       "case_id": "test-batch-single-item-default-continuation",
-      "pending_cells": 94
+      "pending_cells": 106
     },
     {
       "case_id": "test-batch-single-item-options-omitted",
-      "pending_cells": 66
+      "pending_cells": 72
     },
     {
       "case_id": "test-batch-stop-on-first-failure",
-      "pending_cells": 146
+      "pending_cells": 158
     },
     {
       "case_id": "test-batch-undo-rolls-back-prior-success",
-      "pending_cells": 146
+      "pending_cells": 158
     },
     {
       "case_id": "test-batch-unique-item-id-response-correlation",
-      "pending_cells": 178
+      "pending_cells": 190
     },
     {
       "case_id": "test-crypto-decrypt-aes-256-cbc",
@@ -3263,7 +3263,7 @@
     },
     {
       "case_id": "test-norm-message-field-message-field-8-1-batch-item",
-      "pending_cells": 20
+      "pending_cells": 26
     },
     {
       "case_id": "test-norm-message-field-message-field-8-1-request-header",
@@ -3327,7 +3327,7 @@
     },
     {
       "case_id": "test-norm-message-field-message-field-8-3-batch-item",
-      "pending_cells": 20
+      "pending_cells": 26
     },
     {
       "case_id": "test-norm-message-field-message-field-8-3-message-extension",
@@ -7323,7 +7323,7 @@
     },
     {
       "case_id": "test-norm-tag-tag-42000f",
-      "pending_cells": 22
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-tag-tag-420011",
@@ -7826,10 +7826,10 @@
       "pending_cells": 15
     }
   ],
-  "pending_cells": 48528,
+  "pending_cells": 48696,
   "pending_reason": "No validated per-cell route execution evidence is recorded for this cell.",
   "pending_reason_code": "route_evidence_not_emitted",
-  "planned_cells": 71463,
+  "planned_cells": 71649,
   "route_action_axis_summary": [
     {
       "action": "decode",
@@ -31384,6 +31384,26 @@
     {
       "action": "decode",
       "encoding": "TTLV",
+      "executed_cells": 3,
+      "pending_cells": 28,
+      "protocol_version": "2.0",
+      "required_cells": 31,
+      "route_id": "java.typed-protocol.function.client_batch_item_response_json",
+      "transport": null
+    },
+    {
+      "action": "decode",
+      "encoding": "TTLV",
+      "executed_cells": 3,
+      "pending_cells": 28,
+      "protocol_version": "2.1",
+      "required_cells": 31,
+      "route_id": "java.typed-protocol.function.client_batch_item_response_json",
+      "transport": null
+    },
+    {
+      "action": "decode",
+      "encoding": "TTLV",
       "executed_cells": 0,
       "pending_cells": 16,
       "protocol_version": "2.0",
@@ -32175,6 +32195,26 @@
       "action": "decode",
       "encoding": "TTLV",
       "executed_cells": 3,
+      "pending_cells": 28,
+      "protocol_version": "2.0",
+      "required_cells": 31,
+      "route_id": "java.typed-protocol.function.client_batch_item_response_ttlv_hex",
+      "transport": null
+    },
+    {
+      "action": "decode",
+      "encoding": "TTLV",
+      "executed_cells": 3,
+      "pending_cells": 28,
+      "protocol_version": "2.1",
+      "required_cells": 31,
+      "route_id": "java.typed-protocol.function.client_batch_item_response_ttlv_hex",
+      "transport": null
+    },
+    {
+      "action": "decode",
+      "encoding": "TTLV",
+      "executed_cells": 3,
       "pending_cells": 36,
       "protocol_version": "2.0",
       "required_cells": 39,
@@ -32209,6 +32249,26 @@
       "protocol_version": "2.1",
       "required_cells": 9,
       "route_id": "java.typed-protocol.function.client_batch_item_response_validate",
+      "transport": null
+    },
+    {
+      "action": "decode",
+      "encoding": "TTLV",
+      "executed_cells": 3,
+      "pending_cells": 28,
+      "protocol_version": "2.0",
+      "required_cells": 31,
+      "route_id": "java.typed-protocol.function.client_batch_item_response_xml",
+      "transport": null
+    },
+    {
+      "action": "decode",
+      "encoding": "TTLV",
+      "executed_cells": 3,
+      "pending_cells": 28,
+      "protocol_version": "2.1",
+      "required_cells": 31,
+      "route_id": "java.typed-protocol.function.client_batch_item_response_xml",
       "transport": null
     },
     {
@@ -34352,7 +34412,7 @@
       "transport": "raw_tls"
     }
   ],
-  "route_manifest_sha256": "3fe892f7b2804e8c1b03f9dc01c8cc71038829f7ed5aaf38d546fea90ddc980a",
+  "route_manifest_sha256": "411aad566ee5f53e36d8db10a6f5792c6411559871fc53a52a9425dba9911cc8",
   "route_summary": [
     {
       "executed_cells": 4593,
@@ -35105,6 +35165,12 @@
       "route_id": "java.typed-protocol.function.client_batch_item_response_join_split_key"
     },
     {
+      "executed_cells": 6,
+      "pending_cells": 56,
+      "required_cells": 62,
+      "route_id": "java.typed-protocol.function.client_batch_item_response_json"
+    },
+    {
       "executed_cells": 0,
       "pending_cells": 32,
       "required_cells": 32,
@@ -35352,6 +35418,12 @@
     },
     {
       "executed_cells": 6,
+      "pending_cells": 56,
+      "required_cells": 62,
+      "route_id": "java.typed-protocol.function.client_batch_item_response_ttlv_hex"
+    },
+    {
+      "executed_cells": 6,
       "pending_cells": 72,
       "required_cells": 78,
       "route_id": "java.typed-protocol.function.client_batch_item_response_unique_batch_item_id"
@@ -35361,6 +35433,12 @@
       "pending_cells": 18,
       "required_cells": 18,
       "route_id": "java.typed-protocol.function.client_batch_item_response_validate"
+    },
+    {
+      "executed_cells": 6,
+      "pending_cells": 56,
+      "required_cells": 62,
+      "route_id": "java.typed-protocol.function.client_batch_item_response_xml"
     },
     {
       "executed_cells": 4,
@@ -35808,7 +35886,7 @@
     }
   ],
   "schema_version": "1.0",
-  "selected_scope_cells": 22935,
+  "selected_scope_cells": 22953,
   "selected_scope_complete": true,
   "vendor_interoperability_claim": false
 }

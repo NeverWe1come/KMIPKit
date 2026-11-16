@@ -60,8 +60,11 @@ class TypedRequestFactoryTest {
         Set<String> publicFactories = Arrays.stream(ClientBatchItem.class.getMethods())
                 .filter(method -> method.getReturnType() == ClientBatchItem.class
                         && Modifier.isStatic(method.getModifiers())
-                        && !Set.of("createGroup", "obliterate", "createUser", "createCredential", "deactivate",
-                                "encapsulate", "decapsulate").contains(method.getName()))
+                        && !Set.of("createGroup", "createGroupFromAttributes", "obliterate", "obliterateFromIdentifier",
+                                "createUser", "createUserFromAttributes", "createCredential",
+                                "createCredentialFromFields", "deactivate", "deactivateFromFields", "encapsulate",
+                                "encapsulateFromFields", "decapsulate", "decapsulateFromFields")
+                                .contains(method.getName()))
                 .map(java.lang.reflect.Method::toGenericString)
                 .collect(java.util.stream.Collectors.toSet());
 

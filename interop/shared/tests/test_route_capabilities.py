@@ -11,7 +11,7 @@ import subprocess
 
 SHARED = Path(__file__).resolve().parents[1]
 ROOT = SHARED.parents[1]
-PINNED_RELEASE_COMMIT = '489fafc79ef89db2524eafa7a6c6482f5cf75d97'
+PINNED_RELEASE_COMMIT = '12496d646d11d4069b58bcc88fc76cc619211ec6'
 
 
 class RouteCapabilitiesTests(unittest.TestCase):

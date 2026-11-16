@@ -730,7 +730,8 @@ class ControlledTlsPeerTest {
                                     "KMIPKIT-ELEM-TAG-420051",
                                     "org.kmipkit.extensions.ClientBatchItemResult.extensionCount",
                                     null, null, "decode", protocolVersion, null, null, responseHash);
-                            assertBatchItemResponseRouteEvidence(events, result, protocolVersion, responseHash);
+                            assertBatchItemResponseRouteEvidence(
+                                    events, result, protocolVersion, responseHash, responseBytes);
                             appendRouteEvent(events, "test-norm-message-field-message-field-8-5-batch-count",
                                     "java.typed-protocol.function.client_batch_response_item_count",
                                     "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-BATCH-COUNT",
@@ -1136,6 +1137,7 @@ class ControlledTlsPeerTest {
         int batchItemExtensionCountEventCount = KMIP_2_0_AND_2_1.size() * 3;
         int batchItemGenericRouteEventCount = KMIP_2_0_AND_2_1.size() * 4;
         int batchItemAdditionalResponseRouteEventCount = KMIP_2_0_AND_2_1.size() * 12;
+        int batchItemRenderedResponseViewEventCount = KMIP_2_0_AND_2_1.size() * 3 * 3;
         int normativeMessageFieldGenericRouteEventCount = KMIP_2_0_AND_2_1.size() * 31;
         int normativeMessageFieldParserRouteEventCount = KMIP_2_0_AND_2_1.size() * 10;
         int normativeBatchItemAccessorRouteEventCount = KMIP_2_0_AND_2_1.size() * 10;
@@ -1184,7 +1186,8 @@ class ControlledTlsPeerTest {
         assertEquals(68 + enumerationEventCount + localEnumerationEventCount + bitmaskEventCount + 94
                         + batchItemAccessorEventCount
                         + batchItemExtensionCountEventCount + batchItemGenericRouteEventCount
-                        + batchItemAdditionalResponseRouteEventCount + credentialGenericRouteEventCount
+                        + batchItemAdditionalResponseRouteEventCount + batchItemRenderedResponseViewEventCount
+                        + credentialGenericRouteEventCount
                         + normativeMessageFieldGenericRouteEventCount + normativeMessageFieldParserRouteEventCount
                         + normativeBatchItemAccessorRouteEventCount + newAttributePayloadRouteEventCount
                         + credentialEnvelopeEventCount + objectGroupLocalRouteEventCount
@@ -1284,8 +1287,9 @@ class ControlledTlsPeerTest {
         } finally {
             listener.close();
         }
-        assertEquals("passed", outcome.status(), outcome.toString());
         byte[] request = peer.get(15, TimeUnit.SECONDS);
+        assertEquals("passed", outcome.status(), outcome + "; request KMIP minor version: "
+                + requestProtocolMinorVersion(request));
         assertTrue(contains(request, structure(0x420069,
                 item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(0)))),
                 "The installed Java client must preserve KMIP 2.0 in the request header: "
@@ -6277,7 +6281,37 @@ class ControlledTlsPeerTest {
     }
 
     private static void assertBatchItemResponseRouteEvidence(ArrayNode events,
-            ClientBatchItemResult result, String protocolVersion, String responseHash) throws Exception {
+            ClientBatchItemResult result, String protocolVersion, String responseHash,
+            byte[] responseBytes) throws Exception {
+        try (var ttlvHex = result.ttlvHex(CodecLimits.defaults());
+                var json = result.json(CodecLimits.defaults());
+                var xml = result.xml(CodecLimits.defaults())) {
+            byte[] expectedHex = HexFormat.of().withUpperCase()
+                    .formatHex(responseBytes).getBytes(StandardCharsets.US_ASCII);
+            assertArrayEquals(expectedHex, ttlvHex.withBytes(byte[]::clone));
+            json.withBytes(bytes -> {
+                String rendered = new String(bytes, StandardCharsets.UTF_8);
+                assertTrue(rendered.startsWith("{"));
+                assertTrue(rendered.contains("ResponseHeader") && rendered.contains("BatchItem"));
+                return null;
+            });
+            xml.withBytes(bytes -> {
+                String rendered = new String(bytes, StandardCharsets.UTF_8);
+                assertTrue(rendered.startsWith("<"));
+                assertTrue(rendered.contains("ResponseHeader") && rendered.contains("BatchItem"));
+                return null;
+            });
+        }
+        appendResponseViewRouteEvents(events,
+                "java.typed-protocol.function.client_batch_item_response_ttlv_hex",
+                "org.kmipkit.extensions.ClientBatchItemResult.ttlvHex", protocolVersion, responseHash);
+        appendResponseViewRouteEvents(events,
+                "java.typed-protocol.function.client_batch_item_response_json",
+                "org.kmipkit.extensions.ClientBatchItemResult.json", protocolVersion, responseHash);
+        appendResponseViewRouteEvents(events,
+                "java.typed-protocol.function.client_batch_item_response_xml",
+                "org.kmipkit.extensions.ClientBatchItemResult.xml", protocolVersion, responseHash);
+
         try (TtlvStructure raw = result.raw().orElseThrow(); var view = raw.view()) {
             assertEquals(4, view.itemCount());
         }
@@ -6363,6 +6397,14 @@ class ControlledTlsPeerTest {
                     field.targetId(), "org.kmipkit.message.ResponseMessage.fromTtlv", null, null,
                     "construct", protocolVersion, null, responseHash, null);
         }
+    }
+
+    private static void appendResponseViewRouteEvents(ArrayNode events, String routeId,
+            String publicApiSymbol, String protocolVersion, String responseHash) {
+        appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID, routeId,
+                RESPONSE_BATCH_ITEM_TARGET_ID, publicApiSymbol, null, null, "decode",
+                protocolVersion, null, null, responseHash);
+        appendBatchItemFieldRouteEvents(events, routeId, publicApiSymbol, protocolVersion, responseHash);
     }
 
     private static void appendBatchItemFieldRouteEvents(ArrayNode events, String routeId,

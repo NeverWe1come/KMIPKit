@@ -584,5 +584,3 @@ class ControlledTlsPeer:
             raise AssertionError("controlled TLS peer did not terminate")
         if not self.error.empty():
             raise self.error.get()
-
-

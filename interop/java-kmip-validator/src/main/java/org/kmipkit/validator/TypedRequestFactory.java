@@ -1,8 +1,12 @@
 package org.kmipkit.validator;
 
 import org.kmipkit.extensions.AttributeReference;
+import org.kmipkit.extensions.CancelRequest;
 import org.kmipkit.extensions.ClientBatchItem;
 import org.kmipkit.extensions.ClientBatchItemResult;
+import org.kmipkit.extensions.PollRequest;
+import org.kmipkit.extensions.ProcessRequest;
+import org.kmipkit.extensions.QueryAsyncRequestsRequest;
 import org.kmipkit.extensions.RegisterRequest;
 import org.kmipkit.extensions.RevocationReason;
 import org.kmipkit.extensions.RevokeRequest;
@@ -37,8 +41,9 @@ final class TypedRequestFactory {
     private static final byte[] LOG_MESSAGE =
             "KMIPKit interoperability diagnostic".getBytes(StandardCharsets.UTF_8);
     private static final java.util.Set<String> KMIP_3_DRAFT_FACTORIES = java.util.Set.of(
-            "createGroup", "obliterate", "createUser", "createCredential", "deactivate", "encapsulate",
-            "decapsulate");
+            "createGroup", "createGroupFromAttributes", "obliterate", "createUser", "createUserFromAttributes",
+            "createCredential", "createCredentialFromFields", "deactivate", "deactivateFromFields", "obliterateFromIdentifier",
+            "encapsulate", "encapsulateFromFields", "decapsulate", "decapsulateFromFields");
     private static final Map<String, String> FACTORY_METHODS = factoryMethods();
 
     private TypedRequestFactory() { }
@@ -123,6 +128,8 @@ final class TypedRequestFactory {
                     };
                 } else if ("log".equals(factory.getName())) {
                     arguments[index] = LOG_MESSAGE.clone();
+                } else if ("query".equals(factory.getName())) {
+                    arguments[index] = index == 0 ? new int[] {1} : null;
                 } else if ("validate".equals(factory.getName())) {
                     arguments[index] = switch (index) {
                         case 0, 3 -> List.of();
@@ -293,6 +300,19 @@ final class TypedRequestFactory {
             if (type == TtlvStructure.class) return own(TtlvStructure.create());
             if (type == TtlvItem.class) return item();
             if (type == TtlvValue.class) return own(TtlvValue.ByteString(new byte[] {1}, LIMITS));
+            if (type == CancelRequest.class) {
+                return own(CancelRequest.create("kmipkit-validator-correlation"
+                        .getBytes(StandardCharsets.US_ASCII)));
+            }
+            if (type == PollRequest.class) {
+                return own(PollRequest.create("kmipkit-validator-correlation"
+                        .getBytes(StandardCharsets.US_ASCII)));
+            }
+            if (type == ProcessRequest.class) {
+                return own(ProcessRequest.create("kmipkit-validator-correlation"
+                        .getBytes(StandardCharsets.US_ASCII)));
+            }
+            if (type == QueryAsyncRequestsRequest.class) return own(QueryAsyncRequestsRequest.create());
             if (type == UniqueIdentifier.class) return identifier();
             if (type == AttributeReference.class) return attributeReference();
             if (type == RegisterRequest.class) return registerRequest();

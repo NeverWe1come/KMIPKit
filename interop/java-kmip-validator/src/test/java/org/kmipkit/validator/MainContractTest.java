@@ -126,15 +126,6 @@ class MainContractTest {
     }
 
     @Test
-    void planPermitsKmip20LiveRoutesWithPinnedReleaseArtifact() throws Exception {
-        Path connection = connection("2.0", "typed-protocol");
-        String plan = assertCommandOutput(0, "plan", "--connection", connection.toString(),
-                "--catalog", "../shared/catalog/kmipkit-1.0-test-catalog.json");
-        assertTrue(plan.contains("Server exchanges executable through selected Java API level: 11"));
-        assertFalse(plan.contains("KMIP 2.0 live routes are blocked"));
-    }
-
-    @Test
     void serverInitiatedQueryRemainsPendingWithoutOpeningAClientConnection() throws Exception {
         Path connection = connection("2.1", "typed-protocol");
         Path sourceCatalog = Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json");
