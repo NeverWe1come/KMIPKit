@@ -34,3 +34,23 @@ The test class now loads public API metadata through one `_pinned_public_api`
 helper, keeping future route assertions on the same artifact boundary. After
 this refactor, the route-capability suite passed **63 tests**, and the workflow
 contract suite passed **95 tests**.
+
+
+## Shared artifact pin parity refresh (2026-11-16)
+
+The Java route matrix refresh uses `12496d646d11d4069b58bcc88fc76cc619211ec6`,
+the common manifest's `library_commit`, and the Java and Python installed-package
+pins. After this refresh, the Rust installed consumer still used its earlier
+`489fafc79ef89db2524eafa7a6c6482f5cf75d97` pin, so its route matrix rejected
+the common manifest with `route artifact commit mismatch`.
+
+A new shared test,
+`test_all_language_artifact_pins_match_shared_route_manifest`, failed on that
+Rust mismatch. The Rust installer, verifier, test-server build, compile-time
+model identity, and expected-source test now use the common `12496d...` commit.
+The test passes; installing and verifying the Rust package succeeds with
+artifact SHA-256
+`ce3146009589b7caa11590f89cea7ca775b09e9af7e3c6a2fe1ff704fa0c55b2`.
+`route_capabilities.py --check` accepts all 1,507 routes, and the Rust pin
+contract and formatting checks pass. Full controlled-peer CI remains the final
+verification for this refresh.
