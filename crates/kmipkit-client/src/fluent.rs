@@ -3108,31 +3108,57 @@ pub struct SetAttributeBuilder<'a> {
     state: AttributeMutationBuilderState<'a>,
 }
 
-trait HasAttributeMutationBuilderState<'client> {
+trait AttributeMutationBuilderMethods<'client>: Sized {
     fn state_mut(&mut self) -> &mut AttributeMutationBuilderState<'client>;
+
+    fn update_unique_identifier(mut self, value: &str) -> Self {
+        self.state_mut().set_unique_identifier(value);
+        self
+    }
+
+    fn update_catalogued_attribute<D: AttributeDefinition>(
+        mut self,
+        attribute: Attribute<D>,
+    ) -> Self {
+        self.state_mut().set_catalogued_attribute(attribute);
+        self
+    }
+
+    fn update_attribute_item(mut self, item: Item) -> Self {
+        self.state_mut().set_attribute_item(item);
+        self
+    }
+
+    fn update_vendor_attribute(
+        mut self,
+        vendor_identification: &str,
+        attribute_name: &str,
+        attribute_value: &Item,
+    ) -> Self {
+        self.state_mut().set_vendor_attribute(
+            vendor_identification,
+            attribute_name,
+            attribute_value,
+        );
+        self
+    }
+
+    fn update_options(mut self, options: RequestOptions) -> Self {
+        self.state_mut().set_options(options);
+        self
+    }
 }
 
-impl<'client> HasAttributeMutationBuilderState<'client> for AddAttributeBuilder<'client> {
+impl<'client> AttributeMutationBuilderMethods<'client> for AddAttributeBuilder<'client> {
     fn state_mut(&mut self) -> &mut AttributeMutationBuilderState<'client> {
         &mut self.state
     }
 }
 
-impl<'client> HasAttributeMutationBuilderState<'client> for SetAttributeBuilder<'client> {
+impl<'client> AttributeMutationBuilderMethods<'client> for SetAttributeBuilder<'client> {
     fn state_mut(&mut self) -> &mut AttributeMutationBuilderState<'client> {
         &mut self.state
     }
-}
-
-fn update_attribute_mutation_builder<'client, B>(
-    mut builder: B,
-    update: impl FnOnce(&mut AttributeMutationBuilderState<'client>),
-) -> B
-where
-    B: HasAttributeMutationBuilderState<'client>,
-{
-    update(builder.state_mut());
-    builder
 }
 
 impl<'a> AddAttributeBuilder<'a> {
@@ -3153,21 +3179,25 @@ impl<'a> AddAttributeBuilder<'a> {
     /// Sets an optional exact text Unique Identifier.
     #[must_use]
     pub fn unique_identifier(self, value: &str) -> Self {
-        update_attribute_mutation_builder(self, |state| state.set_unique_identifier(value))
+        <AddAttributeBuilder<'a> as AttributeMutationBuilderMethods<'a>>::update_unique_identifier(
+            self, value,
+        )
     }
 
     /// Sets one catalogued New Attribute with its typed value.
     #[must_use]
     pub fn attribute<D: AttributeDefinition>(self, attribute: Attribute<D>) -> Self {
-        update_attribute_mutation_builder(self, |state| {
-            state.set_catalogued_attribute(attribute);
-        })
+        <AddAttributeBuilder<'a> as AttributeMutationBuilderMethods<'a>>::update_catalogued_attribute(
+            self, attribute,
+        )
     }
 
     /// Sets one explicitly typed TTLV Item as the New Attribute.
     #[must_use]
     pub fn attribute_item(self, item: Item) -> Self {
-        update_attribute_mutation_builder(self, |state| state.set_attribute_item(item))
+        <AddAttributeBuilder<'a> as AttributeMutationBuilderMethods<'a>>::update_attribute_item(
+            self, item,
+        )
     }
 
     /// Builds a KMIP Vendor Attribute structure as the New Attribute.
@@ -3178,15 +3208,20 @@ impl<'a> AddAttributeBuilder<'a> {
         attribute_name: &str,
         attribute_value: &Item,
     ) -> Self {
-        update_attribute_mutation_builder(self, |state| {
-            state.set_vendor_attribute(vendor_identification, attribute_name, attribute_value);
-        })
+        <AddAttributeBuilder<'a> as AttributeMutationBuilderMethods<'a>>::update_vendor_attribute(
+            self,
+            vendor_identification,
+            attribute_name,
+            attribute_value,
+        )
     }
 
     /// Sets exchange-local transport options.
     #[must_use]
     pub fn with_options(self, options: RequestOptions) -> Self {
-        update_attribute_mutation_builder(self, |state| state.set_options(options))
+        <AddAttributeBuilder<'a> as AttributeMutationBuilderMethods<'a>>::update_options(
+            self, options,
+        )
     }
 
     /// Sets the Request Header Asynchronous Indicator for this exchange.
@@ -3215,21 +3250,25 @@ impl<'a> SetAttributeBuilder<'a> {
     /// Sets an optional exact text Unique Identifier.
     #[must_use]
     pub fn unique_identifier(self, value: &str) -> Self {
-        update_attribute_mutation_builder(self, |state| state.set_unique_identifier(value))
+        <SetAttributeBuilder<'a> as AttributeMutationBuilderMethods<'a>>::update_unique_identifier(
+            self, value,
+        )
     }
 
     /// Sets one catalogued New Attribute with its typed value.
     #[must_use]
     pub fn attribute<D: AttributeDefinition>(self, attribute: Attribute<D>) -> Self {
-        update_attribute_mutation_builder(self, |state| {
-            state.set_catalogued_attribute(attribute);
-        })
+        <SetAttributeBuilder<'a> as AttributeMutationBuilderMethods<'a>>::update_catalogued_attribute(
+            self, attribute,
+        )
     }
 
     /// Sets one explicitly typed TTLV Item as the New Attribute.
     #[must_use]
     pub fn attribute_item(self, item: Item) -> Self {
-        update_attribute_mutation_builder(self, |state| state.set_attribute_item(item))
+        <SetAttributeBuilder<'a> as AttributeMutationBuilderMethods<'a>>::update_attribute_item(
+            self, item,
+        )
     }
 
     /// Builds a KMIP Vendor Attribute structure as the New Attribute.
@@ -3240,15 +3279,20 @@ impl<'a> SetAttributeBuilder<'a> {
         attribute_name: &str,
         attribute_value: &Item,
     ) -> Self {
-        update_attribute_mutation_builder(self, |state| {
-            state.set_vendor_attribute(vendor_identification, attribute_name, attribute_value);
-        })
+        <SetAttributeBuilder<'a> as AttributeMutationBuilderMethods<'a>>::update_vendor_attribute(
+            self,
+            vendor_identification,
+            attribute_name,
+            attribute_value,
+        )
     }
 
     /// Sets exchange-local transport options.
     #[must_use]
     pub fn with_options(self, options: RequestOptions) -> Self {
-        update_attribute_mutation_builder(self, |state| state.set_options(options))
+        <SetAttributeBuilder<'a> as AttributeMutationBuilderMethods<'a>>::update_options(
+            self, options,
+        )
     }
 
     /// Sets the Request Header Asynchronous Indicator for this exchange.
