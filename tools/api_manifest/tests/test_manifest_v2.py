@@ -3147,7 +3147,10 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertEqual("declared", declaration["declarationState"])
                 self.assertNotIn("candidateSpecId", declaration)
                 self.assertEqual(canonical["capabilityId"], declaration["capabilityId"])
-                self.assertEqual(canonical["requirementIds"], declaration["requirementIds"])
+                self.assertEqual(
+                    sorted(set(canonical["requirementIds"]) | {"KMIPKIT-0093-FR-008"}),
+                    declaration["requirementIds"],
+                )
                 self.assertEqual(canonical["approvalSource"], declaration["approvalSource"])
                 self.assertEqual(expected_mappings, declaration["languageMappings"])
                 for language, mapping in expected_mappings.items():
@@ -3754,6 +3757,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 for owner_declaration in owner_declarations
                 for requirement_id in owner_declaration["requirementIds"]
             }
+            owner_requirements -= excluded_owner_requirements.get(method, set())
             owner_sources = [
                 owner_declaration["approvalSource"]
                 for owner_declaration in owner_declarations
@@ -4495,7 +4499,14 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertEqual("verified", declaration["declarationState"])
                 self.assertNotIn("candidateSpecId", declaration)
                 self.assertEqual(operation_id, declaration["capabilityId"])
-                self.assertEqual(canonical["requirementIds"], declaration["requirementIds"])
+                expected_requirements = set(canonical["requirementIds"])
+                if canonical is not request_canonical:
+                    expected_requirements.update(
+                        {"KMIPKIT-0093-FR-005", "KMIPKIT-0093-FR-008"}
+                    )
+                self.assertEqual(
+                    sorted(expected_requirements), declaration["requirementIds"]
+                )
                 self.assertEqual(operation["approvalEvidence"], declaration["approvalSource"])
                 self.assertEqual(expected_mappings, declaration["languageMappings"])
                 self.assertIn(declaration["declarationId"], operation["declarations"]["rust"])

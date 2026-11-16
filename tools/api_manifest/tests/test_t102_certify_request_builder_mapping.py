@@ -176,7 +176,7 @@ KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS = {
 # the four-language Create Key Pair, Set Attribute, and Add Attribute builder
 # declarations to the same inventory. The Rust export reconciliation adds 159
 # observed paths; eight already-covered KMIPKIT-0047 paths are deduplicated.
-DECLARATIONS_SHA256 = "a514ffd201957877629d2f9c8fbb93f6e592b077a0025a3764b3ebc02613cf6e"
+DECLARATIONS_SHA256 = "16be2c6c1d8186fde9c2c98287710630e9144a272c701353e320893b496ba22b"
 OPERATIONS_SHA256 = "9ab6c670787f07c9faa301744d1654fdd071ceffc3b43936e6cb12add59094e2"
 
 

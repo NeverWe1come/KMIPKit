@@ -2937,82 +2937,6 @@ impl NewAttributeBuilderState {
     }
 }
 
-// Shared typed setters for Add Attribute and Set Attribute builders.
-macro_rules! impl_attribute_mutation_builder_common_methods {
-    ($builder:ident) => {
-        impl<'a> $builder<'a> {
-            fn new(client: Option<&'a mut Client>) -> Self {
-                Self {
-                    client,
-                    unique_identifier: None,
-                    attribute: NewAttributeBuilderState::default(),
-                    options: None,
-                    asynchronous_indicator: None,
-                }
-            }
-
-            /// Creates a detached builder for typed request and batch use.
-            ///
-            /// Executing it returns a local `NotSent` error because no client
-            /// is attached.
-            #[must_use]
-            pub fn detached() -> Self {
-                Self::new(None)
-            }
-
-            /// Sets an optional exact text Unique Identifier.
-            #[must_use]
-            pub fn unique_identifier(mut self, value: &str) -> Self {
-                self.unique_identifier = Some(value.to_owned());
-                self
-            }
-
-            /// Sets one catalogued New Attribute with its typed value.
-            #[must_use]
-            pub fn attribute<D: AttributeDefinition>(self, attribute: Attribute<D>) -> Self {
-                self.attribute_item(attribute.into_item())
-            }
-
-            /// Sets one explicitly typed TTLV Item as the New Attribute.
-            #[must_use]
-            pub fn attribute_item(mut self, item: Item) -> Self {
-                self.attribute.set_item(item);
-                self
-            }
-
-            /// Builds a KMIP Vendor Attribute structure as the New Attribute.
-            #[must_use]
-            pub fn vendor_attribute(
-                mut self,
-                vendor_identification: &str,
-                attribute_name: &str,
-                attribute_value: &Item,
-            ) -> Self {
-                self.attribute.set_vendor_attribute(
-                    vendor_identification,
-                    attribute_name,
-                    attribute_value,
-                );
-                self
-            }
-
-            /// Sets exchange-local transport options.
-            #[must_use]
-            pub fn with_options(mut self, options: RequestOptions) -> Self {
-                self.options = Some(options);
-                self
-            }
-
-            /// Sets the Request Header Asynchronous Indicator for this exchange.
-            #[must_use]
-            pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-                self.asynchronous_indicator = Some(value);
-                self
-            }
-        }
-    };
-}
-
 /// A fluent builder for the existing typed Add Attribute request.
 ///
 /// The required New Attribute is one direct typed Item. Catalogued attributes
@@ -3025,6 +2949,73 @@ pub struct AddAttributeBuilder<'a> {
     attribute: NewAttributeBuilderState,
     options: Option<RequestOptions>,
     asynchronous_indicator: Option<u32>,
+}
+
+impl<'a> AddAttributeBuilder<'a> {
+    fn new(client: Option<&'a mut Client>) -> Self {
+        Self {
+            client,
+            unique_identifier: None,
+            attribute: NewAttributeBuilderState::default(),
+            options: None,
+            asynchronous_indicator: None,
+        }
+    }
+
+    /// Creates a detached builder for typed request and batch use.
+    ///
+    /// Executing it returns a local `NotSent` error because no client is attached.
+    #[must_use]
+    pub fn detached() -> Self {
+        Self::new(None)
+    }
+
+    /// Sets an optional exact text Unique Identifier.
+    #[must_use]
+    pub fn unique_identifier(mut self, value: &str) -> Self {
+        self.unique_identifier = Some(value.to_owned());
+        self
+    }
+
+    /// Sets one catalogued New Attribute with its typed value.
+    #[must_use]
+    pub fn attribute<D: AttributeDefinition>(self, attribute: Attribute<D>) -> Self {
+        self.attribute_item(attribute.into_item())
+    }
+
+    /// Sets one explicitly typed TTLV Item as the New Attribute.
+    #[must_use]
+    pub fn attribute_item(mut self, item: Item) -> Self {
+        self.attribute.set_item(item);
+        self
+    }
+
+    /// Builds a KMIP Vendor Attribute structure as the New Attribute.
+    #[must_use]
+    pub fn vendor_attribute(
+        mut self,
+        vendor_identification: &str,
+        attribute_name: &str,
+        attribute_value: &Item,
+    ) -> Self {
+        self.attribute
+            .set_vendor_attribute(vendor_identification, attribute_name, attribute_value);
+        self
+    }
+
+    /// Sets exchange-local transport options.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.options = Some(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.asynchronous_indicator = Some(value);
+        self
+    }
 }
 
 impl AddAttributeBuilder<'_> {
@@ -3114,8 +3105,72 @@ pub struct SetAttributeBuilder<'a> {
     asynchronous_indicator: Option<u32>,
 }
 
-impl_attribute_mutation_builder_common_methods!(AddAttributeBuilder);
-impl_attribute_mutation_builder_common_methods!(SetAttributeBuilder);
+impl<'a> SetAttributeBuilder<'a> {
+    fn new(client: Option<&'a mut Client>) -> Self {
+        Self {
+            client,
+            unique_identifier: None,
+            attribute: NewAttributeBuilderState::default(),
+            options: None,
+            asynchronous_indicator: None,
+        }
+    }
+
+    /// Creates a detached builder for typed request and batch use.
+    ///
+    /// Executing it returns a local `NotSent` error because no client is attached.
+    #[must_use]
+    pub fn detached() -> Self {
+        Self::new(None)
+    }
+
+    /// Sets an optional exact text Unique Identifier.
+    #[must_use]
+    pub fn unique_identifier(mut self, value: &str) -> Self {
+        self.unique_identifier = Some(value.to_owned());
+        self
+    }
+
+    /// Sets one catalogued New Attribute with its typed value.
+    #[must_use]
+    pub fn attribute<D: AttributeDefinition>(self, attribute: Attribute<D>) -> Self {
+        self.attribute_item(attribute.into_item())
+    }
+
+    /// Sets one explicitly typed TTLV Item as the New Attribute.
+    #[must_use]
+    pub fn attribute_item(mut self, item: Item) -> Self {
+        self.attribute.set_item(item);
+        self
+    }
+
+    /// Builds a KMIP Vendor Attribute structure as the New Attribute.
+    #[must_use]
+    pub fn vendor_attribute(
+        mut self,
+        vendor_identification: &str,
+        attribute_name: &str,
+        attribute_value: &Item,
+    ) -> Self {
+        self.attribute
+            .set_vendor_attribute(vendor_identification, attribute_name, attribute_value);
+        self
+    }
+
+    /// Sets exchange-local transport options.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.options = Some(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.asynchronous_indicator = Some(value);
+        self
+    }
+}
 
 impl SetAttributeBuilder<'_> {
     fn construct_request(&self) -> Result<SetAttributeRequest, FluentBuildError> {

@@ -517931,7 +517931,9 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-008"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -518048,7 +518050,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     },
     {
@@ -521550,7 +521552,9 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-008"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -536504,7 +536508,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -537044,7 +537048,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -544126,7 +544130,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     },
     {
@@ -555026,6 +555030,8 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.4-001"
       ],
       "declarationState": "verified",
@@ -559133,7 +559139,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -560417,6 +560423,8 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.25-001",
         "KMIPKIT-REQ-SPEC-6.1.25-004",
         "KMIPKIT-REQ-SPEC-6.1.25-006"
@@ -561678,7 +561686,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -562799,7 +562807,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -564171,6 +564179,8 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.55-001"
       ],
       "declarationState": "verified",
@@ -564769,7 +564779,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -566665,7 +566675,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -569506,7 +569516,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -570086,7 +570096,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -571393,7 +571403,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -571537,7 +571547,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -573062,7 +573072,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -573347,6 +573357,8 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.56-001-001",
         "KMIPKIT-REQ-SPEC-6.1.56-002"
       ],
@@ -578596,7 +578608,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -578818,7 +578830,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -582083,7 +582095,9 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-008"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -583213,7 +583227,8 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -584201,7 +584216,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -585975,7 +585990,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -586378,6 +586393,8 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.55-001"
       ],
       "declarationState": "verified",
@@ -592515,7 +592532,9 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-008"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -594016,7 +594035,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -597378,7 +597397,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -597486,7 +597505,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     },
     {
@@ -605346,7 +605365,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -605528,7 +605547,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     },
     {
@@ -606025,7 +606044,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -607140,7 +607159,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -607409,7 +607428,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -611316,7 +611335,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     },
     {
@@ -613408,7 +613427,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -620090,7 +620109,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -622796,7 +622815,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -623319,7 +623338,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -627703,7 +627722,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -628521,7 +628540,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     },
     {
@@ -629131,7 +629150,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -632725,6 +632744,8 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.25-001",
         "KMIPKIT-REQ-SPEC-6.1.25-004",
         "KMIPKIT-REQ-SPEC-6.1.25-006"
@@ -636368,7 +636389,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -637226,7 +637247,9 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-008"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -638079,6 +638102,8 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.33-001-001",
         "KMIPKIT-REQ-SPEC-6.1.33-001-002"
       ],
@@ -638461,6 +638486,8 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.42-001-001",
         "KMIPKIT-REQ-SPEC-6.1.42-001-002"
       ],
@@ -638906,7 +638933,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -641845,7 +641872,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     },
     {
@@ -642602,6 +642629,8 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.4-001"
       ],
       "declarationState": "verified",
@@ -647403,7 +647432,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -661110,7 +661139,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -662705,7 +662734,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -664518,7 +664547,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -668444,7 +668473,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -672159,7 +672188,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -672539,7 +672568,9 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-008"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -675413,7 +675444,9 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-008"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -676210,6 +676243,8 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.42-001-001",
         "KMIPKIT-REQ-SPEC-6.1.42-001-002"
       ],
@@ -676587,7 +676622,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -685877,7 +685912,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -693741,7 +693776,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -695121,6 +695156,8 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.56-001-001",
         "KMIPKIT-REQ-SPEC-6.1.56-002"
       ],
@@ -696390,7 +696427,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -696908,7 +696945,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -705608,7 +705645,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -706476,7 +706513,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -707398,7 +707435,9 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-008"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -709700,7 +709739,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     },
     {
@@ -709901,7 +709940,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -711892,7 +711931,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -717591,7 +717630,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     },
     {
@@ -717898,7 +717937,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -719231,7 +719270,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     },
     {
@@ -722049,7 +722088,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -730707,7 +730746,9 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-008"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -739144,7 +739185,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     },
     {
@@ -739220,7 +739261,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -739808,7 +739849,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -742099,7 +742140,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -743418,6 +743459,8 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.32-001"
       ],
       "declarationState": "verified",
@@ -751217,7 +751260,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     },
     {
@@ -752877,7 +752920,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -753955,7 +753998,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -754984,7 +755027,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -756460,7 +756503,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -757415,6 +757458,8 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.33-001-001",
         "KMIPKIT-REQ-SPEC-6.1.33-001-002"
       ],
@@ -762777,6 +762822,8 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.32-001"
       ],
       "declarationState": "verified",
@@ -767334,7 +767381,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -777935,7 +777982,9 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-008"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -780607,7 +780656,9 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-008"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -781115,7 +781166,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -781602,7 +781653,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     },
     {
@@ -782451,7 +782502,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     },
     {
@@ -784044,7 +784095,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -784862,7 +784913,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -786615,7 +786666,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -786913,7 +786964,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     },
     {
@@ -787886,7 +787937,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
@@ -788631,7 +788682,9 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-008"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -790861,7 +790914,8 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -791827,7 +791881,7 @@
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
+      "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     },
     {

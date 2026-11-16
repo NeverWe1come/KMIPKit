@@ -12,8 +12,7 @@ def without_0047_versioned_values(rows: list[dict[str, Any]]) -> list[dict[str, 
 
 
 # KMIPKIT-0053 adds 144 explicitly-owned blocked candidates for follow-up.
-# KMIPKIT-0093 FR-011 records 76 unmapped Rust exports for owner-matrix review.
-T102_BLOCKED_CANDIDATES = 76
+T102_BLOCKED_CANDIDATES = 0
 # KMIPKIT-0091 adds fluent DX declarations; KMIPKIT-0095 adds response view
 # declarations and Rust trait exclusions pending cross-language adapters.
 # KMIPKIT-0096 adds four expert-position declarations; KMIPKIT-0097 adds
