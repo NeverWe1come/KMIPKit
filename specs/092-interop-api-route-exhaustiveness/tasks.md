@@ -485,12 +485,17 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
   Response payload Red `42f8238e4` failed with zero checks; Green `488fdf799`
   passes all 96 checks for eight field/version cases, including 48 expected
   rejections after a required response field is removed.
-- Verification: the two focused payload tests pass (120/120 request checks and
-  96/96 response checks); full CTest passes 7/7 tests in 90.78 seconds, including
-  161 C route-matrix contract tests and both controlled TLS peers. `python3 -m
-  py_compile` and `git diff --check` pass.
-  The full installed C route matrix and exact-head CI remain open; these
-  operation/payload slices do not close KMIPKIT-0092-FR-003 or FR-009 globally.
+- Generic TTLV Red `8a69dc91b` found four local Key Wrap Type/Any Object
+  cases without fixtures; Green `208380cb0` added catalog-backed enumeration
+  and Symmetric Key fixtures and passed the installed-ABI roundtrip test. The
+  full matrix now has no pending Export cells. Exact report `c-route-19dc4d35-1e4d-44d0-8d38-c7573e1226fc`
+  records 66,736 expected, 41,683 invoked, 0 failed and 25,053 pending overall.
+- Verification: the focused request and response tests pass 120/120 and 96/96;
+  the generic roundtrip test passes; full CTest passes 7/7 in 90.64 seconds,
+  including 162 route-matrix contract tests. Python compilation and
+  `git diff --check` pass. The full installed C route matrix and exact-head CI
+  remain open; these operation/payload slices do not close
+  KMIPKIT-0092-FR-003 or FR-009 globally.
 
 ## Development evidence: JNI sanitizer workflow contract after release refresh
 

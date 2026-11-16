@@ -102,12 +102,18 @@ fixtures. Those results are not inferred from this Python-only run.
   response after receiving it (`category=2 cause=2 delivery=3`). The focused
   test passes 96/96 peer checks: 48 complete responses and 48 expected
   rejections across all six encoding/transport combinations.
+- Generic TTLV Red — `8a69dc91b`: the four versioned local cases had no
+  generic fixtures. Green — `208380cb0`: derive Key Wrap Type from its catalogued
+  enumeration and represent Any Object with a catalogued Symmetric Key
+  structure. The installed ABI roundtrip test passes for all four cases and
+  exercises both `kmipkit_ttlv_item_create` and `kmipkit_ttlv_decode`.
 - Refactor/documentation commit records the per-cell scope and immutable
-  artifact identities. Verification: both focused tests passed together with
-  `python3 -m unittest test_route_matrix.RouteMatrixTests.test_export_request_payload_fields_reach_installed_consumer test_route_matrix.RouteMatrixTests.test_export_response_payload_fields_reject_missing_required_branches`
-  (2 tests, 10.874 seconds); full CTest passed 7/7 tests in 90.78 seconds,
-  including all 161 C route-matrix contract tests and both controlled TLS peers.
-  `python3 -m py_compile` and `git diff --check` passed. These checks do not
-  close other pending Export cells or the
-  complete C route matrix. The full matrix must be regenerated for the exact
-  installed artifact and current branch head before FR-003/FR-009 can close.
+  artifact identities. The full route matrix after this Green reports 66,736
+  expected, 41,683 invoked, 0 failed, and 25,053 pending cells (run ID
+  `c-route-19dc4d35-1e4d-44d0-8d38-c7573e1226fc`). It contains no pending Export
+  cells; the other 25,053 cells remain outside these Export slices.
+  Verification: both payload peer tests (120 request and 96 response checks),
+  the generic TTLV roundtrip test, and full CTest passed. CTest passed 7/7 in
+  90.64 seconds, including 162 route-matrix contract tests; `python3 -m
+  py_compile` and `git diff --check` passed. These results do not close the full C route matrix
+  or KMIPKIT-0092-FR-003/FR-009.

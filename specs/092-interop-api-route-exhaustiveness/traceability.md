@@ -40,8 +40,10 @@ peer checks OASIS KMIP v2.0 §6.1.18 Tables 202–203 and v2.1 §6.1.18 Tables
 observes Create → Export → Revoke → Destroy and cleanup. All 12 peer checks pass.
 The ten request-payload cases pass 120 present/omitted checks; the eight
 response-payload cases pass 96 checks, including rejection after one required
-field is removed. This closes only these Export operation and payload slices;
-the complete C route matrix and the FR-003/FR-009 gates remain open.
+field is removed. Generic TTLV construction and decode cover every Export
+payload cell; the exact matrix report has zero Export pending cells and 25,053
+pending cells overall. This closes only these Export operation and payload
+slices; the FR-003/FR-009 gates remain open.
 
 The common serializer/response-reader route assertion loads the API manifest
 from the exact `library_commit` recorded in `route-capabilities.json`, so
