@@ -2264,10 +2264,13 @@ fn is_exact_fluent_catalogued_attribute(
     signature: &syn::Signature,
 ) -> bool {
     let supported_method = match impl_type {
-        Some("CreateSymmetricKeyBuilder" | "CreateSplitKeyBuilder") => {
-            signature.ident == "attribute"
-        }
-        Some("RegisterBuilder" | "SetAttributeBuilder") => signature.ident == "attribute",
+        Some(
+            "CreateSymmetricKeyBuilder"
+            | "CreateSplitKeyBuilder"
+            | "RegisterBuilder"
+            | "SetAttributeBuilder"
+            | "AddAttributeBuilder",
+        ) => signature.ident == "attribute",
         Some("CreateKeyPairBuilder") => matches!(
             signature.ident.to_string().as_str(),
             "common_attribute" | "private_attribute" | "public_attribute"
@@ -2329,20 +2332,26 @@ fn is_exact_fluent_explicit_attribute_item(
     impl_type: Option<&str>,
     signature: &syn::Signature,
 ) -> bool {
-    if !fluent_root_scope
-        || impl_type.is_none_or(|name| {
-            !matches!(
-                name,
-                "CreateSymmetricKeyBuilder"
-                    | "CreateSplitKeyBuilder"
-                    | "RegisterBuilder"
-                    | "SetAttributeBuilder"
+    let supported_method = match impl_type {
+        Some("AddAttributeBuilder") => {
+            matches!(
+                signature.ident.to_string().as_str(),
+                "attribute_item" | "vendor_attribute"
             )
-        })
-        || !matches!(
+        }
+        Some(
+            "CreateSymmetricKeyBuilder"
+            | "CreateSplitKeyBuilder"
+            | "RegisterBuilder"
+            | "SetAttributeBuilder",
+        ) => matches!(
             signature.ident.to_string().as_str(),
             "attribute_item" | "vendor_attribute" | "attribute_at" | "object_item"
-        )
+        ),
+        _ => false,
+    };
+    if !fluent_root_scope
+        || !supported_method
         || !signature.generics.params.is_empty()
         || signature.generics.where_clause.is_some()
         || signature.asyncness.is_some()
@@ -2601,7 +2610,7 @@ fn is_plain_reference_to_str(ty: &Type) -> bool {
 }
 
 #[test]
-fn fluent_builder_signature_exceptions_are_exact_and_method_scoped() {
+fn fluent_builder_catalogued_attribute_signatures_are_exact() {
     let catalogued = syn::parse_str::<syn::Signature>(
         "fn attribute<D: AttributeDefinition>(self, attribute: Attribute<D>) -> Self",
     )
@@ -2626,7 +2635,15 @@ fn fluent_builder_signature_exceptions_are_exact_and_method_scoped() {
         Some("RegisterBuilder"),
         &catalogued
     ));
+    assert!(is_exact_fluent_catalogued_attribute(
+        true,
+        Some("AddAttributeBuilder"),
+        &catalogued
+    ));
+}
 
+#[test]
+fn fluent_builder_explicit_attribute_item_signatures_are_method_scoped() {
     for signature in [
         "fn attribute_item(self, item: Item) -> Self",
         "fn vendor_attribute(self, vendor: &str, name: &str, value: &Item) -> Self",
@@ -2645,7 +2662,33 @@ fn fluent_builder_signature_exceptions_are_exact_and_method_scoped() {
             &signature
         ));
     }
+    for signature in [
+        "fn attribute_at(self, position: FluentAttributePosition, item: Item) -> Self",
+        "fn object_item(self, object_type: ObjectType, object: Item) -> Self",
+    ] {
+        let signature = syn::parse_str::<syn::Signature>(signature).unwrap();
+        assert!(!is_exact_fluent_explicit_attribute_item(
+            true,
+            Some("AddAttributeBuilder"),
+            &signature
+        ));
+    }
 
+    for signature in [
+        "fn attribute_item(self, item: Item) -> Self",
+        "fn vendor_attribute(self, vendor: &str, name: &str, value: &Item) -> Self",
+    ] {
+        let signature = syn::parse_str::<syn::Signature>(signature).unwrap();
+        assert!(is_exact_fluent_explicit_attribute_item(
+            true,
+            Some("AddAttributeBuilder"),
+            &signature
+        ));
+    }
+}
+
+#[test]
+fn fluent_builder_explicit_value_signatures_are_exact_and_method_scoped() {
     for signature in [
         "fn prime_field_size(self, value: Vec<u8>) -> Self",
         "fn protection_storage_masks(self, masks: Structure) -> Self",

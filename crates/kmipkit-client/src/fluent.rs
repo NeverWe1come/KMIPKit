@@ -6,15 +6,15 @@ use std::ops::BitOr;
 
 use kmipkit_protocol::attribute::typed;
 use kmipkit_protocol::{
-    ActivateRequest, ArchiveRequest, Attribute, AttributeDefinition, AttributeReference,
-    AttributeSet, AttributeSetError, CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest,
-    CryptographicAlgorithm, CryptographicParameters, DecryptRequest, DestroyRequest,
-    EncryptRequest, GetAttributeListRequest, GetAttributesRequest, GetRequest, HashRequest,
-    LocateRequest, MacRequest, MacVerifyRequest, ManagedObject, NewAttribute, ObjectGroupMember,
-    ObjectType, OpaqueObjectContext, OperationData, RecertifyRequest, RecoverRequest,
-    RegisterRequest, RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest,
-    SecretBytes, SetAttributeRequest, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
-    StorageStatusMask, UniqueIdentifier, ValidateKmipRequest,
+    ActivateRequest, AddAttributeRequest, ArchiveRequest, Attribute, AttributeDefinition,
+    AttributeReference, AttributeSet, AttributeSetError, CreateKeyPairRequest, CreateRequest,
+    CreateSplitKeyRequest, CryptographicAlgorithm, CryptographicParameters, DecryptRequest,
+    DestroyRequest, EncryptRequest, GetAttributeListRequest, GetAttributesRequest, GetRequest,
+    HashRequest, LocateRequest, MacRequest, MacVerifyRequest, ManagedObject, NewAttribute,
+    ObjectGroupMember, ObjectType, OpaqueObjectContext, OperationData, RecertifyRequest,
+    RecoverRequest, RegisterRequest, RekeyKeyPairRequest, RekeyRequest, RevocationReason,
+    RevokeRequest, SecretBytes, SetAttributeRequest, SignRequest, SignatureVerifyRequest,
+    SplitKeyMethod, StorageStatusMask, UniqueIdentifier, ValidateKmipRequest,
 };
 use kmipkit_transport::{RequestDeliveryState, RequestOptions};
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
@@ -108,6 +108,8 @@ pub enum FluentBuildError {
     InvalidRegisterObject,
     /// Set Attribute is missing its required New Attribute.
     MissingSetAttributeAttribute,
+    /// Add Attribute is missing its required New Attribute.
+    MissingAddAttributeAttribute,
     /// A catalogued attribute has an invalid TTLV type or structure.
     InvalidAttributeValue,
     /// Legacy compatibility error; explicit extension Items are retained as
@@ -151,6 +153,7 @@ impl fmt::Display for FluentBuildError {
             Self::MissingRegisterObject => "Register requires an object",
             Self::InvalidRegisterObject => "Register object or context is invalid",
             Self::MissingSetAttributeAttribute => "Set Attribute requires one New Attribute",
+            Self::MissingAddAttributeAttribute => "Add Attribute requires one New Attribute",
             Self::InvalidAttributeValue => "fluent Object Attribute value is invalid",
             Self::MessageExtensionTagNotObjectAttribute => {
                 "KMIP message extension tags are not Object Attributes"
@@ -231,6 +234,12 @@ impl<'a> RequestBuilder<'a> {
     #[must_use]
     pub fn set_attribute(self) -> SetAttributeBuilder<'a> {
         SetAttributeBuilder::new(Some(self.client))
+    }
+
+    /// Begins constructing an Add Attribute request with no Unique Identifier.
+    #[must_use]
+    pub fn add_attribute(self) -> AddAttributeBuilder<'a> {
+        AddAttributeBuilder::new(Some(self.client))
     }
 
     /// Begins a typed Get Attributes request with no Attribute References.
@@ -2882,115 +2891,426 @@ pub struct DestroyBuilder<'a> {
     asynchronous_indicator: Option<u32>,
 }
 
-/// A fluent builder for the existing typed Set Attribute request.
-pub struct SetAttributeBuilder<'a> {
+#[derive(Default)]
+struct NewAttributeBuilderState {
+    item: Option<Item>,
+    error: Option<FluentBuildError>,
+}
+
+impl NewAttributeBuilderState {
+    fn set_item(&mut self, item: Item) {
+        if self.item.is_some() || self.error.is_some() {
+            self.error
+                .get_or_insert(FluentBuildError::InvalidAttributeValue);
+            return;
+        }
+        if let Err(error) = validate_object_attribute_tag(&item) {
+            self.error = Some(error);
+            return;
+        }
+        self.item = Some(item);
+    }
+
+    fn set_vendor_attribute(
+        &mut self,
+        vendor_identification: &str,
+        attribute_name: &str,
+        attribute_value: &Item,
+    ) {
+        match make_vendor_attribute(vendor_identification, attribute_name, attribute_value) {
+            Ok(item) => self.set_item(item),
+            Err(error) => {
+                self.error.get_or_insert(error);
+            }
+        }
+    }
+
+    fn build_item(&self, missing_error: FluentBuildError) -> Result<Item, FluentBuildError> {
+        if let Some(error) = self.error {
+            return Err(error);
+        }
+        self.item
+            .as_ref()
+            .ok_or(missing_error)?
+            .try_clone()
+            .map_err(|_| FluentBuildError::InvalidTtlvValue)
+    }
+}
+
+struct AttributeMutationBuilderState<'a> {
     client: Option<&'a mut Client>,
     unique_identifier: Option<String>,
-    new_attribute: Option<Item>,
-    attribute_error: Option<FluentBuildError>,
+    attribute: NewAttributeBuilderState,
     options: Option<RequestOptions>,
     asynchronous_indicator: Option<u32>,
 }
 
-impl<'a> SetAttributeBuilder<'a> {
+impl<'a> AttributeMutationBuilderState<'a> {
     fn new(client: Option<&'a mut Client>) -> Self {
         Self {
             client,
             unique_identifier: None,
-            new_attribute: None,
-            attribute_error: None,
+            attribute: NewAttributeBuilderState::default(),
             options: None,
             asynchronous_indicator: None,
         }
     }
 
-    /// Creates a builder that can construct typed requests and batch items
-    /// without attaching a client.
-    ///
-    /// Calling [`Self::execute`] on a detached builder returns a local
-    /// `NotSent` error because no client is attached.
-    #[must_use]
-    pub fn detached() -> Self {
-        Self::new(None)
-    }
-
-    /// Selects an optional exact text Unique Identifier.
-    #[must_use]
-    pub fn unique_identifier(mut self, value: &str) -> Self {
+    fn set_unique_identifier(&mut self, value: &str) {
         self.unique_identifier = Some(value.to_owned());
-        self
     }
 
-    /// Sets one catalogued attribute using its typed value representation.
-    #[must_use]
-    pub fn attribute<D: AttributeDefinition>(self, attribute: Attribute<D>) -> Self {
-        self.attribute_item(attribute.into_item())
+    fn set_catalogued_attribute<D: AttributeDefinition>(&mut self, attribute: Attribute<D>) {
+        self.attribute.set_item(attribute.into_item());
     }
 
-    /// Sets one explicitly typed TTLV attribute Item.
+    fn set_attribute_item(&mut self, item: Item) {
+        self.attribute.set_item(item);
+    }
+
+    fn set_vendor_attribute(
+        &mut self,
+        vendor_identification: &str,
+        attribute_name: &str,
+        attribute_value: &Item,
+    ) {
+        self.attribute
+            .set_vendor_attribute(vendor_identification, attribute_name, attribute_value);
+    }
+
+    fn set_options(&mut self, options: RequestOptions) {
+        self.options = Some(options);
+    }
+
+    const fn set_asynchronous_indicator(&mut self, value: u32) {
+        self.asynchronous_indicator = Some(value);
+    }
+}
+
+fn build_attribute_mutation_request<T>(
+    state: &AttributeMutationBuilderState<'_>,
+    missing_attribute_error: FluentBuildError,
+    build: impl FnOnce(Option<String>, NewAttribute) -> T,
+    validate: impl FnOnce(&T) -> Result<(), FluentBuildError>,
+) -> Result<T, FluentBuildError> {
+    let item = state.attribute.build_item(missing_attribute_error)?;
+    let request = build(state.unique_identifier.clone(), NewAttribute::new(item));
+    validate(&request)?;
+    Ok(request)
+}
+
+fn execute_attribute_mutation<T>(
+    client: Option<&mut Client>,
+    request: Result<T, FluentBuildError>,
+    make_client_request: impl FnOnce(T) -> ClientRequest,
+    asynchronous_indicator: Option<u32>,
+    options: Option<RequestOptions>,
+    limits: &kmipkit_ttlv::codec::CodecLimits,
+) -> Result<ClientBatchItemResponse, ClientError> {
+    let request = request.map_err(fluent_client_validation_error)?;
+    let Some(client) = client else {
+        return Err(fluent_client_validation_error(
+            FluentBuildError::MissingClientForExecution,
+        ));
+    };
+    execute_fluent_request(
+        client,
+        make_client_request(request),
+        asynchronous_indicator,
+        options,
+        limits,
+    )
+}
+
+/// A fluent builder for the existing typed Add Attribute request.
+///
+/// The required New Attribute is one direct typed Item. Catalogued attributes
+/// can be supplied with [`Self::attribute`], unknown attributes require an
+/// explicit [`Self::attribute_item`], and Vendor Attribute uses its dedicated
+/// structure constructor.
+pub struct AddAttributeBuilder<'a> {
+    state: AttributeMutationBuilderState<'a>,
+}
+
+impl AddAttributeBuilder<'_> {
+    fn construct_request(&self) -> Result<AddAttributeRequest, FluentBuildError> {
+        build_attribute_mutation_request(
+            &self.state,
+            FluentBuildError::MissingAddAttributeAttribute,
+            AddAttributeRequest::new,
+            validate_fluent_request,
+        )
+    }
+
+    /// Validates the complete typed request without transport or consumption.
     ///
-    /// Unknown extension tags remain generic Items; reserved or unassigned
-    /// standard tags and a second New Attribute are rejected during validation.
-    #[must_use]
-    pub fn attribute_item(mut self, item: Item) -> Self {
-        if self.new_attribute.is_some() || self.attribute_error.is_some() {
-            self.attribute_error
-                .get_or_insert(FluentBuildError::InvalidAttributeValue);
-            return self;
-        }
-        if let Err(error) = validate_object_attribute_tag(&item) {
-            self.attribute_error = Some(error);
-            return self;
-        }
-        self.new_attribute = Some(item);
+    /// # Errors
+    ///
+    /// Returns an error when the required New Attribute is absent or the
+    /// existing typed request validation rejects the supplied attribute.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        self.construct_request().map(|_| ())
+    }
+
+    /// Builds the existing typed Add Attribute request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when local attribute or typed request validation fails.
+    pub fn build_request(&self) -> Result<AddAttributeRequest, FluentBuildError> {
+        self.construct_request()
+    }
+
+    /// Builds the existing typed Add Attribute request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when local attribute or typed request validation fails.
+    pub fn build(self) -> Result<AddAttributeRequest, FluentBuildError> {
+        self.construct_request()
+    }
+
+    /// Converts the request to the existing typed batch item.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when local attribute or typed request validation fails.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        Ok(ClientBatchItem::new(ClientRequest::AddAttribute(
+            self.construct_request()?,
+        )))
+    }
+
+    /// Executes one typed Add Attribute exchange through the existing client.
+    ///
+    /// # Errors
+    ///
+    /// Returns a local `NotSent` validation error, or the existing protocol or
+    /// transport error with its delivery state.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let request = self.construct_request();
+        execute_attribute_mutation(
+            self.state.client,
+            request,
+            ClientRequest::AddAttribute,
+            self.state.asynchronous_indicator,
+            self.state.options,
+            limits,
+        )
+    }
+}
+
+/// A fluent builder for the existing typed Set Attribute request.
+pub struct SetAttributeBuilder<'a> {
+    state: AttributeMutationBuilderState<'a>,
+}
+
+trait AttributeMutationBuilderMethods<'client>: Sized {
+    fn state_mut(&mut self) -> &mut AttributeMutationBuilderState<'client>;
+
+    fn update_unique_identifier(mut self, value: &str) -> Self {
+        self.state_mut().set_unique_identifier(value);
         self
     }
 
-    /// Constructs the KMIP Vendor Attribute Structure for one direct value.
-    #[must_use]
-    pub fn vendor_attribute(
+    fn update_catalogued_attribute<D: AttributeDefinition>(
+        mut self,
+        attribute: Attribute<D>,
+    ) -> Self {
+        self.state_mut().set_catalogued_attribute(attribute);
+        self
+    }
+
+    fn update_attribute_item(mut self, item: Item) -> Self {
+        self.state_mut().set_attribute_item(item);
+        self
+    }
+
+    fn update_vendor_attribute(
         mut self,
         vendor_identification: &str,
         attribute_name: &str,
         attribute_value: &Item,
     ) -> Self {
-        match make_vendor_attribute(vendor_identification, attribute_name, attribute_value) {
-            Ok(item) => self.attribute_item(item),
-            Err(error) => {
-                self.attribute_error.get_or_insert(error);
-                self
-            }
+        self.state_mut().set_vendor_attribute(
+            vendor_identification,
+            attribute_name,
+            attribute_value,
+        );
+        self
+    }
+
+    fn update_options(mut self, options: RequestOptions) -> Self {
+        self.state_mut().set_options(options);
+        self
+    }
+}
+
+impl<'client> AttributeMutationBuilderMethods<'client> for AddAttributeBuilder<'client> {
+    fn state_mut(&mut self) -> &mut AttributeMutationBuilderState<'client> {
+        &mut self.state
+    }
+}
+
+impl<'client> AttributeMutationBuilderMethods<'client> for SetAttributeBuilder<'client> {
+    fn state_mut(&mut self) -> &mut AttributeMutationBuilderState<'client> {
+        &mut self.state
+    }
+}
+
+impl<'a> AddAttributeBuilder<'a> {
+    fn new(client: Option<&'a mut Client>) -> Self {
+        Self {
+            state: AttributeMutationBuilderState::new(client),
         }
+    }
+
+    /// Creates a detached builder for typed request and batch use.
+    ///
+    /// Executing it returns a local `NotSent` error because no client is attached.
+    #[must_use]
+    pub fn detached() -> Self {
+        Self::new(None)
+    }
+
+    /// Sets an optional exact text Unique Identifier.
+    #[must_use]
+    pub fn unique_identifier(self, value: &str) -> Self {
+        <AddAttributeBuilder<'a> as AttributeMutationBuilderMethods<'a>>::update_unique_identifier(
+            self, value,
+        )
+    }
+
+    /// Sets one catalogued New Attribute with its typed value.
+    #[must_use]
+    pub fn attribute<D: AttributeDefinition>(self, attribute: Attribute<D>) -> Self {
+        <AddAttributeBuilder<'a> as AttributeMutationBuilderMethods<'a>>::update_catalogued_attribute(
+            self, attribute,
+        )
+    }
+
+    /// Sets one explicitly typed TTLV Item as the New Attribute.
+    #[must_use]
+    pub fn attribute_item(self, item: Item) -> Self {
+        <AddAttributeBuilder<'a> as AttributeMutationBuilderMethods<'a>>::update_attribute_item(
+            self, item,
+        )
+    }
+
+    /// Builds a KMIP Vendor Attribute structure as the New Attribute.
+    #[must_use]
+    pub fn vendor_attribute(
+        self,
+        vendor_identification: &str,
+        attribute_name: &str,
+        attribute_value: &Item,
+    ) -> Self {
+        <AddAttributeBuilder<'a> as AttributeMutationBuilderMethods<'a>>::update_vendor_attribute(
+            self,
+            vendor_identification,
+            attribute_name,
+            attribute_value,
+        )
     }
 
     /// Sets exchange-local transport options.
     #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.options = Some(options);
-        self
+    pub fn with_options(self, options: RequestOptions) -> Self {
+        <AddAttributeBuilder<'a> as AttributeMutationBuilderMethods<'a>>::update_options(
+            self, options,
+        )
     }
 
     /// Sets the Request Header Asynchronous Indicator for this exchange.
     #[must_use]
     pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.asynchronous_indicator = Some(value);
+        self.state.set_asynchronous_indicator(value);
         self
     }
+}
 
-    fn construct_request(&self) -> Result<SetAttributeRequest, FluentBuildError> {
-        if let Some(error) = self.attribute_error {
-            return Err(error);
+impl<'a> SetAttributeBuilder<'a> {
+    fn new(client: Option<&'a mut Client>) -> Self {
+        Self {
+            state: AttributeMutationBuilderState::new(client),
         }
-        let item = self
-            .new_attribute
-            .as_ref()
-            .ok_or(FluentBuildError::MissingSetAttributeAttribute)?
-            .try_clone()
-            .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
-        let request =
-            SetAttributeRequest::new(self.unique_identifier.clone(), NewAttribute::new(item));
-        validate_fluent_request(&request)?;
-        Ok(request)
+    }
+
+    /// Creates a detached builder for typed request and batch use.
+    ///
+    /// Executing it returns a local `NotSent` error because no client is attached.
+    #[must_use]
+    pub fn detached() -> Self {
+        Self::new(None)
+    }
+
+    /// Sets an optional exact text Unique Identifier.
+    #[must_use]
+    pub fn unique_identifier(self, value: &str) -> Self {
+        <SetAttributeBuilder<'a> as AttributeMutationBuilderMethods<'a>>::update_unique_identifier(
+            self, value,
+        )
+    }
+
+    /// Sets one catalogued New Attribute with its typed value.
+    #[must_use]
+    pub fn attribute<D: AttributeDefinition>(self, attribute: Attribute<D>) -> Self {
+        <SetAttributeBuilder<'a> as AttributeMutationBuilderMethods<'a>>::update_catalogued_attribute(
+            self, attribute,
+        )
+    }
+
+    /// Sets one explicitly typed TTLV Item as the New Attribute.
+    #[must_use]
+    pub fn attribute_item(self, item: Item) -> Self {
+        <SetAttributeBuilder<'a> as AttributeMutationBuilderMethods<'a>>::update_attribute_item(
+            self, item,
+        )
+    }
+
+    /// Builds a KMIP Vendor Attribute structure as the New Attribute.
+    #[must_use]
+    pub fn vendor_attribute(
+        self,
+        vendor_identification: &str,
+        attribute_name: &str,
+        attribute_value: &Item,
+    ) -> Self {
+        <SetAttributeBuilder<'a> as AttributeMutationBuilderMethods<'a>>::update_vendor_attribute(
+            self,
+            vendor_identification,
+            attribute_name,
+            attribute_value,
+        )
+    }
+
+    /// Sets exchange-local transport options.
+    #[must_use]
+    pub fn with_options(self, options: RequestOptions) -> Self {
+        <SetAttributeBuilder<'a> as AttributeMutationBuilderMethods<'a>>::update_options(
+            self, options,
+        )
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.state.set_asynchronous_indicator(value);
+        self
+    }
+}
+
+impl SetAttributeBuilder<'_> {
+    fn construct_request(&self) -> Result<SetAttributeRequest, FluentBuildError> {
+        build_attribute_mutation_request(
+            &self.state,
+            FluentBuildError::MissingSetAttributeAttribute,
+            SetAttributeRequest::new,
+            validate_fluent_request,
+        )
     }
 
     /// Validates the complete typed request without transport or consumption.
@@ -3036,19 +3356,13 @@ impl<'a> SetAttributeBuilder<'a> {
         self,
         limits: &kmipkit_ttlv::codec::CodecLimits,
     ) -> Result<ClientBatchItemResponse, ClientError> {
-        let request = self
-            .construct_request()
-            .map_err(fluent_client_validation_error)?;
-        let Some(client) = self.client else {
-            return Err(fluent_client_validation_error(
-                FluentBuildError::MissingClientForExecution,
-            ));
-        };
-        execute_fluent_request(
-            client,
-            ClientRequest::SetAttribute(request),
-            self.asynchronous_indicator,
-            self.options,
+        let request = self.construct_request();
+        execute_attribute_mutation(
+            self.state.client,
+            request,
+            ClientRequest::SetAttribute,
+            self.state.asynchronous_indicator,
+            self.state.options,
             limits,
         )
     }

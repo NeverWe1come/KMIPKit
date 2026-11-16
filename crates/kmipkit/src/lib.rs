@@ -148,6 +148,7 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
             | "credential_validation_error_parity"
             | "crypto_response_ttlv"
             | "ffi_runtime_metadata"
+            | "fluent_add_attribute_parity"
             | "fluent_create_key_pair_parity"
             | "fluent_dx_api"
             | "fluent_set_attribute_parity"

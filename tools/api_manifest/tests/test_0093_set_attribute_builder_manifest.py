@@ -43,6 +43,7 @@ class FluentSetAttributeBuilderManifestTests(unittest.TestCase):
             row
             for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit-client"
+            and row.get("declarationState") == "declared"
             and (
                 "SetAttributeBuilder" in row["exportName"]
                 or "RequestBuilder<'a>::set_attribute" in row["exportName"]

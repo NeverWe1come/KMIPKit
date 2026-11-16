@@ -855,11 +855,36 @@ def test_legacy_extensions_remain_available() -> None:
     assert extensions.UniqueIdentifier.text_string("key-1").text == "key-1"
 
 
-def test_request_namespace_exposes_typed_set_attribute_builder() -> None:
+@pytest.mark.parametrize(
+    ("builder_factory", "builder_type", "request_type", "operation"),
+    [
+        (
+            "set_attribute",
+            fluent.SetAttributeBuilder,
+            attribute_operations.SetAttributeRequest,
+            protocol_values.Operation.SET_ATTRIBUTE,
+        ),
+        (
+            "add_attribute",
+            fluent.AddAttributeBuilder,
+            attribute_operations.AddAttributeRequest,
+            protocol_values.Operation.ADD_ATTRIBUTE,
+        ),
+    ],
+)
+def test_request_namespace_exposes_typed_attribute_mutation_builder(
+    builder_factory: str,
+    builder_type: type[fluent.SetAttributeBuilder] | type[fluent.AddAttributeBuilder],
+    request_type: type[
+        attribute_operations.SetAttributeRequest | attribute_operations.AddAttributeRequest
+    ],
+    operation: protocol_values.Operation,
+) -> None:
+    request_builder = getattr(fluent.Request(None), builder_factory)
     with ttlv.codec_limits_defaults() as limits:
         with ttlv.ttlv_value_text_string(b"managed by the fluent API", limits) as description:
-            with fluent.Request(None).set_attribute() as builder:
-                assert isinstance(builder, fluent.SetAttributeBuilder)
+            with request_builder() as builder:
+                assert isinstance(builder, builder_type)
                 with pytest.raises(errors.KmipKitError):
                     builder.validate()
                 assert builder.unique_identifier("key-42") is builder
@@ -871,17 +896,17 @@ def test_request_namespace_exposes_typed_set_attribute_builder() -> None:
                 builder.validate()
                 item = builder.build()
                 try:
-                    assert item.operation == protocol_values.Operation.SET_ATTRIBUTE
+                    assert item.operation == operation
                 finally:
                     item.close()
 
                 request = builder.build_request()
                 try:
-                    assert isinstance(request, attribute_operations.SetAttributeRequest)
+                    assert isinstance(request, request_type)
                     with request.to_ttlv_payload() as payload:
                         assert payload is not None
                     with request.to_batch_item() as request_item:
-                        assert request_item.operation == protocol_values.Operation.SET_ATTRIBUTE
+                        assert request_item.operation == operation
                 finally:
                     request.close()
 
@@ -906,10 +931,10 @@ def test_request_namespace_exposes_typed_set_attribute_builder() -> None:
             with ttlv.raw_tag_try_checked(raw_tag) as tag:
                 with ttlv.ttlv_value_text_string(b"expert attribute", limits) as value:
                     with ttlv.ttlv_item_create(tag, value, limits) as item:
-                        with fluent.Request(None).set_attribute() as builder:
+                        with request_builder() as builder:
                             builder.unique_identifier("key-42").attribute_item(item)
                             builder.validate()
-                        with fluent.Request(None).set_attribute() as builder:
+                        with request_builder() as builder:
                             builder.unique_identifier("key-42").vendor_attribute(
                                 "Vendor_Name.1", "region", item
                             )
@@ -918,8 +943,9 @@ def test_request_namespace_exposes_typed_set_attribute_builder() -> None:
         builder.validate()
 
 
-def test_set_attribute_builder_executes_default_and_override_options(
-    monkeypatch: pytest.MonkeyPatch,
+@pytest.mark.parametrize("builder_factory", ["set_attribute", "add_attribute"])
+def test_attribute_mutation_builder_executes_default_and_override_options(
+    builder_factory: str, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     calls: list[tuple[str, int | None]] = []
 
@@ -950,17 +976,60 @@ def test_set_attribute_builder_executes_default_and_override_options(
 
     monkeypatch.setattr(fluent, "Client", FakeClient)
     monkeypatch.setattr(fluent, "Batch", FakeBatch)
+    request = fluent.Request(FakeClient())
+    request_builder = getattr(request, builder_factory)
     with ttlv.codec_limits_defaults() as limits:
         with ttlv.ttlv_value_text_string(b"default exchange", limits) as value:
-            with fluent.Request(FakeClient()).set_attribute() as builder:
+            with request_builder() as builder:
                 builder.unique_identifier("key-42").catalogued_attribute(
                     StandardAttribute.DESCRIPTION, value,
                 )
                 assert builder.execute(limits) == "default result"
         with ttlv.ttlv_value_text_string(b"overridden exchange", limits) as value:
-            with fluent.Request(FakeClient()).set_attribute() as builder:
+            with request_builder() as builder:
                 builder.unique_identifier("key-42").catalogued_attribute(
                     StandardAttribute.DESCRIPTION, value,
                 ).with_options(client.RequestOptions()).asynchronous_indicator(2)
                 assert builder.execute(limits) == "options result"
     assert calls == [("default", None), ("options", 2)]
+
+
+def test_add_attribute_builder_rejects_success_without_native_output(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    native_library = fluent.lib
+
+    class NativeLibraryStub:
+        def __getattr__(self, name: str) -> object:
+            return getattr(native_library, name)
+
+        def kmipkit_add_attribute_builder_create(self, output: object) -> int:
+            return 0
+
+        def kmipkit_add_attribute_builder_build_request(
+            self, builder: object, output: object
+        ) -> int:
+            return 0
+
+    stub = NativeLibraryStub()
+    monkeypatch.setattr(fluent, "lib", stub)
+    with pytest.raises(errors.KmipKitError):
+        fluent.AddAttributeBuilder()
+
+    monkeypatch.setattr(fluent, "lib", native_library)
+    with fluent.AddAttributeBuilder() as builder:
+        monkeypatch.setattr(fluent, "lib", stub)
+        with pytest.raises(errors.KmipKitError):
+            builder.build_request()
+
+
+def test_add_attribute_builder_finalizer_swallows_close_errors(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fail_close(self: fluent.AddAttributeBuilder) -> None:
+        raise RuntimeError("close failed")
+
+    monkeypatch.setattr(fluent.AddAttributeBuilder, "close", fail_close)
+    builder = object.__new__(fluent.AddAttributeBuilder)
+    builder.__del__()
+    del builder

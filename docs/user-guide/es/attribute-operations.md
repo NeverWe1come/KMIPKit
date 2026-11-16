@@ -220,6 +220,45 @@ fn set_comment(client: &mut Client) -> Result<String, Box<dyn Error>> {
 
 El builder valida localmente el valor catalogado y el payload de la operación. También ofrece `build`, `validate` y `to_batch_item` para controlar cada paso, y `attribute_item` para un `Item` TTLV con tipo explícito. Usa `vendor_attribute` para construir la estructura KMIP Vendor Attribute a partir del identificador del fabricante, el nombre y el valor. La petición usa el cliente existente en un único intercambio, sin Poll ni reintentos.
 
+## Petición fluida Add Attribute
+
+Add Attribute implementa KMIP v2.1 §6.1.2, Table 167; su New Attribute usa la estructura definida en §5.7, Table 163. La petición fluida construye el request tipado existente para añadir un atributo a un objeto identificado y acepta un `Attribute` catalogado, un `Item` TTLV con tipo explícito o un Vendor Attribute construido a partir de sus campos:
+
+```rust
+use std::error::Error;
+
+use kmipkit_client::Client;
+use kmipkit_protocol::{attribute::typed, Attribute};
+use kmipkit_ttlv::codec::CodecLimits;
+
+fn add_comment(client: &mut Client) -> Result<String, Box<dyn Error>> {
+    let response = client
+        .request()
+        .add_attribute()
+        .unique_identifier("object-id-17")
+        .attribute(Attribute::<typed::Comment>::new("reviewed by service".to_owned())?)
+        .execute(&CodecLimits::defaults())?;
+
+    response
+        .outcome()
+        .response()
+        .add_attribute()
+        .and_then(|result| result.unique_identifier())
+        .map(str::to_owned)
+        .ok_or_else(|| "Add Attribute did not return a successful identifier".into())
+}
+```
+
+La operación requiere un único New Attribute. El builder valida localmente el tipo TTLV catalogado y el payload; ofrece `build`, `validate` y `to_batch_item` para controlar cada paso. `attribute_item` acepta un `Item` con tipo explícito y `vendor_attribute` construye la estructura KMIP Vendor Attribute.
+
+| Lenguaje | Iniciar la petición | Añadir un atributo | Enviar y liberar |
+| --- | --- | --- | --- |
+| C | `kmipkit_add_attribute_builder_create` | `..._add_catalogued_attribute`, `..._add_attribute_item` o `..._add_vendor_attribute` | `..._execute_v1` o `..._build_batch_item`; liberar builder y resultados |
+| Java | `new FluentRequest(client).addAttribute()` | `cataloguedAttribute`, `attributeItem` o `vendorAttribute` | `execute(limits)` o `build`; cerrar builder y resultados |
+| Python | `fluent.Request(client).add_attribute()` | `catalogued_attribute`, `attribute_item` o `vendor_attribute` | `execute(limits)` o `build`; usar el builder como gestor de contexto |
+
+El intercambio usa una sola vez el cliente existente y no realiza Poll ni reintentos. Las comprobaciones de política del cliente pueden rechazar atributos prohibidos antes del transporte y marcar el envío como `NotSent`.
+
 El mismo builder está disponible en las fachadas de los cuatro lenguajes:
 
 | Lenguaje | Iniciar la petición | Atributo catalogado | TTLV experto o atributo de fabricante | Enviar y liberar |

@@ -544,3 +544,227 @@
   tools.api_manifest.tests.test_0093_set_attribute_builder_manifest -v`
   passes all four assertions, and `git diff --check` passes.
 
+## KMIPKIT-0093 Add Attribute fluent request builders
+
+### Red
+
+- Commits `00f890771` and `3ffb824c8` added Rust consumer tests for typed
+  request construction, validation, batch conversion, and one typed exchange;
+  they failed first because `RequestBuilder::add_attribute` was absent.
+- Commit `135859cf2` added a compiled C consumer for the opaque Add Attribute
+  builder; it failed first because the public C type and symbols were absent.
+- Commit `22f790cb8` added four-language API manifest assertions; they failed
+  first because the builder declaration and operation functions were absent.
+- Commit `57491df9f` added a Java consumer test that failed to compile because
+  `AddAttributeBuilder` was not present.
+- Commit `e14076b65` added a Python consumer test that failed because
+  `Request.add_attribute` was absent.
+
+### Green
+
+- Rust commit `ffc82f876` added `AddAttributeBuilder` over the existing typed
+  `AddAttributeRequest`, including detached construction, catalogued and
+  explicit Items, Vendor Attribute construction, batch conversion, and one
+  exchange through the existing client.
+- C commit `07738867e` added the opaque ABI and generated public declarations;
+  the compiled C consumer builds the typed request, inspects its batch
+  operation, and exercises the pre-send null-client error path.
+- Java commit `ae20d1018` and Python commit `5dd8d0de4` add the JNI/CFFI
+  facades over the same Rust-owned builder and typed request handles.
+  Their focused consumer tests exercise request ownership, validation, batch
+  conversion, and release. The Python typed-request adapter owns the returned
+  handle independently.
+- `cargo test -p kmipkit-client --all-features add_attribute` passes six
+  focused tests; the compiled C ABI consumer passes; the full Java Gradle test
+  suite passes; and Python passes 1,362 tests with 119 subtests, including the
+  built-wheel contract with `maturin` installed.
+- The Add Attribute manifest tests pass and
+  `python3 tools/api_manifest/generate.py --check` verifies the 12 generated
+  outputs. The generated binding export report reconciles all C, Java, and
+  Python declarations with zero missing, stale, or kind-mismatched exports.
+
+### Refactor
+
+- Commit `b4e4336cd` extracts the New Attribute selection, duplicate-call
+  rejection, vendor construction, TTLV copying, and local error state shared
+  by the Rust Add Attribute and Set Attribute builders.
+- English and Spanish attribute-operation guides and the FR-004, FR-006, and
+  FR-011 traceability rows now describe Add Attribute and its four binding
+  paths with the KMIP v2.1 §6.1.2 and §5.7 references.
+- Full required coverage and exact-head CI remain open. The dependent PR stays
+  WIP until those checks pass.
+
+### Add Attribute audit, metadata, and current-head verification
+
+- Red commit `7066f415f` added a regression for duplicate public export paths;
+  it failed on eight stale Rust v3.0 `object_class_mask` rows that were already
+  covered by the approved KMIPKIT-0047 declarations. The manifest paths now
+  point to the generated `bitmask` module, those eight blocked duplicates are
+  removed, and the capability mapping list is sorted again.
+- Red commit `129380d25` reproduced owner lookup selecting `0120-*` for
+  KMIPKIT-0012 before the actual `012-*` directory. Green commit `72d0d60c5`
+  requires an exact numeric directory boundary; all four owner-lookup tests
+  pass.
+- Red commit `4e95192a2` added the Add Attribute capability to the C runtime
+  metadata expectation and exposed that the Rust facade still returned it as
+  unavailable. Green commit `5af0f5190` exposes
+  `fluent_add_attribute_parity` from `capability_is_available`; the focused FFI
+  metadata test passes.
+- `rust-export-report-2026-11-16.json` matches all 30,744 observed export paths: 9,779
+  declarations, 20,965 exact exclusions, and zero missing, unobserved,
+  mismatched, or unresolved rows. Its exact `--check` passes. The shared Rust
+  inventory reports 5,292 mapped declarations and 20,965 exclusions; its
+  generated report and `--check` pass.
+- Public-manifest inventory, the Add Attribute contract, C header inventory,
+  T102 snapshot, C API documentation, shared inventory, generator, and
+  generated-output checks pass. The generator verifies all 12 outputs.
+- Current local verification passes: `cargo fmt --all --check`, workspace
+  Clippy with all targets and features, `cargo test --workspace --all-features`,
+  and `cargo llvm-cov --workspace --all-features` (90.71% total line coverage).
+  The compiled C ABI consumer suite passes 62 tests; Java `./gradlew test`
+  succeeds; Python passes 1,362 tests and 119 subtests.
+- Exact-head CI has not yet run. AAB004 remains open and the dependent PR stays
+  WIP until all required CI jobs are green.
+
+## Add Attribute exact-head CI repair
+
+### Red
+
+- PR #236 at `0147e68189aa3b85454f6b775f9d2158736322e5` failed the
+  production execute-boundary audit because three item macros in
+  `kmipkit-client/src/fluent.rs` have opaque expansions. Core and coverage
+  jobs consequently failed their shared client test.
+- Script contracts also exposed 76 KMIPKIT-0093-FR-011 declarations incorrectly
+  tagged as KMIPKIT-0043 candidates. The checked-in T102 contract requires zero
+  blocked KMIPKIT-0043 candidates.
+
+### Green
+
+- Replaced the opaque macro-generated Add/Set Attribute methods with explicit
+  builder implementations, keeping the production AST audit fail-closed.
+  The boundary inventory regression and
+  `cargo test --workspace --all-features --locked` pass.
+- Extended Rust export reconciliation so an explicit feature owner repairs
+  unresolved blocked rows for that exact requirement. Reconciled the report
+  with `--candidate-spec-id KMIPKIT-0093 --requirement-id KMIPKIT-0093-FR-011`
+  and regenerated the 12 public API outputs. The T102 response-trait and Rust
+  reconciliation suites pass all 102 tests; the KMIPKIT-0043 blocked count is
+  restored to zero.
+- `cargo fmt --all --check`, workspace Clippy with all targets/features and
+  `-D warnings`, and `git diff --check` pass. The public API generator check
+  passes.
+
+### Refactor
+
+- Documented the explicit owner and requirement flags for feature-specific
+  Rust export reconciliation, including its narrow repair behavior. The public
+  builder surface remains fully typed and the AST audit still rejects opaque
+  macros.
+- The exact-head CI rerun is pending; PR #236 remains WIP until every required
+  check passes.
+
+## Add Attribute SonarCloud duplication repair
+
+### Red
+
+- PR #236 at `2cc3ecd9be84a21380205d181558bc22c91ffcb3` failed the SonarCloud
+  quality gate with 5.0% duplication on new code; the limit is 3%. The
+  identical explicit Add/Set builder method bodies introduced to keep the
+  production AST audit fail-closed exceeded that gate.
+
+### Green
+
+- Commit `7d715b26d` moves the shared Add/Set request state, validation,
+  construction, and execution into private helpers. Each public builder keeps
+  its existing named methods and typed request/result surface; method bodies
+  delegate to the shared implementation without introducing a macro.
+- The fluent request tests pass (31 tests), the complete Rust workspace suite
+  passes, workspace Clippy with all targets/features and `-D warnings` passes,
+  and `cargo fmt --all --check` passes.
+
+### Refactor
+
+- The shared helper accepts the operation-specific typed request constructor,
+  validator, and `ClientRequest` variant. The builders keep their distinct
+  missing-attribute errors and KMIP request types while execution still uses
+  the existing single typed exchange path.
+- A new exact-head SonarCloud analysis on PR #236 (`bb1a1a92`) still measured
+  5.3435% duplication across 1,572 new lines. The duplication endpoint
+  identified the common Add/Set builder methods in `fluent.rs`; the previous
+  request-construction helper had not removed that source duplication.
+- Replaced the repeated method bodies with short explicit wrappers over one
+  private state-update helper. The public builder types and method names stay
+  unchanged. An attempted macro-based extraction was rejected by the closed
+  AST inventory, so the final form keeps every public method directly
+  inspectable.
+- The Add/Set parity and manifest suite passes all 26 tests,
+  `cargo test -p kmipkit-client --all-features --lib` passes all 929 tests,
+  the generator verifies 12 outputs, and workspace formatting passes. Exact
+  head SonarCloud and CI results remain pending.
+- The next exact-head SonarCloud result must confirm duplication is at or below
+  the 3% gate. PR #236 remains WIP until every required check is green.
+
+### Recheck Green
+
+- Commit `4a183689f` moves shared Add/Set mutation methods into private trait
+  defaults. Each concrete builder keeps its public inherent methods and
+  signatures, with explicit type-specific delegation so the closed production
+  AST can still inspect every public method. No macro-generated public code is
+  introduced.
+- The Set Attribute manifest audit now filters blocked duplicate module paths
+  while requiring every declared Rust path to map across the four languages.
+- `cargo test -p kmipkit-client --all-features --lib` passes all 929 tests;
+  the Add/Set/parity manifest suite passes all 30 tests; the public API
+  generator verifies all 12 outputs; workspace formatting and Clippy with all
+  targets/features and `-D warnings` pass; `git diff --check` passes.
+
+### Recheck Refactor
+
+- This keeps the builder types and Rust paths as concrete nominal types, avoids
+  adding a public generic helper type, and shares the repeated mutation logic
+  without relying on macros that the source audit rejects.
+- PR #236 remains WIP until a new exact-head SonarCloud analysis confirms the
+  3% duplication gate and every other required CI check is green.
+
+### Recheck Red
+
+- The exact-head analysis for `8a878f1b4ba7d885fe10725a4503fe704a72c6d9`
+  still fails SonarCloud: `new_duplicated_lines_density` is 5.4307% against a
+  3% limit across 1,602 new lines.
+- Sonar's duplication report locates a 60-line repeated Add/Set builder block
+  at `fluent.rs` lines 3139 and 3201. Sharing only their state mutation and
+  request execution therefore did not remove the duplicated public builder
+  methods.
+
+### Complete Rust export reconciliation (KMIPKIT-0093)
+
+- **Red — `6a91e562b`**: the manifest-limit regression expects the reviewed
+  full 0093 inventory to fit a bounded 64 MiB input, but the generator still
+  used the prior 56 MiB limit. The focused size test failed with
+  `58720256 != 67108864`; the initial generator run also rejected the manifest.
+  After temporarily allowing validation of the larger input, validation
+  exposed eight stale KMIP 3.0 `enumeration::object_class_mask` mapping paths.
+- **Green — `db9d720ca`**: set the strict input bound to 64 MiB, removed only
+  the eight duplicate mapping paths identified by the Rust export audit, and
+  refreshed the source manifest and all generated outputs with the pinned
+  generator. Reconciled 419 exact Rust declaration candidates as blocked under
+  KMIPKIT-0093 and recorded 666 exact Rust trait exclusions. No cross-language
+  mapping was invented for a blocked candidate.
+- The compiler audit reports 31,977 observed Rust paths, 10,346 manifest
+  declarations and 21,631 approved exclusions, with zero missing, stale,
+  duplicate, kind-mismatched, or conditional-mismatch paths. The shared Rust
+  report is current at 5,440 mapped declarations and 21,631 approved
+  exclusions. C, Java, and Python export audits match 2,191, 2,598, and 2,855
+  declarations respectively, with no missing, stale, or kind-mismatched rows.
+- The 64 MiB bound leaves the manifest reader strictly bounded while admitting
+  the complete reviewed declaration and exclusion inventory. The KMIPKIT-0050
+  reconciliation helper is not part of the current reproduction sequence: it
+  enforces the old blocked `typed_cryptographic_parameters` contract that was
+  superseded by the verified KMIPKIT-0053 capability.
+- **Refactor**: updated the T102 count/fingerprint snapshots and the dated
+  audit report guide. Focused API, T102, shared-inventory, size-bound and
+  reconciliation tests pass (62 tests); three additional manifest-v2
+  execution/result mapping tests pass. The generator verifies all 12 outputs,
+  the Rust and shared-inventory report checks pass, and `git diff --check`
+  passes. Exact-head hosted CI is still required before this PR can leave WIP.
+

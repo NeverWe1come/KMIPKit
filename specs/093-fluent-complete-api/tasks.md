@@ -71,6 +71,19 @@ Dependent work branches from the unmerged parent head while review is pending.
 - [ ] KPB004 Push the completed implementation and resolve every required CI
   failure on the exact PR head before marking it ready for human review.
 
+### Add Attribute parity slice
+
+- [x] AAB001 Commit failing Rust, C consumer, Java consumer, Python consumer,
+  and public-manifest checks for one typed Add Attribute request.
+- [x] AAB002 Implement the Rust builder and C ABI on the existing typed
+  request path; return owned typed requests and batch items and preserve the
+  existing client error and delivery-state behavior.
+- [x] AAB003 Add Java/JNI and Python/CFFI builders, update the generated public
+  API inventory, and document the KMIP v2.1 §6.1.2 request in English and
+  Spanish.
+- [ ] AAB004 Run full binding, coverage, traceability, generation, and exact
+  head CI checks; resolve failures before review.
+
 ## End-to-end and closeout PR
 
 - [x] F001 Add five progressive TLS 1.3/mTLS journeys in each language and

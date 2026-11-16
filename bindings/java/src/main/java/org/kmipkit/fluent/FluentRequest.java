@@ -12,6 +12,7 @@ public final class FluentRequest {
     }
     public SymmetricKeyBuilder createSymmetricKey() { return new SymmetricKeyBuilder(client); }
     public CreateKeyPairBuilder createKeyPair() { return new CreateKeyPairBuilder(client); }
+    public AddAttributeBuilder addAttribute() { return new AddAttributeBuilder(client); }
     public SetAttributeBuilder setAttribute() { return new SetAttributeBuilder(client); }
     public OperationBuilder get(UniqueIdentifier id) { return new OperationBuilder(client, id, false); }
     public OperationBuilder destroy(UniqueIdentifier id) { return new OperationBuilder(client, id, true); }

@@ -172,8 +172,12 @@ KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS = {
 # this inventory also includes the approved KMIPKIT-0093 reconciliation and
 # narrowed T101 mappings. KMIPKIT-0124 adds 28 KMIP 3.0 fluent and 16 async
 # batch declarations to this non-target snapshot; the async request constructors
-# The non-target snapshot includes Create Key Pair declarations and KMIPKIT-0126 additions.
-DECLARATIONS_SHA256 = "f36a5b8bce7788f71ec4f7d4451f0f9cbf30a118c5057657441ae2abe77b55af"
+# add four-language mappings to the existing operation rows. KMIPKIT-0093 adds
+# the four-language Create Key Pair, Set Attribute, and Add Attribute builder
+# declarations and the complete Rust export reconciliation, including 419
+# blocked inventory candidates and 666 exact trait exclusions. Eight duplicate
+# KMIPKIT-0047 v3.0 paths are deduplicated.
+DECLARATIONS_SHA256 = "2d1da38eadc84caad789b6ba022b39900145a9d9784301d5ff963304d1f8c94f"
 OPERATIONS_SHA256 = "9ab6c670787f07c9faa301744d1654fdd071ceffc3b43936e6cb12add59094e2"
 
 
@@ -404,6 +408,30 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
                     or normalized_name.endswith("requestsetattribute")
                 )
             )
+        }
+        target_ids |= {
+            row["declarationId"]
+            for row in self.manifest["publicDeclarations"]
+            if row.get("capabilityId") in {
+                "fluent_add_attribute_parity",
+                "fluent_add_attribute_c_abi",
+            }
+        }
+        # A few Rust implementation-facing declarations are intentionally
+        # inventoried as public binding surface instead of fluent parity. They
+        # still belong to the Add Attribute builder slice and should not
+        # perturb this unrelated Certify snapshot.
+        target_ids |= {
+            row["declarationId"]
+            for row in self.manifest["publicDeclarations"]
+            if row.get("capabilityId") == "public_binding_surface"
+            and row.get("exportName") in {
+                "kmipkit_client::AddAttributeBuilder::detached",
+                "kmipkit_client::fluent::AddAttributeBuilder<'a>::detached",
+                "kmipkit_client::FluentBuildError::MissingAddAttributeAttribute",
+                "kmipkit_client::fluent::FluentBuildError::MissingAddAttributeAttribute",
+                "kmipkit_client::fluent::SetAttributeBuilder<'a>::detached",
+            }
         }
         other_declarations = copy.deepcopy([
             row for row in self.manifest["publicDeclarations"] if row["declarationId"] not in target_ids
