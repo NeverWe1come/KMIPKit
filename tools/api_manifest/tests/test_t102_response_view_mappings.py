@@ -176,7 +176,9 @@ EXPECTED = (
 # reconciliation; KMIPKIT-0096 Python expert attributes; and KMIPKIT-0108/0109
 # attribute reads and bindings. The prior fingerprint predates those additions.
 # KMIPKIT-0126 adds 37 versioned standard attributes and 7 KMIP 3.0 batch response readers.
-UNCHANGED_DECLARATIONS_SHA256 = "bba9d025b8918aa9203851cfa2fb723f0bb04db8accf0c7995f5b55ac35ea3a2"
+# KMIPKIT-0093 adds all audited Rust declaration candidates, exact trait
+# exclusions, and the 28 execution-wrapper requirement links.
+UNCHANGED_DECLARATIONS_SHA256 = "e1ebbe0ca4cff48f0453cdc096507f67977398487082bf6786f63f820ce25382"
 UNCHANGED_OPERATIONS_SHA256 = "9ee0f7c51c05a8abd96af7f6d3017f3ffb780c4262f231eaf3cb8c01a38147c7"
 # T098's maintainer-approved reconciliation updates lifecycle approval evidence
 # and inherited requirement links outside the T102 declaration/operation rows.
@@ -186,8 +188,10 @@ UNCHANGED_OPERATIONS_SHA256 = "9ee0f7c51c05a8abd96af7f6d3017f3ffb780c4262f231eaf
 # exclusions, KMIPKIT-0101 through KMIPKIT-0105 declarations, and KMIPKIT-0093
 # reconciliation, including KMIPKIT-0096 expert attributes and KMIPKIT-0108/0109
 # attribute operations and bindings. R002's additive requirement links and C
-# copy caveat are normalized below and tested by the 0093 suite.
-OTHER_MANIFEST_SHA256 = "842015a1ba36e18af23844d67155d457c67776c9c4e07b203b57104931892bbb"
+# copy caveat are normalized below and tested by the 0093 suite. The full Rust
+# reconciliation adds 419 blocked candidates, 666 exact trait exclusions, and
+# the FR-005/FR-008 wrapper links.
+OTHER_MANIFEST_SHA256 = "5d87c95675c3af9936fc7c7acee8af0fefd7693798368d183ed1e0f187053ca7"
 EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = T102_BLOCKED_CANDIDATES
 LOCATE_REQUEST_BUILDER_IDS = {
     "rust-observed-e07fce825be9d33278e1",

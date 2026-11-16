@@ -174,9 +174,10 @@ KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS = {
 # batch declarations to this non-target snapshot; the async request constructors
 # add four-language mappings to the existing operation rows. KMIPKIT-0093 adds
 # the four-language Create Key Pair, Set Attribute, and Add Attribute builder
-# declarations to the same inventory. The Rust export reconciliation adds 159
-# observed paths; eight already-covered KMIPKIT-0047 paths are deduplicated.
-DECLARATIONS_SHA256 = "3239266f3d43125d24c1fd118e89b25ea49d3abdeab254ee6c1f5832a97ee342"
+# declarations and the complete Rust export reconciliation, including 419
+# blocked inventory candidates and 666 exact trait exclusions. Eight duplicate
+# KMIPKIT-0047 v3.0 paths are deduplicated.
+DECLARATIONS_SHA256 = "2d1da38eadc84caad789b6ba022b39900145a9d9784301d5ff963304d1f8c94f"
 OPERATIONS_SHA256 = "9ab6c670787f07c9faa301744d1654fdd071ceffc3b43936e6cb12add59094e2"
 
 

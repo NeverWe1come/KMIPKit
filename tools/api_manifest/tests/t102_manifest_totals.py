@@ -35,13 +35,14 @@ T102_BLOCKED_CANDIDATES = 0
 # KMIPKIT-0126 adds 37 standard attribute declarations and 7 KMIP 3.0 batch response readers across 4 languages.
 # Update this full-manifest snapshot only when an approved feature intentionally
 # adds or removes declarations.
-# KMIPKIT-0093 adds 151 unique fluent declarations and 68 exact Rust trait
-# exclusions after removing eight duplicate KMIPKIT-0047 v3.0 value paths.
+# KMIPKIT-0093 adds 151 unique fluent declarations, 419 blocked Rust inventory
+# candidates, and 666 exact Rust trait exclusions after removing eight
+# duplicate KMIPKIT-0047 v3.0 value paths.
 # The merged release inventory also includes the KMIPKIT-0093 C key-pair, Rust
 # Set Attribute, Add Attribute, and four-language binding declarations.
-T102_PUBLIC_DECLARATIONS = 17_579
+T102_PUBLIC_DECLARATIONS = 17_990
 T102_KMIP30_DRAFT_ROUTE_DECLARATIONS = 36
-T102_APPROVED_EXCLUSIONS = 22_747
-T102_RUST_AUDIT_MANIFEST = 3_287
-T102_RUST_AUDIT_EXCLUDED = 7_176
-T102_RUST_AUDIT_OBSERVED = 10_463
+T102_APPROVED_EXCLUSIONS = 23_413
+T102_RUST_AUDIT_MANIFEST = 10_346
+T102_RUST_AUDIT_EXCLUDED = 21_631
+T102_RUST_AUDIT_OBSERVED = 31_977
