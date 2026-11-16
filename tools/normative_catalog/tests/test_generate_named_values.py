@@ -57,6 +57,40 @@ class NamedValueGeneratorTests(unittest.TestCase):
             with self.subTest(declaration=declaration_id):
                 self.assertEqual(declaration, actual[declaration_id])
 
+    def test_reconciliation_replaces_blocked_observations_for_generated_paths(self) -> None:
+        catalog = generate_named_values.load_validated_catalog(
+            generate_named_values.safe_read_bytes(
+                ROOT,
+                generate_named_values.CATALOG_PATH,
+                max_bytes=generate_named_values.MAX_BYTES,
+            ),
+            ROOT,
+            require_complete=True,
+        )
+        manifest = json.loads(
+            (ROOT / "specification/api/public-api.json").read_text(encoding="utf-8")
+        )
+        declarations, mappings = reconcile_named_value_manifest.build_named_value_records(
+            catalog, generate_named_values.load_versioned_values(ROOT)
+        )
+        generated_paths = {
+            (row["packageId"], row["exportName"]) for row in declarations
+        }
+        reconciled = reconcile_named_value_manifest.reconcile(manifest, declarations, mappings)
+        blocked_overlaps = [
+            row
+            for row in reconciled["publicDeclarations"]
+            if row.get("declarationState") == "blocked"
+            and (row.get("packageId"), row.get("exportName")) in generated_paths
+        ]
+
+        if blocked_overlaps:
+            self.fail(
+                "Named-value reconciliation retained "
+                f"{len(blocked_overlaps)} blocked observations for generated paths: "
+                f"{[row['declarationId'] for row in blocked_overlaps[:5]]}"
+            )
+
     def test_tag_enumeration_is_generated_for_all_supported_versions_and_languages(self) -> None:
         catalog = generate_named_values.load_validated_catalog(
             generate_named_values.safe_read_bytes(
