@@ -71,8 +71,18 @@ Python response view and a pinned-lock test for the Rust test-server harness;
 the view test failed as a missing route recipe before its fix. The harness's
 first `--locked` build attempt also exposed that its generated lock selected
 `cc 1.11.2`, which is incompatible with the pinned release. The harness now
-seeds its lock from the pinned release, resolves the standalone harness
-offline, and builds with `--locked`, retaining the release's `cc 1.6.0`.
+seeds its lock from the pinned release, fetches the standalone harness graph,
+then validates metadata and builds offline with `--locked`, retaining the
+release's `cc 1.6.0`.
+
+The next exact-head CI run exposed a clean-runner dependency-cache gap:
+`cargo metadata --offline` could not find `asn1-rs 0.7.2`, which happened to
+be cached locally. Red commit `34bf5ddc3` added a regression requiring an
+explicit dependency-fetch step and failed before the fix. Green commit
+`980885bbb` fetches the graph against the copied pinned lock before the offline
+metadata/build steps. The focused regression passed, and
+`python3 interop/rust-kmip-validator/tools/build_test_server.py` built the
+harness locally from the same pinned source.
 
 Verification on the pinned Python wheel (`12496d...`, SHA-256
 `18043fee5e92893bf4d3ac495552121ac8edc7cbc7f6e77472143e2b6ccb7d78`): the
