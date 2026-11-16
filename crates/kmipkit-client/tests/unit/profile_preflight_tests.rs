@@ -131,28 +131,19 @@ fn empty_profile_selection_is_rejected_before_exchange_on_both_entry_points() {
 }
 
 #[test]
-fn baseline_selection_with_incomplete_evidence_fails_before_exchange() {
+fn baseline_selection_with_complete_evidence_executes_once() {
     let exchanges = Rc::new(Cell::new(0));
     let mut client = Client::for_test(CountingTransport::new(Rc::clone(&exchanges)));
-    let error = client
+    let response = client
         .execute_with_profiles(
             discover_versions_batch(),
             &ProfileValidationSelection::new([BASELINE]),
             &CodecLimits::defaults(),
         )
-        .expect_err("Baseline cannot be selected while evidence remains incomplete");
+        .expect("Baseline can be selected once evidence is complete");
 
-    assert_eq!(error.category(), ClientErrorCategory::Validation);
-    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
-    assert_eq!(exchanges.get(), 0);
-    let profile_error = error
-        .profile_validation_error()
-        .expect("the closed selection preserves its structured profile error");
-    assert_eq!(
-        profile_error.code(),
-        ProfileValidationErrorCode::ProfileUnavailable
-    );
-    assert_eq!(profile_error.profile_id(), Some(BASELINE));
+    assert_eq!(exchanges.get(), 1);
+    let _ = response;
 }
 
 fn query_batch() -> ClientBatch {

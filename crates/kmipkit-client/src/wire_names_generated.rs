@@ -353,6 +353,66 @@ T	420173	Asynchronous Request
 T	420174	Submission Date
 T	420175	Processing Stage
 T	420176	Asynchronous Correlation Values
+T	420190	Certificate Link
+T	420191	Child Link
+T	420192	Derivation Base Object Link
+T	420193	Derived Object Link
+T	420194	Next Link
+T	420195	Parent Link
+T	420196	PKCS#12 Certificate Link
+T	420197	PKCS#12 Password Link
+T	420198	Previous Link
+T	420199	Private Key Link
+T	42019A	Public Key Link
+T	42019B	Replaced Object Link
+T	42019C	Replacement Object Link
+T	42019D	Wrapping Key Link
+T	42019E	Object Class
+T	42019F	Object Class Mask
+T	4201A0	Credential Link
+T	4201A1	Password Credential
+T	4201A2	Password Salt
+T	4201A3	Password Salt Algorithm
+T	4201A4	Salted Password
+T	4201A5	Password Link
+T	4201A6	Device Credential
+T	4201A7	OTP Credential
+T	4201A8	OTP Algorithm
+T	4201A9	OTP Digest
+T	4201AA	OTP Serial
+T	4201AB	OTP Seed
+T	4201AC	OTP Interval
+T	4201AD	OTP Digits
+T	4201AE	OTP Counter
+T	4201AF	Hashed Password Credential
+T	4201B0	Hashed Username Password
+T	4201B1	Hashed Password Username
+T	4201B2	Credential Information
+T	4201B3	Group Link
+T	4201B4	Split Key Base Link
+T	4201B5	Joined Split Key Parts Link
+T	4201B6	Split Key Polynomial
+T	4201B7	Deactivation Message
+T	4201B8	Deactivation Reason
+T	4201B9	Deactivation Reason Code
+T	4201BA	Certificate Subject DN
+T	4201BB	Certificate Issuer DN
+T	4201BC	Certificate Request Link
+T	4201BD	Certify Counter
+T	4201BE	Decrypt Counter
+T	4201BF	Encrypt Counter
+T	4201C0	Sign Counter
+T	4201C1	Signature Verify Counter
+T	4201C2	NIST Security Category
+T	4201C3	KEM Algorithm
+T	4201C4	Deterministic
+T	4201C5	Context String
+T	4201C6	Seed
+T	4201C7	Input Key Material
+T	4201C8	Internal
+T	4201C9	External Mu
+T	4201CA	Random
+T	4201CB	Performs CRL Checks
 F	420007	Asynchronous Indicator
 F	42000E	Batch Error Continuation Option
 F	420011	Block Cipher Mode
@@ -417,6 +477,13 @@ F	42015D	PKCS#11 Return Code
 F	420160	Interop Function
 F	420171	Rotate Name Type
 F	420175	Processing Stage
+F	42019E	Object Class
+F	4201A3	Cryptographic Algorithm
+F	4201A8	OTP Algorithm
+F	4201A9	Cryptographic Algorithm
+F	4201B6	Split Key Polynomial
+F	4201B9	Deactivation Reason Code
+F	4201C3	KEM Algorithm
 E	Adjustment Type	00000001	Increment
 E	Adjustment Type	00000002	Decrement
 E	Adjustment Type	00000003	Negate
@@ -475,6 +542,8 @@ E	Credential Type	00000003	Attestation
 E	Credential Type	00000004	One Time Password
 E	Credential Type	00000005	Hashed Password
 E	Credential Type	00000006	Ticket
+E	Credential Type	00000007	Password
+E	Credential Type	00000008	Certificate
 E	Cryptographic Algorithm	00000001	DES
 E	Cryptographic Algorithm	00000002	3DES
 E	Cryptographic Algorithm	00000003	AES
@@ -531,6 +600,43 @@ E	Cryptographic Algorithm	00000035	McEliece-6960119
 E	Cryptographic Algorithm	00000036	McEliece-8192128
 E	Cryptographic Algorithm	00000037	Ed25519
 E	Cryptographic Algorithm	00000038	Ed448
+E	Cryptographic Algorithm	00000039	ML-KEM-512
+E	Cryptographic Algorithm	0000003A	ML-KEM-768
+E	Cryptographic Algorithm	0000003B	ML-KEM-1024
+E	Cryptographic Algorithm	0000003C	ML-DSA-44
+E	Cryptographic Algorithm	0000003D	ML-DSA-65
+E	Cryptographic Algorithm	0000003E	ML-DSA-87
+E	Cryptographic Algorithm	0000003F	SLH-DSA-SHA2-128s
+E	Cryptographic Algorithm	00000040	SLH-DSA-SHA2-128f
+E	Cryptographic Algorithm	00000041	SLH-DSA-SHA2-192s
+E	Cryptographic Algorithm	00000042	SLH-DSA-SHA2-192f
+E	Cryptographic Algorithm	00000043	SLH-DSA-SHA2-256s
+E	Cryptographic Algorithm	00000044	SLH-DSA-SHA2-256f
+E	Cryptographic Algorithm	00000045	SLH-DSA-SHAKE-128s
+E	Cryptographic Algorithm	00000046	SLH-DSA-SHAKE-128f
+E	Cryptographic Algorithm	00000047	SLH-DSA-SHAKE-192s
+E	Cryptographic Algorithm	00000048	SLH-DSA-SHAKE-192f
+E	Cryptographic Algorithm	00000049	SLH-DSA-SHAKE-256s
+E	Cryptographic Algorithm	0000004A	SLH-DSA-SHAKE-256f
+E	Cryptographic Algorithm	0000004B	Hash-SLH-DSA-SHA2-128s-with-SHA256
+E	Cryptographic Algorithm	0000004C	Hash-SLH-DSA-SHA2-128f-with-SHA256
+E	Cryptographic Algorithm	0000004D	Hash-SLH-DSA-SHA2-192s-with-SHA512
+E	Cryptographic Algorithm	0000004E	Hash-SLH-DSA-SHA2-192f-with-SHA512
+E	Cryptographic Algorithm	0000004F	Hash-SLH-DSA-SHA2-256s-with-SHA512
+E	Cryptographic Algorithm	00000050	Hash-SLH-DSA-SHA2-256f-with-SHA512
+E	Cryptographic Algorithm	00000051	Hash-SLH-DSA-SHAKE-128s-with-SHAKE128
+E	Cryptographic Algorithm	00000052	Hash-SLH-DSA-SHAKE-128f-with-SHAKE128
+E	Cryptographic Algorithm	00000053	Hash-SLH-DSA-SHAKE-192s-with-SHAKE256
+E	Cryptographic Algorithm	00000054	Hash-SLH-DSA-SHAKE-192f-with-SHAKE256
+E	Cryptographic Algorithm	00000055	Hash-SLH-DSA-SHAKE-256s-with-SHAKE256
+E	Cryptographic Algorithm	00000056	Hash-SLH-DSA-SHAKE-256f-with-SHAKE256
+E	Cryptographic Algorithm	00000057	Hash-ML-DSA-44-with-SHA512
+E	Cryptographic Algorithm	00000058	Hash-ML-DSA-65-with-SHA512
+E	Cryptographic Algorithm	00000059	Hash-ML-DSA-87-with-SHA512
+E	Cryptographic Algorithm	0000005A	X25519
+E	Cryptographic Algorithm	0000005B	X448
+E	Cryptographic Algorithm	0000005C	X25519MLKEM768
+E	Cryptographic Algorithm	0000005D	SECP256R1MLKEM768
 E	DRBG Algorithm	00000001	Unspecified
 E	DRBG Algorithm	00000002	Dual-EC
 E	DRBG Algorithm	00000003	Hash
@@ -543,6 +649,12 @@ E	Data	00000004	MAC MAC Data
 E	Data	00000005	RNG Retrieve
 E	Data	00000006	Sign Signature Data
 E	Data	00000007	Signature Verify
+E	Data	00000008	Encapsulate
+E	Data	00000009	Decapsulate
+E	Deactivation Reason Code	00000001	Unspecified
+E	Deactivation Reason Code	00000002	Deactivation Date
+E	Deactivation Reason Code	00000003	Protect Stop Date
+E	Deactivation Reason Code	00000004	Usage Limit
 E	Derivation Method	00000001	PBKDF2
 E	Derivation Method	00000002	HASH
 E	Derivation Method	00000003	HMAC
@@ -621,6 +733,12 @@ E	Item Type	00000008	Byte String
 E	Item Type	00000009	Date Time
 E	Item Type	0000000A	Interval
 E	Item Type	0000000B	Date Time Extended
+E	Item Type	0000000C	Identifier
+E	Item Type	0000000D	Reference
+E	Item Type	0000000E	Name Reference
+E	KEM Algorithm	00000001	RSASVE
+E	KEM Algorithm	00000002	DHKEM
+E	KEM Algorithm	00000003	MLKEM
 E	Key Compression Type	00000001	EC Public Key Type Uncompressed
 E	Key Compression Type	00000002	EC Public Key Type X9.62 Compressed Prime
 E	Key Compression Type	00000003	EC Public Key Type X9.62 Compressed Char2
@@ -642,6 +760,7 @@ E	Key Format Type	00000014	Transparent EC Private Key
 E	Key Format Type	00000015	Transparent EC Public Key
 E	Key Format Type	00000016	PKCS#12
 E	Key Format Type	00000017	PKCS#10
+E	Key Format Type	00000018	Seed Private Key
 E	Key Role Type	00000001	BDK
 E	Key Role Type	00000002	CVK
 E	Key Role Type	00000003	DEK
@@ -706,6 +825,10 @@ E	NIST Key Type	00000012	Private authorization key
 E	NIST Key Type	00000013	Public authorization key
 E	Name Type	00000001	Uninterpreted Text String
 E	Name Type	00000002	URI
+E	OTP Algorithm	00000001	HOTP
+E	OTP Algorithm	00000002	TOTP
+E	Object Class	00000001	User
+E	Object Class	00000002	System
 E	Object Group Member	00000001	Group Member Fresh
 E	Object Group Member	00000002	Group Member Default
 E	Object Type	00000001	Certificate
@@ -717,6 +840,12 @@ E	Object Type	00000007	Secret Data
 E	Object Type	00000008	Opaque Object
 E	Object Type	00000009	PGP Key
 E	Object Type	0000000A	Certificate Request
+E	Object Type	0000000B	User
+E	Object Type	0000000C	Group
+E	Object Type	0000000D	Password Credential
+E	Object Type	0000000E	Device Credential
+E	Object Type	0000000F	One Time Password Credential
+E	Object Type	00000010	Hashed Password Credential
 E	Operation	00000001	Create
 E	Operation	00000002	Create Key Pair
 E	Operation	00000003	Register
@@ -776,6 +905,13 @@ E	Operation	00000038	Get Constraints
 E	Operation	00000039	Query Asynchronous Requests
 E	Operation	0000003A	Process
 E	Operation	0000003B	Ping
+E	Operation	0000003C	Create Group
+E	Operation	0000003D	Obliterate
+E	Operation	0000003E	Create User
+E	Operation	0000003F	Create Credential
+E	Operation	00000040	Deactivate
+E	Operation	00000041	Encapsulate
+E	Operation	00000042	Decapsulate
 E	Padding Method	00000001	None
 E	Padding Method	00000002	OAEP
 E	Padding Method	00000003	PKCS5
@@ -844,6 +980,7 @@ E	Query Function	0000000B	Query Capabilities
 E	Query Function	0000000C	Query Client Registration Methods
 E	Query Function	0000000D	Query Defaults Information
 E	Query Function	0000000E	Query Storage Protection Masks
+E	Query Function	0000000F	Query Credential Information
 E	RNG Algorithm	00000001	Unspecified
 E	RNG Algorithm	00000002	FIPS 186-2
 E	RNG Algorithm	00000003	DRBG
@@ -923,6 +1060,15 @@ E	Recommended Curve	00000043	BRAINPOOLP512R1
 E	Recommended Curve	00000044	BRAINPOOLP512T1
 E	Recommended Curve	00000045	CURVE25519
 E	Recommended Curve	00000046	CURVE448
+E	Recommended Curve	00000047	ANSIX9C2PNB176W1
+E	Recommended Curve	00000048	ANSIX9C2TNB191V4
+E	Recommended Curve	00000049	ANSIX9C2TNB191V5
+E	Recommended Curve	0000004A	ANSIX9C2TNB239V4
+E	Recommended Curve	0000004B	ANSIX9C2TNB239V5
+E	Recommended Curve	0000004C	CURVE25519PH
+E	Recommended Curve	0000004D	CURVE448PH
+E	Recommended Curve	0000004E	OpenPGP Ed25519
+E	Recommended Curve	0000004F	OpenPGP Curve25519
 E	Result Reason	00000001	Item Not Found
 E	Result Reason	00000002	Response Too Large
 E	Result Reason	00000003	Authentication Not Successful
@@ -993,6 +1139,7 @@ E	Result Reason	00000049	Public Protection Storage Unavailable
 E	Result Reason	0000004A	Unknown Object Group
 E	Result Reason	0000004B	Constraint Violation
 E	Result Reason	0000004C	Duplicate Process Request
+E	Result Reason	0000004D	Circular Link Error
 E	Result Reason	00000100	General Failure
 E	Result Status	00000000	Success
 E	Result Status	00000001	Operation Failed
@@ -1005,6 +1152,9 @@ E	Revocation Reason Code	00000004	Affiliation Changed
 E	Revocation Reason Code	00000005	Superseded
 E	Revocation Reason Code	00000006	Cessation of Operation
 E	Revocation Reason Code	00000007	Privilege Withdrawn
+E	Revocation Reason Code	00000008	Certificate Hold
+E	Revocation Reason Code	00000009	Remove From CRL
+E	Revocation Reason Code	0000000A	AA Compromise
 E	Rotate Name Type	00000001	Uninterpreted Text String
 E	Rotate Name Type	00000002	URI
 E	Secret Data Type	00000001	Password
@@ -1016,6 +1166,8 @@ E	Split Key Method	00000001	XOR
 E	Split Key Method	00000002	Polynomial Sharing GF (2¹⁶)
 E	Split Key Method	00000003	Polynomial Sharing Prime Field
 E	Split Key Method	00000004	Polynomial Sharing GF (2⁸)
+E	Split Key Polynomial	00000001	Polynomial-283
+E	Split Key Polynomial	00000002	Polynomial-285
 E	State	00000001	Pre-Active
 E	State	00000002	Active
 E	State	00000003	Deactivated
@@ -1040,6 +1192,9 @@ E	Unique Identifier	0000000E	Re-certify
 E	Unique Identifier	0000000F	Re-key Key Pair
 E	Unique Identifier	00000010	Re-key Key Pair Private Key
 E	Unique Identifier	00000011	Re-key Key Pair Public Key
+E	Unique Identifier	00000013	Create User
+E	Unique Identifier	00000014	Create Group
+E	Unique Identifier	00000015	Create Credential
 E	Unwrap Mode	00000001	Unspecified
 E	Unwrap Mode	00000002	Processed
 E	Unwrap Mode	00000003	Not Processed
@@ -1064,6 +1219,7 @@ E	Wrapping Method	00000005	TR-31
 M	42002C	Cryptographic Usage Mask
 M	42008E	Storage Status Mask
 M	42015E	Protection Storage Mask
+M	42019F	Object Class Mask
 B	Cryptographic Usage Mask	00000001	Sign
 B	Cryptographic Usage Mask	00000002	Verify
 B	Cryptographic Usage Mask	00000004	Encrypt
@@ -1080,6 +1236,8 @@ B	Cryptographic Usage Mask	00100000	Authenticate
 B	Cryptographic Usage Mask	00200000	Unrestricted
 B	Cryptographic Usage Mask	00400000	FPE Encrypt
 B	Cryptographic Usage Mask	00800000	FPE Decrypt
+B	Object Class Mask	00000001	User
+B	Object Class Mask	00000002	System
 B	Protection Storage Mask	00000001	Software
 B	Protection Storage Mask	00000002	Hardware
 B	Protection Storage Mask	00000004	On Processor

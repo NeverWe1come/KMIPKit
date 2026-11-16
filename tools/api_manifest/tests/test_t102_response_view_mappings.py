@@ -170,14 +170,24 @@ EXPECTED = (
 # The non-target snapshots include subsequent approved T102 manifest slices.
 # They also include the 0047 release stack and reconciled 0048/0049/0050 inventories.
 # The snapshot includes the approved KMIPKIT-0052 async typed-reader routes.
-UNCHANGED_DECLARATIONS_SHA256 = "b3212d8289623f928705345cd30b614950ffacae118a64101f8660bfb7beb067"
+# It also includes the approved KMIPKIT-0099 Create Split Key and KMIPKIT-0100
+# Register declarations, lifecycle declarations, KMIPKIT-0102 Rust, KMIPKIT-0103
+# C, KMIPKIT-0104 Java, and KMIPKIT-0105 Python crypto facades; KMIPKIT-0093
+# reconciliation; KMIPKIT-0096 Python expert attributes; and KMIPKIT-0108/0109
+# attribute reads and bindings. The prior fingerprint predates those additions.
+# KMIPKIT-0126 adds 37 versioned standard attributes and 7 KMIP 3.0 batch response readers.
+UNCHANGED_DECLARATIONS_SHA256 = "5b9f50ca5b35bf89e944478db92721a2308f05f7da55f6ad56acf52d583f4e41"
 UNCHANGED_OPERATIONS_SHA256 = "9ee0f7c51c05a8abd96af7f6d3017f3ffb780c4262f231eaf3cb8c01a38147c7"
 # T098's maintainer-approved reconciliation updates lifecycle approval evidence
 # and inherited requirement links outside the T102 declaration/operation rows.
 # The test separately pins those T098 records; this fingerprint covers the
 # resulting manifest baseline after the explicit T102 normalizations below.
-# The non-target snapshot includes the async reader routes and exact Python adapter exclusions.
-OTHER_MANIFEST_SHA256 = "03148fafcbf2cbec51646166c6c4094b1ba87349a4b5793b218efba061a8146e"
+# The non-target snapshot includes the async reader routes, exact Python adapter
+# exclusions, KMIPKIT-0101 through KMIPKIT-0105 declarations, and KMIPKIT-0093
+# reconciliation, including KMIPKIT-0096 expert attributes and KMIPKIT-0108/0109
+# attribute operations and bindings. R002's additive requirement links and C
+# copy caveat are normalized below and tested by the 0093 suite.
+OTHER_MANIFEST_SHA256 = "b739446325f19be50108f753fb2ca2494a3c06ab0b78fe4fbc0f790290fde66c"
 EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = T102_BLOCKED_CANDIDATES
 LOCATE_REQUEST_BUILDER_IDS = {
     "rust-observed-e07fce825be9d33278e1",
@@ -455,6 +465,19 @@ class T102ResponseViewMappingTests(unittest.TestCase):
             if row["declarationId"] not in target_ids
         ])
         for declaration in unchanged_declarations:
+            # KMIPKIT-0093 maps the new master response contract onto existing
+            # response owners. The dedicated 0093 tests pin those additive IDs;
+            # exclude them from this T102 snapshot of unrelated declarations.
+            declaration["requirementIds"] = [
+                requirement_id
+                for requirement_id in declaration["requirementIds"]
+                if requirement_id
+                not in {
+                    "KMIPKIT-0093-FR-005",
+                    "KMIPKIT-0093-FR-008",
+                    "KMIPKIT-0093-FR-009",
+                }
+            ]
             if declaration["declarationId"] in {
                 "rust-observed-e0a06a71290bee987cc7",
                 "rust-observed-5722377217051635233d",
@@ -549,7 +572,7 @@ class T102ResponseViewMappingTests(unittest.TestCase):
                     | {RETIRED_REKEY_KEY_PAIR_REQUIREMENT}
                 )
         self.assertEqual(
-        "04280541b0de48133cb1ff82067706934c1c7f40455109edbf8d40b28ae72683",
+            UNCHANGED_DECLARATIONS_SHA256,
             canonical_sha256(without_0047_versioned_values(unchanged_declarations)),
         )
 
@@ -598,7 +621,7 @@ class T102ResponseViewMappingTests(unittest.TestCase):
                         != "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java"
                     ]
         self.assertEqual(
-            "4a2ad98111beb45f4ef1e249c27b4405d29dedc96840cfb127a3fcdf4f88fbdf",
+            "9f04e672ec202fb4acdb911879d5519b7c57238d77aa67574b8e5471cc6fea57",
             canonical_sha256(normalized_operations),
         )
         other_manifest = {
@@ -629,6 +652,9 @@ class T102ResponseViewMappingTests(unittest.TestCase):
             requirement_id
             for requirement_id in other_manifest["requirementIds"]
             if requirement_id not in {
+                "KMIPKIT-0093-FR-005",
+                "KMIPKIT-0093-FR-008",
+                "KMIPKIT-0093-FR-009",
                 LOCATE_REQUEST_REQUIREMENT,
                 "KMIPKIT-REQ-SPEC-6.1.45-002-003",
                 "KMIPKIT-REQ-SPEC-6.1.18-001-001",
@@ -638,6 +664,26 @@ class T102ResponseViewMappingTests(unittest.TestCase):
             }
         ]
         for function in other_manifest["functions"]:
+            function["requirementIds"] = [
+                requirement_id
+                for requirement_id in function["requirementIds"]
+                if requirement_id
+                not in {
+                    "KMIPKIT-0093-FR-005",
+                    "KMIPKIT-0093-FR-008",
+                    "KMIPKIT-0093-FR-009",
+                }
+            ]
+            if function["id"] in {
+                "client_batch_item_response_ttlv_hex",
+                "client_batch_item_response_json",
+                "client_batch_item_response_xml",
+            }:
+                function["c"]["documentation"] = [
+                    sentence
+                    for sentence in function["c"]["documentation"]
+                    if "cannot be zeroized by KMIPKit" not in sentence
+                ]
             if function["id"] == "client_batch_item_recertify":
                 function["c"]["documentation"][0] = (
                     "Creates a typed Re-certify item. Certificate Request Type is present only with "
@@ -668,7 +714,7 @@ class T102ResponseViewMappingTests(unittest.TestCase):
                 requirements.add(LOCATE_SERVER_ONLY_REQUIREMENT)
                 function["requirementIds"] = sorted(requirements)
         self.assertEqual(
-            "c6b533ae0c08ecba977a2039c6a9ba2e0df0c01c9fab29b72c1c591f475ccbef",
+            OTHER_MANIFEST_SHA256,
             canonical_sha256(other_manifest),
         )
 

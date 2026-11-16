@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MainContractTest {
@@ -122,6 +123,15 @@ class MainContractTest {
         assertEquals("policy_restricted", result.path("status").asText());
         assertEquals("not_checked", result.path("library_correctness").asText());
         assertEquals("unknown", result.path("server_compatibility").asText());
+    }
+
+    @Test
+    void planPermitsKmip20LiveRoutesWithPinnedReleaseArtifact() throws Exception {
+        Path connection = connection("2.0", "typed-protocol");
+        String plan = assertCommandOutput(0, "plan", "--connection", connection.toString(),
+                "--catalog", "../shared/catalog/kmipkit-1.0-test-catalog.json");
+        assertTrue(plan.contains("Server exchanges executable through selected Java API level: 11"));
+        assertFalse(plan.contains("KMIP 2.0 live routes are blocked"));
     }
 
     @Test

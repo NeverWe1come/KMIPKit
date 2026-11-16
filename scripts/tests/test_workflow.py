@@ -706,7 +706,7 @@ class WorkflowContractTests(unittest.TestCase):
 
         jni_job = self.require_job(contents, "ffi-sanitizer-jni")
         self.assertIn("-fsanitize=address,undefined -fno-omit-frame-pointer", jni_job)
-        self.assertIn("bindings/java/native/tests/zeroizing_bytes_test.cpp", jni_job)
+        self.assertIn("bindings/java/native/tests/*.cpp", jni_job)
 
     def test_fuzz_smoke_job_runs_the_bounded_extension_schema_target(self) -> None:
         contents = self.require_workflow()
@@ -1103,6 +1103,10 @@ class WorkflowContractTests(unittest.TestCase):
         )
         normalized_collector = " ".join(collector.replace("\\\n", " ").split())
 
+        self.assertIn("cargo llvm-cov \\", collector)
+        self.assertIn("-p kmipkit-ffi --all-targets --all-features --locked \\", collector)
+        self.assertIn("--all-targets", collector)
+        self.assertIn('--json --output-path "${raw_report}"', collector)
         self.assertIn(
             'CARGO_TERM_COLOR=never CARGO_TARGET_DIR="${ffi_target}" cargo llvm-cov '
             '--no-clean -p kmipkit-ffi --all-targets --all-features --locked '

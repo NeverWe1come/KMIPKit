@@ -104,10 +104,25 @@ def load_versioned_tag_allocations(root: Path) -> list[tuple[int, str]]:
     seen_values: set[int] = set()
     seen_names: set[str] = set()
     seen_sections: set[str] = set()
+    allowed_keys = {
+        "name",
+        "wire_value",
+        "attribute_section",
+        "introduced_in",
+        "source_encoding",
+        "is_object_attribute",
+        "source_multiplicity",
+        "source_modifiable_by_client",
+        "source_deletable_by_client",
+        "source_initially_set_by",
+        "enumeration_family",
+        "bitmask_family",
+    }
     for assignment in assignments:
-        if not isinstance(assignment, dict) or set(assignment) not in (
-            {"name", "wire_value"},
-            {"name", "wire_value", "attribute_section"},
+        if (
+            not isinstance(assignment, dict)
+            or not {"name", "wire_value"}.issubset(assignment)
+            or not set(assignment).issubset(allowed_keys)
         ):
             raise ValueError("versioned tag catalog has a malformed assignment")
         name = assignment.get("name")
@@ -116,7 +131,7 @@ def load_versioned_tag_allocations(root: Path) -> list[tuple[int, str]]:
             raise ValueError("versioned tag catalog assignment has no name")
         if attribute_section is not None and (
             not isinstance(attribute_section, str)
-            or not re.fullmatch(r"4\.35\.(?:[1-9]|1[0-9]|20)", attribute_section)
+            or not re.fullmatch(r"4\.\d+(?:\.\d+)?", attribute_section)
         ):
             raise ValueError("versioned tag catalog assignment has an invalid attribute section")
         numeric_value = _parse_exact_value(assignment.get("wire_value"))
@@ -125,6 +140,7 @@ def load_versioned_tag_allocations(root: Path) -> list[tuple[int, str]]:
             or name in seen_names
             or (
                 attribute_section is not None
+                and attribute_section.startswith("4.35.")
                 and attribute_section in seen_sections
             )
         ):
