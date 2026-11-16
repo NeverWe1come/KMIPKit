@@ -3,8 +3,9 @@
 use super::*;
 use kmipkit_protocol::attribute::typed;
 use kmipkit_protocol::{
-    ActivateRequest, ArchiveRequest, Attribute, AttributeSet, CreateKeyPairRequest, LocateRequest,
-    RecoverRequest, RevokeRequest, ValidateKmipRequest,
+    ActivateRequest, ArchiveRequest, Attribute, AttributeSet, CreateKeyPairRequest,
+    GetAttributeListRequest, GetAttributesRequest, LocateRequest, RecoverRequest, RevokeRequest,
+    ValidateKmipRequest,
 };
 use std::sync::Arc;
 
@@ -447,6 +448,149 @@ fn execute_simple_request(
         None => RequestOptions::default(),
     };
     execute_fluent_item(client, request, limits, &options, None, out_response)
+}
+
+fn get_attribute_list_client_request(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+) -> FfiResult<ClientRequest> {
+    let unique_identifier = super::super::copy_optional_text_identifier(unique_identifier)?
+        .ok_or(ERROR_INVALID_INPUT)?;
+    Ok(ClientRequest::GetAttributeList(
+        GetAttributeListRequest::new(Some(unique_identifier)),
+    ))
+}
+
+fn get_attributes_client_request(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    attribute_references: *const crate::kmipkit_attribute_reference_v1_t,
+    attribute_reference_count: u64,
+) -> FfiResult<ClientRequest> {
+    let unique_identifier = super::super::copy_optional_text_identifier(unique_identifier)?
+        .ok_or(ERROR_INVALID_INPUT)?;
+    let source_references = input_array(
+        attribute_references,
+        attribute_reference_count,
+        MAX_GET_ATTRIBUTES_REFERENCES,
+    )?;
+    let mut references = Vec::new();
+    references
+        .try_reserve_exact(source_references.len())
+        .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+    for reference in source_references {
+        references.push(super::super::copy_attribute_reference(ptr::from_ref(
+            reference,
+        ))?);
+    }
+    let request = GetAttributesRequest::try_new(Some(unique_identifier), references)
+        .map_err(|_| ERROR_INVALID_INPUT)?;
+    Ok(ClientRequest::GetAttributes(request))
+}
+
+/// Executes one typed Get Attribute List request with a required text identifier.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_get_attribute_list_v1(
+    client: *mut kmipkit_client_t,
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    limits: *mut kmipkit_codec_limits_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let request = match get_attribute_list_client_request(unique_identifier) {
+            Ok(request) => request,
+            Err(status) => return record_ffi_error(status),
+        };
+        execute_simple_request(client, request, limits, None, out_response)
+    })
+}
+
+/// Executes Get Attribute List with exchange-local timeout options.
+///
+/// # Safety
+///
+/// `unique_identifier` and `options` must be null or point to aligned,
+/// initialized records readable for this call, including referenced spans.
+/// `client` and `limits` must be null or live handles. `out_response` must be
+/// an aligned writable handle slot and must not overlap any input.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_client_get_attribute_list_with_options_v1(
+    client: *mut kmipkit_client_t,
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    limits: *mut kmipkit_codec_limits_t,
+    options: *const kmipkit_request_options_v1_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if options.is_null() || !options.is_aligned() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        // SAFETY: the exported function contract requires one readable v1 options record.
+        let options = unsafe { &*options };
+        let request = match get_attribute_list_client_request(unique_identifier) {
+            Ok(request) => request,
+            Err(status) => return record_ffi_error(status),
+        };
+        execute_simple_request(client, request, limits, Some(options), out_response)
+    })
+}
+
+/// Executes one typed Get Attributes request with ordered, unique references.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_get_attributes_v1(
+    client: *mut kmipkit_client_t,
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    attribute_references: *const crate::kmipkit_attribute_reference_v1_t,
+    attribute_reference_count: u64,
+    limits: *mut kmipkit_codec_limits_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let request = match get_attributes_client_request(
+            unique_identifier,
+            attribute_references,
+            attribute_reference_count,
+        ) {
+            Ok(request) => request,
+            Err(status) => return record_ffi_error(status),
+        };
+        execute_simple_request(client, request, limits, None, out_response)
+    })
+}
+
+/// Executes Get Attributes with exchange-local timeout options.
+///
+/// # Safety
+///
+/// `unique_identifier`, `attribute_references`, and `options` must be null or
+/// point to aligned, initialized records readable for this call, including
+/// referenced spans. `client` and `limits` must be null or live handles.
+/// `out_response` must be an aligned writable handle slot and must not overlap
+/// any input.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_client_get_attributes_with_options_v1(
+    client: *mut kmipkit_client_t,
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    attribute_references: *const crate::kmipkit_attribute_reference_v1_t,
+    attribute_reference_count: u64,
+    limits: *mut kmipkit_codec_limits_t,
+    options: *const kmipkit_request_options_v1_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if options.is_null() || !options.is_aligned() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        // SAFETY: the exported function contract requires one readable v1 options record.
+        let options = unsafe { &*options };
+        let request = match get_attributes_client_request(
+            unique_identifier,
+            attribute_references,
+            attribute_reference_count,
+        ) {
+            Ok(request) => request,
+            Err(status) => return record_ffi_error(status),
+        };
+        execute_simple_request(client, request, limits, Some(options), out_response)
+    })
 }
 
 /// Executes one semantic Create Symmetric Key request.

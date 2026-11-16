@@ -28,8 +28,7 @@ public final class FluentRequest {
     public LocateBuilder locate(AttributeSet attributes) { return new LocateBuilder(client, attributes); }
     public RevokeBuilder revoke(UniqueIdentifier id, RevocationReason reason) {
         return new RevokeBuilder(client, id, reason);
-    public OperationBuilder get(UniqueIdentifier id) { return new OperationBuilder(client, id, false); }
-    public OperationBuilder destroy(UniqueIdentifier id) { return new OperationBuilder(client, id, true); }
+    }
     public GetAttributesBuilder getAttributes(
             UniqueIdentifier id, List<org.kmipkit.extensions.AttributeReference> references) {
         return new GetAttributesBuilder(client, id, references);

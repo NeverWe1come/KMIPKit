@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Self
+from typing import Any, Self, Sequence
 
 from . import errors, extensions, ttlv
 from ._client_ffi import ffi, lib
@@ -83,6 +83,63 @@ def _execute_direct(client: Client, function: Any, identifier: Any,
         except (OverflowError, TypeError, ValueError):
             errors.raise_for_status(4)
         _raise_client_status(status)
+    if output[0] == ffi.NULL:
+        errors.raise_for_status(7)
+    return _batch_result(output[0], limits)
+
+
+def _execute_direct_attributes(
+    client: Client,
+    unique_identifier: extensions.UniqueIdentifier,
+    attribute_references: Sequence[extensions.AttributeReference],
+    limits: ttlv.CodecLimits,
+    options: RequestOptions | None,
+) -> BatchResult:
+    """Execute one Get Attributes request through the typed C ABI helper."""
+    if not isinstance(client, Client) or not isinstance(limits, ttlv.CodecLimits):
+        errors.raise_for_status(4)
+    if options is not None and not isinstance(options, RequestOptions):
+        errors.raise_for_status(4)
+    if (
+        not isinstance(unique_identifier, extensions.UniqueIdentifier)
+        or unique_identifier.kind is not extensions.UniqueIdentifierKind.TEXT_STRING
+    ):
+        errors.raise_for_status(4)
+    references = extensions._bounded_snapshot(
+        attribute_references, extensions._MAX_ATTRIBUTE_REFERENCES
+    )
+    if any(not isinstance(reference, extensions.AttributeReference) for reference in references):
+        errors.raise_for_status(4)
+
+    output = ffi.new("kmipkit_client_batch_response_t **")
+    with extensions._staging_buffer_scope() as staging_buffers:
+        identifier = extensions._client_native_unique_identifier(
+            unique_identifier, staging_buffers
+        )
+        native_references, reference_count = extensions._client_native_attribute_reference_array(
+            references, staging_buffers
+        )
+        function = (
+            lib.kmipkit_client_get_attributes_with_options_v1
+            if options is not None
+            else lib.kmipkit_client_get_attributes_v1
+        )
+        arguments = [
+            _client_abi_pointer("kmipkit_client_t *", client._pointer()),
+            identifier,
+            native_references if native_references is not None else ffi.NULL,
+            reference_count,
+            _client_abi_pointer("kmipkit_codec_limits_t *", limits._pointer()),
+        ]
+        if options is not None:
+            arguments.append(_request_options_record(options))
+        arguments.append(output)
+        with _NATIVE_CALL_LOCK:
+            try:
+                status = function(*arguments)
+            except (OverflowError, TypeError, ValueError):
+                errors.raise_for_status(4)
+            _raise_client_status(status)
     if output[0] == ffi.NULL:
         errors.raise_for_status(7)
     return _batch_result(output[0], limits)
@@ -183,6 +240,20 @@ class Request:
 
     def destroy(self, unique_identifier: extensions.UniqueIdentifier) -> Operation:
         return Operation(self._client, "destroy", unique_identifier)
+
+    def get_attributes(
+        self,
+        *,
+        unique_identifier: extensions.UniqueIdentifier | None = None,
+        attribute_references: Sequence[extensions.AttributeReference] = (),
+    ) -> GetAttributesBuilder:
+        return GetAttributesBuilder(self._client, unique_identifier, attribute_references)
+
+    def get_attribute_list(
+        self,
+        unique_identifier: extensions.UniqueIdentifier | None = None,
+    ) -> GetAttributeListBuilder:
+        return GetAttributeListBuilder(self._client, unique_identifier)
 
     def activate(self, unique_identifier: extensions.UniqueIdentifier) -> Operation:
         return Operation(self._client, "activate", unique_identifier)
@@ -813,6 +884,112 @@ class CreateKeyPairBuilder:
             return target.execute_with_options(batch, limits, self._options)
         finally:
             batch.close()
+
+
+class _AttributeReadBuilder:
+    """Shared execution options for typed attribute-read builders."""
+
+    def __init__(self, client: Client) -> None:
+        self._client = client
+        self._options: RequestOptions | None = None
+        self._asynchronous_indicator: int | None = None
+
+    def with_options(self, options: RequestOptions) -> Self:
+        if not isinstance(options, RequestOptions):
+            errors.raise_for_status(4)
+        self._options = options
+        return self
+
+    def asynchronous_indicator(self, value: int) -> Self:
+        self._asynchronous_indicator = _unsigned(value, 32)
+        return self
+
+    def execute(self, limits: ttlv.CodecLimits) -> BatchResult:
+        if not isinstance(limits, ttlv.CodecLimits):
+            errors.raise_for_status(4)
+        with self.build() as item:
+            return _execute_single_item(
+                self._client,
+                item,
+                limits,
+                self._options,
+                self._asynchronous_indicator,
+            )
+
+
+class GetAttributesBuilder(_AttributeReadBuilder):
+    """Typed KMIP Get Attributes builder preserving ordered references."""
+
+    def __init__(
+        self,
+        client: Client,
+        unique_identifier: extensions.UniqueIdentifier | None = None,
+        attribute_references: Sequence[extensions.AttributeReference] = (),
+    ) -> None:
+        if unique_identifier is not None and (
+            not isinstance(unique_identifier, extensions.UniqueIdentifier)
+            or unique_identifier.kind is not extensions.UniqueIdentifierKind.TEXT_STRING
+        ):
+            errors.raise_for_status(4)
+        references = extensions._bounded_snapshot(
+            attribute_references, extensions._MAX_ATTRIBUTE_REFERENCES
+        )
+        if any(not isinstance(reference, extensions.AttributeReference) for reference in references):
+            errors.raise_for_status(4)
+        super().__init__(client)
+        self._unique_identifier = unique_identifier
+        self._attribute_references = references
+
+    def _build_request(self) -> Any:
+        from .attribute_operations import GetAttributesRequest
+
+        return GetAttributesRequest.create(
+            self._unique_identifier, self._attribute_references
+        )
+
+    def validate(self) -> None:
+        with self._build_request():
+            pass
+
+    def build(self) -> extensions.ClientBatchItem:
+        with self._build_request() as request:
+            return request.to_batch_item()
+
+    def to_batch_item(self) -> extensions.ClientBatchItem:
+        return self.build()
+
+
+class GetAttributeListBuilder(_AttributeReadBuilder):
+    """Typed KMIP Get Attribute List builder preserving an omitted identifier."""
+
+    def __init__(
+        self,
+        client: Client,
+        unique_identifier: extensions.UniqueIdentifier | None = None,
+    ) -> None:
+        if unique_identifier is not None and (
+            not isinstance(unique_identifier, extensions.UniqueIdentifier)
+            or unique_identifier.kind is not extensions.UniqueIdentifierKind.TEXT_STRING
+        ):
+            errors.raise_for_status(4)
+        super().__init__(client)
+        self._unique_identifier = unique_identifier
+
+    def _build_request(self) -> Any:
+        from .attribute_operations import GetAttributeListRequest
+
+        return GetAttributeListRequest.create(self._unique_identifier)
+
+    def validate(self) -> None:
+        with self._build_request():
+            pass
+
+    def build(self) -> extensions.ClientBatchItem:
+        with self._build_request() as request:
+            return request.to_batch_item()
+
+    def to_batch_item(self) -> extensions.ClientBatchItem:
+        return self.build()
 
 
 class Operation:
@@ -1479,6 +1656,8 @@ __all__ = [
     "CreateKeyPairBuilder",
     "DecryptBuilder",
     "EncryptBuilder",
+    "GetAttributeListBuilder",
+    "GetAttributesBuilder",
     "HashBuilder",
     "MacBuilder",
     "MacVerifyBuilder",
