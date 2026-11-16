@@ -3146,6 +3146,45 @@ class RouteMatrixTests(unittest.TestCase):
 
         self.assertEqual(recipe, ((3, 20), 'register'))
 
+    def test_export_operation_executes_installed_request_and_response_routes(self):
+        from artifact_support import ROOT
+        from route_peer import RECIPES, execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_id = 'test-op-export'
+        self.assertIn(case_id, RECIPES, 'Export has no controlled-peer route recipe')
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12, 'Export must pass both versions and all six network combinations')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        expected_targets = {
+            'KMIPKIT-ELEM-OP-C2S-EXPORT',
+            'KMIPKIT-PAYLOAD-CLIENT-EXPORT-REQUEST-20-001',
+            'KMIPKIT-PAYLOAD-CLIENT-EXPORT-REQUEST-21-001',
+            'KMIPKIT-PAYLOAD-CLIENT-EXPORT-RESPONSE-20-001',
+            'KMIPKIT-PAYLOAD-CLIENT-EXPORT-RESPONSE-21-001',
+        }
+        self.assertTrue(expected_targets <= {event['target_id'] for event in events})
+        required_symbols = {
+            'kmipkit_client_batch_item_create',
+            'kmipkit_client_batch_item_export',
+            'kmipkit_client_batch_item_response_export',
+            'kmipkit_client_batch_item_response_export_ttlv',
+            'kmipkit_client_batch_item_revoke',
+            'kmipkit_client_batch_item_destroy',
+            'kmipkit_client_execute',
+        }
+        self.assertTrue(all(required_symbols <= set(check['public_api_trace_symbols'])
+                            for check in checks), checks)
+        self.assertEqual({event['action'] for event in events
+                          if event['target_id'].startswith('KMIPKIT-PAYLOAD-CLIENT-EXPORT-RESPONSE-')},
+                         {'decode'})
+
     def test_register_operation_executes_the_installed_request_and_response_routes(self):
         from artifact_support import ROOT
         from route_peer import execute_network_cells
