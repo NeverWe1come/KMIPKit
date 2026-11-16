@@ -10,6 +10,7 @@ final class NativeFluentRegistry {
     static final int CRYPTO_OPERATION_BUILDER = 72;
     static final int CREATE_KEY_PAIR_BUILDER = 73;
     static final int SET_ATTRIBUTE_BUILDER = 74;
+    static final int ADD_ATTRIBUTE_BUILDER = 75;
     static final int SYMMETRIC_KEY_BUILDER = 71;
 
     private NativeFluentRegistry() {}
@@ -102,4 +103,25 @@ final class NativeFluentRegistry {
             long builder, @Nullable UniqueIdentifier identifier);
 
     static native long setAttributeBuilderBuildBatchItem(long builder);
+
+    static native long addAttributeBuilderCreate();
+
+    static native void addAttributeBuilderSetUniqueIdentifier(long builder, String value);
+
+    static native void addAttributeBuilderAddAttributeItem(long builder, long item);
+
+    static native void addAttributeBuilderAddCataloguedAttribute(
+            long builder, int tag, long value);
+
+    static native void addAttributeBuilderAddVendorAttribute(
+            long builder, String vendor, String name, long value);
+
+    static native void addAttributeBuilderSetAsynchronousIndicator(long builder, long value);
+
+    static native void addAttributeBuilderValidate(long builder);
+
+    static native org.kmipkit.extensions.AddAttributeRequest addAttributeBuilderBuildRequest(
+            long builder, @Nullable UniqueIdentifier identifier);
+
+    static native long addAttributeBuilderBuildBatchItem(long builder);
 }
