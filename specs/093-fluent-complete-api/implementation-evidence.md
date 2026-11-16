@@ -453,3 +453,14 @@
   production timeout behavior and the asserted deadline contract are
   unchanged. PR #228 remains WIP until exact-head CI is green.
 
+## Rebase after Create Key Pair merged
+
+- PR #227 has merged into `release/1.0.0`; this branch was rebased from that
+  parent onto the release branch. On the resulting pre-follow-up head
+  `9eb7c61b3`, the operation inventory suite passes all 9 tests and
+  `generate_fluent_operation_inventory.py --check` passes.
+- The exact-head check list on `9eb7c61b3` contained only SonarCloud success;
+  the repository CI workflows had not produced runs for that SHA. PR #228
+  remains `[WIP]` until full CI reports every required result on its updated
+  head.
+
