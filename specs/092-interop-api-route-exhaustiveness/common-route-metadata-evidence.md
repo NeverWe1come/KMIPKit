@@ -15,3 +15,15 @@ The failure was reproduced with
 `python3 -B -m unittest interop.shared.tests.test_route_capabilities.RouteCapabilitiesTests.test_public_request_serializers_and_response_readers_are_routes`.
 The same nine missing-route assertions appear in failed CI run
 `43692884852`, job `132747024380`.
+
+## Green — read API metadata from the recorded artifact commit
+
+The route assertion now loads `specification/api/public-api.json` through the
+existing pinned-source reader using `library_commit` from the route manifest.
+This keeps route availability tied to the installed release artifact, as
+required by KMIPKIT-0092-FR-006. The focused test passed after the change:
+
+```text
+python3 -B -m unittest interop.shared.tests.test_route_capabilities.RouteCapabilitiesTests.test_public_request_serializers_and_response_readers_are_routes
+Ran 1 test — OK
+```

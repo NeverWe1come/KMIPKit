@@ -18,3 +18,8 @@ artifact availability. It does not claim that any validator has executed the
 full matrix. FR-003, FR-005, and the runtime portion of FR-006 remain open until
 the four independent language branches emit evidence from actual public API
 calls and controlled-peer exchanges.
+
+The common serializer/response-reader route assertion loads the API manifest
+from the exact `library_commit` recorded in `route-capabilities.json`, so
+functions added to a later release cannot be required from an older installed
+artifact. This is part of the FR-006 artifact provenance check.
