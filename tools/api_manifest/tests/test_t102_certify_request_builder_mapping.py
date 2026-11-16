@@ -172,9 +172,11 @@ KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS = {
 # this inventory also includes the approved KMIPKIT-0093 reconciliation and
 # narrowed T101 mappings. KMIPKIT-0124 adds 28 KMIP 3.0 fluent and 16 async
 # batch declarations to this non-target snapshot; the async request constructors
-# The non-target snapshot includes Create Key Pair, Set Attribute, and Add
-# Attribute declarations plus the approved KMIPKIT-0126 catalog additions.
-DECLARATIONS_SHA256 = "dd67c2d87dcf63b2a2fa83a2624db3d901760fc67f2e91c3f0b2c64cfd82202b"
+# add four-language mappings to the existing operation rows. KMIPKIT-0093 adds
+# the four-language Create Key Pair, Set Attribute, and Add Attribute builder
+# declarations to the same inventory. The Rust export reconciliation adds 159
+# observed paths; eight already-covered KMIPKIT-0047 paths are deduplicated.
+DECLARATIONS_SHA256 = "a514ffd201957877629d2f9c8fbb93f6e592b077a0025a3764b3ebc02613cf6e"
 OPERATIONS_SHA256 = "9ab6c670787f07c9faa301744d1654fdd071ceffc3b43936e6cb12add59094e2"
 
 

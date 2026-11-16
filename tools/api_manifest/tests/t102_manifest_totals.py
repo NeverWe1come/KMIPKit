@@ -12,7 +12,8 @@ def without_0047_versioned_values(rows: list[dict[str, Any]]) -> list[dict[str, 
 
 
 # KMIPKIT-0053 adds 144 explicitly-owned blocked candidates for follow-up.
-T102_BLOCKED_CANDIDATES = 0
+# KMIPKIT-0093 FR-011 records 76 unmapped Rust exports for owner-matrix review.
+T102_BLOCKED_CANDIDATES = 76
 # KMIPKIT-0091 adds fluent DX declarations; KMIPKIT-0095 adds response view
 # declarations and Rust trait exclusions pending cross-language adapters.
 # KMIPKIT-0096 adds four expert-position declarations; KMIPKIT-0097 adds
@@ -35,11 +36,13 @@ T102_BLOCKED_CANDIDATES = 0
 # KMIPKIT-0126 adds 37 standard attribute declarations and 7 KMIP 3.0 batch response readers across 4 languages.
 # Update this full-manifest snapshot only when an approved feature intentionally
 # adds or removes declarations.
-# The merged release inventory includes the KMIPKIT-0093 C key-pair, Rust
+# KMIPKIT-0093 adds 151 unique fluent declarations and 68 exact Rust trait
+# exclusions after removing eight duplicate KMIPKIT-0047 v3.0 value paths.
+# The merged release inventory also includes the KMIPKIT-0093 C key-pair, Rust
 # Set Attribute, Add Attribute, and four-language binding declarations.
-T102_PUBLIC_DECLARATIONS = 17_420
+T102_PUBLIC_DECLARATIONS = 17_579
 T102_KMIP30_DRAFT_ROUTE_DECLARATIONS = 36
-T102_APPROVED_EXCLUSIONS = 22_679
-T102_RUST_AUDIT_MANIFEST = 3_287
-T102_RUST_AUDIT_EXCLUDED = 7_176
-T102_RUST_AUDIT_OBSERVED = 10_463
+T102_APPROVED_EXCLUSIONS = 22_747
+T102_RUST_AUDIT_MANIFEST = 9_779
+T102_RUST_AUDIT_EXCLUDED = 20_965
+T102_RUST_AUDIT_OBSERVED = 30_744

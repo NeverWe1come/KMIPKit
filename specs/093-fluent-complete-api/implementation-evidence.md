@@ -594,3 +594,35 @@
 - Full required coverage and exact-head CI remain open. The dependent PR stays
   WIP until those checks pass.
 
+### Add Attribute audit, metadata, and current-head verification
+
+- Red commit `7066f415f` added a regression for duplicate public export paths;
+  it failed on eight stale Rust v3.0 `object_class_mask` rows that were already
+  covered by the approved KMIPKIT-0047 declarations. The manifest paths now
+  point to the generated `bitmask` module, those eight blocked duplicates are
+  removed, and the capability mapping list is sorted again.
+- Red commit `129380d25` reproduced owner lookup selecting `0120-*` for
+  KMIPKIT-0012 before the actual `012-*` directory. Green commit `72d0d60c5`
+  requires an exact numeric directory boundary; all four owner-lookup tests
+  pass.
+- Red commit `4e95192a2` added the Add Attribute capability to the C runtime
+  metadata expectation and exposed that the Rust facade still returned it as
+  unavailable. Green commit `5af0f5190` exposes
+  `fluent_add_attribute_parity` from `capability_is_available`; the focused FFI
+  metadata test passes.
+- `rust-export-report-2026-11-16.json` matches all 30,744 observed export paths: 9,779
+  declarations, 20,965 exact exclusions, and zero missing, unobserved,
+  mismatched, or unresolved rows. Its exact `--check` passes. The shared Rust
+  inventory reports 5,292 mapped declarations and 20,965 exclusions; its
+  generated report and `--check` pass.
+- Public-manifest inventory, the Add Attribute contract, C header inventory,
+  T102 snapshot, C API documentation, shared inventory, generator, and
+  generated-output checks pass. The generator verifies all 12 outputs.
+- Current local verification passes: `cargo fmt --all --check`, workspace
+  Clippy with all targets and features, `cargo test --workspace --all-features`,
+  and `cargo llvm-cov --workspace --all-features` (90.71% total line coverage).
+  The compiled C ABI consumer suite passes 62 tests; Java `./gradlew test`
+  succeeds; Python passes 1,362 tests and 119 subtests.
+- Exact-head CI has not yet run. AAB004 remains open and the dependent PR stays
+  WIP until all required CI jobs are green.
+

@@ -176,7 +176,7 @@ EXPECTED = (
 # reconciliation; KMIPKIT-0096 Python expert attributes; and KMIPKIT-0108/0109
 # attribute reads and bindings. The prior fingerprint predates those additions.
 # KMIPKIT-0126 adds 37 versioned standard attributes and 7 KMIP 3.0 batch response readers.
-UNCHANGED_DECLARATIONS_SHA256 = "253289c8e8d9351b06e76a8ec6a96e8586e1bbb0f1d7a5fdc9f489cbfb30410d"
+UNCHANGED_DECLARATIONS_SHA256 = "bb655b4f440b2a94362609e0a2a31d8747ae3bdd12d7ba8ac9aa09d389417577"
 UNCHANGED_OPERATIONS_SHA256 = "9ee0f7c51c05a8abd96af7f6d3017f3ffb780c4262f231eaf3cb8c01a38147c7"
 # T098's maintainer-approved reconciliation updates lifecycle approval evidence
 # and inherited requirement links outside the T102 declaration/operation rows.
@@ -187,7 +187,7 @@ UNCHANGED_OPERATIONS_SHA256 = "9ee0f7c51c05a8abd96af7f6d3017f3ffb780c4262f231eaf
 # reconciliation, including KMIPKIT-0096 expert attributes and KMIPKIT-0108/0109
 # attribute operations and bindings. R002's additive requirement links and C
 # copy caveat are normalized below and tested by the 0093 suite.
-OTHER_MANIFEST_SHA256 = "ccafb4e9dff9bf7568677e446175485a2016a7017a74ad3f48244ea9a914ad4b"
+OTHER_MANIFEST_SHA256 = "842015a1ba36e18af23844d67155d457c67776c9c4e07b203b57104931892bbb"
 EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = T102_BLOCKED_CANDIDATES
 LOCATE_REQUEST_BUILDER_IDS = {
     "rust-observed-e07fce825be9d33278e1",

@@ -13,7 +13,7 @@ from unittest import mock
 REPO_ROOT = Path(__file__).resolve().parents[3]
 MODULE_PATH = REPO_ROOT / "tools" / "api_manifest" / "audit_shared_rust_inventory.py"
 REPORTS_DIR = REPO_ROOT / "specs" / "051-pre-send-validation" / "reports"
-RUST_REPORT_PATH = REPORTS_DIR / "rust-export-report-2026-11-12.json"
+RUST_REPORT_PATH = REPORTS_DIR / "rust-export-report-2026-11-16.json"
 EXPECTED_RUST_ONLY_DECLARATIONS = {
     "kmipkit_transport::HttpsTransport",
     "kmipkit_transport::HttpsTransport::new",
@@ -147,7 +147,7 @@ class SharedRustInventoryTests(unittest.TestCase):
 
     def test_shared_inventory_report_names_the_rust_audit_it_reads(self) -> None:
         expected_source = (
-            "specs/051-pre-send-validation/reports/rust-export-report-2026-11-12.json"
+            "specs/051-pre-send-validation/reports/rust-export-report-2026-11-16.json"
         )
         generated = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
         checked_in = json.loads(
@@ -160,10 +160,10 @@ class SharedRustInventoryTests(unittest.TestCase):
     def test_inventory_accounts_for_exact_approved_rust_exclusions_separately(self) -> None:
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
 
-        self.assertEqual(inventory["approvedExcludedRustDeclarationCount"], 20879)
+        self.assertEqual(inventory["approvedExcludedRustDeclarationCount"], 20965)
         self.assertEqual(
             sum(record["excludedDeclarationCount"] for record in inventory["crates"]),
-            20879,
+            20965,
         )
         self.assertEqual(
             sum(record["blockedDeclarationCount"] for record in inventory["crates"]),
@@ -184,11 +184,11 @@ class SharedRustInventoryTests(unittest.TestCase):
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
 
         rust_counts = self.rust_report["counts"]
-        self.assertEqual(inventory["observedRustDeclarationCount"], 30294)
-        self.assertEqual(inventory["mappedRustDeclarationCount"], 5041)
-        self.assertEqual(rust_counts["observed"], 30294)
-        self.assertEqual(rust_counts["matched"], 9415)
-        self.assertEqual(rust_counts["excluded"], 20879)
+        self.assertEqual(inventory["observedRustDeclarationCount"], 30744)
+        self.assertEqual(inventory["mappedRustDeclarationCount"], 5292)
+        self.assertEqual(rust_counts["observed"], 30744)
+        self.assertEqual(rust_counts["matched"], 9779)
+        self.assertEqual(rust_counts["excluded"], 20965)
         self.assertEqual(rust_counts["observed"], rust_counts["matched"] + rust_counts["excluded"])
         self.assertEqual(
             inventory["approvedExcludedRustDeclarationCount"],

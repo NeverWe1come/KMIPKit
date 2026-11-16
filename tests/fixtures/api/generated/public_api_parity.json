@@ -47282,6 +47282,126 @@
     },
     {
       "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit::protocol::AsynchronousRequestEntry as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit::protocol::AsynchronousRequestEntry as core::borrow::Borrow<kmipkit_protocol::query_async_requests::AsynchronousRequestEntry>>::borrow",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit::protocol::AsynchronousRequestEntry as core::borrow::BorrowMut<kmipkit_protocol::query_async_requests::AsynchronousRequestEntry>>::borrow_mut",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit::protocol::AsynchronousRequestEntry as core::convert::From<kmipkit_protocol::query_async_requests::AsynchronousRequestEntry>>::from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit::protocol::AsynchronousRequestEntry as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit::protocol::AsynchronousRequestEntry as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit::protocol::AsynchronousRequestEntry as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit::protocol::AsynchronousRequestEntry as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit::protocol::AsynchronousRequestEntry as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit::protocol::AsynchronousRequestEntry as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
         "evidence": "**Status**: Approved for implementation",
         "kind": "feature-specification",
         "path": "specs/008-credentials-attestation/spec.md",
@@ -167422,6 +167542,114 @@
         "status": "Approved"
       },
       "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_client::AddAttributeBuilder<'a> as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_client::AddAttributeBuilder<'a> as core::borrow::Borrow<kmipkit_client::fluent::AddAttributeBuilder<'a>>>::borrow",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_client::AddAttributeBuilder<'a> as core::borrow::BorrowMut<kmipkit_client::fluent::AddAttributeBuilder<'a>>>::borrow_mut",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_client::AddAttributeBuilder<'a> as core::convert::From<kmipkit_client::fluent::AddAttributeBuilder<'a>>>::from",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_client::AddAttributeBuilder<'a> as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_client::AddAttributeBuilder<'a> as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_client::AddAttributeBuilder<'a> as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_client::AddAttributeBuilder<'a> as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_client::AddAttributeBuilder<'a> as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
       "exportName": "<kmipkit_client::ArchiveBuilder<'a> as core::any::Any>::type_id",
       "packageId": "rust-kmipkit-client",
       "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
@@ -178587,6 +178815,114 @@
         "status": "Approved"
       },
       "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_client::fluent::AddAttributeBuilder<'a> as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_client::fluent::AddAttributeBuilder<'a> as core::borrow::Borrow<kmipkit_client::fluent::AddAttributeBuilder<'a>>>::borrow",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_client::fluent::AddAttributeBuilder<'a> as core::borrow::BorrowMut<kmipkit_client::fluent::AddAttributeBuilder<'a>>>::borrow_mut",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_client::fluent::AddAttributeBuilder<'a> as core::convert::From<kmipkit_client::fluent::AddAttributeBuilder<'a>>>::from",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_client::fluent::AddAttributeBuilder<'a> as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_client::fluent::AddAttributeBuilder<'a> as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_client::fluent::AddAttributeBuilder<'a> as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_client::fluent::AddAttributeBuilder<'a> as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_client::fluent::AddAttributeBuilder<'a> as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
       "exportName": "<kmipkit_client::fluent::ArchiveBuilder<'a> as core::any::Any>::type_id",
       "packageId": "rust-kmipkit-client",
       "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
@@ -187019,6 +187355,126 @@
       "exportName": "<kmipkit_protocol::AsynchronousOperationError as core::fmt::Display>::fmt",
       "packageId": "rust-kmipkit-protocol",
       "reason": "Exact Rust trait implementation artifact. Trait-qualified formatting, cloning, borrowing, and conversion methods are not independent KMIP operation capabilities; the asynchronous request or error type and its inherent API remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_protocol::AsynchronousRequestEntry as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_protocol::AsynchronousRequestEntry as core::borrow::Borrow<kmipkit_protocol::query_async_requests::AsynchronousRequestEntry>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_protocol::AsynchronousRequestEntry as core::borrow::BorrowMut<kmipkit_protocol::query_async_requests::AsynchronousRequestEntry>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_protocol::AsynchronousRequestEntry as core::convert::From<kmipkit_protocol::query_async_requests::AsynchronousRequestEntry>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_protocol::AsynchronousRequestEntry as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_protocol::AsynchronousRequestEntry as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_protocol::AsynchronousRequestEntry as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_protocol::AsynchronousRequestEntry as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_protocol::AsynchronousRequestEntry as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_protocol::AsynchronousRequestEntry as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
     },
     {
       "approvalSource": {
@@ -301475,6 +301931,246 @@
     },
     {
       "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_transport::TlsVersionPolicy as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_transport::TlsVersionPolicy as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_transport::TlsVersionPolicy as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_transport::TlsVersionPolicy as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_transport::TlsVersionPolicy as core::borrow::Borrow<kmipkit_transport::config::TlsVersionPolicy>>::borrow",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_transport::TlsVersionPolicy as core::borrow::BorrowMut<kmipkit_transport::config::TlsVersionPolicy>>::borrow_mut",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_transport::TlsVersionPolicy as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_transport::TlsVersionPolicy as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_transport::TlsVersionPolicy as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_transport::TlsVersionPolicy as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_transport::TlsVersionPolicy as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_transport::TlsVersionPolicy as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_transport::TlsVersionPolicy as core::convert::From<kmipkit_transport::config::TlsVersionPolicy>>::from",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_transport::TlsVersionPolicy as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_transport::TlsVersionPolicy as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_transport::TlsVersionPolicy as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_transport::TlsVersionPolicy as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_transport::TlsVersionPolicy as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_transport::TlsVersionPolicy as core::default::Default>::default",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_transport::TlsVersionPolicy as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
         "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
         "kind": "accepted-adr",
         "path": "docs/adr/0014-public-transport-exchange-contract.md",
@@ -304034,6 +304730,126 @@
       },
       "evidence": "KMIPKIT-0093-FR-011",
       "exportName": "<kmipkit_transport::listener::RawTlsServerConnection as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_transport::test_support::TextDocumentFramer as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_transport::test_support::TextDocumentFramer as core::borrow::Borrow<kmipkit_transport::raw_tls::wire_framing::TextDocumentFramer>>::borrow",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_transport::test_support::TextDocumentFramer as core::borrow::BorrowMut<kmipkit_transport::raw_tls::wire_framing::TextDocumentFramer>>::borrow_mut",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_transport::test_support::TextDocumentFramer as core::convert::From<kmipkit_transport::raw_tls::wire_framing::TextDocumentFramer>>::from",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_transport::test_support::TextDocumentFramer as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_transport::test_support::TextDocumentFramer as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_transport::test_support::TextDocumentFramer as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_transport::test_support::TextDocumentFramer as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_transport::test_support::TextDocumentFramer as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_transport::test_support::TextDocumentFramer as core::fmt::Debug>::fmt",
       "packageId": "rust-kmipkit-transport",
       "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
     },
@@ -315301,6 +316117,10 @@
           "kmipkit::protocol::named_values_generated::values::versions::v2_1::enumeration::operation::SET_DEFAULTS",
           "kmipkit::protocol::named_values_generated::values::versions::v2_1::enumeration::operation::name",
           "kmipkit::protocol::named_values_generated::values::versions::v3_0",
+          "kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask",
+          "kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::SYSTEM",
+          "kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::USER",
+          "kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::name",
           "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration",
           "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type",
           "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::CERTIFICATE",
@@ -316269,6 +317089,10 @@
           "kmipkit_protocol::named_values_generated::values::versions::v2_1::enumeration::operation::SET_DEFAULTS",
           "kmipkit_protocol::named_values_generated::values::versions::v2_1::enumeration::operation::name",
           "kmipkit_protocol::named_values_generated::values::versions::v3_0",
+          "kmipkit_protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask",
+          "kmipkit_protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::SYSTEM",
+          "kmipkit_protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::USER",
+          "kmipkit_protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::name",
           "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration",
           "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type",
           "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::CERTIFICATE",
@@ -618118,7 +618942,7 @@
           "packageId": "python-kmipkit"
         },
         "rust": {
-          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::SYSTEM",
+          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::SYSTEM",
           "packageId": "rust-kmipkit"
         }
       },
@@ -618157,7 +618981,7 @@
           "packageId": "python-kmipkit"
         },
         "rust": {
-          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::USER",
+          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::USER",
           "packageId": "rust-kmipkit"
         }
       },
@@ -618194,7 +619018,7 @@
           "packageId": "python-kmipkit"
         },
         "rust": {
-          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::name",
+          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::name",
           "packageId": "rust-kmipkit"
         }
       },
@@ -654191,7 +655015,7 @@
           "packageId": "python-kmipkit"
         },
         "rust": {
-          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::SYSTEM",
+          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::SYSTEM",
           "packageId": "rust-kmipkit"
         }
       },
@@ -654228,7 +655052,7 @@
           "packageId": "python-kmipkit"
         },
         "rust": {
-          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::USER",
+          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::USER",
           "packageId": "rust-kmipkit"
         }
       },
@@ -656818,7 +657642,7 @@
           "packageId": "python-kmipkit"
         },
         "rust": {
-          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::name",
+          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::name",
           "packageId": "rust-kmipkit"
         }
       },
@@ -688896,7 +689720,7 @@
           "packageId": "python-kmipkit"
         },
         "rust": {
-          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::SYSTEM",
+          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::SYSTEM",
           "packageId": "rust-kmipkit"
         }
       },
@@ -688933,7 +689757,7 @@
           "packageId": "python-kmipkit"
         },
         "rust": {
-          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::USER",
+          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::USER",
           "packageId": "rust-kmipkit"
         }
       },
@@ -691523,7 +692347,7 @@
           "packageId": "python-kmipkit"
         },
         "rust": {
-          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::name",
+          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::name",
           "packageId": "rust-kmipkit"
         }
       },
@@ -723007,6 +723831,154 @@
         },
         "rust": {
           "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0047-FR-009",
+        "KMIPKIT-0047-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/047-named-protocol-values/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "named_protocol_values",
+      "declarationId": "kmipkit-0047-rust-kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask",
+      "declarationState": "declared",
+      "exportName": "kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask",
+      "kind": "module",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_named_values_namespace_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.KmipValues",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.protocol_values",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0047-FR-009",
+        "KMIPKIT-0047-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/047-named-protocol-values/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "named_protocol_values",
+      "declarationId": "kmipkit-0047-rust-kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::SYSTEM",
+      "declarationState": "declared",
+      "exportName": "kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::SYSTEM",
+      "kind": "constant",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_V3_0_OBJECT_CLASS_MASK_SYSTEM",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.KmipValues.V3_0_OBJECT_CLASS_MASK_SYSTEM",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.protocol_values.V3_0_OBJECT_CLASS_MASK_SYSTEM",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::SYSTEM",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0047-FR-009",
+        "KMIPKIT-0047-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/047-named-protocol-values/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "named_protocol_values",
+      "declarationId": "kmipkit-0047-rust-kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::USER",
+      "declarationState": "declared",
+      "exportName": "kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::USER",
+      "kind": "constant",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_V3_0_OBJECT_CLASS_MASK_USER",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.KmipValues.V3_0_OBJECT_CLASS_MASK_USER",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.protocol_values.V3_0_OBJECT_CLASS_MASK_USER",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::USER",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0047-FR-009",
+        "KMIPKIT-0047-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/047-named-protocol-values/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "named_protocol_values",
+      "declarationId": "kmipkit-0047-rust-kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::name",
+      "declarationState": "declared",
+      "exportName": "kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::name",
+      "kind": "function",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_V3_0_OBJECT_CLASS_MASK_name",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.KmipValues.v3_0ObjectClassMaskName",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.protocol_values.v3_0_object_class_mask_name",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::name",
           "packageId": "rust-kmipkit"
         }
       },
@@ -758819,6 +759791,154 @@
         },
         "rust": {
           "name": "kmipkit_protocol::named_values_generated::values::versions::v3_0",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0047-FR-009",
+        "KMIPKIT-0047-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/047-named-protocol-values/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "named_protocol_values",
+      "declarationId": "kmipkit-0047-rust-kmipkit_protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask",
+      "kind": "module",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_named_values_namespace_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.KmipValues",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.protocol_values",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0047-FR-009",
+        "KMIPKIT-0047-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/047-named-protocol-values/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "named_protocol_values",
+      "declarationId": "kmipkit-0047-rust-kmipkit_protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::SYSTEM",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::SYSTEM",
+      "kind": "constant",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_V3_0_OBJECT_CLASS_MASK_SYSTEM",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.KmipValues.V3_0_OBJECT_CLASS_MASK_SYSTEM",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.protocol_values.V3_0_OBJECT_CLASS_MASK_SYSTEM",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::SYSTEM",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0047-FR-009",
+        "KMIPKIT-0047-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/047-named-protocol-values/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "named_protocol_values",
+      "declarationId": "kmipkit-0047-rust-kmipkit_protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::USER",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::USER",
+      "kind": "constant",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_V3_0_OBJECT_CLASS_MASK_USER",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.KmipValues.V3_0_OBJECT_CLASS_MASK_USER",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.protocol_values.V3_0_OBJECT_CLASS_MASK_USER",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::USER",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0047-FR-009",
+        "KMIPKIT-0047-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/047-named-protocol-values/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "named_protocol_values",
+      "declarationId": "kmipkit-0047-rust-kmipkit_protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::name",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::name",
+      "kind": "function",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_V3_0_OBJECT_CLASS_MASK_name",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.KmipValues.v3_0ObjectClassMaskName",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.protocol_values.v3_0_object_class_mask_name",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::name",
           "packageId": "rust-kmipkit-protocol"
         }
       },

@@ -38,7 +38,7 @@ RUST_EXPORT_REPORT_PATH = (
     / "specs"
     / "051-pre-send-validation"
     / "reports"
-    / "rust-export-report-2026-11-12.json"
+    / "rust-export-report-2026-11-16.json"
 )
 
 EXPECTED_PACKAGES = {
@@ -6337,7 +6337,9 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             if "core::any::Any" in row["exportName"]
             and "<'" in row["exportName"]
         ]
-        self.assertEqual(len(any_lifetime_rows), 85)
+        # Add/Set fluent builders add one lifetime-conditioned Any impl per
+        # builder alias; these standard-library methods remain blocked inventory.
+        self.assertEqual(len(any_lifetime_rows), 89)
         for row in any_lifetime_rows:
             exclusion_key = (row["packageId"], _canonical_export_name(row["exportName"]))
             if exclusion_key in approved_exclusion_keys:

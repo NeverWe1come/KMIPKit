@@ -5596,6 +5596,26 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit::protocol::named_values_generated::values::versions::v3_0",
     ),
     (
+        "kmipkit-0047-rust-kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask",
+        "rust-kmipkit",
+        "kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask",
+    ),
+    (
+        "kmipkit-0047-rust-kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::SYSTEM",
+        "rust-kmipkit",
+        "kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::SYSTEM",
+    ),
+    (
+        "kmipkit-0047-rust-kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::USER",
+        "rust-kmipkit",
+        "kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::USER",
+    ),
+    (
+        "kmipkit-0047-rust-kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::name",
+        "rust-kmipkit",
+        "kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::name",
+    ),
+    (
         "kmipkit-0047-rust-kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration",
         "rust-kmipkit",
         "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration",
@@ -10434,6 +10454,26 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit-0047-rust-kmipkit_protocol::named_values_generated::values::versions::v3_0",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::named_values_generated::values::versions::v3_0",
+    ),
+    (
+        "kmipkit-0047-rust-kmipkit_protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask",
+    ),
+    (
+        "kmipkit-0047-rust-kmipkit_protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::SYSTEM",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::SYSTEM",
+    ),
+    (
+        "kmipkit-0047-rust-kmipkit_protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::USER",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::USER",
+    ),
+    (
+        "kmipkit-0047-rust-kmipkit_protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::name",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::name",
     ),
     (
         "kmipkit-0047-rust-kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration",
