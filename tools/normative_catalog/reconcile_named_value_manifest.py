@@ -554,6 +554,12 @@ def reconcile(manifest: dict[str, Any], declarations: list[dict[str, Any]], mapp
     updated["capabilities"] = existing_capabilities
 
     generated_ids = {row["declarationId"] for row in declarations}
+    generated_paths = {
+        (row["packageId"], row["exportName"])
+        for row in declarations
+        if isinstance(row.get("packageId"), str)
+        and isinstance(row.get("exportName"), str)
+    }
     generated_capabilities = {CAPABILITY_ID, C_ONLY_MASK_CAPABILITY_ID, TAG_CAPABILITY_ID}
     existing_declarations = [
         row
@@ -563,6 +569,10 @@ def reconcile(manifest: dict[str, Any], declarations: list[dict[str, Any]], mapp
             and row.get("approvalSource", {}).get("path")
             in {APPROVAL_SOURCE["path"], TAG_APPROVAL_SOURCE["path"]}
             and row.get("declarationId") not in generated_ids
+        )
+        and not (
+            row.get("declarationState") == "blocked"
+            and (row.get("packageId"), row.get("exportName")) in generated_paths
         )
     ]
     by_id = {row["declarationId"]: row for row in existing_declarations}
