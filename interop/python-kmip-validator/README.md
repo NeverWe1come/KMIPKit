@@ -123,6 +123,19 @@ The independent validator reported `all_invocations_passed: true`, all
 74,648 required cells observed, and the same artifact, catalog and manifest
 hashes (run ID `python-matrix-7f813d39-2e6e-41fb-a92a-2c043a91f221`).
 
+After the shared evidence schema began requiring peer-state hashes for
+catalogued effects, the updated Python consumer matrix passed **74,656/74,656**
+cells: 45,478 local and 29,178 controlled-peer network cells. The run used
+Python 3.12.13 and the exact release-source pin
+`489fafc79ef89db2524eafa7a6c6482f5cf75d97`; the independent validator reported
+`all_invocations_passed: true`, `complete_matrix: true`, and zero duplicates.
+Run ID: `python-matrix-6cd71081-28dc-4fc5-a3ae-68298632eaf7`. Artifact SHA-256:
+`d07a7e45d6bf9ae576e3fcc60df788722e3f2446f75ca07a26f505c5f8049748`;
+catalog SHA-256:
+`55fcd64afba189ab7d04978fafb841fc73c9e5afc1ef25c93cb2eb04f4fba4a9`;
+route-manifest SHA-256:
+`3fe892f7b2804e8c1b03f9dc01c8cc71038829f7ed5aaf38d546fea90ddc980a`.
+
 The Batch Stop scenario references OASIS KMIP 2.0 §11.5, Table 396, and KMIP
 2.1 §11.5, Table 434. Its controlled peer returns one `Operation Failed`
 response and records that the later operation was not executed. KMIPKit's
@@ -132,6 +145,12 @@ server implements this behavior. The previous red test against package commit
 `9a16cc90a12205101d22a38501a5e74c665df4dc` captured the earlier rejection;
 TDD evidence and current verification are in
 [`implementation-evidence.md`](../../specs/092-interop-api-route-exhaustiveness/implementation-evidence.md).
+
+For catalogued read-only Batch Stop and Continue cases, the controlled peer
+also hashes its canonical fixture object snapshot before and after the
+exchange. Equal hashes record that these read-only cases leave fixture state
+unchanged; the separate per-item effects record whether later operations ran.
+These hashes describe only the controlled fixture, not a vendor server.
 
 The branch remains WIP until exact-head CI and the joint cross-language checks
 pass. Vendor interoperability remains pending until a KMIP 2.0/2.1 endpoint is
