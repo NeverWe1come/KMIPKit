@@ -1115,6 +1115,70 @@ def test_attribute_mutation_builder_executes_default_and_override_options(
     assert calls == [("default", None), ("options", 2)]
 
 
+def test_single_item_exchange_helper_forwards_async_and_selected_options(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[tuple[str, int | None, object | None]] = []
+
+    class FakeClient:
+        def execute(self, batch: object, limits: object) -> str:
+            calls.append(("default", getattr(batch, "asynchronous_indicator", None), None))
+            return "default result"
+
+        def execute_with_options(
+            self, batch: object, limits: object, options: object,
+        ) -> str:
+            calls.append(("options", getattr(batch, "asynchronous_indicator", None), options))
+            return "options result"
+
+    class FakeItem:
+        def __enter__(self) -> FakeItem:
+            return self
+
+        def __exit__(self, *_arguments: object) -> None:
+            self.close()
+
+        def close(self) -> None:
+            pass
+
+    class FakeBatch:
+        asynchronous_indicator: int | None = None
+
+        @classmethod
+        def create(cls) -> FakeBatch:
+            return cls()
+
+        def __enter__(self) -> FakeBatch:
+            return self
+
+        def __exit__(self, *_arguments: object) -> None:
+            self.close()
+
+        def add_item(self, _item: object) -> None:
+            pass
+
+        def set_asynchronous_indicator(self, value: int) -> None:
+            self.asynchronous_indicator = value
+
+        def close(self) -> None:
+            pass
+
+    monkeypatch.setattr(fluent, "Client", FakeClient)
+    monkeypatch.setattr(fluent, "Batch", FakeBatch)
+    configured_options = client.RequestOptions()
+    override_options = client.RequestOptions()
+    with ttlv.codec_limits_defaults() as limits:
+        assert fluent._execute_single_item(
+            FakeClient(), FakeItem, limits, configured_options, 2,
+        ) == "options result"
+        assert fluent._execute_single_item(
+            FakeClient(), FakeItem, limits, configured_options, None, override_options,
+        ) == "options result"
+
+    assert calls == [
+        ("options", 2, configured_options),
+        ("options", None, override_options),
+    ]
 def test_add_attribute_builder_rejects_success_without_native_output(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
