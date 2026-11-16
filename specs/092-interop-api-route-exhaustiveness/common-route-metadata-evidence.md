@@ -27,3 +27,10 @@ required by KMIPKIT-0092-FR-006. The focused test passed after the change:
 python3 -B -m unittest interop.shared.tests.test_route_capabilities.RouteCapabilitiesTests.test_public_request_serializers_and_response_readers_are_routes
 Ran 1 test — OK
 ```
+
+## Refactor — centralize pinned API loading
+
+The test class now loads public API metadata through one `_pinned_public_api`
+helper, keeping future route assertions on the same artifact boundary. After
+this refactor, the route-capability suite passed **63 tests**, and the workflow
+contract suite passed **95 tests**.
