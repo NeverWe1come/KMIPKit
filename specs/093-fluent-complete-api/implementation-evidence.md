@@ -429,3 +429,27 @@
 - The full CI for the updated WIP PR head is still required; task M005 remains
   open until every required check on that exact head completes successfully.
 
+## Operation owner matrix macOS Rust 1.94 CI repair
+
+### Red
+
+- PR #228 run `43785623352` failed only in Core / macOS / Rust 1.94 at
+  `successful_flush_progress_restarts_the_write_deadline`. The test used two
+  real 200 ms sleeps under 500 ms inactivity deadlines; macOS scheduling
+  delayed the first flush past its deadline.
+
+### Green
+
+- Changed the test to use Tokio's paused clock. Its release task and the
+  production timeout sleep now advance in deterministic 200 ms steps, so the
+  test continues to verify that a successful flush resets the write deadline
+  without depending on wall-clock scheduling.
+- `cargo test -p kmipkit-transport --locked --test timeout_delivery successful_flush_progress_restarts_the_write_deadline -- --exact --nocapture`
+  passes with the paused clock.
+
+### Refactor
+
+- The change is confined to the timing mode of the existing regression test;
+  production timeout behavior and the asserted deadline contract are
+  unchanged. PR #228 remains WIP until exact-head CI is green.
+
