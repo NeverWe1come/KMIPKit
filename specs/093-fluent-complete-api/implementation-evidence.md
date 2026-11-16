@@ -431,4 +431,10 @@
   growth and the remaining planned declarations; the unchanged generator fails
   that expectation. The precise validator check is in
   `tools/api_manifest/tests/test_t102_manifest_size_limit.py`.
+- The first reconciled declaration inventory exposed six duplicate Rust module
+  paths because the v3 Tag capability re-declared parent modules already owned
+  by the versioned-value capability. The focused no-duplicate export assertion
+  fails at `6,672 != 6,666`, and the manifest validator independently rejects
+  the duplicate public export path. This test is included in
+  `test_tag_enumeration_is_generated_for_all_supported_versions_and_languages`.
 

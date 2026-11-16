@@ -26,33 +26,45 @@ class NamedValueGeneratorTests(unittest.TestCase):
         )
         versioned = generate_named_values.load_versioned_values(ROOT)
         values = generate_named_values.collect_values(catalog)
-        tag_group = next(group for group in values.enumerations if group.name == "Tag")
         v3_tag_groups = [
             group for group in versioned.groups
             if group.version == "v3_0" and group.kind == "enumeration" and group.name == "Tag"
         ]
 
-        self.assertEqual(354, len(tag_group.values))
+        self.assertEqual(354, len(values.tag_values))
+        rendered = generate_named_values.render_outputs(values, versioned)
+        self.assertTrue(
+            "pub const ACTIVATION_DATE: u32 = 0x0042_0001;" in rendered["rust"],
+            "Rust output omits assigned KMIP 2.1 tag constants",
+        )
         self.assertEqual(1, len(v3_tag_groups))
         v3_tag_group = v3_tag_groups[0]
         self.assertEqual(60, len(v3_tag_group.values))
 
-        rendered = generate_named_values.render_outputs(values, versioned)
-        self.assertIn("pub const ACTIVATION_DATE: u32 = 0x0042_0001;", rendered["rust"])
-        self.assertIn("pub const CERTIFICATE_LINK: u32 = 0x0042_0190;", rendered["rust"])
-        self.assertIn("KMIPKIT_ENUMERATION_TAG_ACTIVATION_DATE", rendered["c"])
-        self.assertIn("KMIPKIT_V3_0_TAG_CERTIFICATE_LINK", rendered["c"])
-        self.assertIn("public static final long ACTIVATION_DATE = 0x00420001L;", rendered["java"])
-        self.assertIn("V3_0_TAG_CERTIFICATE_LINK = 0x00420190L", rendered["java"])
-        self.assertIn("ACTIVATION_DATE = 0x00420001", rendered["python"])
-        self.assertIn("V3_0_TAG_CERTIFICATE_LINK = 0x00420190", rendered["python"])
+        self.assertTrue("pub const CERTIFICATE_LINK: u32 = 0x0042_0190;" in rendered["rust"])
+        self.assertTrue("KMIPKIT_ENUMERATION_TAG_ACTIVATION_DATE" in rendered["c"])
+        self.assertTrue("KMIPKIT_V3_0_TAG_name(uint32_t raw)" in rendered["c"])
+        self.assertTrue("public static final long ACTIVATION_DATE = 0x00420001L;" in rendered["java"])
+        self.assertTrue("V3_0_TAG_CERTIFICATE_LINK = 0x00420190L" in rendered["java"])
+        self.assertTrue("ACTIVATION_DATE = 0x00420001" in rendered["python"])
+        self.assertTrue("V3_0_TAG_CERTIFICATE_LINK = 0x00420190" in rendered["python"])
 
         declarations, _ = reconcile_named_value_manifest.build_named_value_records(
             catalog, versioned
         )
-        certificate_link = next(
+        public_export_keys = [
+            (row["packageId"], row["exportName"]) for row in declarations
+        ]
+        self.assertEqual(len(public_export_keys), len(set(public_export_keys)))
+        certificate_links = [
             row for row in declarations
-            if row["exportName"].endswith("V3_0_TAG_CERTIFICATE_LINK")
+            if row["exportName"] == "KMIPKIT_V3_0_TAG_CERTIFICATE_LINK"
+        ]
+        self.assertEqual(1, len(certificate_links))
+        certificate_link = certificate_links[0]
+        self.assertEqual(
+            reconcile_named_value_manifest.TAG_CAPABILITY_ID,
+            certificate_link["capabilityId"],
         )
         self.assertEqual("four-language", certificate_link["parityScope"])
         self.assertEqual(
