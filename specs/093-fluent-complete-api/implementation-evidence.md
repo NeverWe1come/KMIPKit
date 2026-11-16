@@ -663,3 +663,12 @@
 - The exact-head CI rerun is pending; PR #236 remains WIP until every required
   check passes.
 
+## Add Attribute SonarCloud duplication repair
+
+### Red
+
+- PR #236 at `2cc3ecd9be84a21380205d181558bc22c91ffcb3` failed the SonarCloud
+  quality gate with 5.0% duplication on new code; the limit is 3%. The
+  identical explicit Add/Set builder method bodies introduced to keep the
+  production AST audit fail-closed exceeded that gate.
+
