@@ -3032,71 +3032,6 @@ pub struct AddAttributeBuilder<'a> {
     state: AttributeMutationBuilderState<'a>,
 }
 
-impl<'a> AddAttributeBuilder<'a> {
-    fn new(client: Option<&'a mut Client>) -> Self {
-        Self {
-            state: AttributeMutationBuilderState::new(client),
-        }
-    }
-
-    /// Creates a detached builder for typed request and batch use.
-    ///
-    /// Executing it returns a local `NotSent` error because no client is attached.
-    #[must_use]
-    pub fn detached() -> Self {
-        Self::new(None)
-    }
-
-    /// Sets an optional exact text Unique Identifier.
-    #[must_use]
-    pub fn unique_identifier(mut self, value: &str) -> Self {
-        self.state.set_unique_identifier(value);
-        self
-    }
-
-    /// Sets one catalogued New Attribute with its typed value.
-    #[must_use]
-    pub fn attribute<D: AttributeDefinition>(self, attribute: Attribute<D>) -> Self {
-        let mut builder = self;
-        builder.state.set_catalogued_attribute(attribute);
-        builder
-    }
-
-    /// Sets one explicitly typed TTLV Item as the New Attribute.
-    #[must_use]
-    pub fn attribute_item(mut self, item: Item) -> Self {
-        self.state.set_attribute_item(item);
-        self
-    }
-
-    /// Builds a KMIP Vendor Attribute structure as the New Attribute.
-    #[must_use]
-    pub fn vendor_attribute(
-        mut self,
-        vendor_identification: &str,
-        attribute_name: &str,
-        attribute_value: &Item,
-    ) -> Self {
-        self.state
-            .set_vendor_attribute(vendor_identification, attribute_name, attribute_value);
-        self
-    }
-
-    /// Sets exchange-local transport options.
-    #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.state.set_options(options);
-        self
-    }
-
-    /// Sets the Request Header Asynchronous Indicator for this exchange.
-    #[must_use]
-    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.state.set_asynchronous_indicator(value);
-        self
-    }
-}
-
 impl AddAttributeBuilder<'_> {
     fn construct_request(&self) -> Result<AddAttributeRequest, FluentBuildError> {
         build_attribute_mutation_request(
@@ -3173,6 +3108,95 @@ pub struct SetAttributeBuilder<'a> {
     state: AttributeMutationBuilderState<'a>,
 }
 
+trait HasAttributeMutationBuilderState<'client> {
+    fn state_mut(&mut self) -> &mut AttributeMutationBuilderState<'client>;
+}
+
+impl<'client> HasAttributeMutationBuilderState<'client> for AddAttributeBuilder<'client> {
+    fn state_mut(&mut self) -> &mut AttributeMutationBuilderState<'client> {
+        &mut self.state
+    }
+}
+
+impl<'client> HasAttributeMutationBuilderState<'client> for SetAttributeBuilder<'client> {
+    fn state_mut(&mut self) -> &mut AttributeMutationBuilderState<'client> {
+        &mut self.state
+    }
+}
+
+fn update_attribute_mutation_builder<'client, B>(
+    mut builder: B,
+    update: impl FnOnce(&mut AttributeMutationBuilderState<'client>),
+) -> B
+where
+    B: HasAttributeMutationBuilderState<'client>,
+{
+    update(builder.state_mut());
+    builder
+}
+
+impl<'a> AddAttributeBuilder<'a> {
+    fn new(client: Option<&'a mut Client>) -> Self {
+        Self {
+            state: AttributeMutationBuilderState::new(client),
+        }
+    }
+
+    /// Creates a detached builder for typed request and batch use.
+    ///
+    /// Executing it returns a local `NotSent` error because no client is attached.
+    #[must_use]
+    pub fn detached() -> Self {
+        Self::new(None)
+    }
+
+    /// Sets an optional exact text Unique Identifier.
+    #[must_use]
+    pub fn unique_identifier(self, value: &str) -> Self {
+        update_attribute_mutation_builder(self, |state| state.set_unique_identifier(value))
+    }
+
+    /// Sets one catalogued New Attribute with its typed value.
+    #[must_use]
+    pub fn attribute<D: AttributeDefinition>(self, attribute: Attribute<D>) -> Self {
+        update_attribute_mutation_builder(self, |state| {
+            state.set_catalogued_attribute(attribute);
+        })
+    }
+
+    /// Sets one explicitly typed TTLV Item as the New Attribute.
+    #[must_use]
+    pub fn attribute_item(self, item: Item) -> Self {
+        update_attribute_mutation_builder(self, |state| state.set_attribute_item(item))
+    }
+
+    /// Builds a KMIP Vendor Attribute structure as the New Attribute.
+    #[must_use]
+    pub fn vendor_attribute(
+        self,
+        vendor_identification: &str,
+        attribute_name: &str,
+        attribute_value: &Item,
+    ) -> Self {
+        update_attribute_mutation_builder(self, |state| {
+            state.set_vendor_attribute(vendor_identification, attribute_name, attribute_value);
+        })
+    }
+
+    /// Sets exchange-local transport options.
+    #[must_use]
+    pub fn with_options(self, options: RequestOptions) -> Self {
+        update_attribute_mutation_builder(self, |state| state.set_options(options))
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.state.set_asynchronous_indicator(value);
+        self
+    }
+}
+
 impl<'a> SetAttributeBuilder<'a> {
     fn new(client: Option<&'a mut Client>) -> Self {
         Self {
@@ -3190,44 +3214,41 @@ impl<'a> SetAttributeBuilder<'a> {
 
     /// Sets an optional exact text Unique Identifier.
     #[must_use]
-    pub fn unique_identifier(mut self, value: &str) -> Self {
-        self.state.set_unique_identifier(value);
-        self
+    pub fn unique_identifier(self, value: &str) -> Self {
+        update_attribute_mutation_builder(self, |state| state.set_unique_identifier(value))
     }
 
     /// Sets one catalogued New Attribute with its typed value.
     #[must_use]
     pub fn attribute<D: AttributeDefinition>(self, attribute: Attribute<D>) -> Self {
-        let mut builder = self;
-        builder.state.set_catalogued_attribute(attribute);
-        builder
+        update_attribute_mutation_builder(self, |state| {
+            state.set_catalogued_attribute(attribute);
+        })
     }
 
     /// Sets one explicitly typed TTLV Item as the New Attribute.
     #[must_use]
-    pub fn attribute_item(mut self, item: Item) -> Self {
-        self.state.set_attribute_item(item);
-        self
+    pub fn attribute_item(self, item: Item) -> Self {
+        update_attribute_mutation_builder(self, |state| state.set_attribute_item(item))
     }
 
     /// Builds a KMIP Vendor Attribute structure as the New Attribute.
     #[must_use]
     pub fn vendor_attribute(
-        mut self,
+        self,
         vendor_identification: &str,
         attribute_name: &str,
         attribute_value: &Item,
     ) -> Self {
-        self.state
-            .set_vendor_attribute(vendor_identification, attribute_name, attribute_value);
-        self
+        update_attribute_mutation_builder(self, |state| {
+            state.set_vendor_attribute(vendor_identification, attribute_name, attribute_value);
+        })
     }
 
     /// Sets exchange-local transport options.
     #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.state.set_options(options);
-        self
+    pub fn with_options(self, options: RequestOptions) -> Self {
+        update_attribute_mutation_builder(self, |state| state.set_options(options))
     }
 
     /// Sets the Request Header Asynchronous Indicator for this exchange.

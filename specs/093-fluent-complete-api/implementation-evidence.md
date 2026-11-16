@@ -688,6 +688,19 @@
   validator, and `ClientRequest` variant. The builders keep their distinct
   missing-attribute errors and KMIP request types while execution still uses
   the existing single typed exchange path.
+- A new exact-head SonarCloud analysis on PR #236 (`bb1a1a92`) still measured
+  5.3435% duplication across 1,572 new lines. The duplication endpoint
+  identified the common Add/Set builder methods in `fluent.rs`; the previous
+  request-construction helper had not removed that source duplication.
+- Replaced the repeated method bodies with short explicit wrappers over one
+  private state-update helper. The public builder types and method names stay
+  unchanged. An attempted macro-based extraction was rejected by the closed
+  AST inventory, so the final form keeps every public method directly
+  inspectable.
+- The Add/Set parity and manifest suite passes all 26 tests,
+  `cargo test -p kmipkit-client --all-features --lib` passes all 929 tests,
+  the generator verifies 12 outputs, and workspace formatting passes. Exact
+  head SonarCloud and CI results remain pending.
 - The next exact-head SonarCloud result must confirm duplication is at or below
   the 3% gate. PR #236 remains WIP until every required check is green.
 
