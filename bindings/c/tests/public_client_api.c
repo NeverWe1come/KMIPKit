@@ -737,6 +737,40 @@ cleanup:
     return status;
 }
 
+int kmipkit_public_locate_revoke_fluent_probe(void) {
+    kmipkit_client_batch_response_t *response = NULL;
+    kmipkit_request_options_v1_t options = {0};
+    int32_t status;
+
+    options.struct_size = (uint32_t)sizeof(options);
+    options.abi_version = UINT32_C(1);
+    status = kmipkit_client_locate_v1(
+        NULL, NULL, UINT8_C(0), INT32_C(0), UINT8_C(0), INT32_C(0),
+        UINT8_C(0), UINT32_C(0), UINT8_C(0), UINT32_C(0),
+        UINT8_C(0), UINT32_C(0), NULL, &response);
+    if (status != KMIPKIT_ERROR_INVALID_INPUT || response != NULL) {
+        return 1;
+    }
+    status = kmipkit_client_locate_with_options_v1(
+        NULL, NULL, UINT8_C(0), INT32_C(0), UINT8_C(0), INT32_C(0),
+        UINT8_C(0), UINT32_C(0), UINT8_C(0), UINT32_C(0),
+        UINT8_C(0), UINT32_C(0), NULL, &options, &response);
+    if (status != KMIPKIT_ERROR_INVALID_INPUT || response != NULL) {
+        return 2;
+    }
+    status = kmipkit_client_revoke_v1(
+        NULL, NULL, UINT8_C(0), UINT32_C(0), NULL, &response);
+    if (status != KMIPKIT_ERROR_INVALID_INPUT || response != NULL) {
+        return 3;
+    }
+    status = kmipkit_client_revoke_with_options_v1(
+        NULL, NULL, UINT8_C(0), UINT32_C(0), NULL, &options, &response);
+    if (status != KMIPKIT_ERROR_INVALID_INPUT || response != NULL) {
+        return 4;
+    }
+    return 0;
+}
+
 int kmipkit_public_async_batch_items_probe(void) {
     static const uint8_t correlation[] = "async-request-id";
     kmipkit_cancel_request_t *cancel_request = NULL;

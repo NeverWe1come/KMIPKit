@@ -26,6 +26,15 @@ def test_fluent_request_exposes_a_delete_attribute_builder():
     assert "DeleteAttributeBuilder" in fluent.__all__
 
 
+def test_fluent_request_exposes_locate_and_revoke_builders():
+    assert callable(getattr(fluent.Request, "locate", None))
+    assert callable(getattr(fluent.Request, "revoke", None))
+    assert hasattr(fluent, "LocateBuilder")
+    assert hasattr(fluent, "RevokeBuilder")
+    assert "LocateBuilder" in fluent.__all__
+    assert "RevokeBuilder" in fluent.__all__
+
+
 def test_delete_attribute_builder_builds_an_independent_typed_request():
     identifier = extensions.UniqueIdentifier.text_string("delete-attribute-key")
     reference = extensions.AttributeReference.tag(StandardAttribute.DESCRIPTION.tag)
