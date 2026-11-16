@@ -736,3 +736,35 @@
   request execution therefore did not remove the duplicated public builder
   methods.
 
+### Complete Rust export reconciliation (KMIPKIT-0093)
+
+- **Red — `6a91e562b`**: the manifest-limit regression expects the reviewed
+  full 0093 inventory to fit a bounded 64 MiB input, but the generator still
+  used the prior 56 MiB limit. The focused size test failed with
+  `58720256 != 67108864`; the initial generator run also rejected the manifest.
+  After temporarily allowing validation of the larger input, validation
+  exposed eight stale KMIP 3.0 `enumeration::object_class_mask` mapping paths.
+- **Green — `db9d720ca`**: set the strict input bound to 64 MiB, removed only
+  the eight duplicate mapping paths identified by the Rust export audit, and
+  refreshed the source manifest and all generated outputs with the pinned
+  generator. Reconciled 419 exact Rust declaration candidates as blocked under
+  KMIPKIT-0093 and recorded 666 exact Rust trait exclusions. No cross-language
+  mapping was invented for a blocked candidate.
+- The compiler audit reports 31,977 observed Rust paths, 10,346 manifest
+  declarations and 21,631 approved exclusions, with zero missing, stale,
+  duplicate, kind-mismatched, or conditional-mismatch paths. The shared Rust
+  report is current at 5,440 mapped declarations and 21,631 approved
+  exclusions. C, Java, and Python export audits match 2,191, 2,598, and 2,855
+  declarations respectively, with no missing, stale, or kind-mismatched rows.
+- The 64 MiB bound leaves the manifest reader strictly bounded while admitting
+  the complete reviewed declaration and exclusion inventory. The KMIPKIT-0050
+  reconciliation helper is not part of the current reproduction sequence: it
+  enforces the old blocked `typed_cryptographic_parameters` contract that was
+  superseded by the verified KMIPKIT-0053 capability.
+- **Refactor**: updated the T102 count/fingerprint snapshots and the dated
+  audit report guide. Focused API, T102, shared-inventory, size-bound and
+  reconciliation tests pass (62 tests); three additional manifest-v2
+  execution/result mapping tests pass. The generator verifies all 12 outputs,
+  the Rust and shared-inventory report checks pass, and `git diff --check`
+  passes. Exact-head hosted CI is still required before this PR can leave WIP.
+

@@ -20,8 +20,8 @@ T102_BLOCKED_CANDIDATES = 0
 # Create Split Key declarations and 18 standard-trait exclusions; KMIPKIT-0100
 # adds 40 exact Rust Register declarations and 18 standard-trait exclusions;
 # KMIPKIT-0101 adds 188 exact Rust lifecycle declarations.
-# KMIPKIT-0093 reconciliation adds 1,614 explicit blocked declarations and
-# 3,467 reviewed Rust trait exclusions. KMIPKIT-0102 adds Rust fluent crypto
+# The earlier KMIPKIT-0093 reconciliation added 1,614 explicit blocked
+# declarations and 3,467 reviewed Rust trait exclusions. KMIPKIT-0102 adds Rust fluent crypto
 # builders; KMIPKIT-0103 adds 27 C, KMIPKIT-0104 adds 121 Java, and KMIPKIT-0105
 # adds 148 Python fluent crypto declarations. KMIPKIT-0096 also adds one C
 # expert attribute insertion and one blocked Java insertion declaration.
@@ -38,8 +38,9 @@ T102_BLOCKED_CANDIDATES = 0
 # KMIPKIT-0093 adds 151 unique fluent declarations, 419 blocked Rust inventory
 # candidates, and 666 exact Rust trait exclusions after removing eight
 # duplicate KMIPKIT-0047 v3.0 value paths.
-# The merged release inventory also includes the KMIPKIT-0093 C key-pair, Rust
-# Set Attribute, Add Attribute, and four-language binding declarations.
+# This stacked inventory also includes 28 Rust client execution-wrapper
+# requirement links and the KMIPKIT-0093 C key-pair, Rust Set Attribute, Add
+# Attribute, and four-language binding declarations.
 T102_PUBLIC_DECLARATIONS = 17_990
 T102_KMIP30_DRAFT_ROUTE_DECLARATIONS = 36
 T102_APPROVED_EXCLUSIONS = 23_413
