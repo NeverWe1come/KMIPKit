@@ -1,5 +1,7 @@
 use kmipkit_protocol::attribute::typed;
-use kmipkit_protocol::{Attribute, AttributeDefinition, CreateRequest, UniqueIdentifier};
+use kmipkit_protocol::{
+    Attribute, AttributeDefinition, AttributeReference, CreateRequest, UniqueIdentifier,
+};
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::RequestOptions;
 use kmipkit_ttlv::codec::CodecLimits;
@@ -10,8 +12,40 @@ use crate::execute::{ClientBatchOutcome, ClientOperation, ClientRequest, encode_
 use crate::execute_test_support::{test_item, test_structure};
 use crate::fluent::{
     AddAttributeBuilder, CreateSymmetricKeyBuilder, CryptographicUsageMask,
-    FluentAttributePosition, FluentBuildError, SetAttributeBuilder,
+    DeleteAttributeBuilder, FluentAttributePosition, FluentBuildError, SetAttributeBuilder,
 };
+
+#[test]
+fn delete_attribute_builder_constructs_the_existing_typed_request() {
+    let mut client = failed_request_client();
+    let request = client
+        .request()
+        .delete_attribute()
+        .unique_identifier("key-42")
+        .current_attribute(
+            Attribute::<typed::Description>::new("legacy label".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        )
+        .attribute_reference(AttributeReference::tag(typed::Description::TAG))
+        .build_request()
+        .expect("the fluent Delete Attribute request is valid");
+
+    assert_eq!(request.unique_identifier(), Some("key-42"));
+    let current_attribute = request
+        .current_attribute()
+        .expect("the selected attribute is retained");
+    assert_eq!(current_attribute.item().tag().raw(), typed::Description::TAG);
+    assert!(current_attribute.item().with_value(|value| matches!(
+        value,
+        ValueView::TextString(text) if text == "legacy label"
+    )));
+    assert_eq!(
+        request
+            .attribute_reference()
+            .and_then(AttributeReference::tag_value),
+        Some(typed::Description::TAG)
+    );
+}
 
 #[test]
 fn add_attribute_builder_constructs_the_existing_typed_request() {
