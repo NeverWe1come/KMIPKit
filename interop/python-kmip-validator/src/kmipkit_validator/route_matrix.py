@@ -2770,6 +2770,11 @@ def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | No
         observed['batch_item_count'] = len(batch_operations)
     if peer.peer_observed_effects:
         observed['peer_observed_effects'] = list(peer.peer_observed_effects)
+        if (peer.peer_observed_state_before_sha256 is None
+                or peer.peer_observed_state_after_sha256 is None):
+            raise ValueError('controlled peer state snapshots are unavailable')
+        observed['peer_observed_state_before_sha256'] = peer.peer_observed_state_before_sha256
+        observed['peer_observed_state_after_sha256'] = peer.peer_observed_state_after_sha256
     if route_execution_failed:
         raise ObservedRouteFailure(observed)
     return observed

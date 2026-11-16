@@ -52,3 +52,27 @@ server.
 No Cosmian KMS, CipherTrust, or ESKM endpoint was available. Cross-language
 parity is also pending the joint matrix using identical release artifacts and
 fixtures. Those results are not inferred from this Python-only run.
+
+## Follow-up: strict peer-state evidence
+
+- **Red — `76cdb53f7`** adds assertions that Python Stop and Continue events
+  include the before/after state hashes required by the shared evidence schema.
+  The focused tests failed because those fields were absent. Exact-head CI for
+  `10b66ad65` exposed the same schema failure at a Batch Continue cell.
+- **Green — `eb93d6de5`** records the SHA-256 of the canonical controlled
+  fixture object snapshot on both sides of each catalogued read-only batch
+  exchange and includes the hashes in emitted events. The hashes are equal
+  because these two scenarios do not mutate fixture state; ordered item
+  effects remain recorded separately.
+- **Refactor** documents the evidence boundary in the validator README. The
+  full Python consumer suite passed all 132 tests in 361.981 seconds. The
+  expanded catalog contains 74,656 Python route cells: 45,478 local and
+  29,178 controlled-peer network cells. The Python 3.12.13 local matrix and
+  independent validator passed all 74,656 cells with zero failures, pending
+  cells or duplicate events. Run ID:
+  `python-matrix-6cd71081-28dc-4fc5-a3ae-68298632eaf7`. The report used release
+  commit `489fafc79ef89db2524eafa7a6c6482f5cf75d97`, artifact SHA-256
+  `d07a7e45d6bf9ae576e3fcc60df788722e3f2446f75ca07a26f505c5f8049748`, catalog
+  SHA-256 `55fcd64afba189ab7d04978fafb841fc73c9e5afc1ef25c93cb2eb04f4fba4a9`,
+  and route-manifest SHA-256
+  `3fe892f7b2804e8c1b03f9dc01c8cc71038829f7ed5aaf38d546fea90ddc980a`.

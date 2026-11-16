@@ -3,6 +3,7 @@
 Fixture bytes stay in memory; evidence contains normalized tree hashes only.
 """
 from __future__ import annotations
+import hashlib
 import json
 from pathlib import Path
 import queue
@@ -14,6 +15,16 @@ import xml.etree.ElementTree as ET
 from .contract import ROOT
 
 PKI = ROOT / "bindings/python/tests/fixtures/login-mtls"
+
+
+def _read_only_fixture_state_sha256() -> str:
+    """Hash the controlled fixture's unchanged managed-object snapshot."""
+    state = json.dumps(
+        {"objects": ["controlled-fixture-key"]},
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return hashlib.sha256(state).hexdigest()
 
 def item(tag: int, item_type: int, value: bytes) -> bytes:
     return tag.to_bytes(3, "big") + bytes([item_type]) + len(value).to_bytes(4, "big") + value + bytes((-len(value)) % 8)
@@ -482,6 +493,8 @@ class ControlledTlsPeer:
         self.result_statuses = result_statuses
         self.result_reasons = result_reasons
         self.peer_observed_effects: list[str] = []
+        self.peer_observed_state_before_sha256: str | None = None
+        self.peer_observed_state_after_sha256: str | None = None
         self.listener = socket.socket()
         self.listener.bind(("127.0.0.1", 0))
         self.listener.listen(1)
@@ -530,6 +543,10 @@ class ControlledTlsPeer:
                 elif (continuation == 1 and len(statuses) > 1
                       and statuses[0] == 1 and statuses[1] == 0):
                     self.peer_observed_effects = ["first_item_failed", "second_item_executed"]
+                if self.peer_observed_effects:
+                    # The catalogued Stop/Continue cases are read-only, so their
+                    # controlled managed-object snapshot is unchanged.
+                    self.peer_observed_state_before_sha256 = _read_only_fixture_state_sha256()
                 if self.encoding == "TTLV":
                     if normalized_operation_name(str(self.request_observation["operation"])) == "discoverversions":
                         response = discover_versions_response(
@@ -573,6 +590,8 @@ class ControlledTlsPeer:
                     )
                 else:
                     stream.sendall(response)
+                if self.peer_observed_effects:
+                    self.peer_observed_state_after_sha256 = _read_only_fixture_state_sha256()
         except BaseException as error:  # Captured and surfaced by the owning test.
             self.error.put(error)
         finally:
