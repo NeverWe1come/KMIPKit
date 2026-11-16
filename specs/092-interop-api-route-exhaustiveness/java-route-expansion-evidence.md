@@ -1799,3 +1799,35 @@ capability, encoding/transport, and source-backed exclusion filters define
 applicability, and these remaining cells are still applicable required work.
 FR-002/FR-009 require zero pending cells for full completion, so the PR remains
 WIP.
+
+
+## Stack base refresh and Usage Limits route evidence (2026-11-16)
+
+The Java route stack was refreshed onto the current interop route branch at
+`9adc77680b163a8410d02c2e2a604c47dc1d780c`. PR #216 now follows the updated
+Java route matrix branch. The installed consumer was rebuilt from the exact
+`release/1.0.0` pin `12496d646d11d4069b58bcc88fc76cc619211ec6`, with artifact
+SHA-256
+`504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+
+The complete Java validator suite passes 54 tests with zero failures, errors,
+or skips. The selected-scope validator accepts 22,989/22,989 invoked cells
+with zero failed cells. The regenerated ledger records 71,649 planned, 22,989
+executed, and 48,660 pending cells across 1,275 pending case IDs. All pending
+cells remain `route_evidence_not_emitted`; this PR does not claim the full
+route matrix is complete.
+
+Local commands (from `interop/java-kmip-validator`):
+
+```sh
+mkdir -p "$PWD/build/tmp"
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/tmp" \
+  bash ../../bindings/java/gradlew --rerun-tasks \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test
+python3 ../../interop/shared/tools/validate_route_evidence.py \
+  --selected-scope --report build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+```
