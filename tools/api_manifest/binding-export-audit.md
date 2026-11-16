@@ -13,7 +13,7 @@ later, and the platform's native symbol reader (`nm` on Unix):
 
 ```text
 python -B -m unittest tools.api_manifest.tests.test_binding_exports -v
-python -B tools/api_manifest/audit_binding_exports.py --repo-root . --report specs/043-public-api-bindings/reports/binding-export-report-2026-11-15-kmip30-async-bindings.json --check
+python -B tools/api_manifest/audit_binding_exports.py --repo-root . --report specs/043-public-api-bindings/reports/binding-export-report-2026-11-16-kmipkit-0093-tag-values.json --check
 ```
 
 The runner builds `kmipkit-ffi` with `cargo build --locked --offline` into a new
@@ -195,9 +195,9 @@ after KMIPKIT-0122. Earlier dated reports remain historical snapshots.
 | Java | yes | 3,168 | 2,468 | 2,468 | 700 | 0 | 0 | 0 | 0 | yes |
 | Python | yes | 3,688 | 2,679 | 2,679 | 1,009 | 0 | 0 | 0 | 0 | yes |
 
-## KMIP 3.0 and asynchronous binding delivery snapshot (2026-11-15)
+## Historical KMIP 3.0 and asynchronous binding delivery snapshot (2026-11-15)
 
-The current report is
+This historical report is
 `specs/043-public-api-bindings/reports/binding-export-report-2026-11-15-kmip30-async-bindings.json`.
 It includes the KMIPKIT-0122 versioned catalog base and the KMIPKIT-0124
 KMIP 3.0 operation and asynchronous batch binding declarations.
@@ -207,3 +207,16 @@ KMIP 3.0 operation and asynchronous batch binding declarations.
 | C | yes | 2,158 | 2,098 | 2,098 | 60 | 0 | 0 | 0 | 0 | yes |
 | Java | yes | 3,214 | 2,503 | 2,503 | 711 | 0 | 0 | 0 | 0 | yes |
 | Python | yes | 3,726 | 2,717 | 2,717 | 1,009 | 0 | 0 | 0 | 0 | yes |
+
+## Fluent tag API binding delivery snapshot (2026-11-16)
+
+The current report is
+`specs/043-public-api-bindings/reports/binding-export-report-2026-11-16-kmipkit-0093-tag-values.json`.
+It includes the prior KMIP 3.0 and asynchronous bindings plus the 2,077
+catalog-backed fluent tag declarations delivered by KMIPKIT-0093.
+
+| Package | Scanner complete | Observed | Manifest declarations | Exact matches | Exact exclusions | Missing | Stale | Kind mismatches | Issues | `matchesManifest` |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| C | yes | 2,640 | 2,580 | 2,580 | 60 | 0 | 0 | 0 | 0 | yes |
+| Java | yes | 3,696 | 2,985 | 2,985 | 711 | 0 | 0 | 0 | 0 | yes |
+| Python | yes | 4,245 | 3,236 | 3,236 | 1,009 | 0 | 0 | 0 | 0 | yes |

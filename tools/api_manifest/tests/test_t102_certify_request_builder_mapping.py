@@ -173,7 +173,9 @@ KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS = {
 # narrowed T101 mappings. KMIPKIT-0124 adds 28 KMIP 3.0 fluent and 16 async
 # batch declarations to this non-target snapshot; the async request constructors
 # The non-target snapshot includes Create Key Pair declarations and KMIPKIT-0126 additions.
-DECLARATIONS_SHA256 = "f36a5b8bce7788f71ec4f7d4451f0f9cbf30a118c5057657441ae2abe77b55af"
+# KMIPKIT-0093 adds 2,077 catalog-backed fluent tag declarations and corrects
+# the generated KMIP 3.0 Object Class Mask paths from enumeration to bitmask.
+DECLARATIONS_SHA256 = "763ef84aea312d433fd306aa347508faf1e79c1d1e8f42e4d4cf675396b60ca5"
 OPERATIONS_SHA256 = "9ab6c670787f07c9faa301744d1654fdd071ceffc3b43936e6cb12add59094e2"
 
 
