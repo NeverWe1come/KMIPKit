@@ -268,3 +268,43 @@ El mismo builder está disponible en las fachadas de los cuatro lenguajes:
 | Python | `fluent.Request(client).set_attribute()` | `catalogued_attribute(StandardAttribute.DESCRIPTION, value)` | `attribute_item` o `vendor_attribute` | `execute(limits)` o `build`; usar el builder como gestor de contexto |
 
 Los valores catalogados se validan según el tipo TTLV del atributo. Los tags desconocidos requieren un `Item` con tipo explícito. El helper de fabricante construye la estructura Vendor Attribute del protocolo; un tag de fabricante por sí solo no representa esa estructura. Las pruebas del consumidor C compilado, de Java/JNI y de Python/CFFI verifican que la petición tipada y su conversión a batch conservan el mismo tipo de operación.
+
+## Petición fluida Delete Attribute
+
+Delete Attribute sigue OASIS KMIP v2.1 §6.1.13, Tablas 202–204. Current Attribute usa el `Item` directo definido en §5.6, Tabla 162, y Attribute Reference sigue §5.5, Tabla 161. El builder fluido crea el request tipado existente; no envía TTLV arbitrario. El llamador puede seleccionar el atributo por su valor actual, por una referencia o por ambos. El validador de la petición y el servidor determinan si la combinación es válida y si se puede eliminar ese atributo.
+
+En Rust se puede usar un atributo catalogado sin construir a mano la estructura TTLV de Current Attribute ni un batch:
+
+```rust
+use std::error::Error;
+
+use kmipkit_client::Client;
+use kmipkit_protocol::{attribute::typed, Attribute};
+use kmipkit_ttlv::codec::CodecLimits;
+
+fn delete_comment(client: &mut Client) -> Result<String, Box<dyn Error>> {
+    let response = client
+        .request()
+        .delete_attribute()
+        .unique_identifier("object-id-17")
+        .current_attribute(Attribute::<typed::Comment>::new("legacy value".to_owned())?)
+        .execute(&CodecLimits::defaults())?;
+
+    response
+        .outcome()
+        .response()
+        .delete_attribute()
+        .and_then(|result| result.unique_identifier())
+        .map(str::to_owned)
+        .ok_or_else(|| "Delete Attribute did not return a successful identifier".into())
+}
+```
+
+| Lenguaje | Iniciar la petición | Seleccionar el atributo actual | Validar o enviar |
+| --- | --- | --- | --- |
+| Rust | `client.request().delete_attribute()` | `current_attribute(Attribute<D>)`, `current_attribute_item(Item)`, `current_vendor_attribute(...)`, `attribute_reference(...)` | `validate`, `build_request`, `to_batch_item` o un único `execute` |
+| C | `kmipkit_delete_attribute_builder_create` | `..._set_catalogued_attribute`, `..._set_current_attribute_item`, `..._set_vendor_attribute`, `..._set_attribute_reference` | `..._validate`, `..._build_request`, `..._build_batch_item` o un único `..._execute_v1`; liberar cada handle propietario |
+| Java | `new FluentRequest(client).deleteAttribute()` | `cataloguedAttribute`, `currentAttribute(TtlvItem)`, `currentVendorAttribute`, `attributeReference` | `validate`, `buildRequest`, `toBatchItem` o un único `execute(limits)`; cerrar los valores propios |
+| Python | `fluent.Request(client).delete_attribute()` | `catalogued_attribute`, `current_attribute_item`, `current_vendor_attribute`, `attribute_reference` | `validate`, `build_request`, `to_batch_item` o un único `execute(limits)`; usar el builder como gestor de contexto |
+
+Los valores catalogados se comprueban contra el tipo TTLV del atributo. Los tags desconocidos requieren un `Item` con tipo explícito y el helper de fabricante construye la estructura KMIP Vendor Attribute. Las opciones de transporte se configuran con `with_options`; el Request Header Asynchronous Indicator tiene su propio setter. Cada `execute` realiza un intercambio mediante el cliente existente, sin Poll ni reintentos. Java y Python mantienen copias gestionadas por sus runtimes además del propietario nativo; cierra el request, el elemento de batch, el builder y la respuesta según la API de cada lenguaje.
