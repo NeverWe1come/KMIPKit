@@ -2264,12 +2264,13 @@ fn is_exact_fluent_catalogued_attribute(
     signature: &syn::Signature,
 ) -> bool {
     let supported_method = match impl_type {
-        Some("CreateSymmetricKeyBuilder" | "CreateSplitKeyBuilder") => {
-            signature.ident == "attribute"
-        }
-        Some("RegisterBuilder" | "SetAttributeBuilder" | "AddAttributeBuilder") => {
-            signature.ident == "attribute"
-        }
+        Some(
+            "CreateSymmetricKeyBuilder"
+            | "CreateSplitKeyBuilder"
+            | "RegisterBuilder"
+            | "SetAttributeBuilder"
+            | "AddAttributeBuilder",
+        ) => signature.ident == "attribute",
         Some("CreateKeyPairBuilder") => matches!(
             signature.ident.to_string().as_str(),
             "common_attribute" | "private_attribute" | "public_attribute"
@@ -2333,10 +2334,15 @@ fn is_exact_fluent_explicit_attribute_item(
 ) -> bool {
     let supported_method = match impl_type {
         Some("AddAttributeBuilder") => {
-            matches!(signature.ident.to_string().as_str(), "attribute_item" | "vendor_attribute")
+            matches!(
+                signature.ident.to_string().as_str(),
+                "attribute_item" | "vendor_attribute"
+            )
         }
         Some(
-            "CreateSymmetricKeyBuilder" | "CreateSplitKeyBuilder" | "RegisterBuilder"
+            "CreateSymmetricKeyBuilder"
+            | "CreateSplitKeyBuilder"
+            | "RegisterBuilder"
             | "SetAttributeBuilder",
         ) => matches!(
             signature.ident.to_string().as_str(),
@@ -2604,7 +2610,7 @@ fn is_plain_reference_to_str(ty: &Type) -> bool {
 }
 
 #[test]
-fn fluent_builder_signature_exceptions_are_exact_and_method_scoped() {
+fn fluent_builder_catalogued_attribute_signatures_are_exact() {
     let catalogued = syn::parse_str::<syn::Signature>(
         "fn attribute<D: AttributeDefinition>(self, attribute: Attribute<D>) -> Self",
     )
@@ -2634,7 +2640,10 @@ fn fluent_builder_signature_exceptions_are_exact_and_method_scoped() {
         Some("AddAttributeBuilder"),
         &catalogued
     ));
+}
 
+#[test]
+fn fluent_builder_explicit_attribute_item_signatures_are_method_scoped() {
     for signature in [
         "fn attribute_item(self, item: Item) -> Self",
         "fn vendor_attribute(self, vendor: &str, name: &str, value: &Item) -> Self",
@@ -2676,7 +2685,10 @@ fn fluent_builder_signature_exceptions_are_exact_and_method_scoped() {
             &signature
         ));
     }
+}
 
+#[test]
+fn fluent_builder_explicit_value_signatures_are_exact_and_method_scoped() {
     for signature in [
         "fn prime_field_size(self, value: Vec<u8>) -> Self",
         "fn protection_storage_masks(self, masks: Structure) -> Self",
