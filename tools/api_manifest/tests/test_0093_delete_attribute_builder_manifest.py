@@ -57,6 +57,41 @@ class FluentDeleteAttributeBuilderManifestTests(unittest.TestCase):
              if rows[0].get(language)},
         )
 
+    def test_java_vendor_attribute_alias_is_declared_in_manifest(self) -> None:
+        export_name = "org.kmipkit.fluent.DeleteAttributeBuilder.vendorAttribute"
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "java-kmipkit"
+        }
+        self.assertTrue(export_name in declarations, f"missing Java declaration: {export_name}")
+        declaration = declarations[export_name]
+        self.assertEqual("DeleteAttributeBuilder.vendorAttribute:java", declaration["declarationId"])
+        self.assertEqual("fluent_delete_attribute_parity", declaration["capabilityId"])
+        self.assertEqual("four-language", declaration["parityScope"])
+        self.assertEqual(
+            {
+                "rust": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::current_vendor_attribute",
+                "c": "kmipkit_delete_attribute_builder_set_vendor_attribute",
+                "java": export_name,
+                "python": "kmipkit.fluent.DeleteAttributeBuilder.current_vendor_attribute",
+            },
+            {language: mapping["name"] for language, mapping in declaration["languageMappings"].items()},
+        )
+        capability = next(
+            row for row in self.manifest["capabilities"]
+            if row["capabilityId"] == "fluent_delete_attribute_parity"
+        )
+        self.assertIn(export_name, capability["mappings"]["java"])
+
+    def test_attribute_reference_has_no_unrelated_java_overload_signatures(self) -> None:
+        export_name = "org.kmipkit.fluent.DeleteAttributeBuilder.attributeReference"
+        declaration = next(
+            row for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "java-kmipkit" and row.get("exportName") == export_name
+        )
+        self.assertNotIn("javaSignatures", declaration)
+
 
 if __name__ == "__main__":
     unittest.main()
