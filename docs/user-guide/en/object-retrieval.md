@@ -45,6 +45,38 @@ does not evaluate attributes, search local state, or sort or deduplicate the
 server's returned identifiers. The response preserves their original order
 and repetitions.
 
+### Fluent Locate request
+
+The client builder accepts an `AttributeSet`, exposes common Locate selectors,
+and executes one typed request. It keeps server filtering and result ordering
+semantics unchanged.
+
+```rust,kmipkit-test
+use kmipkit_client::{Client, ClientError, ClientOperation};
+use kmipkit_protocol::AttributeSet;
+use kmipkit_ttlv::codec::CodecLimits;
+
+fn locate_objects(
+    client: &mut Client,
+    limits: &CodecLimits,
+) -> Result<(), ClientError> {
+    let item = client
+        .request()
+        .locate(AttributeSet::new())
+        .maximum_items(25)
+        .offset_items(0)
+        .execute(limits)?;
+    let outcome = item.outcome();
+    assert_eq!(outcome.operation(), ClientOperation::Locate);
+    if let Some(response) = outcome.locate_response() {
+        let _server_ordered_identifiers = response.unique_identifiers();
+    }
+    Ok(())
+}
+
+fn main() { let _example = locate_objects; }
+```
+
 ## Build a Get request
 
 Unique Identifier is optional in the model. Omission is preserved for a

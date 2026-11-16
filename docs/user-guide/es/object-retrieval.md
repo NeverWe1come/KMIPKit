@@ -48,6 +48,38 @@ servidor; no evalúa atributos, busca en un estado local, ordena ni deduplica
 los identificadores recibidos. Conserva el orden y las repeticiones de la
 respuesta.
 
+### Petición `Locate` fluida
+
+El builder del cliente recibe un `AttributeSet`, expone los selectores comunes
+de Locate y ejecuta una petición tipada. Conserva la semántica de filtrado y
+orden del servidor.
+
+```rust,kmipkit-test
+use kmipkit_client::{Client, ClientError, ClientOperation};
+use kmipkit_protocol::AttributeSet;
+use kmipkit_ttlv::codec::CodecLimits;
+
+fn locate_objects(
+    client: &mut Client,
+    limits: &CodecLimits,
+) -> Result<(), ClientError> {
+    let item = client
+        .request()
+        .locate(AttributeSet::new())
+        .maximum_items(25)
+        .offset_items(0)
+        .execute(limits)?;
+    let outcome = item.outcome();
+    assert_eq!(outcome.operation(), ClientOperation::Locate);
+    if let Some(response) = outcome.locate_response() {
+        let _server_ordered_identifiers = response.unique_identifiers();
+    }
+    Ok(())
+}
+
+fn main() { let _example = locate_objects; }
+```
+
 ## Construir una petición `Get`
 
 `Unique Identifier` es opcional en el modelo. Su ausencia se conserva cuando

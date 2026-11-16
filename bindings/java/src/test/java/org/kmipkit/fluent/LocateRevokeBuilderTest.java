@@ -14,13 +14,13 @@ final class LocateRevokeBuilderTest {
     @Test
     void locateBuildsTypedItemWithExplicitFilters() {
         try (TtlvStructure empty = TtlvStructure.create();
-                AttributeSet attributes = AttributeSet.tryNew(empty)) {
-            LocateBuilder builder = new LocateBuilder(null, attributes)
+                AttributeSet attributes = AttributeSet.tryNew(empty);
+                LocateBuilder builder = new LocateBuilder(null, attributes)
                     .maximumItems(12)
                     .offsetItems(3)
                     .storageStatusMask(2)
                     .objectGroupMember(1)
-                    .asynchronousIndicator(5);
+                    .asynchronousIndicator(5)) {
             builder.validate();
             try (ClientBatchItem item = builder.toBatchItem()) {
                 assertEquals(8, item.operation());
@@ -36,7 +36,7 @@ final class LocateRevokeBuilderTest {
                 .asynchronousIndicator(7);
         builder.validate();
         try (ClientBatchItem item = builder.toBatchItem()) {
-            assertEquals(23, item.operation());
+            assertEquals(19, item.operation());
         }
         RevokeBuilder invalid = new RevokeBuilder(null, 1, null)
                 .compromiseOccurrenceDate(1_700_000_000L);

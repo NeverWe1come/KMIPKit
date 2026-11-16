@@ -152,6 +152,7 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
             | "fluent_create_key_pair_parity"
             | "fluent_delete_attribute_parity"
             | "fluent_dx_api"
+            | "fluent_locate_revoke_parity"
             | "fluent_set_attribute_parity"
             | "generic_ttlv_model"
             | "hashed_password_timestamp_sequence"

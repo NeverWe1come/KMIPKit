@@ -95,6 +95,18 @@ Dependent work branches from the unmerged parent head while review is pending.
 - [ ] DAB004 Run the complete required checks and resolve exact-head CI before
   marking the PR ready for human review.
 
+### Locate and Revoke parity slice
+
+- [x] LRB001 Commit failing C, Java, Python, Rust option-boundary, and
+  public-manifest checks for typed Locate and Revoke builders.
+- [x] LRB002 Implement Rust builders and opaque C ABI builders over the
+  existing typed requests, retaining validation, options, and delivery state.
+- [x] LRB003 Add Java and Python facades, declare and generate exact public
+  exports, and update English/Spanish guides and traceability for KMIP v2.1
+  §§6.1.28 and 6.1.44.
+- [ ] LRB004 Run binding, coverage, traceability, generation, and exact-head CI
+  checks; resolve failures before requesting human review.
+
 ## End-to-end and closeout PR
 
 - [x] F001 Add five progressive TLS 1.3/mTLS journeys in each language and

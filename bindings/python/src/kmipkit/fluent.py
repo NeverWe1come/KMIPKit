@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any, Self
 
-from . import errors, extensions, ttlv
+from . import attribute_operations, errors, extensions, ttlv
 from ._client_ffi import ffi, lib
 from ._ffi import ffi as _base_ffi
 from ._handles import _wrap_owned_handle
@@ -252,6 +252,19 @@ class Request:
     def delete_attribute(self) -> DeleteAttributeBuilder:
         return DeleteAttributeBuilder(client=self._client)
 
+    def locate(
+        self,
+        attributes: attribute_operations.AttributeSet,
+    ) -> LocateBuilder:
+        return LocateBuilder(self._client, attributes)
+
+    def revoke(
+        self,
+        reason_code: int,
+        revocation_message: str | None = None,
+    ) -> RevokeBuilder:
+        return RevokeBuilder(self._client, reason_code, revocation_message)
+
     def get(self, unique_identifier: extensions.UniqueIdentifier) -> Operation:
         return Operation(self._client, "get", unique_identifier)
 
@@ -293,6 +306,226 @@ class Request:
         unique_identifier: extensions.UniqueIdentifier | None = None,
     ) -> GetAttributeListBuilder:
         return GetAttributeListBuilder(self._client, unique_identifier)
+
+
+class LocateBuilder:
+    """Typed KMIP 2.1 Locate request with an explicit validated Attributes filter."""
+
+    def __init__(
+        self,
+        client: Client,
+        attributes: attribute_operations.AttributeSet,
+    ) -> None:
+        if not isinstance(attributes, attribute_operations.AttributeSet):
+            errors.raise_for_status(4)
+        self._client = client
+        self._attributes: ttlv.Structure | None = attributes.as_items()
+        self._maximum_items: int | None = None
+        self._offset_items: int | None = None
+        self._storage_status_mask: int | None = None
+        self._object_group_member: int | None = None
+        self._options: RequestOptions | None = None
+        self._asynchronous_indicator: int | None = None
+
+    def maximum_items(self, value: int) -> LocateBuilder:
+        self._maximum_items = extensions._integer_range(
+            value, -(1 << 31), (1 << 31) - 1
+        )
+        return self
+
+    def offset_items(self, value: int) -> LocateBuilder:
+        self._offset_items = extensions._integer_range(
+            value, -(1 << 31), (1 << 31) - 1
+        )
+        return self
+
+    def storage_status_mask(self, value: int) -> LocateBuilder:
+        self._storage_status_mask = _unsigned(value, 32)
+        return self
+
+    def object_group_member(self, value: int) -> LocateBuilder:
+        self._object_group_member = _unsigned(value, 32)
+        return self
+
+    def with_options(self, options: RequestOptions) -> LocateBuilder:
+        if not isinstance(options, RequestOptions):
+            errors.raise_for_status(4)
+        self._options = options
+        return self
+
+    def asynchronous_indicator(self, value: int) -> LocateBuilder:
+        self._asynchronous_indicator = _unsigned(value, 32)
+        return self
+
+    def validate(self) -> None:
+        with self.build():
+            pass
+
+    def build(self) -> extensions.ClientBatchItem:
+        if not isinstance(self._attributes, ttlv.Structure):
+            errors.raise_for_status(4)
+        return extensions.client_batch_item_locate(
+            self._attributes,
+            maximum_items=self._maximum_items,
+            offset_items=self._offset_items,
+            storage_status_mask=self._storage_status_mask,
+            object_group_member=self._object_group_member,
+        )
+
+    def to_batch_item(self) -> extensions.ClientBatchItem:
+        return self.build()
+
+    def execute(
+        self,
+        limits: ttlv.CodecLimits,
+        options: RequestOptions | None = None,
+    ) -> BatchResult:
+        if not isinstance(self._client, Client) or not isinstance(
+            limits, ttlv.CodecLimits
+        ):
+            errors.raise_for_status(4)
+        if options is not None and not isinstance(options, RequestOptions):
+            errors.raise_for_status(4)
+        with Batch.create() as batch:
+            with self.build() as item:
+                batch.add_item(item)
+            if self._asynchronous_indicator is not None:
+                batch.set_asynchronous_indicator(self._asynchronous_indicator)
+            selected_options = options if options is not None else self._options
+            if selected_options is not None:
+                return self._client.execute_with_options(batch, limits, selected_options)
+            return self._client.execute(batch, limits)
+
+    def execute_with_options(
+        self,
+        limits: ttlv.CodecLimits,
+        options: RequestOptions,
+    ) -> BatchResult:
+        return self.execute(limits, options)
+
+    def close(self) -> None:
+        if self._attributes is not None:
+            self._attributes.close()
+            self._attributes = None
+
+    def __enter__(self) -> LocateBuilder:
+        if self._attributes is None:
+            errors.raise_for_status(4)
+        return self
+
+    def __exit__(self, exc_type: Any, exc: Any, traceback: Any) -> None:
+        self.close()
+
+    def __del__(self) -> None:
+        try:
+            self.close()
+        except Exception:  # noqa: BLE001 - finalizers must not raise during shutdown.
+            pass
+
+
+class RevokeBuilder:
+    """Typed KMIP 2.1 Revoke request preserving raw reason and optional fields."""
+
+    def __init__(
+        self,
+        client: Client,
+        reason_code: int,
+        revocation_message: str | None = None,
+    ) -> None:
+        self._client = client
+        self._reason_code = _unsigned(reason_code, 32)
+        if revocation_message is not None and not isinstance(revocation_message, str):
+            errors.raise_for_status(4)
+        self._revocation_message = revocation_message
+        self._unique_identifier: extensions.UniqueIdentifier | None = None
+        self._compromise_occurrence_date: int | None = None
+        self._options: RequestOptions | None = None
+        self._asynchronous_indicator: int | None = None
+
+    def unique_identifier(
+        self,
+        value: extensions.UniqueIdentifier | None,
+    ) -> RevokeBuilder:
+        if value is not None and not isinstance(value, extensions.UniqueIdentifier):
+            errors.raise_for_status(4)
+        self._unique_identifier = value
+        return self
+
+    def revocation_message(self, value: str | None) -> RevokeBuilder:
+        if value is not None and not isinstance(value, str):
+            errors.raise_for_status(4)
+        self._revocation_message = value
+        return self
+
+    def compromise_occurrence_date(self, value: int | None) -> RevokeBuilder:
+        self._compromise_occurrence_date = (
+            None if value is None else extensions._integer_range(
+                value, -(1 << 63), (1 << 63) - 1
+            )
+        )
+        return self
+
+    def with_options(self, options: RequestOptions) -> RevokeBuilder:
+        if not isinstance(options, RequestOptions):
+            errors.raise_for_status(4)
+        self._options = options
+        return self
+
+    def asynchronous_indicator(self, value: int) -> RevokeBuilder:
+        self._asynchronous_indicator = _unsigned(value, 32)
+        return self
+
+    def validate(self) -> None:
+        with self.build():
+            pass
+
+    def build(self) -> extensions.ClientBatchItem:
+        reason = extensions.RevocationReason.create(
+            self._reason_code, self._revocation_message
+        )
+        try:
+            request = extensions.RevokeRequest.create(
+                self._unique_identifier,
+                reason,
+                self._compromise_occurrence_date,
+            )
+            try:
+                return extensions.client_batch_item_revoke(request)
+            finally:
+                request.close()
+        finally:
+            reason.close()
+
+    def to_batch_item(self) -> extensions.ClientBatchItem:
+        return self.build()
+
+    def execute(
+        self,
+        limits: ttlv.CodecLimits,
+        options: RequestOptions | None = None,
+    ) -> BatchResult:
+        if not isinstance(self._client, Client) or not isinstance(
+            limits, ttlv.CodecLimits
+        ):
+            errors.raise_for_status(4)
+        if options is not None and not isinstance(options, RequestOptions):
+            errors.raise_for_status(4)
+        with Batch.create() as batch:
+            with self.build() as item:
+                batch.add_item(item)
+            if self._asynchronous_indicator is not None:
+                batch.set_asynchronous_indicator(self._asynchronous_indicator)
+            selected_options = options if options is not None else self._options
+            if selected_options is not None:
+                return self._client.execute_with_options(batch, limits, selected_options)
+            return self._client.execute(batch, limits)
+
+    def execute_with_options(
+        self,
+        limits: ttlv.CodecLimits,
+        options: RequestOptions,
+    ) -> BatchResult:
+        return self.execute(limits, options)
 
 
 class SetAttributeBuilder:
@@ -1574,10 +1807,12 @@ __all__ = [
     "GetAttributeListBuilder",
     "GetAttributesBuilder",
     "HashBuilder",
+    "LocateBuilder",
     "MacBuilder",
     "MacVerifyBuilder",
     "Operation",
     "Request",
+    "RevokeBuilder",
     "SetAttributeBuilder",
     "SignBuilder",
     "SignatureVerifyBuilder",

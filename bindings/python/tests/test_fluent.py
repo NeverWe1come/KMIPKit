@@ -35,6 +35,37 @@ def test_fluent_request_exposes_locate_and_revoke_builders():
     assert "RevokeBuilder" in fluent.__all__
 
 
+def test_locate_and_revoke_build_typed_items_with_explicit_optional_fields():
+    with ttlv.ttlv_structure_create() as empty_items:
+        with attribute_operations.AttributeSet.try_new(empty_items) as attributes:
+            with fluent.Request(None).locate(attributes) as locate:
+                item = (
+                    locate.maximum_items(12)
+                    .offset_items(3)
+                    .storage_status_mask(2)
+                    .object_group_member(1)
+                    .asynchronous_indicator(5)
+                    .to_batch_item()
+                )
+                assert item.operation == 8
+                item.close()
+
+    revoke = (
+        fluent.Request(None)
+        .revoke(2, "key material compromised")
+        .unique_identifier(extensions.UniqueIdentifier.text_string("lifecycle-key"))
+        .compromise_occurrence_date(1_700_000_000)
+        .asynchronous_indicator(7)
+    )
+    item = revoke.to_batch_item()
+    assert item.operation == 19
+    item.close()
+
+    invalid = fluent.Request(None).revoke(1).compromise_occurrence_date(1_700_000_000)
+    with pytest.raises(errors.InvalidInputError):
+        invalid.build()
+
+
 def test_delete_attribute_builder_builds_an_independent_typed_request():
     identifier = extensions.UniqueIdentifier.text_string("delete-attribute-key")
     reference = extensions.AttributeReference.tag(StandardAttribute.DESCRIPTION.tag)
