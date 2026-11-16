@@ -65,6 +65,7 @@ fixtures. Those results are not inferred from this Python-only run.
   because these two scenarios do not mutate fixture state; ordered item
   effects remain recorded separately.
 - **Refactor** documents the evidence boundary in the validator README. The
+  full Python consumer suite passed all 132 tests in 361.981 seconds. The
   expanded catalog contains 74,656 Python route cells: 45,478 local and
   29,178 controlled-peer network cells. The Python 3.12.13 local matrix and
   independent validator passed all 74,656 cells with zero failures, pending

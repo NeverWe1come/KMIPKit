@@ -129,7 +129,8 @@ cells: 45,478 local and 29,178 controlled-peer network cells. The run used
 Python 3.12.13 and the exact release-source pin
 `489fafc79ef89db2524eafa7a6c6482f5cf75d97`; the independent validator reported
 `all_invocations_passed: true`, `complete_matrix: true`, and zero duplicates.
-Run ID: `python-matrix-6cd71081-28dc-4fc5-a3ae-68298632eaf7`. Artifact SHA-256:
+The Python consumer suite also passed all 132 tests. Run ID:
+`python-matrix-6cd71081-28dc-4fc5-a3ae-68298632eaf7`. Artifact SHA-256:
 `d07a7e45d6bf9ae576e3fcc60df788722e3f2446f75ca07a26f505c5f8049748`;
 catalog SHA-256:
 `55fcd64afba189ab7d04978fafb841fc73c9e5afc1ef25c93cb2eb04f4fba4a9`;
