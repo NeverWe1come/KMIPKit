@@ -27,7 +27,11 @@ fn capability_query_matches_manifest_ready_capabilities() {
     );
     assert_eq!(kmipkit::capability_is_available("fluent_dx_api"), Ok(true));
     assert_eq!(
-        kmipkit::capability_is_available("fluent_named_tag_values"),
+        kmipkit::capability_is_available("fluent_set_attribute_parity"),
+        Ok(true)
+    );
+    assert_eq!(
+        kmipkit::capability_is_available("fluent_locate_revoke_parity"),
         Ok(true)
     );
     assert_eq!(

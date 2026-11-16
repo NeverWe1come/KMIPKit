@@ -276,7 +276,12 @@ y Python. Get conserva el Unique Identifier opcional y los selectores de Table
 220 y expone el Any Object correcto como respuesta propia en los cuatro
 lenguajes. Locate conserva los filtros opcionales, el orden del servidor, los
 Unique Identifier repetidos y la diferencia entre Located Items omitido y
-vacío. El mapeo de Get Usage Allocation incluye su petición con identificador
+vacío. Su builder fluido está disponible en Rust, C, Java y Python; recibe un
+`AttributeSet`, expone los selectores comunes de cantidad y desplazamiento y
+ejecuta una petición tipada. Revoke también tiene un builder fluido en los
+cuatro lenguajes, con un motivo explícito y métodos con nombre para el
+identificador, el mensaje de auditoría y la fecha del compromiso. El mapeo de
+Get Usage Allocation incluye su petición con identificador
 opcional y contador con signo, la respuesta con identificador resuelto y los
 resultados comunes del lote en Rust, C, Java y Python. Esta evidencia de mapeo
 no afirma la conformidad completa de las operaciones. Re-certify mapea los

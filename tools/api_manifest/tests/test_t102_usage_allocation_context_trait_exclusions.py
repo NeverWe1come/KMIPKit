@@ -9,8 +9,8 @@ from tools.api_manifest.tests.t102_manifest_totals import (
     T102_APPROVED_EXCLUSIONS,
     T102_BLOCKED_CANDIDATES,
     T102_PUBLIC_DECLARATIONS,
-    T102_RUST_AUDIT_EXCLUDED,
-    T102_RUST_AUDIT_MANIFEST,
+    T102_HISTORICAL_RUST_AUDIT_EXCLUDED,
+    T102_HISTORICAL_RUST_AUDIT_MANIFEST,
 )
 from pathlib import Path
 
@@ -246,9 +246,9 @@ class T102UsageAllocationContextTraitExclusionTests(unittest.TestCase):
         self.assertEqual(candidates, T102_BLOCKED_CANDIDATES)
         self.assertEqual(len(self.manifest["publicDeclarations"]), T102_PUBLIC_DECLARATIONS)
         self.assertEqual(len(self.manifest["approvedExclusions"]), T102_APPROVED_EXCLUSIONS)
-        self.assertEqual(self.report["counts"]["manifest"], T102_RUST_AUDIT_MANIFEST)
-        self.assertEqual(self.report["counts"]["matched"], T102_RUST_AUDIT_MANIFEST)
-        self.assertEqual(self.report["counts"]["excluded"], T102_RUST_AUDIT_EXCLUDED)
+        self.assertEqual(self.report["counts"]["manifest"], T102_HISTORICAL_RUST_AUDIT_MANIFEST)
+        self.assertEqual(self.report["counts"]["matched"], T102_HISTORICAL_RUST_AUDIT_MANIFEST)
+        self.assertEqual(self.report["counts"]["excluded"], T102_HISTORICAL_RUST_AUDIT_EXCLUDED)
 
 
 if __name__ == "__main__":

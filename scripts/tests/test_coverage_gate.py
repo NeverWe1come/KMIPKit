@@ -1069,6 +1069,46 @@ trait Example { fn declaration(&self); }
                 "let Ok(index) = usize::try_from(index) else {",
                 ("return record_ffi_error(ERROR_INVALID_INPUT);",),
             ),
+            (
+                "bindings/java/native/kmipkit_jni.cpp",
+                "Java_org_kmipkit_fluent_NativeFluentRegistry_addAttributeBuilderBuildRequest(",
+                "if (output == nullptr) {",
+                ("throw_invalid_input(env);", "return static_cast<jobject>(nullptr);"),
+            ),
+            (
+                "bindings/java/native/kmipkit_jni.cpp",
+                "Java_org_kmipkit_fluent_NativeFluentRegistry_addAttributeBuilderBuildRequest(",
+                "if (request_class == nullptr) {",
+                (
+                    "kmipkit_add_attribute_request_release(output);",
+                    "return static_cast<jobject>(nullptr);",
+                ),
+            ),
+            (
+                "bindings/java/native/kmipkit_jni.cpp",
+                "Java_org_kmipkit_fluent_NativeFluentRegistry_addAttributeBuilderBuildRequest(",
+                "if (constructor == nullptr) {",
+                (
+                    "kmipkit_add_attribute_request_release(output);",
+                    "env->DeleteLocalRef(request_class);",
+                    "return static_cast<jobject>(nullptr);",
+                ),
+            ),
+            (
+                "bindings/java/native/kmipkit_jni.cpp",
+                "Java_org_kmipkit_fluent_NativeFluentRegistry_addAttributeBuilderBuildRequest(",
+                "if (request == nullptr || env->ExceptionCheck()) {",
+                (
+                    "kmipkit_add_attribute_request_release(output);",
+                    "return static_cast<jobject>(nullptr);",
+                ),
+            ),
+            (
+                "bindings/java/native/kmipkit_jni.cpp",
+                "Java_org_kmipkit_fluent_NativeFluentRegistry_addAttributeBuilderBuildBatchItem(",
+                "if (output == nullptr) {",
+                ("throw_invalid_input(env);", "return static_cast<jlong>(0);"),
+            ),
         )
         for relative, function, branch, statements in cases:
             source = REPOSITORY_ROOT / relative

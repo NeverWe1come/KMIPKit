@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
-from typing import Any, Self
+from collections.abc import Callable, Sequence
+from typing import TYPE_CHECKING, Any, Self
 
-from . import errors, extensions, ttlv
+from . import attribute_operations, errors, extensions, ttlv
 from ._client_ffi import ffi, lib
 from ._ffi import ffi as _base_ffi
 from ._handles import _wrap_owned_handle
@@ -24,6 +24,9 @@ from .cryptographic_parameters import CryptographicParameters
 from .typed_attributes import StandardAttribute
 
 _MAX_CRYPTO_INPUT_BYTES = 16 * 1024 * 1024
+
+if TYPE_CHECKING:
+    from .attribute_operations import AddAttributeRequest, DeleteAttributeRequest, SetAttributeRequest
 
 
 def _wipe_crypto_stage(staged: bytearray) -> None:
@@ -192,6 +195,30 @@ def _execute_direct_create(client: Client, request: Any, limits: ttlv.CodecLimit
     return _batch_result(output[0], limits)
 
 
+def _execute_single_item(
+    client: Client,
+    build: Callable[[], extensions.ClientBatchItem],
+    limits: ttlv.CodecLimits,
+    configured_options: RequestOptions | None,
+    asynchronous_indicator: int | None,
+    options: RequestOptions | None = None,
+) -> BatchResult:
+    """Execute one typed item, preferring call-specific options over configured ones."""
+    if not isinstance(client, Client) or not isinstance(limits, ttlv.CodecLimits):
+        errors.raise_for_status(4)
+    if options is not None and not isinstance(options, RequestOptions):
+        errors.raise_for_status(4)
+    with Batch.create() as batch:
+        with build() as item:
+            batch.add_item(item)
+        if asynchronous_indicator is not None:
+            batch.set_asynchronous_indicator(asynchronous_indicator)
+        selected_options = options if options is not None else configured_options
+        if selected_options is not None:
+            return client.execute_with_options(batch, limits, selected_options)
+        return client.execute(batch, limits)
+
+
 def _build_fluent_batch_item(
     handle: Any, native_function: Any
 ) -> extensions.ClientBatchItem:
@@ -240,6 +267,28 @@ class Request:
     def create_key_pair(self) -> CreateKeyPairBuilder:
         return CreateKeyPairBuilder(client=self._client)
 
+    def set_attribute(self) -> SetAttributeBuilder:
+        return SetAttributeBuilder(client=self._client)
+
+    def add_attribute(self) -> AddAttributeBuilder:
+        return AddAttributeBuilder(client=self._client)
+
+    def delete_attribute(self) -> DeleteAttributeBuilder:
+        return DeleteAttributeBuilder(client=self._client)
+
+    def locate(
+        self,
+        attributes: attribute_operations.AttributeSet,
+    ) -> LocateBuilder:
+        return LocateBuilder(self._client, attributes)
+
+    def revoke(
+        self,
+        reason_code: int,
+        revocation_message: str | None = None,
+    ) -> RevokeBuilder:
+        return RevokeBuilder(self._client, reason_code, revocation_message)
+
     def get(self, unique_identifier: extensions.UniqueIdentifier) -> Operation:
         return Operation(self._client, "get", unique_identifier)
 
@@ -281,6 +330,671 @@ class Request:
         unique_identifier: extensions.UniqueIdentifier | None = None,
     ) -> GetAttributeListBuilder:
         return GetAttributeListBuilder(self._client, unique_identifier)
+
+
+class LocateBuilder:
+    """Typed KMIP 2.1 Locate request with an explicit validated Attributes filter."""
+
+    def __init__(
+        self,
+        client: Client,
+        attributes: attribute_operations.AttributeSet,
+    ) -> None:
+        if not isinstance(attributes, attribute_operations.AttributeSet):
+            errors.raise_for_status(4)
+        self._client = client
+        self._attributes: ttlv.Structure | None = attributes.as_items()
+        self._maximum_items: int | None = None
+        self._offset_items: int | None = None
+        self._storage_status_mask: int | None = None
+        self._object_group_member: int | None = None
+        self._options: RequestOptions | None = None
+        self._asynchronous_indicator: int | None = None
+
+    def maximum_items(self, value: int) -> LocateBuilder:
+        self._maximum_items = extensions._integer_range(
+            value, -(1 << 31), (1 << 31) - 1
+        )
+        return self
+
+    def offset_items(self, value: int) -> LocateBuilder:
+        self._offset_items = extensions._integer_range(
+            value, -(1 << 31), (1 << 31) - 1
+        )
+        return self
+
+    def storage_status_mask(self, value: int) -> LocateBuilder:
+        self._storage_status_mask = _unsigned(value, 32)
+        return self
+
+    def object_group_member(self, value: int) -> LocateBuilder:
+        self._object_group_member = _unsigned(value, 32)
+        return self
+
+    def with_options(self, options: RequestOptions) -> LocateBuilder:
+        if not isinstance(options, RequestOptions):
+            errors.raise_for_status(4)
+        self._options = options
+        return self
+
+    def asynchronous_indicator(self, value: int) -> LocateBuilder:
+        self._asynchronous_indicator = _unsigned(value, 32)
+        return self
+
+    def validate(self) -> None:
+        with self.build():
+            pass
+
+    def build(self) -> extensions.ClientBatchItem:
+        if not isinstance(self._attributes, ttlv.Structure):
+            errors.raise_for_status(4)
+        return extensions.client_batch_item_locate(
+            self._attributes,
+            maximum_items=self._maximum_items,
+            offset_items=self._offset_items,
+            storage_status_mask=self._storage_status_mask,
+            object_group_member=self._object_group_member,
+        )
+
+    def to_batch_item(self) -> extensions.ClientBatchItem:
+        return self.build()
+
+    def execute(
+        self,
+        limits: ttlv.CodecLimits,
+        options: RequestOptions | None = None,
+    ) -> BatchResult:
+        return _execute_single_item(
+            self._client,
+            self.build,
+            limits,
+            self._options,
+            self._asynchronous_indicator,
+            options,
+        )
+
+    def execute_with_options(
+        self,
+        limits: ttlv.CodecLimits,
+        options: RequestOptions,
+    ) -> BatchResult:
+        return self.execute(limits, options)
+
+    def close(self) -> None:
+        if self._attributes is not None:
+            self._attributes.close()
+            self._attributes = None
+
+    def __enter__(self) -> LocateBuilder:
+        if self._attributes is None:
+            errors.raise_for_status(4)
+        return self
+
+    def __exit__(self, exc_type: Any, exc: Any, traceback: Any) -> None:
+        self.close()
+
+    def __del__(self) -> None:
+        try:
+            self.close()
+        except Exception:  # noqa: BLE001 - finalizers must not raise during shutdown.
+            pass
+
+
+class RevokeBuilder:
+    """Typed KMIP 2.1 Revoke request preserving raw reason and optional fields."""
+
+    def __init__(
+        self,
+        client: Client,
+        reason_code: int,
+        revocation_message: str | None = None,
+    ) -> None:
+        self._client = client
+        self._reason_code = _unsigned(reason_code, 32)
+        if revocation_message is not None and not isinstance(revocation_message, str):
+            errors.raise_for_status(4)
+        self._revocation_message = revocation_message
+        self._unique_identifier: extensions.UniqueIdentifier | None = None
+        self._compromise_occurrence_date: int | None = None
+        self._options: RequestOptions | None = None
+        self._asynchronous_indicator: int | None = None
+
+    def unique_identifier(
+        self,
+        value: extensions.UniqueIdentifier | None,
+    ) -> RevokeBuilder:
+        if value is not None and not isinstance(value, extensions.UniqueIdentifier):
+            errors.raise_for_status(4)
+        self._unique_identifier = value
+        return self
+
+    def revocation_message(self, value: str | None) -> RevokeBuilder:
+        if value is not None and not isinstance(value, str):
+            errors.raise_for_status(4)
+        self._revocation_message = value
+        return self
+
+    def compromise_occurrence_date(self, value: int | None) -> RevokeBuilder:
+        self._compromise_occurrence_date = (
+            None if value is None else extensions._integer_range(
+                value, -(1 << 63), (1 << 63) - 1
+            )
+        )
+        return self
+
+    def with_options(self, options: RequestOptions) -> RevokeBuilder:
+        if not isinstance(options, RequestOptions):
+            errors.raise_for_status(4)
+        self._options = options
+        return self
+
+    def asynchronous_indicator(self, value: int) -> RevokeBuilder:
+        self._asynchronous_indicator = _unsigned(value, 32)
+        return self
+
+    def validate(self) -> None:
+        with self.build():
+            pass
+
+    def build(self) -> extensions.ClientBatchItem:
+        reason = extensions.RevocationReason.create(
+            self._reason_code, self._revocation_message
+        )
+        try:
+            request = extensions.RevokeRequest.create(
+                self._unique_identifier,
+                reason,
+                self._compromise_occurrence_date,
+            )
+            try:
+                return extensions.client_batch_item_revoke(request)
+            finally:
+                request.close()
+        finally:
+            reason.close()
+
+    def to_batch_item(self) -> extensions.ClientBatchItem:
+        return self.build()
+
+    def execute(
+        self,
+        limits: ttlv.CodecLimits,
+        options: RequestOptions | None = None,
+    ) -> BatchResult:
+        return _execute_single_item(
+            self._client,
+            self.build,
+            limits,
+            self._options,
+            self._asynchronous_indicator,
+            options,
+        )
+
+    def execute_with_options(
+        self,
+        limits: ttlv.CodecLimits,
+        options: RequestOptions,
+    ) -> BatchResult:
+        return self.execute(limits, options)
+
+
+class SetAttributeBuilder:
+    """Owns a native builder for one typed KMIP Set Attribute request."""
+
+    def __init__(self, *, client: Client | None = None) -> None:
+        output = ffi.new("kmipkit_set_attribute_builder_t **")
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_set_attribute_builder_create(output))
+        if output[0] == ffi.NULL:
+            errors.raise_for_status(7)
+        self._handle = output[0]
+        self._client = client
+        self._options: RequestOptions | None = None
+        self._asynchronous_indicator: int | None = None
+        self._unique_identifier: extensions.UniqueIdentifier | None = None
+
+    def unique_identifier(self, value: str) -> SetAttributeBuilder:
+        self._ensure_open()
+        if not isinstance(value, str):
+            errors.raise_for_status(4)
+        encoded = value.encode("utf-8")
+        owner = ffi.new("uint8_t[]", encoded)
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_set_attribute_builder_set_unique_identifier(
+                self._handle, owner, len(encoded)
+            ))
+        self._unique_identifier = extensions.UniqueIdentifier.text_string(value)
+        return self
+
+    def attribute_item(self, item: ttlv.TtlvItem) -> SetAttributeBuilder:
+        self._ensure_open()
+        if not isinstance(item, ttlv.TtlvItem):
+            errors.raise_for_status(4)
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_set_attribute_builder_add_attribute_item(
+                self._handle, ffi.cast("kmipkit_ttlv_item_t *", item._pointer())
+            ))
+        return self
+
+    def catalogued_attribute(
+        self, attribute: StandardAttribute, value: ttlv.Value,
+    ) -> SetAttributeBuilder:
+        self._ensure_open()
+        if not isinstance(attribute, StandardAttribute) or not isinstance(value, ttlv.Value):
+            errors.raise_for_status(4)
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_set_attribute_builder_add_catalogued_attribute(
+                self._handle, _unsigned(attribute.tag, 32),
+                ffi.cast("kmipkit_ttlv_value_t *", value._pointer()),
+            ))
+        return self
+
+    def vendor_attribute(
+        self, vendor: str, name: str, value: ttlv.TtlvItem,
+    ) -> SetAttributeBuilder:
+        self._ensure_open()
+        if (not isinstance(vendor, str) or not isinstance(name, str)
+                or not isinstance(value, ttlv.TtlvItem)):
+            errors.raise_for_status(4)
+        vendor_bytes, name_bytes = vendor.encode("utf-8"), name.encode("utf-8")
+        vendor_owner, name_owner = ffi.new("uint8_t[]", vendor_bytes), ffi.new("uint8_t[]", name_bytes)
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_set_attribute_builder_add_vendor_attribute(
+                self._handle, vendor_owner, len(vendor_bytes), name_owner, len(name_bytes),
+                ffi.cast("kmipkit_ttlv_item_t *", value._pointer()),
+            ))
+        return self
+
+    def with_options(self, options: RequestOptions) -> SetAttributeBuilder:
+        self._ensure_open()
+        if not isinstance(options, RequestOptions):
+            errors.raise_for_status(4)
+        self._options = options
+        return self
+
+    def asynchronous_indicator(self, value: int) -> SetAttributeBuilder:
+        self._ensure_open()
+        self._asynchronous_indicator = _unsigned(value, 32)
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_set_attribute_builder_set_asynchronous_indicator(
+                self._handle, self._asynchronous_indicator
+            ))
+        return self
+
+    def validate(self) -> None:
+        self._ensure_open()
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_set_attribute_builder_validate(self._handle))
+
+    def build_request(self) -> SetAttributeRequest:
+        """Return an independently owned typed Set Attribute request."""
+        self._ensure_open()
+        output = ffi.new("kmipkit_set_attribute_request_t **")
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(
+                lib.kmipkit_set_attribute_builder_build_request(self._handle, output)
+            )
+        if output[0] == ffi.NULL:
+            errors.raise_for_status(7)
+        from .attribute_operations import SetAttributeRequest
+
+        # The fluent bridge and the shared NativeHandle wrapper use distinct
+        # CFFI declarations, so transfer the owned pointer through its address.
+        native_handle = _base_ffi.cast(
+            "kmipkit_set_attribute_request_t *",
+            int(ffi.cast("uintptr_t", output[0])),
+        )
+        return SetAttributeRequest._from_fluent_builder(
+            native_handle, self._unique_identifier
+        )
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        return _build_fluent_batch_item(
+            self._handle, lib.kmipkit_set_attribute_builder_build_batch_item
+        )
+
+    to_batch_item = build
+
+    def execute(
+        self, limits: ttlv.CodecLimits, client: Client | None = None,
+    ) -> BatchResult:
+        return _execute_fluent_builder(self, limits, client)
+
+    def close(self) -> None:
+        if self._handle != ffi.NULL:
+            with _NATIVE_CALL_LOCK:
+                lib.kmipkit_set_attribute_builder_release(self._handle)
+            self._handle = ffi.NULL
+
+    def _ensure_open(self) -> None:
+        if self._handle == ffi.NULL:
+            raise RuntimeError("fluent builder is closed")
+
+    def __enter__(self) -> SetAttributeBuilder:
+        return self
+
+    def __exit__(self, *_: object) -> None:
+        self.close()
+
+    def __del__(self) -> None:
+        try:
+            self.close()
+        except Exception:  # noqa: BLE001 - finalizers must not raise during shutdown.
+            pass
+
+
+class AddAttributeBuilder:
+    """Owns a native builder for one typed KMIP Add Attribute request."""
+
+    def __init__(self, *, client: Client | None = None) -> None:
+        output = ffi.new("kmipkit_add_attribute_builder_t **")
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_add_attribute_builder_create(output))
+        if output[0] == ffi.NULL:
+            errors.raise_for_status(7)
+        self._handle = output[0]
+        self._client = client
+        self._options: RequestOptions | None = None
+        self._asynchronous_indicator: int | None = None
+        self._unique_identifier: extensions.UniqueIdentifier | None = None
+
+    def unique_identifier(self, value: str) -> AddAttributeBuilder:
+        self._ensure_open()
+        if not isinstance(value, str):
+            errors.raise_for_status(4)
+        encoded = value.encode("utf-8")
+        owner = ffi.new("uint8_t[]", encoded)
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_add_attribute_builder_set_unique_identifier(
+                self._handle, owner, len(encoded)
+            ))
+        self._unique_identifier = extensions.UniqueIdentifier.text_string(value)
+        return self
+
+    def attribute_item(self, item: ttlv.TtlvItem) -> AddAttributeBuilder:
+        self._ensure_open()
+        if not isinstance(item, ttlv.TtlvItem):
+            errors.raise_for_status(4)
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_add_attribute_builder_add_attribute_item(
+                self._handle, ffi.cast("kmipkit_ttlv_item_t *", item._pointer())
+            ))
+        return self
+
+    def catalogued_attribute(
+        self, attribute: StandardAttribute, value: ttlv.Value,
+    ) -> AddAttributeBuilder:
+        self._ensure_open()
+        if not isinstance(attribute, StandardAttribute) or not isinstance(value, ttlv.Value):
+            errors.raise_for_status(4)
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_add_attribute_builder_add_catalogued_attribute(
+                self._handle, _unsigned(attribute.tag, 32),
+                ffi.cast("kmipkit_ttlv_value_t *", value._pointer()),
+            ))
+        return self
+
+    def vendor_attribute(
+        self, vendor: str, name: str, value: ttlv.TtlvItem,
+    ) -> AddAttributeBuilder:
+        self._ensure_open()
+        if (not isinstance(vendor, str) or not isinstance(name, str)
+                or not isinstance(value, ttlv.TtlvItem)):
+            errors.raise_for_status(4)
+        vendor_bytes, name_bytes = vendor.encode("utf-8"), name.encode("utf-8")
+        vendor_owner, name_owner = ffi.new("uint8_t[]", vendor_bytes), ffi.new("uint8_t[]", name_bytes)
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_add_attribute_builder_add_vendor_attribute(
+                self._handle, vendor_owner, len(vendor_bytes), name_owner, len(name_bytes),
+                ffi.cast("kmipkit_ttlv_item_t *", value._pointer()),
+            ))
+        return self
+
+    def with_options(self, options: RequestOptions) -> AddAttributeBuilder:
+        self._ensure_open()
+        if not isinstance(options, RequestOptions):
+            errors.raise_for_status(4)
+        self._options = options
+        return self
+
+    def asynchronous_indicator(self, value: int) -> AddAttributeBuilder:
+        self._ensure_open()
+        self._asynchronous_indicator = _unsigned(value, 32)
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_add_attribute_builder_set_asynchronous_indicator(
+                self._handle, self._asynchronous_indicator
+            ))
+        return self
+
+    def validate(self) -> None:
+        self._ensure_open()
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_add_attribute_builder_validate(self._handle))
+
+    def build_request(self) -> AddAttributeRequest:
+        """Return an independently owned typed Add Attribute request."""
+        self._ensure_open()
+        output = ffi.new("kmipkit_add_attribute_request_t **")
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(
+                lib.kmipkit_add_attribute_builder_build_request(self._handle, output)
+            )
+        if output[0] == ffi.NULL:
+            errors.raise_for_status(7)
+        from .attribute_operations import AddAttributeRequest
+
+        # The fluent bridge and the shared NativeHandle wrapper use distinct
+        # CFFI declarations, so transfer the owned pointer through its address.
+        native_handle = _base_ffi.cast(
+            "kmipkit_add_attribute_request_t *",
+            int(ffi.cast("uintptr_t", output[0])),
+        )
+        return AddAttributeRequest._from_fluent_builder(
+            native_handle, self._unique_identifier
+        )
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        return _build_fluent_batch_item(
+            self._handle, lib.kmipkit_add_attribute_builder_build_batch_item
+        )
+
+    to_batch_item = build
+
+    def execute(
+        self, limits: ttlv.CodecLimits, client: Client | None = None,
+    ) -> BatchResult:
+        return _execute_fluent_builder(self, limits, client)
+
+    def close(self) -> None:
+        if self._handle != ffi.NULL:
+            with _NATIVE_CALL_LOCK:
+                lib.kmipkit_add_attribute_builder_release(self._handle)
+            self._handle = ffi.NULL
+
+    def _ensure_open(self) -> None:
+        if self._handle == ffi.NULL:
+            raise RuntimeError("fluent builder is closed")
+
+    def __enter__(self) -> AddAttributeBuilder:
+        return self
+
+    def __exit__(self, *_: object) -> None:
+        self.close()
+
+    def __del__(self) -> None:
+        try:
+            self.close()
+        except Exception:  # noqa: BLE001 - finalizers must not raise during shutdown.
+            pass
+
+
+class DeleteAttributeBuilder:
+    """Owns a native builder for one typed KMIP Delete Attribute request."""
+
+    def __init__(self, *, client: Client | None = None) -> None:
+        output = ffi.new("kmipkit_delete_attribute_builder_t **")
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_delete_attribute_builder_create(output))
+        if output[0] == ffi.NULL:
+            errors.raise_for_status(7)
+        self._handle = output[0]
+        self._client = client
+        self._options: RequestOptions | None = None
+        self._asynchronous_indicator: int | None = None
+        self._unique_identifier: extensions.UniqueIdentifier | None = None
+        self._attribute_reference: extensions.AttributeReference | None = None
+
+    def unique_identifier(self, value: str) -> DeleteAttributeBuilder:
+        self._ensure_open()
+        if not isinstance(value, str):
+            errors.raise_for_status(4)
+        encoded = value.encode("utf-8")
+        owner = ffi.new("uint8_t[]", encoded)
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_delete_attribute_builder_set_unique_identifier(
+                self._handle, owner, len(encoded)
+            ))
+        self._unique_identifier = extensions.UniqueIdentifier.text_string(value)
+        return self
+
+    def current_attribute_item(self, item: ttlv.TtlvItem) -> DeleteAttributeBuilder:
+        self._ensure_open()
+        if not isinstance(item, ttlv.TtlvItem):
+            errors.raise_for_status(4)
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_delete_attribute_builder_set_current_attribute_item(
+                self._handle, ffi.cast("kmipkit_ttlv_item_t *", item._pointer())
+            ))
+        return self
+
+    def catalogued_attribute(
+        self, attribute: StandardAttribute, value: ttlv.Value,
+    ) -> DeleteAttributeBuilder:
+        self._ensure_open()
+        if not isinstance(attribute, StandardAttribute) or not isinstance(value, ttlv.Value):
+            errors.raise_for_status(4)
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_delete_attribute_builder_set_catalogued_attribute(
+                self._handle, _unsigned(attribute.tag, 32),
+                ffi.cast("kmipkit_ttlv_value_t *", value._pointer()),
+            ))
+        return self
+
+    def vendor_attribute(
+        self, vendor: str, name: str, value: ttlv.TtlvItem,
+    ) -> DeleteAttributeBuilder:
+        self._ensure_open()
+        if (not isinstance(vendor, str) or not isinstance(name, str)
+                or not isinstance(value, ttlv.TtlvItem)):
+            errors.raise_for_status(4)
+        vendor_bytes, name_bytes = vendor.encode("utf-8"), name.encode("utf-8")
+        vendor_owner, name_owner = ffi.new("uint8_t[]", vendor_bytes), ffi.new("uint8_t[]", name_bytes)
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_delete_attribute_builder_set_vendor_attribute(
+                self._handle, vendor_owner, len(vendor_bytes), name_owner, len(name_bytes),
+                ffi.cast("kmipkit_ttlv_item_t *", value._pointer()),
+            ))
+        return self
+
+    def current_vendor_attribute(
+        self, vendor: str, name: str, value: ttlv.TtlvItem,
+    ) -> DeleteAttributeBuilder:
+        """Select one structurally valid KMIP Vendor Attribute."""
+        return self.vendor_attribute(vendor, name, value)
+
+    def attribute_reference(
+        self, value: extensions.AttributeReference,
+    ) -> DeleteAttributeBuilder:
+        self._ensure_open()
+        if not isinstance(value, extensions.AttributeReference):
+            errors.raise_for_status(4)
+        with extensions._staging_buffer_scope() as staging_buffers:
+            reference = extensions._client_native_attribute_reference(value, staging_buffers)
+            with _NATIVE_CALL_LOCK:
+                _raise_client_status(lib.kmipkit_delete_attribute_builder_set_attribute_reference(
+                    self._handle, reference
+                ))
+        self._attribute_reference = value
+        return self
+
+    def with_options(self, options: RequestOptions) -> DeleteAttributeBuilder:
+        self._ensure_open()
+        if not isinstance(options, RequestOptions):
+            errors.raise_for_status(4)
+        self._options = options
+        return self
+
+    def asynchronous_indicator(self, value: int) -> DeleteAttributeBuilder:
+        self._ensure_open()
+        self._asynchronous_indicator = _unsigned(value, 32)
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_delete_attribute_builder_set_asynchronous_indicator(
+                self._handle, self._asynchronous_indicator
+            ))
+        return self
+
+    def validate(self) -> None:
+        self._ensure_open()
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_delete_attribute_builder_validate(self._handle))
+
+    def build_request(self) -> DeleteAttributeRequest:
+        """Return an independently owned typed Delete Attribute request."""
+        self._ensure_open()
+        output = ffi.new("kmipkit_delete_attribute_request_t **")
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(
+                lib.kmipkit_delete_attribute_builder_build_request(self._handle, output)
+            )
+        if output[0] == ffi.NULL:
+            errors.raise_for_status(7)
+        native_handle = _base_ffi.cast(
+            "kmipkit_delete_attribute_request_t *",
+            int(ffi.cast("uintptr_t", output[0])),
+        )
+        from .attribute_operations import DeleteAttributeRequest
+
+        return _wrap_owned_handle(
+            DeleteAttributeRequest, native_handle, self._unique_identifier,
+            self._attribute_reference, None,
+        )
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        return _build_fluent_batch_item(
+            self._handle, lib.kmipkit_delete_attribute_builder_build_batch_item
+        )
+
+    to_batch_item = build
+
+    def execute(
+        self, limits: ttlv.CodecLimits, client: Client | None = None,
+    ) -> BatchResult:
+        return _execute_fluent_builder(self, limits, client)
+
+    def close(self) -> None:
+        if self._handle != ffi.NULL:
+            with _NATIVE_CALL_LOCK:
+                lib.kmipkit_delete_attribute_builder_release(self._handle)
+            self._handle = ffi.NULL
+
+    def _ensure_open(self) -> None:
+        if self._handle == ffi.NULL:
+            raise RuntimeError("fluent builder is closed")
+
+    def __enter__(self) -> DeleteAttributeBuilder:
+        return self
+
+    def __exit__(self, *_: object) -> None:
+        self.close()
+
+    def __del__(self) -> None:
+        try:
+            self.close()
+        except Exception:  # noqa: BLE001 - finalizers must not raise during shutdown.
+            pass
 
 
 class _AttributeReadBuilder:
@@ -1095,16 +1809,21 @@ class HashBuilder(_CryptoOperationBuilder):
 
 
 __all__ = [
+    "AddAttributeBuilder",
     "CreateKeyPairBuilder",
+    "DeleteAttributeBuilder",
     "DecryptBuilder",
     "EncryptBuilder",
     "GetAttributeListBuilder",
     "GetAttributesBuilder",
     "HashBuilder",
+    "LocateBuilder",
     "MacBuilder",
     "MacVerifyBuilder",
     "Operation",
     "Request",
+    "RevokeBuilder",
+    "SetAttributeBuilder",
     "SignBuilder",
     "SignatureVerifyBuilder",
     "SymmetricKeyBuilder",

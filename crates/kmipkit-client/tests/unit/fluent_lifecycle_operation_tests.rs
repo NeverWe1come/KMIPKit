@@ -348,6 +348,33 @@ fn unsupported_protocol_version_is_rejected_before_the_transport_exchange() {
 }
 
 #[test]
+fn locate_and_revoke_execute_with_options_reject_unsupported_versions_before_send() {
+    let unsupported =
+        RequestOptions::default().with_protocol_version(ProtocolVersion::from_raw(1, 4));
+
+    let (mut client, fake, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let error = client
+        .request()
+        .locate(kmipkit_protocol::AttributeSet::new())
+        .execute_with_options(&CodecLimits::defaults(), unsupported)
+        .expect_err("Locate execution options use the existing version gate");
+    assert_eq!(error.category(), ClientErrorCategory::Validation);
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(fake.borrow().exchange_count(), 0);
+
+    let (mut client, fake, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let error = client
+        .request()
+        .revoke(RevocationReason::KEY_COMPROMISE)
+        .unique_identifier(UniqueIdentifier::from("key-revoke"))
+        .execute_with_options(&CodecLimits::defaults(), unsupported)
+        .expect_err("Revoke execution options use the existing version gate");
+    assert_eq!(error.category(), ClientErrorCategory::Validation);
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(fake.borrow().exchange_count(), 0);
+}
+
+#[test]
 fn revoke_execute_exposes_success_failure_and_pending_without_follow_up() {
     let success_response = asynchronous_response_bytes(
         REVOKE_OPERATION,

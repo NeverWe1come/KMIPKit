@@ -438,6 +438,36 @@ fn revoke(client: &mut Client, limits: &CodecLimits) -> Result<(), kmipkit_clien
 fn main() { let _example = revoke; }
 ```
 
+El builder fluido comienza con el motivo de revocación obligatorio y ofrece
+métodos con nombre para el identificador, el mensaje opcional de auditoría y
+la fecha del compromiso. El validador de la petición tipada comprueba su
+combinación antes de enviar nada.
+
+```rust,kmipkit-test
+use kmipkit_client::{Client, ClientError, ClientOperation};
+use kmipkit_protocol::{RevocationReason, UniqueIdentifier};
+use kmipkit_ttlv::codec::CodecLimits;
+
+fn revoke_fluido(
+    client: &mut Client,
+    limits: &CodecLimits,
+) -> Result<(), ClientError> {
+    let item = client
+        .request()
+        .revoke(RevocationReason::KEY_COMPROMISE)
+        .unique_identifier(UniqueIdentifier::TextString("certificate-id".to_owned()))
+        .revocation_message("retirada aprobada")
+        .compromise_occurrence_date(1_700_000_000)
+        .execute(limits)?;
+    let outcome = item.outcome();
+    assert_eq!(outcome.operation(), ClientOperation::Revoke);
+    let _typed_response = outcome.revoke_response();
+    Ok(())
+}
+
+fn main() { let _example = revoke_fluido; }
+```
+
 Los ejemplos marcados se compilan con `python scripts/test_user_guide_examples.py`.
 Solo demuestran la forma de la API: no afirman que un servidor KMIP externo
 acepte la petición ni conceda la operación.

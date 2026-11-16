@@ -4096,4 +4096,69 @@ int32_t kmipkit_client_execute_with_options_and_error_ttlv_v1(kmipkit_client_t *
 #ifdef __cplusplus
 }
 #endif
+/* Fluent builder declarations merged from release base. */
+typedef struct kmipkit_add_attribute_builder_t kmipkit_add_attribute_builder_t;
+typedef struct kmipkit_set_attribute_builder_t kmipkit_set_attribute_builder_t;
+typedef struct kmipkit_delete_attribute_builder_t kmipkit_delete_attribute_builder_t;
+typedef struct kmipkit_locate_builder_t kmipkit_locate_builder_t;
+typedef struct kmipkit_revoke_builder_t kmipkit_revoke_builder_t;
+void kmipkit_add_attribute_builder_release(kmipkit_add_attribute_builder_t *handle);
+void kmipkit_set_attribute_builder_release(kmipkit_set_attribute_builder_t *handle);
+void kmipkit_delete_attribute_builder_release(kmipkit_delete_attribute_builder_t *handle);
+void kmipkit_locate_builder_release(kmipkit_locate_builder_t *handle);
+void kmipkit_revoke_builder_release(kmipkit_revoke_builder_t *handle);
+int32_t kmipkit_add_attribute_builder_add_attribute_item(kmipkit_add_attribute_builder_t * builder, kmipkit_ttlv_item_t * item);
+int32_t kmipkit_add_attribute_builder_add_catalogued_attribute(kmipkit_add_attribute_builder_t * builder, uint32_t tag, kmipkit_ttlv_value_t * value);
+int32_t kmipkit_add_attribute_builder_add_vendor_attribute(kmipkit_add_attribute_builder_t * builder, const uint8_t * vendor_data, uint64_t vendor_length, const uint8_t * name_data, uint64_t name_length, kmipkit_ttlv_item_t * attribute_value);
+int32_t kmipkit_add_attribute_builder_build_batch_item(kmipkit_add_attribute_builder_t * builder, kmipkit_client_batch_item_t ** out_item);
+int32_t kmipkit_add_attribute_builder_build_request(kmipkit_add_attribute_builder_t * builder, kmipkit_add_attribute_request_t ** out_request);
+int32_t kmipkit_add_attribute_builder_create(kmipkit_add_attribute_builder_t ** out_builder);
+int32_t kmipkit_add_attribute_builder_execute_v1(kmipkit_add_attribute_builder_t * builder, kmipkit_client_t * client, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
+int32_t kmipkit_add_attribute_builder_execute_with_options_v1(kmipkit_add_attribute_builder_t * builder, kmipkit_client_t * client, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response);
+int32_t kmipkit_add_attribute_builder_set_asynchronous_indicator(kmipkit_add_attribute_builder_t * builder, uint32_t value);
+int32_t kmipkit_add_attribute_builder_set_unique_identifier(kmipkit_add_attribute_builder_t * builder, const uint8_t * value_data, uint64_t value_length);
+int32_t kmipkit_add_attribute_builder_validate(kmipkit_add_attribute_builder_t * builder);
+int32_t kmipkit_set_attribute_builder_add_attribute_item(kmipkit_set_attribute_builder_t * builder, kmipkit_ttlv_item_t * item);
+int32_t kmipkit_set_attribute_builder_add_catalogued_attribute(kmipkit_set_attribute_builder_t * builder, uint32_t tag, kmipkit_ttlv_value_t * value);
+int32_t kmipkit_set_attribute_builder_add_vendor_attribute(kmipkit_set_attribute_builder_t * builder, const uint8_t * vendor_data, uint64_t vendor_length, const uint8_t * name_data, uint64_t name_length, kmipkit_ttlv_item_t * attribute_value);
+int32_t kmipkit_set_attribute_builder_build_batch_item(kmipkit_set_attribute_builder_t * builder, kmipkit_client_batch_item_t ** out_item);
+int32_t kmipkit_set_attribute_builder_build_request(kmipkit_set_attribute_builder_t * builder, kmipkit_set_attribute_request_t ** out_request);
+int32_t kmipkit_set_attribute_builder_create(kmipkit_set_attribute_builder_t ** out_builder);
+int32_t kmipkit_set_attribute_builder_execute_v1(kmipkit_set_attribute_builder_t * builder, kmipkit_client_t * client, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
+int32_t kmipkit_set_attribute_builder_execute_with_options_v1(kmipkit_set_attribute_builder_t * builder, kmipkit_client_t * client, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response);
+int32_t kmipkit_set_attribute_builder_set_asynchronous_indicator(kmipkit_set_attribute_builder_t * builder, uint32_t value);
+int32_t kmipkit_set_attribute_builder_set_unique_identifier(kmipkit_set_attribute_builder_t * builder, const uint8_t * value_data, uint64_t value_length);
+int32_t kmipkit_set_attribute_builder_validate(kmipkit_set_attribute_builder_t * builder);
+int32_t kmipkit_delete_attribute_builder_build_batch_item(kmipkit_delete_attribute_builder_t * builder, kmipkit_client_batch_item_t ** out_item);
+int32_t kmipkit_delete_attribute_builder_build_request(kmipkit_delete_attribute_builder_t * builder, kmipkit_delete_attribute_request_t ** out_request);
+int32_t kmipkit_delete_attribute_builder_create(kmipkit_delete_attribute_builder_t ** out_builder);
+int32_t kmipkit_delete_attribute_builder_execute_v1(kmipkit_delete_attribute_builder_t * builder, kmipkit_client_t * client, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
+int32_t kmipkit_delete_attribute_builder_execute_with_options_v1(kmipkit_delete_attribute_builder_t * builder, kmipkit_client_t * client, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response);
+int32_t kmipkit_delete_attribute_builder_set_asynchronous_indicator(kmipkit_delete_attribute_builder_t * builder, uint32_t value);
+int32_t kmipkit_delete_attribute_builder_set_attribute_reference(kmipkit_delete_attribute_builder_t * builder, const kmipkit_attribute_reference_v1_t * reference);
+int32_t kmipkit_delete_attribute_builder_set_catalogued_attribute(kmipkit_delete_attribute_builder_t * builder, uint32_t tag, kmipkit_ttlv_value_t * value);
+int32_t kmipkit_delete_attribute_builder_set_current_attribute_item(kmipkit_delete_attribute_builder_t * builder, kmipkit_ttlv_item_t * item);
+int32_t kmipkit_delete_attribute_builder_set_unique_identifier(kmipkit_delete_attribute_builder_t * builder, const uint8_t * value_data, uint64_t value_length);
+int32_t kmipkit_delete_attribute_builder_set_vendor_attribute(kmipkit_delete_attribute_builder_t * builder, const uint8_t * vendor_data, uint64_t vendor_length, const uint8_t * name_data, uint64_t name_length, kmipkit_ttlv_item_t * attribute_value);
+int32_t kmipkit_delete_attribute_builder_validate(kmipkit_delete_attribute_builder_t * builder);
+int32_t kmipkit_locate_builder_create(kmipkit_ttlv_structure_t * attributes, kmipkit_locate_builder_t ** out_builder);
+int32_t kmipkit_locate_builder_set_maximum_items(kmipkit_locate_builder_t * builder, int32_t value);
+int32_t kmipkit_locate_builder_set_offset_items(kmipkit_locate_builder_t * builder, int32_t value);
+int32_t kmipkit_locate_builder_set_storage_status_mask(kmipkit_locate_builder_t * builder, uint32_t value);
+int32_t kmipkit_locate_builder_set_object_group_member(kmipkit_locate_builder_t * builder, uint32_t value);
+int32_t kmipkit_locate_builder_set_asynchronous_indicator(kmipkit_locate_builder_t * builder, uint32_t value);
+int32_t kmipkit_locate_builder_validate(kmipkit_locate_builder_t * builder);
+int32_t kmipkit_locate_builder_build_batch_item(kmipkit_locate_builder_t * builder, kmipkit_client_batch_item_t ** out_item);
+int32_t kmipkit_locate_builder_execute_v1(kmipkit_locate_builder_t * builder, kmipkit_client_t * client, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
+int32_t kmipkit_locate_builder_execute_with_options_v1(kmipkit_locate_builder_t * builder, kmipkit_client_t * client, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response);
+int32_t kmipkit_revoke_builder_create(uint32_t reason, kmipkit_revoke_builder_t ** out_builder);
+int32_t kmipkit_revoke_builder_set_unique_identifier(kmipkit_revoke_builder_t * builder, const kmipkit_unique_identifier_v1_t * identifier);
+int32_t kmipkit_revoke_builder_set_revocation_message(kmipkit_revoke_builder_t * builder, const uint8_t * message_data, uint64_t message_length);
+int32_t kmipkit_revoke_builder_set_compromise_occurrence_date(kmipkit_revoke_builder_t * builder, int64_t value);
+int32_t kmipkit_revoke_builder_set_asynchronous_indicator(kmipkit_revoke_builder_t * builder, uint32_t value);
+int32_t kmipkit_revoke_builder_validate(kmipkit_revoke_builder_t * builder);
+int32_t kmipkit_revoke_builder_build_batch_item(kmipkit_revoke_builder_t * builder, kmipkit_client_batch_item_t ** out_item);
+int32_t kmipkit_revoke_builder_execute_v1(kmipkit_revoke_builder_t * builder, kmipkit_client_t * client, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
+int32_t kmipkit_revoke_builder_execute_with_options_v1(kmipkit_revoke_builder_t * builder, kmipkit_client_t * client, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response);
+
 #endif /* KMIPKIT_H */

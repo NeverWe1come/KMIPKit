@@ -259,6 +259,15 @@ class AddAttributeRequest(_AttributeRequest):
     _batch_function = "kmipkit_client_batch_item_add_attribute_from_request"
 
     @classmethod
+    def _from_fluent_builder(
+        cls,
+        handle: Any,
+        unique_identifier: extensions.UniqueIdentifier | None,
+    ) -> AddAttributeRequest:
+        """Take ownership of a request handle returned by a fluent builder."""
+        return _wrap_owned_handle(cls, handle, unique_identifier, None, None)
+
+    @classmethod
     def create(
         cls,
         unique_identifier: extensions.UniqueIdentifier | None,
@@ -480,6 +489,15 @@ class SetAttributeRequest(_AttributeRequest):
     _request_type = "kmipkit_set_attribute_request_t"
     _payload_function = "kmipkit_set_attribute_request_to_ttlv_payload"
     _batch_function = "kmipkit_client_batch_item_set_attribute_from_request"
+
+    @classmethod
+    def _from_fluent_builder(
+        cls,
+        handle: Any,
+        unique_identifier: extensions.UniqueIdentifier | None,
+    ) -> SetAttributeRequest:
+        """Take ownership of a request handle returned by a fluent builder."""
+        return _wrap_owned_handle(cls, handle, unique_identifier, None, None)
 
     @classmethod
     def create(
