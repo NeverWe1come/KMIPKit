@@ -188,3 +188,34 @@ Los modelos de respuesta exponen el `KmipOperationResult` del servidor, incluido
 Las comprobaciones de política de mutación rechazan solo prohibiciones incondicionales respaldadas por la fuente que puedan determinarse con la petición suministrada. Esos fallos tienen estado de entrega `NotSent` y no invocan el transporte. Los casos dependientes del estado remoto o no reconocidos se envían al servidor. Las peticiones no se reintentan automáticamente. Un resultado `Pending` conserva la respuesta tipada y el valor de correlación asíncrona; consulta el flujo asíncrono en [Ejecución del cliente](client-execution.md).
 
 Las pruebas del protocolo usan vectores derivados y entradas malformadas. No afirman que todos los servidores KMIP admitan todos los atributos ni que se haya superado un caso oficial de OASIS cuyo fixture no está disponible.
+
+## Petición fluida Set Attribute
+
+En Rust, se puede construir y enviar Set Attribute mediante el cliente tipado existente, sin ensamblar a mano la estructura TTLV de New Attribute ni crear un batch:
+
+```rust
+use std::error::Error;
+
+use kmipkit_client::Client;
+use kmipkit_protocol::{attribute::typed, Attribute};
+use kmipkit_ttlv::codec::CodecLimits;
+
+fn set_comment(client: &mut Client) -> Result<String, Box<dyn Error>> {
+    let response = client
+        .request()
+        .set_attribute()
+        .unique_identifier("object-id-17")
+        .attribute(Attribute::<typed::Comment>::new("managed by service".to_owned())?)
+        .execute(&CodecLimits::defaults())?;
+
+    response
+        .outcome()
+        .response()
+        .set_attribute()
+        .and_then(|result| result.unique_identifier())
+        .map(str::to_owned)
+        .ok_or_else(|| "Set Attribute did not return a successful identifier".into())
+}
+```
+
+El builder valida localmente el valor catalogado y el payload de la operación. También ofrece `build`, `validate` y `to_batch_item` para controlar cada paso, y `attribute_item` para un `Item` TTLV con tipo explícito. Usa `vendor_attribute` para construir la estructura KMIP Vendor Attribute a partir del identificador del fabricante, el nombre y el valor. La petición usa el cliente existente en un único intercambio, sin Poll ni reintentos.

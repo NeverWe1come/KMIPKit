@@ -173,7 +173,7 @@ KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS = {
 # narrowed T101 mappings. KMIPKIT-0124 adds 28 KMIP 3.0 fluent and 16 async
 # batch declarations to this non-target snapshot; the async request constructors
 # The non-target snapshot includes Create Key Pair declarations and KMIPKIT-0126 additions.
-DECLARATIONS_SHA256 = "f36a5b8bce7788f71ec4f7d4451f0f9cbf30a118c5057657441ae2abe77b55af"
+DECLARATIONS_SHA256 = "b34f0a107234561a5aa6d5791b0d97f50931ae46e6e2774a96e147910daacac8"
 OPERATIONS_SHA256 = "9ab6c670787f07c9faa301744d1654fdd071ceffc3b43936e6cb12add59094e2"
 
 
@@ -386,6 +386,25 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
         } | PKCS11_REQUEST_EXTENSION_IDS | {
             target["id"] for target in REQUEST_CONSTRUCTION_TARGETS
         } | KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS
+        # Set Attribute has its own exact-surface contract in the dedicated
+        # KMIPKIT-0093 test. Keep those declarations out of this unrelated
+        # Certify non-target snapshot as the fluent builder is introduced.
+        target_ids |= {
+            row["declarationId"]
+            for row in self.manifest["publicDeclarations"]
+            if (
+                (normalized_name := re.sub(r"[^a-z0-9]", "", row["exportName"].lower()))
+                and row.get("capabilityId") in {
+                    "fluent_set_attribute_parity",
+                    "fluent_set_attribute_c_abi",
+                }
+                and "setattribute" in normalized_name
+                and (
+                    "builder" in normalized_name
+                    or normalized_name.endswith("requestsetattribute")
+                )
+            )
+        }
         other_declarations = copy.deepcopy([
             row for row in self.manifest["publicDeclarations"] if row["declarationId"] not in target_ids
         ])

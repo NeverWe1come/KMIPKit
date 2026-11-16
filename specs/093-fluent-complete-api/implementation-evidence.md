@@ -397,3 +397,81 @@
   https_never_attributes_a_surplus_response_to_a_later_exchange -- --exact`
   passed 12 consecutive runs after the synchronization change.
 
+## KMIPKIT-0093 Rust Set Attribute fluent builder
+
+### Red
+
+- Commit `2cc3411a1` added a focused consumer test for the fluent constructor;
+  `cargo test -p kmipkit-client --lib fluent_request_tests::set_attribute_builder_constructs_the_existing_typed_request -- --nocapture`
+  failed because `RequestBuilder` had no `set_attribute` method.
+- Commit `0163959f4` added negative validation coverage. The focused command
+  remained red because the builder and its missing-attribute error did not yet
+  exist.
+- Commit `882a5c7da` added the manifest path contract; its focused Python test
+  failed because the 26 public Rust paths were absent from `public-api.json`.
+
+### Green
+
+- Commit `86a38a25e` adds the Rust `SetAttributeBuilder` on the existing typed
+  request and client execution paths. It supports catalogued typed attributes,
+  explicitly typed TTLV Items, the KMIP Vendor Attribute constructor, optional
+  identifiers, validation, batch conversion, exchange options, and one-exchange
+  execution.
+- `cargo test -p kmipkit-client --lib fluent_request_tests::set_attribute_builder -- --nocapture`
+  passes all five focused tests, including local rejection with zero exchanges
+  and successful typed response extraction after one exchange.
+- `cargo clippy -p kmipkit-client --all-targets --all-features -- -D warnings`
+  passes.
+- `python3 -B -m unittest tools.api_manifest.tests.test_0093_set_attribute_builder_manifest -v`
+  passes the exact-path and pending binding-parity checks.
+- `python3 tools/api_manifest/generate.py --write` generated 12 outputs;
+  `python3 tools/api_manifest/generate.py --check` confirms they are current.
+- The Rust export inventory reports no missing or unobserved Set Attribute
+  builder paths after reconciliation. Its full-repository report still has 205
+  unrelated missing declarations and 8 unobserved manifest declarations; this
+  feature does not claim that broader audit is complete.
+
+### Refactor
+
+- Added Rust usage guidance to the English and Spanish attribute-operation
+  guides, updated the FR-004/FR-011 traceability notes, and declared the fluent
+  builder's Rust exports and exact standard-trait exclusions in the canonical
+  API manifest. C, Java, and Python Set Attribute fluent bindings remain an
+  explicit open part of the global parity objective.
+- The first manifest generation exposed that FR-006 was not included in the
+  manifest requirement registry. Added the existing approved requirement ID
+  before regeneration; full manifest validation and generation then passed.
+
+### T102 snapshot follow-up
+
+#### Red
+
+- The exact-head CI for PR #231 failed
+  `test_non_target_declarations_and_operation_rows_match_snapshot` because
+  the new Set Attribute builder declarations were included in an unrelated
+  Certify non-target fingerprint. The focused test reproduced the mismatch:
+  expected `cd0161cb...`, observed `1ee37489...`.
+
+#### Green
+
+- Excluded only the KMIPKIT-0093 Set Attribute builder paths from the Certify
+  non-target fingerprint. The dedicated Set Attribute manifest test continues
+  to assert the complete exact public Rust path set and the explicit binding
+  parity gap.
+- `python3 -B -m unittest
+  tools.api_manifest.tests.test_t102_certify_request_builder_mapping
+  tools.api_manifest.tests.test_0093_set_attribute_builder_manifest -v`
+  passes all 9 tests, and `git diff --check` passes.
+
+## Rebase after Create Key Pair merged
+
+- PR #227 has merged into `release/1.0.0`; this branch was rebased onto the
+  release branch. On the resulting pre-follow-up head `e8ecb0f08`,
+  `fluent_request_tests::` passes 24 tests, the focused Set Attribute manifest
+  test passes, the manifest generator check passes, and `cargo fmt --all
+  --check` passes.
+- The exact-head check list on `e8ecb0f08` contained only SonarCloud success;
+  the repository CI workflows had not produced runs for that SHA. PR #231
+  remains `[WIP]` until full CI reports every required result on its updated
+  head.
+
