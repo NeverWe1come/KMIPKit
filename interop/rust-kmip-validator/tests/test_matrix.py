@@ -62,6 +62,10 @@ class PinnedSourceContract(unittest.TestCase):
         self.assertIsNotNone(readme_match)
         self.assertEqual(expected, readme_match.group(1))
 
+    def test_test_server_harness_uses_locked_release_dependencies(self):
+        source = (ROOT / 'interop/rust-kmip-validator/tools/build_test_server.py').read_text()
+        self.assertIn('"build", "--locked"', source)
+
     def test_cached_release_bundle_is_rebuilt_when_its_pin_or_digest_is_stale(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
