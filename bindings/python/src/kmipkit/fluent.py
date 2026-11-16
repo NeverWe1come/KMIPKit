@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import Any, Self
+from typing import TYPE_CHECKING, Any, Self
 
 from . import errors, extensions, ttlv
 from ._client_ffi import ffi, lib
@@ -24,6 +24,9 @@ from .cryptographic_parameters import CryptographicParameters
 from .typed_attributes import StandardAttribute
 
 _MAX_CRYPTO_INPUT_BYTES = 16 * 1024 * 1024
+
+if TYPE_CHECKING:
+    from .attribute_operations import SetAttributeRequest
 
 
 def _wipe_crypto_stage(staged: bytearray) -> None:
@@ -240,6 +243,9 @@ class Request:
     def create_key_pair(self) -> CreateKeyPairBuilder:
         return CreateKeyPairBuilder(client=self._client)
 
+    def set_attribute(self) -> SetAttributeBuilder:
+        return SetAttributeBuilder(client=self._client)
+
     def get(self, unique_identifier: extensions.UniqueIdentifier) -> Operation:
         return Operation(self._client, "get", unique_identifier)
 
@@ -281,6 +287,152 @@ class Request:
         unique_identifier: extensions.UniqueIdentifier | None = None,
     ) -> GetAttributeListBuilder:
         return GetAttributeListBuilder(self._client, unique_identifier)
+
+
+class SetAttributeBuilder:
+    """Owns a native builder for one typed KMIP Set Attribute request."""
+
+    def __init__(self, *, client: Client | None = None) -> None:
+        output = ffi.new("kmipkit_set_attribute_builder_t **")
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_set_attribute_builder_create(output))
+        if output[0] == ffi.NULL:
+            errors.raise_for_status(7)
+        self._handle = output[0]
+        self._client = client
+        self._options: RequestOptions | None = None
+        self._asynchronous_indicator: int | None = None
+        self._unique_identifier: extensions.UniqueIdentifier | None = None
+
+    def unique_identifier(self, value: str) -> SetAttributeBuilder:
+        self._ensure_open()
+        if not isinstance(value, str):
+            errors.raise_for_status(4)
+        encoded = value.encode("utf-8")
+        owner = ffi.new("uint8_t[]", encoded)
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_set_attribute_builder_set_unique_identifier(
+                self._handle, owner, len(encoded)
+            ))
+        self._unique_identifier = extensions.UniqueIdentifier.text_string(value)
+        return self
+
+    def attribute_item(self, item: ttlv.TtlvItem) -> SetAttributeBuilder:
+        self._ensure_open()
+        if not isinstance(item, ttlv.TtlvItem):
+            errors.raise_for_status(4)
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_set_attribute_builder_add_attribute_item(
+                self._handle, ffi.cast("kmipkit_ttlv_item_t *", item._pointer())
+            ))
+        return self
+
+    def catalogued_attribute(
+        self, attribute: StandardAttribute, value: ttlv.Value,
+    ) -> SetAttributeBuilder:
+        self._ensure_open()
+        if not isinstance(attribute, StandardAttribute) or not isinstance(value, ttlv.Value):
+            errors.raise_for_status(4)
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_set_attribute_builder_add_catalogued_attribute(
+                self._handle, _unsigned(attribute.tag, 32),
+                ffi.cast("kmipkit_ttlv_value_t *", value._pointer()),
+            ))
+        return self
+
+    def vendor_attribute(
+        self, vendor: str, name: str, value: ttlv.TtlvItem,
+    ) -> SetAttributeBuilder:
+        self._ensure_open()
+        if (not isinstance(vendor, str) or not isinstance(name, str)
+                or not isinstance(value, ttlv.TtlvItem)):
+            errors.raise_for_status(4)
+        vendor_bytes, name_bytes = vendor.encode("utf-8"), name.encode("utf-8")
+        vendor_owner, name_owner = ffi.new("uint8_t[]", vendor_bytes), ffi.new("uint8_t[]", name_bytes)
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_set_attribute_builder_add_vendor_attribute(
+                self._handle, vendor_owner, len(vendor_bytes), name_owner, len(name_bytes),
+                ffi.cast("kmipkit_ttlv_item_t *", value._pointer()),
+            ))
+        return self
+
+    def with_options(self, options: RequestOptions) -> SetAttributeBuilder:
+        self._ensure_open()
+        if not isinstance(options, RequestOptions):
+            errors.raise_for_status(4)
+        self._options = options
+        return self
+
+    def asynchronous_indicator(self, value: int) -> SetAttributeBuilder:
+        self._ensure_open()
+        self._asynchronous_indicator = _unsigned(value, 32)
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_set_attribute_builder_set_asynchronous_indicator(
+                self._handle, self._asynchronous_indicator
+            ))
+        return self
+
+    def validate(self) -> None:
+        self._ensure_open()
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_set_attribute_builder_validate(self._handle))
+
+    def build_request(self) -> SetAttributeRequest:
+        """Return an independently owned typed Set Attribute request."""
+        self._ensure_open()
+        output = ffi.new("kmipkit_set_attribute_request_t **")
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(
+                lib.kmipkit_set_attribute_builder_build_request(self._handle, output)
+            )
+        if output[0] == ffi.NULL:
+            errors.raise_for_status(7)
+        from .attribute_operations import SetAttributeRequest
+
+        # The fluent bridge and the shared NativeHandle wrapper use distinct
+        # CFFI declarations, so transfer the owned pointer through its address.
+        native_handle = _base_ffi.cast(
+            "kmipkit_set_attribute_request_t *",
+            int(ffi.cast("uintptr_t", output[0])),
+        )
+        return SetAttributeRequest._from_fluent_builder(
+            native_handle, self._unique_identifier
+        )
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        return _build_fluent_batch_item(
+            self._handle, lib.kmipkit_set_attribute_builder_build_batch_item
+        )
+
+    to_batch_item = build
+
+    def execute(
+        self, limits: ttlv.CodecLimits, client: Client | None = None,
+    ) -> BatchResult:
+        return _execute_fluent_builder(self, limits, client)
+
+    def close(self) -> None:
+        if self._handle != ffi.NULL:
+            with _NATIVE_CALL_LOCK:
+                lib.kmipkit_set_attribute_builder_release(self._handle)
+            self._handle = ffi.NULL
+
+    def _ensure_open(self) -> None:
+        if self._handle == ffi.NULL:
+            raise RuntimeError("fluent builder is closed")
+
+    def __enter__(self) -> SetAttributeBuilder:
+        return self
+
+    def __exit__(self, *_: object) -> None:
+        self.close()
+
+    def __del__(self) -> None:
+        try:
+            self.close()
+        except Exception:  # noqa: BLE001 - finalizers must not raise during shutdown.
+            pass
 
 
 class _AttributeReadBuilder:

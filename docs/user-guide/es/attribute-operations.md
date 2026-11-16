@@ -219,3 +219,13 @@ fn set_comment(client: &mut Client) -> Result<String, Box<dyn Error>> {
 ```
 
 El builder valida localmente el valor catalogado y el payload de la operación. También ofrece `build`, `validate` y `to_batch_item` para controlar cada paso, y `attribute_item` para un `Item` TTLV con tipo explícito. Usa `vendor_attribute` para construir la estructura KMIP Vendor Attribute a partir del identificador del fabricante, el nombre y el valor. La petición usa el cliente existente en un único intercambio, sin Poll ni reintentos.
+
+El mismo builder está disponible en las fachadas de los cuatro lenguajes:
+
+| Lenguaje | Iniciar la petición | Atributo catalogado | TTLV experto o atributo de fabricante | Enviar y liberar |
+| --- | --- | --- | --- | --- |
+| C | `kmipkit_set_attribute_builder_create` | `kmipkit_set_attribute_builder_add_catalogued_attribute(..., KMIPKIT_STANDARD_ATTRIBUTE_DESCRIPTION, value)` | `..._add_attribute_item` o `..._add_vendor_attribute` | `..._execute_v1` o `..._build_batch_item`; liberar builder y resultados |
+| Java | `new FluentRequest(client).setAttribute()` | `cataloguedAttribute(StandardAttribute.DESCRIPTION, value)` | `attributeItem` o `vendorAttribute` | `execute(limits)` o `build`; cerrar el builder y sus resultados |
+| Python | `fluent.Request(client).set_attribute()` | `catalogued_attribute(StandardAttribute.DESCRIPTION, value)` | `attribute_item` o `vendor_attribute` | `execute(limits)` o `build`; usar el builder como gestor de contexto |
+
+Los valores catalogados se validan según el tipo TTLV del atributo. Los tags desconocidos requieren un `Item` con tipo explícito. El helper de fabricante construye la estructura Vendor Attribute del protocolo; un tag de fabricante por sí solo no representa esa estructura. Las pruebas del consumidor C compilado, de Java/JNI y de Python/CFFI verifican que la petición tipada y su conversión a batch conservan el mismo tipo de operación.

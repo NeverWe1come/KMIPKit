@@ -1,12 +1,15 @@
 package org.kmipkit.fluent;
 
 import org.kmipkit.NativeExtensionRegistry;
+import org.kmipkit.extensions.SetAttributeRequest;
+import org.kmipkit.extensions.UniqueIdentifier;
 import org.jspecify.annotations.Nullable;
 
 /** Package-private JNI bridge so fluent builder handles do not expand public exports. */
 final class NativeFluentRegistry {
     static final int CRYPTO_OPERATION_BUILDER = 72;
     static final int CREATE_KEY_PAIR_BUILDER = 73;
+    static final int SET_ATTRIBUTE_BUILDER = 74;
     static final int SYMMETRIC_KEY_BUILDER = 71;
 
     private NativeFluentRegistry() {}
@@ -78,4 +81,25 @@ final class NativeFluentRegistry {
     static native void createKeyPairBuilderValidate(long builder);
 
     static native long createKeyPairBuilderBuildBatchItem(long builder);
+
+    static native long setAttributeBuilderCreate();
+
+    static native void setAttributeBuilderSetUniqueIdentifier(long builder, String value);
+
+    static native void setAttributeBuilderAddAttributeItem(long builder, long item);
+
+    static native void setAttributeBuilderAddCataloguedAttribute(
+            long builder, int tag, long value);
+
+    static native void setAttributeBuilderAddVendorAttribute(
+            long builder, String vendor, String name, long value);
+
+    static native void setAttributeBuilderSetAsynchronousIndicator(long builder, long value);
+
+    static native void setAttributeBuilderValidate(long builder);
+
+    static native SetAttributeRequest setAttributeBuilderBuildRequest(
+            long builder, @Nullable UniqueIdentifier identifier);
+
+    static native long setAttributeBuilderBuildBatchItem(long builder);
 }

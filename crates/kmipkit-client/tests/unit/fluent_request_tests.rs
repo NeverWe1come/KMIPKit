@@ -10,6 +10,7 @@ use crate::execute::{ClientBatchOutcome, ClientOperation, ClientRequest, encode_
 use crate::execute_test_support::{test_item, test_structure};
 use crate::fluent::{
     CreateSymmetricKeyBuilder, CryptographicUsageMask, FluentAttributePosition, FluentBuildError,
+    SetAttributeBuilder,
 };
 
 fn item(raw_tag: u32, value: Value) -> Item {
@@ -83,6 +84,37 @@ fn set_attribute_builder_builds_the_existing_typed_request() {
     assert_eq!(
         request.new_attribute().item().tag().raw(),
         typed::Description::TAG
+    );
+}
+
+#[test]
+fn detached_set_attribute_builder_builds_without_a_client_and_refuses_execution() {
+    let builder = SetAttributeBuilder::detached()
+        .unique_identifier("key-42")
+        .attribute(
+            Attribute::<typed::Description>::new("managed by C, Java, and Python".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        );
+    let request = builder
+        .build_request()
+        .expect("detached builders construct the existing typed request");
+    assert_eq!(request.unique_identifier(), Some("key-42"));
+    assert_eq!(
+        request.new_attribute().item().tag().raw(),
+        typed::Description::TAG
+    );
+
+    let error = SetAttributeBuilder::detached()
+        .unique_identifier("key-42")
+        .attribute(
+            Attribute::<typed::Description>::new("managed by C, Java, and Python".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        )
+        .execute(&CodecLimits::defaults())
+        .expect_err("a detached builder cannot send without an explicit client");
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
     );
 }
 

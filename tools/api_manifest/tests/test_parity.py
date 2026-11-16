@@ -914,6 +914,20 @@ class PublicApiParityTests(unittest.TestCase):
                     "create_key_pair_builder_set_public_name",
                     "create_key_pair_builder_set_public_usage_mask",
                     "create_key_pair_builder_validate",
+                    # The fluent Set Attribute facade reaches these C ABI
+                    # calls through NativeFluentRegistry rather than a JNI
+                    # symbol assigned to each C function declaration.
+                    "set_attribute_builder_add_attribute_item",
+                    "set_attribute_builder_add_catalogued_attribute",
+                    "set_attribute_builder_add_vendor_attribute",
+                    "set_attribute_builder_build_batch_item",
+                    "set_attribute_builder_build_request",
+                    "set_attribute_builder_create",
+                    "set_attribute_builder_execute_v1",
+                    "set_attribute_builder_execute_with_options_v1",
+                    "set_attribute_builder_set_asynchronous_indicator",
+                    "set_attribute_builder_set_unique_identifier",
+                    "set_attribute_builder_validate",
                 } | CRYPTO_RESPONSE_TTLV_AGGREGATE_FUNCTIONS:
                     self.assertNotIn("jniSymbol", java)
                     if function["id"] == "client_batch_item_count":

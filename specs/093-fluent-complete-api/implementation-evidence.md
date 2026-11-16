@@ -474,4 +474,73 @@
   the repository CI workflows had not produced runs for that SHA. PR #231
   remains `[WIP]` until full CI reports every required result on its updated
   head.
+## KMIPKIT-0093 Set Attribute bindings
+
+### Red
+
+- Commit `dcb129af4` extends the C consumer, Java facade test, Python consumer
+  test, and API-manifest test to require a typed `SetAttributeRequest` from
+  the fluent builder, inspect its payload, and convert it to the matching
+  batch item. The earlier binding contract allowed only direct batch-item
+  construction and did not prove this typed-request path.
+- The manifest test first failed because
+  `kmipkit_set_attribute_builder_build_request` was missing from the public C
+  symbol declarations and the four-language capability mapping did not match
+  the exact ready exports. After adding its public declaration and reconciling
+  the three affected capability mappings, the generated header exposed the
+  ABI function.
+
+### Green
+
+- Added the typed C ABI request constructor on the existing Rust
+  `SetAttributeBuilder`, the Java `buildRequest()` JNI path, and Python's
+  `build_request()` method. Each returns an independently owned typed request
+  that can be inspected and converted to a batch item.
+- `cargo fmt --all --check`,
+  `cargo clippy -p kmipkit-ffi --all-targets --all-features -- -D warnings`,
+  and `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage`
+  pass; the C consumer suite reports 61 tests passed, including payload
+  inspection, batch conversion, and release of the request, payload, and item.
+- `mvn --batch-mode --file bindings/java/pom.xml test` passes 718 tests with
+  no failures; its JNI build and `SetAttributeBuilderTest` pass.
+- Built the Python binding with the CI-pinned coverage requirements in a
+  temporary Python 3.12 environment. The first collection run found that the
+  new CFFI prototype referenced `kmipkit_set_attribute_request_t` before its
+  forward declaration; moving the prototype below that declaration allowed
+  collection to proceed. The focused request test then found that the two
+  CFFI modules' opaque pointer types must be bridged by address before handing
+  ownership to `NativeHandle`; the bridge now follows the existing fluent
+  batch-item ownership pattern. The focused test passes and
+  `python -m pytest -q bindings/python/tests` reports 1,359 passed.
+- `python3 -B -m unittest
+  tools.api_manifest.tests.test_0093_set_attribute_builder_manifest
+  tools.api_manifest.tests.test_t102_pkcs11_request_trait_exclusions -v`
+  passes the exact Rust path, cross-language mapping, C-header, and T102
+  snapshot assertions. `python3 -B tools/api_manifest/generate.py --check`
+  confirms all 12 generated outputs are current.
+
+### Refactor
+
+- Updated the English and Spanish attribute-operation guides and FR-004,
+  FR-006, and FR-011 traceability rows to describe the typed request path and
+  its four-language bindings without implying complete operation-wide parity.
+- The C, Java, and Python declarations remain generated or manifest-backed;
+  the implementation adds no second transport or codec path.
+
+### Rebased T102 snapshot follow-up
+
+- Red commit `1616b8342` reproduced the post-rebase failure in
+  `test_non_target_declarations_and_operation_rows_match_snapshot`: the new
+  Set Attribute binding declarations changed the unrelated Certify fingerprint.
+  A focused run failed with expected hash `cd0161cb...` and observed hash
+  `a033de4a...`.
+- Green commit `065717e70` scopes the non-target exclusion to the Set Attribute
+  fluent parity and C ABI capability IDs. The C manifest rows use
+  `fluent_set_attribute_c_abi`, while the Rust, Java, and Python rows use
+  `fluent_set_attribute_parity`; both are already checked by the dedicated
+  exact-surface manifest contract.
+- `python3 -B -m unittest
+  tools.api_manifest.tests.test_t102_certify_request_builder_mapping.T102CertifyRequestBuilderMappingTests.test_non_target_declarations_and_operation_rows_match_snapshot
+  tools.api_manifest.tests.test_0093_set_attribute_builder_manifest -v`
+  passes all four assertions, and `git diff --check` passes.
 

@@ -1,8 +1,7 @@
-"""Private CFFI declarations for the T076 client ABI adapter.
+"""Private CFFI declarations for the Rust-backed client and fluent adapters.
 
-The declarations stay here until the shared manifest can promote T076's
-blocked exports after both Java and Python mappings are complete. They mirror
-the reviewed versioned C records and do not add a public C header surface.
+The public API manifest and generated C header remain canonical. This module
+declares the C ABI symbols needed by the Python CFFI wrappers.
 """
 
 from __future__ import annotations
@@ -28,6 +27,7 @@ ffi.cdef(
     typedef struct kmipkit_client_t kmipkit_client_t;
     typedef struct kmipkit_symmetric_key_builder_t kmipkit_symmetric_key_builder_t;
     typedef struct kmipkit_create_key_pair_builder_t kmipkit_create_key_pair_builder_t;
+    typedef struct kmipkit_set_attribute_builder_t kmipkit_set_attribute_builder_t;
     typedef struct kmipkit_crypto_operation_builder_t kmipkit_crypto_operation_builder_t;
     typedef struct kmipkit_client_batch_t kmipkit_client_batch_t;
     typedef struct kmipkit_client_batch_response_t kmipkit_client_batch_response_t;
@@ -48,6 +48,8 @@ ffi.cdef(
     typedef struct kmipkit_delete_attribute_request_t kmipkit_delete_attribute_request_t;
     typedef struct kmipkit_modify_attribute_request_t kmipkit_modify_attribute_request_t;
     typedef struct kmipkit_set_attribute_request_t kmipkit_set_attribute_request_t;
+    int32_t kmipkit_set_attribute_builder_build_request(
+        kmipkit_set_attribute_builder_t *, kmipkit_set_attribute_request_t **);
     typedef struct kmipkit_get_attributes_request_t kmipkit_get_attributes_request_t;
     typedef struct kmipkit_get_attribute_list_request_t kmipkit_get_attribute_list_request_t;
     typedef struct kmipkit_usage_allocation_context_t kmipkit_usage_allocation_context_t;
@@ -303,6 +305,17 @@ ffi.cdef(
     int32_t kmipkit_create_key_pair_builder_build_batch_item(kmipkit_create_key_pair_builder_t *, kmipkit_client_batch_item_t **);
     int32_t kmipkit_create_key_pair_builder_set_asynchronous_indicator(kmipkit_create_key_pair_builder_t *, uint32_t);
     void kmipkit_create_key_pair_builder_release(kmipkit_create_key_pair_builder_t *);
+    int32_t kmipkit_set_attribute_builder_create(kmipkit_set_attribute_builder_t **);
+    int32_t kmipkit_set_attribute_builder_set_unique_identifier(kmipkit_set_attribute_builder_t *, const uint8_t *, uint64_t);
+    int32_t kmipkit_set_attribute_builder_add_attribute_item(kmipkit_set_attribute_builder_t *, kmipkit_ttlv_item_t *);
+    int32_t kmipkit_set_attribute_builder_add_catalogued_attribute(kmipkit_set_attribute_builder_t *, uint32_t, kmipkit_ttlv_value_t *);
+    int32_t kmipkit_set_attribute_builder_add_vendor_attribute(kmipkit_set_attribute_builder_t *, const uint8_t *, uint64_t, const uint8_t *, uint64_t, kmipkit_ttlv_item_t *);
+    int32_t kmipkit_set_attribute_builder_set_asynchronous_indicator(kmipkit_set_attribute_builder_t *, uint32_t);
+    int32_t kmipkit_set_attribute_builder_validate(kmipkit_set_attribute_builder_t *);
+    int32_t kmipkit_set_attribute_builder_build_batch_item(kmipkit_set_attribute_builder_t *, kmipkit_client_batch_item_t **);
+    int32_t kmipkit_set_attribute_builder_execute_v1(kmipkit_set_attribute_builder_t *, kmipkit_client_t *, kmipkit_codec_limits_t *, kmipkit_client_batch_response_t **);
+    int32_t kmipkit_set_attribute_builder_execute_with_options_v1(kmipkit_set_attribute_builder_t *, kmipkit_client_t *, kmipkit_codec_limits_t *, const kmipkit_request_options_v1_t *, kmipkit_client_batch_response_t **);
+    void kmipkit_set_attribute_builder_release(kmipkit_set_attribute_builder_t *);
 
     int32_t kmipkit_encrypt_builder_create(kmipkit_crypto_operation_builder_t **);
     int32_t kmipkit_decrypt_builder_create(kmipkit_crypto_operation_builder_t **);
