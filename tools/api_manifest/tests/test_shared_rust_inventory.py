@@ -5,7 +5,9 @@ from __future__ import annotations
 import importlib.util
 import json
 from pathlib import Path
+import tempfile
 import unittest
+from unittest import mock
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -80,6 +82,35 @@ class SharedRustInventoryTests(unittest.TestCase):
 
         self.assertIn("KMIPKIT-0044-FR-001", owner_requirements)
         self.assertIn("KMIPKIT-0044-FR-007", owner_requirements)
+
+    def test_approved_owner_lookup_does_not_match_a_longer_directory_prefix(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            specs = root / "specs"
+            longer_prefix = specs / "0120-partial-batch-responses"
+            exact_owner = specs / "012-vendor-extension-registry"
+            longer_prefix.mkdir(parents=True)
+            exact_owner.mkdir()
+            (longer_prefix / "spec.md").write_text(
+                "**Status**: Approved\n\n- **FR-001**: unrelated requirement\n",
+                encoding="utf-8",
+            )
+            (exact_owner / "spec.md").write_text(
+                "**Status**: Approved\n\n- **FR-009**: owner requirement\n",
+                encoding="utf-8",
+            )
+
+            original_iterdir = Path.iterdir
+
+            def ordered_spec_directories(path: Path):
+                if path == specs:
+                    return iter((longer_prefix, exact_owner))
+                return original_iterdir(path)
+
+            with mock.patch.object(Path, "iterdir", ordered_spec_directories):
+                owner_requirements = AUDIT._read_approved_owner("KMIPKIT-0012", root)
+
+        self.assertEqual({"KMIPKIT-0012-FR-009"}, owner_requirements)
 
     def test_approved_implementation_spec_local_requirement_ids_are_recognized(self) -> None:
         owner_requirements = AUDIT._read_approved_owner("KMIPKIT-0095", REPO_ROOT)
