@@ -1028,3 +1028,52 @@ def test_request_namespace_exposes_typed_add_attribute_builder() -> None:
     with pytest.raises(RuntimeError, match="closed"):
         builder.validate()
 
+
+
+def test_add_attribute_builder_executes_default_and_override_options(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[tuple[str, int | None]] = []
+
+    class FakeClient:
+        def execute(self, batch: object, limits: object) -> str:
+            calls.append(("default", getattr(batch, "asynchronous_indicator", None)))
+            return "default result"
+
+        def execute_with_options(self, batch: object, limits: object, options: object) -> str:
+            calls.append(("options", getattr(batch, "asynchronous_indicator", None)))
+            return "options result"
+
+    class FakeBatch:
+        asynchronous_indicator: int | None = None
+
+        @classmethod
+        def create(cls) -> FakeBatch:
+            return cls()
+
+        def add_item(self, item: object) -> None:
+            item.close()  # type: ignore[attr-defined]
+
+        def set_asynchronous_indicator(self, value: int) -> None:
+            self.asynchronous_indicator = value
+
+        def close(self) -> None:
+            pass
+
+    monkeypatch.setattr(fluent, "Client", FakeClient)
+    monkeypatch.setattr(fluent, "Batch", FakeBatch)
+    with ttlv.codec_limits_defaults() as limits:
+        with ttlv.ttlv_value_text_string(b"default exchange", limits) as value:
+            with fluent.Request(FakeClient()).add_attribute() as builder:
+                builder.unique_identifier("key-42").catalogued_attribute(
+                    StandardAttribute.DESCRIPTION, value,
+                )
+                assert builder.execute(limits) == "default result"
+        with ttlv.ttlv_value_text_string(b"overridden exchange", limits) as value:
+            with fluent.Request(FakeClient()).add_attribute() as builder:
+                builder.unique_identifier("key-42").catalogued_attribute(
+                    StandardAttribute.DESCRIPTION, value,
+                ).with_options(client.RequestOptions()).asynchronous_indicator(2)
+                assert builder.execute(limits) == "options result"
+    assert calls == [("default", None), ("options", 2)]
+

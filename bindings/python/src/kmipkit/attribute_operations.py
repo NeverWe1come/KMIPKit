@@ -259,6 +259,15 @@ class AddAttributeRequest(_AttributeRequest):
     _batch_function = "kmipkit_client_batch_item_add_attribute_from_request"
 
     @classmethod
+    def _from_fluent_builder(
+        cls,
+        handle: Any,
+        unique_identifier: extensions.UniqueIdentifier | None,
+    ) -> AddAttributeRequest:
+        """Take ownership of a request handle returned by a fluent builder."""
+        return _wrap_owned_handle(cls, handle, unique_identifier, None, None)
+
+    @classmethod
     def create(
         cls,
         unique_identifier: extensions.UniqueIdentifier | None,
