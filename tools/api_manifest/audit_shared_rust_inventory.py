@@ -119,7 +119,8 @@ def _read_approved_owner(
         (
             path
             for path in (root / "specs").iterdir()
-            if path.is_dir() and path.name.startswith(owner_spec_id[9:])
+            if path.is_dir()
+            and re.match(rf"^{re.escape(owner_spec_id[9:])}(?:-|$)", path.name)
         ),
         None,
     )
