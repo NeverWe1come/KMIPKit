@@ -1045,3 +1045,10 @@
   coverage-c-consumer
   extension_registry::metadata_tests::capability_query_only_reports_c_mapped_nonblocked_capabilities
   -- --exact --nocapture`.
+- After adding that expected C capability locally, the same FFI test reaches its
+  Rust parity check and fails because `kmipkit::capability_is_available` returns
+  `Ok(false)`. A new assertion in
+  `capability_query_matches_manifest_ready_capabilities` reproduces that missing
+  runtime mapping with
+  `cargo +1.94 test --locked -p kmipkit --test runtime_metadata
+  capability_query_matches_manifest_ready_capabilities -- --exact --nocapture`.
