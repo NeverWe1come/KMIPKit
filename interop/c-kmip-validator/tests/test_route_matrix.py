@@ -3228,6 +3228,28 @@ class RouteMatrixTests(unittest.TestCase):
                         {event['target_id'] for event in events})
         self.assertIn('KMIPKIT-ELEM-OP-C2S-EXPORT', {event['target_id'] for event in events})
 
+    def test_export_response_payload_fields_reject_missing_required_branches(self):
+        """OASIS KMIP 2.0/2.1 §6.1.18 Tables 203/218 require successful Export fields."""
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        cases = [case for case in catalog['test_cases']
+                 if case['case_id'].startswith('test-norm-payload-client-export-response-')]
+        selected = {**catalog, 'test_cases': cases}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 96,
+                         'Each of eight required Export response fields must cover present and missing branches')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertEqual(sum(check['constructor_variant'] == 'present' for check in checks), 48)
+        self.assertEqual(sum(check['constructor_variant'] == 'missing_rejected' for check in checks), 48)
+        self.assertTrue({case['requires']['normative_target_id'] for case in cases} <=
+                        {event['target_id'] for event in events})
+
     def test_register_operation_executes_the_installed_request_and_response_routes(self):
         from artifact_support import ROOT
         from route_peer import execute_network_cells
