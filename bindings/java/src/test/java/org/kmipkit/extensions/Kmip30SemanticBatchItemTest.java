@@ -2,6 +2,7 @@ package org.kmipkit.extensions;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
@@ -93,5 +94,17 @@ final class Kmip30SemanticBatchItemTest {
                 InvalidInputException.class, () -> ClientBatchItem.decapsulateFromFields(
                         UniqueIdentifier.textString("kem-key"), null, null, null))
                 .getMessage());
+    }
+
+    @Test
+    void parsesSemanticBatchItemResponses() {
+        Object[] emptyIdResult = new Object[] {new long[] {0}, null};
+        assertTrue(ClientBatchItemResult.parseCreateGroupResponse(emptyIdResult).isEmpty());
+        assertTrue(ClientBatchItemResult.parseCreateUserResponse(emptyIdResult).isEmpty());
+        assertTrue(ClientBatchItemResult.parseCreateCredentialResponse(emptyIdResult).isEmpty());
+        assertTrue(ClientBatchItemResult.parseObliterateResponse(new long[] {0}).isEmpty());
+        assertTrue(ClientBatchItemResult.parseDeactivateResponse(emptyIdResult).isEmpty());
+        assertTrue(ClientBatchItemResult.parseEncapsulateResponse(new Object[] {new long[] {0, 0}, null, null}).isEmpty());
+        assertTrue(ClientBatchItemResult.parseDecapsulateResponse(emptyIdResult).isEmpty());
     }
 }

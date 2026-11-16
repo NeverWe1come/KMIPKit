@@ -96,3 +96,28 @@ def test_kmip30_semantic_binding_annotations_are_resolvable() -> None:
         "client_batch_item_decapsulate_from_fields",
     ):
         get_type_hints(getattr(extensions, function_name))
+
+
+def test_kmip30_response_readers_exist_on_client() -> None:
+    from kmipkit import client
+
+    for dataclass_name in (
+        "CreateGroupResponse",
+        "CreateUserResponse",
+        "CreateCredentialResponse",
+        "DeactivateResponse",
+        "EncapsulateResponse",
+        "DecapsulateResponse",
+    ):
+        assert hasattr(client, dataclass_name), f"missing {dataclass_name}"
+
+    for field_name in (
+        "create_group_response",
+        "create_user_response",
+        "create_credential_response",
+        "obliterate_response",
+        "deactivate_response",
+        "encapsulate_response",
+        "decapsulate_response",
+    ):
+        assert field_name in client.BatchItemResult.__dataclass_fields__, f"missing field {field_name}"
