@@ -96,6 +96,7 @@ fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
             "ffi_runtime_metadata",
             "fluent_add_attribute_parity",
             "fluent_create_key_pair_parity",
+            "fluent_delete_attribute_parity",
             "fluent_dx_api",
             "fluent_set_attribute_parity",
             "generic_ttlv_model",
