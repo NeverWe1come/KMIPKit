@@ -2,10 +2,10 @@
 
 use kmipkit_protocol::{
     AttributeSet, CancelRequest, CancellationResult, CreateCredentialObject,
-    CreateCredentialRequest, CreateGroupRequest, CreateUserRequest, CredentialType,
-    DeactivateRequest, DecapsulateRequest, EncapsulateRequest, ObliterateRequest,
-    PasswordCredentialObject, PasswordCredentialObjectFields, PollRequest, ProcessRequest,
-    QueryAsyncRequestsRequest, SecretText, UniqueIdentifier,
+    CreateCredentialRequest, CreateGroupRequest, CreateUserRequest, DeactivateRequest,
+    DecapsulateRequest, EncapsulateRequest, ObliterateRequest, PasswordCredentialObject,
+    PasswordCredentialObjectFields, PollRequest, ProcessRequest, QueryAsyncRequestsRequest,
+    SecretText, UniqueIdentifier,
 };
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_ttlv::Value;
@@ -85,7 +85,6 @@ fn async_requests_methods_to_payload_and_debug() {
         ))),
         ClientRequest::CreateUser(CreateUserRequest::new(AttributeSet::new())),
         ClientRequest::CreateCredential(CreateCredentialRequest::new(
-            CredentialType::UsernameAndPassword,
             AttributeSet::new(),
             CreateCredentialObject::PasswordCredential(password),
         )),
@@ -300,7 +299,6 @@ fn kmip30_batch_items_constructors_and_draft_constructors() {
         ))),
         ClientBatchItem::create_user(CreateUserRequest::new(AttributeSet::new())),
         ClientBatchItem::create_credential(CreateCredentialRequest::new(
-            CredentialType::UsernameAndPassword,
             AttributeSet::new(),
             CreateCredentialObject::PasswordCredential(password),
         )),
@@ -459,7 +457,6 @@ fn client_kmip30_credential_and_deactivate_methods_execute_roundtrip() {
     let item = client
         .create_credential_with_options(
             CreateCredentialRequest::new(
-                CredentialType::UsernameAndPassword,
                 AttributeSet::new(),
                 CreateCredentialObject::PasswordCredential(password),
             ),

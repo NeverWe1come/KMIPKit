@@ -241,7 +241,7 @@ def test_fluent_and_direct_lifecycle_helpers_roundtrip_over_mtls() -> None:
         assert not peer.is_alive()
         assert peer_failures.empty()
         assert [item.items[0].operation for item in results] == list(operations)
-        assert [operation for operation, _ in observations] == list(operations)
+        assert [operation for operation, _, _ in observations] == list(operations)
     finally:
         for result in results:
             result.close()

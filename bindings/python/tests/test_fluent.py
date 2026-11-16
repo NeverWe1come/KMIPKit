@@ -304,7 +304,6 @@ def _start_lifecycle_peer(
                     operation, request_identifier = _request_operation_and_identifier(request)
                     if operation != expected_operation:
                         raise AssertionError(f"expected operation {expected_operation}, got {operation}")
-                    observations.append((operation, request_identifier))
                     observations.append((operation, request_identifier, request))
                     response_identifier = request_identifier or b"fluent-created-id"
                     stream.sendall(_lifecycle_response(operation, response_identifier))
@@ -371,7 +370,6 @@ def test_fluent_operation_and_symmetric_builder_execute_with_and_without_options
         assert not peer.is_alive()
         assert peer_failures.empty()
         assert [result.items[0].operation for result in results] == [10, 20, 1, 1]
-        assert [operation for operation, _ in observations] == [10, 20, 1, 1]
         assert [operation for operation, _, _ in observations] == [10, 20, 1, 1]
     finally:
         for result in results:
@@ -863,7 +861,6 @@ def test_direct_client_helpers_create_get_and_destroy_with_exchange_options() ->
         assert not peer.is_alive()
         assert peer_failures.empty()
         assert [result.items[0].operation for result in results] == [1, 10, 20]
-        assert [operation for operation, _ in observations] == [1, 10, 20]
         assert [operation for operation, _, _ in observations] == [1, 10, 20]
     finally:
         for result in results:
