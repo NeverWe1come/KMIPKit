@@ -38,7 +38,7 @@ RUST_EXPORT_REPORT_PATH = (
     / "specs"
     / "051-pre-send-validation"
     / "reports"
-    / "rust-export-report-2026-11-12.json"
+    / "rust-export-report-2026-11-16.json"
 )
 
 EXPECTED_PACKAGES = {
@@ -1191,6 +1191,12 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
         with self.assertRaisesRegex(ManifestError, "duplicate public export path"):
             _validate_v2_readiness(manifest, ROOT)
+
+    def test_checked_in_manifest_has_unique_public_export_paths(self) -> None:
+        generate._validate_unique_public_export_identities(
+            self.checked_in_manifest["publicDeclarations"],
+            self.checked_in_manifest["approvedExclusions"],
+        )
 
     def test_readiness_rejects_duplicate_approved_exclusion_paths(self) -> None:
         manifest = json.loads(json.dumps(self.checked_in_manifest))
@@ -3141,7 +3147,10 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertEqual("declared", declaration["declarationState"])
                 self.assertNotIn("candidateSpecId", declaration)
                 self.assertEqual(canonical["capabilityId"], declaration["capabilityId"])
-                self.assertEqual(canonical["requirementIds"], declaration["requirementIds"])
+                self.assertEqual(
+                    sorted(set(canonical["requirementIds"]) | {"KMIPKIT-0093-FR-008"}),
+                    declaration["requirementIds"],
+                )
                 self.assertEqual(canonical["approvalSource"], declaration["approvalSource"])
                 self.assertEqual(expected_mappings, declaration["languageMappings"])
                 for language, mapping in expected_mappings.items():
@@ -3748,6 +3757,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 for owner_declaration in owner_declarations
                 for requirement_id in owner_declaration["requirementIds"]
             }
+            owner_requirements -= excluded_owner_requirements.get(method, set())
             owner_sources = [
                 owner_declaration["approvalSource"]
                 for owner_declaration in owner_declarations
@@ -4489,7 +4499,14 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertEqual("verified", declaration["declarationState"])
                 self.assertNotIn("candidateSpecId", declaration)
                 self.assertEqual(operation_id, declaration["capabilityId"])
-                self.assertEqual(canonical["requirementIds"], declaration["requirementIds"])
+                expected_requirements = set(canonical["requirementIds"])
+                if canonical is not request_canonical:
+                    expected_requirements.update(
+                        {"KMIPKIT-0093-FR-005", "KMIPKIT-0093-FR-008"}
+                    )
+                self.assertEqual(
+                    sorted(expected_requirements), declaration["requirementIds"]
+                )
                 self.assertEqual(operation["approvalEvidence"], declaration["approvalSource"])
                 self.assertEqual(expected_mappings, declaration["languageMappings"])
                 self.assertIn(declaration["declarationId"], operation["declarations"]["rust"])
@@ -6331,7 +6348,9 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             if "core::any::Any" in row["exportName"]
             and "<'" in row["exportName"]
         ]
-        self.assertEqual(len(any_lifetime_rows), 85)
+        # Add/Set fluent builders add one lifetime-conditioned Any impl per
+        # builder alias; these standard-library methods remain blocked inventory.
+        self.assertEqual(len(any_lifetime_rows), 89)
         for row in any_lifetime_rows:
             exclusion_key = (row["packageId"], _canonical_export_name(row["exportName"]))
             if exclusion_key in approved_exclusion_keys:
@@ -7087,7 +7106,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         )
         header_versioned_macros = set(
             re.findall(
-                r"^#define (KMIPKIT_V(?:2_1|3_0)_(?:OPERATION|OBJECT_TYPE|OBJECT_CLASS)_\w+)",
+                r"^#define (KMIPKIT_V(?:2_0|2_1|3_0)_[A-Z0-9_]+)",
                 header,
                 re.MULTILINE,
             )

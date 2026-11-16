@@ -1,16 +1,233 @@
 use kmipkit_protocol::attribute::typed;
-use kmipkit_protocol::{Attribute, AttributeDefinition, CreateRequest, UniqueIdentifier};
+use kmipkit_protocol::{
+    Attribute, AttributeDefinition, AttributeReference, CreateRequest, UniqueIdentifier,
+};
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::RequestOptions;
 use kmipkit_ttlv::codec::CodecLimits;
 use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Value, ValueView};
 
 use crate::asynchronous_execution_test_support::client_for;
-use crate::execute::{ClientBatchOutcome, ClientOperation, encode_message_for_test};
+use crate::execute::{ClientBatchOutcome, ClientOperation, ClientRequest, encode_message_for_test};
 use crate::execute_test_support::{test_item, test_structure};
 use crate::fluent::{
-    CreateSymmetricKeyBuilder, CryptographicUsageMask, FluentAttributePosition, FluentBuildError,
+    AddAttributeBuilder, CreateSymmetricKeyBuilder, CryptographicUsageMask, DeleteAttributeBuilder,
+    FluentAttributePosition, FluentBuildError, SetAttributeBuilder,
 };
+
+#[test]
+fn delete_attribute_builder_constructs_the_existing_typed_request() {
+    let mut client = failed_request_client();
+    let request = client
+        .request()
+        .delete_attribute()
+        .unique_identifier("key-42")
+        .current_attribute(
+            Attribute::<typed::Description>::new("legacy label".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        )
+        .attribute_reference(AttributeReference::tag(typed::Description::TAG))
+        .build_request()
+        .expect("the fluent Delete Attribute request is valid");
+
+    assert_eq!(request.unique_identifier(), Some("key-42"));
+    let current_attribute = request
+        .current_attribute()
+        .expect("the selected attribute is retained");
+    assert_eq!(
+        current_attribute.item().tag().raw(),
+        typed::Description::TAG
+    );
+    assert!(current_attribute.item().with_value(|value| matches!(
+        value,
+        ValueView::TextString(text) if text == "legacy label"
+    )));
+    assert_eq!(
+        request
+            .attribute_reference()
+            .and_then(AttributeReference::tag_value),
+        Some(typed::Description::TAG)
+    );
+}
+
+#[test]
+fn detached_delete_attribute_builder_builds_without_a_client_and_refuses_execution() {
+    let request = DeleteAttributeBuilder::detached()
+        .unique_identifier("key-42")
+        .attribute_reference(AttributeReference::tag(typed::Description::TAG))
+        .build_request()
+        .expect("a detached builder returns the existing typed request");
+    assert_eq!(request.unique_identifier(), Some("key-42"));
+    assert_eq!(
+        request
+            .attribute_reference()
+            .and_then(AttributeReference::tag_value),
+        Some(typed::Description::TAG)
+    );
+
+    let error = DeleteAttributeBuilder::detached()
+        .execute(&CodecLimits::defaults())
+        .expect_err("a detached builder cannot send without an explicit client");
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+}
+
+#[test]
+fn delete_attribute_builder_executes_once_and_converts_to_the_typed_batch_item() {
+    let mut batch_client = failed_request_client();
+    let batch_item = batch_client
+        .request()
+        .delete_attribute()
+        .unique_identifier("key-42")
+        .attribute_reference(AttributeReference::tag(typed::Description::TAG))
+        .to_batch_item()
+        .expect("valid Delete Attribute request converts to a typed batch item");
+    assert_eq!(batch_item.operation(), 0x0000_000F);
+    assert!(matches!(
+        batch_item.request(),
+        ClientRequest::DeleteAttribute(_)
+    ));
+
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response: delete_attribute_response_bytes(),
+        request_write_chunks: Vec::new(),
+    });
+    let response = client
+        .request()
+        .delete_attribute()
+        .unique_identifier("key-42")
+        .attribute_reference(AttributeReference::tag(typed::Description::TAG))
+        .with_options(RequestOptions::default())
+        .with_asynchronous_indicator(3)
+        .execute(&CodecLimits::defaults())
+        .expect("Delete Attribute executes through one existing typed exchange");
+
+    assert_eq!(
+        response
+            .outcome()
+            .response()
+            .delete_attribute()
+            .and_then(|result| result.unique_identifier()),
+        Some("server-key-42")
+    );
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn delete_attribute_builder_preserves_explicit_items_and_vendor_selectors() {
+    let unknown = item(
+        0x0042_00FC,
+        Value::text_string("opaque selector".to_owned()),
+    );
+    let explicit = DeleteAttributeBuilder::detached()
+        .current_attribute_item(unknown)
+        .build_request()
+        .expect("an explicitly typed unknown attribute remains generic TTLV");
+    assert_eq!(
+        explicit
+            .current_attribute()
+            .expect("the selector is preserved")
+            .item()
+            .tag()
+            .raw(),
+        0x0042_00FC
+    );
+
+    let value = item(
+        typed::Description::TAG,
+        Value::text_string("north".to_owned()),
+    );
+    let vendor = DeleteAttributeBuilder::detached()
+        .current_vendor_attribute("Vendor_Name.1", "region", &value)
+        .build_request()
+        .expect("the vendor helper constructs the complete KMIP Vendor Attribute");
+    let item = vendor
+        .current_attribute()
+        .expect("the vendor selector is present")
+        .item();
+    assert_eq!(item.tag().raw(), 0x0042_0008);
+    let children = item
+        .as_structure()
+        .expect("Vendor Attribute is a Structure")
+        .children();
+    assert_eq!(children.len(), 3);
+    assert_eq!(children[0].tag().raw(), 0x0042_009D);
+    assert_eq!(children[1].tag().raw(), 0x0042_000A);
+    assert_eq!(children[2].tag().raw(), 0x0042_000B);
+}
+
+#[test]
+fn delete_attribute_builder_rejects_duplicate_and_malformed_current_attributes() {
+    let first = item(0x0042_00FC, Value::text_string("first".to_owned()));
+    let second = item(0x0042_00FD, Value::text_string("second".to_owned()));
+    let duplicate = DeleteAttributeBuilder::detached()
+        .current_attribute_item(first)
+        .current_attribute_item(second);
+    assert_eq!(
+        duplicate.validate(),
+        Err(FluentBuildError::InvalidAttributeValue)
+    );
+    assert_eq!(
+        duplicate.build_request().err(),
+        Some(FluentBuildError::InvalidAttributeValue)
+    );
+    assert_eq!(
+        duplicate.build().err(),
+        Some(FluentBuildError::InvalidAttributeValue)
+    );
+
+    let mut value = item(
+        typed::Description::TAG,
+        Value::text_string("vendor value".to_owned()),
+    );
+    for _ in 0..64 {
+        let mut structure = Structure::new();
+        structure
+            .try_push(value)
+            .expect("each nested structure remains within the model's maximum depth");
+        value = item(typed::Description::TAG, Value::structure(structure));
+    }
+    let malformed_vendor =
+        DeleteAttributeBuilder::detached().current_vendor_attribute("", "region", &value);
+    assert!(malformed_vendor.validate().is_err());
+    assert!(malformed_vendor.build_request().is_err());
+}
+
+#[test]
+fn add_attribute_builder_constructs_the_existing_typed_request() {
+    let mut client = failed_request_client();
+    let request = client
+        .request()
+        .add_attribute()
+        .unique_identifier("key-42")
+        .attribute(
+            Attribute::<typed::Description>::new("managed by fluent".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        )
+        .build_request()
+        .expect("the fluent Add Attribute request is valid");
+
+    assert_eq!(request.unique_identifier(), Some("key-42"));
+    assert_eq!(
+        request.new_attribute().item().tag().raw(),
+        typed::Description::TAG
+    );
+    assert!(request.new_attribute().item().with_value(|value| matches!(
+        value,
+        ValueView::TextString(text) if text == "managed by fluent"
+    )));
+}
+
+#[test]
+fn add_attribute_builder_rejects_a_missing_required_new_attribute() {
+    let mut client = failed_request_client();
+    assert_eq!(
+        client.request().add_attribute().validate(),
+        Err(FluentBuildError::MissingAddAttributeAttribute)
+    );
+}
 
 fn item(raw_tag: u32, value: Value) -> Item {
     Item::new(
@@ -39,6 +256,199 @@ fn read_enumeration(item: &Item) -> Option<u32> {
         ValueView::Enumeration(value) => Some(*value),
         _ => None,
     })
+}
+
+#[test]
+fn set_attribute_builder_constructs_the_existing_typed_request() {
+    let mut client = failed_request_client();
+    let request = client
+        .request()
+        .set_attribute()
+        .unique_identifier("key-42")
+        .attribute(
+            Attribute::<typed::Description>::new("managed by fluent".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        )
+        .build_request()
+        .expect("the fluent Set Attribute request is valid");
+
+    assert_eq!(request.unique_identifier(), Some("key-42"));
+    assert_eq!(
+        request.new_attribute().item().tag().raw(),
+        typed::Description::TAG
+    );
+    assert!(request.new_attribute().item().with_value(|value| matches!(
+        value,
+        ValueView::TextString(text) if text == "managed by fluent"
+    )));
+}
+
+#[test]
+fn set_attribute_builder_builds_the_existing_typed_request() {
+    let mut client = failed_request_client();
+    let request = client
+        .request()
+        .set_attribute()
+        .attribute(
+            Attribute::<typed::Description>::new("managed by fluent".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        )
+        .build()
+        .expect("the fluent builder returns the typed request without sending it");
+
+    assert_eq!(request.unique_identifier(), None);
+    assert_eq!(
+        request.new_attribute().item().tag().raw(),
+        typed::Description::TAG
+    );
+}
+
+#[test]
+fn detached_set_attribute_builder_builds_without_a_client_and_refuses_execution() {
+    let builder = SetAttributeBuilder::detached()
+        .unique_identifier("key-42")
+        .attribute(
+            Attribute::<typed::Description>::new("managed by C, Java, and Python".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        );
+    let request = builder
+        .build_request()
+        .expect("detached builders construct the existing typed request");
+    assert_eq!(request.unique_identifier(), Some("key-42"));
+    assert_eq!(
+        request.new_attribute().item().tag().raw(),
+        typed::Description::TAG
+    );
+
+    let error = SetAttributeBuilder::detached()
+        .unique_identifier("key-42")
+        .attribute(
+            Attribute::<typed::Description>::new("managed by C, Java, and Python".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        )
+        .execute(&CodecLimits::defaults())
+        .expect_err("a detached builder cannot send without an explicit client");
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+}
+
+#[test]
+fn set_attribute_builder_rejects_missing_and_wrong_type_attributes_before_exchange() {
+    let mut client = failed_request_client();
+    assert_eq!(
+        client.request().set_attribute().validate(),
+        Err(FluentBuildError::MissingSetAttributeAttribute)
+    );
+
+    let duplicate = client
+        .request()
+        .set_attribute()
+        .attribute(
+            Attribute::<typed::Description>::new("first".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        )
+        .attribute(
+            Attribute::<typed::Description>::new("second".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        )
+        .validate();
+    assert_eq!(duplicate, Err(FluentBuildError::InvalidAttributeValue));
+
+    let (mut client, fake, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let error = client
+        .request()
+        .set_attribute()
+        .unique_identifier("key-42")
+        .attribute_item(item(typed::Description::TAG, Value::integer(17)))
+        .execute(&CodecLimits::defaults())
+        .expect_err("a catalogued attribute with the wrong TTLV type is rejected locally");
+
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert_eq!(fake.borrow().exchange_count(), 0);
+}
+
+#[test]
+fn set_attribute_builder_executes_one_typed_exchange_and_converts_to_batch() {
+    let mut batch_client = failed_request_client();
+    let batch_item = batch_client
+        .request()
+        .set_attribute()
+        .unique_identifier("key-42")
+        .attribute(
+            Attribute::<typed::Description>::new("managed by fluent".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        )
+        .to_batch_item()
+        .expect("valid Set Attribute request converts to a typed batch item");
+    assert_eq!(batch_item.operation(), 0x0000_0031);
+    assert!(matches!(
+        batch_item.request(),
+        ClientRequest::SetAttribute(_)
+    ));
+
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response: set_attribute_response_bytes(),
+        request_write_chunks: Vec::new(),
+    });
+    let response = client
+        .request()
+        .set_attribute()
+        .unique_identifier("key-42")
+        .attribute(
+            Attribute::<typed::Description>::new("managed by fluent".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        )
+        .with_options(RequestOptions::default())
+        .with_asynchronous_indicator(3)
+        .execute(&CodecLimits::defaults())
+        .expect("Set Attribute executes through one existing typed exchange");
+
+    assert_eq!(
+        response
+            .outcome()
+            .response()
+            .set_attribute()
+            .and_then(|result| result.unique_identifier()),
+        Some("key-42")
+    );
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn set_attribute_builder_constructs_a_vendor_attribute_and_rejects_non_attribute_tags() {
+    let mut client = failed_request_client();
+    let value = item(typed::Description::TAG, Value::text_string("eu".to_owned()));
+    let request = client
+        .request()
+        .set_attribute()
+        .vendor_attribute("Vendor_Name.1", "region", &value)
+        .build_request()
+        .expect("Vendor Attribute helper constructs the required KMIP structure");
+    let vendor = request.new_attribute().item();
+    assert_eq!(vendor.tag().raw(), 0x0042_0008);
+    assert_eq!(
+        vendor
+            .as_structure()
+            .expect("Vendor Attribute is a Structure")
+            .children()
+            .len(),
+        3
+    );
+
+    let mut client = failed_request_client();
+    assert_eq!(
+        client
+            .request()
+            .set_attribute()
+            .attribute_item(item(0x0042_005C, Value::enumeration(1)))
+            .validate(),
+        Err(FluentBuildError::InvalidAttributeValue)
+    );
 }
 
 fn response_bytes(operation: u32, status: u32, correlation: Option<&[u8]>) -> Vec<u8> {
@@ -85,6 +495,234 @@ fn response_bytes(operation: u32, status: u32, correlation: Option<&[u8]>) -> Ve
     ));
     encode_message_for_test(test_structure(message), &CodecLimits::defaults())
         .expect("fixture response is valid TTLV")
+}
+
+fn set_attribute_response_bytes() -> Vec<u8> {
+    let payload = test_structure([test_item(
+        0x0042_0094,
+        Value::text_string("key-42".to_owned()),
+    )]);
+    let batch_item = test_structure([
+        test_item(0x0042_005C, Value::enumeration(0x0000_0031)),
+        test_item(0x0042_007F, Value::enumeration(0)),
+        test_item(0x0042_007C, Value::structure(payload)),
+    ]);
+    let header = test_structure([
+        test_item(
+            0x0042_0069,
+            Value::structure(test_structure([
+                test_item(0x0042_006A, Value::integer(2)),
+                test_item(0x0042_006B, Value::integer(1)),
+            ])),
+        ),
+        test_item(0x0042_0092, Value::date_time(1)),
+        test_item(0x0042_000D, Value::integer(1)),
+    ]);
+    encode_message_for_test(
+        test_structure([
+            test_item(0x0042_007A, Value::structure(header)),
+            test_item(0x0042_000F, Value::structure(batch_item)),
+        ]),
+        &CodecLimits::defaults(),
+    )
+    .expect("Set Attribute response fixture is valid TTLV")
+}
+
+fn add_attribute_response_bytes() -> Vec<u8> {
+    let payload = test_structure([test_item(
+        0x0042_0094,
+        Value::text_string("server-key-42".to_owned()),
+    )]);
+    let batch_item = test_structure([
+        test_item(0x0042_005C, Value::enumeration(0x0000_000D)),
+        test_item(0x0042_007F, Value::enumeration(0)),
+        test_item(0x0042_007C, Value::structure(payload)),
+    ]);
+    let header = test_structure([
+        test_item(
+            0x0042_0069,
+            Value::structure(test_structure([
+                test_item(0x0042_006A, Value::integer(2)),
+                test_item(0x0042_006B, Value::integer(1)),
+            ])),
+        ),
+        test_item(0x0042_0092, Value::date_time(1)),
+        test_item(0x0042_000D, Value::integer(1)),
+    ]);
+    encode_message_for_test(
+        test_structure([
+            test_item(0x0042_007A, Value::structure(header)),
+            test_item(0x0042_000F, Value::structure(batch_item)),
+        ]),
+        &CodecLimits::defaults(),
+    )
+    .expect("Add Attribute response fixture is valid TTLV")
+}
+
+fn delete_attribute_response_bytes() -> Vec<u8> {
+    let payload = test_structure([test_item(
+        0x0042_0094,
+        Value::text_string("server-key-42".to_owned()),
+    )]);
+    let batch_item = test_structure([
+        test_item(0x0042_005C, Value::enumeration(0x0000_000F)),
+        test_item(0x0042_007F, Value::enumeration(0)),
+        test_item(0x0042_007C, Value::structure(payload)),
+    ]);
+    let header = test_structure([
+        test_item(
+            0x0042_0069,
+            Value::structure(test_structure([
+                test_item(0x0042_006A, Value::integer(2)),
+                test_item(0x0042_006B, Value::integer(1)),
+            ])),
+        ),
+        test_item(0x0042_0092, Value::date_time(1)),
+        test_item(0x0042_000D, Value::integer(1)),
+    ]);
+    encode_message_for_test(
+        test_structure([
+            test_item(0x0042_007A, Value::structure(header)),
+            test_item(0x0042_000F, Value::structure(batch_item)),
+        ]),
+        &CodecLimits::defaults(),
+    )
+    .expect("Delete Attribute response fixture is valid TTLV")
+}
+
+#[test]
+fn add_attribute_builder_preserves_explicit_and_vendor_attribute_items() {
+    let mut client = failed_request_client();
+    let extension = client
+        .request()
+        .add_attribute()
+        .attribute_item(item(
+            0x0042_00FC,
+            Value::text_string("extension".to_owned()),
+        ))
+        .build_request()
+        .expect("an explicit allocated TTLV Item is preserved");
+    assert_eq!(extension.new_attribute().item().tag().raw(), 0x0042_00FC);
+
+    let value = item(0x0042_00FD, Value::text_string("west".to_owned()));
+    let vendor = client
+        .request()
+        .add_attribute()
+        .vendor_attribute("Vendor_Name.1", "region", &value)
+        .build_request()
+        .expect("the vendor helper constructs a KMIP Vendor Attribute");
+    assert_eq!(vendor.new_attribute().item().tag().raw(), 0x0042_0008);
+
+    let invalid_vendor = client
+        .request()
+        .add_attribute()
+        .vendor_attribute("Vendor Name", "region", &value)
+        .vendor_attribute("Vendor_Name.1", "", &value)
+        .validate();
+    assert_eq!(invalid_vendor, Err(FluentBuildError::InvalidAttributeValue));
+}
+
+#[test]
+fn detached_add_attribute_builder_builds_without_a_client_and_refuses_execution() {
+    let request = AddAttributeBuilder::detached()
+        .attribute(
+            Attribute::<typed::Description>::new("managed by fluent".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        )
+        .build()
+        .expect("a detached builder builds the existing typed request");
+    assert_eq!(request.unique_identifier(), None);
+
+    let error = AddAttributeBuilder::detached()
+        .attribute(
+            Attribute::<typed::Description>::new("managed by fluent".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        )
+        .execute(&CodecLimits::defaults())
+        .expect_err("a detached builder cannot execute without an explicit client");
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+}
+
+#[test]
+fn add_attribute_builder_executes_once_and_returns_the_typed_result() {
+    let mut batch_client = failed_request_client();
+    let batch_item = batch_client
+        .request()
+        .add_attribute()
+        .attribute(
+            Attribute::<typed::Description>::new("managed by fluent".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        )
+        .to_batch_item()
+        .expect("valid Add Attribute requests convert to typed batch items");
+    assert_eq!(batch_item.operation(), 0x0000_000D);
+    assert!(matches!(
+        batch_item.request(),
+        ClientRequest::AddAttribute(_)
+    ));
+
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response: add_attribute_response_bytes(),
+        request_write_chunks: Vec::new(),
+    });
+    let response = client
+        .request()
+        .add_attribute()
+        .unique_identifier("key-42")
+        .attribute(
+            Attribute::<typed::Description>::new("managed by fluent".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        )
+        .with_options(RequestOptions::default())
+        .with_asynchronous_indicator(3)
+        .execute(&CodecLimits::defaults())
+        .expect("Add Attribute uses one existing typed exchange");
+
+    assert_eq!(
+        response
+            .outcome()
+            .response()
+            .add_attribute()
+            .and_then(|result| result.unique_identifier()),
+        Some("server-key-42")
+    );
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn add_attribute_builder_rejects_wrong_type_and_duplicate_new_attributes_before_send() {
+    let (mut client, fake, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let error = client
+        .request()
+        .add_attribute()
+        .attribute_item(item(typed::Description::TAG, Value::integer(17)))
+        .execute(&CodecLimits::defaults())
+        .expect_err("a catalogued attribute with the wrong TTLV type is rejected locally");
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert_eq!(fake.borrow().exchange_count(), 0);
+
+    let mut client = failed_request_client();
+    assert!(
+        client
+            .request()
+            .add_attribute()
+            .attribute(
+                Attribute::<typed::Description>::new("first".to_owned())
+                    .expect("Description uses a catalogued Text String value"),
+            )
+            .attribute(
+                Attribute::<typed::Description>::new("second".to_owned())
+                    .expect("Description uses a catalogued Text String value"),
+            )
+            .validate()
+            .is_err()
+    );
 }
 
 #[test]
@@ -134,6 +772,14 @@ fn fluent_build_errors_have_stable_user_facing_messages() {
         (
             FluentBuildError::InvalidAttributeValue,
             "fluent Object Attribute value is invalid",
+        ),
+        (
+            FluentBuildError::MissingSetAttributeAttribute,
+            "Set Attribute requires one New Attribute",
+        ),
+        (
+            FluentBuildError::MissingAddAttributeAttribute,
+            "Add Attribute requires one New Attribute",
         ),
         (
             FluentBuildError::MessageExtensionTagNotObjectAttribute,
