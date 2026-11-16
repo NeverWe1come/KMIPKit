@@ -176,7 +176,7 @@ KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS = {
 # the four-language Create Key Pair, Set Attribute, and Add Attribute builder
 # declarations to the same inventory. The Rust export reconciliation adds 159
 # observed paths; eight already-covered KMIPKIT-0047 paths are deduplicated.
-DECLARATIONS_SHA256 = "16be2c6c1d8186fde9c2c98287710630e9144a272c701353e320893b496ba22b"
+DECLARATIONS_SHA256 = "3239266f3d43125d24c1fd118e89b25ea49d3abdeab254ee6c1f5832a97ee342"
 OPERATIONS_SHA256 = "9ab6c670787f07c9faa301744d1654fdd071ceffc3b43936e6cb12add59094e2"
 
 
@@ -407,6 +407,30 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
                     or normalized_name.endswith("requestsetattribute")
                 )
             )
+        }
+        target_ids |= {
+            row["declarationId"]
+            for row in self.manifest["publicDeclarations"]
+            if row.get("capabilityId") in {
+                "fluent_add_attribute_parity",
+                "fluent_add_attribute_c_abi",
+            }
+        }
+        # A few Rust implementation-facing declarations are intentionally
+        # inventoried as public binding surface instead of fluent parity. They
+        # still belong to the Add Attribute builder slice and should not
+        # perturb this unrelated Certify snapshot.
+        target_ids |= {
+            row["declarationId"]
+            for row in self.manifest["publicDeclarations"]
+            if row.get("capabilityId") == "public_binding_surface"
+            and row.get("exportName") in {
+                "kmipkit_client::AddAttributeBuilder::detached",
+                "kmipkit_client::fluent::AddAttributeBuilder<'a>::detached",
+                "kmipkit_client::FluentBuildError::MissingAddAttributeAttribute",
+                "kmipkit_client::fluent::FluentBuildError::MissingAddAttributeAttribute",
+                "kmipkit_client::fluent::SetAttributeBuilder<'a>::detached",
+            }
         }
         other_declarations = copy.deepcopy([
             row for row in self.manifest["publicDeclarations"] if row["declarationId"] not in target_ids
