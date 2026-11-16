@@ -1068,12 +1068,7 @@ impl BoundaryAudit {
                     || registry_inspect && index == 2
                     || server_request_dispatcher && index == 2
                     || fluent_explicit_attribute_item
-                        && (signature.ident == "attribute_item" && index == 1
-                            || signature.ident == "current_attribute_item" && index == 1
-                            || signature.ident == "vendor_attribute" && index == 3
-                            || signature.ident == "current_vendor_attribute" && index == 3
-                            || signature.ident == "attribute_at" && index == 2
-                            || signature.ident == "object_item" && index == 2)
+                        && is_exact_fluent_explicit_attribute_argument(signature, index)
                     || fluent_explicit_value && index == 1
                 {
                     continue;
@@ -2423,6 +2418,15 @@ fn is_exact_fluent_explicit_attribute_item(
         && matches!(signature.inputs.get(2), Some(syn::FnArg::Typed(argument))
             if is_plain_reference_to_str(&argument.ty))
         && is_item_reference(signature.inputs.get(3))
+}
+
+fn is_exact_fluent_explicit_attribute_argument(signature: &syn::Signature, index: usize) -> bool {
+    match signature.ident.to_string().as_str() {
+        "attribute_item" | "current_attribute_item" => index == 1,
+        "vendor_attribute" | "current_vendor_attribute" => index == 3,
+        "attribute_at" | "object_item" => index == 2,
+        _ => false,
+    }
 }
 
 fn is_exact_fluent_builder_explicit_value(
