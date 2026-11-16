@@ -179,3 +179,220 @@
   passes.
 - The exact-head CI coverage gate has not yet run on these updates; its result
   remains pending and will be recorded before the PR leaves WIP.
+
+## KMIPKIT-0093 HTTPS surplus-response coverage follow-up
+
+### Red
+
+- CI for PR #226 at `b9ea45b53` failed the selected-scope coverage gate:
+  `Changed Rust code coverage 0/3 is below 90%`. The only changed production
+  path was a `#[cfg(test)]` helper in `crates/kmipkit-transport/src/https.rs`;
+  the source-included integration test passed but its helper lines were not
+  credited by the workspace coverage report.
+
+### Green
+
+- Commit `77867e943` replaces the source helper with an observable peer-side
+  signal: after sending the surplus body, the HTTPS fixture reports when that
+  connection closes. The client waits for this signal before issuing the third
+  exchange, then proves the third request used a new TLS connection and got its
+  own response. No production Rust lines change.
+- `cargo fmt --all --check` passes;
+  `cargo test -p kmipkit-transport --test https` passes all 122 tests; and
+  `cargo clippy -p kmipkit-transport --all-targets --all-features -- -D warnings`
+  passes.
+
+### Refactor
+
+- The integration test now observes the protocol effect through the peer
+  socket instead of exposing internal connection state solely for a test.
+  The exact-head CI coverage gate is pending on the updated PR head.
+
+## KMIPKIT-0093 C Create Key Pair builder
+
+### Red
+
+- Added a compiled C consumer probe for the opaque builder and a second Red
+  check requiring local validation to reject missing algorithm and length.
+  The generated C header initially lacked the new declarations.
+
+### Green
+
+- Added the C opaque builder ABI for explicit algorithm, length, separate
+  private/public usage masks and names, grouped catalogued/expert/vendor
+  attributes, asynchronous indicator, local validation, typed batch-item
+  conversion, execution with exchange options, and release.
+- The Rust builder can be detached for FFI use; detached execution returns a
+  payload-free `NotSent` validation error. It uses the existing request
+  validation and typed execution paths.
+- Java now exposes `FluentRequest.createKeyPair()` and an `AutoCloseable`
+  builder with explicit choices, grouped attributes, local validation, typed
+  batch conversion, and execution through the existing client. Python exposes
+  the same request-facade flow and a context-managed builder backed by the C ABI.
+- Java and Python preserve the three attribute groups and provide catalogued
+  and vendor-specific attribute methods; unknown attributes require an
+  explicitly typed TTLV item.
+- `cargo +1.94 test -p kmipkit-client --all-features fluent_create_key_pair`
+  passes all 21 matching tests.
+- `cargo +1.94 test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage`
+  passes all 60 C ABI tests, including the incomplete/complete builder
+  validation and typed batch-item probe.
+- `bash bindings/java/gradlew test` succeeds, and the full Python suite passes
+  all 1,357 tests. The focused Java and Python builder tests exercise explicit
+  choices, validation, typed batch construction, and request-facade access.
+- `python3 -B -m unittest tools.api_manifest.tests.test_0093_c_key_pair_builder_manifest -v`
+  passes both tests. `python3 tools/api_manifest/generate.py --write` generated
+  12 outputs and the subsequent `--check` verified them.
+- Regenerated the current binding export report. All package inventories are
+  complete with zero missing, stale, kind-mismatched, or otherwise unclassified
+  exports: C 2,158 observed / 2,098 matched, Java 3,214 / 2,503, and Python
+  3,726 / 2,717. The Rust export audit found no Create Key Pair builder export
+  missing from the manifest; its repository-wide inventory still reports 180
+  other missing declarations and is not represented as complete here.
+- `cargo +1.94 fmt --all --check` passes. After correcting one
+  `manual_let_else` reported by Clippy, `cargo +1.94 clippy -p kmipkit-ffi
+  --all-targets --all-features -- -D warnings` passes.
+
+### Refactor
+
+- The C ABI remains separately declared as a C-only surface, while the shared
+  Create Key Pair builder capability maps exact declared exports in Rust, C,
+  Java, and Python. The binding audit enforces exact public export names.
+- Added English and Spanish user-guide coverage for C validation, ownership,
+  grouped attributes, typed batch construction, and Java/Python request-facade
+  usage. The API manifest generator remains the source for all checked-in
+  generated outputs.
+
+## KMIPKIT-0093 Create Key Pair and signing TLS journey
+
+### Red
+
+- Extended the external-consumer acceptance check to require an ECDSA
+  Create-Key-Pair/Sign/Destroy journey in all four languages. Before the
+  fixture response and consumer paths were added, each consumer was missing the
+  required journey marker.
+- Added a focused fixture test requiring Destroy to echo the Unique Identifier
+  from the request. It failed before the responder accepted and returned the
+  request identifier.
+
+### Green
+
+- The loopback fixture now validates ECDSA, the explicit 256-bit length, the
+  private Sign and public Verify masks, and the Sign request's SHA-256/ECDSA
+  parameters. It returns distinct private/public identifiers and fixture
+  Signature Data, and echoes each Destroy request identifier.
+- Each language creates the pair, reads both typed identifiers, signs the same
+  explicit input, checks the typed Signature Data, and destroys both keys.
+  C initializes the versioned output records before reading typed response
+  fields; Python reads the typed Destroy response and wipes its signature copy
+  even when an assertion fails.
+- The fixture consumer runner checks the full 41-request operation sequence
+  over TLS 1.3/mTLS and rebuilds the editable Python CFFI package against the
+  current workspace before execution. `bash tests/consumers/0053-parity/verify.sh`
+  passes on the current worktree, with all four languages completing the key
+  pair journey.
+
+### Refactor
+
+- Updated the English and Spanish user guides to distinguish these controlled
+  TLS exchanges from synthetic response parsing and external-KMS
+  interoperability. The same docs record that the expert-attribute and batch
+  ID Placeholder journeys remain for the five-journey acceptance criterion.
+- Updated FR-004, FR-011, and FR-013 traceability to reflect the exercised
+  four-language path while preserving the remaining operation-matrix and
+  closeout work.
+
+## KMIPKIT-0093 expert Vendor Attribute TLS journey
+
+### Red
+
+- Added a fixture contract test that requires the named expert key's exact
+  Vendor Attribute structure and rejects a Create request that omits it:
+  `python3 -B -m unittest discover -s tests/consumers/0053-parity -p test_execute_ping.py -k fixture_requires_the_expert_vendor_attribute_on_the_named_key -v`.
+- Before the fixture validator enforced the contract, the test failed because
+  no `RuntimeError` was raised for the missing Vendor Attribute.
+- Running the new Java journey against the old 41-operation sequence also
+  failed at connection 12 because the fixture expected the old Destroy request
+  instead of the expert Create request.
+
+### Green
+
+- All four language consumers now create an AES-256 key with explicit
+  Encrypt/Decrypt usage and the Vendor Attribute (`KMIPKit.Example`, `purpose`,
+  TextString `fluent expert journey`), then verify typed Create, Get, and
+  Destroy responses for the returned `fluent-expert-key` identifier.
+- The TLS fixture validates the decoded Attribute beneath the Object
+  Attributes structure and echoes the request identifier in Get and Destroy
+  responses. The expected runner sequence now covers 53 TLS exchanges.
+- The focused fixture contract passes, and an independent run of
+  `bash tests/consumers/0053-parity/verify.sh` passed for Rust, C, Java, and
+  Python, including the new four-language Vendor Attribute journey.
+
+### Refactor
+
+- Updated the English and Spanish user guides, consumer README, and FR-013
+  traceability to describe four completed journeys and the remaining batch ID
+  Placeholder journey. The guide continues to distinguish controlled fixture
+  responses from external-KMS interoperability evidence.
+
+## KMIPKIT-0093 ordered batch ID Placeholder TLS journey
+
+### Red
+
+- Added fixture tests for grouped operation sequences, Create→Get request
+  decoding, Batch Order Option validation, and response batches that retain
+  all typed results and their Unique Batch Item IDs.
+- Before the consumers had a batch journey, the end-to-end runner reached the
+  next Ping where it expected `Create, Get`. The first implementation attempt
+  was rejected locally with `RequestDeliveryState::NotSent`; tracing
+  `validate_batch` showed that every item in a multi-item batch must carry a
+  distinct Unique Batch Item ID.
+- The fixture initially looked for Batch Order Option under the wrong tag and
+  rejected the real request. The pinned typed model identifies this field as
+  `0x420010`; the corrected fixture now validates its eight-byte Boolean value.
+
+### Green
+
+- All four consumers now create a named AES-256 key and Get it in the same
+  ordered batch. Get omits Unique Identifier so the server resolves the
+  preceding ID Placeholder. Each item has a distinct Unique Batch Item ID;
+  the fixture echoes both IDs and returns typed Create and Get results.
+- The fixture requires the exact Create→Get order, Batch Order Option true,
+  the Create Name, omitted Get Unique Identifier, non-empty distinct batch
+  IDs, and both corresponding response IDs. The response Batch Count is two.
+- `python3 -B -m unittest discover -s tests/consumers/0053-parity -p test_execute_ping.py -v`
+  passes all 11 tests, including the 57-exchange TLS 1.3/mTLS run across Rust,
+  C, Java, and Python. An independent
+  `bash tests/consumers/0053-parity/verify.sh` run also passes all five journeys
+  in all four consumers.
+- `cargo +1.94 check --locked --manifest-path tests/consumers/0053-parity/rust/Cargo.toml`,
+  C11 `-Wall -Wextra -Werror -fsyntax-only`, Java consumer compilation,
+  Python `py_compile`, and `git diff --check` pass.
+
+### Refactor
+
+- Updated English and Spanish user guides, the consumer README, F001 task
+  status, and FR-013 traceability to describe all five completed progressive
+  journeys and the fixture's limits. The evidence remains limited to a
+  controlled fixture and does not claim external-KMS interoperability.
+
+## PR #226 macOS HTTPS surplus-response CI follow-up
+
+### Red
+
+- Exact-head CI run `43758665557` failed on macOS stable in
+  `https_never_attributes_a_surplus_response_to_a_later_exchange`: the third
+  request received the server's extra response. The peer's completion signal
+  followed its local TLS flush, which did not prove the client had processed
+  those bytes before the test started the next exchange.
+
+### Green
+
+- Added a test-only observation of whether the retained HTTPS connection is
+  still reusable. The integration test now waits, with a bounded condition
+  wait, for the idle driver to reject the surplus input before sending the
+  third exchange. It also requires the third request to reach the peer on a
+  different connection and receive its own exact response body.
+- `cargo test -p kmipkit-transport --test https
+  https_never_attributes_a_surplus_response_to_a_later_exchange -- --exact`
+  passed 12 consecutive runs after the synchronization change.

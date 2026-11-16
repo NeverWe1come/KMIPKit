@@ -10,6 +10,7 @@ use kmipkit_protocol::{
 use std::sync::Arc;
 
 type SymmetricBuilder = kmipkit_client::fluent::CreateSymmetricKeyBuilder<'static>;
+type KeyPairBuilder = kmipkit_client::fluent::CreateKeyPairBuilder<'static>;
 
 fn symmetric_builder_validation_status(operation: impl FnOnce() -> i32) -> i32 {
     let status = operation();
@@ -215,6 +216,155 @@ fn update_symmetric_builder(
     let current = slot.take().ok_or(ERROR_INVALID_INPUT)?;
     *slot = Some(update(current));
     Ok(())
+}
+
+fn update_key_pair_builder(
+    builder: *mut kmipkit_create_key_pair_builder_t,
+    update: impl FnOnce(KeyPairBuilder) -> KeyPairBuilder,
+) -> FfiResult<()> {
+    let handle = reference_handle(builder, Kind::CreateKeyPairBuilder)?;
+    let HandleValue::CreateKeyPairBuilder(builder) = &handle.value else {
+        return Err(ERROR_INVALID_INPUT);
+    };
+    let mut slot = builder.lock().map_err(|_| ERROR_INTERNAL)?;
+    let mut current = slot.take().ok_or(ERROR_INVALID_INPUT)?;
+    current.builder = update(current.builder);
+    *slot = Some(current);
+    Ok(())
+}
+
+fn key_pair_attribute_set(item: Item) -> FfiResult<AttributeSet> {
+    AttributeSet::try_new([item]).map_err(|_| ERROR_INVALID_INPUT)
+}
+
+fn clone_fluent_value(value: ValueView<'_>) -> Result<Value, kmipkit_ttlv::ModelError> {
+    match value {
+        ValueView::Structure(structure) => Ok(Value::structure(structure.try_clone()?)),
+        _ => super::super::typed_attributes::clone_scalar_value_view(&value),
+    }
+}
+
+fn update_key_pair_attribute(
+    builder: *mut kmipkit_create_key_pair_builder_t,
+    group: u32,
+    item: Item,
+) -> FfiResult<()> {
+    if group > 2 {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    let attributes = key_pair_attribute_set(item)?;
+    match group {
+        0 => update_key_pair_builder(builder, |builder| builder.common_attributes(attributes)),
+        1 => update_key_pair_builder(builder, |builder| {
+            builder.private_key_attributes(attributes)
+        }),
+        2 => update_key_pair_builder(builder, |builder| builder.public_key_attributes(attributes)),
+        _ => Err(ERROR_INVALID_INPUT),
+    }
+}
+
+fn key_pair_request(
+    builder: *mut kmipkit_create_key_pair_builder_t,
+) -> FfiResult<(CreateKeyPairRequest, Option<u32>)> {
+    let handle = reference_handle(builder, Kind::CreateKeyPairBuilder)?;
+    let HandleValue::CreateKeyPairBuilder(builder) = &handle.value else {
+        return Err(ERROR_INVALID_INPUT);
+    };
+    let slot = builder.lock().map_err(|_| ERROR_INTERNAL)?;
+    let state = slot.as_ref().ok_or(ERROR_INVALID_INPUT)?;
+    let request = state
+        .builder
+        .build_request()
+        .map_err(|_| ERROR_INVALID_INPUT)?;
+    Ok((request, state.asynchronous_indicator))
+}
+
+fn execute_key_pair_builder(
+    builder: *mut kmipkit_create_key_pair_builder_t,
+    client: *mut kmipkit_client_t,
+    limits: *mut kmipkit_codec_limits_t,
+    options: Option<&kmipkit_request_options_v1_t>,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    let (request, asynchronous_indicator) = match key_pair_request(builder) {
+        Ok(parts) => parts,
+        Err(status) => return record_ffi_error(status),
+    };
+    let options = match options {
+        Some(options) => match super::request_options_from_v1(options) {
+            Ok(options) => options,
+            Err(status) => return record_ffi_error(status),
+        },
+        None => RequestOptions::default(),
+    };
+    execute_fluent_item(
+        client,
+        ClientRequest::CreateKeyPair(request),
+        limits,
+        &options,
+        asynchronous_indicator,
+        out_response,
+    )
+}
+
+fn key_pair_vendor_attribute(
+    vendor_data: *const u8,
+    vendor_length: u64,
+    name_data: *const u8,
+    name_length: u64,
+    value_handle: *mut kmipkit_ttlv_item_t,
+) -> FfiResult<Item> {
+    const VENDOR_ATTRIBUTE_TAG: u32 = 0x0042_0008;
+    const ATTRIBUTE_NAME_TAG: u32 = 0x0042_000A;
+    const ATTRIBUTE_VALUE_TAG: u32 = 0x0042_000B;
+    const VENDOR_IDENTIFICATION_TAG: u32 = 0x0042_009D;
+
+    let vendor = input_span(vendor_data, vendor_length, MAX_FFI_INPUT_BYTES)?;
+    let vendor = std::str::from_utf8(vendor).map_err(|_| ERROR_INVALID_INPUT)?;
+    let name = input_span(name_data, name_length, MAX_FFI_INPUT_BYTES)?;
+    let name = std::str::from_utf8(name).map_err(|_| ERROR_INVALID_INPUT)?;
+    let value = super::super::copy_required_item_handle(value_handle)?;
+    let mut fields = Structure::new();
+    fields
+        .try_push(
+            Item::new(
+                RawTag::new(VENDOR_IDENTIFICATION_TAG)
+                    .and_then(|tag| tag.try_checked())
+                    .map_err(|_| ERROR_INVALID_INPUT)?,
+                Value::text_string(vendor.to_owned()),
+            )
+            .map_err(model_status)?,
+        )
+        .map_err(model_status)?;
+    fields
+        .try_push(
+            Item::new(
+                RawTag::new(ATTRIBUTE_NAME_TAG)
+                    .and_then(|tag| tag.try_checked())
+                    .map_err(|_| ERROR_INVALID_INPUT)?,
+                Value::text_string(name.to_owned()),
+            )
+            .map_err(model_status)?,
+        )
+        .map_err(model_status)?;
+    fields
+        .try_push(
+            Item::new(
+                RawTag::new(ATTRIBUTE_VALUE_TAG)
+                    .and_then(|tag| tag.try_checked())
+                    .map_err(|_| ERROR_INVALID_INPUT)?,
+                value.with_value(clone_fluent_value).map_err(model_status)?,
+            )
+            .map_err(model_status)?,
+        )
+        .map_err(model_status)?;
+    Item::new(
+        RawTag::new(VENDOR_ATTRIBUTE_TAG)
+            .and_then(|tag| tag.try_checked())
+            .map_err(|_| ERROR_INVALID_INPUT)?,
+        Value::structure(fields),
+    )
+    .map_err(model_status)
 }
 
 fn validated_expert_attribute_item(item: *mut kmipkit_ttlv_item_t) -> FfiResult<Item> {
@@ -1155,6 +1305,398 @@ pub unsafe extern "C" fn kmipkit_client_revoke_by_id_with_options_v1(
             out_response,
         )
     })
+}
+
+/// Creates a detached, reusable Create Key Pair builder.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_create_key_pair_builder_create(
+    out_builder: *mut *mut kmipkit_create_key_pair_builder_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_builder);
+        *out = try_ffi!(try_make_handle(
+            Kind::CreateKeyPairBuilder,
+            HandleValue::CreateKeyPairBuilder(Mutex::new(Some(
+                super::super::CreateKeyPairBuilderState {
+                    builder: KeyPairBuilder::detached(),
+                    asynchronous_indicator: None,
+                },
+            ))),
+        ));
+        SUCCESS
+    })
+}
+
+/// Sets the raw KMIP Cryptographic Algorithm Enumeration.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_create_key_pair_builder_set_algorithm(
+    builder: *mut kmipkit_create_key_pair_builder_t,
+    algorithm: u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        try_ffi!(update_key_pair_builder(builder, |builder| {
+            builder.algorithm(CryptographicAlgorithm::from_raw(algorithm))
+        }));
+        SUCCESS
+    })
+}
+
+/// Sets the signed KMIP Cryptographic Length in bits.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_create_key_pair_builder_set_length(
+    builder: *mut kmipkit_create_key_pair_builder_t,
+    length: i32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        try_ffi!(update_key_pair_builder(builder, |builder| builder.length(length)));
+        SUCCESS
+    })
+}
+
+/// Sets the explicit private-key Cryptographic Usage Mask bits.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_create_key_pair_builder_set_private_usage_mask(
+    builder: *mut kmipkit_create_key_pair_builder_t,
+    usage_mask: i32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        try_ffi!(update_key_pair_builder(builder, |builder| {
+            builder.private_usage_mask(kmipkit_client::fluent::CryptographicUsageMask::from_raw(
+                usage_mask,
+            ))
+        }));
+        SUCCESS
+    })
+}
+
+/// Sets the explicit public-key Cryptographic Usage Mask bits.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_create_key_pair_builder_set_public_usage_mask(
+    builder: *mut kmipkit_create_key_pair_builder_t,
+    usage_mask: i32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        try_ffi!(update_key_pair_builder(builder, |builder| {
+            builder.public_usage_mask(kmipkit_client::fluent::CryptographicUsageMask::from_raw(
+                usage_mask,
+            ))
+        }));
+        SUCCESS
+    })
+}
+
+fn set_key_pair_name(
+    builder: *mut kmipkit_create_key_pair_builder_t,
+    name_data: *const u8,
+    name_length: u64,
+    private_key: bool,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let name = try_ffi!(input_span(name_data, name_length, MAX_FFI_INPUT_BYTES));
+        let name = try_ffi!(std::str::from_utf8(name).map_err(|_| ERROR_INVALID_INPUT));
+        let mut owned = String::new();
+        if owned.try_reserve_exact(name.len()).is_err() {
+            return record_ffi_error(ERROR_RESOURCE_LIMIT);
+        }
+        owned.push_str(name);
+        try_ffi!(update_key_pair_builder(builder, |builder| {
+            if private_key {
+                builder.private_name(&owned)
+            } else {
+                builder.public_name(&owned)
+            }
+        }));
+        SUCCESS
+    })
+}
+
+/// Copies a UTF-8 Name to the private-key attributes.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_create_key_pair_builder_set_private_name(
+    builder: *mut kmipkit_create_key_pair_builder_t,
+    name_data: *const u8,
+    name_length: u64,
+) -> i32 {
+    set_key_pair_name(builder, name_data, name_length, true)
+}
+
+/// Copies a UTF-8 Name to the public-key attributes.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_create_key_pair_builder_set_public_name(
+    builder: *mut kmipkit_create_key_pair_builder_t,
+    name_data: *const u8,
+    name_length: u64,
+) -> i32 {
+    set_key_pair_name(builder, name_data, name_length, false)
+}
+
+fn add_key_pair_attribute_item(
+    builder: *mut kmipkit_create_key_pair_builder_t,
+    group: u32,
+    item: *mut kmipkit_ttlv_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let item = try_ffi!(validated_expert_attribute_item(item));
+        try_ffi!(update_key_pair_attribute(builder, group, item));
+        SUCCESS
+    })
+}
+
+/// Adds an explicit TTLV Item to Common Attributes.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_create_key_pair_builder_add_common_attribute_item(
+    builder: *mut kmipkit_create_key_pair_builder_t,
+    item: *mut kmipkit_ttlv_item_t,
+) -> i32 {
+    add_key_pair_attribute_item(builder, 0, item)
+}
+
+/// Adds an explicit TTLV Item to Private Key Attributes.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_create_key_pair_builder_add_private_attribute_item(
+    builder: *mut kmipkit_create_key_pair_builder_t,
+    item: *mut kmipkit_ttlv_item_t,
+) -> i32 {
+    add_key_pair_attribute_item(builder, 1, item)
+}
+
+/// Adds an explicit TTLV Item to Public Key Attributes.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_create_key_pair_builder_add_public_attribute_item(
+    builder: *mut kmipkit_create_key_pair_builder_t,
+    item: *mut kmipkit_ttlv_item_t,
+) -> i32 {
+    add_key_pair_attribute_item(builder, 2, item)
+}
+
+fn add_key_pair_catalogued_attribute(
+    builder: *mut kmipkit_create_key_pair_builder_t,
+    group: u32,
+    tag: u32,
+    value: *mut kmipkit_ttlv_value_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let item = try_ffi!(super::super::typed_attributes::catalogued_item_from_value(
+            tag,
+            value,
+            model_status,
+        ));
+        try_ffi!(update_key_pair_attribute(builder, group, item));
+        SUCCESS
+    })
+}
+
+/// Adds a catalogued primitive attribute to Common Attributes after type validation.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_create_key_pair_builder_add_common_catalogued_attribute(
+    builder: *mut kmipkit_create_key_pair_builder_t,
+    tag: u32,
+    value: *mut kmipkit_ttlv_value_t,
+) -> i32 {
+    add_key_pair_catalogued_attribute(builder, 0, tag, value)
+}
+
+/// Adds a catalogued primitive attribute to Private Key Attributes after type validation.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_create_key_pair_builder_add_private_catalogued_attribute(
+    builder: *mut kmipkit_create_key_pair_builder_t,
+    tag: u32,
+    value: *mut kmipkit_ttlv_value_t,
+) -> i32 {
+    add_key_pair_catalogued_attribute(builder, 1, tag, value)
+}
+
+/// Adds a catalogued primitive attribute to Public Key Attributes after type validation.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_create_key_pair_builder_add_public_catalogued_attribute(
+    builder: *mut kmipkit_create_key_pair_builder_t,
+    tag: u32,
+    value: *mut kmipkit_ttlv_value_t,
+) -> i32 {
+    add_key_pair_catalogued_attribute(builder, 2, tag, value)
+}
+
+fn add_key_pair_vendor_attribute(
+    builder: *mut kmipkit_create_key_pair_builder_t,
+    group: u32,
+    vendor_data: *const u8,
+    vendor_length: u64,
+    name_data: *const u8,
+    name_length: u64,
+    value: *mut kmipkit_ttlv_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let item = try_ffi!(key_pair_vendor_attribute(
+            vendor_data,
+            vendor_length,
+            name_data,
+            name_length,
+            value,
+        ));
+        try_ffi!(update_key_pair_attribute(builder, group, item));
+        SUCCESS
+    })
+}
+
+/// Builds and appends a KMIP Vendor Attribute to Common Attributes.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_create_key_pair_builder_add_common_vendor_attribute(
+    builder: *mut kmipkit_create_key_pair_builder_t,
+    vendor_data: *const u8,
+    vendor_length: u64,
+    name_data: *const u8,
+    name_length: u64,
+    value: *mut kmipkit_ttlv_item_t,
+) -> i32 {
+    add_key_pair_vendor_attribute(
+        builder,
+        0,
+        vendor_data,
+        vendor_length,
+        name_data,
+        name_length,
+        value,
+    )
+}
+
+/// Builds and appends a KMIP Vendor Attribute to Private Key Attributes.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_create_key_pair_builder_add_private_vendor_attribute(
+    builder: *mut kmipkit_create_key_pair_builder_t,
+    vendor_data: *const u8,
+    vendor_length: u64,
+    name_data: *const u8,
+    name_length: u64,
+    value: *mut kmipkit_ttlv_item_t,
+) -> i32 {
+    add_key_pair_vendor_attribute(
+        builder,
+        1,
+        vendor_data,
+        vendor_length,
+        name_data,
+        name_length,
+        value,
+    )
+}
+
+/// Builds and appends a KMIP Vendor Attribute to Public Key Attributes.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_create_key_pair_builder_add_public_vendor_attribute(
+    builder: *mut kmipkit_create_key_pair_builder_t,
+    vendor_data: *const u8,
+    vendor_length: u64,
+    name_data: *const u8,
+    name_length: u64,
+    value: *mut kmipkit_ttlv_item_t,
+) -> i32 {
+    add_key_pair_vendor_attribute(
+        builder,
+        2,
+        vendor_data,
+        vendor_length,
+        name_data,
+        name_length,
+        value,
+    )
+}
+
+/// Sets the Request Header Asynchronous Indicator for the next exchange.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_create_key_pair_builder_set_asynchronous_indicator(
+    builder: *mut kmipkit_create_key_pair_builder_t,
+    value: u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let handle = try_ffi!(reference_handle(builder, Kind::CreateKeyPairBuilder));
+        let HandleValue::CreateKeyPairBuilder(builder) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(mut slot) = builder.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let Some(state) = slot.as_mut() else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        state.asynchronous_indicator = Some(value);
+        SUCCESS
+    })
+}
+
+/// Validates the explicit Create Key Pair inputs without sending a request.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_create_key_pair_builder_validate(
+    builder: *mut kmipkit_create_key_pair_builder_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let _ = try_ffi!(key_pair_request(builder));
+        SUCCESS
+    })
+}
+
+/// Builds an independently owned typed Create Key Pair batch item.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_create_key_pair_builder_build_batch_item(
+    builder: *mut kmipkit_create_key_pair_builder_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let (request, _) = match key_pair_request(builder) {
+            Ok(parts) => parts,
+            Err(status) => return record_ffi_error(status),
+        };
+        *out = try_ffi!(try_make_handle(
+            Kind::BatchItem,
+            HandleValue::BatchItem(Box::new(ClientBatchItem::new(
+                ClientRequest::CreateKeyPair(request)
+            ))),
+        ));
+        SUCCESS
+    })
+}
+
+/// Executes the typed request with the client's default exchange options.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_create_key_pair_builder_execute_v1(
+    builder: *mut kmipkit_create_key_pair_builder_t,
+    client: *mut kmipkit_client_t,
+    limits: *mut kmipkit_codec_limits_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| execute_key_pair_builder(builder, client, limits, None, out_response))
+}
+
+/// Executes the typed request with explicit exchange-local options.
+///
+/// # Safety
+///
+/// `options` must reference an aligned, initialized v1 record. All handles
+/// and the output pointer must satisfy their declared C ABI contracts.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_create_key_pair_builder_execute_with_options_v1(
+    builder: *mut kmipkit_create_key_pair_builder_t,
+    client: *mut kmipkit_client_t,
+    limits: *mut kmipkit_codec_limits_t,
+    options: *const kmipkit_request_options_v1_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if options.is_null() || !options.is_aligned() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        // SAFETY: The non-null aligned pointer must reference one readable v1 record.
+        let options = unsafe { &*options };
+        execute_key_pair_builder(builder, client, limits, Some(options), out_response)
+    })
+}
+
+/// Releases the opaque Create Key Pair builder.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_create_key_pair_builder_release(
+    builder: *mut kmipkit_create_key_pair_builder_t,
+) {
+    ffi_entrypoint(|| release(builder, Kind::CreateKeyPairBuilder));
 }
 
 /// Creates an opaque, reusable Create Symmetric Key builder.

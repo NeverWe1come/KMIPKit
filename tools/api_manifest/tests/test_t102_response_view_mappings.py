@@ -166,11 +166,28 @@ EXPECTED = (
     ),
 )
 
-# These fingerprints pin non-target records after the approved release stack,
-# the fluent feature stack, and KMIPKIT-0126 updates are combined.
-UNCHANGED_DECLARATIONS_SHA256 = "e1557d0da6085282a27cc2815a7ae4fb62775a1e78603d569f221af0efe6fd93"
+# Baseline fingerprints exclude response views and exact request-builder batches.
+# The non-target snapshots include subsequent approved T102 manifest slices.
+# They also include the 0047 release stack and reconciled 0048/0049/0050 inventories.
+# The snapshot includes the approved KMIPKIT-0052 async typed-reader routes.
+# It also includes the approved KMIPKIT-0099 Create Split Key and KMIPKIT-0100
+# Register declarations, lifecycle declarations, KMIPKIT-0102 Rust, KMIPKIT-0103
+# C, KMIPKIT-0104 Java, and KMIPKIT-0105 Python crypto facades; KMIPKIT-0093
+# reconciliation; KMIPKIT-0096 Python expert attributes; and KMIPKIT-0108/0109
+# attribute reads and bindings. The prior fingerprint predates those additions.
+# KMIPKIT-0126 adds 37 versioned standard attributes and 7 KMIP 3.0 batch response readers.
+UNCHANGED_DECLARATIONS_SHA256 = "f68ecb4973e8745b4dab76e6129e35ea81d5eeb22a22767f93da3be42f2d3089"
 UNCHANGED_OPERATIONS_SHA256 = "15c294a44e22c32d9f35c027ce928bf3e5f18ed41eb224a4c0c630b12b549a63"
-OTHER_MANIFEST_SHA256 = "d03fa77668ae19c3bae98e042596f19f51ba6dac1b73be6f96ccd5c913f48560"
+# T098's maintainer-approved reconciliation updates lifecycle approval evidence
+# and inherited requirement links outside the T102 declaration/operation rows.
+# The test separately pins those T098 records; this fingerprint covers the
+# resulting manifest baseline after the explicit T102 normalizations below.
+# The non-target snapshot includes the async reader routes, exact Python adapter
+# exclusions, KMIPKIT-0101 through KMIPKIT-0105 declarations, and KMIPKIT-0093
+# reconciliation, including KMIPKIT-0096 expert attributes and KMIPKIT-0108/0109
+# attribute operations and bindings. R002's additive requirement links and C
+# copy caveat are normalized below and tested by the 0093 suite.
+OTHER_MANIFEST_SHA256 = "8284ce348d1636e9e02e11369c5aa5d4130f04e6d436083cde33f639c55310db"
 EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = T102_BLOCKED_CANDIDATES
 LOCATE_REQUEST_BUILDER_IDS = {
     "rust-observed-e07fce825be9d33278e1",

@@ -210,11 +210,6 @@ complete builder parity or external-KMS interoperability.
 
 | Package | Scanner complete | Observed | Manifest declarations | Exact matches | Exact exclusions | Missing | Stale | Kind mismatches | Issues | `matchesManifest` |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| C | yes | 2,072 | 2,012 | 2,012 | 60 | 0 | 0 | 0 | 0 | yes |
-| Java | yes | 3,102 | 2,402 | 2,402 | 700 | 0 | 0 | 0 | 0 | yes |
-| Python | yes | 3,620 | 2,611 | 2,611 | 1,009 | 0 | 0 | 0 | 0 | yes |
-
-The Task 3 review correction adds typed common-attribute adapters so the
-journey selects Recommended Curve P-256 explicitly inside Cryptographic Domain
-Parameters. The existing C v1 input layout is unchanged; the new C entry point
-borrows an independently constructed Attribute Set.
+| C | yes | 2,158 | 2,098 | 2,098 | 60 | 0 | 0 | 0 | 0 | yes |
+| Java | yes | 3,214 | 2,503 | 2,503 | 711 | 0 | 0 | 0 | 0 | yes |
+| Python | yes | 3,726 | 2,717 | 2,717 | 1,009 | 0 | 0 | 0 | 0 | yes |

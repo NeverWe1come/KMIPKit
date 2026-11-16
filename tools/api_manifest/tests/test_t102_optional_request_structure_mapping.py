@@ -188,11 +188,19 @@ PKCS11_REQUEST_SETTER_IDS = {
     "rust-observed-cc71aab290dc65b5928f",
     "rust-observed-573ae1d0de80ffa2884b",
 }
-# The non-target snapshot includes the approved fluent API stack, KMIP 3.0
-# declarations, async typed results, and the KMIPKIT-0126 audit remediation.
-OTHER_DECLARATIONS_SHA256 = "4586660bffe9546cab47bf14a2b924a132c175ebcdaa5c53ebfeda34b7e8c2b8"
+# The non-target snapshot includes subsequent approved T102 manifest slices.
+# Includes the reviewed 0047 release stack and complete 0048/0049 inventories.
+# Snapshot includes final 0049 and exact 0050 constructor mappings.
+# The snapshot includes the approved KMIPKIT-0052 async typed-reader routes.
+# It also includes approved KMIPKIT-0099 Create Split Key and KMIPKIT-0100
+# Register declarations, lifecycle declarations, KMIPKIT-0102 Rust, KMIPKIT-0103
+# C, KMIPKIT-0104 Java, and KMIPKIT-0105 Python crypto facades; KMIPKIT-0095
+# response views; KMIPKIT-0096 expert attributes; KMIPKIT-0093 reconciliation;
+# and KMIPKIT-0108/0109 attribute operations and bindings. KMIPKIT-0124 adds
+# 28 KMIP 3.0 fluent and 16 asynchronous batch declarations, which also map
+# asynchronous constructors onto four existing operation rows.
+OTHER_DECLARATIONS_SHA256 = "2c8d5f44b9990dd59d8c63ef14891ef645b53ae52a979d3e8a280a4cac26f59e"
 OTHER_OPERATIONS_SHA256 = "e5a9106cee22c4a218013882d1775a0f28292accdd5cab79e7d9040514c57332"
-
 def canonical_sha256(value: object) -> str:
     encoded = json.dumps(
         value,

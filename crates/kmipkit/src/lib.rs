@@ -149,6 +149,7 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
             | "credential_validation_error_parity"
             | "crypto_response_ttlv"
             | "ffi_runtime_metadata"
+            | "fluent_create_key_pair_parity"
             | "fluent_dx_api"
             | "fluent_dx_journeys"
             | "fluent_java_python_lifecycle_facade"

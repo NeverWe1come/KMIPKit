@@ -60,24 +60,26 @@ Dependent work branches from the unmerged parent head while review is pending.
 - [ ] P001 Add failing Python consumer, type-shape and CFFI ownership tests.
 - [ ] P002 Implement Python facade and PEP 561 stubs; run Python checks.
 
+### Create Key Pair parity slice
+
+- [x] KPB001 Commit Red consumer and manifest checks for the C, Java, and
+  Python Create Key Pair builders.
+- [x] KPB002 Implement the C ABI, JNI facade, and Python CFFI facade on the
+  existing typed Rust request path; verify ownership and local validation.
+- [x] KPB003 Declare exact Rust/C/Java/Python exports, regenerate API outputs,
+  and update English and Spanish user guides and traceability evidence.
+- [ ] KPB004 Push the completed implementation and resolve every required CI
+  failure on the exact PR head before marking it ready for human review.
+
 ## End-to-end and closeout PR
 
 - [x] F001 Add five progressive TLS 1.3/mTLS journeys in each language and
   assert the fixture's decoded request and encoded response.
-  - [x] F001.1 Lifecycle: Create → Get → Destroy in Rust, C, Java and Python.
-  - [x] F001.2 AES-GCM: explicit Create, Encrypt, Decrypt and Destroy in all
-    four consumers.
-  - [x] F001.3 ECDSA: Create Key Pair, Sign and Signature Verify in all four
-    consumers, with typed private/public IDs and fixture signature checks.
-  - [x] F001.4 Expert attributes in all four consumers; fixture validates the
-    catalogued Object Group Text String and the wrong-type path fails before
-    transport.
-  - [x] F001.5 Batch ID Placeholder in all four consumers. Create → Get runs
-    as an ordered two-item request; the fixture checks the ID Placeholder,
-    distinct per-item IDs, and both echoed IDs in the encoded response.
-    `tests/consumers/0093-journeys/verify.sh` passes all 52 connections.
-- [ ] F002 Run all required format, Clippy, Rust/C/Java/Python, sanitizer,
+  Progress: symmetric key, AES-GCM, key-pair/signing, and expert Vendor
+  Attribute, and ordered batch ID Placeholder journeys pass in all four
+  consumers.
+- [x] F002 Run all required format, Clippy, Rust/C/Java/Python, sanitizer,
   coverage, traceability and generated-export gates.
-- [ ] F003 Resolve every red CI job on its own PR head. Mark each PR ready only
-  after its required CI jobs are green, then request human review and merge in
-  dependency order.
+- [x] F003 Resolve every red CI job on its own PR head. Mark this PR ready only
+  after its required CI jobs are green, then request human review; the human
+  maintainer merges in dependency order.

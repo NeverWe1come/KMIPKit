@@ -179,11 +179,14 @@ estado y handles tipados propiedad del llamador. Get recibe el identificador
 devuelto por Create; los bindings no lo inventan localmente.
 
 Cada lenguaje tiene un recorrido TLS 1.3/mTLS limitado a loopback que envía
-Create, Get y Destroy a un peer controlado, lee el identificador de Create y lo
-usa en las peticiones siguientes. Esto comprueba la ruta del cliente y el
-intercambio tipado contra el fixture, no la interoperabilidad con un KMS
-externo. Pending sigue siendo un resultado explícito; el cliente no ejecuta
-Poll ni reintenta automáticamente.
+Create, Get, Encrypt, Decrypt y Destroy a un peer controlado. Lee el
+identificador de Create, selecciona los parámetros AES-GCM, el nonce y los datos
+adicionales autenticados, y pasa a Decrypt los campos tipados de la respuesta
+Encrypt del fixture. El fixture valida las peticiones decodificadas y devuelve
+respuestas KMIP codificadas predeterminadas; no ejecuta AES. Esto comprueba la
+ruta del cliente y el intercambio tipado, no la ejecución criptográfica ni la
+interoperabilidad con un KMS externo. Pending sigue siendo un resultado
+explícito; el cliente no ejecuta Poll ni reintenta automáticamente.
 
 Consulta [Recorridos de la API fluida](recorridos-api-fluida.md) para ver los
 cinco ejemplos ejecutables en todos los lenguajes, incluido el uso de ID
@@ -285,9 +288,73 @@ El builder no deduce máscara de uso, curva, formato de clave ni versión de
 protocolo. El cliente conserva su versión configurada (2.1 por defecto); la
 sobrescritura explícita de versión sigue en `RequestOptions`. `with_options`
 aporta opciones del intercambio y `with_asynchronous_indicator` selecciona
-explícitamente el indicador de la cabecera. Esta entrega solo cubre Rust:
-los builders equivalentes de C, Java y Python siguen bloqueados en el manifiesto
-hasta sus especificaciones de bindings.
+explícitamente el indicador de la cabecera. Las vinculaciones de C, Java y
+Python ofrecen builders equivalentes para Create Key Pair y usan la misma
+validación de la petición tipada.
+
+## Create Key Pair fluido en C
+
+C expone un builder opaco reutilizable `kmipkit_create_key_pair_builder_t`.
+Selecciona explícitamente el algoritmo y la longitud en bits, y después las
+máscaras de uso y los nombres opcionales de las claves privada y pública.
+`kmipkit_create_key_pair_builder_validate` comprueba localmente las entradas;
+`kmipkit_create_key_pair_builder_build_batch_item` crea un
+`kmipkit_client_batch_item_t` tipado, y
+`kmipkit_create_key_pair_builder_execute_v1` ejecuta la petición de un solo
+elemento con el cliente existente. La variante
+`_execute_with_options_v1` acepta opciones del intercambio.
+
+El builder mantiene separados los atributos comunes, privados y públicos. La
+API valida el tipo TTLV de los atributos primitivos catalogados; para un valor
+desconocido requiere un Item TTLV con tipo explícito. Las funciones de Vendor
+Attribute construyen la estructura KMIP a partir del fabricante, nombre y
+valor. El llamador libera el ítem devuelto con
+`kmipkit_client_batch_item_release` y el builder con
+`kmipkit_create_key_pair_builder_release`. La ABI no acepta mensajes TTLV
+arbitrarios para ejecutar.
+
+El consumidor C compilado comprueba el rechazo de entradas incompletas, la
+validación local correcta y la construcción del ítem tipado en
+`bindings/c/tests/public_client_api.c`.
+
+## Create Key Pair fluido en Java y Python
+
+Java y Python exponen el builder desde la fachada de peticiones. En ambos hay
+que seleccionar el algoritmo, la longitud en bits y las máscaras de uso de las
+claves privada y pública. Por ejemplo, RSA de 2048 bits con uso de firma para
+la clave privada:
+
+```java
+try (var builder = client.request().createKeyPair()
+        .algorithm(KmipValues.CryptographicAlgorithm.RSA)
+        .length(2048)
+        .privateUsageMask((int) KmipValues.CryptographicUsageMask.SIGN)
+        .publicUsageMask((int) KmipValues.CryptographicUsageMask.VERIFY)) {
+    builder.validate();
+    try (var item = builder.build()) {
+        // Añade el ítem tipado a un ClientBatch o llama a builder.execute(limits).
+    }
+}
+```
+
+```python
+from kmipkit import protocol_values
+
+with client.request().create_key_pair() as builder:
+    builder.algorithm(protocol_values.CryptographicAlgorithm.RSA) \
+        .length(2048) \
+        .private_usage_mask(protocol_values.CryptographicUsageMask.SIGN) \
+        .public_usage_mask(protocol_values.CryptographicUsageMask.VERIFY)
+    builder.validate()
+    item = builder.build()
+    item.close()
+```
+
+Cada builder puede validar localmente, producir un ítem tipado para un batch o
+ejecutar un único intercambio con los límites TTLV proporcionados. Los
+atributos catalogados se validan según su tipo TTLV; los desconocidos requieren
+un Item TTLV con tipo explícito y los atributos de fabricante usan constructores
+KMIP específicos.
 
 
 ## Create Split Key fluido en Rust

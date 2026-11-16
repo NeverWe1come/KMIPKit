@@ -1,8 +1,13 @@
 import java.nio.file.Path;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import org.kmipkit.client.KmipClient;
-import org.kmipkit.client.SymmetricKeyRequest;
+import org.kmipkit.fluent.SymmetricKeyBuilder;
+import org.kmipkit.fluent.CreateKeyPairBuilder;
+import org.kmipkit.fluent.DecryptBuilder;
+import org.kmipkit.fluent.EncryptBuilder;
+import org.kmipkit.fluent.SignBuilder;
 import org.kmipkit.extensions.ClientBatchItemResult;
 import org.kmipkit.extensions.ClientBatchResponse;
 import org.kmipkit.extensions.ClientConfiguration;
@@ -17,6 +22,7 @@ import org.kmipkit.extensions.RequestOptions;
 import org.kmipkit.extensions.UniqueIdentifier;
 import org.kmipkit.message.ResponseMessage;
 import org.kmipkit.protocol.CryptographicParameters;
+import org.kmipkit.protocol.KmipValues;
 import org.kmipkit.ttlv.CodecLimits;
 import org.kmipkit.ttlv.KeyMaterial;
 import org.kmipkit.ttlv.ManagedObject;
@@ -30,6 +36,16 @@ import org.kmipkit.ttlv.TypedAttribute;
 
 public final class Consumer {
     private Consumer() {}
+
+    private static CryptographicParameters aesGcmParameters() {
+        try (CryptographicParameters.Builder builder = CryptographicParameters.builder()) {
+            return builder.cryptographicAlgorithm(KmipValues.CryptographicAlgorithm.AES)
+                    .blockCipherMode(KmipValues.BlockCipherMode.GCM)
+                    .ivLength(96)
+                    .tagLength(16)
+                    .build();
+        }
+    }
 
     private static TtlvItem item(int rawTag, TtlvValue value, CodecLimits limits) {
         try (RawTag raw = RawTag.fromRaw(rawTag); Tag tag = raw.checked()) {
@@ -132,9 +148,12 @@ public final class Consumer {
                             .build();
                     KmipClient kmipClient = KmipClient.create(configuration, transport)) {
                 UniqueIdentifier identifier;
-                try (ClientBatchResponse created = kmipClient.createSymmetricKey(
-                                SymmetricKeyRequest.named(3, 256, 12, "fluent-key"), limits,
-                                RequestOptions.defaults());
+                try (SymmetricKeyBuilder builder = kmipClient.request().createSymmetricKey()
+                                .aes256()
+                                .usageMask((int) (KmipValues.CryptographicUsageMask.ENCRYPT
+                                        | KmipValues.CryptographicUsageMask.DECRYPT))
+                                .name("fluent-key");
+                        ClientBatchResponse created = builder.execute(limits);
                         ClientBatchItemResult itemResult = created.itemAt(0)) {
                     if (!itemResult.outcomeKind().isCompleted() || itemResult.resultStatus() != 0) {
                         throw new IllegalStateException("Create did not complete successfully");
@@ -151,6 +170,70 @@ public final class Consumer {
                         throw new IllegalStateException("Get did not return the created object");
                     }
                 }
+
+                byte[] plaintext = "fluent plaintext".getBytes(StandardCharsets.UTF_8);
+                byte[] nonce = "nonce-12byte".getBytes(StandardCharsets.UTF_8);
+                byte[] additionalData = "fluent context".getBytes(StandardCharsets.UTF_8);
+                byte[] ciphertext = null;
+                byte[] responseNonce = null;
+                byte[] authenticationTag = null;
+                try {
+                    try (CryptographicParameters aesParameters = aesGcmParameters();
+                            EncryptBuilder builder = kmipClient.request().encrypt();
+                            ClientBatchResponse encrypted = builder.uniqueIdentifier(identifier)
+                                    .cryptographicParameters(aesParameters)
+                                    .data(plaintext)
+                                    .ivCounterNonce(nonce)
+                                    .authenticatedEncryptionAdditionalData(additionalData)
+                                    .execute(limits);
+                            ClientBatchItemResult itemResult = encrypted.itemAt(0);
+                            ClientBatchItemResult.EncryptResponse response =
+                                    itemResult.encryptResponse().orElseThrow()) {
+                        if (!itemResult.outcomeKind().isCompleted() || itemResult.resultStatus() != 0
+                                || !response.uniqueIdentifier().text().equals(identifier.text())) {
+                            throw new IllegalStateException("Encrypt did not return a successful typed response");
+                        }
+                        ciphertext = response.data().orElseThrow();
+                        responseNonce = response.ivCounterNonce().orElseThrow();
+                        authenticationTag = response.authenticatedEncryptionTag().orElseThrow();
+                        if (!Arrays.equals(ciphertext, "fixture ciphertext".getBytes(StandardCharsets.UTF_8))
+                                || !Arrays.equals(responseNonce, nonce)
+                                || !Arrays.equals(authenticationTag, "fixture-auth-tag".getBytes(StandardCharsets.UTF_8))) {
+                            throw new IllegalStateException("Encrypt response did not preserve the AES-GCM fields");
+                        }
+                    }
+                    try (CryptographicParameters decryptParameters = aesGcmParameters();
+                            DecryptBuilder builder = kmipClient.request().decrypt();
+                            ClientBatchResponse decrypted = builder.uniqueIdentifier(identifier)
+                                    .cryptographicParameters(decryptParameters)
+                                    .data(ciphertext)
+                                    .ivCounterNonce(responseNonce)
+                                    .authenticatedEncryptionAdditionalData(additionalData)
+                                    .authenticatedEncryptionTag(authenticationTag)
+                                    .execute(limits);
+                            ClientBatchItemResult itemResult = decrypted.itemAt(0);
+                            ClientBatchItemResult.DecryptResponse response =
+                                    itemResult.decryptResponse().orElseThrow()) {
+                        byte[] recovered = response.data().orElseThrow();
+                        try {
+                            if (!itemResult.outcomeKind().isCompleted() || itemResult.resultStatus() != 0
+                                    || !response.uniqueIdentifier().text().equals(identifier.text())
+                                    || !Arrays.equals(recovered, plaintext)) {
+                                throw new IllegalStateException("Decrypt did not recover the fixture plaintext");
+                            }
+                        } finally {
+                            Arrays.fill(recovered, (byte) 0);
+                        }
+                    }
+                } finally {
+                    Arrays.fill(plaintext, (byte) 0);
+                    Arrays.fill(nonce, (byte) 0);
+                    Arrays.fill(additionalData, (byte) 0);
+                    if (ciphertext != null) Arrays.fill(ciphertext, (byte) 0);
+                    if (responseNonce != null) Arrays.fill(responseNonce, (byte) 0);
+                    if (authenticationTag != null) Arrays.fill(authenticationTag, (byte) 0);
+                }
+
                 try (ClientBatchResponse destroyed = kmipClient.destroyById(
                                 identifier, limits, RequestOptions.defaults());
                         ClientBatchItemResult itemResult = destroyed.itemAt(0)) {
@@ -182,7 +265,158 @@ public final class Consumer {
                         throw new IllegalStateException("Failure outcome was not preserved");
                     }
                 }
-                System.out.println("java: fluent lifecycle Success/Pending/Failure outcomes verified");
+                System.out.println("java: fluent AES-GCM lifecycle Success/Pending/Failure outcomes verified");
+
+                UniqueIdentifier privateIdentifier;
+                UniqueIdentifier publicIdentifier;
+                try (CreateKeyPairBuilder builder = kmipClient.request().createKeyPair()
+                                .algorithm(KmipValues.CryptographicAlgorithm.ECDSA)
+                                .length(256)
+                                .privateUsageMask((int) KmipValues.CryptographicUsageMask.SIGN)
+                                .publicUsageMask((int) KmipValues.CryptographicUsageMask.VERIFY)
+                                .privateName("fluent-private-key")
+                                .publicName("fluent-public-key");
+                        ClientBatchResponse paired = builder.execute(limits);
+                        ClientBatchItemResult itemResult = paired.itemAt(0)) {
+                    var response = itemResult.createKeyPairResponse().orElseThrow();
+                    if (!itemResult.outcomeKind().isCompleted() || itemResult.resultStatus() != 0) {
+                        throw new IllegalStateException("Create Key Pair did not complete successfully");
+                    }
+                    privateIdentifier = response.privateKeyUniqueIdentifier();
+                    publicIdentifier = response.publicKeyUniqueIdentifier();
+                    if (!privateIdentifier.text().equals("fluent-private-key")
+                            || !publicIdentifier.text().equals("fluent-public-key")) {
+                        throw new IllegalStateException("Create Key Pair identifiers did not match the fixture");
+                    }
+                }
+
+                byte[] signInput = "fluent sign input".getBytes(StandardCharsets.UTF_8);
+                try {
+                    try (CryptographicParameters signParameters = CryptographicParameters.builder()
+                                    .hashingAlgorithm(KmipValues.HashingAlgorithm.SHA_256)
+                                    .digitalSignatureAlgorithm(
+                                            KmipValues.DigitalSignatureAlgorithm.ECDSA_WITH_SHA256)
+                                    .build();
+                            SignBuilder builder = kmipClient.request().sign();
+                            ClientBatchResponse signed = builder.uniqueIdentifier(privateIdentifier)
+                                    .cryptographicParameters(signParameters)
+                                    .data(signInput)
+                                    .execute(limits);
+                            ClientBatchItemResult itemResult = signed.itemAt(0)) {
+                        var response = itemResult.signResponse().orElseThrow();
+                        try (TtlvStructure responseTtlv = response.responseTtlv()) {
+                            byte[] signature = response.signatureData().orElseThrow();
+                            try {
+                                if (!itemResult.outcomeKind().isCompleted() || itemResult.resultStatus() != 0
+                                        || !response.uniqueIdentifier().text().equals(privateIdentifier.text())
+                                        || !Arrays.equals(signature,
+                                                "fixture signature".getBytes(StandardCharsets.UTF_8))) {
+                                    throw new IllegalStateException("Sign did not preserve typed Signature Data");
+                                }
+                            } finally {
+                                Arrays.fill(signature, (byte) 0);
+                            }
+                        }
+                    }
+                } finally {
+                    Arrays.fill(signInput, (byte) 0);
+                }
+
+                for (UniqueIdentifier keyIdentifier : List.of(privateIdentifier, publicIdentifier)) {
+                    try (ClientBatchResponse destroyedKey = kmipClient.request().destroy(keyIdentifier)
+                                    .execute(limits);
+                            ClientBatchItemResult itemResult = destroyedKey.itemAt(0)) {
+                        if (!itemResult.outcomeKind().isCompleted() || itemResult.resultStatus() != 0
+                                || !itemResult.destroyResponse().orElseThrow().uniqueIdentifier()
+                                        .text().equals(keyIdentifier.text())) {
+                            throw new IllegalStateException("Destroy did not return a key-pair identifier");
+                        }
+                    }
+                }
+                System.out.println(
+                        "java: fluent ECDSA key pair, Sign, and Destroy verified over TLS 1.3/mTLS");
+
+                UniqueIdentifier expertIdentifier;
+                try (RawTag raw = RawTag.fromRaw(0x540001);
+                        Tag tag = raw.checked();
+                        TtlvValue vendorValue = TtlvValue.TextString(
+                                "fluent expert journey".getBytes(StandardCharsets.UTF_8), limits);
+                        TtlvItem vendorValueItem = TtlvItem.create(tag, vendorValue, limits);
+                        SymmetricKeyBuilder builder = kmipClient.request().createSymmetricKey()
+                                .aes256()
+                                .usageMask((int) (KmipValues.CryptographicUsageMask.ENCRYPT
+                                        | KmipValues.CryptographicUsageMask.DECRYPT))
+                                .name("fluent-expert-key");
+                        ClientBatchResponse created = builder
+                                .vendorAttribute("KMIPKit.Example", "purpose", vendorValueItem)
+                                .execute(limits);
+                        ClientBatchItemResult itemResult = created.itemAt(0)) {
+                    var response = itemResult.createResponse().orElseThrow();
+                    if (!itemResult.outcomeKind().isCompleted() || itemResult.resultStatus() != 0
+                            || response.objectType() != 2
+                            || !response.uniqueIdentifier().text().equals("fluent-expert-key")) {
+                        throw new IllegalStateException(
+                                "expert-attribute Create did not return its typed response");
+                    }
+                    expertIdentifier = response.uniqueIdentifier();
+                }
+                try (ClientBatchResponse retrieved = kmipClient.request().get(expertIdentifier).execute(limits);
+                        ClientBatchItemResult itemResult = retrieved.itemAt(0);
+                        var response = itemResult.getResponse().orElseThrow()) {
+                    response.object().orElseThrow();
+                    if (!itemResult.outcomeKind().isCompleted() || itemResult.resultStatus() != 0
+                            || !response.uniqueIdentifier().orElseThrow().text()
+                                    .equals(expertIdentifier.text())) {
+                        throw new IllegalStateException(
+                                "expert-attribute Get did not return the typed identifier");
+                    }
+                }
+                try (ClientBatchResponse destroyed = kmipClient.request().destroy(expertIdentifier)
+                                .execute(limits);
+                        ClientBatchItemResult itemResult = destroyed.itemAt(0)) {
+                    if (!itemResult.outcomeKind().isCompleted() || itemResult.resultStatus() != 0
+                            || !itemResult.destroyResponse().orElseThrow().uniqueIdentifier()
+                                    .text().equals(expertIdentifier.text())) {
+                        throw new IllegalStateException(
+                                "expert-attribute Destroy did not return its typed identifier");
+                    }
+                }
+                System.out.println(
+                        "java: fluent Vendor Attribute Create/Get/Destroy verified over TLS 1.3/mTLS");
+
+                try (ClientBatch batch = ClientBatch.create().ordered(true);
+                        SymmetricKeyBuilder builder = kmipClient.request().createSymmetricKey()
+                                .aes256()
+                                .usageMask((int) (KmipValues.CryptographicUsageMask.ENCRYPT
+                                        | KmipValues.CryptographicUsageMask.DECRYPT))
+                                .name("fluent-batch-key");
+                        ClientBatchResponse response = kmipClient.execute(
+                                batch.add(builder.build().withUniqueBatchItemId(
+                                                "fluent-batch-create".getBytes(StandardCharsets.UTF_8)))
+                                        .add(ClientBatchItem.get(null, null, null, null, null)
+                                                .withUniqueBatchItemId(
+                                                        "fluent-batch-get".getBytes(StandardCharsets.UTF_8))),
+                                limits);
+                        ClientBatchItemResult createItem = response.itemAt(0);
+                        ClientBatchItemResult getItem = response.itemAt(1);
+                        var getResponse = getItem.getResponse().orElseThrow()) {
+                    var createResponse = createItem.createResponse().orElseThrow();
+                    String batchIdentifier = createResponse.uniqueIdentifier().text();
+                    getResponse.object().orElseThrow();
+                    if (response.itemCount() != 2
+                            || createItem.operation() != KmipValues.Operation.CREATE
+                            || !createItem.outcomeKind().isCompleted() || createItem.resultStatus() != 0
+                            || createResponse.objectType() != 2
+                            || !batchIdentifier.equals("fluent-batch-key")
+                            || getItem.operation() != KmipValues.Operation.GET
+                            || !getItem.outcomeKind().isCompleted() || getItem.resultStatus() != 0
+                            || !getResponse.uniqueIdentifier().orElseThrow().text().equals(batchIdentifier)) {
+                        throw new IllegalStateException(
+                                "ordered Create/Get did not resolve the typed ID Placeholder");
+                    }
+                }
+                System.out.println(
+                        "java: fluent ordered batch Create/Get with ID Placeholder verified over TLS 1.3/mTLS");
             }
         }
     }

@@ -27,6 +27,7 @@ ffi.cdef(
     typedef struct kmipkit_transport_config_t kmipkit_transport_config_t;
     typedef struct kmipkit_client_t kmipkit_client_t;
     typedef struct kmipkit_symmetric_key_builder_t kmipkit_symmetric_key_builder_t;
+    typedef struct kmipkit_create_key_pair_builder_t kmipkit_create_key_pair_builder_t;
     typedef struct kmipkit_crypto_operation_builder_t kmipkit_crypto_operation_builder_t;
     typedef struct kmipkit_client_batch_t kmipkit_client_batch_t;
     typedef struct kmipkit_client_batch_response_t kmipkit_client_batch_response_t;
@@ -282,6 +283,26 @@ ffi.cdef(
     int32_t kmipkit_symmetric_key_builder_execute_v1(kmipkit_symmetric_key_builder_t *, kmipkit_client_t *, kmipkit_codec_limits_t *, kmipkit_client_batch_response_t **);
     int32_t kmipkit_symmetric_key_builder_execute_with_options_v1(kmipkit_symmetric_key_builder_t *, kmipkit_client_t *, kmipkit_codec_limits_t *, const kmipkit_request_options_v1_t *, kmipkit_client_batch_response_t **);
     void kmipkit_symmetric_key_builder_release(kmipkit_symmetric_key_builder_t *);
+    int32_t kmipkit_create_key_pair_builder_create(kmipkit_create_key_pair_builder_t **);
+    int32_t kmipkit_create_key_pair_builder_set_algorithm(kmipkit_create_key_pair_builder_t *, uint32_t);
+    int32_t kmipkit_create_key_pair_builder_set_length(kmipkit_create_key_pair_builder_t *, int32_t);
+    int32_t kmipkit_create_key_pair_builder_set_private_usage_mask(kmipkit_create_key_pair_builder_t *, int32_t);
+    int32_t kmipkit_create_key_pair_builder_set_public_usage_mask(kmipkit_create_key_pair_builder_t *, int32_t);
+    int32_t kmipkit_create_key_pair_builder_set_private_name(kmipkit_create_key_pair_builder_t *, const uint8_t *, uint64_t);
+    int32_t kmipkit_create_key_pair_builder_set_public_name(kmipkit_create_key_pair_builder_t *, const uint8_t *, uint64_t);
+    int32_t kmipkit_create_key_pair_builder_add_common_attribute_item(kmipkit_create_key_pair_builder_t *, kmipkit_ttlv_item_t *);
+    int32_t kmipkit_create_key_pair_builder_add_private_attribute_item(kmipkit_create_key_pair_builder_t *, kmipkit_ttlv_item_t *);
+    int32_t kmipkit_create_key_pair_builder_add_public_attribute_item(kmipkit_create_key_pair_builder_t *, kmipkit_ttlv_item_t *);
+    int32_t kmipkit_create_key_pair_builder_add_common_catalogued_attribute(kmipkit_create_key_pair_builder_t *, uint32_t, kmipkit_ttlv_value_t *);
+    int32_t kmipkit_create_key_pair_builder_add_private_catalogued_attribute(kmipkit_create_key_pair_builder_t *, uint32_t, kmipkit_ttlv_value_t *);
+    int32_t kmipkit_create_key_pair_builder_add_public_catalogued_attribute(kmipkit_create_key_pair_builder_t *, uint32_t, kmipkit_ttlv_value_t *);
+    int32_t kmipkit_create_key_pair_builder_add_common_vendor_attribute(kmipkit_create_key_pair_builder_t *, const uint8_t *, uint64_t, const uint8_t *, uint64_t, kmipkit_ttlv_item_t *);
+    int32_t kmipkit_create_key_pair_builder_add_private_vendor_attribute(kmipkit_create_key_pair_builder_t *, const uint8_t *, uint64_t, const uint8_t *, uint64_t, kmipkit_ttlv_item_t *);
+    int32_t kmipkit_create_key_pair_builder_add_public_vendor_attribute(kmipkit_create_key_pair_builder_t *, const uint8_t *, uint64_t, const uint8_t *, uint64_t, kmipkit_ttlv_item_t *);
+    int32_t kmipkit_create_key_pair_builder_validate(kmipkit_create_key_pair_builder_t *);
+    int32_t kmipkit_create_key_pair_builder_build_batch_item(kmipkit_create_key_pair_builder_t *, kmipkit_client_batch_item_t **);
+    int32_t kmipkit_create_key_pair_builder_set_asynchronous_indicator(kmipkit_create_key_pair_builder_t *, uint32_t);
+    void kmipkit_create_key_pair_builder_release(kmipkit_create_key_pair_builder_t *);
 
     int32_t kmipkit_encrypt_builder_create(kmipkit_crypto_operation_builder_t **);
     int32_t kmipkit_decrypt_builder_create(kmipkit_crypto_operation_builder_t **);

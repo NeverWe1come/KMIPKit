@@ -6378,6 +6378,8 @@ JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_release(
                 from_java_handle<kmipkit_kmip30_operation_builder_t>(raw_handle)); break;
         case 74: kmipkit_create_credential_object_release(
                 from_java_handle<kmipkit_create_credential_object_t>(raw_handle)); break;
+        case 75: kmipkit_create_key_pair_builder_release(
+                from_java_handle<kmipkit_create_key_pair_builder_t>(raw_handle)); break;
         default: throw_invalid_input(env); break;
         }
         return 0;

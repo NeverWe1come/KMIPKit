@@ -159,10 +159,23 @@ KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS = {
     "T096:java-fluent-crypto:attribute-item-at",
     "T096:fluent-python:attribute-item-at",
 }
-# The non-target snapshot includes the approved fluent API stack, KMIP 3.0
-# declarations, async typed results, and the KMIPKIT-0126 audit remediation.
-DECLARATIONS_SHA256 = "89ce60f364d59068792c6f66d3e73e247ab5100916e44da8519a4cbc950c092e"
+# The non-target snapshot includes subsequent approved T102 manifest slices.
+# Includes the reviewed 0047 release stack and complete 0048/0049 inventories.
+# Snapshot includes final 0049 and exact 0050 constructor mappings.
+# The snapshot includes the approved KMIPKIT-0052 async typed-reader routes.
+# The snapshot includes the final KMIPKIT-0053 verified operation surfaces.
+# The snapshot includes approved KMIPKIT-0099 Create Split Key and KMIPKIT-0100
+# Register declarations, KMIPKIT-0101 lifecycle declarations, and KMIPKIT-0102
+# Rust plus KMIPKIT-0103 C, KMIPKIT-0104 Java, and KMIPKIT-0105 Python fluent
+# cryptographic operation builders; KMIPKIT-0095 adds response rendering and
+# KMIPKIT-0108 attribute-read declarations and KMIPKIT-0109 attribute builders;
+# this inventory also includes the approved KMIPKIT-0093 reconciliation and
+# narrowed T101 mappings. KMIPKIT-0124 adds 28 KMIP 3.0 fluent and 16 async
+# batch declarations to this non-target snapshot; the async request constructors
+# The non-target snapshot includes Create Key Pair declarations and KMIPKIT-0126 additions.
+DECLARATIONS_SHA256 = "db2bd8ee14a64b4a706a811ca3d0a94511b23efbc43f561e88b538642337631a"
 OPERATIONS_SHA256 = "e3302743fc6d209e82b32b1ec8f14c4f5fd11c9a588a51367a6350fb0c703de8"
+
 
 def canonical_sha256(value: object) -> str:
     encoded = json.dumps(value, ensure_ascii=False, separators=(",", ":"), sort_keys=True).encode("utf-8")

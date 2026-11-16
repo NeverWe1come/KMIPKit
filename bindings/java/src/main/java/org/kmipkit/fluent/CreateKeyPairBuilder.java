@@ -1,62 +1,170 @@
 package org.kmipkit.fluent;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.client.KmipClient;
-import org.kmipkit.extensions.AttributeSet;
 import org.kmipkit.extensions.ClientBatch;
 import org.kmipkit.extensions.ClientBatchItem;
 import org.kmipkit.extensions.ClientBatchResponse;
+import org.kmipkit.extensions.FluentBatchItemAdapter;
 import org.kmipkit.extensions.RequestOptions;
+import org.kmipkit.internal.NativeHandle;
 import org.kmipkit.ttlv.CodecLimits;
-import org.kmipkit.ttlv.StandardAttribute;
-import org.kmipkit.ttlv.TtlvStructure;
+import org.kmipkit.ttlv.Tag;
+import org.kmipkit.ttlv.TtlvItem;
 import org.kmipkit.ttlv.TtlvValue;
-import org.kmipkit.ttlv.TypedAttribute;
 
-/** Builds a typed Create Key Pair request from explicit algorithm and usage choices. */
-public final class CreateKeyPairBuilder {
+/** Rust-backed builder for a typed KMIP Create Key Pair request. */
+public final class CreateKeyPairBuilder implements AutoCloseable {
+    @FunctionalInterface
+    private interface ItemAction {
+        void apply(long builder, long item);
+    }
+
+    @FunctionalInterface
+    private interface CataloguedAction {
+        void apply(long builder, int tag, long value);
+    }
+
+    @FunctionalInterface
+    private interface VendorAction {
+        void apply(long builder, String vendor, String name, long value);
+    }
+
+    private final NativeHandle handle;
     private final KmipClient client;
-    private Long algorithm;
-    private Integer length;
-    private Integer privateUsageMask;
-    private Integer publicUsageMask;
     private RequestOptions options;
     private Long asynchronousIndicator;
-    private final List<TypedAttribute> commonAttributes = new ArrayList<>();
 
     CreateKeyPairBuilder(KmipClient client) {
         this.client = client;
+        NativeFluentRegistry.ensureLoaded();
+        handle = NativeHandle.owned(
+                NativeFluentRegistry.createKeyPairBuilderCreate(),
+                NativeFluentRegistry.CREATE_KEY_PAIR_BUILDER);
     }
 
     public CreateKeyPairBuilder algorithm(long value) {
-        if (value < 0 || value > 0xffff_ffffL) {
-            throw new InvalidInputException("Cryptographic Algorithm is outside uint32");
-        }
-        algorithm = value;
+        handle.withValue(builder -> {
+            NativeFluentRegistry.createKeyPairBuilderSetAlgorithm(builder, value);
+            return null;
+        });
         return this;
     }
 
     public CreateKeyPairBuilder length(int bits) {
-        length = bits;
+        handle.withValue(builder -> {
+            NativeFluentRegistry.createKeyPairBuilderSetLength(builder, bits);
+            return null;
+        });
         return this;
     }
 
-    public CreateKeyPairBuilder privateUsageMask(int value) {
-        privateUsageMask = value;
+    public CreateKeyPairBuilder privateUsageMask(int mask) {
+        handle.withValue(builder -> {
+            NativeFluentRegistry.createKeyPairBuilderSetPrivateUsageMask(builder, mask);
+            return null;
+        });
         return this;
     }
 
-    public CreateKeyPairBuilder publicUsageMask(int value) {
-        publicUsageMask = value;
+    public CreateKeyPairBuilder publicUsageMask(int mask) {
+        handle.withValue(builder -> {
+            NativeFluentRegistry.createKeyPairBuilderSetPublicUsageMask(builder, mask);
+            return null;
+        });
         return this;
     }
 
-    /** Adds a typed common attribute, borrowed until build or execute completes. */
-    public CreateKeyPairBuilder commonAttribute(TypedAttribute value) {
-        if (value == null) throw new InvalidInputException("common attribute is required");
-        commonAttributes.add(value);
+    public CreateKeyPairBuilder privateName(String value) {
+        if (value == null) throw new InvalidInputException("private key name is invalid");
+        handle.withValue(builder -> {
+            NativeFluentRegistry.createKeyPairBuilderSetPrivateName(builder, value);
+            return null;
+        });
+        return this;
+    }
+
+    public CreateKeyPairBuilder publicName(String value) {
+        if (value == null) throw new InvalidInputException("public key name is invalid");
+        handle.withValue(builder -> {
+            NativeFluentRegistry.createKeyPairBuilderSetPublicName(builder, value);
+            return null;
+        });
+        return this;
+    }
+
+    public CreateKeyPairBuilder commonAttributeItem(TtlvItem item) {
+        return withAttributeItem(item, NativeFluentRegistry::createKeyPairBuilderAddCommonAttributeItem);
+    }
+
+    public CreateKeyPairBuilder privateAttributeItem(TtlvItem item) {
+        return withAttributeItem(item, NativeFluentRegistry::createKeyPairBuilderAddPrivateAttributeItem);
+    }
+
+    public CreateKeyPairBuilder publicAttributeItem(TtlvItem item) {
+        return withAttributeItem(item, NativeFluentRegistry::createKeyPairBuilderAddPublicAttributeItem);
+    }
+
+    private CreateKeyPairBuilder withAttributeItem(TtlvItem item, ItemAction action) {
+        if (item == null) throw new InvalidInputException("attribute item is invalid");
+        NativeHandle.withValues(new NativeHandle[] {handle, item.nativeHandleOwner()}, values -> {
+            action.apply(values[0], values[1]);
+            return null;
+        });
+        return this;
+    }
+
+    public CreateKeyPairBuilder commonCataloguedAttribute(Tag tag, TtlvValue value) {
+        return withCataloguedAttribute(tag, value,
+                NativeFluentRegistry::createKeyPairBuilderAddCommonCataloguedAttribute);
+    }
+
+    public CreateKeyPairBuilder privateCataloguedAttribute(Tag tag, TtlvValue value) {
+        return withCataloguedAttribute(tag, value,
+                NativeFluentRegistry::createKeyPairBuilderAddPrivateCataloguedAttribute);
+    }
+
+    public CreateKeyPairBuilder publicCataloguedAttribute(Tag tag, TtlvValue value) {
+        return withCataloguedAttribute(tag, value,
+                NativeFluentRegistry::createKeyPairBuilderAddPublicCataloguedAttribute);
+    }
+
+    private CreateKeyPairBuilder withCataloguedAttribute(
+            Tag tag, TtlvValue value, CataloguedAction action) {
+        if (tag == null || value == null) {
+            throw new InvalidInputException("catalogued attribute inputs are invalid");
+        }
+        NativeHandle.withValues(new NativeHandle[] {handle, value.nativeHandleOwner()}, values -> {
+            action.apply(values[0], tag.raw(), values[1]);
+            return null;
+        });
+        return this;
+    }
+
+    public CreateKeyPairBuilder commonVendorAttribute(String vendor, String name, TtlvItem value) {
+        return withVendorAttribute(vendor, name, value,
+                NativeFluentRegistry::createKeyPairBuilderAddCommonVendorAttribute);
+    }
+
+    public CreateKeyPairBuilder privateVendorAttribute(String vendor, String name, TtlvItem value) {
+        return withVendorAttribute(vendor, name, value,
+                NativeFluentRegistry::createKeyPairBuilderAddPrivateVendorAttribute);
+    }
+
+    public CreateKeyPairBuilder publicVendorAttribute(String vendor, String name, TtlvItem value) {
+        return withVendorAttribute(vendor, name, value,
+                NativeFluentRegistry::createKeyPairBuilderAddPublicVendorAttribute);
+    }
+
+    private CreateKeyPairBuilder withVendorAttribute(
+            String vendor, String name, TtlvItem value, VendorAction action) {
+        if (vendor == null || name == null || value == null) {
+            throw new InvalidInputException("vendor attribute inputs are invalid");
+        }
+        NativeHandle.withValues(new NativeHandle[] {handle, value.nativeHandleOwner()}, values -> {
+            action.apply(values[0], vendor, name, values[1]);
+            return null;
+        });
         return this;
     }
 
@@ -66,7 +174,6 @@ public final class CreateKeyPairBuilder {
         return this;
     }
 
-    /** Sets the explicit Request Header Asynchronous Indicator on the one-item batch. */
     public CreateKeyPairBuilder asynchronousIndicator(long value) {
         if (value < 0 || value > 0xffff_ffffL) {
             throw new InvalidInputException("asynchronous indicator is outside uint32");
@@ -75,39 +182,20 @@ public final class CreateKeyPairBuilder {
         return this;
     }
 
-    /** Builds the existing typed Create Key Pair batch item. */
+    public void validate() {
+        handle.withValue(builder -> {
+            NativeFluentRegistry.createKeyPairBuilderValidate(builder);
+            return null;
+        });
+    }
+
     public ClientBatchItem build() {
-        if (algorithm == null || length == null) {
-            throw new InvalidInputException("Create Key Pair requires algorithm and length");
-        }
-        try (TtlvStructure common = commonAttributes();
-             TtlvStructure privateAttributes = optionalUsage(privateUsageMask);
-             TtlvStructure publicAttributes = optionalUsage(publicUsageMask)) {
-            return ClientBatchItem.createKeyPair(
-                    common, privateAttributes, publicAttributes, null, null, null);
-        }
+        long item = handle.withValue(NativeFluentRegistry::createKeyPairBuilderBuildBatchItem);
+        return FluentBatchItemAdapter.takeOwnership(item);
     }
 
-    private TtlvStructure commonAttributes() {
-        try (TtlvStructure base = attributes(
-                     StandardAttribute.CRYPTOGRAPHIC_ALGORITHM,
-                     TtlvValue.Enumeration(algorithm),
-                     StandardAttribute.CRYPTOGRAPHIC_LENGTH,
-                     TtlvValue.Integer(length));
-             AttributeSet values = AttributeSet.tryNew(base)) {
-            for (TypedAttribute attribute : commonAttributes) {
-                values.tryPushTyped(attribute.attribute(), attribute);
-            }
-            return values.intoItems();
-        }
-    }
+    public ClientBatchItem toBatchItem() { return build(); }
 
-    /** Alias for {@link #build()}. */
-    public ClientBatchItem toBatchItem() {
-        return build();
-    }
-
-    /** Executes one typed Create Key Pair exchange without retrying it. */
     public ClientBatchResponse execute(CodecLimits limits)
             throws org.kmipkit.ClientOperationException {
         if (limits == null) throw new InvalidInputException("codec limits are invalid");
@@ -120,34 +208,5 @@ public final class CreateKeyPairBuilder {
         }
     }
 
-    private static TtlvStructure optionalUsage(Integer usageMask) {
-        if (usageMask == null) return null;
-        return attributes(StandardAttribute.CRYPTOGRAPHIC_USAGE_MASK, TtlvValue.Integer(usageMask));
-    }
-
-    private static TtlvStructure attributes(
-            StandardAttribute firstAttribute, TtlvValue firstValue,
-            StandardAttribute secondAttribute, TtlvValue secondValue) {
-        try (TtlvValue first = firstValue;
-             TtlvValue second = secondValue;
-             TypedAttribute firstTyped = TypedAttribute.create(firstAttribute, first);
-             TypedAttribute secondTyped = TypedAttribute.create(secondAttribute, second);
-             TtlvStructure empty = TtlvStructure.create();
-             AttributeSet values = AttributeSet.tryNew(empty)) {
-            values.tryPushTyped(firstAttribute, firstTyped);
-            values.tryPushTyped(secondAttribute, secondTyped);
-            return values.intoItems();
-        }
-    }
-
-    private static TtlvStructure attributes(StandardAttribute attribute, TtlvValue value) {
-        try (TtlvValue ownedValue = value;
-             TypedAttribute typed = TypedAttribute.create(attribute, ownedValue);
-             TtlvStructure empty = TtlvStructure.create();
-             AttributeSet values = AttributeSet.tryNew(empty)) {
-            values.tryPushTyped(attribute, typed);
-            return values.intoItems();
-        }
-    }
-
+    @Override public void close() { handle.close(); }
 }

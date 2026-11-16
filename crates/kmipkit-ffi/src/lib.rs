@@ -242,6 +242,10 @@ pub struct kmipkit_create_credential_object_t {
     _private: [u8; 0],
 }
 #[repr(C)]
+pub struct kmipkit_create_key_pair_builder_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
 pub struct kmipkit_crypto_operation_builder_t {
     _private: [u8; 0],
 }
