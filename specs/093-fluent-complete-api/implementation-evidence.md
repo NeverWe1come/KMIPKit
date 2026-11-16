@@ -424,4 +424,11 @@
   focused test fails as expected: the existing KMIP 2.1 Tag enumeration has
   zero generated values instead of 354. Reproduced with:
   `python3 -B -m unittest tools.normative_catalog.tests.test_generate_named_values.NamedValueGeneratorTests.test_tag_enumeration_is_generated_for_all_supported_versions_and_languages -v`
+- Reconciliation adds the generated tag declarations to the reviewed API
+  manifest. A follow-up generation attempt exposed the existing 56 MiB manifest
+  input bound: the reconciled file is 59,718,087 bytes. The manifest-size test
+  now requires a bounded 72 MiB limit to accommodate this approved catalog
+  growth and the remaining planned declarations; the unchanged generator fails
+  that expectation. The precise validator check is in
+  `tools/api_manifest/tests/test_t102_manifest_size_limit.py`.
 
