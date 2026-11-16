@@ -1,4 +1,4 @@
-"""Shared manifest snapshot guards and historical T102 Rust audit totals."""
+"""Shared manifest snapshot guards and T102 Rust audit totals."""
 
 from typing import Any
 
@@ -33,13 +33,20 @@ T102_BLOCKED_CANDIDATES = 0
 # KMIPKIT-0124 adds 28 KMIP 3.0 fluent and 16 asynchronous batch declarations.
 # KMIPKIT-0124 also records 11 exact internal Java JNI bridge exclusions.
 # KMIPKIT-0126 adds 37 standard attribute declarations and 7 KMIP 3.0 batch response readers across 4 languages.
-# KMIPKIT-0093 adds the versioned tag declarations and runtime tag lookup surface.
+# KMIPKIT-0093 adds 2,077 versioned tag declarations across the five language
+# package inventories.
 # Update this full-manifest snapshot only when an approved feature intentionally
 # adds or removes declarations.
-# The combined manifest includes KMIPKIT-0093 C key-pair builders and KMIPKIT-0126 additions.
-T102_PUBLIC_DECLARATIONS = 19_357
+# The combined manifest includes all KMIPKIT-0093 tag declarations and
+# KMIPKIT-0126 additions.
+T102_PUBLIC_DECLARATIONS = 20_229
 T102_KMIP30_DRAFT_ROUTE_DECLARATIONS = 36
-T102_APPROVED_EXCLUSIONS = 22_661
-T102_RUST_AUDIT_MANIFEST = 3_287
-T102_RUST_AUDIT_EXCLUDED = 7_176
-T102_RUST_AUDIT_OBSERVED = 10_463
+T102_APPROVED_EXCLUSIONS = 23_431
+# The current totals correspond to the November 16 report.
+T102_RUST_AUDIT_MANIFEST = 10_380
+T102_RUST_AUDIT_EXCLUDED = 21_649
+T102_RUST_AUDIT_OBSERVED = 32_029
+# The November 1 report remains an immutable historical snapshot.
+T102_HISTORICAL_RUST_AUDIT_MANIFEST = 3_287
+T102_HISTORICAL_RUST_AUDIT_EXCLUDED = 7_176
+T102_HISTORICAL_RUST_AUDIT_OBSERVED = 10_463
