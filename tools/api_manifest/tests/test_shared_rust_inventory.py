@@ -160,10 +160,10 @@ class SharedRustInventoryTests(unittest.TestCase):
     def test_inventory_accounts_for_exact_approved_rust_exclusions_separately(self) -> None:
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
 
-        self.assertEqual(inventory["approvedExcludedRustDeclarationCount"], 21631)
+        self.assertEqual(inventory["approvedExcludedRustDeclarationCount"], 21649)
         self.assertEqual(
             sum(record["excludedDeclarationCount"] for record in inventory["crates"]),
-            21631,
+            21649,
         )
         self.assertEqual(
             sum(record["blockedDeclarationCount"] for record in inventory["crates"]),
@@ -184,11 +184,11 @@ class SharedRustInventoryTests(unittest.TestCase):
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
 
         rust_counts = self.rust_report["counts"]
-        self.assertEqual(inventory["observedRustDeclarationCount"], 31977)
-        self.assertEqual(inventory["mappedRustDeclarationCount"], 5440)
-        self.assertEqual(rust_counts["observed"], 31977)
-        self.assertEqual(rust_counts["matched"], 10346)
-        self.assertEqual(rust_counts["excluded"], 21631)
+        self.assertEqual(inventory["observedRustDeclarationCount"], 32025)
+        self.assertEqual(inventory["mappedRustDeclarationCount"], 5468)
+        self.assertEqual(rust_counts["observed"], 32025)
+        self.assertEqual(rust_counts["matched"], 10376)
+        self.assertEqual(rust_counts["excluded"], 21649)
         self.assertEqual(rust_counts["observed"], rust_counts["matched"] + rust_counts["excluded"])
         self.assertEqual(
             inventory["approvedExcludedRustDeclarationCount"],

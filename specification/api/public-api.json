@@ -825361,6 +825361,34 @@
           "name": "kmipkit.fluent.DeleteAttributeBuilder.vendor_attribute"
         }
       }
+    },
+    {
+      "declarationId": "rust-observed-129ef70503110047097a",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::attribute_reference",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-7727266c89039edd0754",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::detached",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     }
   ],
   "approvedExclusions": [
@@ -1000621,6 +1000649,114 @@
     },
     {
       "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::DeleteAttributeBuilder<'a> as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::DeleteAttributeBuilder<'a> as core::borrow::Borrow<kmipkit_client::fluent::DeleteAttributeBuilder<'a>>>::borrow",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::DeleteAttributeBuilder<'a> as core::borrow::BorrowMut<kmipkit_client::fluent::DeleteAttributeBuilder<'a>>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::DeleteAttributeBuilder<'a> as core::convert::From<kmipkit_client::fluent::DeleteAttributeBuilder<'a>>>::from",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::DeleteAttributeBuilder<'a> as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::DeleteAttributeBuilder<'a> as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::DeleteAttributeBuilder<'a> as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::DeleteAttributeBuilder<'a> as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::DeleteAttributeBuilder<'a> as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
       "exportName": "<kmipkit_client::DestroyBuilder<'a> as core::any::Any>::type_id",
       "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
       "approvalSource": {
@@ -1009035,6 +1009171,114 @@
     {
       "packageId": "rust-kmipkit-client",
       "exportName": "<kmipkit_client::fluent::DecryptBuilder<'a> as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::DeleteAttributeBuilder<'a> as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::DeleteAttributeBuilder<'a> as core::borrow::Borrow<kmipkit_client::fluent::DeleteAttributeBuilder<'a>>>::borrow",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::DeleteAttributeBuilder<'a> as core::borrow::BorrowMut<kmipkit_client::fluent::DeleteAttributeBuilder<'a>>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::DeleteAttributeBuilder<'a> as core::convert::From<kmipkit_client::fluent::DeleteAttributeBuilder<'a>>>::from",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::DeleteAttributeBuilder<'a> as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::DeleteAttributeBuilder<'a> as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::DeleteAttributeBuilder<'a> as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::DeleteAttributeBuilder<'a> as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::DeleteAttributeBuilder<'a> as core::convert::TryInto<U>>::try_into",
       "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
       "approvalSource": {
         "kind": "feature-specification",
@@ -1141200,222 +1141444,6 @@
         "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "evidence": "The helper is explicitly documented for language bindings and used as internal adapter plumbing. The four-language owned value constructors and lifecycle APIs represent the product capability."
-    },
-    {
-      "packageId": "rust-kmipkit-client",
-      "exportName": "<kmipkit_client::DeleteAttributeBuilder<'a> as core::any::Any>::type_id",
-      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/093-fluent-complete-api/spec.md",
-        "status": "Approved",
-        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
-      },
-      "evidence": "KMIPKIT-0093-FR-011"
-    },
-    {
-      "packageId": "rust-kmipkit-client",
-      "exportName": "<kmipkit_client::DeleteAttributeBuilder<'a> as core::borrow::Borrow<kmipkit_client::fluent::DeleteAttributeBuilder<'a>>>::borrow",
-      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/093-fluent-complete-api/spec.md",
-        "status": "Approved",
-        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
-      },
-      "evidence": "KMIPKIT-0093-FR-011"
-    },
-    {
-      "packageId": "rust-kmipkit-client",
-      "exportName": "<kmipkit_client::DeleteAttributeBuilder<'a> as core::borrow::BorrowMut<kmipkit_client::fluent::DeleteAttributeBuilder<'a>>>::borrow_mut",
-      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/093-fluent-complete-api/spec.md",
-        "status": "Approved",
-        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
-      },
-      "evidence": "KMIPKIT-0093-FR-011"
-    },
-    {
-      "packageId": "rust-kmipkit-client",
-      "exportName": "<kmipkit_client::DeleteAttributeBuilder<'a> as core::convert::From<kmipkit_client::fluent::DeleteAttributeBuilder<'a>>>::from",
-      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/093-fluent-complete-api/spec.md",
-        "status": "Approved",
-        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
-      },
-      "evidence": "KMIPKIT-0093-FR-011"
-    },
-    {
-      "packageId": "rust-kmipkit-client",
-      "exportName": "<kmipkit_client::DeleteAttributeBuilder<'a> as core::convert::Into<U>>::into",
-      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/093-fluent-complete-api/spec.md",
-        "status": "Approved",
-        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
-      },
-      "evidence": "KMIPKIT-0093-FR-011"
-    },
-    {
-      "packageId": "rust-kmipkit-client",
-      "exportName": "<kmipkit_client::DeleteAttributeBuilder<'a> as core::convert::TryFrom<U>>::Error",
-      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/093-fluent-complete-api/spec.md",
-        "status": "Approved",
-        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
-      },
-      "evidence": "KMIPKIT-0093-FR-011"
-    },
-    {
-      "packageId": "rust-kmipkit-client",
-      "exportName": "<kmipkit_client::DeleteAttributeBuilder<'a> as core::convert::TryFrom<U>>::try_from",
-      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/093-fluent-complete-api/spec.md",
-        "status": "Approved",
-        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
-      },
-      "evidence": "KMIPKIT-0093-FR-011"
-    },
-    {
-      "packageId": "rust-kmipkit-client",
-      "exportName": "<kmipkit_client::DeleteAttributeBuilder<'a> as core::convert::TryInto<U>>::Error",
-      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/093-fluent-complete-api/spec.md",
-        "status": "Approved",
-        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
-      },
-      "evidence": "KMIPKIT-0093-FR-011"
-    },
-    {
-      "packageId": "rust-kmipkit-client",
-      "exportName": "<kmipkit_client::DeleteAttributeBuilder<'a> as core::convert::TryInto<U>>::try_into",
-      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/093-fluent-complete-api/spec.md",
-        "status": "Approved",
-        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
-      },
-      "evidence": "KMIPKIT-0093-FR-011"
-    },
-    {
-      "packageId": "rust-kmipkit-client",
-      "exportName": "<kmipkit_client::fluent::DeleteAttributeBuilder<'a> as core::any::Any>::type_id",
-      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/093-fluent-complete-api/spec.md",
-        "status": "Approved",
-        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
-      },
-      "evidence": "KMIPKIT-0093-FR-011"
-    },
-    {
-      "packageId": "rust-kmipkit-client",
-      "exportName": "<kmipkit_client::fluent::DeleteAttributeBuilder<'a> as core::borrow::Borrow<kmipkit_client::fluent::DeleteAttributeBuilder<'a>>>::borrow",
-      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/093-fluent-complete-api/spec.md",
-        "status": "Approved",
-        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
-      },
-      "evidence": "KMIPKIT-0093-FR-011"
-    },
-    {
-      "packageId": "rust-kmipkit-client",
-      "exportName": "<kmipkit_client::fluent::DeleteAttributeBuilder<'a> as core::borrow::BorrowMut<kmipkit_client::fluent::DeleteAttributeBuilder<'a>>>::borrow_mut",
-      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/093-fluent-complete-api/spec.md",
-        "status": "Approved",
-        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
-      },
-      "evidence": "KMIPKIT-0093-FR-011"
-    },
-    {
-      "packageId": "rust-kmipkit-client",
-      "exportName": "<kmipkit_client::fluent::DeleteAttributeBuilder<'a> as core::convert::From<kmipkit_client::fluent::DeleteAttributeBuilder<'a>>>::from",
-      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/093-fluent-complete-api/spec.md",
-        "status": "Approved",
-        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
-      },
-      "evidence": "KMIPKIT-0093-FR-011"
-    },
-    {
-      "packageId": "rust-kmipkit-client",
-      "exportName": "<kmipkit_client::fluent::DeleteAttributeBuilder<'a> as core::convert::Into<U>>::into",
-      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/093-fluent-complete-api/spec.md",
-        "status": "Approved",
-        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
-      },
-      "evidence": "KMIPKIT-0093-FR-011"
-    },
-    {
-      "packageId": "rust-kmipkit-client",
-      "exportName": "<kmipkit_client::fluent::DeleteAttributeBuilder<'a> as core::convert::TryFrom<U>>::Error",
-      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/093-fluent-complete-api/spec.md",
-        "status": "Approved",
-        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
-      },
-      "evidence": "KMIPKIT-0093-FR-011"
-    },
-    {
-      "packageId": "rust-kmipkit-client",
-      "exportName": "<kmipkit_client::fluent::DeleteAttributeBuilder<'a> as core::convert::TryFrom<U>>::try_from",
-      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/093-fluent-complete-api/spec.md",
-        "status": "Approved",
-        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
-      },
-      "evidence": "KMIPKIT-0093-FR-011"
-    },
-    {
-      "packageId": "rust-kmipkit-client",
-      "exportName": "<kmipkit_client::fluent::DeleteAttributeBuilder<'a> as core::convert::TryInto<U>>::Error",
-      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/093-fluent-complete-api/spec.md",
-        "status": "Approved",
-        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
-      },
-      "evidence": "KMIPKIT-0093-FR-011"
-    },
-    {
-      "packageId": "rust-kmipkit-client",
-      "exportName": "<kmipkit_client::fluent::DeleteAttributeBuilder<'a> as core::convert::TryInto<U>>::try_into",
-      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/093-fluent-complete-api/spec.md",
-        "status": "Approved",
-        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
-      },
-      "evidence": "KMIPKIT-0093-FR-011"
     }
   ],
   "apiLevels": [

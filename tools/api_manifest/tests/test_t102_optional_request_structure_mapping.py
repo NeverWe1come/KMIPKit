@@ -198,8 +198,10 @@ PKCS11_REQUEST_SETTER_IDS = {
 # response views; KMIPKIT-0096 expert attributes; KMIPKIT-0093 reconciliation;
 # and KMIPKIT-0108/0109 attribute operations and bindings. KMIPKIT-0124 adds
 # 28 KMIP 3.0 fluent and 16 asynchronous batch declarations, which also map
-# asynchronous constructors onto four existing operation rows.
-OTHER_DECLARATIONS_SHA256 = "c8ef683e05d8f3d9cc573c9a28c9e0019ac1f5a6aa54926e03be298db2e20a6e"
+# asynchronous constructors onto four existing operation rows. Delete
+# Attribute adds 77 ready declarations and two blocked Rust candidates. Its
+# operation row also gains the approved four-language fixture evidence.
+OTHER_DECLARATIONS_SHA256 = "b947062289c8f25fd495311a789c3ac4ece7f17c15075c6d06a23b61c8812173"
 OTHER_OPERATIONS_SHA256 = "2ea94003f2877d0e6d84271d67d9add6f48a5c5b7a837c48b22fe40f41022d39"
 def canonical_sha256(value: object) -> str:
     encoded = json.dumps(
@@ -445,7 +447,7 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
                     if evidence_id not in RECERTIFY_OPERATION_ADDED_EVIDENCE
                 ]
         self.assertEqual(
-            "327bd4ccc9eb3c600fe49eed482a9f47840d555c4066560a39af67520dcf5b9a",
+            "e15b13391ce59b3c8f5ff4d2129d7f6d7a2bc890e0f169d590e47ef9635658e2",
             canonical_sha256(other_operations),
         )
 
