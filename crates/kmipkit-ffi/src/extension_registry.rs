@@ -49,20 +49,20 @@ mod typed_attributes_catalog_generated;
 
 use crate::{
     kmipkit_add_attribute_builder_t, kmipkit_add_attribute_request_t,
-    kmipkit_adjust_attribute_request_t, kmipkit_attestation_credential_t, kmipkit_attribute_set_t,
-    kmipkit_authentication_t, kmipkit_byte_span_v1_t, kmipkit_cancel_request_t,
-    kmipkit_client_async_operation_metadata_v1_t, kmipkit_client_async_operation_outcome_t,
-    kmipkit_client_async_operation_response_v1_t, kmipkit_client_batch_item_metadata_v1_t,
-    kmipkit_client_batch_item_metadata_v2_t, kmipkit_client_batch_item_response_t,
-    kmipkit_client_batch_item_t, kmipkit_client_batch_response_t, kmipkit_client_batch_t,
-    kmipkit_client_configuration_t, kmipkit_client_extension_registry_t,
-    kmipkit_client_request_message_extension_t, kmipkit_client_t, kmipkit_codec_limits_t,
-    kmipkit_create_key_pair_builder_t, kmipkit_credential_t,
-    kmipkit_credential_validation_error_v1_t, kmipkit_credential_value_t,
+    kmipkit_adjust_attribute_request_t, kmipkit_attestation_credential_t,
+    kmipkit_attribute_reference_v1_t, kmipkit_attribute_set_t, kmipkit_authentication_t,
+    kmipkit_byte_span_v1_t, kmipkit_cancel_request_t, kmipkit_client_async_operation_metadata_v1_t,
+    kmipkit_client_async_operation_outcome_t, kmipkit_client_async_operation_response_v1_t,
+    kmipkit_client_batch_item_metadata_v1_t, kmipkit_client_batch_item_metadata_v2_t,
+    kmipkit_client_batch_item_response_t, kmipkit_client_batch_item_t,
+    kmipkit_client_batch_response_t, kmipkit_client_batch_t, kmipkit_client_configuration_t,
+    kmipkit_client_extension_registry_t, kmipkit_client_request_message_extension_t,
+    kmipkit_client_t, kmipkit_codec_limits_t, kmipkit_create_key_pair_builder_t,
+    kmipkit_credential_t, kmipkit_credential_validation_error_v1_t, kmipkit_credential_value_t,
     kmipkit_credential_view_t, kmipkit_crypto_operation_builder_t,
     kmipkit_cryptographic_parameters_fields_v1_t, kmipkit_cryptographic_parameters_t,
-    kmipkit_delete_attribute_request_t, kmipkit_device_credential_t,
-    kmipkit_extension_child_rule_t, kmipkit_extension_compatibility_t,
+    kmipkit_delete_attribute_builder_t, kmipkit_delete_attribute_request_t,
+    kmipkit_device_credential_t, kmipkit_extension_child_rule_t, kmipkit_extension_compatibility_t,
     kmipkit_extension_definition_t, kmipkit_extension_discriminator_t,
     kmipkit_extension_identity_t, kmipkit_extension_information_t,
     kmipkit_extension_order_constraint_t, kmipkit_extension_recognition_t,
@@ -575,6 +575,7 @@ enum Kind {
     CreateKeyPairBuilder,
     SetAttributeBuilder,
     AddAttributeBuilder,
+    DeleteAttributeBuilder,
     CryptoOperationBuilder,
 }
 
@@ -627,6 +628,11 @@ struct AddAttributeBuilderState {
     asynchronous_indicator: Option<u32>,
 }
 
+struct DeleteAttributeBuilderState {
+    builder: kmipkit_client::fluent::DeleteAttributeBuilder<'static>,
+    asynchronous_indicator: Option<u32>,
+}
+
 impl CryptoOperationBuilder {
     fn new(operation: CryptoOperationKind) -> Self {
         Self {
@@ -673,6 +679,7 @@ enum HandleValue {
     CreateKeyPairBuilder(Mutex<Option<CreateKeyPairBuilderState>>),
     SetAttributeBuilder(Mutex<Option<SetAttributeBuilderState>>),
     AddAttributeBuilder(Mutex<Option<AddAttributeBuilderState>>),
+    DeleteAttributeBuilder(Mutex<Option<DeleteAttributeBuilderState>>),
     CryptoOperationBuilder(Mutex<CryptoOperationBuilder>),
     BatchItemReadback(ClientBatchItemReadback),
     RegisterRequest(Box<RegisterRequest>),

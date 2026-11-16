@@ -244,6 +244,10 @@ pub struct kmipkit_add_attribute_builder_t {
     _private: [u8; 0],
 }
 #[repr(C)]
+pub struct kmipkit_delete_attribute_builder_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
 pub struct kmipkit_crypto_operation_builder_t {
     _private: [u8; 0],
 }

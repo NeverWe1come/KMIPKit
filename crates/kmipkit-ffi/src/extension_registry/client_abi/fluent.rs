@@ -7,6 +7,7 @@ type SymmetricBuilder = kmipkit_client::fluent::CreateSymmetricKeyBuilder<'stati
 type KeyPairBuilder = kmipkit_client::fluent::CreateKeyPairBuilder<'static>;
 type SetAttributeBuilder = kmipkit_client::fluent::SetAttributeBuilder<'static>;
 type AddAttributeBuilder = kmipkit_client::fluent::AddAttributeBuilder<'static>;
+type DeleteAttributeBuilder = kmipkit_client::fluent::DeleteAttributeBuilder<'static>;
 
 fn symmetric_builder_validation_status(operation: impl FnOnce() -> i32) -> i32 {
     let status = operation();
@@ -259,6 +260,21 @@ fn update_add_attribute_builder(
     Ok(())
 }
 
+fn update_delete_attribute_builder(
+    builder: *mut kmipkit_delete_attribute_builder_t,
+    update: impl FnOnce(DeleteAttributeBuilder) -> DeleteAttributeBuilder,
+) -> FfiResult<()> {
+    let handle = reference_handle(builder, Kind::DeleteAttributeBuilder)?;
+    let HandleValue::DeleteAttributeBuilder(builder) = &handle.value else {
+        return Err(ERROR_INVALID_INPUT);
+    };
+    let mut slot = builder.lock().map_err(|_| ERROR_INTERNAL)?;
+    let mut current = slot.take().ok_or(ERROR_INVALID_INPUT)?;
+    current.builder = update(current.builder);
+    *slot = Some(current);
+    Ok(())
+}
+
 fn set_attribute_request(
     builder: *mut kmipkit_set_attribute_builder_t,
 ) -> FfiResult<(SetAttributeRequest, Option<u32>)> {
@@ -280,6 +296,22 @@ fn add_attribute_request(
 ) -> FfiResult<(AddAttributeRequest, Option<u32>)> {
     let handle = reference_handle(builder, Kind::AddAttributeBuilder)?;
     let HandleValue::AddAttributeBuilder(builder) = &handle.value else {
+        return Err(ERROR_INVALID_INPUT);
+    };
+    let slot = builder.lock().map_err(|_| ERROR_INTERNAL)?;
+    let state = slot.as_ref().ok_or(ERROR_INVALID_INPUT)?;
+    let request = state
+        .builder
+        .build_request()
+        .map_err(|_| ERROR_INVALID_INPUT)?;
+    Ok((request, state.asynchronous_indicator))
+}
+
+fn delete_attribute_request(
+    builder: *mut kmipkit_delete_attribute_builder_t,
+) -> FfiResult<(DeleteAttributeRequest, Option<u32>)> {
+    let handle = reference_handle(builder, Kind::DeleteAttributeBuilder)?;
+    let HandleValue::DeleteAttributeBuilder(builder) = &handle.value else {
         return Err(ERROR_INVALID_INPUT);
     };
     let slot = builder.lock().map_err(|_| ERROR_INTERNAL)?;
@@ -427,6 +459,34 @@ fn execute_add_attribute_builder(
     execute_fluent_item(
         client,
         ClientRequest::AddAttribute(request),
+        limits,
+        &options,
+        asynchronous_indicator,
+        out_response,
+    )
+}
+
+fn execute_delete_attribute_builder(
+    builder: *mut kmipkit_delete_attribute_builder_t,
+    client: *mut kmipkit_client_t,
+    limits: *mut kmipkit_codec_limits_t,
+    options: Option<&kmipkit_request_options_v1_t>,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    let (request, asynchronous_indicator) = match delete_attribute_request(builder) {
+        Ok(parts) => parts,
+        Err(status) => return record_ffi_error(status),
+    };
+    let options = match options {
+        Some(options) => match super::request_options_from_v1(options) {
+            Ok(options) => options,
+            Err(status) => return record_ffi_error(status),
+        },
+        None => RequestOptions::default(),
+    };
+    execute_fluent_item(
+        client,
+        ClientRequest::DeleteAttribute(request),
         limits,
         &options,
         asynchronous_indicator,
@@ -1732,6 +1792,246 @@ pub extern "C" fn kmipkit_add_attribute_builder_release(
     builder: *mut kmipkit_add_attribute_builder_t,
 ) {
     ffi_entrypoint(|| release(builder, Kind::AddAttributeBuilder));
+}
+
+/// Creates a detached, reusable Delete Attribute builder.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_delete_attribute_builder_create(
+    out_builder: *mut *mut kmipkit_delete_attribute_builder_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_builder);
+        *out = try_ffi!(try_make_handle(
+            Kind::DeleteAttributeBuilder,
+            HandleValue::DeleteAttributeBuilder(Mutex::new(Some(
+                super::super::DeleteAttributeBuilderState {
+                    builder: DeleteAttributeBuilder::detached(),
+                    asynchronous_indicator: None,
+                },
+            ))),
+        ));
+        SUCCESS
+    })
+}
+
+/// Sets the optional UTF-8 Unique Identifier.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_delete_attribute_builder_set_unique_identifier(
+    builder: *mut kmipkit_delete_attribute_builder_t,
+    value_data: *const u8,
+    value_length: u64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let value = match input_span(value_data, value_length, MAX_FFI_INPUT_BYTES) {
+            Ok(value) => match std::str::from_utf8(value) {
+                Ok(value) => value,
+                Err(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+            },
+            Err(status) => return record_ffi_error(status),
+        };
+        try_ffi!(update_delete_attribute_builder(builder, |builder| {
+            builder.unique_identifier(value)
+        }));
+        SUCCESS
+    })
+}
+
+/// Sets the Current Attribute using an explicitly typed TTLV Item.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_delete_attribute_builder_set_current_attribute_item(
+    builder: *mut kmipkit_delete_attribute_builder_t,
+    item: *mut kmipkit_ttlv_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let item = try_ffi!(super::super::copy_required_item_handle(item));
+        try_ffi!(update_delete_attribute_builder(builder, |builder| {
+            builder.current_attribute_item(item)
+        }));
+        SUCCESS
+    })
+}
+
+/// Sets a catalogued Current Attribute after validating its TTLV value type.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_delete_attribute_builder_set_catalogued_attribute(
+    builder: *mut kmipkit_delete_attribute_builder_t,
+    tag: u32,
+    value: *mut kmipkit_ttlv_value_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let item = try_ffi!(super::super::typed_attributes::catalogued_item_from_value(
+            tag,
+            value,
+            model_status,
+        ));
+        try_ffi!(update_delete_attribute_builder(builder, |builder| {
+            builder.current_attribute_item(item)
+        }));
+        SUCCESS
+    })
+}
+
+/// Sets the Current Attribute to a structurally valid KMIP Vendor Attribute.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_delete_attribute_builder_set_vendor_attribute(
+    builder: *mut kmipkit_delete_attribute_builder_t,
+    vendor_data: *const u8,
+    vendor_length: u64,
+    name_data: *const u8,
+    name_length: u64,
+    value: *mut kmipkit_ttlv_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let item = try_ffi!(key_pair_vendor_attribute(
+            vendor_data,
+            vendor_length,
+            name_data,
+            name_length,
+            value,
+        ));
+        try_ffi!(update_delete_attribute_builder(builder, |builder| {
+            builder.current_attribute_item(item)
+        }));
+        SUCCESS
+    })
+}
+
+/// Sets an optional versioned KMIP Attribute Reference selector.
+///
+/// # Safety
+/// `reference` must point to one initialized, readable v1 record.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_delete_attribute_builder_set_attribute_reference(
+    builder: *mut kmipkit_delete_attribute_builder_t,
+    reference: *const kmipkit_attribute_reference_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let reference = try_ffi!(super::copy_attribute_reference(reference));
+        try_ffi!(update_delete_attribute_builder(builder, |builder| {
+            builder.attribute_reference(reference)
+        }));
+        SUCCESS
+    })
+}
+
+/// Sets the Request Header Asynchronous Indicator.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_delete_attribute_builder_set_asynchronous_indicator(
+    builder: *mut kmipkit_delete_attribute_builder_t,
+    value: u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let handle = try_ffi!(reference_handle(builder, Kind::DeleteAttributeBuilder));
+        let HandleValue::DeleteAttributeBuilder(builder) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(mut slot) = builder.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let Some(mut state) = slot.take() else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        state.builder = state.builder.with_asynchronous_indicator(value);
+        state.asynchronous_indicator = Some(value);
+        *slot = Some(state);
+        SUCCESS
+    })
+}
+
+/// Validates the typed Delete Attribute request without transport.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_delete_attribute_builder_validate(
+    builder: *mut kmipkit_delete_attribute_builder_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        symmetric_builder_validation_status(|| match delete_attribute_request(builder) {
+            Ok(_) => SUCCESS,
+            Err(status) => record_ffi_error(status),
+        })
+    })
+}
+
+/// Builds an independently owned typed Delete Attribute request.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_delete_attribute_builder_build_request(
+    builder: *mut kmipkit_delete_attribute_builder_t,
+    out_request: *mut *mut kmipkit_delete_attribute_request_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_request);
+        let (request, _) = match delete_attribute_request(builder) {
+            Ok(parts) => parts,
+            Err(status) => return record_ffi_error(status),
+        };
+        *out = try_ffi!(try_make_handle(
+            Kind::DeleteAttributeRequest,
+            HandleValue::DeleteAttributeRequest(Box::new(request)),
+        ));
+        SUCCESS
+    })
+}
+
+/// Builds an independently owned typed Delete Attribute batch item.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_delete_attribute_builder_build_batch_item(
+    builder: *mut kmipkit_delete_attribute_builder_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let (request, _) = match delete_attribute_request(builder) {
+            Ok(parts) => parts,
+            Err(status) => return record_ffi_error(status),
+        };
+        *out = try_ffi!(try_make_handle(
+            Kind::BatchItem,
+            HandleValue::BatchItem(Box::new(ClientBatchItem::new(
+                ClientRequest::DeleteAttribute(request),
+            ))),
+        ));
+        SUCCESS
+    })
+}
+
+/// Executes the typed request with the client's default exchange options.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_delete_attribute_builder_execute_v1(
+    builder: *mut kmipkit_delete_attribute_builder_t,
+    client: *mut kmipkit_client_t,
+    limits: *mut kmipkit_codec_limits_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| execute_delete_attribute_builder(builder, client, limits, None, out_response))
+}
+
+/// Executes the typed request with explicit exchange-local options.
+///
+/// # Safety
+/// `options` must reference an aligned, initialized v1 record.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_delete_attribute_builder_execute_with_options_v1(
+    builder: *mut kmipkit_delete_attribute_builder_t,
+    client: *mut kmipkit_client_t,
+    limits: *mut kmipkit_codec_limits_t,
+    options: *const kmipkit_request_options_v1_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if options.is_null() || !options.is_aligned() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        // SAFETY: The non-null aligned pointer must reference one readable v1 record.
+        let options = unsafe { &*options };
+        execute_delete_attribute_builder(builder, client, limits, Some(options), out_response)
+    })
+}
+
+/// Releases the opaque Delete Attribute builder.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_delete_attribute_builder_release(
+    builder: *mut kmipkit_delete_attribute_builder_t,
+) {
+    ffi_entrypoint(|| release(builder, Kind::DeleteAttributeBuilder));
 }
 
 /// Creates an opaque, reusable Create Symmetric Key builder.
