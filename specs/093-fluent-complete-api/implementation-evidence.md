@@ -1005,3 +1005,26 @@
 
 - This update changes only the test comparison; generated API output and runtime
   behavior are unchanged.
+
+### Tag export allowlist CI repair
+
+- **Red — `3cdc52712`**: added a regression that compares generated KMIP tag
+  declarations with the canonical API manifest. It failed because all 415
+  generated C tag declarations were missing from the manifest; the C ABI
+  export audit reported the same 415 missing entries.
+- **Red — `abf0795f8`**: added a regression for reconciling blocked observations
+  after a named declaration is generated. It failed because two blocked Rust
+  module observations retained the same export paths as the new versioned
+  named-value declarations, which made API generation reject the duplicate
+  paths.
+- **Green — `209d6c919`**: the reconciler now removes blocked observations only
+  when an approved generated declaration owns that exact package and export
+  path. The canonical manifest was reconciled with
+  `reconcile_named_value_manifest.py --write`, then all 12 API outputs were
+  regenerated through `api_manifest/generate.py --write`.
+- The 22 named-value generator tests pass. Reconciliation, named-value
+  generation, and API-manifest checks pass. The Rust 1.94 C ABI build and export
+  audit now match 2,643/2,643 declarations with zero missing, stale, or kind
+  mismatches; the compiled C consumer suite passes 4/4 tests.
+- Full exact-head CI remains required; G004 stays open and this PR stays WIP
+  until the final head's applicable checks pass.
