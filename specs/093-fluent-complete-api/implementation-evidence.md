@@ -626,3 +626,40 @@
 - Exact-head CI has not yet run. AAB004 remains open and the dependent PR stays
   WIP until all required CI jobs are green.
 
+## Add Attribute exact-head CI repair
+
+### Red
+
+- PR #236 at `0147e68189aa3b85454f6b775f9d2158736322e5` failed the
+  production execute-boundary audit because three item macros in
+  `kmipkit-client/src/fluent.rs` have opaque expansions. Core and coverage
+  jobs consequently failed their shared client test.
+- Script contracts also exposed 76 KMIPKIT-0093-FR-011 declarations incorrectly
+  tagged as KMIPKIT-0043 candidates. The checked-in T102 contract requires zero
+  blocked KMIPKIT-0043 candidates.
+
+### Green
+
+- Replaced the opaque macro-generated Add/Set Attribute methods with explicit
+  builder implementations, keeping the production AST audit fail-closed.
+  The boundary inventory regression and
+  `cargo test --workspace --all-features --locked` pass.
+- Extended Rust export reconciliation so an explicit feature owner repairs
+  unresolved blocked rows for that exact requirement. Reconciled the report
+  with `--candidate-spec-id KMIPKIT-0093 --requirement-id KMIPKIT-0093-FR-011`
+  and regenerated the 12 public API outputs. The T102 response-trait and Rust
+  reconciliation suites pass all 102 tests; the KMIPKIT-0043 blocked count is
+  restored to zero.
+- `cargo fmt --all --check`, workspace Clippy with all targets/features and
+  `-D warnings`, and `git diff --check` pass. The public API generator check
+  passes.
+
+### Refactor
+
+- Documented the explicit owner and requirement flags for feature-specific
+  Rust export reconciliation, including its narrow repair behavior. The public
+  builder surface remains fully typed and the AST audit still rejects opaque
+  macros.
+- The exact-head CI rerun is pending; PR #236 remains WIP until every required
+  check passes.
+

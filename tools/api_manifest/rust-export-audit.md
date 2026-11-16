@@ -25,6 +25,18 @@ manifest input. It never generates signatures, mappings, or exclusions:
 python -B tools/api_manifest/reconcile_rust_exports.py --report rust-export-report.json --write
 ```
 
+When reconciling under another feature, pass both its explicit owner and
+requirement. For KMIPKIT-0093, use:
+
+```text
+python -B tools/api_manifest/reconcile_rust_exports.py --report rust-export-report.json --candidate-spec-id KMIPKIT-0093 --requirement-id KMIPKIT-0093-FR-011 --write
+```
+
+An explicit owner also repairs unresolved blocked rows for that exact
+requirement that an earlier invocation may have left under the KMIPKIT-0043
+fallback. It does not change declarations with another requirement, mappings,
+or approval evidence.
+
 Regenerate the report and run `generate.py --check` afterward. The Rust audit
 remains a failing gate while it reports unresolved issues.
 
