@@ -1934,6 +1934,12 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             parity = json.loads((root / GENERATED_OUTPUTS[5]).read_text(encoding="utf-8"))
 
             expected = json.loads(PUBLIC_API_V1_FIXTURE.read_text(encoding="utf-8"))
+            # Release updates can reorder preserved manifest records without
+            # changing the v1 registry slice; compare those identity-keyed rows
+            # independently of source order.
+            for collection in ("types", "functions"):
+                parity[collection].sort(key=lambda record: record["id"])
+                expected[collection].sort(key=lambda record: record["id"])
             self.assertEqual(parity, expected)
 
     def test_registry_projection_excludes_non_registry_async_client_accessors(self) -> None:

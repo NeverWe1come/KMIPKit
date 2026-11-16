@@ -463,20 +463,22 @@
 - The reconciled manifest adds 2,077 declared Rust, C, Java, and Python tag
   values and helper exports under `KMIPKIT-0093-FR-001` and `FR-002`. The public
   manifest input bound is 72 MiB, and its pinned snapshot now records 18,895
-  declarations. KMIP 3.0 tag names remain explicitly versioned.
+  declarations before the release rebase; it records 19,357 after merging the
+  current release manifest. KMIP 3.0 tag names remain explicitly versioned.
 - Rust lookups split the 354-value match into small private functions; the
   generated source passes Clippy with warnings denied. New C, Java, Python, and
   Rust consumer tests check exact 2.1/3.0 tag names and unknown-value behavior.
 - The bilingual package guides document the new names and version boundary.
-- Local verification passed: 23 catalog tests; 114 API-manifest generator
+- Before the release rebase, local verification passed: 23 catalog tests; 114 API-manifest generator
   tests; 1,453 Rust protocol tests plus the tag integration test; C consumer
   tests 4/4; Java tests 714 with one pre-existing skip; Python tests 1,356;
   all four generated-output checks; and the C/Java/Python export audit. The
-  generated Rust audit maps every new tag path, but reports 193 other existing
-  Rust paths missing from the manifest; none of those paths are tag exports.
+  pre-rebase Rust audit mapped every new tag path, but reported 193 other
+  existing Rust paths missing from the manifest; none of those paths are tag exports.
   The full Rust export audit therefore remains incomplete outside this slice.
 - Exact-head CI has not run yet. G004 remains open until the WIP PR's required
   checks pass and any failures are fixed.
+
 
 ### Refactor
 
@@ -511,3 +513,30 @@
   only the runtime mapping and its parity tests changed. Re-ran both focused
   tests after the mapping change, with one test passing in each package.
 
+## KMIPKIT-0093 release rebase contract follow-up
+
+### Red
+
+- After rebasing the catalog branch onto `release/1.0.0` at `e1b12188b`,
+  `test_registry_parity_fixture_preserves_the_v1_registry_slice` failed because
+  the current manifest ordered the preserved v1 `types` and `functions`
+  differently from the historical fixture. Comparing records by ID showed the
+  same record sets and contents; only array order differed.
+
+### Green
+
+- The fixture assertion now canonicalizes the identity-keyed `types` and
+  `functions` arrays by ID before comparing them, while still comparing every
+  field and rejecting missing or changed records.
+- The manifest reconciliation, named-value generation, and API manifest
+  generation checks pass on the merged source. The C, Java, and Python export
+  audit also matches all declarations with no missing, stale, kind, or
+  signature issues: C 2,580; Java 2,985; Python 3,236.
+- `python3 -B -m unittest
+  tools.api_manifest.tests.test_generate.ManifestGeneratorCliTests.test_registry_parity_fixture_preserves_the_v1_registry_slice -v`
+  passes.
+
+### Refactor
+
+- This update changes only the test comparison; generated API output and runtime
+  behavior are unchanged.
