@@ -62,12 +62,13 @@ class PinnedSourceContract(unittest.TestCase):
         self.assertIsNotNone(readme_match)
         self.assertEqual(expected, readme_match.group(1))
 
-    def test_test_server_harness_uses_locked_release_dependencies(self):
+    def test_test_server_harness_fetches_release_dependencies_before_offline_build(self):
         source = (ROOT / 'interop/rust-kmip-validator/tools/build_test_server.py').read_text()
         self.assertIn('shutil.copyfile(SOURCE / "Cargo.lock", HARNESS / "Cargo.lock")', source)
-        self.assertIn('"fetch", "--locked"', source)
+        self.assertIn('"fetch", "--manifest-path"', source)
         self.assertIn('"metadata", "--offline"', source)
         self.assertIn('"build", "--locked"', source)
+        self.assertLess(source.index('"fetch", "--manifest-path"'), source.index('"metadata", "--offline"'))
 
     def test_cached_release_bundle_is_rebuilt_when_its_pin_or_digest_is_stale(self):
         with tempfile.TemporaryDirectory() as directory:

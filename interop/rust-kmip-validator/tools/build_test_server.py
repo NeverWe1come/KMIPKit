@@ -42,6 +42,8 @@ tokio = { version = "=1.53.3", features = ["macros", "rt", "sync"] }
 aws-lc-sys = { path = "../release-source/vendor/aws-lc-sys-0.45.0" }
 ''')
 shutil.copyfile(SOURCE / "Cargo.lock", HARNESS / "Cargo.lock")
+subprocess.run(["cargo", "+1.94", "fetch", "--manifest-path",
+                str(HARNESS / "Cargo.toml")], check=True)
 subprocess.run(["cargo", "+1.94", "metadata", "--offline", "--manifest-path",
                 str(HARNESS / "Cargo.toml"), "--format-version", "1"],
                check=True, stdout=subprocess.DEVNULL)
