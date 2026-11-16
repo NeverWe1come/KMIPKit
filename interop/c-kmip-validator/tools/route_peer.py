@@ -333,6 +333,7 @@ RECIPES = {
     'test-v20-reject-get-constraints': ((56,), 'get_constraints'),
     'test-v20-reject-ping': ((59,), 'ping'),
     'test-op-create': ((1, 20), 'create'),
+    'test-op-export': ((1, 43, 19, 20), 'export'),
     'test-op-register': ((3, 20), 'register'),
     'test-op-add-attribute': ((1, 13, 19, 20), 'add_attribute'),
     'test-norm-payload-client-add-attribute-request-20-002': ((1, 13, 19, 20), 'add_attribute'),
@@ -669,6 +670,18 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
                 text_values(adjust_item, UNIQUE_IDENTIFIER_TAG) != ['fixture-key-1'] or
                 request_adjust_attribute_fields(adjust_item) != ('KMIPKit', 'Counter', 1, 5)):
             raise ValueError('fixture_adjust_attribute_request_fields_mismatch')
+    if selected_recipe[1] == 'export':
+        export_item = next((item for item in node[2]
+                            if item[0] == BATCH_ITEM_TAG and item[1] == 1 and
+                            numbers(item, 0x42005C) == [43]), None)
+        payloads = [child for child in export_item[2]
+                    if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1] if export_item else []
+        identifiers = [child for child in payloads[0][2]
+                       if child[0] == UNIQUE_IDENTIFIER_TAG] if len(payloads) == 1 else []
+        if (len(payloads) != 1 or len(identifiers) != 1 or
+                not is_id_placeholder_identifier(identifiers[0]) or
+                len(payloads[0][2]) != 1):
+            raise ValueError('fixture_export_request_fields_mismatch')
     if selected_recipe[1] == 'delegated_login':
         payloads = list(descendants(node, REQUEST_PAYLOAD_TAG))
         if (len(payloads) != 1 or payloads[0][1] != 1 or
@@ -1972,6 +1985,7 @@ class PeerState:
                   15: 'attribute_deleted',
                   48: 'attribute_adjusted',
                   49: 'attribute_set',
+                  43: 'exported',
                   17: 'usage_allocation_returned',
                   26: 'async_operation_polled',
                   56: 'constraints_retrieved',
@@ -2024,7 +2038,7 @@ class PeerState:
                 identifier = matching_identifiers[0]
                 placeholder = identifier
                 effect = 'located'
-            elif operation in (9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 20, 31, 32, 48, 49, 56):
+            elif operation in (9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 20, 31, 32, 43, 48, 49, 56):
                 state = self.objects.get(identifier)
                 if state is None:
                     status, reason, effect = 1, 55, 'object_not_found'
@@ -2146,6 +2160,7 @@ def verify_lifecycle(operations, response_tree):
     labels = {9: 'checked', 10: 'object_retrieved', 11: 'attributes_retrieved',
               12: 'attribute_list_retrieved', 13: 'attribute_added',
               48: 'attribute_adjusted',
+              43: 'exported',
               17: 'usage_allocation_returned',
               56: 'constraints_retrieved'}
     for operation in operations:
@@ -2195,6 +2210,29 @@ def verify_lifecycle(operations, response_tree):
     if [(numbers(item, 0x42007E) or [0])[0] for item in items] != expected_reasons:
         raise ValueError('fixture_state_result_reason_mismatch')
     return effects
+
+
+def verify_export_response(response_tree):
+    """Check the required KMIP v2.0/v2.1 §6.1.18 Export payload fields."""
+    items = [child for child in response_tree[2]
+             if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    export_items = [item for item in items if numbers(item, 0x42005C) == [43]]
+    payloads = [child for child in export_items[0][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1] if len(export_items) == 1 else []
+    fields = payloads[0][2] if len(payloads) == 1 else []
+    required_tags = [0x420057, UNIQUE_IDENTIFIER_TAG, 0x420125, 0x42008F]
+    if ([field[0] for field in fields] != required_tags or
+            fields[0][1] != 5 or int.from_bytes(fields[0][2], 'big') != 2 or
+            fields[1][1] != 7 or fields[1][2] != b'fixture-key-1' or
+            fields[2][1] != 1 or fields[3][1] != 1):
+        raise ValueError('fixture_export_response_fields_mismatch')
+    attribute_fields = fields[2][2]
+    if ([field[0] for field in attribute_fields] != [0x420028, 0x42002A] or
+            int.from_bytes(attribute_fields[0][2], 'big') != 3 or
+            int.from_bytes(attribute_fields[1][2], 'big', signed=True) != 128):
+        raise ValueError('fixture_export_response_attributes_mismatch')
+    if not any(child[0] == 0x420040 for child in fields[3][2]):
+        raise ValueError('fixture_export_response_any_object_mismatch')
 
 
 def verify_usage_allocation_identifier_variants(response_tree):
@@ -2607,6 +2645,10 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 (b'placeholder-revoke-cleanup', b'placeholder-destroy-cleanup')
                                                 if cleanup_exchange else
                                                 (b'placeholder-create', b'placeholder-activate', b'placeholder-get'))
+                                        elif recipe[1] == 'export':
+                                            response_item_ids = (
+                                                b'interop-create', b'interop-export',
+                                                b'interop-revoke', b'interop-destroy')
                                         elif attribute_mutation_recipe:
                                             response_item_ids = (
                                                 (b'interop-create',)
@@ -2903,6 +2945,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 raise ValueError('fixture_stop_partial_response_mismatch')
                                         elif placeholder_chain_recipe:
                                             verify_placeholder_chain_response(response_tree, response_operations)
+                                        elif recipe[1] == 'export':
+                                            verify_export_response(response_tree)
+                                            verify_lifecycle(recipe[0], response_tree)
                                         elif recipe[1] == 'get_usage_allocation_uid_variants':
                                             verify_usage_allocation_identifier_variants(response_tree)
                                         elif reject_this_exchange:

@@ -3147,8 +3147,11 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(recipe, ((3, 20), 'register'))
 
     def test_export_operation_executes_installed_request_and_response_routes(self):
-        from artifact_support import ROOT
+        """OASIS KMIP 2.0/2.1 §6.1.18 Tables 202–203/217–218 define Export."""
+        from artifact_support import INSTALL, ROOT
+        from route_matrix import catalog_tag_values, generic_tree_fixtures
         from route_peer import RECIPES, execute_network_cells
+        from route_ttlv import TreeAbi, encode
 
         catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
         manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
@@ -3162,14 +3165,16 @@ class RouteMatrixTests(unittest.TestCase):
 
         self.assertEqual(len(checks), 12, 'Export must pass both versions and all six network combinations')
         self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
-        expected_targets = {
-            'KMIPKIT-ELEM-OP-C2S-EXPORT',
-            'KMIPKIT-PAYLOAD-CLIENT-EXPORT-REQUEST-20-001',
-            'KMIPKIT-PAYLOAD-CLIENT-EXPORT-REQUEST-21-001',
-            'KMIPKIT-PAYLOAD-CLIENT-EXPORT-RESPONSE-20-001',
-            'KMIPKIT-PAYLOAD-CLIENT-EXPORT-RESPONSE-21-001',
-        }
-        self.assertTrue(expected_targets <= {event['target_id'] for event in events})
+        self.assertEqual({event['target_id'] for event in events},
+                         {'KMIPKIT-ELEM-OP-C2S-EXPORT'})
+        send_events = [event for event in events if event['action'] == 'send']
+        self.assertEqual(len(send_events), 12)
+        self.assertTrue(all(event['peer_observed_operation_sequence'] ==
+                            ['Create', 'Export', 'Revoke', 'Destroy'] and
+                            event['peer_observed_effects'] ==
+                            ['created', 'exported', 'revoked', 'destroyed'] and
+                            event['peer_observed_response_count'] == 4
+                            for event in send_events))
         required_symbols = {
             'kmipkit_client_batch_item_create',
             'kmipkit_client_batch_item_export',
@@ -3181,9 +3186,26 @@ class RouteMatrixTests(unittest.TestCase):
         }
         self.assertTrue(all(required_symbols <= set(check['public_api_trace_symbols'])
                             for check in checks), checks)
-        self.assertEqual({event['action'] for event in events
-                          if event['target_id'].startswith('KMIPKIT-PAYLOAD-CLIENT-EXPORT-RESPONSE-')},
-                         {'decode'})
+        export_response_decodes = [event for event in events
+                                   if event['public_api_symbol'] in {
+                                       'kmipkit_client_batch_item_response_export',
+                                       'kmipkit_client_batch_item_response_export_ttlv'}]
+        self.assertEqual({event['action'] for event in export_response_decodes}, {'decode'})
+        self.assertEqual(len(export_response_decodes), 4)
+
+        export_target = next(target for target in catalog['normative_targets']
+                             if target['target_id'] == 'KMIPKIT-ELEM-OP-C2S-EXPORT')
+        tags = catalog_tag_values(catalog)
+        abi = TreeAbi(INSTALL / 'lib/libkmipkit_ffi.so')
+        for version in ('2.0', '2.1'):
+            fixtures = generic_tree_fixtures(
+                export_target, catalog, tags, version,
+                case=next(case for case in selected['test_cases']
+                          if case['case_id'] == case_id))
+            self.assertEqual(len(fixtures), 1)
+            generic_route = abi.roundtrip(encode(fixtures[0]))
+            self.assertTrue({'kmipkit_ttlv_decode', 'kmipkit_ttlv_item_create'} <=
+                            generic_route['invoked_symbols'])
 
     def test_register_operation_executes_the_installed_request_and_response_routes(self):
         from artifact_support import ROOT
