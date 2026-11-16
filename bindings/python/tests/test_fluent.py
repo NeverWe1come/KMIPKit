@@ -1076,4 +1076,3 @@ def test_add_attribute_builder_executes_default_and_override_options(
                 ).with_options(client.RequestOptions()).asynchronous_indicator(2)
                 assert builder.execute(limits) == "options result"
     assert calls == [("default", None), ("options", 2)]
-
