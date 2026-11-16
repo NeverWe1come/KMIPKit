@@ -176,7 +176,7 @@ EXPECTED = (
 # reconciliation; KMIPKIT-0096 Python expert attributes; and KMIPKIT-0108/0109
 # attribute reads and bindings. The prior fingerprint predates those additions.
 # KMIPKIT-0126 adds 37 versioned standard attributes and 7 KMIP 3.0 batch response readers.
-UNCHANGED_DECLARATIONS_SHA256 = "c5ffdef6f618f6a1f770b2ba6be279e5567c74d5d2064986b8f42c60e774c6f2"
+UNCHANGED_DECLARATIONS_SHA256 = "253289c8e8d9351b06e76a8ec6a96e8586e1bbb0f1d7a5fdc9f489cbfb30410d"
 UNCHANGED_OPERATIONS_SHA256 = "9ee0f7c51c05a8abd96af7f6d3017f3ffb780c4262f231eaf3cb8c01a38147c7"
 # T098's maintainer-approved reconciliation updates lifecycle approval evidence
 # and inherited requirement links outside the T102 declaration/operation rows.

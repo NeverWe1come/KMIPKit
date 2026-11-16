@@ -162,6 +162,45 @@ fn set_comment(client: &mut Client) -> Result<String, Box<dyn Error>> {
 
 The builder validates the catalogued value and operation payload locally, supports `build`, `validate`, and `to_batch_item` when the caller needs explicit control, and exposes `attribute_item` for an explicitly typed TTLV Item. Use `vendor_attribute` to construct a KMIP Vendor Attribute structure from its vendor identifier, name, and value. The request executes through the existing client in one exchange and does not poll or retry.
 
+## Fluent Add Attribute request
+
+Add Attribute implements KMIP v2.1 §6.1.2, Table 167; its New Attribute uses the structure defined in §5.7, Table 163. The fluent request builds the existing typed request for adding one attribute to an identified object and accepts a catalogued `Attribute`, an explicitly typed TTLV `Item`, or a Vendor Attribute constructed from its fields:
+
+```rust
+use std::error::Error;
+
+use kmipkit_client::Client;
+use kmipkit_protocol::{attribute::typed, Attribute};
+use kmipkit_ttlv::codec::CodecLimits;
+
+fn add_comment(client: &mut Client) -> Result<String, Box<dyn Error>> {
+    let response = client
+        .request()
+        .add_attribute()
+        .unique_identifier("object-id-17")
+        .attribute(Attribute::<typed::Comment>::new("reviewed by service".to_owned())?)
+        .execute(&CodecLimits::defaults())?;
+
+    response
+        .outcome()
+        .response()
+        .add_attribute()
+        .and_then(|result| result.unique_identifier())
+        .map(str::to_owned)
+        .ok_or_else(|| "Add Attribute did not return a successful identifier".into())
+}
+```
+
+The operation requires one New Attribute. The builder validates its catalogued TTLV type and request payload locally; `build`, `validate`, and `to_batch_item` are available when a caller needs explicit control. `attribute_item` accepts a fully typed Item, while `vendor_attribute` constructs the KMIP Vendor Attribute structure.
+
+| Language | Start the request | Add an attribute | Submit and release |
+| --- | --- | --- | --- |
+| C | `kmipkit_add_attribute_builder_create` | `..._add_catalogued_attribute`, `..._add_attribute_item`, or `..._add_vendor_attribute` | `..._execute_v1` or `..._build_batch_item`; release the builder and results |
+| Java | `new FluentRequest(client).addAttribute()` | `cataloguedAttribute`, `attributeItem`, or `vendorAttribute` | `execute(limits)` or `build`; close the builder and results |
+| Python | `fluent.Request(client).add_attribute()` | `catalogued_attribute`, `attribute_item`, or `vendor_attribute` | `execute(limits)` or `build`; use the builder as a context manager |
+
+The exchange uses the existing client once and does not poll or retry. Client-side mutation policy checks can reject prohibited attributes before transport and report `NotSent`.
+
 The same task-oriented builder is available from each binding's fluent request facade:
 
 | Language | Start the request | Catalogued attribute | Expert TTLV or vendor attribute | Submit and release |

@@ -68613,6 +68613,10 @@
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.fluent.AddAttributeBuilder.cataloguedAttribute",
+      "javaSignatures": [
+        "public org.kmipkit.fluent.AddAttributeBuilder cataloguedAttribute(org.kmipkit.ttlv.Tag, org.kmipkit.ttlv.TtlvValue)",
+        "public org.kmipkit.fluent.AddAttributeBuilder cataloguedAttribute(org.kmipkit.ttlv.StandardAttribute, org.kmipkit.ttlv.TtlvValue)"
+      ],
       "capabilityId": "fluent_add_attribute_parity",
       "requirementIds": [
         "KMIPKIT-0093-FR-004",
@@ -109640,6 +109644,10 @@
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.fluent.SetAttributeBuilder.cataloguedAttribute",
+      "javaSignatures": [
+        "public org.kmipkit.fluent.SetAttributeBuilder cataloguedAttribute(org.kmipkit.ttlv.Tag, org.kmipkit.ttlv.TtlvValue)",
+        "public org.kmipkit.fluent.SetAttributeBuilder cataloguedAttribute(org.kmipkit.ttlv.StandardAttribute, org.kmipkit.ttlv.TtlvValue)"
+      ],
       "capabilityId": "fluent_set_attribute_parity",
       "requirementIds": [
         "KMIPKIT-0093-FR-004",

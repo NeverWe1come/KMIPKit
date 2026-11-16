@@ -544,3 +544,53 @@
   tools.api_manifest.tests.test_0093_set_attribute_builder_manifest -v`
   passes all four assertions, and `git diff --check` passes.
 
+## KMIPKIT-0093 Add Attribute fluent request builders
+
+### Red
+
+- Commits `00f890771` and `3ffb824c8` added Rust consumer tests for typed
+  request construction, validation, batch conversion, and one typed exchange;
+  they failed first because `RequestBuilder::add_attribute` was absent.
+- Commit `135859cf2` added a compiled C consumer for the opaque Add Attribute
+  builder; it failed first because the public C type and symbols were absent.
+- Commit `22f790cb8` added four-language API manifest assertions; they failed
+  first because the builder declaration and operation functions were absent.
+- Commit `57491df9f` added a Java consumer test that failed to compile because
+  `AddAttributeBuilder` was not present.
+- Commit `e14076b65` added a Python consumer test that failed because
+  `Request.add_attribute` was absent.
+
+### Green
+
+- Rust commit `ffc82f876` added `AddAttributeBuilder` over the existing typed
+  `AddAttributeRequest`, including detached construction, catalogued and
+  explicit Items, Vendor Attribute construction, batch conversion, and one
+  exchange through the existing client.
+- C commit `07738867e` added the opaque ABI and generated public declarations;
+  the compiled C consumer builds the typed request, inspects its batch
+  operation, and exercises the pre-send null-client error path.
+- Java commit `ae20d1018` and Python commit `5dd8d0de4` add the JNI/CFFI
+  facades over the same Rust-owned builder and typed request handles.
+  Their focused consumer tests exercise request ownership, validation, batch
+  conversion, and release. The Python typed-request adapter owns the returned
+  handle independently.
+- `cargo test -p kmipkit-client --all-features add_attribute` passes six
+  focused tests; the compiled C ABI consumer passes; the full Java Gradle test
+  suite passes; and Python passes 1,362 tests with 119 subtests, including the
+  built-wheel contract with `maturin` installed.
+- The Add Attribute manifest tests pass and
+  `python3 tools/api_manifest/generate.py --check` verifies the 12 generated
+  outputs. The generated binding export report reconciles all C, Java, and
+  Python declarations with zero missing, stale, or kind-mismatched exports.
+
+### Refactor
+
+- Commit `b4e4336cd` extracts the New Attribute selection, duplicate-call
+  rejection, vendor construction, TTLV copying, and local error state shared
+  by the Rust Add Attribute and Set Attribute builders.
+- English and Spanish attribute-operation guides and the FR-004, FR-006, and
+  FR-011 traceability rows now describe Add Attribute and its four binding
+  paths with the KMIP v2.1 §6.1.2 and §5.7 references.
+- Full required coverage and exact-head CI remain open. The dependent PR stays
+  WIP until those checks pass.
+

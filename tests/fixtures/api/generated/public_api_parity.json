@@ -389019,6 +389019,10 @@
       "declarationId": "AddAttributeBuilder.cataloguedAttribute:java",
       "declarationState": "declared",
       "exportName": "org.kmipkit.fluent.AddAttributeBuilder.cataloguedAttribute",
+      "javaSignatures": [
+        "public org.kmipkit.fluent.AddAttributeBuilder cataloguedAttribute(org.kmipkit.ttlv.Tag, org.kmipkit.ttlv.TtlvValue)",
+        "public org.kmipkit.fluent.AddAttributeBuilder cataloguedAttribute(org.kmipkit.ttlv.StandardAttribute, org.kmipkit.ttlv.TtlvValue)"
+      ],
       "kind": "java-member",
       "languageMappings": {
         "c": {
@@ -430046,6 +430050,10 @@
       "declarationId": "SetAttributeBuilder.cataloguedAttribute:java",
       "declarationState": "declared",
       "exportName": "org.kmipkit.fluent.SetAttributeBuilder.cataloguedAttribute",
+      "javaSignatures": [
+        "public org.kmipkit.fluent.SetAttributeBuilder cataloguedAttribute(org.kmipkit.ttlv.Tag, org.kmipkit.ttlv.TtlvValue)",
+        "public org.kmipkit.fluent.SetAttributeBuilder cataloguedAttribute(org.kmipkit.ttlv.StandardAttribute, org.kmipkit.ttlv.TtlvValue)"
+      ],
       "kind": "java-member",
       "languageMappings": {
         "c": {
