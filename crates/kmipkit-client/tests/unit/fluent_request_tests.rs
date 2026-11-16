@@ -116,6 +116,43 @@ fn delete_attribute_builder_executes_once_and_converts_to_the_typed_batch_item()
 }
 
 #[test]
+fn delete_attribute_builder_preserves_explicit_items_and_vendor_selectors() {
+    let unknown = item(0x0042_00FC, Value::text_string("opaque selector".to_owned()));
+    let explicit = DeleteAttributeBuilder::detached()
+        .current_attribute_item(unknown)
+        .build_request()
+        .expect("an explicitly typed unknown attribute remains generic TTLV");
+    assert_eq!(
+        explicit
+            .current_attribute()
+            .expect("the selector is preserved")
+            .item()
+            .tag()
+            .raw(),
+        0x0042_00FC
+    );
+
+    let value = item(typed::Description::TAG, Value::text_string("north".to_owned()));
+    let vendor = DeleteAttributeBuilder::detached()
+        .current_vendor_attribute("Vendor_Name.1", "region", &value)
+        .build_request()
+        .expect("the vendor helper constructs the complete KMIP Vendor Attribute");
+    let item = vendor
+        .current_attribute()
+        .expect("the vendor selector is present")
+        .item();
+    assert_eq!(item.tag().raw(), 0x0042_0008);
+    let children = item
+        .as_structure()
+        .expect("Vendor Attribute is a Structure")
+        .children();
+    assert_eq!(children.len(), 3);
+    assert_eq!(children[0].tag().raw(), 0x0042_009D);
+    assert_eq!(children[1].tag().raw(), 0x0042_000A);
+    assert_eq!(children[2].tag().raw(), 0x0042_000B);
+}
+
+#[test]
 fn add_attribute_builder_constructs_the_existing_typed_request() {
     let mut client = failed_request_client();
     let request = client
