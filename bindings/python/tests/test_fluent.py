@@ -66,6 +66,70 @@ def test_locate_and_revoke_build_typed_items_with_explicit_optional_fields():
         invalid.build()
 
 
+def test_locate_and_revoke_execute_forward_options_and_async_indicator(monkeypatch):
+    calls = []
+
+    class FakeBatch:
+        @classmethod
+        def create(cls):
+            return cls()
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_arguments):
+            return None
+
+        def add_item(self, item):
+            self.operation = item.operation
+
+        def set_asynchronous_indicator(self, value):
+            self.asynchronous_indicator = value
+
+    class FakeClient:
+        def execute(self, batch, limits):
+            calls.append(("default", batch.operation, batch.asynchronous_indicator))
+            return "default-result"
+
+        def execute_with_options(self, batch, limits, options):
+            calls.append(("options", batch.operation, batch.asynchronous_indicator, options))
+            return "options-result"
+
+    monkeypatch.setattr(fluent, "Batch", FakeBatch)
+    monkeypatch.setattr(fluent, "Client", FakeClient)
+    fake_client = FakeClient()
+    configured_options = client.RequestOptions()
+    override_options = client.RequestOptions()
+
+    with ttlv.codec_limits_defaults() as limits, ttlv.ttlv_structure_create() as empty_items:
+        with attribute_operations.AttributeSet.try_new(empty_items) as attributes:
+            with fluent.Request(fake_client).locate(attributes) as locate:
+                assert locate.with_options(configured_options) is locate
+                assert locate.asynchronous_indicator(3) is locate
+                assert locate.execute(limits) == "options-result"
+                assert locate.execute_with_options(limits, override_options) == "options-result"
+
+        revoke = fluent.Request(fake_client).revoke(2, "rekey after compromise")
+        assert revoke.with_options(configured_options) is revoke
+        assert revoke.asynchronous_indicator(4) is revoke
+        assert revoke.execute(limits) == "options-result"
+        assert revoke.execute_with_options(limits, override_options) == "options-result"
+
+    assert [call[:3] for call in calls] == [
+        ("options", 8, 3),
+        ("options", 8, 3),
+        ("options", 19, 4),
+        ("options", 19, 4),
+    ]
+
+    with ttlv.ttlv_structure_create() as empty_items:
+        with attribute_operations.AttributeSet.try_new(empty_items) as attributes:
+            with pytest.raises(errors.InvalidInputError):
+                fluent.Request(fake_client).locate(attributes).with_options(object())
+    with pytest.raises(errors.InvalidInputError):
+        fluent.Request(fake_client).revoke(2).with_options(object())
+
+
 def test_delete_attribute_builder_builds_an_independent_typed_request():
     identifier = extensions.UniqueIdentifier.text_string("delete-attribute-key")
     reference = extensions.AttributeReference.tag(StandardAttribute.DESCRIPTION.tag)

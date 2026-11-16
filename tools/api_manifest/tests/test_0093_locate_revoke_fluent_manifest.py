@@ -26,6 +26,34 @@ EXPECTED_FUNCTIONS = {
     "revoke_builder_execute_v1",
     "revoke_builder_execute_with_options_v1",
 }
+EXPECTED_RUST_ROOT_EXPORTS = {
+    "kmipkit_client::LocateBuilder",
+    "kmipkit_client::LocateBuilder<'a>::attributes",
+    "kmipkit_client::LocateBuilder<'a>::build_request",
+    "kmipkit_client::LocateBuilder<'a>::execute",
+    "kmipkit_client::LocateBuilder<'a>::execute_with_options",
+    "kmipkit_client::LocateBuilder<'a>::maximum_items",
+    "kmipkit_client::LocateBuilder<'a>::object_group_member",
+    "kmipkit_client::LocateBuilder<'a>::offset_items",
+    "kmipkit_client::LocateBuilder<'a>::storage_status_mask",
+    "kmipkit_client::LocateBuilder<'a>::to_batch_item",
+    "kmipkit_client::LocateBuilder<'a>::validate",
+    "kmipkit_client::LocateBuilder<'a>::with_asynchronous_indicator",
+    "kmipkit_client::LocateBuilder<'a>::with_options",
+    "kmipkit_client::RequestBuilder<'a>::locate",
+    "kmipkit_client::RequestBuilder<'a>::revoke",
+    "kmipkit_client::RevokeBuilder",
+    "kmipkit_client::RevokeBuilder<'a>::build_request",
+    "kmipkit_client::RevokeBuilder<'a>::compromise_occurrence_date",
+    "kmipkit_client::RevokeBuilder<'a>::execute",
+    "kmipkit_client::RevokeBuilder<'a>::execute_with_options",
+    "kmipkit_client::RevokeBuilder<'a>::revocation_message",
+    "kmipkit_client::RevokeBuilder<'a>::to_batch_item",
+    "kmipkit_client::RevokeBuilder<'a>::unique_identifier",
+    "kmipkit_client::RevokeBuilder<'a>::validate",
+    "kmipkit_client::RevokeBuilder<'a>::with_asynchronous_indicator",
+    "kmipkit_client::RevokeBuilder<'a>::with_options",
+}
 
 
 class FluentLocateRevokeManifestTests(unittest.TestCase):
@@ -61,6 +89,33 @@ class FluentLocateRevokeManifestTests(unittest.TestCase):
                     {language for language in ("rust", "c", "java", "python")
                      if row.get(language)},
                 )
+        locate_declaration = next(
+            row for row in self.manifest["publicDeclarations"]
+            if row["packageId"] == "rust-kmipkit-client"
+            and row["exportName"] == "kmipkit_client::fluent::LocateBuilder"
+        )
+        self.assertEqual(
+            "kmipkit_locate_builder_t",
+            locate_declaration["languageMappings"]["c"]["name"],
+        )
+
+    def test_all_root_reexports_are_declared_with_four_language_mappings(self) -> None:
+        rows = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row["packageId"] == "rust-kmipkit-client"
+            and row["exportName"] in EXPECTED_RUST_ROOT_EXPORTS
+        }
+        self.assertEqual(EXPECTED_RUST_ROOT_EXPORTS, set(rows))
+        for export_name, row in rows.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual("declared", row["declarationState"])
+                self.assertEqual("fluent_locate_revoke_parity", row["capabilityId"])
+                self.assertEqual(
+                    {"rust", "c", "java", "python"},
+                    set(row["languageMappings"]),
+                )
+                self.assertEqual(export_name, row["languageMappings"]["rust"]["name"])
 
     def test_binding_aliases_and_lifecycle_methods_are_declared(self) -> None:
         declarations = {
