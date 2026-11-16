@@ -487,3 +487,27 @@
   all 23 tests, and both the named-value and manifest reconciliation checks
   confirm generated outputs are unchanged.
 
+## KMIPKIT-0093 named-tag capability runtime reporting
+
+### Red
+
+- CI run `43831588866`, Ubuntu coverage job `133178419627`, failed the FFI
+  capability test: the generated C capability list included
+  `fluent_named_tag_values`, but the Rust runtime query returned `Ok(false)`.
+- After extending the expected C capability list, the focused Rust runtime
+  metadata test reproduced the missing implementation at
+  `crates/kmipkit/tests/runtime_metadata.rs`.
+
+### Green
+
+- Added the named-tag capability to the Rust runtime query and asserted it in
+  both Rust and FFI capability tests. The focused Rust runtime and C capability
+  tests now pass.
+- `cargo fmt --all --check` and `git diff --check` pass.
+
+### Refactor
+
+- Kept the capability query's existing boundary and generated manifest output;
+  only the runtime mapping and its parity tests changed. Re-ran both focused
+  tests after the mapping change, with one test passing in each package.
+
