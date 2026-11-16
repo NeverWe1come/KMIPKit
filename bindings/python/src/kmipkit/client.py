@@ -2203,6 +2203,50 @@ class BatchItemResult(_BatchItemResultNativeState):
                 lib.kmipkit_ttlv_structure_release(output[0])
                 raise
 
+    def ttlv_hex(self, limits: ttlv.CodecLimits) -> credentials.SecretBytes:
+        """Render the complete retained response as canonical uppercase TTLV hex in an owned UTF-8 buffer.
+
+        Close the returned native zeroizing owner. ``with_bytes`` clears its
+        temporary callback view; copies retained by Python or the caller cannot
+        be cleared by KMIPKit. Rendering never sends a request.
+        """
+        return self._render_response_view("ttlv_hex", limits)
+
+    def json(self, limits: ttlv.CodecLimits) -> credentials.SecretBytes:
+        """Render the complete retained response as KMIP JSON in an owned UTF-8 buffer.
+
+        Close the returned native zeroizing owner. ``with_bytes`` clears its
+        temporary callback view; copies retained by Python or the caller cannot
+        be cleared by KMIPKit. Rendering never sends a request.
+        """
+        return self._render_response_view("json", limits)
+
+    def xml(self, limits: ttlv.CodecLimits) -> credentials.SecretBytes:
+        """Render the complete retained response as KMIP XML in an owned UTF-8 buffer.
+
+        Close the returned native zeroizing owner. ``with_bytes`` clears its
+        temporary callback view; copies retained by Python or the caller cannot
+        be cleared by KMIPKit. Rendering never sends a request.
+        """
+        return self._render_response_view("xml", limits)
+
+    def _render_response_view(self, encoding: str, limits: ttlv.CodecLimits) -> credentials.SecretBytes:
+        if not isinstance(limits, ttlv.CodecLimits) or self._native_response_item is None:
+            errors.raise_for_status(4)
+        with _NATIVE_CALL_LOCK:
+            output = ffi.new("kmipkit_secret_bytes_t **")
+            _raise_abi_status(getattr(lib, "kmipkit_client_batch_item_response_" + encoding)(
+                self._native_response_item._pointer(),
+                ffi.cast("kmipkit_codec_limits_t *", int(_base_ffi.cast("uintptr_t", limits._pointer()))),
+                output,
+            ))
+            try:
+                return _wrap_owned_handle(credentials.SecretBytes,
+                    _base_ffi.cast("kmipkit_secret_bytes_t *", int(ffi.cast("uintptr_t", output[0]))))
+            except BaseException:
+                lib.kmipkit_secret_bytes_release(output[0])
+                raise
+
     def raw(self) -> ttlv.Structure | None:
         """Return an owned copy of the decoded Response Payload, when present.
 
@@ -3091,7 +3135,11 @@ class RngSeedResponse:
 
 
 class BatchResult(_ClientHandle):
-    """Owns a native batch response and exposes copied, ordered outcome metadata."""
+    """Owns a native batch response and exposes returned outcomes in request order.
+
+    An accepted partial Stop or Undo response contains only the items returned
+    by the server; omitted items do not have fabricated results.
+    """
 
     _release_name = "kmipkit_client_batch_response_release"
 
@@ -3106,11 +3154,11 @@ class BatchResult(_ClientHandle):
         self.items = items
 
     def item_count(self) -> int:
-        """Return the number of ordered response items."""
+        """Return the number of response items actually returned by the server."""
         return len(self.items)
 
     def item_at(self, index: int) -> BatchItemResult:
-        """Return a copied response item by zero-based position."""
+        """Return a copied returned result by zero-based request-order position."""
         if not isinstance(index, int) or isinstance(index, bool) or index < 0:
             errors.raise_for_status(4)
         try:
@@ -3199,6 +3247,103 @@ class Client(_ClientHandle):
     """Production client constructed only from validated configuration records."""
 
     _release_name = "kmipkit_client_release"
+
+    def request(self) -> Any:
+        """Return the task-oriented fluent namespace for this client."""
+        from .fluent import Request
+
+        return Request(self)
+
+    def create_symmetric_key(
+        self,
+        limits: ttlv.CodecLimits,
+        *,
+        algorithm: int,
+        length: int,
+        usage_mask: int,
+        name: str | None = None,
+        options: RequestOptions | None = None,
+    ) -> BatchResult:
+        """Create one symmetric key with explicitly selected cryptographic policy."""
+        if not isinstance(limits, ttlv.CodecLimits):
+            errors.raise_for_status(4)
+        if options is not None and not isinstance(options, RequestOptions):
+            errors.raise_for_status(4)
+        if name is not None and not isinstance(name, str):
+            errors.raise_for_status(4)
+        raw_name = name.encode("utf-8") if name is not None else b""
+        owner = ffi.new("uint8_t[]", raw_name) if raw_name else ffi.NULL
+        request = ffi.new("kmipkit_symmetric_key_request_v1_t *")
+        request.struct_size = ffi.sizeof("kmipkit_symmetric_key_request_v1_t")
+        request.abi_version = 1
+        request.cryptographic_algorithm = int(algorithm)
+        request.cryptographic_length = int(length)
+        request.cryptographic_usage_mask = int(usage_mask)
+        request.name_present = int(name is not None)
+        request.name.data, request.name.length = owner, len(raw_name)
+        from . import fluent
+
+        return fluent._execute_direct_create(self, request, limits, options)
+
+    def get_by_id(
+        self, unique_identifier: extensions.UniqueIdentifier, limits: ttlv.CodecLimits,
+        *, options: RequestOptions | None = None,
+    ) -> BatchResult:
+        """Get one object by its typed Unique Identifier."""
+        from .fluent import _execute_direct
+
+        fn = (
+            lib.kmipkit_client_get_by_id_with_options_v1
+            if options
+            else lib.kmipkit_client_get_by_id_v1
+        )
+        return _execute_direct(self, fn, unique_identifier, limits, options)
+
+    def destroy_by_id(
+        self, unique_identifier: extensions.UniqueIdentifier, limits: ttlv.CodecLimits,
+        *, options: RequestOptions | None = None,
+    ) -> BatchResult:
+        """Destroy one object by its typed Unique Identifier."""
+        from .fluent import _execute_direct
+
+        fn = (
+            lib.kmipkit_client_destroy_by_id_with_options_v1
+            if options
+            else lib.kmipkit_client_destroy_by_id_v1
+        )
+        return _execute_direct(self, fn, unique_identifier, limits, options)
+
+    def get_attributes(
+        self,
+        unique_identifier: extensions.UniqueIdentifier,
+        attribute_references: Sequence[extensions.AttributeReference],
+        limits: ttlv.CodecLimits,
+        *,
+        options: RequestOptions | None = None,
+    ) -> BatchResult:
+        """Get ordered attributes in one exchange using named typed inputs."""
+        from .fluent import _execute_direct_attributes
+
+        return _execute_direct_attributes(
+            self, unique_identifier, attribute_references, limits, options
+        )
+
+    def get_attribute_list(
+        self,
+        unique_identifier: extensions.UniqueIdentifier,
+        limits: ttlv.CodecLimits,
+        *,
+        options: RequestOptions | None = None,
+    ) -> BatchResult:
+        """Get an object's attribute names in one typed exchange."""
+        from .fluent import _execute_direct
+
+        function = (
+            lib.kmipkit_client_get_attribute_list_with_options_v1
+            if options is not None
+            else lib.kmipkit_client_get_attribute_list_v1
+        )
+        return _execute_direct(self, function, unique_identifier, limits, options)
 
     @classmethod
     def create(

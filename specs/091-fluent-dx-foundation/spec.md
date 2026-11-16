@@ -2,7 +2,7 @@
 
 - **Feature Branch**: `feature/KMIPKIT-0091-fluent-dx`
 - **Base**: `release/1.0.0` at `9692057c9ade474fb0c4e0b7130539da368eb794`
-- **Status**: Draft for maintainer review; implementation authorization is the user request, subject to this spec's approval
+**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)
 - **Owning identifier**: KMIPKIT-0091
 
 ## 1. Purpose

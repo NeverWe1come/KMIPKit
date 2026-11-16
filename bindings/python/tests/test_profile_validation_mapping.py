@@ -489,7 +489,7 @@ def test_baseline_selection_fails_closed_before_a_cffi_transport_connection() ->
     )
     configuration = extensions.create_client_configuration(registry)
     selection = client.ProfileValidationSelection(
-        ("KMIPKIT-PROFILE-BASELINE-CLIENT",)
+        ("KMIPKIT-PROFILE-HTTPS-CLIENT",)
     )
     batch = client.Batch.create()
     batch.add_item(extensions.client_batch_item_discover_versions())
@@ -513,15 +513,15 @@ def test_baseline_selection_fails_closed_before_a_cffi_transport_connection() ->
         assert failure.value.delivery is errors.DeliveryState.NOT_SENT
         details = failure.value.profile_validation
         assert details == errors.ProfileValidationDetails(
-            error_code="profile_unavailable",
-            profile_id="KMIPKIT-PROFILE-BASELINE-CLIENT",
-            requirement_id="KMIPKIT-REQ-SPEC-14.1-001",
-            source_clause_id="KMIPKIT-CLAUSE-SPEC-14.1-001",
+            error_code="conditional_profile_unsatisfied",
+            profile_id="KMIPKIT-PROFILE-HTTPS-CLIENT",
+            requirement_id=None,
+            source_clause_id=None,
             source_gap_id=None,
             source_gap_locator=None,
             batch_item_index=None,
         )
-        assert "KMIPKIT-PROFILE-BASELINE-CLIENT" not in str(failure.value)
+        assert "KMIPKIT-PROFILE-HTTPS-CLIENT" not in str(failure.value)
 
         with pytest.raises(errors.ClientExecutionError) as unknown_failure:
             kmip.execute_with_profiles(unknown_batch, limits, unknown_selection)

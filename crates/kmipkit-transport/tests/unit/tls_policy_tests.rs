@@ -15,7 +15,7 @@ use std::time::Duration;
 
 use crate::config::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RevocationListInput,
-    TransportConfig, TransportConfigError, TrustSource,
+    TlsVersionPolicy, TransportConfig, TransportConfigError, TrustSource,
 };
 use crate::tls::{self, MonotonicClock, TlsClientConfig};
 use rcgen::{
@@ -546,6 +546,70 @@ fn ssl_cert_file_child() {
     }
 }
 
+#[test]
+fn default_tls_policy_rejects_tls12_only_server_and_opt_in_compat_connects_with_mtls() {
+    let pki = TestPki::generate(SERVER_NAME, false);
+    let tls12_peer = server_config_with_versions(&pki, true, 0, &[&rustls::version::TLS12]);
+
+    // Default policy remains TLS 1.3 only and rejects TLS 1.2 servers.
+    let default_cfg = transport_config(&pki, &pki, None, Vec::new());
+    assert_eq!(
+        default_cfg.tls_version_policy(),
+        TlsVersionPolicy::Tls13Only
+    );
+    let default_client =
+        tls::build_client_config(&default_cfg).expect("default TLS 1.3 config builds");
+    expect_tls_rejection(handshake(&default_client, Arc::clone(&tls12_peer)));
+
+    // Explicit opt-in compatibility mode negotiates TLS 1.2 with mTLS and strict peer verification.
+    let compat_cfg = TransportConfig::builder(Endpoint::raw_tls(SERVER_NAME, 5696))
+        .client_identity(identity_input(&pki, &pki))
+        .trust_source(trust_input(&pki))
+        .tls_version_policy(TlsVersionPolicy::Tls12And13Compat)
+        .build()
+        .expect("opt-in TLS 1.2 compatibility configuration builds");
+    assert_eq!(
+        compat_cfg.tls_version_policy(),
+        TlsVersionPolicy::Tls12And13Compat
+    );
+    let compat_client =
+        tls::build_client_config(&compat_cfg).expect("opt-in TLS 1.2 client config builds");
+    assert_eq!(
+        handshake_expecting_version(
+            &compat_client,
+            Arc::clone(&tls12_peer),
+            rustls::ProtocolVersion::TLSv1_2,
+        )
+        .expect("opt-in TLS 1.2 compatibility connects to trusted mTLS TLS 1.2 peer"),
+        HandshakeKind::Full
+    );
+
+    // Mismatched client identity and untrusted server still fail closed under Tls12And13Compat.
+    let other_identity = TestPki::generate("other-client.kmipkit.test", false);
+    let bad_identity_cfg = TransportConfig::builder(Endpoint::raw_tls(SERVER_NAME, 5696))
+        .client_identity(identity_input(&other_identity, &other_identity))
+        .trust_source(trust_input(&pki))
+        .tls_version_policy(TlsVersionPolicy::Tls12And13Compat)
+        .build()
+        .expect("distinct client identity builds");
+    let bad_identity_client = tls::build_client_config(&bad_identity_cfg)
+        .expect("client config with untrusted client cert builds");
+    expect_tls_rejection(handshake(&bad_identity_client, tls12_peer));
+
+    let provider = tls::aws_lc_crypto_provider_for_policy(TlsVersionPolicy::Tls12And13Compat);
+    assert!(provider.cipher_suites.iter().all(|suite| {
+        matches!(
+            suite.suite(),
+            rustls::CipherSuite::TLS13_AES_256_GCM_SHA384
+                | rustls::CipherSuite::TLS13_CHACHA20_POLY1305_SHA256
+                | rustls::CipherSuite::TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+                | rustls::CipherSuite::TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+                | rustls::CipherSuite::TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+                | rustls::CipherSuite::TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        )
+    }));
+}
+
 struct TestPki {
     ca_params: CertificateParams,
     ca_key: KeyPair,
@@ -701,10 +765,24 @@ fn trust_input(pki: &TestPki) -> TrustSource {
 }
 
 fn server_config(pki: &TestPki, require_client_auth: bool, tickets: usize) -> Arc<ServerConfig> {
+    server_config_with_versions(
+        pki,
+        require_client_auth,
+        tickets,
+        &[&rustls::version::TLS13],
+    )
+}
+
+fn server_config_with_versions(
+    pki: &TestPki,
+    require_client_auth: bool,
+    tickets: usize,
+    versions: &[&'static rustls::SupportedProtocolVersion],
+) -> Arc<ServerConfig> {
     let provider = Arc::new(rustls::crypto::aws_lc_rs::default_provider());
     let builder = ServerConfig::builder_with_provider(provider)
-        .with_protocol_versions(&[&rustls::version::TLS13])
-        .expect("the test server uses TLS 1.3 only");
+        .with_protocol_versions(versions)
+        .expect("the test server protocol versions are valid");
     let builder = if require_client_auth {
         let mut roots = RootCertStore::empty();
         roots
@@ -742,13 +820,45 @@ fn handshake(
     client: &TlsClientConfig,
     peer_config: Arc<ServerConfig>,
 ) -> Result<HandshakeKind, HandshakeFailure> {
-    handshake_with_server_name(client, peer_config, client.server_name().clone())
+    handshake_with_server_name_and_version(
+        client,
+        peer_config,
+        client.server_name().clone(),
+        rustls::ProtocolVersion::TLSv1_3,
+    )
+}
+
+fn handshake_expecting_version(
+    client: &TlsClientConfig,
+    peer_config: Arc<ServerConfig>,
+    expected_version: rustls::ProtocolVersion,
+) -> Result<HandshakeKind, HandshakeFailure> {
+    handshake_with_server_name_and_version(
+        client,
+        peer_config,
+        client.server_name().clone(),
+        expected_version,
+    )
 }
 
 fn handshake_with_server_name(
     client: &TlsClientConfig,
     peer_config: Arc<ServerConfig>,
     server_name: ServerName<'static>,
+) -> Result<HandshakeKind, HandshakeFailure> {
+    handshake_with_server_name_and_version(
+        client,
+        peer_config,
+        server_name,
+        rustls::ProtocolVersion::TLSv1_3,
+    )
+}
+
+fn handshake_with_server_name_and_version(
+    client: &TlsClientConfig,
+    peer_config: Arc<ServerConfig>,
+    server_name: ServerName<'static>,
+    expected_version: rustls::ProtocolVersion,
 ) -> Result<HandshakeKind, HandshakeFailure> {
     let mut connection =
         ClientConnection::new(Arc::new(client.rustls_config().clone()), server_name)
@@ -765,7 +875,7 @@ fn handshake_with_server_name(
         .set_write_timeout(Some(Duration::from_secs(2)))
         .map_err(|_| HandshakeFailure::ClientIo)?;
     let peer = thread::spawn(move || run_server_handshake(peer_stream, peer_config));
-    let client_result = run_client_handshake(&mut connection, &mut stream);
+    let client_result = run_client_handshake(&mut connection, &mut stream, expected_version);
     drop(stream);
     let peer_result = peer.join().map_err(|_| HandshakeFailure::Thread)?;
     match client_result {
@@ -782,6 +892,7 @@ fn handshake_with_server_name(
 fn run_client_handshake(
     connection: &mut ClientConnection,
     stream: &mut TcpStream,
+    expected_version: rustls::ProtocolVersion,
 ) -> Result<HandshakeKind, HandshakeFailure> {
     while connection.is_handshaking() {
         if let Err(error) = connection.complete_io(stream) {
@@ -795,7 +906,7 @@ fn run_client_handshake(
     let kind = connection
         .handshake_kind()
         .ok_or(HandshakeFailure::ClientIo)?;
-    if connection.protocol_version() != Some(rustls::ProtocolVersion::TLSv1_3) {
+    if connection.protocol_version() != Some(expected_version) {
         return Err(HandshakeFailure::ClientIo);
     }
     while connection.wants_write() {

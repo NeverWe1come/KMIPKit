@@ -19,6 +19,25 @@ fn main() -> Result<(), Box<dyn Error>> {
     {
         return Err("installed artifact integrity check failed".into());
     }
+    for path in [
+        "tools/generate_matrix_hashes.py",
+        "../shared/tools/coverage_matrix.py",
+        "../shared/catalog/kmipkit-1.0-test-catalog.json",
+        "../shared/coverage/route-capabilities.json",
+    ] {
+        println!("cargo:rerun-if-changed={path}");
+    }
+    let output =
+        std::path::PathBuf::from(std::env::var_os("OUT_DIR").ok_or("build directory missing")?)
+            .join("route-cell-hashes.txt");
+    if !Command::new("python3")
+        .arg("tools/generate_matrix_hashes.py")
+        .arg(output)
+        .status()?
+        .success()
+    {
+        return Err("canonical route matrix generation failed".into());
+    }
     let value: serde_json::Value = serde_json::from_slice(&std::fs::read(manifest)?)?;
     for (field, variable, length) in [
         ("library_commit", "KMIPKIT_LIBRARY_COMMIT", 40),

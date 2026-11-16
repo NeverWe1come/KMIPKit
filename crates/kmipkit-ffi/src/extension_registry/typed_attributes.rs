@@ -30,6 +30,41 @@ pub(super) fn validate_typed_item(expected_tag: u32, item: Item) -> FfiResult<It
         .ok_or(ERROR_INTERNAL)
 }
 
+pub(super) fn catalogued_item_from_value(
+    expected_tag: u32,
+    value: *mut kmipkit_ttlv_value_t,
+    item_error: impl FnOnce(kmipkit_ttlv::ModelError) -> i32,
+) -> FfiResult<Item> {
+    let source = reference_handle(value, Kind::Value)?;
+    let HandleValue::Value(source) = &source.value else {
+        return Err(ERROR_INVALID_INPUT);
+    };
+    let value = kmipkit_ttlv::try_clone_value(source).map_err(model_status)?;
+    let tag = RawTag::new(expected_tag)
+        .and_then(|tag| tag.try_checked())
+        .map_err(|_| ERROR_INVALID_INPUT)?;
+    let item = Item::new(tag, value).map_err(item_error)?;
+    validate_typed_item(expected_tag, item)
+}
+
+pub(super) fn clone_scalar_value_view(
+    value: &ValueView<'_>,
+) -> Result<Value, kmipkit_ttlv::ModelError> {
+    match value {
+        ValueView::Integer(value) => Ok(Value::integer(**value)),
+        ValueView::LongInteger(value) => Ok(Value::long_integer(**value)),
+        ValueView::BigInteger(value) => Ok(Value::big_integer((**value).to_vec())),
+        ValueView::Enumeration(value) => Ok(Value::enumeration(**value)),
+        ValueView::Boolean(value) => Ok(Value::boolean(**value)),
+        ValueView::TextString(value) => Ok(Value::text_string((**value).to_owned())),
+        ValueView::ByteString(value) => Ok(Value::byte_string((**value).to_vec())),
+        ValueView::DateTime(value) => Ok(Value::date_time(**value)),
+        ValueView::Interval(value) => Ok(Value::interval(**value)),
+        ValueView::DateTimeExtended(value) => Ok(Value::date_time_extended(**value)),
+        _ => Err(kmipkit_ttlv::ModelError::UnsupportedValue),
+    }
+}
+
 /// Returns a copied catalogued direct attribute Item after validating its tag and TTLV type.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_typed_attribute_from_item(
@@ -55,18 +90,9 @@ pub extern "C" fn kmipkit_typed_attribute_from_value(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_item);
-        let source = try_ffi!(reference_handle(value, Kind::Value));
-        let HandleValue::Value(source) = &source.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let value = try_ffi!(kmipkit_ttlv::try_clone_value(source).map_err(model_status));
-        let tag = try_ffi!(
-            RawTag::new(expected_tag)
-                .and_then(|tag| tag.try_checked())
-                .map_err(|_| ERROR_INVALID_INPUT)
-        );
-        let item = try_ffi!(Item::new(tag, value).map_err(|_| ERROR_INVALID_INPUT));
-        let item = try_ffi!(validate_typed_item(expected_tag, item));
+        let item = try_ffi!(catalogued_item_from_value(expected_tag, value, |_| {
+            ERROR_INVALID_INPUT
+        },));
         *out = try_ffi!(try_make_handle(Kind::Item, HandleValue::Item(item)));
         SUCCESS
     })
@@ -99,16 +125,6 @@ fn clone_value_view(value: ValueView<'_>) -> Result<Value, kmipkit_ttlv::ModelEr
             }
             Ok(Value::structure(structure))
         }
-        ValueView::Integer(value) => Ok(Value::integer(*value)),
-        ValueView::LongInteger(value) => Ok(Value::long_integer(*value)),
-        ValueView::BigInteger(value) => Ok(Value::big_integer(value.to_vec())),
-        ValueView::Enumeration(value) => Ok(Value::enumeration(*value)),
-        ValueView::Boolean(value) => Ok(Value::boolean(*value)),
-        ValueView::TextString(value) => Ok(Value::text_string((*value).to_owned())),
-        ValueView::ByteString(value) => Ok(Value::byte_string(value.to_vec())),
-        ValueView::DateTime(value) => Ok(Value::date_time(*value)),
-        ValueView::Interval(value) => Ok(Value::interval(*value)),
-        ValueView::DateTimeExtended(value) => Ok(Value::date_time_extended(*value)),
-        _ => Err(kmipkit_ttlv::ModelError::UnsupportedValue),
+        _ => clone_scalar_value_view(&value),
     }
 }

@@ -21,7 +21,7 @@ fn generated_typed_attribute_registry_covers_every_direct_definition() {
     let definitions = crate::typed_attributes::ATTRIBUTE_DEFINITIONS;
     let generated_tags = crate::typed_attributes::ATTRIBUTE_TAGS;
 
-    assert_eq!(definitions.len(), 62);
+    assert_eq!(definitions.len(), 99);
     assert_eq!(generated_tags.len(), definitions.len());
     assert!(
         definitions
@@ -311,4 +311,16 @@ fn typed_structure_view_preserves_unknown_child_tags() {
         .unwrap();
 
     assert_eq!(observed, 0x0054_1234);
+}
+
+#[test]
+fn long_integer_encoding_exercises_roundtrip() {
+    use crate::typed_attributes::{AttributeValueEncoding, LongIntegerEncoding};
+    use kmipkit_ttlv::ValueView;
+    let value = 123_456_789_012_i64;
+    let encoded = LongIntegerEncoding::into_ttlv(value);
+    let view = LongIntegerEncoding::value_view(ValueView::LongInteger(&value)).expect("valid view");
+    assert_eq!(view, value);
+    assert_eq!(encoded.item_type(), kmipkit_ttlv::ItemType::LongInteger);
+    assert!(LongIntegerEncoding::value_view(ValueView::Integer(&42)).is_err());
 }

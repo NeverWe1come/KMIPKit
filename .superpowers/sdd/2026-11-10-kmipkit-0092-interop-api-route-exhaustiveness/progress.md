@@ -245,3 +245,27 @@ branches, and the common CI therefore reports a planned matrix only.
   passed. Language matrices still need the resulting common SHA before their
   counts can be treated as current. Vendor KMS interoperability remains
   unverified and the PR remains WIP.
+
+## 2026-11-12 Rust batch lifecycle order correction
+
+- The controlled Rust catalog recipe for `test-batch-create-activate-destroy`
+  omitted the required Get Attribute List operation between Activate and
+  Revoke. This contradicted the catalog's exact KMIP 2.1 §6.1.8 batch scenario
+  and caused a real request-order mismatch.
+- Red: `ea616175c` added a controlled-mTLS assertion comparing the observed
+  request operation codes with the catalog's `operations_in_request_order`.
+  It failed with `[Create, Activate, Revoke, Destroy]` instead of
+  `[Create, Activate, Get Attribute List, Revoke, Destroy]`.
+- Green: `310ae649f` adds `GetAttributeListRequest::new(None)` to the ordered
+  batch and supplies valid successful payloads for the controlled Create,
+  Get Attribute List, Activate, Revoke, and Destroy responses. The focused
+  controlled-mTLS regression passes.
+- Refactor: `cf32c47a2` extracts the operation-aware batch response fixture
+  and records the exact OASIS KMIP 2.1 sections in the regression test.
+  The focused regression, `cargo +1.94 fmt --manifest-path
+  interop/rust-kmip-validator/Cargo.toml --check`, `git diff --check`, and all
+  69 Rust validator unit/integration tests pass.
+- This fixes one workflow recipe only. The current local route-matrix run still
+  reports 287 uninvoked response-accessor cells out of 49,079 local cells;
+  network execution evidence for the 26,376 required network cells remains
+  incomplete. The PR stays WIP and no vendor KMS run has been performed.

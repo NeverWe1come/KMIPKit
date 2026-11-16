@@ -43,6 +43,10 @@ public final class CancelRequest implements AutoCloseable {
                 NativeExtensionRegistry.cancelRequestToTtlvPayload(value), this));
     }
 
+    NativeHandle nativeHandleOwner() {
+        return handle;
+    }
+
     @Override
     public void close() {
         handle.close();

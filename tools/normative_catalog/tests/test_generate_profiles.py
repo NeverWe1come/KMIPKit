@@ -5,9 +5,11 @@ from __future__ import annotations
 import html
 import io
 import json
+import os
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -4713,6 +4715,20 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
 
 class ProfileTargetManifestTests(unittest.TestCase):
+    @staticmethod
+    def _run_captured_utf8_command(
+        args: list[str],
+    ) -> subprocess.CompletedProcess[str]:
+        """Capture command diagnostics without assuming the host code page."""
+        return subprocess.run(
+            args,
+            capture_output=True,
+            check=False,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
+
     def setUp(self) -> None:
         self.catalog = {
             "profiles": [
@@ -4819,9 +4835,21 @@ class ProfileTargetManifestTests(unittest.TestCase):
             with self.assertRaises(ProfileGenerationError):
                 load_profile_targets(repository, self.catalog)
 
+    def test_captured_command_output_tolerates_non_utf8_diagnostics(self) -> None:
+        result = self._run_captured_utf8_command(
+            [
+                sys.executable,
+                "-c",
+                "import sys; sys.stderr.buffer.write(bytes([0xA0]))",
+            ]
+        )
+
+        self.assertEqual(result.returncode, 0)
+        self.assertEqual(result.stderr, "\ufffd")
+
     def test_fixed_loader_rejects_a_junctioned_target_manifest_directory(self) -> None:
-        if not shutil.which("cmd.exe"):
-            self.skipTest("Windows cmd.exe is required to create a directory junction")
+        if os.name != "nt" or not shutil.which("cmd.exe"):
+            self.skipTest("native Windows cmd.exe is required to create a directory junction")
 
         with tempfile.TemporaryDirectory() as directory:
             repository = Path(directory) / "repository"
@@ -4837,11 +4865,8 @@ class ProfileTargetManifestTests(unittest.TestCase):
                 "mklink /J "
                 + subprocess.list2cmdline([str(junction), str(external)])
             )
-            result = subprocess.run(
-                ["cmd.exe", "/d", "/c", mklink_command],
-                capture_output=True,
-                check=False,
-                text=True,
+            result = self._run_captured_utf8_command(
+                ["cmd.exe", "/d", "/c", mklink_command]
             )
             self.assertEqual(
                 result.returncode,
