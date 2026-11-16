@@ -121,3 +121,93 @@ def test_kmip30_response_readers_exist_on_client() -> None:
         "decapsulate_response",
     ):
         assert field_name in client.BatchItemResult.__dataclass_fields__, f"missing field {field_name}"
+
+
+def test_kmip30_response_readers_logic(monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    from kmipkit import client
+
+    fake_lib = SimpleNamespace(**{name: getattr(client.lib, name) for name in dir(client.lib) if not name.startswith("_")})
+    monkeypatch.setattr(client, "lib", fake_lib)
+
+    # 1. Test obliterate_response
+    def fake_obliterate_present(item: object, out_present: object) -> int:
+        out_present[0] = 1  # type: ignore[index]
+        return 0
+
+    fake_lib.kmipkit_client_batch_item_response_obliterate = fake_obliterate_present
+    dummy_item = SimpleNamespace(_pointer=lambda: client.ffi.NULL)
+    assert client._obliterate_response(dummy_item) is True
+
+    def fake_obliterate_absent(item: object, out_present: object) -> int:
+        out_present[0] = 0  # type: ignore[index]
+        return 0
+
+    fake_lib.kmipkit_client_batch_item_response_obliterate = fake_obliterate_absent
+    assert client._obliterate_response(dummy_item) is None
+
+    # 2. Test encapsulate_response
+    uid_bytes = b"encaps-uid"
+    uid_c = client.ffi.new("char[]", uid_bytes)
+    data_bytes = b"secret-data"
+    data_c = client.ffi.new("char[]", data_bytes)
+
+    def fake_encapsulate_present(
+        item: object,
+        out_present: object,
+        out_uid: object,
+        out_data_present: object,
+        out_data: object,
+    ) -> int:
+        out_present[0] = 1  # type: ignore[index]
+        out_uid.kind = 1  # TEXT_STRING
+        out_uid.text_data = uid_c
+        out_uid.text_length = len(uid_bytes)
+        out_data_present[0] = 1  # type: ignore[index]
+        out_data.data = data_c
+        out_data.length = len(data_bytes)
+        return 0
+
+    fake_lib.kmipkit_client_batch_item_response_encapsulate = fake_encapsulate_present
+    res = client._encapsulate_response(dummy_item)
+    assert res is not None
+    assert res.unique_identifier.text == "encaps-uid"
+    assert res.data == data_bytes
+
+    def fake_encapsulate_absent(
+        item: object,
+        out_present: object,
+        out_uid: object,
+        out_data_present: object,
+        out_data: object,
+    ) -> int:
+        out_present[0] = 0  # type: ignore[index]
+        return 0
+
+    fake_lib.kmipkit_client_batch_item_response_encapsulate = fake_encapsulate_absent
+    assert client._encapsulate_response(dummy_item) is None
+
+    # 3. Test lifecycle_response for create_group, create_user, create_credential, deactivate, decapsulate
+    for op_name, resp_cls in (
+        ("create_group", client.CreateGroupResponse),
+        ("create_user", client.CreateUserResponse),
+        ("create_credential", client.CreateCredentialResponse),
+        ("deactivate", client.DeactivateResponse),
+        ("decapsulate", client.DecapsulateResponse),
+    ):
+        def make_fake_lifecycle(name: str):
+            def fake_lc(item: object, out_present: object, out_uid: object) -> int:
+                out_present[0] = 1  # type: ignore[index]
+                out_uid.kind = 1  # TEXT_STRING
+                out_uid.text_data = uid_c
+                out_uid.text_length = len(uid_bytes)
+                return 0
+            return fake_lc
+
+        setattr(fake_lib, f"kmipkit_client_batch_item_response_{op_name}", make_fake_lifecycle(op_name))
+        resp = client._lifecycle_response(dummy_item, op_name, resp_cls)
+        assert resp is not None
+        assert isinstance(resp, resp_cls)
+        assert resp.unique_identifier.text == "encaps-uid"
+
+

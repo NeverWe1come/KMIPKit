@@ -199,7 +199,7 @@ PKCS11_REQUEST_SETTER_IDS = {
 # and KMIPKIT-0108/0109 attribute operations and bindings. KMIPKIT-0124 adds
 # 28 KMIP 3.0 fluent and 16 asynchronous batch declarations, which also map
 # asynchronous constructors onto four existing operation rows.
-OTHER_DECLARATIONS_SHA256 = "c7bf1c33ae8234f2ae4249c3ae1f0aac4288c448069d4d847aab7a9ca7212ffb"
+OTHER_DECLARATIONS_SHA256 = "565f3143d180ae1838020b0d9e4257254479de8a9d84c011b1ccc8e26277482e"
 OTHER_OPERATIONS_SHA256 = "2ea94003f2877d0e6d84271d67d9add6f48a5c5b7a837c48b22fe40f41022d39"
 def canonical_sha256(value: object) -> str:
     encoded = json.dumps(

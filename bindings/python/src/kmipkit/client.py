@@ -5147,7 +5147,7 @@ def _encapsulate_response(item: _ClientBatchItemResponse) -> EncapsulateResponse
     if unique_identifier is None:
         errors.raise_for_status(4)
     data_bytes = (
-        bytes(ffi.buffer(data.data, data.len))
+        bytes(ffi.buffer(data.data, data.length))
         if data_present[0] == 1 and data.data != ffi.NULL
         else None
     )

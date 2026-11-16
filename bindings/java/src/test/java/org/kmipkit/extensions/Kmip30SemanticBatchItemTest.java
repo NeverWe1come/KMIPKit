@@ -106,5 +106,19 @@ final class Kmip30SemanticBatchItemTest {
         assertTrue(ClientBatchItemResult.parseDeactivateResponse(emptyIdResult).isEmpty());
         assertTrue(ClientBatchItemResult.parseEncapsulateResponse(new Object[] {new long[] {0, 0}, null, null}).isEmpty());
         assertTrue(ClientBatchItemResult.parseDecapsulateResponse(emptyIdResult).isEmpty());
+
+        Object[] sampleIdRecord = new Object[] {
+                new long[] {1, 1, 0, 0},
+                "system-id".getBytes(StandardCharsets.UTF_8)
+        };
+        Object[] presentIdResult = new Object[] {new long[] {1}, sampleIdRecord};
+        assertTrue(ClientBatchItemResult.parseCreateGroupResponse(presentIdResult).isPresent());
+        assertTrue(ClientBatchItemResult.parseCreateUserResponse(presentIdResult).isPresent());
+        assertTrue(ClientBatchItemResult.parseCreateCredentialResponse(presentIdResult).isPresent());
+        assertTrue(ClientBatchItemResult.parseObliterateResponse(new long[] {1}).isPresent());
+        assertTrue(ClientBatchItemResult.parseDeactivateResponse(presentIdResult).isPresent());
+        assertTrue(ClientBatchItemResult.parseEncapsulateResponse(
+                new Object[] {new long[] {1, 1}, sampleIdRecord, new byte[] {0x42}}).isPresent());
+        assertTrue(ClientBatchItemResult.parseDecapsulateResponse(presentIdResult).isPresent());
     }
 }
