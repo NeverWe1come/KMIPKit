@@ -117,7 +117,10 @@ fn delete_attribute_builder_executes_once_and_converts_to_the_typed_batch_item()
 
 #[test]
 fn delete_attribute_builder_preserves_explicit_items_and_vendor_selectors() {
-    let unknown = item(0x0042_00FC, Value::text_string("opaque selector".to_owned()));
+    let unknown = item(
+        0x0042_00FC,
+        Value::text_string("opaque selector".to_owned()),
+    );
     let explicit = DeleteAttributeBuilder::detached()
         .current_attribute_item(unknown)
         .build_request()
@@ -132,7 +135,10 @@ fn delete_attribute_builder_preserves_explicit_items_and_vendor_selectors() {
         0x0042_00FC
     );
 
-    let value = item(typed::Description::TAG, Value::text_string("north".to_owned()));
+    let value = item(
+        typed::Description::TAG,
+        Value::text_string("north".to_owned()),
+    );
     let vendor = DeleteAttributeBuilder::detached()
         .current_vendor_attribute("Vendor_Name.1", "region", &value)
         .build_request()
