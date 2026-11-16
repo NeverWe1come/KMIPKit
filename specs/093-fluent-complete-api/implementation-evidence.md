@@ -1052,3 +1052,26 @@
   runtime mapping with
   `cargo +1.94 test --locked -p kmipkit --test runtime_metadata
   capability_query_matches_manifest_ready_capabilities -- --exact --nocapture`.
+
+#### Green
+
+- Added `fluent_named_tag_values` to the Rust runtime capability query and to
+  the FFI test's exact expected C capability set. The Rust runtime parity test
+  and the C capability parity test now pass with Rust 1.94:
+  `cargo +1.94 test --locked -p kmipkit --test runtime_metadata
+  capability_query_matches_manifest_ready_capabilities -- --exact` and
+  `cargo +1.94 test --locked -p kmipkit-ffi --lib --features
+  coverage-c-consumer
+  extension_registry::metadata_tests::capability_query_only_reports_c_mapped_nonblocked_capabilities
+  -- --exact`.
+- The full local workspace test reached doctests but could not link four
+  `kmipkit-client` doctests: `rust-lld` terminated with signal 7 (Bus error).
+  The focused runtime and FFI parity tests pass; exact-head hosted CI remains
+  required before G004 can close or the PR can leave WIP.
+
+#### Refactor
+
+- Kept the existing match-based Rust capability query and generated C list.
+  This fix only aligns their named-tag capability inventory and its parity
+  assertions. `rustfmt +1.94 --edition 2024 --check` on the three changed Rust
+  files and `git diff --check` pass.
