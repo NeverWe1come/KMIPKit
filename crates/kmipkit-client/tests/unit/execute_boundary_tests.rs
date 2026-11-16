@@ -2626,6 +2626,11 @@ fn fluent_builder_signature_exceptions_are_exact_and_method_scoped() {
         Some("RegisterBuilder"),
         &catalogued
     ));
+    assert!(is_exact_fluent_catalogued_attribute(
+        true,
+        Some("AddAttributeBuilder"),
+        &catalogued
+    ));
 
     for signature in [
         "fn attribute_item(self, item: Item) -> Self",
@@ -2642,6 +2647,18 @@ fn fluent_builder_signature_exceptions_are_exact_and_method_scoped() {
         assert!(!is_exact_fluent_explicit_attribute_item(
             true,
             Some("OtherBuilder"),
+            &signature
+        ));
+    }
+
+    for signature in [
+        "fn attribute_item(self, item: Item) -> Self",
+        "fn vendor_attribute(self, vendor: &str, name: &str, value: &Item) -> Self",
+    ] {
+        let signature = syn::parse_str::<syn::Signature>(signature).unwrap();
+        assert!(is_exact_fluent_explicit_attribute_item(
+            true,
+            Some("AddAttributeBuilder"),
             &signature
         ));
     }
