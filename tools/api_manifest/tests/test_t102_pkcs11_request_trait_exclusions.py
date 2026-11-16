@@ -11,9 +11,9 @@ from tools.api_manifest.tests.t102_manifest_totals import (
     T102_APPROVED_EXCLUSIONS,
     T102_BLOCKED_CANDIDATES,
     T102_PUBLIC_DECLARATIONS,
-    T102_RUST_AUDIT_EXCLUDED,
-    T102_RUST_AUDIT_MANIFEST,
-    T102_RUST_AUDIT_OBSERVED,
+    T102_HISTORICAL_RUST_AUDIT_EXCLUDED,
+    T102_HISTORICAL_RUST_AUDIT_MANIFEST,
+    T102_HISTORICAL_RUST_AUDIT_OBSERVED,
 )
 from pathlib import Path
 
@@ -307,14 +307,14 @@ class T102Pkcs11RequestTraitExclusionTests(unittest.TestCase):
         self.assertEqual(len(self.manifest["approvedExclusions"]), T102_APPROVED_EXCLUSIONS)
 
     def test_t102_historical_rust_audit_snapshot_remains_consistent(self) -> None:
-        self.assertEqual(self.rust_report["counts"]["manifest"], T102_RUST_AUDIT_MANIFEST)
-        self.assertEqual(self.rust_report["counts"]["excluded"], T102_RUST_AUDIT_EXCLUDED)
-        self.assertEqual(self.rust_report["counts"]["observed"], T102_RUST_AUDIT_OBSERVED)
+        self.assertEqual(self.rust_report["counts"]["manifest"], T102_HISTORICAL_RUST_AUDIT_MANIFEST)
+        self.assertEqual(self.rust_report["counts"]["excluded"], T102_HISTORICAL_RUST_AUDIT_EXCLUDED)
+        self.assertEqual(self.rust_report["counts"]["observed"], T102_HISTORICAL_RUST_AUDIT_OBSERVED)
 
     def test_historical_snapshot_totals_are_not_replaced_by_current_audit_totals(self) -> None:
-        self.assertEqual(T102_RUST_AUDIT_MANIFEST, 3_287)
-        self.assertEqual(T102_RUST_AUDIT_EXCLUDED, 7_176)
-        self.assertEqual(T102_RUST_AUDIT_OBSERVED, 10_463)
+        self.assertEqual(T102_HISTORICAL_RUST_AUDIT_MANIFEST, 3_287)
+        self.assertEqual(T102_HISTORICAL_RUST_AUDIT_EXCLUDED, 7_176)
+        self.assertEqual(T102_HISTORICAL_RUST_AUDIT_OBSERVED, 10_463)
 
 
 if __name__ == "__main__":
