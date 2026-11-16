@@ -2267,7 +2267,9 @@ fn is_exact_fluent_catalogued_attribute(
         Some("CreateSymmetricKeyBuilder" | "CreateSplitKeyBuilder") => {
             signature.ident == "attribute"
         }
-        Some("RegisterBuilder" | "SetAttributeBuilder") => signature.ident == "attribute",
+        Some("RegisterBuilder" | "SetAttributeBuilder" | "AddAttributeBuilder") => {
+            signature.ident == "attribute"
+        }
         Some("CreateKeyPairBuilder") => matches!(
             signature.ident.to_string().as_str(),
             "common_attribute" | "private_attribute" | "public_attribute"
@@ -2329,20 +2331,21 @@ fn is_exact_fluent_explicit_attribute_item(
     impl_type: Option<&str>,
     signature: &syn::Signature,
 ) -> bool {
-    if !fluent_root_scope
-        || impl_type.is_none_or(|name| {
-            !matches!(
-                name,
-                "CreateSymmetricKeyBuilder"
-                    | "CreateSplitKeyBuilder"
-                    | "RegisterBuilder"
-                    | "SetAttributeBuilder"
-            )
-        })
-        || !matches!(
+    let supported_method = match impl_type {
+        Some("AddAttributeBuilder") => {
+            matches!(signature.ident.to_string().as_str(), "attribute_item" | "vendor_attribute")
+        }
+        Some(
+            "CreateSymmetricKeyBuilder" | "CreateSplitKeyBuilder" | "RegisterBuilder"
+            | "SetAttributeBuilder",
+        ) => matches!(
             signature.ident.to_string().as_str(),
             "attribute_item" | "vendor_attribute" | "attribute_at" | "object_item"
-        )
+        ),
+        _ => false,
+    };
+    if !fluent_root_scope
+        || !supported_method
         || !signature.generics.params.is_empty()
         || signature.generics.where_clause.is_some()
         || signature.asyncness.is_some()
@@ -2647,6 +2650,17 @@ fn fluent_builder_signature_exceptions_are_exact_and_method_scoped() {
         assert!(!is_exact_fluent_explicit_attribute_item(
             true,
             Some("OtherBuilder"),
+            &signature
+        ));
+    }
+    for signature in [
+        "fn attribute_at(self, position: FluentAttributePosition, item: Item) -> Self",
+        "fn object_item(self, object_type: ObjectType, object: Item) -> Self",
+    ] {
+        let signature = syn::parse_str::<syn::Signature>(signature).unwrap();
+        assert!(!is_exact_fluent_explicit_attribute_item(
+            true,
+            Some("AddAttributeBuilder"),
             &signature
         ));
     }
