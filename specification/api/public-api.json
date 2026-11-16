@@ -824105,6 +824105,44 @@
       }
     },
     {
+      "declarationId": "DeleteAttributeBuilder.vendorAttribute:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.DeleteAttributeBuilder.vendorAttribute",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::current_vendor_attribute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_set_vendor_attribute"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.vendorAttribute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.current_vendor_attribute"
+        }
+      }
+    },
+    {
       "declarationId": "DeleteAttributeBuilder.withOptions:java",
       "packageId": "java-kmipkit",
       "kind": "java-member",
@@ -825227,10 +825265,6 @@
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.fluent.DeleteAttributeBuilder.attributeReference",
-      "javaSignatures": [
-        "public org.kmipkit.fluent.DeleteAttributeBuilder cataloguedAttribute(org.kmipkit.ttlv.Tag, org.kmipkit.ttlv.TtlvValue)",
-        "public org.kmipkit.fluent.DeleteAttributeBuilder cataloguedAttribute(org.kmipkit.ttlv.StandardAttribute, org.kmipkit.ttlv.TtlvValue)"
-      ],
       "capabilityId": "fluent_delete_attribute_parity",
       "requirementIds": [
         "KMIPKIT-0093-FR-004",
@@ -1160637,6 +1160671,7 @@
           "org.kmipkit.fluent.DeleteAttributeBuilder.toBatchItem",
           "org.kmipkit.fluent.DeleteAttributeBuilder.uniqueIdentifier",
           "org.kmipkit.fluent.DeleteAttributeBuilder.validate",
+          "org.kmipkit.fluent.DeleteAttributeBuilder.vendorAttribute",
           "org.kmipkit.fluent.DeleteAttributeBuilder.withOptions",
           "org.kmipkit.fluent.FluentRequest.deleteAttribute"
         ],
