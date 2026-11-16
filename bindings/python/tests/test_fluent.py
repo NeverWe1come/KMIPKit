@@ -23,6 +23,29 @@ _FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
 def test_fluent_request_exposes_a_delete_attribute_builder():
     assert callable(getattr(fluent.Request, "delete_attribute", None))
     assert hasattr(fluent, "DeleteAttributeBuilder")
+    assert "DeleteAttributeBuilder" in fluent.__all__
+
+
+def test_delete_attribute_builder_builds_an_independent_typed_request():
+    identifier = extensions.UniqueIdentifier.text_string("delete-attribute-key")
+    reference = extensions.AttributeReference.tag(StandardAttribute.DESCRIPTION.tag)
+    with ttlv.codec_limits_defaults() as limits:
+        with ttlv.ttlv_value_text_string(b"retired description", limits) as value:
+            with fluent.DeleteAttributeBuilder() as builder:
+                builder.unique_identifier(identifier.text)
+                builder.catalogued_attribute(StandardAttribute.DESCRIPTION, value)
+                builder.attribute_reference(reference)
+                builder.validate()
+
+                with builder.build_request() as request:
+                    assert isinstance(request, attribute_operations.DeleteAttributeRequest)
+                    assert request.unique_identifier == identifier
+                    assert request.attribute_reference == reference
+                    with request.current_attribute as current:
+                        assert current is not None
+                    with request.to_ttlv_payload() as payload:
+                        with ttlv.ttlv_structure_view(payload) as view:
+                            assert ttlv.ttlv_structure_view_item_count(view) == 3
 
 
 def _item(tag: int, item_type: int, value: bytes) -> bytes:
