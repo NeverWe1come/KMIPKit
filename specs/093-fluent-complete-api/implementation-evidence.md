@@ -463,3 +463,15 @@
   tools.api_manifest.tests.test_0093_set_attribute_builder_manifest -v`
   passes all 9 tests, and `git diff --check` passes.
 
+## Rebase after Create Key Pair merged
+
+- PR #227 has merged into `release/1.0.0`; this branch was rebased onto the
+  release branch. On the resulting pre-follow-up head `e8ecb0f08`,
+  `fluent_request_tests::` passes 24 tests, the focused Set Attribute manifest
+  test passes, the manifest generator check passes, and `cargo fmt --all
+  --check` passes.
+- The exact-head check list on `e8ecb0f08` contained only SonarCloud success;
+  the repository CI workflows had not produced runs for that SHA. PR #231
+  remains `[WIP]` until full CI reports every required result on its updated
+  head.
+
