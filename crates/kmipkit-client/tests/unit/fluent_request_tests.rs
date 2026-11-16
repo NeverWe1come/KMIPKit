@@ -48,6 +48,30 @@ fn delete_attribute_builder_constructs_the_existing_typed_request() {
 }
 
 #[test]
+fn detached_delete_attribute_builder_builds_without_a_client_and_refuses_execution() {
+    let request = DeleteAttributeBuilder::detached()
+        .unique_identifier("key-42")
+        .attribute_reference(AttributeReference::tag(typed::Description::TAG))
+        .build_request()
+        .expect("a detached builder returns the existing typed request");
+    assert_eq!(request.unique_identifier(), Some("key-42"));
+    assert_eq!(
+        request
+            .attribute_reference()
+            .and_then(AttributeReference::tag_value),
+        Some(typed::Description::TAG)
+    );
+
+    let error = DeleteAttributeBuilder::detached()
+        .execute(&CodecLimits::defaults())
+        .expect_err("a detached builder cannot send without an explicit client");
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+}
+
+#[test]
 fn add_attribute_builder_constructs_the_existing_typed_request() {
     let mut client = failed_request_client();
     let request = client
