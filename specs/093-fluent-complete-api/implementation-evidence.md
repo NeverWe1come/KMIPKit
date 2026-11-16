@@ -704,6 +704,16 @@
 - The next exact-head SonarCloud result must confirm duplication is at or below
   the 3% gate. PR #236 remains WIP until every required check is green.
 
+### Recheck Red
+
+- The exact-head analysis for `8a878f1b4ba7d885fe10725a4503fe704a72c6d9`
+  still fails SonarCloud: `new_duplicated_lines_density` is 5.4307% against a
+  3% limit across 1,602 new lines.
+- Sonar's duplication report locates a 60-line repeated Add/Set builder block
+  at `fluent.rs` lines 3139 and 3201. Sharing only their state mutation and
+  request execution therefore did not remove the duplicated public builder
+  methods.
+
 ### Recheck Green
 
 - Commit `4a183689f` moves shared Add/Set mutation methods into private trait
@@ -726,15 +736,54 @@
 - PR #236 remains WIP until a new exact-head SonarCloud analysis confirms the
   3% duplication gate and every other required CI check is green.
 
-### Recheck Red
+## KMIPKIT-0093 Locate and Revoke fluent bindings
 
-- The exact-head analysis for `8a878f1b4ba7d885fe10725a4503fe704a72c6d9`
-  still fails SonarCloud: `new_duplicated_lines_density` is 5.4307% against a
-  3% limit across 1,602 new lines.
-- Sonar's duplication report locates a 60-line repeated Add/Set builder block
-  at `fluent.rs` lines 3139 and 3201. Sharing only their state mutation and
-  request execution therefore did not remove the duplicated public builder
-  methods.
+### Red
+
+- Commits `c4577c319`, `caa751a84`, and `6d01681d0` add failing consumer,
+  option-boundary, and API-manifest checks before the implementation.
+- The tests require typed Locate filters and Revoke reason/message/date,
+  request options, pre-send rejection of unsupported versions and invalid
+  dates, four-language declarations, and explicit public C ownership.
+
+### Green
+
+- Added typed Rust Locate and Revoke builders, opaque C builder handles and
+  direct C conveniences, and Java/Python facades over typed request items.
+  Builders preserve explicit filters and revocation data, expose execution
+  options, and return the existing success, pending, failure, or delivery
+  errors without polling or retrying.
+- `python3 -B -m unittest tools.api_manifest.tests.test_parity tools.api_manifest.tests.test_0093_locate_revoke_fluent_manifest -v`
+  passes 28 tests. `cargo test -p kmipkit-client --all-features --lib
+  fluent_lifecycle_operation_tests` passes 23 tests. The C ABI coverage
+  harness passes all 64 tests, including its compiled C consumer.
+- The focused Java `LocateRevokeBuilderTest` passes. The Python fluent suite
+  passes all 35 tests. `python3 -B tools/api_manifest/generate.py --write`
+  regenerated the 12 manifest outputs and the subsequent `--check` verified
+  them. `git diff --check` passes.
+- The first full workspace run exposed a missing Rust readiness mapping for
+  `fluent_locate_revoke_parity` and an incomplete closed C-export inventory
+  for the new macro-generated Locate setters. Added the capability to the
+  public readiness query and extended the inventory to verify the setter
+  macro's panic boundary. The rerun `cargo test --workspace --all-features`
+  exits 0; all 12 FFI metadata tests pass. Workspace Clippy
+  (`cargo clippy --workspace --all-targets --all-features -- -D warnings`),
+  `cargo fmt --all --check`, and `git diff --check` pass.
+
+### Refactor
+
+- The API parity audit initially treated the 19 C Locate/Revoke builder
+  functions as one-to-one JNI methods. Java instead constructs typed
+  `ClientBatchItem` values directly. Recorded that intentional binding shape
+  in the parity test's explicit exception list; the 28 parity and manifest
+  tests then pass.
+- Updated English and Spanish guides, operation traceability, generated
+  declarations, and the KMIPKIT-0093 task list with the new operation slice.
+- The parity inventory records that Java Locate/Revoke facades construct typed
+  batch items directly instead of dispatching each C builder function through
+  one-to-one JNI methods; the focused 28-test suite passes.
+- Full workspace formatting, lint, coverage, and exact-head CI remain part of
+  LRB004 and must pass before this PR can leave WIP.
 
 ### Complete Rust export reconciliation (KMIPKIT-0093)
 
