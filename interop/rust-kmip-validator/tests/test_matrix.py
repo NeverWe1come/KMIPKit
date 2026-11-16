@@ -64,6 +64,8 @@ class PinnedSourceContract(unittest.TestCase):
 
     def test_test_server_harness_uses_locked_release_dependencies(self):
         source = (ROOT / 'interop/rust-kmip-validator/tools/build_test_server.py').read_text()
+        self.assertIn('shutil.copyfile(SOURCE / "Cargo.lock", HARNESS / "Cargo.lock")', source)
+        self.assertIn('"metadata", "--offline"', source)
         self.assertIn('"build", "--locked"', source)
 
     def test_cached_release_bundle_is_rebuilt_when_its_pin_or_digest_is_stale(self):
