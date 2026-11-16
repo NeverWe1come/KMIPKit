@@ -186,7 +186,7 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
   in the workflow job, while the refreshed job runs every
   `bindings/java/native/tests/*.cpp` file. The file is therefore executed, but
   the test contract did not recognize the wildcard route.
-- Green commit `617c76414` accepts either the explicit source path or the
+- Green commit `6f43b17a4` accepts either the explicit source path or the
   wildcard source set and separately verifies that the zeroization test exists.
 - Verification: `python3 -B -m unittest scripts.tests.test_workflow` passed
   all 96 tests and `git diff --check` passed.
@@ -200,3 +200,11 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
   the checked-in generated mapping no longer matched `public-api.json` in
   `normative_target_ids`. The route tests reported 6 failures and 1 error; the
   validation mismatch also masked several negative-test assertions.
+- Green commit `35884ea32` regenerated `route-capabilities.json` using the
+  repository generator, restoring the mapping for all 1,491 routes pinned to
+  library commit `489fafc79ef89db2524eafa7a6c6482f5cf75d97`.
+- Refactor/documentation commit: records the generated-file refresh and fixes
+  the JNI sanitizer Green commit reference after rebasing the feature branch.
+- Verification: route-manifest validation passed; focused route tests passed
+  65/65; shared interop tests passed 189/189; workflow contract tests passed
+  96/96; Rust 1.94 validator tests passed 72/72; and `git diff --check` passed.
