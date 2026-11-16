@@ -132,6 +132,24 @@ class NamedValueGeneratorTests(unittest.TestCase):
         self.assertNotIn("RE_ENCRYPT", rendered["rust"])
         self.assertNotIn("CREDENTIAL = 0x0000000D", rendered["rust"])
 
+    def test_large_tag_lookup_is_split_into_clippy_sized_rust_functions(self) -> None:
+        catalog = generate_named_values.load_validated_catalog(
+            generate_named_values.safe_read_bytes(
+                ROOT,
+                generate_named_values.CATALOG_PATH,
+                max_bytes=generate_named_values.MAX_BYTES,
+            ),
+            ROOT,
+            require_complete=True,
+        )
+        rendered = generate_named_values.render_outputs(
+            generate_named_values.collect_values(catalog),
+            generate_named_values.load_versioned_values(ROOT),
+        )
+
+        self.assertIn("const fn name_chunk_0(raw: u32)", rendered["rust"])
+        self.assertIn("const fn name_chunk_1(raw: u32)", rendered["rust"])
+
     def test_versioned_namespace_is_emitted_in_all_four_generated_surfaces(self) -> None:
         catalog = generate_named_values.load_validated_catalog(
             generate_named_values.safe_read_bytes(

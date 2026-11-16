@@ -443,4 +443,9 @@
   regression test `test_versioned_bitmask_public_values_use_the_bitmask_namespace`
   fails on the expected `::bitmask::object_class_mask::USER` path. The audit
   reported these eight declarations as not observed at the manifest path.
+- The generated KMIP 2.1 Tag name lookup exceeded Clippy's function-size gate:
+  `cargo clippy --locked -p kmipkit-protocol --all-targets --all-features -- -D warnings`
+  failed with `clippy::too_many_lines` at 357 lines. The new regression test
+  `test_large_tag_lookup_is_split_into_clippy_sized_rust_functions` also fails
+  because generated Rust has no chunked tag lookup helpers.
 
