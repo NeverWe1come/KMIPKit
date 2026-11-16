@@ -159,6 +159,43 @@ fn delete_attribute_builder_preserves_explicit_items_and_vendor_selectors() {
 }
 
 #[test]
+fn delete_attribute_builder_rejects_duplicate_and_malformed_current_attributes() {
+    let first = item(0x0042_00FC, Value::text_string("first".to_owned()));
+    let second = item(0x0042_00FD, Value::text_string("second".to_owned()));
+    let duplicate = DeleteAttributeBuilder::detached()
+        .current_attribute_item(first)
+        .current_attribute_item(second);
+    assert_eq!(
+        duplicate.validate(),
+        Err(FluentBuildError::InvalidAttributeValue)
+    );
+    assert_eq!(
+        duplicate.build_request().err(),
+        Some(FluentBuildError::InvalidAttributeValue)
+    );
+    assert_eq!(
+        duplicate.build().err(),
+        Some(FluentBuildError::InvalidAttributeValue)
+    );
+
+    let mut value = item(
+        typed::Description::TAG,
+        Value::text_string("vendor value".to_owned()),
+    );
+    for _ in 0..64 {
+        let mut structure = Structure::new();
+        structure
+            .try_push(value)
+            .expect("each nested structure remains within the model's maximum depth");
+        value = item(typed::Description::TAG, Value::structure(structure));
+    }
+    let malformed_vendor =
+        DeleteAttributeBuilder::detached().current_vendor_attribute("", "region", &value);
+    assert!(malformed_vendor.validate().is_err());
+    assert!(malformed_vendor.build_request().is_err());
+}
+
+#[test]
 fn add_attribute_builder_constructs_the_existing_typed_request() {
     let mut client = failed_request_client();
     let request = client

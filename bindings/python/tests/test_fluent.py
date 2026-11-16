@@ -48,6 +48,59 @@ def test_delete_attribute_builder_builds_an_independent_typed_request():
                             assert ttlv.ttlv_structure_view_item_count(view) == 3
 
 
+def test_delete_attribute_builder_supports_explicit_vendor_options_and_validation():
+    with ttlv.codec_limits_defaults() as limits:
+        with ttlv.raw_tag_from_raw(0x004200FC) as raw_tag:
+            with ttlv.raw_tag_try_checked(raw_tag) as tag:
+                with ttlv.ttlv_value_text_string(b"expert value", limits) as value:
+                    with ttlv.ttlv_item_create(tag, value, limits) as item:
+                        reference = extensions.AttributeReference.name("KMIPKit", "Region")
+                        with fluent.DeleteAttributeBuilder() as builder:
+                            assert builder.unique_identifier("key-42") is builder
+                            assert builder.current_attribute_item(item) is builder
+                            assert builder.attribute_reference(reference) is builder
+                            assert builder.with_options(client.RequestOptions()) is builder
+                            assert builder.asynchronous_indicator(3) is builder
+                            builder.validate()
+                            with builder.build_request() as request:
+                                assert request.attribute_reference == reference
+                                with request.current_attribute as current:
+                                    assert current is not None
+                            with builder.build() as batch_item:
+                                assert batch_item.operation == protocol_values.Operation.DELETE_ATTRIBUTE
+                            with pytest.raises(errors.KmipKitError):
+                                builder.execute(limits)
+
+                            with pytest.raises(errors.KmipKitError):
+                                builder.unique_identifier(42)
+                            with pytest.raises(errors.KmipKitError):
+                                builder.current_attribute_item(object())
+                            with pytest.raises(errors.KmipKitError):
+                                builder.catalogued_attribute(object(), value)
+                            with pytest.raises(errors.KmipKitError):
+                                builder.vendor_attribute("Vendor", "region", object())
+                            with pytest.raises(errors.KmipKitError):
+                                builder.attribute_reference(object())
+                            with pytest.raises(errors.KmipKitError):
+                                builder.with_options(object())
+                            with pytest.raises(errors.KmipKitError):
+                                builder.asynchronous_indicator(-1)
+                            with pytest.raises(errors.KmipKitError):
+                                builder.asynchronous_indicator(0x1_0000_0000)
+
+                        with fluent.DeleteAttributeBuilder() as vendor_builder:
+                            assert vendor_builder.current_vendor_attribute(
+                                "Vendor_Name.1", "region", item
+                            ) is vendor_builder
+                            vendor_builder.validate()
+                            with vendor_builder.build_request() as request:
+                                with request.current_attribute as current:
+                                    assert current is not None
+                            vendor_builder.close()
+                            with pytest.raises(RuntimeError, match="closed"):
+                                vendor_builder.validate()
+
+
 def _item(tag: int, item_type: int, value: bytes) -> bytes:
     return tag.to_bytes(3, "big") + bytes((item_type,)) + len(value).to_bytes(4, "big") + value + bytes((-len(value)) % 8)
 
