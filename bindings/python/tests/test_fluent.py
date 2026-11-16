@@ -20,6 +20,11 @@ from kmipkit.typed_attributes import StandardAttribute
 _FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
 
 
+def test_fluent_request_exposes_a_delete_attribute_builder():
+    assert callable(getattr(fluent.Request, "delete_attribute", None))
+    assert hasattr(fluent, "DeleteAttributeBuilder")
+
+
 def _item(tag: int, item_type: int, value: bytes) -> bytes:
     return tag.to_bytes(3, "big") + bytes((item_type,)) + len(value).to_bytes(4, "big") + value + bytes((-len(value)) % 8)
 
