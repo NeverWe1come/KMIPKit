@@ -343,6 +343,135 @@ fn set_attribute_response_bytes() -> Vec<u8> {
     .expect("Set Attribute response fixture is valid TTLV")
 }
 
+fn add_attribute_response_bytes() -> Vec<u8> {
+    let payload = test_structure([test_item(
+        0x0042_0094,
+        Value::text_string("server-key-42".to_owned()),
+    )]);
+    let batch_item = test_structure([
+        test_item(0x0042_005C, Value::enumeration(0x0000_000D)),
+        test_item(0x0042_007F, Value::enumeration(0)),
+        test_item(0x0042_007C, Value::structure(payload)),
+    ]);
+    let header = test_structure([
+        test_item(
+            0x0042_0069,
+            Value::structure(test_structure([
+                test_item(0x0042_006A, Value::integer(2)),
+                test_item(0x0042_006B, Value::integer(1)),
+            ])),
+        ),
+        test_item(0x0042_0092, Value::date_time(1)),
+        test_item(0x0042_000D, Value::integer(1)),
+    ]);
+    encode_message_for_test(
+        test_structure([
+            test_item(0x0042_007A, Value::structure(header)),
+            test_item(0x0042_000F, Value::structure(batch_item)),
+        ]),
+        &CodecLimits::defaults(),
+    )
+    .expect("Add Attribute response fixture is valid TTLV")
+}
+
+#[test]
+fn add_attribute_builder_preserves_explicit_and_vendor_attribute_items() {
+    let mut client = failed_request_client();
+    let extension = client
+        .request()
+        .add_attribute()
+        .attribute_item(item(0x0042_00FC, Value::text_string("extension".to_owned())))
+        .build_request()
+        .expect("an explicit allocated TTLV Item is preserved");
+    assert_eq!(extension.new_attribute().item().tag().raw(), 0x0042_00FC);
+
+    let value = item(0x0042_00FD, Value::text_string("west".to_owned()));
+    let vendor = client
+        .request()
+        .add_attribute()
+        .vendor_attribute("Vendor_Name.1", "region", &value)
+        .build_request()
+        .expect("the vendor helper constructs a KMIP Vendor Attribute");
+    assert_eq!(vendor.new_attribute().item().tag().raw(), 0x0042_0008);
+}
+
+#[test]
+fn add_attribute_builder_executes_once_and_returns_the_typed_result() {
+    let mut batch_client = failed_request_client();
+    let batch_item = batch_client
+        .request()
+        .add_attribute()
+        .attribute(
+            Attribute::<typed::Description>::new("managed by fluent".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        )
+        .to_batch_item()
+        .expect("valid Add Attribute requests convert to typed batch items");
+    assert_eq!(batch_item.operation(), 0x0000_000D);
+    assert!(matches!(
+        batch_item.request(),
+        ClientRequest::AddAttribute(_)
+    ));
+
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response: add_attribute_response_bytes(),
+        request_write_chunks: Vec::new(),
+    });
+    let response = client
+        .request()
+        .add_attribute()
+        .unique_identifier("key-42")
+        .attribute(
+            Attribute::<typed::Description>::new("managed by fluent".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        )
+        .with_options(RequestOptions::default())
+        .with_asynchronous_indicator(3)
+        .execute(&CodecLimits::defaults())
+        .expect("Add Attribute uses one existing typed exchange");
+
+    assert_eq!(
+        response
+            .outcome()
+            .response()
+            .add_attribute()
+            .and_then(|result| result.unique_identifier()),
+        Some("server-key-42")
+    );
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn add_attribute_builder_rejects_wrong_type_and_duplicate_new_attributes_before_send() {
+    let (mut client, fake, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let error = client
+        .request()
+        .add_attribute()
+        .attribute_item(item(typed::Description::TAG, Value::integer(17)))
+        .execute(&CodecLimits::defaults())
+        .expect_err("a catalogued attribute with the wrong TTLV type is rejected locally");
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert_eq!(fake.borrow().exchange_count(), 0);
+
+    let mut client = failed_request_client();
+    assert!(client
+        .request()
+        .add_attribute()
+        .attribute(
+            Attribute::<typed::Description>::new("first".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        )
+        .attribute(
+            Attribute::<typed::Description>::new("second".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        )
+        .validate()
+        .is_err());
+}
+
 #[test]
 fn symmetric_key_builder_requires_algorithm_length_and_usage_mask() {
     let mut client = failed_request_client();
