@@ -1117872,86 +1117872,121 @@
     {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseCreateGroup",
-      "reason": "Internal JNI native bridge binding for KMIP 3.0 batch response reader.",
+      "reason": "This exact public static native member is JNI handle plumbing used by the typed client batch facade; it provides no independent Java product capability.",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/093-fluent-complete-api/spec.md",
+        "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved in scope by the maintainer's direct 2026-11-11 instruction"
+        "evidence": "**Status**: Approved for implementation"
       },
-      "evidence": "Internal JNI bridge method wrapped by ClientBatchItemResult."
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/021 and KMIPKIT-0093-FR-011. This exact CreateGroup response bridge reads a typed KMIPKit batch item response through JNI; callers use the separately inventoried ClientBatchItemResult facade.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItemResult.java",
+        "specs/093-fluent-complete-api/spec.md"
+      ]
     },
     {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseCreateUser",
-      "reason": "Internal JNI native bridge binding for KMIP 3.0 batch response reader.",
+      "reason": "This exact public static native member is JNI handle plumbing used by the typed client batch facade; it provides no independent Java product capability.",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/093-fluent-complete-api/spec.md",
+        "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved in scope by the maintainer's direct 2026-11-11 instruction"
+        "evidence": "**Status**: Approved for implementation"
       },
-      "evidence": "Internal JNI bridge method wrapped by ClientBatchItemResult."
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/021 and KMIPKIT-0093-FR-011. This exact CreateUser response bridge reads a typed KMIPKit batch item response through JNI; callers use the separately inventoried ClientBatchItemResult facade.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItemResult.java",
+        "specs/093-fluent-complete-api/spec.md"
+      ]
     },
     {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseCreateCredential",
-      "reason": "Internal JNI native bridge binding for KMIP 3.0 batch response reader.",
+      "reason": "This exact public static native member is JNI handle plumbing used by the typed client batch facade; it provides no independent Java product capability.",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/093-fluent-complete-api/spec.md",
+        "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved in scope by the maintainer's direct 2026-11-11 instruction"
+        "evidence": "**Status**: Approved for implementation"
       },
-      "evidence": "Internal JNI bridge method wrapped by ClientBatchItemResult."
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/021 and KMIPKIT-0093-FR-011. This exact CreateCredential response bridge reads a typed KMIPKit batch item response through JNI; callers use the separately inventoried ClientBatchItemResult facade.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItemResult.java",
+        "specs/093-fluent-complete-api/spec.md"
+      ]
     },
     {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseObliterate",
-      "reason": "Internal JNI native bridge binding for KMIP 3.0 batch response reader.",
+      "reason": "This exact public static native member is JNI handle plumbing used by the typed client batch facade; it provides no independent Java product capability.",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/093-fluent-complete-api/spec.md",
+        "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved in scope by the maintainer's direct 2026-11-11 instruction"
+        "evidence": "**Status**: Approved for implementation"
       },
-      "evidence": "Internal JNI bridge method wrapped by ClientBatchItemResult."
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/021 and KMIPKIT-0093-FR-011. This exact Obliterate response bridge reads a typed KMIPKit batch item response through JNI; callers use the separately inventoried ClientBatchItemResult facade.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItemResult.java",
+        "specs/093-fluent-complete-api/spec.md"
+      ]
     },
     {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseDeactivate",
-      "reason": "Internal JNI native bridge binding for KMIP 3.0 batch response reader.",
+      "reason": "This exact public static native member is JNI handle plumbing used by the typed client batch facade; it provides no independent Java product capability.",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/093-fluent-complete-api/spec.md",
+        "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved in scope by the maintainer's direct 2026-11-11 instruction"
+        "evidence": "**Status**: Approved for implementation"
       },
-      "evidence": "Internal JNI bridge method wrapped by ClientBatchItemResult."
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/021 and KMIPKIT-0093-FR-011. This exact Deactivate response bridge reads a typed KMIPKit batch item response through JNI; callers use the separately inventoried ClientBatchItemResult facade.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItemResult.java",
+        "specs/093-fluent-complete-api/spec.md"
+      ]
     },
     {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseEncapsulate",
-      "reason": "Internal JNI native bridge binding for KMIP 3.0 batch response reader.",
+      "reason": "This exact public static native member is JNI handle plumbing used by the typed client batch facade; it provides no independent Java product capability.",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/093-fluent-complete-api/spec.md",
+        "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved in scope by the maintainer's direct 2026-11-11 instruction"
+        "evidence": "**Status**: Approved for implementation"
       },
-      "evidence": "Internal JNI bridge method wrapped by ClientBatchItemResult."
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/021 and KMIPKIT-0093-FR-011. This exact Encapsulate response bridge reads a typed KMIPKit batch item response through JNI; callers use the separately inventoried ClientBatchItemResult facade.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItemResult.java",
+        "specs/093-fluent-complete-api/spec.md"
+      ]
     },
     {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseDecapsulate",
-      "reason": "Internal JNI native bridge binding for KMIP 3.0 batch response reader.",
+      "reason": "This exact public static native member is JNI handle plumbing used by the typed client batch facade; it provides no independent Java product capability.",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/093-fluent-complete-api/spec.md",
+        "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved in scope by the maintainer's direct 2026-11-11 instruction"
+        "evidence": "**Status**: Approved for implementation"
       },
-      "evidence": "Internal JNI bridge method wrapped by ClientBatchItemResult."
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/021 and KMIPKIT-0093-FR-011. This exact Decapsulate response bridge reads a typed KMIPKit batch item response through JNI; callers use the separately inventoried ClientBatchItemResult facade.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItemResult.java",
+        "specs/093-fluent-complete-api/spec.md"
+      ]
     },
     {
       "packageId": "java-kmipkit",
