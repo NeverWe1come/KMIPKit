@@ -672,3 +672,22 @@
   identical explicit Add/Set builder method bodies introduced to keep the
   production AST audit fail-closed exceeded that gate.
 
+### Green
+
+- Commit `7d715b26d` moves the shared Add/Set request state, validation,
+  construction, and execution into private helpers. Each public builder keeps
+  its existing named methods and typed request/result surface; method bodies
+  delegate to the shared implementation without introducing a macro.
+- The fluent request tests pass (31 tests), the complete Rust workspace suite
+  passes, workspace Clippy with all targets/features and `-D warnings` passes,
+  and `cargo fmt --all --check` passes.
+
+### Refactor
+
+- The shared helper accepts the operation-specific typed request constructor,
+  validator, and `ClientRequest` variant. The builders keep their distinct
+  missing-attribute errors and KMIP request types while execution still uses
+  the existing single typed exchange path.
+- The next exact-head SonarCloud result must confirm duplication is at or below
+  the 3% gate. PR #236 remains WIP until every required check is green.
+
