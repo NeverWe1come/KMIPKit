@@ -464,6 +464,18 @@ def collect_values(catalog: dict[str, Any]) -> CatalogValues:
     return values
 
 
+def _group_values(
+    group: NamedGroup,
+    tag_values: tuple[NamedValue, ...],
+    *,
+    enumeration: bool,
+) -> tuple[NamedValue, ...]:
+    """Use the separately sourced assigned tag values for the Tag enumeration."""
+    if enumeration and group.name == "Tag":
+        return tag_values
+    return group.values
+
+
 def _render_rust(values: CatalogValues) -> str:
     lines = ["//! Generated catalog-backed KMIP 2.1 named values.", "", "/// KMIP protocol Enumeration and Bit Mask values.", "pub mod values {"]
     kinds = (("enumeration", values.enumerations), ("bitmask", values.bitmasks))
@@ -471,10 +483,10 @@ def _render_rust(values: CatalogValues) -> str:
         lines.append(f"    /// Assigned KMIP 2.1 {kind.title()} values.")
         lines.extend([f"    pub mod {kind} {{"])
         for group_index, group in enumerate(groups):
-            member_values = (
-                values.tag_values
-                if kind == "enumeration" and group.name == "Tag"
-                else group.values
+            member_values = _group_values(
+                group,
+                values.tag_values,
+                enumeration=kind == "enumeration",
             )
             lines.append(f"        /// Values for the KMIP {group.name} {kind.title()}.")
             lines.extend([f"        pub mod {_snake_identifier(group.name)} {{"])
@@ -594,10 +606,10 @@ def _render_c(values: CatalogValues) -> str:
     lines.append("")
     for kind, groups in (("ENUMERATION", values.enumerations), ("BITMASK", values.bitmasks)):
         for group in groups:
-            member_values = (
-                values.tag_values
-                if kind == "ENUMERATION" and group.name == "Tag"
-                else group.values
+            member_values = _group_values(
+                group,
+                values.tag_values,
+                enumeration=kind == "ENUMERATION",
             )
             prefix = f"KMIPKIT_{kind}_{group.identifier}"
             if kind == "ENUMERATION":
@@ -638,10 +650,10 @@ def _render_java(values: CatalogValues) -> str:
     lines = ["package org.kmipkit.protocol;", "", "/** Generated KMIP 2.1 named values. */", "public final class KmipValues {", "    private KmipValues() {}", ""]
     for kind, groups in (("Enumeration", values.enumerations), ("BitMask", values.bitmasks)):
         for group in groups:
-            member_values = (
-                values.tag_values
-                if kind == "Enumeration" and group.name == "Tag"
-                else group.values
+            member_values = _group_values(
+                group,
+                values.tag_values,
+                enumeration=kind == "Enumeration",
             )
             type_name = _type_identifier(group.name)
             lines.extend([f"    /** Named KMIP 2.1 values for {group.name}. */", f"    public static final class {type_name} {{", f"        private {type_name}() {{}}"])
@@ -688,10 +700,10 @@ def _render_python(values: CatalogValues) -> str:
     lines = ['"""Generated KMIP 2.1 named values."""', "", "from __future__ import annotations", ""]
     for kind, groups in (("enumeration", values.enumerations), ("bitmask", values.bitmasks)):
         for group in groups:
-            member_values = (
-                values.tag_values
-                if kind == "enumeration" and group.name == "Tag"
-                else group.values
+            member_values = _group_values(
+                group,
+                values.tag_values,
+                enumeration=kind == "enumeration",
             )
             type_name = _type_identifier(group.name)
             lines.extend([f"class {type_name}:", f'    """Named values for {group.name}."""'])

@@ -478,3 +478,12 @@
 - Exact-head CI has not run yet. G004 remains open until the WIP PR's required
   checks pass and any failures are fixed.
 
+### Refactor
+
+- Consolidated the four language renderers' choice between the canonical
+  Enumeration values and the separately sourced Tag assignments in one helper.
+  `python3 -B -m unittest tools.normative_catalog.tests.test_generate_named_values
+  tools.normative_catalog.tests.test_fluent_api_catalog_consistency -v` passes
+  all 23 tests, and both the named-value and manifest reconciliation checks
+  confirm generated outputs are unchanged.
+
