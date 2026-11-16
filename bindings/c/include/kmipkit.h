@@ -1006,6 +1006,8 @@ typedef struct kmipkit_validated_extension_value_t kmipkit_validated_extension_v
 typedef struct kmipkit_validation_issue_view_v1_t kmipkit_validation_issue_view_v1_t;
 typedef struct kmipkit_validation_report_t kmipkit_validation_report_t;
 typedef struct kmipkit_delete_attribute_builder_t kmipkit_delete_attribute_builder_t;
+typedef struct kmipkit_locate_builder_t kmipkit_locate_builder_t;
+typedef struct kmipkit_revoke_builder_t kmipkit_revoke_builder_t;
 
 typedef struct kmipkit_byte_span_v1_t kmipkit_byte_span_v1_t;
 typedef struct kmipkit_client_batch_item_metadata_v1_t kmipkit_client_batch_item_metadata_v1_t;
@@ -1469,6 +1471,8 @@ void kmipkit_username_and_password_credential_release(kmipkit_username_and_passw
 void kmipkit_validated_extension_value_release(kmipkit_validated_extension_value_t *handle);
 void kmipkit_validation_report_release(kmipkit_validation_report_t *handle);
 void kmipkit_delete_attribute_builder_release(kmipkit_delete_attribute_builder_t *handle);
+void kmipkit_locate_builder_release(kmipkit_locate_builder_t *handle);
+void kmipkit_revoke_builder_release(kmipkit_revoke_builder_t *handle);
 #define KMIPKIT_ERROR_COMPATIBILITY_MISMATCH ((int32_t)1)
 #define KMIPKIT_ERROR_DUPLICATE_KEY ((int32_t)2)
 #define KMIPKIT_ERROR_INVALID_IDENTITY ((int32_t)3)
@@ -3483,6 +3487,44 @@ int32_t kmipkit_delete_attribute_builder_set_unique_identifier(kmipkit_delete_at
 int32_t kmipkit_delete_attribute_builder_set_vendor_attribute(kmipkit_delete_attribute_builder_t * builder, const uint8_t * vendor_data, uint64_t vendor_length, const uint8_t * name_data, uint64_t name_length, kmipkit_ttlv_item_t * attribute_value);
 /* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005 */
 int32_t kmipkit_delete_attribute_builder_validate(kmipkit_delete_attribute_builder_t * builder);
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011, KMIPKIT-0101-FR-001, KMIPKIT-0101-FR-004, KMIPKIT-0101-FR-005, KMIPKIT-0101-FR-006 */
+int32_t kmipkit_locate_builder_create(kmipkit_ttlv_structure_t * attributes, kmipkit_locate_builder_t ** out_builder);
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011, KMIPKIT-0101-FR-001, KMIPKIT-0101-FR-004, KMIPKIT-0101-FR-005, KMIPKIT-0101-FR-006 */
+int32_t kmipkit_locate_builder_set_maximum_items(kmipkit_locate_builder_t * builder, int32_t value);
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011, KMIPKIT-0101-FR-001, KMIPKIT-0101-FR-004, KMIPKIT-0101-FR-005, KMIPKIT-0101-FR-006 */
+int32_t kmipkit_locate_builder_set_offset_items(kmipkit_locate_builder_t * builder, int32_t value);
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011, KMIPKIT-0101-FR-001, KMIPKIT-0101-FR-004, KMIPKIT-0101-FR-005, KMIPKIT-0101-FR-006 */
+int32_t kmipkit_locate_builder_set_storage_status_mask(kmipkit_locate_builder_t * builder, uint32_t value);
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011, KMIPKIT-0101-FR-001, KMIPKIT-0101-FR-004, KMIPKIT-0101-FR-005, KMIPKIT-0101-FR-006 */
+int32_t kmipkit_locate_builder_set_object_group_member(kmipkit_locate_builder_t * builder, uint32_t value);
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011, KMIPKIT-0101-FR-001, KMIPKIT-0101-FR-004, KMIPKIT-0101-FR-005, KMIPKIT-0101-FR-006 */
+int32_t kmipkit_locate_builder_set_asynchronous_indicator(kmipkit_locate_builder_t * builder, uint32_t value);
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011, KMIPKIT-0101-FR-001, KMIPKIT-0101-FR-004, KMIPKIT-0101-FR-005, KMIPKIT-0101-FR-006 */
+int32_t kmipkit_locate_builder_validate(kmipkit_locate_builder_t * builder);
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011, KMIPKIT-0101-FR-001, KMIPKIT-0101-FR-004, KMIPKIT-0101-FR-005, KMIPKIT-0101-FR-006 */
+int32_t kmipkit_locate_builder_build_batch_item(kmipkit_locate_builder_t * builder, kmipkit_client_batch_item_t ** out_item);
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011, KMIPKIT-0101-FR-001, KMIPKIT-0101-FR-004, KMIPKIT-0101-FR-005, KMIPKIT-0101-FR-006 */
+int32_t kmipkit_locate_builder_execute_v1(kmipkit_locate_builder_t * builder, kmipkit_client_t * client, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011, KMIPKIT-0101-FR-001, KMIPKIT-0101-FR-004, KMIPKIT-0101-FR-005, KMIPKIT-0101-FR-006 */
+int32_t kmipkit_locate_builder_execute_with_options_v1(kmipkit_locate_builder_t * builder, kmipkit_client_t * client, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response);
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011, KMIPKIT-0101-FR-001, KMIPKIT-0101-FR-004, KMIPKIT-0101-FR-005, KMIPKIT-0101-FR-006 */
+int32_t kmipkit_revoke_builder_create(uint32_t reason, kmipkit_revoke_builder_t ** out_builder);
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011, KMIPKIT-0101-FR-001, KMIPKIT-0101-FR-004, KMIPKIT-0101-FR-005, KMIPKIT-0101-FR-006 */
+int32_t kmipkit_revoke_builder_set_unique_identifier(kmipkit_revoke_builder_t * builder, const kmipkit_unique_identifier_v1_t * identifier);
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011, KMIPKIT-0101-FR-001, KMIPKIT-0101-FR-004, KMIPKIT-0101-FR-005, KMIPKIT-0101-FR-006 */
+int32_t kmipkit_revoke_builder_set_revocation_message(kmipkit_revoke_builder_t * builder, const uint8_t * message_data, uint64_t message_length);
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011, KMIPKIT-0101-FR-001, KMIPKIT-0101-FR-004, KMIPKIT-0101-FR-005, KMIPKIT-0101-FR-006 */
+int32_t kmipkit_revoke_builder_set_compromise_occurrence_date(kmipkit_revoke_builder_t * builder, int64_t value);
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011, KMIPKIT-0101-FR-001, KMIPKIT-0101-FR-004, KMIPKIT-0101-FR-005, KMIPKIT-0101-FR-006 */
+int32_t kmipkit_revoke_builder_set_asynchronous_indicator(kmipkit_revoke_builder_t * builder, uint32_t value);
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011, KMIPKIT-0101-FR-001, KMIPKIT-0101-FR-004, KMIPKIT-0101-FR-005, KMIPKIT-0101-FR-006 */
+int32_t kmipkit_revoke_builder_validate(kmipkit_revoke_builder_t * builder);
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011, KMIPKIT-0101-FR-001, KMIPKIT-0101-FR-004, KMIPKIT-0101-FR-005, KMIPKIT-0101-FR-006 */
+int32_t kmipkit_revoke_builder_build_batch_item(kmipkit_revoke_builder_t * builder, kmipkit_client_batch_item_t ** out_item);
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011, KMIPKIT-0101-FR-001, KMIPKIT-0101-FR-004, KMIPKIT-0101-FR-005, KMIPKIT-0101-FR-006 */
+int32_t kmipkit_revoke_builder_execute_v1(kmipkit_revoke_builder_t * builder, kmipkit_client_t * client, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011, KMIPKIT-0101-FR-001, KMIPKIT-0101-FR-004, KMIPKIT-0101-FR-005, KMIPKIT-0101-FR-006 */
+int32_t kmipkit_revoke_builder_execute_with_options_v1(kmipkit_revoke_builder_t * builder, kmipkit_client_t * client, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response);
 /* Returns an owned snapshot of safe profile validation IDs when the calling thread's last error is a profile validation failure.
  * Returns success and writes a null handle when no profile validation details are present; this leaves the last-error snapshot unchanged.
  * The returned handle remains valid when the thread-local error snapshot changes and must be released with kmipkit_profile_validation_error_release.

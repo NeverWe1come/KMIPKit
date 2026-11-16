@@ -4260,6 +4260,33 @@ impl<'a> RevokeBuilder<'a> {
             limits,
         )
     }
+
+    /// Executes exactly one typed Revoke exchange with the supplied options.
+    ///
+    /// # Errors
+    ///
+    /// Returns a validation error before sending when the request is invalid,
+    /// or the existing client error for exchange and response failures.
+    pub fn execute_with_options(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+        options: RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let Self {
+            client,
+            request,
+            asynchronous_indicator,
+            ..
+        } = self;
+        validate_fluent_request(&request).map_err(fluent_client_validation_error)?;
+        execute_fluent_request(
+            client,
+            ClientRequest::Revoke(request),
+            asynchronous_indicator,
+            Some(options),
+            limits,
+        )
+    }
 }
 
 /// A fluent builder for an existing typed Locate request.
@@ -4401,6 +4428,33 @@ impl<'a> LocateBuilder<'a> {
             ClientRequest::Locate(request),
             asynchronous_indicator,
             options,
+            limits,
+        )
+    }
+
+    /// Executes exactly one typed Locate exchange with the supplied options.
+    ///
+    /// # Errors
+    ///
+    /// Returns a validation error before sending when the request is invalid,
+    /// or the existing client error for exchange and response failures.
+    pub fn execute_with_options(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+        options: RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let Self {
+            client,
+            request,
+            asynchronous_indicator,
+            ..
+        } = self;
+        validate_fluent_request(&request).map_err(fluent_client_validation_error)?;
+        execute_fluent_request(
+            client,
+            ClientRequest::Locate(request),
+            asynchronous_indicator,
+            Some(options),
             limits,
         )
     }

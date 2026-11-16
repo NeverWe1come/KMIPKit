@@ -1,6 +1,7 @@
 package org.kmipkit.fluent;
 
 import org.kmipkit.extensions.UniqueIdentifier;
+import org.kmipkit.extensions.AttributeSet;
 import java.util.List;
 
 /** Entry point for one task-oriented, typed client operation. */
@@ -15,6 +16,15 @@ public final class FluentRequest {
     public AddAttributeBuilder addAttribute() { return new AddAttributeBuilder(client); }
     public SetAttributeBuilder setAttribute() { return new SetAttributeBuilder(client); }
     public DeleteAttributeBuilder deleteAttribute() { return new DeleteAttributeBuilder(client); }
+    public LocateBuilder locate(AttributeSet attributes) {
+        return new LocateBuilder(client, attributes);
+    }
+    public RevokeBuilder revoke(long reasonCode) {
+        return new RevokeBuilder(client, reasonCode, null);
+    }
+    public RevokeBuilder revoke(long reasonCode, String revocationMessage) {
+        return new RevokeBuilder(client, reasonCode, revocationMessage);
+    }
     public OperationBuilder get(UniqueIdentifier id) { return new OperationBuilder(client, id, false); }
     public OperationBuilder destroy(UniqueIdentifier id) { return new OperationBuilder(client, id, true); }
     public GetAttributesBuilder getAttributes(

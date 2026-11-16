@@ -430,6 +430,36 @@ fn revoke(client: &mut Client, limits: &CodecLimits) -> Result<(), kmipkit_clien
 fn main() { let _example = revoke; }
 ```
 
+The fluent builder starts with the required revocation reason and provides
+named methods for the identifier, optional audit message, and compromise
+occurrence date. The typed request validator checks their combination before
+the client sends anything.
+
+```rust,kmipkit-test
+use kmipkit_client::{Client, ClientError, ClientOperation};
+use kmipkit_protocol::{RevocationReason, UniqueIdentifier};
+use kmipkit_ttlv::codec::CodecLimits;
+
+fn revoke_fluently(
+    client: &mut Client,
+    limits: &CodecLimits,
+) -> Result<(), ClientError> {
+    let item = client
+        .request()
+        .revoke(RevocationReason::KEY_COMPROMISE)
+        .unique_identifier(UniqueIdentifier::TextString("certificate-id".to_owned()))
+        .revocation_message("approved retirement")
+        .compromise_occurrence_date(1_700_000_000)
+        .execute(limits)?;
+    let outcome = item.outcome();
+    assert_eq!(outcome.operation(), ClientOperation::Revoke);
+    let _typed_response = outcome.revoke_response();
+    Ok(())
+}
+
+fn main() { let _example = revoke_fluently; }
+```
+
 The marked examples are compiled by `python scripts/test_user_guide_examples.py`.
 They demonstrate API shape only and do not assert that an external KMIP server
 accepts a request or grants an operation.

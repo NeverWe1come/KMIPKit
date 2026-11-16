@@ -38,11 +38,12 @@ the Rust and binding export snapshots remain applicable to this branch.
   mapped shared declarations, 21,649 approved exclusions, 45 Rust-only
   declarations, and no unresolved routes.
 - `binding-export-report-2026-11-07.json` preserves the historical C, Java,
-  and Python inventory from November 7. The current audit is
-  `specs/043-public-api-bindings/reports/binding-export-report-2026-11-16-fluent-add-attribute.json`:
+  and Python inventory from November 7. The November 16 Add Attribute audit is
+  retained as an earlier snapshot. The current audit is
+  `specs/043-public-api-bindings/reports/binding-export-report-2026-11-16-fluent-locate-revoke.json`:
   all three packages match their manifest exactly, with no missing, stale,
-  kind-mismatched, or unresolved entries. Its exact matches are C 2,205,
-  Java 2,614, and Python 2,874.
+  kind-mismatched, or unresolved entries. Its exact matches are C 2,228,
+  Java 2,640, and Python 2,904.
 
 Reproduction from the repository root:
 
@@ -51,7 +52,7 @@ python -B tools/api_manifest/audit_rust_exports.py --report specs/051-pre-send-v
 python -B tools/api_manifest/reconcile_rust_exports.py --report specs/051-pre-send-validation/reports/rust-export-report-2026-11-16.json --candidate-spec-id KMIPKIT-0093 --requirement-id KMIPKIT-0093-FR-011
 python -B tools/api_manifest/generate.py --check
 python -B tools/api_manifest/audit_shared_rust_inventory.py --check
-python -B tools/api_manifest/audit_binding_exports.py --report specs/043-public-api-bindings/reports/binding-export-report-2026-11-16-fluent-add-attribute.json --check
+python -B tools/api_manifest/audit_binding_exports.py --report specs/043-public-api-bindings/reports/binding-export-report-2026-11-16-fluent-locate-revoke.json --check
 ```
 
 The November 7 snapshot retains the earlier 4,199-route gap as historical

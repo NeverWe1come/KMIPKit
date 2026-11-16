@@ -178,7 +178,8 @@ EXPECTED = (
 # KMIPKIT-0126 adds 37 versioned standard attributes and 7 KMIP 3.0 batch response readers.
 # KMIPKIT-0093 adds all audited Rust declaration candidates, exact trait
 # exclusions, and the 28 execution-wrapper requirement links.
-UNCHANGED_DECLARATIONS_SHA256 = "8bcfc306c3a7a55beb96b6f2a64d82aae58656b1e944a4626cc97427d4b1bc33"
+# Locate and Revoke add their 26 exact Rust root re-exports and Java signatures.
+UNCHANGED_DECLARATIONS_SHA256 = "3bc44954e9804aa6fcef2c3a4e69d7fe6845741eaaae02aa5864d04c74c2b5b9"
 # Delete Attribute records four-language fixture evidence on its operation row.
 UNCHANGED_OPERATIONS_SHA256 = "474e80929e0d09563d03ff2ae9542045ae784ba26e54b5f1152544c43e1adc0b"
 # T098's maintainer-approved reconciliation updates lifecycle approval evidence
@@ -193,7 +194,7 @@ UNCHANGED_OPERATIONS_SHA256 = "474e80929e0d09563d03ff2ae9542045ae784ba26e54b5f11
 # reconciliation adds 419 blocked candidates, 666 exact trait exclusions, and
 # the FR-005/FR-008 wrapper links. Delete Attribute adds 77 ready declarations,
 # two blocked Rust candidates, and 18 exact trait exclusions.
-OTHER_MANIFEST_SHA256 = "4fb0596a2fb834813f41496ad5905174e2d917a45206f6cf4a7cf197d3afc291"
+OTHER_MANIFEST_SHA256 = "19da1c043e9190b615470fec17e4b4b58cd0791c6a2af63d63e1a5dc29bc8bca"
 EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = T102_BLOCKED_CANDIDATES
 LOCATE_REQUEST_BUILDER_IDS = {
     "rust-observed-e07fce825be9d33278e1",

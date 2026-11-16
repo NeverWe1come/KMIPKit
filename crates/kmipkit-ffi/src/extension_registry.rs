@@ -69,7 +69,7 @@ use crate::{
     kmipkit_extension_registry_limits_v1_t, kmipkit_extension_schema_t,
     kmipkit_get_attribute_list_request_t, kmipkit_get_attributes_request_t,
     kmipkit_hashed_password_credential_t, kmipkit_hashed_password_timestamp_sequence_t,
-    kmipkit_message_extension_view_t, kmipkit_message_validation_error_t,
+    kmipkit_locate_builder_t, kmipkit_message_extension_view_t, kmipkit_message_validation_error_t,
     kmipkit_modify_attribute_request_t, kmipkit_mtls_client_config_v1_t, kmipkit_nonce_t,
     kmipkit_poll_request_t, kmipkit_process_request_t, kmipkit_profile_object_state_v1_t,
     kmipkit_profile_readiness_t, kmipkit_profile_validation_context_v1_t,
@@ -79,17 +79,17 @@ use crate::{
     kmipkit_registered_extension_value_t, kmipkit_request_batch_item_view_t,
     kmipkit_request_header_view_t, kmipkit_request_message_t, kmipkit_request_options_v1_t,
     kmipkit_response_batch_item_view_t, kmipkit_response_header_view_t, kmipkit_response_message_t,
-    kmipkit_revocation_reason_t, kmipkit_revoke_request_t, kmipkit_secret_bytes_t,
-    kmipkit_secret_text_t, kmipkit_set_attribute_builder_t, kmipkit_set_attribute_request_t,
-    kmipkit_split_key_reference_t, kmipkit_symmetric_key_builder_t,
-    kmipkit_symmetric_key_request_v1_t, kmipkit_tag_t, kmipkit_timeout_limit_v1_t,
-    kmipkit_transport_config_t, kmipkit_transport_config_v1_t, kmipkit_transport_input_v1_t,
-    kmipkit_ttlv_decode_error_v1_t, kmipkit_ttlv_item_t, kmipkit_ttlv_item_view_t,
-    kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t, kmipkit_ttlv_structure_view_t,
-    kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t, kmipkit_unique_identifier_v1_t,
-    kmipkit_usage_allocation_context_t, kmipkit_username_and_password_credential_t,
-    kmipkit_validated_extension_value_t, kmipkit_validation_issue_view_v1_t,
-    kmipkit_validation_report_t,
+    kmipkit_revocation_reason_t, kmipkit_revoke_builder_t, kmipkit_revoke_request_t,
+    kmipkit_secret_bytes_t, kmipkit_secret_text_t, kmipkit_set_attribute_builder_t,
+    kmipkit_set_attribute_request_t, kmipkit_split_key_reference_t,
+    kmipkit_symmetric_key_builder_t, kmipkit_symmetric_key_request_v1_t, kmipkit_tag_t,
+    kmipkit_timeout_limit_v1_t, kmipkit_transport_config_t, kmipkit_transport_config_v1_t,
+    kmipkit_transport_input_v1_t, kmipkit_ttlv_decode_error_v1_t, kmipkit_ttlv_item_t,
+    kmipkit_ttlv_item_view_t, kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t,
+    kmipkit_ttlv_structure_view_t, kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t,
+    kmipkit_unique_identifier_v1_t, kmipkit_usage_allocation_context_t,
+    kmipkit_username_and_password_credential_t, kmipkit_validated_extension_value_t,
+    kmipkit_validation_issue_view_v1_t, kmipkit_validation_report_t,
 };
 use kmipkit_client::UsageAllocationContext;
 use kmipkit_client::extension_registry as client_extension;
@@ -576,6 +576,8 @@ enum Kind {
     SetAttributeBuilder,
     AddAttributeBuilder,
     DeleteAttributeBuilder,
+    LocateBuilder,
+    RevokeBuilder,
     CryptoOperationBuilder,
 }
 
@@ -633,6 +635,23 @@ struct DeleteAttributeBuilderState {
     asynchronous_indicator: Option<u32>,
 }
 
+struct LocateBuilderState {
+    attributes: Arc<Handle>,
+    maximum_items: Option<i32>,
+    offset_items: Option<i32>,
+    storage_status_mask: Option<StorageStatusMask>,
+    object_group_member: Option<ObjectGroupMember>,
+    asynchronous_indicator: Option<u32>,
+}
+
+struct RevokeBuilderState {
+    reason: RevocationReason,
+    unique_identifier: Option<UniqueIdentifier>,
+    revocation_message: Option<String>,
+    compromise_occurrence_date: Option<i64>,
+    asynchronous_indicator: Option<u32>,
+}
+
 impl CryptoOperationBuilder {
     fn new(operation: CryptoOperationKind) -> Self {
         Self {
@@ -680,6 +699,8 @@ enum HandleValue {
     SetAttributeBuilder(Mutex<Option<SetAttributeBuilderState>>),
     AddAttributeBuilder(Mutex<Option<AddAttributeBuilderState>>),
     DeleteAttributeBuilder(Mutex<Option<DeleteAttributeBuilderState>>),
+    LocateBuilder(Mutex<LocateBuilderState>),
+    RevokeBuilder(Mutex<RevokeBuilderState>),
     CryptoOperationBuilder(Mutex<CryptoOperationBuilder>),
     BatchItemReadback(ClientBatchItemReadback),
     RegisterRequest(Box<RegisterRequest>),
@@ -5128,6 +5149,10 @@ fn copy_attribute_set_handle(
         };
     }
     let handle = reference_handle(structure, Kind::Structure)?;
+    copy_attribute_set_from_handle(&handle).map(Some)
+}
+
+fn copy_attribute_set_from_handle(handle: &Arc<Handle>) -> FfiResult<AttributeSet> {
     let HandleValue::Structure(source) = &handle.value else {
         return Err(ERROR_INVALID_INPUT);
     };
@@ -5140,9 +5165,7 @@ fn copy_attribute_set_handle(
     for child in children {
         items.push(child.try_clone().map_err(model_status)?);
     }
-    AttributeSet::try_new(items)
-        .map(Some)
-        .map_err(|_| ERROR_INVALID_INPUT)
+    AttributeSet::try_new(items).map_err(|_| ERROR_INVALID_INPUT)
 }
 
 fn copy_unique_identifier(

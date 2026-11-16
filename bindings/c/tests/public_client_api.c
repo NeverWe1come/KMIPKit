@@ -737,6 +737,138 @@ cleanup:
     return status;
 }
 
+int kmipkit_public_locate_revoke_fluent_probe(void) {
+    static const uint8_t identifier_text[] = "revoke-key";
+    static const uint8_t revocation_message[] = "key material compromised";
+    static const uint8_t invalid_utf8[] = {UINT8_C(0xff)};
+    kmipkit_ttlv_structure_t *attributes = NULL;
+    kmipkit_locate_builder_t *locate = NULL;
+    kmipkit_locate_builder_t *invalid_locate = NULL;
+    kmipkit_revoke_builder_t *revoke = NULL;
+    kmipkit_revoke_builder_t *invalid_revoke = NULL;
+    kmipkit_client_batch_item_t *locate_item = NULL;
+    kmipkit_client_batch_item_t *revoke_item = NULL;
+    kmipkit_client_batch_item_t *invalid_item = NULL;
+    kmipkit_client_batch_response_t *response = NULL;
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    kmipkit_request_options_v1_t options = {0};
+    uint32_t operation = UINT32_C(0);
+    int32_t status;
+
+    if (kmipkit_ttlv_structure_create(&attributes) != INT32_C(0) || attributes == NULL ||
+        kmipkit_locate_builder_create(attributes, &locate) != INT32_C(0) || locate == NULL ||
+        kmipkit_locate_builder_create(NULL, &invalid_locate) != KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_locate_builder_create(attributes, NULL) != KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_locate_builder_validate(NULL) != KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_locate_builder_build_batch_item(NULL, &invalid_item) !=
+            KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_locate_builder_set_maximum_items(NULL, INT32_C(1)) !=
+            KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_locate_builder_set_storage_status_mask(
+            (kmipkit_locate_builder_t *)attributes, UINT32_C(1)) !=
+            KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_locate_builder_set_maximum_items(locate, INT32_C(3)) != INT32_C(0) ||
+        kmipkit_locate_builder_set_offset_items(locate, INT32_C(0)) != INT32_C(0) ||
+        kmipkit_locate_builder_set_storage_status_mask(locate, UINT32_C(1)) != INT32_C(0) ||
+        kmipkit_locate_builder_set_object_group_member(locate, UINT32_C(1)) != INT32_C(0) ||
+        kmipkit_locate_builder_set_asynchronous_indicator(locate, UINT32_C(4)) != INT32_C(0) ||
+        kmipkit_locate_builder_validate(locate) != INT32_C(0) ||
+        kmipkit_locate_builder_build_batch_item(locate, &locate_item) != INT32_C(0) ||
+        locate_item == NULL ||
+        kmipkit_client_batch_item_operation(locate_item, &operation) != INT32_C(0) ||
+        operation != UINT32_C(8)) {
+        status = 1;
+        goto cleanup;
+    }
+
+    options.struct_size = (uint32_t)sizeof(options);
+    options.abi_version = 1;
+    kmipkit_request_options_v1_t invalid_options = options;
+    invalid_options.abi_version = UINT32_C(2);
+    if (kmipkit_locate_builder_execute_v1(locate, NULL, NULL, &response) !=
+            KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_locate_builder_execute_with_options_v1(locate, NULL, NULL, NULL, &response) !=
+            KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_locate_builder_execute_with_options_v1(locate, NULL, NULL, &options, &response) !=
+            KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_locate_builder_execute_with_options_v1(
+            locate, NULL, NULL, &invalid_options, &response) !=
+            KMIPKIT_ERROR_INVALID_INPUT) {
+        status = 2;
+        goto cleanup;
+    }
+
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = 1;
+    identifier.kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING;
+    identifier.text_data = identifier_text;
+    identifier.text_length = (uint64_t)(sizeof(identifier_text) - 1);
+    if (kmipkit_revoke_builder_create(UINT32_C(2), &revoke) != INT32_C(0) || revoke == NULL ||
+        kmipkit_revoke_builder_set_unique_identifier(revoke, NULL) != INT32_C(0) ||
+        kmipkit_revoke_builder_set_unique_identifier(revoke, &identifier) != INT32_C(0) ||
+        kmipkit_revoke_builder_set_unique_identifier(
+            revoke, (const kmipkit_unique_identifier_v1_t *)((const uint8_t *)&identifier + 1)) !=
+            KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_revoke_builder_set_revocation_message(
+            revoke, revocation_message, (uint64_t)(sizeof(revocation_message) - 1)) != INT32_C(0) ||
+        kmipkit_revoke_builder_set_revocation_message(revoke, NULL, UINT64_C(1)) !=
+            KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_revoke_builder_set_revocation_message(
+            revoke, invalid_utf8, (uint64_t)sizeof(invalid_utf8)) != KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_revoke_builder_set_compromise_occurrence_date(revoke, INT64_C(1700000000)) !=
+            INT32_C(0) ||
+        kmipkit_revoke_builder_set_asynchronous_indicator(revoke, UINT32_C(5)) != INT32_C(0) ||
+        kmipkit_revoke_builder_validate(revoke) != INT32_C(0) ||
+        kmipkit_revoke_builder_build_batch_item(revoke, &revoke_item) != INT32_C(0) ||
+        revoke_item == NULL ||
+        kmipkit_client_batch_item_operation(revoke_item, &operation) != INT32_C(0) ||
+        operation != UINT32_C(19)) {
+        status = 3;
+        goto cleanup;
+    }
+    if (kmipkit_revoke_builder_set_compromise_occurrence_date(
+            (kmipkit_revoke_builder_t *)attributes, INT64_C(1)) !=
+            KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_revoke_builder_execute_with_options_v1(
+            revoke, NULL, NULL, &invalid_options, &response) != KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_revoke_builder_execute_v1(revoke, NULL, NULL, &response) !=
+            KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_revoke_builder_execute_with_options_v1(revoke, NULL, NULL, NULL, &response) !=
+            KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_revoke_builder_execute_with_options_v1(revoke, NULL, NULL, &options, &response) !=
+            KMIPKIT_ERROR_INVALID_INPUT) {
+        status = 4;
+        goto cleanup;
+    }
+    if (kmipkit_revoke_builder_create(UINT32_C(1), &invalid_revoke) != INT32_C(0) ||
+        invalid_revoke == NULL ||
+        kmipkit_revoke_builder_set_compromise_occurrence_date(
+            invalid_revoke, INT64_C(1700000000)) != INT32_C(0) ||
+        kmipkit_revoke_builder_validate(invalid_revoke) != KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_revoke_builder_build_batch_item(invalid_revoke, &invalid_item) !=
+            KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_revoke_builder_execute_v1(invalid_revoke, NULL, NULL, &response) !=
+            KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_revoke_builder_execute_with_options_v1(
+            invalid_revoke, NULL, NULL, &options, &response) != KMIPKIT_ERROR_INVALID_INPUT) {
+        status = 5;
+        goto cleanup;
+    }
+    status = 0;
+
+cleanup:
+    kmipkit_client_batch_response_release(response);
+    kmipkit_client_batch_item_release(invalid_item);
+    kmipkit_client_batch_item_release(revoke_item);
+    kmipkit_client_batch_item_release(locate_item);
+    kmipkit_locate_builder_release(invalid_locate);
+    kmipkit_revoke_builder_release(invalid_revoke);
+    kmipkit_revoke_builder_release(revoke);
+    kmipkit_locate_builder_release(locate);
+    kmipkit_ttlv_structure_release(attributes);
+    return status;
+}
+
 int kmipkit_public_async_batch_items_probe(void) {
     static const uint8_t correlation[] = "async-request-id";
     kmipkit_cancel_request_t *cancel_request = NULL;

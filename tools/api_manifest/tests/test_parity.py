@@ -953,6 +953,28 @@ class PublicApiParityTests(unittest.TestCase):
                     "delete_attribute_builder_set_unique_identifier",
                     "delete_attribute_builder_set_vendor_attribute",
                     "delete_attribute_builder_validate",
+                    # The Java Locate and Revoke builders construct typed
+                    # ClientBatchItems directly; they do not call these C ABI
+                    # builder functions through one-to-one JNI symbols.
+                    "locate_builder_build_batch_item",
+                    "locate_builder_create",
+                    "locate_builder_execute_v1",
+                    "locate_builder_execute_with_options_v1",
+                    "locate_builder_set_asynchronous_indicator",
+                    "locate_builder_set_maximum_items",
+                    "locate_builder_set_object_group_member",
+                    "locate_builder_set_offset_items",
+                    "locate_builder_set_storage_status_mask",
+                    "locate_builder_validate",
+                    "revoke_builder_build_batch_item",
+                    "revoke_builder_create",
+                    "revoke_builder_execute_v1",
+                    "revoke_builder_execute_with_options_v1",
+                    "revoke_builder_set_asynchronous_indicator",
+                    "revoke_builder_set_compromise_occurrence_date",
+                    "revoke_builder_set_revocation_message",
+                    "revoke_builder_set_unique_identifier",
+                    "revoke_builder_validate",
                 } | CRYPTO_RESPONSE_TTLV_AGGREGATE_FUNCTIONS:
                     self.assertNotIn("jniSymbol", java)
                     if function["id"] == "client_batch_item_count":

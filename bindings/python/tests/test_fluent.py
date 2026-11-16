@@ -26,6 +26,145 @@ def test_fluent_request_exposes_a_delete_attribute_builder():
     assert "DeleteAttributeBuilder" in fluent.__all__
 
 
+def test_fluent_request_exposes_locate_and_revoke_builders():
+    assert callable(getattr(fluent.Request, "locate", None))
+    assert callable(getattr(fluent.Request, "revoke", None))
+    assert hasattr(fluent, "LocateBuilder")
+    assert hasattr(fluent, "RevokeBuilder")
+    assert "LocateBuilder" in fluent.__all__
+    assert "RevokeBuilder" in fluent.__all__
+
+
+def test_locate_and_revoke_build_typed_items_with_explicit_optional_fields():
+    with ttlv.ttlv_structure_create() as empty_items:
+        with attribute_operations.AttributeSet.try_new(empty_items) as attributes:
+            with fluent.Request(None).locate(attributes) as locate:
+                item = (
+                    locate.maximum_items(12)
+                    .offset_items(3)
+                    .storage_status_mask(2)
+                    .object_group_member(1)
+                    .asynchronous_indicator(5)
+                    .to_batch_item()
+                )
+                assert item.operation == 8
+                item.close()
+
+    revoke = (
+        fluent.Request(None)
+        .revoke(2, "key material compromised")
+        .unique_identifier(extensions.UniqueIdentifier.text_string("lifecycle-key"))
+        .compromise_occurrence_date(1_700_000_000)
+        .asynchronous_indicator(7)
+    )
+    item = revoke.to_batch_item()
+    assert item.operation == 19
+    item.close()
+
+    invalid = fluent.Request(None).revoke(1).compromise_occurrence_date(1_700_000_000)
+    with pytest.raises(errors.InvalidInputError):
+        invalid.build()
+
+
+def test_locate_and_revoke_execute_forward_options_and_async_indicator(monkeypatch):
+    calls = []
+
+    class FakeBatch:
+        @classmethod
+        def create(cls):
+            return cls()
+
+        def __init__(self):
+            self.asynchronous_indicator = None
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_arguments):
+            return None
+
+        def add_item(self, item):
+            self.operation = item.operation
+
+        def set_asynchronous_indicator(self, value):
+            self.asynchronous_indicator = value
+
+    class FakeClient:
+        def execute(self, batch, limits):
+            calls.append(("default", batch.operation, batch.asynchronous_indicator))
+            return "default-result"
+
+        def execute_with_options(self, batch, limits, options):
+            calls.append(("options", batch.operation, batch.asynchronous_indicator, options))
+            return "options-result"
+
+    monkeypatch.setattr(fluent, "Batch", FakeBatch)
+    monkeypatch.setattr(fluent, "Client", FakeClient)
+    fake_client = FakeClient()
+    configured_options = client.RequestOptions()
+    override_options = client.RequestOptions()
+
+    with ttlv.codec_limits_defaults() as limits, ttlv.ttlv_structure_create() as empty_items:
+        with attribute_operations.AttributeSet.try_new(empty_items) as attributes:
+            with fluent.Request(fake_client).locate(attributes) as locate:
+                assert locate.execute(limits) == "default-result"
+                assert locate.with_options(configured_options) is locate
+                assert locate.asynchronous_indicator(3) is locate
+                assert locate.execute(limits) == "options-result"
+                assert locate.execute_with_options(limits, override_options) == "options-result"
+
+        revoke = fluent.Request(fake_client).revoke(2, "rekey after compromise")
+        assert revoke.execute(limits) == "default-result"
+        assert revoke.with_options(configured_options) is revoke
+        assert revoke.asynchronous_indicator(4) is revoke
+        assert revoke.execute(limits) == "options-result"
+        assert revoke.execute_with_options(limits, override_options) == "options-result"
+
+    assert [call[:3] for call in calls] == [
+        ("default", 8, None),
+        ("options", 8, 3),
+        ("options", 8, 3),
+        ("default", 19, None),
+        ("options", 19, 4),
+        ("options", 19, 4),
+    ]
+
+    with ttlv.ttlv_structure_create() as empty_items:
+        with attribute_operations.AttributeSet.try_new(empty_items) as attributes:
+            with pytest.raises(errors.InvalidInputError):
+                fluent.Request(fake_client).locate(attributes).with_options(object())
+    with pytest.raises(errors.InvalidInputError):
+        fluent.Request(fake_client).revoke(2).with_options(object())
+
+
+def test_locate_and_revoke_validate_builder_state_and_optional_inputs():
+    with pytest.raises(errors.InvalidInputError):
+        fluent.Request(None).locate(object())
+
+    with ttlv.ttlv_structure_create() as empty_items:
+        with attribute_operations.AttributeSet.try_new(empty_items) as attributes:
+            locate = fluent.Request(None).locate(attributes)
+            locate.validate()
+            locate.close()
+            with pytest.raises(errors.InvalidInputError):
+                locate.build()
+            with pytest.raises(errors.InvalidInputError):
+                locate.__enter__()
+
+    revoke = fluent.Request(None).revoke(2)
+    assert revoke.unique_identifier(None) is revoke
+    assert revoke.compromise_occurrence_date(None) is revoke
+    assert revoke.revocation_message("reviewed revocation") is revoke
+    revoke.validate()
+
+    with pytest.raises(errors.InvalidInputError):
+        revoke.unique_identifier(object())
+    with pytest.raises(errors.InvalidInputError):
+        revoke.revocation_message(object())
+    with pytest.raises(errors.InvalidInputError):
+        revoke.asynchronous_indicator(1 << 32)
+
+
 def test_delete_attribute_builder_builds_an_independent_typed_request():
     identifier = extensions.UniqueIdentifier.text_string("delete-attribute-key")
     reference = extensions.AttributeReference.tag(StandardAttribute.DESCRIPTION.tag)
@@ -1075,6 +1214,70 @@ def test_attribute_mutation_builder_executes_default_and_override_options(
     assert calls == [("default", None), ("options", 2)]
 
 
+def test_single_item_exchange_helper_forwards_async_and_selected_options(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[tuple[str, int | None, object | None]] = []
+
+    class FakeClient:
+        def execute(self, batch: object, limits: object) -> str:
+            calls.append(("default", getattr(batch, "asynchronous_indicator", None), None))
+            return "default result"
+
+        def execute_with_options(
+            self, batch: object, limits: object, options: object,
+        ) -> str:
+            calls.append(("options", getattr(batch, "asynchronous_indicator", None), options))
+            return "options result"
+
+    class FakeItem:
+        def __enter__(self) -> FakeItem:
+            return self
+
+        def __exit__(self, *_arguments: object) -> None:
+            self.close()
+
+        def close(self) -> None:
+            pass
+
+    class FakeBatch:
+        asynchronous_indicator: int | None = None
+
+        @classmethod
+        def create(cls) -> FakeBatch:
+            return cls()
+
+        def __enter__(self) -> FakeBatch:
+            return self
+
+        def __exit__(self, *_arguments: object) -> None:
+            self.close()
+
+        def add_item(self, _item: object) -> None:
+            pass
+
+        def set_asynchronous_indicator(self, value: int) -> None:
+            self.asynchronous_indicator = value
+
+        def close(self) -> None:
+            pass
+
+    monkeypatch.setattr(fluent, "Client", FakeClient)
+    monkeypatch.setattr(fluent, "Batch", FakeBatch)
+    configured_options = client.RequestOptions()
+    override_options = client.RequestOptions()
+    with ttlv.codec_limits_defaults() as limits:
+        assert fluent._execute_single_item(
+            FakeClient(), FakeItem, limits, configured_options, 2,
+        ) == "options result"
+        assert fluent._execute_single_item(
+            FakeClient(), FakeItem, limits, configured_options, None, override_options,
+        ) == "options result"
+
+    assert calls == [
+        ("options", 2, configured_options),
+        ("options", None, override_options),
+    ]
 def test_add_attribute_builder_rejects_success_without_native_output(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
