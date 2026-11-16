@@ -2891,6 +2891,52 @@ pub struct DestroyBuilder<'a> {
     asynchronous_indicator: Option<u32>,
 }
 
+#[derive(Default)]
+struct NewAttributeBuilderState {
+    item: Option<Item>,
+    error: Option<FluentBuildError>,
+}
+
+impl NewAttributeBuilderState {
+    fn set_item(&mut self, item: Item) {
+        if self.item.is_some() || self.error.is_some() {
+            self.error
+                .get_or_insert(FluentBuildError::InvalidAttributeValue);
+            return;
+        }
+        if let Err(error) = validate_object_attribute_tag(&item) {
+            self.error = Some(error);
+            return;
+        }
+        self.item = Some(item);
+    }
+
+    fn set_vendor_attribute(
+        &mut self,
+        vendor_identification: &str,
+        attribute_name: &str,
+        attribute_value: &Item,
+    ) {
+        match make_vendor_attribute(vendor_identification, attribute_name, attribute_value) {
+            Ok(item) => self.set_item(item),
+            Err(error) => {
+                self.error.get_or_insert(error);
+            }
+        }
+    }
+
+    fn build_item(&self, missing_error: FluentBuildError) -> Result<Item, FluentBuildError> {
+        if let Some(error) = self.error {
+            return Err(error);
+        }
+        self.item
+            .as_ref()
+            .ok_or(missing_error)?
+            .try_clone()
+            .map_err(|_| FluentBuildError::InvalidTtlvValue)
+    }
+}
+
 /// A fluent builder for the existing typed Add Attribute request.
 ///
 /// The required New Attribute is one direct typed Item. Catalogued attributes
@@ -2900,8 +2946,7 @@ pub struct DestroyBuilder<'a> {
 pub struct AddAttributeBuilder<'a> {
     client: Option<&'a mut Client>,
     unique_identifier: Option<String>,
-    new_attribute: Option<Item>,
-    attribute_error: Option<FluentBuildError>,
+    attribute: NewAttributeBuilderState,
     options: Option<RequestOptions>,
     asynchronous_indicator: Option<u32>,
 }
@@ -2911,8 +2956,7 @@ impl<'a> AddAttributeBuilder<'a> {
         Self {
             client,
             unique_identifier: None,
-            new_attribute: None,
-            attribute_error: None,
+            attribute: NewAttributeBuilderState::default(),
             options: None,
             asynchronous_indicator: None,
         }
@@ -2940,16 +2984,7 @@ impl<'a> AddAttributeBuilder<'a> {
     /// Sets one explicitly typed TTLV Item as the New Attribute.
     #[must_use]
     pub fn attribute_item(mut self, item: Item) -> Self {
-        if self.new_attribute.is_some() || self.attribute_error.is_some() {
-            self.attribute_error
-                .get_or_insert(FluentBuildError::InvalidAttributeValue);
-            return self;
-        }
-        if let Err(error) = validate_object_attribute_tag(&item) {
-            self.attribute_error = Some(error);
-            return self;
-        }
-        self.new_attribute = Some(item);
+        self.attribute.set_item(item);
         self
     }
 
@@ -2961,13 +2996,9 @@ impl<'a> AddAttributeBuilder<'a> {
         attribute_name: &str,
         attribute_value: &Item,
     ) -> Self {
-        match make_vendor_attribute(vendor_identification, attribute_name, attribute_value) {
-            Ok(item) => self.attribute_item(item),
-            Err(error) => {
-                self.attribute_error.get_or_insert(error);
-                self
-            }
-        }
+        self.attribute
+            .set_vendor_attribute(vendor_identification, attribute_name, attribute_value);
+        self
     }
 
     /// Sets exchange-local transport options.
@@ -2985,15 +3016,9 @@ impl<'a> AddAttributeBuilder<'a> {
     }
 
     fn construct_request(&self) -> Result<AddAttributeRequest, FluentBuildError> {
-        if let Some(error) = self.attribute_error {
-            return Err(error);
-        }
         let item = self
-            .new_attribute
-            .as_ref()
-            .ok_or(FluentBuildError::MissingAddAttributeAttribute)?
-            .try_clone()
-            .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
+            .attribute
+            .build_item(FluentBuildError::MissingAddAttributeAttribute)?;
         let request =
             AddAttributeRequest::new(self.unique_identifier.clone(), NewAttribute::new(item));
         validate_fluent_request(&request)?;
@@ -3071,8 +3096,7 @@ impl<'a> AddAttributeBuilder<'a> {
 pub struct SetAttributeBuilder<'a> {
     client: Option<&'a mut Client>,
     unique_identifier: Option<String>,
-    new_attribute: Option<Item>,
-    attribute_error: Option<FluentBuildError>,
+    attribute: NewAttributeBuilderState,
     options: Option<RequestOptions>,
     asynchronous_indicator: Option<u32>,
 }
@@ -3082,8 +3106,7 @@ impl<'a> SetAttributeBuilder<'a> {
         Self {
             client,
             unique_identifier: None,
-            new_attribute: None,
-            attribute_error: None,
+            attribute: NewAttributeBuilderState::default(),
             options: None,
             asynchronous_indicator: None,
         }
@@ -3118,16 +3141,7 @@ impl<'a> SetAttributeBuilder<'a> {
     /// standard tags and a second New Attribute are rejected during validation.
     #[must_use]
     pub fn attribute_item(mut self, item: Item) -> Self {
-        if self.new_attribute.is_some() || self.attribute_error.is_some() {
-            self.attribute_error
-                .get_or_insert(FluentBuildError::InvalidAttributeValue);
-            return self;
-        }
-        if let Err(error) = validate_object_attribute_tag(&item) {
-            self.attribute_error = Some(error);
-            return self;
-        }
-        self.new_attribute = Some(item);
+        self.attribute.set_item(item);
         self
     }
 
@@ -3139,13 +3153,9 @@ impl<'a> SetAttributeBuilder<'a> {
         attribute_name: &str,
         attribute_value: &Item,
     ) -> Self {
-        match make_vendor_attribute(vendor_identification, attribute_name, attribute_value) {
-            Ok(item) => self.attribute_item(item),
-            Err(error) => {
-                self.attribute_error.get_or_insert(error);
-                self
-            }
-        }
+        self.attribute
+            .set_vendor_attribute(vendor_identification, attribute_name, attribute_value);
+        self
     }
 
     /// Sets exchange-local transport options.
@@ -3163,15 +3173,9 @@ impl<'a> SetAttributeBuilder<'a> {
     }
 
     fn construct_request(&self) -> Result<SetAttributeRequest, FluentBuildError> {
-        if let Some(error) = self.attribute_error {
-            return Err(error);
-        }
         let item = self
-            .new_attribute
-            .as_ref()
-            .ok_or(FluentBuildError::MissingSetAttributeAttribute)?
-            .try_clone()
-            .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
+            .attribute
+            .build_item(FluentBuildError::MissingSetAttributeAttribute)?;
         let request =
             SetAttributeRequest::new(self.unique_identifier.clone(), NewAttribute::new(item));
         validate_fluent_request(&request)?;
