@@ -1,5 +1,6 @@
 """KMIPKIT-0092: executable route evidence must fail closed on missing recipes."""
 import copy
+import hashlib
 import importlib
 import json
 from pathlib import Path
@@ -46,10 +47,18 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual([1] * response_count, event['peer_observed_result_status_codes'])
         self.assertEqual(['first_item_failed', 'second_item_not_executed'],
                          peer.peer_observed_effects)
+        self.assert_peer_state_hashes(event)
         response = self.runner._network_tree(peer.responses[0], encoding)
         self.assertEqual(response_count, len(self.runner._tree_batch_operation_values(response)))
         self.assertEqual(2, peer.request_observation['batch_error_continuation_option'])
         _validate_batch_event(event, case, self.catalog, ('batch-stop',))
+
+    def assert_peer_state_hashes(self, event):
+        state = json.dumps({'objects': ['controlled-fixture-key']},
+                           sort_keys=True, separators=(',', ':')).encode()
+        expected = hashlib.sha256(state).hexdigest()
+        self.assertEqual(expected, event['peer_observed_state_before_sha256'])
+        self.assertEqual(expected, event['peer_observed_state_after_sha256'])
 
     def test_tag_decode_rejection_code_preserves_reserved_and_unused_classes(self):
         self.assertEqual(
@@ -1208,6 +1217,7 @@ class RouteMatrixTests(unittest.TestCase):
                 self.assertEqual([1, 0], event['peer_observed_result_status_codes'])
                 self.assertEqual(['first_item_failed', 'second_item_executed'],
                                  event['peer_observed_effects'])
+                self.assert_peer_state_hashes(event)
                 self.assertEqual(1, peers[0].request_observation['batch_error_continuation_option'])
                 _validate_batch_event(event, case, self.catalog, ('batch-continue',))
 
