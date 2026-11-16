@@ -928,8 +928,8 @@ class PublicApiParityTests(unittest.TestCase):
                     "set_attribute_builder_set_asynchronous_indicator",
                     "set_attribute_builder_set_unique_identifier",
                     "set_attribute_builder_validate",
-                    # Add Attribute follows the same shared native registry;
-                    # these C ABI declarations are not individual JNI exports.
+                    # The fluent Add and Delete Attribute facades route through
+                    # NativeFluentRegistry, not one JNI symbol per C function.
                     "add_attribute_builder_add_attribute_item",
                     "add_attribute_builder_add_catalogued_attribute",
                     "add_attribute_builder_add_vendor_attribute",
@@ -941,6 +941,18 @@ class PublicApiParityTests(unittest.TestCase):
                     "add_attribute_builder_set_asynchronous_indicator",
                     "add_attribute_builder_set_unique_identifier",
                     "add_attribute_builder_validate",
+                    "delete_attribute_builder_build_batch_item",
+                    "delete_attribute_builder_build_request",
+                    "delete_attribute_builder_create",
+                    "delete_attribute_builder_execute_v1",
+                    "delete_attribute_builder_execute_with_options_v1",
+                    "delete_attribute_builder_set_asynchronous_indicator",
+                    "delete_attribute_builder_set_attribute_reference",
+                    "delete_attribute_builder_set_catalogued_attribute",
+                    "delete_attribute_builder_set_current_attribute_item",
+                    "delete_attribute_builder_set_unique_identifier",
+                    "delete_attribute_builder_set_vendor_attribute",
+                    "delete_attribute_builder_validate",
                 } | CRYPTO_RESPONSE_TTLV_AGGREGATE_FUNCTIONS:
                     self.assertNotIn("jniSymbol", java)
                     if function["id"] == "client_batch_item_count":

@@ -8,13 +8,14 @@ use kmipkit_protocol::attribute::typed;
 use kmipkit_protocol::{
     ActivateRequest, AddAttributeRequest, ArchiveRequest, Attribute, AttributeDefinition,
     AttributeReference, AttributeSet, AttributeSetError, CreateKeyPairRequest, CreateRequest,
-    CreateSplitKeyRequest, CryptographicAlgorithm, CryptographicParameters, DecryptRequest,
-    DestroyRequest, EncryptRequest, GetAttributeListRequest, GetAttributesRequest, GetRequest,
-    HashRequest, LocateRequest, MacRequest, MacVerifyRequest, ManagedObject, NewAttribute,
-    ObjectGroupMember, ObjectType, OpaqueObjectContext, OperationData, RecertifyRequest,
-    RecoverRequest, RegisterRequest, RekeyKeyPairRequest, RekeyRequest, RevocationReason,
-    RevokeRequest, SecretBytes, SetAttributeRequest, SignRequest, SignatureVerifyRequest,
-    SplitKeyMethod, StorageStatusMask, UniqueIdentifier, ValidateKmipRequest,
+    CreateSplitKeyRequest, CryptographicAlgorithm, CryptographicParameters, CurrentAttribute,
+    DecryptRequest, DeleteAttributeRequest, DestroyRequest, EncryptRequest,
+    GetAttributeListRequest, GetAttributesRequest, GetRequest, HashRequest, LocateRequest,
+    MacRequest, MacVerifyRequest, ManagedObject, NewAttribute, ObjectGroupMember, ObjectType,
+    OpaqueObjectContext, OperationData, RecertifyRequest, RecoverRequest, RegisterRequest,
+    RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest, SecretBytes,
+    SetAttributeRequest, SignRequest, SignatureVerifyRequest, SplitKeyMethod, StorageStatusMask,
+    UniqueIdentifier, ValidateKmipRequest,
 };
 use kmipkit_transport::{RequestDeliveryState, RequestOptions};
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
@@ -240,6 +241,12 @@ impl<'a> RequestBuilder<'a> {
     #[must_use]
     pub fn add_attribute(self) -> AddAttributeBuilder<'a> {
         AddAttributeBuilder::new(Some(self.client))
+    }
+
+    /// Begins a typed Delete Attribute request with all optional fields omitted.
+    #[must_use]
+    pub fn delete_attribute(self) -> DeleteAttributeBuilder<'a> {
+        DeleteAttributeBuilder::new(Some(self.client))
     }
 
     /// Begins a typed Get Attributes request with no Attribute References.
@@ -3030,6 +3037,196 @@ fn execute_attribute_mutation<T>(
 /// structure constructor.
 pub struct AddAttributeBuilder<'a> {
     state: AttributeMutationBuilderState<'a>,
+}
+
+/// A fluent builder for the existing typed Delete Attribute request.
+///
+/// KMIP v2.1 §6.1.13 Table 202 permits the Unique Identifier, Current
+/// Attribute, and Attribute Reference fields to be omitted independently.
+/// Catalogued current values use [`Self::current_attribute`]; unknown values
+/// require an explicitly typed TTLV Item.
+pub struct DeleteAttributeBuilder<'a> {
+    client: Option<&'a mut Client>,
+    unique_identifier: Option<String>,
+    current_attribute: Option<Item>,
+    current_attribute_error: Option<FluentBuildError>,
+    attribute_reference: Option<AttributeReference>,
+    options: Option<RequestOptions>,
+    asynchronous_indicator: Option<u32>,
+}
+
+impl<'a> DeleteAttributeBuilder<'a> {
+    fn new(client: Option<&'a mut Client>) -> Self {
+        Self {
+            client,
+            unique_identifier: None,
+            current_attribute: None,
+            current_attribute_error: None,
+            attribute_reference: None,
+            options: None,
+            asynchronous_indicator: None,
+        }
+    }
+
+    /// Creates a detached builder for request construction and batch use.
+    #[must_use]
+    pub fn detached() -> Self {
+        Self::new(None)
+    }
+
+    /// Sets the optional exact text Unique Identifier.
+    #[must_use]
+    pub fn unique_identifier(mut self, value: &str) -> Self {
+        self.unique_identifier = Some(value.to_owned());
+        self
+    }
+
+    /// Selects a catalogued Current Attribute value using its typed value.
+    #[must_use]
+    pub fn current_attribute<D: AttributeDefinition>(mut self, attribute: Attribute<D>) -> Self {
+        self.set_current_attribute(attribute.into_item());
+        self
+    }
+
+    /// Selects a Current Attribute using an explicitly typed generic TTLV Item.
+    #[must_use]
+    pub fn current_attribute_item(mut self, item: Item) -> Self {
+        self.set_current_attribute(item);
+        self
+    }
+
+    /// Constructs a KMIP Vendor Attribute Current Attribute selector.
+    #[must_use]
+    pub fn current_vendor_attribute(
+        mut self,
+        vendor_identification: &str,
+        attribute_name: &str,
+        attribute_value: &Item,
+    ) -> Self {
+        match make_vendor_attribute(vendor_identification, attribute_name, attribute_value) {
+            Ok(item) => self.set_current_attribute(item),
+            Err(error) => {
+                self.current_attribute_error.get_or_insert(error);
+            }
+        }
+        self
+    }
+
+    /// Sets the optional exact KMIP Attribute Reference.
+    #[must_use]
+    pub fn attribute_reference(mut self, value: AttributeReference) -> Self {
+        self.attribute_reference = Some(value);
+        self
+    }
+
+    /// Sets exchange-local transport options.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.options = Some(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.asynchronous_indicator = Some(value);
+        self
+    }
+
+    fn set_current_attribute(&mut self, item: Item) {
+        if self.current_attribute.is_some() || self.current_attribute_error.is_some() {
+            self.current_attribute_error
+                .get_or_insert(FluentBuildError::InvalidAttributeValue);
+        } else {
+            self.current_attribute = Some(item);
+        }
+    }
+
+    fn construct_request(&self) -> Result<DeleteAttributeRequest, FluentBuildError> {
+        if let Some(error) = self.current_attribute_error {
+            return Err(error);
+        }
+        let current_attribute = self
+            .current_attribute
+            .as_ref()
+            .map(Item::try_clone)
+            .transpose()
+            .map_err(|_| FluentBuildError::InvalidTtlvValue)?
+            .map(CurrentAttribute::new);
+        let request = DeleteAttributeRequest::new(
+            self.unique_identifier.clone(),
+            current_attribute,
+            self.attribute_reference.clone(),
+        );
+        validate_fluent_request(&request)?;
+        Ok(request)
+    }
+
+    /// Validates the typed request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when a selector is malformed or duplicated, or the
+    /// existing typed request validator rejects its fields.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        self.construct_request().map(|_| ())
+    }
+
+    /// Builds the existing typed Delete Attribute request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when local selector or typed request validation fails.
+    pub fn build_request(&self) -> Result<DeleteAttributeRequest, FluentBuildError> {
+        self.construct_request()
+    }
+
+    /// Builds the existing typed Delete Attribute request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when local selector or typed request validation fails.
+    pub fn build(self) -> Result<DeleteAttributeRequest, FluentBuildError> {
+        self.construct_request()
+    }
+
+    /// Converts the request to the existing typed batch item.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when local selector or typed request validation fails.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        Ok(ClientBatchItem::new(ClientRequest::DeleteAttribute(
+            self.construct_request()?,
+        )))
+    }
+
+    /// Executes one typed Delete Attribute exchange through the existing client.
+    ///
+    /// # Errors
+    ///
+    /// Returns a local `NotSent` validation error, or the existing protocol or
+    /// transport error with its delivery state.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let request = self
+            .construct_request()
+            .map_err(fluent_client_validation_error)?;
+        let Some(client) = self.client else {
+            return Err(fluent_client_validation_error(
+                FluentBuildError::MissingClientForExecution,
+            ));
+        };
+        execute_fluent_request(
+            client,
+            ClientRequest::DeleteAttribute(request),
+            self.asynchronous_indicator,
+            self.options,
+            limits,
+        )
+    }
 }
 
 impl AddAttributeBuilder<'_> {

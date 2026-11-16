@@ -29,20 +29,20 @@ the Rust and binding export snapshots remain applicable to this branch.
   declarations, and 20,879 approved exclusions.
 - `rust-export-report-2026-11-16.json` is the current compiler audit after the
   KMIPKIT-0093 fluent binding and exact Rust export reconciliation. It records
-  31,977 observed paths, 10,346 matched declarations, 21,631 approved
+  32,025 observed paths, 10,376 matched declarations, 21,649 approved
   exclusions, and no missing paths, stale declarations, kind mismatches, or
   unresolved conditions.
 - `shared-rust-inventory-2026-11-11.json` preserves the earlier shared Rust
   inventory. `shared-rust-inventory-2026-11-12.json` is the earlier fluent
-  snapshot. The current `shared-rust-inventory-2026-11-16.json` records 5,440
-  mapped shared declarations, 21,631 approved exclusions, 45 Rust-only
+  snapshot. The current `shared-rust-inventory-2026-11-16.json` records 5,468
+  mapped shared declarations, 21,649 approved exclusions, 45 Rust-only
   declarations, and no unresolved routes.
 - `binding-export-report-2026-11-07.json` preserves the historical C, Java,
   and Python inventory from November 7. The current audit is
   `specs/043-public-api-bindings/reports/binding-export-report-2026-11-16-fluent-add-attribute.json`:
   all three packages match their manifest exactly, with no missing, stale,
-  kind-mismatched, or unresolved entries. Its exact matches are C 2,191,
-  Java 2,598, and Python 2,855.
+  kind-mismatched, or unresolved entries. Its exact matches are C 2,205,
+  Java 2,614, and Python 2,874.
 
 Reproduction from the repository root:
 

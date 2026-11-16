@@ -84,6 +84,17 @@ Dependent work branches from the unmerged parent head while review is pending.
 - [ ] AAB004 Run full binding, coverage, traceability, generation, and exact
   head CI checks; resolve failures before review.
 
+### Delete Attribute parity slice
+
+- [x] DAB001 Commit failing C, Java, Python, and public-manifest checks for a
+  typed Delete Attribute builder.
+- [x] DAB002 Implement the Rust-backed C ABI, JNI, and CFFI builders for
+  catalogued values, explicit TTLV Items, vendor attributes, and references.
+- [x] DAB003 Declare and generate exact public exports; update the English and
+  Spanish guides and traceability for KMIP v2.1 §6.1.13.
+- [ ] DAB004 Run the complete required checks and resolve exact-head CI before
+  marking the PR ready for human review.
+
 ## End-to-end and closeout PR
 
 - [x] F001 Add five progressive TLS 1.3/mTLS journeys in each language and

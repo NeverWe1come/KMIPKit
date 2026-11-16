@@ -768,3 +768,24 @@
   the Rust and shared-inventory report checks pass, and `git diff --check`
   passes. Exact-head hosted CI is still required before this PR can leave WIP.
 
+### Delete Attribute stack rebase
+
+- Rebased the Delete Attribute binding branch from its old Add Attribute base
+  onto the updated KMIPKIT-0093 Add Attribute head `811062df3`. The rebase kept
+  the feature commits and merged the source manifest by stable API identities;
+  generated C, Rust, Java, Python, and fixture outputs were restored from the
+  current base and regenerated from the merged source.
+- The resulting inventory includes 77 ready Delete Attribute declarations,
+  two blocked Rust candidates retained without cross-language mappings, and 18
+  exact Rust trait exclusions. The Rust export audit reports 32,025 observed
+  paths, 10,376 matched declarations, 21,649 approved exclusions, and zero
+  missing, stale, kind-mismatched, or unresolved paths.
+- The shared Rust inventory reports 5,468 mapped declarations and 21,649
+  approved exclusions. Binding export audits match C 2,205/2,205, Java
+  2,614/2,614, and Python 2,874/2,874 with zero missing, stale, or kind-
+  mismatched rows. The generator verifies all 12 outputs.
+- The Delete Attribute, shared-inventory, manifest-size, Rust reconciliation,
+  and T102 regression modules pass (44 tests). Three additional manifest-v2
+  execution/result mapping tests pass. Exact-head hosted CI for the rebased
+  PR remains required before it can leave WIP.
+

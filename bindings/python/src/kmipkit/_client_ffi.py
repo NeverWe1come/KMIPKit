@@ -29,6 +29,7 @@ ffi.cdef(
     typedef struct kmipkit_create_key_pair_builder_t kmipkit_create_key_pair_builder_t;
     typedef struct kmipkit_set_attribute_builder_t kmipkit_set_attribute_builder_t;
     typedef struct kmipkit_add_attribute_builder_t kmipkit_add_attribute_builder_t;
+    typedef struct kmipkit_delete_attribute_builder_t kmipkit_delete_attribute_builder_t;
     typedef struct kmipkit_crypto_operation_builder_t kmipkit_crypto_operation_builder_t;
     typedef struct kmipkit_client_batch_t kmipkit_client_batch_t;
     typedef struct kmipkit_client_batch_response_t kmipkit_client_batch_response_t;
@@ -53,6 +54,8 @@ ffi.cdef(
         kmipkit_set_attribute_builder_t *, kmipkit_set_attribute_request_t **);
     int32_t kmipkit_add_attribute_builder_build_request(
         kmipkit_add_attribute_builder_t *, kmipkit_add_attribute_request_t **);
+    int32_t kmipkit_delete_attribute_builder_build_request(
+        kmipkit_delete_attribute_builder_t *, kmipkit_delete_attribute_request_t **);
     typedef struct kmipkit_get_attributes_request_t kmipkit_get_attributes_request_t;
     typedef struct kmipkit_get_attribute_list_request_t kmipkit_get_attribute_list_request_t;
     typedef struct kmipkit_usage_allocation_context_t kmipkit_usage_allocation_context_t;
@@ -330,6 +333,17 @@ ffi.cdef(
     int32_t kmipkit_add_attribute_builder_execute_v1(kmipkit_add_attribute_builder_t *, kmipkit_client_t *, kmipkit_codec_limits_t *, kmipkit_client_batch_response_t **);
     int32_t kmipkit_add_attribute_builder_execute_with_options_v1(kmipkit_add_attribute_builder_t *, kmipkit_client_t *, kmipkit_codec_limits_t *, const kmipkit_request_options_v1_t *, kmipkit_client_batch_response_t **);
     void kmipkit_add_attribute_builder_release(kmipkit_add_attribute_builder_t *);
+    int32_t kmipkit_delete_attribute_builder_create(kmipkit_delete_attribute_builder_t **);
+    int32_t kmipkit_delete_attribute_builder_set_unique_identifier(kmipkit_delete_attribute_builder_t *, const uint8_t *, uint64_t);
+    int32_t kmipkit_delete_attribute_builder_set_current_attribute_item(kmipkit_delete_attribute_builder_t *, kmipkit_ttlv_item_t *);
+    int32_t kmipkit_delete_attribute_builder_set_catalogued_attribute(kmipkit_delete_attribute_builder_t *, uint32_t, kmipkit_ttlv_value_t *);
+    int32_t kmipkit_delete_attribute_builder_set_vendor_attribute(kmipkit_delete_attribute_builder_t *, const uint8_t *, uint64_t, const uint8_t *, uint64_t, kmipkit_ttlv_item_t *);
+    int32_t kmipkit_delete_attribute_builder_set_asynchronous_indicator(kmipkit_delete_attribute_builder_t *, uint32_t);
+    int32_t kmipkit_delete_attribute_builder_validate(kmipkit_delete_attribute_builder_t *);
+    int32_t kmipkit_delete_attribute_builder_build_batch_item(kmipkit_delete_attribute_builder_t *, kmipkit_client_batch_item_t **);
+    int32_t kmipkit_delete_attribute_builder_execute_v1(kmipkit_delete_attribute_builder_t *, kmipkit_client_t *, kmipkit_codec_limits_t *, kmipkit_client_batch_response_t **);
+    int32_t kmipkit_delete_attribute_builder_execute_with_options_v1(kmipkit_delete_attribute_builder_t *, kmipkit_client_t *, kmipkit_codec_limits_t *, const kmipkit_request_options_v1_t *, kmipkit_client_batch_response_t **);
+    void kmipkit_delete_attribute_builder_release(kmipkit_delete_attribute_builder_t *);
 
     int32_t kmipkit_encrypt_builder_create(kmipkit_crypto_operation_builder_t **);
     int32_t kmipkit_decrypt_builder_create(kmipkit_crypto_operation_builder_t **);
@@ -557,6 +571,9 @@ ffi.cdef(
         const uint8_t *attribute_name_data;
         uint64_t attribute_name_length;
     } kmipkit_attribute_reference_v1_t;
+
+    int32_t kmipkit_delete_attribute_builder_set_attribute_reference(
+        kmipkit_delete_attribute_builder_t *, const kmipkit_attribute_reference_v1_t *);
 
     int32_t kmipkit_client_get_attribute_list_v1(
         kmipkit_client_t *, const kmipkit_unique_identifier_v1_t *,

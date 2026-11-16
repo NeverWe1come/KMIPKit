@@ -176,9 +176,10 @@ KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS = {
 # the four-language Create Key Pair, Set Attribute, and Add Attribute builder
 # declarations and the complete Rust export reconciliation, including 419
 # blocked inventory candidates and 666 exact trait exclusions. Eight duplicate
-# KMIPKIT-0047 v3.0 paths are deduplicated.
-DECLARATIONS_SHA256 = "2d1da38eadc84caad789b6ba022b39900145a9d9784301d5ff963304d1f8c94f"
-OPERATIONS_SHA256 = "9ab6c670787f07c9faa301744d1654fdd071ceffc3b43936e6cb12add59094e2"
+# KMIPKIT-0047 v3.0 paths are deduplicated. Delete Attribute adds 77 ready
+# declarations, two blocked Rust candidates, and 18 exact trait exclusions.
+DECLARATIONS_SHA256 = "53d17fcb0f42ac7836bb54bee6167bc57dd76f5f51dba011600c44b44885bdd2"
+OPERATIONS_SHA256 = "11a39efdadf8e9c7791a8479e3d8b3ae05f82b8dee94e8d21ed2ff2192a147ac"
 
 
 def canonical_sha256(value: object) -> str:

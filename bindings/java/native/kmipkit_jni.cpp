@@ -3618,6 +3618,186 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_fluent_NativeFluentRegistry_addAttribut
     });
 }
 
+JNIEXPORT jlong JNICALL Java_org_kmipkit_fluent_NativeFluentRegistry_deleteAttributeBuilderCreate(
+        JNIEnv* env, jclass) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_delete_attribute_builder_t>(env, [](auto out) {
+            return kmipkit_delete_attribute_builder_create(out);
+        });
+    });
+}
+
+JNIEXPORT void JNICALL Java_org_kmipkit_fluent_NativeFluentRegistry_deleteAttributeBuilderSetUniqueIdentifier(
+        JNIEnv* env, jclass, jlong raw_builder, jstring raw_identifier) {
+    guarded<int>(env, 0, [&] {
+        std::vector<uint8_t> identifier;
+        if (!java_string_to_utf8(env, raw_identifier, identifier)) return 0;
+        check_status(env, [&] { return kmipkit_delete_attribute_builder_set_unique_identifier(
+                from_java_handle<kmipkit_delete_attribute_builder_t>(raw_builder),
+                identifier.data(), static_cast<uint64_t>(identifier.size())); });
+        return 0;
+    });
+}
+
+JNIEXPORT void JNICALL Java_org_kmipkit_fluent_NativeFluentRegistry_deleteAttributeBuilderSetCurrentAttributeItem(
+        JNIEnv* env, jclass, jlong raw_builder, jlong raw_item) {
+    guarded<int>(env, 0, [&] {
+        check_status(env, [&] { return kmipkit_delete_attribute_builder_set_current_attribute_item(
+                from_java_handle<kmipkit_delete_attribute_builder_t>(raw_builder),
+                from_java_handle<kmipkit_ttlv_item_t>(raw_item)); });
+        return 0;
+    });
+}
+
+JNIEXPORT void JNICALL Java_org_kmipkit_fluent_NativeFluentRegistry_deleteAttributeBuilderSetCataloguedAttribute(
+        JNIEnv* env, jclass, jlong raw_builder, jint tag, jlong raw_value) {
+    guarded<int>(env, 0, [&] {
+        check_status(env, [&] { return kmipkit_delete_attribute_builder_set_catalogued_attribute(
+                from_java_handle<kmipkit_delete_attribute_builder_t>(raw_builder),
+                static_cast<uint32_t>(tag), from_java_handle<kmipkit_ttlv_value_t>(raw_value)); });
+        return 0;
+    });
+}
+
+JNIEXPORT void JNICALL Java_org_kmipkit_fluent_NativeFluentRegistry_deleteAttributeBuilderSetVendorAttribute(
+        JNIEnv* env, jclass, jlong raw_builder, jstring raw_vendor, jstring raw_name, jlong raw_value) {
+    guarded<int>(env, 0, [&] {
+        std::vector<uint8_t> vendor;
+        std::vector<uint8_t> name;
+        if (!java_string_to_utf8(env, raw_vendor, vendor)
+                || !java_string_to_utf8(env, raw_name, name)) return 0;
+        check_status(env, [&] { return kmipkit_delete_attribute_builder_set_vendor_attribute(
+                from_java_handle<kmipkit_delete_attribute_builder_t>(raw_builder),
+                vendor.data(), static_cast<uint64_t>(vendor.size()),
+                name.data(), static_cast<uint64_t>(name.size()),
+                from_java_handle<kmipkit_ttlv_item_t>(raw_value)); });
+        return 0;
+    });
+}
+
+JNIEXPORT void JNICALL Java_org_kmipkit_fluent_NativeFluentRegistry_deleteAttributeBuilderSetAttributeReference(
+        JNIEnv* env, jclass, jlong raw_builder, jint raw_kind, jlong raw_tag,
+        jbyteArray raw_vendor, jbyteArray raw_name) {
+    guarded<int>(env, 0, [&] {
+        if (raw_tag < 0 || static_cast<uint64_t>(raw_tag) > UINT32_MAX) {
+            throw_invalid_input(env);
+            return 0;
+        }
+        std::vector<uint8_t> vendor;
+        std::vector<uint8_t> name;
+        kmipkit_attribute_reference_v1_t reference{};
+        reference.struct_size = static_cast<uint32_t>(sizeof(reference));
+        reference.abi_version = 1;
+        if (raw_kind == static_cast<jint>(KMIPKIT_ATTRIBUTE_REFERENCE_KIND_TAG)) {
+            if (raw_vendor != nullptr || raw_name != nullptr) {
+                throw_invalid_input(env);
+                return 0;
+            }
+            reference.kind = KMIPKIT_ATTRIBUTE_REFERENCE_KIND_TAG;
+            reference.tag_value = static_cast<uint32_t>(raw_tag);
+        } else if (raw_kind == static_cast<jint>(KMIPKIT_ATTRIBUTE_REFERENCE_KIND_NAME)) {
+            if (raw_tag != 0 || raw_vendor == nullptr || raw_name == nullptr
+                    || !read_java_bytes(env, raw_vendor, vendor, false)
+                    || !read_java_bytes(env, raw_name, name, false)) {
+                if (!env->ExceptionCheck()) throw_invalid_input(env);
+                return 0;
+            }
+            reference.kind = KMIPKIT_ATTRIBUTE_REFERENCE_KIND_NAME;
+            reference.vendor_identification_data = vendor.empty() ? nullptr : vendor.data();
+            reference.vendor_identification_length = static_cast<uint64_t>(vendor.size());
+            reference.attribute_name_data = name.empty() ? nullptr : name.data();
+            reference.attribute_name_length = static_cast<uint64_t>(name.size());
+        } else {
+            throw_invalid_input(env);
+            return 0;
+        }
+        check_status(env, [&] { return kmipkit_delete_attribute_builder_set_attribute_reference(
+                from_java_handle<kmipkit_delete_attribute_builder_t>(raw_builder), &reference); });
+        return 0;
+    });
+}
+
+JNIEXPORT void JNICALL Java_org_kmipkit_fluent_NativeFluentRegistry_deleteAttributeBuilderSetAsynchronousIndicator(
+        JNIEnv* env, jclass, jlong raw_builder, jlong value) {
+    guarded<int>(env, 0, [&] {
+        if (value < 0 || static_cast<uint64_t>(value) > UINT32_MAX) {
+            throw_invalid_input(env);
+            return 0;
+        }
+        check_status(env, [&] { return kmipkit_delete_attribute_builder_set_asynchronous_indicator(
+                from_java_handle<kmipkit_delete_attribute_builder_t>(raw_builder),
+                static_cast<uint32_t>(value)); });
+        return 0;
+    });
+}
+
+JNIEXPORT void JNICALL Java_org_kmipkit_fluent_NativeFluentRegistry_deleteAttributeBuilderValidate(
+        JNIEnv* env, jclass, jlong raw_builder) {
+    guarded<int>(env, 0, [&] {
+        check_status(env, [&] { return kmipkit_delete_attribute_builder_validate(
+                from_java_handle<kmipkit_delete_attribute_builder_t>(raw_builder)); });
+        return 0;
+    });
+}
+
+JNIEXPORT jobject JNICALL Java_org_kmipkit_fluent_NativeFluentRegistry_deleteAttributeBuilderBuildRequest(
+        JNIEnv* env, jclass, jlong raw_builder, jobject identifier, jobject reference) {
+    return guarded<jobject>(env, nullptr, [&] {
+        kmipkit_delete_attribute_request_t* output = nullptr;
+        const int32_t status = kmipkit_delete_attribute_builder_build_request(
+                from_java_handle<kmipkit_delete_attribute_builder_t>(raw_builder), &output);
+        if (status != 0) {
+            kmipkit_delete_attribute_request_release(output);
+            throw_client_operation_status(env, status);
+            return static_cast<jobject>(nullptr);
+        }
+        if (output == nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jobject>(nullptr);
+        }
+        jclass request_class = env->FindClass("org/kmipkit/extensions/DeleteAttributeRequest");
+        if (request_class == nullptr) {
+            kmipkit_delete_attribute_request_release(output);
+            return static_cast<jobject>(nullptr);
+        }
+        jmethodID constructor = env->GetMethodID(
+                request_class, "<init>",
+                "(JLorg/kmipkit/extensions/UniqueIdentifier;Lorg/kmipkit/extensions/AttributeReference;)V");
+        if (constructor == nullptr) {
+            kmipkit_delete_attribute_request_release(output);
+            env->DeleteLocalRef(request_class);
+            return static_cast<jobject>(nullptr);
+        }
+        jobject request = env->NewObject(
+                request_class, constructor, to_java_handle(output), identifier, reference);
+        env->DeleteLocalRef(request_class);
+        if (request == nullptr || env->ExceptionCheck()) {
+            kmipkit_delete_attribute_request_release(output);
+            return static_cast<jobject>(nullptr);
+        }
+        return request;
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_fluent_NativeFluentRegistry_deleteAttributeBuilderBuildBatchItem(
+        JNIEnv* env, jclass, jlong raw_builder) {
+    return guarded<jlong>(env, 0, [&] {
+        kmipkit_client_batch_item_t* output = nullptr;
+        const int32_t status = kmipkit_delete_attribute_builder_build_batch_item(
+                from_java_handle<kmipkit_delete_attribute_builder_t>(raw_builder), &output);
+        if (status != 0) {
+            kmipkit_client_batch_item_release(output);
+            throw_client_operation_status(env, status);
+            return static_cast<jlong>(0);
+        }
+        if (output == nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        return to_java_handle(output);
+    });
+}
+
 JNIEXPORT void JNICALL Java_org_kmipkit_fluent_NativeFluentRegistry_symmetricKeyBuilderInsertAttributeItem(
         JNIEnv* env, jclass, jlong raw_builder, jint index, jlong raw_item) {
     guarded<int>(env, 0, [&] {
@@ -6593,6 +6773,8 @@ JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_release(
                 from_java_handle<kmipkit_set_attribute_builder_t>(raw_handle)); break;
         case 75: kmipkit_add_attribute_builder_release(
                 from_java_handle<kmipkit_add_attribute_builder_t>(raw_handle)); break;
+        case 76: kmipkit_delete_attribute_builder_release(
+                from_java_handle<kmipkit_delete_attribute_builder_t>(raw_handle)); break;
         default: throw_invalid_input(env); break;
         }
         return 0;

@@ -178,8 +178,9 @@ EXPECTED = (
 # KMIPKIT-0126 adds 37 versioned standard attributes and 7 KMIP 3.0 batch response readers.
 # KMIPKIT-0093 adds all audited Rust declaration candidates, exact trait
 # exclusions, and the 28 execution-wrapper requirement links.
-UNCHANGED_DECLARATIONS_SHA256 = "e1ebbe0ca4cff48f0453cdc096507f67977398487082bf6786f63f820ce25382"
-UNCHANGED_OPERATIONS_SHA256 = "9ee0f7c51c05a8abd96af7f6d3017f3ffb780c4262f231eaf3cb8c01a38147c7"
+UNCHANGED_DECLARATIONS_SHA256 = "8bcfc306c3a7a55beb96b6f2a64d82aae58656b1e944a4626cc97427d4b1bc33"
+# Delete Attribute records four-language fixture evidence on its operation row.
+UNCHANGED_OPERATIONS_SHA256 = "474e80929e0d09563d03ff2ae9542045ae784ba26e54b5f1152544c43e1adc0b"
 # T098's maintainer-approved reconciliation updates lifecycle approval evidence
 # and inherited requirement links outside the T102 declaration/operation rows.
 # The test separately pins those T098 records; this fingerprint covers the
@@ -190,8 +191,9 @@ UNCHANGED_OPERATIONS_SHA256 = "9ee0f7c51c05a8abd96af7f6d3017f3ffb780c4262f231eaf
 # attribute operations and bindings. R002's additive requirement links and C
 # copy caveat are normalized below and tested by the 0093 suite. The full Rust
 # reconciliation adds 419 blocked candidates, 666 exact trait exclusions, and
-# the FR-005/FR-008 wrapper links.
-OTHER_MANIFEST_SHA256 = "5d87c95675c3af9936fc7c7acee8af0fefd7693798368d183ed1e0f187053ca7"
+# the FR-005/FR-008 wrapper links. Delete Attribute adds 77 ready declarations,
+# two blocked Rust candidates, and 18 exact trait exclusions.
+OTHER_MANIFEST_SHA256 = "4fb0596a2fb834813f41496ad5905174e2d917a45206f6cf4a7cf197d3afc291"
 EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = T102_BLOCKED_CANDIDATES
 LOCATE_REQUEST_BUILDER_IDS = {
     "rust-observed-e07fce825be9d33278e1",
@@ -625,7 +627,7 @@ class T102ResponseViewMappingTests(unittest.TestCase):
                         != "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java"
                     ]
         self.assertEqual(
-            "9f04e672ec202fb4acdb911879d5519b7c57238d77aa67574b8e5471cc6fea57",
+            "474e80929e0d09563d03ff2ae9542045ae784ba26e54b5f1152544c43e1adc0b",
             canonical_sha256(normalized_operations),
         )
         other_manifest = {

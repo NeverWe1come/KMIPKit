@@ -5566,6 +5566,35 @@
           }
         ]
       }
+    },
+    {
+      "id": "DeleteAttributeBuilder",
+      "kind": "struct",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent",
+        "name": "DeleteAttributeBuilder",
+        "owner": "client"
+      },
+      "c": {
+        "name": "kmipkit_delete_attribute_builder_t",
+        "kind": "opaque-handle",
+        "handleKind": "delete_attribute_builder",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_delete_attribute_builder_release"
+      },
+      "java": {
+        "package": "org.kmipkit.fluent",
+        "name": "DeleteAttributeBuilder"
+      },
+      "python": {
+        "module": "kmipkit.fluent",
+        "name": "DeleteAttributeBuilder"
+      }
     }
   ],
   "functions": [
@@ -60492,6 +60521,953 @@
         ]
       },
       "ordering": "not-applicable"
+    },
+    {
+      "id": "delete_attribute_builder_build_batch_item",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::DeleteAttributeBuilder",
+        "name": "to_batch_item",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "ClientBatchItem"
+      },
+      "c": {
+        "symbol": "kmipkit_delete_attribute_builder_build_batch_item",
+        "parameters": [
+          {
+            "name": "builder",
+            "kind": "handle",
+            "type": "kmipkit_delete_attribute_builder_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_item",
+            "kind": "output",
+            "type": "kmipkit_client_batch_item_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.fluent",
+        "class": "DeleteAttributeBuilder",
+        "method": "build",
+        "parameters": [],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "python": {
+        "module": "kmipkit.fluent",
+        "function": "DeleteAttributeBuilder.build",
+        "parameters": [],
+        "cffiSymbol": "kmipkit_delete_attribute_builder_build_batch_item",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "ordering": "not-applicable",
+      "legacyRegistry": false
+    },
+    {
+      "id": "delete_attribute_builder_build_request",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::DeleteAttributeBuilder",
+        "name": "build_request",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "DeleteAttributeRequest"
+      },
+      "c": {
+        "symbol": "kmipkit_delete_attribute_builder_build_request",
+        "parameters": [
+          {
+            "name": "builder",
+            "kind": "handle",
+            "type": "kmipkit_delete_attribute_builder_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_request",
+            "kind": "output",
+            "type": "kmipkit_delete_attribute_request_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.fluent",
+        "class": "DeleteAttributeBuilder",
+        "method": "buildRequest",
+        "parameters": [],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "DeleteAttributeRequest"
+      },
+      "python": {
+        "module": "kmipkit.fluent",
+        "function": "DeleteAttributeBuilder.build_request",
+        "parameters": [],
+        "cffiSymbol": "kmipkit_delete_attribute_builder_build_request",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "DeleteAttributeRequest"
+      },
+      "ordering": "not-applicable",
+      "legacyRegistry": false
+    },
+    {
+      "id": "delete_attribute_builder_create",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::DeleteAttributeBuilder",
+        "name": "detached",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "DeleteAttributeBuilder"
+      },
+      "c": {
+        "symbol": "kmipkit_delete_attribute_builder_create",
+        "parameters": [
+          {
+            "name": "out_builder",
+            "kind": "output",
+            "type": "kmipkit_delete_attribute_builder_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.fluent",
+        "class": "FluentRequest",
+        "method": "deleteAttribute",
+        "parameters": [],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "DeleteAttributeBuilder"
+      },
+      "python": {
+        "module": "kmipkit.fluent",
+        "function": "Request.delete_attribute",
+        "parameters": [],
+        "cffiSymbol": "kmipkit_delete_attribute_builder_create",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "DeleteAttributeBuilder"
+      },
+      "ordering": "not-applicable",
+      "legacyRegistry": false
+    },
+    {
+      "id": "delete_attribute_builder_execute_v1",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::DeleteAttributeBuilder",
+        "name": "execute",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "ClientBatchResponse"
+      },
+      "c": {
+        "symbol": "kmipkit_delete_attribute_builder_execute_v1",
+        "parameters": [
+          {
+            "name": "builder",
+            "kind": "handle",
+            "type": "kmipkit_delete_attribute_builder_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "client",
+            "kind": "handle",
+            "type": "kmipkit_client_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_response",
+            "kind": "output",
+            "type": "kmipkit_client_batch_response_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.fluent",
+        "class": "DeleteAttributeBuilder",
+        "method": "execute",
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "ClientBatchResponse"
+      },
+      "python": {
+        "module": "kmipkit.fluent",
+        "function": "DeleteAttributeBuilder.execute",
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "cffiSymbol": "kmipkit_delete_attribute_builder_execute_v1",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "ClientBatchResponse"
+      },
+      "ordering": "not-applicable",
+      "legacyRegistry": false
+    },
+    {
+      "id": "delete_attribute_builder_execute_with_options_v1",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::DeleteAttributeBuilder",
+        "name": "execute",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "ClientBatchResponse"
+      },
+      "c": {
+        "symbol": "kmipkit_delete_attribute_builder_execute_with_options_v1",
+        "parameters": [
+          {
+            "name": "builder",
+            "kind": "handle",
+            "type": "kmipkit_delete_attribute_builder_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "client",
+            "kind": "handle",
+            "type": "kmipkit_client_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "options",
+            "kind": "input-value-pointer",
+            "type": "const kmipkit_request_options_v1_t *",
+            "valueType": "kmipkit_request_options_v1_t",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_response",
+            "kind": "output",
+            "type": "kmipkit_client_batch_response_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.fluent",
+        "class": "DeleteAttributeBuilder",
+        "method": "withOptions",
+        "parameters": [
+          {
+            "name": "options",
+            "type": "RequestOptions"
+          }
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "DeleteAttributeBuilder"
+      },
+      "python": {
+        "module": "kmipkit.fluent",
+        "function": "DeleteAttributeBuilder.with_options",
+        "parameters": [
+          {
+            "name": "options",
+            "type": "RequestOptions"
+          }
+        ],
+        "cffiSymbol": "kmipkit_delete_attribute_builder_execute_with_options_v1",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "DeleteAttributeBuilder"
+      },
+      "ordering": "not-applicable",
+      "legacyRegistry": false
+    },
+    {
+      "id": "delete_attribute_builder_set_asynchronous_indicator",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::DeleteAttributeBuilder",
+        "name": "with_asynchronous_indicator",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "void"
+      },
+      "c": {
+        "symbol": "kmipkit_delete_attribute_builder_set_asynchronous_indicator",
+        "parameters": [
+          {
+            "name": "builder",
+            "kind": "handle",
+            "type": "kmipkit_delete_attribute_builder_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "value",
+            "kind": "scalar",
+            "type": "uint32_t"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.fluent",
+        "class": "DeleteAttributeBuilder",
+        "method": "asynchronousIndicator",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "long"
+          }
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "DeleteAttributeBuilder"
+      },
+      "python": {
+        "module": "kmipkit.fluent",
+        "function": "DeleteAttributeBuilder.asynchronous_indicator",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "int"
+          }
+        ],
+        "cffiSymbol": "kmipkit_delete_attribute_builder_set_asynchronous_indicator",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "DeleteAttributeBuilder"
+      },
+      "ordering": "not-applicable",
+      "legacyRegistry": false
+    },
+    {
+      "id": "delete_attribute_builder_set_attribute_reference",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::DeleteAttributeBuilder",
+        "name": "attribute_reference",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "void"
+      },
+      "c": {
+        "symbol": "kmipkit_delete_attribute_builder_set_attribute_reference",
+        "parameters": [
+          {
+            "name": "builder",
+            "kind": "handle",
+            "type": "kmipkit_delete_attribute_builder_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "reference",
+            "kind": "input-value-pointer",
+            "type": "const kmipkit_attribute_reference_v1_t *",
+            "valueType": "kmipkit_attribute_reference_v1_t",
+            "ownership": "borrowed"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.fluent",
+        "class": "DeleteAttributeBuilder",
+        "method": "attributeReference",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "AttributeReference"
+          }
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "DeleteAttributeBuilder"
+      },
+      "python": {
+        "module": "kmipkit.fluent",
+        "function": "DeleteAttributeBuilder.attribute_reference",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "extensions.AttributeReference"
+          }
+        ],
+        "cffiSymbol": "kmipkit_delete_attribute_builder_set_attribute_reference",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "DeleteAttributeBuilder"
+      },
+      "ordering": "not-applicable",
+      "legacyRegistry": false
+    },
+    {
+      "id": "delete_attribute_builder_set_catalogued_attribute",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::DeleteAttributeBuilder",
+        "name": "current_attribute",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "void"
+      },
+      "c": {
+        "symbol": "kmipkit_delete_attribute_builder_set_catalogued_attribute",
+        "parameters": [
+          {
+            "name": "builder",
+            "kind": "handle",
+            "type": "kmipkit_delete_attribute_builder_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "tag",
+            "kind": "scalar",
+            "type": "uint32_t"
+          },
+          {
+            "name": "value",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_value_t *",
+            "ownership": "borrowed"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.fluent",
+        "class": "DeleteAttributeBuilder",
+        "method": "cataloguedAttribute",
+        "parameters": [
+          {
+            "name": "tag",
+            "type": "Tag"
+          },
+          {
+            "name": "value",
+            "type": "TtlvValue"
+          }
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "DeleteAttributeBuilder"
+      },
+      "python": {
+        "module": "kmipkit.fluent",
+        "function": "DeleteAttributeBuilder.catalogued_attribute",
+        "parameters": [
+          {
+            "name": "tag",
+            "type": "int"
+          },
+          {
+            "name": "value",
+            "type": "ttlv.Value"
+          }
+        ],
+        "cffiSymbol": "kmipkit_delete_attribute_builder_add_catalogued_attribute",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "DeleteAttributeBuilder"
+      },
+      "ordering": "not-applicable",
+      "legacyRegistry": false
+    },
+    {
+      "id": "delete_attribute_builder_set_current_attribute_item",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::DeleteAttributeBuilder",
+        "name": "current_attribute_item",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "void"
+      },
+      "c": {
+        "symbol": "kmipkit_delete_attribute_builder_set_current_attribute_item",
+        "parameters": [
+          {
+            "name": "builder",
+            "kind": "handle",
+            "type": "kmipkit_delete_attribute_builder_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "item",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_item_t *",
+            "ownership": "borrowed"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.fluent",
+        "class": "DeleteAttributeBuilder",
+        "method": "currentAttribute",
+        "parameters": [
+          {
+            "name": "item",
+            "type": "TtlvItem"
+          }
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "DeleteAttributeBuilder"
+      },
+      "python": {
+        "module": "kmipkit.fluent",
+        "function": "DeleteAttributeBuilder.current_attribute_item",
+        "parameters": [
+          {
+            "name": "item",
+            "type": "ttlv.TtlvItem"
+          }
+        ],
+        "cffiSymbol": "kmipkit_delete_attribute_builder_delete_attribute_item",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "DeleteAttributeBuilder"
+      },
+      "ordering": "not-applicable",
+      "legacyRegistry": false
+    },
+    {
+      "id": "delete_attribute_builder_set_unique_identifier",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::DeleteAttributeBuilder",
+        "name": "unique_identifier",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "void"
+      },
+      "c": {
+        "symbol": "kmipkit_delete_attribute_builder_set_unique_identifier",
+        "parameters": [
+          {
+            "name": "builder",
+            "kind": "handle",
+            "type": "kmipkit_delete_attribute_builder_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "value_data",
+            "kind": "byte-span",
+            "type": "const uint8_t *",
+            "encoding": "utf-8",
+            "byteLengthParameter": "value_length",
+            "byteLengthType": "uint64_t",
+            "lengthUnit": "bytes",
+            "limitCheck": "before-dereference",
+            "nulTerminatedScan": false,
+            "maxBytes": 16777216
+          },
+          {
+            "name": "value_length",
+            "kind": "scalar",
+            "type": "uint64_t"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.fluent",
+        "class": "DeleteAttributeBuilder",
+        "method": "uniqueIdentifier",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "String"
+          }
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "DeleteAttributeBuilder"
+      },
+      "python": {
+        "module": "kmipkit.fluent",
+        "function": "DeleteAttributeBuilder.unique_identifier",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "str"
+          }
+        ],
+        "cffiSymbol": "kmipkit_delete_attribute_builder_set_unique_identifier",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "DeleteAttributeBuilder"
+      },
+      "ordering": "not-applicable",
+      "legacyRegistry": false
+    },
+    {
+      "id": "delete_attribute_builder_set_vendor_attribute",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::DeleteAttributeBuilder",
+        "name": "current_vendor_attribute",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "void"
+      },
+      "c": {
+        "symbol": "kmipkit_delete_attribute_builder_set_vendor_attribute",
+        "parameters": [
+          {
+            "name": "builder",
+            "kind": "handle",
+            "type": "kmipkit_delete_attribute_builder_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "vendor_data",
+            "kind": "byte-span",
+            "type": "const uint8_t *",
+            "encoding": "utf-8",
+            "byteLengthParameter": "vendor_length",
+            "byteLengthType": "uint64_t",
+            "lengthUnit": "bytes",
+            "limitCheck": "before-dereference",
+            "nulTerminatedScan": false,
+            "maxBytes": 16777216
+          },
+          {
+            "name": "vendor_length",
+            "kind": "scalar",
+            "type": "uint64_t"
+          },
+          {
+            "name": "name_data",
+            "kind": "byte-span",
+            "type": "const uint8_t *",
+            "encoding": "utf-8",
+            "byteLengthParameter": "name_length",
+            "byteLengthType": "uint64_t",
+            "lengthUnit": "bytes",
+            "limitCheck": "before-dereference",
+            "nulTerminatedScan": false,
+            "maxBytes": 16777216
+          },
+          {
+            "name": "name_length",
+            "kind": "scalar",
+            "type": "uint64_t"
+          },
+          {
+            "name": "attribute_value",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_item_t *",
+            "ownership": "borrowed"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.fluent",
+        "class": "DeleteAttributeBuilder",
+        "method": "currentVendorAttribute",
+        "parameters": [
+          {
+            "name": "vendorIdentification",
+            "type": "String"
+          },
+          {
+            "name": "attributeName",
+            "type": "String"
+          },
+          {
+            "name": "value",
+            "type": "TtlvItem"
+          }
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "DeleteAttributeBuilder"
+      },
+      "python": {
+        "module": "kmipkit.fluent",
+        "function": "DeleteAttributeBuilder.vendor_attribute",
+        "parameters": [
+          {
+            "name": "vendor_identification",
+            "type": "str"
+          },
+          {
+            "name": "attribute_name",
+            "type": "str"
+          },
+          {
+            "name": "value",
+            "type": "ttlv.TtlvItem"
+          }
+        ],
+        "cffiSymbol": "kmipkit_delete_attribute_builder_add_vendor_attribute",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "DeleteAttributeBuilder"
+      },
+      "ordering": "not-applicable",
+      "legacyRegistry": false
+    },
+    {
+      "id": "delete_attribute_builder_validate",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::DeleteAttributeBuilder",
+        "name": "validate",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "void"
+      },
+      "c": {
+        "symbol": "kmipkit_delete_attribute_builder_validate",
+        "parameters": [
+          {
+            "name": "builder",
+            "kind": "handle",
+            "type": "kmipkit_delete_attribute_builder_t *",
+            "ownership": "borrowed"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.fluent",
+        "class": "DeleteAttributeBuilder",
+        "method": "validate",
+        "parameters": [],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "void"
+      },
+      "python": {
+        "module": "kmipkit.fluent",
+        "function": "DeleteAttributeBuilder.validate",
+        "parameters": [],
+        "cffiSymbol": "kmipkit_delete_attribute_builder_validate",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "void"
+      },
+      "ordering": "not-applicable",
+      "legacyRegistry": false
     }
   ],
   "errorCategories": [
@@ -821553,6 +822529,2866 @@
       "parityScope": "four-language",
       "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "kmipkit-0093-delete-attribute-kmipkit_client-DeleteAttributeBuilder",
+      "packageId": "rust-kmipkit-client",
+      "kind": "type",
+      "exportName": "kmipkit_client::DeleteAttributeBuilder",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::DeleteAttributeBuilder"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder"
+        }
+      }
+    },
+    {
+      "declarationId": "kmipkit-0093-delete-attribute-kmipkit_client-DeleteAttributeBuilder-a-with_asynchronous_indicator",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::DeleteAttributeBuilder<'a>::with_asynchronous_indicator",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::DeleteAttributeBuilder<'a>::with_asynchronous_indicator"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_set_asynchronous_indicator"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.asynchronousIndicator"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.asynchronous_indicator"
+        }
+      }
+    },
+    {
+      "declarationId": "kmipkit-0093-delete-attribute-kmipkit_client-DeleteAttributeBuilder-a-build",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::DeleteAttributeBuilder<'a>::build",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-006",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::DeleteAttributeBuilder<'a>::build"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_build_request"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.buildRequest"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.build_request"
+        }
+      },
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/public_client_api.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/DeleteAttributeBuilderTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "crates/kmipkit-client/tests/unit/fluent_request_tests.rs",
+        "tools/api_manifest/tests/test_0093_delete_attribute_builder_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0093-delete-attribute-kmipkit_client-DeleteAttributeBuilder-a-to_batch_item",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::DeleteAttributeBuilder<'a>::to_batch_item",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::DeleteAttributeBuilder<'a>::to_batch_item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_build_batch_item"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.toBatchItem"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.to_batch_item"
+        }
+      }
+    },
+    {
+      "declarationId": "kmipkit-0093-delete-attribute-kmipkit_client-DeleteAttributeBuilder-a-execute",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::DeleteAttributeBuilder<'a>::execute",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::DeleteAttributeBuilder<'a>::execute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_execute_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.execute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.execute"
+        }
+      }
+    },
+    {
+      "declarationId": "kmipkit-0093-delete-attribute-kmipkit_client-DeleteAttributeBuilder-a-attribute",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::DeleteAttributeBuilder<'a>::current_attribute",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::DeleteAttributeBuilder<'a>::current_attribute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_set_catalogued_attribute"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.cataloguedAttribute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.catalogued_attribute"
+        }
+      }
+    },
+    {
+      "declarationId": "kmipkit-0093-delete-attribute-kmipkit_client-DeleteAttributeBuilder-a-validate",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::DeleteAttributeBuilder<'a>::validate",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::DeleteAttributeBuilder<'a>::validate"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_validate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.validate"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.validate"
+        }
+      }
+    },
+    {
+      "declarationId": "kmipkit-0093-delete-attribute-kmipkit_client-DeleteAttributeBuilder-a-attribute_item",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::DeleteAttributeBuilder<'a>::current_attribute_item",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::DeleteAttributeBuilder<'a>::current_attribute_item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_set_current_attribute_item"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.currentAttribute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.current_attribute_item"
+        }
+      }
+    },
+    {
+      "declarationId": "kmipkit-0093-delete-attribute-kmipkit_client-DeleteAttributeBuilder-a-build_request",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::DeleteAttributeBuilder<'a>::build_request",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-006",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::DeleteAttributeBuilder<'a>::build_request"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_build_request"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.buildRequest"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.build_request"
+        }
+      },
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/public_client_api.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/DeleteAttributeBuilderTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "crates/kmipkit-client/tests/unit/fluent_request_tests.rs",
+        "tools/api_manifest/tests/test_0093_delete_attribute_builder_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0093-delete-attribute-kmipkit_client-DeleteAttributeBuilder-a-vendor_attribute",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::DeleteAttributeBuilder<'a>::current_vendor_attribute",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::DeleteAttributeBuilder<'a>::current_vendor_attribute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_set_vendor_attribute"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.currentVendorAttribute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.current_vendor_attribute"
+        }
+      }
+    },
+    {
+      "declarationId": "kmipkit-0093-delete-attribute-kmipkit_client-DeleteAttributeBuilder-a-with_options",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::DeleteAttributeBuilder<'a>::with_options",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::DeleteAttributeBuilder<'a>::with_options"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_execute_with_options_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.withOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.with_options"
+        }
+      }
+    },
+    {
+      "declarationId": "kmipkit-0093-delete-attribute-kmipkit_client-DeleteAttributeBuilder-a-unique_identifier",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::DeleteAttributeBuilder<'a>::unique_identifier",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::DeleteAttributeBuilder<'a>::unique_identifier"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_set_unique_identifier"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.uniqueIdentifier"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.unique_identifier"
+        }
+      }
+    },
+    {
+      "declarationId": "kmipkit-0093-delete-attribute-kmipkit_client-RequestBuilder-a-delete_attribute",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RequestBuilder<'a>::delete_attribute",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-006",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::RequestBuilder<'a>::delete_attribute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_create"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.FluentRequest.deleteAttribute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Request.delete_attribute"
+        }
+      },
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/public_client_api.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/DeleteAttributeBuilderTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "crates/kmipkit-client/tests/unit/fluent_request_tests.rs",
+        "tools/api_manifest/tests/test_0093_delete_attribute_builder_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0093-delete-attribute-kmipkit_client-fluent-DeleteAttributeBuilder",
+      "packageId": "rust-kmipkit-client",
+      "kind": "type",
+      "exportName": "kmipkit_client::fluent::DeleteAttributeBuilder",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder"
+        }
+      }
+    },
+    {
+      "declarationId": "kmipkit-0093-delete-attribute-kmipkit_client-fluent-DeleteAttributeBuilder-a-with_asynchronous_indicator",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::with_asynchronous_indicator",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::with_asynchronous_indicator"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_set_asynchronous_indicator"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.asynchronousIndicator"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.asynchronous_indicator"
+        }
+      }
+    },
+    {
+      "declarationId": "kmipkit-0093-delete-attribute-kmipkit_client-fluent-DeleteAttributeBuilder-a-build",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::build",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-006",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::build"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_build_request"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.buildRequest"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.build_request"
+        }
+      },
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/public_client_api.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/DeleteAttributeBuilderTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "crates/kmipkit-client/tests/unit/fluent_request_tests.rs",
+        "tools/api_manifest/tests/test_0093_delete_attribute_builder_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0093-delete-attribute-kmipkit_client-fluent-DeleteAttributeBuilder-a-to_batch_item",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::to_batch_item",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::to_batch_item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_build_batch_item"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.toBatchItem"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.to_batch_item"
+        }
+      }
+    },
+    {
+      "declarationId": "kmipkit-0093-delete-attribute-kmipkit_client-fluent-DeleteAttributeBuilder-a-execute",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::execute",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::execute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_execute_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.execute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.execute"
+        }
+      }
+    },
+    {
+      "declarationId": "kmipkit-0093-delete-attribute-kmipkit_client-fluent-DeleteAttributeBuilder-a-attribute",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::current_attribute",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::current_attribute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_set_catalogued_attribute"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.cataloguedAttribute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.catalogued_attribute"
+        }
+      }
+    },
+    {
+      "declarationId": "kmipkit-0093-delete-attribute-kmipkit_client-fluent-DeleteAttributeBuilder-a-validate",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::validate",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::validate"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_validate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.validate"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.validate"
+        }
+      }
+    },
+    {
+      "declarationId": "kmipkit-0093-delete-attribute-kmipkit_client-fluent-DeleteAttributeBuilder-a-attribute_item",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::current_attribute_item",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::current_attribute_item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_set_current_attribute_item"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.currentAttribute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.current_attribute_item"
+        }
+      }
+    },
+    {
+      "declarationId": "kmipkit-0093-delete-attribute-kmipkit_client-fluent-DeleteAttributeBuilder-a-build_request",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::build_request",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-006",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::build_request"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_build_request"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.buildRequest"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.build_request"
+        }
+      },
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/public_client_api.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/DeleteAttributeBuilderTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "crates/kmipkit-client/tests/unit/fluent_request_tests.rs",
+        "tools/api_manifest/tests/test_0093_delete_attribute_builder_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0093-delete-attribute-kmipkit_client-fluent-DeleteAttributeBuilder-a-vendor_attribute",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::current_vendor_attribute",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::current_vendor_attribute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_set_vendor_attribute"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.currentVendorAttribute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.current_vendor_attribute"
+        }
+      }
+    },
+    {
+      "declarationId": "kmipkit-0093-delete-attribute-kmipkit_client-fluent-DeleteAttributeBuilder-a-with_options",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::with_options",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::with_options"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_execute_with_options_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.withOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.with_options"
+        }
+      }
+    },
+    {
+      "declarationId": "kmipkit-0093-delete-attribute-kmipkit_client-fluent-DeleteAttributeBuilder-a-unique_identifier",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::unique_identifier",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::unique_identifier"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_set_unique_identifier"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.uniqueIdentifier"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.unique_identifier"
+        }
+      }
+    },
+    {
+      "declarationId": "kmipkit-0093-delete-attribute-kmipkit_client-fluent-RequestBuilder-a-delete_attribute",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RequestBuilder<'a>::delete_attribute",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-006",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::RequestBuilder<'a>::delete_attribute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_create"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.FluentRequest.deleteAttribute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Request.delete_attribute"
+        }
+      },
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/public_client_api.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/DeleteAttributeBuilderTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "crates/kmipkit-client/tests/unit/fluent_request_tests.rs",
+        "tools/api_manifest/tests/test_0093_delete_attribute_builder_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "DeleteAttributeBuilder:c",
+      "packageId": "c-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit_delete_attribute_builder_t",
+      "capabilityId": "fluent_delete_attribute_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_t"
+        }
+      }
+    },
+    {
+      "declarationId": "DeleteAttributeBuilder:c-release",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_delete_attribute_builder_release",
+      "capabilityId": "fluent_delete_attribute_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_release"
+        }
+      }
+    },
+    {
+      "declarationId": "delete_attribute_builder_create:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_delete_attribute_builder_create",
+      "capabilityId": "fluent_delete_attribute_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_create"
+        }
+      }
+    },
+    {
+      "declarationId": "delete_attribute_builder_set_unique_identifier:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_delete_attribute_builder_set_unique_identifier",
+      "capabilityId": "fluent_delete_attribute_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_set_unique_identifier"
+        }
+      }
+    },
+    {
+      "declarationId": "delete_attribute_builder_set_current_attribute_item:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_delete_attribute_builder_set_current_attribute_item",
+      "capabilityId": "fluent_delete_attribute_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_set_current_attribute_item"
+        }
+      }
+    },
+    {
+      "declarationId": "delete_attribute_builder_set_catalogued_attribute:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_delete_attribute_builder_set_catalogued_attribute",
+      "capabilityId": "fluent_delete_attribute_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_set_catalogued_attribute"
+        }
+      }
+    },
+    {
+      "declarationId": "delete_attribute_builder_set_vendor_attribute:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_delete_attribute_builder_set_vendor_attribute",
+      "capabilityId": "fluent_delete_attribute_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_set_vendor_attribute"
+        }
+      }
+    },
+    {
+      "declarationId": "delete_attribute_builder_set_asynchronous_indicator:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_delete_attribute_builder_set_asynchronous_indicator",
+      "capabilityId": "fluent_delete_attribute_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_set_asynchronous_indicator"
+        }
+      }
+    },
+    {
+      "declarationId": "delete_attribute_builder_validate:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_delete_attribute_builder_validate",
+      "capabilityId": "fluent_delete_attribute_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_validate"
+        }
+      }
+    },
+    {
+      "declarationId": "delete_attribute_builder_build_request:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_delete_attribute_builder_build_request",
+      "capabilityId": "fluent_delete_attribute_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_build_request"
+        }
+      }
+    },
+    {
+      "declarationId": "delete_attribute_builder_build_batch_item:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_delete_attribute_builder_build_batch_item",
+      "capabilityId": "fluent_delete_attribute_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_build_batch_item"
+        }
+      }
+    },
+    {
+      "declarationId": "delete_attribute_builder_execute_v1:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_delete_attribute_builder_execute_v1",
+      "capabilityId": "fluent_delete_attribute_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_execute_v1"
+        }
+      }
+    },
+    {
+      "declarationId": "delete_attribute_builder_execute_with_options_v1:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_delete_attribute_builder_execute_with_options_v1",
+      "capabilityId": "fluent_delete_attribute_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_execute_with_options_v1"
+        }
+      }
+    },
+    {
+      "declarationId": "DeleteAttributeBuilder:java",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.fluent.DeleteAttributeBuilder",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder"
+        }
+      }
+    },
+    {
+      "declarationId": "DeleteAttributeBuilder.uniqueIdentifier:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.DeleteAttributeBuilder.uniqueIdentifier",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::unique_identifier"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_set_unique_identifier"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.uniqueIdentifier"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.unique_identifier"
+        }
+      }
+    },
+    {
+      "declarationId": "DeleteAttributeBuilder.currentAttribute:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.DeleteAttributeBuilder.currentAttribute",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::current_attribute_item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_set_current_attribute_item"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.currentAttribute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.current_attribute_item"
+        }
+      }
+    },
+    {
+      "declarationId": "DeleteAttributeBuilder.cataloguedAttribute:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.DeleteAttributeBuilder.cataloguedAttribute",
+      "javaSignatures": [
+        "public org.kmipkit.fluent.DeleteAttributeBuilder cataloguedAttribute(org.kmipkit.ttlv.Tag, org.kmipkit.ttlv.TtlvValue)",
+        "public org.kmipkit.fluent.DeleteAttributeBuilder cataloguedAttribute(org.kmipkit.ttlv.StandardAttribute, org.kmipkit.ttlv.TtlvValue)"
+      ],
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::current_attribute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_set_catalogued_attribute"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.cataloguedAttribute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.catalogued_attribute"
+        }
+      }
+    },
+    {
+      "declarationId": "DeleteAttributeBuilder.currentVendorAttribute:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.DeleteAttributeBuilder.currentVendorAttribute",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::current_vendor_attribute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_set_vendor_attribute"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.currentVendorAttribute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.current_vendor_attribute"
+        }
+      }
+    },
+    {
+      "declarationId": "DeleteAttributeBuilder.vendorAttribute:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.DeleteAttributeBuilder.vendorAttribute",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::current_vendor_attribute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_set_vendor_attribute"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.vendorAttribute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.current_vendor_attribute"
+        }
+      }
+    },
+    {
+      "declarationId": "DeleteAttributeBuilder.withOptions:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.DeleteAttributeBuilder.withOptions",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::with_options"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_execute_with_options_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.withOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.with_options"
+        }
+      }
+    },
+    {
+      "declarationId": "DeleteAttributeBuilder.asynchronousIndicator:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.DeleteAttributeBuilder.asynchronousIndicator",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::with_asynchronous_indicator"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_set_asynchronous_indicator"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.asynchronousIndicator"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.asynchronous_indicator"
+        }
+      }
+    },
+    {
+      "declarationId": "DeleteAttributeBuilder.validate:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.DeleteAttributeBuilder.validate",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::validate"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_validate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.validate"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.validate"
+        }
+      }
+    },
+    {
+      "declarationId": "DeleteAttributeBuilder.build:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.DeleteAttributeBuilder.build",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::to_batch_item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_build_batch_item"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.build"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.build"
+        }
+      }
+    },
+    {
+      "declarationId": "DeleteAttributeBuilder.build_request:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.DeleteAttributeBuilder.build_request",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::build_request"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_build_request"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.buildRequest"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.build_request"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/public_client_api.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/DeleteAttributeBuilderTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "crates/kmipkit-client/tests/unit/fluent_request_tests.rs",
+        "tools/api_manifest/tests/test_0093_delete_attribute_builder_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "DeleteAttributeBuilder.buildRequest:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.DeleteAttributeBuilder.buildRequest",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::build_request"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_build_request"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.buildRequest"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.build_request"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/public_client_api.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/DeleteAttributeBuilderTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "crates/kmipkit-client/tests/unit/fluent_request_tests.rs",
+        "tools/api_manifest/tests/test_0093_delete_attribute_builder_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "DeleteAttributeBuilder.toBatchItem:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.DeleteAttributeBuilder.toBatchItem",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::to_batch_item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_build_batch_item"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.toBatchItem"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.to_batch_item"
+        }
+      }
+    },
+    {
+      "declarationId": "DeleteAttributeBuilder.execute:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.DeleteAttributeBuilder.execute",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::execute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_execute_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.execute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.execute"
+        }
+      }
+    },
+    {
+      "declarationId": "DeleteAttributeBuilder:python",
+      "packageId": "python-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit.fluent.DeleteAttributeBuilder",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder"
+        }
+      }
+    },
+    {
+      "declarationId": "DeleteAttributeBuilder.unique_identifier:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.DeleteAttributeBuilder.unique_identifier",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::unique_identifier"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_set_unique_identifier"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.uniqueIdentifier"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.unique_identifier"
+        }
+      }
+    },
+    {
+      "declarationId": "DeleteAttributeBuilder.current_attribute_item:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.DeleteAttributeBuilder.current_attribute_item",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::current_attribute_item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_set_current_attribute_item"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.currentAttribute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.current_attribute_item"
+        }
+      }
+    },
+    {
+      "declarationId": "DeleteAttributeBuilder.catalogued_attribute:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.DeleteAttributeBuilder.catalogued_attribute",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::current_attribute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_set_catalogued_attribute"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.cataloguedAttribute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.catalogued_attribute"
+        }
+      }
+    },
+    {
+      "declarationId": "DeleteAttributeBuilder.current_vendor_attribute:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.DeleteAttributeBuilder.current_vendor_attribute",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::current_vendor_attribute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_set_vendor_attribute"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.currentVendorAttribute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.current_vendor_attribute"
+        }
+      }
+    },
+    {
+      "declarationId": "DeleteAttributeBuilder.with_options:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.DeleteAttributeBuilder.with_options",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::with_options"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_execute_with_options_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.withOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.with_options"
+        }
+      }
+    },
+    {
+      "declarationId": "DeleteAttributeBuilder.asynchronous_indicator:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.DeleteAttributeBuilder.asynchronous_indicator",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::with_asynchronous_indicator"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_set_asynchronous_indicator"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.asynchronousIndicator"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.asynchronous_indicator"
+        }
+      }
+    },
+    {
+      "declarationId": "DeleteAttributeBuilder.validate:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.DeleteAttributeBuilder.validate",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::validate"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_validate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.validate"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.validate"
+        }
+      }
+    },
+    {
+      "declarationId": "DeleteAttributeBuilder.build:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.DeleteAttributeBuilder.build",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::to_batch_item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_build_batch_item"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.build"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.build"
+        }
+      }
+    },
+    {
+      "declarationId": "DeleteAttributeBuilder.to_batch_item:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.DeleteAttributeBuilder.to_batch_item",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::to_batch_item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_build_batch_item"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.toBatchItem"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.to_batch_item"
+        }
+      }
+    },
+    {
+      "declarationId": "DeleteAttributeBuilder.execute:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.DeleteAttributeBuilder.execute",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::execute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_execute_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.execute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.execute"
+        }
+      }
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0093-delete-attribute-detached",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::DeleteAttributeBuilder::detached",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::DeleteAttributeBuilder::detached"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_create"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.FluentRequest.deleteAttribute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Request.delete_attribute"
+        }
+      }
+    },
+    {
+      "declarationId": "KMIPKIT-0093:java:org.kmipkit.fluent.DeleteAttributeBuilder.close",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.DeleteAttributeBuilder.close",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.close"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.close"
+        }
+      },
+      "mappingSemantics": "native-handle-release"
+    },
+    {
+      "declarationId": "KMIPKIT-0093:python:kmipkit.fluent.DeleteAttributeBuilder.close",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.DeleteAttributeBuilder.close",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.close"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.close"
+        }
+      },
+      "mappingSemantics": "native-handle-release"
+    },
+    {
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "declarationId": "KMIPKIT-0093:python:kmipkit.fluent.DeleteAttributeBuilder.__init__",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.DeleteAttributeBuilder.__init__",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::DeleteAttributeBuilder::detached"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_create"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.FluentRequest.deleteAttribute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.__init__"
+        }
+      }
+    },
+    {
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "declarationId": "KMIPKIT-0093:python:kmipkit.fluent.DeleteAttributeBuilder.__enter__",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.DeleteAttributeBuilder.__enter__",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::DeleteAttributeBuilder"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.__enter__"
+        }
+      }
+    },
+    {
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "declarationId": "KMIPKIT-0093:python:kmipkit.fluent.DeleteAttributeBuilder.__exit__",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.DeleteAttributeBuilder.__exit__",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::DeleteAttributeBuilder"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.close"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.__exit__"
+        }
+      }
+    },
+    {
+      "declarationId": "FluentRequest.deleteAttribute:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.FluentRequest.deleteAttribute",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::RequestBuilder<'a>::delete_attribute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_create"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.FluentRequest.deleteAttribute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Request.delete_attribute"
+        }
+      }
+    },
+    {
+      "declarationId": "Request.delete_attribute:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.Request.delete_attribute",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::RequestBuilder<'a>::delete_attribute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_create"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.FluentRequest.deleteAttribute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Request.delete_attribute"
+        }
+      }
+    },
+    {
+      "declarationId": "DeleteAttributeBuilder.attribute_reference:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.DeleteAttributeBuilder.attribute_reference",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::DeleteAttributeBuilder<'a>::attribute_reference"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_set_attribute_reference"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.attributeReference"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.attribute_reference"
+        }
+      }
+    },
+    {
+      "declarationId": "kmipkit-0093-delete-attribute-kmipkit_client-DeleteAttributeBuilder-a-attribute_reference",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::DeleteAttributeBuilder<'a>::attribute_reference",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::DeleteAttributeBuilder<'a>::attribute_reference"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_set_attribute_reference"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.attributeReference"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.attribute_reference"
+        }
+      }
+    },
+    {
+      "declarationId": "DeleteAttributeBuilder.attributeReference:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.DeleteAttributeBuilder.attributeReference",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::DeleteAttributeBuilder<'a>::attribute_reference"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_set_attribute_reference"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.attributeReference"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.attribute_reference"
+        }
+      }
+    },
+    {
+      "declarationId": "delete_attribute_builder_set_attribute_reference:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_delete_attribute_builder_set_attribute_reference",
+      "capabilityId": "fluent_delete_attribute_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_set_attribute_reference"
+        }
+      }
+    },
+    {
+      "declarationId": "DeleteAttributeBuilder.vendor_attribute:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.DeleteAttributeBuilder.vendor_attribute",
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::current_vendor_attribute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_delete_attribute_builder_set_vendor_attribute"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.DeleteAttributeBuilder.currentVendorAttribute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.DeleteAttributeBuilder.vendor_attribute"
+        }
+      }
+    },
+    {
+      "declarationId": "rust-observed-129ef70503110047097a",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::attribute_reference",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-7727266c89039edd0754",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::detached",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     }
   ],
   "approvedExclusions": [
@@ -996813,6 +1000649,114 @@
     },
     {
       "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::DeleteAttributeBuilder<'a> as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::DeleteAttributeBuilder<'a> as core::borrow::Borrow<kmipkit_client::fluent::DeleteAttributeBuilder<'a>>>::borrow",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::DeleteAttributeBuilder<'a> as core::borrow::BorrowMut<kmipkit_client::fluent::DeleteAttributeBuilder<'a>>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::DeleteAttributeBuilder<'a> as core::convert::From<kmipkit_client::fluent::DeleteAttributeBuilder<'a>>>::from",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::DeleteAttributeBuilder<'a> as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::DeleteAttributeBuilder<'a> as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::DeleteAttributeBuilder<'a> as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::DeleteAttributeBuilder<'a> as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::DeleteAttributeBuilder<'a> as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
       "exportName": "<kmipkit_client::DestroyBuilder<'a> as core::any::Any>::type_id",
       "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
       "approvalSource": {
@@ -1005227,6 +1009171,114 @@
     {
       "packageId": "rust-kmipkit-client",
       "exportName": "<kmipkit_client::fluent::DecryptBuilder<'a> as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::DeleteAttributeBuilder<'a> as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::DeleteAttributeBuilder<'a> as core::borrow::Borrow<kmipkit_client::fluent::DeleteAttributeBuilder<'a>>>::borrow",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::DeleteAttributeBuilder<'a> as core::borrow::BorrowMut<kmipkit_client::fluent::DeleteAttributeBuilder<'a>>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::DeleteAttributeBuilder<'a> as core::convert::From<kmipkit_client::fluent::DeleteAttributeBuilder<'a>>>::from",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::DeleteAttributeBuilder<'a> as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::DeleteAttributeBuilder<'a> as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::DeleteAttributeBuilder<'a> as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::DeleteAttributeBuilder<'a> as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::DeleteAttributeBuilder<'a> as core::convert::TryInto<U>>::try_into",
       "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
       "approvalSource": {
         "kind": "feature-specification",
@@ -1138526,7 +1142578,12 @@
         "bindings/python/tests/test_delete_attribute_operation.py",
         "crates/kmipkit-ffi/tests/support/delete_attribute_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs",
-        "tools/api_manifest/tests/test_t076_client_mapping.py"
+        "tools/api_manifest/tests/test_t076_client_mapping.py",
+        "bindings/c/tests/public_client_api.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/DeleteAttributeBuilderTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "crates/kmipkit-client/tests/unit/fluent_request_tests.rs",
+        "tools/api_manifest/tests/test_0093_delete_attribute_builder_manifest.py"
       ],
       "declarations": {
         "rust": [
@@ -1156527,6 +1160584,145 @@
           "kmipkit.extensions.WireEncoding.TTLV",
           "kmipkit.extensions.WireEncoding.XML",
           "kmipkit.extensions.client_configuration_wire_encoding"
+        ]
+      }
+    },
+    {
+      "capabilityId": "fluent_delete_attribute_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "capabilityState": "declared",
+      "parityScope": "c-only",
+      "ownerSpecId": "KMIPKIT-0093",
+      "approvalEvidence": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "mappings": {
+        "c": [
+          "kmipkit_delete_attribute_builder_build_batch_item",
+          "kmipkit_delete_attribute_builder_build_request",
+          "kmipkit_delete_attribute_builder_create",
+          "kmipkit_delete_attribute_builder_execute_v1",
+          "kmipkit_delete_attribute_builder_execute_with_options_v1",
+          "kmipkit_delete_attribute_builder_release",
+          "kmipkit_delete_attribute_builder_set_asynchronous_indicator",
+          "kmipkit_delete_attribute_builder_set_attribute_reference",
+          "kmipkit_delete_attribute_builder_set_catalogued_attribute",
+          "kmipkit_delete_attribute_builder_set_current_attribute_item",
+          "kmipkit_delete_attribute_builder_set_unique_identifier",
+          "kmipkit_delete_attribute_builder_set_vendor_attribute",
+          "kmipkit_delete_attribute_builder_t",
+          "kmipkit_delete_attribute_builder_validate"
+        ]
+      }
+    },
+    {
+      "capabilityId": "fluent_delete_attribute_parity",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "capabilityState": "declared",
+      "parityScope": "four-language",
+      "ownerSpecId": "KMIPKIT-0093",
+      "approvalEvidence": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "mappings": {
+        "rust": [
+          "kmipkit_client::DeleteAttributeBuilder",
+          "kmipkit_client::DeleteAttributeBuilder::detached",
+          "kmipkit_client::DeleteAttributeBuilder<'a>::attribute_reference",
+          "kmipkit_client::DeleteAttributeBuilder<'a>::build",
+          "kmipkit_client::DeleteAttributeBuilder<'a>::build_request",
+          "kmipkit_client::DeleteAttributeBuilder<'a>::current_attribute",
+          "kmipkit_client::DeleteAttributeBuilder<'a>::current_attribute_item",
+          "kmipkit_client::DeleteAttributeBuilder<'a>::current_vendor_attribute",
+          "kmipkit_client::DeleteAttributeBuilder<'a>::execute",
+          "kmipkit_client::DeleteAttributeBuilder<'a>::to_batch_item",
+          "kmipkit_client::DeleteAttributeBuilder<'a>::unique_identifier",
+          "kmipkit_client::DeleteAttributeBuilder<'a>::validate",
+          "kmipkit_client::DeleteAttributeBuilder<'a>::with_asynchronous_indicator",
+          "kmipkit_client::DeleteAttributeBuilder<'a>::with_options",
+          "kmipkit_client::RequestBuilder<'a>::delete_attribute",
+          "kmipkit_client::fluent::DeleteAttributeBuilder",
+          "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::build",
+          "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::build_request",
+          "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::current_attribute",
+          "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::current_attribute_item",
+          "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::current_vendor_attribute",
+          "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::execute",
+          "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::to_batch_item",
+          "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::unique_identifier",
+          "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::validate",
+          "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::with_asynchronous_indicator",
+          "kmipkit_client::fluent::DeleteAttributeBuilder<'a>::with_options",
+          "kmipkit_client::fluent::RequestBuilder<'a>::delete_attribute"
+        ],
+        "c": [
+          "kmipkit_delete_attribute_builder_build_batch_item",
+          "kmipkit_delete_attribute_builder_build_request",
+          "kmipkit_delete_attribute_builder_create",
+          "kmipkit_delete_attribute_builder_execute_v1",
+          "kmipkit_delete_attribute_builder_execute_with_options_v1",
+          "kmipkit_delete_attribute_builder_release",
+          "kmipkit_delete_attribute_builder_set_asynchronous_indicator",
+          "kmipkit_delete_attribute_builder_set_attribute_reference",
+          "kmipkit_delete_attribute_builder_set_catalogued_attribute",
+          "kmipkit_delete_attribute_builder_set_current_attribute_item",
+          "kmipkit_delete_attribute_builder_set_unique_identifier",
+          "kmipkit_delete_attribute_builder_set_vendor_attribute",
+          "kmipkit_delete_attribute_builder_t",
+          "kmipkit_delete_attribute_builder_validate"
+        ],
+        "java": [
+          "org.kmipkit.fluent.DeleteAttributeBuilder",
+          "org.kmipkit.fluent.DeleteAttributeBuilder.asynchronousIndicator",
+          "org.kmipkit.fluent.DeleteAttributeBuilder.attributeReference",
+          "org.kmipkit.fluent.DeleteAttributeBuilder.build",
+          "org.kmipkit.fluent.DeleteAttributeBuilder.buildRequest",
+          "org.kmipkit.fluent.DeleteAttributeBuilder.cataloguedAttribute",
+          "org.kmipkit.fluent.DeleteAttributeBuilder.close",
+          "org.kmipkit.fluent.DeleteAttributeBuilder.currentAttribute",
+          "org.kmipkit.fluent.DeleteAttributeBuilder.currentVendorAttribute",
+          "org.kmipkit.fluent.DeleteAttributeBuilder.execute",
+          "org.kmipkit.fluent.DeleteAttributeBuilder.toBatchItem",
+          "org.kmipkit.fluent.DeleteAttributeBuilder.uniqueIdentifier",
+          "org.kmipkit.fluent.DeleteAttributeBuilder.validate",
+          "org.kmipkit.fluent.DeleteAttributeBuilder.vendorAttribute",
+          "org.kmipkit.fluent.DeleteAttributeBuilder.withOptions",
+          "org.kmipkit.fluent.FluentRequest.deleteAttribute"
+        ],
+        "python": [
+          "kmipkit.fluent.DeleteAttributeBuilder",
+          "kmipkit.fluent.DeleteAttributeBuilder.__enter__",
+          "kmipkit.fluent.DeleteAttributeBuilder.__exit__",
+          "kmipkit.fluent.DeleteAttributeBuilder.__init__",
+          "kmipkit.fluent.DeleteAttributeBuilder.asynchronous_indicator",
+          "kmipkit.fluent.DeleteAttributeBuilder.attribute_reference",
+          "kmipkit.fluent.DeleteAttributeBuilder.build",
+          "kmipkit.fluent.DeleteAttributeBuilder.build_request",
+          "kmipkit.fluent.DeleteAttributeBuilder.catalogued_attribute",
+          "kmipkit.fluent.DeleteAttributeBuilder.close",
+          "kmipkit.fluent.DeleteAttributeBuilder.current_attribute_item",
+          "kmipkit.fluent.DeleteAttributeBuilder.current_vendor_attribute",
+          "kmipkit.fluent.DeleteAttributeBuilder.execute",
+          "kmipkit.fluent.DeleteAttributeBuilder.to_batch_item",
+          "kmipkit.fluent.DeleteAttributeBuilder.unique_identifier",
+          "kmipkit.fluent.DeleteAttributeBuilder.validate",
+          "kmipkit.fluent.DeleteAttributeBuilder.vendor_attribute",
+          "kmipkit.fluent.DeleteAttributeBuilder.with_options",
+          "kmipkit.fluent.Request.delete_attribute"
         ]
       }
     }

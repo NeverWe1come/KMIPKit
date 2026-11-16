@@ -98,6 +98,7 @@ unsafe extern "C" {
     fn kmipkit_public_create_key_pair_builder_probe() -> i32;
     fn kmipkit_public_set_attribute_builder_probe() -> i32;
     fn kmipkit_public_add_attribute_builder_probe() -> i32;
+    fn kmipkit_public_delete_attribute_builder_probe() -> i32;
     fn kmipkit_public_symmetric_builder_execute_validation_probe() -> i32;
     fn kmipkit_public_async_batch_items_probe() -> i32;
     fn kmipkit_public_kmip30_semantic_items_probe() -> i32;
@@ -259,6 +260,16 @@ fn public_c_add_attribute_builder_constructs_a_typed_add_attribute_item() {
     assert_eq!(
         status, 0,
         "public C Add Attribute builder declarations and ABI calls must agree"
+    );
+}
+
+#[test]
+fn public_c_delete_attribute_builder_constructs_a_typed_delete_attribute_item() {
+    // SAFETY: The compiled C consumer releases every temporary builder and TTLV handle.
+    let status = unsafe { kmipkit_public_delete_attribute_builder_probe() };
+    assert_eq!(
+        status, 0,
+        "public C Delete Attribute builder declarations and ABI calls must agree"
     );
 }
 
