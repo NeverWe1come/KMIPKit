@@ -311,6 +311,11 @@ class T102Pkcs11RequestTraitExclusionTests(unittest.TestCase):
         self.assertEqual(self.rust_report["counts"]["excluded"], T102_RUST_AUDIT_EXCLUDED)
         self.assertEqual(self.rust_report["counts"]["observed"], T102_RUST_AUDIT_OBSERVED)
 
+    def test_historical_snapshot_totals_are_not_replaced_by_current_audit_totals(self) -> None:
+        self.assertEqual(T102_RUST_AUDIT_MANIFEST, 3_287)
+        self.assertEqual(T102_RUST_AUDIT_EXCLUDED, 7_176)
+        self.assertEqual(T102_RUST_AUDIT_OBSERVED, 10_463)
+
 
 if __name__ == "__main__":
     unittest.main()
