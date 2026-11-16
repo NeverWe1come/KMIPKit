@@ -11,8 +11,8 @@ use crate::asynchronous_execution_test_support::client_for;
 use crate::execute::{ClientBatchOutcome, ClientOperation, ClientRequest, encode_message_for_test};
 use crate::execute_test_support::{test_item, test_structure};
 use crate::fluent::{
-    AddAttributeBuilder, CreateSymmetricKeyBuilder, CryptographicUsageMask,
-    DeleteAttributeBuilder, FluentAttributePosition, FluentBuildError, SetAttributeBuilder,
+    AddAttributeBuilder, CreateSymmetricKeyBuilder, CryptographicUsageMask, DeleteAttributeBuilder,
+    FluentAttributePosition, FluentBuildError, SetAttributeBuilder,
 };
 
 #[test]
@@ -34,7 +34,10 @@ fn delete_attribute_builder_constructs_the_existing_typed_request() {
     let current_attribute = request
         .current_attribute()
         .expect("the selected attribute is retained");
-    assert_eq!(current_attribute.item().tag().raw(), typed::Description::TAG);
+    assert_eq!(
+        current_attribute.item().tag().raw(),
+        typed::Description::TAG
+    );
     assert!(current_attribute.item().with_value(|value| matches!(
         value,
         ValueView::TextString(text) if text == "legacy label"
@@ -69,6 +72,47 @@ fn detached_delete_attribute_builder_builds_without_a_client_and_refuses_executi
         error.delivery_state(),
         Some(kmipkit_transport::RequestDeliveryState::NotSent)
     );
+}
+
+#[test]
+fn delete_attribute_builder_executes_once_and_converts_to_the_typed_batch_item() {
+    let mut batch_client = failed_request_client();
+    let batch_item = batch_client
+        .request()
+        .delete_attribute()
+        .unique_identifier("key-42")
+        .attribute_reference(AttributeReference::tag(typed::Description::TAG))
+        .to_batch_item()
+        .expect("valid Delete Attribute request converts to a typed batch item");
+    assert_eq!(batch_item.operation(), 0x0000_000F);
+    assert!(matches!(
+        batch_item.request(),
+        ClientRequest::DeleteAttribute(_)
+    ));
+
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response: delete_attribute_response_bytes(),
+        request_write_chunks: Vec::new(),
+    });
+    let response = client
+        .request()
+        .delete_attribute()
+        .unique_identifier("key-42")
+        .attribute_reference(AttributeReference::tag(typed::Description::TAG))
+        .with_options(RequestOptions::default())
+        .with_asynchronous_indicator(3)
+        .execute(&CodecLimits::defaults())
+        .expect("Delete Attribute executes through one existing typed exchange");
+
+    assert_eq!(
+        response
+            .outcome()
+            .response()
+            .delete_attribute()
+            .and_then(|result| result.unique_identifier()),
+        Some("server-key-42")
+    );
+    assert_eq!(fake.borrow().exchange_count(), 1);
 }
 
 #[test]
@@ -433,6 +477,37 @@ fn add_attribute_response_bytes() -> Vec<u8> {
         &CodecLimits::defaults(),
     )
     .expect("Add Attribute response fixture is valid TTLV")
+}
+
+fn delete_attribute_response_bytes() -> Vec<u8> {
+    let payload = test_structure([test_item(
+        0x0042_0094,
+        Value::text_string("server-key-42".to_owned()),
+    )]);
+    let batch_item = test_structure([
+        test_item(0x0042_005C, Value::enumeration(0x0000_000F)),
+        test_item(0x0042_007F, Value::enumeration(0)),
+        test_item(0x0042_007C, Value::structure(payload)),
+    ]);
+    let header = test_structure([
+        test_item(
+            0x0042_0069,
+            Value::structure(test_structure([
+                test_item(0x0042_006A, Value::integer(2)),
+                test_item(0x0042_006B, Value::integer(1)),
+            ])),
+        ),
+        test_item(0x0042_0092, Value::date_time(1)),
+        test_item(0x0042_000D, Value::integer(1)),
+    ]);
+    encode_message_for_test(
+        test_structure([
+            test_item(0x0042_007A, Value::structure(header)),
+            test_item(0x0042_000F, Value::structure(batch_item)),
+        ]),
+        &CodecLimits::defaults(),
+    )
+    .expect("Delete Attribute response fixture is valid TTLV")
 }
 
 #[test]
