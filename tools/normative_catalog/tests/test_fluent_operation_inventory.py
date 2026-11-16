@@ -124,6 +124,22 @@ class FluentOperationInventoryTests(unittest.TestCase):
                 if row["version"] == "2.1":
                     self.assertTrue(all((ROOT / path).exists() for path in row["testEvidence"]))
 
+    def test_owner_evidence_matches_current_public_api_parity_evidence(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        owners = json.loads(MODEL_OWNERS.read_text(encoding="utf-8"))
+        parity_evidence = {
+            operation["name"]: operation["parityEvidenceIds"]
+            for operation in manifest["operations"]
+        }
+
+        for owner in owners["owners"]:
+            if owner["version"] != "2.1" or owner["direction"] != "client_to_server":
+                continue
+            if owner["name"] not in parity_evidence:
+                continue
+            with self.subTest(operation=owner["name"]):
+                self.assertEqual(owner["testEvidence"], parity_evidence[owner["name"]])
+
     def test_generator_rejects_missing_typed_owner_route(self) -> None:
         base = json.loads(BASE_CATALOG.read_text(encoding="utf-8"))
         versioned = json.loads(VERSIONED_VALUES.read_text(encoding="utf-8"))
