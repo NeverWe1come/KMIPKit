@@ -108,7 +108,42 @@ def response(operations: tuple[int, ...], protocol_minor: int,
         if result_statuses is not None:
             result_status = result_statuses[item_index]
             result_reason = result_reasons[item_index] if result_reasons is not None else None
-        if operation == 30:
+        if operations in ((2, 18, 33, 19, 20, 20), (2, 18, 34, 19, 20, 20)):
+            verify = operations[2] == 34
+            target_identifier = b"fixture-public-key-1" if verify else b"fixture-private-key-1"
+            other_identifier = b"fixture-private-key-1" if verify else b"fixture-public-key-1"
+            if item_index == 0:
+                payload_value = tlv(0x420066, 7, b"fixture-private-key-1") + \
+                    tlv(0x42006F, 7, b"fixture-public-key-1")
+            elif item_index == 2 and verify:
+                payload_value = tlv(0x420094, 7, target_identifier) + enumeration(0x42009B, 1)
+            elif item_index == 2:
+                payload_value = tlv(0x420094, 7, target_identifier) + \
+                    tlv(0x4200C3, 8, bytes(256))
+            else:
+                response_identifier = other_identifier if item_index == 5 else target_identifier
+                payload_value = tlv(0x420094, 7, response_identifier)
+        elif operations == (2, 20, 20):
+            if item_index == 0:
+                payload_value = tlv(0x420066, 7, b"fixture-private-key-1") + \
+                    tlv(0x42006F, 7, b"fixture-public-key-1")
+            else:
+                identifier = b"fixture-private-key-1" if item_index == 1 else b"fixture-public-key-1"
+                payload_value = tlv(0x420094, 7, identifier)
+        elif operations == (2, 18, 6, 19, 20, 20, 20):
+            if item_index == 0:
+                payload_value = tlv(0x420066, 7, b"fixture-private-key-1") + \
+                    tlv(0x42006F, 7, b"fixture-public-key-1")
+            elif item_index == 2:
+                payload_value = tlv(0x420094, 7, b"fixture-certificate-1")
+            else:
+                identifier = {
+                    1: b"fixture-private-key-1", 3: b"fixture-private-key-1",
+                    4: b"fixture-certificate-1", 5: b"fixture-private-key-1",
+                    6: b"fixture-public-key-1",
+                }[item_index]
+                payload_value = tlv(0x420094, 7, identifier)
+        elif operation == 30:
             payload_value = tlv(
             0x420069, 1,
             integer(0x42006A, 2) + integer(0x42006B, protocol_minor),
@@ -185,6 +220,11 @@ def response(operations: tuple[int, ...], protocol_minor: int,
         elif operation == 32:
             payload_value = tlv(0x420094, 7, b"fixture-key-1") + tlv(
                 0x4200C2, 8, bytes.fromhex("00112233445566778899aabbccddeeff"))
+        elif operation == 35:
+            payload_value = tlv(0x420094, 7, b"fixture-key-1") + tlv(
+                0x4200C6, 8, bytes(range(32)))
+        elif operation == 36:
+            payload_value = tlv(0x420094, 7, b"fixture-key-1") + enumeration(0x42009B, 1)
         elif operation in (13, 14, 15, 48, 49):
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
         elif operation == 11:
@@ -469,6 +509,14 @@ def main() -> int:
     expected_cases += ("test-async-unknown-correlation-rejected",)
     expected_operations += (10, 12, 10, 12, 10, 12, 10, 12)
     expected_operations += registered_key_batch
+    expected_operations += (1, 18, 31, 19, 20)
+    expected_operations += (1, 18, 32, 19, 20)
+    expected_operations += (1, 18, 35, 19, 20)
+    expected_operations += (1, 18, 36, 19, 20)
+    expected_operations += (2, 18, 33, 19, 20, 20)
+    expected_operations += (2, 18, 34, 19, 20, 20)
+    expected_operations += (2, 20, 20)
+    expected_operations += (2, 18, 6, 19, 20, 20, 20)
     expected_operations += stop_on_first_failure_batch
     expected_operations += (1, 25)
     expected_cases += ("test-op-cancel",)
@@ -504,6 +552,13 @@ def main() -> int:
         "test-crypto-rng-seed-rng-32",
     )
     expected_cases += ("test-batch-register-encrypt-decrypt-destroy",)
+    expected_cases += ("test-op-encrypt",)
+    expected_cases += ("test-op-decrypt",)
+    expected_cases += ("test-op-mac",)
+    expected_cases += ("test-op-mac-verify",)
+    expected_cases += ("test-op-sign", "test-op-signature-verify")
+    expected_cases += ("test-op-create-key-pair",)
+    expected_cases += ("test-op-certify",)
     expected_cases += ("test-batch-stop-on-first-failure",)
     expected_cases += ("test-neg-destroy-active-without-revoke",)
     expected_cases += ("test-op-add-attribute",)
@@ -637,6 +692,87 @@ def main() -> int:
                                         "registered-key batch omitted or duplicated a unique item ID"
                                     )
                                 response_item_ids = registered_key_batch_item_ids
+                            if operations == (1, 18, 31, 19, 20):
+                                expected_encrypt_item_ids = (
+                                    b"encrypt-create", b"encrypt-activate", b"encrypt-target",
+                                    b"encrypt-revoke", b"encrypt-destroy",
+                                )
+                                if any(request.count(tlv(0x420093, 8, item_id)) != 1
+                                       for item_id in expected_encrypt_item_ids):
+                                    raise AssertionError(
+                                        "isolated Encrypt batch omitted or duplicated a unique item ID"
+                                    )
+                                response_item_ids = expected_encrypt_item_ids
+                            if operations == (1, 18, 32, 19, 20):
+                                expected_decrypt_item_ids = (
+                                    b"decrypt-create", b"decrypt-activate", b"decrypt-target",
+                                    b"decrypt-revoke", b"decrypt-destroy",
+                                )
+                                if any(request.count(tlv(0x420093, 8, item_id)) != 1
+                                       for item_id in expected_decrypt_item_ids):
+                                    raise AssertionError(
+                                        "isolated Decrypt batch omitted or duplicated a unique item ID"
+                                    )
+                                response_item_ids = expected_decrypt_item_ids
+                            if operations == (1, 18, 35, 19, 20):
+                                expected_mac_item_ids = (
+                                    b"mac-create", b"mac-activate", b"mac-target",
+                                    b"mac-revoke", b"mac-destroy",
+                                )
+                                if any(request.count(tlv(0x420093, 8, item_id)) != 1
+                                       for item_id in expected_mac_item_ids):
+                                    raise AssertionError(
+                                        "isolated MAC batch omitted or duplicated a unique item ID"
+                                    )
+                                response_item_ids = expected_mac_item_ids
+                            if operations == (1, 18, 36, 19, 20):
+                                expected_mac_verify_item_ids = (
+                                    b"mac-verify-create", b"mac-verify-activate", b"mac-verify-target",
+                                    b"mac-verify-revoke", b"mac-verify-destroy",
+                                )
+                                if any(request.count(tlv(0x420093, 8, item_id)) != 1
+                                       for item_id in expected_mac_verify_item_ids):
+                                    raise AssertionError(
+                                        "isolated MAC Verify batch omitted or duplicated a unique item ID"
+                                    )
+                                response_item_ids = expected_mac_verify_item_ids
+                            if operations in ((2, 18, 33, 19, 20, 20), (2, 18, 34, 19, 20, 20)):
+                                expected_signature_item_ids = (
+                                    (b"sign-create-pair", b"sign-activate", b"sign-target",
+                                     b"sign-revoke", b"sign-destroy-private", b"sign-destroy-public")
+                                    if operations[2] == 33 else
+                                    (b"verify-create-pair", b"verify-activate", b"verify-target",
+                                     b"verify-revoke", b"verify-destroy-public", b"verify-destroy-private")
+                                )
+                                if any(request.count(tlv(0x420093, 8, item_id)) != 1
+                                       for item_id in expected_signature_item_ids):
+                                    raise AssertionError(
+                                        "signature key-pair batch omitted or duplicated a unique item ID"
+                                    )
+                                response_item_ids = expected_signature_item_ids
+                            if operations == (2, 20, 20):
+                                expected_pair_item_ids = (
+                                    b"create-pair", b"destroy-private", b"destroy-public"
+                                )
+                                if any(request.count(tlv(0x420093, 8, item_id)) != 1
+                                       for item_id in expected_pair_item_ids):
+                                    raise AssertionError(
+                                        "Create Key Pair batch omitted or duplicated a unique item ID"
+                                    )
+                                response_item_ids = expected_pair_item_ids
+                            if operations == (2, 18, 6, 19, 20, 20, 20):
+                                expected_certify_item_ids = (
+                                    b"certify-create-pair", b"certify-activate-private",
+                                    b"certify-public-key", b"certify-revoke-private",
+                                    b"certify-destroy-certificate", b"certify-destroy-private",
+                                    b"certify-destroy-public",
+                                )
+                                if any(request.count(tlv(0x420093, 8, item_id)) != 1
+                                       for item_id in expected_certify_item_ids):
+                                    raise AssertionError(
+                                        "Certify batch omitted or duplicated a unique item ID"
+                                    )
+                                response_item_ids = expected_certify_item_ids
                             if operations == stop_on_first_failure_batch:
                                 if (request.count(integer(0x42000D, 2)) != 1 or
                                         request.count(tlv(0x420094, 7, b"missing-key")) != 1 or
