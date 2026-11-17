@@ -101,8 +101,8 @@ baseline, regenerate the checked-in ledger with
 rejects generated ledgers that do not record successful invocations.
 The generated ledger retains the artifact
 SHA-256 for each build; that build-specific digest is not used as a coverage
-baseline. These recipes execute 27,226 of 71,641 planned Java route cells, with
-no failed cells; the ledger records the other 44,415 as pending and does not imply
+baseline. These recipes execute 27,234 of 71,641 planned Java route cells, with
+no failed cells; the ledger records the other 44,407 as pending and does not imply
 vendor interoperability or full-matrix completion. Local TTLV recipes exercise 51
 enumeration families, all six bitmask aggregate cases, and all 44 individual
 bitmask value cases through the applicable
@@ -123,6 +123,10 @@ The required Extension Name and optional Extension Description members also
 cover their Text String constructor, Item, view, and decoder routes in both
 versions (KMIP 2.0 §7.9 Table 329 and KMIP 2.1 §7.13 Table 365; tag allocation
 §§11.54/11.56).
+The optional Extension Tag member covers its Integer constructor, Item creation,
+view, and decoder routes in both versions. The fixture uses `0x540001`, an Item
+Tag Value in the Extensions range, per the definition in KMIP 2.0 §7.9 Table
+329 and KMIP 2.1 §7.13 Table 365; the member tag is allocated in §§11.54/11.56.
 Initialization Vector, Derivation Data, and Iteration Count also cover their
 typed constructor, Item creation, view, and decoder routes in both versions,
 using a Byte String value for the two byte fields and an Integer for Iteration

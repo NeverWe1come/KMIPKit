@@ -125,6 +125,9 @@ class ControlledTlsPeerTest {
     private record ExtensionInformationMemberFixture(String caseId, String targetId, int rawTag,
             String textValue) { }
 
+    private record ExtensionInformationIntegerMemberFixture(String caseId, String targetId, int rawTag,
+            int value) { }
+
     private record DerivationByteStringFixture(String caseId, String targetId, int rawTag, byte[] value) { }
 
     private record DerivationIntegerFixture(String caseId, String targetId, int rawTag, int value) { }
@@ -251,6 +254,10 @@ class ControlledTlsPeerTest {
                     "test-norm-structure-member-structure-member-7-13-extension-description",
                     "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-13-EXTENSION-DESCRIPTION", 0x42012c,
                     "Controlled fixture extension description"));
+    private static final ExtensionInformationIntegerMemberFixture EXTENSION_TAG_FIXTURE =
+            new ExtensionInformationIntegerMemberFixture(
+                    "test-norm-structure-member-structure-member-7-13-extension-tag",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-13-EXTENSION-TAG", 0x4200a6, 0x540001);
     private static final List<String> SERVER_INFORMATION_CASE_IDS = List.of(
             SERVER_INFORMATION_CASE_ID,
             SERVER_INFORMATION_MEMBER_FIXTURES.get(0).caseId(),
@@ -1373,7 +1380,7 @@ class ControlledTlsPeerTest {
                         + genericTagEventCount + typedTagIdentityEventCount
                         + booleanFieldRouteEventCount + scalarMessageFieldRouteEventCount + itemTypeRouteEventCount
                         + scalarTypedParserEventCount
-                        + 83 // BEC, batch IDs, async payload, Ping, Endpoint Role, Object Defaults, derivation, and Extension Information member cells.
+                        + 91 // BEC, batch IDs, async payload, Ping, Endpoint Role, Object Defaults, derivation, and Extension Information member cells.
                         + tagAggregateEventCount
                         + referencedEnumEventCount + referencedEnumAggregateEventCount,
                 report.path("events").size());
@@ -1415,7 +1422,7 @@ class ControlledTlsPeerTest {
                         + 11 + itemTypeValueCaseIds.size() + STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size()
                         + STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.size()
                         + STRUCTURE_MEMBER_VALUE_FIXTURES.size() + PROFILE_INFORMATION_CASE_IDS.size()
-                        + SERVER_INFORMATION_CASE_IDS.size() + 5 + booleanFieldCaseIds.size()
+                        + SERVER_INFORMATION_CASE_IDS.size() + 6 + booleanFieldCaseIds.size()
                         // Four scalar header cases are already included by the baseline report groups.
                         + scalarMessageFieldCaseIds(report.path("events")).size() - 4,
                 report.path("case_ids").size());
@@ -3722,6 +3729,7 @@ class ControlledTlsPeerTest {
         DERIVATION_BYTE_STRING_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         caseIds.add(DERIVATION_ITERATION_COUNT_FIXTURE.caseId());
         EXTENSION_INFORMATION_MEMBER_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
+        caseIds.add(EXTENSION_TAG_FIXTURE.caseId());
         caseIds.add(OBJECT_DEFAULTS_OBJECT_TYPE_CASE_ID);
         caseIds.add("test-norm-operation-structure-operation-structure-7-2-asynchronous-request");
         caseIds.add("test-norm-operation-structure-operation-structure-7-13-extension-information");
@@ -6533,6 +6541,16 @@ class ControlledTlsPeerTest {
                         protocolVersion);
             }
         }
+        for (String route : List.of(
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.integer",
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode")) {
+            String action = route.endsWith("integer") || route.endsWith("ttlv_item.create")
+                    ? "construct" : "decode";
+            assertRouteEventRecorded(events, EXTENSION_TAG_FIXTURE.caseId(),
+                    EXTENSION_TAG_FIXTURE.targetId(), route, action, protocolVersion);
+        }
     }
 
     // OASIS KMIP 2.0 §7.9 Table 329 and KMIP 2.1 §7.13 Table 365: Extension Name is required;
@@ -6567,6 +6585,50 @@ class ControlledTlsPeerTest {
             appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_codec.decode", fixture.targetId(),
                     "org.kmipkit.ttlv.TtlvCodec.decode", null, null, "decode", protocolVersion,
                     null, null, treeHash);
+        }
+        appendExtensionTagRouteEvents(events, protocolVersion, limits);
+    }
+
+    // OASIS KMIP 2.0 §7.9 Table 329 and KMIP 2.1 §7.13 Table 365 define Extension Tag as
+    // the Integer Item Tag Value of an extension object; its member tag is assigned in §§11.54/11.56.
+    private static void appendExtensionTagRouteEvents(ArrayNode events, String protocolVersion,
+            CodecLimits limits) throws Exception {
+        ExtensionInformationIntegerMemberFixture fixture = EXTENSION_TAG_FIXTURE;
+        byte[] wire = item(fixture.rawTag(), TtlvItemType.Integer.code(), intBytes(fixture.value()));
+        String treeHash = normalizedTreeSha256(wire);
+        try (TtlvValue value = TtlvValue.Integer(fixture.value());
+                RawTag rawTag = RawTag.fromRaw(fixture.rawTag());
+                Tag tag = rawTag.checked();
+                TtlvItem created = TtlvItem.create(tag, value, limits);
+                TtlvItemView view = created.view()) {
+            assertExtensionTagItem(view, fixture);
+        }
+        appendRouteEvent(events, fixture.caseId(),
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.integer", fixture.targetId(),
+                "org.kmipkit.ttlv.TtlvValue.Integer", null, null, "construct", protocolVersion,
+                null, treeHash, null);
+        appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_item.create", fixture.targetId(),
+                "org.kmipkit.ttlv.TtlvItem.create", null, null, "construct", protocolVersion,
+                null, treeHash, null);
+        try (TtlvItem decoded = TtlvCodec.decode(wire);
+                TtlvItemView view = decoded.view()) {
+            assertExtensionTagItem(view, fixture);
+        }
+        appendRouteEvent(events, fixture.caseId(),
+                "java.generic-ttlv.function.ttlv_item_view_from_item", fixture.targetId(),
+                "org.kmipkit.ttlv.TtlvItem.view", null, null, "decode", protocolVersion,
+                null, null, treeHash);
+        appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_codec.decode", fixture.targetId(),
+                "org.kmipkit.ttlv.TtlvCodec.decode", null, null, "decode", protocolVersion,
+                null, null, treeHash);
+    }
+
+    private static void assertExtensionTagItem(TtlvItemView view,
+            ExtensionInformationIntegerMemberFixture fixture) throws Exception {
+        try (Tag tag = view.tag(); var value = view.value()) {
+            assertEquals(fixture.rawTag(), tag.raw());
+            assertEquals(TtlvItemType.Integer, view.itemType());
+            assertEquals(fixture.value(), value.integer());
         }
     }
 
