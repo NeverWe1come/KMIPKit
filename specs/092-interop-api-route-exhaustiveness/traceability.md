@@ -47,3 +47,17 @@ artifact. This is part of the FR-006 artifact provenance check.
   the combined selected report validates 27,171/27,171 cells with zero
   failures. The regenerated ledger records 71,641 planned, 27,171 executed,
   and 44,470 pending cells. The full matrix remains open.
+
+- **FR-003/FR-005:** Tag `0x42000E` now has Java per-case `RawTag.fromRaw`,
+  `RawTag.checked`, and `ClientBatch.addErrorContinuationValue` evidence in
+  KMIP 2.0/2.1. The typed setter is tied to the observed serialized header of
+  the controlled two-item Query request (OASIS KMIP 2.0 §11.54; KMIP 2.1
+  §11.56).
+- The updated selected report validates 27,147/27,147 invoked cells with zero
+  failures. The ledger records 71,641 planned, 27,147 executed, and 44,494
+  pending cells. This remains selected-scope evidence; full-matrix closure is
+  still required.
+- After merging the Tag route into Usage Limits, the combined selected report
+  validates 27,183/27,183 cells with zero failures. The regenerated ledger
+  records 71,641 planned, 27,183 executed, and 44,458 pending cells. Full-matrix
+  closure remains required.
