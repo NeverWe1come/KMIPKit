@@ -194,7 +194,14 @@ final class NativeBridgeCoverageTest {
                 () -> NativeExtensionRegistry.clientBatchItemResponseSign(0),
                 () -> NativeExtensionRegistry.clientBatchItemResponseSignatureVerify(0),
                 () -> NativeExtensionRegistry.clientBatchItemResponseDecrypt(0),
-                () -> NativeExtensionRegistry.clientBatchItemResponseEncrypt(0));
+                () -> NativeExtensionRegistry.clientBatchItemResponseEncrypt(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseCreateGroup(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseCreateUser(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseCreateCredential(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseObliterate(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseDeactivate(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseEncapsulate(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseDecapsulate(0));
         for (Executable responseGetter : responseGetters) {
             assertThrows(InvalidInputException.class, responseGetter);
         }
@@ -711,7 +718,14 @@ final class NativeBridgeCoverageTest {
                 new ResponseGetter("macResponse", result -> result.macResponse()),
                 new ResponseGetter("macVerifyResponse", result -> result.macVerifyResponse()),
                 new ResponseGetter("signResponse", result -> result.signResponse()),
-                new ResponseGetter("signatureVerifyResponse", result -> result.signatureVerifyResponse()));
+                new ResponseGetter("signatureVerifyResponse", result -> result.signatureVerifyResponse()),
+                new ResponseGetter("createGroupResponse", result -> result.createGroupResponse()),
+                new ResponseGetter("createUserResponse", result -> result.createUserResponse()),
+                new ResponseGetter("createCredentialResponse", result -> result.createCredentialResponse()),
+                new ResponseGetter("obliterateResponse", result -> result.obliterateResponse()),
+                new ResponseGetter("deactivateResponse", result -> result.deactivateResponse()),
+                new ResponseGetter("encapsulateResponse", result -> result.encapsulateResponse()),
+                new ResponseGetter("decapsulateResponse", result -> result.decapsulateResponse()));
     }
 
     private static void closeMappedResponse(Optional<?> mapped) throws Exception {

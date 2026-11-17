@@ -669,6 +669,13 @@ public final class NativeExtensionRegistry {
     public static native Object[] clientBatchItemResponseSignatureVerify(long itemResponse);
     public static native Object[] clientBatchItemResponseDecrypt(long itemResponse);
     public static native Object[] clientBatchItemResponseEncrypt(long itemResponse);
+    public static native Object[] clientBatchItemResponseCreateGroup(long itemResponse);
+    public static native Object[] clientBatchItemResponseCreateUser(long itemResponse);
+    public static native Object[] clientBatchItemResponseCreateCredential(long itemResponse);
+    public static native long[] clientBatchItemResponseObliterate(long itemResponse);
+    public static native Object[] clientBatchItemResponseDeactivate(long itemResponse);
+    public static native Object[] clientBatchItemResponseEncapsulate(long itemResponse);
+    public static native Object[] clientBatchItemResponseDecapsulate(long itemResponse);
     public static native long extensionInformationCreate(String extensionName);
     public static native long extensionInformationWithTag(long information, int tag);
     public static native long extensionInformationWithType(long information, int type);

@@ -2,6 +2,9 @@
 
 // Link the exported C symbols through Cargo, independently of its artifact layout.
 use kmipkit_ffi as _;
+#[path = "support/ffi_link_exports.rs"]
+mod ffi_link_exports;
+use ffi_link_exports::{kmipkit_client_batch_create, kmipkit_client_batch_release};
 
 #[link(name = "kmipkit_operation_parity_0053_consumer", kind = "static")]
 unsafe extern "C" {
@@ -10,11 +13,6 @@ unsafe extern "C" {
 
 #[link(name = "kmipkit_client_abi_c_consumer", kind = "static")]
 unsafe extern "C" {}
-
-unsafe extern "C" {
-    fn kmipkit_client_batch_create(out_batch: *mut *mut core::ffi::c_void) -> i32;
-    fn kmipkit_client_batch_release(batch: *mut core::ffi::c_void);
-}
 
 #[test]
 fn compiled_c_consumer_invokes_all_56_client_operation_routes() {

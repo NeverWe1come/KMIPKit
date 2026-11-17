@@ -22,9 +22,9 @@ pub enum CredentialType {
     HashedPassword,
     /// Ticket, value `6`.
     Ticket,
-    /// Password, value `7` in KMIP 3.0.
+    /// Password, value `7` (OASIS KMIP 3.0 §11.11 Table 551).
     Password,
-    /// Certificate, value `8` in KMIP 3.0.
+    /// Certificate, value `8` (OASIS KMIP 3.0 §11.11 Table 551).
     Certificate,
     /// Extensions, values in the OASIS `8XXXXXXX` range.
     Extensions(u32),

@@ -37,6 +37,7 @@ final class CredentialTypeParityTest {
             {7L, "Password"},
             {8L, "Certificate"},
             {0x8000_0009L, "Extensions"},
+            {9L, "Unknown"},
             {0xFFFF_FFFFL, "Unknown"}
         };
         for (Object[] testCase : cases) {

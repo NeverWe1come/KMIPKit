@@ -37,13 +37,11 @@ T102_BLOCKED_CANDIDATES = 0
 # package inventories.
 # Update this full-manifest snapshot only when an approved feature intentionally
 # adds or removes declarations.
-# KMIPKIT-0093 includes journey operations, response bindings, and the named
-# value/tag inventories from the current approved release line.
-# The release merge removes two duplicate blocked observations superseded by
-# the approved KMIPKIT-0047 declarations for the same export paths.
-T102_PUBLIC_DECLARATIONS = 20_665
+# The combined manifest includes the KMIPKIT-0093 declarations, KMIP 3.0
+# builder declarations, and KMIPKIT-0126 response and attribute additions.
+T102_PUBLIC_DECLARATIONS = 20_720
 T102_KMIP30_DRAFT_ROUTE_DECLARATIONS = 36
-T102_APPROVED_EXCLUSIONS = 23_678
+T102_APPROVED_EXCLUSIONS = 23_757
 # Current Rust audit totals remain tied to the November 16 reviewed reports.
 T102_RUST_AUDIT_MANIFEST = 10_380
 T102_RUST_AUDIT_EXCLUDED = 21_649

@@ -104,18 +104,38 @@ class TypedAttributeGeneratorTests(unittest.TestCase):
 
         self.assertEqual(62, java.count("(0x"))
         self.assertEqual(62, python.count(" = (0x"))
-        self.assertIn("ACTIVATION_DATE(0x420001, \"DateTime\", \"No\")", java)
+        self.assertIn("ACTIVATION_DATE(0x420001, \"DateTime\", \"No\", \"2.0\", null)", java)
         self.assertIn(
-            "APPLICATION_SPECIFIC_INFORMATION(0x420004, \"Structure\", \"Yes\")",
+            "APPLICATION_SPECIFIC_INFORMATION(0x420004, \"Structure\", \"Yes\", \"2.0\", null)",
             java,
         )
         self.assertIn(
             "DIGITAL_SIGNATURE_ALGORITHM(0x4200AE, \"Enumeration\", "
-            "\"Yes for PGP keys. No for X.509 certificates.\")",
+            "\"Yes for PGP keys. No for X.509 certificates.\", \"2.0\", null)",
             java,
         )
-        self.assertIn("ACTIVATION_DATE = (0x420001, \"DateTime\", \"No\")", python)
+        self.assertIn("ACTIVATION_DATE = (0x420001, \"DateTime\", \"No\", \"2.0\", None)", python)
         self.assertIn("def source_multiplicity(self) -> str | None:", python)
+
+    def test_typed_attributes_expose_min_and_max_version_metadata(self) -> None:
+        versioned_tags = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-versioned-tags.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        java = generate_attribute_types.render_typed_java(
+            self.catalog, versioned_tags=versioned_tags
+        )
+        python = generate_attribute_types.render_typed_python(
+            self.catalog, versioned_tags=versioned_tags
+        )
+
+        self.assertIn("public String minVersion()", java)
+        self.assertIn("public String maxVersion()", java)
+        self.assertIn("def min_version(self) -> str:", python)
+        self.assertIn("def max_version(self) -> str | None:", python)
+        self.assertIn("OASIS KMIP 2.0–3.0 direct object attributes", java)
+        self.assertIn("OASIS KMIP 2.0–3.0 direct object attributes", python)
 
     def test_marker_and_multiplicity_validation_reject_invalid_catalog_values(self) -> None:
         with self.assertRaisesRegex(ValueError, "invalid element identity"):

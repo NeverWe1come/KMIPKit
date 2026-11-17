@@ -2032,6 +2032,34 @@ void kmipkit_kmip30_operation_builder_release(kmipkit_kmip30_operation_builder_t
 #define KMIPKIT_ERROR_TYPED_ATTRIBUTE_TAG_MISMATCH ((int32_t)12)
 #define KMIPKIT_ERROR_TYPED_ATTRIBUTE_VALUE_TYPE_MISMATCH ((int32_t)13)
 
+/* Copies the returned unique identifier only from a successful CreateGroup result.
+ */
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011 */
+int32_t kmipkit_client_batch_item_response_create_group(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier);
+/* Copies the returned unique identifier only from a successful CreateUser result.
+ */
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011 */
+int32_t kmipkit_client_batch_item_response_create_user(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier);
+/* Copies the returned unique identifier only from a successful CreateCredential result.
+ */
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011 */
+int32_t kmipkit_client_batch_item_response_create_credential(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier);
+/* Reports whether this batch item has a successful Obliterate result.
+ */
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011 */
+int32_t kmipkit_client_batch_item_response_obliterate(kmipkit_client_batch_item_response_t * item, uint8_t * out_present);
+/* Copies the returned unique identifier only from a successful Deactivate result.
+ */
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011 */
+int32_t kmipkit_client_batch_item_response_deactivate(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier);
+/* Copies the returned unique identifier and optional data only from a successful Encapsulate result.
+ */
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011 */
+int32_t kmipkit_client_batch_item_response_encapsulate(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier, uint8_t * out_data_present, kmipkit_byte_span_v1_t * out_data);
+/* Copies the returned unique identifier only from a successful Decapsulate result.
+ */
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011 */
+int32_t kmipkit_client_batch_item_response_decapsulate(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier);
 /* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005 */
 int32_t kmipkit_add_attribute_builder_add_attribute_item(kmipkit_add_attribute_builder_t * builder, kmipkit_ttlv_item_t * item);
 /* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005 */

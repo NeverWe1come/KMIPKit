@@ -5,17 +5,155 @@ use driver::Observed;
 use kmipkit::protocol::{
     ActivateRequest, ArchiveRequest, CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest,
     CryptographicParameters, CryptographicParametersBuilder, DecryptRequest, DestroyRequest,
-    EncryptRequest, HashRequest, JoinSplitKeyRequest, LoginRequest, LogoutRequest, MacRequest,
-    MacVerifyRequest, ObjectType, OperationData, RevocationReason, RevokeRequest, SecretBytes,
-    SignRequest, SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference, UniqueIdentifier,
+    EncryptRequest, GetAttributeListRequest, HashRequest, JoinSplitKeyRequest, LoginRequest,
+    LogoutRequest, MacRequest, MacVerifyRequest, ObjectType, OperationData, QueryFunction,
+    QueryRequest, RevocationReason, RevokeRequest, SecretBytes, SignRequest,
+    SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference, UniqueIdentifier,
 };
-use kmipkit::{Client, ClientRequest};
+use kmipkit::{Client, ClientBatch, ClientBatchItem, ClientRequest};
 
 pub(crate) enum Failure {
-    LocalRejection(&'static str),
     Prerequisite(&'static str),
     Library(kmipkit::ClientError),
     Assertion(&'static str),
+}
+
+pub(crate) fn verify_version_boundary(
+    case: &Case,
+    connection: &Connection,
+    client: &mut Client,
+) -> bool {
+    if matches!(
+        case.operation.as_str(),
+        "Process" | "Query Asynchronous Requests"
+    ) {
+        return crate::driver::asynchronous(client, connection, &case.operation, &[0x41])
+            .is_err_and(|error| {
+                error.delivery_state() == Some(kmipkit::RequestDeliveryState::NotSent)
+            });
+    }
+    let Ok(request) = adapters::request(case, None, &case.case_id) else {
+        return false;
+    };
+    driver::execute(client, connection, request)
+        .is_err_and(|error| error.delivery_state() == Some(kmipkit::RequestDeliveryState::NotSent))
+}
+
+#[allow(clippy::too_many_lines)] // Each local protocol scenario keeps its assertions adjacent.
+pub(crate) fn verify_local_batch_model(
+    case_id: &str,
+    case: &Case,
+    _connection: &Connection,
+    client: &mut Client,
+) -> std::result::Result<(), String> {
+    let limits = kmipkit::ttlv::codec::CodecLimits::defaults();
+    match case_id {
+        "test-batch-count-zero-rejected" => match client.execute(ClientBatch::empty(), &limits) {
+            Err(error)
+                if error.delivery_state() == Some(kmipkit::RequestDeliveryState::NotSent) =>
+            {
+                Ok(())
+            }
+            Err(error) => Err(format!(
+                "empty batch rejected with {:?} at {:?}",
+                error.category(),
+                error.delivery_state()
+            )),
+            Ok(_) => Err("empty batch unexpectedly succeeded".to_owned()),
+        },
+        "test-batch-count-mismatch-rejected" => {
+            let batch = ClientBatch::from_items([
+                ClientBatchItem::new(ClientRequest::Query(QueryRequest::new([
+                    QueryFunction::OPERATIONS,
+                ])))
+                .with_unique_batch_item_id(b"first".to_vec()),
+                ClientBatchItem::new(ClientRequest::Query(QueryRequest::new([
+                    QueryFunction::OPERATIONS,
+                ])))
+                .with_unique_batch_item_id(b"second".to_vec()),
+            ]);
+            match client.execute(batch, &limits) {
+                Ok(response)
+                    if response.len() == 2
+                        && response.get(0).is_some()
+                        && response.get(1).is_some() =>
+                {
+                    Ok(())
+                }
+                Ok(response) => Err(format!(
+                    "two-item batch returned {} results",
+                    response.len()
+                )),
+                Err(error) => Err(format!(
+                    "two-item batch failed with {:?} at {:?}",
+                    error.category(),
+                    error.delivery_state()
+                )),
+            }
+        }
+        "test-batch-single-item-options-omitted" => {
+            let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::Query(
+                QueryRequest::new([QueryFunction::OPERATIONS]),
+            )));
+            match client.execute(batch, &limits) {
+                Ok(response) if response.len() == 1 && response.get(0).is_some() => Ok(()),
+                Ok(response) => Err(format!(
+                    "single-item batch returned {} results",
+                    response.len()
+                )),
+                Err(error) => Err(format!(
+                    "single-item batch failed with {:?} at {:?}",
+                    error.category(),
+                    error.delivery_state()
+                )),
+            }
+        }
+        "test-batch-placeholder-forward-reference-rejected" => {
+            let activate = ClientRequest::Activate(ActivateRequest::new(Some(
+                UniqueIdentifier::Enumeration(1),
+            )));
+            let Ok(create) = adapters::create(&case.case_id) else {
+                return Err("forward-placeholder Create request could not be built".to_owned());
+            };
+            let batch = ClientBatch::from_items([
+                ClientBatchItem::new(activate),
+                ClientBatchItem::new(create),
+            ]);
+            match client.execute(batch, &limits) {
+                Err(error)
+                    if error.delivery_state() == Some(kmipkit::RequestDeliveryState::NotSent) =>
+                {
+                    Ok(())
+                }
+                Err(error) => Err(format!(
+                    "forward placeholder rejected with {:?} at {:?}",
+                    error.category(),
+                    error.delivery_state()
+                )),
+                Ok(_) => Err("forward placeholder unexpectedly succeeded".to_owned()),
+            }
+        }
+        "test-batch-placeholder-without-producer-rejected" => {
+            let activate = ClientRequest::Activate(ActivateRequest::new(Some(
+                UniqueIdentifier::Enumeration(1),
+            )));
+            let batch = ClientBatch::new(ClientBatchItem::new(activate));
+            match client.execute(batch, &limits) {
+                Err(error)
+                    if error.delivery_state() == Some(kmipkit::RequestDeliveryState::NotSent) =>
+                {
+                    Ok(())
+                }
+                Err(error) => Err(format!(
+                    "unbound placeholder rejected with {:?} at {:?}",
+                    error.category(),
+                    error.delivery_state()
+                )),
+                Ok(_) => Err("unbound placeholder unexpectedly succeeded".to_owned()),
+            }
+        }
+        _ => Err("unknown protocol scenario".to_owned()),
+    }
 }
 impl From<kmipkit::ClientError> for Failure {
     fn from(error: kmipkit::ClientError) -> Self {
@@ -60,6 +198,7 @@ impl Attempt<'_> {
         algorithm: &str,
         bits: i32,
         active: bool,
+        include_comment: bool,
     ) -> std::result::Result<(UniqueIdentifier, UniqueIdentifier), Failure> {
         let raw = match algorithm {
             "RSA" => 4,
@@ -67,7 +206,11 @@ impl Attempt<'_> {
             "HMAC_SHA256" => 9,
             _ => 3,
         };
-        let attrs = adapters::attributes(&self.name, raw, bits)?;
+        let attrs = if include_comment {
+            adapters::attributes_with_comment(&self.name, raw, bits)?
+        } else {
+            adapters::attributes(&self.name, raw, bits)?
+        };
         let request = if [4, 6].contains(&raw) {
             ClientRequest::CreateKeyPair(CreateKeyPairRequest::new().with_common_attributes(attrs))
         } else {
@@ -205,9 +348,13 @@ impl Attempt<'_> {
                 self.own(&response);
                 identifier = response.identifier;
             } else if case.operation == "Re-key Key Pair" {
-                identifier = Some(self.key("RSA", 2048, false)?.0);
+                identifier = Some(self.key("RSA", 2048, false, false)?.0);
             } else {
-                identifier = Some(self.key("AES", 256, false)?.0);
+                let needs_comment = matches!(
+                    case.operation.as_str(),
+                    "Modify Attribute" | "Delete Attribute"
+                );
+                identifier = Some(self.key("AES", 256, false, needs_comment)?.0);
             }
             if case.operation == "Recover" {
                 self.setup(ClientRequest::Archive(ArchiveRequest::new(
@@ -222,14 +369,18 @@ impl Attempt<'_> {
         }
         let target_identifier = identifier.clone();
         let request = adapters::request(case, identifier.as_ref(), &self.name)?;
-        if case.case_id == "test-neg-modify-readonly-attribute"
-            && !request.validation_report().is_valid()
-        {
-            return Err(Failure::LocalRejection(
-                "library_preflight_rejection: State modification is rejected locally under OASIS KMIP 2.1 §4.57; server negative probe cannot be sent",
-            ));
-        }
         let response = self.exchange(request)?;
+        if case.operation == "Hash" && response.status == 0 {
+            use sha2::Digest;
+            let expected = sha2::Sha256::digest([0x41; 16]);
+            if !response
+                .bytes
+                .as_ref()
+                .is_some_and(|bytes| bytes.with_bytes(|value| value == expected.as_slice()))
+            {
+                return Err(Failure::Assertion("hash did not match the fixture digest"));
+            }
+        }
         if case.operation == "Destroy" && response.status == 0 {
             self.owned
                 .retain(|id| Some(id) != target_identifier.as_ref());
@@ -319,6 +470,7 @@ impl Attempt<'_> {
             vec![
                 adapters::create(&self.name)?,
                 ClientRequest::Activate(ActivateRequest::new(None)),
+                ClientRequest::GetAttributeList(GetAttributeListRequest::new(None)),
                 ClientRequest::Revoke(RevokeRequest::new(RevocationReason::CESSATION_OF_OPERATION)),
                 ClientRequest::Destroy(DestroyRequest::new(None)),
             ]
@@ -380,7 +532,7 @@ impl Attempt<'_> {
             .and_then(|v| i32::try_from(v).ok())
             .unwrap_or(256);
         let active = case.case_id != "test-neg-encrypt-preactive-key";
-        let (private, public) = self.key(algorithm, bits, active)?;
+        let (private, public) = self.key(algorithm, bits, active, false)?;
         let raw = match algorithm {
             "RSA" => 4,
             "ECDSA" => 6,
@@ -482,7 +634,7 @@ impl Attempt<'_> {
         let id = if case.operation == "Hash" {
             None
         } else {
-            Some(self.key(algorithm, bits, true)?.0)
+            Some(self.key(algorithm, bits, true, false)?.0)
         };
         let raw = if algorithm == "RSA" { 4 } else { 3 };
         let initial = match case.operation.as_str() {

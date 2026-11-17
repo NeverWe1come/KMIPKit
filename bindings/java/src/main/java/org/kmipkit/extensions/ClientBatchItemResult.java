@@ -3,6 +3,7 @@ package org.kmipkit.extensions;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
@@ -222,6 +223,69 @@ public final class ClientBatchItemResult implements AutoCloseable {
         Object[] values = handle.withValue(
                 NativeExtensionRegistry::clientBatchItemResponseRecover);
         return parseLifecycleIdentifierResponse(values, "Recover").map(RecoverResponse::new);
+    }
+
+    /** Returns the successful Create Group response identifier, when present. */
+    public Optional<CreateGroupResponse> createGroupResponse() {
+        if (resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(
+                NativeExtensionRegistry::clientBatchItemResponseCreateGroup);
+        return parseCreateGroupResponse(values);
+    }
+
+    /** Returns the successful Create User response identifier, when present. */
+    public Optional<CreateUserResponse> createUserResponse() {
+        if (resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(
+                NativeExtensionRegistry::clientBatchItemResponseCreateUser);
+        return parseCreateUserResponse(values);
+    }
+
+    /** Returns the successful Create Credential response identifier, when present. */
+    public Optional<CreateCredentialResponse> createCredentialResponse() {
+        if (resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(
+                NativeExtensionRegistry::clientBatchItemResponseCreateCredential);
+        return parseCreateCredentialResponse(values);
+    }
+
+    /** Returns whether this batch item has a successful Obliterate response. */
+    public Optional<Boolean> obliterateResponse() {
+        if (resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        long[] values = handle.withValue(
+                NativeExtensionRegistry::clientBatchItemResponseObliterate);
+        return parseObliterateResponse(values);
+    }
+
+    /** Returns the successful Deactivate response identifier, when present. */
+    public Optional<DeactivateResponse> deactivateResponse() {
+        if (resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(
+                NativeExtensionRegistry::clientBatchItemResponseDeactivate);
+        return parseDeactivateResponse(values);
+    }
+
+    /** Returns the successful Encapsulate response fields, when present. */
+    public Optional<EncapsulateResponse> encapsulateResponse() {
+        if (resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(
+                NativeExtensionRegistry::clientBatchItemResponseEncapsulate);
+        return parseEncapsulateResponse(values);
+    }
+
+    /** Returns the successful Decapsulate response identifier, when present. */
+    public Optional<DecapsulateResponse> decapsulateResponse() {
+        if (resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(
+                NativeExtensionRegistry::clientBatchItemResponseDecapsulate);
+        return parseDecapsulateResponse(values);
     }
 
     /** Returns the required returned identifier and owned TTLV only for successful Revoke. */
@@ -973,6 +1037,89 @@ public final class ClientBatchItemResult implements AutoCloseable {
         @Override public String toString() {
             return "RecoverResponse[uniqueIdentifier=redacted]";
         }
+    }
+
+    /** Successful Create Group response identifier. */
+    public static final class CreateGroupResponse {
+        private final UniqueIdentifier uniqueIdentifier;
+
+        private CreateGroupResponse(UniqueIdentifier uniqueIdentifier) {
+            this.uniqueIdentifier = Objects.requireNonNull(uniqueIdentifier, "uniqueIdentifier is required");
+        }
+
+        public UniqueIdentifier uniqueIdentifier() { return uniqueIdentifier; }
+
+        @Override public String toString() { return "CreateGroupResponse[uniqueIdentifier=redacted]"; }
+    }
+
+    /** Successful Create User response identifier. */
+    public static final class CreateUserResponse {
+        private final UniqueIdentifier uniqueIdentifier;
+
+        private CreateUserResponse(UniqueIdentifier uniqueIdentifier) {
+            this.uniqueIdentifier = Objects.requireNonNull(uniqueIdentifier, "uniqueIdentifier is required");
+        }
+
+        public UniqueIdentifier uniqueIdentifier() { return uniqueIdentifier; }
+
+        @Override public String toString() { return "CreateUserResponse[uniqueIdentifier=redacted]"; }
+    }
+
+    /** Successful Create Credential response identifier. */
+    public static final class CreateCredentialResponse {
+        private final UniqueIdentifier uniqueIdentifier;
+
+        private CreateCredentialResponse(UniqueIdentifier uniqueIdentifier) {
+            this.uniqueIdentifier = Objects.requireNonNull(uniqueIdentifier, "uniqueIdentifier is required");
+        }
+
+        public UniqueIdentifier uniqueIdentifier() { return uniqueIdentifier; }
+
+        @Override public String toString() { return "CreateCredentialResponse[uniqueIdentifier=redacted]"; }
+    }
+
+    /** Successful Deactivate response identifier. */
+    public static final class DeactivateResponse {
+        private final UniqueIdentifier uniqueIdentifier;
+
+        private DeactivateResponse(UniqueIdentifier uniqueIdentifier) {
+            this.uniqueIdentifier = Objects.requireNonNull(uniqueIdentifier, "uniqueIdentifier is required");
+        }
+
+        public UniqueIdentifier uniqueIdentifier() { return uniqueIdentifier; }
+
+        @Override public String toString() { return "DeactivateResponse[uniqueIdentifier=redacted]"; }
+    }
+
+    /** Successful Encapsulate response fields. */
+    public static final class EncapsulateResponse {
+        private final UniqueIdentifier uniqueIdentifier;
+        private final @Nullable byte[] data;
+
+        private EncapsulateResponse(UniqueIdentifier uniqueIdentifier, @Nullable byte[] data) {
+            this.uniqueIdentifier = Objects.requireNonNull(uniqueIdentifier, "uniqueIdentifier is required");
+            this.data = copyBytes(data);
+        }
+
+        public UniqueIdentifier uniqueIdentifier() { return uniqueIdentifier; }
+        public Optional<byte[]> data() { return copiedBytes(data); }
+
+        @Override public String toString() {
+            return "EncapsulateResponse[uniqueIdentifier=redacted, data=" + (data == null ? "absent" : "redacted") + "]";
+        }
+    }
+
+    /** Successful Decapsulate response identifier. */
+    public static final class DecapsulateResponse {
+        private final UniqueIdentifier uniqueIdentifier;
+
+        private DecapsulateResponse(UniqueIdentifier uniqueIdentifier) {
+            this.uniqueIdentifier = Objects.requireNonNull(uniqueIdentifier, "uniqueIdentifier is required");
+        }
+
+        public UniqueIdentifier uniqueIdentifier() { return uniqueIdentifier; }
+
+        @Override public String toString() { return "DecapsulateResponse[uniqueIdentifier=redacted]"; }
     }
 
     /** Successful §6.1.43 response with its required returned identifier and complete TTLV. */
@@ -2274,6 +2421,42 @@ public final class ClientBatchItemResult implements AutoCloseable {
             responseTtlv.close();
             throw exception;
         }
+    }
+
+    static Optional<CreateGroupResponse> parseCreateGroupResponse(Object[] values) {
+        return parseLifecycleIdentifierResponse(values, "Create Group").map(CreateGroupResponse::new);
+    }
+
+    static Optional<CreateUserResponse> parseCreateUserResponse(Object[] values) {
+        return parseLifecycleIdentifierResponse(values, "Create User").map(CreateUserResponse::new);
+    }
+
+    static Optional<CreateCredentialResponse> parseCreateCredentialResponse(Object[] values) {
+        return parseLifecycleIdentifierResponse(values, "Create Credential").map(CreateCredentialResponse::new);
+    }
+
+    static Optional<Boolean> parseObliterateResponse(long[] values) {
+        long[] fields = requireLongArray(values, 1, "native Obliterate response is invalid");
+        return responsePresent(fields) ? Optional.of(Boolean.TRUE) : Optional.empty();
+    }
+
+    static Optional<DeactivateResponse> parseDeactivateResponse(Object[] values) {
+        return parseLifecycleIdentifierResponse(values, "Deactivate").map(DeactivateResponse::new);
+    }
+
+    static Optional<EncapsulateResponse> parseEncapsulateResponse(Object[] values) {
+        Object[] tuple = requireTuple(values, 3, "native Encapsulate response is invalid");
+        long[] fields = requireLongArray(tuple[0], 2, "native Encapsulate response is invalid");
+        if (!responsePresent(fields)) {
+            return Optional.empty();
+        }
+        UniqueIdentifier id = identifierRecord(tuple[1]);
+        byte[] data = tuple[2] != null ? (byte[]) tuple[2] : null;
+        return Optional.of(new EncapsulateResponse(id, data));
+    }
+
+    static Optional<DecapsulateResponse> parseDecapsulateResponse(Object[] values) {
+        return parseLifecycleIdentifierResponse(values, "Decapsulate").map(DecapsulateResponse::new);
     }
 
     static Optional<UniqueIdentifier> parseLifecycleIdentifierResponse(

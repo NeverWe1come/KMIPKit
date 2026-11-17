@@ -112,6 +112,7 @@ def load_versioned_tag_allocations(root: Path) -> list[tuple[int, str]]:
         "source_encoding",
         "is_object_attribute",
         "source_multiplicity",
+        "source_always_required",
         "source_modifiable_by_client",
         "source_deletable_by_client",
         "source_initially_set_by",

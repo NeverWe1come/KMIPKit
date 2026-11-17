@@ -535,6 +535,11 @@ fn pending_response_for_operation(operation: u32, unique_id: &[u8], correlation:
 }
 
 fn failed_cryptographic_response(operation: u32, unique_id: &[u8]) -> Vec<u8> {
+    let (major, minor) = if (0x3C..=0x42).contains(&operation) {
+        (3, 0)
+    } else {
+        (2, 1)
+    };
     ttlv_structure(
         0x0042_007b,
         [
@@ -543,7 +548,10 @@ fn failed_cryptographic_response(operation: u32, unique_id: &[u8]) -> Vec<u8> {
                 [
                     ttlv_structure(
                         0x0042_0069,
-                        [ttlv_integer(0x0042_006a, 2), ttlv_integer(0x0042_006b, 1)],
+                        [
+                            ttlv_integer(0x0042_006a, major),
+                            ttlv_integer(0x0042_006b, minor),
+                        ],
                     ),
                     ttlv_datetime(0x0042_0092, 1),
                     ttlv_integer(0x0042_000d, 1),
@@ -802,9 +810,17 @@ fn successful_cryptographic_response(
     unique_id: &[u8],
     response_fields: Vec<Vec<u8>>,
 ) -> Vec<u8> {
+    let (major, minor) = if (0x3C..=0x42).contains(&operation) {
+        (3, 0)
+    } else {
+        (2, 1)
+    };
     let protocol_version = ttlv_structure(
         0x0042_0069,
-        [ttlv_integer(0x0042_006a, 2), ttlv_integer(0x0042_006b, 1)],
+        [
+            ttlv_integer(0x0042_006a, major),
+            ttlv_integer(0x0042_006b, minor),
+        ],
     );
     let header = ttlv_structure(
         0x0042_007a,
@@ -4193,6 +4209,9 @@ fn execute_single_abi_response_with_async(
     let mut batch = ClientBatch::from_items([
         ClientBatchItem::new(request).with_unique_batch_item_id(batch_item_id.to_vec())
     ]);
+    if (0x3C..=0x42).contains(&batch.items()[0].operation()) {
+        batch = batch.with_protocol_version(kmipkit_protocol::ProtocolVersion::V3_0);
+    }
     if let Some(indicator) = asynchronous_indicator {
         batch = batch.with_asynchronous_indicator(indicator);
     }
