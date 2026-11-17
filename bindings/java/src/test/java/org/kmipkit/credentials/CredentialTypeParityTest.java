@@ -24,6 +24,8 @@ final class CredentialTypeParityTest {
         assertEquals(4L, facade.getField("ONE_TIME_PASSWORD").getLong(null));
         assertEquals(5L, facade.getField("HASHED_PASSWORD").getLong(null));
         assertEquals(6L, facade.getField("TICKET").getLong(null));
+        assertEquals(7L, facade.getField("PASSWORD").getLong(null));
+        assertEquals(8L, facade.getField("CERTIFICATE").getLong(null));
 
         Object[][] cases = {
             {1L, "UsernameAndPassword"},
@@ -32,8 +34,10 @@ final class CredentialTypeParityTest {
             {4L, "OneTimePassword"},
             {5L, "HashedPassword"},
             {6L, "Ticket"},
+            {7L, "Password"},
+            {8L, "Certificate"},
             {0x8000_0009L, "Extensions"},
-            {7L, "Unknown"},
+            {9L, "Unknown"},
             {0xFFFF_FFFFL, "Unknown"}
         };
         for (Object[] testCase : cases) {

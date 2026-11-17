@@ -10,6 +10,8 @@ pub(crate) struct AttributeMetadata {
     pub(crate) tag: u32,
     pub(crate) value_kind: &'static str,
     pub(crate) source_multiplicity: Option<&'static str>,
+    pub(crate) min_version: (u8, u8),
+    pub(crate) max_version: Option<(u8, u8)>,
 }
 
 #[cfg(test)]
@@ -21,6 +23,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_01,
         value_kind: "DateTime",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-APPLICATION-SPECIFIC-INFORMATION",
@@ -29,6 +33,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_04,
         value_kind: "Structure",
         source_multiplicity: Some("Yes"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-ARCHIVE-DATE",
@@ -37,6 +43,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_05,
         value_kind: "DateTime",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-VENDOR-ATTRIBUTE",
@@ -45,6 +53,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_08,
         value_kind: "Structure",
         source_multiplicity: None,
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-TYPE",
@@ -53,6 +63,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_1D,
         value_kind: "Enumeration",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-COMPROMISE-DATE",
@@ -61,6 +73,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_20,
         value_kind: "DateTime",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-COMPROMISE-OCCURRENCE-DATE",
@@ -69,6 +83,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_21,
         value_kind: "DateTime",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-CONTACT-INFORMATION",
@@ -77,6 +93,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_22,
         value_kind: "TextString",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-CREDENTIAL-TYPE",
@@ -85,6 +103,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_24,
         value_kind: "Enumeration",
         source_multiplicity: Some("No"),
+        min_version: (3, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-ALGORITHM",
@@ -93,6 +113,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_28,
         value_kind: "Enumeration",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-DOMAIN-PARAMETERS",
@@ -101,6 +123,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_29,
         value_kind: "Structure",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-LENGTH",
@@ -109,6 +133,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_2A,
         value_kind: "Integer",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-PARAMETERS",
@@ -117,6 +143,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_2B,
         value_kind: "Structure",
         source_multiplicity: Some("Yes"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-USAGE-MASK",
@@ -125,6 +153,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_2C,
         value_kind: "Integer",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-DEACTIVATION-DATE",
@@ -133,6 +163,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_2F,
         value_kind: "DateTime",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-DESTROY-DATE",
@@ -141,6 +173,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_33,
         value_kind: "DateTime",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-DIGEST",
@@ -149,6 +183,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_34,
         value_kind: "Structure",
         source_multiplicity: Some("Yes"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-INITIAL-DATE",
@@ -157,6 +193,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_39,
         value_kind: "DateTime",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-KEY-FORMAT-TYPE",
@@ -165,6 +203,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_42,
         value_kind: "Enumeration",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-KEY-PART-IDENTIFIER",
@@ -173,6 +213,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_44,
         value_kind: "Integer",
         source_multiplicity: Some("No"),
+        min_version: (3, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-LAST-CHANGE-DATE",
@@ -181,6 +223,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_48,
         value_kind: "DateTime",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-LEASE-TIME",
@@ -189,6 +233,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_49,
         value_kind: "Interval",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-LINK",
@@ -197,6 +243,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_4A,
         value_kind: "Structure",
         source_multiplicity: Some("Yes"),
+        min_version: (2, 0),
+        max_version: Some((2, 1)),
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-NAME",
@@ -205,6 +253,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_53,
         value_kind: "Structure",
         source_multiplicity: Some("Yes"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-OBJECT-GROUP",
@@ -213,6 +263,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_56,
         value_kind: "TextString",
         source_multiplicity: Some("Yes"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-OBJECT-TYPE",
@@ -221,6 +273,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_57,
         value_kind: "Enumeration",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-OPAQUE-DATA-TYPE",
@@ -229,6 +283,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_59,
         value_kind: "Enumeration",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-PROCESS-START-DATE",
@@ -237,6 +293,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_67,
         value_kind: "DateTime",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-PROTECT-STOP-DATE",
@@ -245,6 +303,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_68,
         value_kind: "DateTime",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-REVOCATION-REASON",
@@ -253,6 +313,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_81,
         value_kind: "Structure",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-SPLIT-KEY-METHOD",
@@ -261,6 +323,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_8A,
         value_kind: "Enumeration",
         source_multiplicity: Some("No"),
+        min_version: (3, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-SPLIT-KEY-PARTS",
@@ -269,6 +333,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_8B,
         value_kind: "Integer",
         source_multiplicity: Some("No"),
+        min_version: (3, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-SPLIT-KEY-THRESHOLD",
@@ -277,6 +343,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_8C,
         value_kind: "Integer",
         source_multiplicity: Some("No"),
+        min_version: (3, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-STATE",
@@ -285,6 +353,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_8D,
         value_kind: "Enumeration",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER",
@@ -293,6 +363,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_94,
         value_kind: "UniqueIdentifier",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-USAGE-LIMITS",
@@ -301,6 +373,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_95,
         value_kind: "Structure",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-FRESH",
@@ -309,6 +383,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_A8,
         value_kind: "Boolean",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-LENGTH",
@@ -317,6 +393,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_AD,
         value_kind: "Integer",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-DIGITAL-SIGNATURE-ALGORITHM",
@@ -325,6 +403,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_AE,
         value_kind: "Enumeration",
         source_multiplicity: Some("Yes for PGP keys. No for X.509 certificates."),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-X-509-CERTIFICATE-IDENTIFIER",
@@ -333,6 +413,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_B5,
         value_kind: "Structure",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: Some((2, 1)),
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-X-509-CERTIFICATE-ISSUER",
@@ -341,6 +423,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_B6,
         value_kind: "Structure",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: Some((2, 1)),
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-X-509-CERTIFICATE-SUBJECT",
@@ -349,6 +433,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_B7,
         value_kind: "Structure",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: Some((2, 1)),
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-KEY-VALUE-LOCATION",
@@ -357,6 +443,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_B8,
         value_kind: "Structure",
         source_multiplicity: Some("Yes"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-KEY-VALUE-PRESENT",
@@ -365,6 +453,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_BB,
         value_kind: "Boolean",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-ORIGINAL-CREATION-DATE",
@@ -373,6 +463,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_BC,
         value_kind: "DateTime",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-ALTERNATIVE-NAME",
@@ -381,6 +473,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_BF,
         value_kind: "Structure",
         source_multiplicity: Some("Yes"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-RANDOM-NUMBER-GENERATOR",
@@ -389,6 +483,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_DE,
         value_kind: "Structure",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-PKCS-12-FRIENDLY-NAME",
@@ -397,6 +493,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_FB,
         value_kind: "TextString",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-DESCRIPTION",
@@ -405,6 +503,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_FC,
         value_kind: "TextString",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-COMMENT",
@@ -413,6 +513,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_00_FD,
         value_kind: "TextString",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-SENSITIVE",
@@ -421,6 +523,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_20,
         value_kind: "Boolean",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-ALWAYS-SENSITIVE",
@@ -429,6 +533,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_21,
         value_kind: "Boolean",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-EXTRACTABLE",
@@ -437,6 +543,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_22,
         value_kind: "Boolean",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-NEVER-EXTRACTABLE",
@@ -445,6 +553,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_23,
         value_kind: "Boolean",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-SHORT-UNIQUE-IDENTIFIER",
@@ -453,6 +563,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_36,
         value_kind: "ByteString",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-NIST-KEY-TYPE",
@@ -461,6 +573,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_3A,
         value_kind: "Enumeration",
         source_multiplicity: Some("Yes"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-PROTECTION-LEVEL",
@@ -469,6 +583,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_45,
         value_kind: "Enumeration",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-PROTECTION-PERIOD",
@@ -477,6 +593,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_46,
         value_kind: "Interval",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-QUANTUM-SAFE",
@@ -485,6 +603,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_47,
         value_kind: "Boolean",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-PROTECTION-STORAGE-MASK",
@@ -493,6 +613,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_5E,
         value_kind: "Integer",
         source_multiplicity: Some("No"),
+        min_version: (2, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-INTERVAL",
@@ -501,6 +623,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_6A,
         value_kind: "Interval",
         source_multiplicity: Some("No"),
+        min_version: (2, 1),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-AUTOMATIC",
@@ -509,6 +633,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_6B,
         value_kind: "Boolean",
         source_multiplicity: Some("No"),
+        min_version: (2, 1),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-OFFSET",
@@ -517,6 +643,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_6C,
         value_kind: "Interval",
         source_multiplicity: Some("No"),
+        min_version: (2, 1),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-DATE",
@@ -525,6 +653,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_6D,
         value_kind: "DateTime",
         source_multiplicity: Some("No"),
+        min_version: (2, 1),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-GENERATION",
@@ -533,6 +663,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_6E,
         value_kind: "Integer",
         source_multiplicity: Some("No"),
+        min_version: (2, 1),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-NAME",
@@ -541,6 +673,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_6F,
         value_kind: "Structure",
         source_multiplicity: Some("No"),
+        min_version: (2, 1),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-LATEST",
@@ -549,6 +683,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_72,
         value_kind: "Boolean",
         source_multiplicity: Some("No"),
+        min_version: (2, 1),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-CERTIFICATE-LINK",
@@ -557,6 +693,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_90,
         value_kind: "UniqueIdentifier",
         source_multiplicity: Some("Yes"),
+        min_version: (3, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-CHILD-LINK",
@@ -565,6 +703,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_91,
         value_kind: "UniqueIdentifier",
         source_multiplicity: Some("No"),
+        min_version: (3, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-DERIVATION-BASE-OBJECT-LINK",
@@ -573,6 +713,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_92,
         value_kind: "UniqueIdentifier",
         source_multiplicity: Some("Yes"),
+        min_version: (3, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-DERIVED-OBJECT-LINK",
@@ -581,6 +723,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_93,
         value_kind: "UniqueIdentifier",
         source_multiplicity: Some("Yes"),
+        min_version: (3, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-NEXT-LINK",
@@ -589,6 +733,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_94,
         value_kind: "UniqueIdentifier",
         source_multiplicity: Some("No"),
+        min_version: (3, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-PARENT-LINK",
@@ -597,6 +743,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_95,
         value_kind: "UniqueIdentifier",
         source_multiplicity: Some("Yes"),
+        min_version: (3, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-PKCS12-CERTIFICATE-LINK",
@@ -605,6 +753,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_96,
         value_kind: "UniqueIdentifier",
         source_multiplicity: Some("No"),
+        min_version: (3, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-PKCS12-PASSWORD-LINK",
@@ -613,6 +763,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_97,
         value_kind: "UniqueIdentifier",
         source_multiplicity: Some("No"),
+        min_version: (3, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-PREVIOUS-LINK",
@@ -621,6 +773,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_98,
         value_kind: "UniqueIdentifier",
         source_multiplicity: Some("No"),
+        min_version: (3, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-PRIVATE-KEY-LINK",
@@ -629,6 +783,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_99,
         value_kind: "UniqueIdentifier",
         source_multiplicity: Some("No"),
+        min_version: (3, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-PUBLIC-KEY-LINK",
@@ -637,6 +793,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_9A,
         value_kind: "UniqueIdentifier",
         source_multiplicity: Some("No"),
+        min_version: (3, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-REPLACED-OBJECT-LINK",
@@ -645,6 +803,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_9B,
         value_kind: "UniqueIdentifier",
         source_multiplicity: Some("No"),
+        min_version: (3, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-REPLACEMENT-OBJECT-LINK",
@@ -653,6 +813,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_9C,
         value_kind: "UniqueIdentifier",
         source_multiplicity: Some("No"),
+        min_version: (3, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-WRAPPING-KEY-LINK",
@@ -661,6 +823,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_9D,
         value_kind: "UniqueIdentifier",
         source_multiplicity: Some("No"),
+        min_version: (3, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-OBJECT-CLASS",
@@ -669,6 +833,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_9E,
         value_kind: "Enumeration",
         source_multiplicity: Some("No"),
+        min_version: (3, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-CREDENTIAL-LINK",
@@ -677,6 +843,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_A0,
         value_kind: "UniqueIdentifier",
         source_multiplicity: Some("Yes"),
+        min_version: (3, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-PASSWORD-LINK",
@@ -685,6 +853,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_A5,
         value_kind: "UniqueIdentifier",
         source_multiplicity: Some("Yes"),
+        min_version: (3, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-OTP-COUNTER",
@@ -693,6 +863,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_AE,
         value_kind: "ByteString",
         source_multiplicity: Some("No"),
+        min_version: (3, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-GROUP-LINK",
@@ -701,6 +873,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_B3,
         value_kind: "UniqueIdentifier",
         source_multiplicity: Some("Yes"),
+        min_version: (3, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-SPLIT-KEY-BASE-LINK",
@@ -709,6 +883,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_B4,
         value_kind: "UniqueIdentifier",
         source_multiplicity: Some("Yes"),
+        min_version: (3, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-JOINED-SPLIT-KEY-PARTS-LINK",
@@ -717,6 +893,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_B5,
         value_kind: "UniqueIdentifier",
         source_multiplicity: Some("Yes"),
+        min_version: (3, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-SPLIT-KEY-POLYNOMIAL",
@@ -725,6 +903,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_B6,
         value_kind: "Enumeration",
         source_multiplicity: Some("No"),
+        min_version: (3, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-DEACTIVATION-REASON",
@@ -733,6 +913,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_B8,
         value_kind: "Structure",
         source_multiplicity: Some("No"),
+        min_version: (3, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-CERTIFICATE-SUBJECT-DN",
@@ -741,6 +923,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_BA,
         value_kind: "TextString",
         source_multiplicity: Some("No"),
+        min_version: (3, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-CERTIFICATE-ISSUER-DN",
@@ -749,6 +933,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_BB,
         value_kind: "TextString",
         source_multiplicity: Some("No"),
+        min_version: (3, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-CERTIFICATE-REQUEST-LINK",
@@ -757,6 +943,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_BC,
         value_kind: "UniqueIdentifier",
         source_multiplicity: Some("Yes"),
+        min_version: (3, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-CERTIFY-COUNTER",
@@ -765,6 +953,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_BD,
         value_kind: "LongInteger",
         source_multiplicity: Some("No"),
+        min_version: (3, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-DECRYPT-COUNTER",
@@ -773,6 +963,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_BE,
         value_kind: "LongInteger",
         source_multiplicity: Some("No"),
+        min_version: (3, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-ENCRYPT-COUNTER",
@@ -781,6 +973,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_BF,
         value_kind: "LongInteger",
         source_multiplicity: Some("No"),
+        min_version: (3, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-SIGN-COUNTER",
@@ -789,6 +983,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_C0,
         value_kind: "LongInteger",
         source_multiplicity: Some("No"),
+        min_version: (3, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-SIGNATURE-VERIFY-COUNTER",
@@ -797,6 +993,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_C1,
         value_kind: "LongInteger",
         source_multiplicity: Some("No"),
+        min_version: (3, 0),
+        max_version: None,
     },
     AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-NIST-SECURITY-CATEGORY",
@@ -805,6 +1003,8 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         tag: 0x42_01_C2,
         value_kind: "Integer",
         source_multiplicity: Some("No"),
+        min_version: (3, 0),
+        max_version: None,
     },
 ];
 
@@ -813,25 +1013,20 @@ pub mod typed {
     use kmipkit_ttlv::{Value, ValueView};
 
     macro_rules! define_typed_attribute {
-        ($marker:ident, $source_name:literal, $tag:literal, $encoding:ty, $owned:ty, $view:ty) => {
-            #[doc = concat!("Typed marker for the KMIP 2.1 ", $source_name, " attribute.")]
+        ($marker:ident, $source_name:literal, $tag:literal, $min_version:literal, $encoding:ty, $owned:ty, $view:ty) => {
+            #[doc = concat!("Typed marker for the KMIP ", $min_version, " ", $source_name, " attribute.")]
             pub struct $marker;
             impl super::super::sealed::Sealed for $marker {}
             impl super::AttributeDefinition for $marker {
                 type Value = $owned;
-                type ValueView<'a>
-                    = $view
-                where
-                    Self: 'a;
+                type ValueView<'a> = $view where Self: 'a;
                 const TAG: u32 = $tag;
 
                 fn into_ttlv(value: Self::Value) -> Value {
                     <$encoding as super::super::AttributeValueEncoding>::into_ttlv(value)
                 }
 
-                fn value_view<'a>(
-                    value: ValueView<'a>,
-                ) -> Result<Self::ValueView<'a>, AttributeValueError>
+                fn value_view<'a>(value: ValueView<'a>) -> Result<Self::ValueView<'a>, AttributeValueError>
                 where
                     Self: 'a,
                 {
@@ -845,6 +1040,7 @@ pub mod typed {
         ActivationDate,
         "Activation Date",
         0x42_00_01,
+        "2.0",
         super::super::DateTimeEncoding,
         i64,
         i64
@@ -853,6 +1049,7 @@ pub mod typed {
         ApplicationSpecificInformation,
         "Application Specific Information",
         0x42_00_04,
+        "2.0",
         super::super::StructureEncoding,
         kmipkit_ttlv::Structure,
         kmipkit_ttlv::StructureView<'a>
@@ -861,6 +1058,7 @@ pub mod typed {
         ArchiveDate,
         "Archive Date",
         0x42_00_05,
+        "2.0",
         super::super::DateTimeEncoding,
         i64,
         i64
@@ -869,6 +1067,7 @@ pub mod typed {
         VendorAttribute,
         "Attribute",
         0x42_00_08,
+        "2.0",
         super::super::StructureEncoding,
         kmipkit_ttlv::Structure,
         kmipkit_ttlv::StructureView<'a>
@@ -877,6 +1076,7 @@ pub mod typed {
         CertificateType,
         "Certificate Type",
         0x42_00_1D,
+        "2.0",
         super::super::EnumerationEncoding,
         u32,
         u32
@@ -885,6 +1085,7 @@ pub mod typed {
         CompromiseDate,
         "Compromise Date",
         0x42_00_20,
+        "2.0",
         super::super::DateTimeEncoding,
         i64,
         i64
@@ -893,6 +1094,7 @@ pub mod typed {
         CompromiseOccurrenceDate,
         "Compromise Occurrence Date",
         0x42_00_21,
+        "2.0",
         super::super::DateTimeEncoding,
         i64,
         i64
@@ -901,6 +1103,7 @@ pub mod typed {
         ContactInformation,
         "Contact Information",
         0x42_00_22,
+        "2.0",
         super::super::TextStringEncoding,
         String,
         &'a str
@@ -909,6 +1112,7 @@ pub mod typed {
         CredentialType,
         "Credential Type",
         0x42_00_24,
+        "3.0",
         super::super::EnumerationEncoding,
         u32,
         u32
@@ -917,6 +1121,7 @@ pub mod typed {
         CryptographicAlgorithm,
         "Cryptographic Algorithm",
         0x42_00_28,
+        "2.0",
         super::super::EnumerationEncoding,
         u32,
         u32
@@ -925,6 +1130,7 @@ pub mod typed {
         CryptographicDomainParameters,
         "Cryptographic Domain Parameters",
         0x42_00_29,
+        "2.0",
         super::super::StructureEncoding,
         kmipkit_ttlv::Structure,
         kmipkit_ttlv::StructureView<'a>
@@ -933,6 +1139,7 @@ pub mod typed {
         CryptographicLength,
         "Cryptographic Length",
         0x42_00_2A,
+        "2.0",
         super::super::IntegerEncoding,
         i32,
         i32
@@ -941,6 +1148,7 @@ pub mod typed {
         CryptographicParameters,
         "Cryptographic Parameters",
         0x42_00_2B,
+        "2.0",
         super::super::StructureEncoding,
         kmipkit_ttlv::Structure,
         kmipkit_ttlv::StructureView<'a>
@@ -949,6 +1157,7 @@ pub mod typed {
         CryptographicUsageMask,
         "Cryptographic Usage Mask",
         0x42_00_2C,
+        "2.0",
         super::super::IntegerEncoding,
         i32,
         i32
@@ -957,6 +1166,7 @@ pub mod typed {
         DeactivationDate,
         "Deactivation Date",
         0x42_00_2F,
+        "2.0",
         super::super::DateTimeEncoding,
         i64,
         i64
@@ -965,6 +1175,7 @@ pub mod typed {
         DestroyDate,
         "Destroy Date",
         0x42_00_33,
+        "2.0",
         super::super::DateTimeEncoding,
         i64,
         i64
@@ -973,6 +1184,7 @@ pub mod typed {
         Digest,
         "Digest",
         0x42_00_34,
+        "2.0",
         super::super::StructureEncoding,
         kmipkit_ttlv::Structure,
         kmipkit_ttlv::StructureView<'a>
@@ -981,6 +1193,7 @@ pub mod typed {
         InitialDate,
         "Initial Date",
         0x42_00_39,
+        "2.0",
         super::super::DateTimeEncoding,
         i64,
         i64
@@ -989,6 +1202,7 @@ pub mod typed {
         KeyFormatType,
         "Key Format Type",
         0x42_00_42,
+        "2.0",
         super::super::EnumerationEncoding,
         u32,
         u32
@@ -997,6 +1211,7 @@ pub mod typed {
         KeyPartIdentifier,
         "Key Part Identifier",
         0x42_00_44,
+        "3.0",
         super::super::IntegerEncoding,
         i32,
         i32
@@ -1005,6 +1220,7 @@ pub mod typed {
         LastChangeDate,
         "Last Change Date",
         0x42_00_48,
+        "2.0",
         super::super::DateTimeEncoding,
         i64,
         i64
@@ -1013,6 +1229,7 @@ pub mod typed {
         LeaseTime,
         "Lease Time",
         0x42_00_49,
+        "2.0",
         super::super::IntervalEncoding,
         u32,
         u32
@@ -1021,6 +1238,7 @@ pub mod typed {
         Link,
         "Link",
         0x42_00_4A,
+        "2.0",
         super::super::StructureEncoding,
         kmipkit_ttlv::Structure,
         kmipkit_ttlv::StructureView<'a>
@@ -1029,6 +1247,7 @@ pub mod typed {
         Name,
         "Name",
         0x42_00_53,
+        "2.0",
         super::super::StructureEncoding,
         kmipkit_ttlv::Structure,
         kmipkit_ttlv::StructureView<'a>
@@ -1037,6 +1256,7 @@ pub mod typed {
         ObjectGroup,
         "Object Group",
         0x42_00_56,
+        "2.0",
         super::super::TextStringEncoding,
         String,
         &'a str
@@ -1045,6 +1265,7 @@ pub mod typed {
         ObjectType,
         "Object Type",
         0x42_00_57,
+        "2.0",
         super::super::EnumerationEncoding,
         u32,
         u32
@@ -1053,6 +1274,7 @@ pub mod typed {
         OpaqueDataType,
         "Opaque Data Type",
         0x42_00_59,
+        "2.0",
         super::super::EnumerationEncoding,
         u32,
         u32
@@ -1061,6 +1283,7 @@ pub mod typed {
         ProcessStartDate,
         "Process Start Date",
         0x42_00_67,
+        "2.0",
         super::super::DateTimeEncoding,
         i64,
         i64
@@ -1069,6 +1292,7 @@ pub mod typed {
         ProtectStopDate,
         "Protect Stop Date",
         0x42_00_68,
+        "2.0",
         super::super::DateTimeEncoding,
         i64,
         i64
@@ -1077,6 +1301,7 @@ pub mod typed {
         RevocationReason,
         "Revocation Reason",
         0x42_00_81,
+        "2.0",
         super::super::StructureEncoding,
         kmipkit_ttlv::Structure,
         kmipkit_ttlv::StructureView<'a>
@@ -1085,6 +1310,7 @@ pub mod typed {
         SplitKeyMethod,
         "Split Key Method",
         0x42_00_8A,
+        "3.0",
         super::super::EnumerationEncoding,
         u32,
         u32
@@ -1093,6 +1319,7 @@ pub mod typed {
         SplitKeyParts,
         "Split Key Parts",
         0x42_00_8B,
+        "3.0",
         super::super::IntegerEncoding,
         i32,
         i32
@@ -1101,6 +1328,7 @@ pub mod typed {
         SplitKeyThreshold,
         "Split Key Threshold",
         0x42_00_8C,
+        "3.0",
         super::super::IntegerEncoding,
         i32,
         i32
@@ -1109,6 +1337,7 @@ pub mod typed {
         State,
         "State",
         0x42_00_8D,
+        "2.0",
         super::super::EnumerationEncoding,
         u32,
         u32
@@ -1117,6 +1346,7 @@ pub mod typed {
         UniqueIdentifier,
         "Unique Identifier",
         0x42_00_94,
+        "2.0",
         super::super::UniqueIdentifierEncoding,
         super::super::UniqueIdentifierValue,
         super::super::UniqueIdentifierView<'a>
@@ -1125,6 +1355,7 @@ pub mod typed {
         UsageLimits,
         "Usage Limits",
         0x42_00_95,
+        "2.0",
         super::super::StructureEncoding,
         kmipkit_ttlv::Structure,
         kmipkit_ttlv::StructureView<'a>
@@ -1133,6 +1364,7 @@ pub mod typed {
         Fresh,
         "Fresh",
         0x42_00_A8,
+        "2.0",
         super::super::BooleanEncoding,
         bool,
         bool
@@ -1141,6 +1373,7 @@ pub mod typed {
         CertificateLength,
         "Certificate Length",
         0x42_00_AD,
+        "2.0",
         super::super::IntegerEncoding,
         i32,
         i32
@@ -1149,6 +1382,7 @@ pub mod typed {
         DigitalSignatureAlgorithm,
         "Digital Signature Algorithm",
         0x42_00_AE,
+        "2.0",
         super::super::EnumerationEncoding,
         u32,
         u32
@@ -1157,6 +1391,7 @@ pub mod typed {
         X509CertificateIdentifier,
         "X.509 Certificate Identifier",
         0x42_00_B5,
+        "2.0",
         super::super::StructureEncoding,
         kmipkit_ttlv::Structure,
         kmipkit_ttlv::StructureView<'a>
@@ -1165,6 +1400,7 @@ pub mod typed {
         X509CertificateIssuer,
         "X.509 Certificate Issuer",
         0x42_00_B6,
+        "2.0",
         super::super::StructureEncoding,
         kmipkit_ttlv::Structure,
         kmipkit_ttlv::StructureView<'a>
@@ -1173,6 +1409,7 @@ pub mod typed {
         X509CertificateSubject,
         "X.509 Certificate Subject",
         0x42_00_B7,
+        "2.0",
         super::super::StructureEncoding,
         kmipkit_ttlv::Structure,
         kmipkit_ttlv::StructureView<'a>
@@ -1181,6 +1418,7 @@ pub mod typed {
         KeyValueLocation,
         "Key Value Location",
         0x42_00_B8,
+        "2.0",
         super::super::StructureEncoding,
         kmipkit_ttlv::Structure,
         kmipkit_ttlv::StructureView<'a>
@@ -1189,6 +1427,7 @@ pub mod typed {
         KeyValuePresent,
         "Key Value Present",
         0x42_00_BB,
+        "2.0",
         super::super::BooleanEncoding,
         bool,
         bool
@@ -1197,6 +1436,7 @@ pub mod typed {
         OriginalCreationDate,
         "Original Creation Date",
         0x42_00_BC,
+        "2.0",
         super::super::DateTimeEncoding,
         i64,
         i64
@@ -1205,6 +1445,7 @@ pub mod typed {
         AlternativeName,
         "Alternative Name",
         0x42_00_BF,
+        "2.0",
         super::super::StructureEncoding,
         kmipkit_ttlv::Structure,
         kmipkit_ttlv::StructureView<'a>
@@ -1213,6 +1454,7 @@ pub mod typed {
         RandomNumberGenerator,
         "Random Number Generator",
         0x42_00_DE,
+        "2.0",
         super::super::StructureEncoding,
         kmipkit_ttlv::Structure,
         kmipkit_ttlv::StructureView<'a>
@@ -1221,6 +1463,7 @@ pub mod typed {
         Pkcs12FriendlyName,
         "PKCS#12 Friendly Name",
         0x42_00_FB,
+        "2.0",
         super::super::TextStringEncoding,
         String,
         &'a str
@@ -1229,6 +1472,7 @@ pub mod typed {
         Description,
         "Description",
         0x42_00_FC,
+        "2.0",
         super::super::TextStringEncoding,
         String,
         &'a str
@@ -1237,6 +1481,7 @@ pub mod typed {
         Comment,
         "Description",
         0x42_00_FD,
+        "2.0",
         super::super::TextStringEncoding,
         String,
         &'a str
@@ -1245,6 +1490,7 @@ pub mod typed {
         Sensitive,
         "Sensitive",
         0x42_01_20,
+        "2.0",
         super::super::BooleanEncoding,
         bool,
         bool
@@ -1253,6 +1499,7 @@ pub mod typed {
         AlwaysSensitive,
         "Sensitive",
         0x42_01_21,
+        "2.0",
         super::super::BooleanEncoding,
         bool,
         bool
@@ -1261,6 +1508,7 @@ pub mod typed {
         Extractable,
         "Extractable",
         0x42_01_22,
+        "2.0",
         super::super::BooleanEncoding,
         bool,
         bool
@@ -1269,6 +1517,7 @@ pub mod typed {
         NeverExtractable,
         "Never Extractable",
         0x42_01_23,
+        "2.0",
         super::super::BooleanEncoding,
         bool,
         bool
@@ -1277,6 +1526,7 @@ pub mod typed {
         ShortUniqueIdentifier,
         "Short Unique Identifier",
         0x42_01_36,
+        "2.0",
         super::super::ByteStringEncoding,
         Vec<u8>,
         &'a [u8]
@@ -1285,6 +1535,7 @@ pub mod typed {
         NistKeyType,
         "NIST Key Type",
         0x42_01_3A,
+        "2.0",
         super::super::EnumerationEncoding,
         u32,
         u32
@@ -1293,6 +1544,7 @@ pub mod typed {
         ProtectionLevel,
         "Protection Level",
         0x42_01_45,
+        "2.0",
         super::super::EnumerationEncoding,
         u32,
         u32
@@ -1301,6 +1553,7 @@ pub mod typed {
         ProtectionPeriod,
         "Protection Period",
         0x42_01_46,
+        "2.0",
         super::super::IntervalEncoding,
         u32,
         u32
@@ -1309,6 +1562,7 @@ pub mod typed {
         QuantumSafe,
         "Quantum Safe",
         0x42_01_47,
+        "2.0",
         super::super::BooleanEncoding,
         bool,
         bool
@@ -1317,6 +1571,7 @@ pub mod typed {
         ProtectionStorageMask,
         "Protection Storage Mask",
         0x42_01_5E,
+        "2.0",
         super::super::IntegerEncoding,
         i32,
         i32
@@ -1325,6 +1580,7 @@ pub mod typed {
         RotateInterval,
         "Rotate Interval",
         0x42_01_6A,
+        "2.1",
         super::super::IntervalEncoding,
         u32,
         u32
@@ -1333,6 +1589,7 @@ pub mod typed {
         RotateAutomatic,
         "Rotate Automatic",
         0x42_01_6B,
+        "2.1",
         super::super::BooleanEncoding,
         bool,
         bool
@@ -1341,6 +1598,7 @@ pub mod typed {
         RotateOffset,
         "Rotate Offset",
         0x42_01_6C,
+        "2.1",
         super::super::IntervalEncoding,
         u32,
         u32
@@ -1349,6 +1607,7 @@ pub mod typed {
         RotateDate,
         "Rotate Date",
         0x42_01_6D,
+        "2.1",
         super::super::DateTimeEncoding,
         i64,
         i64
@@ -1357,6 +1616,7 @@ pub mod typed {
         RotateGeneration,
         "Rotate Generation",
         0x42_01_6E,
+        "2.1",
         super::super::IntegerEncoding,
         i32,
         i32
@@ -1365,6 +1625,7 @@ pub mod typed {
         RotateName,
         "Rotate Name",
         0x42_01_6F,
+        "2.1",
         super::super::StructureEncoding,
         kmipkit_ttlv::Structure,
         kmipkit_ttlv::StructureView<'a>
@@ -1373,6 +1634,7 @@ pub mod typed {
         RotateLatest,
         "Rotate Latest",
         0x42_01_72,
+        "2.1",
         super::super::BooleanEncoding,
         bool,
         bool
@@ -1381,6 +1643,7 @@ pub mod typed {
         CertificateLink,
         "Certificate Link",
         0x42_01_90,
+        "3.0",
         super::super::UniqueIdentifierEncoding,
         super::super::UniqueIdentifierValue,
         super::super::UniqueIdentifierView<'a>
@@ -1389,6 +1652,7 @@ pub mod typed {
         ChildLink,
         "Child Link",
         0x42_01_91,
+        "3.0",
         super::super::UniqueIdentifierEncoding,
         super::super::UniqueIdentifierValue,
         super::super::UniqueIdentifierView<'a>
@@ -1397,6 +1661,7 @@ pub mod typed {
         DerivationBaseObjectLink,
         "Derivation Base Object Link",
         0x42_01_92,
+        "3.0",
         super::super::UniqueIdentifierEncoding,
         super::super::UniqueIdentifierValue,
         super::super::UniqueIdentifierView<'a>
@@ -1405,6 +1670,7 @@ pub mod typed {
         DerivedObjectLink,
         "Derived Object Link",
         0x42_01_93,
+        "3.0",
         super::super::UniqueIdentifierEncoding,
         super::super::UniqueIdentifierValue,
         super::super::UniqueIdentifierView<'a>
@@ -1413,6 +1679,7 @@ pub mod typed {
         NextLink,
         "Next Link",
         0x42_01_94,
+        "3.0",
         super::super::UniqueIdentifierEncoding,
         super::super::UniqueIdentifierValue,
         super::super::UniqueIdentifierView<'a>
@@ -1421,6 +1688,7 @@ pub mod typed {
         ParentLink,
         "Parent Link",
         0x42_01_95,
+        "3.0",
         super::super::UniqueIdentifierEncoding,
         super::super::UniqueIdentifierValue,
         super::super::UniqueIdentifierView<'a>
@@ -1429,6 +1697,7 @@ pub mod typed {
         Pkcs12CertificateLink,
         "PKCS#12 Certificate Link",
         0x42_01_96,
+        "3.0",
         super::super::UniqueIdentifierEncoding,
         super::super::UniqueIdentifierValue,
         super::super::UniqueIdentifierView<'a>
@@ -1437,6 +1706,7 @@ pub mod typed {
         Pkcs12PasswordLink,
         "PKCS#12 Password Link",
         0x42_01_97,
+        "3.0",
         super::super::UniqueIdentifierEncoding,
         super::super::UniqueIdentifierValue,
         super::super::UniqueIdentifierView<'a>
@@ -1445,6 +1715,7 @@ pub mod typed {
         PreviousLink,
         "Previous Link",
         0x42_01_98,
+        "3.0",
         super::super::UniqueIdentifierEncoding,
         super::super::UniqueIdentifierValue,
         super::super::UniqueIdentifierView<'a>
@@ -1453,6 +1724,7 @@ pub mod typed {
         PrivateKeyLink,
         "Private Key Link",
         0x42_01_99,
+        "3.0",
         super::super::UniqueIdentifierEncoding,
         super::super::UniqueIdentifierValue,
         super::super::UniqueIdentifierView<'a>
@@ -1461,6 +1733,7 @@ pub mod typed {
         PublicKeyLink,
         "Public Key Link",
         0x42_01_9A,
+        "3.0",
         super::super::UniqueIdentifierEncoding,
         super::super::UniqueIdentifierValue,
         super::super::UniqueIdentifierView<'a>
@@ -1469,6 +1742,7 @@ pub mod typed {
         ReplacedObjectLink,
         "Replaced Object Link",
         0x42_01_9B,
+        "3.0",
         super::super::UniqueIdentifierEncoding,
         super::super::UniqueIdentifierValue,
         super::super::UniqueIdentifierView<'a>
@@ -1477,6 +1751,7 @@ pub mod typed {
         ReplacementObjectLink,
         "Replacement Object Link",
         0x42_01_9C,
+        "3.0",
         super::super::UniqueIdentifierEncoding,
         super::super::UniqueIdentifierValue,
         super::super::UniqueIdentifierView<'a>
@@ -1485,6 +1760,7 @@ pub mod typed {
         WrappingKeyLink,
         "Wrapping Key Link",
         0x42_01_9D,
+        "3.0",
         super::super::UniqueIdentifierEncoding,
         super::super::UniqueIdentifierValue,
         super::super::UniqueIdentifierView<'a>
@@ -1493,6 +1769,7 @@ pub mod typed {
         ObjectClass,
         "Object Class",
         0x42_01_9E,
+        "3.0",
         super::super::EnumerationEncoding,
         u32,
         u32
@@ -1501,6 +1778,7 @@ pub mod typed {
         CredentialLink,
         "Credential Link",
         0x42_01_A0,
+        "3.0",
         super::super::UniqueIdentifierEncoding,
         super::super::UniqueIdentifierValue,
         super::super::UniqueIdentifierView<'a>
@@ -1509,6 +1787,7 @@ pub mod typed {
         PasswordLink,
         "Password Link",
         0x42_01_A5,
+        "3.0",
         super::super::UniqueIdentifierEncoding,
         super::super::UniqueIdentifierValue,
         super::super::UniqueIdentifierView<'a>
@@ -1517,6 +1796,7 @@ pub mod typed {
         OtpCounter,
         "OTP Counter",
         0x42_01_AE,
+        "3.0",
         super::super::ByteStringEncoding,
         Vec<u8>,
         &'a [u8]
@@ -1525,6 +1805,7 @@ pub mod typed {
         GroupLink,
         "Group Link",
         0x42_01_B3,
+        "3.0",
         super::super::UniqueIdentifierEncoding,
         super::super::UniqueIdentifierValue,
         super::super::UniqueIdentifierView<'a>
@@ -1533,6 +1814,7 @@ pub mod typed {
         SplitKeyBaseLink,
         "Split Key Base Link",
         0x42_01_B4,
+        "3.0",
         super::super::UniqueIdentifierEncoding,
         super::super::UniqueIdentifierValue,
         super::super::UniqueIdentifierView<'a>
@@ -1541,6 +1823,7 @@ pub mod typed {
         JoinedSplitKeyPartsLink,
         "Joined Split Key Parts Link",
         0x42_01_B5,
+        "3.0",
         super::super::UniqueIdentifierEncoding,
         super::super::UniqueIdentifierValue,
         super::super::UniqueIdentifierView<'a>
@@ -1549,6 +1832,7 @@ pub mod typed {
         SplitKeyPolynomial,
         "Split Key Polynomial",
         0x42_01_B6,
+        "3.0",
         super::super::EnumerationEncoding,
         u32,
         u32
@@ -1557,6 +1841,7 @@ pub mod typed {
         DeactivationReason,
         "Deactivation Reason",
         0x42_01_B8,
+        "3.0",
         super::super::StructureEncoding,
         kmipkit_ttlv::Structure,
         kmipkit_ttlv::StructureView<'a>
@@ -1565,6 +1850,7 @@ pub mod typed {
         CertificateSubjectDn,
         "Certificate Subject DN",
         0x42_01_BA,
+        "3.0",
         super::super::TextStringEncoding,
         String,
         &'a str
@@ -1573,6 +1859,7 @@ pub mod typed {
         CertificateIssuerDn,
         "Certificate Issuer DN",
         0x42_01_BB,
+        "3.0",
         super::super::TextStringEncoding,
         String,
         &'a str
@@ -1581,6 +1868,7 @@ pub mod typed {
         CertificateRequestLink,
         "Certificate Request Link",
         0x42_01_BC,
+        "3.0",
         super::super::UniqueIdentifierEncoding,
         super::super::UniqueIdentifierValue,
         super::super::UniqueIdentifierView<'a>
@@ -1589,6 +1877,7 @@ pub mod typed {
         CertifyCounter,
         "Certify Counter",
         0x42_01_BD,
+        "3.0",
         super::super::LongIntegerEncoding,
         i64,
         i64
@@ -1597,6 +1886,7 @@ pub mod typed {
         DecryptCounter,
         "Decrypt Counter",
         0x42_01_BE,
+        "3.0",
         super::super::LongIntegerEncoding,
         i64,
         i64
@@ -1605,6 +1895,7 @@ pub mod typed {
         EncryptCounter,
         "Encrypt Counter",
         0x42_01_BF,
+        "3.0",
         super::super::LongIntegerEncoding,
         i64,
         i64
@@ -1613,6 +1904,7 @@ pub mod typed {
         SignCounter,
         "Sign Counter",
         0x42_01_C0,
+        "3.0",
         super::super::LongIntegerEncoding,
         i64,
         i64
@@ -1621,6 +1913,7 @@ pub mod typed {
         SignatureVerifyCounter,
         "Signature Verify Counter",
         0x42_01_C1,
+        "3.0",
         super::super::LongIntegerEncoding,
         i64,
         i64
@@ -1629,6 +1922,7 @@ pub mod typed {
         NistSecurityCategory,
         "NIST Security Category",
         0x42_01_C2,
+        "3.0",
         super::super::IntegerEncoding,
         i32,
         i32
