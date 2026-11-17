@@ -537,6 +537,21 @@ branches, and the common CI therefore reports a planned matrix only.
   emits generic TTLV and typed parser evidence and asserts the response value.
   Refactor: `06d74f08b` shares the fixture text between construction and
   assertion.
+
+## 2026-11-17 KMIP 3.0 builders synchronized with Client Correlation Value
+
+- Updated #213 with Java route-matrix parent #187 head
+  `8bf6631e3b4a4da3bd9f4974e10fa81e0a083673`; KMIP 3.0 builder work remains
+  on top of that parent.
+- Full Java suite: 57/57 tests pass with no failures, errors, or skips. Shared
+  route-capability tests: 68/68; traceability tests: 33/33; route generator:
+  1,507 routes. Selected-scope validation accepts 27,352/27,352 cells with
+  zero failures. The generated ledger records 71,641 planned, 27,352 executed,
+  and 44,289 pending cells across 1,208 pending case IDs; comparison passes.
+- This is local-model evidence, not vendor interoperability or full Java matrix
+  completion. PR #213 remains WIP pending exact-head CI.
+- Verification commands are recorded in
+  `specs/092-interop-api-route-exhaustiveness/java-route-expansion-evidence.md`.
 - The full Java suite passes 57/57 tests with no failures, errors, or skips.
   Shared route-capability tests pass 68/68; the generated route check reports
   1,507 routes. Selected-scope validation accepts 27,352/27,352 cells with zero
