@@ -2776,6 +2776,22 @@ fn fluent_builder_explicit_value_signatures_are_exact_and_method_scoped() {
         &register_prime_field
     ));
 
+    let create_masks = syn::parse_str::<syn::Signature>(
+        "fn protection_storage_masks(self, masks: Structure) -> Self",
+    )
+    .unwrap();
+    assert!(is_exact_fluent_builder_explicit_value(
+        true,
+        Some("CreateBuilder"),
+        &create_masks
+    ));
+    assert!(!is_exact_fluent_builder_explicit_value(
+        true,
+        Some("CreateBuilder"),
+        &syn::parse_str::<syn::Signature>("fn protection_storage_masks(self, masks: Item) -> Self")
+            .unwrap()
+    ));
+
     for signature in [
         "fn raw_bytes(self, value: Vec<u8>) -> Self",
         "fn prime_field_size(self, value: Vec<u16>) -> Self",
