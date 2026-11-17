@@ -2597,3 +2597,65 @@ python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-refe
 python3 interop/java-kmip-validator/tools/compare_route_ledger.py
 git diff --check
 ```
+
+## Java KMIP 2.0/2.1 shared Request Header scalar routes — 2026-11-17
+
+Red commit `661d07efa` requires the three generic TTLV Item routes and typed
+`RequestMessage.fromTtlv` for the seven scalar fields catalogued under the
+shared §8.2 Request Header: Asynchronous Indicator, Batch Count, Batch Error
+Continuation Option, Client Correlation Value, Maximum Response Size, Server
+Correlation Value, and Time Stamp. The focused test failed because those exact
+§8.2 cells had no emitted routes. Green commit `d8a64d9ed` resolves the shared
+field encodings from the matching version-specific KMIP 2.0/2.1 definitions
+(§§9.2, 9.5, 9.6, 9.9, 9.10, 9.12, and 9.20), constructs and decodes each
+field through the generic Item API, and parses a valid two-item RequestMessage
+fixture. The parser asserts the header values; Server Correlation Value is
+checked through the public generic header TTLV view because the typed header has
+no direct accessor for it. The Batch Error Continuation Stop value also reaches
+the installed `ClientBatch.addErrorContinuationValue` API. This adds 58
+selected cells: eight per field and one additional BEC setter cell per version.
+
+Refactor commit `50d4b494d` centralizes the shared §8.2 case-ID prefix. The
+focused controlled-peer test passes after Green and Refactor. The full Java
+suite passes 57/57 tests with no skips or failures; all 68 shared route
+capability tests pass; the generated route check confirms 1,507 routes. The
+selected-scope validator accepts 27,328/27,328 cells with zero failed cells.
+The refreshed Java ledger records 71,641 planned, 27,328 executed, and 44,313
+pending cells across 1,211 pending case IDs. The ledger comparer passes. This
+is local-model route evidence, not vendor interoperability or a complete Java
+matrix; the Java PR remains WIP.
+
+Verification commands:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test \
+  --tests org.kmipkit.validator.ControlledTlsPeerTest.controlledQueryProducesPerRouteEvidenceForBothProtocolVersions \
+  --rerun-tasks
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks
+python3 -m unittest interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+python3 interop/shared/tools/validate_route_evidence.py \
+  --selected-scope --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+```
+
+## Right Usage Limits stack synchronized with shared Request Header routes — 2026-11-17
+
+The Right Usage Limits branch now includes #216 at head
+`ed9aa460651728a22c637454c82cc6220e2ca2f3`, including the seven shared §8.2
+Request Header fields and the Usage Limits, Derivation/Extension Metadata,
+Rotate Name, Endpoint Role, and Attestation evidence. The complete Java suite
+passes 57/57 tests with no failures, errors, or skips. Selected-scope validation
+accepts 27,372/27,372 cells, with zero failed cells; the generated 71,641-cell
+ledger records 44,269 pending cells across 1,206 case IDs. Ledger regeneration
+and comparison pass. The pinned package digest remains
+`504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+The global Java matrix remains incomplete; this is local-model evidence, and
+#217 stays WIP.

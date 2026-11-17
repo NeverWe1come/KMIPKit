@@ -473,7 +473,36 @@ class ControlledTlsPeerTest {
             new NormativeTarget("test-norm-message-field-message-field-9-13-message-extension",
                     "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION"),
             new NormativeTarget("test-norm-message-field-message-field-9-13-criticality-indicator",
-                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-CRITICALITY-INDICATOR"));
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-CRITICALITY-INDICATOR"),
+            new NormativeTarget("test-norm-message-field-message-field-8-2-asynchronous-indicator",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ASYNCHRONOUS-INDICATOR"),
+            new NormativeTarget("test-norm-message-field-message-field-8-2-batch-count",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-COUNT"),
+            new NormativeTarget("test-norm-message-field-message-field-8-2-batch-error-continuation-option",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION"),
+            new NormativeTarget("test-norm-message-field-message-field-8-2-client-correlation-value",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-CLIENT-CORRELATION-VALUE"),
+            new NormativeTarget("test-norm-message-field-message-field-8-2-maximum-response-size",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-MAXIMUM-RESPONSE-SIZE"),
+            new NormativeTarget("test-norm-message-field-message-field-8-2-server-correlation-value",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-SERVER-CORRELATION-VALUE"),
+            new NormativeTarget("test-norm-message-field-message-field-8-2-time-stamp",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-TIME-STAMP"));
+    private static final List<NormativeTarget> REQUEST_HEADER_SCALAR_ROUTE_TARGETS = List.of(
+            new NormativeTarget("test-norm-message-field-message-field-8-2-asynchronous-indicator",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ASYNCHRONOUS-INDICATOR"),
+            new NormativeTarget("test-norm-message-field-message-field-8-2-batch-count",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-COUNT"),
+            new NormativeTarget("test-norm-message-field-message-field-8-2-batch-error-continuation-option",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION"),
+            new NormativeTarget("test-norm-message-field-message-field-8-2-client-correlation-value",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-CLIENT-CORRELATION-VALUE"),
+            new NormativeTarget("test-norm-message-field-message-field-8-2-maximum-response-size",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-MAXIMUM-RESPONSE-SIZE"),
+            new NormativeTarget("test-norm-message-field-message-field-8-2-server-correlation-value",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-SERVER-CORRELATION-VALUE"),
+            new NormativeTarget("test-norm-message-field-message-field-8-2-time-stamp",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-TIME-STAMP"));
     private static final List<NormativeTarget> SCALAR_REQUEST_MESSAGE_PARSE_TARGETS = List.of(
             new NormativeTarget("test-norm-message-field-message-field-9-10-server-correlation-value",
                     "KMIPKIT-ELEM-MESSAGE-FIELD-9-10-SERVER-CORRELATION-VALUE"),
@@ -1241,6 +1270,28 @@ class ControlledTlsPeerTest {
                 assertEquals("passed", event.path("status").asText());
             }
         }
+        List<String> requestHeaderScalarRoutes = List.of(
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode",
+                "java.typed-protocol.model.org.kmipkit.message.requestmessage.fromttlv");
+        for (NormativeTarget field : REQUEST_HEADER_SCALAR_ROUTE_TARGETS) {
+            for (String route : requestHeaderScalarRoutes) {
+                assertEquals(KMIP_2_0_AND_2_1.size(), routeEventCount(report.path("events"),
+                        field.caseId(), route),
+                        field.caseId() + " must complete its exact generic or typed route cells.");
+                for (String version : KMIP_2_0_AND_2_1) {
+                    JsonNode event = findRouteEvent(report.path("events"), field.caseId(), route,
+                            version, field.targetId());
+                    assertEquals("passed", event.path("status").asText());
+                }
+            }
+        }
+        NormativeTarget batchErrorContinuationHeader = REQUEST_HEADER_SCALAR_ROUTE_TARGETS.get(2);
+        assertEquals(KMIP_2_0_AND_2_1.size(), routeEventCount(report.path("events"),
+                batchErrorContinuationHeader.caseId(),
+                "java.typed-protocol.function.client_batch_add_error_continuation_value"),
+                "The 8.2 Batch Error Continuation Option must exercise its explicit ClientBatch setter.");
         List<String> genericEnumerationRoutes = List.of(
                 "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
                 "java.generic-ttlv.ttlv_item.create",
@@ -1443,7 +1494,8 @@ class ControlledTlsPeerTest {
         int batchItemAdditionalResponseRouteEventCount = KMIP_2_0_AND_2_1.size() * 12;
         int batchItemRenderedResponseViewEventCount = KMIP_2_0_AND_2_1.size() * 3 * 3;
         int normativeMessageFieldGenericRouteEventCount = KMIP_2_0_AND_2_1.size() * 31;
-        int normativeMessageFieldParserRouteEventCount = KMIP_2_0_AND_2_1.size() * 16;
+        int normativeMessageFieldParserRouteEventCount = KMIP_2_0_AND_2_1.size()
+                * (16 + REQUEST_HEADER_SCALAR_ROUTE_TARGETS.size());
         int normativeBatchItemAccessorRouteEventCount = KMIP_2_0_AND_2_1.size() * 10;
         int newAttributePayloadRouteEventCount = KMIP_2_0_AND_2_1.size() * 3 * 20;
         int objectGroupLocalRouteEventCount = 3;
@@ -1474,6 +1526,7 @@ class ControlledTlsPeerTest {
         int batchErrorContinuationEventCount = enumerationFixtures.stream()
                 .filter(fixture -> "BATCH-ERROR-CONTINUATION-OPTION".equals(fixture.parentName()))
                 .mapToInt(fixture -> fixture.protocolVersions().size()).sum();
+        int batchErrorContinuationHeaderRouteEventCount = KMIP_2_0_AND_2_1.size();
         int batchContinuationTagIdentityEventCount = KMIP_2_0_AND_2_1.size() * 6;
         int genericTagEventCount = 0;
         int referencedEnumEventCount = 0;
@@ -1512,7 +1565,8 @@ class ControlledTlsPeerTest {
                         + pendingCorrelationAccessorEventCount
                         + structureMemberStructureRouteEventCount + structureMemberByteStringRouteEventCount
                         + structureMemberValueRouteEventCount
-                        + batchErrorContinuationEventCount + batchContinuationTagIdentityEventCount
+                        + batchErrorContinuationEventCount + batchErrorContinuationHeaderRouteEventCount
+                        + batchContinuationTagIdentityEventCount
                         + genericTagEventCount + typedTagIdentityEventCount
                         + booleanFieldRouteEventCount + scalarMessageFieldRouteEventCount + itemTypeRouteEventCount
                         + scalarTypedParserEventCount
@@ -2500,6 +2554,7 @@ class ControlledTlsPeerTest {
                 appendCryptographicParameterBuilderRouteEvent(events, fixture, protocolVersion, treeHash);
                 appendCredentialEnumerationRouteEvents(events, fixture, protocolVersion, treeHash, true);
                 appendBatchErrorContinuationRouteEvent(events, fixture, protocolVersion);
+                appendBatchErrorContinuationHeaderRouteEvent(events, fixture, protocolVersion, treeHash);
             }
         }
     }
@@ -2679,6 +2734,16 @@ class ControlledTlsPeerTest {
         appendRouteEvent(events, fixture.caseId(),
                 "java.typed-protocol.function.client_batch_add_error_continuation_value",
                 fixture.targetId(), "org.kmipkit.extensions.ClientBatch.addErrorContinuationValue",
+                null, null, "construct", protocolVersion, null, treeHash, null);
+    }
+
+    private static void appendBatchErrorContinuationHeaderRouteEvent(ArrayNode events,
+            EnumerationFixture fixture, String protocolVersion, String treeHash) throws Exception {
+        if (!"BATCH-ERROR-CONTINUATION-OPTION".equals(fixture.parentName()) || fixture.value() != 2) return;
+        appendRouteEvent(events, LocalCatalogRouteChecks.REQUEST_HEADER_SCALAR_CASE_PREFIX + "batch-error-continuation-option",
+                "java.typed-protocol.function.client_batch_add_error_continuation_value",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION",
+                "org.kmipkit.extensions.ClientBatch.addErrorContinuationValue",
                 null, null, "construct", protocolVersion, null, treeHash, null);
     }
 
@@ -3966,8 +4031,14 @@ class ControlledTlsPeerTest {
                 "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring");
         for (JsonNode event : events) {
             String caseId = event.path("case_id").asText();
+            String routeId = event.path("route_id").asText();
             if (caseId.startsWith("test-norm-message-field-message-field-9-")
-                    && constructorRoutes.contains(event.path("route_id").asText())) {
+                    && constructorRoutes.contains(routeId)) {
+                scalarMessageFieldCases.add(caseId);
+            } else if (caseId.startsWith(LocalCatalogRouteChecks.REQUEST_HEADER_SCALAR_CASE_PREFIX)
+                    && !caseId.equals(LocalCatalogRouteChecks.ATTESTATION_CAPABLE_CASE_ID)
+                    && !caseId.equals(LocalCatalogRouteChecks.BATCH_ORDER_OPTION_CASE_ID)
+                    && "java.generic-ttlv.ttlv_item.create".equals(routeId)) {
                 scalarMessageFieldCases.add(caseId);
             }
         }
@@ -4298,14 +4369,18 @@ class ControlledTlsPeerTest {
             if (!"message_field".equals(requires.path("target_kind").asText())
                     || !"local_model".equals(testCase.path("execution").path("mode").asText())
                     || !appliesToVersion(testCase, version)) continue;
+            String caseId = testCase.path("case_id").asText();
+            if (caseId.equals(LocalCatalogRouteChecks.ATTESTATION_CAPABLE_CASE_ID)
+                    || caseId.equals(LocalCatalogRouteChecks.BATCH_ORDER_OPTION_CASE_ID)) continue;
             String targetId = requires.path("normative_target_id").asText();
             JsonNode target = targets.get(targetId);
             if (target == null) continue;
-            String encoding = requires.path("source_encoding").asText(
-                    target.path("source_encoding").asText());
+            String encoding = requires.path("source_encoding").asText(target.path("source_encoding").asText());
+            if (encoding.isEmpty() && caseId.startsWith(LocalCatalogRouteChecks.REQUEST_HEADER_SCALAR_CASE_PREFIX)) {
+                encoding = LocalCatalogRouteChecks.scalarMessageFieldEncoding(catalog, targetId, version);
+            }
             if (!isSupportedScalarMessageFieldEncoding(encoding)) continue;
-            String caseId = testCase.path("case_id").asText();
-            List<String> requiredRoutes = scalarMessageFieldRoutes(encoding);
+            List<String> requiredRoutes = scalarMessageFieldRoutes(caseId, encoding);
             int present = 0;
             for (String route : requiredRoutes) {
                 if (hasRouteEvent(events, caseId, route, version, targetId)) present++;
@@ -4326,7 +4401,10 @@ class ControlledTlsPeerTest {
                 .contains(encoding);
     }
 
-    private static List<String> scalarMessageFieldRoutes(String encoding) {
+    private static List<String> scalarMessageFieldRoutes(String caseId, String encoding) {
+        List<String> commonRoutes = List.of("java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item", "java.generic-ttlv.ttlv_codec.decode");
+        if (caseId.startsWith(LocalCatalogRouteChecks.REQUEST_HEADER_SCALAR_CASE_PREFIX)) return commonRoutes;
         String constructor = switch (encoding) {
             case "Boolean" -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.boolean";
             case "Byte String" -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.bytestring";
@@ -4338,8 +4416,10 @@ class ControlledTlsPeerTest {
                     -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring";
             default -> throw new IllegalArgumentException("Unsupported scalar message field encoding: " + encoding);
         };
-        return List.of(constructor, "java.generic-ttlv.ttlv_item.create",
-                "java.generic-ttlv.function.ttlv_item_view_from_item", "java.generic-ttlv.ttlv_codec.decode");
+        List<String> routes = new ArrayList<>();
+        routes.add(constructor);
+        routes.addAll(commonRoutes);
+        return routes;
     }
 
     private static int expectedTagAggregateEventCount() throws Exception {
@@ -7703,9 +7783,22 @@ class ControlledTlsPeerTest {
         String treeHash = normalizedTreeSha256(requestMessageWire(minorVersion));
         try (RequestMessage message = RequestMessage.fromTtlv(requestMessageStructure(minorVersion));
                 var header = message.header();
+                var headerTtlv = header.ttlv();
+                var headerView = headerTtlv.view();
+                var serverCorrelationItem = headerView.itemAt(3);
+                var serverCorrelationTag = serverCorrelationItem.tag();
+                var serverCorrelationValue = serverCorrelationItem.value();
                 var item = message.batchItemAt(0);
                 var secondItem = message.batchItemAt(1)) {
             assertEquals(2, header.batchCount());
+            assertEquals(java.util.OptionalLong.of(1L), header.asynchronousIndicator());
+            assertEquals(java.util.OptionalInt.of(1_024), header.maximumResponseSize());
+            assertEquals(java.util.Optional.of("client-correlation"), header.clientCorrelationValue());
+            assertEquals(java.util.OptionalLong.of(2L), header.batchErrorContinuationOption());
+            assertEquals(java.util.OptionalLong.of(1L), header.timeStamp());
+            assertEquals(0x420106, serverCorrelationTag.raw());
+            assertArrayEquals("server-correlation".getBytes(StandardCharsets.US_ASCII),
+                    serverCorrelationValue.bytes());
             assertEquals(java.util.Optional.of(true), header.attestationCapableIndicator());
             assertEquals(java.util.Optional.of(true), header.batchOrderOption());
             assertEquals(2, message.batchItemCount());

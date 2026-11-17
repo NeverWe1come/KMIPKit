@@ -38,8 +38,10 @@ final class LocalCatalogRouteChecks {
     static final String ROTATE_NAME_VALUE_CASE_ID =
             "test-norm-structure-member-structure-member-4-53-rotate-name-value";
     static final String ROTATE_NAME_VALUE_TARGET_ID = "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-53-ROTATE-NAME-VALUE";
+    static final String REQUEST_HEADER_SCALAR_CASE_PREFIX =
+            "test-norm-message-field-message-field-8-2-";
     static final String BATCH_ORDER_OPTION_CASE_ID =
-            "test-norm-message-field-message-field-8-2-batch-order-option";
+            REQUEST_HEADER_SCALAR_CASE_PREFIX + "batch-order-option";
     static final String BATCH_ORDER_OPTION_TARGET_ID = "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION";
     static final String ATTESTATION_CAPABLE_CASE_ID =
             "test-norm-message-field-message-field-8-2-attestation-capable-indicator";
@@ -148,7 +150,7 @@ final class LocalCatalogRouteChecks {
             }
             String targetId = requires.path("normative_target_id").asText();
             String encoding = requires.path("source_encoding").asText(
-                    findTarget(catalog, targetId).path("source_encoding").asText());
+                    scalarMessageFieldEncoding(catalog, targetId, version));
             int tagCode = messageFieldTag(catalog, targetId, version);
             TtlvItemType itemType = scalarMessageFieldType(encoding);
             byte[] valueBytes = scalarMessageFieldBytes(caseId, encoding);
@@ -173,8 +175,10 @@ final class LocalCatalogRouteChecks {
                 assertScalarMessageFieldValue(decodedValue, itemType, valueBytes, numericValue);
             }
             String constructorRoute = scalarMessageFieldConstructorRoute(encoding);
-            emitRoute(sink, caseId, targetId, constructorRoute, scalarMessageFieldConstructor(encoding),
-                    "construct", wire);
+            if (!caseId.startsWith(REQUEST_HEADER_SCALAR_CASE_PREFIX)) {
+                emitRoute(sink, caseId, targetId, constructorRoute, scalarMessageFieldConstructor(encoding),
+                        "construct", wire);
+            }
             emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_item.create",
                     "org.kmipkit.ttlv.TtlvItem.create", "construct", wire);
             emitRoute(sink, caseId, targetId, "java.generic-ttlv.function.ttlv_item_view_from_item",
@@ -194,6 +198,28 @@ final class LocalCatalogRouteChecks {
             if (targetId.equals(target.path("target_id").asText())) return target;
         }
         throw new IllegalArgumentException("Missing catalogued message field target: " + targetId);
+    }
+
+    /** Resolves a shared §8.2 field's scalar encoding from its version-specific §9.x field definition. */
+    static String scalarMessageFieldEncoding(JsonNode catalog, String targetId, String version) {
+        JsonNode target = findTarget(catalog, targetId);
+        String encoding = target.path("source_encoding").asText();
+        if (!encoding.isEmpty()) return encoding;
+
+        String name = normalizeName(target.path("name").asText());
+        Set<String> siblingEncodings = new java.util.LinkedHashSet<>();
+        for (JsonNode candidate : catalog.path("normative_targets")) {
+            if (!"message_field".equals(candidate.path("kind").asText())
+                    || !name.equals(normalizeName(candidate.path("name").asText()))
+                    || !supportsVersion(candidate, version)) continue;
+            String siblingEncoding = candidate.path("source_encoding").asText();
+            if (!siblingEncoding.isEmpty()) siblingEncodings.add(siblingEncoding);
+        }
+        if (siblingEncodings.size() > 1) {
+            throw new IllegalArgumentException("Shared message field has conflicting versioned encodings: "
+                    + targetId);
+        }
+        return siblingEncodings.stream().findFirst().orElse("");
     }
 
     private static int messageFieldTag(JsonNode catalog, String targetId, String version) {
