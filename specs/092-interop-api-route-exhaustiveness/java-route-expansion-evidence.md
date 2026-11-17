@@ -1941,3 +1941,39 @@ complete selected scope. The generated ledger records 71,641 planned cells,
 The normal ledger comparison matches the checked-in reference. This is not
 full KMIPKIT-0092 closure; the remaining global cells are still required, and
 the PR remains WIP.
+
+## Batch Error Continuation Option Tag route — 2026-11-17
+
+Red: a new assertion requiring `ClientBatch.addErrorContinuationValue` evidence
+under the individual Tag case `test-norm-tag-tag-42000e` failed with two expected
+version events and zero observed. Green: the Java controlled-peer test now
+records `RawTag.fromRaw`, `RawTag.checked`, and the typed batch setter for
+`KMIPKIT-ELEM-TAG-42000E`. The setter event is emitted only after the real
+two-item Query request is captured and its header is asserted to contain the
+Batch Error Continuation Option tag and value in KMIP 2.0 and 2.1 (§11.54 and
+§11.56 respectively). This adds 12 validated cells to the selected Java report.
+
+Verification on 2026-11-17:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks \
+  --tests org.kmipkit.validator.ControlledTlsPeerTest.controlledQueryProducesPerRouteEvidenceForBothProtocolVersions
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks
+python3 -m unittest interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+python3 interop/shared/tools/validate_route_evidence.py \
+  --selected-scope --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+```
+
+The focused TLS test and full Java suite pass (57/57 tests, no failures,
+errors, or skips); all 68 shared route-capability tests pass. Route validation
+reports 27,147/27,147 selected cells invoked with zero failures. The full Java
+matrix remains incomplete and the PR stays WIP.
