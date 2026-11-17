@@ -222,3 +222,22 @@ Signature Verify also passed 12/12 each. The normative inventory passed
 26/26, catalog `--check` passed, and CTest passed 7/7 in 96.00 seconds,
 including both controlled TLS peers. These results add one C operation route;
 other C route cells and cross-language FR-003/FR-005 coverage remain pending.
+
+## C Certify Public Key route
+
+The installed C consumer now exercises OASIS KMIP v2.0/v2.1 §6.1.6 Certify
+with the paired Public Key as target. Its generated catalog recipe creates an
+RSA-2048 pair with Certificate Sign usage on the Private Key, activates that
+signer, requests an X.509 certificate, destroys the certificate using ID
+Placeholder, then revokes and destroys the pair. The X.509 Certificate Type is
+encoded directly in the request Attributes structure. OASIS §12.1 Table 495
+places Certificate Sign usage on a Private Key.
+
+Red `109ff223e` required the route and `b86d6d708` added the signer lifecycle
+expectation. Green `eabd01402` implemented the generator-backed recipe, typed C
+request/results, and controlled-peer request/response and lifecycle checks. The
+route passed all 12 version/encoding/transport cells, both controlled TLS peer
+tests passed, the normative inventory passed 27/27, catalog `--check` passed,
+and CTest passed 7/7 in 97.46 seconds. This is protocol-shape and lifecycle
+evidence; the fixture does not validate certificate or signature cryptography.
+Other C routes and cross-language FR-003/FR-005 coverage remain pending.

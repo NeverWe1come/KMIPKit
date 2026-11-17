@@ -145,3 +145,19 @@ version/encoding/transport cells; the normative inventory passes 26/26, the
 catalog generation check passes, and CTest passes 7/7. Key material is not
 inspected or cryptographically validated. Remaining C and cross-language
 operation routes remain pending under FR-003/FR-005.
+
+### C Certify route follow-up
+
+The installed C `test-op-certify` route covers OASIS KMIP v2.0/v2.1 §6.1.6;
+the Certificate Sign usage assignment follows §12.1 Table 495. It creates an
+RSA-2048 pair with explicit Certificate Sign usage on the Private Key, activates
+that key, certifies the paired Public Key with the X.509 Certificate Type in
+Attributes, destroys the certificate through ID Placeholder, then revokes and
+destroys both keys. This covers the C client execution and typed lifecycle
+checks traced by FR-003/FR-005, with the route catalog and controlled TLS peer
+as executable evidence. Red `109ff223e` and `b86d6d708` preceded Green
+`eabd01402`. The focused matrix passed 12/12; both controlled TLS peer tests
+passed; the normative inventory passed 27/27; catalog `--check` passed; and
+CTest passed 7/7. The peer validates protocol shape and lifecycle, not
+certificate or signature cryptography. Other C and cross-language route cells
+remain pending.

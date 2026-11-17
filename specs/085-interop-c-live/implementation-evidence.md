@@ -1265,3 +1265,28 @@ behavior; it does not inspect or validate key material.
   `--check` passed. CTest passed 7/7 in 96.00 seconds, including both TLS peers
   and the route-matrix contract suite. The complete C matrix and exact-head CI
   remain open.
+
+## C Certify Public Key route
+
+OASIS KMIP v2.0/v2.1 §6.1.6 defines Certify. The generated catalog now creates
+an RSA-2048 pair with Certificate Sign usage on the Private Key, activates that
+signer, and uses the paired Public Key as the Certify target. The request
+includes the X.509 Certificate Type directly in the Attributes structure. It
+checks the typed certificate identifier, then destroys the certificate using
+ID Placeholder, revokes the signer, and destroys both pair members. OASIS
+§12.1 Table 495 identifies Certificate Sign as a Private Key usage, which is
+why the signer is the private member while the target remains the public
+member.
+
+- Red commits `109ff223e` and `b86d6d708`: required the missing C Certify route
+  and then its signer lifecycle; the focused test failed before the route
+  existed.
+- Green commit `eabd01402`: added the generated setup/cleanup recipe, installed
+  C batch and typed result checks, and controlled-peer request, response,
+  placeholder, and lifecycle validation.
+- Verification: the route passed all 12 KMIP-version, encoding, and transport
+  combinations; both controlled TLS peer tests passed; the normative inventory
+  passed 27/27; catalog `--check` passed; and CTest passed 7/7 in 97.46 seconds.
+  The full C route matrix and exact-head CI remain open. The peer validates
+  protocol shape and lifecycle only, not certificate or signature
+  cryptography.
