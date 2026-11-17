@@ -41,6 +41,10 @@ final class LocalCatalogRouteChecks {
     static final String BATCH_ORDER_OPTION_CASE_ID =
             "test-norm-message-field-message-field-8-2-batch-order-option";
     static final String BATCH_ORDER_OPTION_TARGET_ID = "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION";
+    static final String ATTESTATION_CAPABLE_CASE_ID =
+            "test-norm-message-field-message-field-8-2-attestation-capable-indicator";
+    static final String ATTESTATION_CAPABLE_TARGET_ID =
+            "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ATTESTATION-CAPABLE-INDICATOR";
 
     private LocalCatalogRouteChecks() { }
 
