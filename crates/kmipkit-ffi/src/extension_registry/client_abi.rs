@@ -5303,6 +5303,103 @@ lifecycle_response_identifier!(
     recover_response,
     "Recover"
 );
+lifecycle_response_identifier!(
+    kmipkit_client_batch_item_response_create_group,
+    create_group_response,
+    "Create Group"
+);
+lifecycle_response_identifier!(
+    kmipkit_client_batch_item_response_create_user,
+    create_user_response,
+    "Create User"
+);
+lifecycle_response_identifier!(
+    kmipkit_client_batch_item_response_create_credential,
+    create_credential_response,
+    "Create Credential"
+);
+lifecycle_response_identifier!(
+    kmipkit_client_batch_item_response_deactivate,
+    deactivate_response,
+    "Deactivate"
+);
+lifecycle_response_identifier!(
+    kmipkit_client_batch_item_response_decapsulate,
+    decapsulate_response,
+    "Decapsulate"
+);
+
+/// Copies the successful Obliterate response result.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_obliterate(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if out_present.is_null() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let present = scalar_out!(out_present);
+        *present = 0;
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
+        let outcome = item.outcome();
+        if outcome.result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        if outcome.obliterate_response().is_some() {
+            *present = 1;
+        }
+        SUCCESS
+    })
+}
+
+/// Copies the successful Encapsulate response Unique Identifier and borrows the ciphertext data.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_encapsulate(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+    out_data_present: *mut u8,
+    out_data: *mut crate::kmipkit_byte_span_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if out_present.is_null()
+            || out_unique_identifier.is_null()
+            || out_data_present.is_null()
+            || out_data.is_null()
+            || ffi_output_ranges_overlap(out_present, out_unique_identifier)
+        {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let present = scalar_out!(out_present);
+        let data_present = scalar_out!(out_data_present);
+        let data = scalar_out!(out_data);
+        *present = 0;
+        try_ffi!(set_borrowed_span(data_present, data, None));
+        if let Err(status) = write_unique_identifier_v1(out_unique_identifier, None) {
+            return record_ffi_error(status);
+        }
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
+        let outcome = item.outcome();
+        if outcome.result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        if let Some(encapsulate) = outcome.encapsulate_response() {
+            let Some(identifier) = encapsulate.unique_identifier() else {
+                return record_ffi_error(ERROR_INTERNAL);
+            };
+            if let Err(status) = write_unique_identifier_v1(out_unique_identifier, Some(identifier))
+            {
+                return record_ffi_error(status);
+            }
+            try_ffi!(set_borrowed_span(data_present, data, encapsulate.data()));
+            *present = 1;
+        }
+        SUCCESS
+    })
+}
 
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_item_response_create(

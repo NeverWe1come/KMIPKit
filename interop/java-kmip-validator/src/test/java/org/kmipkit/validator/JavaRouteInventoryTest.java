@@ -29,7 +29,7 @@ class JavaRouteInventoryTest {
         assertEquals(JavaRouteInventory.Status.TYPED_API_PENDING, inventory.get("Get Attribute List").status());
         assertEquals(JavaRouteInventory.Status.TYPED_API_PENDING, inventory.get("Get Constraints").status());
         assertEquals(JavaRouteInventory.Status.EXECUTABLE_TYPED, inventory.get("Create").status());
-        assertEquals(JavaRouteInventory.Status.PAYLOAD_ONLY, inventory.get("Cancel").status());
+        assertEquals(JavaRouteInventory.Status.TYPED_API_PENDING, inventory.get("Cancel").status());
         assertEquals(JavaRouteInventory.Status.NO_PUBLIC_ROUTE, inventory.get("Set Endpoint Role").status());
 
         var clientQuery = catalog.cases().stream()
@@ -59,7 +59,7 @@ class JavaRouteInventoryTest {
             assertFalse(route.reason().isBlank(), route.operation());
             assertTrue(route.status() != JavaRouteInventory.Status.UNCLASSIFIED, route.operation());
         }
-        assertEquals(Set.of("Cancel", "Poll", "Process", "Query Asynchronous Requests"),
+        assertEquals(Set.of(),
                 inventory.values().stream()
                         .filter(route -> route.status() == JavaRouteInventory.Status.PAYLOAD_ONLY)
                         .map(JavaRouteInventory.Route::operation)

@@ -21,7 +21,7 @@ Building upon the multi-version modern foundation established in `KMIPKIT-0069`,
   - §3 Profile Definitions (Baseline, Complete Server)
   - §5 Conformance Clauses
 - **OASIS KMIP 2.1 Specification** (for normative delta analysis):
-  - Operations added in 2.1 (§6.1.54–§6.1.59): `RegisterOpaqueContext`, `RegisterOpaque`, `SetConstraints`, `GetConstraints`, `Export`, `Import`.
+  - Operations added in 2.1 (§6.1.54–§6.1.59): `Set Defaults` (`0x00000036`), `Set Constraints` (`0x00000037`), `Get Constraints` (`0x00000038`), `Query Asynchronous Requests` (`0x00000039`), `Process` (`0x0000003A`), `Ping` (`0x0000003B`).
 - **KMIPKit Constitution**: Principles I, IV, V, and Amendment 1.3.0.
 - **ADR-0022**: Multi-Version Modern KMIP Architecture.
 
