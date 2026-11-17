@@ -4917,7 +4917,7 @@ static kmip_execution_outcome_t execute_created_key_action(kmip_live_client_t *c
     bool decrypt = operation == KMIPKIT_ENUMERATION_OPERATION_DECRYPT;
     bool mac_verify = operation == KMIPKIT_ENUMERATION_OPERATION_MAC_VERIFY;
     bool mac = operation == KMIPKIT_ENUMERATION_OPERATION_MAC || mac_verify;
-    const uint32_t crypto_operations[] = {
+    const uint32_t active_key_operations[] = {
         KMIPKIT_ENUMERATION_OPERATION_CREATE, KMIPKIT_ENUMERATION_OPERATION_ACTIVATE,
         operation,
         KMIPKIT_ENUMERATION_OPERATION_REVOKE,
@@ -4943,7 +4943,7 @@ static kmip_execution_outcome_t execute_created_key_action(kmip_live_client_t *c
     static const char *const archive_item_ids[] = {
         "archive-create", "archive-target", "archive-revoke", "archive-destroy"
     };
-    const uint32_t *operations = archive ? archive_operations : crypto_operations;
+    const uint32_t *operations = archive ? archive_operations : active_key_operations;
     size_t operation_count = archive ? 4U : 5U;
     size_t target_index = archive ? 1U : 2U;
     size_t revoke_index = archive ? 2U : 3U;
@@ -4990,6 +4990,7 @@ static kmip_execution_outcome_t execute_created_key_action(kmip_live_client_t *c
     if (status == 0 && !append_ttlv_value(client, &attributes, UINT32_C(0x42002C), &value)) status = -1;
     if (status == 0) status = kmipkit_client_batch_item_create(
         KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY, attributes, NULL, &items[0]);
+    /* Archive has no Active-state precondition in KMIP §6.1.4 or this catalog. */
     if (status == 0 && !archive)
         status = kmipkit_client_batch_item_activate(&placeholder, &items[1]);
     if (status == 0) status = kmipkit_ttlv_structure_create(&parameters);
