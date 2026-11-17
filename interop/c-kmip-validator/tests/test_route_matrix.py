@@ -3783,6 +3783,15 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(len(standalone_events), 72)
         self.assertEqual({event['action'] for event in standalone_events},
                          {'construct', 'send', 'decode'})
+        response_accessors = {
+            'kmipkit_client_batch_item_response_header_ttlv',
+            'kmipkit_client_batch_item_response_metadata_v1',
+            'kmipkit_client_batch_item_response_pending_correlation_value',
+            'kmipkit_client_batch_item_response_raw_ttlv',
+        }
+        for check in checks:
+            self.assertTrue(response_accessors <= set(check['public_api_trace_symbols']),
+                            check['case_id'])
 
 
     def test_stop_batch_returns_only_the_failed_item_and_stops_processing(self):
