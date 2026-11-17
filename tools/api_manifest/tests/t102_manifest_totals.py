@@ -1,4 +1,4 @@
-"""Shared manifest snapshot guards and historical T102 Rust audit totals."""
+"""Shared manifest snapshot guards and T102 Rust audit totals."""
 
 from typing import Any
 
@@ -20,8 +20,8 @@ T102_BLOCKED_CANDIDATES = 0
 # Create Split Key declarations and 18 standard-trait exclusions; KMIPKIT-0100
 # adds 40 exact Rust Register declarations and 18 standard-trait exclusions;
 # KMIPKIT-0101 adds 188 exact Rust lifecycle declarations.
-# The earlier KMIPKIT-0093 reconciliation added 1,614 explicit blocked
-# declarations and 3,467 reviewed Rust trait exclusions. KMIPKIT-0102 adds Rust fluent crypto
+# KMIPKIT-0093 reconciliation adds 1,614 explicit blocked declarations and
+# 3,467 reviewed Rust trait exclusions. KMIPKIT-0102 adds Rust fluent crypto
 # builders; KMIPKIT-0103 adds 27 C, KMIPKIT-0104 adds 121 Java, and KMIPKIT-0105
 # adds 148 Python fluent crypto declarations. KMIPKIT-0096 also adds one C
 # expert attribute insertion and one blocked Java insertion declaration.
@@ -33,21 +33,20 @@ T102_BLOCKED_CANDIDATES = 0
 # KMIPKIT-0124 adds 28 KMIP 3.0 fluent and 16 asynchronous batch declarations.
 # KMIPKIT-0124 also records 11 exact internal Java JNI bridge exclusions.
 # KMIPKIT-0126 adds 37 standard attribute declarations and 7 KMIP 3.0 batch response readers across 4 languages.
+# KMIPKIT-0093 adds 2,077 versioned tag declarations across the five language
+# package inventories.
 # Update this full-manifest snapshot only when an approved feature intentionally
 # adds or removes declarations.
-# KMIPKIT-0093 adds 151 unique fluent declarations, 419 blocked Rust inventory
-# candidates, and 666 exact Rust trait exclusions after removing eight
-# duplicate KMIPKIT-0047 v3.0 value paths.
-# This stacked inventory also includes 28 Rust client execution-wrapper
-# requirement links and the KMIPKIT-0093 C key-pair, Rust Set Attribute, Add
-# Attribute, Delete Attribute, Locate, Revoke, and four-language binding
-# declarations. Delete Attribute adds 77 ready declarations and two blocked
-# Rust candidates; Locate and Revoke add 57 declarations and 26 root re-exports.
-T102_PUBLIC_DECLARATIONS = 18_152
+# The combined manifest includes all KMIPKIT-0093 tag declarations and
+# KMIPKIT-0126 additions.
+T102_PUBLIC_DECLARATIONS = 20_229
 T102_KMIP30_DRAFT_ROUTE_DECLARATIONS = 36
 T102_APPROVED_EXCLUSIONS = 23_431
-# The November 1 report is immutable history; current totals are pinned by the
-# current inventory tests against the November 16 report.
+# The current totals correspond to the November 16 report.
+T102_RUST_AUDIT_MANIFEST = 10_380
+T102_RUST_AUDIT_EXCLUDED = 21_649
+T102_RUST_AUDIT_OBSERVED = 32_029
+# The November 1 report remains an immutable historical snapshot.
 T102_HISTORICAL_RUST_AUDIT_MANIFEST = 3_287
 T102_HISTORICAL_RUST_AUDIT_EXCLUDED = 7_176
 T102_HISTORICAL_RUST_AUDIT_OBSERVED = 10_463
