@@ -4584,6 +4584,20 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(any(event['public_api_symbol'] == 'kmipkit_client_batch_item_response_archive'
                             and event['action'] == 'decode' for event in events))
 
+    def test_archive_response_item_ids_match_the_request_recipe(self):
+        """Keep response correlation IDs aligned with each Archive request recipe."""
+        from route_peer import archive_response_item_ids
+
+        self.assertEqual(archive_response_item_ids('test-op-archive'), (
+            b'archive-create', b'archive-target', b'archive-revoke', b'archive-destroy'))
+        for case_id in (
+                'test-norm-payload-client-archive-request-20-001',
+                'test-norm-payload-client-archive-response-20-001',
+                'test-norm-payload-client-archive-request-21-001',
+                'test-norm-payload-client-archive-response-21-001'):
+            self.assertEqual(archive_response_item_ids(case_id), (
+                b'interop-create', b'interop-archive', b'interop-revoke', b'interop-destroy'))
+
     def test_archive_payload_fixtures_cover_present_and_omitted_identifiers(self):
         """Execute KMIP 2.0/2.1 §6.1.4 request and success response field fixtures."""
         from artifact_support import ROOT
