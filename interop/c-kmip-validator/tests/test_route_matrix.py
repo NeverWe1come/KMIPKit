@@ -3741,6 +3741,49 @@ class RouteMatrixTests(unittest.TestCase):
                     'kmipkit_client_batch_item_response_get_attribute_list_payload_ttlv',
                 } <= set(symbols), 'Continue must inspect the failed Get and successful attribute-list payload')
 
+    def test_batch_count_and_unordered_correlation_cover_standalone_get_attribute_list(self):
+        """Exercise both Get Attribute List constructors in KMIP 2.0/2.1 batch routes."""
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        case_ids = {
+            'test-batch-count-matches-items',
+            'test-batch-order-false-correlates-response-items',
+        }
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] in case_ids]}
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 48,
+                         'both constructors must run for both cases over six transports and two versions')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        for case_id in case_ids:
+            case_checks = [check for check in checks if check['case_id'] == case_id]
+            self.assertEqual(len(case_checks), 24, case_id)
+            self.assertEqual({check['constructor_variant'] for check in case_checks},
+                             {'direct', 'standalone'})
+            for check in case_checks:
+                if check['constructor_variant'] == 'standalone':
+                    self.assertIn('kmipkit_client_batch_item_get_attribute_list_from_request',
+                                  check['public_api_trace_symbols'])
+                    self.assertIn('kmipkit_get_attribute_list_request_to_ttlv_payload',
+                                  check['public_api_trace_symbols'])
+                else:
+                    self.assertIn('kmipkit_client_batch_item_get_attribute_list',
+                                  check['public_api_trace_symbols'])
+                    self.assertNotIn('kmipkit_client_batch_item_get_attribute_list_from_request',
+                                     check['public_api_trace_symbols'])
+        standalone_events = [event for event in events
+                             if event['case_id'] in case_ids and
+                             event['public_api_symbol'] ==
+                             'kmipkit_client_batch_item_get_attribute_list_from_request']
+        self.assertEqual(len(standalone_events), 72)
+        self.assertEqual({event['action'] for event in standalone_events},
+                         {'construct', 'send', 'decode'})
+
 
     def test_stop_batch_returns_only_the_failed_item_and_stops_processing(self):
         from artifact_support import ROOT
