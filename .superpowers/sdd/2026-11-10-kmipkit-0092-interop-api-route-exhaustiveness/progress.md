@@ -461,3 +461,42 @@ branches, and the common CI therefore reports a planned matrix only.
   vendor interoperability. The PR remains WIP.
 - Verification commands are recorded in
   `specs/092-interop-api-route-exhaustiveness/java-route-expansion-evidence.md`.
+
+## 2026-11-17 Java KMIP 2.0/2.1 repeatable Request Header Attestation Type
+
+- OASIS KMIP 2.0/2.1 §8.2 marks Request Header Attestation Type optional and
+  repeatable. The Java consumer now exercises generic Item create/view/decode
+  and typed `RequestMessage.fromTtlv`; the typed view preserves two Enumeration
+  values in source order. The fixture follows the Request Header field order.
+- Red: `2c869bcab` adds exact route assertions and fails because all eight
+  route/version cells are missing. Green: `5b985bfd0` constructs, decodes, and
+  parses repeated Attestation Type values in the pinned artifact. Refactor:
+  `d0766d376` shares route IDs and fixture values. The focused controlled-peer
+  class passes 19/19 tests.
+- Full Java suite: 57/57 tests pass, no skips or failures. Selected-scope
+  validation passes 27,336/27,336 cells with zero failed cells. The generated
+  ledger records 71,641 planned, 27,336 executed, and 44,305 pending across
+  1,210 case IDs; ledger comparison passes. Artifact commit
+  `12496d646d11d4069b58bcc88fc76cc619211ec6`, SHA-256
+  `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+- This closes eight local-model route cells. It does not establish vendor
+  interoperability or complete the Java matrix. The Java PR remains WIP.
+- Verification commands are recorded in
+  `specs/092-interop-api-route-exhaustiveness/java-route-expansion-evidence.md`.
+
+## 2026-11-17 Java Usage Limits stack synchronized with Attestation Type
+
+- Updated the Usage Limits stack branch on top of Java route-matrix head
+  `7647874fb44e9ef0d11ffd65b58cfdd9db43037a`, preserving its Usage Limits,
+  Rotate Name, and Derivation/Extension Metadata slices. The shared controlled
+  Java consumer suite passes 57/57 tests with no skips or failures.
+- The combined selected-scope report validates 27,372/27,372 cells with zero
+  failed cells. The generated ledger records 71,641 planned, 27,372 executed,
+  and 44,269 pending cells across 1,206 pending case IDs. The ledger comparer
+  passes. Artifact commit `12496d646d11d4069b58bcc88fc76cc619211ec6`,
+  SHA-256 `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+- This is selected local-model evidence; the global Java matrix remains
+  incomplete and does not claim vendor interoperability. The PR stays WIP
+  while exact-head CI runs.
+- The full commands and generated ledger comparison are recorded in
+  `specs/092-interop-api-route-exhaustiveness/java-route-expansion-evidence.md`.
