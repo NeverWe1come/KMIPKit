@@ -9,12 +9,13 @@ use kmipkit_protocol::{
     ActivateRequest, AddAttributeRequest, ArchiveRequest, Attribute, AttributeDefinition,
     AttributeReference, AttributeSet, AttributeSetError, CreateKeyPairRequest, CreateRequest,
     CreateSplitKeyRequest, CryptographicAlgorithm, CryptographicParameters, CurrentAttribute,
-    DecryptRequest, DeleteAttributeRequest, DestroyRequest, EncryptRequest,
-    GetAttributeListRequest, GetAttributesRequest, GetConstraintsRequest, GetRequest,
-    GetUsageAllocationRequest, HashRequest, LocateRequest, MacRequest, MacVerifyRequest,
-    ManagedObject, NewAttribute, ObjectGroupMember, ObjectType, OpaqueObjectContext, OperationData,
-    PingRequest, RecertifyRequest, RecoverRequest, RegisterRequest, RekeyKeyPairRequest,
-    RekeyRequest, RevocationReason, RevokeRequest, RngRetrieveRequest, RngSeedRequest, SecretBytes,
+    DecryptRequest, DeleteAttributeRequest, DerivationMethod, DerivationParameters,
+    DeriveKeyRequest, DestroyRequest, EncryptRequest, GetAttributeListRequest,
+    GetAttributesRequest, GetConstraintsRequest, GetRequest, GetUsageAllocationRequest,
+    HashRequest, LocateRequest, MacRequest, MacVerifyRequest, ManagedObject, NewAttribute,
+    ObjectGroupMember, ObjectType, OpaqueObjectContext, OperationData, PingRequest,
+    RecertifyRequest, RecoverRequest, RegisterRequest, RekeyKeyPairRequest, RekeyRequest,
+    RevocationReason, RevokeRequest, RngRetrieveRequest, RngSeedRequest, SecretBytes,
     SetAttributeRequest, SignRequest, SignatureVerifyRequest, SplitKeyMethod, StorageStatusMask,
     UniqueIdentifier, ValidateKmipRequest,
 };
@@ -98,6 +99,16 @@ pub enum FluentBuildError {
     MissingCreateSplitKeyObjectType,
     /// Create is missing Object Type.
     MissingCreateObjectType,
+    /// Derive Key is missing Object Type.
+    MissingDeriveKeyObjectType,
+    /// Derive Key requires at least one source Unique Identifier.
+    MissingDeriveKeyUniqueIdentifier,
+    /// Derive Key is missing the caller-selected Derivation Method.
+    MissingDeriveKeyMethod,
+    /// Derive Key is missing the caller-selected Derivation Parameters.
+    MissingDeriveKeyParameters,
+    /// Derive Key is missing the required output Attributes Structure.
+    MissingDeriveKeyAttributes,
     /// Create Split Key is missing Split Key Method.
     MissingCreateSplitKeyMethod,
     /// Create Split Key is missing Split Key Parts.
@@ -155,6 +166,13 @@ impl fmt::Display for FluentBuildError {
             Self::MissingCreateKeyPairLength => "Create Key Pair requires Cryptographic Length",
             Self::MissingCreateSplitKeyObjectType => "Create Split Key requires Object Type",
             Self::MissingCreateObjectType => "Create requires Object Type",
+            Self::MissingDeriveKeyObjectType => "Derive Key requires Object Type",
+            Self::MissingDeriveKeyUniqueIdentifier => {
+                "Derive Key requires at least one source Unique Identifier"
+            }
+            Self::MissingDeriveKeyMethod => "Derive Key requires a Derivation Method",
+            Self::MissingDeriveKeyParameters => "Derive Key requires Derivation Parameters",
+            Self::MissingDeriveKeyAttributes => "Derive Key requires output Attributes",
             Self::MissingCreateSplitKeyMethod => "Create Split Key requires Split Key Method",
             Self::MissingCreateSplitKeyParts => "Create Split Key requires Split Key Parts",
             Self::MissingCreateSplitKeyThreshold => "Create Split Key requires Split Key Threshold",
@@ -230,6 +248,13 @@ impl<'a> RequestBuilder<'a> {
     #[must_use]
     pub fn create(self) -> CreateBuilder<'a> {
         CreateBuilder::new(self.client)
+    }
+
+    /// Begins a typed Derive Key request with its source, method, parameters,
+    /// and output attributes unset.
+    #[must_use]
+    pub fn derive_key(self) -> DeriveKeyBuilder<'a> {
+        DeriveKeyBuilder::new(self.client)
     }
 
     /// Begins constructing a typed Register request.
@@ -545,6 +570,168 @@ impl<'a> CreateBuilder<'a> {
             .into_request_and_execution()
             .map_err(fluent_client_validation_error)?;
         execution.run(ClientRequest::Create(request), limits)
+    }
+}
+
+/// A fluent Derive Key builder for OASIS KMIP v2.1 §6.1.14, Tables 205–207.
+/// It preserves repeated source identifiers, caller-selected derivation
+/// parameters, and the existing typed result and delivery-state path.
+pub struct DeriveKeyBuilder<'a> {
+    execution: FluentBuilderExecution<'a>,
+    object_type: Option<ObjectType>,
+    unique_identifiers: Vec<UniqueIdentifier>,
+    derivation_method: Option<DerivationMethod>,
+    derivation_parameters: Option<DerivationParameters>,
+    attributes: Option<AttributeSet>,
+}
+
+impl<'a> DeriveKeyBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            execution: FluentBuilderExecution::new(client),
+            object_type: None,
+            unique_identifiers: Vec::new(),
+            derivation_method: None,
+            derivation_parameters: None,
+            attributes: None,
+        }
+    }
+
+    /// Selects the caller's explicit output Object Type.
+    #[must_use]
+    pub const fn object_type(mut self, object_type: ObjectType) -> Self {
+        self.object_type = Some(object_type);
+        self
+    }
+
+    /// Appends one explicit source Unique Identifier in request order.
+    ///
+    /// §6.1.14 permits repeated identifiers but prohibits substituting the ID
+    /// Placeholder. The existing typed request validator enforces that rule.
+    #[must_use]
+    pub fn unique_identifier(mut self, identifier: UniqueIdentifier) -> Self {
+        self.unique_identifiers.push(identifier);
+        self
+    }
+
+    /// Selects the caller's explicit Derivation Method.
+    #[must_use]
+    pub const fn derivation_method(mut self, method: DerivationMethod) -> Self {
+        self.derivation_method = Some(method);
+        self
+    }
+
+    /// Supplies the caller's typed §7.12 Derivation Parameters.
+    #[must_use]
+    pub fn derivation_parameters(mut self, parameters: DerivationParameters) -> Self {
+        self.derivation_parameters = Some(parameters);
+        self
+    }
+
+    /// Replaces the caller-selected output Attributes.
+    #[must_use]
+    pub fn attributes(mut self, attributes: AttributeSet) -> Self {
+        self.attributes = Some(attributes);
+        self
+    }
+
+    /// Sets exchange-local options without changing client policy.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.execution = self.execution.with_options(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.execution = self.execution.with_asynchronous_indicator(value);
+        self
+    }
+
+    fn validate_required_fields(&self) -> Result<(), FluentBuildError> {
+        if self.object_type.is_none() {
+            return Err(FluentBuildError::MissingDeriveKeyObjectType);
+        }
+        if self.unique_identifiers.is_empty() {
+            return Err(FluentBuildError::MissingDeriveKeyUniqueIdentifier);
+        }
+        if self.derivation_method.is_none() {
+            return Err(FluentBuildError::MissingDeriveKeyMethod);
+        }
+        if self.derivation_parameters.is_none() {
+            return Err(FluentBuildError::MissingDeriveKeyParameters);
+        }
+        if self.attributes.is_none() {
+            return Err(FluentBuildError::MissingDeriveKeyAttributes);
+        }
+        Ok(())
+    }
+
+    fn into_request_and_execution(
+        self,
+    ) -> Result<(DeriveKeyRequest, FluentBuilderExecution<'a>), FluentBuildError> {
+        self.validate_required_fields()?;
+        let request = DeriveKeyRequest::new(
+            self.object_type
+                .ok_or(FluentBuildError::MissingDeriveKeyObjectType)?,
+            self.unique_identifiers,
+            self.derivation_method
+                .ok_or(FluentBuildError::MissingDeriveKeyMethod)?,
+            self.derivation_parameters
+                .ok_or(FluentBuildError::MissingDeriveKeyParameters)?,
+            self.attributes
+                .ok_or(FluentBuildError::MissingDeriveKeyAttributes)?,
+        );
+        if !request.validate().is_valid() {
+            return Err(FluentBuildError::InvalidRequest);
+        }
+        Ok((request, self.execution))
+    }
+
+    /// Checks that every required Table 205 field has been supplied.
+    ///
+    /// The typed request validation also runs in [`Self::build`],
+    /// [`Self::to_batch_item`], and [`Self::execute`].
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        self.validate_required_fields()
+    }
+
+    /// Builds the existing typed Derive Key request without sending it.
+    ///
+    /// # Errors
+    /// Returns a payload-free error when a required field is absent or the
+    /// typed request validation rejects the selected values.
+    pub fn build(self) -> Result<DeriveKeyRequest, FluentBuildError> {
+        self.into_request_and_execution()
+            .map(|(request, _execution)| request)
+    }
+
+    /// Converts this request to the existing typed batch item without sending it.
+    ///
+    /// Exchange options and the asynchronous indicator belong to the batch
+    /// header and are not retained in an individual batch item.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        self.into_request_and_execution()
+            .map(|(request, _execution)| ClientBatchItem::new(ClientRequest::DeriveKey(request)))
+    }
+
+    /// Executes at most one exchange through the existing typed client path.
+    ///
+    /// Pending preserves the originating Derive Key operation and correlation
+    /// value without a follow-up or retry.
+    ///
+    /// # Errors
+    /// Returns the existing sanitized validation, protocol, or transport error
+    /// with its request-delivery evidence.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let (request, execution) = self
+            .into_request_and_execution()
+            .map_err(fluent_client_validation_error)?;
+        execution.run(ClientRequest::DeriveKey(request), limits)
     }
 }
 
