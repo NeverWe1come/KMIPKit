@@ -416,18 +416,49 @@ branches, and the common CI therefore reports a planned matrix only.
 - This adds local-model evidence; it does not complete the Java matrix or
   establish interoperability with a vendor KMS. The Java PR remains WIP.
 
-## 2026-11-17 #213 stack sync with Attestation Capable Indicator
+## 2026-11-17 #213 stack sync with shared Request Header routes
 
-- Merged #187 head `912b90a08711fe486c747776e99bd12f5562428c` into the KMIP 3.0
-  Java/Python branch. KMIP 3.0 builder work remains in place alongside the
-  Attestation, Batch Order Option, and earlier Java route evidence.
+- Merged current #187 head `8313b6019ab987f0f0612d9c3bd2c5df10ca6600` into the
+  KMIP 3.0 Java/Python branch. KMIP 3.0 builder work remains in place alongside
+  the shared Request Header, Attestation, Batch Order Option, and earlier Java
+  route evidence.
 - The Java validator suite passes 57/57 tests with no failures, errors, or
-  skips. Selected-scope validation passes 27,270/27,270 cells; the generated
-  Java ledger records 44,371 pending of 71,641 cells across 1,218 case IDs.
-  Route-capability tests pass 68/68, the generator reports 1,507 routes, and
-  the ledger comparison passes after regeneration.
+  skips. Selected-scope validation passes 27,328/27,328 cells; the generated
+  Java ledger records 44,313 pending of 71,641 cells across 1,211 case IDs.
+  The ledger comparison passes after regeneration. Shared route-capability
+  tests pass 68/68 and the generator reports 1,507 routes on the common matrix.
 - The artifact was installed from pinned commit
   `12496d646d11d4069b58bcc88fc76cc619211ec6` with SHA-256
   `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
   This is local fixture evidence; it does not establish vendor interoperability
   or complete the route matrix. #213 remains WIP.
+
+## 2026-11-17 Java KMIP 2.0/2.1 shared Request Header scalar routes
+
+- The seven scalar targets under the shared §8.2 Request Header now complete
+  three generic TTLV Item routes and typed `RequestMessage.fromTtlv` for KMIP
+  2.0 and 2.1: Asynchronous Indicator, Batch Count, Batch Error Continuation
+  Option, Client Correlation Value, Maximum Response Size, Server Correlation
+  Value, and Time Stamp. Their version-specific scalar definitions are OASIS
+  KMIP 2.0/2.1 §§9.2, 9.5, 9.6, 9.9, 9.10, 9.12, and 9.20. The parser
+  fixture asserts each typed header value; Server Correlation Value is asserted
+  by tag and bytes through the public generic header TTLV view.
+- Red: `661d07efa` adds exact route/version assertions and fails because the
+  §8.2 targets have no emitted generic or typed route evidence. Green:
+  `d8a64d9ed` resolves the shared targets through their version-specific
+  scalar definitions, emits their three generic TTLV routes, validates the
+  request header values via `RequestMessage.fromTtlv`, and records the explicit
+  `ClientBatch.addErrorContinuationValue` setter for Stop. Refactor:
+  `50d4b494d` centralizes the shared §8.2 case-ID prefix. Focused tests pass
+  after Green and Refactor.
+- Full Java suite: 57/57 tests passed with no failures, errors, or skips.
+  Shared route-capability tests: 68/68 passed. Route generator check: 1,507
+  routes. Selected-scope validation: 27,328/27,328 cells, zero failed. The
+  generated ledger records 71,641 planned, 27,328 executed, 44,313 pending
+  across 1,211 pending case IDs; the ledger comparison passes. Artifact commit
+  `12496d646d11d4069b58bcc88fc76cc619211ec6`, SHA-256
+  `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+- This is local-model evidence and does not complete the Java matrix or claim
+  vendor interoperability. The PR remains WIP.
+- Verification commands are recorded in
+  `specs/092-interop-api-route-exhaustiveness/java-route-expansion-evidence.md`.
