@@ -4852,6 +4852,156 @@ static void record_kmip_result(kmip_execution_outcome_t *outcome,
     }
 }
 
+static kmip_execution_outcome_t execute_created_key_encrypt(kmip_live_client_t *client) {
+    /* OASIS KMIP 2.0/2.1 §6.1.17: isolate a created AES key around Encrypt. */
+    static const uint32_t operations[] = {
+        KMIPKIT_ENUMERATION_OPERATION_CREATE, KMIPKIT_ENUMERATION_OPERATION_ACTIVATE,
+        KMIPKIT_ENUMERATION_OPERATION_ENCRYPT, KMIPKIT_ENUMERATION_OPERATION_REVOKE,
+        KMIPKIT_ENUMERATION_OPERATION_DESTROY
+    };
+    static const char *item_ids[] = {
+        "encrypt-create", "encrypt-activate", "encrypt-target", "encrypt-revoke", "encrypt-destroy"
+    };
+    kmip_execution_outcome_t outcome = {.executed = true};
+    kmipkit_client_batch_t *batch = NULL;
+    kmipkit_client_batch_response_t *response = NULL;
+    kmipkit_client_batch_item_t *items[5] = {NULL};
+    kmipkit_client_batch_item_response_t *responses[5] = {NULL};
+    kmipkit_ttlv_structure_t *attributes = NULL;
+    kmipkit_ttlv_structure_t *parameters = NULL;
+    kmipkit_ttlv_value_t *value = NULL;
+    kmipkit_ttlv_value_t *plaintext = NULL;
+    kmipkit_authentication_t *authentication = NULL;
+    const kmipkit_unique_identifier_v1_t placeholder = {
+        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1,
+        .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION,
+        .enumeration_value = KMIPKIT_ENUMERATION_UNIQUE_IDENTIFIER_ID_PLACEHOLDER
+    };
+    int32_t status = create_symmetric_key_attributes(client, &attributes) ? 0 : -1;
+    if (status == 0) status = kmipkit_ttlv_value_integer(
+        (int32_t)KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_ENCRYPT, &value);
+    if (status == 0 && !append_ttlv_value(client, &attributes, UINT32_C(0x42002C), &value)) status = -1;
+    if (status == 0) status = kmipkit_client_batch_item_create(
+        KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY, attributes, NULL, &items[0]);
+    if (status == 0) status = kmipkit_client_batch_item_activate(&placeholder, &items[1]);
+    if (status == 0) status = kmipkit_ttlv_structure_create(&parameters);
+    if (status == 0) status = kmipkit_ttlv_value_enumeration(
+        KMIPKIT_ENUMERATION_BLOCK_CIPHER_MODE_ECB, &value);
+    if (status == 0 && !append_ttlv_value(client, &parameters, UINT32_C(0x420011), &value)) status = -1;
+    if (status == 0) status = kmipkit_ttlv_value_enumeration(
+        KMIPKIT_ENUMERATION_PADDING_METHOD_NONE, &value);
+    if (status == 0 && !append_ttlv_value(client, &parameters, UINT32_C(0x42005F), &value)) status = -1;
+    if (status == 0) status = kmipkit_ttlv_value_enumeration(
+        KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES, &value);
+    if (status == 0 && !append_ttlv_value(client, &parameters, UINT32_C(0x420028), &value)) status = -1;
+    if (status == 0) status = batch_crypto_secret_value(
+        BATCH_CRYPTO_PLAINTEXT, sizeof(BATCH_CRYPTO_PLAINTEXT), &plaintext);
+    if (status == 0) status = kmipkit_client_batch_item_encrypt(
+        &placeholder, parameters, plaintext, NULL, NULL, 0, 0, NULL, &items[2]);
+    if (status == 0) status = create_revocation_item(&placeholder, &items[3]);
+    if (status == 0) status = kmipkit_client_batch_item_destroy(&placeholder, &items[4]);
+    char validation_diagnostic[256] = {0};
+    for (size_t index = 0; status == 0 && index < 5; ++index) {
+        status = set_batch_item_id(&items[index], item_ids[index]);
+        if (status == 0 && !request_item_is_valid(
+                items[index], validation_diagnostic, sizeof(validation_diagnostic)))
+            status = KMIPKIT_ERROR_INVALID_INPUT;
+    }
+    if (status == 0) status = kmipkit_client_batch_create(&batch);
+    if (status == 0) status = kmipkit_client_batch_set_order_option(batch, 1);
+    if (status == 0) status = kmipkit_client_batch_add_error_continuation_value(
+        batch, KMIPKIT_ENUMERATION_BATCH_ERROR_CONTINUATION_OPTION_CONTINUE);
+    for (size_t index = 0; status == 0 && index < 5; ++index)
+        status = kmipkit_client_batch_add_item(batch, &items[index]);
+    if (status == 0 && client->username_env[0] != '\0') {
+        if (!create_authentication(client, &authentication)) status = KMIPKIT_ERROR_INVALID_INPUT;
+        else {
+            status = kmipkit_client_batch_set_authentication(batch, authentication);
+            if (status != 0) kmipkit_authentication_release(authentication);
+            else authentication = NULL;
+        }
+    }
+    if (status != 0) {
+        outcome.library_failed = true;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "KMIPKit could not construct the isolated Encrypt request (status %d)", status);
+        goto cleanup;
+    }
+    status = kmipkit_client_execute(client->client, &batch, client->limits, &response);
+    if (status != 0) {
+        uint32_t category = 0, cause = 0, delivery = 0;
+        (void)kmipkit_last_error_get(&status, &category, &cause, &delivery);
+        outcome.library_failed = true;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "KMIPKit could not execute the isolated Encrypt request (category=%u cause=%u delivery=%u)",
+                 category, cause, delivery);
+        goto cleanup;
+    }
+    uint64_t response_count = 0;
+    status = kmipkit_client_batch_response_item_count(response, &response_count);
+    if (status == 0 && response_count != 5) status = KMIPKIT_ERROR_INVALID_INPUT;
+    for (size_t index = 0; status == 0 && index < 5; ++index) {
+        kmipkit_client_batch_item_metadata_v2_t metadata = {
+            .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t), .abi_version = 2
+        };
+        status = kmipkit_client_batch_response_item_at(response, index, &responses[index]);
+        if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
+            responses[index], &metadata);
+        if (status == 0 && metadata.operation != operations[index]) status = KMIPKIT_ERROR_INVALID_INPUT;
+        if (status == 0 && metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
+            record_kmip_result(&outcome, &metadata);
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "controlled Encrypt lifecycle item %zu was rejected (status=%u reason=%u)",
+                     index, metadata.result_status, metadata.result_reason);
+            goto cleanup;
+        }
+    }
+    if (status != 0) {
+        outcome.library_failed = true;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "KMIPKit returned an invalid isolated Encrypt response (status %d)", status);
+        goto cleanup;
+    }
+    uint8_t identifier_present = 0;
+    uint32_t object_type = 0;
+    kmipkit_unique_identifier_v1_t identifier = {
+        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1
+    };
+    status = kmipkit_client_batch_item_response_create(
+        responses[0], &identifier_present, &object_type, &identifier);
+    bool valid = status == 0 && identifier_present &&
+        object_type == KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY &&
+        identifier.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING &&
+        identifier.text_data && identifier.text_length &&
+        activate_response_matches_created_key(responses[1], &identifier, &status) &&
+        batch_crypto_response_matches(responses[2], &identifier, true, &status) &&
+        revoke_response_matches_created_key(responses[3], &identifier, &status) &&
+        response_ttlv_matches_identifier(responses[3], kmipkit_client_batch_item_response_revoke_ttlv,
+                                         &identifier, &status) &&
+        destroy_response_matches_key(responses[4], &identifier, &status);
+    outcome.success = valid;
+    outcome.library_failed = status != 0;
+    outcome.library_validated = status == 0;
+    outcome.has_result_status_code = status == 0;
+    outcome.result_status_code = KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS;
+    if (!valid) snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+        "KMIPKit Encrypt response did not match the created key, ciphertext, or cleanup results");
+
+cleanup:
+    if (authentication) kmipkit_authentication_release(authentication);
+    for (size_t index = 0; index < 5; ++index) {
+        if (responses[index]) kmipkit_client_batch_item_response_release(responses[index]);
+        if (items[index]) kmipkit_client_batch_item_release(items[index]);
+    }
+    if (response) kmipkit_client_batch_response_release(response);
+    if (batch) kmipkit_client_batch_release(batch);
+    if (attributes) kmipkit_ttlv_structure_release(attributes);
+    if (parameters) kmipkit_ttlv_structure_release(parameters);
+    if (plaintext) kmipkit_ttlv_value_release(plaintext);
+    if (value) kmipkit_ttlv_value_release(value);
+    return outcome;
+}
+
 static kmip_execution_outcome_t execute_logout_with_login_ticket(kmip_live_client_t *client) {
     /* OASIS KMIP 2.0 §6.1.29-§6.1.30; KMIP 2.1 §6.1.30-§6.1.31. */
     kmip_execution_outcome_t outcome = {.executed = true};
@@ -5191,6 +5341,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         return execute_attribute_mutation_case(client, ATTRIBUTE_MUTATION_DELETE);
     if (strcmp(test_case->case_id, "test-batch-register-encrypt-decrypt-destroy") == 0)
         return execute_registered_crypto_batch(client);
+    if (strcmp(test_case->case_id, "test-op-encrypt") == 0)
+        return execute_created_key_encrypt(client);
     if (strcmp(test_case->operation, "Discover Versions") == 0 &&
         client->protocol_minor == 0) {
         return outcome_not_run(
