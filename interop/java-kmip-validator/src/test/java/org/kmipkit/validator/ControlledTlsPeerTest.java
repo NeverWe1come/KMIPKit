@@ -1262,13 +1262,22 @@ class ControlledTlsPeerTest {
         long dataTypeCaseCount = dataTypeFixtures.stream().map(DataTypeFixture::caseId).distinct().count();
         long localEnumerationCaseCount = localEnumerationFixtures.stream()
                 .map(EnumerationFixture::caseId).distinct().count();
+        Set<String> itemTypeValueCaseIds = new java.util.HashSet<>();
+        for (JsonNode event : report.path("events")) {
+            String caseId = event.path("case_id").asText();
+            if (caseId.startsWith("test-norm-enumeration-value-enum-value-item-type-")) {
+                itemTypeValueCaseIds.add(caseId);
+            }
+        }
+        assertEquals(11, itemTypeValueCaseIds.size(),
+                "Every catalogued Item Type enumeration value needs its own case evidence.");
         assertEquals(16 + OPERATION_STRUCTURE_FIXTURES.size() + SCALAR_OPERATION_STRUCTURE_FIXTURES.size()
                         + enumerationFixtures.size() + localEnumerationCaseCount + bitmaskCaseCount
                         + dataTypeCaseCount
                         + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + genericTagCaseIds.size()
                         + 3
                         + typedTagIdentityCaseIds().size() + referencedEnumCaseCount
-                        + 11 + STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size()
+                        + 11 + itemTypeValueCaseIds.size() + STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size()
                         + STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.size()
                         + STRUCTURE_MEMBER_VALUE_FIXTURES.size() + PROFILE_INFORMATION_CASE_IDS.size()
                         + SERVER_INFORMATION_CASE_IDS.size() + 2 + booleanFieldCaseIds.size(),
@@ -3600,6 +3609,7 @@ class ControlledTlsPeerTest {
             }
         }
         appendBooleanFieldCaseIds(caseIds, events);
+        appendItemTypeEnumerationCaseIds(caseIds, events);
         caseIds.add("test-enum-pkcs#11-function");
         caseIds.add("test-enum-pkcs#11-return-code");
         caseIds.add("test-enum-tag");
@@ -3627,6 +3637,18 @@ class ControlledTlsPeerTest {
         }
         for (String caseId : booleanFieldCases) {
             if (existing.add(caseId)) caseIds.add(caseId);
+        }
+    }
+
+    private static void appendItemTypeEnumerationCaseIds(ArrayNode caseIds, JsonNode events) {
+        Set<String> existing = new java.util.HashSet<>();
+        for (JsonNode caseId : caseIds) existing.add(caseId.asText());
+        for (JsonNode event : events) {
+            String caseId = event.path("case_id").asText();
+            if (caseId.startsWith("test-norm-enumeration-value-enum-value-item-type-")
+                    && existing.add(caseId)) {
+                caseIds.add(caseId);
+            }
         }
     }
 

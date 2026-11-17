@@ -123,6 +123,16 @@ final class LocalCatalogRouteChecks {
         String caseId = "test-enum-item-type";
         int rawTag = 0x420028;
         int count = 0;
+        java.util.Map<String, String> caseIdByTarget = new java.util.HashMap<>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String targetId = testCase.path("requires").path("normative_target_id").asText();
+            if (targetId.startsWith("KMIPKIT-ELEM-ENUM-VALUE-ITEM-TYPE-")) {
+                String previous = caseIdByTarget.put(targetId, testCase.path("case_id").asText());
+                if (previous != null) {
+                    throw new IllegalArgumentException("Item Type target has duplicate test cases: " + targetId);
+                }
+            }
+        }
         for (JsonNode testCase : catalog.path("test_cases")) {
             if (!caseId.equals(testCase.path("case_id").asText()) || !applies(testCase, version)) continue;
             for (JsonNode target : catalog.path("normative_targets")) {
@@ -134,6 +144,10 @@ final class LocalCatalogRouteChecks {
                 TtlvItemType itemType = TtlvItemType.fromCode(Math.toIntExact(itemTypeCode));
                 if (!normalizeName(itemType.name()).equals(normalizeName(target.path("name").asText()))) {
                     throw new AssertionError("Item Type code does not match its catalogued name: " + targetId);
+                }
+                String valueCaseId = caseIdByTarget.get(targetId);
+                if (valueCaseId == null) {
+                    throw new IllegalArgumentException("Item Type value has no individual test case: " + targetId);
                 }
                 byte[] wire = scalarWire(rawTag, TtlvItemType.Enumeration.code(), Math.toIntExact(itemTypeCode));
                 try (RawTag raw = RawTag.fromRaw(rawTag); Tag tag = raw.checked();
@@ -150,14 +164,16 @@ final class LocalCatalogRouteChecks {
                     assertEquals(TtlvItemType.Enumeration, view.itemType());
                     assertEquals(itemTypeCode, decodedValue.enumeration());
                 }
-                emit(sink, caseId, targetId, "model.org.kmipkit.ttlv.ttlvvalue.enumeration",
-                        "org.kmipkit.ttlv.TtlvValue.Enumeration", "construct", wire);
-                emit(sink, caseId, targetId, "ttlv_item.create", "org.kmipkit.ttlv.TtlvItem.create",
-                        "construct", wire);
-                emit(sink, caseId, targetId, "function.ttlv_item_view_from_item",
-                        "org.kmipkit.ttlv.TtlvItem.view", "decode", wire);
-                emit(sink, caseId, targetId, "ttlv_codec.decode", "org.kmipkit.ttlv.TtlvCodec.decode",
-                        "decode", wire);
+                for (String evidenceCaseId : List.of(caseId, valueCaseId)) {
+                    emit(sink, evidenceCaseId, targetId, "model.org.kmipkit.ttlv.ttlvvalue.enumeration",
+                            "org.kmipkit.ttlv.TtlvValue.Enumeration", "construct", wire);
+                    emit(sink, evidenceCaseId, targetId, "ttlv_item.create", "org.kmipkit.ttlv.TtlvItem.create",
+                            "construct", wire);
+                    emit(sink, evidenceCaseId, targetId, "function.ttlv_item_view_from_item",
+                            "org.kmipkit.ttlv.TtlvItem.view", "decode", wire);
+                    emit(sink, evidenceCaseId, targetId, "ttlv_codec.decode", "org.kmipkit.ttlv.TtlvCodec.decode",
+                            "decode", wire);
+                }
                 count++;
             }
         }
