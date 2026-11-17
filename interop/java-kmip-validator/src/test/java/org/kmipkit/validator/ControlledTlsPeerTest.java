@@ -474,6 +474,9 @@ class ControlledTlsPeerTest {
                     "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-SERVER-CORRELATION-VALUE"),
             new NormativeTarget("test-norm-message-field-message-field-8-2-time-stamp",
                     "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-TIME-STAMP"));
+    private static final NormativeTarget REQUEST_HEADER_ATTESTATION_TYPE = new NormativeTarget(
+            "test-norm-message-field-message-field-8-2-attestation-type",
+            "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ATTESTATION-TYPE");
     private static final List<NormativeTarget> SCALAR_REQUEST_MESSAGE_PARSE_TARGETS = List.of(
             new NormativeTarget("test-norm-message-field-message-field-9-10-server-correlation-value",
                     "KMIPKIT-ELEM-MESSAGE-FIELD-9-10-SERVER-CORRELATION-VALUE"),
@@ -1252,6 +1255,22 @@ class ControlledTlsPeerTest {
                             version, field.targetId());
                     assertEquals("passed", event.path("status").asText());
                 }
+            }
+        }
+        List<String> requestHeaderAttestationTypeRoutes = List.of(
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode",
+                "java.typed-protocol.model.org.kmipkit.message.requestmessage.fromttlv");
+        for (String route : requestHeaderAttestationTypeRoutes) {
+            assertEquals(KMIP_2_0_AND_2_1.size(), routeEventCount(report.path("events"),
+                    REQUEST_HEADER_ATTESTATION_TYPE.caseId(), route),
+                    "Attestation Type must complete its repeatable generic or typed route cells.");
+            for (String version : KMIP_2_0_AND_2_1) {
+                JsonNode event = findRouteEvent(report.path("events"),
+                        REQUEST_HEADER_ATTESTATION_TYPE.caseId(), route, version,
+                        REQUEST_HEADER_ATTESTATION_TYPE.targetId());
+                assertEquals("passed", event.path("status").asText());
             }
         }
         NormativeTarget batchErrorContinuationHeader = REQUEST_HEADER_SCALAR_ROUTE_TARGETS.get(2);
