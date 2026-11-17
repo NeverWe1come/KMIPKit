@@ -164,6 +164,34 @@ static bool create_rsa_key_attributes(kmip_live_client_t *client,
         client, KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_RSA, 2048, out_attributes);
 }
 
+static bool create_export_key_wrapping_specification(
+    kmip_live_client_t *client,
+    kmipkit_ttlv_structure_t **out_specification) {
+    kmipkit_ttlv_structure_t *key_information = NULL;
+    kmipkit_ttlv_value_t *value = NULL;
+    if (kmipkit_ttlv_structure_create(out_specification) != 0 ||
+        kmipkit_ttlv_structure_create(&key_information) != 0) {
+        if (*out_specification) kmipkit_ttlv_structure_release(*out_specification);
+        if (key_information) kmipkit_ttlv_structure_release(key_information);
+        *out_specification = NULL;
+        return false;
+    }
+    bool valid = kmipkit_ttlv_value_enumeration(
+        KMIPKIT_ENUMERATION_WRAPPING_METHOD_ENCRYPT, &value) == 0 &&
+        append_ttlv_value(client, out_specification, UINT32_C(0x42009E), &value) &&
+        append_secret_text(client, &key_information, UINT32_C(0x420094),
+                           "fixture-wrapping-key") &&
+        structure_into_value(client, &key_information, &value) &&
+        append_ttlv_value(client, out_specification, UINT32_C(0x420036), &value);
+    if (value) kmipkit_ttlv_value_release(value);
+    if (key_information) kmipkit_ttlv_structure_release(key_information);
+    if (!valid && *out_specification) {
+        kmipkit_ttlv_structure_release(*out_specification);
+        *out_specification = NULL;
+    }
+    return valid;
+}
+
 static bool item_view_has_tag(kmipkit_ttlv_item_view_t *item,
                               uint32_t expected_tag,
                               uint8_t expected_type,
@@ -593,6 +621,92 @@ static bool destroy_response_matches_key(
         response_item, &present, &destroyed_identifier);
     return *out_status == 0 && present &&
         same_text_identifier(created_identifier, &destroyed_identifier);
+}
+
+static bool structure_view_find_value(kmipkit_ttlv_structure_view_t *structure,
+                                      uint32_t expected_tag,
+                                      uint8_t expected_type,
+                                      kmipkit_ttlv_value_view_t **out_value);
+
+static bool export_response_matches_created_key(
+    kmipkit_client_batch_item_response_t *response_item,
+    const kmipkit_unique_identifier_v1_t *created_identifier,
+    int32_t *out_status) {
+    /* OASIS KMIP v2.0 §6.1.18 Table 203 and v2.1 §6.1.18 Table 218. */
+    uint8_t present = 0;
+    uint8_t payload_present = 0;
+    uint32_t object_type = 0;
+    kmipkit_unique_identifier_v1_t response_identifier = {
+        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
+        .abi_version = 1
+    };
+    kmipkit_ttlv_structure_t *attributes = NULL;
+    kmipkit_ttlv_structure_t *any_object = NULL;
+    kmipkit_ttlv_structure_view_t *any_object_view = NULL;
+    kmipkit_ttlv_structure_view_t *symmetric_key_view = NULL;
+    kmipkit_ttlv_structure_view_t *key_block_view = NULL;
+    kmipkit_ttlv_structure_view_t *key_value_view = NULL;
+    kmipkit_ttlv_value_view_t *symmetric_key_value = NULL;
+    kmipkit_ttlv_value_view_t *key_block_value = NULL;
+    kmipkit_ttlv_value_view_t *key_value_value = NULL;
+    kmipkit_ttlv_value_view_t *algorithm_value = NULL;
+    kmipkit_ttlv_value_view_t *key_material = NULL;
+    int32_t status = kmipkit_client_batch_item_response_export(
+        response_item, &present, &payload_present, &object_type,
+        &response_identifier, &attributes, &any_object);
+    bool valid = status == 0 && present && payload_present &&
+        object_type == KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY &&
+        same_text_identifier(created_identifier, &response_identifier) &&
+        attributes && any_object &&
+        attributes_contain_value(attributes, UINT32_C(0x420028),
+            KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION,
+            KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES, 0) &&
+        attributes_contain_value(attributes, UINT32_C(0x42002A),
+            KMIPKIT_TTLV_ITEM_TYPE_INTEGER, 0, 128);
+    if (status == 0) valid = valid && response_ttlv_matches_field_count(
+        response_item, kmipkit_client_batch_item_response_export_ttlv, 4, &status);
+    if (valid) status = kmipkit_ttlv_structure_view(any_object, &any_object_view);
+    uint64_t object_count = 0;
+    if (status == 0 && any_object_view)
+        status = kmipkit_ttlv_structure_view_item_count(any_object_view, &object_count);
+    valid = valid && status == 0 && object_count == 1 &&
+        structure_view_find_value(any_object_view, UINT32_C(0x42008F),
+            KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE, &symmetric_key_value);
+    if (valid) status = kmipkit_ttlv_value_view_structure(
+        symmetric_key_value, &symmetric_key_view);
+    if (status == 0 && valid) valid = structure_view_find_value(
+        symmetric_key_view, UINT32_C(0x420040), KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE,
+        &key_block_value) && kmipkit_ttlv_value_view_structure(
+            key_block_value, &key_block_view) == 0;
+    if (valid) valid = structure_view_find_value(
+        key_block_view, UINT32_C(0x420028), KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION,
+        &algorithm_value);
+    uint32_t algorithm = 0;
+    if (valid) status = kmipkit_ttlv_value_view_enumeration(algorithm_value, &algorithm);
+    valid = valid && status == 0 &&
+        algorithm == KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES &&
+        structure_view_find_value(key_block_view, UINT32_C(0x420045),
+            KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE, &key_value_value);
+    if (valid) status = kmipkit_ttlv_value_view_structure(key_value_value, &key_value_view);
+    if (status == 0 && valid) valid = structure_view_find_value(
+        key_value_view, UINT32_C(0x420043), KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING,
+        &key_material);
+    uint64_t key_material_length = 0;
+    if (valid) status = kmipkit_ttlv_value_view_byte_length(key_material, &key_material_length);
+    valid = valid && status == 0 && key_material_length == 16;
+    if (key_material) kmipkit_ttlv_value_view_release(key_material);
+    if (algorithm_value) kmipkit_ttlv_value_view_release(algorithm_value);
+    if (key_value_view) kmipkit_ttlv_structure_view_release(key_value_view);
+    if (key_value_value) kmipkit_ttlv_value_view_release(key_value_value);
+    if (key_block_view) kmipkit_ttlv_structure_view_release(key_block_view);
+    if (key_block_value) kmipkit_ttlv_value_view_release(key_block_value);
+    if (symmetric_key_view) kmipkit_ttlv_structure_view_release(symmetric_key_view);
+    if (symmetric_key_value) kmipkit_ttlv_value_view_release(symmetric_key_value);
+    if (any_object_view) kmipkit_ttlv_structure_view_release(any_object_view);
+    if (any_object) kmipkit_ttlv_structure_release(any_object);
+    if (attributes) kmipkit_ttlv_structure_release(attributes);
+    *out_status = status;
+    return valid;
 }
 
 static bool structure_view_find_value(kmipkit_ttlv_structure_view_t *structure,
@@ -6219,6 +6333,11 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     bool unsupported_version_boundary_workflow =
         strcmp(test_case->case_id, "test-v20-reject-get-constraints") == 0 ||
         strcmp(test_case->case_id, "test-v20-reject-ping") == 0;
+    bool export_workflow = strcmp(test_case->operation, "Export") == 0;
+    const char *export_request_field = getenv("KMIPKIT_C_EXPORT_REQUEST_FIELD");
+    const char *export_request_variant = getenv("KMIPKIT_C_EXPORT_REQUEST_VARIANT");
+    bool export_request_field_present = export_request_variant &&
+        strcmp(export_request_variant, "present") == 0;
     bool ping_boundary_workflow = strcmp(test_case->case_id, "test-v20-reject-ping") == 0;
     bool get_usage_allocation_uid_variant =
         strcmp(test_case->case_id,
@@ -6237,7 +6356,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         strcmp(test_case->case_id, "test-op-set-defaults") == 0;
     bool interop_workflow = strcmp(test_case->case_id, "test-op-interop") == 0;
     if (strcmp(test_case->mode, "local_model") == 0) {
-        if (!unsupported_version_boundary_workflow && !get_usage_allocation_uid_variant)
+        if (!unsupported_version_boundary_workflow && !get_usage_allocation_uid_variant &&
+            !export_workflow)
             return execute_local_model_case(test_case);
         if (strcmp(client->api_level, "typed-protocol") != 0) {
             return outcome_not_run(
@@ -6665,13 +6785,13 @@ create_key_pair_cleanup:
         strcmp(test_case->case_id, "test-neg-destroy-active-without-revoke") == 0;
     bool revoke_cleanup_workflow = check_workflow || activate_workflow || archive_workflow || destroy_workflow ||
         get_constraints_workflow || get_usage_allocation_workflow || active_destroy_negative_workflow ||
-        add_attribute_workflow ||
+        add_attribute_workflow || export_workflow ||
         batch_create_activate_get_attribute_list_revoke_destroy_workflow;
     bool object_lifecycle_workflow = create_workflow ||
         batch_create_activate_get_attribute_list_revoke_destroy_workflow ||
         batch_placeholder_chain_workflow || batch_forward_placeholder_rejection_workflow ||
-        batch_order_placeholder_workflow || revoke_workflow ||
-        revoke_cleanup_workflow || get_workflow ||
+        batch_order_placeholder_workflow || revoke_workflow || revoke_cleanup_workflow ||
+        export_workflow || get_workflow ||
         get_attributes_workflow || get_attribute_list_workflow || get_constraints_workflow ||
         get_usage_allocation_workflow || add_attribute_workflow;
     if (strcmp(test_case->operation, "Create") == 0 && !create_workflow &&
@@ -6693,6 +6813,9 @@ create_key_pair_cleanup:
     }
     if (strcmp(test_case->operation, "Revoke") == 0 && !revoke_workflow) {
         return outcome_not_run("Revoke variations are not yet mapped to isolated C fixtures");
+    }
+    if (strcmp(test_case->operation, "Export") == 0 && !export_workflow) {
+        return outcome_not_run("Export variations are not yet mapped to isolated C fixtures");
     }
     if (strcmp(test_case->operation, "Destroy") == 0 && !destroy_workflow &&
         !active_destroy_negative_workflow) {
@@ -7088,6 +7211,39 @@ create_key_pair_cleanup:
             } else if (revoke_workflow) {
                 request_construction_step = "Revoke target operation";
                 status = create_revocation_item(&placeholder, &item);
+            } else if (export_workflow) {
+                request_construction_step = "Export target operation";
+                bool export_identifier_present = !export_request_field ||
+                    strcmp(export_request_field, "Unique Identifier") != 0 ||
+                    export_request_field_present;
+                bool has_export_key_format = export_request_field_present &&
+                    export_request_field && strcmp(export_request_field, "Key Format Type") == 0;
+                bool has_export_key_wrap_type = export_request_field_present &&
+                    export_request_field && strcmp(export_request_field, "Key Wrap Type") == 0;
+                bool has_export_key_compression_type = export_request_field_present &&
+                    export_request_field && strcmp(export_request_field, "Key Compression Type") == 0;
+                bool has_export_wrapping_specification = export_request_field_present &&
+                    export_request_field && strcmp(export_request_field, "Key Wrapping Specification") == 0;
+                kmipkit_ttlv_structure_t *export_wrapping_specification = NULL;
+                if (has_export_wrapping_specification &&
+                    !create_export_key_wrapping_specification(client, &export_wrapping_specification)) {
+                    status = KMIPKIT_ERROR_INVALID_INPUT;
+                }
+                if (status == 0) {
+                    status = kmipkit_client_batch_item_export(
+                        export_identifier_present ? &placeholder : NULL,
+                        has_export_key_format ? 1U : 0U,
+                        has_export_key_format ? KMIPKIT_ENUMERATION_KEY_FORMAT_TYPE_RAW : 0U,
+                        has_export_key_wrap_type ? 1U : 0U,
+                        has_export_key_wrap_type ? KMIPKIT_ENUMERATION_KEY_WRAP_TYPE_NOT_WRAPPED : 0U,
+                        has_export_key_compression_type ? 1U : 0U,
+                        has_export_key_compression_type ?
+                            KMIPKIT_ENUMERATION_KEY_COMPRESSION_TYPE_EC_PUBLIC_KEY_TYPE_UNCOMPRESSED : 0U,
+                        export_wrapping_specification, &item);
+                }
+                if (export_wrapping_specification) {
+                    kmipkit_ttlv_structure_release(export_wrapping_specification);
+                }
             } else if (destroy_workflow) {
                 status = kmipkit_client_batch_item_destroy(&placeholder, &item);
             } else if (get_constraints_workflow) {
@@ -7197,6 +7353,7 @@ create_key_pair_cleanup:
                            activate_workflow ? "interop-activate" :
                            archive_workflow ? "interop-archive" :
                            revoke_workflow ? "interop-revoke" :
+                           export_workflow ? "interop-export" :
                            destroy_workflow ? "interop-destroy-target" :
                            get_constraints_workflow ? "interop-get-constraints" :
                            get_usage_allocation_uid_variant
@@ -7954,6 +8111,14 @@ create_key_pair_cleanup:
             outcome.library_failed = status != 0;
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),
                      "KMIPKit Log response TTLV did not preserve the complete result item");
+            goto cleanup;
+        }
+    } else if (export_workflow) {
+        if (!export_response_matches_created_key(response_item, &created_identifier, &status)) {
+            outcome.success = false;
+            outcome.library_failed = status != 0;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit Export response did not preserve its typed payload and complete response TTLV");
             goto cleanup;
         }
     } else if (strcmp(test_case->operation, "Discover Versions") == 0) {

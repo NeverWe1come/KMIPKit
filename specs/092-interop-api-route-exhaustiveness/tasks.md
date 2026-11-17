@@ -98,6 +98,40 @@ passing shared-contract job does not satisfy those language-level requirements.
   all 42 Archive events passed. The cross-language matrix and exact-head CI
   remain open.
 
+## Development evidence: scoped Rust route evidence union
+
+- Red commit `351d9ccfd` added tests that require a route report to validate an
+  exact planned subset without claiming the full matrix. The focused tests
+  failed before scoped validation was implemented. Red commits `1b894a648` and
+  `80ade8a8a` then reproduced incomplete evidence unions, valid events outside
+  a declared scope, and the local runner selecting response routes that need a
+  live peer.
+- Green commit `045f86298` added exact scoped-report validation and collection
+  union checks, rejected events outside each scope, and isolated local
+  constructors from response accessors served by the controlled mTLS fixture.
+- The gate now measures pending local and network cells against the canonical
+  full Rust matrix even when a test supplies a smaller `--matrix` input.
+- Verification on 2026-11-12: all 25 tests in
+  `python3 -m unittest discover -s interop/shared/tests -p test_route_execution_evidence.py -v`
+  passed, and the focused response evidence gate test passed.
+- Full Rust route-gate execution reports 48,792 local cells and 287 controlled
+  response cells invoked, with zero failed invocations. It still correctly
+  exits nonzero with 26,376 network cells pending. T006 and T007 remain open.
+
+## Development evidence: stable controlled-peer identity
+
+- Red commit `5d1d764c9` added an assertion that the controlled mTLS peer has
+  the same configuration fingerprint for KMIP 2.0 and 2.1. It failed because
+  hashing the complete connection document included the selected protocol
+  version and ephemeral endpoint port.
+- Green commit `354da0bdf` fingerprints the server identity, selected endpoint
+  host, TLS trust certificate, client certificate, and SNI. It omits connection
+  details that vary per matrix cell, allowing response evidence from the same
+  peer configuration to be combined safely.
+- Verification on 2026-11-12: Rust validator Clippy passed; all 67 Rust unit
+  tests and 3 CLI tests passed; the controlled mTLS response-accessor test
+  passed for KMIP 2.0 and 2.1 with one shared fingerprint.
+
 ## Development evidence: Secret Data constructor applicability
 
 - Red commit `f7cb47c47`: `python3 -m unittest interop.shared.tests.test_route_capabilities.RouteCapabilitiesTests.test_secret_data_constructor_does_not_claim_inapplicable_key_block_crypto_fields -v` failed because the route included Cryptographic Algorithm and Cryptographic Length.
@@ -188,15 +222,26 @@ passing shared-contract job does not satisfy those language-level requirements.
   `c93eb8f7daa60d3b6832d297887e99cd2101e4f9baf2d04f55ce4042ba4bb7a2`. The
   completeness validator next reports
   `test-async-unknown-correlation-rejected`; coverage remains incomplete and
-  no pending recipe is treated as an API limitation.
-
-## Development evidence: release pin refresh after KMIPKIT-0120
+  no pending recipe is treated as an API limitation.## Development evidence: release pin refresh after KMIPKIT-0120
 
 - The feature branch conflicted with the updated `release/1.0.0` after PR #204 (`KMIPKIT-0120`) merged as `489fafc79ef89db2524eafa7a6c6482f5cf75d97`. The release merge was preserved as a normal signed merge commit; two FFI coverage script conflicts were resolved by retaining both the isolated `--no-clean` run and the existing package-scoped report checks.
 - Red commit `072f4081a`: the focused release-pin contract test failed because the generated route inventory still identified the old commit.
 - Green commit `9d9dbb308`: the route generator now pins the exact current release commit and regenerates all 1,491 route records. The catalog semantics and route count are unchanged.
 - Refactor/documentation: the approved feature spec now records the updated release base and this evidence.
 - Verification: the focused Red was observed; `python3 -m unittest interop.shared.tests.test_route_capabilities -v` passed 63 tests, `python3 interop/shared/tools/route_capabilities.py --check` passed, and `python3 -m unittest scripts.tests.test_workflow -v` passed 95 tests after conflict resolution. Exact-head CI must still pass after this branch update.
+
+## Development evidence: complete Rust route matrix CI budget
+
+- Exact-head run `43470863653`, attempt 1, spent its full 30-minute job budget.
+  All preceding checks passed; the final canonical route-matrix step was
+  cancelled at timeout before it produced a completeness result.
+- Red commit `cf6ef367` added
+  `test_rust_interop_job_reserves_time_for_the_full_route_matrix`; the focused
+  test failed because the workflow allowed only 30 minutes.
+- Green commit `843be907` raised the bounded job timeout to 60 minutes. The
+  focused test and all 96 tests in `scripts/tests/test_workflow.py` pass.
+- Refactor/documentation commit records the CI time-budget reason in the
+  validator README. Exact-head interop CI is pending after this correction.
 
 ## Development evidence: session mutation policy
 
@@ -819,3 +864,74 @@ Normative references are OASIS KMIP 2.0 and 2.1 §6.1.14 Tables 205–207 and
   exchanges; the controlled TLS peer passed for KMIP 2.0 and 2.1; full CTest
   passed 7/7 in 101.27 seconds. The broader C execution matrix and exact-head
   hosted CI remain incomplete; T006, T007, and T009 remain open.
+
+## Development evidence: C Export request and response routes
+
+- Normative scope: OASIS KMIP v2.0 §6.1.18 Tables 202–203 and v2.1 §6.1.18
+  Tables 217–218 define the Export Request and Response Payloads. The response
+  requires Object Type, Unique Identifier, Attributes, and Any Object. The
+  ordered Create/Export/Revoke/Destroy exchange exercises ID Placeholder use
+  and cleanup under §6.1 and §§8.2–8.6.
+- Red commit `76f402452`: the focused test failed because `test-op-export` had
+  no controlled-peer recipe.
+- Green commit `f4aa1a690`: the installed C consumer builds the typed Export request,
+  follows its Create with Export and cleanup, checks the typed response and
+  complete response TTLV, and returns the expected payload from a controlled
+  peer. The peer validates the four required response fields and the AES-128
+  attributes without including key bytes in diagnostics or evidence.
+- Refactor/documentation commit: record the scoped Export evidence, normative
+  payload fields, and remaining matrix gate in C implementation evidence and
+  requirement traceability.
+- The operation slice passes all 44 C cells for `test-op-export`: four local
+  generic TTLV cells, 36 constructor/send/decode cells across KMIP 2.0/2.1 and
+  TTLV/JSON/XML over raw TLS/HTTPS, and four response-accessor cells. All 12
+  controlled-peer checks pass and observe Create → Export → Revoke → Destroy
+  with cleanup returning fixture state to its initial value.
+- Request payload Red `4d4174e79` failed with zero checks; Green `367006d57`
+  passes all 120 present/omitted peer checks for the ten catalogued request
+  fields across both protocol versions and all six encoding/transport pairs.
+  Response payload Red `42f8238e4` failed with zero checks; Green `488fdf799`
+  passes all 96 checks for eight field/version cases, including 48 expected
+  rejections after a required response field is removed.
+- Generic TTLV Red `8a69dc91b` found four local Key Wrap Type/Any Object
+  cases without fixtures; Green `208380cb0` added catalog-backed enumeration
+  and Symmetric Key fixtures and passed the installed-ABI roundtrip test. The
+  full matrix now has no pending Export cells. Exact report `c-route-19dc4d35-1e4d-44d0-8d38-c7573e1226fc`
+  records 66,736 expected, 41,683 invoked, 0 failed and 25,053 pending overall.
+- Verification: the focused request and response tests pass 120/120 and 96/96;
+  the generic roundtrip test passes; full CTest passes 7/7 in 90.64 seconds,
+  including 162 route-matrix contract tests. Python compilation and
+  `git diff --check` pass. The full installed C route matrix and exact-head CI
+  remain open; these operation/payload slices do not close
+  KMIPKIT-0092-FR-003 or FR-009 globally.
+
+## Development evidence: JNI sanitizer workflow contract after release refresh
+
+- Red: rebasing the route-matrix branch onto the refreshed KMIPKIT-0092 base
+  exposed `test_ffi_sanitizer_job_runs_the_c_consumer_under_address_sanitizer`:
+  it required the literal `bindings/java/native/tests/zeroizing_bytes_test.cpp`
+  in the workflow job, while the refreshed job runs every
+  `bindings/java/native/tests/*.cpp` file. The file is therefore executed, but
+  the test contract did not recognize the wildcard route.
+- Green commit `6f43b17a4` accepts either the explicit source path or the
+  wildcard source set and separately verifies that the zeroization test exists.
+- Verification: `python3 -B -m unittest scripts.tests.test_workflow` passed
+  all 96 tests and `git diff --check` passed.
+- Refactor/documentation: the contract checks which test is covered without
+  depending on whether the workflow names it directly or through a wildcard.
+
+## Development evidence: route manifest after KMIPKIT-0092 refresh
+
+- Red: after updating this stack to the refreshed KMIPKIT-0092 base, the
+  existing route-manifest check and `test_route_capabilities` failed because
+  the checked-in generated mapping no longer matched `public-api.json` in
+  `normative_target_ids`. The route tests reported 6 failures and 1 error; the
+  validation mismatch also masked several negative-test assertions.
+- Green commit `35884ea32` regenerated `route-capabilities.json` using the
+  repository generator, restoring the mapping for all 1,491 routes pinned to
+  library commit `489fafc79ef89db2524eafa7a6c6482f5cf75d97`.
+- Refactor/documentation commit: records the generated-file refresh and fixes
+  the JNI sanitizer Green commit reference after rebasing the feature branch.
+- Verification: route-manifest validation passed; focused route tests passed
+  65/65; shared interop tests passed 189/189; workflow contract tests passed
+  96/96; Rust 1.94 validator tests passed 72/72; and `git diff --check` passed.

@@ -2849,6 +2849,16 @@ public final class KmipValues {
     }
 
     // Exact assigned values added by later KMIP editions.
+    /** Item Not Found; kmip-2.0 §11.45, Table 457. */
+    public static final long V2_0_RESULT_REASON_ITEM_NOT_FOUND = 0x00000001L;
+    /** Returns the KMIP v2.0 Result Reason name, or null for an unassigned value. */
+    public static String v2_0ResultReasonName(long raw) {
+        if (raw < 0 || raw > 0xFFFF_FFFFL) return null;
+        return switch ((int) raw) {
+            case 0x00000001 -> "Item Not Found";
+            default -> null;
+        };
+    }
     /** Set Defaults; kmip-2.1 §11.36, Table 470. */
     public static final long V2_1_OPERATION_SET_DEFAULTS = 0x00000036L;
     /** Set Constraints; kmip-2.1 §11.36, Table 470. */
@@ -2937,6 +2947,336 @@ public final class KmipValues {
             case 0x0000000E -> "Device Credential";
             case 0x0000000F -> "One Time Password Credential";
             case 0x00000010 -> "Hashed Password Credential";
+            default -> null;
+        };
+    }
+    /** ML-KEM-512; kmip-3.0 §11.12, Table 552. */
+    public static final long V3_0_CRYPTOGRAPHIC_ALGORITHM_ML_KEM_512 = 0x00000039L;
+    /** ML-KEM-768; kmip-3.0 §11.12, Table 552. */
+    public static final long V3_0_CRYPTOGRAPHIC_ALGORITHM_ML_KEM_768 = 0x0000003AL;
+    /** ML-KEM-1024; kmip-3.0 §11.12, Table 552. */
+    public static final long V3_0_CRYPTOGRAPHIC_ALGORITHM_ML_KEM_1024 = 0x0000003BL;
+    /** ML-DSA-44; kmip-3.0 §11.12, Table 552. */
+    public static final long V3_0_CRYPTOGRAPHIC_ALGORITHM_ML_DSA_44 = 0x0000003CL;
+    /** ML-DSA-65; kmip-3.0 §11.12, Table 552. */
+    public static final long V3_0_CRYPTOGRAPHIC_ALGORITHM_ML_DSA_65 = 0x0000003DL;
+    /** ML-DSA-87; kmip-3.0 §11.12, Table 552. */
+    public static final long V3_0_CRYPTOGRAPHIC_ALGORITHM_ML_DSA_87 = 0x0000003EL;
+    /** SLH-DSA-SHA2-128s; kmip-3.0 §11.12, Table 552. */
+    public static final long V3_0_CRYPTOGRAPHIC_ALGORITHM_SLH_DSA_SHA2_128S = 0x0000003FL;
+    /** SLH-DSA-SHA2-128f; kmip-3.0 §11.12, Table 552. */
+    public static final long V3_0_CRYPTOGRAPHIC_ALGORITHM_SLH_DSA_SHA2_128F = 0x00000040L;
+    /** SLH-DSA-SHA2-192s; kmip-3.0 §11.12, Table 552. */
+    public static final long V3_0_CRYPTOGRAPHIC_ALGORITHM_SLH_DSA_SHA2_192S = 0x00000041L;
+    /** SLH-DSA-SHA2-192f; kmip-3.0 §11.12, Table 552. */
+    public static final long V3_0_CRYPTOGRAPHIC_ALGORITHM_SLH_DSA_SHA2_192F = 0x00000042L;
+    /** SLH-DSA-SHA2-256s; kmip-3.0 §11.12, Table 552. */
+    public static final long V3_0_CRYPTOGRAPHIC_ALGORITHM_SLH_DSA_SHA2_256S = 0x00000043L;
+    /** SLH-DSA-SHA2-256f; kmip-3.0 §11.12, Table 552. */
+    public static final long V3_0_CRYPTOGRAPHIC_ALGORITHM_SLH_DSA_SHA2_256F = 0x00000044L;
+    /** SLH-DSA-SHAKE-128s; kmip-3.0 §11.12, Table 552. */
+    public static final long V3_0_CRYPTOGRAPHIC_ALGORITHM_SLH_DSA_SHAKE_128S = 0x00000045L;
+    /** SLH-DSA-SHAKE-128f; kmip-3.0 §11.12, Table 552. */
+    public static final long V3_0_CRYPTOGRAPHIC_ALGORITHM_SLH_DSA_SHAKE_128F = 0x00000046L;
+    /** SLH-DSA-SHAKE-192s; kmip-3.0 §11.12, Table 552. */
+    public static final long V3_0_CRYPTOGRAPHIC_ALGORITHM_SLH_DSA_SHAKE_192S = 0x00000047L;
+    /** SLH-DSA-SHAKE-192f; kmip-3.0 §11.12, Table 552. */
+    public static final long V3_0_CRYPTOGRAPHIC_ALGORITHM_SLH_DSA_SHAKE_192F = 0x00000048L;
+    /** SLH-DSA-SHAKE-256s; kmip-3.0 §11.12, Table 552. */
+    public static final long V3_0_CRYPTOGRAPHIC_ALGORITHM_SLH_DSA_SHAKE_256S = 0x00000049L;
+    /** SLH-DSA-SHAKE-256f; kmip-3.0 §11.12, Table 552. */
+    public static final long V3_0_CRYPTOGRAPHIC_ALGORITHM_SLH_DSA_SHAKE_256F = 0x0000004AL;
+    /** Hash-SLH-DSA-SHA2-128s-with-SHA256; kmip-3.0 §11.12, Table 552. */
+    public static final long V3_0_CRYPTOGRAPHIC_ALGORITHM_HASH_SLH_DSA_SHA2_128S_WITH_SHA256 = 0x0000004BL;
+    /** Hash-SLH-DSA-SHA2-128f-with-SHA256; kmip-3.0 §11.12, Table 552. */
+    public static final long V3_0_CRYPTOGRAPHIC_ALGORITHM_HASH_SLH_DSA_SHA2_128F_WITH_SHA256 = 0x0000004CL;
+    /** Hash-SLH-DSA-SHA2-192s-with-SHA512; kmip-3.0 §11.12, Table 552. */
+    public static final long V3_0_CRYPTOGRAPHIC_ALGORITHM_HASH_SLH_DSA_SHA2_192S_WITH_SHA512 = 0x0000004DL;
+    /** Hash-SLH-DSA-SHA2-192f-with-SHA512; kmip-3.0 §11.12, Table 552. */
+    public static final long V3_0_CRYPTOGRAPHIC_ALGORITHM_HASH_SLH_DSA_SHA2_192F_WITH_SHA512 = 0x0000004EL;
+    /** Hash-SLH-DSA-SHA2-256s-with-SHA512; kmip-3.0 §11.12, Table 552. */
+    public static final long V3_0_CRYPTOGRAPHIC_ALGORITHM_HASH_SLH_DSA_SHA2_256S_WITH_SHA512 = 0x0000004FL;
+    /** Hash-SLH-DSA-SHA2-256f-with-SHA512; kmip-3.0 §11.12, Table 552. */
+    public static final long V3_0_CRYPTOGRAPHIC_ALGORITHM_HASH_SLH_DSA_SHA2_256F_WITH_SHA512 = 0x00000050L;
+    /** Hash-SLH-DSA-SHAKE-128s-with-SHAKE128; kmip-3.0 §11.12, Table 552. */
+    public static final long V3_0_CRYPTOGRAPHIC_ALGORITHM_HASH_SLH_DSA_SHAKE_128S_WITH_SHAKE128 = 0x00000051L;
+    /** Hash-SLH-DSA-SHAKE-128f-with-SHAKE128; kmip-3.0 §11.12, Table 552. */
+    public static final long V3_0_CRYPTOGRAPHIC_ALGORITHM_HASH_SLH_DSA_SHAKE_128F_WITH_SHAKE128 = 0x00000052L;
+    /** Hash-SLH-DSA-SHAKE-192s-with-SHAKE256; kmip-3.0 §11.12, Table 552. */
+    public static final long V3_0_CRYPTOGRAPHIC_ALGORITHM_HASH_SLH_DSA_SHAKE_192S_WITH_SHAKE256 = 0x00000053L;
+    /** Hash-SLH-DSA-SHAKE-192f-with-SHAKE256; kmip-3.0 §11.12, Table 552. */
+    public static final long V3_0_CRYPTOGRAPHIC_ALGORITHM_HASH_SLH_DSA_SHAKE_192F_WITH_SHAKE256 = 0x00000054L;
+    /** Hash-SLH-DSA-SHAKE-256s-with-SHAKE256; kmip-3.0 §11.12, Table 552. */
+    public static final long V3_0_CRYPTOGRAPHIC_ALGORITHM_HASH_SLH_DSA_SHAKE_256S_WITH_SHAKE256 = 0x00000055L;
+    /** Hash-SLH-DSA-SHAKE-256f-with-SHAKE256; kmip-3.0 §11.12, Table 552. */
+    public static final long V3_0_CRYPTOGRAPHIC_ALGORITHM_HASH_SLH_DSA_SHAKE_256F_WITH_SHAKE256 = 0x00000056L;
+    /** Hash-ML-DSA-44-with-SHA512; kmip-3.0 §11.12, Table 552. */
+    public static final long V3_0_CRYPTOGRAPHIC_ALGORITHM_HASH_ML_DSA_44_WITH_SHA512 = 0x00000057L;
+    /** Hash-ML-DSA-65-with-SHA512; kmip-3.0 §11.12, Table 552. */
+    public static final long V3_0_CRYPTOGRAPHIC_ALGORITHM_HASH_ML_DSA_65_WITH_SHA512 = 0x00000058L;
+    /** Hash-ML-DSA-87-with-SHA512; kmip-3.0 §11.12, Table 552. */
+    public static final long V3_0_CRYPTOGRAPHIC_ALGORITHM_HASH_ML_DSA_87_WITH_SHA512 = 0x00000059L;
+    /** X25519; kmip-3.0 §11.12, Table 552. */
+    public static final long V3_0_CRYPTOGRAPHIC_ALGORITHM_X25519 = 0x0000005AL;
+    /** X448; kmip-3.0 §11.12, Table 552. */
+    public static final long V3_0_CRYPTOGRAPHIC_ALGORITHM_X448 = 0x0000005BL;
+    /** X25519MLKEM768; kmip-3.0 §11.12, Table 552. */
+    public static final long V3_0_CRYPTOGRAPHIC_ALGORITHM_X25519MLKEM768 = 0x0000005CL;
+    /** SECP256R1MLKEM768; kmip-3.0 §11.12, Table 552. */
+    public static final long V3_0_CRYPTOGRAPHIC_ALGORITHM_SECP256R1MLKEM768 = 0x0000005DL;
+    /** Returns the KMIP v3.0 Cryptographic Algorithm name, or null for an unassigned value. */
+    public static String v3_0CryptographicAlgorithmName(long raw) {
+        if (raw < 0 || raw > 0xFFFF_FFFFL) return null;
+        return switch ((int) raw) {
+            case 0x00000039 -> "ML-KEM-512";
+            case 0x0000003A -> "ML-KEM-768";
+            case 0x0000003B -> "ML-KEM-1024";
+            case 0x0000003C -> "ML-DSA-44";
+            case 0x0000003D -> "ML-DSA-65";
+            case 0x0000003E -> "ML-DSA-87";
+            case 0x0000003F -> "SLH-DSA-SHA2-128s";
+            case 0x00000040 -> "SLH-DSA-SHA2-128f";
+            case 0x00000041 -> "SLH-DSA-SHA2-192s";
+            case 0x00000042 -> "SLH-DSA-SHA2-192f";
+            case 0x00000043 -> "SLH-DSA-SHA2-256s";
+            case 0x00000044 -> "SLH-DSA-SHA2-256f";
+            case 0x00000045 -> "SLH-DSA-SHAKE-128s";
+            case 0x00000046 -> "SLH-DSA-SHAKE-128f";
+            case 0x00000047 -> "SLH-DSA-SHAKE-192s";
+            case 0x00000048 -> "SLH-DSA-SHAKE-192f";
+            case 0x00000049 -> "SLH-DSA-SHAKE-256s";
+            case 0x0000004A -> "SLH-DSA-SHAKE-256f";
+            case 0x0000004B -> "Hash-SLH-DSA-SHA2-128s-with-SHA256";
+            case 0x0000004C -> "Hash-SLH-DSA-SHA2-128f-with-SHA256";
+            case 0x0000004D -> "Hash-SLH-DSA-SHA2-192s-with-SHA512";
+            case 0x0000004E -> "Hash-SLH-DSA-SHA2-192f-with-SHA512";
+            case 0x0000004F -> "Hash-SLH-DSA-SHA2-256s-with-SHA512";
+            case 0x00000050 -> "Hash-SLH-DSA-SHA2-256f-with-SHA512";
+            case 0x00000051 -> "Hash-SLH-DSA-SHAKE-128s-with-SHAKE128";
+            case 0x00000052 -> "Hash-SLH-DSA-SHAKE-128f-with-SHAKE128";
+            case 0x00000053 -> "Hash-SLH-DSA-SHAKE-192s-with-SHAKE256";
+            case 0x00000054 -> "Hash-SLH-DSA-SHAKE-192f-with-SHAKE256";
+            case 0x00000055 -> "Hash-SLH-DSA-SHAKE-256s-with-SHAKE256";
+            case 0x00000056 -> "Hash-SLH-DSA-SHAKE-256f-with-SHAKE256";
+            case 0x00000057 -> "Hash-ML-DSA-44-with-SHA512";
+            case 0x00000058 -> "Hash-ML-DSA-65-with-SHA512";
+            case 0x00000059 -> "Hash-ML-DSA-87-with-SHA512";
+            case 0x0000005A -> "X25519";
+            case 0x0000005B -> "X448";
+            case 0x0000005C -> "X25519MLKEM768";
+            case 0x0000005D -> "SECP256R1MLKEM768";
+            default -> null;
+        };
+    }
+    /** Encapsulate; kmip-3.0 §11.13, Table 553. */
+    public static final long V3_0_DATA_ENCAPSULATE = 0x00000008L;
+    /** Decapsulate; kmip-3.0 §11.13, Table 553. */
+    public static final long V3_0_DATA_DECAPSULATE = 0x00000009L;
+    /** Returns the KMIP v3.0 Data name, or null for an unassigned value. */
+    public static String v3_0DataName(long raw) {
+        if (raw < 0 || raw > 0xFFFF_FFFFL) return null;
+        return switch ((int) raw) {
+            case 0x00000008 -> "Encapsulate";
+            case 0x00000009 -> "Decapsulate";
+            default -> null;
+        };
+    }
+    /** Unspecified; kmip-3.0 §11.14, Table 554. */
+    public static final long V3_0_DEACTIVATION_REASON_CODE_UNSPECIFIED = 0x00000001L;
+    /** Deactivation Date; kmip-3.0 §11.14, Table 554. */
+    public static final long V3_0_DEACTIVATION_REASON_CODE_DEACTIVATION_DATE = 0x00000002L;
+    /** Protect Stop Date; kmip-3.0 §11.14, Table 554. */
+    public static final long V3_0_DEACTIVATION_REASON_CODE_PROTECT_STOP_DATE = 0x00000003L;
+    /** Usage Limit; kmip-3.0 §11.14, Table 554. */
+    public static final long V3_0_DEACTIVATION_REASON_CODE_USAGE_LIMIT = 0x00000004L;
+    /** Returns the KMIP v3.0 Deactivation Reason Code name, or null for an unassigned value. */
+    public static String v3_0DeactivationReasonCodeName(long raw) {
+        if (raw < 0 || raw > 0xFFFF_FFFFL) return null;
+        return switch ((int) raw) {
+            case 0x00000001 -> "Unspecified";
+            case 0x00000002 -> "Deactivation Date";
+            case 0x00000003 -> "Protect Stop Date";
+            case 0x00000004 -> "Usage Limit";
+            default -> null;
+        };
+    }
+    /** RSASVE; kmip-3.0 §11.26, Table 572. */
+    public static final long V3_0_KEM_ALGORITHM_RSASVE = 0x00000001L;
+    /** DHKEM; kmip-3.0 §11.26, Table 572. */
+    public static final long V3_0_KEM_ALGORITHM_DHKEM = 0x00000002L;
+    /** MLKEM; kmip-3.0 §11.26, Table 572. */
+    public static final long V3_0_KEM_ALGORITHM_MLKEM = 0x00000003L;
+    /** Returns the KMIP v3.0 KEM Algorithm name, or null for an unassigned value. */
+    public static String v3_0KemAlgorithmName(long raw) {
+        if (raw < 0 || raw > 0xFFFF_FFFFL) return null;
+        return switch ((int) raw) {
+            case 0x00000001 -> "RSASVE";
+            case 0x00000002 -> "DHKEM";
+            case 0x00000003 -> "MLKEM";
+            default -> null;
+        };
+    }
+    /** Seed Private Key; kmip-3.0 §11.28, Table 575. */
+    public static final long V3_0_KEY_FORMAT_TYPE_SEED_PRIVATE_KEY = 0x00000018L;
+    /** Returns the KMIP v3.0 Key Format Type name, or null for an unassigned value. */
+    public static String v3_0KeyFormatTypeName(long raw) {
+        if (raw < 0 || raw > 0xFFFF_FFFFL) return null;
+        return switch ((int) raw) {
+            case 0x00000018 -> "Seed Private Key";
+            default -> null;
+        };
+    }
+    /** HOTP; kmip-3.0 §11.38, Table 586. */
+    public static final long V3_0_OTP_ALGORITHM_HOTP = 0x00000001L;
+    /** TOTP; kmip-3.0 §11.38, Table 586. */
+    public static final long V3_0_OTP_ALGORITHM_TOTP = 0x00000002L;
+    /** Returns the KMIP v3.0 OTP Algorithm name, or null for an unassigned value. */
+    public static String v3_0OtpAlgorithmName(long raw) {
+        if (raw < 0 || raw > 0xFFFF_FFFFL) return null;
+        return switch ((int) raw) {
+            case 0x00000001 -> "HOTP";
+            case 0x00000002 -> "TOTP";
+            default -> null;
+        };
+    }
+    /** Circular Link Error; kmip-3.0 §11.48, Table 594. */
+    public static final long V3_0_RESULT_REASON_CIRCULAR_LINK_ERROR = 0x0000004DL;
+    /** Returns the KMIP v3.0 Result Reason name, or null for an unassigned value. */
+    public static String v3_0ResultReasonName(long raw) {
+        if (raw < 0 || raw > 0xFFFF_FFFFL) return null;
+        return switch ((int) raw) {
+            case 0x0000004D -> "Circular Link Error";
+            default -> null;
+        };
+    }
+    /** User; kmip-3.0 §12.2, Table 616. */
+    public static final long V3_0_OBJECT_CLASS_MASK_USER = 0x00000001L;
+    /** System; kmip-3.0 §12.2, Table 616. */
+    public static final long V3_0_OBJECT_CLASS_MASK_SYSTEM = 0x00000002L;
+    /** Returns the KMIP v3.0 Object Class Mask name, or null for an unassigned value. */
+    public static String v3_0ObjectClassMaskName(long raw) {
+        if (raw < 0 || raw > 0xFFFF_FFFFL) return null;
+        return switch ((int) raw) {
+            case 0x00000001 -> "User";
+            case 0x00000002 -> "System";
+            default -> null;
+        };
+    }
+    /** Polynomial-283; kmip-3.0 §11.56, Table 603. */
+    public static final long V3_0_SPLIT_KEY_POLYNOMIAL_POLYNOMIAL_283 = 0x00000001L;
+    /** Polynomial-285; kmip-3.0 §11.56, Table 603. */
+    public static final long V3_0_SPLIT_KEY_POLYNOMIAL_POLYNOMIAL_285 = 0x00000002L;
+    /** Returns the KMIP v3.0 Split Key Polynomial name, or null for an unassigned value. */
+    public static String v3_0SplitKeyPolynomialName(long raw) {
+        if (raw < 0 || raw > 0xFFFF_FFFFL) return null;
+        return switch ((int) raw) {
+            case 0x00000001 -> "Polynomial-283";
+            case 0x00000002 -> "Polynomial-285";
+            default -> null;
+        };
+    }
+    /** Password; kmip-3.0 §11.11, Table 551. */
+    public static final long V3_0_CREDENTIAL_TYPE_PASSWORD = 0x00000007L;
+    /** Certificate; kmip-3.0 §11.11, Table 551. */
+    public static final long V3_0_CREDENTIAL_TYPE_CERTIFICATE = 0x00000008L;
+    /** Returns the KMIP v3.0 Credential Type name, or null for an unassigned value. */
+    public static String v3_0CredentialTypeName(long raw) {
+        if (raw < 0 || raw > 0xFFFF_FFFFL) return null;
+        return switch ((int) raw) {
+            case 0x00000007 -> "Password";
+            case 0x00000008 -> "Certificate";
+            default -> null;
+        };
+    }
+    /** Identifier; kmip-3.0 §11.25, Table 568. */
+    public static final long V3_0_ITEM_TYPE_IDENTIFIER = 0x0000000CL;
+    /** Reference; kmip-3.0 §11.25, Table 568. */
+    public static final long V3_0_ITEM_TYPE_REFERENCE = 0x0000000DL;
+    /** Name Reference; kmip-3.0 §11.25, Table 568. */
+    public static final long V3_0_ITEM_TYPE_NAME_REFERENCE = 0x0000000EL;
+    /** Returns the KMIP v3.0 Item Type name, or null for an unassigned value. */
+    public static String v3_0ItemTypeName(long raw) {
+        if (raw < 0 || raw > 0xFFFF_FFFFL) return null;
+        return switch ((int) raw) {
+            case 0x0000000C -> "Identifier";
+            case 0x0000000D -> "Reference";
+            case 0x0000000E -> "Name Reference";
+            default -> null;
+        };
+    }
+    /** Query Credential Information; kmip-3.0 §11.46, Table 591. */
+    public static final long V3_0_QUERY_FUNCTION_QUERY_CREDENTIAL_INFORMATION = 0x0000000FL;
+    /** Returns the KMIP v3.0 Query Function name, or null for an unassigned value. */
+    public static String v3_0QueryFunctionName(long raw) {
+        if (raw < 0 || raw > 0xFFFF_FFFFL) return null;
+        return switch ((int) raw) {
+            case 0x0000000F -> "Query Credential Information";
+            default -> null;
+        };
+    }
+    /** ANSIX9C2PNB176W1; kmip-3.0 §11.47, Table 592. */
+    public static final long V3_0_RECOMMENDED_CURVE_ANSIX9C2PNB176W1 = 0x00000047L;
+    /** ANSIX9C2TNB191V4; kmip-3.0 §11.47, Table 592. */
+    public static final long V3_0_RECOMMENDED_CURVE_ANSIX9C2TNB191V4 = 0x00000048L;
+    /** ANSIX9C2TNB191V5; kmip-3.0 §11.47, Table 592. */
+    public static final long V3_0_RECOMMENDED_CURVE_ANSIX9C2TNB191V5 = 0x00000049L;
+    /** ANSIX9C2TNB239V4; kmip-3.0 §11.47, Table 592. */
+    public static final long V3_0_RECOMMENDED_CURVE_ANSIX9C2TNB239V4 = 0x0000004AL;
+    /** ANSIX9C2TNB239V5; kmip-3.0 §11.47, Table 592. */
+    public static final long V3_0_RECOMMENDED_CURVE_ANSIX9C2TNB239V5 = 0x0000004BL;
+    /** CURVE25519PH; kmip-3.0 §11.47, Table 592. */
+    public static final long V3_0_RECOMMENDED_CURVE_CURVE25519PH = 0x0000004CL;
+    /** CURVE448PH; kmip-3.0 §11.47, Table 592. */
+    public static final long V3_0_RECOMMENDED_CURVE_CURVE448PH = 0x0000004DL;
+    /** OpenPGP Ed25519; kmip-3.0 §11.47, Table 592. */
+    public static final long V3_0_RECOMMENDED_CURVE_OPENPGP_ED25519 = 0x0000004EL;
+    /** OpenPGP Curve25519; kmip-3.0 §11.47, Table 592. */
+    public static final long V3_0_RECOMMENDED_CURVE_OPENPGP_CURVE25519 = 0x0000004FL;
+    /** Returns the KMIP v3.0 Recommended Curve name, or null for an unassigned value. */
+    public static String v3_0RecommendedCurveName(long raw) {
+        if (raw < 0 || raw > 0xFFFF_FFFFL) return null;
+        return switch ((int) raw) {
+            case 0x00000047 -> "ANSIX9C2PNB176W1";
+            case 0x00000048 -> "ANSIX9C2TNB191V4";
+            case 0x00000049 -> "ANSIX9C2TNB191V5";
+            case 0x0000004A -> "ANSIX9C2TNB239V4";
+            case 0x0000004B -> "ANSIX9C2TNB239V5";
+            case 0x0000004C -> "CURVE25519PH";
+            case 0x0000004D -> "CURVE448PH";
+            case 0x0000004E -> "OpenPGP Ed25519";
+            case 0x0000004F -> "OpenPGP Curve25519";
+            default -> null;
+        };
+    }
+    /** Certificate Hold; kmip-3.0 §11.50, Table 595. */
+    public static final long V3_0_REVOCATION_REASON_CODE_CERTIFICATE_HOLD = 0x00000008L;
+    /** Remove From CRL; kmip-3.0 §11.50, Table 595. */
+    public static final long V3_0_REVOCATION_REASON_CODE_REMOVE_FROM_CRL = 0x00000009L;
+    /** AA Compromise; kmip-3.0 §11.50, Table 595. */
+    public static final long V3_0_REVOCATION_REASON_CODE_AA_COMPROMISE = 0x0000000AL;
+    /** Returns the KMIP v3.0 Revocation Reason Code name, or null for an unassigned value. */
+    public static String v3_0RevocationReasonCodeName(long raw) {
+        if (raw < 0 || raw > 0xFFFF_FFFFL) return null;
+        return switch ((int) raw) {
+            case 0x00000008 -> "Certificate Hold";
+            case 0x00000009 -> "Remove From CRL";
+            case 0x0000000A -> "AA Compromise";
+            default -> null;
+        };
+    }
+    /** Create User; kmip-3.0 §11.60, Table 607. */
+    public static final long V3_0_UNIQUE_IDENTIFIER_CREATE_USER = 0x00000013L;
+    /** Create Group; kmip-3.0 §11.60, Table 607. */
+    public static final long V3_0_UNIQUE_IDENTIFIER_CREATE_GROUP = 0x00000014L;
+    /** Create Credential; kmip-3.0 §11.60, Table 607. */
+    public static final long V3_0_UNIQUE_IDENTIFIER_CREATE_CREDENTIAL = 0x00000015L;
+    /** Returns the KMIP v3.0 Unique Identifier name, or null for an unassigned value. */
+    public static String v3_0UniqueIdentifierName(long raw) {
+        if (raw < 0 || raw > 0xFFFF_FFFFL) return null;
+        return switch ((int) raw) {
+            case 0x00000013 -> "Create User";
+            case 0x00000014 -> "Create Group";
+            case 0x00000015 -> "Create Credential";
             default -> null;
         };
     }

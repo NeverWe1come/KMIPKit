@@ -1,0 +1,847 @@
+"""Executable KMIPKIT-0092 route evidence regression contracts."""
+import hashlib
+import importlib.util
+import json
+import os
+from pathlib import Path
+import re
+import subprocess
+import sys
+import tempfile
+import unittest
+
+import jsonschema
+
+ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT / 'interop/shared/tools'))
+sys.path.insert(0, str(ROOT / 'interop/rust-kmip-validator/tools'))
+from coverage_matrix import iter_cells
+from run_route_matrix import executable_local_cells
+from validate_route_evidence import validate_report
+from coverage_exclusions import generated_source_files
+from install_artifact import artifact_matches_pin
+from artifact_paths import validator_binary
+
+VALIDATOR = Path(os.environ.get('KMIPKIT_VALIDATOR_BIN', validator_binary(ROOT)))
+CATALOG_PATH = ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json'
+ROUTES_PATH = ROOT / 'interop/shared/coverage/route-capabilities.json'
+CATALOG = json.loads(CATALOG_PATH.read_bytes())
+ROUTES = json.loads(ROUTES_PATH.read_bytes())
+SCHEMA = json.loads((ROOT / 'interop/shared/schemas/route-execution-evidence.schema.json').read_bytes())
+ELEMENTS = json.loads((ROOT / 'specification/catalog/kmip-2.1.json').read_bytes())['elements']
+EXPECTED_SOURCE_COMMIT = '489fafc79ef89db2524eafa7a6c6482f5cf75d97'
+PIN_SOURCE_PATTERNS = (
+    ('interop/rust-kmip-validator/tools/install_artifact.py', r'^PIN = "([0-9a-f]{40})"$'),
+    ('interop/rust-kmip-validator/tools/verify_artifact.py', r'^PIN = "([0-9a-f]{40})"$'),
+    ('interop/rust-kmip-validator/tools/build_test_server.py', r'^PIN = "([0-9a-f]{40})"$'),
+    ('interop/rust-kmip-validator/src/models.rs',
+     r'pub\(crate\) const PIN: &str = "([0-9a-f]{40})";'),
+)
+
+
+class PinnedSourceContract(unittest.TestCase):
+    def test_installed_package_and_test_server_use_shared_manifest_commit(self):
+        expected = ROUTES['library_commit']
+        self.assertEqual(EXPECTED_SOURCE_COMMIT, expected)
+        ancestry = subprocess.run(
+            ['git', 'merge-base', '--is-ancestor', expected, 'origin/release/1.0.0'],
+            cwd=ROOT,
+            check=False,
+        )
+        self.assertEqual(0, ancestry.returncode, 'shared artifact pin must be in release/1.0.0 history')
+        for relative_path, pattern in PIN_SOURCE_PATTERNS:
+            path = ROOT / relative_path
+            with self.subTest(path=relative_path):
+                match = re.search(pattern, path.read_text(), re.MULTILINE)
+                self.assertIsNotNone(match)
+                self.assertEqual(expected, match.group(1))
+        readme_match = re.search(
+            r'from release commit `([0-9a-f]{40})`',
+            (ROOT / 'interop/rust-kmip-validator/README.md').read_text(),
+        )
+        self.assertIsNotNone(readme_match)
+        self.assertEqual(expected, readme_match.group(1))
+
+    def test_cached_release_bundle_is_rebuilt_when_its_pin_or_digest_is_stale(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            bundle = root / 'artifact.tar.gz'
+            provenance = root / 'provenance.json'
+            bundle.write_bytes(b'cached release bundle')
+            digest = hashlib.sha256(bundle.read_bytes()).hexdigest()
+            provenance.write_text(json.dumps({
+                'library_commit': EXPECTED_SOURCE_COMMIT,
+                'artifact_sha256': digest,
+            }))
+            self.assertTrue(artifact_matches_pin(bundle, provenance))
+            provenance.write_text(json.dumps({
+                'library_commit': '8281fef2e9ca211fde1e1d8e21525a672287eead',
+                'artifact_sha256': digest,
+            }))
+            self.assertFalse(artifact_matches_pin(bundle, provenance))
+            provenance.write_text(json.dumps({
+                'library_commit': EXPECTED_SOURCE_COMMIT,
+                'artifact_sha256': '0' * 64,
+            }))
+            self.assertFalse(artifact_matches_pin(bundle, provenance))
+
+    def test_rust_build_caches_are_isolated_by_installed_release_commit(self):
+        source = ROOT / 'interop/rust-kmip-validator/tools/artifact_paths.py'
+        self.assertTrue(source.is_file(), 'consumer build paths must be keyed by installed source commit')
+        module_spec = importlib.util.spec_from_file_location('artifact_paths', source)
+        self.assertIsNotNone(module_spec)
+        self.assertIsNotNone(module_spec.loader)
+        module = importlib.util.module_from_spec(module_spec)
+        module_spec.loader.exec_module(module)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            provenance = root / 'interop/.local/rust-live/provenance.json'
+            provenance.parent.mkdir(parents=True)
+            provenance.write_text(json.dumps({
+                'library_commit': EXPECTED_SOURCE_COMMIT,
+                'artifact_sha256': 'a' * 64,
+            }))
+            expected_target = root / 'interop/rust-kmip-validator/target'
+            self.assertEqual(
+                expected_target / f'consumer-{EXPECTED_SOURCE_COMMIT}',
+                module.rust_target_dir(root),
+            )
+            self.assertEqual(
+                expected_target / f'coverage-{EXPECTED_SOURCE_COMMIT}',
+                module.coverage_target_dir(root),
+            )
+            self.assertEqual(
+                root / 'interop/.local/rust-test-server' / f'harness-target-{EXPECTED_SOURCE_COMMIT}',
+                module.test_server_target_dir(root),
+            )
+            provenance.write_text(json.dumps({
+                'library_commit': '8281fef2e9ca211fde1e1d8e21525a672287eead',
+                'artifact_sha256': 'b' * 64,
+            }))
+            self.assertNotEqual(
+                expected_target / f'consumer-{EXPECTED_SOURCE_COMMIT}',
+                module.rust_target_dir(root),
+            )
+
+
+class MatrixContract(unittest.TestCase):
+    def test_local_runner_scope_excludes_response_accessors_requiring_live_peer(self):
+        local = self.cell('kmipkit_ttlv::Item::new')
+        response = next(cell for cell in iter_cells(CATALOG, ROUTES, languages=('rust',))
+                        if cell['public_api_symbol'] == 'kmipkit_client::ClientBatchResponse::len')
+        self.assertEqual([local], executable_local_cells([local, response]))
+
+    def test_coverage_gate_identifies_generated_dispatch_tables(self):
+        generated = [
+            str(ROOT / 'interop/rust-kmip-validator/src/local_cases_generated.rs'),
+            str(ROOT / 'interop/rust-kmip-validator/src/route_calls_generated.rs'),
+        ]
+        report_paths = generated + [str(ROOT / 'interop/rust-kmip-validator/src/matrix.rs')]
+        self.assertCountEqual(generated, generated_source_files(report_paths))
+
+    def cell(self, symbol, target='KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-LENGTH'):
+        return next(cell for cell in iter_cells(CATALOG, ROUTES, languages=('rust',))
+                    if cell['public_api_symbol'] == symbol and (target is None or cell['target_id'] == target))
+
+    def run_matrix(self, cells):
+        with tempfile.TemporaryDirectory() as work:
+            matrix = Path(work) / 'matrix.jsonl'
+            output = Path(work) / 'evidence.json'
+            matrix.write_text(''.join(json.dumps(cell) + '\n' for cell in cells))
+            process = subprocess.run([str(VALIDATOR), 'matrix-local', '--matrix', str(matrix),
+                '--output', str(output)], capture_output=True, text=True, timeout=30)
+            return process, json.loads(output.read_bytes()) if output.exists() else None
+
+    def test_matrix_network_accepts_typed_query_execution_cells(self):
+        cells = [cell for cell in iter_cells(CATALOG, ROUTES, languages=('rust',))
+                 if cell['mode'] == 'network' and cell['case_id'] == 'test-op-query'
+                 and cell['protocol_version'] == '2.1' and cell['encoding'] == 'TTLV'
+                 and cell['transport'] == 'raw_tls']
+        self.assertEqual({'construct', 'send', 'decode'}, {cell['action'] for cell in cells})
+        with tempfile.TemporaryDirectory() as work:
+            root = Path(work)
+            matrix = root / 'query.jsonl'
+            connection = root / 'connection.json'
+            output = root / 'evidence.json'
+            matrix.write_text(''.join(json.dumps(cell) + '\n' for cell in cells))
+            connection.write_text(json.dumps({
+                'server_id': 'controlled-fixture', 'protocol_version': '2.1',
+                'transport': 'raw_tls', 'encoding': 'TTLV', 'api_level': 'typed-protocol',
+                'endpoints': {'raw_tls': {'host': '127.0.0.1', 'port': 1},
+                              'https': {'url': 'https://127.0.0.1:1/kmip'}},
+                'tls': {'ca_cert_path': str(root / 'missing-ca.pem'),
+                        'client_cert_path': str(root / 'missing-client.pem'),
+                        'client_key_path': str(root / 'missing-key.pem'),
+                        'server_name_override': 'localhost'},
+                'environment': {'kind': 'dedicated_test',
+                                'dedicated_test_environment_confirmed': True},
+                'execution_policy': {'probe_unsupported': False, 'allow_mutations': False},
+            }))
+            process = subprocess.run([
+                str(VALIDATOR), 'matrix-network', '--matrix', str(matrix),
+                '--connection', str(connection), '--output', str(output),
+            ], capture_output=True, text=True, timeout=30)
+        self.assertNotEqual(0, process.returncode)
+        self.assertIn('client certificate unavailable or invalid', process.stderr)
+
+    def test_network_runner_rejects_non_loopback_fixture_endpoints(self):
+        combinations = (
+            ('raw_tls', '2.1', 'TTLV'),
+            ('https', '2.1', 'TTLV'),
+        )
+        with tempfile.TemporaryDirectory() as work:
+            root = Path(work)
+            for transport, version, encoding in combinations:
+                with self.subTest(transport=transport):
+                    cell = next(cell for cell in iter_cells(CATALOG, ROUTES, languages=('rust',))
+                                if cell['mode'] == 'network' and cell['case_id'] == 'test-op-query'
+                                and cell['protocol_version'] == version and cell['encoding'] == encoding
+                                and cell['transport'] == transport and cell['action'] == 'construct')
+                    matrix = root / f'{transport}.jsonl'
+                    connection = root / f'{transport}.json'
+                    output = root / f'{transport}-evidence.json'
+                    matrix.write_text(json.dumps(cell) + '\n')
+                    connection.write_text(json.dumps({
+                        'server_id': 'controlled-fixture', 'protocol_version': version,
+                        'transport': transport, 'encoding': encoding, 'api_level': 'typed-protocol',
+                        'endpoints': {'raw_tls': {'host': '192.0.2.10', 'port': 1},
+                                      'https': {'url': 'https://kms.example.invalid/kmip'}},
+                        'tls': {'ca_cert_path': str(root / 'missing-ca.pem'),
+                                'client_cert_path': str(root / 'missing-client.pem'),
+                                'client_key_path': str(root / 'missing-key.pem'),
+                                'server_name_override': 'localhost'},
+                        'environment': {'kind': 'dedicated_test',
+                                        'dedicated_test_environment_confirmed': True},
+                        'execution_policy': {'probe_unsupported': False, 'allow_mutations': False},
+                    }))
+                    process = subprocess.run([
+                        str(VALIDATOR), 'matrix-network', '--matrix', str(matrix),
+                        '--connection', str(connection), '--output', str(output),
+                    ], capture_output=True, text=True, timeout=30)
+                    self.assertNotEqual(0, process.returncode)
+                    self.assertIn('controlled network evidence requires a loopback endpoint',
+                                  process.stderr)
+
+    def test_named_typed_constructor_emits_actual_cell_evidence(self):
+        cell = self.cell('kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::CryptographicLength>::new')
+        process, report = self.run_matrix([cell])
+        self.assertEqual(process.returncode, 0, process.stderr)
+        jsonschema.Draft202012Validator(SCHEMA).validate(report)
+        event = report['events'][0]
+        self.assertEqual(event['public_api_symbol'], cell['public_api_symbol'])
+        self.assertEqual(event['invocation_count'], 1)
+        self.assertEqual(event['status'], 'passed')
+        self.assertEqual(event['request_tree_sha256'], hashlib.sha256(b'[[4325418,2,256]]').hexdigest())
+        self.assertNotIn('wire_bytes_sha256', event, 'wire bytes are not public model evidence')
+
+    def test_generic_constructor_roundtrip_preserves_case_value(self):
+        integer = self.cell('kmipkit_ttlv::Item::new')
+        enumeration = self.cell('kmipkit_ttlv::Item::new', 'KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-AES-00000003')
+        process, report = self.run_matrix([integer, enumeration])
+        self.assertEqual(process.returncode, 0, process.stderr)
+        hashes = [event['request_tree_sha256'] for event in report['events']]
+        self.assertNotEqual(*hashes, 'a fixed unrelated fixture cannot satisfy different target values')
+
+    def test_reserved_tag_decoder_records_expected_rejection_without_response_tree(self):
+        cell = next(cell for cell in iter_cells(CATALOG, ROUTES, languages=('rust',))
+                    if cell['case_id'] == 'test-norm-tag-tag-420009'
+                    and cell['public_api_symbol'] == 'kmipkit_ttlv::codec::decode'
+                    and cell['action'] == 'decode')
+        process, report = self.run_matrix([cell])
+        self.assertEqual(process.returncode, 0, process.stderr)
+        jsonschema.Draft202012Validator(SCHEMA).validate(report)
+        event = report['events'][0]
+        self.assertEqual('passed', event['status'])
+        self.assertEqual('rejected', event['decode_outcome'])
+        self.assertEqual('tag_reserved', event['decode_rejection_code'])
+        expected_wire = bytes.fromhex('42000905000000040000000000000000')
+        self.assertEqual(hashlib.sha256(expected_wire).hexdigest(), event['decode_input_sha256'])
+        self.assertNotIn('response_tree_sha256', event)
+
+    def test_unused_tag_decoder_records_unallocated_rejection(self):
+        cell = next(cell for cell in iter_cells(CATALOG, ROUTES, languages=('rust',))
+                    if cell['case_id'] == 'test-norm-tag-range-kmipkit-range-001'
+                    and cell['public_api_symbol'] == 'kmipkit_ttlv::codec::decode'
+                    and cell['action'] == 'decode')
+        process, report = self.run_matrix([cell])
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertEqual('tag_not_allocated', report['events'][0]['decode_rejection_code'])
+
+    def test_enumeration_extension_range_constructs_an_open_value(self):
+        target = next(target for target in CATALOG['normative_targets']
+                      if target['kind'] == 'enumeration_value'
+                      and target.get('allocation') == 'extension'
+                      and target.get('wire_value', '').startswith('8X'))
+        cell = self.cell('kmipkit_ttlv::Value::enumeration', target['target_id'])
+        process, report = self.run_matrix([cell])
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertEqual(report['events'][0]['status'], 'passed')
+        enumeration = next(element for element in ELEMENTS
+                           if element['element_id'] == target['parent_element_ids'][0])
+        tag_element = next(element for element in ELEMENTS
+                           if element['kind'] == 'tag' and element['name'] == enumeration['name'])
+        tag = int(tag_element['wire_value'], 16)
+        expected = json.dumps([[tag, 5, 0x80000000]], separators=(',', ':')).encode()
+        self.assertEqual(hashlib.sha256(expected).hexdigest(), report['events'][0]['request_tree_sha256'])
+
+    def test_operation_target_constructs_its_operation_enum_item(self):
+        cell = self.cell('kmipkit_ttlv::Item::new', 'KMIPKIT-ELEM-OP-C2S-QUERY')
+        process, report = self.run_matrix([cell])
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertEqual(report['events'][0]['status'], 'passed')
+        self.assertEqual(hashlib.sha256(b'[[4325468,5,24]]').hexdigest(),
+                         report['events'][0]['request_tree_sha256'])
+
+    def test_every_operation_target_uses_its_normative_operation_value(self):
+        targets = {target['target_id']: target for target in CATALOG['normative_targets']}
+        operation_values = {element['name']: int(element['wire_value'], 16)
+                            for element in ELEMENTS
+                            if element['kind'] == 'enumeration_value'
+                            and element.get('allocation') == 'assigned'
+                            and 'KMIPKIT-ELEM-ENUMERATION-OPERATION' in element.get('parent_element_ids', [])}
+        operation_tag = int(next(element['wire_value'] for element in ELEMENTS
+                                 if element['kind'] == 'tag' and element['name'] == 'Operation'), 16)
+        selected = {}
+        for cell in iter_cells(CATALOG, ROUTES, languages=('rust',)):
+            target = targets[cell['target_id']]
+            if target['kind'] == 'operation' and cell['public_api_symbol'] == 'kmipkit_ttlv::Item::new':
+                selected[(cell['target_id'], cell['protocol_version'])] = cell
+        cells = list(selected.values())
+        process, report = self.run_matrix(cells)
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertGreater(len(cells), 50)
+        for cell, event in zip(cells, report['events']):
+            expected = json.dumps([[operation_tag, 5, operation_values[targets[cell['target_id']]['name']]],
+                                   ], separators=(',', ':')).encode()
+            self.assertEqual(hashlib.sha256(expected).hexdigest(), event['request_tree_sha256'],
+                             cell['target_id'])
+
+    def test_every_open_enumeration_range_constructs_its_lowest_extension_value(self):
+        targets = {target['target_id']: target for target in CATALOG['normative_targets']}
+        selected = {}
+        for cell in iter_cells(CATALOG, ROUTES, languages=('rust',)):
+            target = targets[cell['target_id']]
+            if (target['kind'] == 'enumeration_value' and target.get('allocation') == 'extension'
+                    and cell['public_api_symbol'] == 'kmipkit_ttlv::Value::enumeration'):
+                selected[(cell['target_id'], cell['protocol_version'])] = cell
+        cells = list(selected.values())
+        process, report = self.run_matrix(cells)
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertGreater(len(cells), 100)
+        for cell, event in zip(cells, report['events']):
+            target = targets[cell['target_id']]
+            enumeration = next(element for element in ELEMENTS
+                               if element['element_id'] == target['parent_element_ids'][0])
+            tag_element = next(element for element in ELEMENTS
+                               if element['kind'] == 'tag' and element['name'] == enumeration['name'])
+            tag = int(tag_element['wire_value'], 16)
+            value = int(target['wire_value'].replace('X', '0').replace('x', '0'), 16)
+            expected = json.dumps([[tag, 5, value]], separators=(',', ':')).encode()
+            self.assertEqual(hashlib.sha256(expected).hexdigest(), event['request_tree_sha256'],
+                             cell['target_id'])
+
+    def test_referenced_enum_values_roundtrip_through_generic_public_routes(self):
+        targets = {target['target_id']: target for target in CATALOG['normative_targets']}
+        selected = {}
+        symbols = {'kmipkit_ttlv::Item::new', 'kmipkit_ttlv::codec::decode',
+                   'kmipkit_ttlv::Value::enumeration'}
+        for cell in iter_cells(CATALOG, ROUTES, languages=('rust',)):
+            if (targets[cell['target_id']]['kind'] == 'referenced_enum_value'
+                    and cell['public_api_symbol'] in symbols):
+                selected[(cell['case_id'], cell['route_id'], cell['target_id'],
+                          cell['protocol_version'], cell['public_api_symbol'])] = cell
+        cells = list(selected.values())
+        process, report = self.run_matrix(cells)
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertGreater(len(cells), 1000)
+        for cell, event in zip(cells, report['events']):
+            target = targets[cell['target_id']]
+            tag = {'PKCS#11 Function': 0x0042015a,
+                   'PKCS#11 Return Code': 0x0042015d}[target['parent_name']]
+            expected = json.dumps([[tag, 5, int(target['wire_value'], 16)]],
+                                  separators=(',', ':')).encode()
+            field = 'response_tree_sha256' if cell['action'] == 'decode' else 'request_tree_sha256'
+            self.assertEqual(hashlib.sha256(expected).hexdigest(), event[field], cell['target_id'])
+
+    def test_payload_value_variants_execute_generic_item_construction_and_decode(self):
+        targets = {target['target_id']: target for target in CATALOG['normative_targets']}
+        selected = {}
+        symbols = {'kmipkit_ttlv::Item::new', 'kmipkit_ttlv::codec::decode'}
+        for cell in iter_cells(CATALOG, ROUTES, languages=('rust',)):
+            if (targets[cell['target_id']]['kind'] == 'operation_payload_value_variant'
+                    and cell['public_api_symbol'] in symbols):
+                selected[(cell['target_id'], cell['protocol_version'],
+                          cell['public_api_symbol'])] = cell
+        cells = list(selected.values())
+        process, report = self.run_matrix(cells)
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertGreater(len(cells), 100)
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+
+    def test_all_generic_value_constructors_roundtrip_their_own_data_type(self):
+        kinds = {'big_integer': 'BIG-INTEGER', 'boolean': 'BOOLEAN', 'byte_string': 'BYTE-STRING',
+                 'date_time': 'DATE-TIME', 'date_time_extended': 'DATE-TIME-EXTENDED',
+                 'enumeration': 'ENUMERATION', 'integer': 'INTEGER', 'interval': 'INTERVAL',
+                 'long_integer': 'LONG-INTEGER', 'structure': 'STRUCTURE', 'text_string': 'TEXT-STRING'}
+        cells = [self.cell('kmipkit_ttlv::Value::' + name, 'KMIPKIT-ELEM-DATA-TYPE-' + target)
+                 for name, target in kinds.items()]
+        process, report = self.run_matrix(cells)
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertEqual(len(report['events']), 11)
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+
+    def test_unknown_case_and_wrong_version_cannot_generate_evidence(self):
+        for mutation in ({'case_id': 'not-a-real-case'}, {'protocol_version': '1.4'}):
+            cell = self.cell('kmipkit_ttlv::Item::new')
+            cell.update(mutation)
+            process, report = self.run_matrix([cell])
+            self.assertNotEqual(process.returncode, 0)
+            self.assertIsNone(report)
+
+    def test_route_cannot_claim_an_unrelated_normative_target(self):
+        cell = self.cell('kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::CryptographicLength>::new')
+        cell['target_id'] = 'KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-AES-00000003'
+        process, report = self.run_matrix([cell])
+        self.assertNotEqual(process.returncode, 0)
+        self.assertIsNone(report)
+
+    def test_constructor_cannot_pass_when_it_changes_the_normative_tag(self):
+        cell = self.cell('kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::Comment>::new',
+                         'KMIPKIT-ELEM-ATTRIBUTE-COMMENT')
+        cell['target_id'] = 'KMIPKIT-ELEM-ATTRIBUTE-DESCRIPTION'
+        process, report = self.run_matrix([cell])
+        self.assertNotEqual(process.returncode, 0)
+        self.assertIsNone(report)
+
+    def test_shared_gate_rejects_incomplete_and_duplicate_actual_evidence(self):
+        process, report = self.run_matrix([self.cell('kmipkit_ttlv::Item::new')])
+        self.assertEqual(process.returncode, 0, process.stderr)
+        arguments = {'catalog_sha256': hashlib.sha256(CATALOG_PATH.read_bytes()).hexdigest(),
+                     'route_manifest_sha256': hashlib.sha256(ROUTES_PATH.read_bytes()).hexdigest(),
+                     'expected_artifact_sha256': report['artifact_sha256']}
+        with self.assertRaisesRegex(ValueError, 'missing route execution cells'):
+            validate_report(report, CATALOG, ROUTES, **arguments)
+        report['events'].append(dict(report['events'][0]))
+        with self.assertRaisesRegex(ValueError, 'duplicate route execution cell'):
+            validate_report(report, CATALOG, ROUTES, **arguments)
+
+    def test_named_open_wrappers_preserve_exact_numeric_codes(self):
+        cells = [self.cell('kmipkit_protocol::ResultStatus::from_raw', 'KMIPKIT-ELEM-ENUM-VALUE-RESULT-STATUS-SUCCESS-00000000'),
+                 self.cell('kmipkit_protocol::ObjectType::from_raw', 'KMIPKIT-ELEM-ENUM-VALUE-OBJECT-TYPE-CERTIFICATE-00000001')]
+        process, report = self.run_matrix(cells)
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertEqual([event['request_tree_sha256'] for event in report['events']],
+                         [hashlib.sha256(value).hexdigest() for value in (b'[[4325503,5,0]]', b'[[4325463,5,1]]')])
+
+    def test_named_tag_and_structure_paths_execute_roundtrips(self):
+        cells = [self.cell('kmipkit_ttlv::RawTag::' + method, 'KMIPKIT-ELEM-TAG-42002A')
+                 for method in ('new', 'try_checked')]
+        cells.extend(self.cell('kmipkit_ttlv::Structure::' + method, 'KMIPKIT-ELEM-DATA-TYPE-STRUCTURE')
+                     for method in ('new', 'try_push'))
+        process, report = self.run_matrix(cells)
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertEqual(len(report['events']), 4)
+        self.assertEqual(report['events'][2]['request_tree_sha256'], report['events'][3]['request_tree_sha256'])
+
+    def test_structure_try_push_inserts_a_normative_member_into_its_parent(self):
+        cell = self.cell('kmipkit_ttlv::Structure::try_push',
+                         'KMIPKIT-ELEM-OBJECT-STRUCTURE-3-10-KEY-MATERIAL')
+        process, report = self.run_matrix([cell])
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertEqual('passed', report['events'][0]['status'])
+        self.assertRegex(report['events'][0]['request_tree_sha256'], r'^[0-9a-f]{64}$')
+
+    def test_operation_structure_tags_match_case_insensitively(self):
+        cell = self.cell('kmipkit_ttlv::Structure::try_push',
+                         'KMIPKIT-ELEM-OPERATION-STRUCTURE-7-16-INTEROP-IDENTIFIER')
+        process, report = self.run_matrix([cell])
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertEqual('passed', report['events'][0]['status'])
+
+    def test_managed_object_route_parses_a_complete_public_certificate_fixture(self):
+        cell = self.cell('kmipkit_protocol::ManagedObject::try_from_item',
+                         'KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE')
+        process, report = self.run_matrix([cell])
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertEqual('passed', report['events'][0]['status'])
+
+    def test_managed_object_route_parses_each_kmip_21_object_fixture(self):
+        names = ('Certificate', 'Certificate Request', 'Opaque Object', 'PGP Key',
+                 'Private Key', 'Public Key', 'Secret Data', 'Split Key', 'Symmetric Key')
+        cells = [self.cell('kmipkit_protocol::ManagedObject::try_from_item',
+                           next(target['target_id'] for target in CATALOG['normative_targets']
+                                if target['kind'] == 'object_structure' and target['name'] == name))
+                 for name in names]
+        process, report = self.run_matrix(cells)
+        self.assertEqual(process.returncode, 0, process.stderr or report)
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+
+    def test_ci_gate_refuses_a_partial_real_route_run(self):
+        with tempfile.TemporaryDirectory() as directory:
+            matrix = Path(directory) / 'one-cell.jsonl'
+            matrix.write_text(json.dumps(self.cell('kmipkit_ttlv::Item::new')) + '\n')
+            process = subprocess.run([sys.executable, str(ROOT / 'interop/rust-kmip-validator/tools/run_route_matrix.py'),
+                '--matrix', str(matrix), '--output-dir', directory,
+                '--response-evidence-dir', directory],
+                capture_output=True, text=True, timeout=30)
+            self.assertNotEqual(process.returncode, 0)
+            summary_path = Path(directory) / 'matrix-summary.json'
+            self.assertTrue(summary_path.exists(), process.stderr)
+            summary = json.loads(summary_path.read_bytes())
+            self.assertTrue(summary['schema_valid'])
+            self.assertFalse(summary['complete_matrix'])
+            self.assertEqual(summary['invoked_local_cells'], 1)
+            self.assertEqual(summary['gate_failure_code'], 'missing_required_matrix_cells')
+
+    def test_route_gate_consumes_controlled_response_accessor_evidence(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            matrix = root / 'one-cell.jsonl'
+            matrix.write_text(json.dumps(self.cell('kmipkit_ttlv::Item::new')) + '\n')
+            evidence_dir = root / 'response-evidence'
+            evidence_dir.mkdir()
+            response_cell = next(
+                cell for cell in iter_cells(CATALOG, ROUTES, languages=('rust',))
+                if cell['public_api_symbol'] == 'kmipkit_client::ClientBatchResponse::len'
+                and cell['protocol_version'] == '2.1'
+            )
+            matrix.write_text(''.join(
+                json.dumps(cell, sort_keys=True, separators=(',', ':')) + '\n'
+                for cell in (self.cell('kmipkit_ttlv::Item::new'), response_cell)
+            ))
+            provenance = json.loads((ROOT / 'interop/.local/rust-live/provenance.json').read_bytes())
+            event = {
+                key: response_cell.get(key)
+                for key in (
+                    'case_id', 'route_id', 'target_id', 'workflow_step_index',
+                    'workflow_item_index', 'public_api_symbol', 'execution_route_id',
+                    'execution_api_symbol', 'action', 'protocol_version', 'encoding',
+                    'transport',
+                )
+                if key in response_cell or key in ('execution_route_id', 'execution_api_symbol')
+            }
+            event.update({
+                'invocation_id': 'controlled-response-cell',
+                'status': 'passed',
+                'invocation_count': 1,
+                'response_tree_sha256': 'a' * 64,
+            })
+            report = {
+                'schema_version': '1.0',
+                'run_id': 'controlled-response-run',
+                'language': 'rust',
+                'server': {
+                    'id': 'controlled-fixture',
+                    'product': 'controlled-fixture',
+                    'version': 'offline-1',
+                    'configuration_fingerprint': 'b' * 64,
+                },
+                'library_commit': provenance['library_commit'],
+                'artifact_sha256': provenance['artifact_sha256'],
+                'catalog_sha256': hashlib.sha256(CATALOG_PATH.read_bytes()).hexdigest(),
+                'route_manifest_sha256': hashlib.sha256(ROUTES_PATH.read_bytes()).hexdigest(),
+                'protocol_versions': ['2.1'],
+                'network_combinations': [{'encoding': 'TTLV', 'transport': 'raw_tls'}],
+                'events': [event],
+            }
+            (evidence_dir / 'rust-response-routes-2.1.json').write_text(json.dumps(report))
+            process = subprocess.run([
+                sys.executable,
+                str(ROOT / 'interop/rust-kmip-validator/tools/run_route_matrix.py'),
+                '--matrix', str(matrix),
+                '--output-dir', str(root / 'output'),
+                '--response-evidence-dir', str(evidence_dir),
+            ], capture_output=True, text=True, timeout=30)
+            self.assertNotEqual(process.returncode, 0)
+            summary = json.loads((root / 'output/matrix-summary.json').read_bytes())
+            self.assertEqual(summary['invoked_response_cells'], 1)
+            self.assertEqual(summary['invoked_local_cells'], 1)
+            self.assertEqual(summary['pending_local_cells'], summary['required_local_cells'] - 2)
+            self.assertEqual(summary['gate_failure_code'], 'missing_required_matrix_cells')
+
+    def test_route_gate_consumes_controlled_network_request_evidence(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            matrix = root / 'selected-cells.jsonl'
+            local_cell = self.cell('kmipkit_ttlv::Item::new')
+            network_cell = next(
+                cell for cell in iter_cells(CATALOG, ROUTES, languages=('rust',))
+                if cell['mode'] == 'network' and cell['case_id'] == 'test-op-query'
+                and cell['protocol_version'] == '2.1' and cell['encoding'] == 'TTLV'
+                and cell['transport'] == 'raw_tls' and cell['action'] == 'construct'
+            )
+            matrix.write_text(''.join(
+                json.dumps(cell, sort_keys=True, separators=(',', ':')) + '\n'
+                for cell in (local_cell, network_cell)
+            ))
+            provenance = json.loads((ROOT / 'interop/.local/rust-live/provenance.json').read_bytes())
+            event = {
+                key: network_cell.get(key)
+                for key in (
+                    'case_id', 'route_id', 'target_id', 'workflow_step_index',
+                    'workflow_operation', 'workflow_item_index', 'public_api_symbol',
+                    'execution_route_id', 'execution_api_symbol', 'action',
+                    'protocol_version', 'encoding', 'transport',
+                )
+                if key in network_cell or key in ('execution_route_id', 'execution_api_symbol')
+            }
+            event.update({
+                'invocation_id': 'controlled-query-constructor',
+                'status': 'passed',
+                'invocation_count': 1,
+                'request_tree_sha256': 'a' * 64,
+                'request_delivery_state': 'response_received',
+                'transport_invocation_count': 1,
+            })
+            report = {
+                'schema_version': '1.0',
+                'run_id': 'controlled-query-route-run',
+                'language': 'rust',
+                'server': {
+                    'id': 'controlled-fixture',
+                    'product': 'controlled-fixture',
+                    'version': 'offline-1',
+                    'configuration_fingerprint': 'b' * 64,
+                },
+                'library_commit': provenance['library_commit'],
+                'artifact_sha256': provenance['artifact_sha256'],
+                'catalog_sha256': hashlib.sha256(CATALOG_PATH.read_bytes()).hexdigest(),
+                'route_manifest_sha256': hashlib.sha256(ROUTES_PATH.read_bytes()).hexdigest(),
+                'protocol_versions': ['2.1'],
+                'network_combinations': [{'encoding': 'TTLV', 'transport': 'raw_tls'}],
+                'events': [event],
+            }
+            evidence_dir = root / 'evidence'
+            (evidence_dir / 'routes').mkdir(parents=True)
+            (evidence_dir / 'routes/rust-network-routes-2.1-ttlv-raw_tls.json').write_text(
+                json.dumps(report)
+            )
+            output_dir = root / 'output'
+            process = subprocess.run([
+                sys.executable,
+                str(ROOT / 'interop/rust-kmip-validator/tools/run_route_matrix.py'),
+                '--matrix', str(matrix),
+                '--output-dir', str(output_dir),
+                '--response-evidence-dir', str(evidence_dir),
+            ], capture_output=True, text=True, timeout=30)
+            self.assertNotEqual(process.returncode, 0)
+            summary = json.loads((output_dir / 'matrix-summary.json').read_bytes())
+            self.assertTrue(summary['schema_valid'])
+            self.assertEqual(summary['invoked_network_cells'], 1)
+            self.assertEqual(summary['pending_network_cells'], summary['required_network_cells'] - 1)
+            self.assertEqual(summary['gate_failure_code'], 'missing_required_matrix_cells')
+
+    def test_route_matrix_runner_does_not_accept_a_caller_selected_executable(self):
+        process = subprocess.run([sys.executable,
+            str(ROOT / 'interop/rust-kmip-validator/tools/run_route_matrix.py'), '--help'],
+            capture_output=True, text=True, timeout=30)
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertNotIn('--validator', process.stdout)
+
+    def test_matrix_hash_output_is_confined_to_cargo_out_dir(self):
+        sys.path.insert(0, str(ROOT / 'interop/rust-kmip-validator/tools'))
+        from matrix_hashes import contained_output_path
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            output_dir = root / 'cargo-out'
+            output_dir.mkdir()
+            expected = output_dir / 'route-cell-hashes.txt'
+            self.assertEqual(expected.resolve(), contained_output_path(expected, output_dir))
+            with self.assertRaises(ValueError):
+                contained_output_path(root / 'outside.txt', output_dir)
+            escape = output_dir / 'escape.txt'
+            escape.symlink_to(root / 'outside.txt')
+            with self.assertRaises(ValueError):
+                contained_output_path(escape, output_dir)
+
+    def test_generated_route_arm_parser_handles_long_nonmatching_input(self):
+        sys.path.insert(0, str(ROOT / 'interop/rust-kmip-validator/tools'))
+        from route_call_parser import parse_route_arm
+
+        self.assertEqual(('kmipkit_protocol::CheckRequest::new', 'CheckRequest::new()'),
+                         parse_route_arm('"kmipkit_protocol::CheckRequest::new" => CheckRequest::new(),'))
+        self.assertIsNone(parse_route_arm('x' * 1_000_000))
+
+    def test_query_response_payload_accessor_reconstructs_the_decoded_response(self):
+        cells = [cell for cell in iter_cells(CATALOG, ROUTES, languages=('rust',))
+                 if cell['public_api_symbol'] == 'kmipkit_protocol::QueryResponse::to_ttlv_payload']
+        process, report = self.run_matrix(cells)
+        self.assertEqual(process.returncode, 0, process.stderr or process.stdout or report)
+        self.assertEqual(len(cells), len(report['events']))
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+
+    def test_keyblock_cryptographic_properties_cover_every_normative_target(self):
+        cells = [cell for cell in iter_cells(CATALOG, ROUTES, languages=('rust',))
+                 if cell['public_api_symbol'] == 'kmipkit_protocol::KeyBlock::with_cryptographic_properties']
+        process, report = self.run_matrix(cells)
+        self.assertEqual(process.returncode, 0, process.stderr or process.stdout or report)
+        self.assertEqual(len(cells), len(report['events']))
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+
+    def test_check_usage_mask_builder_covers_every_normative_target(self):
+        cells = [cell for cell in iter_cells(CATALOG, ROUTES, languages=('rust',))
+                 if cell['public_api_symbol'] == 'kmipkit_protocol::CheckRequest::with_cryptographic_usage_mask']
+        process, report = self.run_matrix(cells)
+        self.assertEqual(process.returncode, 0, process.stderr or process.stdout or report)
+        self.assertEqual(len(cells), len(report['events']))
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+
+    def test_raw_tag_routes_cover_assigned_reserved_and_unallocated_values(self):
+        symbols = {'kmipkit_ttlv::RawTag::new', 'kmipkit_ttlv::RawTag::try_checked'}
+        cells = [cell for cell in iter_cells(CATALOG, ROUTES, languages=('rust',))
+                 if cell['public_api_symbol'] in symbols and cell['case_id'] == 'test-enum-tag']
+        process, report = self.run_matrix(cells)
+        self.assertEqual(process.returncode, 0, process.stderr or process.stdout or report)
+        self.assertEqual(len(cells), len(report['events']))
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+
+    def test_managed_object_parser_covers_every_object_subtree_target(self):
+        cells = [cell for cell in iter_cells(CATALOG, ROUTES, languages=('rust',))
+                 if cell['public_api_symbol'] == 'kmipkit_protocol::ManagedObject::try_from_item']
+        process, report = self.run_matrix(cells)
+        self.assertEqual(process.returncode, 0, process.stderr or process.stdout or report)
+        self.assertEqual(len(cells), len(report['events']))
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+
+    def test_typed_object_and_key_model_parsers_cover_every_route_cell(self):
+        # OASIS KMIP 2.0/2.1 §§2.1–2.9 define the nine managed-object root structures.
+        roots = {
+            'kmipkit_protocol::Certificate::try_from_item': 'Certificate',
+            'kmipkit_protocol::CertificateRequest::try_from_item': 'Certificate Request',
+            'kmipkit_protocol::OpaqueObject::try_from_item': 'Opaque Object',
+            'kmipkit_protocol::PgpKey::try_from_item': 'PGP Key',
+            'kmipkit_protocol::PrivateKey::try_from_item': 'Private Key',
+            'kmipkit_protocol::PublicKey::try_from_item': 'Public Key',
+            'kmipkit_protocol::SecretData::try_from_item': 'Secret Data',
+            'kmipkit_protocol::SplitKey::try_from_item': 'Split Key',
+            'kmipkit_protocol::SymmetricKey::try_from_item': 'Symmetric Key',
+        }
+        cells = [cell for cell in iter_cells(CATALOG, ROUTES, languages=('rust',))
+                 if cell['public_api_symbol'] in roots
+                 and next(target for target in CATALOG['normative_targets']
+                          if target['target_id'] == cell['target_id'])['name'] == roots[cell['public_api_symbol']]
+                 and next(target for target in CATALOG['normative_targets']
+                          if target['target_id'] == cell['target_id'])['kind'] in ('tag', 'object_structure')]
+        self.assertGreater(len(cells), 0)
+        process, report = self.run_matrix(cells)
+        self.assertEqual(process.returncode, 0, process.stderr or process.stdout or report)
+        self.assertEqual(len(cells), len(report['events']))
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+
+    def test_managed_object_constructors_cover_every_local_route_cell(self):
+        constructors = {
+            'kmipkit_protocol::Certificate::try_new',
+            'kmipkit_protocol::CertificateRequest::try_new',
+            'kmipkit_protocol::OpaqueObject::try_new',
+            'kmipkit_protocol::PgpKey::try_new',
+            'kmipkit_protocol::PrivateKey::try_new',
+            'kmipkit_protocol::PublicKey::try_new',
+            'kmipkit_protocol::SecretData::try_new',
+            'kmipkit_protocol::SplitKey::try_new',
+            'kmipkit_protocol::SymmetricKey::try_new',
+        }
+        cells = [cell for cell in iter_cells(CATALOG, ROUTES, languages=('rust',))
+                 if cell['mode'] == 'local' and cell['action'] == 'construct'
+                 and cell['public_api_symbol'] in constructors]
+        self.assertGreater(len(cells), 0)
+        process, report = self.run_matrix(cells)
+        self.assertEqual(process.returncode, 0, process.stderr or process.stdout or report)
+        self.assertEqual(len(cells), len(report['events']))
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+
+    def test_key_block_constructor_covers_every_local_route_cell(self):
+        symbol = 'kmipkit_protocol::KeyBlock::try_new'
+        cells = [cell for cell in iter_cells(CATALOG, ROUTES, languages=('rust',))
+                 if cell['mode'] == 'local' and cell['action'] == 'construct'
+                 and cell['public_api_symbol'] == symbol]
+        self.assertGreater(len(cells), 0)
+        process, report = self.run_matrix(cells)
+        self.assertEqual(process.returncode, 0, process.stderr or process.stdout or report)
+        self.assertEqual(len(cells), len(report['events']))
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+
+    def test_key_wrapping_metadata_parsers_cover_every_normative_route_cell(self):
+        # OASIS KMIP 2.0/2.1 §3.3, Tables 14–17 define these metadata structures.
+        symbols = {
+            'kmipkit_protocol::EncryptionKeyInformation::try_from_item',
+            'kmipkit_protocol::MacSignatureKeyInformation::try_from_item',
+            'kmipkit_protocol::KeyWrappingData::try_from_item',
+        }
+        cells = [cell for cell in iter_cells(CATALOG, ROUTES, languages=('rust',))
+                 if cell['public_api_symbol'] in symbols]
+        process, report = self.run_matrix(cells)
+        self.assertEqual(process.returncode, 0, process.stderr or process.stdout or report)
+        self.assertEqual(len(cells), len(report['events']))
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+
+    def test_parameter_modifier_projects_the_exact_constructed_target(self):
+        cell = self.cell('kmipkit_protocol::CryptographicParametersBuilder::with_padding_method',
+                         'KMIPKIT-ELEM-ENUM-VALUE-PADDING-METHOD-NONE-00000001')
+        process, report = self.run_matrix([cell])
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertEqual(report['events'][0]['request_tree_sha256'], hashlib.sha256(b'[[4325471,5,1]]').hexdigest())
+
+    def test_parameter_constructor_preserves_source_permitted_empty_model(self):
+        cell = self.cell('kmipkit_protocol::CryptographicParametersBuilder::new', 'KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-PARAMETERS')
+        process, report = self.run_matrix([cell])
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertEqual(report['events'][0]['request_tree_sha256'], hashlib.sha256(b'[[4325419,1,[]]]').hexdigest())
+
+    def test_every_parameter_setter_projects_its_own_normative_field(self):
+        symbols = {route['public_api_symbol'] for route in ROUTES['routes']
+                   if route['language'] == 'rust' and route['public_api_symbol'].startswith('kmipkit_protocol::CryptographicParametersBuilder::with_')}
+        targets = {target['target_id']: target for target in CATALOG['normative_targets']}
+        selected = {}
+        for cell in iter_cells(CATALOG, ROUTES, languages=('rust',)):
+            if cell['public_api_symbol'] not in symbols or cell['public_api_symbol'] in selected:
+                continue
+            target = targets[cell['target_id']]
+            if target['kind'] == 'enumeration_value' and target.get('allocation') != 'assigned':
+                continue
+            if target['kind'] in ('enumeration_value', 'structure_member'):
+                selected[cell['public_api_symbol']] = cell
+        self.assertEqual(set(selected), symbols)
+        process, report = self.run_matrix(list(selected.values()))
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertEqual(len(report['events']), len(symbols))
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+
+    def test_credential_variants_and_nonce_invoke_their_real_model_routes(self):
+        kinds = {'UsernameAndPasswordCredential': 'USERNAME-AND-PASSWORD', 'DeviceCredential': 'DEVICE',
+                 'AttestationCredential': 'ATTESTATION', 'HashedPasswordCredential': 'HASHED-PASSWORD'}
+        cells = [self.cell('kmipkit_protocol::' + owner + '::try_from_ttlv', 'KMIPKIT-ELEM-CREDENTIAL-' + target)
+                 for owner, target in kinds.items()]
+        cells.append(self.cell('kmipkit_protocol::Nonce::try_from_ttlv', 'KMIPKIT-ELEM-MESSAGE-FIELD-9-14-NONCE'))
+        process, report = self.run_matrix(cells)
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertEqual(len(report['events']), 5)
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+        encoded = json.dumps(report)
+        self.assertNotIn('KMIPKit', encoded, 'fixture credentials must stay out of evidence')
+
+    def test_forged_symbol_is_rejected_without_false_positive(self):
+        cell = self.cell('kmipkit_ttlv::Item::new')
+        cell['public_api_symbol'] = 'kmipkit_ttlv::Value::boolean'
+        process, report = self.run_matrix([cell])
+        self.assertNotEqual(process.returncode, 0)
+        self.assertIsNone(report)
+
+    def test_duplicate_cells_fail_before_invocation(self):
+        cell = self.cell('kmipkit_ttlv::Item::new')
+        process, report = self.run_matrix([cell, cell])
+        self.assertNotEqual(process.returncode, 0)
+        self.assertIsNone(report)
+
+    def test_unfinished_recipe_cannot_be_reported_as_api_unavailable(self):
+        cell = self.cell('kmipkit_client::ClientBatchOutcome::asynchronous_correlation_value', None)
+        process, report = self.run_matrix([cell])
+        self.assertNotEqual(process.returncode, 0)
+        self.assertIsNotNone(report, process.stderr)
+        self.assertEqual(report['events'], [])
+        self.assertIn('pending_recipe', process.stderr)
+        self.assertNotIn('api_unavailable', process.stderr)
+
+
+if __name__ == '__main__':
+    unittest.main()

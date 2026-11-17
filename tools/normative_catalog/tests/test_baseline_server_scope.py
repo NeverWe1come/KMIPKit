@@ -49,7 +49,6 @@ PROCESS_DATE_REQUIREMENT_IDS = {
     *(f"KMIPKIT-REQ-SPEC-4.41-001-{ordinal:03}" for ordinal in range(1, 5)),
 }
 
-
 def load_catalog() -> dict[str, Any]:
     """Load the checked-in normative catalog used by profile generation."""
     path = ROOT / "specification/catalog/kmip-2.1.json"

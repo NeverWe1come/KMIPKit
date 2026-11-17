@@ -30,6 +30,10 @@ public final class ProcessRequest implements AutoCloseable {
                 NativeExtensionRegistry.processRequestToTtlvPayload(value), this));
     }
 
+    NativeHandle nativeHandleOwner() {
+        return handle;
+    }
+
     @Override
     public void close() {
         handle.close();

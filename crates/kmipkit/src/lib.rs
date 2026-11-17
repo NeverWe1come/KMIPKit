@@ -137,6 +137,7 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
             | "client_asynchronous_operations"
             | "client_batch_model"
             | "client_execution"
+            | "client_kmip30_typed_operations"
             | "client_operation_identity"
             | "wire_encoding_selection"
             | "client_profile_readiness"
@@ -147,6 +148,12 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
             | "credential_validation_error_parity"
             | "crypto_response_ttlv"
             | "ffi_runtime_metadata"
+            | "fluent_add_attribute_parity"
+            | "fluent_create_key_pair_parity"
+            | "fluent_delete_attribute_parity"
+            | "fluent_dx_api"
+            | "fluent_locate_revoke_parity"
+            | "fluent_set_attribute_parity"
             | "generic_ttlv_model"
             | "hashed_password_timestamp_sequence"
             | "kmip30_draft_routes"
@@ -179,8 +186,9 @@ pub use kmipkit_client::{
     ClientBatchResponse, ClientCauseCategory, ClientError, ClientErrorCategory, ClientListener,
     ClientListenerConnection, ClientMessageExtension, ClientOperation, ClientOperationOutcome,
     ClientRequest, ClientResponseView, IncomingServerBatch, PendingOutcome, RequestOptions,
-    RoleReversedSession, ServerRequestDispatcher, ServerRequestHandler, ServerRequestItemPayload,
-    ServerRequestItemView, UsageAllocationContext, UsageAllocationContextError,
+    ResponseEncodingError, RoleReversedSession, ServerRequestDispatcher, ServerRequestHandler,
+    ServerRequestItemPayload, ServerRequestItemView, UsageAllocationContext,
+    UsageAllocationContextError,
 };
 pub use kmipkit_protocol::{
     CancelRequest, CodecContext, DelegatedLoginError, DelegatedLoginRequest,

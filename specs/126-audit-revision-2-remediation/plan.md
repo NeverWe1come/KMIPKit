@@ -1,0 +1,11 @@
+# Plan: KMIPKIT-0126 Remediation of Second Independent Audit Findings
+
+## Architecture Decisions
+
+1. **Exact OASIS KMIP 2.1 Tags in `v2_1_tags`**: Replace the corrupted `v2_1_tags` array in `kmip-versioned-tags.json` with the exact 36 tags (`0x420153..=0x420176`) defined in Table 487 of KMIP 2.1. The 7 object attributes (`Rotate Interval` `0x42016A`, `Rotate Automatic` `0x42016B`, `Rotate Offset` `0x42016C`, `Rotate Date` `0x42016D`, `Rotate Generation` `0x42016E`, `Rotate Name` `0x42016F`, `Rotate Latest` `0x420172`) are designated with `"is_object_attribute": true`.
+2. **Unified 99 Typed Attributes Surface**: In `generate_attribute_types.py`, pass `versioned_tags` to `collect_typed_attributes` and all `render_*` functions so that standard attribute enums, builder extensions, FFI tag validation, and multi-language bindings cover all 99 attributes (62 baseline + 32 KMIP 3.0 new + 5 KMIP 3.0 promoted). Parity fixtures and test assertions are updated from 62 to 99.
+3. **Fail-Closed Wire Names Generator & Split Key Polynomial**: Ensure `generate_wire_names.py` raises `ValueError` if an Enumeration entry in versioned tags lacks an enumeration family. Add `Split Key Polynomial` to `kmip-versioned-tags.json` and `kmip-versioned-values.json` (§11.56 Table 603).
+4. **Normative KMIP 3.0 Fidelity for Enums**: Do not invent fake values in `Digital Signature Algorithm` (Table 558) or `Cryptographic Usage Mask` (Table 616). Add the 6 real KMIP 3.0 enumeration deltas (`Credential Type`, `Item Type`, `Query Function`, `Recommended Curve`, `Revocation Reason Code`, `Unique Identifier`) to `kmip-versioned-values.json`.
+5. **Exact KMIP 2.0 VersionGate Tags**: Correct `Digest` to `0x0042_0034`, `Key Value Present` to `0x0042_00BB`, and `Key Format Type` to `0x0042_0042` in `VersionGate::validate_attribute_mutation` and spec 070. Realign operation names `0x36..=0x3B`.
+6. **Multi-Language Typed Response Accessors for KMIP 3.0 Batch**: Provide dedicated typed response accessors on batch item results across Rust, C, Java, and Python for the 7 KMIP 3.0 operations, and align `public-api.md`.
+7. **Java Interop Validator Unblocking**: Align `interop/java-kmip-validator` pin with `release/1.0.0` and enable live KMIP 2.0 route execution.

@@ -418,7 +418,7 @@ class WireNameGeneratorCliTests(unittest.TestCase):
             output = root / OUTPUT_PATH
             output.parent.mkdir(parents=True)
 
-            with patch("tools.normative_catalog.generate_wire_names.safe_read_bytes", return_value=b"catalog"), patch(
+            with patch("tools.normative_catalog.generate_wire_names.safe_read_bytes", side_effect=[b"catalog", b"{}", b"{}"]), patch(
                 "tools.normative_catalog.generate_wire_names.load_validated_catalog", return_value=catalog
             ), patch("tools.normative_catalog.generate_wire_names.atomic_write_bytes") as write_output:
                 with redirect_stdout(StringIO()):
@@ -426,12 +426,12 @@ class WireNameGeneratorCliTests(unittest.TestCase):
                 write_output.assert_called_once()
 
             generated_source = render_rust(catalog).encode("utf-8")
-            with patch("tools.normative_catalog.generate_wire_names.safe_read_bytes", side_effect=[b"catalog", generated_source]), patch(
+            with patch("tools.normative_catalog.generate_wire_names.safe_read_bytes", side_effect=[b"catalog", b"{}", b"{}", generated_source]), patch(
                 "tools.normative_catalog.generate_wire_names.load_validated_catalog", return_value=catalog
             ), redirect_stdout(StringIO()):
                 self.assertEqual(main(["--check", "--repo-root", str(root)]), 0)
 
-            with patch("tools.normative_catalog.generate_wire_names.safe_read_bytes", side_effect=[b"catalog", b"stale"]), patch(
+            with patch("tools.normative_catalog.generate_wire_names.safe_read_bytes", side_effect=[b"catalog", b"{}", b"{}", b"stale"]), patch(
                 "tools.normative_catalog.generate_wire_names.load_validated_catalog", return_value=catalog
             ), redirect_stderr(StringIO()):
                 self.assertEqual(main(["--check", "--repo-root", str(root)]), 1)

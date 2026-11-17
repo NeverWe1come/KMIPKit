@@ -245,21 +245,21 @@ final class ProfileValidationMappingTest {
 
     @Test
     void selectionValidationFailsClosedWithRedactedSourceBackedDetails() {
-        String selectedBaseline = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+        String unavailableProfile = "KMIPKIT-PROFILE-HTTPS-CLIENT";
         ProfileValidationException failure = assertThrows(
                 ProfileValidationException.class,
-                () -> new ProfileValidationSelection(List.of(selectedBaseline)).validate());
+                () -> new ProfileValidationSelection(List.of(unavailableProfile)).validate());
 
         var details = failure.profileValidation();
-        assertEquals("profile_unavailable", details.errorCode());
-        assertEquals(selectedBaseline, details.profileId().orElseThrow());
-        assertEquals("KMIPKIT-REQ-SPEC-14.1-001", details.requirementId().orElseThrow());
-        assertEquals("KMIPKIT-CLAUSE-SPEC-14.1-001", details.sourceClauseId().orElseThrow());
+        assertEquals("conditional_profile_unsatisfied", details.errorCode());
+        assertEquals(unavailableProfile, details.profileId().orElseThrow());
+        assertFalse(details.requirementId().isPresent());
+        assertFalse(details.sourceClauseId().isPresent());
         assertFalse(details.sourceGapId().isPresent());
         assertFalse(details.sourceGapLocator().isPresent());
         assertFalse(details.batchItemIndex().isPresent());
-        assertFalse(failure.getMessage().contains(selectedBaseline));
-        assertFalse(failure.toString().contains(selectedBaseline));
+        assertFalse(failure.getMessage().contains(unavailableProfile));
+        assertFalse(failure.toString().contains(unavailableProfile));
     }
 
     @Test
@@ -369,17 +369,17 @@ final class ProfileValidationMappingTest {
                 ClientOperationException failure = assertThrows(ClientOperationException.class,
                         () -> client.executeWithProfiles(batch, CodecLimits.defaults(),
                                 new ProfileValidationSelection(
-                                        List.of("KMIPKIT-PROFILE-BASELINE-CLIENT"))));
+                                        List.of("KMIPKIT-PROFILE-HTTPS-CLIENT"))));
                 assertEquals(1, failure.categoryCode());
                 assertEquals(1, failure.deliveryStateCode());
                 var details = failure.profileValidation().orElseThrow();
-                assertEquals("profile_unavailable", details.errorCode());
-                assertEquals("KMIPKIT-PROFILE-BASELINE-CLIENT", details.profileId().orElseThrow());
-                assertEquals("KMIPKIT-REQ-SPEC-14.1-001", details.requirementId().orElseThrow());
-                assertEquals("KMIPKIT-CLAUSE-SPEC-14.1-001", details.sourceClauseId().orElseThrow());
+                assertEquals("conditional_profile_unsatisfied", details.errorCode());
+                assertEquals("KMIPKIT-PROFILE-HTTPS-CLIENT", details.profileId().orElseThrow());
+                assertFalse(details.requirementId().isPresent());
+                assertFalse(details.sourceClauseId().isPresent());
                 assertFalse(details.sourceGapId().isPresent());
                 assertFalse(details.batchItemIndex().isPresent());
-                assertFalse(failure.getMessage().contains("KMIPKIT-PROFILE-BASELINE-CLIENT"));
+                assertFalse(failure.getMessage().contains("KMIPKIT-PROFILE-HTTPS-CLIENT"));
 
                 ProfileValidationContext context = new ProfileValidationContext().withObjectState(
                         0, new ProfileObjectState("object-7")
@@ -395,8 +395,8 @@ final class ProfileValidationMappingTest {
                         () -> client.executeWithProfilesAndContext(contextBatch,
                                 CodecLimits.defaults(),
                                 new ProfileValidationSelection(
-                                        List.of("KMIPKIT-PROFILE-BASELINE-CLIENT")), context));
-                assertEquals("profile_unavailable",
+                                        List.of("KMIPKIT-PROFILE-HTTPS-CLIENT")), context));
+                assertEquals("conditional_profile_unsatisfied",
                         contextFailure.profileValidation().orElseThrow().errorCode());
                 assertFalse(context.toString().contains("object-7"));
 

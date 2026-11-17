@@ -306,6 +306,18 @@ def request_payload_field_present(target, batch_item, targets, codec):
 
 def response_payload_field_present(target, batch_item, targets, codec):
     """Check a response payload field under its exact operation's batch item."""
+    if target.get('name') == 'Any Object (Section 2)':
+        operation = targets.get(target.get('operation_id'))
+        object_tag = codec.tags.get(normalize('Symmetric Key'))
+        payloads = [child for child in batch_item[2]
+                    if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1]
+        operation_value = (codec.values.get((codec.tag('Operation'), normalize(operation['name'])))
+                          if operation is not None else None)
+        return (target.get('role') == 'response' and operation is not None and
+                operation.get('kind') == 'operation' and object_tag is not None and
+                operation_value is not None and numbers(batch_item, codec.tag('Operation')) == [operation_value] and
+                len(payloads) == 1 and
+                any(child[0] == object_tag and child[1] == 1 for child in payloads[0][2]))
     return payload_field_present(target, batch_item, targets, codec,
                                  role='response', payload_tag=RESPONSE_PAYLOAD_TAG)
 
@@ -358,6 +370,25 @@ RECIPES = {
     'test-v20-reject-get-constraints': ((56,), 'get_constraints'),
     'test-v20-reject-ping': ((59,), 'ping'),
     'test-op-create': ((1, 20), 'create'),
+    'test-op-export': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-request-20-001': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-request-20-002': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-request-20-003': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-request-20-004': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-request-20-005': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-request-21-001': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-request-21-002': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-request-21-003': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-request-21-004': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-request-21-005': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-response-20-001': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-response-20-002': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-response-20-003': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-response-20-004': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-response-21-001': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-response-21-002': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-response-21-003': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-response-21-004': ((1, 43, 19, 20), 'export'),
     'test-op-register': ((3, 20), 'register'),
     'test-op-add-attribute': ((1, 13, 19, 20), 'add_attribute'),
     'test-norm-payload-client-add-attribute-request-20-002': ((1, 13, 19, 20), 'add_attribute'),
@@ -496,6 +527,24 @@ CONTROLLED_PEER_LOCAL_MODEL_CASES = frozenset({
     'test-norm-payload-client-create-request-21-003',
     'test-norm-payload-client-get-usage-allocation-request-20-001',
     'test-norm-payload-client-get-usage-allocation-request-21-001',
+    'test-norm-payload-client-export-request-20-001',
+    'test-norm-payload-client-export-request-20-002',
+    'test-norm-payload-client-export-request-20-003',
+    'test-norm-payload-client-export-request-20-004',
+    'test-norm-payload-client-export-request-20-005',
+    'test-norm-payload-client-export-request-21-001',
+    'test-norm-payload-client-export-request-21-002',
+    'test-norm-payload-client-export-request-21-003',
+    'test-norm-payload-client-export-request-21-004',
+    'test-norm-payload-client-export-request-21-005',
+    'test-norm-payload-client-export-response-20-001',
+    'test-norm-payload-client-export-response-20-002',
+    'test-norm-payload-client-export-response-20-003',
+    'test-norm-payload-client-export-response-20-004',
+    'test-norm-payload-client-export-response-21-001',
+    'test-norm-payload-client-export-response-21-002',
+    'test-norm-payload-client-export-response-21-003',
+    'test-norm-payload-client-export-response-21-004',
 })
 
 
@@ -778,7 +827,7 @@ def assert_delegated_login_request_payload(node, case_id):
 
 
 def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
-                  constructor_variant=None):
+                  constructor_variant=None, export_field=None):
     selected_recipe = recipe or RECIPES[case_id]
     expected, _ = selected_recipe
     observed_operations = tuple(numbers(node, 0x42005C))
@@ -832,6 +881,46 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
         if (len(archive_items) != 1 or
                 numbers(archive_items[0], UNIQUE_IDENTIFIER_TAG) != expected_identifier):
             raise ValueError('fixture_archive_unique_identifier_presence_mismatch')
+    if selected_recipe[1] == 'export':
+        export_item = next((item for item in node[2]
+                            if item[0] == BATCH_ITEM_TAG and item[1] == 1 and
+                            numbers(item, 0x42005C) == [43]), None)
+        payloads = [child for child in export_item[2]
+                    if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1] if export_item else []
+        fields = payloads[0][2] if len(payloads) == 1 else []
+        identifiers = [child for child in fields if child[0] == UNIQUE_IDENTIFIER_TAG]
+        expected_field_tag = {
+            'Key Format Type': 0x420042,
+            'Key Wrap Type': 0x4200F8,
+            'Key Compression Type': 0x420041,
+            'Key Wrapping Specification': 0x420047,
+        }.get(export_field)
+        field_is_present = constructor_variant == 'present'
+        expected_tags = ([] if export_field == 'Unique Identifier' and not field_is_present else
+                         [UNIQUE_IDENTIFIER_TAG])
+        if expected_field_tag is not None and field_is_present:
+            expected_tags.append(expected_field_tag)
+        if (len(payloads) != 1 or [field[0] for field in fields] != expected_tags or
+                (identifiers and not is_id_placeholder_identifier(identifiers[0])) or
+                (expected_tags and expected_tags[0] == UNIQUE_IDENTIFIER_TAG and len(identifiers) != 1)):
+            raise ValueError('fixture_export_request_fields_mismatch')
+        if expected_field_tag is not None and field_is_present:
+            selected = next(field for field in fields if field[0] == expected_field_tag)
+            if export_field == 'Key Format Type' and (selected[1] != 5 or selected[2] != (1).to_bytes(4, 'big')):
+                raise ValueError('fixture_export_key_format_type_mismatch')
+            if export_field == 'Key Wrap Type' and (selected[1] != 5 or selected[2] != (1).to_bytes(4, 'big')):
+                raise ValueError('fixture_export_key_wrap_type_mismatch')
+            if export_field == 'Key Compression Type' and (selected[1] != 5 or selected[2] != (1).to_bytes(4, 'big')):
+                raise ValueError('fixture_export_key_compression_type_mismatch')
+            if export_field == 'Key Wrapping Specification':
+                spec_fields = selected[2] if selected[1] == 1 else []
+                method = [field for field in spec_fields if field[0] == 0x42009E and field[1] == 5]
+                key_info = [field for field in spec_fields if field[0] == 0x420036 and field[1] == 1]
+                identifiers = [field for field in key_info[0][2] if field[0] == UNIQUE_IDENTIFIER_TAG] if len(key_info) == 1 else []
+                if (len(spec_fields) != 2 or len(method) != 1 or method[0][2] != (1).to_bytes(4, 'big') or
+                        len(key_info) != 1 or len(identifiers) != 1 or
+                        identifiers[0][2] != b'fixture-wrapping-key'):
+                    raise ValueError('fixture_export_key_wrapping_specification_mismatch')
     if expected[0] == 1:
         object_type = 4 if case_id in ('test-obj-private-key', 'test-op-sign',
                                       'test-crypto-sign-rsa-2048-pkcs1_v1_5') else 3 if case_id in (
@@ -860,6 +949,9 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
             'test-batch-order-required-placeholder-resolution',
             'test-batch-order-omitted-defaults-true')
         implicit_target = implicit_target or case_id == 'test-op-certify'
+        implicit_target = implicit_target or (
+            selected_recipe[1] == 'export' and export_field == 'Unique Identifier' and
+            constructor_variant == 'omitted')
         minimum_unique_identifiers = 0 if case_id == 'test-batch-placeholder-chain-resolves' else (
             len(expected) - 1 - int(implicit_target))
         if len(numbers(node, 0x420094)) < minimum_unique_identifiers:
@@ -2177,6 +2269,7 @@ class PeerState:
                   15: 'attribute_deleted',
                   48: 'attribute_adjusted',
                   49: 'attribute_set',
+                  43: 'exported',
                   17: 'usage_allocation_returned',
                   26: 'async_operation_polled',
                   56: 'constraints_retrieved', 21: 'archive_requested',
@@ -2184,7 +2277,11 @@ class PeerState:
         items = [item for item in request_tree[2] if item[0] == BATCH_ITEM_TAG]
         for index, item in enumerate(items):
             operation = numbers(item, 0x42005C)[0]
-            identifiers = text_values(item, UNIQUE_IDENTIFIER_TAG)
+            request_payloads = [child for child in item[2]
+                                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+            identifiers = [child[2].decode('utf-8') for child in request_payloads[0][2]
+                           if child[0] == UNIQUE_IDENTIFIER_TAG and child[1] == 7] \
+                if len(request_payloads) == 1 else []
             identifier = identifiers[0] if identifiers else placeholder
             status, reason = 0, 0
             if operation == rejected_operation:
@@ -2275,7 +2372,7 @@ class PeerState:
                 identifier = matching_identifiers[0]
                 placeholder = identifier
                 effect = 'located'
-            elif operation in (9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 20, 31, 32, 33, 34, 48, 49, 56):
+            elif operation in (9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 20, 31, 32, 33, 34, 43, 48, 49, 56):
                 state = self.objects.get(identifier)
                 if state is None:
                     status, reason, effect = 1, 55, 'object_not_found'
@@ -2415,6 +2512,7 @@ def verify_lifecycle(operations, response_tree):
     labels = {9: 'checked', 10: 'object_retrieved', 11: 'attributes_retrieved',
               12: 'attribute_list_retrieved', 13: 'attribute_added',
               48: 'attribute_adjusted',
+              43: 'exported',
               17: 'usage_allocation_returned',
               56: 'constraints_retrieved', 21: 'archive_requested'}
     for operation in operations:
@@ -2729,6 +2827,72 @@ def assert_signature_verify_request(request_tree, version, case_id):
             len(data) != 1 or data[0][2] != b'abc' or
             len(signatures) != 1 or signatures[0][2] != b'fixture-signature-data'):
         raise ValueError('fixture_signature_verify_request_parameters_mismatch')
+def verify_export_response(response_tree):
+    """Check the required KMIP v2.0/v2.1 §6.1.18 Export payload fields."""
+    items = [child for child in response_tree[2]
+             if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    export_items = [item for item in items if numbers(item, 0x42005C) == [43]]
+    payloads = [child for child in export_items[0][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1] if len(export_items) == 1 else []
+    fields = payloads[0][2] if len(payloads) == 1 else []
+    required_tags = [0x420057, UNIQUE_IDENTIFIER_TAG, 0x420125, 0x42008F]
+    if ([field[0] for field in fields] != required_tags or
+            fields[0][1] != 5 or int.from_bytes(fields[0][2], 'big') != 2 or
+            fields[1][1] != 7 or fields[1][2] != b'fixture-key-1' or
+            fields[2][1] != 1 or fields[3][1] != 1):
+        raise ValueError('fixture_export_response_fields_mismatch')
+    attribute_fields = fields[2][2]
+    if ([field[0] for field in attribute_fields] != [0x420028, 0x42002A] or
+            int.from_bytes(attribute_fields[0][2], 'big') != 3 or
+            int.from_bytes(attribute_fields[1][2], 'big', signed=True) != 128):
+        raise ValueError('fixture_export_response_attributes_mismatch')
+    if not any(child[0] == 0x420040 for child in fields[3][2]):
+        raise ValueError('fixture_export_response_any_object_mismatch')
+
+
+
+def export_response_field_tag(field_name):
+    """Resolve the fixture's exact tag for one Export response field."""
+    tags = {'Object Type': 0x420057, 'Unique Identifier': UNIQUE_IDENTIFIER_TAG,
+            'Attributes': 0x420125, 'Any Object (Section 2)': 0x42008F}
+    tag = tags.get(field_name)
+    if tag is None:
+        raise ValueError('fixture_export_response_field_unmapped')
+    return tag
+
+
+def omit_export_response_field(response_wire, field_name):
+    """Build a response fixture with one required Export field removed."""
+    response_tree = parse(response_wire)
+    export_items = [item for item in response_tree[2]
+                    if item[0] == BATCH_ITEM_TAG and item[1] == 1 and
+                    numbers(item, 0x42005C) == [43]]
+    payloads = [child for child in export_items[0][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1] if len(export_items) == 1 else []
+    if len(payloads) != 1:
+        raise ValueError('fixture_export_response_payload_missing')
+    fields = payloads[0][2]
+    tag = export_response_field_tag(field_name)
+    matching = [field for field in fields if field[0] == tag]
+    if len(matching) != 1:
+        raise ValueError('fixture_export_response_field_cardinality_mismatch')
+    fields.remove(matching[0])
+    return fixture_wire(response_tree)
+
+
+def verify_export_response_missing_field(response_tree, field_name):
+    """Confirm one required successful Export field is absent in the negative fixture."""
+    export_items = [item for item in response_tree[2]
+                    if item[0] == BATCH_ITEM_TAG and item[1] == 1 and
+                    numbers(item, 0x42005C) == [43]]
+    payloads = [child for child in export_items[0][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1] if len(export_items) == 1 else []
+    if len(payloads) != 1:
+        raise ValueError('fixture_export_response_payload_missing')
+    expected_tags = [0x420057, UNIQUE_IDENTIFIER_TAG, 0x420125, 0x42008F]
+    expected_tags.remove(export_response_field_tag(field_name))
+    if [field[0] for field in payloads[0][2]] != expected_tags:
+        raise ValueError('fixture_export_response_missing_field_mismatch')
 
 
 def verify_usage_allocation_identifier_variants(response_tree):
@@ -2851,6 +3015,10 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
          if case['case_id'] in {
              'test-norm-payload-client-get-usage-allocation-request-20-001',
              'test-norm-payload-client-get-usage-allocation-request-21-001'} else
+         ('present', 'missing_rejected') if case['case_id'].startswith(
+             'test-norm-payload-client-export-response-') else
+         ('present', 'omitted') if case['case_id'].startswith(
+             'test-norm-payload-client-export-request-') else
          ('direct', 'standalone') if case['case_id'] in {'test-op-get-attributes', 'test-op-get-attribute-list',
                                                          'test-batch-continue-after-failure',
                                                          'test-batch-create-activate-destroy',
@@ -3199,11 +3367,19 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             response_operations = (attribute_mutation_operation,)
                                         elif recipe[1] in ('set_constraints', 'set_defaults'):
                                             assert_recipe(request_tree, case_id, version, recipe,
-                                                          attribute_fixture, variant)
+                                                          attribute_fixture, variant,
+                                                          case.get('requires', {}).get('field_name')
+                                                          if case_id.startswith(
+                                                              'test-norm-payload-client-export-request-')
+                                                          else None)
                                             response_operations = recipe[0]
                                         else:
                                             assert_recipe(request_tree, case_id, version, recipe,
-                                                          attribute_fixture, variant)
+                                                          attribute_fixture, variant,
+                                                          case.get('requires', {}).get('field_name')
+                                                          if case_id.startswith(
+                                                              'test-norm-payload-client-export-request-')
+                                                          else None)
                                             response_operations = recipe[0]
                                         selected_tag = {'test-attr-cryptographic-algorithm': 0x420028,
                                                         'test-attr-cryptographic-length': 0x42002A}.get(
@@ -3233,6 +3409,10 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 (b'placeholder-revoke-cleanup', b'placeholder-destroy-cleanup')
                                                 if cleanup_exchange else
                                                 (b'placeholder-create', b'placeholder-activate'))
+                                        elif recipe[1] == 'export':
+                                            response_item_ids = (
+                                                b'interop-create', b'interop-export',
+                                                b'interop-revoke', b'interop-destroy')
                                         elif attribute_mutation_recipe:
                                             response_item_ids = (
                                                 (b'interop-create',)
@@ -3499,6 +3679,13 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 response_wire = encode_ttlv_node(response_node)
                                             elif recipe[1] == 'certify' and exchange_index == 0:
                                                 verify_create_key_pair_response(parse(response_wire))
+                                        export_response_negative = (
+                                            case_id.startswith('test-norm-payload-client-export-response-') and
+                                            variant == 'missing_rejected' and
+                                            exchange_index == target_operation_exchange_index(recipe))
+                                        if export_response_negative:
+                                            response_wire = omit_export_response_field(
+                                                response_wire, case['requires']['field_name'])
                                         response_tree = parse(response_wire)
                                         if recipe[1] == 'discover_versions':
                                             response_items = [item for item in response_tree[2]
@@ -3711,6 +3898,13 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                         [numbers(item, 0x42007F) for item in response_items] !=
                                                         [[0], [0]] or peer_state.objects):
                                                     raise ValueError('fixture_ordered_placeholder_cleanup_mismatch')
+                                        elif recipe[1] == 'export':
+                                            if export_response_negative:
+                                                verify_export_response_missing_field(
+                                                    response_tree, case['requires']['field_name'])
+                                            else:
+                                                verify_export_response(response_tree)
+                                            verify_lifecycle(recipe[0], response_tree)
                                         elif recipe[1] == 'get_usage_allocation_uid_variants':
                                             verify_usage_allocation_identifier_variants(response_tree)
                                         elif reject_this_exchange:
@@ -3804,6 +3998,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                              'get_usage_allocation_uid_variants'):
                                 run_environment['KMIPKIT_C_USAGE_ALLOCATION_IDENTIFIER_FORM'] = (
                                     'explicit' if variant == 'usage-allocation-explicit' else 'omitted')
+                            elif case_id.startswith('test-norm-payload-client-export-request-'):
+                                run_environment['KMIPKIT_C_EXPORT_REQUEST_FIELD'] = case['requires']['field_name']
+                                run_environment['KMIPKIT_C_EXPORT_REQUEST_VARIANT'] = variant
                             else:
                                 run_environment['KMIPKIT_C_ATTRIBUTE_REQUEST_ROUTE'] = variant
                             if case_id in {
@@ -3828,8 +4025,15 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                 'policy_restricted'
                                 if peer_rejection and peer_rejection.get('result_reason') in (12, 57) else None)
                             expected_rejection_observed = reject_case and result_case.get('status') == expected_rejection_status
+                            response_rejection_observed = (
+                                case_id.startswith('test-norm-payload-client-export-response-') and
+                                variant == 'missing_rejected' and result_case.get('status') == 'failed' and
+                                'category=2 cause=2 delivery=3' in result_case.get('diagnostic', '') and
+                                result_case.get('library_correctness') == 'not_checked' and
+                                result_case.get('server_compatibility') == 'unknown')
                             case_passed = bool(result_case and (
-                                result_case.get('status') == 'passed' or expected_rejection_observed))
+                                result_case.get('status') == 'passed' or expected_rejection_observed or
+                                response_rejection_observed))
                             trace = [line.split('\t') for line in trace_path.read_text().splitlines()] if trace_path.exists() else []
                             called_symbols = {symbol for symbol, status in trace if status == '0'}
                             invoked_symbols = {symbol for symbol, _ in trace}
@@ -3895,7 +4099,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                     attribute_check['request_certificate_attribute_tags'] = [
                                         f'{item[0]:06X}' for item in register_attributes[2]]
                             checks.append({'case_id': case_id, 'constructor_variant': variant, 'protocol_version': version, 'encoding': encoding,
-                                           'transport': transport, 'status': 'passed' if observation and not code and run.returncode == 0 else 'failed',
+                                           'transport': transport, 'status': 'passed' if observation and not code and (run.returncode == 0 or response_rejection_observed) else 'failed',
                                            'consumer_case_status': (result.get('cases') or [{}])[0].get('status', 'missing'),
                                            'consumer_server_compatibility': (result.get('cases') or [{}])[0].get('server_compatibility', 'missing'),
                                            'consumer_library_correctness': (result.get('cases') or [{}])[0].get('library_correctness', 'missing'),

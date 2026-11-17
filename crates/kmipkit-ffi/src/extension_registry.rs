@@ -8,6 +8,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex, OnceLock};
 use std::{collections::HashMap, collections::HashSet, collections::hash_map::Entry, mem::size_of};
 use std::{fs, io::Read};
+use zeroize::Zeroizing;
 
 #[cfg(test)]
 macro_rules! test_pointer_ffi_call {
@@ -47,18 +48,20 @@ mod request_validation_0053_tests;
 mod typed_attributes_catalog_generated;
 
 use crate::{
-    kmipkit_add_attribute_request_t, kmipkit_adjust_attribute_request_t,
-    kmipkit_attestation_credential_t, kmipkit_attribute_set_t, kmipkit_authentication_t,
+    kmipkit_add_attribute_builder_t, kmipkit_add_attribute_request_t,
+    kmipkit_adjust_attribute_request_t, kmipkit_attestation_credential_t,
+    kmipkit_attribute_reference_v1_t, kmipkit_attribute_set_t, kmipkit_authentication_t,
     kmipkit_byte_span_v1_t, kmipkit_cancel_request_t, kmipkit_client_async_operation_metadata_v1_t,
     kmipkit_client_async_operation_outcome_t, kmipkit_client_async_operation_response_v1_t,
     kmipkit_client_batch_item_metadata_v1_t, kmipkit_client_batch_item_metadata_v2_t,
     kmipkit_client_batch_item_response_t, kmipkit_client_batch_item_t,
     kmipkit_client_batch_response_t, kmipkit_client_batch_t, kmipkit_client_configuration_t,
     kmipkit_client_extension_registry_t, kmipkit_client_request_message_extension_t,
-    kmipkit_client_t, kmipkit_codec_limits_t, kmipkit_credential_t,
-    kmipkit_credential_validation_error_v1_t, kmipkit_credential_value_t,
-    kmipkit_credential_view_t, kmipkit_cryptographic_parameters_fields_v1_t,
-    kmipkit_cryptographic_parameters_t, kmipkit_delete_attribute_request_t,
+    kmipkit_client_t, kmipkit_codec_limits_t, kmipkit_create_key_pair_builder_t,
+    kmipkit_credential_t, kmipkit_credential_validation_error_v1_t, kmipkit_credential_value_t,
+    kmipkit_credential_view_t, kmipkit_crypto_operation_builder_t,
+    kmipkit_cryptographic_parameters_fields_v1_t, kmipkit_cryptographic_parameters_t,
+    kmipkit_delete_attribute_builder_t, kmipkit_delete_attribute_request_t,
     kmipkit_device_credential_t, kmipkit_extension_child_rule_t, kmipkit_extension_compatibility_t,
     kmipkit_extension_definition_t, kmipkit_extension_discriminator_t,
     kmipkit_extension_identity_t, kmipkit_extension_information_t,
@@ -66,18 +69,20 @@ use crate::{
     kmipkit_extension_registry_limits_v1_t, kmipkit_extension_schema_t,
     kmipkit_get_attribute_list_request_t, kmipkit_get_attributes_request_t,
     kmipkit_hashed_password_credential_t, kmipkit_hashed_password_timestamp_sequence_t,
-    kmipkit_message_extension_view_t, kmipkit_message_validation_error_t,
-    kmipkit_modify_attribute_request_t, kmipkit_nonce_t, kmipkit_poll_request_t,
-    kmipkit_process_request_t, kmipkit_profile_object_state_v1_t, kmipkit_profile_readiness_t,
-    kmipkit_profile_validation_context_v1_t, kmipkit_profile_validation_error_t,
-    kmipkit_profile_validation_error_view_v1_t, kmipkit_profile_validation_result_t,
-    kmipkit_profile_validation_selection_v1_t, kmipkit_query_async_requests_request_t,
-    kmipkit_raw_tag_t, kmipkit_register_request_t, kmipkit_registered_extension_value_t,
-    kmipkit_request_batch_item_view_t, kmipkit_request_header_view_t, kmipkit_request_message_t,
-    kmipkit_request_options_v1_t, kmipkit_response_batch_item_view_t,
-    kmipkit_response_header_view_t, kmipkit_response_message_t, kmipkit_revocation_reason_t,
-    kmipkit_revoke_request_t, kmipkit_secret_bytes_t, kmipkit_secret_text_t,
-    kmipkit_set_attribute_request_t, kmipkit_split_key_reference_t, kmipkit_tag_t,
+    kmipkit_locate_builder_t, kmipkit_message_extension_view_t, kmipkit_message_validation_error_t,
+    kmipkit_modify_attribute_request_t, kmipkit_mtls_client_config_v1_t, kmipkit_nonce_t,
+    kmipkit_poll_request_t, kmipkit_process_request_t, kmipkit_profile_object_state_v1_t,
+    kmipkit_profile_readiness_t, kmipkit_profile_validation_context_v1_t,
+    kmipkit_profile_validation_error_t, kmipkit_profile_validation_error_view_v1_t,
+    kmipkit_profile_validation_result_t, kmipkit_profile_validation_selection_v1_t,
+    kmipkit_query_async_requests_request_t, kmipkit_raw_tag_t, kmipkit_register_request_t,
+    kmipkit_registered_extension_value_t, kmipkit_request_batch_item_view_t,
+    kmipkit_request_header_view_t, kmipkit_request_message_t, kmipkit_request_options_v1_t,
+    kmipkit_response_batch_item_view_t, kmipkit_response_header_view_t, kmipkit_response_message_t,
+    kmipkit_revocation_reason_t, kmipkit_revoke_builder_t, kmipkit_revoke_request_t,
+    kmipkit_secret_bytes_t, kmipkit_secret_text_t, kmipkit_set_attribute_builder_t,
+    kmipkit_set_attribute_request_t, kmipkit_split_key_reference_t,
+    kmipkit_symmetric_key_builder_t, kmipkit_symmetric_key_request_v1_t, kmipkit_tag_t,
     kmipkit_timeout_limit_v1_t, kmipkit_transport_config_t, kmipkit_transport_config_v1_t,
     kmipkit_transport_input_v1_t, kmipkit_ttlv_decode_error_v1_t, kmipkit_ttlv_item_t,
     kmipkit_ttlv_item_view_t, kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t,
@@ -97,14 +102,16 @@ use kmipkit_protocol::extension;
 use kmipkit_protocol::{
     ActivateRequest, AddAttributeRequest, AdjustAttributeRequest, AdjustmentType, ArchiveRequest,
     AttributeReference, AttributeSet, CancelRequest, CertifyRequest, CheckRequest,
-    CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest, CurrentAttribute, DecryptRequest,
-    DelegatedLoginRequest, DeleteAttributeRequest, DerivationMethod, DerivationParameters,
-    DeriveKeyRequest, DestroyRequest, EncryptRequest, ExportRequest, GetAttributeListRequest,
-    GetAttributesRequest, GetConstraintsRequest, GetRequest, GetUsageAllocationRequest,
-    HashRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest, KeyBlock, KeyCompressionType,
-    KeyFormatType, KeyMaterial, KeyValue, KeyWrapType, KeyWrappingData, LocateRequest, LogRequest,
-    LoginRequest, LogoutRequest, MacRequest, MacVerifyRequest, ManagedObject,
-    ModifyAttributeRequest, NewAttribute, ObjectGroupMember, ObjectType, ObtainLeaseRequest,
+    CreateCredentialObject, CreateCredentialRequest, CreateGroupRequest, CreateKeyPairRequest,
+    CreateRequest, CreateSplitKeyRequest, CreateUserRequest, CurrentAttribute, DeactivateRequest,
+    DecapsulateRequest, DecryptRequest, DelegatedLoginRequest, DeleteAttributeRequest,
+    DerivationMethod, DerivationParameters, DeriveKeyRequest, DestroyRequest, EncapsulateRequest,
+    EncryptRequest, ExportRequest, GetAttributeListRequest, GetAttributesRequest,
+    GetConstraintsRequest, GetRequest, GetUsageAllocationRequest, HashRequest, ImportRequest,
+    InteropRequest, JoinSplitKeyRequest, KeyBlock, KeyCompressionType, KeyFormatType, KeyMaterial,
+    KeyValue, KeyWrapType, KeyWrappingData, LocateRequest, LogRequest, LoginRequest, LogoutRequest,
+    MacRequest, MacVerifyRequest, ManagedObject, ManagedObjectError, ModifyAttributeRequest,
+    NewAttribute, ObjectGroupMember, ObjectType, ObliterateRequest, ObtainLeaseRequest,
     OpaqueObjectContext, OperationData, PollRequest, ProcessRequest, ProtocolError,
     ProtocolErrorKind, QueryAsyncRequestsRequest, QueryFunction, QueryRequest,
     QueryResponseFieldKind, ReProvisionRequest, RecertifyRequest, RecoverRequest, RegisterRequest,
@@ -116,9 +123,10 @@ use kmipkit_protocol::{
 };
 use kmipkit_protocol::{
     AttestationCredential, Authentication, Credential, CredentialType, CredentialValidationError,
-    CredentialValidationErrorKind, CredentialValue, CryptographicParameters,
-    CryptographicParametersBuilder, DeviceCredential, HashedPasswordCredential,
-    HashedPasswordTimestampSequence, Nonce, UsernameAndPasswordCredential,
+    CredentialValidationErrorKind, CredentialValue, CryptographicAlgorithm,
+    CryptographicParameters, CryptographicParametersBuilder, DeviceCredential,
+    HashedPasswordCredential, HashedPasswordTimestampSequence, Nonce,
+    UsernameAndPasswordCredential,
 };
 use kmipkit_protocol::{MessageValidationError, MessageValidationErrorKind, RequestMessage};
 use kmipkit_protocol::{
@@ -563,6 +571,106 @@ enum Kind {
     PollRequest,
     ProcessRequest,
     QueryAsyncRequestsRequest,
+    SymmetricKeyBuilder,
+    CreateKeyPairBuilder,
+    SetAttributeBuilder,
+    AddAttributeBuilder,
+    DeleteAttributeBuilder,
+    LocateBuilder,
+    RevokeBuilder,
+    CryptoOperationBuilder,
+}
+
+#[derive(Clone, Copy, Eq, PartialEq)]
+enum CryptoOperationKind {
+    Encrypt,
+    Decrypt,
+    Sign,
+    SignatureVerify,
+    Mac,
+    MacVerify,
+    Hash,
+}
+
+enum CryptoBuilderData {
+    ByteString(Zeroizing<Vec<u8>>),
+    Enumeration(u32),
+    Integer(i32),
+}
+
+struct CryptoOperationBuilder {
+    operation: CryptoOperationKind,
+    unique_identifier: Option<UniqueIdentifier>,
+    data: Option<CryptoBuilderData>,
+    cryptographic_parameters: Option<Structure>,
+    iv_counter_nonce: Option<Zeroizing<Vec<u8>>>,
+    authenticated_encryption_additional_data: Option<Zeroizing<Vec<u8>>>,
+    authenticated_encryption_tag: Option<Zeroizing<Vec<u8>>>,
+    digested_data: Option<Zeroizing<Vec<u8>>>,
+    signature_data: Option<Zeroizing<Vec<u8>>>,
+    mac_data: Option<Zeroizing<Vec<u8>>>,
+    correlation_value: Option<Zeroizing<Vec<u8>>>,
+    init_indicator: Option<bool>,
+    final_indicator: Option<bool>,
+    asynchronous_indicator: Option<u32>,
+}
+
+struct CreateKeyPairBuilderState {
+    builder: kmipkit_client::fluent::CreateKeyPairBuilder<'static>,
+    asynchronous_indicator: Option<u32>,
+}
+
+struct SetAttributeBuilderState {
+    builder: kmipkit_client::fluent::SetAttributeBuilder<'static>,
+    asynchronous_indicator: Option<u32>,
+}
+
+struct AddAttributeBuilderState {
+    builder: kmipkit_client::fluent::AddAttributeBuilder<'static>,
+    asynchronous_indicator: Option<u32>,
+}
+
+struct DeleteAttributeBuilderState {
+    builder: kmipkit_client::fluent::DeleteAttributeBuilder<'static>,
+    asynchronous_indicator: Option<u32>,
+}
+
+struct LocateBuilderState {
+    attributes: Arc<Handle>,
+    maximum_items: Option<i32>,
+    offset_items: Option<i32>,
+    storage_status_mask: Option<StorageStatusMask>,
+    object_group_member: Option<ObjectGroupMember>,
+    asynchronous_indicator: Option<u32>,
+}
+
+struct RevokeBuilderState {
+    reason: RevocationReason,
+    unique_identifier: Option<UniqueIdentifier>,
+    revocation_message: Option<String>,
+    compromise_occurrence_date: Option<i64>,
+    asynchronous_indicator: Option<u32>,
+}
+
+impl CryptoOperationBuilder {
+    fn new(operation: CryptoOperationKind) -> Self {
+        Self {
+            operation,
+            unique_identifier: None,
+            data: None,
+            cryptographic_parameters: None,
+            iv_counter_nonce: None,
+            authenticated_encryption_additional_data: None,
+            authenticated_encryption_tag: None,
+            digested_data: None,
+            signature_data: None,
+            mac_data: None,
+            correlation_value: None,
+            init_indicator: None,
+            final_indicator: None,
+            asynchronous_indicator: None,
+        }
+    }
 }
 
 enum HandleValue {
@@ -586,6 +694,14 @@ enum HandleValue {
     Structure(Structure),
     AttributeSet(Mutex<AttributeSet>),
     BatchItem(Box<ClientBatchItem>),
+    SymmetricKeyBuilder(Mutex<Option<kmipkit_client::fluent::CreateSymmetricKeyBuilder<'static>>>),
+    CreateKeyPairBuilder(Mutex<Option<CreateKeyPairBuilderState>>),
+    SetAttributeBuilder(Mutex<Option<SetAttributeBuilderState>>),
+    AddAttributeBuilder(Mutex<Option<AddAttributeBuilderState>>),
+    DeleteAttributeBuilder(Mutex<Option<DeleteAttributeBuilderState>>),
+    LocateBuilder(Mutex<LocateBuilderState>),
+    RevokeBuilder(Mutex<RevokeBuilderState>),
+    CryptoOperationBuilder(Mutex<CryptoOperationBuilder>),
     BatchItemReadback(ClientBatchItemReadback),
     RegisterRequest(Box<RegisterRequest>),
     AddAttributeRequest(Box<AddAttributeRequest>),
@@ -5033,6 +5149,10 @@ fn copy_attribute_set_handle(
         };
     }
     let handle = reference_handle(structure, Kind::Structure)?;
+    copy_attribute_set_from_handle(&handle).map(Some)
+}
+
+fn copy_attribute_set_from_handle(handle: &Arc<Handle>) -> FfiResult<AttributeSet> {
     let HandleValue::Structure(source) = &handle.value else {
         return Err(ERROR_INVALID_INPUT);
     };
@@ -5045,9 +5165,7 @@ fn copy_attribute_set_handle(
     for child in children {
         items.push(child.try_clone().map_err(model_status)?);
     }
-    AttributeSet::try_new(items)
-        .map(Some)
-        .map_err(|_| ERROR_INVALID_INPUT)
+    AttributeSet::try_new(items).map_err(|_| ERROR_INVALID_INPUT)
 }
 
 fn copy_unique_identifier(

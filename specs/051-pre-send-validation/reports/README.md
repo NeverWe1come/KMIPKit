@@ -21,27 +21,46 @@ the Rust and binding export snapshots remain applicable to this branch.
   audit cannot regenerate a passing current inventory while the 4,199
   whole-tree routes remain missing; do not use that older report as current
   evidence.
-- `binding-export-report-2026-11-07.json` inventories C, Java, and Python
-  exports against the same combined manifest. The current exact declaration
-  counts are C 1,749, Java 1,928, and Python 2,047, with no mismatches.
+- `rust-export-report-2026-11-11.json` preserves the compiler audit after the
+  KMIPKIT-0093 complete API contract was approved. It is retained as historical
+  evidence and is superseded by the November 12 snapshot.
+- `rust-export-report-2026-11-12.json` preserves the compiler audit after the
+  earlier fluent API additions: 30,294 observed Rust paths, 9,415 matched
+  declarations, and 20,879 approved exclusions.
+- `rust-export-report-2026-11-16.json` is the current compiler audit after the
+  KMIPKIT-0093 fluent binding and exact Rust export reconciliation. It records
+  32,025 observed paths, 10,376 matched declarations, 21,649 approved
+  exclusions, and no missing paths, stale declarations, kind mismatches, or
+  unresolved conditions.
+- `shared-rust-inventory-2026-11-11.json` preserves the earlier shared Rust
+  inventory. `shared-rust-inventory-2026-11-12.json` is the earlier fluent
+  snapshot. The current `shared-rust-inventory-2026-11-16.json` records 5,468
+  mapped shared declarations, 21,649 approved exclusions, 45 Rust-only
+  declarations, and no unresolved routes.
+- `binding-export-report-2026-11-07.json` preserves the historical C, Java,
+  and Python inventory from November 7. The November 16 Add Attribute audit is
+  retained as an earlier snapshot. The current audit is
+  `specs/043-public-api-bindings/reports/binding-export-report-2026-11-16-fluent-locate-revoke.json`:
+  all three packages match their manifest exactly, with no missing, stale,
+  kind-mismatched, or unresolved entries. Its exact matches are C 2,228,
+  Java 2,640, and Python 2,904.
 
 Reproduction from the repository root:
 
 ```text
-python -B tools/api_manifest/audit_rust_exports.py --report specs/051-pre-send-validation/reports/rust-export-report-2026-11-07.json --check
-python -B tools/api_manifest/reconcile_rust_exports.py --report specs/051-pre-send-validation/reports/rust-export-report-2026-11-07.json
-python -B tools/api_manifest/reconcile_0050_parameters_auth_client.py --report specs/051-pre-send-validation/reports/rust-export-report-2026-11-07.json
+python -B tools/api_manifest/audit_rust_exports.py --report specs/051-pre-send-validation/reports/rust-export-report-2026-11-16.json --check
+python -B tools/api_manifest/reconcile_rust_exports.py --report specs/051-pre-send-validation/reports/rust-export-report-2026-11-16.json --candidate-spec-id KMIPKIT-0093 --requirement-id KMIPKIT-0093-FR-011
 python -B tools/api_manifest/generate.py --check
 python -B tools/api_manifest/audit_shared_rust_inventory.py --check
-python -B tools/api_manifest/audit_binding_exports.py --report specs/051-pre-send-validation/reports/binding-export-report-2026-11-07.json --check
+python -B tools/api_manifest/audit_binding_exports.py --report specs/043-public-api-bindings/reports/binding-export-report-2026-11-16-fluent-locate-revoke.json --check
 ```
 
-The Rust export `--check` and shared inventory `--check` currently exit
-nonzero because 4,199 routes remain missing from the whole-tree 0043 manifest.
-The scanner itself is complete and reports no kind, conditional, or scope
-issues. Those routes require owner-by-owner classification; they are not
-attributed wholesale to 0051 or 0053. The 0051 validation declarations remain
-blocked for cross-language reconciliation under the approved follow-up scope.
-The binding audit and generated-manifest check pass independently. These
-reports do not establish hosted CI, coverage, interoperability, certification,
-or release readiness.
+The November 7 snapshot retains the earlier 4,199-route gap as historical
+evidence. The November 16 report reconciles the current fluent API exports and
+passes the exact Rust inventory checks. The KMIPKIT-0050 reconciliation helper
+is intentionally omitted from the current command sequence: it encodes the
+pre-KMIPKIT-0053 blocked contract for `typed_cryptographic_parameters`, while
+the later approved KMIPKIT-0053 capability is verified. The 0051 validation
+declarations remain blocked for cross-language implementation. These reports
+do not establish hosted CI, coverage, interoperability, certification, or
+release readiness.

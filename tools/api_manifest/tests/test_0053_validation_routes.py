@@ -10,6 +10,7 @@ from pathlib import Path
 
 from tools.api_manifest.prepare_0053_validation_routes import (
     ALIAS_CANONICAL_NAMES,
+    _is_scoped_blocked_candidate,
     prepare_validation_routes,
 )
 
@@ -46,6 +47,21 @@ class ValidationRoutePreparationTests(unittest.TestCase):
             cls.manifest, cls.report, cls.routes, cls.candidates
         )
 
+    def test_candidate_inventory_is_scoped_to_its_approved_requirement(self) -> None:
+        unrelated_blocker = {
+            "candidateSpecId": "KMIPKIT-0043",
+            "declarationState": "blocked",
+            "requirementIds": ["KMIPKIT-0093-FR-011"],
+        }
+        scoped_candidate = {
+            "candidateSpecId": "KMIPKIT-0043",
+            "declarationState": "blocked",
+            "requirementIds": ["KMIPKIT-0053-FR-016"],
+        }
+
+        self.assertFalse(_is_scoped_blocked_candidate(unrelated_blocker))
+        self.assertTrue(_is_scoped_blocked_candidate(scoped_candidate))
+
     def test_exact_blocked_inventory_is_mapped_or_excluded(self) -> None:
         blocked = [
             row for row in self.candidates["candidates"]
@@ -77,12 +93,7 @@ class ValidationRoutePreparationTests(unittest.TestCase):
         blocked_ids = {row["declarationId"] for row in blocked}
         self.assertEqual(blocked_ids, removals & blocked_ids)
         self.assertFalse(
-            any(
-                row.get("declarationState") == "blocked"
-                and row.get("candidateSpecId")
-                in {"KMIPKIT-0009", "KMIPKIT-0043", "KMIPKIT-0044"}
-                for row in self.manifest["publicDeclarations"]
-            )
+            any(_is_scoped_blocked_candidate(row) for row in self.manifest["publicDeclarations"])
         )
         self.assertEqual(
             {row["exportName"] for row in blocked if row["exportName"] in ALIAS_CANONICAL_NAMES},
