@@ -65,10 +65,12 @@ fn allocate_for_object(
     usage_limits_unit: u32,
     limits: &CodecLimits,
 ) -> Result<UsageAllocationContext, Box<dyn Error>> {
-    let response = client.get_usage_allocation(
-        GetUsageAllocationRequest::new(requested_units).with_unique_identifier(object_id),
-        limits,
-    )?;
+    let response = client
+        .request()
+        .get_usage_allocation()
+        .unique_identifier(object_id)
+        .usage_limits_count(requested_units)
+        .execute(limits)?;
     let response_view = response.outcome().response();
     let allocation = response_view
         .get_usage_allocation()
@@ -142,6 +144,8 @@ fn defaults_with_debug_sentinel() -> Structure {
 fn documented_policy_payloads_preserve_defaults_omission_semantics() {
     for guide in [ENGLISH_GUIDE, SPANISH_GUIDE] {
         assert!(guide.contains("GetUsageAllocationRequest::new(25)"));
+        assert!(guide.contains(".get_usage_allocation()"));
+        assert!(guide.contains(".usage_limits_count(requested_units)"));
         assert!(guide.contains("with_defaults_information(defaults)"));
         assert!(guide.contains("execute_guarded_protection"));
         assert!(guide.contains("local"));

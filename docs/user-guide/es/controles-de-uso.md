@@ -51,7 +51,31 @@ fn build_policy_payloads(
 }
 ```
 
-Con un `Client` configurado, llama a `get_constraints`, `get_usage_allocation`, `set_constraints` o `set_defaults`. Cada método de conveniencia realiza un único intercambio; no reintenta ni consulta el estado asíncrono automáticamente. Inspecciona la respuesta tipada mediante `response.outcome().response()` y conserva `Pending` y su valor de correlación al usar un lote asíncrono.
+Con un `Client` configurado, llama a `get_constraints`, `get_usage_allocation`, `set_constraints` o `set_defaults`. Cada método de conveniencia realiza un único intercambio; no reintenta ni consulta el estado asíncrono automáticamente. Rust también ofrece un constructor fluido para Get Usage Allocation. Indica el Unique Identifier en una llamada individual; puede omitirse cuando una operación anterior del mismo lote establece el KMIP ID Placeholder:
+
+```rust
+use kmipkit_client::Client;
+use kmipkit_protocol::UniqueIdentifier;
+use kmipkit_ttlv::codec::CodecLimits;
+
+fn allocate(
+    client: &mut Client,
+    object_id: UniqueIdentifier,
+    requested_units: i64,
+    limits: &CodecLimits,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let response = client
+        .request()
+        .get_usage_allocation()
+        .unique_identifier(object_id)
+        .usage_limits_count(requested_units)
+        .execute(limits)?;
+    let _outcome = response.outcome(); // Inspecciona Success, Pending o Failure.
+    Ok(())
+}
+```
+
+Inspecciona la respuesta tipada mediante `response.outcome().response()` y conserva `Pending` y su valor de correlación al usar un lote asíncrono.
 
 ## Proteger operaciones limitadas por uso
 
@@ -61,7 +85,7 @@ Con un `Client` configurado, llama a `get_constraints`, `get_usage_allocation`, 
 use kmipkit_client::{
     Client, ClientBatchItemResponse, ClientError, ClientRequest, UsageAllocationContext,
 };
-use kmipkit_protocol::{EncryptRequest, GetUsageAllocationRequest, UniqueIdentifier};
+use kmipkit_protocol::{EncryptRequest, UniqueIdentifier};
 use kmipkit_ttlv::codec::CodecLimits;
 
 fn allocate_for_object(
@@ -71,11 +95,12 @@ fn allocate_for_object(
     usage_limits_unit: u32,
     limits: &CodecLimits,
 ) -> Result<UsageAllocationContext, Box<dyn std::error::Error>> {
-    let response = client.get_usage_allocation(
-        GetUsageAllocationRequest::new(requested_units)
-            .with_unique_identifier(object_id),
-        limits,
-    )?;
+    let response = client
+        .request()
+        .get_usage_allocation()
+        .unique_identifier(object_id)
+        .usage_limits_count(requested_units)
+        .execute(limits)?;
     let response_view = response.outcome().response();
     let allocation = response_view
         .get_usage_allocation()
