@@ -653,6 +653,16 @@ class WorkflowContractTests(unittest.TestCase):
             ),
         )
 
+    def test_script_contracts_run_the_fluent_ping_binding_manifest(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        python_contracts = self.require_named_step(job, "Run Python contracts").group(1)
+        self.assertIn(
+            "tools.api_manifest.tests.test_0093_ping_builder_manifest",
+            python_contracts,
+            "Fluent Ping ABI, bindings, and four-language mappings must stay in CI.",
+        )
+
     def test_script_contract_diagnostics_use_the_uv_environment_python(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "script-contracts")
