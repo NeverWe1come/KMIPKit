@@ -134,6 +134,10 @@ class ControlledTlsPeerTest {
             "test-norm-structure-member-structure-member-7-24-object-type";
     private static final String OBJECT_TYPE_MEMBER_TARGET_ID =
             "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-24-OBJECT-TYPE";
+    private static final String OBJECT_DEFAULTS_OBJECT_TYPE_CASE_ID =
+            "test-norm-structure-member-structure-member-7-22-object-type-objecttypes";
+    private static final String OBJECT_DEFAULTS_OBJECT_TYPE_TARGET_ID =
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-22-OBJECT-TYPE-OBJECTTYPES";
     private static final String CONSTRAINT_CASE_ID =
             "test-norm-operation-structure-operation-structure-7-6-constraint";
     private static final String CONSTRAINT_TARGET_ID =
@@ -923,6 +927,7 @@ class ControlledTlsPeerTest {
             if ("2.1".equals(protocolVersion)) appendStructureMemberByteStringRouteEvents(events);
             if ("2.1".equals(protocolVersion)) appendStructureMemberValueRouteEvents(events,
                     serverCertificatePem, serverPrivateKeyPem, clientCertificatePem, clientPrivateKeyPem);
+            assertObjectDefaultsObjectTypeRouteEvents(events, protocolVersion);
             assertNewlyCataloguedLocalRoutesAreInvoked(events, protocolVersion);
         }
 
@@ -3674,6 +3679,7 @@ class ControlledTlsPeerTest {
         caseIds.add("test-norm-tag-tag-420051");
         caseIds.add("test-norm-message-field-message-field-8-3-ephemeral");
         caseIds.add("test-norm-structure-member-structure-member-7-23-object-group");
+        caseIds.add(OBJECT_DEFAULTS_OBJECT_TYPE_CASE_ID);
         caseIds.add("test-norm-operation-structure-operation-structure-7-2-asynchronous-request");
         caseIds.add("test-norm-operation-structure-operation-structure-7-13-extension-information");
         caseIds.add(OBJECT_TYPE_MEMBER_CASE_ID);
@@ -6377,6 +6383,19 @@ class ControlledTlsPeerTest {
             String action = route.endsWith("ttlv_codec.decode")
                     || route.endsWith("ttlv_item_view_from_item") ? "decode" : "construct";
             assertRouteEventRecorded(events, caseId, targetId, route, action, protocolVersion);
+        }
+    }
+
+    // OASIS KMIP 2.0 §7.18 Table 338 and KMIP 2.1 §7.22 Table 374: Object Defaults
+    // changes the required Object Type Enumeration to the ObjectTypes Structure.
+    private static void assertObjectDefaultsObjectTypeRouteEvents(ArrayNode events, String protocolVersion) {
+        for (String route : List.of(
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode")) {
+            String action = route.endsWith("ttlv_item.create") ? "construct" : "decode";
+            assertRouteEventRecorded(events, OBJECT_DEFAULTS_OBJECT_TYPE_CASE_ID,
+                    OBJECT_DEFAULTS_OBJECT_TYPE_TARGET_ID, route, action, protocolVersion);
         }
     }
 
