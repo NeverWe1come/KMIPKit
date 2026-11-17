@@ -67,3 +67,11 @@ artifact. This is part of the FR-006 artifact provenance check.
 - The latest selected report validates 27,160/27,160 cells with zero failures.
   Its generated ledger records 71,641 planned, 27,160 executed, and 44,481
   pending cells. Full-matrix closure remains required.
+- **FR-003/FR-005:** KMIP 2.0 Set Endpoint Role now has Java generic TTLV
+  creation, Item view, and decoder evidence for both required Endpoint Role
+  request and response fields, plus the Operation Enumeration, under OASIS
+  KMIP 2.0 §6.1.48 Tables 299–300, §11.19, and §11.36.
+- The selected report validates 27,172/27,172 Java cells with zero failures.
+  Its generated ledger records 71,641 planned, 27,172 executed, and 44,469
+  pending cells across 1,231 pending case IDs. Full-matrix closure remains
+  required.
