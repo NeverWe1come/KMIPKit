@@ -1181,6 +1181,10 @@ class ControlledTlsPeerTest {
         assertEquals(2, routeEventCount(report.path("events"), RESPONSE_BATCH_ITEM_CASE_ID,
                         "java.typed-protocol.function.client_batch_item_response_pending_correlation_value"),
                 "A controlled Pending response must expose its server-issued correlation value.");
+        assertEquals(KMIP_2_0_AND_2_1.size(), routeEventCount(report.path("events"),
+                        "test-norm-tag-tag-42000e",
+                        "java.typed-protocol.function.client_batch_add_error_continuation_value"),
+                "The Batch Error Continuation Option tag must be checked through the typed batch API.");
         for (EnumerationFixture fixture : enumerationFixtures) {
             String builderRoute = CRYPTOGRAPHIC_PARAMETER_BUILDER_ROUTES.get(fixture.parentName());
             if (builderRoute != null) {
