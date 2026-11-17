@@ -1888,3 +1888,144 @@ pending cells; 1,274 case IDs still have pending route cells. Refreshing the
 checked-in reference with `tools/compare_route_ledger.py --refresh-reference`
 then comparing it succeeds. The full matrix remains incomplete and the branch
 stays WIP.
+## Java Boolean field route execution
+
+Red commit `4651a7c4c` required generic TTLV evidence for catalogued Boolean
+message fields. Red commit `a62eda031` added a focused controlled-peer assertion
+and reproduced the missing-route failure. Green commit `98a4dabc9` executes all
+12 selected Boolean message-field and structure-member cases through their
+applicable generic TTLV routes. The valid two-item request exercises
+`RequestMessage.fromTtlv` for Attestation Capable Indicator and Batch Order
+Option; request and response fixtures exercise Criticality Indicator through
+both typed message parsers. Random IV is exercised via
+`CryptographicParameters.Builder.randomIv`, `build`, `CryptographicParameters.fromTtlv`,
+`TypedAttribute.create`, `TypedAttribute.fromItem`, and `AttributeSet.tryNew`
+(KMIP 2.0/2.1 §§4.16, 9.3, 9.8, 9.13; Tables 58–60).
+
+The generated ledger was refreshed only after the selected report passed the
+repository validator. The full Java consumer test suite passes 56/56 tests;
+the selected-scope report validates 26,745/26,745 cells with zero failed
+invocations, and the normal ledger comparison passes. The ledger now records
+71,649 planned, 26,745 executed, and 44,904 pending cells across 1,266 case
+IDs. Pending cells remain `route_evidence_not_emitted`; T006, T007, and T009
+remain open and the PR must remain WIP.
+
+Verification commands:
+
+```sh
+TMPDIR="$PWD/build/java-temp" \
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+bash ../../bindings/java/gradlew \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test
+python3 interop/shared/tools/validate_route_evidence.py \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --selected-scope --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+```
+
+## Java Item Type enum routes
+
+Red commit `8534357d6` adds a focused assertion for the 11 catalogued Item
+Type enum values and their four generic TTLV routes. It fails because the
+general enum recipe requires a same-named standalone Tag, which the §11.23
+Item Type enum does not have. Green commit `86887bae4` adds a dedicated local
+fixture that reads the enum values from the catalog, validates each through
+`TtlvItemType.fromCode`, then constructs and decodes a generic TTLV Enumeration
+Item for each code in KMIP 2.0 and 2.1.
+
+Verification:
+
+```sh
+TMPDIR="$PWD/build/java-temp" \
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+bash ../../bindings/java/gradlew \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test \
+  --tests org.kmipkit.validator.LocalCatalogRouteChecksTest \
+  --tests org.kmipkit.validator.ControlledTlsPeerTest.controlledQueryProducesPerRouteEvidenceForBothProtocolVersions
+python3 interop/shared/tools/validate_route_evidence.py \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --selected-scope --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+```
+
+The selected report validates 26,833/26,833 cells with zero failures; the
+ledger records 71,649 planned, 26,833 executed, and 44,816 pending cells across
+1,265 case IDs. The full matrix remains incomplete and the PR remains WIP.
+The complete Java validator Gradle suite passes 57/57 tests with zero failures,
+errors, or skips. The selected-scope report, generated ledger refresh, normal
+ledger comparison, and `git diff --check` all pass.
+
+## Java Item Type individual value cases
+
+Red commit `875ccfa80` changes the focused fixture expectation so each of the
+11 catalogued Item Type values must emit routes under its individual normative
+case ID as well as under the aggregate. It fails while the fixture emits only
+the aggregate. Green commit `57c6b2160` maps each value target to its unique
+catalog case, emits the four generic TTLV Enumeration routes under both case
+IDs, and adds the new individual IDs to the controlled report scope.
+
+Verification:
+
+```sh
+TMPDIR="$PWD/build/java-temp" \
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+bash ../../bindings/java/gradlew \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test \
+  --tests org.kmipkit.validator.LocalCatalogRouteChecksTest \
+  --tests org.kmipkit.validator.ControlledTlsPeerTest.controlledQueryProducesPerRouteEvidenceForBothProtocolVersions
+TMPDIR="$PWD/build/java-temp" \
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+bash ../../bindings/java/gradlew -PkmipkitMavenRepo="$PWD/build/maven-repository" test
+python3 interop/shared/tools/validate_route_evidence.py \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --selected-scope --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+```
+
+The selected report validates 26,921/26,921 invoked cells with zero failures;
+the ledger contains 71,649 planned, 26,921 executed, and 44,728 pending cells
+across 1,254 case IDs. The complete Java validator suite passes 57/57 tests
+with zero failures, errors, or skips. The full matrix remains incomplete and
+the PR stays WIP.
+
+## Usage Limits branch refreshed from the current route-matrix parent
+
+The Usage Limits branch was updated from parent head
+`94bbc7cf2f09d04f047de9e83185604aa7fad48d`. Conflicts in the controlled-peer
+case list were resolved by retaining the Usage Limits case IDs and including
+the current Boolean-field and Item Type individual-case IDs. The README,
+traceability, and route evidence retain both the parent additions and the
+Usage Limits route description. The route ledger was regenerated from the
+combined controlled report using the repository validator and comparer.
+
+Verification:
+
+```sh
+TMPDIR="$PWD/build/java-temp" \
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+bash ../../bindings/java/gradlew \
+  -PkmipkitMavenRepo="/home/ramp1953/.codex/worktrees/java-route-matrix/feature-0092/interop/java-kmip-validator/build/maven-repository" test \
+  --tests org.kmipkit.validator.LocalCatalogRouteChecksTest \
+  --tests org.kmipkit.validator.ControlledTlsPeerTest.controlledQueryProducesPerRouteEvidenceForBothProtocolVersions
+TMPDIR="$PWD/build/java-temp" \
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+bash ../../bindings/java/gradlew \
+  -PkmipkitMavenRepo="/home/ramp1953/.codex/worktrees/java-route-matrix/feature-0092/interop/java-kmip-validator/build/maven-repository" test
+python3 interop/shared/tools/validate_route_evidence.py \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --selected-scope --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+```
+
+The selected report validates 26,957/26,957 cells with zero failures. The
+ledger records 71,649 planned, 26,957 executed, and 44,692 pending cells across
+1,250 case IDs. The full Java suite passes 57/57 tests with zero failures,
+errors, or skips; the matrix remains incomplete and the PR remains WIP.

@@ -1421,15 +1421,39 @@
     "test-norm-pkcs11-return-function-rejected",
     "test-norm-pkcs11-return-token-resource-exceeded",
     "test-norm-pkcs11-return-vendor-defined",
+    "test-norm-message-field-message-field-9-13-criticality-indicator",
+    "test-norm-message-field-message-field-9-3-attestation-capable-indicator",
+    "test-norm-message-field-message-field-9-8-batch-order-option",
+    "test-norm-structure-member-structure-member-4-16-random-iv",
+    "test-norm-structure-member-structure-member-7-13-extension-attribute",
+    "test-norm-structure-member-structure-member-7-36-prediction-resistance",
+    "test-norm-structure-member-structure-member-7-5-asynchronous-capability",
+    "test-norm-structure-member-structure-member-7-5-attestation-capability",
+    "test-norm-structure-member-structure-member-7-5-batch-continue-capability",
+    "test-norm-structure-member-structure-member-7-5-batch-undo-capability",
+    "test-norm-structure-member-structure-member-7-5-quantum-safe-capability",
+    "test-norm-structure-member-structure-member-7-5-streaming-capability",
+    "test-norm-enumeration-value-enum-value-item-type-big-integer-00000004",
+    "test-norm-enumeration-value-enum-value-item-type-boolean-00000006",
+    "test-norm-enumeration-value-enum-value-item-type-byte-string-00000008",
+    "test-norm-enumeration-value-enum-value-item-type-date-time-00000009",
+    "test-norm-enumeration-value-enum-value-item-type-date-time-extended-0000000b",
+    "test-norm-enumeration-value-enum-value-item-type-enumeration-00000005",
+    "test-norm-enumeration-value-enum-value-item-type-integer-00000002",
+    "test-norm-enumeration-value-enum-value-item-type-interval-0000000a",
+    "test-norm-enumeration-value-enum-value-item-type-long-integer-00000003",
+    "test-norm-enumeration-value-enum-value-item-type-structure-00000001",
+    "test-norm-enumeration-value-enum-value-item-type-text-string-00000007",
     "test-enum-pkcs#11-function",
     "test-enum-pkcs#11-return-code",
     "test-enum-tag",
+    "test-enum-item-type",
     "test-norm-credential-credential-attestation",
     "test-norm-credential-credential-device",
     "test-norm-credential-credential-hashed-password",
     "test-norm-credential-credential-username-and-password"
   ],
-  "executed_cells": 26663,
+  "executed_cells": 26957,
   "language": "java",
   "library_commit": "12496d646d11d4069b58bcc88fc76cc619211ec6",
   "pending_case_ids": [
@@ -1541,7 +1565,6 @@
     "test-crypto-sign-rsa-2048-pkcs1_v1_5",
     "test-crypto-signature-verify-ecdsa-256-p_256",
     "test-crypto-signature-verify-rsa-2048-pkcs1_v1_5",
-    "test-enum-item-type",
     "test-multipart-decrypt-aes-cbc",
     "test-multipart-encrypt-aes-cbc",
     "test-multipart-hash-sha256",
@@ -1559,17 +1582,6 @@
     "test-norm-credential-credential-credential",
     "test-norm-credential-credential-one-time-password",
     "test-norm-credential-credential-ticket",
-    "test-norm-enumeration-value-enum-value-item-type-big-integer-00000004",
-    "test-norm-enumeration-value-enum-value-item-type-boolean-00000006",
-    "test-norm-enumeration-value-enum-value-item-type-byte-string-00000008",
-    "test-norm-enumeration-value-enum-value-item-type-date-time-00000009",
-    "test-norm-enumeration-value-enum-value-item-type-date-time-extended-0000000b",
-    "test-norm-enumeration-value-enum-value-item-type-enumeration-00000005",
-    "test-norm-enumeration-value-enum-value-item-type-integer-00000002",
-    "test-norm-enumeration-value-enum-value-item-type-interval-0000000a",
-    "test-norm-enumeration-value-enum-value-item-type-long-integer-00000003",
-    "test-norm-enumeration-value-enum-value-item-type-structure-00000001",
-    "test-norm-enumeration-value-enum-value-item-type-text-string-00000007",
     "test-norm-message-field-message-field-8-1-batch-item",
     "test-norm-message-field-message-field-8-1-request-header",
     "test-norm-message-field-message-field-8-1-request-message",
@@ -1611,7 +1623,6 @@
     "test-norm-message-field-message-field-9-1-asynchronous-correlation-value",
     "test-norm-message-field-message-field-9-10-server-correlation-value",
     "test-norm-message-field-message-field-9-12-maximum-response-size",
-    "test-norm-message-field-message-field-9-13-criticality-indicator",
     "test-norm-message-field-message-field-9-13-vendor-extension",
     "test-norm-message-field-message-field-9-13-vendor-identification",
     "test-norm-message-field-message-field-9-14-nonce",
@@ -1627,11 +1638,9 @@
     "test-norm-message-field-message-field-9-2-asynchronous-indicator",
     "test-norm-message-field-message-field-9-20-time-stamp",
     "test-norm-message-field-message-field-9-21-unique-batch-item-id",
-    "test-norm-message-field-message-field-9-3-attestation-capable-indicator",
     "test-norm-message-field-message-field-9-4-authentication",
     "test-norm-message-field-message-field-9-4-credential-may-be-repeated",
     "test-norm-message-field-message-field-9-6-batch-error-continuation-option",
-    "test-norm-message-field-message-field-9-8-batch-order-option",
     "test-norm-message-field-message-field-9-9-client-correlation-value",
     "test-norm-object-structure-object-structure-3-10-key-material",
     "test-norm-object-structure-object-structure-3-11-key-material",
@@ -2453,7 +2462,6 @@
     "test-norm-structure-member-structure-member-4-16-mask-generator-hashing-algorithm",
     "test-norm-structure-member-structure-member-4-16-p-source",
     "test-norm-structure-member-structure-member-4-16-padding-method",
-    "test-norm-structure-member-structure-member-4-16-random-iv",
     "test-norm-structure-member-structure-member-4-16-salt-length",
     "test-norm-structure-member-structure-member-4-16-tag-length",
     "test-norm-structure-member-structure-member-4-16-trailer-field",
@@ -2498,7 +2506,6 @@
     "test-norm-structure-member-structure-member-7-12-initialization-vector",
     "test-norm-structure-member-structure-member-7-12-iteration-count",
     "test-norm-structure-member-structure-member-7-12-salt",
-    "test-norm-structure-member-structure-member-7-13-extension-attribute",
     "test-norm-structure-member-structure-member-7-13-extension-description",
     "test-norm-structure-member-structure-member-7-13-extension-enumeration",
     "test-norm-structure-member-structure-member-7-13-extension-name",
@@ -2531,7 +2538,6 @@
     "test-norm-structure-member-structure-member-7-36-drbg-algorithm",
     "test-norm-structure-member-structure-member-7-36-fips186-variation",
     "test-norm-structure-member-structure-member-7-36-hashing-algorithm",
-    "test-norm-structure-member-structure-member-7-36-prediction-resistance",
     "test-norm-structure-member-structure-member-7-36-recommended-curve",
     "test-norm-structure-member-structure-member-7-36-rng-algorithm",
     "test-norm-structure-member-structure-member-7-39-ticket-type",
@@ -2547,15 +2553,9 @@
     "test-norm-structure-member-structure-member-7-41-validation-vendor-uri",
     "test-norm-structure-member-structure-member-7-41-validation-version-major",
     "test-norm-structure-member-structure-member-7-41-validation-version-minor",
-    "test-norm-structure-member-structure-member-7-5-asynchronous-capability",
-    "test-norm-structure-member-structure-member-7-5-attestation-capability",
-    "test-norm-structure-member-structure-member-7-5-batch-continue-capability",
-    "test-norm-structure-member-structure-member-7-5-batch-undo-capability",
     "test-norm-structure-member-structure-member-7-5-destroy-action",
-    "test-norm-structure-member-structure-member-7-5-quantum-safe-capability",
     "test-norm-structure-member-structure-member-7-5-rng-mode",
     "test-norm-structure-member-structure-member-7-5-shredding-algorithm",
-    "test-norm-structure-member-structure-member-7-5-streaming-capability",
     "test-norm-structure-member-structure-member-7-5-unwrap-mode",
     "test-norm-structure-member-structure-member-9-11-attestation-attestation-assertion",
     "test-norm-structure-member-structure-member-9-11-attestation-attestation-measurement",
@@ -3142,10 +3142,6 @@
       "pending_cells": 46
     },
     {
-      "case_id": "test-enum-item-type",
-      "pending_cells": 88
-    },
-    {
       "case_id": "test-multipart-decrypt-aes-cbc",
       "pending_cells": 44
     },
@@ -3212,50 +3208,6 @@
     {
       "case_id": "test-norm-credential-credential-ticket",
       "pending_cells": 10
-    },
-    {
-      "case_id": "test-norm-enumeration-value-enum-value-item-type-big-integer-00000004",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-enumeration-value-enum-value-item-type-boolean-00000006",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-enumeration-value-enum-value-item-type-byte-string-00000008",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-enumeration-value-enum-value-item-type-date-time-00000009",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-enumeration-value-enum-value-item-type-date-time-extended-0000000b",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-enumeration-value-enum-value-item-type-enumeration-00000005",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-enumeration-value-enum-value-item-type-integer-00000002",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-enumeration-value-enum-value-item-type-interval-0000000a",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-enumeration-value-enum-value-item-type-long-integer-00000003",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-enumeration-value-enum-value-item-type-structure-00000001",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-enumeration-value-enum-value-item-type-text-string-00000007",
-      "pending_cells": 8
     },
     {
       "case_id": "test-norm-message-field-message-field-8-1-batch-item",
@@ -3422,10 +3374,6 @@
       "pending_cells": 10
     },
     {
-      "case_id": "test-norm-message-field-message-field-9-13-criticality-indicator",
-      "pending_cells": 12
-    },
-    {
       "case_id": "test-norm-message-field-message-field-9-13-vendor-extension",
       "pending_cells": 12
     },
@@ -3486,10 +3434,6 @@
       "pending_cells": 14
     },
     {
-      "case_id": "test-norm-message-field-message-field-9-3-attestation-capable-indicator",
-      "pending_cells": 10
-    },
-    {
       "case_id": "test-norm-message-field-message-field-9-4-authentication",
       "pending_cells": 14
     },
@@ -3500,10 +3444,6 @@
     {
       "case_id": "test-norm-message-field-message-field-9-6-batch-error-continuation-option",
       "pending_cells": 12
-    },
-    {
-      "case_id": "test-norm-message-field-message-field-9-8-batch-order-option",
-      "pending_cells": 10
     },
     {
       "case_id": "test-norm-message-field-message-field-9-9-client-correlation-value",
@@ -6790,10 +6730,6 @@
       "pending_cells": 22
     },
     {
-      "case_id": "test-norm-structure-member-structure-member-4-16-random-iv",
-      "pending_cells": 22
-    },
-    {
       "case_id": "test-norm-structure-member-structure-member-4-16-salt-length",
       "pending_cells": 22
     },
@@ -6970,10 +6906,6 @@
       "pending_cells": 8
     },
     {
-      "case_id": "test-norm-structure-member-structure-member-7-13-extension-attribute",
-      "pending_cells": 8
-    },
-    {
       "case_id": "test-norm-structure-member-structure-member-7-13-extension-description",
       "pending_cells": 8
     },
@@ -7102,10 +7034,6 @@
       "pending_cells": 10
     },
     {
-      "case_id": "test-norm-structure-member-structure-member-7-36-prediction-resistance",
-      "pending_cells": 8
-    },
-    {
       "case_id": "test-norm-structure-member-structure-member-7-36-recommended-curve",
       "pending_cells": 8
     },
@@ -7166,27 +7094,7 @@
       "pending_cells": 8
     },
     {
-      "case_id": "test-norm-structure-member-structure-member-7-5-asynchronous-capability",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-structure-member-structure-member-7-5-attestation-capability",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-structure-member-structure-member-7-5-batch-continue-capability",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-structure-member-structure-member-7-5-batch-undo-capability",
-      "pending_cells": 8
-    },
-    {
       "case_id": "test-norm-structure-member-structure-member-7-5-destroy-action",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-structure-member-structure-member-7-5-quantum-safe-capability",
       "pending_cells": 8
     },
     {
@@ -7195,10 +7103,6 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-7-5-shredding-algorithm",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-structure-member-structure-member-7-5-streaming-capability",
       "pending_cells": 8
     },
     {
@@ -7806,7 +7710,7 @@
       "pending_cells": 15
     }
   ],
-  "pending_cells": 44986,
+  "pending_cells": 44692,
   "pending_reason": "No validated per-cell route execution evidence is recorded for this cell.",
   "pending_reason_code": "route_evidence_not_emitted",
   "planned_cells": 71649,
@@ -7814,8 +7718,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 2636,
-      "pending_cells": 1448,
+      "executed_cells": 2670,
+      "pending_cells": 1414,
       "protocol_version": "2.0",
       "required_cells": 4084,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item",
@@ -7824,8 +7728,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 2675,
-      "pending_cells": 1504,
+      "executed_cells": 2709,
+      "pending_cells": 1470,
       "protocol_version": "2.1",
       "required_cells": 4179,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item",
@@ -7934,8 +7838,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 4,
-      "pending_cells": 19,
+      "executed_cells": 16,
+      "pending_cells": 7,
       "protocol_version": "2.0",
       "required_cells": 23,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.boolean",
@@ -7944,8 +7848,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 4,
-      "pending_cells": 21,
+      "executed_cells": 16,
+      "pending_cells": 9,
       "protocol_version": "2.1",
       "required_cells": 25,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.boolean",
@@ -8014,8 +7918,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 1781,
-      "pending_cells": 87,
+      "executed_cells": 1803,
+      "pending_cells": 65,
       "protocol_version": "2.0",
       "required_cells": 1868,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
@@ -8024,8 +7928,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 1807,
-      "pending_cells": 88,
+      "executed_cells": 1829,
+      "pending_cells": 66,
       "protocol_version": "2.1",
       "required_cells": 1895,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
@@ -8134,8 +8038,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 2684,
-      "pending_cells": 1447,
+      "executed_cells": 2718,
+      "pending_cells": 1413,
       "protocol_version": "2.0",
       "required_cells": 4131,
       "route_id": "java.generic-ttlv.ttlv_codec.decode",
@@ -8144,8 +8048,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 2723,
-      "pending_cells": 1503,
+      "executed_cells": 2757,
+      "pending_cells": 1469,
       "protocol_version": "2.1",
       "required_cells": 4226,
       "route_id": "java.generic-ttlv.ttlv_codec.decode",
@@ -8154,8 +8058,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 2636,
-      "pending_cells": 1447,
+      "executed_cells": 2670,
+      "pending_cells": 1413,
       "protocol_version": "2.0",
       "required_cells": 4083,
       "route_id": "java.generic-ttlv.ttlv_item.create",
@@ -8164,8 +8068,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 2675,
-      "pending_cells": 1503,
+      "executed_cells": 2709,
+      "pending_cells": 1469,
       "protocol_version": "2.1",
       "required_cells": 4178,
       "route_id": "java.generic-ttlv.ttlv_item.create",
@@ -32674,8 +32578,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 486,
-      "pending_cells": 101,
+      "executed_cells": 487,
+      "pending_cells": 100,
       "protocol_version": "2.0",
       "required_cells": 587,
       "route_id": "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
@@ -32684,8 +32588,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 486,
-      "pending_cells": 110,
+      "executed_cells": 487,
+      "pending_cells": 109,
       "protocol_version": "2.1",
       "required_cells": 596,
       "route_id": "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
@@ -32734,8 +32638,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 4,
-      "pending_cells": 40,
+      "executed_cells": 7,
+      "pending_cells": 37,
       "protocol_version": "2.0",
       "required_cells": 44,
       "route_id": "java.typed-protocol.model.org.kmipkit.message.requestmessage.fromttlv",
@@ -32744,8 +32648,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 4,
-      "pending_cells": 40,
+      "executed_cells": 7,
+      "pending_cells": 37,
       "protocol_version": "2.1",
       "required_cells": 44,
       "route_id": "java.typed-protocol.model.org.kmipkit.message.requestmessage.fromttlv",
@@ -32754,8 +32658,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 7,
-      "pending_cells": 36,
+      "executed_cells": 8,
+      "pending_cells": 35,
       "protocol_version": "2.0",
       "required_cells": 43,
       "route_id": "java.typed-protocol.model.org.kmipkit.message.responsemessage.fromttlv",
@@ -32764,8 +32668,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 7,
-      "pending_cells": 36,
+      "executed_cells": 8,
+      "pending_cells": 35,
       "protocol_version": "2.1",
       "required_cells": 43,
       "route_id": "java.typed-protocol.model.org.kmipkit.message.responsemessage.fromttlv",
@@ -32774,8 +32678,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 23,
+      "executed_cells": 1,
+      "pending_cells": 22,
       "protocol_version": "2.0",
       "required_cells": 23,
       "route_id": "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder",
@@ -32784,8 +32688,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 23,
+      "executed_cells": 1,
+      "pending_cells": 22,
       "protocol_version": "2.1",
       "required_cells": 23,
       "route_id": "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder",
@@ -32814,8 +32718,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 23,
+      "executed_cells": 1,
+      "pending_cells": 22,
       "protocol_version": "2.0",
       "required_cells": 23,
       "route_id": "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.build",
@@ -32824,8 +32728,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 23,
+      "executed_cells": 1,
+      "pending_cells": 22,
       "protocol_version": "2.1",
       "required_cells": 23,
       "route_id": "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.build",
@@ -33094,8 +32998,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 2,
+      "executed_cells": 1,
+      "pending_cells": 1,
       "protocol_version": "2.0",
       "required_cells": 2,
       "route_id": "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.randomiv",
@@ -33104,8 +33008,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 2,
+      "executed_cells": 1,
+      "pending_cells": 1,
       "protocol_version": "2.1",
       "required_cells": 2,
       "route_id": "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.randomiv",
@@ -33174,8 +33078,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 23,
+      "executed_cells": 1,
+      "pending_cells": 22,
       "protocol_version": "2.0",
       "required_cells": 23,
       "route_id": "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.fromttlv",
@@ -33184,8 +33088,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 23,
+      "executed_cells": 1,
+      "pending_cells": 22,
       "protocol_version": "2.1",
       "required_cells": 23,
       "route_id": "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.fromttlv",
@@ -33574,8 +33478,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 486,
-      "pending_cells": 101,
+      "executed_cells": 487,
+      "pending_cells": 100,
       "protocol_version": "2.0",
       "required_cells": 587,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
@@ -33584,8 +33488,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 486,
-      "pending_cells": 110,
+      "executed_cells": 487,
+      "pending_cells": 109,
       "protocol_version": "2.1",
       "required_cells": 596,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
@@ -33594,8 +33498,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 486,
-      "pending_cells": 101,
+      "executed_cells": 487,
+      "pending_cells": 100,
       "protocol_version": "2.0",
       "required_cells": 587,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
@@ -33604,8 +33508,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 486,
-      "pending_cells": 110,
+      "executed_cells": 487,
+      "pending_cells": 109,
       "protocol_version": "2.1",
       "required_cells": 596,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
@@ -34395,8 +34299,8 @@
   "route_manifest_sha256": "411aad566ee5f53e36d8db10a6f5792c6411559871fc53a52a9425dba9911cc8",
   "route_summary": [
     {
-      "executed_cells": 5311,
-      "pending_cells": 2952,
+      "executed_cells": 5379,
+      "pending_cells": 2884,
       "required_cells": 8263,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item"
     },
@@ -34431,8 +34335,8 @@
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.biginteger"
     },
     {
-      "executed_cells": 8,
-      "pending_cells": 40,
+      "executed_cells": 32,
+      "pending_cells": 16,
       "required_cells": 48,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.boolean"
     },
@@ -34455,8 +34359,8 @@
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.datetimeextended"
     },
     {
-      "executed_cells": 3588,
-      "pending_cells": 175,
+      "executed_cells": 3632,
+      "pending_cells": 131,
       "required_cells": 3763,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration"
     },
@@ -34491,14 +34395,14 @@
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring"
     },
     {
-      "executed_cells": 5407,
-      "pending_cells": 2950,
+      "executed_cells": 5475,
+      "pending_cells": 2882,
       "required_cells": 8357,
       "route_id": "java.generic-ttlv.ttlv_codec.decode"
     },
     {
-      "executed_cells": 5311,
-      "pending_cells": 2950,
+      "executed_cells": 5379,
+      "pending_cells": 2882,
       "required_cells": 8261,
       "route_id": "java.generic-ttlv.ttlv_item.create"
     },
@@ -35553,8 +35457,8 @@
       "route_id": "java.typed-protocol.model.org.kmipkit.credentials.usernameandpasswordcredential.fromttlv"
     },
     {
-      "executed_cells": 972,
-      "pending_cells": 211,
+      "executed_cells": 974,
+      "pending_cells": 209,
       "required_cells": 1183,
       "route_id": "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew"
     },
@@ -35571,20 +35475,20 @@
       "route_id": "java.typed-protocol.model.org.kmipkit.extensions.queryasyncrequestsrequest.withoperations"
     },
     {
-      "executed_cells": 8,
-      "pending_cells": 80,
+      "executed_cells": 14,
+      "pending_cells": 74,
       "required_cells": 88,
       "route_id": "java.typed-protocol.model.org.kmipkit.message.requestmessage.fromttlv"
     },
     {
-      "executed_cells": 14,
-      "pending_cells": 72,
+      "executed_cells": 16,
+      "pending_cells": 70,
       "required_cells": 86,
       "route_id": "java.typed-protocol.model.org.kmipkit.message.responsemessage.fromttlv"
     },
     {
-      "executed_cells": 0,
-      "pending_cells": 46,
+      "executed_cells": 2,
+      "pending_cells": 44,
       "required_cells": 46,
       "route_id": "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder"
     },
@@ -35595,8 +35499,8 @@
       "route_id": "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.blockciphermode"
     },
     {
-      "executed_cells": 0,
-      "pending_cells": 46,
+      "executed_cells": 2,
+      "pending_cells": 44,
       "required_cells": 46,
       "route_id": "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.build"
     },
@@ -35679,8 +35583,8 @@
       "route_id": "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.psource"
     },
     {
-      "executed_cells": 0,
-      "pending_cells": 4,
+      "executed_cells": 2,
+      "pending_cells": 2,
       "required_cells": 4,
       "route_id": "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.randomiv"
     },
@@ -35703,8 +35607,8 @@
       "route_id": "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.trailerfield"
     },
     {
-      "executed_cells": 0,
-      "pending_cells": 46,
+      "executed_cells": 2,
+      "pending_cells": 44,
       "required_cells": 46,
       "route_id": "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.fromttlv"
     },
@@ -35823,14 +35727,14 @@
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.symmetrickey"
     },
     {
-      "executed_cells": 972,
-      "pending_cells": 211,
+      "executed_cells": 974,
+      "pending_cells": 209,
       "required_cells": 1183,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create"
     },
     {
-      "executed_cells": 972,
-      "pending_cells": 211,
+      "executed_cells": 974,
+      "pending_cells": 209,
       "required_cells": 1183,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem"
     },
@@ -35866,7 +35770,7 @@
     }
   ],
   "schema_version": "1.0",
-  "selected_scope_cells": 26663,
+  "selected_scope_cells": 26957,
   "selected_scope_complete": true,
   "vendor_interoperability_claim": false
 }
