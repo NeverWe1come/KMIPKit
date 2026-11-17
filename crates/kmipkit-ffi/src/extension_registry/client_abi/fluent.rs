@@ -2751,3 +2751,167 @@ pub unsafe extern "C" fn kmipkit_revoke_builder_execute_with_options_v1(
 pub extern "C" fn kmipkit_revoke_builder_release(builder: *mut kmipkit_revoke_builder_t) {
     ffi_entrypoint(|| release(builder, Kind::RevokeBuilder));
 }
+
+fn ping_builder_request(
+    builder: *mut kmipkit_ping_builder_t,
+) -> FfiResult<(ClientRequest, Option<u32>)> {
+    let handle = reference_handle(builder, Kind::PingBuilder)?;
+    let HandleValue::PingBuilder(builder) = &handle.value else {
+        return Err(ERROR_INVALID_INPUT);
+    };
+    let builder = builder.lock().map_err(|_| ERROR_INTERNAL)?;
+    Ok((ClientRequest::ping(), builder.asynchronous_indicator))
+}
+
+/// Creates a reusable empty KMIP 2.1 §6.1.36 Ping builder.
+/// KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-011.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_ping_builder_create(
+    out_builder: *mut *mut kmipkit_ping_builder_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_builder);
+        *out = try_ffi!(try_make_handle(
+            Kind::PingBuilder,
+            HandleValue::PingBuilder(Mutex::new(PingBuilderState::default())),
+        ));
+        SUCCESS
+    })
+}
+
+/// Sets the raw-preserving Request Header Asynchronous Indicator.
+/// KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-007.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_ping_builder_set_asynchronous_indicator(
+    builder: *mut kmipkit_ping_builder_t,
+    value: u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let handle = try_ffi!(reference_handle(builder, Kind::PingBuilder));
+        let HandleValue::PingBuilder(builder) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        match builder.lock() {
+            Ok(mut builder) => builder.asynchronous_indicator = Some(value),
+            Err(_) => return record_ffi_error(ERROR_INTERNAL),
+        }
+        SUCCESS
+    })
+}
+
+/// Validates that the opaque Ping builder remains live; Ping has no payload fields.
+/// KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-007.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_ping_builder_validate(builder: *mut kmipkit_ping_builder_t) -> i32 {
+    ffi_entrypoint(|| match ping_builder_request(builder) {
+        Ok(_) => SUCCESS,
+        Err(status) => record_ffi_error(status),
+    })
+}
+
+/// Builds an independently owned typed Ping batch item.
+/// KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-011.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_ping_builder_build_batch_item(
+    builder: *mut kmipkit_ping_builder_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let (request, _) = match ping_builder_request(builder) {
+            Ok(parts) => parts,
+            Err(status) => return record_ffi_error(status),
+        };
+        *out = try_ffi!(try_make_handle(
+            Kind::BatchItem,
+            HandleValue::BatchItem(Box::new(ClientBatchItem::new(request))),
+        ));
+        SUCCESS
+    })
+}
+
+/// Executes one empty typed Ping request with the client's default options.
+/// KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_ping_v1(
+    client: *mut kmipkit_client_t,
+    limits: *mut kmipkit_codec_limits_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    execute_fluent_item(
+        client,
+        ClientRequest::ping(),
+        limits,
+        &RequestOptions::default(),
+        None,
+        out_response,
+    )
+}
+
+/// Executes one typed Ping exchange with the builder's options.
+/// KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_ping_builder_execute_v1(
+    builder: *mut kmipkit_ping_builder_t,
+    client: *mut kmipkit_client_t,
+    limits: *mut kmipkit_codec_limits_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let (request, asynchronous_indicator) = match ping_builder_request(builder) {
+            Ok(parts) => parts,
+            Err(status) => return record_ffi_error(status),
+        };
+        execute_fluent_item(
+            client,
+            request,
+            limits,
+            &RequestOptions::default(),
+            asynchronous_indicator,
+            out_response,
+        )
+    })
+}
+
+/// Executes one typed Ping exchange with explicit exchange-local options.
+/// KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011.
+///
+/// # Safety
+/// `options` must point to a readable, aligned v1 request-options record.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_ping_builder_execute_with_options_v1(
+    builder: *mut kmipkit_ping_builder_t,
+    client: *mut kmipkit_client_t,
+    limits: *mut kmipkit_codec_limits_t,
+    options: *const kmipkit_request_options_v1_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if options.is_null() || !options.is_aligned() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        // SAFETY: pointer alignment and non-nullness were checked; the record is borrowed here.
+        let options = match super::request_options_from_v1(unsafe { &*options }) {
+            Ok(options) => options,
+            Err(status) => return record_ffi_error(status),
+        };
+        let (request, asynchronous_indicator) = match ping_builder_request(builder) {
+            Ok(parts) => parts,
+            Err(status) => return record_ffi_error(status),
+        };
+        execute_fluent_item(
+            client,
+            request,
+            limits,
+            &options,
+            asynchronous_indicator,
+            out_response,
+        )
+    })
+}
+
+/// Releases the opaque Ping builder.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_ping_builder_release(builder: *mut kmipkit_ping_builder_t) {
+    ffi_entrypoint(|| release(builder, Kind::PingBuilder));
+}

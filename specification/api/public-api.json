@@ -375603,6 +375603,586 @@
         "returnType": "ClientBatchItemResponse"
       },
       "ordering": "not-applicable"
+    },
+    {
+      "id": "ping_builder_create",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::RequestBuilder",
+        "name": "ping",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "PingBuilder"
+      },
+      "c": {
+        "symbol": "kmipkit_ping_builder_create",
+        "parameters": [
+          {
+            "name": "out_builder",
+            "type": "kmipkit_ping_builder_t **",
+            "kind": "output",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "documentation": [
+          "Creates an opaque builder for the empty KMIP 2.1 Ping request."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.fluent",
+        "class": "FluentRequest",
+        "method": "ping",
+        "parameters": [],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "PingBuilder"
+      },
+      "python": {
+        "module": "kmipkit.fluent",
+        "function": "Request.ping",
+        "parameters": [],
+        "cffiSymbol": "kmipkit_ping_builder_create",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "PingBuilder"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ping_builder_set_asynchronous_indicator",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::PingBuilder",
+        "name": "with_asynchronous_indicator",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "u32"
+          }
+        ],
+        "returnType": "PingBuilder"
+      },
+      "c": {
+        "symbol": "kmipkit_ping_builder_set_asynchronous_indicator",
+        "parameters": [
+          {
+            "name": "builder",
+            "type": "kmipkit_ping_builder_t *",
+            "kind": "handle",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "value",
+            "type": "uint32_t",
+            "kind": "scalar"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "documentation": [
+          "Sets the raw-preserving Request Header Asynchronous Indicator."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.fluent",
+        "class": "PingBuilder",
+        "method": "asynchronousIndicator",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "long"
+          }
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "PingBuilder"
+      },
+      "python": {
+        "module": "kmipkit.fluent",
+        "function": "PingBuilder.asynchronous_indicator",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "int"
+          }
+        ],
+        "cffiSymbol": "kmipkit_ping_builder_set_asynchronous_indicator",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "PingBuilder"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ping_builder_validate",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::PingBuilder",
+        "name": "validate",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "void"
+      },
+      "c": {
+        "symbol": "kmipkit_ping_builder_validate",
+        "parameters": [
+          {
+            "name": "builder",
+            "type": "kmipkit_ping_builder_t *",
+            "kind": "handle",
+            "ownership": "borrowed"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "documentation": [
+          "Validates that the opaque empty Ping builder is live."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.fluent",
+        "class": "PingBuilder",
+        "method": "validate",
+        "parameters": [],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "void"
+      },
+      "python": {
+        "module": "kmipkit.fluent",
+        "function": "PingBuilder.validate",
+        "parameters": [],
+        "cffiSymbol": "kmipkit_ping_builder_validate",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "void"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ping_builder_build_batch_item",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::PingBuilder",
+        "name": "to_batch_item",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "ClientBatchItem"
+      },
+      "c": {
+        "symbol": "kmipkit_ping_builder_build_batch_item",
+        "parameters": [
+          {
+            "name": "builder",
+            "type": "kmipkit_ping_builder_t *",
+            "kind": "handle",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_item",
+            "type": "kmipkit_client_batch_item_t **",
+            "kind": "output",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "documentation": [
+          "Builds an independently owned typed Ping batch item."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.fluent",
+        "class": "PingBuilder",
+        "method": "toBatchItem",
+        "parameters": [],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "python": {
+        "module": "kmipkit.fluent",
+        "function": "PingBuilder.to_batch_item",
+        "parameters": [],
+        "cffiSymbol": "kmipkit_ping_builder_build_batch_item",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ping_builder_execute_v1",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::PingBuilder",
+        "name": "execute",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "&CodecLimits"
+          }
+        ],
+        "returnType": "ClientBatchItemResponse"
+      },
+      "c": {
+        "symbol": "kmipkit_ping_builder_execute_v1",
+        "parameters": [
+          {
+            "name": "builder",
+            "type": "kmipkit_ping_builder_t *",
+            "kind": "handle",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "client",
+            "type": "kmipkit_client_t *",
+            "kind": "handle",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "limits",
+            "type": "kmipkit_codec_limits_t *",
+            "kind": "handle",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_response",
+            "type": "kmipkit_client_batch_response_t **",
+            "kind": "output",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "documentation": [
+          "Executes one typed Ping exchange using default exchange options."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.fluent",
+        "class": "PingBuilder",
+        "method": "execute",
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "returnType": "ClientBatchResponse"
+      },
+      "python": {
+        "module": "kmipkit.fluent",
+        "function": "PingBuilder.execute",
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "ttlv.CodecLimits"
+          }
+        ],
+        "cffiSymbol": "kmipkit_ping_builder_execute_v1",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "returnType": "BatchResult"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ping_builder_execute_with_options_v1",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::PingBuilder",
+        "name": "with_options",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "options",
+            "type": "RequestOptions"
+          }
+        ],
+        "returnType": "PingBuilder"
+      },
+      "c": {
+        "symbol": "kmipkit_ping_builder_execute_with_options_v1",
+        "parameters": [
+          {
+            "name": "builder",
+            "type": "kmipkit_ping_builder_t *",
+            "kind": "handle",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "client",
+            "type": "kmipkit_client_t *",
+            "kind": "handle",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "limits",
+            "type": "kmipkit_codec_limits_t *",
+            "kind": "handle",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "options",
+            "type": "const kmipkit_request_options_v1_t *",
+            "kind": "input-value-pointer",
+            "valueType": "kmipkit_request_options_v1_t",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_response",
+            "type": "kmipkit_client_batch_response_t **",
+            "kind": "output",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "documentation": [
+          "Executes one typed Ping exchange using explicit exchange-local options."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.fluent",
+        "class": "PingBuilder",
+        "method": "executeWithOptions",
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          },
+          {
+            "name": "options",
+            "type": "RequestOptions"
+          }
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "returnType": "ClientBatchResponse"
+      },
+      "python": {
+        "module": "kmipkit.fluent",
+        "function": "PingBuilder.execute",
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "ttlv.CodecLimits"
+          },
+          {
+            "name": "options",
+            "type": "RequestOptions"
+          }
+        ],
+        "cffiSymbol": "kmipkit_ping_builder_execute_with_options_v1",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "returnType": "BatchResult"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "client_ping_v1",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::PingBuilder",
+        "name": "execute",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "ClientBatchItemResponse"
+      },
+      "c": {
+        "symbol": "kmipkit_client_ping_v1",
+        "parameters": [
+          {
+            "name": "client",
+            "type": "kmipkit_client_t *",
+            "kind": "handle",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "limits",
+            "type": "kmipkit_codec_limits_t *",
+            "kind": "handle",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_response",
+            "type": "kmipkit_client_batch_response_t **",
+            "kind": "output",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "documentation": [
+          "Executes one empty typed KMIP 2.1 Ping request using the existing client and default exchange options."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.fluent",
+        "class": "PingBuilder",
+        "method": "execute",
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "returnType": "ClientBatchResponse"
+      },
+      "python": {
+        "module": "kmipkit.fluent",
+        "function": "PingBuilder.execute",
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "ttlv.CodecLimits"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_ping_v1",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "returnType": "BatchResult"
+      },
+      "ordering": "not-applicable",
+      "legacyRegistry": false
     }
   ],
   "catalog": {
@@ -386085,6 +386665,35 @@
       "python": {
         "module": "kmipkit.fluent",
         "name": "RevokeBuilder"
+      }
+    },
+    {
+      "id": "PingBuilder",
+      "kind": "struct",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent",
+        "name": "PingBuilder",
+        "owner": "client"
+      },
+      "c": {
+        "name": "kmipkit_ping_builder_t",
+        "kind": "opaque-handle",
+        "handleKind": "ping_builder",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_ping_builder_release"
+      },
+      "java": {
+        "package": "org.kmipkit.fluent",
+        "name": "PingBuilder"
+      },
+      "python": {
+        "module": "kmipkit.fluent",
+        "name": "PingBuilder"
       }
     }
   ],
@@ -402486,6 +403095,87 @@
           "kmipkit.protocol_values.V3_0_TAG_SPLIT_KEY_POLYNOMIAL",
           "kmipkit.protocol_values.V3_0_TAG_WRAPPING_KEY_LINK",
           "kmipkit.protocol_values.v3_0_tag_name"
+        ]
+      }
+    },
+    {
+      "capabilityId": "fluent_ping_builder",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "capabilityState": "declared",
+      "parityScope": "four-language",
+      "ownerSpecId": "KMIPKIT-0093",
+      "approvalEvidence": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "mappings": {
+        "rust": [
+          "kmipkit_client::fluent::PingBuilder",
+          "kmipkit_client::fluent::PingBuilder<'a>::build",
+          "kmipkit_client::fluent::PingBuilder<'a>::execute",
+          "kmipkit_client::fluent::PingBuilder<'a>::to_batch_item",
+          "kmipkit_client::fluent::PingBuilder<'a>::validate",
+          "kmipkit_client::fluent::PingBuilder<'a>::with_asynchronous_indicator",
+          "kmipkit_client::fluent::PingBuilder<'a>::with_options",
+          "kmipkit_client::fluent::RequestBuilder<'a>::ping"
+        ],
+        "c": [
+          "kmipkit_client_ping_v1",
+          "kmipkit_ping_builder_build_batch_item",
+          "kmipkit_ping_builder_create",
+          "kmipkit_ping_builder_execute_v1",
+          "kmipkit_ping_builder_execute_with_options_v1",
+          "kmipkit_ping_builder_set_asynchronous_indicator",
+          "kmipkit_ping_builder_t",
+          "kmipkit_ping_builder_validate"
+        ],
+        "java": [
+          "org.kmipkit.fluent.FluentRequest.ping",
+          "org.kmipkit.fluent.PingBuilder",
+          "org.kmipkit.fluent.PingBuilder.asynchronousIndicator",
+          "org.kmipkit.fluent.PingBuilder.build",
+          "org.kmipkit.fluent.PingBuilder.execute",
+          "org.kmipkit.fluent.PingBuilder.toBatchItem",
+          "org.kmipkit.fluent.PingBuilder.validate",
+          "org.kmipkit.fluent.PingBuilder.withOptions"
+        ],
+        "python": [
+          "kmipkit.fluent.PingBuilder",
+          "kmipkit.fluent.PingBuilder.asynchronous_indicator",
+          "kmipkit.fluent.PingBuilder.build",
+          "kmipkit.fluent.PingBuilder.execute",
+          "kmipkit.fluent.PingBuilder.to_batch_item",
+          "kmipkit.fluent.PingBuilder.validate",
+          "kmipkit.fluent.PingBuilder.with_options",
+          "kmipkit.fluent.Request.ping"
+        ]
+      }
+    },
+    {
+      "capabilityId": "fluent_ping_builder_c_cleanup",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "capabilityState": "declared",
+      "parityScope": "c-only",
+      "ownerSpecId": "KMIPKIT-0093",
+      "approvalEvidence": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "mappings": {
+        "c": [
+          "kmipkit_ping_builder_release"
         ]
       }
     }
@@ -1252395,116 +1253085,1510 @@
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
-      "declarationId": "rust-observed-25995efcb24ae767c901",
+      "declarationId": "KMIPKIT-0093-ping-rust-kmipkit-client-kmipkit_client::fluent::PingBuilder",
       "packageId": "rust-kmipkit-client",
       "kind": "type",
       "exportName": "kmipkit_client::fluent::PingBuilder",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "fluent_ping_builder",
       "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
         "KMIPKIT-0093-FR-011"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
       "candidateSpecId": "KMIPKIT-0093",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::PingBuilder"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ping_builder_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.PingBuilder"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.PingBuilder"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "tools/api_manifest/tests/test_0093_ping_builder_manifest.py"
+      ]
     },
     {
-      "declarationId": "rust-observed-0045aa8ef18c9ddbebee",
+      "declarationId": "KMIPKIT-0093-ping-rust-kmipkit-client-kmipkit_client::fluent::PingBuilder<'a>::build",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::fluent::PingBuilder<'a>::build",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "fluent_ping_builder",
       "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
         "KMIPKIT-0093-FR-011"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
       "candidateSpecId": "KMIPKIT-0093",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::PingBuilder<'a>::build"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ping_builder_build_batch_item"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.PingBuilder.build"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.PingBuilder.build"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "tools/api_manifest/tests/test_0093_ping_builder_manifest.py"
+      ]
     },
     {
-      "declarationId": "rust-observed-b182a5b5e406a17f0edc",
+      "declarationId": "KMIPKIT-0093-ping-rust-kmipkit-client-kmipkit_client::fluent::PingBuilder<'a>::execute",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::fluent::PingBuilder<'a>::execute",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "fluent_ping_builder",
       "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
         "KMIPKIT-0093-FR-011"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
       "candidateSpecId": "KMIPKIT-0093",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::PingBuilder<'a>::execute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_ping_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.PingBuilder.execute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.PingBuilder.execute"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "tools/api_manifest/tests/test_0093_ping_builder_manifest.py"
+      ]
     },
     {
-      "declarationId": "rust-observed-bbcd87c67af81511c3a3",
+      "declarationId": "KMIPKIT-0093-ping-rust-kmipkit-client-kmipkit_client::fluent::PingBuilder<'a>::to_batch_item",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::fluent::PingBuilder<'a>::to_batch_item",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "fluent_ping_builder",
       "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
         "KMIPKIT-0093-FR-011"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
       "candidateSpecId": "KMIPKIT-0093",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::PingBuilder<'a>::to_batch_item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ping_builder_build_batch_item"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.PingBuilder.toBatchItem"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.PingBuilder.to_batch_item"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "tools/api_manifest/tests/test_0093_ping_builder_manifest.py"
+      ]
     },
     {
-      "declarationId": "rust-observed-90e33e8356bcd18428f8",
+      "declarationId": "KMIPKIT-0093-ping-rust-kmipkit-client-kmipkit_client::fluent::PingBuilder<'a>::validate",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::fluent::PingBuilder<'a>::validate",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "fluent_ping_builder",
       "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
         "KMIPKIT-0093-FR-011"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
       "candidateSpecId": "KMIPKIT-0093",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::PingBuilder<'a>::validate"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ping_builder_validate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.PingBuilder.validate"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.PingBuilder.validate"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "tools/api_manifest/tests/test_0093_ping_builder_manifest.py"
+      ]
     },
     {
-      "declarationId": "rust-observed-0f65999f1254a3182bf3",
+      "declarationId": "KMIPKIT-0093-ping-rust-kmipkit-client-kmipkit_client::fluent::PingBuilder<'a>::with_asynchronous_indicator",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::fluent::PingBuilder<'a>::with_asynchronous_indicator",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "fluent_ping_builder",
       "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
         "KMIPKIT-0093-FR-011"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
       "candidateSpecId": "KMIPKIT-0093",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::PingBuilder<'a>::with_asynchronous_indicator"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ping_builder_set_asynchronous_indicator"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.PingBuilder.asynchronousIndicator"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.PingBuilder.asynchronous_indicator"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "tools/api_manifest/tests/test_0093_ping_builder_manifest.py"
+      ]
     },
     {
-      "declarationId": "rust-observed-a3830f4bab130260ce17",
+      "declarationId": "KMIPKIT-0093-ping-rust-kmipkit-client-kmipkit_client::fluent::PingBuilder<'a>::with_options",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::fluent::PingBuilder<'a>::with_options",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "fluent_ping_builder",
       "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
         "KMIPKIT-0093-FR-011"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
       "candidateSpecId": "KMIPKIT-0093",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::PingBuilder<'a>::with_options"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ping_builder_execute_with_options_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.PingBuilder.withOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.PingBuilder.with_options"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "tools/api_manifest/tests/test_0093_ping_builder_manifest.py"
+      ]
     },
     {
-      "declarationId": "rust-observed-022428d1c2a6e92c4f1e",
+      "declarationId": "KMIPKIT-0093-ping-rust-kmipkit-client-kmipkit_client::fluent::RequestBuilder<'a>::ping",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::fluent::RequestBuilder<'a>::ping",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "fluent_ping_builder",
       "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
         "KMIPKIT-0093-FR-011"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
       "candidateSpecId": "KMIPKIT-0093",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::RequestBuilder<'a>::ping"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ping_builder_create"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.FluentRequest.ping"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Request.ping"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "tools/api_manifest/tests/test_0093_ping_builder_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0093-ping-c-kmipkit-kmipkit_ping_builder_t",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_ping_builder_t",
+      "capabilityId": "fluent_ping_builder",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::PingBuilder"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ping_builder_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.PingBuilder"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.PingBuilder"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "tools/api_manifest/tests/test_0093_ping_builder_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0093-ping-java-kmipkit-org.kmipkit.fluent.PingBuilder",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.PingBuilder",
+      "capabilityId": "fluent_ping_builder",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::PingBuilder"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ping_builder_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.PingBuilder"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.PingBuilder"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "tools/api_manifest/tests/test_0093_ping_builder_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0093-ping-python-kmipkit-kmipkit.fluent.PingBuilder",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.PingBuilder",
+      "capabilityId": "fluent_ping_builder",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::PingBuilder"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ping_builder_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.PingBuilder"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.PingBuilder"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "tools/api_manifest/tests/test_0093_ping_builder_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0093-ping-c-kmipkit-kmipkit_ping_builder_create",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_ping_builder_create",
+      "capabilityId": "fluent_ping_builder",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::RequestBuilder<'a>::ping"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ping_builder_create"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.FluentRequest.ping"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Request.ping"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "tools/api_manifest/tests/test_0093_ping_builder_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0093-ping-java-kmipkit-org.kmipkit.fluent.FluentRequest.ping",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.FluentRequest.ping",
+      "capabilityId": "fluent_ping_builder",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::RequestBuilder<'a>::ping"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ping_builder_create"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.FluentRequest.ping"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Request.ping"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "tools/api_manifest/tests/test_0093_ping_builder_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0093-ping-python-kmipkit-kmipkit.fluent.Request.ping",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.Request.ping",
+      "capabilityId": "fluent_ping_builder",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::RequestBuilder<'a>::ping"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ping_builder_create"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.FluentRequest.ping"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Request.ping"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "tools/api_manifest/tests/test_0093_ping_builder_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0093-ping-c-kmipkit-kmipkit_ping_builder_build_batch_item",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_ping_builder_build_batch_item",
+      "capabilityId": "fluent_ping_builder",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::PingBuilder<'a>::to_batch_item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ping_builder_build_batch_item"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.PingBuilder.toBatchItem"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.PingBuilder.to_batch_item"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "tools/api_manifest/tests/test_0093_ping_builder_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0093-ping-java-kmipkit-org.kmipkit.fluent.PingBuilder.build",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.PingBuilder.build",
+      "capabilityId": "fluent_ping_builder",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::PingBuilder<'a>::build"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ping_builder_build_batch_item"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.PingBuilder.build"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.PingBuilder.build"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "tools/api_manifest/tests/test_0093_ping_builder_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0093-ping-python-kmipkit-kmipkit.fluent.PingBuilder.build",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.PingBuilder.build",
+      "capabilityId": "fluent_ping_builder",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::PingBuilder<'a>::build"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ping_builder_build_batch_item"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.PingBuilder.build"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.PingBuilder.build"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "tools/api_manifest/tests/test_0093_ping_builder_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0093-ping-java-kmipkit-org.kmipkit.fluent.PingBuilder.toBatchItem",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.PingBuilder.toBatchItem",
+      "capabilityId": "fluent_ping_builder",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::PingBuilder<'a>::to_batch_item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ping_builder_build_batch_item"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.PingBuilder.toBatchItem"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.PingBuilder.to_batch_item"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "tools/api_manifest/tests/test_0093_ping_builder_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0093-ping-python-kmipkit-kmipkit.fluent.PingBuilder.to_batch_item",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.PingBuilder.to_batch_item",
+      "capabilityId": "fluent_ping_builder",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::PingBuilder<'a>::to_batch_item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ping_builder_build_batch_item"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.PingBuilder.toBatchItem"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.PingBuilder.to_batch_item"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "tools/api_manifest/tests/test_0093_ping_builder_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0093-ping-c-kmipkit-kmipkit_ping_builder_execute_v1",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_ping_builder_execute_v1",
+      "capabilityId": "fluent_ping_builder",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::PingBuilder<'a>::execute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ping_builder_execute_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.PingBuilder.execute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.PingBuilder.execute"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "tools/api_manifest/tests/test_0093_ping_builder_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0093-ping-java-kmipkit-org.kmipkit.fluent.PingBuilder.execute",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.PingBuilder.execute",
+      "capabilityId": "fluent_ping_builder",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::PingBuilder<'a>::execute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_ping_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.PingBuilder.execute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.PingBuilder.execute"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "tools/api_manifest/tests/test_0093_ping_builder_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0093-ping-python-kmipkit-kmipkit.fluent.PingBuilder.execute",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.PingBuilder.execute",
+      "capabilityId": "fluent_ping_builder",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::PingBuilder<'a>::execute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_ping_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.PingBuilder.execute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.PingBuilder.execute"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "tools/api_manifest/tests/test_0093_ping_builder_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0093-ping-c-kmipkit-kmipkit_ping_builder_validate",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_ping_builder_validate",
+      "capabilityId": "fluent_ping_builder",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::PingBuilder<'a>::validate"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ping_builder_validate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.PingBuilder.validate"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.PingBuilder.validate"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "tools/api_manifest/tests/test_0093_ping_builder_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0093-ping-java-kmipkit-org.kmipkit.fluent.PingBuilder.validate",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.PingBuilder.validate",
+      "capabilityId": "fluent_ping_builder",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::PingBuilder<'a>::validate"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ping_builder_validate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.PingBuilder.validate"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.PingBuilder.validate"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "tools/api_manifest/tests/test_0093_ping_builder_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0093-ping-python-kmipkit-kmipkit.fluent.PingBuilder.validate",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.PingBuilder.validate",
+      "capabilityId": "fluent_ping_builder",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::PingBuilder<'a>::validate"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ping_builder_validate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.PingBuilder.validate"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.PingBuilder.validate"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "tools/api_manifest/tests/test_0093_ping_builder_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0093-ping-c-kmipkit-kmipkit_ping_builder_set_asynchronous_indicator",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_ping_builder_set_asynchronous_indicator",
+      "capabilityId": "fluent_ping_builder",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::PingBuilder<'a>::with_asynchronous_indicator"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ping_builder_set_asynchronous_indicator"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.PingBuilder.asynchronousIndicator"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.PingBuilder.asynchronous_indicator"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "tools/api_manifest/tests/test_0093_ping_builder_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0093-ping-java-kmipkit-org.kmipkit.fluent.PingBuilder.asynchronousIndicator",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.PingBuilder.asynchronousIndicator",
+      "capabilityId": "fluent_ping_builder",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::PingBuilder<'a>::with_asynchronous_indicator"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ping_builder_set_asynchronous_indicator"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.PingBuilder.asynchronousIndicator"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.PingBuilder.asynchronous_indicator"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "tools/api_manifest/tests/test_0093_ping_builder_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0093-ping-python-kmipkit-kmipkit.fluent.PingBuilder.asynchronous_indicator",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.PingBuilder.asynchronous_indicator",
+      "capabilityId": "fluent_ping_builder",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::PingBuilder<'a>::with_asynchronous_indicator"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ping_builder_set_asynchronous_indicator"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.PingBuilder.asynchronousIndicator"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.PingBuilder.asynchronous_indicator"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "tools/api_manifest/tests/test_0093_ping_builder_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0093-ping-c-kmipkit-kmipkit_ping_builder_execute_with_options_v1",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_ping_builder_execute_with_options_v1",
+      "capabilityId": "fluent_ping_builder",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::PingBuilder<'a>::with_options"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ping_builder_execute_with_options_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.PingBuilder.withOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.PingBuilder.with_options"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "tools/api_manifest/tests/test_0093_ping_builder_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0093-ping-java-kmipkit-org.kmipkit.fluent.PingBuilder.withOptions",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.PingBuilder.withOptions",
+      "capabilityId": "fluent_ping_builder",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::PingBuilder<'a>::with_options"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ping_builder_execute_with_options_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.PingBuilder.withOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.PingBuilder.with_options"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "tools/api_manifest/tests/test_0093_ping_builder_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0093-ping-python-kmipkit-kmipkit.fluent.PingBuilder.with_options",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.PingBuilder.with_options",
+      "capabilityId": "fluent_ping_builder",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::PingBuilder<'a>::with_options"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ping_builder_execute_with_options_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.PingBuilder.withOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.PingBuilder.with_options"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "tools/api_manifest/tests/test_0093_ping_builder_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0093-ping-c-kmipkit-kmipkit_client_ping_v1",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_ping_v1",
+      "capabilityId": "fluent_ping_builder",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::PingBuilder<'a>::execute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_ping_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.PingBuilder.execute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.PingBuilder.execute"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "tools/api_manifest/tests/test_0093_ping_builder_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0093-ping-c-kmipkit-kmipkit_ping_builder_release",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_ping_builder_release",
+      "capabilityId": "fluent_ping_builder_c_cleanup",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ping_builder_release"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "tools/api_manifest/tests/test_0093_ping_builder_manifest.py"
+      ]
     }
   ],
   "requirementIds": [

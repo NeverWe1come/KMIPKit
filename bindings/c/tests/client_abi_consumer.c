@@ -7828,7 +7828,7 @@ failure:
     return 0;
 }
 
-static int ping_builder_builds_typed_batch_item_from_c(void) {
+int kmipkit_client_abi_c_consumer_ping_builder_builds_typed_item(void) {
     kmipkit_ping_builder_t *builder = NULL;
     kmipkit_client_batch_item_t *item = NULL;
     uint32_t operation = UINT32_C(0);
@@ -7888,7 +7888,7 @@ int main(int argc, char **argv) {
         !rekey_constructor_is_callable_from_c() ||
         !reprovision_constructor_is_callable_from_c() ||
         !rng_request_builders_are_callable_from_c() ||
-        !ping_builder_builds_typed_batch_item_from_c() ||
+        !kmipkit_client_abi_c_consumer_ping_builder_builds_typed_item() ||
         !rekey_key_pair_constructor_is_callable_from_c() ||
         !rekey_key_pair_response_rejects_invalid_output_records_from_c() ||
         !rekey_key_pair_response_accessors_clear_outputs_from_c() ||

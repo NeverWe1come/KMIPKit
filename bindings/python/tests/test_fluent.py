@@ -391,8 +391,7 @@ def _lifecycle_response(operation: int, identifier: bytes) -> bytes:
         _item(0x42005C, 5, struct.pack(">I", operation)),
         _item(0x42007F, 5, struct.pack(">I", 0)),
     ]
-    if operation != protocol_values.V2_1_OPERATION_PING:
-        response_fields.append(_structure(0x42007C, *payload_fields))
+    response_fields.append(_structure(0x42007C, *payload_fields))
     response_item = _structure(0x42000F, *response_fields)
     return _structure(0x42007B, header, response_item)
 

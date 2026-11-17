@@ -23,6 +23,7 @@ pub(crate) const C_AVAILABLE_CAPABILITIES: &[&str] = &[
     "fluent_dx_api",
     "fluent_locate_revoke_parity",
     "fluent_named_tag_values",
+    "fluent_ping_builder",
     "fluent_set_attribute_parity",
     "generic_ttlv_model",
     "hashed_password_timestamp_sequence",
@@ -44183,5 +44184,45 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit-0093-rust-kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::tag::name",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::tag::name",
+    ),
+    (
+        "KMIPKIT-0093-ping-rust-kmipkit-client-kmipkit_client::fluent::PingBuilder",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::PingBuilder",
+    ),
+    (
+        "KMIPKIT-0093-ping-rust-kmipkit-client-kmipkit_client::fluent::PingBuilder<'a>::build",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::PingBuilder<'a>::build",
+    ),
+    (
+        "KMIPKIT-0093-ping-rust-kmipkit-client-kmipkit_client::fluent::PingBuilder<'a>::execute",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::PingBuilder<'a>::execute",
+    ),
+    (
+        "KMIPKIT-0093-ping-rust-kmipkit-client-kmipkit_client::fluent::PingBuilder<'a>::to_batch_item",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::PingBuilder<'a>::to_batch_item",
+    ),
+    (
+        "KMIPKIT-0093-ping-rust-kmipkit-client-kmipkit_client::fluent::PingBuilder<'a>::validate",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::PingBuilder<'a>::validate",
+    ),
+    (
+        "KMIPKIT-0093-ping-rust-kmipkit-client-kmipkit_client::fluent::PingBuilder<'a>::with_asynchronous_indicator",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::PingBuilder<'a>::with_asynchronous_indicator",
+    ),
+    (
+        "KMIPKIT-0093-ping-rust-kmipkit-client-kmipkit_client::fluent::PingBuilder<'a>::with_options",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::PingBuilder<'a>::with_options",
+    ),
+    (
+        "KMIPKIT-0093-ping-rust-kmipkit-client-kmipkit_client::fluent::RequestBuilder<'a>::ping",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::RequestBuilder<'a>::ping",
     ),
 ];
