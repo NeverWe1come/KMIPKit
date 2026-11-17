@@ -421,6 +421,7 @@ class ControlledTlsPeerTest {
             "java.generic-ttlv.function.ttlv_item_view_from_item",
             "java.generic-ttlv.ttlv_codec.decode",
             "java.typed-protocol.model.org.kmipkit.message.responsemessage.fromttlv");
+    private static final List<Long> RESPONSE_HEADER_ATTESTATION_TYPE_VALUES = List.of(1L, 2L);
     private static final List<NormativeTarget> RESPONSE_MESSAGE_PARSE_TARGETS = List.of(
             RESPONSE_HEADER_ATTESTATION_TYPE,
             new NormativeTarget("test-norm-message-field-message-field-8-5-batch-count",
@@ -1501,9 +1502,9 @@ class ControlledTlsPeerTest {
         int batchItemGenericRouteEventCount = KMIP_2_0_AND_2_1.size() * 4;
         int batchItemAdditionalResponseRouteEventCount = KMIP_2_0_AND_2_1.size() * 12;
         int batchItemRenderedResponseViewEventCount = KMIP_2_0_AND_2_1.size() * 3 * 3;
-        int normativeMessageFieldGenericRouteEventCount = KMIP_2_0_AND_2_1.size() * 34;
+        int normativeMessageFieldGenericRouteEventCount = KMIP_2_0_AND_2_1.size() * 37;
         int normativeMessageFieldParserRouteEventCount = KMIP_2_0_AND_2_1.size()
-                * (17 + REQUEST_HEADER_SCALAR_ROUTE_TARGETS.size());
+                * (18 + REQUEST_HEADER_SCALAR_ROUTE_TARGETS.size());
         int normativeBatchItemAccessorRouteEventCount = KMIP_2_0_AND_2_1.size() * 10;
         int newAttributePayloadRouteEventCount = KMIP_2_0_AND_2_1.size() * 3 * 20;
         int objectGroupLocalRouteEventCount = 3;
@@ -5205,6 +5206,10 @@ class ControlledTlsPeerTest {
         appendGenericEnumerationRouteEvents(events, REQUEST_HEADER_ATTESTATION_TYPE.caseId(),
                 REQUEST_HEADER_ATTESTATION_TYPE.targetId(), 0x4200c7,
                 REQUEST_HEADER_ATTESTATION_TYPE_VALUES.get(0), protocolVersion);
+        // OASIS KMIP 2.0/2.1 §8.5 defines Attestation Type as an optional, repeatable Response Header field.
+        appendGenericEnumerationRouteEvents(events, RESPONSE_HEADER_ATTESTATION_TYPE.caseId(),
+                RESPONSE_HEADER_ATTESTATION_TYPE.targetId(), 0x4200c7,
+                RESPONSE_HEADER_ATTESTATION_TYPE_VALUES.get(0), protocolVersion);
         appendMessageFieldIntegerRoutes(events, "test-norm-message-field-message-field-8-5-batch-count",
                 "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-BATCH-COUNT", protocolVersion, false);
         appendMessageFieldIntegerRoutes(events, "test-norm-message-field-message-field-9-5-batch-count",
@@ -7893,9 +7898,13 @@ class ControlledTlsPeerTest {
                 "org.kmipkit.extensions.ClientBatchItemResult.uniqueBatchItemId", protocolVersion, responseHash);
 
         try (ResponseMessage message = ResponseMessage.fromTtlv(responseMessageStructure(
-                "2.0".equals(protocolVersion) ? 0 : 1)); var item = message.batchItemAt(0)) {
+                "2.0".equals(protocolVersion) ? 0 : 1));
+                var item = message.batchItemAt(0);
+                var header = message.header()) {
             assertEquals(1, message.batchItemCount());
             assertEquals(0x18L, item.operation().orElseThrow());
+            assertEquals(RESPONSE_HEADER_ATTESTATION_TYPE_VALUES, header.attestationTypes(),
+                    "Response Header must preserve each repeated Attestation Type in wire order.");
         }
         appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID,
                 "java.typed-protocol.model.org.kmipkit.message.responsemessage.fromttlv",
@@ -7962,6 +7971,9 @@ class ControlledTlsPeerTest {
         TtlvStructure header = TtlvStructure.create();
         header = appendTtlvItem(header, 0x420069, TtlvValue.structure(protocolVersion, limits), limits);
         header = appendTtlvItem(header, 0x420092, TtlvValue.DateTime(1), limits);
+        for (long value : RESPONSE_HEADER_ATTESTATION_TYPE_VALUES) {
+            header = appendTtlvItem(header, 0x4200c7, TtlvValue.Enumeration(value), limits);
+        }
         header = appendTtlvItem(header, 0x42000d, TtlvValue.Integer(1), limits);
         TtlvStructure message = TtlvStructure.create();
         message = appendTtlvItem(message, 0x42007a, TtlvValue.structure(header, limits), limits);
