@@ -418,6 +418,7 @@ RECIPES = {
         ((1, 18), 'batch_order_placeholder_two_item'),
     'test-batch-single-item-options-omitted': ((10,), 'batch_single_item_options_omitted'),
     'test-batch-count-matches-items': ((10, 12), 'batch_count_two_read_items'),
+    'test-batch-count-mismatch-rejected': ((10, 12), 'batch_count_two_read_items'),
     'test-batch-unique-item-id-response-correlation': ((10, 12), 'batch_count_two_read_items'),
     'test-batch-order-false-correlates-response-items': ((10, 12), 'batch_order_false_two_read_items'),
     'test-batch-continue-after-failure': ((10, 12), 'batch_continue_after_failure'),
@@ -3064,6 +3065,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
              'test-norm-payload-client-export-request-') else
          ('direct', 'standalone') if case['case_id'] in {'test-op-get-attributes', 'test-op-get-attribute-list',
                                                          'test-batch-continue-after-failure',
+                                                         'test-batch-count-matches-items',
+                                                         'test-batch-count-mismatch-rejected',
+                                                         'test-batch-order-false-correlates-response-items',
                                                          'test-norm-payload-client-get-attribute-list-request-20-001',
                                                          'test-norm-payload-client-get-attribute-list-request-21-001',
                                                          'test-norm-payload-client-add-attribute-request-20-002',
@@ -3993,6 +3997,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                if item[0] == 0x42000F]}
                                                if observation and case_id in {
                                                    'test-batch-count-matches-items',
+                                                   'test-batch-count-mismatch-rejected',
                                                    'test-batch-unique-item-id-response-correlation',
                                                    'test-batch-order-false-correlates-response-items',
                                                    'test-batch-order-required-placeholder-resolution',
@@ -4007,6 +4012,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                if item[0] == 0x42000F]}
                                                if observation and case_id in {
                                                    'test-batch-count-matches-items',
+                                                   'test-batch-count-mismatch-rejected',
                                                    'test-batch-unique-item-id-response-correlation',
                                                    'test-batch-order-false-correlates-response-items',
                                                    'test-batch-order-required-placeholder-resolution',

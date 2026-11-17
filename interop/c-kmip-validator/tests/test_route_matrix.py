@@ -3774,8 +3774,8 @@ class RouteMatrixTests(unittest.TestCase):
                                                if case['case_id'] in case_ids]}
         events, _, checks = execute_network_cells(
             ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
-        self.assertEqual(len(checks), 60,
-                         'Get Attribute List must run through direct and request-based constructors')
+        self.assertEqual(len(checks), 84,
+                         'batch read cases must cover direct and request-based constructors')
         self.assertTrue(all(check['status'] == 'passed' for check in checks))
         expected_operations = {
             'KMIPKIT-ELEM-OP-C2S-GET', 'KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST',
@@ -3817,6 +3817,90 @@ class RouteMatrixTests(unittest.TestCase):
                     'kmipkit_client_batch_item_response_get_attribute_list',
                     'kmipkit_client_batch_item_response_get_attribute_list_payload_ttlv',
                 } <= set(symbols), 'Continue must inspect the failed Get and successful attribute-list payload')
+
+    def test_batch_count_and_unordered_correlation_cover_standalone_get_attribute_list(self):
+        """Exercise both Get Attribute List constructors in KMIP 2.0/2.1 batch routes."""
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        case_ids = {
+            'test-batch-count-matches-items',
+            'test-batch-order-false-correlates-response-items',
+        }
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] in case_ids]}
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 48,
+                         'both constructors must run for both cases over six transports and two versions')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        for case_id in case_ids:
+            case_checks = [check for check in checks if check['case_id'] == case_id]
+            self.assertEqual(len(case_checks), 24, case_id)
+            self.assertEqual({check['constructor_variant'] for check in case_checks},
+                             {'direct', 'standalone'})
+            for check in case_checks:
+                if check['constructor_variant'] == 'standalone':
+                    self.assertIn('kmipkit_client_batch_item_get_attribute_list_from_request',
+                                  check['public_api_trace_symbols'])
+                    self.assertIn('kmipkit_get_attribute_list_request_to_ttlv_payload',
+                                  check['public_api_trace_symbols'])
+                else:
+                    self.assertIn('kmipkit_client_batch_item_get_attribute_list',
+                                  check['public_api_trace_symbols'])
+                    self.assertNotIn('kmipkit_client_batch_item_get_attribute_list_from_request',
+                                     check['public_api_trace_symbols'])
+        standalone_events = [event for event in events
+                             if event['case_id'] in case_ids and
+                             event['public_api_symbol'] ==
+                             'kmipkit_client_batch_item_get_attribute_list_from_request']
+        self.assertEqual(len(standalone_events), 72)
+        self.assertEqual({event['action'] for event in standalone_events},
+                         {'construct', 'send', 'decode'})
+        response_accessors = {
+            'kmipkit_client_batch_item_response_header_ttlv',
+            'kmipkit_client_batch_item_response_metadata_v1',
+            'kmipkit_client_batch_item_response_pending_correlation_value',
+            'kmipkit_client_batch_item_response_raw_ttlv',
+        }
+        for check in checks:
+            self.assertTrue(response_accessors <= set(check['public_api_trace_symbols']),
+                            check['case_id'])
+
+    def test_batch_count_mismatch_is_recomputed_before_transport(self):
+        """OASIS KMIP 2.0/2.1 §§8.1–8.6, 9.5–9.8, 9.21, 6.1.19, and 6.1.21 define the batch count and two item operations."""
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        case_id = 'test-batch-count-mismatch-rejected'
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 24,
+                         'both C constructors must keep Batch Count equal to the two request items')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertEqual({check['constructor_variant'] for check in checks},
+                         {'direct', 'standalone'})
+        self.assertTrue(all(check['peer_response_operation_values'] == [10, 12]
+                            for check in checks))
+        self.assertTrue(all(check['peer_response_result_statuses'] == [0, 0]
+                            for check in checks))
+        send_events = [event for event in events if event['action'] == 'send']
+        self.assertEqual(len(send_events), 36)
+        for symbol in ('kmipkit_client_batch_item_get',
+                       'kmipkit_client_batch_item_get_attribute_list',
+                       'kmipkit_client_batch_item_get_attribute_list_from_request'):
+            self.assertEqual(sum(event['public_api_symbol'] == symbol for event in send_events), 12,
+                             symbol)
+        self.assertTrue(all(event['peer_observed_operation_sequence'] ==
+                            ['Get', 'Get Attribute List'] for event in send_events))
 
 
     def test_stop_batch_returns_only_the_failed_item_and_stops_processing(self):
