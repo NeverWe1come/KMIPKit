@@ -54,6 +54,37 @@ class LocalCatalogRouteChecksTest {
     }
 
     @Test
+    void executesClientPayloadCorrelationFieldThroughGenericTtlvRoutes() throws Exception {
+        JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
+        String caseId = "test-norm-payload-client-cancel-request-21-001";
+        List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
+
+        LocalCatalogRouteChecks.executeClientPayloadScalarFields(
+                catalog, "2.1", Set.of(caseId), invocations::add);
+
+        assertEquals(List.of(
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode",
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode"),
+                invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId).toList());
+        assertEquals(Set.of(
+                "KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-21-001",
+                "KMIPKIT-ELEM-OP-C2S-CANCEL"),
+                invocations.stream().map(LocalCatalogRouteChecks.Invocation::targetId)
+                        .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(Set.of(caseId), invocations.stream().map(LocalCatalogRouteChecks.Invocation::caseId)
+                .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(Set.of("construct", "decode"), invocations.stream()
+                .map(LocalCatalogRouteChecks.Invocation::action)
+                .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(1, invocations.stream().map(LocalCatalogRouteChecks.Invocation::wire)
+                .mapToInt(wire -> wire.length).distinct().count());
+    }
+
+    @Test
     void executesRandomIvThroughTheTypedCryptographicParametersBuilder() throws Exception {
         JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
         String caseId = "test-norm-structure-member-structure-member-4-16-random-iv";
