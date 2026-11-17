@@ -4550,7 +4550,6 @@ class ControlledTlsPeerTest {
             throws Exception {
         JsonNode catalog = readRouteEvidenceCatalog();
         Map<String, JsonNode> targets = new HashMap<>();
-        Set<String> typedTargetIds = javaTypedProtocolTargetIds();
         for (JsonNode target : catalog.path("normative_targets")) {
             targets.put(target.path("target_id").asText(), target);
         }
@@ -4562,7 +4561,7 @@ class ControlledTlsPeerTest {
                     || !appliesToVersion(testCase, version)) continue;
             String targetId = requires.path("normative_target_id").asText();
             JsonNode target = targets.get(targetId);
-            if (target == null || typedTargetIds.contains(targetId) || !appliesToTargetVersion(target, version)) {
+            if (target == null || !appliesToTargetVersion(target, version)) {
                 continue;
             }
             String encoding = target.path("source_encoding").asText();
