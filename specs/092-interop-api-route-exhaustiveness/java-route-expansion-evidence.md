@@ -2326,6 +2326,39 @@ validates 27,198/27,198 cells with zero failures. The regenerated ledger
 records 71,641 planned, 27,198 executed, and 44,443 pending cells across 1,229
 pending case IDs. Full-matrix coverage remains incomplete; the PR stays WIP.
 
+## Right Usage Limits branch synchronized with Ping and Endpoint Role — 2026-11-17
+
+The Right Usage Limits branch now includes #216 head `ebbb85c9d` and #187
+Endpoint Role evidence from `c4bd8c2a6`. The Endpoint Role fixture constructs,
+views, and decodes both the request field Enumeration and Operation Enumeration
+from a controlled catalog case; the seven KMIP 2.1 Ping cells remain covered by
+the real controlled mTLS exchange above. The branch retains its eight optional
+Right Usage Limits routes.
+
+The complete Java Gradle suite passes 57/57 tests with no failures, errors, or
+skips. All 68 shared route-capability tests pass, and the route capability
+generator check passes for 1,507 routes. Selected-scope validation accepts
+27,204/27,204 Java cells with zero failures. The generated ledger records
+71,641 planned, 27,204 executed, and 44,437 pending cells across 1,228 pending
+case IDs. `compare_route_ledger.py --refresh-reference` regenerated the
+checked-in ledger from the validated report, and a second comparer run matches
+it. The full matrix remains incomplete and the PR remains WIP.
+
+The Gradle run used the independently installed artifact pinned to release
+commit `12496d646d11d4069b58bcc88fc76cc619211ec6` (artifact SHA-256
+`504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`). The
+`kmipkitMavenRepo` property pointed to the local repository holding that pinned
+artifact. Validation and ledger commands:
+
+```sh
+python3 ../../interop/shared/tools/validate_route_evidence.py \
+  --selected-scope --report build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+```
+
 The combined Java verification commands are:
 
 ```sh

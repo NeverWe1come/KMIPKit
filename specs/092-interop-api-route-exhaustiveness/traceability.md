@@ -79,3 +79,13 @@ artifact. This is part of the FR-006 artifact provenance check.
   Its regenerated ledger records 71,641 planned, 27,198 executed, and 44,443
   pending cells. Full-matrix closure and four-language peer runs remain
   required.
+- **FR-003/FR-005:** The Right Usage Limits branch now includes the Java
+  Endpoint Role constructor, Item view, and decoder routes for both the
+  Endpoint Role field and Set Endpoint Role Operation Enumeration from the
+  catalogued KMIP 2.1 request fixture (OASIS KMIP 2.1 §6.1.54 Table 331,
+  §§11.19 and 11.36). The existing Ping exchange remains covered through the
+  controlled TLS 1.3 mTLS peer.
+- The updated selected report validates 27,204/27,204 Java cells with zero
+  failures. The generated ledger records 71,641 planned, 27,204 executed, and
+  44,437 pending cells across 1,228 pending case IDs. The complete matrix and
+  four-language peer runs remain required.
