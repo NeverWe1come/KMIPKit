@@ -706,7 +706,13 @@ class WorkflowContractTests(unittest.TestCase):
 
         jni_job = self.require_job(contents, "ffi-sanitizer-jni")
         self.assertIn("-fsanitize=address,undefined -fno-omit-frame-pointer", jni_job)
-        self.assertIn("bindings/java/native/tests/zeroizing_bytes_test.cpp", jni_job)
+        self.assertTrue(
+            "bindings/java/native/tests/zeroizing_bytes_test.cpp" in jni_job
+            or "bindings/java/native/tests/*.cpp" in jni_job
+        )
+        self.assertTrue(
+            (REPOSITORY_ROOT / "bindings/java/native/tests/zeroizing_bytes_test.cpp").is_file()
+        )
 
     def test_fuzz_smoke_job_runs_the_bounded_extension_schema_target(self) -> None:
         contents = self.require_workflow()
@@ -1104,6 +1110,10 @@ class WorkflowContractTests(unittest.TestCase):
         collector = (REPOSITORY_ROOT / "scripts" / "collect_ffi_coverage.sh").read_text(
             encoding="utf-8"
         )
+        self.assertIn("cargo llvm-cov \\", collector)
+        self.assertIn("-p kmipkit-ffi --all-targets --all-features --locked \\", collector)
+        self.assertIn("--all-targets", collector)
+        self.assertIn('--json --output-path "${raw_report}"', collector)
         normalized_collector = " ".join(collector.replace("\\\n", " ").split())
 
         self.assertIn(
@@ -1458,6 +1468,19 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertNotIn("temporary coverage-threshold waiver", body)
         python_config = (REPOSITORY_ROOT / "bindings/python/pyproject.toml").read_text(encoding="utf-8")
         self.assertRegex(python_config, r"(?m)^fail_under\s*=\s*85$")
+
+    def test_rust_interop_job_reserves_time_for_the_full_route_matrix(self) -> None:
+        interop_workflow = REPOSITORY_ROOT / ".github/workflows/interop-rust.yml"
+        contents = interop_workflow.read_text(encoding="utf-8")
+        job = self.require_job(contents, "validate-rust")
+        timeout = re.search(r"(?m)^    timeout-minutes: (\d+)$", job)
+        self.assertIsNotNone(timeout, "The Rust interoperability job must bound its runtime.")
+        assert timeout is not None
+        self.assertGreaterEqual(
+            int(timeout.group(1)),
+            60,
+            "The installed-artifact route matrix must have time to finish after validation and coverage.",
+        )
 
 
 if __name__ == "__main__":

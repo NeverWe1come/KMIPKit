@@ -29,12 +29,12 @@ Building upon the multi-version modern foundation established in `KMIPKIT-0069`,
 
 ### 3.1 Prohibited Operations in KMIP 2.0
 The following six operations were added in KMIP 2.1 and **MUST NOT** be issued when operating under KMIP 2.0:
-1. `RegisterOpaqueContext` (`0x00000036`)
-2. `RegisterOpaque` (`0x00000037`)
-3. `SetConstraints` (`0x00000038`)
-4. `GetConstraints` (`0x00000039`)
-5. `Export` (`0x0000003A`)
-6. `Import` (`0x0000003B`)
+1. `Set Defaults` (`0x00000036`)
+2. `Set Constraints` (`0x00000037`)
+3. `Get Constraints` (`0x00000038`)
+4. `Query Asynchronous Requests` (`0x00000039`)
+5. `Process` (`0x0000003A`)
+6. `Ping` (`0x0000003B`)
 
 Any client request targeting KMIP 2.0 with one of these operations **MUST** be rejected pre-send by `VersionGate` with `RequestDeliveryState::NotSent`.
 
@@ -44,9 +44,9 @@ In KMIP 2.0, seven core cryptographic attributes are immutable or modifyable sol
 2. `Cryptographic Length` (`0x0042002A`)
 3. `Cryptographic Parameters` (`0x0042002B`)
 4. `Cryptographic Usage Mask` (`0x0042002C`)
-5. `Digest` (`0x00420032`)
-6. `Key Value Present` (`0x004200BF`)
-7. `Key Format Type` (`0x00420044`)
+5. `Digest` (`0x00420034`)
+6. `Key Value Present` (`0x004200BB`)
+7. `Key Format Type` (`0x00420042`)
 
 ### 3.3 Server and Wire Protocol Details
 - Request and response headers **MUST** carry `ProtocolVersion` major=2, minor=0.

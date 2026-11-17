@@ -24,8 +24,8 @@ import org.kmipkit.extensions.AttributeSet;
 final class TypedAttributeParityTest {
     @Test
     void exposesAllSixtyTwoDirectAttributesWithUniqueTags() {
-        assertEquals(62, StandardAttribute.values().length);
-        assertEquals(62, java.util.Arrays.stream(StandardAttribute.values())
+        assertEquals(99, StandardAttribute.values().length);
+        assertEquals(99, java.util.Arrays.stream(StandardAttribute.values())
                 .map(StandardAttribute::tag).distinct().count());
         assertEquals(0x0042_0001, StandardAttribute.ACTIVATION_DATE.tag());
         assertEquals(0x0042_0008, StandardAttribute.VENDOR_ATTRIBUTE.tag());
@@ -286,6 +286,7 @@ final class TypedAttributeParityTest {
             case "Enumeration" -> TtlvItemType.Enumeration;
             case "Integer" -> TtlvItemType.Integer;
             case "Interval" -> TtlvItemType.Interval;
+            case "LongInteger" -> TtlvItemType.LongInteger;
             case "Structure" -> TtlvItemType.Structure;
             case "TextString", "UniqueIdentifier" -> TtlvItemType.TextString;
             default -> throw new AssertionError("unhandled catalogued attribute type");
@@ -302,6 +303,7 @@ final class TypedAttributeParityTest {
             case "Enumeration" -> TtlvValue.Enumeration(0xffff_ffffL);
             case "Integer" -> TtlvValue.Integer(7);
             case "Interval" -> TtlvValue.Interval(7);
+            case "LongInteger" -> TtlvValue.LongInteger(7L);
             case "Structure" -> TtlvValue.structure(
                     attribute == StandardAttribute.VENDOR_ATTRIBUTE
                             ? vendorAttribute(limits)

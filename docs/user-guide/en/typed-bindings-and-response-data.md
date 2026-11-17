@@ -137,14 +137,61 @@ The high-level API does not expose transport byte exchange. Asynchronous outcome
 
 ## Runnable consumer examples
 
-Run the [KMIPKIT-0053 quickstart](../../../specs/053-api-parity-facade/quickstart.md)
-from the repository root to build and execute package consumers for all four
-languages. The applications construct and validate a Ping request locally,
-attach demo Authentication, and parse a synthetic response TTLV tree. They do
-not contact a KMIP server. The complete sources are [Rust](../../../tests/consumers/0053-parity/rust/src/main.rs),
+Run `bash tests/consumers/0053-parity/verify.sh` from the repository root
+(Windows: `pwsh -File tests/consumers/0053-parity/verify.ps1`) to build and run
+the Rust, C, Java, and Python package consumers against a loopback TLS 1.3
+fixture that requires mutual TLS. The consumers exercise symmetric-key
+Create/Get/Destroy, explicit AES-GCM Encrypt/Decrypt parameters, and ECDSA
+Create Key Pair, Sign, and Destroy for both returned identifiers. Java also
+checks Success, Pending, and Failure lifecycle outcomes. Each consumer also
+creates, retrieves, and destroys a key carrying a structurally valid Vendor
+Attribute built by its fluent API. The fixture checks the operation, vendor
+identifier, attribute name, value, and returned key identifier and responds
+with encoded KMIP responses. Each consumer also sends one ordered batch with
+Create followed by Get and the Get Unique Identifier omitted. The fixture
+checks Batch Order Option, distinct Unique Batch Item IDs, and both typed
+results, so Get resolves the created key's ID Placeholder. This verifies the
+client paths against the controlled fixture, not against an external KMS. The
+sources are [Rust](../../../tests/consumers/0053-parity/rust/src/main.rs),
 [C](../../../tests/consumers/0053-parity/c/main.c),
 [Java](../../../tests/consumers/0053-parity/java/src/main/java/Consumer.java),
-and [Python](../../../tests/consumers/0053-parity/python/main.py).
-The examples exercise generic response TTLV access. C, Java, and Python also
-expose typed readers that check operation identity for Cancel, Poll, Process,
-and Query Async; their parity tests are recorded in [task T078](../../../specs/053-api-parity-facade/tasks.md).
+and [Python](../../../tests/consumers/0053-parity/python/main.py). These are the
+five progressive KMIPKIT-0093 journeys, exercised in all four languages. C,
+Java, and Python also expose
+typed readers that check operation identity for Cancel, Poll, Process, and
+Query Async; their parity tests are recorded in [task T078](../../../specs/053-api-parity-facade/tasks.md).
+
+## Explicit full response representations
+
+The response item inspection methods render the **complete retained
+ResponseMessage**: the common header followed by all batch items in source
+order, including retained vendor values. Select `ttlv_hex` / `ttlvHex`, `json`,
+or `xml` and pass `CodecLimits` explicitly. TTLV hex is canonical uppercase;
+these are model representations, not a promise to reproduce network padding.
+Rendering uses the same Rust model in all four languages and never sends,
+polls, retries, or changes the response outcome.
+
+| Language | Explicit rendering | Owned result and release |
+|---|---|---|
+| C | `kmipkit_client_batch_item_response_ttlv_hex`, `_json`, `_xml` | `kmipkit_secret_bytes_t *`; inspect with `kmipkit_secret_bytes_with_bytes`, release with `kmipkit_secret_bytes_release` |
+| Java | `ClientBatchItemResult.ttlvHex(limits)`, `.json(limits)`, `.xml(limits)` | `SecretBytes`; use `withBytes` inside try-with-resources |
+| Python | `BatchItemResult.ttlv_hex(limits)`, `.json(limits)`, `.xml(limits)` | `credentials.SecretBytes`; use `with_bytes` inside a context manager |
+
+Each owner contains UTF-8 bytes and survives closing the source response.
+Owners and diagnostic errors redact their content. C output handles are null
+on failure. Invalid handles use the existing invalid-input status; codec limit
+or allocation failures use the resource-limit status; invalid retained trees
+use invalid-input, and codec representation failures use the payload-free
+internal status. The corresponding Java and Python
+exceptions follow these same categories.
+
+The native allocation is zeroized on release. Java and Python callback copies
+are cleared when the callback returns, including exceptional returns. A caller
+that creates a `String`, `str`, immutable bytes, or another copy owns that copy;
+KMIPKit cannot guarantee its erasure by the language runtime. Do not log
+rendered responses: they can contain key material and credentials.
+
+The `max_message_bytes` inspection limit bounds the final requested output.
+Canonical TTLV hexadecimal needs exactly twice the binary TTLV byte length.
+A cap large enough for the binary message can therefore reject its hex view;
+a cap equal to the complete hexadecimal length is accepted.

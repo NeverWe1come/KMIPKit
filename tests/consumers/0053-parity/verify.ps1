@@ -34,7 +34,8 @@ try {
         '--ready-file', $readyFile,
         '--pid-file', $responderPidFile,
         '--fixture-dir', $fixtureRoot,
-        '--connections', '4'
+        '--connections', '57',
+        '--expected-operations', '0x3b;1;10;0x1f;0x20;20;2;0x21;20;20;1;10;20;1+10;0x3b;1;10;0x1f;0x20;20;2;0x21;20;20;1;10;20;1+10;1;10;0x1f;0x20;20;20;20;2;0x21;20;20;1;10;20;1+10;0x3b;1;10;0x1f;0x20;20;2;0x21;20;20;1;10;20;1+10'
     ) | ForEach-Object { '"' + $_ + '"' }
     $server = Start-Process -FilePath 'uv' -ArgumentList ($serverArguments -join ' ') `
         -WindowStyle Hidden -PassThru -RedirectStandardError $serverErrorFile
@@ -89,6 +90,7 @@ try {
     if ($LASTEXITCODE -ne 0) { throw "Java consumer failed with exit code $LASTEXITCODE." }
 
     uv run --locked --python 3.12 --project (Join-Path $consumerRoot 'python') `
+        --reinstall-package kmipkit `
         python (Join-Path $consumerRoot 'python\main.py')
     if ($LASTEXITCODE -ne 0) { throw "Python consumer failed with exit code $LASTEXITCODE." }
 }

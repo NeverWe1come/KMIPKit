@@ -18,7 +18,7 @@ from collections.abc import Iterable, Iterator, Sequence, Sized
 from contextlib import contextmanager
 from dataclasses import dataclass
 from enum import IntEnum
-from typing import Any, overload
+from typing import TYPE_CHECKING, Any, overload
 
 from . import errors, ttlv
 from ._ffi import ffi, lib
@@ -38,6 +38,22 @@ from ._handles import (
 )
 from .validation import ValidationReport
 from ._protocol_version import ProtocolVersion
+from .async_operations import (
+    CancelRequest,
+    PollRequest,
+    ProcessRequest,
+    QueryAsyncRequestsRequest,
+)
+
+if TYPE_CHECKING:
+    from .attribute_operations import AttributeSet
+    from .credentials import CredentialType
+    from .cryptographic_parameters import CryptographicParameters
+else:
+    # Resolve public annotations at runtime without importing cyclic modules.
+    AttributeSet = Any
+    CredentialType = Any
+    CryptographicParameters = Any
 
 
 @dataclass(frozen=True, slots=True)
@@ -143,6 +159,17 @@ _CLIENT_ABI_HANDLE_FUNCTIONS = frozenset(
         "kmipkit_client_batch_item_deactivate",
         "kmipkit_client_batch_item_encapsulate",
         "kmipkit_client_batch_item_decapsulate",
+        "kmipkit_client_batch_item_cancel_from_request",
+        "kmipkit_client_batch_item_poll_from_request",
+        "kmipkit_client_batch_item_process_from_request",
+        "kmipkit_client_batch_item_query_async_requests_from_request",
+        "kmipkit_client_batch_item_create_group_from_attributes",
+        "kmipkit_client_batch_item_create_user_from_attributes",
+        "kmipkit_client_batch_item_obliterate_from_identifier",
+        "kmipkit_client_batch_item_deactivate_from_fields",
+        "kmipkit_client_batch_item_create_credential_from_fields",
+        "kmipkit_client_batch_item_encapsulate_from_fields",
+        "kmipkit_client_batch_item_decapsulate_from_fields",
     }
 )
 
@@ -1844,6 +1871,204 @@ def client_batch_item_decapsulate(payload: ttlv.Structure) -> ClientBatchItem:
     return _client_batch_item_kmip30_draft("decapsulate", payload)
 
 
+def _client_batch_item_from_attributes(
+    attributes: AttributeSet, function_name: str
+) -> ClientBatchItem:
+    from .attribute_operations import AttributeSet
+
+    if not isinstance(attributes, AttributeSet):
+        errors.raise_for_status(4)
+    with _NATIVE_CALL_LOCK:
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            function_name,
+            (attributes._native_attribute_set(),),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_create_group_from_attributes(attributes: AttributeSet) -> ClientBatchItem:
+    """Create a typed KMIP 3.0 Create Group item from a copied AttributeSet."""
+    return _client_batch_item_from_attributes(
+        attributes, "kmipkit_client_batch_item_create_group_from_attributes"
+    )
+
+
+def client_batch_item_create_user_from_attributes(attributes: AttributeSet) -> ClientBatchItem:
+    """Create a typed KMIP 3.0 Create User item from a copied AttributeSet."""
+    return _client_batch_item_from_attributes(
+        attributes, "kmipkit_client_batch_item_create_user_from_attributes"
+    )
+
+
+def client_batch_item_obliterate_from_identifier(
+    unique_identifier: UniqueIdentifier,
+) -> ClientBatchItem:
+    """Create a typed KMIP 3.0 Obliterate item from its required identifier."""
+    if not isinstance(unique_identifier, UniqueIdentifier):
+        errors.raise_for_status(4)
+    with _staging_buffer_scope() as staging_buffers:
+        identifier = _client_native_unique_identifier(unique_identifier, staging_buffers)
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_obliterate_from_identifier",
+            (identifier,),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_deactivate_from_fields(
+    unique_identifier: UniqueIdentifier,
+    deactivation_reason: ttlv.Structure | None = None,
+    deactivation_date: int | None = None,
+) -> ClientBatchItem:
+    """Create a typed KMIP 3.0 Deactivate item from explicit semantic fields."""
+    if not isinstance(unique_identifier, UniqueIdentifier):
+        errors.raise_for_status(4)
+    date = (
+        None
+        if deactivation_date is None
+        else _integer_range(deactivation_date, -(1 << 63), (1 << 63) - 1)
+    )
+    if deactivation_reason is not None and not isinstance(deactivation_reason, ttlv.Structure):
+        errors.raise_for_status(4)
+    with _staging_buffer_scope() as staging_buffers:
+        identifier = _client_native_unique_identifier(unique_identifier, staging_buffers)
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_deactivate_from_fields",
+            (
+                identifier,
+                _client_native_structure(deactivation_reason),
+                1 if date is not None else 0,
+                0 if date is None else date,
+            ),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_create_credential_from_fields(
+    credential_type: CredentialType,
+    object_type: int,
+    attributes: AttributeSet,
+    credential_object: ttlv.TtlvItem,
+) -> ClientBatchItem:
+    """Create a typed KMIP 3.0 Create Credential item from explicit fields."""
+    from .attribute_operations import AttributeSet
+    from .credentials import CredentialType
+
+    if not isinstance(credential_type, CredentialType):
+        errors.raise_for_status(4)
+    if not isinstance(attributes, AttributeSet) or not isinstance(credential_object, ttlv.TtlvItem):
+        errors.raise_for_status(4)
+    credential_type_raw = _integer_range(credential_type.raw(), 0, 0xFFFF_FFFF)
+    object_type_raw = _integer_range(object_type, 0, 0xFFFF_FFFF)
+    with _NATIVE_CALL_LOCK:
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_create_credential_from_fields",
+            (
+                credential_type_raw,
+                object_type_raw,
+                attributes._native_attribute_set(),
+                _client_native_item(credential_object),
+            ),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def _client_kem_parameters(value: CryptographicParameters | None) -> Any:
+    from .cryptographic_parameters import CryptographicParameters
+
+    if value is None:
+        return _client_ffi.NULL
+    if not isinstance(value, CryptographicParameters):
+        errors.raise_for_status(4)
+    return _client_ffi.cast(
+        "kmipkit_cryptographic_parameters_t *",
+        int(_client_ffi.cast("uintptr_t", value._pointer())),
+    )
+
+
+def client_batch_item_encapsulate_from_fields(
+    unique_identifier: UniqueIdentifier,
+    cryptographic_parameters: CryptographicParameters | None = None,
+    attributes: AttributeSet | None = None,
+) -> ClientBatchItem:
+    """Create a typed KMIP 3.0 Encapsulate item from semantic inputs."""
+    from .attribute_operations import AttributeSet
+
+    if not isinstance(unique_identifier, UniqueIdentifier):
+        errors.raise_for_status(4)
+    if attributes is not None and not isinstance(attributes, AttributeSet):
+        errors.raise_for_status(4)
+    with _staging_buffer_scope() as staging_buffers:
+        identifier = _client_native_unique_identifier(unique_identifier, staging_buffers)
+        with _NATIVE_CALL_LOCK:
+            parameters = _client_kem_parameters(cryptographic_parameters)
+            native_attributes = (
+                _client_ffi.NULL
+                if attributes is None
+                else attributes._native_attribute_set()
+            )
+            handle = _make_handle(
+                "kmipkit_client_batch_item_t",
+                "kmipkit_client_batch_item_encapsulate_from_fields",
+                (identifier, parameters, native_attributes),
+            )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_decapsulate_from_fields(
+    unique_identifier: UniqueIdentifier,
+    ciphertext: bytes | bytearray | memoryview,
+    cryptographic_parameters: CryptographicParameters | None = None,
+    attributes: AttributeSet | None = None,
+) -> ClientBatchItem:
+    """Create a typed KMIP 3.0 Decapsulate item from semantic inputs."""
+    from .attribute_operations import AttributeSet
+
+    if not isinstance(unique_identifier, UniqueIdentifier):
+        errors.raise_for_status(4)
+    if attributes is not None and not isinstance(attributes, AttributeSet):
+        errors.raise_for_status(4)
+    if not isinstance(ciphertext, (bytes, bytearray, memoryview)):
+        errors.raise_for_status(4)
+    with _staging_buffer_scope() as staging_buffers:
+        identifier = _client_native_unique_identifier(unique_identifier, staging_buffers)
+        raw_ciphertext, staged_ciphertext = _owned_bytes(
+            ciphertext, _MAX_OPERATION_INPUT_BYTES
+        )
+        staging_buffers.append(staged_ciphertext)
+        native_ciphertext = (
+            _client_ffi.NULL
+            if not raw_ciphertext
+            else _client_ffi.cast(
+                "const uint8_t *",
+                int(ffi.cast("uintptr_t", staged_ciphertext)),
+            )
+        )
+        with _NATIVE_CALL_LOCK:
+            parameters = _client_kem_parameters(cryptographic_parameters)
+            native_attributes = (
+                _client_ffi.NULL
+                if attributes is None
+                else attributes._native_attribute_set()
+            )
+            handle = _make_handle(
+                "kmipkit_client_batch_item_t",
+                "kmipkit_client_batch_item_decapsulate_from_fields",
+                (
+                    identifier,
+                    native_ciphertext,
+                    len(raw_ciphertext),
+                    parameters,
+                    native_attributes,
+                ),
+            )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
 def client_batch_item_logout(ticket: ttlv.Structure) -> ClientBatchItem:
     """Create a KMIP 2.1 §6.1.31 Logout item from its required Ticket Structure."""
     handle = _make_handle(
@@ -2063,6 +2288,65 @@ def client_batch_item_revoke(request: RevokeRequest) -> ClientBatchItem:
         consumed_indices=(0,),
     )
     return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def _client_batch_item_from_async_request(
+    request: NativeHandle,
+    request_type: type[NativeHandle],
+    native_request_type: str,
+    function_name: str,
+) -> ClientBatchItem:
+    if not isinstance(request, request_type):
+        errors.raise_for_status(4)
+    with _NATIVE_CALL_LOCK:
+        address = int(ffi.cast("uintptr_t", request._pointer()))
+        native_request = _client_ffi.cast(f"{native_request_type} *", address)
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t", function_name, (native_request,)
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_cancel_from_request(request: CancelRequest) -> ClientBatchItem:
+    """Create an independent Cancel item while keeping the request caller-owned."""
+    return _client_batch_item_from_async_request(
+        request,
+        CancelRequest,
+        "kmipkit_cancel_request_t",
+        "kmipkit_client_batch_item_cancel_from_request",
+    )
+
+
+def client_batch_item_poll_from_request(request: PollRequest) -> ClientBatchItem:
+    """Create an independent Poll item while keeping the request caller-owned."""
+    return _client_batch_item_from_async_request(
+        request,
+        PollRequest,
+        "kmipkit_poll_request_t",
+        "kmipkit_client_batch_item_poll_from_request",
+    )
+
+
+def client_batch_item_process_from_request(request: ProcessRequest) -> ClientBatchItem:
+    """Create an independent Process item while keeping the request caller-owned."""
+    return _client_batch_item_from_async_request(
+        request,
+        ProcessRequest,
+        "kmipkit_process_request_t",
+        "kmipkit_client_batch_item_process_from_request",
+    )
+
+
+def client_batch_item_query_async_requests_from_request(
+    request: QueryAsyncRequestsRequest,
+) -> ClientBatchItem:
+    """Create an independent Query Asynchronous Requests item and retain the model."""
+    return _client_batch_item_from_async_request(
+        request,
+        QueryAsyncRequestsRequest,
+        "kmipkit_query_async_requests_request_t",
+        "kmipkit_client_batch_item_query_async_requests_from_request",
+    )
 
 
 def _native_structure(value: ttlv.Structure | None, *, required: bool = False) -> Any:
@@ -3814,6 +4098,17 @@ __all__ = [
     "client_batch_item_signature_verify",
     "client_batch_item_register",
     "client_batch_item_revoke",
+    "client_batch_item_cancel_from_request",
+    "client_batch_item_poll_from_request",
+    "client_batch_item_process_from_request",
+    "client_batch_item_query_async_requests_from_request",
+    "client_batch_item_create_group_from_attributes",
+    "client_batch_item_create_user_from_attributes",
+    "client_batch_item_obliterate_from_identifier",
+    "client_batch_item_deactivate_from_fields",
+    "client_batch_item_create_credential_from_fields",
+    "client_batch_item_encapsulate_from_fields",
+    "client_batch_item_decapsulate_from_fields",
     "client_batch_item_create",
     "client_batch_item_create_key_pair",
     "client_batch_item_create_split_key",

@@ -141,6 +141,20 @@ def response(operations: tuple[int, ...], protocol_minor: int,
                 + tlv(0x420094, 7, b"fixture-key-1")
                 + symmetric_key
             )
+        elif operation == 43:
+            key_material = tlv(0x420043, 8, b"KMIPKIT-SECRET!!")
+            key_value = tlv(0x420045, 1, key_material)
+            key_block = (
+                enumeration(0x420042, 1) + key_value + enumeration(0x420028, 3)
+            )
+            symmetric_key = tlv(0x42008F, 1, tlv(0x420040, 1, key_block))
+            attributes = enumeration(0x420028, 3) + integer(0x42002A, 128)
+            payload_value = (
+                enumeration(0x420057, 2)
+                + tlv(0x420094, 7, b"fixture-key-1")
+                + tlv(0x420125, 1, attributes)
+                + symmetric_key
+            )
         elif operation == 39:
             payload_value = tlv(0x4200C2, 8, hashlib.sha256(b"abc").digest())
         elif operation == 37:
@@ -220,6 +234,7 @@ def response(operations: tuple[int, ...], protocol_minor: int,
                                     9: b"interop-check",
                                     18: b"interop-activate",
                                     19: b"interop-revoke",
+                                    43: b"interop-export",
                                     56: b"interop-get-constraints",
                                     17: b"interop-get-usage-allocation",
                                 }.get(operation))
@@ -440,6 +455,8 @@ def main() -> int:
     if protocol_version == "2.0":
         expected_operations += (30,)
         expected_cases += ("test-op-discover-versions",)
+    expected_operations += (1, 43, 19, 20)
+    expected_cases += ("test-op-export",)
     expected_operations += (37, 38, 39)
     expected_operations += (39, 37, 38)
     expected_operations += (1, 13, 19, 20)
@@ -699,6 +716,7 @@ def main() -> int:
                             illegal_destroy_lifecycle = operations == (1, 18, 20, 19, 20)
                             get_constraints_lifecycle = operations == (1, 56, 19, 20)
                             get_usage_allocation_lifecycle = operations == (1, 17, 19, 20)
+                            export_lifecycle = operations == (1, 43, 19, 20)
                             lifecycle_target = {operations[1]: {
                                 9: b"interop-check", 10: b"interop-get",
                                 11: b"interop-attributes", 12: b"interop-attributes"
@@ -717,12 +735,14 @@ def main() -> int:
                                 lifecycle_target = {56: b"interop-get-constraints"}
                             if get_usage_allocation_lifecycle:
                                 lifecycle_target = {17: b"interop-get-usage-allocation"}
+                            if export_lifecycle:
+                                lifecycle_target = {43: b"interop-export"}
                             if create_lifecycle:
                                 lifecycle_target = {1: b"interop-create"}
                             lifecycle_ids = (b"interop-create", *lifecycle_target.values(),
                                              *((b"interop-revoke",) if (check_lifecycle or activate_lifecycle or
-                                                 get_constraints_lifecycle or
-                                                 get_usage_allocation_lifecycle) else ()),
+                                                 get_constraints_lifecycle or get_usage_allocation_lifecycle or
+                                                 export_lifecycle) else ()),
                                              *((b"interop-revoke-cleanup", b"interop-destroy-cleanup")
                                                if destroy_lifecycle else ()),
                                              *((b"interop-destroy",) if not destroy_lifecycle else ()))
@@ -760,9 +780,11 @@ def main() -> int:
                             if create_lifecycle and request.count(enumeration(0x420094, 1)) < 1:
                                 raise AssertionError("Create cleanup must Destroy through ID Placeholder")
                             if operations in ((1, 9, 19, 20), (1, 18, 19, 20), (1, 19, 20),
-                                              (1, 20, 19, 20), (1, 56, 19, 20), (1, 10, 20)) and request.count(
+                                              (1, 20, 19, 20), (1, 56, 19, 20), (1, 17, 19, 20),
+                                              (1, 43, 19, 20), (1, 10, 20)) and request.count(
                                     enumeration(0x420094, 1)) < (
-                                        3 if (check_lifecycle or activate_lifecycle or destroy_lifecycle) else 2):
+                                        3 if (check_lifecycle or activate_lifecycle or destroy_lifecycle or
+                                              export_lifecycle) else 2):
                                 raise AssertionError("target operation and cleanup must consume the created ID Placeholder")
                             if illegal_destroy_lifecycle and request.count(enumeration(0x420094, 1)) < 4:
                                 raise AssertionError(

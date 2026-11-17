@@ -738,32 +738,70 @@ fn policy_value(policy_name: &str) -> Value {
         "Certificate Length"
         | "Cryptographic Length"
         | "Cryptographic Usage Mask"
+        | "Key Part Identifier"
+        | "NIST Security Category"
         | "Protection Storage Mask"
-        | "Rotate Generation" => Value::integer(1),
+        | "Rotate Generation"
+        | "Split Key Parts"
+        | "Split Key Threshold" => Value::integer(1),
+        "Certify Counter"
+        | "Decrypt Counter"
+        | "Encrypt Counter"
+        | "Sign Counter"
+        | "Signature Verify Counter" => Value::long_integer(1),
         "Certificate Type"
+        | "Credential Type"
         | "Cryptographic Algorithm"
         | "Digital Signature Algorithm"
         | "Key Format Type"
         | "NIST Key Type"
+        | "Object Class"
         | "Object Type"
         | "Opaque Data Type"
         | "Protection Level"
+        | "Split Key Method"
+        | "Split Key Polynomial"
         | "State" => Value::enumeration(1),
         "Lease Time" | "Protection Period" | "Rotate Interval" | "Rotate Offset" => {
             Value::interval(1)
         }
         "Rotate Date" => Value::date_time_extended(1_700_000_000_123_456),
-        "Comment"
+        "Certificate Issuer DN"
+        | "Certificate Link"
+        | "Certificate Request Link"
+        | "Certificate Subject DN"
+        | "Child Link"
+        | "Comment"
         | "Contact Information"
+        | "Credential Link"
+        | "Derivation Base Object Link"
+        | "Derived Object Link"
         | "Description"
+        | "Group Link"
+        | "Joined Split Key Parts Link"
+        | "Next Link"
         | "Object Group"
+        | "PKCS#12 Certificate Link"
         | "PKCS#12 Friendly Name"
-        | "Unique Identifier" => Value::text_string(VALUE_SENTINEL.to_owned()),
-        "Short Unique Identifier" => Value::byte_string(VALUE_SENTINEL.as_bytes().to_vec()),
+        | "PKCS#12 Password Link"
+        | "Parent Link"
+        | "Password Link"
+        | "Previous Link"
+        | "Private Key Link"
+        | "Public Key Link"
+        | "Replaced Object Link"
+        | "Replacement Object Link"
+        | "Split Key Base Link"
+        | "Unique Identifier"
+        | "Wrapping Key Link" => Value::text_string(VALUE_SENTINEL.to_owned()),
+        "OTP Counter" | "Short Unique Identifier" => {
+            Value::byte_string(VALUE_SENTINEL.as_bytes().to_vec())
+        }
         "Alternative Name"
         | "Application Specific Information"
         | "Cryptographic Domain Parameters"
         | "Cryptographic Parameters"
+        | "Deactivation Reason"
         | "Digest"
         | "Key Value Location"
         | "Link"

@@ -247,7 +247,7 @@ class T102ProfileValidationErrorTraitExclusionTests(unittest.TestCase):
             for row in self.catalog["profiles"]
             if row["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT"
         )
-        self.assertEqual(baseline["claim_state"], "evidence_incomplete")
+        self.assertEqual(baseline["claim_state"], "evidence_complete")
 
     def test_manifest_and_candidate_totals_change_only_by_this_exact_batch(self) -> None:
         candidates = sum(

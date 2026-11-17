@@ -25,6 +25,14 @@ class RouteCapabilitiesTests(unittest.TestCase):
     def setUp(self):
         self.data = json.loads((SHARED / 'coverage/route-capabilities.json').read_text())
 
+    def _pinned_public_api(self):
+        source = self.module.source(
+            ROOT,
+            self.data['library_commit'],
+            'specification/api/public-api.json',
+        )
+        return json.loads(source)
+
     def test_manifest_and_generator_use_the_exact_release_commit(self):
         self.assertEqual(PINNED_RELEASE_COMMIT, self.module.PINNED_SOURCE_COMMIT)
         self.assertEqual(PINNED_RELEASE_COMMIT, self.data['library_commit'])
@@ -411,6 +419,37 @@ class RouteCapabilitiesTests(unittest.TestCase):
             self.assertEqual(6, len(route['combinations']), key)
             self.assertEqual('construct', route['actions'][0], key)
 
+    def test_rust_batch_item_route_inventory_matches_public_methods(self):
+        inventory = self.module.construction_inventory(
+            ROOT, self.data['library_commit'])
+        rust_network_symbols = {
+            symbol for language, symbol, _, _, mode in inventory
+            if language == 'rust' and mode == 'network'
+        }
+        self.assertIn('kmipkit_client::ClientBatchItem::new', rust_network_symbols)
+        self.assertNotIn('kmipkit_client::ClientBatchItem::revoke', rust_network_symbols)
+
+    def test_rust_generic_batch_item_constructor_is_a_network_route(self):
+        route = next(route for route in self.data['routes']
+                     if route['language'] == 'rust'
+                     and route['public_api_symbol'] == 'kmipkit_client::ClientBatchItem::new')
+        catalog = json.loads((SHARED / 'catalog/kmipkit-1.0-test-catalog.json').read_text())
+        client_operation_ids = {
+            target['target_id'] for target in catalog['normative_targets']
+            if target['kind'] == 'operation'
+            and target['target_id'].startswith('KMIPKIT-ELEM-OP-C2S-')
+        }
+        expected_targets = client_operation_ids | {
+            target['target_id'] for target in catalog['normative_targets']
+            if target.get('operation_id') in client_operation_ids
+            and target.get('role') == 'request'
+        }
+        self.assertEqual('network', route['mode'])
+        self.assertEqual([], route['operation_ids'])
+        self.assertEqual(expected_targets, set(route['normative_target_ids']))
+        self.assertEqual(6, len(route['combinations']))
+        self.assertEqual(['construct'], route['actions'])
+
     def test_batch_response_readers_only_claim_response_batch_fields(self):
         # OASIS KMIP 2.0/2.1 §§8.5-8.6 and §§9.5, 9.7 define response Batch Count and Batch Item.
         expected = {
@@ -700,7 +739,7 @@ class RouteCapabilitiesTests(unittest.TestCase):
             self.assertTrue(symbol in symbols, symbol)
 
     def test_public_request_serializers_and_response_readers_are_routes(self):
-        api = json.loads((ROOT / 'specification/api/public-api.json').read_text())
+        api = self._pinned_public_api()
         routes = {(route['language'], route['public_api_symbol']): route for route in self.data['routes']}
         package_languages = {package['id']: package['language'] for package in api['publicPackages']}
         declared = {(package_languages[declaration['packageId']], declaration['exportName'])

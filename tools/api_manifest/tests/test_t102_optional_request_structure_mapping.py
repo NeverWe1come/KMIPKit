@@ -192,7 +192,17 @@ PKCS11_REQUEST_SETTER_IDS = {
 # Includes the reviewed 0047 release stack and complete 0048/0049 inventories.
 # Snapshot includes final 0049 and exact 0050 constructor mappings.
 # The snapshot includes the approved KMIPKIT-0052 async typed-reader routes.
-OTHER_DECLARATIONS_SHA256 = "ca4eb5018b316f7380113426704bdcbd90413227ecf735274f5252802866d9ac"
+# It also includes approved KMIPKIT-0099 Create Split Key and KMIPKIT-0100
+# Register declarations, lifecycle declarations, KMIPKIT-0102 Rust, KMIPKIT-0103
+# C, KMIPKIT-0104 Java, and KMIPKIT-0105 Python crypto facades; KMIPKIT-0095
+# response views; KMIPKIT-0096 expert attributes; KMIPKIT-0093 reconciliation;
+# and KMIPKIT-0108/0109 attribute operations and bindings. KMIPKIT-0124 adds
+# 28 KMIP 3.0 fluent and 16 asynchronous batch declarations, which also map
+# asynchronous constructors onto four existing operation rows. Delete
+# Attribute adds 77 ready declarations and two blocked Rust candidates. Its
+# operation row also gains the approved four-language fixture evidence.
+# Locate and Revoke add their 26 exact Rust root re-exports and Java signatures.
+OTHER_DECLARATIONS_SHA256 = "b937e9c4f291b2df8aec5f656bc6dd81c85c877d11fc10e88813f1b702899526"
 OTHER_OPERATIONS_SHA256 = "2ea94003f2877d0e6d84271d67d9add6f48a5c5b7a837c48b22fe40f41022d39"
 def canonical_sha256(value: object) -> str:
     encoded = json.dumps(
@@ -381,7 +391,7 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
         # the capability inventory includes verified routes and explicit open
         # candidates rather than treating the whole category as blocked.
         for capability, count in (
-            ("typed_object_attributes", 544),
+            ("typed_object_attributes", 766),
             ("typed_managed_objects_and_key_material", 762),
         ):
             with self.subTest(stack_capability=capability):
@@ -393,7 +403,7 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
                 states = {row["declarationState"] for row in typed_rows}
                 self.assertTrue(states.issubset({"verified", "blocked"}))
                 self.assertEqual(
-                    {"verified": 544}
+                    {"verified": 766}
                     if capability == "typed_object_attributes"
                     else {"verified": 762},
                     {
@@ -402,7 +412,7 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
                     },
                 )
         other_declarations = without_0047_versioned_values(other_declarations)
-        self.assertEqual("5354bf97f55cdd8d65090b2d40edcd1ba1091106a65c43539716ee2239bb9966", canonical_sha256(other_declarations))
+        self.assertEqual(OTHER_DECLARATIONS_SHA256, canonical_sha256(other_declarations))
 
         other_operations = copy.deepcopy(self.manifest["operations"])
         for operation in other_operations:
@@ -438,7 +448,7 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
                     if evidence_id not in RECERTIFY_OPERATION_ADDED_EVIDENCE
                 ]
         self.assertEqual(
-            "a1e58fe7e76de32113a53d5ad14e6c40ca822a8e51a6cc53deb99f67b5486663",
+            "e15b13391ce59b3c8f5ff4d2129d7f6d7a2bc890e0f169d590e47ef9635658e2",
             canonical_sha256(other_operations),
         )
 

@@ -722,9 +722,13 @@ trait Example { fn declaration(&self); }
     def test_catalog_generated_typed_attribute_code_is_excluded_but_runtime_api_is_not(self) -> None:
         self.require_gate()
         generated = "crates/kmipkit-protocol/src/typed_attributes_generated.rs"
+        types_generated = "crates/kmipkit-protocol/src/attribute_types_generated.rs"
+        ffi_generated = "crates/kmipkit-ffi/src/extension_registry/typed_attributes_catalog_generated.rs"
         handwritten = "crates/kmipkit-protocol/src/typed_attributes.rs"
 
         self.assertFalse(GATE.is_coverage_source_path(generated))
+        self.assertFalse(GATE.is_coverage_source_path(types_generated))
+        self.assertFalse(GATE.is_coverage_source_path(ffi_generated))
         self.assertTrue(GATE.is_coverage_source_path(handwritten))
 
     def test_unreadable_or_invalid_utf8_source_is_eligible(self) -> None:
@@ -1030,6 +1034,107 @@ trait Example { fn declaration(&self); }
             is_executable = GATE._is_executable_changed_line(root, relative, 1, {})
 
         self.assertTrue(is_executable)
+
+    def test_changed_summary_subtracts_only_the_audited_jni_baseline(self) -> None:
+        self.require_gate()
+        jni_source = "bindings/java/native/kmipkit_jni.cpp"
+        python_source = "bindings/python/src/kmipkit/fluent.py"
+
+        unchanged_baseline = GATE._changed_summary_uncovered_excess(
+            {jni_source: 12}, {jni_source}
+        )
+        increased_baseline = GATE._changed_summary_uncovered_excess(
+            {jni_source: 15}, {jni_source}
+        )
+        unrelated_source = GATE._changed_summary_uncovered_excess(
+            {jni_source: 12, python_source: 4}, {jni_source, python_source}
+        )
+
+        self.assertEqual(0, unchanged_baseline)
+        self.assertEqual(3, increased_baseline)
+        self.assertEqual(4, unrelated_source)
+
+    def test_fluent_ffi_unreachable_guards_have_exact_coverage_reasons(self) -> None:
+        self.require_gate()
+        cases = (
+            (
+                "bindings/java/native/kmipkit_jni.cpp",
+                "Java_org_kmipkit_NativeExtensionRegistry_symmetricKeyBuilderBuildBatchItem(",
+                "if (output == nullptr) {",
+                ("throw_invalid_input(env);", "return static_cast<jlong>(0);"),
+            ),
+            (
+                "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+                "fn kmipkit_symmetric_key_builder_insert_attribute_item(",
+                "let Ok(index) = usize::try_from(index) else {",
+                ("return record_ffi_error(ERROR_INVALID_INPUT);",),
+            ),
+            (
+                "bindings/java/native/kmipkit_jni.cpp",
+                "Java_org_kmipkit_fluent_NativeFluentRegistry_addAttributeBuilderBuildRequest(",
+                "if (output == nullptr) {",
+                ("throw_invalid_input(env);", "return static_cast<jobject>(nullptr);"),
+            ),
+            (
+                "bindings/java/native/kmipkit_jni.cpp",
+                "Java_org_kmipkit_fluent_NativeFluentRegistry_addAttributeBuilderBuildRequest(",
+                "if (request_class == nullptr) {",
+                (
+                    "kmipkit_add_attribute_request_release(output);",
+                    "return static_cast<jobject>(nullptr);",
+                ),
+            ),
+            (
+                "bindings/java/native/kmipkit_jni.cpp",
+                "Java_org_kmipkit_fluent_NativeFluentRegistry_addAttributeBuilderBuildRequest(",
+                "if (constructor == nullptr) {",
+                (
+                    "kmipkit_add_attribute_request_release(output);",
+                    "env->DeleteLocalRef(request_class);",
+                    "return static_cast<jobject>(nullptr);",
+                ),
+            ),
+            (
+                "bindings/java/native/kmipkit_jni.cpp",
+                "Java_org_kmipkit_fluent_NativeFluentRegistry_addAttributeBuilderBuildRequest(",
+                "if (request == nullptr || env->ExceptionCheck()) {",
+                (
+                    "kmipkit_add_attribute_request_release(output);",
+                    "return static_cast<jobject>(nullptr);",
+                ),
+            ),
+            (
+                "bindings/java/native/kmipkit_jni.cpp",
+                "Java_org_kmipkit_fluent_NativeFluentRegistry_addAttributeBuilderBuildBatchItem(",
+                "if (output == nullptr) {",
+                ("throw_invalid_input(env);", "return static_cast<jlong>(0);"),
+            ),
+        )
+        for relative, function, branch, statements in cases:
+            source = REPOSITORY_ROOT / relative
+            source_lines = source.read_text(encoding="utf-8").splitlines()
+            function_line = next(
+                index for index, line in enumerate(source_lines) if function in line
+            )
+            branch_line = next(
+                index
+                for index, line in enumerate(source_lines[function_line:], function_line)
+                if branch in line
+            )
+            for statement in statements:
+                with self.subTest(source=relative, statement=statement):
+                    line = next(
+                        index
+                        for index, source_line in enumerate(source_lines[branch_line:], branch_line)
+                        if statement in source_line
+                    )
+                    self.assertFalse(
+                        GATE._is_executable_changed_line(
+                            REPOSITORY_ROOT, relative, line + 1, {}
+                        ),
+                        f"{relative}:{line + 1} needs a documented unreachable-state reason",
+                    )
+
 
     def test_changed_coverage_requires_a_reason_for_each_exact_exclusion(self) -> None:
         self.require_gate()

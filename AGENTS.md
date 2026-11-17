@@ -35,7 +35,9 @@ human reviewer. Never silently invent a KMIP requirement.
   by KMIPKIT-0066 and ADR-0021.
 - 1.0 transports: TTLV, JSON, and XML over raw TLS and HTTPS/HTTP 1.1,
   subject to the approved message-framing and encoding specifications.
-- TLS: TLS 1.3 only, mutual TLS, rustls with aws-lc-rs.
+- TLS: TLS 1.3 only by default (`TlsVersionPolicy::Tls13Only`), with explicit
+  opt-in `TlsVersionPolicy::Tls12And13Compat` for OASIS KMIP Profiles
+  v2.0/v2.1 ECDHE-GCM suites; mutual TLS, rustls with aws-lc-rs.
 - 1.0 languages: Rust, C, Java, and Python with functional parity.
 - The library transports and manages cryptographic material. It is not a
   local cryptographic algorithm provider.

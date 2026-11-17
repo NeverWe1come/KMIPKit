@@ -1,18 +1,92 @@
 from pathlib import Path
 import json
+import re
 import unittest
+from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[3]
 DOC = ROOT / "docs" / "architecture" / "ffi-and-bindings.md"
 AUDIT_GUIDE = ROOT / "tools" / "api_manifest" / "binding-export-audit.md"
 AUDIT_REPORT_PATH = Path(
-    "specs/043-public-api-bindings/reports/binding-export-report-2026-11-07.json"
+    "specs/043-public-api-bindings/reports/binding-export-report-2026-11-16-fluent-locate-revoke.json"
 )
 AUDIT_REPORT = ROOT / AUDIT_REPORT_PATH
+JAVA_CLIENT_BATCH_ITEM = ROOT / "bindings" / "java" / "src" / "main" / "java" / "org" / "kmipkit" / "extensions" / "ClientBatchItem.java"
+
+KMIP30_SEMANTIC_JAVA_METHODS = {
+    "createGroupFromAttributes",
+    "createUserFromAttributes",
+    "deactivateFromFields",
+    "obliterateFromIdentifier",
+}
+
+KMIP30_JNI_BRIDGE_EXCLUSIONS = {
+    "org.kmipkit.NativeExtensionRegistry.clientBatchItemCancelFromRequest",
+    "org.kmipkit.NativeExtensionRegistry.clientBatchItemCreateCredentialFromFields",
+    "org.kmipkit.NativeExtensionRegistry.clientBatchItemCreateGroupFromAttributes",
+    "org.kmipkit.NativeExtensionRegistry.clientBatchItemCreateUserFromAttributes",
+    "org.kmipkit.NativeExtensionRegistry.clientBatchItemDeactivateFromFields",
+    "org.kmipkit.NativeExtensionRegistry.clientBatchItemDecapsulateFromFields",
+    "org.kmipkit.NativeExtensionRegistry.clientBatchItemEncapsulateFromFields",
+    "org.kmipkit.NativeExtensionRegistry.clientBatchItemObliterateFromIdentifier",
+    "org.kmipkit.NativeExtensionRegistry.clientBatchItemPollFromRequest",
+    "org.kmipkit.NativeExtensionRegistry.clientBatchItemProcessFromRequest",
+    "org.kmipkit.NativeExtensionRegistry.clientBatchItemQueryAsyncRequestsFromRequest",
+}
+
+
+def _load_audit_report():
+    return json.loads(AUDIT_REPORT.read_text(encoding="utf-8"))
+
+
+def _audited_declarations_by_package(
+    manifest: dict[str, Any],
+) -> dict[str, list[dict[str, Any]]]:
+    stable_c_error_codes = {
+        category["cCode"]
+        for category in manifest["errorCategories"]
+        if category.get("stableCHeaderCode") is True
+    }
+    declarations: dict[str, list[dict[str, Any]]] = {}
+    for declaration in manifest["publicDeclarations"]:
+        if (
+            declaration["packageId"] == "c-kmipkit"
+            and declaration["declarationState"] == "blocked"
+            and declaration["kind"] != "c-symbol"
+            and declaration["exportName"] not in stable_c_error_codes
+        ):
+            continue
+        declarations.setdefault(declaration["packageId"], []).append(declaration)
+    return declarations
 
 
 class CApiDocumentationTests(unittest.TestCase):
+    def test_kmip30_semantic_java_methods_have_manifested_names(self) -> None:
+        source = JAVA_CLIENT_BATCH_ITEM.read_text(encoding="utf-8")
+        for method in KMIP30_SEMANTIC_JAVA_METHODS:
+            with self.subTest(method=method):
+                self.assertIsNotNone(
+                    re.search(
+                        rf"\bpublic\s+static\s+ClientBatchItem\s+{method}\s*\(",
+                        source,
+                    ),
+                    f"Java facade is missing manifested method {method}",
+                )
+
+    def test_kmip30_and_async_jni_bridges_have_exact_exclusions(self) -> None:
+        manifest = json.loads(
+            (ROOT / "specification" / "api" / "public-api.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        exclusions = {
+            row["exportName"]
+            for row in manifest["approvedExclusions"]
+            if row.get("packageId") == "java-kmipkit"
+        }
+        self.assertTrue(KMIP30_JNI_BRIDGE_EXCLUSIONS <= exclusions)
+
     def test_c_api_docs_point_to_the_generated_manifest_and_symbol_inventory(self) -> None:
         documentation = DOC.read_text(encoding="utf-8")
 
@@ -27,7 +101,7 @@ class CApiDocumentationTests(unittest.TestCase):
 
     def test_audit_guide_snapshot_matches_the_generated_report(self) -> None:
         guide = AUDIT_GUIDE.read_text(encoding="utf-8")
-        report = json.loads(AUDIT_REPORT.read_text(encoding="utf-8"))
+        report = _load_audit_report()
         labels = {"c-kmipkit": "C", "java-kmipkit": "Java", "python-kmipkit": "Python"}
 
         guide_rows = {
@@ -51,30 +125,13 @@ class CApiDocumentationTests(unittest.TestCase):
                 )
 
     def test_checked_in_binding_export_report_reconciles_every_package(self) -> None:
-        report = json.loads(AUDIT_REPORT.read_text(encoding="utf-8"))
+        report = _load_audit_report()
         manifest = json.loads(
             (ROOT / "specification" / "api" / "public-api.json").read_text(
                 encoding="utf-8"
             )
         )
-        declarations_by_package: dict[str, int] = {}
-        stable_c_error_codes = {
-            category["cCode"]
-            for category in manifest["errorCategories"]
-            if category.get("stableCHeaderCode") is True
-        }
-        for declaration in manifest["publicDeclarations"]:
-            if (
-                declaration["packageId"] == "c-kmipkit"
-                and declaration["declarationState"] == "blocked"
-                and declaration["kind"] != "c-symbol"
-                and declaration["exportName"] not in stable_c_error_codes
-            ):
-                continue
-            package_id = declaration["packageId"]
-            declarations_by_package[package_id] = (
-                declarations_by_package.get(package_id, 0) + 1
-            )
+        declarations_by_package = _audited_declarations_by_package(manifest)
 
         for package in report["packages"]:
             with self.subTest(package=package["packageId"]):
@@ -92,13 +149,13 @@ class CApiDocumentationTests(unittest.TestCase):
                 self.assertEqual([], package["kindMismatches"])
                 self.assertEqual([], package["issues"])
                 self.assertEqual(
-                    declarations_by_package[package["packageId"]],
+                    len(declarations_by_package[package["packageId"]]),
                     package["counts"]["manifest"],
                     "checked-in audit report must match the current manifest",
                 )
 
     def test_get_attribute_list_c_exports_are_present_in_checked_in_report(self) -> None:
-        report = json.loads(AUDIT_REPORT.read_text(encoding="utf-8"))
+        report = _load_audit_report()
         manifest = json.loads(
             (ROOT / "specification" / "api" / "public-api.json").read_text(
                 encoding="utf-8"
@@ -108,20 +165,9 @@ class CApiDocumentationTests(unittest.TestCase):
             package for package in report["packages"]
             if package["packageId"] == "c-kmipkit"
         )
-        stable_c_error_codes = {
-            category["cCode"]
-            for category in manifest["errorCategories"]
-            if category.get("stableCHeaderCode") is True
-        }
         c_declarations = {
             row["exportName"]
-            for row in manifest["publicDeclarations"]
-            if row["packageId"] == "c-kmipkit"
-            and not (
-                row["declarationState"] == "blocked"
-                and row["kind"] != "c-symbol"
-                and row["exportName"] not in stable_c_error_codes
-            )
+            for row in _audited_declarations_by_package(manifest)["c-kmipkit"]
         }
         expected = {
             "kmipkit_client_batch_item_get_attribute_list",
