@@ -60,6 +60,9 @@ SIGN_ITEM_IDS = (b'sign-create-pair', b'sign-activate', b'sign-target', b'sign-r
 SIGNATURE_VERIFY_ITEM_IDS = (b'verify-create-pair', b'verify-activate', b'verify-target',
                              b'verify-revoke', b'verify-destroy-public', b'verify-destroy-private')
 CREATE_KEY_PAIR_ITEM_IDS = (b'create-pair', b'destroy-private', b'destroy-public')
+CERTIFY_ITEM_IDS = (b'certify-create-pair', b'certify-activate-private', b'certify-public-key',
+                    b'certify-revoke-private', b'certify-destroy-certificate',
+                    b'certify-destroy-private', b'certify-destroy-public')
 MAC_TEST_OUTPUT = bytes(range(32))
 CANCEL_CORRELATION_VALUE = b'fixture-cancel-correlation'
 ASYNC_QUERY_CORRELATION_CREATE_COMPLETED = b'fixture-query-create-completed'
@@ -385,6 +388,7 @@ RECIPES = {
     'test-op-sign': ((2, 18, 33, 19, 20, 20), 'sign'),
     'test-op-signature-verify': ((2, 18, 34, 19, 20, 20), 'signature_verify'),
     'test-op-create-key-pair': ((2, 20, 20), 'create_key_pair'),
+    'test-op-certify': ((2, 18, 6, 19, 20, 20, 20), 'certify'),
     'test-op-add-attribute': ((1, 13, 19, 20), 'add_attribute'),
     'test-norm-payload-client-add-attribute-request-20-002': ((1, 13, 19, 20), 'add_attribute'),
     'test-norm-payload-client-add-attribute-request-21-002': ((1, 13, 19, 20), 'add_attribute'),
@@ -992,6 +996,85 @@ def verify_create_key_pair_response(response_tree):
         raise ValueError('fixture_create_key_pair_cleanup_mapping_mismatch')
 
 
+def assert_certify_request(node):
+    """Check Certify of the Public Key and Certificate Sign capability."""
+    items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    operations = [[2], [18], [6], [19], [20], [20], [20]]
+    if ([numbers(item, 0x42005C) for item in items] != operations or
+            [byte_string_values(item, 0x420093) for item in items] !=
+            [[item_id] for item_id in CERTIFY_ITEM_IDS]):
+        raise ValueError('fixture_certify_batch_mismatch')
+    create_payloads = [child for child in items[0][2]
+                       if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+    if len(create_payloads) != 1:
+        raise ValueError('fixture_certify_create_pair_payload_missing')
+    create_fields = create_payloads[0][2]
+    if [field[0] for field in create_fields] != [0x420126, 0x420127, 0x420128]:
+        raise ValueError('fixture_certify_create_pair_attribute_fields_mismatch')
+    common, private, public = create_fields
+    if (numbers(common, 0x420028) != [4] or numbers(common, 0x42002A) != [2048] or
+            numbers(private, 0x42002C) != [4096] or numbers(public, 0x42002C) != [2]):
+        raise ValueError('fixture_certify_key_pair_attributes_mismatch')
+    if ([numbers(item, UNIQUE_IDENTIFIER_TAG) for item in items[1:]] !=
+            [[5], [6], [5], [ID_PLACEHOLDER_ENUMERATION], [5], [6]]):
+        raise ValueError('fixture_certify_unique_identifier_mapping_mismatch')
+    certify_payloads = [child for child in items[2][2]
+                        if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+    if len(certify_payloads) != 1:
+        raise ValueError('fixture_certify_payload_missing')
+    fields = certify_payloads[0][2]
+    identifier_fields = [field for field in fields
+                         if field[0] == UNIQUE_IDENTIFIER_TAG and field[1] == 5]
+    attribute_fields = [field for field in fields
+                        if field[0] == 0x420125 and field[1] == 1]
+    if (len(fields) != 2 or len(identifier_fields) != 1 or
+            int.from_bytes(identifier_fields[0][2], 'big') != 6 or len(attribute_fields) != 1):
+        raise ValueError('fixture_certify_public_key_selector_mismatch')
+    attributes = attribute_fields[0][2]
+    certificate_types = [field for field in attributes
+                         if field[0] == 0x42001D and field[1] == 5]
+    if (len(attributes) != 1 or len(certificate_types) != 1 or
+            int.from_bytes(certificate_types[0][2], 'big') != 1):
+        raise ValueError('fixture_certify_certificate_type_attribute_mismatch')
+
+
+def verify_certify_response(response_tree):
+    """Check the generated certificate ID and all three cleanup results."""
+    items = [child for child in response_tree[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    operations = [[2], [18], [6], [19], [20], [20], [20]]
+    if ([numbers(item, 0x42005C) for item in items] != operations or
+            [byte_string_values(item, 0x420093) for item in items] !=
+            [[item_id] for item_id in CERTIFY_ITEM_IDS] or
+            [numbers(item, 0x42007F) for item in items] != [[0]] * 7):
+        raise ValueError('fixture_certify_response_lifecycle_mismatch')
+    create_payloads = [child for child in items[0][2]
+                       if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1]
+    if len(create_payloads) != 1:
+        raise ValueError('fixture_certify_response_create_pair_payload_missing')
+    pair_fields = create_payloads[0][2]
+    private_ids = [field for field in pair_fields if field[0] == 0x420066 and field[1] == 7]
+    public_ids = [field for field in pair_fields if field[0] == 0x42006F and field[1] == 7]
+    if (len(pair_fields) != 2 or len(private_ids) != 1 or len(public_ids) != 1 or
+            private_ids[0][2] != b'fixture-private-key-1' or
+            public_ids[0][2] != b'fixture-public-key-1'):
+        raise ValueError('fixture_certify_pair_response_identifiers_mismatch')
+    certify_payloads = [child for child in items[2][2]
+                        if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1]
+    certificate_ids = [field for field in certify_payloads[0][2]
+                       if field[0] == UNIQUE_IDENTIFIER_TAG and field[1] == 7] \
+        if len(certify_payloads) == 1 else []
+    if (len(certify_payloads) != 1 or len(certify_payloads[0][2]) != 1 or
+            len(certificate_ids) != 1 or certificate_ids[0][2] != b'fixture-certificate-1'):
+        raise ValueError('fixture_certify_response_certificate_identifier_mismatch')
+    expected_identifiers = [
+        ['fixture-private-key-1'], ['fixture-certificate-1'],
+        ['fixture-private-key-1'], ['fixture-certificate-1'],
+        ['fixture-private-key-1'], ['fixture-public-key-1'],
+    ]
+    if [text_values(item, UNIQUE_IDENTIFIER_TAG) for item in items[1:]] != expected_identifiers:
+        raise ValueError('fixture_certify_response_cleanup_identifiers_mismatch')
+
+
 def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
                   constructor_variant=None, export_field=None):
     selected_recipe = recipe or RECIPES[case_id]
@@ -1019,6 +1102,8 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
         assert_signature_request(node, selected_recipe[1] == 'signature_verify')
     if selected_recipe[1] == 'create_key_pair':
         assert_create_key_pair_request(node)
+    if selected_recipe[1] == 'certify':
+        assert_certify_request(node)
     if (case_id in {
             'test-norm-payload-client-add-attribute-request-20-002',
             'test-norm-payload-client-add-attribute-request-21-002'} and
@@ -2456,6 +2541,22 @@ class PeerState:
                 self.adjustable_attribute_values[public_identifier] = {}
                 self.key_pair_identifiers = {5: private_identifier, 6: public_identifier}
                 effect = 'key_pair_created'
+            elif operation == 6:
+                private_identifier = self.key_pair_identifiers.get(5)
+                public_identifier = self.key_pair_identifiers.get(6)
+                certificate_identifier = 'fixture-certificate-1'
+                if (identifier != public_identifier or public_identifier not in self.objects or
+                        private_identifier not in self.objects or
+                        self.objects[private_identifier] != 'active' or
+                        self.objects[public_identifier] != 'pre_active' or
+                        certificate_identifier in self.objects):
+                    raise ValueError('fixture_certify_key_pair_state_mismatch')
+                self.objects[certificate_identifier] = 'pre_active'
+                self.attributes[certificate_identifier] = set()
+                self.attribute_values[certificate_identifier] = {}
+                self.adjustable_attribute_values[certificate_identifier] = {}
+                placeholder = certificate_identifier
+                effect = 'certified'
             elif operation in (1, 3):
                 identifier = 'fixture-key-1'
                 if identifier in self.objects:
@@ -3149,6 +3250,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             response_item_ids = SIGNATURE_VERIFY_ITEM_IDS
                                         elif recipe[1] == 'create_key_pair':
                                             response_item_ids = CREATE_KEY_PAIR_ITEM_IDS
+                                        elif recipe[1] == 'certify':
+                                            response_item_ids = CERTIFY_ITEM_IDS
                                         elif placeholder_chain_recipe:
                                             response_item_ids = (
                                                 (b'placeholder-revoke-cleanup', b'placeholder-destroy-cleanup')
@@ -3479,6 +3582,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 response_tree, recipe[1] == 'signature_verify')
                                         elif recipe[1] == 'create_key_pair':
                                             verify_create_key_pair_response(response_tree)
+                                        elif recipe[1] == 'certify':
+                                            verify_certify_response(response_tree)
                                         elif recipe[1] == 'get_usage_allocation_uid_variants':
                                             verify_usage_allocation_identifier_variants(response_tree)
                                         elif reject_this_exchange:

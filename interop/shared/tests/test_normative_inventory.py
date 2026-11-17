@@ -79,6 +79,10 @@ class NormativeInventoryTests(unittest.TestCase):
             ["Revoke Private Key", "Destroy Certificate", "Destroy Private Key", "Destroy Public Key"],
             case["isolation_recipe"]["teardown_steps"],
         )
+        self.assertEqual(
+            "Certify Public Key with Certificate Type X.509",
+            case["isolation_recipe"]["target_step"],
+        )
         for version in ("2.0", "2.1"):
             self.assertIn(
                 {"document": f"OASIS KMIP {version} Specification", "section": "12.1"},

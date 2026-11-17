@@ -56999,12 +56999,15 @@
       "isolation_recipe": {
         "unique_name_prefix": "kmipkit-certify",
         "setup_steps": [
-          "Create unique SymmetricKey"
+          "Create Key Pair with Certificate Sign usage on Private Key",
+          "Activate Private Key"
         ],
-        "target_step": "Execute Certify",
+        "target_step": "Certify Public Key with Certificate Type X.509",
         "teardown_steps": [
-          "Revoke SymmetricKey",
-          "Destroy SymmetricKey"
+          "Revoke Private Key",
+          "Destroy Certificate",
+          "Destroy Private Key",
+          "Destroy Public Key"
         ],
         "normalized_fields": [
           "TimeStamp",
@@ -57023,6 +57026,14 @@
         {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.6"
+        },
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "12.1"
+        },
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "12.1"
         }
       ],
       "execution": {

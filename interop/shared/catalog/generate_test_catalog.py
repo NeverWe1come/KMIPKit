@@ -303,7 +303,9 @@ def add_execution_contract(test_case: dict, elements: list[dict], indexes: dict[
     if category == "version_boundaries":
         # The operation is defined in KMIP 2.1 and intentionally has no KMIP 2.0 entry.
         test_case["normative_refs"].append({"document": "OASIS KMIP 2.0 Specification", "section": "6.1"})
-    if category == "object_lifecycle" and test_case.get("operation") in {"Sign", "Signature Verify"}:
+    if category == "object_lifecycle" and test_case.get("operation") in {
+        "Sign", "Signature Verify", "Certify"
+    }:
         # The Cryptographic Usage Mask's operation/object-type mapping is an
         # independent normative constraint on these isolated operation fixtures.
         for version in versions:
@@ -1506,7 +1508,16 @@ def generate_catalog(normative_catalog_path: Path) -> dict:
 
         setup = []
         teardown = []
-        if name == "Sign":
+        if name == "Certify":
+            setup = [
+                "Create Key Pair with Certificate Sign usage on Private Key",
+                "Activate Private Key",
+            ]
+            teardown = [
+                "Revoke Private Key", "Destroy Certificate",
+                "Destroy Private Key", "Destroy Public Key",
+            ]
+        elif name == "Sign":
             setup = ["Create Key Pair with Sign usage on Private Key", "Activate Private Key"]
             teardown = ["Revoke Private Key", "Destroy Private Key", "Destroy Public Key"]
         elif name == "Signature Verify":
@@ -1533,7 +1544,8 @@ def generate_catalog(normative_catalog_path: Path) -> dict:
             "isolation_recipe": {
                 "unique_name_prefix": f"kmipkit-{name.lower().replace(' ', '-')}",
                 "setup_steps": setup,
-                "target_step": f"Execute {name}",
+            "target_step": "Certify Public Key with Certificate Type X.509" if name == "Certify"
+            else f"Execute {name}",
                 "teardown_steps": teardown,
                 "normalized_fields": ["TimeStamp", "UniqueIdentifier", "InitialDate", "ActivationDate", "LastChangeDate", "DestroyDate"]
             }
