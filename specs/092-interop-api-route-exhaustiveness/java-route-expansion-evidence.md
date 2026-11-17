@@ -2486,3 +2486,45 @@ python3 interop/shared/tools/validate_route_evidence.py \
 python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
 python3 interop/java-kmip-validator/tools/compare_route_ledger.py
 ```
+
+## Java scalar structure-member routes — 2026-11-17
+
+Red commit `d54861542` adds a focused requirement for generic TTLV construction
+and decoding of a scalar structure member, using the exact “Attribute Name”
+target in OASIS KMIP 2.0/2.1 §5.5. It failed before the route executor existed.
+Green commit `77a8577a2` builds source-identified scalar members from the
+catalogued name, encoding, assigned tag, and version, then exercises
+`TtlvValue`, `TtlvItem.create`, `TtlvItem.view`, and `TtlvCodec.decode`. The
+selector consults the generated Java capability manifest and only adds cases
+whose applicable route set is generic TTLV; cases that also require typed
+managed-object routes remain pending until those routes have their own
+complete fixture.
+
+This adds 31 scalar structure-member cases and 248 complete cells for KMIP
+2.0/2.1. The cases cover Attribute Name and Vendor Identification, Extension
+Information scalars, Key Wrapping Data scalars, PKCS#11 Function and Return
+Code, Profile Name, RNG Parameters scalars, Ticket scalars, Usage Limits Unit,
+Validation Information scalars, and Server Information scalar fields. The
+selected scope validates 27,644/27,644 cells with zero failed cells; the
+71,641-cell Java matrix now has 27,644 executed and 43,997 pending across
+1,170 pending case IDs. The installed artifact remains pinned at
+`12496d646d11d4069b58bcc88fc76cc619211ec6` (SHA-256
+`504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`). The
+full Java validator suite passes 59 tests with no failures or errors. This
+evidence is local TTLV route coverage, not vendor interoperability or a
+complete Java matrix; PR #187 remains WIP.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-tmp" \
+  bash bindings/java/gradlew -p interop/java-kmip-validator \
+  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" test
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+git diff --check
+```
