@@ -56,6 +56,11 @@ DECRYPT_ITEM_IDS = (b'decrypt-create', b'decrypt-activate', b'decrypt-target',
 MAC_ITEM_IDS = (b'mac-create', b'mac-activate', b'mac-target', b'mac-revoke', b'mac-destroy')
 MAC_VERIFY_ITEM_IDS = (b'mac-verify-create', b'mac-verify-activate', b'mac-verify-target',
                        b'mac-verify-revoke', b'mac-verify-destroy')
+LEGACY_SIGN_ITEM_IDS = (b'interop-create', b'interop-activate', b'interop-sign',
+                        b'interop-revoke', b'interop-destroy')
+LEGACY_SIGNATURE_VERIFY_ITEM_IDS = (
+    b'interop-create', b'interop-activate', b'interop-signature-verify',
+    b'interop-revoke', b'interop-destroy')
 SIGN_ITEM_IDS = (b'sign-create-pair', b'sign-activate', b'sign-target', b'sign-revoke',
                  b'sign-destroy-private', b'sign-destroy-public')
 SIGNATURE_VERIFY_ITEM_IDS = (b'verify-create-pair', b'verify-activate', b'verify-target',
@@ -410,10 +415,10 @@ RECIPES = {
     'test-op-decrypt': ((1, 18, 32, 19, 20), 'decrypt'),
     'test-op-mac': ((1, 18, 35, 19, 20), 'mac'),
     'test-op-mac-verify': ((1, 18, 36, 19, 20), 'mac_verify'),
-    'test-op-sign': ((2, 18, 33, 19, 20, 20), 'sign'),
-    'test-op-signature-verify': ((2, 18, 34, 19, 20, 20), 'signature_verify'),
-    'test-op-create-key-pair': ((2, 20, 20), 'create_key_pair'),
-    'test-op-certify': ((2, 18, 6, 19, 20, 20, 20), 'certify'),
+    'test-op-sign': ((2, 18, 33, 19, 20, 20), 'sign_pair'),
+    'test-op-signature-verify': ((2, 18, 34, 19, 20, 20), 'signature_verify_pair'),
+    'test-op-create-key-pair': ((2, 20, 20), 'create_key_pair_direct'),
+    'test-op-certify': ((2, 18, 6, 19, 20, 20, 20), 'certify_public_key'),
     'test-op-add-attribute': ((1, 13, 19, 20), 'add_attribute'),
     'test-norm-payload-client-add-attribute-request-20-002': ((1, 13, 19, 20), 'add_attribute'),
     'test-norm-payload-client-add-attribute-request-21-002': ((1, 13, 19, 20), 'add_attribute'),
@@ -433,8 +438,6 @@ RECIPES = {
     'test-obj-certificate-request': ((3, 20), 'register_certificate_request'),
     'test-batch-create-activate-destroy': ((1, 18, 12, 19, 20), 'create_activate_attribute_list_revoke_destroy'),
     'test-batch-register-encrypt-decrypt-destroy': (BATCH_CRYPTO_OPERATIONS, 'batch_register_crypto'),
-    'test-op-encrypt': (BATCH_CRYPTO_OPERATIONS, 'batch_register_crypto'),
-    'test-op-decrypt': (BATCH_CRYPTO_OPERATIONS, 'batch_register_crypto'),
     'test-batch-placeholder-chain-resolves': (PLACEHOLDER_CHAIN_OPERATIONS, 'batch_placeholder_chain'),
     'test-batch-placeholder-forward-reference-rejected': ((18, 1), 'batch_placeholder_forward_reference'),
     'test-batch-order-required-placeholder-resolution':
@@ -468,8 +471,6 @@ RECIPES = {
     'test-norm-payload-client-archive-response-20-001': ((1, 21, 19, 20), 'archive'),
     'test-norm-payload-client-archive-request-21-001': ((1, 21, 19, 20), 'archive'),
     'test-norm-payload-client-archive-response-21-001': ((1, 21, 19, 20), 'archive'),
-    'test-op-certify': ((6,), 'certify'),
-    'test-op-create-key-pair': ((2,), 'create_key_pair'),
     'test-op-create-split-key': ((40,), 'create_split_key'),
     'test-op-derive-key': ((5,), 'derive_key'),
     'test-op-revoke': ((1, 19, 20), 'revoke'),
@@ -1094,6 +1095,30 @@ def verify_signature_response(response_tree, verify):
             raise ValueError('fixture_sign_response_fields_mismatch')
 
 
+def verify_legacy_signature_response(response_tree, verify):
+    """Check the established single-key Sign and Signature Verify fixture shape."""
+    operation = 34 if verify else 33
+    item_ids = LEGACY_SIGNATURE_VERIFY_ITEM_IDS if verify else LEGACY_SIGN_ITEM_IDS
+    items = [child for child in response_tree[2]
+             if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if ([numbers(item, 0x42005C) for item in items] != [[1], [18], [operation], [19], [20]] or
+            [byte_string_values(item, 0x420093) for item in items] != [[item_id] for item_id in item_ids] or
+            [numbers(item, 0x42007F) for item in items] != [[0]] * 5):
+        raise ValueError('fixture_legacy_signature_response_lifecycle_mismatch')
+    payloads = [child for child in items[2][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1]
+    if len(payloads) != 1 or text_values(items[2], UNIQUE_IDENTIFIER_TAG) != ['fixture-key-1']:
+        raise ValueError('fixture_legacy_signature_response_identifier_mismatch')
+    fields = payloads[0][2]
+    if verify:
+        if len(fields) != 2 or numbers(items[2], 0x42009B) != [1]:
+            raise ValueError('fixture_legacy_signature_verify_response_mismatch')
+    else:
+        signatures = [field for field in fields if field[0] == 0x4200C3 and field[1] == 8]
+        if len(fields) != 2 or len(signatures) != 1 or signatures[0][2] != b'fixture-signature-data':
+            raise ValueError('fixture_legacy_sign_response_mismatch')
+
+
 def assert_create_key_pair_request(node):
     """Check a Create Key Pair request and cleanup of both returned objects."""
     items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
@@ -1116,7 +1141,7 @@ def assert_create_key_pair_request(node):
         raise ValueError('fixture_create_key_pair_cleanup_identifiers_mismatch')
 
 
-def verify_create_key_pair_response(response_tree):
+def verify_create_key_pair_batch_response(response_tree):
     """Check distinct response IDs and exact cleanup identifier mapping."""
     items = [child for child in response_tree[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
     if ([numbers(item, 0x42005C) for item in items] != [[2], [20], [20]] or
@@ -1140,7 +1165,7 @@ def verify_create_key_pair_response(response_tree):
         raise ValueError('fixture_create_key_pair_cleanup_mapping_mismatch')
 
 
-def assert_certify_request(node):
+def assert_certify_batch_request(node):
     """Check Certify of the Public Key and Certificate Sign capability."""
     items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
     operations = [[2], [18], [6], [19], [20], [20], [20]]
@@ -1182,7 +1207,7 @@ def assert_certify_request(node):
         raise ValueError('fixture_certify_certificate_type_attribute_mismatch')
 
 
-def verify_certify_response(response_tree):
+def verify_certify_batch_response(response_tree):
     """Check the generated certificate ID and all three cleanup results."""
     items = [child for child in response_tree[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
     operations = [[2], [18], [6], [19], [20], [20], [20]]
@@ -1248,12 +1273,12 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
         assert_mac_request(node)
     if selected_recipe[1] == 'mac_verify':
         assert_mac_verify_request(node)
-    if selected_recipe[1] in ('sign', 'signature_verify'):
-        assert_signature_request(node, selected_recipe[1] == 'signature_verify')
-    if selected_recipe[1] == 'create_key_pair':
+    if selected_recipe[1] in ('sign_pair', 'signature_verify_pair'):
+        assert_signature_request(node, selected_recipe[1] == 'signature_verify_pair')
+    if selected_recipe[1] == 'create_key_pair_direct':
         assert_create_key_pair_request(node)
-    if selected_recipe[1] == 'certify':
-        assert_certify_request(node)
+    if selected_recipe[1] == 'certify_public_key':
+        assert_certify_batch_request(node)
     if (case_id in {
             'test-norm-payload-client-add-attribute-request-20-002',
             'test-norm-payload-client-add-attribute-request-21-002'} and
@@ -3556,10 +3581,10 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 'async_poll_repeated_pending_to_success',
                                                 'async_process_then_poll_state',
                                                 'async_query_outstanding_filter',
-                                                'create_key_pair',
+                                                'create_key_pair', 'create_key_pair_direct',
                                                 'create_split_key',
                                                 'derive_key',
-                                                'certify',
+                                                'certify', 'certify_public_key',
                                                 'async_unknown_correlation_rejected') and
                                             recipe[0][0] not in (1, 2, 3))),
                             usage_allocation_ready=recipe[1] == 'get_usage_allocation_uid_variants')
@@ -3624,6 +3649,11 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         if logout_recipe:
                                             assert_login_logout_exchange(request_tree, version, exchange_index)
                                             response_operations = ((45,) if exchange_index == 0 else (46,))
+                                        elif recipe[1] == 'certify_public_key':
+                                            assert_recipe(request_tree, case_id, version, recipe,
+                                                          attribute_fixture, variant)
+                                            response_operations = recipe[0]
+                                            response_item_ids = CERTIFY_ITEM_IDS
                                         elif recipe[1] == 'certify':
                                             if exchange_index == 0:
                                                 assert_certify_setup_request(request_tree, version)
@@ -3639,18 +3669,24 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 response_item_ids = (b'interop-destroy-certificate',
                                                                      b'interop-destroy-public-key',
                                                                      b'interop-destroy-private-key')
+                                        elif recipe[1] == 'sign_pair':
+                                            assert_recipe(request_tree, case_id, version, recipe,
+                                                          attribute_fixture, variant)
+                                            response_operations = recipe[0]
+                                            response_item_ids = SIGN_ITEM_IDS
+                                        elif recipe[1] == 'signature_verify_pair':
+                                            assert_recipe(request_tree, case_id, version, recipe,
+                                                          attribute_fixture, variant)
+                                            response_operations = recipe[0]
+                                            response_item_ids = SIGNATURE_VERIFY_ITEM_IDS
                                         elif recipe[1] == 'sign':
                                             assert_sign_request(request_tree, version, case_id)
                                             response_operations = recipe[0]
-                                            response_item_ids = (b'interop-create', b'interop-activate',
-                                                                 b'interop-sign', b'interop-revoke',
-                                                                 b'interop-destroy')
+                                            response_item_ids = LEGACY_SIGN_ITEM_IDS
                                         elif recipe[1] == 'signature_verify':
                                             assert_signature_verify_request(request_tree, version, case_id)
                                             response_operations = recipe[0]
-                                            response_item_ids = (b'interop-create', b'interop-activate',
-                                                                 b'interop-signature-verify', b'interop-revoke',
-                                                                 b'interop-destroy')
+                                            response_item_ids = LEGACY_SIGNATURE_VERIFY_ITEM_IDS
                                         elif recipe[1] == 'create_key_pair':
                                             if exchange_index == 0:
                                                 assert_recipe(request_tree, case_id, version, recipe,
@@ -3858,10 +3894,17 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             response_item_ids = MAC_ITEM_IDS
                                         elif recipe[1] == 'mac_verify':
                                             response_item_ids = MAC_VERIFY_ITEM_IDS
+                                        elif recipe[1] in ('sign_pair', 'signature_verify_pair'):
+                                            response_item_ids = (SIGN_ITEM_IDS if recipe[1] == 'sign_pair'
+                                                                 else SIGNATURE_VERIFY_ITEM_IDS)
+                                        elif recipe[1] == 'create_key_pair_direct':
+                                            response_item_ids = CREATE_KEY_PAIR_ITEM_IDS
+                                        elif recipe[1] == 'certify_public_key':
+                                            response_item_ids = CERTIFY_ITEM_IDS
                                         elif recipe[1] == 'sign':
-                                            response_item_ids = SIGN_ITEM_IDS
+                                            response_item_ids = LEGACY_SIGN_ITEM_IDS
                                         elif recipe[1] == 'signature_verify':
-                                            response_item_ids = SIGNATURE_VERIFY_ITEM_IDS
+                                            response_item_ids = LEGACY_SIGNATURE_VERIFY_ITEM_IDS
                                         elif recipe[1] == 'create_key_pair':
                                             response_item_ids = CREATE_KEY_PAIR_ITEM_IDS
                                         elif recipe[1] == 'certify':
@@ -4205,6 +4248,26 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                         [numbers(item, 0x42007F) for item in response_items] !=
                                                         [[0], [0], [0]] or peer_state.objects):
                                                     raise ValueError('fixture_derive_key_cleanup_response_mismatch')
+                                        elif recipe[1] == 'sign_pair':
+                                            response_items = [item for item in response_tree[2]
+                                                              if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+                                            if ([numbers(item, 0x42005C) for item in response_items] !=
+                                                    [[2], [18], [33], [19], [20], [20]] or
+                                                    [numbers(item, 0x42007F) for item in response_items] !=
+                                                    [[0]] * 6 or peer_state.objects):
+                                                raise ValueError('fixture_sign_pair_response_lifecycle_mismatch')
+                                        elif recipe[1] == 'signature_verify_pair':
+                                            response_items = [item for item in response_tree[2]
+                                                              if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+                                            if ([numbers(item, 0x42005C) for item in response_items] !=
+                                                    [[2], [18], [34], [19], [20], [20]] or
+                                                    [numbers(item, 0x42007F) for item in response_items] !=
+                                                    [[0]] * 6 or peer_state.objects):
+                                                raise ValueError('fixture_signature_verify_pair_response_lifecycle_mismatch')
+                                        elif recipe[1] == 'create_key_pair_direct':
+                                            verify_create_key_pair_batch_response(response_tree)
+                                        elif recipe[1] == 'certify_public_key':
+                                            verify_certify_batch_response(response_tree)
                                         elif recipe[1] == 'certify':
                                             if exchange_index == 0:
                                                 verify_create_key_pair_response(response_tree)
@@ -4378,9 +4441,16 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             else:
                                                 verify_export_response(response_tree)
                                             verify_lifecycle(recipe[0], response_tree)
-                                        elif recipe[1] in ('sign', 'signature_verify'):
+                                        elif recipe[1] in ('sign_pair', 'signature_verify_pair'):
                                             verify_signature_response(
+                                                response_tree, recipe[1] == 'signature_verify_pair')
+                                        elif recipe[1] in ('sign', 'signature_verify'):
+                                            verify_legacy_signature_response(
                                                 response_tree, recipe[1] == 'signature_verify')
+                                        elif recipe[1] == 'create_key_pair_direct':
+                                            verify_create_key_pair_batch_response(response_tree)
+                                        elif recipe[1] == 'certify_public_key':
+                                            verify_certify_batch_response(response_tree)
                                         elif recipe[1] == 'create_key_pair':
                                             verify_create_key_pair_response(response_tree)
                                         elif recipe[1] == 'certify':
@@ -4761,6 +4831,24 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                    observation[0][2]['peer_observed_state_before_sha256'] ==
                                                    observation[0][2]['peer_observed_state_after_sha256']}
                                               if observation and recipe[1] == 'archive' else {}),
+                                           **({'peer_request_operations': [
+                                                   numbers(item, 0x42005C)[0]
+                                                   for item in observation[0][0][2]
+                                                   if item[0] == BATCH_ITEM_TAG],
+                                               'peer_setup_operations': (
+                                                   [] if recipe[1] == 'create_key_pair_direct' else
+                                                   list(recipe[0][:2])),
+                                               'peer_cleanup_operations': [
+                                                   operation for operation in recipe[0]
+                                                   if operation in (19, 20)],
+                                               'peer_observed_effects': observation[0][2]['effects'],
+                                               'peer_final_state_matches_setup':
+                                                   observation[0][2]['peer_observed_state_before_sha256'] ==
+                                                   observation[0][2]['peer_observed_state_after_sha256']}
+                                              if observation and len(observation) == 1 and recipe[1] in (
+                                                  'encrypt', 'decrypt', 'mac', 'mac_verify',
+                                                  'sign_pair', 'signature_verify_pair',
+                                                  'create_key_pair_direct', 'certify_public_key') else {}),
                                            **({'peer_request_operations': [
                                                    numbers(item, 0x42005C)[0]
                                                    for item in observation[0][0][2]
