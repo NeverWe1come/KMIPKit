@@ -3015,6 +3015,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
              'test-norm-payload-client-export-request-') else
          ('direct', 'standalone') if case['case_id'] in {'test-op-get-attributes', 'test-op-get-attribute-list',
                                                          'test-batch-continue-after-failure',
+                                                         'test-batch-count-matches-items',
+                                                         'test-batch-order-false-correlates-response-items',
                                                          'test-norm-payload-client-get-attribute-list-request-20-001',
                                                          'test-norm-payload-client-get-attribute-list-request-21-001',
                                                          'test-norm-payload-client-add-attribute-request-20-002',

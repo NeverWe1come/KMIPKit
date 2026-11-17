@@ -3697,8 +3697,8 @@ class RouteMatrixTests(unittest.TestCase):
                                                if case['case_id'] in case_ids]}
         events, _, checks = execute_network_cells(
             ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
-        self.assertEqual(len(checks), 60,
-                         'Get Attribute List must run through direct and request-based constructors')
+        self.assertEqual(len(checks), 84,
+                         'batch read cases must cover direct and request-based constructors')
         self.assertTrue(all(check['status'] == 'passed' for check in checks))
         expected_operations = {
             'KMIPKIT-ELEM-OP-C2S-GET', 'KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST',
