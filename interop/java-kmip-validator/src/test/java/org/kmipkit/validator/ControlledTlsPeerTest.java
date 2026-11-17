@@ -2701,7 +2701,7 @@ class ControlledTlsPeerTest {
     private static void appendBatchErrorContinuationHeaderRouteEvent(ArrayNode events,
             EnumerationFixture fixture, String protocolVersion, String treeHash) throws Exception {
         if (!"BATCH-ERROR-CONTINUATION-OPTION".equals(fixture.parentName()) || fixture.value() != 2) return;
-        appendRouteEvent(events, "test-norm-message-field-message-field-8-2-batch-error-continuation-option",
+        appendRouteEvent(events, LocalCatalogRouteChecks.REQUEST_HEADER_SCALAR_CASE_PREFIX + "batch-error-continuation-option",
                 "java.typed-protocol.function.client_batch_add_error_continuation_value",
                 "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION",
                 "org.kmipkit.extensions.ClientBatch.addErrorContinuationValue",
@@ -3994,7 +3994,7 @@ class ControlledTlsPeerTest {
             if (caseId.startsWith("test-norm-message-field-message-field-9-")
                     && constructorRoutes.contains(routeId)) {
                 scalarMessageFieldCases.add(caseId);
-            } else if (caseId.startsWith("test-norm-message-field-message-field-8-2-")
+            } else if (caseId.startsWith(LocalCatalogRouteChecks.REQUEST_HEADER_SCALAR_CASE_PREFIX)
                     && !caseId.equals(LocalCatalogRouteChecks.ATTESTATION_CAPABLE_CASE_ID)
                     && !caseId.equals(LocalCatalogRouteChecks.BATCH_ORDER_OPTION_CASE_ID)
                     && "java.generic-ttlv.ttlv_item.create".equals(routeId)) {
@@ -4335,7 +4335,7 @@ class ControlledTlsPeerTest {
             JsonNode target = targets.get(targetId);
             if (target == null) continue;
             String encoding = requires.path("source_encoding").asText(target.path("source_encoding").asText());
-            if (encoding.isEmpty() && caseId.startsWith("test-norm-message-field-message-field-8-2-")) {
+            if (encoding.isEmpty() && caseId.startsWith(LocalCatalogRouteChecks.REQUEST_HEADER_SCALAR_CASE_PREFIX)) {
                 encoding = LocalCatalogRouteChecks.scalarMessageFieldEncoding(catalog, targetId, version);
             }
             if (!isSupportedScalarMessageFieldEncoding(encoding)) continue;
@@ -4363,7 +4363,7 @@ class ControlledTlsPeerTest {
     private static List<String> scalarMessageFieldRoutes(String caseId, String encoding) {
         List<String> commonRoutes = List.of("java.generic-ttlv.ttlv_item.create",
                 "java.generic-ttlv.function.ttlv_item_view_from_item", "java.generic-ttlv.ttlv_codec.decode");
-        if (caseId.startsWith("test-norm-message-field-message-field-8-2-")) return commonRoutes;
+        if (caseId.startsWith(LocalCatalogRouteChecks.REQUEST_HEADER_SCALAR_CASE_PREFIX)) return commonRoutes;
         String constructor = switch (encoding) {
             case "Boolean" -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.boolean";
             case "Byte String" -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.bytestring";

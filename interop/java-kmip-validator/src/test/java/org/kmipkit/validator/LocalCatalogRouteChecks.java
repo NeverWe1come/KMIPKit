@@ -38,8 +38,10 @@ final class LocalCatalogRouteChecks {
     static final String ROTATE_NAME_VALUE_CASE_ID =
             "test-norm-structure-member-structure-member-4-53-rotate-name-value";
     static final String ROTATE_NAME_VALUE_TARGET_ID = "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-53-ROTATE-NAME-VALUE";
+    static final String REQUEST_HEADER_SCALAR_CASE_PREFIX =
+            "test-norm-message-field-message-field-8-2-";
     static final String BATCH_ORDER_OPTION_CASE_ID =
-            "test-norm-message-field-message-field-8-2-batch-order-option";
+            REQUEST_HEADER_SCALAR_CASE_PREFIX + "batch-order-option";
     static final String BATCH_ORDER_OPTION_TARGET_ID = "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION";
     static final String ATTESTATION_CAPABLE_CASE_ID =
             "test-norm-message-field-message-field-8-2-attestation-capable-indicator";
@@ -173,7 +175,7 @@ final class LocalCatalogRouteChecks {
                 assertScalarMessageFieldValue(decodedValue, itemType, valueBytes, numericValue);
             }
             String constructorRoute = scalarMessageFieldConstructorRoute(encoding);
-            if (!caseId.startsWith("test-norm-message-field-message-field-8-2-")) {
+            if (!caseId.startsWith(REQUEST_HEADER_SCALAR_CASE_PREFIX)) {
                 emitRoute(sink, caseId, targetId, constructorRoute, scalarMessageFieldConstructor(encoding),
                         "construct", wire);
             }
