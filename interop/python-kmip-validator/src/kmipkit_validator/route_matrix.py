@@ -26,6 +26,8 @@ from .driver import PythonKmipDriver, _TTLV_TYPE_KINDS, _catalog_model_data
 sys.path.insert(0, str(SHARED / 'tools'))
 from coverage_matrix import iter_cells  # noqa: E402
 
+CANCELLATION_RESULT_ENUM_ID = 'KMIPKIT-ELEM-ENUMERATION-CANCELLATION-RESULT'
+
 
 class RecipePending(Exception):
     """The validator cannot yet demonstrate the required case semantics."""
@@ -1854,8 +1856,7 @@ def _cancellation_result_value(name: str) -> int:
     _, _, elements = _catalog_model_data()
     cancellation_element = next((element for element in elements.values()
                                  if element.get('kind') == 'enumeration_value'
-                                 and 'KMIPKIT-ELEM-ENUMERATION-CANCELLATION-RESULT'
-                                 in element.get('parent_element_ids', [])
+                                 and CANCELLATION_RESULT_ENUM_ID in element.get('parent_element_ids', [])
                                  and _normalized_name(element.get('name', ''))
                                  == _normalized_name(name)), None)
     if cancellation_element is None:
