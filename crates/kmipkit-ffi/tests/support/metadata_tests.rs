@@ -94,10 +94,14 @@ fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
             "crypto_response_ttlv",
             "discover_versions_request_item",
             "ffi_runtime_metadata",
+            "fluent_add_attribute_parity",
             "fluent_create_key_pair_parity",
+            "fluent_delete_attribute_parity",
             "fluent_dx_api",
             "fluent_dx_journeys",
             "fluent_java_python_lifecycle_facade",
+            "fluent_locate_revoke_parity",
+            "fluent_set_attribute_parity",
             "generic_ttlv_model",
             "hashed_password_timestamp_sequence",
             "kmip30_credential_type_values",
@@ -524,6 +528,10 @@ fn source_c_exports() -> Vec<(String, bool)> {
     exports.extend(macro_generated_c_exports(
         sources[0],
         "kmip30_draft_batch_item_constructor",
+    ));
+    exports.extend(macro_generated_c_exports(
+        sources[7],
+        "locate_builder_setter",
     ));
 
     exports

@@ -3,16 +3,17 @@ package org.kmipkit.fluent;
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.client.KmipClient;
 import org.kmipkit.extensions.AttributeSet;
+import org.kmipkit.extensions.ClientBatch;
 import org.kmipkit.extensions.ClientBatchItem;
 import org.kmipkit.extensions.ClientBatchResponse;
 import org.kmipkit.extensions.RequestOptions;
 import org.kmipkit.ttlv.CodecLimits;
 import org.kmipkit.ttlv.TtlvStructure;
 
-/** Builds a typed Locate request while preserving explicit optional filters. */
-public final class LocateBuilder {
+/** Typed KMIP 2.1 Locate request with an explicit validated Attributes filter. */
+public final class LocateBuilder implements AutoCloseable {
     private final KmipClient client;
-    private final AttributeSet attributes;
+    private TtlvStructure attributes;
     private Integer maximumItems;
     private Integer offsetItems;
     private Long storageStatusMask;
@@ -21,50 +22,104 @@ public final class LocateBuilder {
     private Long asynchronousIndicator;
 
     LocateBuilder(KmipClient client, AttributeSet attributes) {
-        if (client == null || attributes == null) {
-            throw new InvalidInputException("Locate inputs are invalid");
-        }
+        if (attributes == null) throw new InvalidInputException("Locate Attributes are required");
         this.client = client;
-        this.attributes = attributes;
+        this.attributes = attributes.asItems();
     }
 
-    /** Selects the exact caller-supplied maximum item count. */
-    public LocateBuilder maximumItems(int value) { maximumItems = value; return this; }
-    /** Selects the exact caller-supplied offset. */
-    public LocateBuilder offsetItems(int value) { offsetItems = value; return this; }
-    /** Selects the exact caller-supplied storage-status bit mask. */
-    public LocateBuilder storageStatusMask(long value) { storageStatusMask = value; return this; }
-    /** Selects the exact caller-supplied object-group member value. */
-    public LocateBuilder objectGroupMember(long value) { objectGroupMember = value; return this; }
-    /** Applies exchange-local timeout overrides. */
+    /** Limits the number of located objects returned by the server. */
+    public LocateBuilder maximumItems(int value) {
+        maximumItems = value;
+        return this;
+    }
+
+    /** Selects the zero-based server-side result offset. */
+    public LocateBuilder offsetItems(int value) {
+        offsetItems = value;
+        return this;
+    }
+
+    /** Sets the raw-preserving Storage Status Mask filter. */
+    public LocateBuilder storageStatusMask(long value) {
+        storageStatusMask = unsigned32(value, "Storage Status Mask");
+        return this;
+    }
+
+    /** Sets the raw-preserving Object Group Member filter. */
+    public LocateBuilder objectGroupMember(long value) {
+        objectGroupMember = unsigned32(value, "Object Group Member");
+        return this;
+    }
+
+    /** Sets exchange-local timeout options. */
     public LocateBuilder withOptions(RequestOptions value) {
-        if (value == null) throw new InvalidInputException("request options are invalid");
+        if (value == null) throw new InvalidInputException("request options are required");
         options = value;
         return this;
     }
-    /** Sets the explicit Request Header Asynchronous Indicator. */
+
+    /** Sets the Request Header Asynchronous Indicator independently of exchange options. */
     public LocateBuilder asynchronousIndicator(long value) {
-        if (value < 0 || value > 0xffff_ffffL) {
-            throw new InvalidInputException("asynchronous indicator is outside uint32");
-        }
-        asynchronousIndicator = value;
+        asynchronousIndicator = unsigned32(value, "asynchronous indicator");
         return this;
     }
-    /** Builds the typed Locate batch item without sending it. */
-    public ClientBatchItem build() {
-        try (TtlvStructure items = attributes.asItems()) {
-            return ClientBatchItem.locate(
-                    maximumItems, offsetItems, storageStatusMask, objectGroupMember, items);
+
+    /** Validates the typed request without sending it. */
+    public void validate() throws org.kmipkit.ClientOperationException {
+        try (ClientBatchItem ignored = build()) {
+            // Typed construction runs the shared Rust Locate validator.
         }
     }
+
+    /** Builds the existing typed batch item without sending it. */
+    public ClientBatchItem build() {
+        if (attributes == null) throw new InvalidInputException("Locate builder is closed");
+        return ClientBatchItem.locate(
+                maximumItems, offsetItems, storageStatusMask, objectGroupMember, attributes);
+    }
+
     /** Alias for {@link #build()}. */
     public ClientBatchItem toBatchItem() { return build(); }
-    /** Validates this request locally without sending it. */
-    public void validate() { try (ClientBatchItem ignored = build()) { } }
-    /** Executes exactly one exchange and returns the typed Locate result. */
+
+    /** Executes one typed exchange; this method never retries or polls. */
     public ClientBatchResponse execute(CodecLimits limits)
             throws org.kmipkit.ClientOperationException {
-        if (limits == null) throw new InvalidInputException("codec limits are invalid");
-        return BatchExecution.execute(client, build(), limits, options, asynchronousIndicator);
+        if (limits == null) throw new InvalidInputException("codec limits are required");
+        if (client == null) throw new InvalidInputException("client is required to execute");
+        try (ClientBatch batch = ClientBatch.create()) {
+            batch.add(build());
+            if (asynchronousIndicator != null) batch.asynchronousIndicator(asynchronousIndicator);
+            return options == null ? client.execute(batch, limits)
+                    : client.executeWithOptions(batch, limits, options);
+        }
+    }
+
+    /** Executes one exchange with explicit options supplied at the call site. */
+    public ClientBatchResponse execute(CodecLimits limits, RequestOptions value)
+            throws org.kmipkit.ClientOperationException {
+        if (value == null) throw new InvalidInputException("request options are required");
+        options = value;
+        return execute(limits);
+    }
+
+    /** Executes one exchange with explicit options supplied at the call site. */
+    public ClientBatchResponse executeWithOptions(CodecLimits limits, RequestOptions value)
+            throws org.kmipkit.ClientOperationException {
+        return execute(limits, value);
+    }
+
+    @Override
+    public void close() {
+        if (attributes != null) {
+            attributes.close();
+            attributes = null;
+        }
+    }
+
+    private static long unsigned32(long value, String field) {
+        if (value < 0 || value > 0xffff_ffffL) {
+            throw new InvalidInputException(field + " is outside uint32");
+        }
+        return value;
     }
 }

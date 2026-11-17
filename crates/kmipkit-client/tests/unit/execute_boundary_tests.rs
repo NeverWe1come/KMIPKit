@@ -1074,10 +1074,7 @@ impl BoundaryAudit {
                     || registry_inspect && index == 2
                     || server_request_dispatcher && index == 2
                     || fluent_explicit_attribute_item
-                        && (signature.ident == "attribute_item" && index == 1
-                            || signature.ident == "vendor_attribute" && index == 3
-                            || signature.ident == "attribute_at" && index == 2
-                            || signature.ident == "object_item" && index == 2)
+                        && is_exact_fluent_explicit_attribute_argument(signature, index)
                     || fluent_explicit_value && index == 1
                     || fluent_kmip30_ciphertext && index == 2
                 {
@@ -2446,10 +2443,14 @@ fn is_exact_fluent_catalogued_attribute(
     signature: &syn::Signature,
 ) -> bool {
     let supported_method = match impl_type {
-        Some("CreateSymmetricKeyBuilder" | "CreateSplitKeyBuilder") => {
-            signature.ident == "attribute"
-        }
-        Some("RegisterBuilder") => signature.ident == "attribute",
+        Some(
+            "CreateSymmetricKeyBuilder"
+            | "CreateSplitKeyBuilder"
+            | "RegisterBuilder"
+            | "SetAttributeBuilder"
+            | "AddAttributeBuilder",
+        ) => signature.ident == "attribute",
+        Some("DeleteAttributeBuilder") => signature.ident == "current_attribute",
         Some("CreateKeyPairBuilder") => matches!(
             signature.ident.to_string().as_str(),
             "common_attribute" | "private_attribute" | "public_attribute"
@@ -2511,17 +2512,30 @@ fn is_exact_fluent_explicit_attribute_item(
     impl_type: Option<&str>,
     signature: &syn::Signature,
 ) -> bool {
-    if !fluent_root_scope
-        || impl_type.is_none_or(|name| {
-            !matches!(
-                name,
-                "CreateSymmetricKeyBuilder" | "CreateSplitKeyBuilder" | "RegisterBuilder"
+    let supported_method = match impl_type {
+        Some("AddAttributeBuilder") => {
+            matches!(
+                signature.ident.to_string().as_str(),
+                "attribute_item" | "vendor_attribute"
             )
-        })
-        || !matches!(
+        }
+        Some("DeleteAttributeBuilder") => matches!(
+            signature.ident.to_string().as_str(),
+            "current_attribute_item" | "current_vendor_attribute"
+        ),
+        Some(
+            "CreateSymmetricKeyBuilder"
+            | "CreateSplitKeyBuilder"
+            | "RegisterBuilder"
+            | "SetAttributeBuilder",
+        ) => matches!(
             signature.ident.to_string().as_str(),
             "attribute_item" | "vendor_attribute" | "attribute_at" | "object_item"
-        )
+        ),
+        _ => false,
+    };
+    if !fluent_root_scope
+        || !supported_method
         || !signature.generics.params.is_empty()
         || signature.generics.where_clause.is_some()
         || signature.asyncness.is_some()
@@ -2553,7 +2567,10 @@ fn is_exact_fluent_explicit_attribute_item(
                     && reference.mutability.is_none()
                     && is_plain_type_path(reference.elem.as_ref(), "Item")))
     };
-    if signature.ident == "attribute_item" {
+    if matches!(
+        signature.ident.to_string().as_str(),
+        "attribute_item" | "current_attribute_item"
+    ) {
         return signature.inputs.len() == 2
             && is_receiver(signature.inputs.first())
             && is_item(signature.inputs.get(1));
@@ -2573,13 +2590,25 @@ fn is_exact_fluent_explicit_attribute_item(
                 if is_plain_type_path(&argument.ty, "ObjectType"))
             && is_item(signature.inputs.get(2));
     }
-    signature.inputs.len() == 4
+    matches!(
+        signature.ident.to_string().as_str(),
+        "vendor_attribute" | "current_vendor_attribute"
+    ) && signature.inputs.len() == 4
         && is_receiver(signature.inputs.first())
         && matches!(signature.inputs.get(1), Some(syn::FnArg::Typed(argument))
             if is_plain_reference_to_str(&argument.ty))
         && matches!(signature.inputs.get(2), Some(syn::FnArg::Typed(argument))
             if is_plain_reference_to_str(&argument.ty))
         && is_item_reference(signature.inputs.get(3))
+}
+
+fn is_exact_fluent_explicit_attribute_argument(signature: &syn::Signature, index: usize) -> bool {
+    match signature.ident.to_string().as_str() {
+        "attribute_item" | "current_attribute_item" => index == 1,
+        "vendor_attribute" | "current_vendor_attribute" => index == 3,
+        "attribute_at" | "object_item" => index == 2,
+        _ => false,
+    }
 }
 
 fn is_exact_fluent_builder_explicit_value(
@@ -2824,6 +2853,7 @@ fn generic_create_masks_exception_accepts_only_its_exact_typed_setter() {
 
 #[test]
 fn fluent_builder_signature_exceptions_are_exact_and_method_scoped() {
+fn fluent_builder_catalogued_attribute_signatures_are_exact() {
     let catalogued = syn::parse_str::<syn::Signature>(
         "fn attribute<D: AttributeDefinition>(self, attribute: Attribute<D>) -> Self",
     )
@@ -2848,7 +2878,28 @@ fn fluent_builder_signature_exceptions_are_exact_and_method_scoped() {
         Some("RegisterBuilder"),
         &catalogued
     ));
+    assert!(is_exact_fluent_catalogued_attribute(
+        true,
+        Some("AddAttributeBuilder"),
+        &catalogued
+    ));
+    assert!(is_exact_fluent_catalogued_attribute(
+        true,
+        Some("DeleteAttributeBuilder"),
+        &syn::parse_str::<syn::Signature>(
+            "fn current_attribute<D: AttributeDefinition>(self, attribute: Attribute<D>) -> Self",
+        )
+        .unwrap()
+    ));
+    assert!(!is_exact_fluent_catalogued_attribute(
+        true,
+        Some("DeleteAttributeBuilder"),
+        &catalogued
+    ));
+}
 
+#[test]
+fn fluent_builder_explicit_attribute_item_signatures_are_method_scoped() {
     for signature in [
         "fn attribute_item(self, item: Item) -> Self",
         "fn vendor_attribute(self, vendor: &str, name: &str, value: &Item) -> Self",
@@ -2867,7 +2918,50 @@ fn fluent_builder_signature_exceptions_are_exact_and_method_scoped() {
             &signature
         ));
     }
+    for signature in [
+        "fn attribute_at(self, position: FluentAttributePosition, item: Item) -> Self",
+        "fn object_item(self, object_type: ObjectType, object: Item) -> Self",
+    ] {
+        let signature = syn::parse_str::<syn::Signature>(signature).unwrap();
+        assert!(!is_exact_fluent_explicit_attribute_item(
+            true,
+            Some("AddAttributeBuilder"),
+            &signature
+        ));
+    }
 
+    for signature in [
+        "fn attribute_item(self, item: Item) -> Self",
+        "fn vendor_attribute(self, vendor: &str, name: &str, value: &Item) -> Self",
+    ] {
+        let signature = syn::parse_str::<syn::Signature>(signature).unwrap();
+        assert!(is_exact_fluent_explicit_attribute_item(
+            true,
+            Some("AddAttributeBuilder"),
+            &signature
+        ));
+    }
+
+    for signature in [
+        "fn current_attribute_item(self, item: Item) -> Self",
+        "fn current_vendor_attribute(self, vendor: &str, name: &str, value: &Item) -> Self",
+    ] {
+        let signature = syn::parse_str::<syn::Signature>(signature).unwrap();
+        assert!(is_exact_fluent_explicit_attribute_item(
+            true,
+            Some("DeleteAttributeBuilder"),
+            &signature
+        ));
+        assert!(!is_exact_fluent_explicit_attribute_item(
+            true,
+            Some("RegisterBuilder"),
+            &signature
+        ));
+    }
+}
+
+#[test]
+fn fluent_builder_explicit_value_signatures_are_exact_and_method_scoped() {
     for signature in [
         "fn prime_field_size(self, value: Vec<u8>) -> Self",
         "fn protection_storage_masks(self, masks: Structure) -> Self",

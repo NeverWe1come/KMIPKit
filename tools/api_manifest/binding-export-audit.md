@@ -13,7 +13,7 @@ later, and the platform's native symbol reader (`nm` on Unix):
 
 ```text
 python -B -m unittest tools.api_manifest.tests.test_binding_exports -v
-python -B tools/api_manifest/audit_binding_exports.py --repo-root . --report specs/043-public-api-bindings/reports/binding-export-report-2026-11-07.json --check
+python -B tools/api_manifest/audit_binding_exports.py --repo-root . --report specs/043-public-api-bindings/reports/binding-export-report-2026-11-16-fluent-locate-revoke.json --check
 ```
 
 The runner builds `kmipkit-ffi` with `cargo build --locked --offline` into a new
@@ -122,9 +122,9 @@ export audit remains an open manifest gate; see KMIPKIT-0050's report README.
 
 | Package | Scanner complete | Observed | Manifest declarations | Exact matches | Exact exclusions | Missing | Stale | Kind mismatches | Issues | `matchesManifest` |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| C | yes | 2,027 | 1,967 | 1,967 | 60 | 0 | 0 | 0 | 0 | yes |
-| Java | yes | 2,962 | 2,265 | 2,265 | 697 | 0 | 0 | 0 | 0 | yes |
-| Python | yes | 3,454 | 2,445 | 2,445 | 1,009 | 0 | 0 | 0 | 0 | yes |
+| C | yes | 2,124 | 2,064 | 2,064 | 60 | 0 | 0 | 0 | 0 | yes |
+| Java | yes | 3,168 | 2,468 | 2,468 | 700 | 0 | 0 | 0 | 0 | yes |
+| Python | yes | 3,688 | 2,679 | 2,679 | 1,009 | 0 | 0 | 0 | 0 | yes |
 
 The Java scanner records public inherited members from package-private helper
 bases under each concrete public facade, while members inherited from an
@@ -182,34 +182,43 @@ or inventory issues. No binding capability is promoted by this audit; typed
 parameters and Authentication execution parity remain assigned to KMIPKIT-0053.
 
 
-## Response-view binding delivery snapshot (2026-11-11)
+## Versioned catalog binding delivery snapshot (2026-11-15)
 
 The current audit report is
-`specs/043-public-api-bindings/reports/binding-export-report-2026-11-11-response-views.json`.
+`specs/043-public-api-bindings/reports/binding-export-report-2026-11-15-versioned-catalogs.json`.
 It was generated from the built C DSO and complete Java/Python inventories
-after KMIPKIT-0095 T009. Earlier dated reports remain historical snapshots.
+after KMIPKIT-0122. Earlier dated reports remain historical snapshots.
 
 | Package | Scanner complete | Observed | Manifest declarations | Exact matches | Exact exclusions | Missing | Stale | Kind mismatches | Issues | `matchesManifest` |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| C | yes | 2,058 | 1,998 | 1,998 | 60 | 0 | 0 | 0 | 0 | yes |
-| Java | yes | 3,090 | 2,390 | 2,390 | 700 | 0 | 0 | 0 | 0 | yes |
-| Python | yes | 3,605 | 2,596 | 2,596 | 1,009 | 0 | 0 | 0 | 0 | yes |
+| C | yes | 2,124 | 2,064 | 2,064 | 60 | 0 | 0 | 0 | 0 | yes |
+| Java | yes | 3,168 | 2,468 | 2,468 | 700 | 0 | 0 | 0 | 0 | yes |
+| Python | yes | 3,688 | 2,679 | 2,679 | 1,009 | 0 | 0 | 0 | 0 | yes |
 
-## Key-pair journey binding snapshot (2026-11-12)
+## Fluent Add Attribute, KMIP 3.0, and asynchronous binding delivery snapshot (2026-11-16)
 
-The current report includes the KMIPKIT-0107 Task 3 semantic C entry points
-and Java/Python Create Key Pair builders. It was generated with:
-
-```text
-python3 tools/api_manifest/audit_binding_exports.py --report specs/043-public-api-bindings/reports/binding-export-report-2026-11-12-key-pair-journeys.json --check
-```
-
-The prior response-view report remains historical evidence. This declaration
-audit complements the 40-exchange controlled TLS journey; it does not establish
-complete builder parity or external-KMS interoperability.
+This snapshot was superseded by the later Locate and Revoke audit below. Its report was
+`specs/043-public-api-bindings/reports/binding-export-report-2026-11-16-fluent-add-attribute.json`.
+It includes the KMIPKIT-0122 versioned catalog base, KMIPKIT-0124 KMIP 3.0 and
+asynchronous batch declarations, and KMIPKIT-0093 fluent Add Attribute
+bindings. The Java inventory records the exact `Tag` and `StandardAttribute`
+overloads for both Add Attribute and Set Attribute.
 
 | Package | Scanner complete | Observed | Manifest declarations | Exact matches | Exact exclusions | Missing | Stale | Kind mismatches | Issues | `matchesManifest` |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| C | yes | 2,158 | 2,098 | 2,098 | 60 | 0 | 0 | 0 | 0 | yes |
-| Java | yes | 3,214 | 2,503 | 2,503 | 711 | 0 | 0 | 0 | 0 | yes |
-| Python | yes | 3,726 | 2,717 | 2,717 | 1,009 | 0 | 0 | 0 | 0 | yes |
+| C | yes | 2,184 | 2,124 | 2,124 | 60 | 0 | 0 | 0 | 0 | yes |
+| Java | yes | 3,242 | 2,531 | 2,531 | 711 | 0 | 0 | 0 | 0 | yes |
+| Python | yes | 3,760 | 2,751 | 2,751 | 1,009 | 0 | 0 | 0 | 0 | yes |
+
+## Fluent Locate and Revoke bindings snapshot (2026-11-16)
+
+The current report is
+`specs/043-public-api-bindings/reports/binding-export-report-2026-11-16-fluent-locate-revoke.json`.
+It reconciles the Locate and Revoke fluent bindings across C, Java, and Python,
+including the exact Java overload signatures and checked exceptions.
+
+| Package | Scanner complete | Observed | Manifest declarations | Exact matches | Exact exclusions | Missing | Stale | Kind mismatches | Issues | `matchesManifest` |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| C | yes | 2,288 | 2,228 | 2,228 | 60 | 0 | 0 | 0 | 0 | yes |
+| Java | yes | 3,351 | 2,640 | 2,640 | 711 | 0 | 0 | 0 | 0 | yes |
+| Python | yes | 3,913 | 2,904 | 2,904 | 1,009 | 0 | 0 | 0 | 0 | yes |

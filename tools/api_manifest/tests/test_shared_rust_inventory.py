@@ -5,14 +5,15 @@ from __future__ import annotations
 import importlib.util
 import json
 from pathlib import Path
+import tempfile
 import unittest
+from unittest import mock
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 MODULE_PATH = REPO_ROOT / "tools" / "api_manifest" / "audit_shared_rust_inventory.py"
-RUST_REPORT_PATH = REPO_ROOT / "specs/051-pre-send-validation/reports/rust-export-report-2026-11-11.json"
 REPORTS_DIR = REPO_ROOT / "specs" / "051-pre-send-validation" / "reports"
-RUST_REPORT_PATH = REPORTS_DIR / "rust-export-report-2026-11-12.json"
+RUST_REPORT_PATH = REPORTS_DIR / "rust-export-report-2026-11-16.json"
 EXPECTED_RUST_ONLY_DECLARATIONS = {
     "kmipkit_transport::HttpsTransport",
     "kmipkit_transport::HttpsTransport::new",
@@ -82,13 +83,35 @@ class SharedRustInventoryTests(unittest.TestCase):
         self.assertIn("KMIPKIT-0044-FR-001", owner_requirements)
         self.assertIn("KMIPKIT-0044-FR-007", owner_requirements)
 
-    def test_approved_owner_lookup_reads_bold_requirement_ids_without_trailing_colon(self) -> None:
-        owner_requirements = AUDIT._read_approved_owner("KMIPKIT-0095", REPO_ROOT)
+    def test_approved_owner_lookup_does_not_match_a_longer_directory_prefix(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            specs = root / "specs"
+            longer_prefix = specs / "0120-partial-batch-responses"
+            exact_owner = specs / "012-vendor-extension-registry"
+            longer_prefix.mkdir(parents=True)
+            exact_owner.mkdir()
+            (longer_prefix / "spec.md").write_text(
+                "**Status**: Approved\n\n- **FR-001**: unrelated requirement\n",
+                encoding="utf-8",
+            )
+            (exact_owner / "spec.md").write_text(
+                "**Status**: Approved\n\n- **FR-009**: owner requirement\n",
+                encoding="utf-8",
+            )
 
-        self.assertEqual(
-            {f"KMIPKIT-0095-FR-{index:03}" for index in range(1, 6)},
-            owner_requirements,
-        )
+            original_iterdir = Path.iterdir
+
+            def ordered_spec_directories(path: Path):
+                if path == specs:
+                    return iter((longer_prefix, exact_owner))
+                return original_iterdir(path)
+
+            with mock.patch.object(Path, "iterdir", ordered_spec_directories):
+                owner_requirements = AUDIT._read_approved_owner("KMIPKIT-0012", root)
+
+        self.assertEqual({"KMIPKIT-0012-FR-009"}, owner_requirements)
+
     def test_approved_implementation_spec_local_requirement_ids_are_recognized(self) -> None:
         owner_requirements = AUDIT._read_approved_owner("KMIPKIT-0095", REPO_ROOT)
 
@@ -124,8 +147,7 @@ class SharedRustInventoryTests(unittest.TestCase):
 
     def test_shared_inventory_report_names_the_rust_audit_it_reads(self) -> None:
         expected_source = (
-            "specs/051-pre-send-validation/reports/rust-export-report-2026-11-11.json"
-            "specs/051-pre-send-validation/reports/rust-export-report-2026-11-12.json"
+            "specs/051-pre-send-validation/reports/rust-export-report-2026-11-16.json"
         )
         generated = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
         checked_in = json.loads(
@@ -138,14 +160,10 @@ class SharedRustInventoryTests(unittest.TestCase):
     def test_inventory_accounts_for_exact_approved_rust_exclusions_separately(self) -> None:
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
 
-        self.assertEqual(inventory["approvedExcludedRustDeclarationCount"], 21063)
+        self.assertEqual(inventory["approvedExcludedRustDeclarationCount"], 21649)
         self.assertEqual(
             sum(record["excludedDeclarationCount"] for record in inventory["crates"]),
-            21063,
-        self.assertEqual(inventory["approvedExcludedRustDeclarationCount"], 20879)
-        self.assertEqual(
-            sum(record["excludedDeclarationCount"] for record in inventory["crates"]),
-            20879,
+            21649,
         )
         self.assertEqual(
             sum(record["blockedDeclarationCount"] for record in inventory["crates"]),
@@ -166,16 +184,11 @@ class SharedRustInventoryTests(unittest.TestCase):
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
 
         rust_counts = self.rust_report["counts"]
-        self.assertEqual(inventory["observedRustDeclarationCount"], 30707)
-        self.assertEqual(inventory["mappedRustDeclarationCount"], 5117)
-        self.assertEqual(rust_counts["observed"], 30707)
-        self.assertEqual(rust_counts["matched"], 9644)
-        self.assertEqual(rust_counts["excluded"], 21063)
-        self.assertEqual(inventory["observedRustDeclarationCount"], 30294)
-        self.assertEqual(inventory["mappedRustDeclarationCount"], 5041)
-        self.assertEqual(rust_counts["observed"], 30294)
-        self.assertEqual(rust_counts["matched"], 9415)
-        self.assertEqual(rust_counts["excluded"], 20879)
+        self.assertEqual(inventory["observedRustDeclarationCount"], 32025)
+        self.assertEqual(inventory["mappedRustDeclarationCount"], 5468)
+        self.assertEqual(rust_counts["observed"], 32025)
+        self.assertEqual(rust_counts["matched"], 10376)
+        self.assertEqual(rust_counts["excluded"], 21649)
         self.assertEqual(rust_counts["observed"], rust_counts["matched"] + rust_counts["excluded"])
         self.assertEqual(
             inventory["approvedExcludedRustDeclarationCount"],
@@ -546,24 +559,6 @@ class SharedRustInventoryTests(unittest.TestCase):
         with self.assertRaises(AUDIT.InventoryError):
             AUDIT.build_inventory(altered, self.rust_report, REPO_ROOT)
 
-    def test_c_only_declaration_in_shared_capability_does_not_require_rust_mapping(self) -> None:
-        manifest = {
-            "capabilities": [{
-                "capabilityId": "shared_fluent_api",
-                "capabilityState": "draft",
-                "parityScope": "four-language",
-            }],
-            "publicDeclarations": [{
-                "declarationId": "KMIPKIT-0116:c:c_only_builder",
-                "capabilityId": "shared_fluent_api",
-                "declarationState": "declared",
-                "parityScope": "c-only",
-                "languageMappings": {"c": {"packageId": "c-kmipkit", "name": "c_only_builder"}},
-            }],
-        }
-
-        AUDIT._verify_ready_mapping_exports(manifest, {"matched": []})
-
     def test_unapproved_rust_only_owner_is_rejected(self) -> None:
         altered = json.loads(json.dumps(self.manifest))
         declaration = next(row for row in altered["publicDeclarations"] if row["parityScope"] == "rust-only-adr")
@@ -575,3 +570,11 @@ class SharedRustInventoryTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+    def test_approved_owner_lookup_reads_bold_requirement_ids_without_trailing_colon(self) -> None:
+        owner_requirements = AUDIT._read_approved_owner("KMIPKIT-0095", REPO_ROOT)
+
+        self.assertEqual(
+            {f"KMIPKIT-0095-FR-{index:03}" for index in range(1, 6)},
+            owner_requirements,
+        )

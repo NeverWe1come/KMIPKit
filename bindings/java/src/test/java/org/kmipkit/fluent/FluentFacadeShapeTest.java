@@ -467,6 +467,18 @@ final class FluentFacadeShapeTest {
             assertThrows(ClientOperationException.class,
                     () -> client.request().destroy(id).withOptions(RequestOptions.defaults())
                             .asynchronousIndicator(1).execute(limits));
+            try (TtlvValue description = TtlvValue.TextString(
+                    "fluent update".getBytes(java.nio.charset.StandardCharsets.UTF_8), limits)) {
+                assertThrows(ClientOperationException.class,
+                        () -> client.request().setAttribute().uniqueIdentifier("fluent-id")
+                                .cataloguedAttribute(StandardAttribute.DESCRIPTION, description)
+                                .execute(limits));
+                assertThrows(ClientOperationException.class,
+                        () -> client.request().setAttribute().uniqueIdentifier("fluent-id")
+                                .cataloguedAttribute(StandardAttribute.DESCRIPTION, description)
+                                .withOptions(RequestOptions.defaults()).asynchronousIndicator(2)
+                                .execute(limits));
+            }
             assertThrows(InvalidInputException.class,
                     () -> client.request().get(id).asynchronousIndicator(-1));
             assertThrows(InvalidInputException.class,

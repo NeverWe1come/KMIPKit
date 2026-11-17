@@ -1,9 +1,5 @@
 from __future__ import annotations
 
-import struct
-import queue
-import socket
-import ssl
 import queue
 import socket
 import ssl
@@ -12,103 +8,236 @@ import threading
 from pathlib import Path
 
 import pytest
-
 from _test_support import (
     mtls_transport_config,
     read_ttlv_frame,
     require_tls13_mtls_peer,
     start_tls13_mtls_peer,
 )
-from kmipkit import client, errors, extensions, fluent, ttlv
+from kmipkit import attribute_operations, client, errors, extensions, fluent, protocol_values, ttlv
 from kmipkit.typed_attributes import StandardAttribute, TypedAttribute
-from kmipkit.typed_attributes import StandardAttribute
 
 _FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
 
 
-def test_key_pair_builder_requires_explicit_algorithm_and_length() -> None:
-    # KMIPKIT-0093-FR-011/013; KMIP 2.1 section 6.1.2 Create Key Pair.
-    builder = fluent.CreateKeyPairBuilder()
-    with pytest.raises(errors.KmipKitError):
-        builder.build()
-    builder.algorithm(6)
-    with pytest.raises(errors.KmipKitError):
-        builder.validate()
-    builder.length(256).private_usage_mask(1).public_usage_mask(2)
-    builder.validate()
-    item = builder.to_batch_item()
+def test_fluent_request_exposes_a_delete_attribute_builder():
+    assert callable(getattr(fluent.Request, "delete_attribute", None))
+    assert hasattr(fluent, "DeleteAttributeBuilder")
+    assert "DeleteAttributeBuilder" in fluent.__all__
+
+
+def test_fluent_request_exposes_locate_and_revoke_builders():
+    assert callable(getattr(fluent.Request, "locate", None))
+    assert callable(getattr(fluent.Request, "revoke", None))
+    assert hasattr(fluent, "LocateBuilder")
+    assert hasattr(fluent, "RevokeBuilder")
+    assert "LocateBuilder" in fluent.__all__
+    assert "RevokeBuilder" in fluent.__all__
+
+
+def test_locate_and_revoke_build_typed_items_with_explicit_optional_fields():
+    with ttlv.ttlv_structure_create() as empty_items:
+        with attribute_operations.AttributeSet.try_new(empty_items) as attributes:
+            with fluent.Request(None).locate(attributes) as locate:
+                item = (
+                    locate.maximum_items(12)
+                    .offset_items(3)
+                    .storage_status_mask(2)
+                    .object_group_member(1)
+                    .asynchronous_indicator(5)
+                    .to_batch_item()
+                )
+                assert item.operation == 8
+                item.close()
+
+    revoke = (
+        fluent.Request(None)
+        .revoke(2, "key material compromised")
+        .unique_identifier(extensions.UniqueIdentifier.text_string("lifecycle-key"))
+        .compromise_occurrence_date(1_700_000_000)
+        .asynchronous_indicator(7)
+    )
+    item = revoke.to_batch_item()
+    assert item.operation == 19
     item.close()
 
-
-@pytest.mark.parametrize("method,value", [
-    ("algorithm", -1), ("algorithm", 1 << 32),
-    ("length", 0), ("length", True),
-    ("private_usage_mask", -1), ("public_usage_mask", 1 << 31),
-    ("with_options", None), ("asynchronous_indicator", -1),
-    ("common_attribute", None),
-])
-def test_key_pair_builder_rejects_invalid_semantic_fields(method: str, value: object) -> None:
-    with pytest.raises(errors.KmipKitError):
-        getattr(fluent.CreateKeyPairBuilder(), method)(value)
+    invalid = fluent.Request(None).revoke(1).compromise_occurrence_date(1_700_000_000)
+    with pytest.raises(errors.InvalidInputError):
+        invalid.build()
 
 
-@pytest.mark.parametrize("fail_on", [2, 3])
-def test_key_pair_builder_releases_earlier_groups_when_later_allocation_fails(
-    monkeypatch: pytest.MonkeyPatch, fail_on: int
-) -> None:
-    original = fluent.CreateKeyPairBuilder._attribute_structure
-    allocated: list[ttlv.Structure] = []
+def test_locate_and_revoke_execute_forward_options_and_async_indicator(monkeypatch):
+    calls = []
 
-    def allocate(attributes, limits):
-        if len(allocated) + 1 == fail_on:
-            raise MemoryError("injected allocation failure")
-        structure = original(attributes, limits)
-        allocated.append(structure)
-        return structure
+    class FakeBatch:
+        @classmethod
+        def create(cls):
+            return cls()
 
-    monkeypatch.setattr(fluent.CreateKeyPairBuilder, "_attribute_structure", staticmethod(allocate))
-    try:
-        with pytest.raises(MemoryError, match="injected allocation failure"):
-            fluent.CreateKeyPairBuilder().algorithm(6).length(256).build()
-        assert all(structure.closed for structure in allocated)
-    finally:
-        for structure in allocated:
-            structure.close()
+        def __init__(self):
+            self.asynchronous_indicator = None
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_arguments):
+            return None
+
+        def add_item(self, item):
+            self.operation = item.operation
+
+        def set_asynchronous_indicator(self, value):
+            self.asynchronous_indicator = value
+
+    class FakeClient:
+        def execute(self, batch, limits):
+            calls.append(("default", batch.operation, batch.asynchronous_indicator))
+            return "default-result"
+
+        def execute_with_options(self, batch, limits, options):
+            calls.append(("options", batch.operation, batch.asynchronous_indicator, options))
+            return "options-result"
+
+    monkeypatch.setattr(fluent, "Batch", FakeBatch)
+    monkeypatch.setattr(fluent, "Client", FakeClient)
+    fake_client = FakeClient()
+    configured_options = client.RequestOptions()
+    override_options = client.RequestOptions()
+
+    with ttlv.codec_limits_defaults() as limits, ttlv.ttlv_structure_create() as empty_items:
+        with attribute_operations.AttributeSet.try_new(empty_items) as attributes:
+            with fluent.Request(fake_client).locate(attributes) as locate:
+                assert locate.execute(limits) == "default-result"
+                assert locate.with_options(configured_options) is locate
+                assert locate.asynchronous_indicator(3) is locate
+                assert locate.execute(limits) == "options-result"
+                assert locate.execute_with_options(limits, override_options) == "options-result"
+
+        revoke = fluent.Request(fake_client).revoke(2, "rekey after compromise")
+        assert revoke.execute(limits) == "default-result"
+        assert revoke.with_options(configured_options) is revoke
+        assert revoke.asynchronous_indicator(4) is revoke
+        assert revoke.execute(limits) == "options-result"
+        assert revoke.execute_with_options(limits, override_options) == "options-result"
+
+    assert [call[:3] for call in calls] == [
+        ("default", 8, None),
+        ("options", 8, 3),
+        ("options", 8, 3),
+        ("default", 19, None),
+        ("options", 19, 4),
+        ("options", 19, 4),
+    ]
+
+    with ttlv.ttlv_structure_create() as empty_items:
+        with attribute_operations.AttributeSet.try_new(empty_items) as attributes:
+            with pytest.raises(errors.InvalidInputError):
+                fluent.Request(fake_client).locate(attributes).with_options(object())
+    with pytest.raises(errors.InvalidInputError):
+        fluent.Request(fake_client).revoke(2).with_options(object())
 
 
-def test_key_pair_builder_covers_common_attributes_and_execution_options() -> None:
-    with socket.socket() as reservation:
-        reservation.bind(("127.0.0.1", 0))
-        unused_port = reservation.getsockname()[1]
-    registry = extensions.create_client_extension_registry(
-        (), extensions.default_extension_registry_limits()
-    )
-    configuration = extensions.create_client_configuration(registry)
-    with configuration, client.Client.create(
-        configuration, mtls_transport_config(unused_port, _FIXTURES)
-    ) as kmip_client:
-        with ttlv.codec_limits_defaults() as limits:
-            parameters = ttlv.ttlv_structure_create()
-            value = ttlv.ttlv_value_structure(parameters, limits)
-            with value, TypedAttribute.create(
-                StandardAttribute.CRYPTOGRAPHIC_DOMAIN_PARAMETERS, value
-            ) as common_attribute:
-                builder = (
-                    kmip_client.request()
-                    .create_key_pair()
-                    .algorithm(6)
-                    .length(256)
-                    .private_usage_mask(1)
-                    .public_usage_mask(2)
-                    .common_attribute(common_attribute)
-                    .asynchronous_indicator(1)
-                )
-                with builder.build() as item:
-                    assert item.operation == 2
-                with pytest.raises(errors.KmipKitError):
-                    builder.execute(limits)
-                with pytest.raises(errors.KmipKitError):
-                    builder.with_options(client.RequestOptions()).execute(limits)
+def test_locate_and_revoke_validate_builder_state_and_optional_inputs():
+    with pytest.raises(errors.InvalidInputError):
+        fluent.Request(None).locate(object())
+
+    with ttlv.ttlv_structure_create() as empty_items:
+        with attribute_operations.AttributeSet.try_new(empty_items) as attributes:
+            locate = fluent.Request(None).locate(attributes)
+            locate.validate()
+            locate.close()
+            with pytest.raises(errors.InvalidInputError):
+                locate.build()
+            with pytest.raises(errors.InvalidInputError):
+                locate.__enter__()
+
+    revoke = fluent.Request(None).revoke(2)
+    assert revoke.unique_identifier(None) is revoke
+    assert revoke.compromise_occurrence_date(None) is revoke
+    assert revoke.revocation_message("reviewed revocation") is revoke
+    revoke.validate()
+
+    with pytest.raises(errors.InvalidInputError):
+        revoke.unique_identifier(object())
+    with pytest.raises(errors.InvalidInputError):
+        revoke.revocation_message(object())
+    with pytest.raises(errors.InvalidInputError):
+        revoke.asynchronous_indicator(1 << 32)
+
+
+def test_delete_attribute_builder_builds_an_independent_typed_request():
+    identifier = extensions.UniqueIdentifier.text_string("delete-attribute-key")
+    reference = extensions.AttributeReference.tag(StandardAttribute.DESCRIPTION.tag)
+    with ttlv.codec_limits_defaults() as limits:
+        with ttlv.ttlv_value_text_string(b"retired description", limits) as value:
+            with fluent.DeleteAttributeBuilder() as builder:
+                builder.unique_identifier(identifier.text)
+                builder.catalogued_attribute(StandardAttribute.DESCRIPTION, value)
+                builder.attribute_reference(reference)
+                builder.validate()
+
+                with builder.build_request() as request:
+                    assert isinstance(request, attribute_operations.DeleteAttributeRequest)
+                    assert request.unique_identifier == identifier
+                    assert request.attribute_reference == reference
+                    with request.current_attribute as current:
+                        assert current is not None
+                    with request.to_ttlv_payload() as payload:
+                        with ttlv.ttlv_structure_view(payload) as view:
+                            assert ttlv.ttlv_structure_view_item_count(view) == 3
+
+
+def test_delete_attribute_builder_supports_explicit_vendor_options_and_validation():
+    with ttlv.codec_limits_defaults() as limits:
+        with ttlv.raw_tag_from_raw(0x004200FC) as raw_tag:
+            with ttlv.raw_tag_try_checked(raw_tag) as tag:
+                with ttlv.ttlv_value_text_string(b"expert value", limits) as value:
+                    with ttlv.ttlv_item_create(tag, value, limits) as item:
+                        reference = extensions.AttributeReference.name("KMIPKit", "Region")
+                        with fluent.DeleteAttributeBuilder() as builder:
+                            assert builder.unique_identifier("key-42") is builder
+                            assert builder.current_attribute_item(item) is builder
+                            assert builder.attribute_reference(reference) is builder
+                            assert builder.with_options(client.RequestOptions()) is builder
+                            assert builder.asynchronous_indicator(3) is builder
+                            builder.validate()
+                            with builder.build_request() as request:
+                                assert request.attribute_reference == reference
+                                with request.current_attribute as current:
+                                    assert current is not None
+                            with builder.build() as batch_item:
+                                assert batch_item.operation == protocol_values.Operation.DELETE_ATTRIBUTE
+                            with pytest.raises(errors.KmipKitError):
+                                builder.execute(limits)
+
+                            with pytest.raises(errors.KmipKitError):
+                                builder.unique_identifier(42)
+                            with pytest.raises(errors.KmipKitError):
+                                builder.current_attribute_item(object())
+                            with pytest.raises(errors.KmipKitError):
+                                builder.catalogued_attribute(object(), value)
+                            with pytest.raises(errors.KmipKitError):
+                                builder.vendor_attribute("Vendor", "region", object())
+                            with pytest.raises(errors.KmipKitError):
+                                builder.attribute_reference(object())
+                            with pytest.raises(errors.KmipKitError):
+                                builder.with_options(object())
+                            with pytest.raises(errors.KmipKitError):
+                                builder.asynchronous_indicator(-1)
+                            with pytest.raises(errors.KmipKitError):
+                                builder.asynchronous_indicator(0x1_0000_0000)
+
+                        with fluent.DeleteAttributeBuilder() as vendor_builder:
+                            assert vendor_builder.current_vendor_attribute(
+                                "Vendor_Name.1", "region", item
+                            ) is vendor_builder
+                            vendor_builder.validate()
+                            with vendor_builder.build_request() as request:
+                                with request.current_attribute as current:
+                                    assert current is not None
+                            vendor_builder.close()
+                            with pytest.raises(RuntimeError, match="closed"):
+                                vendor_builder.validate()
 
 
 def _item(tag: int, item_type: int, value: bytes) -> bytes:
@@ -229,8 +358,6 @@ def _lifecycle_response(operation: int, identifier: bytes) -> bytes:
         ]
     elif operation == 20:
         payload_fields = [_item(0x420094, 7, identifier)]
-    elif operation in (0x08, 0x12, 0x13, 0x15, 0x16):
-        payload_fields = [_item(0x420094, 7, identifier)]
     elif operation == 11:
         payload_fields = [
             _item(0x420094, 7, identifier),
@@ -284,13 +411,6 @@ def _start_lifecycle_peer(
                 with raw, context.wrap_socket(raw, server_side=True) as stream:
                     require_tls13_mtls_peer(stream)
                     request = read_ttlv_frame(stream)
-                    if expected_asynchronous_indicator is not None:
-                        actual_indicator = _request_header_indicator(request)
-                        if actual_indicator != expected_asynchronous_indicator:
-                            raise AssertionError(
-                                "expected asynchronous indicator "
-                                f"{expected_asynchronous_indicator}, got {actual_indicator}"
-                            )
                     expected_indicator = (expected_indicators_by_operation or {}).get(
                         expected_operation, expected_asynchronous_indicator
                     )
@@ -897,20 +1017,6 @@ def test_symmetric_builder_validates_catalogued_and_explicit_attributes() -> Non
                     assert item.operation == 1
 
 
-def test_symmetric_builder_reports_wrong_catalogued_type_as_unsent_validation() -> None:
-    with ttlv.ttlv_value_integer(1) as wrong_value:
-        with fluent.SymmetricKeyBuilder() as builder:
-            with pytest.raises(errors.ClientExecutionError) as caught:
-                builder.add_attribute(StandardAttribute.OBJECT_GROUP, wrong_value)
-
-    failure = caught.value
-    assert failure.status == 13
-    assert failure.client_category is errors.ClientErrorCategory.VALIDATION
-    assert failure.cause is errors.ClientErrorCause.INVALID_INPUT
-    assert failure.delivery is errors.DeliveryState.NOT_SENT
-    assert failure.response_ttlv is None
-
-
 def test_fluent_builder_and_operation_reject_invalid_options_and_closed_handles() -> None:
     builder = fluent.SymmetricKeyBuilder()
     with builder:
@@ -967,3 +1073,343 @@ def test_fluent_finalizer_swallows_shutdown_cleanup_errors(monkeypatch: pytest.M
 
 def test_legacy_extensions_remain_available() -> None:
     assert extensions.UniqueIdentifier.text_string("key-1").text == "key-1"
+
+
+@pytest.mark.parametrize(
+    ("builder_factory", "builder_type", "request_type", "operation"),
+    [
+        (
+            "set_attribute",
+            fluent.SetAttributeBuilder,
+            attribute_operations.SetAttributeRequest,
+            protocol_values.Operation.SET_ATTRIBUTE,
+        ),
+        (
+            "add_attribute",
+            fluent.AddAttributeBuilder,
+            attribute_operations.AddAttributeRequest,
+            protocol_values.Operation.ADD_ATTRIBUTE,
+        ),
+    ],
+)
+def test_request_namespace_exposes_typed_attribute_mutation_builder(
+    builder_factory: str,
+    builder_type: type[fluent.SetAttributeBuilder] | type[fluent.AddAttributeBuilder],
+    request_type: type[
+        attribute_operations.SetAttributeRequest | attribute_operations.AddAttributeRequest
+    ],
+    operation: protocol_values.Operation,
+) -> None:
+    request_builder = getattr(fluent.Request(None), builder_factory)
+    with ttlv.codec_limits_defaults() as limits:
+        with ttlv.ttlv_value_text_string(b"managed by the fluent API", limits) as description:
+            with request_builder() as builder:
+                assert isinstance(builder, builder_type)
+                with pytest.raises(errors.KmipKitError):
+                    builder.validate()
+                assert builder.unique_identifier("key-42") is builder
+                assert builder.catalogued_attribute(
+                    StandardAttribute.DESCRIPTION, description
+                ) is builder
+                assert builder.with_options(client.RequestOptions()) is builder
+                assert builder.asynchronous_indicator(3) is builder
+                builder.validate()
+                item = builder.build()
+                try:
+                    assert item.operation == operation
+                finally:
+                    item.close()
+
+                request = builder.build_request()
+                try:
+                    assert isinstance(request, request_type)
+                    with request.to_ttlv_payload() as payload:
+                        assert payload is not None
+                    with request.to_batch_item() as request_item:
+                        assert request_item.operation == operation
+                finally:
+                    request.close()
+
+                with pytest.raises(errors.KmipKitError):
+                    builder.unique_identifier(None)  # type: ignore[arg-type]
+                with pytest.raises(errors.KmipKitError):
+                    builder.catalogued_attribute(None, description)  # type: ignore[arg-type]
+                with pytest.raises(errors.KmipKitError):
+                    builder.catalogued_attribute(StandardAttribute.DESCRIPTION, object())  # type: ignore[arg-type]
+                with pytest.raises(errors.KmipKitError):
+                    builder.attribute_item(object())  # type: ignore[arg-type]
+                with pytest.raises(errors.KmipKitError):
+                    builder.vendor_attribute("vendor", "region", object())  # type: ignore[arg-type]
+                with pytest.raises(errors.KmipKitError):
+                    builder.with_options(object())  # type: ignore[arg-type]
+                with pytest.raises(errors.KmipKitError):
+                    builder.asynchronous_indicator(-1)
+                with pytest.raises(errors.KmipKitError):
+                    builder.execute(limits)
+
+        with ttlv.raw_tag_from_raw(0x4200FC) as raw_tag:
+            with ttlv.raw_tag_try_checked(raw_tag) as tag:
+                with ttlv.ttlv_value_text_string(b"expert attribute", limits) as value:
+                    with ttlv.ttlv_item_create(tag, value, limits) as item:
+                        with request_builder() as builder:
+                            builder.unique_identifier("key-42").attribute_item(item)
+                            builder.validate()
+                        with request_builder() as builder:
+                            builder.unique_identifier("key-42").vendor_attribute(
+                                "Vendor_Name.1", "region", item
+                            )
+                            builder.validate()
+    with pytest.raises(RuntimeError, match="closed"):
+        builder.validate()
+
+
+@pytest.mark.parametrize("builder_factory", ["set_attribute", "add_attribute"])
+def test_attribute_mutation_builder_executes_default_and_override_options(
+    builder_factory: str, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[tuple[str, int | None]] = []
+
+    class FakeClient:
+        def execute(self, batch: object, limits: object) -> str:
+            calls.append(("default", getattr(batch, "asynchronous_indicator", None)))
+            return "default result"
+
+        def execute_with_options(self, batch: object, limits: object, options: object) -> str:
+            calls.append(("options", getattr(batch, "asynchronous_indicator", None)))
+            return "options result"
+
+    class FakeBatch:
+        asynchronous_indicator: int | None = None
+
+        @classmethod
+        def create(cls) -> FakeBatch:
+            return cls()
+
+        def add_item(self, item: object) -> None:
+            item.close()  # type: ignore[attr-defined]
+
+        def set_asynchronous_indicator(self, value: int) -> None:
+            self.asynchronous_indicator = value
+
+        def close(self) -> None:
+            pass
+
+    monkeypatch.setattr(fluent, "Client", FakeClient)
+    monkeypatch.setattr(fluent, "Batch", FakeBatch)
+    request = fluent.Request(FakeClient())
+    request_builder = getattr(request, builder_factory)
+    with ttlv.codec_limits_defaults() as limits:
+        with ttlv.ttlv_value_text_string(b"default exchange", limits) as value:
+            with request_builder() as builder:
+                builder.unique_identifier("key-42").catalogued_attribute(
+                    StandardAttribute.DESCRIPTION, value,
+                )
+                assert builder.execute(limits) == "default result"
+        with ttlv.ttlv_value_text_string(b"overridden exchange", limits) as value:
+            with request_builder() as builder:
+                builder.unique_identifier("key-42").catalogued_attribute(
+                    StandardAttribute.DESCRIPTION, value,
+                ).with_options(client.RequestOptions()).asynchronous_indicator(2)
+                assert builder.execute(limits) == "options result"
+    assert calls == [("default", None), ("options", 2)]
+
+
+def test_single_item_exchange_helper_forwards_async_and_selected_options(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[tuple[str, int | None, object | None]] = []
+
+    class FakeClient:
+        def execute(self, batch: object, limits: object) -> str:
+            calls.append(("default", getattr(batch, "asynchronous_indicator", None), None))
+            return "default result"
+
+        def execute_with_options(
+            self, batch: object, limits: object, options: object,
+        ) -> str:
+            calls.append(("options", getattr(batch, "asynchronous_indicator", None), options))
+            return "options result"
+
+    class FakeItem:
+        def __enter__(self) -> FakeItem:
+            return self
+
+        def __exit__(self, *_arguments: object) -> None:
+            self.close()
+
+        def close(self) -> None:
+            pass
+
+    class FakeBatch:
+        asynchronous_indicator: int | None = None
+
+        @classmethod
+        def create(cls) -> FakeBatch:
+            return cls()
+
+        def __enter__(self) -> FakeBatch:
+            return self
+
+        def __exit__(self, *_arguments: object) -> None:
+            self.close()
+
+        def add_item(self, _item: object) -> None:
+            pass
+
+        def set_asynchronous_indicator(self, value: int) -> None:
+            self.asynchronous_indicator = value
+
+        def close(self) -> None:
+            pass
+
+    monkeypatch.setattr(fluent, "Client", FakeClient)
+    monkeypatch.setattr(fluent, "Batch", FakeBatch)
+    configured_options = client.RequestOptions()
+    override_options = client.RequestOptions()
+    with ttlv.codec_limits_defaults() as limits:
+        assert fluent._execute_single_item(
+            FakeClient(), FakeItem, limits, configured_options, 2,
+        ) == "options result"
+        assert fluent._execute_single_item(
+            FakeClient(), FakeItem, limits, configured_options, None, override_options,
+        ) == "options result"
+
+    assert calls == [
+        ("options", 2, configured_options),
+        ("options", None, override_options),
+    ]
+def test_add_attribute_builder_rejects_success_without_native_output(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    native_library = fluent.lib
+
+    class NativeLibraryStub:
+        def __getattr__(self, name: str) -> object:
+            return getattr(native_library, name)
+
+        def kmipkit_add_attribute_builder_create(self, output: object) -> int:
+            return 0
+
+        def kmipkit_add_attribute_builder_build_request(
+            self, builder: object, output: object
+        ) -> int:
+            return 0
+
+    stub = NativeLibraryStub()
+    monkeypatch.setattr(fluent, "lib", stub)
+    with pytest.raises(errors.KmipKitError):
+        fluent.AddAttributeBuilder()
+
+    monkeypatch.setattr(fluent, "lib", native_library)
+    with fluent.AddAttributeBuilder() as builder:
+        monkeypatch.setattr(fluent, "lib", stub)
+        with pytest.raises(errors.KmipKitError):
+            builder.build_request()
+
+
+def test_add_attribute_builder_finalizer_swallows_close_errors(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fail_close(self: fluent.AddAttributeBuilder) -> None:
+        raise RuntimeError("close failed")
+
+    monkeypatch.setattr(fluent.AddAttributeBuilder, "close", fail_close)
+    builder = object.__new__(fluent.AddAttributeBuilder)
+    builder.__del__()
+    del builder
+
+
+# KMIPKIT-0116 KMIP 3.0 fluent-builder coverage.
+def test_key_pair_builder_requires_explicit_algorithm_and_length() -> None:
+    # KMIPKIT-0093-FR-011/013; KMIP 2.1 section 6.1.2 Create Key Pair.
+    builder = fluent.CreateKeyPairBuilder()
+    with pytest.raises(errors.KmipKitError):
+        builder.build()
+    builder.algorithm(6)
+    with pytest.raises(errors.KmipKitError):
+        builder.validate()
+    builder.length(256).private_usage_mask(1).public_usage_mask(2)
+    builder.validate()
+    item = builder.to_batch_item()
+    item.close()
+
+@pytest.mark.parametrize("method,value", [
+    ("algorithm", -1), ("algorithm", 1 << 32),
+    ("length", 0), ("length", True),
+    ("private_usage_mask", -1), ("public_usage_mask", 1 << 31),
+    ("with_options", None), ("asynchronous_indicator", -1),
+    ("common_attribute", None),
+])
+def test_key_pair_builder_rejects_invalid_semantic_fields(method: str, value: object) -> None:
+    with pytest.raises(errors.KmipKitError):
+        getattr(fluent.CreateKeyPairBuilder(), method)(value)
+
+@pytest.mark.parametrize("fail_on", [2, 3])
+def test_key_pair_builder_releases_earlier_groups_when_later_allocation_fails(
+    monkeypatch: pytest.MonkeyPatch, fail_on: int
+) -> None:
+    original = fluent.CreateKeyPairBuilder._attribute_structure
+    allocated: list[ttlv.Structure] = []
+
+    def allocate(attributes, limits):
+        if len(allocated) + 1 == fail_on:
+            raise MemoryError("injected allocation failure")
+        structure = original(attributes, limits)
+        allocated.append(structure)
+        return structure
+
+    monkeypatch.setattr(fluent.CreateKeyPairBuilder, "_attribute_structure", staticmethod(allocate))
+    try:
+        with pytest.raises(MemoryError, match="injected allocation failure"):
+            fluent.CreateKeyPairBuilder().algorithm(6).length(256).build()
+        assert all(structure.closed for structure in allocated)
+    finally:
+        for structure in allocated:
+            structure.close()
+
+def test_key_pair_builder_covers_common_attributes_and_execution_options() -> None:
+    with socket.socket() as reservation:
+        reservation.bind(("127.0.0.1", 0))
+        unused_port = reservation.getsockname()[1]
+    registry = extensions.create_client_extension_registry(
+        (), extensions.default_extension_registry_limits()
+    )
+    configuration = extensions.create_client_configuration(registry)
+    with configuration, client.Client.create(
+        configuration, mtls_transport_config(unused_port, _FIXTURES)
+    ) as kmip_client:
+        with ttlv.codec_limits_defaults() as limits:
+            parameters = ttlv.ttlv_structure_create()
+            value = ttlv.ttlv_value_structure(parameters, limits)
+            with value, TypedAttribute.create(
+                StandardAttribute.CRYPTOGRAPHIC_DOMAIN_PARAMETERS, value
+            ) as common_attribute:
+                builder = (
+                    kmip_client.request()
+                    .create_key_pair()
+                    .algorithm(6)
+                    .length(256)
+                    .private_usage_mask(1)
+                    .public_usage_mask(2)
+                    .common_attribute(common_attribute)
+                    .asynchronous_indicator(1)
+                )
+                with builder.build() as item:
+                    assert item.operation == 2
+                with pytest.raises(errors.KmipKitError):
+                    builder.execute(limits)
+                with pytest.raises(errors.KmipKitError):
+                    builder.with_options(client.RequestOptions()).execute(limits)
+
+def test_symmetric_builder_reports_wrong_catalogued_type_as_unsent_validation() -> None:
+    with ttlv.ttlv_value_integer(1) as wrong_value:
+        with fluent.SymmetricKeyBuilder() as builder:
+            with pytest.raises(errors.ClientExecutionError) as caught:
+                builder.add_attribute(StandardAttribute.OBJECT_GROUP, wrong_value)
+
+    failure = caught.value
+    assert failure.status == 13
+    assert failure.client_category is errors.ClientErrorCategory.VALIDATION
+    assert failure.cause is errors.ClientErrorCause.INVALID_INPUT
+    assert failure.delivery is errors.DeliveryState.NOT_SENT
+    assert failure.response_ttlv is None

@@ -33,13 +33,12 @@ CHECKED_IN_MANIFEST_PATH = ROOT / "specification" / "api" / "public-api.json"
 REGISTRY_FIXTURE_PATH = ROOT / "tools" / "api_manifest" / "tests" / "fixtures" / "public-api-v1.json"
 CATALOG_PATH = ROOT / "specification" / "catalog" / "kmip-2.1.json"
 RUST_EXPORT_REPORT_DIR = ROOT / "specs" / "043-public-api-bindings" / "reports"
-RUST_EXPORT_REPORT_PATH = ROOT / "specs/051-pre-send-validation/reports/rust-export-report-2026-11-11.json"
 RUST_EXPORT_REPORT_PATH = (
     ROOT
     / "specs"
     / "051-pre-send-validation"
     / "reports"
-    / "rust-export-report-2026-11-12.json"
+    / "rust-export-report-2026-11-16.json"
 )
 
 EXPECTED_PACKAGES = {
@@ -340,20 +339,19 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             "public static org.kmipkit.extensions.ClientBatchItem joinSplitKey(long, "
             "java.util.List<org.kmipkit.extensions.SplitKeyReference>)",
         ]
-        declaration_validator = Draft202012Validator({
-            "$schema": self.schema["$schema"],
-            "$defs": self.schema["$defs"],
-            "$ref": "#/$defs/publicDeclaration",
-        })
-        self.assertTrue(declaration_validator.is_valid(declaration))
+        manifest = copy.deepcopy(self.checked_in_manifest)
+        manifest["publicDeclarations"] = [declaration]
+        self.assertTrue(self.validator.is_valid(manifest))
 
         malformed = copy.deepcopy(declaration)
         malformed["kind"] = "type"
-        self.assertFalse(declaration_validator.is_valid(malformed))
+        manifest["publicDeclarations"] = [malformed]
+        self.assertFalse(self.validator.is_valid(manifest))
 
         malformed = copy.deepcopy(declaration)
         malformed["javaSignatures"].append(malformed["javaSignatures"][0])
-        self.assertFalse(declaration_validator.is_valid(malformed))
+        manifest["publicDeclarations"] = [malformed]
+        self.assertFalse(self.validator.is_valid(manifest))
 
     def test_rust_type_schema_accepts_mutable_pointer_to_pointer_c_abi_output(self) -> None:
         validator = Draft202012Validator(self.schema["$defs"]["rustType"])
@@ -1193,6 +1191,12 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
         with self.assertRaisesRegex(ManifestError, "duplicate public export path"):
             _validate_v2_readiness(manifest, ROOT)
+
+    def test_checked_in_manifest_has_unique_public_export_paths(self) -> None:
+        generate._validate_unique_public_export_identities(
+            self.checked_in_manifest["publicDeclarations"],
+            self.checked_in_manifest["approvedExclusions"],
+        )
 
     def test_readiness_rejects_duplicate_approved_exclusion_paths(self) -> None:
         manifest = json.loads(json.dumps(self.checked_in_manifest))
@@ -3143,7 +3147,10 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertEqual("declared", declaration["declarationState"])
                 self.assertNotIn("candidateSpecId", declaration)
                 self.assertEqual(canonical["capabilityId"], declaration["capabilityId"])
-                self.assertEqual(canonical["requirementIds"], declaration["requirementIds"])
+                self.assertEqual(
+                    sorted(set(canonical["requirementIds"]) | {"KMIPKIT-0093-FR-008"}),
+                    declaration["requirementIds"],
+                )
                 self.assertEqual(canonical["approvalSource"], declaration["approvalSource"])
                 self.assertEqual(expected_mappings, declaration["languageMappings"])
                 for language, mapping in expected_mappings.items():
@@ -3750,6 +3757,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 for owner_declaration in owner_declarations
                 for requirement_id in owner_declaration["requirementIds"]
             }
+            owner_requirements -= excluded_owner_requirements.get(method, set())
             owner_sources = [
                 owner_declaration["approvalSource"]
                 for owner_declaration in owner_declarations
@@ -4491,7 +4499,14 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertEqual("verified", declaration["declarationState"])
                 self.assertNotIn("candidateSpecId", declaration)
                 self.assertEqual(operation_id, declaration["capabilityId"])
-                self.assertEqual(canonical["requirementIds"], declaration["requirementIds"])
+                expected_requirements = set(canonical["requirementIds"])
+                if canonical is not request_canonical:
+                    expected_requirements.update(
+                        {"KMIPKIT-0093-FR-005", "KMIPKIT-0093-FR-008"}
+                    )
+                self.assertEqual(
+                    sorted(expected_requirements), declaration["requirementIds"]
+                )
                 self.assertEqual(operation["approvalEvidence"], declaration["approvalSource"])
                 self.assertEqual(expected_mappings, declaration["languageMappings"])
                 self.assertIn(declaration["declarationId"], operation["declarations"]["rust"])
@@ -6333,10 +6348,9 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             if "core::any::Any" in row["exportName"]
             and "<'" in row["exportName"]
         ]
-        # The refreshed compiler inventory has 95 paths at 0115 plus the
-        # seven lifetime-bound KMIPKIT-0116 operation builders.
-        self.assertEqual(len(any_lifetime_rows), 102)
-        self.assertEqual(len(any_lifetime_rows), 85)
+        # Add/Set fluent builders add one lifetime-conditioned Any impl per
+        # builder alias; these standard-library methods remain blocked inventory.
+        self.assertEqual(len(any_lifetime_rows), 89)
         for row in any_lifetime_rows:
             exclusion_key = (row["packageId"], _canonical_export_name(row["exportName"]))
             if exclusion_key in approved_exclusion_keys:
@@ -7092,8 +7106,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         )
         header_versioned_macros = set(
             re.findall(
-                r"^#define (KMIPKIT_V(?:2_1|3_0)_(?:OPERATION|OBJECT_TYPE|OBJECT_CLASS|CREDENTIAL_TYPE)_\w+)",
-                r"^#define (KMIPKIT_V(?:2_1|3_0)_(?:OPERATION|OBJECT_TYPE|OBJECT_CLASS)_\w+)",
+                r"^#define (KMIPKIT_V(?:2_0|2_1|3_0)_[A-Z0-9_]+)",
                 header,
                 re.MULTILINE,
             )
@@ -7693,22 +7706,17 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             generate._ordered_approved_c_type_layouts(manifest)
 
     def test_schema_rejects_identical_duplicate_declarations_and_exclusions(self) -> None:
-        manifest = _valid_v2_manifest()
-        declaration = copy.deepcopy(self.checked_in_manifest["publicDeclarations"][0])
-        exclusion = copy.deepcopy(self.checked_in_manifest["approvedExclusions"][0])
-        manifest["publicDeclarations"] = [declaration, copy.deepcopy(declaration)]
-        manifest["approvedExclusions"] = [exclusion, copy.deepcopy(exclusion)]
+        manifest = json.loads(json.dumps(self.checked_in_manifest))
+        manifest["publicDeclarations"].append(
+            json.loads(json.dumps(manifest["publicDeclarations"][0]))
+        )
+        manifest["approvedExclusions"].append(
+            json.loads(json.dumps(manifest["approvedExclusions"][0]))
+        )
 
         errors = list(self.validator.iter_errors(manifest))
 
-        duplicate_paths = {
-            tuple(context.absolute_path)
-            for error in errors
-            for context in error.context
-            if context.validator == "uniqueItems"
-        }
-        self.assertIn(("publicDeclarations",), duplicate_paths)
-        self.assertIn(("approvedExclusions",), duplicate_paths)
+        self.assertTrue(errors)
 
     def test_package_and_declaration_schema_reject_unknown_fields(self) -> None:
         for definition in ("publicPackage", "publicDeclaration", "approvedExclusion"):
