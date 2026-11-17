@@ -689,6 +689,7 @@ class ControlledTlsPeerTest {
                     invocation -> appendAggregateTagInvocation(events, protocolVersion, invocation));
             LocalCatalogRouteChecks.executeReferencedEnums(readRouteEvidenceCatalog(), protocolVersion,
                     invocation -> appendLocalCatalogInvocation(events, protocolVersion, invocation));
+            assertBooleanFieldGenericRouteEvidence(events, protocolVersion);
             byte[] serverCertificatePem = fixture("server-cert.pem");
             byte[] serverPrivateKeyPem = fixture("server-key.pem");
             byte[] clientCertificatePem = fixture("client-cert.pem");
@@ -3773,6 +3774,35 @@ class ControlledTlsPeerTest {
             }
         }
         return missing;
+    }
+
+    private static void assertBooleanFieldGenericRouteEvidence(JsonNode events, String version) throws Exception {
+        JsonNode catalog = readRouteEvidenceCatalog();
+        Map<String, JsonNode> targets = new HashMap<>();
+        for (JsonNode target : catalog.path("normative_targets")) {
+            targets.put(target.path("target_id").asText(), target);
+        }
+        List<String> requiredRoutes = List.of(
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.boolean",
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode");
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            JsonNode requires = testCase.path("requires");
+            String targetKind = requires.path("target_kind").asText();
+            if (!("message_field".equals(targetKind) || "structure_member".equals(targetKind))
+                    || !"local_model".equals(testCase.path("execution").path("mode").asText())
+                    || !appliesToVersion(testCase, version)) continue;
+            String caseId = testCase.path("case_id").asText();
+            String targetId = requires.path("normative_target_id").asText();
+            JsonNode target = targets.get(targetId);
+            if (target == null || !"Boolean".equals(target.path("source_encoding").asText())) continue;
+            for (String route : requiredRoutes) {
+                JsonNode event = findRouteEvent(events, caseId, route, version, targetId);
+                assertEquals("passed", event.path("status").asText(), caseId + " / " + route);
+                assertEquals(1, event.path("invocation_count").asInt(), caseId + " / " + route);
+            }
+        }
     }
 
     private static int expectedTagAggregateEventCount() throws Exception {
