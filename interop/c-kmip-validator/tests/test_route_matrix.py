@@ -3774,6 +3774,11 @@ class RouteMatrixTests(unittest.TestCase):
             self.assertEqual(check['peer_response_result_statuses'], expected_statuses)
             if check['case_id'] == 'test-batch-continue-after-failure':
                 self.assertIn('kmipkit_client_batch_add_error_continuation_value', symbols)
+                self.assertTrue({
+                    'kmipkit_client_batch_item_response_get',
+                    'kmipkit_client_batch_item_response_get_attribute_list',
+                    'kmipkit_client_batch_item_response_get_attribute_list_payload_ttlv',
+                } <= set(symbols), 'Continue must inspect the failed Get and successful attribute-list payload')
 
 
     def test_stop_batch_returns_only_the_failed_item_and_stops_processing(self):

@@ -241,3 +241,27 @@ tests passed, the normative inventory passed 27/27, catalog `--check` passed,
 and CTest passed 7/7 in 97.46 seconds. This is protocol-shape and lifecycle
 evidence; the fixture does not validate certificate or signature cryptography.
 Other C routes and cross-language FR-003/FR-005 coverage remain pending.
+
+## C batch Continue response accessors
+
+For KMIPKIT-0092-FR-003 and FR-005, the two-item Get/Get Attribute List
+Continue fixture now inspects both response payloads instead of stopping at
+metadata and Unique Batch Item ID correlation. It verifies the failed Get's
+Operation Failed/Object Not Found result, omitted Response Payload, and empty
+typed identifier fields. The successful Get Attribute List result is read
+through `kmipkit_client_batch_item_response_get_attribute_list` and its
+`...get_attribute_list_payload_ttlv` accessor; the consumer checks the fixture
+identifier and both Cryptographic Algorithm and Cryptographic Length
+references. The fixture exercises direct and request-based Get Attribute List
+construction across KMIP 2.0/2.1 and all six encoding and transport
+combinations. The normative sources are OASIS KMIP v2.0/v2.1 §§6.1.19,
+6.1.21, 8.2–8.6, and 9.5–9.7.
+
+Red commit `f8f13c455` made the focused route test fail when these three
+response accessors were not observed. Green commit `dd2f4946d` added the
+response checks. The focused test passed; `test_route_matrix.py` passed all
+171 tests; CTest passed 7/7, including both controlled TLS peers. The complete
+local C evidence run contains 66,736 expected cells, 42,025 invoked, zero
+failed, and 24,711 pending; this slice adds 38 invoked cells. Four local
+Continue-option constructor cells remain pending, along with the broader C
+matrix, so no exhaustive-coverage claim is made.
