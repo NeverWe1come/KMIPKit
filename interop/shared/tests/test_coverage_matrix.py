@@ -299,6 +299,31 @@ class CoverageMatrixTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, r"two-version-case target PING \(rust, KMIP 2.1\)"):
             list(iter_cells(catalog, manifest, languages=("rust",)))
 
+    def test_version_scoped_unavailability_only_covers_its_declared_version(self):
+        case = {
+            "case_id": "version-limited-operation",
+            "category": "normative_inventory",
+            "operation": "Ping",
+            "requires": {},
+            "execution": {"protocol_versions": ["2.0"]},
+        }
+        catalog = {
+            "test_cases": [case],
+            "normative_targets": [{"kind": "operation", "name": "Ping", "target_id": "PING"}],
+        }
+        limitation = {
+            "language": "c", "capability": "protocol-version-limit",
+            "operation_ids": ["PING"], "normative_target_ids": ["PING"],
+            "protocol_versions": ["2.0"], "reason": "The binding fixes its offer to KMIP 2.1.",
+            "source_paths": ["bindings/c/include/kmipkit.h"],
+        }
+        manifest = {"routes": [], "execution_routes": [], "unavailable": [limitation]}
+
+        self.assertEqual([], list(iter_cells(catalog, manifest, languages=("c",))))
+        case["execution"]["protocol_versions"] = ["2.1"]
+        with self.assertRaisesRegex(ValueError, r"version-limited-operation target PING \(c, KMIP 2.1\)"):
+            list(iter_cells(catalog, manifest, languages=("c",)))
+
     def test_multistep_scenario_requires_every_operation_route_for_each_version(self):
         case = {
             "case_id": "two-operation-case",

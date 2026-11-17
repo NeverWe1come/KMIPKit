@@ -9686,7 +9686,6 @@ pub(crate) fn verify(name: &str) -> bool {
                 )
         }
         "test-batch-count-zero-rejected" => false,
-        "test-batch-count-mismatch-rejected" => false,
         "test-batch-single-item-options-omitted" => false,
         "test-batch-placeholder-forward-reference-rejected" => false,
         "test-batch-placeholder-without-producer-rejected" => false,

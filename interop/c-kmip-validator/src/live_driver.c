@@ -798,6 +798,61 @@ static bool delegated_login_response_matches_fixture(
     return typed_matches && generic_matches;
 }
 
+static bool login_response_matches_fixture(
+    kmipkit_client_batch_item_response_t *response_item, int32_t *status) {
+    /* OASIS KMIP v2.0 §6.1.29 Table 236 and v2.1 §6.1.30 Table 254. */
+    static const uint8_t expected_ticket[] = "controlled-login-ticket";
+    uint8_t present = 0, ticket_present = 0, ttlv_present = 0;
+    uint32_t ticket_type = 0;
+    kmipkit_byte_span_v1_t ticket_value = {0};
+    kmipkit_ttlv_structure_t *ticket_ttlv = NULL;
+    kmipkit_ttlv_structure_view_t *ticket_view = NULL;
+    kmipkit_ttlv_item_view_t *field = NULL;
+    kmipkit_ttlv_value_view_t *value = NULL;
+    *status = kmipkit_client_batch_item_response_login(
+        response_item, &present, &ticket_present, &ticket_type, &ticket_value);
+    bool typed_matches = *status == 0 && present && ticket_present &&
+        ticket_type == KMIPKIT_ENUMERATION_TICKET_TYPE_LOGIN && ticket_value.data &&
+        ticket_value.length == sizeof(expected_ticket) - 1 &&
+        memcmp(ticket_value.data, expected_ticket, sizeof(expected_ticket) - 1) == 0;
+    if (*status == 0) *status = kmipkit_client_batch_item_response_login_ttlv(
+        response_item, &ttlv_present, &ticket_ttlv);
+    bool generic_matches = *status == 0 && ttlv_present && ticket_ttlv;
+    if (generic_matches) *status = kmipkit_ttlv_structure_view(ticket_ttlv, &ticket_view);
+    uint64_t field_count = 0;
+    if (*status == 0 && ticket_view)
+        *status = kmipkit_ttlv_structure_view_item_count(ticket_view, &field_count);
+    generic_matches = generic_matches && *status == 0 && field_count == 2;
+    for (uint64_t index = 0; generic_matches && index < field_count; ++index) {
+        *status = kmipkit_ttlv_structure_view_item_at(ticket_view, index, &field);
+        generic_matches = *status == 0 && item_view_has_tag(
+            field, index == 0 ? UINT32_C(0x42014A) : UINT32_C(0x42014B),
+            index == 0 ? KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION :
+                         KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING, &value);
+        if (generic_matches && index == 0) {
+            uint32_t raw_type = 0;
+            *status = kmipkit_ttlv_value_view_enumeration(value, &raw_type);
+            generic_matches = *status == 0 && raw_type == KMIPKIT_ENUMERATION_TICKET_TYPE_LOGIN;
+        } else if (generic_matches) {
+            uint64_t length = 0;
+            *status = kmipkit_ttlv_value_view_byte_length(value, &length);
+            generic_matches = *status == 0 && length == sizeof(expected_ticket) - 1;
+            for (uint64_t offset = 0; generic_matches && offset < length; ++offset) {
+                uint8_t byte = 0;
+                *status = kmipkit_ttlv_value_view_byte_at(value, offset, &byte);
+                generic_matches = *status == 0 && byte == expected_ticket[offset];
+            }
+        }
+        if (value) kmipkit_ttlv_value_view_release(value);
+        value = NULL;
+        if (field) kmipkit_ttlv_item_view_release(field);
+        field = NULL;
+    }
+    if (ticket_view) kmipkit_ttlv_structure_view_release(ticket_view);
+    if (ticket_ttlv) kmipkit_ttlv_structure_release(ticket_ttlv);
+    return typed_matches && generic_matches;
+}
+
 static bool get_response_matches_created_key(
     kmipkit_client_batch_item_response_t *response_item,
     const kmipkit_unique_identifier_v1_t *created_identifier,
@@ -5824,10 +5879,6 @@ static kmip_execution_outcome_t execute_logout_with_login_ticket(kmip_live_clien
         .abi_version = 2
     };
 
-    if (client->protocol_minor == 0) {
-        return outcome_not_run(
-            "the installed C Login builder supports KMIP 2.1 only, so KMIP 2.0 Logout cannot obtain a server-issued Ticket");
-    }
     status = kmipkit_client_batch_item_login(0, 0, 1, 2, NULL, &login_item);
     if (status == 0) status = kmipkit_client_batch_create(&login_batch);
     if (status == 0) status = kmipkit_client_batch_add_item(login_batch, &login_item);
@@ -6161,15 +6212,6 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     if (strcmp(test_case->case_id, "test-op-signature-verify") == 0)
         return execute_created_key_signature(
             client, KMIPKIT_ENUMERATION_OPERATION_SIGNATURE_VERIFY);
-    if (strcmp(test_case->operation, "Discover Versions") == 0 &&
-        client->protocol_minor == 0) {
-        return outcome_not_run(
-            "the public C Discover Versions builder only offers KMIP 2.1 and cannot construct a KMIP 2.0 offer");
-    }
-    if (strcmp(test_case->operation, "Login") == 0 && client->protocol_minor == 0) {
-        return outcome_not_run(
-            "the public C Login builder only supports KMIP 2.1");
-    }
     bool cryptographic_algorithm_attribute_workflow =
         strcmp(test_case->case_id, "test-attr-cryptographic-algorithm") == 0;
     bool cryptographic_length_attribute_workflow =
@@ -6234,7 +6276,10 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     bool hash_workflow = strcmp(test_case->case_id, "test-op-hash") == 0 ||
         strcmp(test_case->case_id, "test-crypto-hash-sha_256-0") == 0;
     bool delegated_login_workflow =
-        strcmp(test_case->case_id, "test-op-delegated-login") == 0;
+        strcmp(test_case->case_id, "test-op-delegated-login") == 0 ||
+        strncmp(test_case->case_id,
+                "test-norm-payload-client-delegated-login-",
+                sizeof("test-norm-payload-client-delegated-login-") - 1) == 0;
     bool rng_retrieve_workflow = strcmp(test_case->case_id, "test-op-rng-retrieve") == 0 ||
         strcmp(test_case->case_id, "test-crypto-rng-retrieve-rng-32") == 0;
     bool rng_seed_workflow = strcmp(test_case->case_id, "test-op-rng-seed") == 0 ||
@@ -6376,6 +6421,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     kmipkit_client_batch_item_t *cleanup_item = NULL;
     kmipkit_ttlv_structure_t *request_attributes = NULL;
     kmipkit_ttlv_structure_t *request_storage_masks = NULL;
+    kmipkit_ttlv_structure_t *delegated_login_usage_limits = NULL;
     kmipkit_ttlv_value_t *request_data = NULL;
     int32_t status = 0;
     const char *request_construction_step = "typed request";
@@ -6421,7 +6467,43 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         static const uint8_t message[] = "KMIPKit interoperability validation probe";
         status = kmipkit_client_batch_item_log(message, sizeof(message) - 1, &item);
     } else if (strcmp(test_case->operation, "Login") == 0) {
-        status = kmipkit_client_batch_item_login(0, 0, 0, 0, NULL, &item);
+        uint32_t lease_time_kind = 0;
+        int64_t lease_time_value = 0;
+        uint8_t has_request_count = 0;
+        int32_t request_count = 0;
+        if (strstr(test_case->case_id, "-request-") &&
+            (strstr(test_case->case_id, "-001") != NULL)) {
+            lease_time_kind = 1;
+            lease_time_value = 60;
+        } else if (strstr(test_case->case_id, "-request-") &&
+                   strstr(test_case->case_id, "-002")) {
+            has_request_count = 1;
+            request_count = 2;
+        } else if (strstr(test_case->case_id, "-request-") &&
+                   strstr(test_case->case_id, "-003")) {
+            kmipkit_ttlv_value_t *limit_value = NULL;
+            status = kmipkit_ttlv_structure_create(&request_attributes);
+            if (status == 0) status = kmipkit_ttlv_value_long_integer(10, &limit_value);
+            if (status == 0 && !append_ttlv_value(
+                    client, &request_attributes, UINT32_C(0x420097), &limit_value)) {
+                status = KMIPKIT_ERROR_INVALID_INPUT;
+            }
+            if (status == 0) status = kmipkit_ttlv_value_long_integer(10, &limit_value);
+            if (status == 0 && !append_ttlv_value(
+                    client, &request_attributes, UINT32_C(0x420096), &limit_value)) {
+                status = KMIPKIT_ERROR_INVALID_INPUT;
+            }
+            if (status == 0) status = kmipkit_ttlv_value_enumeration(
+                KMIPKIT_ENUMERATION_USAGE_LIMITS_UNIT_BYTE, &limit_value);
+            if (status == 0 && !append_ttlv_value(
+                    client, &request_attributes, UINT32_C(0x420098), &limit_value)) {
+                status = KMIPKIT_ERROR_INVALID_INPUT;
+            }
+            if (limit_value) kmipkit_ttlv_value_release(limit_value);
+        }
+        if (status == 0) status = kmipkit_client_batch_item_login(
+            lease_time_kind, lease_time_value, has_request_count, request_count,
+            request_attributes, &item);
     } else if (interop_workflow) {
         static const uint8_t interop_identifier[] = "KMIPKit controlled interoperability fixture";
         status = kmipkit_client_batch_item_interop(
@@ -6437,9 +6519,46 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             interop_identifier, sizeof(interop_identifier) - 1, &third_item);
         if (status == 0) status = set_batch_item_id(&third_item, "interop-reset");
     } else if (delegated_login_workflow) {
-        status = kmipkit_ttlv_structure_create(&request_attributes);
+        uint32_t lease_time_kind = 0;
+        int64_t lease_time_value = 0;
+        uint8_t has_request_count = 0;
+        int32_t request_count = 0;
+        bool request_field_case = strstr(test_case->case_id, "-request-") != NULL;
+        if (request_field_case && strstr(test_case->case_id, "-001")) {
+            lease_time_kind = 1;
+            lease_time_value = 60;
+        } else if (request_field_case && strstr(test_case->case_id, "-002")) {
+            has_request_count = 1;
+            request_count = 2;
+        } else if (request_field_case && strstr(test_case->case_id, "-003")) {
+            kmipkit_ttlv_value_t *limit_value = NULL;
+            status = kmipkit_ttlv_structure_create(&delegated_login_usage_limits);
+            if (status == 0) status = kmipkit_ttlv_value_long_integer(10, &limit_value);
+            if (status == 0 && !append_ttlv_value(
+                    client, &delegated_login_usage_limits, UINT32_C(0x420097), &limit_value)) {
+                status = KMIPKIT_ERROR_INVALID_INPUT;
+            }
+            if (status == 0) status = kmipkit_ttlv_value_long_integer(10, &limit_value);
+            if (status == 0 && !append_ttlv_value(
+                    client, &delegated_login_usage_limits, UINT32_C(0x420096), &limit_value)) {
+                status = KMIPKIT_ERROR_INVALID_INPUT;
+            }
+            if (status == 0) status = kmipkit_ttlv_value_enumeration(
+                KMIPKIT_ENUMERATION_USAGE_LIMITS_UNIT_BYTE, &limit_value);
+            if (status == 0 && !append_ttlv_value(
+                    client, &delegated_login_usage_limits, UINT32_C(0x420098), &limit_value)) {
+                status = KMIPKIT_ERROR_INVALID_INPUT;
+            }
+            if (limit_value) kmipkit_ttlv_value_release(limit_value);
+        }
+        if (status == 0) status = kmipkit_ttlv_structure_create(&request_attributes);
         if (status == 0) status = kmipkit_client_batch_item_delegated_login(
-            request_attributes, 0, 0, 0, 0, NULL, &item);
+            request_attributes, lease_time_kind, lease_time_value,
+            has_request_count, request_count, delegated_login_usage_limits, &item);
+        if (delegated_login_usage_limits) {
+            kmipkit_ttlv_structure_release(delegated_login_usage_limits);
+            delegated_login_usage_limits = NULL;
+        }
     } else if (hash_workflow) {
         kmipkit_ttlv_value_t *algorithm = NULL;
         status = kmipkit_ttlv_structure_create(&request_attributes);
@@ -6808,6 +6927,9 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                      request_construction_step, status, category, cause);
         }
         if (request_attributes) kmipkit_ttlv_structure_release(request_attributes);
+        if (delegated_login_usage_limits) {
+            kmipkit_ttlv_structure_release(delegated_login_usage_limits);
+        }
         return outcome;
     }
 
@@ -7485,15 +7607,16 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                      "KMIPKit could not read the typed Discover Versions payload (status %d)", status);
             goto cleanup;
         }
-        bool configured_version_found = false;
+        bool response_matches_offer = present != 0;
         for (uint64_t index = 0; index < version_count; ++index) {
-            if (versions[index].major == client->protocol_major &&
-                versions[index].minor == client->protocol_minor) configured_version_found = true;
+            if (versions[index].major != 2 || versions[index].minor != 1) {
+                response_matches_offer = false;
+            }
         }
-        if (!present || !configured_version_found) {
+        if (!response_matches_offer) {
             outcome.success = false;
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                     "server did not advertise the configured KMIP protocol version");
+                     "server returned a Discover Versions value outside the C builder's 2.1 offer");
         }
     } else if (delegated_login_workflow) {
         if (!delegated_login_response_matches_fixture(response_item, &status)) {
@@ -7503,19 +7626,11 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                      "KMIPKit Delegated Login typed or TTLV response did not preserve the fixture Ticket");
         }
     } else if (strcmp(test_case->operation, "Login") == 0) {
-        uint8_t present = 0;
-        uint8_t ticket_present = 0;
-        uint32_t ticket_type = 0;
-        kmipkit_byte_span_v1_t ticket_value = {0};
-        status = kmipkit_client_batch_item_response_login(
-            response_item, &present, &ticket_present, &ticket_type, &ticket_value);
-        if (status != 0 || !present || !ticket_present ||
-            ticket_type != KMIPKIT_ENUMERATION_TICKET_TYPE_LOGIN ||
-            ticket_value.length == 0 || !ticket_value.data) {
+        if (!login_response_matches_fixture(response_item, &status)) {
             outcome.success = false;
             outcome.library_failed = status != 0;
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                     "KMIPKit did not expose a valid typed Login response");
+                     "KMIPKit Login response did not preserve the typed and TTLV fixture Ticket");
         }
     } else if (strcmp(test_case->operation, "Ping") == 0) {
         uint8_t present = 0;
@@ -7797,6 +7912,9 @@ cleanup:
     if (revoke_item) kmipkit_client_batch_item_release(revoke_item);
     if (cleanup_item) kmipkit_client_batch_item_release(cleanup_item);
     if (request_attributes) kmipkit_ttlv_structure_release(request_attributes);
+    if (delegated_login_usage_limits) {
+        kmipkit_ttlv_structure_release(delegated_login_usage_limits);
+    }
     if (request_storage_masks) kmipkit_ttlv_structure_release(request_storage_masks);
     return outcome;
 }

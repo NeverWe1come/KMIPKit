@@ -582,14 +582,34 @@ only and is never recorded in diagnostics, fixture reports, or matrix evidence.
 - Verification: CMake build passed and CTest passed 7/7, including controlled
   KMIP 2.0 and 2.1 TLS fixtures. The KMIP 2.0 fixture confirms that the Logout
   path is explicitly not run without a valid Login Ticket.
-- The complete C matrix reports 38,429 of 66,728 cells invoked, zero failed,
-  and 28,299 pending. Logout accounts for 23 passed route cells and 19 pending
-  KMIP 2.0 cells. The installed C Login builder only accepts KMIP 2.1, so a
-  valid KMIP 2.0 server-issued Ticket cannot be acquired; this is an API
-  limitation and no invalid or synthetic Ticket is sent to a server.
+- At this historical snapshot, the complete C matrix reports 38,429 of 66,728
+  cells invoked, zero failed, and 28,299 pending. Logout accounts for 23
+  passed route cells and 19 pending KMIP 2.0 cells. The later section below
+  records the follow-up that removes this Login limitation by exercising the
+  KMIP 2.0 Login constructor and server-issued Ticket handoff.
 
 This recipe verifies KMIPKit against a controlled peer only. External KMS
 compatibility and the remaining C route recipes are still unverified.
+
+### Login and Ticket-backed Logout under KMIP 2.0
+
+The C consumer now executes the Login request and the Login→Logout ticket
+handoff under KMIP 2.0 as well as 2.1. The fixture verifies the KMIP 2.0
+Login Request Payload (OASIS §6.1.29, Table 235) and Response Payload (Table
+236), checks both the typed Ticket reader and generic TTLV Ticket reader, and
+uses the returned Ticket in Logout. KMIP 2.1 uses §6.1.30, Tables 253–254.
+This removes the earlier validator-side skip; the installed C constructor and
+response readers already support the common payload shape.
+
+- Red: the updated KMIP 2.0 controlled-peer assertion failed because the C
+  driver returned before sending Login. After removing the version guard, the
+  first rerun exposed a missing expected direct Login exchange in the test
+  ledger; the exchange accounting was corrected.
+- Green: the focused `c_validator_controlled_tls_peer_kmip20` test passes, and
+  its observed TLS exchanges include direct Login plus the Login and Logout
+  pair used by the Logout case. The controlled fixture confirms both operation
+  responses and does not persist Ticket bytes.
+- The full route matrix and exact-head CI remain required for this update.
 
 ### Normative Item Type values
 
@@ -800,6 +820,38 @@ TTLV tree.
   CI runs `43539660499` and `43539654754` on head `5adcf0c` likewise had only
   pending recipe cells (27,423) and zero failed cells. The complete matrix is
   still open, and PR #170 remains WIP.
+
+### Discover Versions offer and installed C route matrix
+
+The controlled peer validates that a Discover Versions request's optional,
+repeated Protocol Version values are well-formed and ordered by decreasing
+preference. It does not require the offered versions to match the Request
+Header version: OASIS KMIP 2.0 §6.1.16 Table 196 and KMIP 2.1 §6.1.16 Table
+211 distinguish the message version from the list of versions supported by
+the client. The installed C constructor currently emits an offer of 2.1; the
+route is still exercised with both 2.0 and 2.1 message headers. The shared
+route manifest retains both versions for the C builder and typed supported-
+versions response accessor. The network test requires both public symbols in
+the invocation evidence for TTLV, JSON, and XML over raw TLS and HTTPS.
+These checks also follow KMIPKIT-0092-FR-001, FR-005, FR-006, and FR-009.
+
+- Review of the original offer assertion found that it incorrectly rejected a
+  2.0 offer solely because the Request Header used 2.1. New Red tests cover a
+  header/offer version mismatch that OASIS allows and reject an ascending offer
+  list as required by the preference-order rule.
+- The peer now checks the offer's structure and order without equating it to
+  the header version. The manifest keeps the request and response routes
+  enabled for both versions. Focused checks and the full installed C route
+  matrix pass: 12 Discover Versions exchanges and 148/148 route-matrix tests.
+  CTest passes 7/7; the shared route capability and coverage-matrix suites pass
+  93/93; and `route_capabilities.py --check` passes. For the controlled KMIP
+  2.0 peer, the offer/header mismatch yields an empty intersection as defined
+  by §6.1.16 and the typed accessor accepts the present empty Supported
+  Versions list. Exact-head CI run `43548278272` records 40,008/66,736 invoked
+  cells, zero failed, and 26,728 pending; all 42 Discover Versions cells passed
+  (21 for each message version) with none pending. The C matrix completeness
+  gate remains red on recipes for other operations, so PR #170 and the stacked
+  PR remain WIP.
 
 ### Async Cancel local payload routes
 
@@ -1075,6 +1127,29 @@ preserving their server-issued correlations.
   The matching completeness validator now reports
   `test-async-unknown-correlation-rejected` as the next missing recipe; PR
   #170 remains WIP.
+
+## Evidence: C typed batches derive Batch Count from their items
+
+`test-batch-count-mismatch-rejected` now runs as a read-only controlled-peer
+exchange. It submits two typed request items through the public C batch API;
+the peer accepts the request only when Batch Count is 2 and the ordered items
+are Get and Get Attribute List. The C API has no caller-supplied Batch Count
+setter, so an inconsistent count cannot enter this typed send path. The recipe
+runs for KMIP 2.0 and 2.1 with TTLV, JSON, and XML over raw TLS and HTTPS.
+
+- Red commit `d61a3341`: the regression expected 75 checks but received 60
+  because the catalog classified this request/transport scenario as local-only.
+- Green commit `82a1fb9c`: the catalog generator now classifies it as a
+  read-only server exchange; the C driver and peer recipe exercise the typed
+  two-item batch. The first full CTest run then exposed the missing expected
+  operation in the aggregate TLS harness; that expectation was corrected
+  before the passing rerun.
+- Verification: the focused batch test passed 72 total peer checks, including
+  all 12 count-mismatch scenario combinations; both protocol-specific TLS
+  peers also passed. Full CTest passed 7/7 in 80.69 seconds. The normative
+  scenario test, catalog generation check, and route-capability audit passed.
+  Exact-head PR CI remains open and PR #212 stays WIP while the broader C route
+  matrix has pending recipes.
 
 ### C Export request and response routes
 
