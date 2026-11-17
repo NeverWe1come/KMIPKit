@@ -138,6 +138,9 @@ class ControlledTlsPeerTest {
             "test-norm-structure-member-structure-member-7-22-object-type-objecttypes";
     private static final String OBJECT_DEFAULTS_OBJECT_TYPE_TARGET_ID =
             "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-22-OBJECT-TYPE-OBJECTTYPES";
+    private static final String DERIVATION_SALT_CASE_ID =
+            "test-norm-structure-member-structure-member-7-12-salt";
+    private static final String DERIVATION_SALT_TARGET_ID = "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-12-SALT";
     private static final String CONSTRAINT_CASE_ID =
             "test-norm-operation-structure-operation-structure-7-6-constraint";
     private static final String CONSTRAINT_TARGET_ID =
@@ -929,6 +932,7 @@ class ControlledTlsPeerTest {
                     serverCertificatePem, serverPrivateKeyPem, clientCertificatePem, clientPrivateKeyPem);
             appendObjectDefaultsObjectTypeRouteEvents(events, protocolVersion);
             assertObjectDefaultsObjectTypeRouteEvents(events, protocolVersion);
+            assertDerivationSaltRouteEvents(events, protocolVersion);
             assertNewlyCataloguedLocalRoutesAreInvoked(events, protocolVersion);
         }
 
@@ -3680,6 +3684,7 @@ class ControlledTlsPeerTest {
         caseIds.add("test-norm-tag-tag-420051");
         caseIds.add("test-norm-message-field-message-field-8-3-ephemeral");
         caseIds.add("test-norm-structure-member-structure-member-7-23-object-group");
+        caseIds.add(DERIVATION_SALT_CASE_ID);
         caseIds.add(OBJECT_DEFAULTS_OBJECT_TYPE_CASE_ID);
         caseIds.add("test-norm-operation-structure-operation-structure-7-2-asynchronous-request");
         caseIds.add("test-norm-operation-structure-operation-structure-7-13-extension-information");
@@ -6397,6 +6402,19 @@ class ControlledTlsPeerTest {
             String action = route.endsWith("ttlv_item.create") ? "construct" : "decode";
             assertRouteEventRecorded(events, OBJECT_DEFAULTS_OBJECT_TYPE_CASE_ID,
                     OBJECT_DEFAULTS_OBJECT_TYPE_TARGET_ID, route, action, protocolVersion);
+        }
+    }
+
+    private static void assertDerivationSaltRouteEvents(ArrayNode events, String protocolVersion) {
+        for (String route : List.of(
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.bytestring",
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode")) {
+            String action = route.endsWith("ttlvvalue.bytestring") || route.endsWith("ttlv_item.create")
+                    ? "construct" : "decode";
+            assertRouteEventRecorded(events, DERIVATION_SALT_CASE_ID, DERIVATION_SALT_TARGET_ID,
+                    route, action, protocolVersion);
         }
     }
 
