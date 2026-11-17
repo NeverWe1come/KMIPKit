@@ -433,6 +433,8 @@ class ControlledTlsPeerTest {
                     "KMIPKIT-ELEM-MESSAGE-FIELD-9-3-ATTESTATION-CAPABLE-INDICATOR"),
             new NormativeTarget("test-norm-message-field-message-field-9-5-batch-count",
                     "KMIPKIT-ELEM-MESSAGE-FIELD-9-5-BATCH-COUNT"),
+            new NormativeTarget("test-norm-message-field-message-field-8-2-batch-order-option",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION"),
             new NormativeTarget("test-norm-message-field-message-field-9-8-batch-order-option",
                     "KMIPKIT-ELEM-MESSAGE-FIELD-9-8-BATCH-ORDER-OPTION"),
             new NormativeTarget("test-norm-message-field-message-field-9-7-batch-item",
@@ -832,6 +834,13 @@ class ControlledTlsPeerTest {
                     missingBooleanFieldCases, booleanFieldInvocations::add);
             booleanFieldRouteEventCount += booleanFieldInvocations.size();
             for (LocalCatalogRouteChecks.Invocation invocation : booleanFieldInvocations) {
+                appendLocalCatalogInvocation(events, protocolVersion, invocation);
+            }
+            List<LocalCatalogRouteChecks.Invocation> batchOrderOptionInvocations = new ArrayList<>();
+            LocalCatalogRouteChecks.executeBatchOrderOption(readRouteEvidenceCatalog(), protocolVersion,
+                    batchOrderOptionInvocations::add);
+            booleanFieldRouteEventCount += batchOrderOptionInvocations.size();
+            for (LocalCatalogRouteChecks.Invocation invocation : batchOrderOptionInvocations) {
                 appendLocalCatalogInvocation(events, protocolVersion, invocation);
             }
             assertBooleanFieldGenericRouteEvidence(events, protocolVersion);
@@ -1376,7 +1385,7 @@ class ControlledTlsPeerTest {
         int batchItemAdditionalResponseRouteEventCount = KMIP_2_0_AND_2_1.size() * 12;
         int batchItemRenderedResponseViewEventCount = KMIP_2_0_AND_2_1.size() * 3 * 3;
         int normativeMessageFieldGenericRouteEventCount = KMIP_2_0_AND_2_1.size() * 31;
-        int normativeMessageFieldParserRouteEventCount = KMIP_2_0_AND_2_1.size() * 14;
+        int normativeMessageFieldParserRouteEventCount = KMIP_2_0_AND_2_1.size() * 15;
         int normativeBatchItemAccessorRouteEventCount = KMIP_2_0_AND_2_1.size() * 10;
         int newAttributePayloadRouteEventCount = KMIP_2_0_AND_2_1.size() * 3 * 20;
         int objectGroupLocalRouteEventCount = 3;
