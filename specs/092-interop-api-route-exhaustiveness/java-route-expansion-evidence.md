@@ -2011,6 +2011,36 @@ reference was refreshed with `compare_route_ledger.py --refresh-reference`
 from the validated build ledger and then matched by the comparer. The full
 matrix remains incomplete, so the PR stays WIP.
 
+## Set Endpoint Role generic TTLV routes — 2026-11-17
+
+The Java local recipe now covers the required Endpoint Role request field and
+Set Endpoint Role Operation Enumeration from the KMIP 2.1 catalog case
+`test-norm-payload-client-set-endpoint-role-request-21-001`. It constructs,
+views, and decodes each Enumeration through the installed generic TTLV API,
+preserving the field tag `0x420151` and Operation value `0x32`. The normative
+basis is OASIS KMIP 2.1 §6.1.54 Table 331, §11.19 (Endpoint Role Enumeration),
+and §11.36 (Operation Enumeration).
+
+Red, commit `87f60844c`:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test \
+  --tests org.kmipkit.validator.ControlledTlsPeerTest.controlledQueryProducesPerRouteEvidenceForBothProtocolVersions
+```
+
+The test failed because the six expected generic route events for the payload
+field and Operation Enumeration were absent. Green, commit `56a2401ae`, adds
+both real constructor/view/decode sequences and includes their catalog case in
+the generated report. The focused controlled-peer test passes; the complete
+Java suite passes 57/57 tests with no failures, errors, or skips. All 68 shared
+route-capability tests pass, the generator check passes, and selected-scope
+validation accepts 27,160/27,160 cells with zero failures. The generated
+ledger records 71,641 planned, 27,160 executed, and 44,481 pending cells. The
+ledger comparer passes after regenerating from the validated build report.
+Full-matrix closure remains required, so the PR stays WIP.
+
 Verification commands:
 
 ```sh
