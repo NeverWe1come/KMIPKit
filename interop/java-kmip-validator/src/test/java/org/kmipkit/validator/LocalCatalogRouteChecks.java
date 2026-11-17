@@ -23,6 +23,7 @@ import org.kmipkit.ttlv.TtlvValueView;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -213,8 +214,12 @@ final class LocalCatalogRouteChecks {
             TtlvItemType itemType = scalarMessageFieldType(encoding);
             String targetName = target.path("name").asText();
             int tagCode = tagCodeNamed(catalog, targetName, version);
-            byte[] valueBytes = scalarMessageFieldBytes(caseId, encoding);
-            long numericValue = scalarMessageFieldNumber(caseId, encoding);
+            long numericValue = "Enumeration".equals(encoding)
+                    ? representativeEnumerationValue(catalog, targetName, version)
+                    : scalarMessageFieldNumber(caseId, encoding);
+            byte[] valueBytes = "Enumeration".equals(encoding)
+                    ? ByteBuffer.allocate(Integer.BYTES).putInt((int) numericValue).array()
+                    : scalarMessageFieldBytes(caseId, encoding);
             byte[] wire = scalarWire(tagCode, itemType.code(), valueBytes);
             try (TtlvValue value = scalarMessageFieldValue(encoding, valueBytes, numericValue, limits);
                     RawTag raw = RawTag.fromRaw(tagCode);
@@ -247,6 +252,43 @@ final class LocalCatalogRouteChecks {
             throw new IllegalArgumentException("Selected scalar structure member cases were not executed for "
                     + version);
         }
+    }
+
+    private static long representativeEnumerationValue(JsonNode catalog, String fieldName, String version) {
+        String enumTypeName = "Mask Generator Hashing Algorithm".equals(fieldName)
+                ? "HASHING-ALGORITHM"
+                : fieldName.toUpperCase(Locale.ROOT).replaceAll("[^A-Z0-9]+", "-");
+        String enumTypeId = "KMIPKIT-ELEM-ENUMERATION-" + enumTypeName;
+        String normalizedFieldName = normalizeName(fieldName);
+        long firstValue = Long.MAX_VALUE;
+        boolean found = false;
+        String extensionRange = null;
+        for (JsonNode candidate : catalog.path("normative_targets")) {
+            String kind = candidate.path("kind").asText();
+            boolean standardEnum = "enumeration_value".equals(kind) && hasParent(candidate, enumTypeId);
+            boolean referencedEnum = "referenced_enum_value".equals(kind)
+                    && normalizedFieldName.equals(normalizeName(candidate.path("parent_name").asText()));
+            if ((!standardEnum && !referencedEnum) || !supportsVersion(candidate, version)) continue;
+            if ("extension".equals(candidate.path("allocation").asText())) {
+                extensionRange = candidate.path("wire_value").asText();
+                continue;
+            }
+            if (!"assigned".equals(candidate.path("allocation").asText())) continue;
+            long value = Integer.toUnsignedLong(Integer.parseUnsignedInt(
+                    candidate.path("wire_value").asText().replaceFirst("^0[xX]", ""), 16));
+            if (!found || Long.compareUnsigned(value, firstValue) < 0) {
+                firstValue = value;
+                found = true;
+            }
+        }
+        if (!found && extensionRange != null && extensionRange.matches("[0-9A-Fa-f]X{7}")) {
+            return Long.parseLong(extensionRange.substring(0, 1), 16) << 28;
+        }
+        if (!found) {
+            throw new IllegalArgumentException("No source-backed enumeration value for structure member: "
+                    + fieldName + " / " + version);
+        }
+        return firstValue;
     }
 
     /** Executes selected scalar fields from OASIS KMIP 2.0/2.1 server-initiated operation payloads. */

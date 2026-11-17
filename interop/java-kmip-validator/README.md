@@ -101,8 +101,8 @@ baseline, regenerate the checked-in ledger with
 rejects generated ledgers that do not record successful invocations.
 The generated ledger retains the artifact
 SHA-256 for each build; that build-specific digest is not used as a coverage
-baseline. These recipes execute 27,306 of 71,641 planned Java route cells, with
-no failed cells; the ledger records the other 44,335 as pending and does not imply
+baseline. These recipes execute 27,270 of 71,641 planned Java route cells, with
+no failed cells; the ledger records the other 44,371 as pending and does not imply
 vendor interoperability or full-matrix completion. Local TTLV recipes exercise 51
 enumeration families, all six bitmask aggregate cases, and all 44 individual
 bitmask value cases through the applicable
@@ -123,10 +123,10 @@ The required Extension Name and optional Extension Description members also
 cover their Text String constructor, Item, view, and decoder routes in both
 versions (KMIP 2.0 §7.9 Table 329 and KMIP 2.1 §7.13 Table 365; tag allocation
 §§11.54/11.56).
-The required Extension Tag member also exercises its Integer constructor, Item
-creation/view, and decoder routes in both versions. The controlled fixture
-checks the Integer value and assigned tag (KMIP 2.0 §7.9 Table 329 and KMIP
-2.1 §7.13 Table 365; tag allocation §§11.54/11.56).
+The optional Extension Tag member covers its Integer constructor, Item creation,
+view, and decoder routes in both versions. The fixture uses `0x540001`, an Item
+Tag Value in the Extensions range, per the definition in KMIP 2.0 §7.9 Table
+329 and KMIP 2.1 §7.13 Table 365; the member tag is allocated in §§11.54/11.56.
 Initialization Vector, Derivation Data, and Iteration Count also cover their
 typed constructor, Item creation, view, and decoder routes in both versions,
 using a Byte String value for the two byte fields and an Integer for Iteration
@@ -167,12 +167,6 @@ Endpoints, and two heterogeneous Vendor-Specific values. The controlled mTLS
 Query response invokes `QueryResponse.serverInformations()` and checks the
 12-field tag order, types, and values; this convenience getter has no separate
 route ID in the manifest.
-Usage Limits completes 36 local cells across KMIP 2.0/2.1: the outer Structure
-uses all six generic routes, and its required Total, Count, and Unit members
-each use their applicable value constructor, Item creation, Item view, and
-decoder routes. The installed consumer checks the required three-field order,
-exact tags, Long Integer/Enumeration types, and values (KMIP 2.0 §7.34
-Table 354; KMIP 2.1 §7.40 Table 392).
 Four optional/repeatable members in the KMIP 2.1 Constraint and Constraints
 structures also exercise the installed `TtlvValue.structure`, Item creation,
 Item view, and decoder routes (§§7.6–7.7, Tables 357–358).
@@ -196,7 +190,6 @@ Attribute cases: each New Attribute is checked as a §5.7 Structure containing
 one direct Name Item, and the installed direct constructors, request-to-batch
 conversions, TTLV payload conversion, controlled TLS exchange, and typed
 response readers are invoked under the operation-specific §6.1 tables.
-
 It also executes all 12 catalogued Boolean message-field and structure-member
 cases in both protocol versions through their applicable generic TTLV routes.
 Controlled request and response fixtures exercise Criticality Indicator through
@@ -215,17 +208,21 @@ evidence for both `RawTag` identity routes and the `ClientBatch` setter. The
 setter's evidence comes from the serialized header of a controlled two-item
 Query request in KMIP 2.0 and 2.1 (KMIP 2.0 §11.54; KMIP 2.1 §11.56).
 
-The 44,335 pending cells belong to 1,214 case IDs listed in the generated
-ledger; every one has the reason `route_evidence_not_emitted`. The applicability
-rule is the shared catalog and capability matrix after protocol-version,
-public-route, encoding/transport, and source-backed exclusion filters. A cell
-remaining in that matrix is planned and applicable; the current ledger gives
-none of these cells a non-applicability or API-unavailable reason. KMIPKIT-0092
-FR-002 and FR-009 therefore treat them as unfinished coverage, not accepted
-exceptions. This CI recipe validates only its declared `case_ids` selected
-scope and the ledger comparer checks stable ledger equality; a green selected
-scope does not mean the full-matrix completeness gate is satisfied. The PR
-remains WIP while any required Java route cells are pending.
+The current Java ledger has 43,225 pending cells across 1,155 case IDs; every
+one has the reason `route_evidence_not_emitted`. The applicability rule is the
+shared catalog and capability matrix after protocol-version, public-route,
+encoding/transport, and source-backed exclusion filters. A cell remaining in
+that matrix is planned and applicable; the ledger gives none of these cells a
+non-applicability or API-unavailable reason. KMIPKIT-0092 FR-002 and FR-009
+therefore treat them as unfinished coverage, not accepted exceptions.
+
+Reports may declare `scope_cells` when a run exercises only selected
+case/route/action/version/encoding/transport tuples. The validator checks that
+each declared cell is planned, appears exactly once, and has a matching passing
+invocation; the evidence ledger still measures execution against the complete
+matrix. If `scope_cells` is omitted, `case_ids` selects every planned cell for
+each listed case. A green selected scope does not mean the full-matrix gate is
+satisfied. The PR remains WIP while any required Java route cells are pending.
 The `test-enum-tag` aggregate now covers all 3,674 applicable generic TTLV
 cells for catalogued tags and tag-allocation ranges in KMIP 2.0 and 2.1. Fifty
 individual tag cases still have 652 pending typed-route cells; those remain
@@ -319,14 +316,11 @@ the peer-observed Operation, and reads the successful response through
 `ClientBatchItemResult.pingResponse()`. The same case round-trips the Operation
 Enumeration through the installed generic TTLV item constructor, view, and
 decoder, as required by KMIP 2.1 §6.1.36. The selected Java report now validates
-27,306/27,306 cells; 44,335 of the full 71,641-cell Java matrix remain pending,
+27,270/27,270 cells; 44,371 of the full 71,641-cell Java matrix remain pending,
 so this does not complete the Java matrix. The Set Endpoint Role request field
-and Operation have generic TTLV item creation, view, and decode evidence for
+and Operation now have generic TTLV item creation, view, and decode evidence for
 the KMIP 2.1 request and both KMIP 2.0 request and response cases (KMIP 2.0
-§6.1.48 Tables 299–300; KMIP 2.1 §6.1.54 Table 331; §11.19; §11.36). The
-two KMIP 2.1 §4.53 structure-member cases each exercise seven applicable
-generic and typed routes through the enclosing `Rotate Name` Attribute, using
-both required members from Table 135.
+§6.1.48 Tables 299–300; KMIP 2.1 §6.1.54 Table 331; §11.19; §11.36).
 The Batch Order Option message-field case completes three generic TTLV routes
 and `RequestMessage.fromTtlv` in both KMIP 2.0 and 2.1 (§8.2; §9.8 Tables 369
 and 407).
