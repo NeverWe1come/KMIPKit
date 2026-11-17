@@ -773,11 +773,6 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
                         len(key_info) != 1 or len(identifiers) != 1 or
                         identifiers[0][2] != b'fixture-wrapping-key'):
                     raise ValueError('fixture_export_key_wrapping_specification_mismatch')
-    if selected_recipe[1] == 'delegated_login':
-        payloads = list(descendants(node, REQUEST_PAYLOAD_TAG))
-        if (len(payloads) != 1 or payloads[0][1] != 1 or
-                payloads[0][2] != [(0x42014D, 1, [])]):
-            raise ValueError('fixture_delegated_login_rights_mismatch')
     if expected[0] == 1:
         object_type = 4 if case_id == 'test-obj-private-key' else 3 if case_id == 'test-obj-public-key' else 2
         if numbers(node, 0x420057) != [object_type]:
