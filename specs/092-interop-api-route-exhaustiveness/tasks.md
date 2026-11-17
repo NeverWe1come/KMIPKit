@@ -562,7 +562,23 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
   responses for the Batch Order Option false case.
 - Verification: both focused tests pass across KMIP 2.0/2.1 and all six
   encoding/transport pairs, with direct and standalone variants. The full C
-  matrix and exact-head CI remain open.
+  matrix confirms zero pending cells for both target cases.
+
+## Development evidence: C batch response view decoders
+
+- Normative scope: OASIS KMIP 2.0/2.1 §§6.1.19, 6.1.21, 8.3, 8.6, and 9.7.
+- Red commit `8669cbb9b` requires response metadata v1, response header TTLV,
+  pending-correlation, and raw payload accessors on both batch read cases; the
+  focused route test failed because these symbols were not invoked.
+- Green commit `292f0c5fe` reads those accessors for each successful response
+  item and checks the returned structures, metadata status, and synchronous
+  absence of pending correlation and Result Reason. Continue's failed Get
+  uses the existing accessor checks for its absent payload.
+- Verification: focused route tests pass for both cases, both protocol
+  versions, and all six encoding/transport pairs. CTest passes 7/7, including
+  175 route-matrix contract tests. The exhaustive matrix reports 42,349/66,736
+  cells invoked, zero failed, and 24,387 pending, with zero pending cells for
+  both cases. The global completeness gate remains open.
 
 ## Development evidence: C MAC and Sign response TTLV accessors
 

@@ -1345,4 +1345,31 @@ not claim behavior from an external KMS.
   cases and updates the combined two-item batch check from 60 to 84 checks.
 - Verification: both focused tests pass, including 48 checks across both
   cases, protocol versions, encodings, transports, and constructor variants.
-  The exhaustive C matrix and exact-head CI remain open.
+  The exhaustive C matrix then reported both cases fully invoked and no
+  pending cells for either case.
+
+## C batch response view decoders
+
+For successful results in the two-item Get/Get Attribute List workflows, the
+installed C consumer also reads response metadata v1, raw TTLV payload,
+response header TTLV, and pending correlation. It checks that both payload and
+header structures are present and nonempty, that the v1 result status matches
+the typed v2 status, and that synchronous successful items have no pending
+correlation or Result Reason. The existing failed-Get path validates its
+header, absent payload, and absent correlation through the same public accessors.
+
+The catalog maps these routes to OASIS KMIP 2.0/2.1 §§6.1.19, 6.1.21, 8.3,
+8.6, and 9.7. The response view checks validate the controlled fixture shape;
+they do not claim external KMS behavior.
+
+- Red commit `8669cbb9b` requires all four response view accessors in both
+  batch read cases; the focused test failed because the installed consumer
+  exposed only typed v2 metadata and Unique Batch Item ID.
+- Green commit `292f0c5fe` reads and validates the v1 metadata, raw payload,
+  response header, and pending-correlation accessors for each successful item.
+- Verification: both focused tests pass, including count-matched batches,
+  reversed unordered responses, and the continued-batch failure route. Full
+  CTest passes 7/7, including 175 route-matrix contract tests, in 103.52
+  seconds. The exhaustive C matrix at `292f0c5fe` reports 42,349/66,736 cells
+  invoked, zero failed, and 24,387 pending; both target cases have zero pending
+  cells. The matrix gate remains open.

@@ -235,3 +235,6 @@ direct Get Attribute List construction and the standalone
 `GetAttributeListRequest` constructor through the installed C ABI. The peer
 reverses the two responses for the unordered batch and verifies correlation by
 Unique Batch Item ID.
+
+The consumer also checks response metadata v1, the raw payload and header
+TTLV structures, and the absent pending correlation for synchronous success.
