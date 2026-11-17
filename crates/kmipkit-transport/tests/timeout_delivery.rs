@@ -284,7 +284,7 @@ async fn positive_write_progress_restarts_only_the_write_deadline() {
     assert_eq!(control.delivery_state(), RequestDeliveryState::PossiblySent);
 }
 
-#[tokio::test]
+#[tokio::test(start_paused = true)]
 async fn successful_flush_progress_restarts_the_write_deadline() {
     let inner = ScriptIo::manual();
     let progress = inner.clone();

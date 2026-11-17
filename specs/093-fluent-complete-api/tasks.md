@@ -26,6 +26,18 @@ Dependent work branches from the unmerged parent head while review is pending.
 - [ ] G004 Run the focused test, generation check, export audit, and full CI;
   commit Green and Refactor separately.
 
+## FR-003 operation-matrix completion follow-up
+
+- [x] M001 Add failing matrix tests requiring each route to declare typed
+  request/response owners and advance the generated matrix format.
+- [x] M002 Record Red evidence in commit `097bcc859`; the focused test failed
+  because operation rows had no typed owner fields.
+- [x] M003 Add the reviewed per-route owner and test-evidence catalog; derive
+  and validate earliest supported versions against the versioned assignments.
+- [x] M004 Regenerate the matrix and pass focused matrix and API parity tests.
+- [ ] M005 Run the complete required CI on the WIP PR head before requesting
+  human review.
+
 ## Response and expert request PRs
 
 - [x] R001 Fail a test that transcodes one retained response tree to TTLV hex,

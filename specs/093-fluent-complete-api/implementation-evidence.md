@@ -1096,3 +1096,17 @@
   `test_t102_usage_allocation_context_trait_exclusions` pass; `git diff
   --check` passes. Exact-head CI must still pass before this PR is ready for
   human review.
+
+### Owner matrix evidence refresh
+
+- **Red — `94c279c97`**: added a regression requiring the typed owner catalog's
+  evidence list to match the current public operation parity evidence. The
+  focused test failed for Delete Attribute because the owner catalog omitted
+  five tests added by the Delete Attribute binding slice on `release/1.0.0`.
+- **Green — `c4d98920c`**: added the five current C, Java, Python, Rust, and
+  manifest test paths to the source owner catalog and regenerated the fluent
+  operation inventory. The focused owner inventory suite passes all 10 tests;
+  `generate_fluent_operation_inventory.py --check` and `git diff --check` pass.
+- **Refactor**: kept the owner evidence synchronized with the canonical public
+  API manifest. Exact-head hosted CI remains required before M005 is complete
+  and this PR can leave WIP.
