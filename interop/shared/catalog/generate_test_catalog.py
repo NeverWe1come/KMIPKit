@@ -303,6 +303,16 @@ def add_execution_contract(test_case: dict, elements: list[dict], indexes: dict[
     if category == "version_boundaries":
         # The operation is defined in KMIP 2.1 and intentionally has no KMIP 2.0 entry.
         test_case["normative_refs"].append({"document": "OASIS KMIP 2.0 Specification", "section": "6.1"})
+    if category == "object_lifecycle" and test_case.get("operation") in {"Sign", "Signature Verify"}:
+        # The Cryptographic Usage Mask's operation/object-type mapping is an
+        # independent normative constraint on these isolated operation fixtures.
+        for version in versions:
+            reference = {
+                "document": f"OASIS KMIP {version} Specification",
+                "section": "12.1",
+            }
+            if reference not in test_case["normative_refs"]:
+                test_case["normative_refs"].append(reference)
     test_case["execution"] = {
         "mode": mode,
         "protocol_versions": versions,
@@ -1496,7 +1506,13 @@ def generate_catalog(normative_catalog_path: Path) -> dict:
 
         setup = []
         teardown = []
-        if name not in {"Create", "Create Key Pair", "Create Split Key", "Register", "Import", "Locate"}:
+        if name == "Sign":
+            setup = ["Create Key Pair with Sign usage on Private Key"]
+            teardown = ["Destroy Private Key", "Destroy Public Key"]
+        elif name == "Signature Verify":
+            setup = ["Create Key Pair with Verify usage on Public Key"]
+            teardown = ["Destroy Private Key", "Destroy Public Key"]
+        elif name not in {"Create", "Create Key Pair", "Create Split Key", "Register", "Import", "Locate"}:
             setup = ["Create unique SymmetricKey"]
             teardown = ["Revoke SymmetricKey", "Destroy SymmetricKey"]
         elif name in {"Create", "Create Key Pair", "Create Split Key", "Register", "Import"}:
