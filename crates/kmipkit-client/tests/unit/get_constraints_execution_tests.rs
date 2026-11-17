@@ -337,6 +337,105 @@ fn local_encoding_limit_reports_not_sent_without_transport() {
 }
 
 #[test]
+fn fluent_builder_validates_builds_and_converts_the_empty_typed_request() {
+    let (mut client, fake, _) = client_for(ExchangeScript::FailBeforeWrite);
+
+    client
+        .request()
+        .get_constraints()
+        .validate()
+        .expect("the typed Get Constraints request is empty and valid");
+    let request = client.request().get_constraints().build();
+    assert!(
+        request
+            .to_ttlv_payload()
+            .expect("Table 229 empty payload is valid")
+            .view()
+            .children()
+            .is_empty()
+    );
+
+    let item = client.request().get_constraints().to_batch_item();
+    assert_eq!(item.operation(), GET_CONSTRAINTS);
+    assert_eq!(fake.borrow().exchange_count(), 0);
+}
+
+#[test]
+fn fluent_builder_executes_one_typed_exchange_and_preserves_success() {
+    let (mut client, fake, captured) = client_for(ExchangeScript::Success {
+        response: response_bytes(0, None, None, None, None, Some(success_payload())),
+        request_write_chunks: Vec::new(),
+    });
+
+    let result = client
+        .request()
+        .get_constraints()
+        .execute(&CodecLimits::defaults())
+        .expect("Table 230 success is returned as a typed response");
+
+    assert_eq!(fake.borrow().exchange_count(), 1);
+    let wire = captured.borrow();
+    let decoded = decode(wire.as_ref().expect("one request was captured"))
+        .expect("outbound request is valid TTLV");
+    decoded.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            panic!("request message is a Structure");
+        };
+        let batch = message
+            .children()
+            .iter()
+            .find(|item| item.tag().raw() == BATCH_ITEM)
+            .expect("one Batch Item is present");
+        batch.with_value(|value| {
+            let ValueView::Structure(batch) = value else {
+                panic!("Batch Item is a Structure");
+            };
+            let payload = batch
+                .children()
+                .iter()
+                .find(|item| item.tag().raw() == REQUEST_PAYLOAD)
+                .expect("Table 229 has a Request Payload");
+            payload.with_value(|value| {
+                let ValueView::Structure(payload) = value else {
+                    panic!("Request Payload is a Structure");
+                };
+                assert!(payload.children().is_empty());
+            });
+        });
+    });
+    assert_eq!(completed(result.outcome()).result().status().raw(), 0);
+}
+
+#[test]
+fn fluent_builder_preserves_pending_correlation_without_follow_up() {
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response: response_bytes(
+            2,
+            None,
+            None,
+            Some(CORRELATION),
+            None,
+            Some(Structure::new()),
+        ),
+        request_write_chunks: Vec::new(),
+    });
+
+    let result = client
+        .request()
+        .get_constraints()
+        .with_asynchronous_indicator(1)
+        .execute(&CodecLimits::defaults())
+        .expect("Pending remains an explicit typed outcome");
+
+    let ClientBatchOutcome::Pending(pending) = result.outcome() else {
+        panic!("Get Constraints Pending remains visible");
+    };
+    assert_eq!(pending.operation(), ClientOperation::GetConstraints);
+    assert_eq!(pending.asynchronous_correlation_value(), CORRELATION);
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
 fn partial_write_keeps_possible_delivery_without_retry() {
     let (mut client, fake, _) =
         client_for(ExchangeScript::FailAfterPartialWrite { written_bytes: 3 });
