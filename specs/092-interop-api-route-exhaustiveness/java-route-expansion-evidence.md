@@ -2050,12 +2050,55 @@ generated ledger records 71,641 planned, 27,284 executed, and 44,357 pending
 cells across 1,217 pending case IDs. The ledger comparer passes after refresh.
 The full matrix remains incomplete and #217 stays WIP.
 
-Verification:
+## Java KMIP 2.0/2.1 repeatable Request Header Attestation Type — 2026-11-17
+
+Source: OASIS KMIP 2.0 Specification §8.2 and KMIP 2.1 Specification §8.2.
+The catalog marks Attestation Type optional and explicitly repeatable. Red
+commit `2c869bcab` adds exact per-version assertions for generic Item create,
+Item view, TTLV decode, and typed `RequestMessage.fromTtlv`; the focused test
+fails because all eight expected route/version cells are absent.
+
+Green commit `5b985bfd0` constructs and decodes the Attestation Type
+Enumeration, then parses two values in the Request Header and asserts that the
+typed `RequestHeaderView.attestationTypes()` preserves `[1, 2]` in wire order.
+The fixture places the repeated field after Attestation Capable Indicator, as
+required by the §8.2 Request Header ordering. Refactor commit `d0766d376`
+centralizes the values and four route IDs. The focused controlled-peer class
+passes 19/19 tests; the complete Java suite passes 57/57 tests with no skips,
+failures, or errors.
+
+Selected-scope validation accepts 27,336/27,336 cells with zero failed cells.
+The regenerated ledger records 71,641 planned, 27,336 executed, and 44,305
+pending cells across 1,210 pending case IDs. This slice closes eight cells,
+one per route and protocol version pair for the four applicable Java routes.
+The ledger comparer passes. Evidence uses pinned artifact commit
+`12496d646d11d4069b58bcc88fc76cc619211ec6` with SHA-256
+`504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+These are local-model routes, not vendor interoperability or full matrix
+completion; the Java PR remains WIP.
+
+## Combined Java Usage Limits stack after Attestation Type sync — 2026-11-17
+
+The Usage Limits branch was synchronized with Java route-matrix parent head
+`7647874fb44e9ef0d11ffd65b58cfdd9db43037a`. Its previously implemented
+Usage Limits, Rotate Name, and Derivation/Extension Metadata routes remain in
+the combined test report. At that stack head, the full Java suite passed 57/57
+tests without skips or failures. The selected-scope validator accepted
+27,372/27,372 cells with zero failures; the regenerated ledger recorded 71,641
+planned, 27,372 executed, and 44,269 pending cells across 1,206 pending case
+IDs. The ledger comparer passed. This historical stack snapshot is selected
+local-model evidence, not vendor interoperability or full matrix completion.
+
+The run used pinned artifact commit
+`12496d646d11d4069b58bcc88fc76cc619211ec6` and SHA-256
+`504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+
+Verification commands:
 
 ```sh
 JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
   bash ../../bindings/java/gradlew --no-daemon \
-  -PkmipkitMavenRepo="$KMIPKIT_MAVEN_REPO" test --rerun-tasks
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks
 python3 -m unittest interop.shared.tests.test_route_capabilities
 python3 interop/shared/tools/route_capabilities.py --check
 python3 interop/shared/tools/validate_route_evidence.py \
@@ -2066,7 +2109,6 @@ python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-refe
 python3 interop/java-kmip-validator/tools/compare_route_ledger.py
 git diff --check
 ```
-
 ## Java Item Type enum routes
 
 Red commit `8534357d6` adds a focused assertion for the 11 catalogued Item
@@ -2659,3 +2701,23 @@ and comparison pass. The pinned package digest remains
 `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
 The global Java matrix remains incomplete; this is local-model evidence, and
 #217 stays WIP.
+
+## Right Usage Limits stack after Attestation Type sync — 2026-11-17
+
+The Right Usage Limits branch is synchronized with #216 head
+`ad708ce410a3ffa67ecb73caf7610f29a79d712a`, retaining its Endpoint Role
+routes and all inherited Usage Limits, Rotate Name, Derivation/Extension
+Metadata, and Attestation Type evidence. The full Java suite passes 57/57
+tests with no failures, errors, or skips. Selected-scope validation accepts
+27,380/27,380 cells with zero failed cells. The refreshed 71,641-cell ledger
+records 27,380 executed and 44,261 pending cells across 1,205 pending case
+IDs; the ledger comparer passes. Shared route-capability tests pass 68/68 and
+the route generator check reports 1,507 routes. This remains local-model
+evidence and does not complete the matrix or claim vendor interoperability.
+PR #217 remains WIP.
+
+The run uses pinned artifact commit
+`12496d646d11d4069b58bcc88fc76cc619211ec6`, SHA-256
+`504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`, and
+the parent worktree Maven repository with its matching generated provenance
+manifest.
