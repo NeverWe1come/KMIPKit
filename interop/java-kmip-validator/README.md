@@ -101,8 +101,8 @@ baseline, regenerate the checked-in ledger with
 rejects generated ledgers that do not record successful invocations.
 The generated ledger retains the artifact
 SHA-256 for each build; that build-specific digest is not used as a coverage
-baseline. These recipes execute 27,246 of 71,641 planned Java route cells, with
-no failed cells; the ledger records the other 44,395 as pending and does not imply
+baseline. These recipes execute 27,270 of 71,641 planned Java route cells, with
+no failed cells; the ledger records the other 44,371 as pending and does not imply
 vendor interoperability or full-matrix completion. Local TTLV recipes exercise 51
 enumeration families, all six bitmask aggregate cases, and all 44 individual
 bitmask value cases through the applicable
@@ -123,6 +123,12 @@ The required Extension Name and optional Extension Description members also
 cover their Text String constructor, Item, view, and decoder routes in both
 versions (KMIP 2.0 §7.9 Table 329 and KMIP 2.1 §7.13 Table 365; tag allocation
 §§11.54/11.56).
+Initialization Vector, Derivation Data, and Iteration Count also cover their
+typed constructor, Item creation, view, and decoder routes in both versions,
+using a Byte String value for the two byte fields and an Integer for Iteration
+Count (KMIP 2.0 §7.8 Table 328 and KMIP 2.1 §7.12 Table 364; tag allocations
+§§11.54/11.56). The fixture checks field typing and route behavior; it does not
+claim to execute a PBKDF2 derivation.
 Data Length, Final Indicator, Interop Identifier, Log Message, and MAC Data
 exercise their six applicable local generic routes in KMIP 2.0 and 2.1 with
 their source-defined Integer, Boolean, Text String, or Byte String values
@@ -311,5 +317,5 @@ Enumeration through the installed generic TTLV item constructor, view, and
 decoder, as required by KMIP 2.1 §6.1.36. The combined branch also covers the
 Usage Limits and Right Usage Limits fields, and Endpoint Role request and
 response payloads in KMIP 2.0 plus the request in KMIP 2.1. The selected report
-validates 27,216/27,216 cells; 44,425 of the full 71,641-cell Java matrix
+validates 27,270/27,270 cells; 44,371 of the full 71,641-cell Java matrix
 remain pending, so this does not complete the Java matrix.
