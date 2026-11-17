@@ -847,6 +847,7 @@
     "test-norm-data-type-data-type-text-string",
     "test-norm-message-field-message-field-8-4-batch-item",
     "test-norm-message-field-message-field-8-5-attestation-type",
+    "test-norm-message-field-message-field-8-5-client-correlation-value",
     "test-norm-message-field-message-field-8-5-batch-count",
     "test-norm-message-field-message-field-9-5-batch-count",
     "test-norm-message-field-message-field-8-6-batch-item",
@@ -1642,7 +1643,6 @@
     "test-norm-message-field-message-field-8-3-unique-batch-item-id",
     "test-norm-message-field-message-field-8-4-response-header",
     "test-norm-message-field-message-field-8-4-response-message",
-    "test-norm-message-field-message-field-8-5-client-correlation-value",
     "test-norm-message-field-message-field-8-5-nonce",
     "test-norm-message-field-message-field-8-5-protocol-version",
     "test-norm-message-field-message-field-8-5-response-header",
@@ -3261,10 +3261,6 @@
     {
       "case_id": "test-norm-message-field-message-field-8-4-response-message",
       "pending_cells": 10
-    },
-    {
-      "case_id": "test-norm-message-field-message-field-8-5-client-correlation-value",
-      "pending_cells": 8
     },
     {
       "case_id": "test-norm-message-field-message-field-8-5-nonce",
@@ -32465,8 +32461,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 23,
-      "pending_cells": 20,
+      "executed_cells": 24,
+      "pending_cells": 19,
       "protocol_version": "2.0",
       "required_cells": 43,
       "route_id": "java.typed-protocol.model.org.kmipkit.message.responsemessage.fromttlv",
@@ -32475,8 +32471,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 23,
-      "pending_cells": 20,
+      "executed_cells": 24,
+      "pending_cells": 19,
       "protocol_version": "2.1",
       "required_cells": 43,
       "route_id": "java.typed-protocol.model.org.kmipkit.message.responsemessage.fromttlv",
@@ -35288,8 +35284,8 @@
       "route_id": "java.typed-protocol.model.org.kmipkit.message.requestmessage.fromttlv"
     },
     {
-      "executed_cells": 46,
-      "pending_cells": 40,
+      "executed_cells": 48,
+      "pending_cells": 38,
       "required_cells": 86,
       "route_id": "java.typed-protocol.model.org.kmipkit.message.responsemessage.fromttlv"
     },
