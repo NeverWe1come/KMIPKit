@@ -774,6 +774,9 @@ class ControlledTlsPeerTest {
             appendServerInformationRouteEvents(events, protocolVersion);
             appendUsageLimitsRouteEvents(events, protocolVersion);
             appendBatchContinuationTagIdentityRouteEvents(events, protocolVersion);
+            if ("2.1".equals(protocolVersion)) {
+                appendEndpointRolePayloadGenericRouteEvents(events, protocolVersion);
+            }
             LocalCatalogRouteChecks.executeTags(readRouteEvidenceCatalog(), protocolVersion, genericOnlyTagCaseIds(),
                     invocation -> appendLocalCatalogInvocation(events, protocolVersion, invocation));
             Set<String> typedTagIdentityCases = missingTypedTagIdentityCaseIds(events, protocolVersion);
@@ -1352,7 +1355,7 @@ class ControlledTlsPeerTest {
                         + genericTagEventCount + typedTagIdentityEventCount
                         + booleanFieldRouteEventCount + scalarMessageFieldRouteEventCount + itemTypeRouteEventCount
                         + scalarTypedParserEventCount
-                        + 11 // BEC, batch IDs, async payload, and all seven Ping route cells.
+                        + 17 // BEC, batch IDs, async payload, Ping, and Endpoint Role route cells.
                         + tagAggregateEventCount
                         + referencedEnumEventCount + referencedEnumAggregateEventCount,
                 report.path("events").size());
@@ -1389,7 +1392,7 @@ class ControlledTlsPeerTest {
                         + enumerationFixtures.size() + localEnumerationCaseCount + bitmaskCaseCount
                         + dataTypeCaseCount
                         + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + genericTagCaseIds.size()
-                        + 4
+                        + 5
                         + typedTagIdentityCaseIds().size() + referencedEnumCaseCount
                         + 11 + itemTypeValueCaseIds.size() + STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size()
                         + STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.size()
@@ -3734,6 +3737,7 @@ class ControlledTlsPeerTest {
         caseIds.add("test-enum-tag");
         caseIds.add("test-norm-tag-tag-42000e");
         caseIds.add("test-op-ping");
+        caseIds.add("test-norm-payload-client-set-endpoint-role-request-21-001");
         caseIds.add("test-enum-item-type");
         CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().forEach(caseIds::add);
         report.putArray("protocol_versions").add("2.0").add("2.1");
@@ -4684,6 +4688,54 @@ class ControlledTlsPeerTest {
                 "decode", "2.1", null, null, treeHash);
     }
 
+    // OASIS KMIP 2.1 §6.1.54 Table 331 defines the required Endpoint Role request field;
+    // §11.19 defines the Endpoint Role Enumeration used by its value.
+    private static void appendEndpointRolePayloadGenericRouteEvents(ArrayNode events, String protocolVersion)
+            throws Exception {
+        appendGenericEnumerationRouteEvents(events,
+                "test-norm-payload-client-set-endpoint-role-request-21-001",
+                "KMIPKIT-PAYLOAD-CLIENT-SET-ENDPOINT-ROLE-REQUEST-21-001",
+                0x420151, 1, protocolVersion);
+        appendGenericEnumerationRouteEvents(events,
+                "test-norm-payload-client-set-endpoint-role-request-21-001",
+                "KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE",
+                0x42005c, 0x32, protocolVersion);
+    }
+
+    private static void appendGenericEnumerationRouteEvents(ArrayNode events, String caseId, String targetId,
+            int rawTag, long value, String protocolVersion) throws Exception {
+        CodecLimits limits = CodecLimits.defaults();
+        byte[] wire = item(rawTag, TtlvItemType.Enumeration.code(), intBytes(Math.toIntExact(value)));
+        String treeHash = normalizedTreeSha256(wire);
+        try (TtlvValue ttlvValue = TtlvValue.Enumeration(value);
+                RawTag raw = RawTag.fromRaw(rawTag);
+                Tag tag = raw.checked();
+                TtlvItem created = TtlvItem.create(tag, ttlvValue, limits);
+                var createdView = created.view();
+                var createdTag = createdView.tag();
+                var createdValue = createdView.value();
+                TtlvItem decoded = TtlvCodec.decode(wire);
+                var decodedView = decoded.view();
+                var decodedTag = decodedView.tag();
+                var decodedValue = decodedView.value()) {
+            assertEquals(rawTag, createdTag.raw());
+            assertEquals(TtlvItemType.Enumeration, createdView.itemType());
+            assertEquals(value, createdValue.enumeration());
+            assertEquals(rawTag, decodedTag.raw());
+            assertEquals(TtlvItemType.Enumeration, decodedView.itemType());
+            assertEquals(value, decodedValue.enumeration());
+        }
+        appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_item.create", targetId,
+                "org.kmipkit.ttlv.TtlvItem.create", null, null, "construct", protocolVersion,
+                null, treeHash, null);
+        appendRouteEvent(events, caseId, "java.generic-ttlv.function.ttlv_item_view_from_item", targetId,
+                "org.kmipkit.ttlv.TtlvItem.view", null, null, "decode", protocolVersion,
+                null, null, treeHash);
+        appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_codec.decode", targetId,
+                "org.kmipkit.ttlv.TtlvCodec.decode", null, null, "decode", protocolVersion,
+                null, null, treeHash);
+    }
+
     private static byte[] queryResponseBatchItem() throws Exception {
         return structure(0x42000f,
                 item(0x42005c, 5, intBytes(0x18)),
@@ -5188,6 +5240,18 @@ class ControlledTlsPeerTest {
         if ("2.1".equals(protocolVersion)) {
             assertRouteEventRecorded(events, "test-op-ping", "KMIPKIT-ELEM-OP-C2S-PING",
                     "java.typed-protocol.function.client_batch_item_response_ping", "decode", protocolVersion);
+            for (String targetId : List.of(
+                    "KMIPKIT-PAYLOAD-CLIENT-SET-ENDPOINT-ROLE-REQUEST-21-001",
+                    "KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE")) {
+                for (String route : List.of("java.generic-ttlv.ttlv_item.create",
+                        "java.generic-ttlv.function.ttlv_item_view_from_item",
+                        "java.generic-ttlv.ttlv_codec.decode")) {
+                    String action = route.endsWith("ttlv_item.create") ? "construct" : "decode";
+                    assertRouteEventRecorded(events,
+                            "test-norm-payload-client-set-endpoint-role-request-21-001",
+                            targetId, route, action, protocolVersion);
+                }
+            }
         }
         for (ScalarOperationStructureFixture fixture : SCALAR_OPERATION_STRUCTURE_FIXTURES) {
             assertScalarOperationStructureRouteEvents(events, fixture, protocolVersion);

@@ -294,6 +294,8 @@ the peer-observed Operation, and reads the successful response through
 `ClientBatchItemResult.pingResponse()`. The same case round-trips the Operation
 Enumeration through the installed generic TTLV item constructor, view, and
 decoder, as required by KMIP 2.1 §6.1.36. After integrating the Usage Limits
-routes, the selected Java report validates 27,190/27,190 cells; 44,451 of the
+routes, the selected Java report validates 27,196/27,196 cells; 44,445 of the
 full 71,641-cell Java matrix remain pending, so this does not complete the
-Java matrix.
+Java matrix. Six local cells cover the Set Endpoint Role request field and
+Operation through generic TTLV creation, view, and decode (§6.1.54 Table 331,
+§11.19, and §11.36).

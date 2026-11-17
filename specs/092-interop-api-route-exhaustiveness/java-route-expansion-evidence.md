@@ -2179,3 +2179,41 @@ git diff --check
 The complete Java suite passes 57/57 tests; the shared suite passes 68/68.
 The route generator check and ledger comparison also pass. The evidence ledger
 was regenerated from the validated build report.
+
+## Set Endpoint Role routes in the Usage Limits stack — 2026-11-17
+
+The merged Java branch records generic TTLV construction, view, and decode for
+the required Endpoint Role request field and its Set Endpoint Role Operation
+Enumeration (`test-norm-payload-client-set-endpoint-role-request-21-001`). The
+wire tag is `0x420151` and the Operation value is `0x32`. OASIS KMIP 2.1
+§6.1.54 Table 331 defines the required field; §§11.19 and 11.36 define the
+Endpoint Role and Operation Enumerations.
+
+Red, commit `87f60844c`, made the controlled-peer test fail because the six
+generic route events for these two targets were absent. Green, commit
+`56a2401ae`, adds the actual installed TTLV constructor/view/decoder calls.
+The focused test and full Java suite pass; the full suite completed 57 tests
+without failures, errors, or skips. The selected validator accepts
+27,196/27,196 cells with zero failures. The generated ledger records 71,641
+planned, 27,196 executed, and 44,445 pending cells. The comparer matches its
+checked-in reference after refresh from the validated build report. The full
+matrix remains incomplete and the PR stays WIP.
+
+Verification on the combined branch:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$KMIPKIT_MAVEN_REPO" test \
+  --tests org.kmipkit.validator.ControlledTlsPeerTest.controlledQueryProducesPerRouteEvidenceForBothProtocolVersions
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$KMIPKIT_MAVEN_REPO" test --rerun-tasks
+python3 interop/shared/tools/validate_route_evidence.py \
+  --selected-scope --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+git diff --check
+```
