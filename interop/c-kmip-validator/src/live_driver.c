@@ -4687,6 +4687,21 @@ static bool batch_crypto_response_matches(kmipkit_client_batch_item_response_t *
 static bool created_key_crypto_response_matches(kmipkit_client_batch_item_response_t *item,
                                                 const kmipkit_unique_identifier_v1_t *identifier,
                                                 uint32_t operation, int32_t *out_status) {
+    if (operation == KMIPKIT_ENUMERATION_OPERATION_MAC_VERIFY) {
+        uint8_t present = 0, validity_present = 0, correlation_present = 0;
+        uint32_t validity_indicator = 0;
+        kmipkit_unique_identifier_v1_t result_identifier = {
+            .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1
+        };
+        kmipkit_byte_span_v1_t correlation = {0};
+        int32_t status = kmipkit_client_batch_item_response_mac_verify(
+            item, &present, &result_identifier, &validity_present, &validity_indicator,
+            &correlation_present, &correlation);
+        *out_status = status;
+        return status == 0 && present && same_text_identifier(identifier, &result_identifier) &&
+            validity_present && validity_indicator == KMIPKIT_ENUMERATION_VALIDITY_INDICATOR_VALID &&
+            !correlation_present;
+    }
     uint8_t present = 0, data_present = 0, iv_present = 0, correlation_present = 0, tag_present = 0;
     kmipkit_unique_identifier_v1_t result_identifier = {
         .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1
@@ -4881,9 +4896,10 @@ static void record_kmip_result(kmip_execution_outcome_t *outcome,
 
 static kmip_execution_outcome_t execute_created_key_crypto(kmip_live_client_t *client,
                                                            uint32_t operation) {
-    /* OASIS KMIP 2.x §§6.1.11, 6.1.17, 6.1.31/6.1.32: isolate a key around crypto. */
+    /* OASIS KMIP 2.x §§6.1.11, 6.1.17, 6.1.31–6.1.33: isolate a key around crypto. */
     bool decrypt = operation == KMIPKIT_ENUMERATION_OPERATION_DECRYPT;
-    bool mac = operation == KMIPKIT_ENUMERATION_OPERATION_MAC;
+    bool mac_verify = operation == KMIPKIT_ENUMERATION_OPERATION_MAC_VERIFY;
+    bool mac = operation == KMIPKIT_ENUMERATION_OPERATION_MAC || mac_verify;
     const uint32_t operations[] = {
         KMIPKIT_ENUMERATION_OPERATION_CREATE, KMIPKIT_ENUMERATION_OPERATION_ACTIVATE,
         operation,
@@ -4899,8 +4915,14 @@ static kmip_execution_outcome_t execute_created_key_crypto(kmip_live_client_t *c
     static const char *const mac_item_ids[] = {
         "mac-create", "mac-activate", "mac-target", "mac-revoke", "mac-destroy"
     };
-    const char *const *item_ids = mac ? mac_item_ids : decrypt ? decrypt_item_ids : encrypt_item_ids;
-    const char *operation_name = mac ? "MAC" : decrypt ? "Decrypt" : "Encrypt";
+    static const char *const mac_verify_item_ids[] = {
+        "mac-verify-create", "mac-verify-activate", "mac-verify-target",
+        "mac-verify-revoke", "mac-verify-destroy"
+    };
+    const char *const *item_ids = mac_verify ? mac_verify_item_ids :
+        mac ? mac_item_ids : decrypt ? decrypt_item_ids : encrypt_item_ids;
+    const char *operation_name = mac_verify ? "MAC Verify" :
+        mac ? "MAC" : decrypt ? "Decrypt" : "Encrypt";
     kmip_execution_outcome_t outcome = {.executed = true};
     kmipkit_client_batch_t *batch = NULL;
     kmipkit_client_batch_response_t *response = NULL;
@@ -4911,6 +4933,13 @@ static kmip_execution_outcome_t execute_created_key_crypto(kmip_live_client_t *c
     kmipkit_ttlv_value_t *value = NULL;
     kmipkit_ttlv_value_t *plaintext = NULL;
     kmipkit_authentication_t *authentication = NULL;
+    static const uint8_t mac_data_bytes[] = {
+        0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+        0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
+        0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+        0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f
+    };
+    kmipkit_byte_span_v1_t mac_data = {mac_data_bytes, sizeof(mac_data_bytes)};
     const kmipkit_unique_identifier_v1_t placeholder = {
         .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1,
         .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION,
@@ -4919,7 +4948,8 @@ static kmip_execution_outcome_t execute_created_key_crypto(kmip_live_client_t *c
     uint32_t key_algorithm = mac ? KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_HMAC_SHA256 :
         KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES;
     uint32_t key_length = mac ? 256U : 128U;
-    uint32_t usage_mask = mac ? KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_MAC_GENERATE :
+    uint32_t usage_mask = mac_verify ? KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_MAC_VERIFY :
+        mac ? KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_MAC_GENERATE :
         decrypt ? KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_DECRYPT :
         KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_ENCRYPT;
     int32_t status = create_cryptographic_key_attributes(
@@ -4943,7 +4973,9 @@ static kmip_execution_outcome_t execute_created_key_crypto(kmip_live_client_t *c
     if (status == 0 && !append_ttlv_value(client, &parameters, UINT32_C(0x420028), &value)) status = -1;
     const uint8_t *input = decrypt ? BATCH_CRYPTO_CIPHERTEXT : BATCH_CRYPTO_PLAINTEXT;
     if (status == 0) status = batch_crypto_secret_value(input, sizeof(BATCH_CRYPTO_PLAINTEXT), &plaintext);
-    if (status == 0 && mac) status = kmipkit_client_batch_item_mac(
+    if (status == 0 && mac_verify) status = kmipkit_client_batch_item_mac_verify(
+        &placeholder, parameters, plaintext, &mac_data, NULL, 0, 0, &items[2]);
+    else if (status == 0 && mac) status = kmipkit_client_batch_item_mac(
         &placeholder, parameters, plaintext, NULL, 0, 0, &items[2]);
     else if (status == 0 && decrypt) status = kmipkit_client_batch_item_decrypt(
         &placeholder, parameters, plaintext, NULL, NULL, NULL, 0, 0, NULL, &items[2]);
@@ -5399,6 +5431,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         return execute_created_key_crypto(client, KMIPKIT_ENUMERATION_OPERATION_DECRYPT);
     if (strcmp(test_case->case_id, "test-op-mac") == 0)
         return execute_created_key_crypto(client, KMIPKIT_ENUMERATION_OPERATION_MAC);
+    if (strcmp(test_case->case_id, "test-op-mac-verify") == 0)
+        return execute_created_key_crypto(client, KMIPKIT_ENUMERATION_OPERATION_MAC_VERIFY);
     if (strcmp(test_case->operation, "Discover Versions") == 0 &&
         client->protocol_minor == 0) {
         return outcome_not_run(

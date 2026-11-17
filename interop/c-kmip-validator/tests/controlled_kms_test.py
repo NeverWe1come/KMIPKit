@@ -188,6 +188,8 @@ def response(operations: tuple[int, ...], protocol_minor: int,
         elif operation == 35:
             payload_value = tlv(0x420094, 7, b"fixture-key-1") + tlv(
                 0x4200C6, 8, bytes(range(32)))
+        elif operation == 36:
+            payload_value = tlv(0x420094, 7, b"fixture-key-1") + enumeration(0x42009B, 1)
         elif operation in (13, 14, 15, 48, 49):
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
         elif operation == 11:
@@ -475,6 +477,7 @@ def main() -> int:
     expected_operations += (1, 18, 31, 19, 20)
     expected_operations += (1, 18, 32, 19, 20)
     expected_operations += (1, 18, 35, 19, 20)
+    expected_operations += (1, 18, 36, 19, 20)
     expected_operations += stop_on_first_failure_batch
     expected_operations += (1, 25)
     expected_cases += ("test-op-cancel",)
@@ -513,6 +516,7 @@ def main() -> int:
     expected_cases += ("test-op-encrypt",)
     expected_cases += ("test-op-decrypt",)
     expected_cases += ("test-op-mac",)
+    expected_cases += ("test-op-mac-verify",)
     expected_cases += ("test-batch-stop-on-first-failure",)
     expected_cases += ("test-neg-destroy-active-without-revoke",)
     expected_cases += ("test-op-add-attribute",)
@@ -679,6 +683,17 @@ def main() -> int:
                                         "isolated MAC batch omitted or duplicated a unique item ID"
                                     )
                                 response_item_ids = expected_mac_item_ids
+                            if operations == (1, 18, 36, 19, 20):
+                                expected_mac_verify_item_ids = (
+                                    b"mac-verify-create", b"mac-verify-activate", b"mac-verify-target",
+                                    b"mac-verify-revoke", b"mac-verify-destroy",
+                                )
+                                if any(request.count(tlv(0x420093, 8, item_id)) != 1
+                                       for item_id in expected_mac_verify_item_ids):
+                                    raise AssertionError(
+                                        "isolated MAC Verify batch omitted or duplicated a unique item ID"
+                                    )
+                                response_item_ids = expected_mac_verify_item_ids
                             if operations == stop_on_first_failure_batch:
                                 if (request.count(integer(0x42000D, 2)) != 1 or
                                         request.count(tlv(0x420094, 7, b"missing-key")) != 1 or
