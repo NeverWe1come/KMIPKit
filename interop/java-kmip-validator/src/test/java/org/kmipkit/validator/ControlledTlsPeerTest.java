@@ -1380,7 +1380,7 @@ class ControlledTlsPeerTest {
                         + genericTagEventCount + typedTagIdentityEventCount
                         + booleanFieldRouteEventCount + scalarMessageFieldRouteEventCount + itemTypeRouteEventCount
                         + scalarTypedParserEventCount
-                        + 91 // BEC, batch IDs, async payload, Ping, Endpoint Role, Object Defaults, derivation, and Extension Information member cells.
+                        + 97 // BEC, batch IDs, async payload, Ping, Endpoint Role, Object Defaults, derivation, and Extension Information member cells.
                         + tagAggregateEventCount
                         + referencedEnumEventCount + referencedEnumAggregateEventCount,
                 report.path("events").size());
@@ -4730,6 +4730,15 @@ class ControlledTlsPeerTest {
                 0x420151, 1, protocolVersion);
         appendGenericEnumerationRouteEvents(events,
                 "test-norm-payload-client-set-endpoint-role-request-21-001",
+                "KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE",
+                0x42005c, 0x32, protocolVersion);
+        // KMIP 2.1 §6.1.54 Table 332 returns the role accepted by the server; §11.19 assigns Client value 1.
+        appendGenericEnumerationRouteEvents(events,
+                "test-norm-payload-client-set-endpoint-role-response-21-001",
+                "KMIPKIT-PAYLOAD-CLIENT-SET-ENDPOINT-ROLE-RESPONSE-21-001",
+                0x420151, 1, protocolVersion);
+        appendGenericEnumerationRouteEvents(events,
+                "test-norm-payload-client-set-endpoint-role-response-21-001",
                 "KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE",
                 0x42005c, 0x32, protocolVersion);
     }
