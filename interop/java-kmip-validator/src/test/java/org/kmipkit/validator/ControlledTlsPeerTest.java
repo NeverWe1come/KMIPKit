@@ -428,6 +428,15 @@ class ControlledTlsPeerTest {
                     "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION"),
             new NormativeTarget("test-norm-message-field-message-field-9-13-criticality-indicator",
                     "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-CRITICALITY-INDICATOR"));
+    private static final NormativeTarget REQUEST_HEADER_ATTESTATION_TYPE = new NormativeTarget(
+            "test-norm-message-field-message-field-8-2-attestation-type",
+            "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ATTESTATION-TYPE");
+    private static final List<Long> REQUEST_HEADER_ATTESTATION_TYPE_VALUES = List.of(1L, 2L);
+    private static final List<String> REQUEST_HEADER_ATTESTATION_TYPE_ROUTES = List.of(
+            "java.generic-ttlv.ttlv_item.create",
+            "java.generic-ttlv.function.ttlv_item_view_from_item",
+            "java.generic-ttlv.ttlv_codec.decode",
+            "java.typed-protocol.model.org.kmipkit.message.requestmessage.fromttlv");
     private static final List<NormativeTarget> REQUEST_MESSAGE_PARSE_TARGETS = List.of(
             new NormativeTarget("test-norm-message-field-message-field-9-3-attestation-capable-indicator",
                     "KMIPKIT-ELEM-MESSAGE-FIELD-9-3-ATTESTATION-CAPABLE-INDICATOR"),
@@ -445,6 +454,7 @@ class ControlledTlsPeerTest {
                     "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION"),
             new NormativeTarget("test-norm-message-field-message-field-9-13-criticality-indicator",
                     "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-CRITICALITY-INDICATOR"),
+            REQUEST_HEADER_ATTESTATION_TYPE,
             new NormativeTarget("test-norm-message-field-message-field-8-2-asynchronous-indicator",
                     "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ASYNCHRONOUS-INDICATOR"),
             new NormativeTarget("test-norm-message-field-message-field-8-2-batch-count",
@@ -1254,6 +1264,17 @@ class ControlledTlsPeerTest {
                 }
             }
         }
+        for (String route : REQUEST_HEADER_ATTESTATION_TYPE_ROUTES) {
+            assertEquals(KMIP_2_0_AND_2_1.size(), routeEventCount(report.path("events"),
+                    REQUEST_HEADER_ATTESTATION_TYPE.caseId(), route),
+                    "Attestation Type must complete its repeatable generic or typed route cells.");
+            for (String version : KMIP_2_0_AND_2_1) {
+                JsonNode event = findRouteEvent(report.path("events"),
+                        REQUEST_HEADER_ATTESTATION_TYPE.caseId(), route, version,
+                        REQUEST_HEADER_ATTESTATION_TYPE.targetId());
+                assertEquals("passed", event.path("status").asText());
+            }
+        }
         NormativeTarget batchErrorContinuationHeader = REQUEST_HEADER_SCALAR_ROUTE_TARGETS.get(2);
         assertEquals(KMIP_2_0_AND_2_1.size(), routeEventCount(report.path("events"),
                 batchErrorContinuationHeader.caseId(),
@@ -1460,9 +1481,9 @@ class ControlledTlsPeerTest {
         int batchItemGenericRouteEventCount = KMIP_2_0_AND_2_1.size() * 4;
         int batchItemAdditionalResponseRouteEventCount = KMIP_2_0_AND_2_1.size() * 12;
         int batchItemRenderedResponseViewEventCount = KMIP_2_0_AND_2_1.size() * 3 * 3;
-        int normativeMessageFieldGenericRouteEventCount = KMIP_2_0_AND_2_1.size() * 31;
+        int normativeMessageFieldGenericRouteEventCount = KMIP_2_0_AND_2_1.size() * 34;
         int normativeMessageFieldParserRouteEventCount = KMIP_2_0_AND_2_1.size()
-                * (16 + REQUEST_HEADER_SCALAR_ROUTE_TARGETS.size());
+                * (17 + REQUEST_HEADER_SCALAR_ROUTE_TARGETS.size());
         int normativeBatchItemAccessorRouteEventCount = KMIP_2_0_AND_2_1.size() * 10;
         int newAttributePayloadRouteEventCount = KMIP_2_0_AND_2_1.size() * 3 * 20;
         int objectGroupLocalRouteEventCount = 3;
@@ -5160,6 +5181,10 @@ class ControlledTlsPeerTest {
         // OASIS KMIP 2.0/2.1 §8.3 defines the optional Boolean Ephemeral field in a Request Batch Item.
         appendMessageFieldBooleanRoutes(events, "test-norm-message-field-message-field-8-3-ephemeral",
                 "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-EPHEMERAL", 0x420154, protocolVersion);
+        // OASIS KMIP 2.0/2.1 §8.2 defines Attestation Type as a repeatable Enumeration in Request Header.
+        appendGenericEnumerationRouteEvents(events, REQUEST_HEADER_ATTESTATION_TYPE.caseId(),
+                REQUEST_HEADER_ATTESTATION_TYPE.targetId(), 0x4200c7,
+                REQUEST_HEADER_ATTESTATION_TYPE_VALUES.get(0), protocolVersion);
         appendMessageFieldIntegerRoutes(events, "test-norm-message-field-message-field-8-5-batch-count",
                 "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-BATCH-COUNT", protocolVersion, false);
         appendMessageFieldIntegerRoutes(events, "test-norm-message-field-message-field-9-5-batch-count",
@@ -7538,6 +7563,8 @@ class ControlledTlsPeerTest {
             assertEquals(java.util.Optional.of("client-correlation"), header.clientCorrelationValue());
             assertEquals(java.util.OptionalLong.of(2L), header.batchErrorContinuationOption());
             assertEquals(java.util.OptionalLong.of(1L), header.timeStamp());
+            assertEquals(REQUEST_HEADER_ATTESTATION_TYPE_VALUES, header.attestationTypes(),
+                    "Request Header must preserve each repeated Attestation Type in wire order.");
             assertEquals(0x420106, serverCorrelationTag.raw());
             assertArrayEquals("server-correlation".getBytes(StandardCharsets.US_ASCII),
                     serverCorrelationValue.bytes());
@@ -7684,6 +7711,9 @@ class ControlledTlsPeerTest {
                 TtlvValue.TextString("server-correlation".getBytes(StandardCharsets.US_ASCII), limits), limits);
         header = appendTtlvItem(header, 0x420007, TtlvValue.Enumeration(1), limits);
         header = appendTtlvItem(header, 0x4200d3, TtlvValue.Boolean(true), limits);
+        for (long value : REQUEST_HEADER_ATTESTATION_TYPE_VALUES) {
+            header = appendTtlvItem(header, 0x4200c7, TtlvValue.Enumeration(value), limits);
+        }
         header = appendTtlvItem(header, 0x42000e, TtlvValue.Enumeration(2), limits);
         header = appendTtlvItem(header, 0x420010, TtlvValue.Boolean(true), limits);
         header = appendTtlvItem(header, 0x420092, TtlvValue.DateTime(1), limits);
@@ -7717,6 +7747,10 @@ class ControlledTlsPeerTest {
                 item(0x420105, 7, "client-correlation".getBytes(StandardCharsets.US_ASCII)),
                 item(0x420106, 7, "server-correlation".getBytes(StandardCharsets.US_ASCII)),
                 item(0x420007, 5, intBytes(1)), item(0x4200d3, 6, longBytes(1)),
+                item(0x4200c7, 5,
+                        intBytes(Math.toIntExact(REQUEST_HEADER_ATTESTATION_TYPE_VALUES.get(0)))),
+                item(0x4200c7, 5,
+                        intBytes(Math.toIntExact(REQUEST_HEADER_ATTESTATION_TYPE_VALUES.get(1)))),
                 item(0x42000e, 5, intBytes(2)), item(0x420010, 6, longBytes(1)),
                 item(0x420092, 9, longBytes(1)), item(0x42000d, 2, intBytes(2)));
         byte[] requestPayload = structure(0x420079, item(0x420074, 5, intBytes(1)));
