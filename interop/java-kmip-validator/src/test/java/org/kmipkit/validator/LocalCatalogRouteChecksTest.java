@@ -161,6 +161,22 @@ class LocalCatalogRouteChecksTest {
     }
 
     @Test
+    void executesCertificateTypeStructureMemberWithAssignedEnumerationValue() throws Exception {
+        JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
+        String caseId = "test-norm-structure-member-structure-member-2-1-certificate-certificate-type";
+        List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
+
+        LocalCatalogRouteChecks.executeScalarStructureMembers(catalog, "2.1", Set.of(caseId), invocations::add);
+
+        assertEquals(4, invocations.size());
+        try (var decoded = TtlvCodec.decode(invocations.get(0).wire());
+                var view = decoded.view(); var value = view.value()) {
+            assertEquals(TtlvItemType.Enumeration, view.itemType());
+            assertEquals(1, value.enumeration(), "X.509 is the first assigned Certificate Type value.");
+        }
+    }
+
+    @Test
     void executesServerQueryFunctionPayloadThroughGenericTtlvRoutes() throws Exception {
         JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
         String caseId = "test-norm-payload-server-query-request-20-001";
