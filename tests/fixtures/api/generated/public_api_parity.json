@@ -392905,7 +392905,12 @@
         "bindings/python/tests/test_delete_attribute_operation.py",
         "crates/kmipkit-ffi/tests/support/delete_attribute_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs",
-        "tools/api_manifest/tests/test_t076_client_mapping.py"
+        "tools/api_manifest/tests/test_t076_client_mapping.py",
+        "bindings/c/tests/public_client_api.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/DeleteAttributeBuilderTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "crates/kmipkit-client/tests/unit/fluent_request_tests.rs",
+        "tools/api_manifest/tests/test_0093_delete_attribute_builder_manifest.py"
       ],
       "scope": "client_1_0",
       "section": "6.1.13"
