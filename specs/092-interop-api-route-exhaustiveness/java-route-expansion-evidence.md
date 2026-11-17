@@ -1854,6 +1854,43 @@ python3 interop/java-kmip-validator/tools/compare_route_ledger.py
 git diff --check
 ```
 
+## Java repeatable Any object-attribute members — 2026-11-17
+
+Red commit `d9285a466` requires the generic Item creation, Item view, and
+decoder routes for the six repeatable `Any attribute in §4 - Object
+Attributes` members in KMIP 2.0/2.1 §§5.1–5.7. The focused test failed because
+the catalog-driven route executor was absent. Green commit `957355db1` uses a
+well-formed Name attribute (KMIP 2.0/2.1 §4.32; tags §§11.54/11.56), exercises
+absent, single, and repeated member counts, and emits each required route for
+both protocol versions. Existing route evidence is checked first to prevent
+duplicate cells.
+
+The focused local test and full Java consumer suite pass (58 tests, no skips or
+failures). The evidence validator accepts 27,396/27,396 selected cells with
+zero failed cells. The ledger records 71,641 planned, 27,396 executed, and
+44,245 pending cells. This closes 36 cells; the full matrix remains incomplete
+and the PR remains WIP.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-tmp" \
+  bash bindings/java/gradlew -p interop/java-kmip-validator \
+  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" \
+  test --tests org.kmipkit.validator.LocalCatalogRouteChecksTest.executesRepeatableObjectAttributeMemberThroughGenericTtlvRoutes
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-tmp" \
+  bash bindings/java/gradlew -p interop/java-kmip-validator \
+  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" test
+python3 interop/shared/tools/validate_route_evidence.py \
+  --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+git diff --check
+```
+
 ## Java KMIP 2.0/2.1 repeatable Response Header Attestation Type — 2026-11-17
 
 OASIS KMIP 2.0/2.1 §8.5 specifies an optional, repeatable Attestation Type in

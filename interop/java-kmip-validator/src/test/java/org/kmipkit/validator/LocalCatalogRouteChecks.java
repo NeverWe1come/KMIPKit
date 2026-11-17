@@ -193,7 +193,11 @@ final class LocalCatalogRouteChecks {
         }
     }
 
-    /** Executes the repeatable Any object-attribute member with a well-formed Name attribute. */
+    /**
+     * Executes the repeatable Any object-attribute member with a Name attribute.
+     * The Name structure follows OASIS KMIP 2.0/2.1 §4.32; the six member cases
+     * are defined by §§5.1–5.7, and the Name tags by §§11.54/11.56.
+     */
     static void executeAnyObjectAttributeMembers(JsonNode catalog, String version, Set<String> selectedCaseIds,
             EvidenceSink sink) throws Exception {
         Set<String> emitted = new java.util.HashSet<>();
