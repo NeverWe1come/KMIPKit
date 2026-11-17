@@ -350,3 +350,21 @@ branches, and the common CI therefore reports a planned matrix only.
 - The ledger is regenerated from that validated report. These checks do not
   complete the global Java matrix or establish vendor interoperability; #216
   remains WIP.
+
+## 2026-11-17 #216 Batch Order Option stack sync
+
+- Synced the latest #187 Batch Order Option slice into the Usage Limits branch.
+  The combined Java report invokes 27,298/27,298 selected cells with zero
+  failures and leaves 44,343/71,641 global cells pending across 1,215 case IDs.
+- The full Java suite passes 57/57 tests with no failures or skips. Red/Green/
+  Refactor commits are `234626a25`, `4741dad52`, and `bd9cc43a5` on #187.
+- Verification commands: `bash ../../bindings/java/gradlew --no-daemon
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks`;
+  `python3 ../shared/tools/validate_route_evidence.py --selected-scope --report
+  build/route-execution-evidence.json --artifact-sha256
+  504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545
+  --write-ledger`; `python3 tools/compare_route_ledger.py --refresh-reference`;
+  `python3 tools/compare_route_ledger.py`.
+- The ledger is regenerated from the validated report; the full matrix remains
+  incomplete and no vendor KMS interoperability has been exercised. #216
+  remains WIP.

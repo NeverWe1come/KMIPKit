@@ -38,6 +38,9 @@ final class LocalCatalogRouteChecks {
     static final String ROTATE_NAME_VALUE_CASE_ID =
             "test-norm-structure-member-structure-member-4-53-rotate-name-value";
     static final String ROTATE_NAME_VALUE_TARGET_ID = "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-53-ROTATE-NAME-VALUE";
+    static final String BATCH_ORDER_OPTION_CASE_ID =
+            "test-norm-message-field-message-field-8-2-batch-order-option";
+    static final String BATCH_ORDER_OPTION_TARGET_ID = "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION";
 
     private LocalCatalogRouteChecks() { }
 
@@ -639,6 +642,45 @@ final class LocalCatalogRouteChecks {
                 "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
                 "org.kmipkit.extensions.AttributeSet.tryNew", "construct",
                 structureWire(0x420125, rotateNameWire));
+    }
+
+    // OASIS KMIP 2.0/2.1 §9.8 Tables 369/407: Batch Order Option is a Boolean.
+    static void executeBatchOrderOption(JsonNode catalog, String version, EvidenceSink sink) throws Exception {
+        if (!"2.0".equals(version) && !"2.1".equals(version)) return;
+        JsonNode target = findTarget(catalog, BATCH_ORDER_OPTION_TARGET_ID);
+        assertEquals("Batch Order Option", target.path("name").asText());
+        assertEquals("message_field", target.path("kind").asText());
+        int tagCode = messageFieldTag(catalog, BATCH_ORDER_OPTION_TARGET_ID, version);
+        byte[] wire = booleanWire(tagCode, true);
+
+        try (TtlvValue value = TtlvValue.Boolean(true);
+                RawTag raw = RawTag.fromRaw(tagCode);
+                Tag tag = raw.checked();
+                TtlvItem item = TtlvItem.create(tag, value, CodecLimits.defaults());
+                TtlvItemView itemView = item.view();
+                Tag itemTag = itemView.tag();
+                TtlvValueView itemValue = itemView.value();
+                TtlvItem decoded = TtlvCodec.decode(wire);
+                TtlvItemView decodedView = decoded.view();
+                Tag decodedTag = decodedView.tag();
+                TtlvValueView decodedValue = decodedView.value()) {
+            assertEquals(tagCode, raw.raw());
+            assertEquals(tagCode, itemTag.raw());
+            assertEquals(TtlvItemType.Boolean, itemView.itemType());
+            assertEquals(true, itemValue.booleanValue());
+            assertEquals(tagCode, decodedTag.raw());
+            assertEquals(TtlvItemType.Boolean, decodedView.itemType());
+            assertEquals(true, decodedValue.booleanValue());
+        }
+        emitRoute(sink, BATCH_ORDER_OPTION_CASE_ID, BATCH_ORDER_OPTION_TARGET_ID,
+                "java.generic-ttlv.ttlv_item.create", "org.kmipkit.ttlv.TtlvItem.create",
+                "construct", wire);
+        emitRoute(sink, BATCH_ORDER_OPTION_CASE_ID, BATCH_ORDER_OPTION_TARGET_ID,
+                "java.generic-ttlv.function.ttlv_item_view_from_item", "org.kmipkit.ttlv.TtlvItem.view",
+                "decode", wire);
+        emitRoute(sink, BATCH_ORDER_OPTION_CASE_ID, BATCH_ORDER_OPTION_TARGET_ID,
+                "java.generic-ttlv.ttlv_codec.decode", "org.kmipkit.ttlv.TtlvCodec.decode",
+                "decode", wire);
     }
 
     private static byte[] rotateNameAttributeWire(byte[] nameBytes, long nameType) {
