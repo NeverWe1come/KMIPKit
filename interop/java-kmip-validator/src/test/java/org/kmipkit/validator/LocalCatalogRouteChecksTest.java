@@ -166,7 +166,7 @@ class LocalCatalogRouteChecksTest {
         String caseId = "test-norm-payload-server-query-request-20-001";
         List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
 
-        LocalCatalogRouteChecks.executeQueryPayloadScalarFields(catalog, "2.0", Set.of(caseId), invocations::add);
+        LocalCatalogRouteChecks.executeServerPayloadScalarFields(catalog, "2.0", Set.of(caseId), invocations::add);
 
         assertEquals(List.of(
                 "java.generic-ttlv.ttlv_item.create",

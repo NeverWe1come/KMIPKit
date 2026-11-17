@@ -827,14 +827,14 @@ class ControlledTlsPeerTest {
         int booleanFieldRouteEventCount = 0;
         int scalarMessageFieldRouteEventCount = 0;
         int scalarStructureMemberRouteEventCount = 0;
-        int queryPayloadRouteEventCount = 0;
+        int serverPayloadRouteEventCount = 0;
         int anyObjectAttributeRouteEventCount = 0;
         int scalarTypedParserEventCount = 0;
         int itemTypeRouteEventCount = 0;
         Set<String> booleanFieldCaseIds = new java.util.HashSet<>();
         Set<String> anyObjectAttributeCaseIds = new java.util.HashSet<>();
         Set<String> scalarStructureMemberCaseIds = new java.util.LinkedHashSet<>();
-        Set<String> queryPayloadCaseIds = new java.util.LinkedHashSet<>();
+        Set<String> serverPayloadCaseIds = new java.util.LinkedHashSet<>();
 
         for (String protocolVersion : KMIP_2_0_AND_2_1) {
             appendLocalQueryRouteEvents(events, protocolVersion, requestTreeHash);
@@ -1102,22 +1102,22 @@ class ControlledTlsPeerTest {
             }
             scalarStructureMemberRouteEventCount += scalarStructureMemberInvocations.size();
             assertScalarStructureMemberGenericRouteEvidence(events, protocolVersion);
-            Set<String> missingQueryPayloadCases = missingQueryPayloadScalarCaseIds(events, protocolVersion);
-            queryPayloadCaseIds.addAll(missingQueryPayloadCases);
-            List<LocalCatalogRouteChecks.Invocation> queryPayloadInvocations = new ArrayList<>();
-            LocalCatalogRouteChecks.executeQueryPayloadScalarFields(readRouteEvidenceCatalog(), protocolVersion,
-                    missingQueryPayloadCases, queryPayloadInvocations::add);
-            for (LocalCatalogRouteChecks.Invocation invocation : queryPayloadInvocations) {
+            Set<String> missingServerPayloadCases = missingServerPayloadScalarCaseIds(events, protocolVersion);
+            serverPayloadCaseIds.addAll(missingServerPayloadCases);
+            List<LocalCatalogRouteChecks.Invocation> serverPayloadInvocations = new ArrayList<>();
+            LocalCatalogRouteChecks.executeServerPayloadScalarFields(readRouteEvidenceCatalog(), protocolVersion,
+                    missingServerPayloadCases, serverPayloadInvocations::add);
+            for (LocalCatalogRouteChecks.Invocation invocation : serverPayloadInvocations) {
                 appendLocalCatalogInvocation(events, protocolVersion, invocation);
             }
-            queryPayloadRouteEventCount += queryPayloadInvocations.size();
+            serverPayloadRouteEventCount += serverPayloadInvocations.size();
         }
 
         int tagAggregateEventCount = appendTagAggregateRouteEvents(events);
         assertEquals(expectedTagAggregateEventCount(), tagAggregateEventCount,
                 "The Tag aggregate must represent every catalogued tag and tag-allocation range cell.");
         int additionalCaseIdCount = writeRouteExecutionReport(reportPath, mapper, events,
-                scalarStructureMemberCaseIds, queryPayloadCaseIds);
+                scalarStructureMemberCaseIds, serverPayloadCaseIds);
         assertTrue(Files.isRegularFile(reportPath),
                 "Installed Query calls against the controlled peer must emit route execution evidence.");
         JsonNode report = new ObjectMapper().readTree(reportPath.toFile());
@@ -1655,7 +1655,7 @@ class ControlledTlsPeerTest {
                         + genericTagEventCount + typedTagIdentityEventCount
                         + booleanFieldRouteEventCount + scalarMessageFieldRouteEventCount
                         + scalarStructureMemberRouteEventCount + itemTypeRouteEventCount
-                        + queryPayloadRouteEventCount
+                        + serverPayloadRouteEventCount
                         + anyObjectAttributeRouteEventCount
                         + scalarTypedParserEventCount
                         + 97 // BEC, batch IDs, async payload, Ping, Endpoint Role, Object Defaults, derivation, and Extension Information member cells.
@@ -3980,7 +3980,7 @@ class ControlledTlsPeerTest {
     }
 
     private static int writeRouteExecutionReport(Path reportPath, ObjectMapper mapper,
-            ArrayNode events, Set<String> scalarStructureMemberCaseIds, Set<String> queryPayloadCaseIds)
+            ArrayNode events, Set<String> scalarStructureMemberCaseIds, Set<String> serverPayloadCaseIds)
             throws Exception {
         Path catalogPath = routeEvidenceCatalogPath();
         Path manifestPath = Path.of("../shared/coverage/route-capabilities.json");
@@ -4067,7 +4067,7 @@ class ControlledTlsPeerTest {
         appendScalarMessageFieldCaseIds(caseIds, events);
         int additionalCaseIdCount = appendCaseIds(caseIds,
                 scalarStructureMemberCaseIds);
-        additionalCaseIdCount += appendCaseIds(caseIds, queryPayloadCaseIds);
+        additionalCaseIdCount += appendCaseIds(caseIds, serverPayloadCaseIds);
         appendItemTypeEnumerationCaseIds(caseIds, events);
         caseIds.add("test-enum-pkcs#11-function");
         caseIds.add("test-enum-pkcs#11-return-code");
@@ -4585,18 +4585,22 @@ class ControlledTlsPeerTest {
         return missing;
     }
 
-    private static Set<String> missingQueryPayloadScalarCaseIds(JsonNode events, String version) throws Exception {
+    private static Set<String> missingServerPayloadScalarCaseIds(JsonNode events, String version) throws Exception {
         JsonNode catalog = readRouteEvidenceCatalog();
         List<String> routes = List.of("java.generic-ttlv.ttlv_item.create",
                 "java.generic-ttlv.function.ttlv_item_view_from_item", "java.generic-ttlv.ttlv_codec.decode");
-        Set<String> supportedFields = Set.of("Query Function", "Object Type", "Vendor Identification",
+        Set<String> queryFields = Set.of("Query Function", "Object Type", "Vendor Identification",
                 "Attestation Type", "Client Registration Method");
         Set<String> missing = new java.util.LinkedHashSet<>();
         for (JsonNode testCase : catalog.path("test_cases")) {
             JsonNode requires = testCase.path("requires");
+            String operationId = requires.path("operation_id").asText();
+            boolean supportedQueryField = "KMIPKIT-ELEM-OP-S2C-QUERY".equals(operationId)
+                    && queryFields.contains(requires.path("field_name").asText());
+            boolean supportedNotifyField = "KMIPKIT-ELEM-OP-S2C-NOTIFY".equals(operationId)
+                    && "Unique Identifier".equals(requires.path("field_name").asText());
             if (!"operation_payload_field".equals(requires.path("target_kind").asText())
-                    || !"KMIPKIT-ELEM-OP-S2C-QUERY".equals(requires.path("operation_id").asText())
-                    || !supportedFields.contains(requires.path("field_name").asText())
+                    || !(supportedQueryField || supportedNotifyField)
                     || !"local_model".equals(testCase.path("execution").path("mode").asText())
                     || !appliesToVersion(testCase, version)) continue;
             String caseId = testCase.path("case_id").asText();
@@ -4611,7 +4615,7 @@ class ControlledTlsPeerTest {
                 missing.add(caseId);
             } else {
                 assertEquals(routes.size() * 2, present,
-                        "Query payload route evidence must be complete before reuse for " + caseId);
+                        "Server payload route evidence must be complete before reuse for " + caseId);
             }
         }
         return missing;

@@ -249,8 +249,8 @@ final class LocalCatalogRouteChecks {
         }
     }
 
-    /** Executes scalar fields from OASIS KMIP 2.0/2.1 §6.2.4 Query payloads. */
-    static void executeQueryPayloadScalarFields(JsonNode catalog, String version, Set<String> selectedCaseIds,
+    /** Executes selected scalar fields from OASIS KMIP 2.0/2.1 server-initiated operation payloads. */
+    static void executeServerPayloadScalarFields(JsonNode catalog, String version, Set<String> selectedCaseIds,
             EvidenceSink sink) throws Exception {
         Set<String> emitted = new java.util.HashSet<>();
         CodecLimits limits = CodecLimits.defaults();
@@ -260,12 +260,14 @@ final class LocalCatalogRouteChecks {
                     || !"local_model".equals(testCase.path("execution").path("mode").asText())
                     || !applies(testCase, version)) continue;
             JsonNode requires = testCase.path("requires");
+            String operationId = requires.path("operation_id").asText();
             if (!"operation_payload_field".equals(requires.path("target_kind").asText())
-                    || !"KMIPKIT-ELEM-OP-S2C-QUERY".equals(requires.path("operation_id").asText())) {
-                throw new IllegalArgumentException("Selected case is not a Query payload field: " + caseId);
+                    || !Set.of("KMIPKIT-ELEM-OP-S2C-QUERY", "KMIPKIT-ELEM-OP-S2C-NOTIFY")
+                            .contains(operationId)) {
+                throw new IllegalArgumentException("Selected case is not a supported server payload field: " + caseId);
             }
             String fieldName = requires.path("field_name").asText();
-            QueryPayloadValue fixture = queryPayloadValue(catalog, fieldName);
+            QueryPayloadValue fixture = serverPayloadValue(catalog, operationId, fieldName);
             int tagCode = tagCodeNamed(catalog, fieldName, version);
             TtlvItemType itemType = scalarMessageFieldType(fixture.encoding());
             byte[] wire = scalarWire(tagCode, itemType.code(), fixture.bytes());
@@ -288,7 +290,6 @@ final class LocalCatalogRouteChecks {
                 assertScalarMessageFieldValue(decodedValue, itemType, fixture.bytes(), fixture.number());
             }
             String targetId = requires.path("normative_target_id").asText();
-            String operationId = requires.path("operation_id").asText();
             for (String evidenceTargetId : List.of(targetId, operationId)) {
                 emitRoute(sink, caseId, evidenceTargetId, "java.generic-ttlv.ttlv_item.create",
                         "org.kmipkit.ttlv.TtlvItem.create", "construct", wire);
@@ -305,7 +306,15 @@ final class LocalCatalogRouteChecks {
         }
     }
 
-    private static QueryPayloadValue queryPayloadValue(JsonNode catalog, String fieldName) {
+    private static QueryPayloadValue serverPayloadValue(JsonNode catalog, String operationId, String fieldName) {
+        if ("KMIPKIT-ELEM-OP-S2C-NOTIFY".equals(operationId) && "Unique Identifier".equals(fieldName)) {
+            return new QueryPayloadValue("Text String", 0,
+                    "kmipkit-notify-validator".getBytes(StandardCharsets.US_ASCII));
+        }
+        if (!"KMIPKIT-ELEM-OP-S2C-QUERY".equals(operationId)) {
+            throw new IllegalArgumentException("No source-backed scalar server payload fixture: " + operationId
+                    + " / " + fieldName);
+        }
         return switch (fieldName) {
             case "Query Function" -> queryEnumeration(catalog, "QUERY-FUNCTION", "Query Operations");
             case "Object Type" -> queryEnumeration(catalog, "OBJECT-TYPE", "Symmetric Key");
