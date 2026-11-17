@@ -659,6 +659,7 @@ class ControlledTlsPeerTest {
         String requestTreeHash = normalizedTreeSha256(queryOperation);
         int typedTagIdentityEventCount = 0;
         int booleanFieldRouteEventCount = 0;
+        int itemTypeRouteEventCount = 0;
         Set<String> booleanFieldCaseIds = new java.util.HashSet<>();
 
         for (String protocolVersion : KMIP_2_0_AND_2_1) {
@@ -666,6 +667,13 @@ class ControlledTlsPeerTest {
             appendTagRangeRouteEvents(events, protocolVersion);
             appendActivationDateLocalRouteEvents(events, protocolVersion);
             appendGenericEnumerationRouteEvents(events, enumerationFixtures, protocolVersion);
+            List<LocalCatalogRouteChecks.Invocation> itemTypeInvocations = new ArrayList<>();
+            LocalCatalogRouteChecks.executeItemTypeEnumerations(readRouteEvidenceCatalog(), protocolVersion,
+                    itemTypeInvocations::add);
+            itemTypeRouteEventCount += itemTypeInvocations.size();
+            for (LocalCatalogRouteChecks.Invocation invocation : itemTypeInvocations) {
+                appendLocalCatalogInvocation(events, protocolVersion, invocation);
+            }
             appendGenericLocalEnumerationRouteEvents(events, localEnumerationFixtures, protocolVersion);
             appendGenericBitmaskRouteEvents(events, bitmaskFixtures, protocolVersion);
             appendGenericDataTypeRouteEvents(events, dataTypeFixtures, dataTypeVectors, protocolVersion);
@@ -1230,7 +1238,7 @@ class ControlledTlsPeerTest {
                         + structureMemberStructureRouteEventCount + structureMemberByteStringRouteEventCount
                         + structureMemberValueRouteEventCount
                         + batchErrorContinuationEventCount + genericTagEventCount + typedTagIdentityEventCount
-                        + booleanFieldRouteEventCount
+                        + booleanFieldRouteEventCount + itemTypeRouteEventCount
                         + tagAggregateEventCount
                         + referencedEnumEventCount + referencedEnumAggregateEventCount,
                 report.path("events").size());
@@ -1263,7 +1271,7 @@ class ControlledTlsPeerTest {
                         + 11 + STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size()
                         + STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.size()
                         + STRUCTURE_MEMBER_VALUE_FIXTURES.size() + PROFILE_INFORMATION_CASE_IDS.size()
-                        + SERVER_INFORMATION_CASE_IDS.size() + 1 + booleanFieldCaseIds.size(),
+                        + SERVER_INFORMATION_CASE_IDS.size() + 2 + booleanFieldCaseIds.size(),
                 report.path("case_ids").size());
         List<String> expectedCredentialCaseIds = CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().toList();
         int credentialCaseStart = report.path("case_ids").size() - expectedCredentialCaseIds.size();
@@ -3595,6 +3603,7 @@ class ControlledTlsPeerTest {
         caseIds.add("test-enum-pkcs#11-function");
         caseIds.add("test-enum-pkcs#11-return-code");
         caseIds.add("test-enum-tag");
+        caseIds.add("test-enum-item-type");
         CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().forEach(caseIds::add);
         report.putArray("protocol_versions").add("2.0").add("2.1");
         ObjectNode combination = mapper.createObjectNode();

@@ -118,6 +118,61 @@ final class LocalCatalogRouteChecks {
         }
     }
 
+    /** Executes the Item Type enum values, which have no same-named standalone TTLV Tag. */
+    static void executeItemTypeEnumerations(JsonNode catalog, String version, EvidenceSink sink) throws Exception {
+        String caseId = "test-enum-item-type";
+        int rawTag = 0x420028;
+        int count = 0;
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            if (!caseId.equals(testCase.path("case_id").asText()) || !applies(testCase, version)) continue;
+            for (JsonNode target : catalog.path("normative_targets")) {
+                if (!"enumeration_value".equals(target.path("kind").asText())
+                        || !hasParent(target, "KMIPKIT-ELEM-ENUMERATION-ITEM-TYPE")) continue;
+                String targetId = target.path("target_id").asText();
+                long itemTypeCode = Long.parseUnsignedLong(
+                        target.path("wire_value").asText().replaceFirst("^0[xX]", ""), 16);
+                TtlvItemType itemType = TtlvItemType.fromCode(Math.toIntExact(itemTypeCode));
+                if (!normalizeName(itemType.name()).equals(normalizeName(target.path("name").asText()))) {
+                    throw new AssertionError("Item Type code does not match its catalogued name: " + targetId);
+                }
+                byte[] wire = scalarWire(rawTag, TtlvItemType.Enumeration.code(), Math.toIntExact(itemTypeCode));
+                try (RawTag raw = RawTag.fromRaw(rawTag); Tag tag = raw.checked();
+                        TtlvValue value = TtlvValue.Enumeration(itemTypeCode);
+                        TtlvItem item = TtlvItem.create(tag, value, CodecLimits.defaults());
+                        var view = item.view(); var viewedTag = view.tag(); var viewedValue = view.value()) {
+                    assertEquals(rawTag, viewedTag.raw());
+                    assertEquals(TtlvItemType.Enumeration, view.itemType());
+                    assertEquals(itemTypeCode, viewedValue.enumeration());
+                }
+                try (TtlvItem decoded = TtlvCodec.decode(wire);
+                        var view = decoded.view(); var decodedTag = view.tag(); var decodedValue = view.value()) {
+                    assertEquals(rawTag, decodedTag.raw());
+                    assertEquals(TtlvItemType.Enumeration, view.itemType());
+                    assertEquals(itemTypeCode, decodedValue.enumeration());
+                }
+                emit(sink, caseId, targetId, "model.org.kmipkit.ttlv.ttlvvalue.enumeration",
+                        "org.kmipkit.ttlv.TtlvValue.Enumeration", "construct", wire);
+                emit(sink, caseId, targetId, "ttlv_item.create", "org.kmipkit.ttlv.TtlvItem.create",
+                        "construct", wire);
+                emit(sink, caseId, targetId, "function.ttlv_item_view_from_item",
+                        "org.kmipkit.ttlv.TtlvItem.view", "decode", wire);
+                emit(sink, caseId, targetId, "ttlv_codec.decode", "org.kmipkit.ttlv.TtlvCodec.decode",
+                        "decode", wire);
+                count++;
+            }
+        }
+        if (count != 11) {
+            throw new IllegalArgumentException("Expected all 11 catalogued Item Type values for " + version);
+        }
+    }
+
+    private static boolean hasParent(JsonNode target, String parentId) {
+        for (JsonNode parent : target.path("parent_element_ids")) {
+            if (parentId.equals(parent.asText())) return true;
+        }
+        return false;
+    }
+
     // OASIS KMIP 2.0/2.1 §4.16 Table 59 defines Random IV in Cryptographic Parameters.
     private static void executeTypedRandomIv(String caseId, String targetId, int tagCode,
             EvidenceSink sink) throws Exception {
