@@ -2145,3 +2145,37 @@ failures and records 71,641 planned, 27,183 executed, and 44,458 pending cells
 across 1,230 pending case IDs. The Java validator suite passes 57/57 tests and
 the shared route-capability suite passes 68/68 tests; the full matrix remains
 incomplete, so the PR stays WIP.
+
+## Ping route in the Usage Limits stack — 2026-11-17
+
+The Usage Limits stack now also includes the Java KMIP 2.1 Ping evidence from
+the matrix parent. Red commit `812c615f6` required the missing response route;
+Green commit `4f2e96761` adds a controlled TLS 1.3 mutual-TLS exchange, verifies
+the actual Ping request and successful `pingResponse()`, and exercises the
+Operation Enumeration with the generic TTLV constructor, view, and decoder.
+This completes all seven cells selected for `test-op-ping` under OASIS KMIP 2.1
+§6.1.36. The selected report on the combined Usage Limits branch validates
+27,190/27,190 cells with zero failures. Its generated ledger records 71,641
+planned, 27,190 executed, and 44,451 pending cells across 1,230 pending case
+IDs. The full matrix remains incomplete, so the PR stays WIP.
+
+Verification on this combined branch:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$KMIPKIT_MAVEN_REPO" test --rerun-tasks
+python3 -m unittest interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+python3 interop/shared/tools/validate_route_evidence.py \
+  --selected-scope --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+git diff --check
+```
+
+The complete Java suite passes 57/57 tests; the shared suite passes 68/68.
+The route generator check and ledger comparison also pass. The evidence ledger
+was regenerated from the validated build report.

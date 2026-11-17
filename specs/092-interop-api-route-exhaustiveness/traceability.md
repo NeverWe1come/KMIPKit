@@ -61,3 +61,10 @@ artifact. This is part of the FR-006 artifact provenance check.
   validates 27,183/27,183 cells with zero failures. The regenerated ledger
   records 71,641 planned, 27,183 executed, and 44,458 pending cells. Full-matrix
   closure remains required.
+- **FR-003/FR-005:** The combined Usage Limits branch includes the Java KMIP
+  2.1 Ping request/response route, exercised through a controlled mTLS peer.
+  The test also verifies the generic Operation Enumeration routes under §6.1.36.
+- The latest combined selected report validates 27,190/27,190 cells with zero
+  failures. Its ledger records 71,641 planned, 27,190 executed, and 44,451
+  pending cells. This is still selected-scope evidence; full-matrix closure and
+  four-language peer runs remain required.
