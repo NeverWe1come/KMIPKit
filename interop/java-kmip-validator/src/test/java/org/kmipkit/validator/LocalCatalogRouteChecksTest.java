@@ -13,6 +13,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class LocalCatalogRouteChecksTest {
     private static final Path CATALOG = Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json");
@@ -114,5 +115,25 @@ class LocalCatalogRouteChecksTest {
         for (String caseId : expectedIndividualCaseIds) {
             assertEquals(4, invocations.stream().filter(invocation -> caseId.equals(invocation.caseId())).count());
         }
+    }
+
+    @Test
+    void executesRepeatableObjectAttributeMemberThroughGenericTtlvRoutes() throws Exception {
+        JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
+        String caseId = "test-norm-structure-member-structure-member-5-1-any-attribute-in-4-object-attributes";
+        List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
+
+        LocalCatalogRouteChecks.executeAnyObjectAttributeMembers(catalog, "2.1", Set.of(caseId),
+                invocations::add);
+
+        assertEquals(List.of(
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode"),
+                invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId).toList());
+        assertEquals(Set.of("KMIPKIT-ELEM-STRUCTURE-MEMBER-5-1-ANY-ATTRIBUTE-IN-4-OBJECT-ATTRIBUTES"),
+                invocations.stream().map(LocalCatalogRouteChecks.Invocation::targetId)
+                        .collect(java.util.stream.Collectors.toSet()));
+        invocations.forEach(invocation -> assertTrue(invocation.wire().length > 16));
     }
 }
