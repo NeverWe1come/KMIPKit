@@ -2359,7 +2359,98 @@ python3 tools/compare_route_ledger.py --refresh-reference
 python3 tools/compare_route_ledger.py
 ```
 
-The combined Java verification commands are:
+The merged-history notes below retain the Extension Tag and KMIP 2.0 Set Endpoint Role evidence from the parent branch.
+
+## Extension Tag routes included in the Usage Limits stack — 2026-11-17
+
+The refreshed stack retains all Usage Limits and derivation evidence and adds
+the Extension Tag member as an Integer Item. The controlled fixture checks the
+assigned extension tag value and exercises the Integer constructor, generic
+Item creation, Item view, and TTLV decoder in KMIP 2.0 and 2.1 (KMIP 2.0 §7.9
+Table 329; KMIP 2.1 §7.13 Table 365; tag allocation §§11.54/11.56). The four
+routes contribute eight selected cells and one case ID. The complete Java
+Gradle suite passes 57/57 tests with `--rerun-tasks`; all 68 route-capability
+unit tests pass and the route generator check reports 1,507 routes. Selected-
+scope validation accepts 27,270/27,270 invoked cells with zero failures. The
+generated ledger records 71,641 planned, 27,270 executed, and 44,371 pending
+cells across 1,219 pending case IDs; the ledger comparer passes after refresh.
+This verifies selected local routes, not the unfinished complete matrix or
+vendor interoperability. The branch remains WIP.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$KMIPKIT_MAVEN_REPO" test --rerun-tasks
+python3 -m unittest interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+python3 interop/shared/tools/validate_route_evidence.py \
+  --selected-scope --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+git diff --check
+```
+
+## Extension Tag stack sync case-count reconciliation — 2026-11-17
+
+When the Right Usage Limits stack incorporated the Extension Tag evidence, the
+controlled-peer run exposed one additional case ID beyond the expected count
+(1,480 observed versus 1,479 expected). The merge combined two independent
+baseline increments—one case from Right Usage Limits and one from Extension
+Tag—while retaining only one increment in the fixed case-count expression.
+Green increments the combined baseline to account for both cases; the focal
+controlled-peer test then passes. The complete Java suite passes 57/57 tests
+with `--rerun-tasks`; all 68 route-capability unit tests pass and the route
+generator check reports 1,507 routes. Selected-scope validation accepts
+27,278/27,278 invoked cells with zero failures. The generated ledger records
+71,641 planned, 27,278 executed, and 44,363 pending cells across 1,218 pending
+case IDs; the comparer passes after refresh. The full matrix remains
+incomplete, and the PR stays WIP.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$KMIPKIT_MAVEN_REPO" test --rerun-tasks
+python3 -m unittest interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+python3 interop/shared/tools/validate_route_evidence.py \
+  --selected-scope --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+git diff --check
+```
+
+The complete Java suite passes 57/57 tests; the shared suite passes 68/68.
+The route generator check and ledger comparison also pass. The evidence ledger
+was regenerated from the validated build report.
+
+## Set Endpoint Role routes in the Usage Limits stack — 2026-11-17
+
+The merged Java branch records generic TTLV construction, view, and decode for
+the required Endpoint Role request field and its Set Endpoint Role Operation
+Enumeration (`test-norm-payload-client-set-endpoint-role-request-21-001`). The
+wire tag is `0x420151` and the Operation value is `0x32`. OASIS KMIP 2.1
+§6.1.54 Table 331 defines the required field; §§11.19 and 11.36 define the
+Endpoint Role and Operation Enumerations.
+
+Red, commit `87f60844c`, made the controlled-peer test fail because the six
+generic route events for these two targets were absent. Green, commit
+`56a2401ae`, adds the actual installed TTLV constructor/view/decoder calls.
+The focused test and full Java suite pass; the full suite completed 57 tests
+without failures, errors, or skips. The selected validator accepts
+27,196/27,196 cells with zero failures. The generated ledger records 71,641
+planned, 27,196 executed, and 44,445 pending cells. The comparer matches its
+checked-in reference after refresh from the validated build report. The full
+matrix remains incomplete and the PR stays WIP.
+
+Verification on the combined branch:
 
 ```sh
 JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
