@@ -509,7 +509,7 @@ def main() -> int:
     expected_operations += (52, 52, 52)
     expected_operations += (26,)
     expected_cases += ("test-async-unknown-correlation-rejected",)
-    expected_operations += (10, 12, 10, 12, 10, 12, 10, 12)
+    expected_operations += (10, 12, 10, 12, 10, 12, 10, 12, 10, 12)
     expected_operations += registered_key_batch
     expected_operations += (1, 18, 31, 19, 20)
     expected_operations += (1, 18, 32, 19, 20)
@@ -581,6 +581,7 @@ def main() -> int:
     )
     expected_cases += (
         "test-batch-count-matches-items",
+        "test-batch-count-mismatch-rejected",
         "test-batch-unique-item-id-response-correlation",
         "test-batch-order-false-correlates-response-items",
         "test-batch-continue-after-failure",
@@ -821,7 +822,9 @@ def main() -> int:
                             if two_read_batch:
                                 continue_after_failure = tlv(0x420094, 7, b"missing-key") in request
                                 expected_fixture_identifiers = 1 if continue_after_failure else 2
-                                if (request.count(tlv(0x420094, 7, b"fixture-key-1")) !=
+                                if (request.count(integer(0x42000D, 2)) != 1 or
+                                        len(operations) != 2 or
+                                        request.count(tlv(0x420094, 7, b"fixture-key-1")) !=
                                         expected_fixture_identifiers or
                                         (continue_after_failure and
                                          request.count(tlv(0x420094, 7, b"missing-key")) != 1) or

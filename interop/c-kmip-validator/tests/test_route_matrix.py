@@ -3794,7 +3794,7 @@ class RouteMatrixTests(unittest.TestCase):
                             check['case_id'])
 
     def test_batch_count_mismatch_is_recomputed_before_transport(self):
-        """OASIS KMIP 2.0/2.1 §§8.2–8.6 and 9.5–9.7 require a count matching the items."""
+        """OASIS KMIP 2.0/2.1 §§8.1–8.6, 9.5–9.8, 9.21, 6.1.19, and 6.1.21 define the batch count and two item operations."""
         from artifact_support import ROOT
         from route_peer import execute_network_cells
 
@@ -3816,7 +3816,12 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(all(check['peer_response_result_statuses'] == [0, 0]
                             for check in checks))
         send_events = [event for event in events if event['action'] == 'send']
-        self.assertEqual(len(send_events), 24)
+        self.assertEqual(len(send_events), 36)
+        for symbol in ('kmipkit_client_batch_item_get',
+                       'kmipkit_client_batch_item_get_attribute_list',
+                       'kmipkit_client_batch_item_get_attribute_list_from_request'):
+            self.assertEqual(sum(event['public_api_symbol'] == symbol for event in send_events), 12,
+                             symbol)
         self.assertTrue(all(event['peer_observed_operation_sequence'] ==
                             ['Get', 'Get Attribute List'] for event in send_events))
 
