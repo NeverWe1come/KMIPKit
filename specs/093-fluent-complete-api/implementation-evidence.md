@@ -1178,3 +1178,51 @@
   --all-features` sequentially after coverage completed: the full workspace
   suite passes, including compile-fail boundaries and doctests. Hosted CI must
   independently verify the PR head.
+
+## Ping binding metadata and CI repair
+
+### Red
+
+- Commits `902894db8`, `544c142c7`, `42131fac4`, and `cc4d8e44f` added
+  regression coverage for the C opaque builder kind, runtime capability
+  availability, Java/Python declaration inventory, and capability mappings.
+  The focused checks reproduced the missing/incorrect declarations and the
+  capability query returning unavailable.
+- Commit `308a0b662` added the exact Python constructor-kind regression. The
+  focused test failed because the canonical manifest classified
+  `PingBuilder.__init__` as `type` while the source audit reports
+  `python-export`.
+
+### Green
+
+- Commit `80270c39e` corrected the canonical manifest and regenerated its
+  outputs: C `kmipkit_ping_builder_t` is a `type`; Java and Python
+  `PingBuilder` classes are `type`; Python `PingBuilder.__init__` is a
+  `python-export`; Java execute overload signatures and `executeWithOptions`
+  are declared; and the Ping capability mapping includes the ready exports.
+  The runtime capability query now exposes `fluent_ping_builder`, and the
+  direct C Ping function enters through the shared FFI panic boundary.
+- `python3 -B -m unittest tools.api_manifest.tests.test_0093_ping_builder_manifest
+  -v` passes all seven tests. `python3 -B tools/api_manifest/generate.py
+  --check` verifies all 12 outputs. The complete binding audit passes with
+  exact inventories: C 2,661/2,661, Java 3,086/3,086, Python 3,350/3,350;
+  there are no missing declarations, kind mismatches, or unobserved entries.
+- `cargo test --workspace --all-features`,
+  `cargo clippy --workspace --all-targets --all-features -- -D warnings`,
+  `cargo fmt --all --check`, and `git diff --check` pass. The C consumer
+  rebuilds and CTest passes 4/4. The Python binding suite passes 1,384 tests
+  after placing pytest's temporary wheel-build directory on the disk-backed
+  task temp volume.
+
+### Refactor
+
+- Kept the new runtime capability assertion in its own integration test so
+  the pre-existing capability test remains below the Clippy line-count limit.
+  Regenerated Java, Python, and shared parity projections from the canonical
+  manifest rather than editing generated output manually.
+- `bash gradlew test --no-daemon` passes the full Java suite: 731 tests, zero
+  failures, one skipped. The first local attempts exposed `/tmp` exhaustion;
+  after removing only this turn's failed pytest scratch and rerunning without
+  `JAVA_TOOL_OPTIONS` (which polluted subprocess stderr), the full suite passes.
+  Exact-head hosted CI remains required before this draft can be marked ready
+  for human review.
