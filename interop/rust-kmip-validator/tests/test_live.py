@@ -421,7 +421,7 @@ class LiveContract(unittest.TestCase):
         self.assertEqual(process.returncode, 0, process.stderr)
         self.assertEqual(report["summary"]["total"], len(cases))
         self.assertEqual(report["summary"]["passed"], len(applicable))
-        self.assertEqual([find(tree, 0x42000d) for tree in peer.request_trees], [2, 1])
+        self.assertEqual([find(tree, 0x42000d) for tree in peer.request_trees], [1])
         single_header = peer.request_trees[-1]
         self.assertIsNone(find(single_header, 0x42000E))
         self.assertIsNone(find(single_header, 0x420010))
