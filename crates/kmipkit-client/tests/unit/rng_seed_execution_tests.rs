@@ -22,7 +22,7 @@ use crate::execute::{
     ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientOperation, ClientRequest,
 };
 use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_structure};
-use crate::{ClientCauseCategory, ClientErrorCategory};
+use crate::{ClientCauseCategory, ClientErrorCategory, FluentBuildError};
 
 const RNG_SEED: u32 = 0x0000_0026;
 const DATA: u32 = 0x0042_00C2;
@@ -226,4 +226,120 @@ fn rng_seed_transport_failure_preserves_delivery_and_is_not_retried() {
     assert!(!error.to_string().contains("KMIP_RNG_SEED_SECRET_SENTINEL"));
     assert!(!format!("{error:?}").contains("KMIP_RNG_SEED_SECRET_SENTINEL"));
     assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn fluent_rng_seed_requires_secret_data_and_builds_typed_request_without_sending() {
+    let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
+
+    assert_eq!(
+        client.request().rng_seed().validate(),
+        Err(FluentBuildError::MissingRngSeedData)
+    );
+
+    let request = client
+        .request()
+        .rng_seed()
+        .data(SecretBytes::new(SEED_SENTINEL.to_vec()))
+        .build()
+        .expect("RNG Seed Data is required and moved into the typed secret owner");
+    assert!(!format!("{request:?}").contains("KMIP_RNG_SEED_SECRET_SENTINEL"));
+
+    let item = client
+        .request()
+        .rng_seed()
+        .data(SecretBytes::new(SEED_SENTINEL.to_vec()))
+        .to_batch_item()
+        .expect("the required secret field converts to a typed batch item");
+    assert_eq!(item.operation(), RNG_SEED);
+    assert_eq!(transport.borrow().exchange_count(), 0);
+}
+
+#[test]
+fn fluent_rng_seed_sends_secret_once_and_preserves_zero_bytes_used() {
+    let response = asynchronous_response_bytes(
+        RNG_SEED,
+        0,
+        None,
+        None,
+        Some(test_structure([test_item(
+            DATA_LENGTH,
+            kmipkit_ttlv::Value::integer(0),
+        )])),
+    );
+    let (mut client, transport, captured) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: vec![2, 5],
+    });
+
+    let item = client
+        .request()
+        .rng_seed()
+        .data(SecretBytes::new(SEED_SENTINEL.to_vec()))
+        .execute(&CodecLimits::defaults())
+        .expect("the server may successfully report that it used zero seed bytes");
+    assert_eq!(item.outcome().operation(), ClientOperation::RngSeed);
+    let ClientBatchOutcome::RngSeed(response) = item.outcome() else {
+        panic!("RNG Seed returns its typed outcome");
+    };
+    assert_eq!(response.data_length(), Some(0));
+    assert!(!format!("{:?}", item.outcome()).contains("KMIP_RNG_SEED_SECRET_SENTINEL"));
+    assert!(
+        !item
+            .outcome()
+            .to_string()
+            .contains("KMIP_RNG_SEED_SECRET_SENTINEL")
+    );
+    assert_eq!(
+        request_operation_and_data(captured.borrow().as_deref().expect("request was captured")),
+        Some((RNG_SEED, SEED_SENTINEL.to_vec()))
+    );
+    assert!(request_contains(&captured, SEED_SENTINEL));
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn fluent_rng_seed_preserves_pending_correlation_without_follow_up() {
+    let response = asynchronous_response_bytes(
+        RNG_SEED,
+        2,
+        None,
+        Some(PENDING_CORRELATION),
+        Some(test_structure([])),
+    );
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+
+    let item = client
+        .request()
+        .rng_seed()
+        .data(SecretBytes::new(SEED_SENTINEL.to_vec()))
+        .with_asynchronous_indicator(1)
+        .execute(&CodecLimits::defaults())
+        .expect("the request explicitly accepts an asynchronous response");
+    let ClientBatchOutcome::Pending(pending) = item.outcome() else {
+        panic!("Pending remains explicit and resumable by the caller");
+    };
+    assert_eq!(pending.operation(), ClientOperation::RngSeed);
+    assert_eq!(
+        pending.asynchronous_correlation_value(),
+        PENDING_CORRELATION
+    );
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn fluent_rng_seed_missing_data_fails_before_transport() {
+    let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
+
+    let error = client
+        .request()
+        .rng_seed()
+        .execute(&CodecLimits::defaults())
+        .expect_err("Data is required before sending");
+
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(transport.borrow().exchange_count(), 0);
 }
