@@ -159,4 +159,28 @@ class LocalCatalogRouteChecksTest {
         assertEquals(1, invocations.stream().map(LocalCatalogRouteChecks.Invocation::wire)
                 .mapToInt(wire -> wire.length).distinct().count());
     }
+
+    @Test
+    void executesServerQueryFunctionPayloadThroughGenericTtlvRoutes() throws Exception {
+        JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
+        String caseId = "test-norm-payload-server-query-request-20-001";
+        List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
+
+        LocalCatalogRouteChecks.executeQueryPayloadScalarFields(catalog, "2.0", Set.of(caseId), invocations::add);
+
+        assertEquals(List.of(
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode",
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode"),
+                invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId).toList());
+        assertEquals(Set.of("KMIPKIT-PAYLOAD-SERVER-QUERY-REQUEST-20-001", "KMIPKIT-ELEM-OP-S2C-QUERY"),
+                invocations.stream().map(LocalCatalogRouteChecks.Invocation::targetId)
+                        .collect(java.util.stream.Collectors.toSet()));
+        byte[] expected = new byte[] {0x42, 0x00, 0x74, 0x05, 0, 0, 0, 4,
+                0, 0, 0, 1, 0, 0, 0, 0};
+        invocations.forEach(invocation -> assertArrayEquals(expected, invocation.wire()));
+    }
 }
