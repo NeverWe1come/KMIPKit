@@ -26,6 +26,8 @@ from .driver import PythonKmipDriver, _TTLV_TYPE_KINDS, _catalog_model_data
 sys.path.insert(0, str(SHARED / 'tools'))
 from coverage_matrix import iter_cells  # noqa: E402
 
+CANCELLATION_RESULT_ENUM_ID = 'KMIPKIT-ELEM-ENUMERATION-CANCELLATION-RESULT'
+
 
 class RecipePending(Exception):
     """The validator cannot yet demonstrate the required case semantics."""
@@ -1718,16 +1720,7 @@ def _async_outcome_response_cell(cell: dict, case: dict, target: dict,
     cancellation_result = None
     cancellation_name = parameters.get('cancel_result')
     if operation == 'Cancel' and cancellation_name:
-        _, _, elements = _catalog_model_data()
-        enum_target_ids = scenario.get('target_ids', [])
-        cancellation_element = next((elements[target_id] for target_id in enum_target_ids
-                                     if target_id in elements
-                                     and elements[target_id].get('kind') == 'enumeration_value'
-                                     and _normalized_name(elements[target_id].get('name', ''))
-                                     == _normalized_name(cancellation_name)), None)
-        if cancellation_element is None:
-            raise RecipePending
-        cancellation_result = int(cancellation_element['wire_value'].replace('X', '0'), 16)
+        cancellation_result = _cancellation_result_value(cancellation_name)
     peer_status = (protocol_values.ResultStatus.SUCCESS if cancellation_result is not None
                    else protocol_values.ResultStatus.OPERATION_FAILED)
     peer_reason = (None if cancellation_result is not None
@@ -1856,6 +1849,19 @@ def _async_outcome_response_cell(cell: dict, case: dict, target: dict,
             'response_tree_sha256': response_digest,
             'request_delivery_state': 'response_received',
             'transport_invocation_count': 1, 'peer_observed_response_count': 1}
+
+
+def _cancellation_result_value(name: str) -> int:
+    """Resolve a Cancellation Result enum independently from payload targets."""
+    _, _, elements = _catalog_model_data()
+    cancellation_element = next((element for element in elements.values()
+                                 if element.get('kind') == 'enumeration_value'
+                                 and CANCELLATION_RESULT_ENUM_ID in element.get('parent_element_ids', [])
+                                 and _normalized_name(element.get('name', ''))
+                                 == _normalized_name(name)), None)
+    if cancellation_element is None:
+        raise RecipePending
+    return int(cancellation_element['wire_value'].replace('X', '0'), 16)
 
 
 def _batch_result_live_cell(cell: dict, target: dict,
