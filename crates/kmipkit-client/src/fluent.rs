@@ -557,13 +557,9 @@ impl<'a> GetUsageAllocationBuilder<'a> {
         self,
         limits: &kmipkit_ttlv::codec::CodecLimits,
     ) -> Result<ClientBatchItemResponse, ClientError> {
-        let request = self.typed_request().map_err(|error| {
-            ClientError::validation(
-                ClientCauseCategory::InvalidInput,
-                RequestDeliveryState::NotSent,
-                error,
-            )
-        })?;
+        let request = self
+            .typed_request()
+            .map_err(fluent_client_validation_error)?;
         self.execution
             .run(ClientRequest::get_usage_allocation(request), limits)
     }

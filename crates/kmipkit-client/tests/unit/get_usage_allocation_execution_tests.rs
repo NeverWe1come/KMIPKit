@@ -418,6 +418,20 @@ fn fluent_builder_validates_builds_and_converts_to_the_typed_batch_item() {
 }
 
 #[test]
+fn fluent_builder_missing_count_is_not_sent_without_transport_exchange() {
+    let (mut client, fake, _) = client_for(ExchangeScript::FailBeforeWrite);
+
+    let error = client
+        .request()
+        .get_usage_allocation()
+        .execute(&CodecLimits::defaults())
+        .expect_err("Usage Limits Count is required before sending");
+
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(fake.borrow().exchange_count(), 0);
+}
+
+#[test]
 fn fluent_builder_executes_one_typed_exchange_and_preserves_success() {
     let (mut client, fake, captured) = client_for(ExchangeScript::Success {
         response: response_bytes(0, None, None, None, Some(success_payload())),
