@@ -3378,11 +3378,13 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(len(expected), 76)
         self.assertEqual(keys, expected)
         self.assertEqual(len(events), len(expected))
-        self.assertTrue(all(check['peer_request_operations'] == [3, 18, 31, 32, 19, 20]
-                            for check in checks))
-        self.assertTrue(all(check['peer_setup_operations'] == [3, 18] and
-                            check['peer_cleanup_operations'] == [19, 20] and
-                            check['peer_final_state_matches_setup'] for check in checks))
+        for check in checks:
+            expected_operations = ([1, 18, 31, 19, 20] if check['case_id'] == 'test-op-encrypt'
+                                   else [1, 18, 32, 19, 20])
+            self.assertEqual(check['peer_request_operations'], expected_operations)
+            self.assertEqual(check['peer_setup_operations'], [1, 18])
+            self.assertEqual(check['peer_cleanup_operations'], [19, 20])
+            self.assertTrue(check['peer_final_state_matches_setup'])
         for case_id, operation, response in (
                 ('test-op-encrypt', 'kmipkit_client_batch_item_encrypt',
                  'kmipkit_client_batch_item_response_encrypt'),
@@ -4469,10 +4471,14 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(len(checks), 24,
                          'Sign cases must cover both versions and all six encoding/transport pairs')
         self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
-        self.assertTrue(all(check['peer_request_operations'] == [1, 18, 33, 19, 20]
-                            for check in checks))
-        self.assertTrue(all(check['peer_setup_operations'] == [1] for check in checks))
-        self.assertTrue(all(check['peer_cleanup_operations'] == [19, 20] for check in checks))
+        for check in checks:
+            direct_route = check['case_id'] == 'test-op-sign'
+            self.assertEqual(check['peer_request_operations'],
+                             [2, 18, 33, 19, 20, 20] if direct_route else
+                             [1, 18, 33, 19, 20])
+            self.assertEqual(check['peer_setup_operations'], [2, 18] if direct_route else [1])
+            self.assertEqual(check['peer_cleanup_operations'],
+                             [19, 20, 20] if direct_route else [19, 20])
         self.assertTrue(any(event['public_api_symbol'] == 'kmipkit_client_batch_item_sign' and
                             event['action'] == 'send' for event in events))
         self.assertTrue(any(event['public_api_symbol'] == 'kmipkit_client_batch_item_response_sign' and
@@ -4498,10 +4504,14 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(len(checks), 24,
                          'Signature Verify must cover both versions and all encoding/transport pairs')
         self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
-        self.assertTrue(all(check['peer_request_operations'] == [1, 18, 34, 19, 20]
-                            for check in checks))
-        self.assertTrue(all(check['peer_setup_operations'] == [1] for check in checks))
-        self.assertTrue(all(check['peer_cleanup_operations'] == [19, 20] for check in checks))
+        for check in checks:
+            direct_route = check['case_id'] == 'test-op-signature-verify'
+            self.assertEqual(check['peer_request_operations'],
+                             [2, 18, 34, 19, 20, 20] if direct_route else
+                             [1, 18, 34, 19, 20])
+            self.assertEqual(check['peer_setup_operations'], [2, 18] if direct_route else [1])
+            self.assertEqual(check['peer_cleanup_operations'],
+                             [19, 20, 20] if direct_route else [19, 20])
         self.assertTrue(any(event['public_api_symbol'] ==
                             'kmipkit_client_batch_item_signature_verify' and
                             event['action'] == 'send' for event in events))
@@ -4580,8 +4590,9 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(len(checks), 12,
                          'Create Key Pair must run for both versions and all encoding/transport pairs')
         self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
-        self.assertTrue(all(check['peer_request_operations'] == [2] for check in checks))
-        self.assertTrue(all(check['peer_cleanup_operations'] == [20, 20] for check in checks))
+        self.assertTrue(all(check['peer_request_operations'] == [2, 20, 20] for check in checks))
+        self.assertTrue(all(check['peer_cleanup_operations'] == [20, 20] and
+                            check['peer_final_state_matches_setup'] for check in checks))
         self.assertTrue(any(event['public_api_symbol'] == 'kmipkit_client_batch_item_create_key_pair'
                             and event['action'] == 'send' for event in events))
         self.assertTrue(any(event['public_api_symbol'] == 'kmipkit_client_batch_item_response_create_key_pair'
@@ -4649,9 +4660,11 @@ class RouteMatrixTests(unittest.TestCase):
         manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
         case_id = 'test-op-certify'
         case = next(case for case in catalog['test_cases'] if case['case_id'] == case_id)
-        self.assertEqual(['Create RSA 2048-bit key pair and target its PublicKey'],
+        self.assertEqual(['Create Key Pair with Certificate Sign usage on Private Key',
+                          'Activate Private Key'],
                          case['isolation_recipe']['setup_steps'])
-        self.assertEqual(['Destroy generated Certificate', 'Destroy PublicKey', 'Destroy PrivateKey'],
+        self.assertEqual(['Revoke Private Key', 'Destroy Certificate', 'Destroy Private Key',
+                          'Destroy Public Key'],
                          case['isolation_recipe']['teardown_steps'])
         selected = {**catalog, 'test_cases': [case]}
 
@@ -4661,9 +4674,11 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(len(checks), 12,
                          'Certify must run for both versions and all encoding/transport pairs')
         self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
-        self.assertTrue(all(check['peer_setup_operations'] == [2] for check in checks))
-        self.assertTrue(all(check['peer_request_operations'] == [6] for check in checks))
-        self.assertTrue(all(check['peer_cleanup_operations'] == [20, 20, 20] for check in checks))
+        self.assertTrue(all(check['peer_setup_operations'] == [2, 18] for check in checks))
+        self.assertTrue(all(check['peer_request_operations'] == [2, 18, 6, 19, 20, 20, 20]
+                            for check in checks))
+        self.assertTrue(all(check['peer_cleanup_operations'] == [19, 20, 20, 20] and
+                            check['peer_final_state_matches_setup'] for check in checks))
         self.assertTrue(any(event['public_api_symbol'] == 'kmipkit_client_batch_item_certify'
                             and event['action'] == 'send' for event in events))
         self.assertTrue(any(event['public_api_symbol'] == 'kmipkit_client_batch_item_response_certify'

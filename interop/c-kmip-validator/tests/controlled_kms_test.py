@@ -550,7 +550,6 @@ def main() -> int:
     expected_operations += (10, 12, 10, 12, 10, 12, 10, 12)
     expected_operations += (10, 12)
     expected_operations += registered_key_batch
-    expected_operations += registered_key_batch * 2
     expected_cases += ("test-op-encrypt", "test-op-decrypt")
     if protocol_version == "2.0":
         expected_operations += (45, 45, 46)
@@ -617,15 +616,14 @@ def main() -> int:
     expected_cases += ("test-op-delete-attribute",)
     expected_cases += ("test-op-modify-attribute",)
     expected_cases += ("test-op-adjust-attribute",)
-    expected_operations += (2, 6, 20, 20, 20)
-    expected_operations += (2, 20, 20)
-    expected_operations += (40, 20, 20, 20)
+    expected_operations += (40,)
+    expected_operations += (20, 20, 20)
     expected_cases += ("test-op-certify", "test-op-create-key-pair", "test-op-create-split-key")
     expected_operations += (1, 18, 5, 19, 20, 20)
     expected_cases += ("test-op-derive-key",)
-    expected_operations += (1, 18, 33, 19, 20) * 2
+    expected_operations += (1, 18, 33, 19, 20)
     expected_cases += ("test-op-sign", "test-crypto-sign-rsa-2048-pkcs1_v1_5")
-    expected_operations += (1, 18, 34, 19, 20) * 2
+    expected_operations += (1, 18, 34, 19, 20)
     expected_cases += ("test-op-signature-verify",
                        "test-crypto-signature-verify-rsa-2048-pkcs1_v1_5")
     expected_cases += ("test-batch-create-activate-destroy",)
@@ -1474,11 +1472,11 @@ def main() -> int:
             raise AssertionError("opted-in controlled run must preserve uncovered-case classification")
         expected_summary = {
             "total": len(version_cases),
-            "passed": len(expected_cases) + local_value_cases,
+            "passed": len(set(expected_cases)) + local_value_cases,
             "failed": 0,
             "unsupported": 0,
             "policy_restricted": 0,
-            "not_run": len(version_cases) - len(expected_cases) - local_value_cases,
+            "not_run": len(version_cases) - len(set(expected_cases)) - local_value_cases,
         }
         if protocol_version == "2.1" and result["summary"] != expected_summary:
             raise AssertionError(
@@ -1487,11 +1485,11 @@ def main() -> int:
             )
         expected_kmip20_summary = {
             "total": len(version_cases),
-            "passed": len(expected_cases) + local_value_cases,
+            "passed": len(set(expected_cases)) + local_value_cases,
             "failed": 0,
             "unsupported": 0,
             "policy_restricted": 0,
-            "not_run": len(version_cases) - len(expected_cases) - local_value_cases,
+            "not_run": len(version_cases) - len(set(expected_cases)) - local_value_cases,
         }
         if protocol_version == "2.0" and result["summary"] != expected_kmip20_summary:
             raise AssertionError(
