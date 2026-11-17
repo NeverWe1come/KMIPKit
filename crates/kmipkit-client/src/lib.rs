@@ -247,6 +247,10 @@ mod create_execution_tests;
 mod create_builder_execution_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/derive_key_fluent_builder_tests.rs"]
+mod derive_key_fluent_builder_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/create_guide_examples.rs"]
 mod create_guide_examples;
 
