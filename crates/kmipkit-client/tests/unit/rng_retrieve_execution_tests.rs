@@ -21,7 +21,7 @@ use crate::execute::{
     ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientOperation, ClientRequest,
 };
 use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_structure};
-use crate::{ClientCauseCategory, ClientErrorCategory};
+use crate::{ClientCauseCategory, ClientErrorCategory, FluentBuildError, RequestOptions};
 
 const RNG_RETRIEVE: u32 = 0x0000_0025;
 const DATA_LENGTH: u32 = 0x0042_00C4;
@@ -242,5 +242,124 @@ fn rng_retrieve_transport_failure_preserves_delivery_and_is_not_retried() {
             .contains("KMIP_RNG_RETRIEVE_SECRET_SENTINEL")
     );
     assert!(!format!("{error:?}").contains("KMIP_RNG_RETRIEVE_SECRET_SENTINEL"));
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn fluent_rng_retrieve_requires_and_preserves_the_caller_data_length() {
+    let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
+
+    assert_eq!(
+        client.request().rng_retrieve().validate(),
+        Err(FluentBuildError::MissingRngRetrieveDataLength)
+    );
+    assert_eq!(
+        client
+            .request()
+            .rng_retrieve()
+            .data_length(0)
+            .build()
+            .expect("zero is preserved by the existing typed request")
+            .data_length(),
+        0
+    );
+
+    let item = client
+        .request()
+        .rng_retrieve()
+        .data_length(output_length())
+        .to_batch_item()
+        .expect("a valid fluent request converts to a typed batch item");
+    assert_eq!(item.operation(), RNG_RETRIEVE);
+    assert_eq!(transport.borrow().exchange_count(), 0);
+}
+
+#[test]
+fn fluent_rng_retrieve_missing_length_fails_before_transport() {
+    let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
+
+    let error = client
+        .request()
+        .rng_retrieve()
+        .execute(&CodecLimits::defaults())
+        .expect_err("Data Length is required before sending");
+
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(transport.borrow().exchange_count(), 0);
+}
+
+#[test]
+fn fluent_rng_retrieve_executes_once_and_keeps_secret_output_redacted() {
+    let response = asynchronous_response_bytes(
+        RNG_RETRIEVE,
+        0,
+        None,
+        None,
+        Some(test_structure([test_item(
+            DATA,
+            kmipkit_ttlv::Value::byte_string(OUTPUT_SENTINEL.to_vec()),
+        )])),
+    );
+    let (mut client, transport, captured) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: vec![3, 2],
+    });
+
+    let item = client
+        .request()
+        .rng_retrieve()
+        .data_length(output_length())
+        .with_options(RequestOptions::default())
+        .execute(&CodecLimits::defaults())
+        .expect("the existing typed route returns the RNG Retrieve response");
+
+    assert_eq!(item.outcome().operation(), ClientOperation::RngRetrieve);
+    let ClientBatchOutcome::RngRetrieve(response) = item.outcome() else {
+        panic!("RNG Retrieve returns its typed outcome");
+    };
+    assert!(response.data().is_some_and(|data| {
+        data.with_bytes(|bytes| bytes == OUTPUT_SENTINEL)
+    }));
+    assert!(!format!("{:?}", item.outcome()).contains("KMIP_RNG_RETRIEVE_SECRET_SENTINEL"));
+    assert!(!item
+        .outcome()
+        .to_string()
+        .contains("KMIP_RNG_RETRIEVE_SECRET_SENTINEL"));
+    assert_eq!(
+        request_operation_and_length(
+            captured.borrow().as_deref().expect("request was captured")
+        ),
+        Some((RNG_RETRIEVE, output_length()))
+    );
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn fluent_rng_retrieve_preserves_pending_without_polling() {
+    let response = asynchronous_response_bytes(
+        RNG_RETRIEVE,
+        2,
+        None,
+        Some(PENDING_CORRELATION),
+        Some(test_structure([])),
+    );
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+
+    let item = client
+        .request()
+        .rng_retrieve()
+        .data_length(32)
+        .with_asynchronous_indicator(1)
+        .execute(&CodecLimits::defaults())
+        .expect("an enabled asynchronous request may return Pending");
+
+    let ClientBatchOutcome::Pending(pending) = item.outcome() else {
+        panic!("Pending remains explicit for the caller");
+    };
+    assert_eq!(pending.operation(), ClientOperation::RngRetrieve);
+    assert_eq!(pending.asynchronous_correlation_value(), PENDING_CORRELATION);
     assert_eq!(transport.borrow().exchange_count(), 1);
 }
