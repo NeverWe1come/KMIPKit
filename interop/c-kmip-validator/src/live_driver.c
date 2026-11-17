@@ -4736,9 +4736,14 @@ static bool created_key_crypto_response_matches(kmipkit_client_batch_item_respon
     uint64_t expected_length = operation == KMIPKIT_ENUMERATION_OPERATION_MAC ? 32U :
         (uint64_t)sizeof(BATCH_CRYPTO_PLAINTEXT);
     *out_status = status;
-    return status == 0 && present && same_text_identifier(identifier, &result_identifier) &&
+    bool valid = status == 0 && present && same_text_identifier(identifier, &result_identifier) &&
         data_present && data.length == expected_length && data.data &&
         !iv_present && !correlation_present && !tag_present;
+    if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_MAC) {
+        valid = response_ttlv_matches_field_count(
+            item, kmipkit_client_batch_item_response_mac_ttlv, 4, out_status);
+    }
+    return valid;
 }
 
 static kmip_execution_outcome_t execute_registered_crypto_batch(kmip_live_client_t *client) {
@@ -5140,8 +5145,13 @@ static bool created_key_signature_response_matches(
             item, &present, &result_identifier, &output_present, &output,
             &correlation_present, &correlation);
         *out_status = status;
-        return status == 0 && present && same_text_identifier(identifier, &result_identifier) &&
+        bool valid = status == 0 && present && same_text_identifier(identifier, &result_identifier) &&
             output_present && output.data && output.length == 256U && !correlation_present;
+        if (valid) {
+            valid = response_ttlv_matches_field_count(
+                item, kmipkit_client_batch_item_response_sign_ttlv, 4, out_status);
+        }
+        return valid;
     }
 
     uint8_t validity_present = 0, recovered_data_present = 0;
