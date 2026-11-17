@@ -154,6 +154,22 @@ Dependent work branches from the unmerged parent head while review is pending.
 - [ ] P001 Add failing Python consumer, type-shape and CFFI ownership tests.
 - [ ] P002 Implement Python facade and PEP 561 stubs; run Python checks.
 
+### Generic Create binding parity slice
+
+- [x] CRB001 Add failing C ABI, Java, Python, and manifest tests for the
+  existing Rust `CreateBuilder`; Red evidence: `python3 -m unittest
+  tools.api_manifest.tests.test_0093_create_builder_manifest -v` failed because
+  Rust builder declarations remained blocked, the C ABI had no Create builder
+  functions, and the Python lifecycle had no manifest mapping.
+- [ ] CRB002 Implement the opaque C builder over the typed Rust Create request,
+  with copy-preserving attributes and masks, validation, batch conversion,
+  one-exchange execution, and explicit ownership.
+- [ ] CRB003 Add Java and Python Create builders with matching validation,
+  batch conversion, exchange options, asynchronous indicators, and ownership.
+- [ ] CRB004 Reconcile the public API manifest through repository tooling,
+  regenerate declared outputs, update both user guides and traceability, and
+  pass focused tests and exact-head CI before human review.
+
 ### Create Key Pair parity slice
 
 - [x] KPB001 Commit Red consumer and manifest checks for the C, Java, and

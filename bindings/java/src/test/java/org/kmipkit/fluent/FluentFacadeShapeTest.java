@@ -88,6 +88,31 @@ final class FluentFacadeShapeTest {
                         java.util.List.class));
         assertNotNull(Class.forName("org.kmipkit.fluent.FluentRequest")
                 .getMethod("getAttributeList", org.kmipkit.extensions.UniqueIdentifier.class));
+        assertNotNull(Class.forName("org.kmipkit.fluent.FluentRequest").getMethod("create"));
+        assertNotNull(Class.forName("org.kmipkit.fluent.CreateBuilder")
+                .getMethod("objectType", long.class));
+        assertNotNull(Class.forName("org.kmipkit.fluent.CreateBuilder")
+                .getMethod("attributes", org.kmipkit.extensions.AttributeSet.class));
+        assertNotNull(Class.forName("org.kmipkit.fluent.CreateBuilder")
+                .getMethod("build"));
+    }
+
+    @Test
+    void createBuilderRequiresExplicitObjectTypeAndBuildsTypedCreateItem() {
+        try (org.kmipkit.ttlv.TtlvStructure emptyItems =
+                        org.kmipkit.ttlv.TtlvStructure.create();
+                org.kmipkit.extensions.AttributeSet attributes =
+                        org.kmipkit.extensions.AttributeSet.tryNew(emptyItems)) {
+            CreateBuilder incomplete = new CreateBuilder(null);
+            assertThrows(InvalidInputException.class, incomplete::validate);
+
+            try (ClientBatchItem item = new CreateBuilder(null)
+                    .objectType(2)
+                    .attributes(attributes)
+                    .build()) {
+                assertEquals(1, item.operation());
+            }
+        }
     }
 
     @Test
