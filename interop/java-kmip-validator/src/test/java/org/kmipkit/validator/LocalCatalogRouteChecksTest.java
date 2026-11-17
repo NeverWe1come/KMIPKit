@@ -13,6 +13,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class LocalCatalogRouteChecksTest {
     private static final Path CATALOG = Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json");
@@ -114,5 +115,91 @@ class LocalCatalogRouteChecksTest {
         for (String caseId : expectedIndividualCaseIds) {
             assertEquals(4, invocations.stream().filter(invocation -> caseId.equals(invocation.caseId())).count());
         }
+    }
+
+    @Test
+    void executesRepeatableObjectAttributeMemberThroughGenericTtlvRoutes() throws Exception {
+        JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
+        String caseId = "test-norm-structure-member-structure-member-5-1-any-attribute-in-4-object-attributes";
+        List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
+
+        LocalCatalogRouteChecks.executeAnyObjectAttributeMembers(catalog, "2.1", Set.of(caseId),
+                invocations::add);
+
+        assertEquals(List.of(
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode"),
+                invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId).toList());
+        assertEquals(Set.of("KMIPKIT-ELEM-STRUCTURE-MEMBER-5-1-ANY-ATTRIBUTE-IN-4-OBJECT-ATTRIBUTES"),
+                invocations.stream().map(LocalCatalogRouteChecks.Invocation::targetId)
+                        .collect(java.util.stream.Collectors.toSet()));
+        invocations.forEach(invocation -> assertTrue(invocation.wire().length > 16));
+    }
+
+    @Test
+    void executesScalarStructureMemberThroughGenericTtlvRoutes() throws Exception {
+        JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
+        String caseId = "test-norm-structure-member-structure-member-5-5-attribute-name";
+        List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
+
+        LocalCatalogRouteChecks.executeScalarStructureMembers(catalog, "2.1", Set.of(caseId), invocations::add);
+
+        assertEquals(List.of(
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring",
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode"),
+                invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId).toList());
+        assertEquals(Set.of("KMIPKIT-ELEM-STRUCTURE-MEMBER-5-5-ATTRIBUTE-NAME"),
+                invocations.stream().map(LocalCatalogRouteChecks.Invocation::targetId)
+                        .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(Set.of(caseId), invocations.stream().map(LocalCatalogRouteChecks.Invocation::caseId)
+                .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(1, invocations.stream().map(LocalCatalogRouteChecks.Invocation::wire)
+                .mapToInt(wire -> wire.length).distinct().count());
+    }
+
+    @Test
+    void executesServerQueryFunctionPayloadThroughGenericTtlvRoutes() throws Exception {
+        JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
+        String caseId = "test-norm-payload-server-query-request-20-001";
+        List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
+
+        LocalCatalogRouteChecks.executeServerPayloadScalarFields(catalog, "2.0", Set.of(caseId), invocations::add);
+
+        assertEquals(List.of(
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode",
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode"),
+                invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId).toList());
+        assertEquals(Set.of("KMIPKIT-PAYLOAD-SERVER-QUERY-REQUEST-20-001", "KMIPKIT-ELEM-OP-S2C-QUERY"),
+                invocations.stream().map(LocalCatalogRouteChecks.Invocation::targetId)
+                        .collect(java.util.stream.Collectors.toSet()));
+        byte[] expected = new byte[] {0x42, 0x00, 0x74, 0x05, 0, 0, 0, 4,
+                0, 0, 0, 1, 0, 0, 0, 0};
+        invocations.forEach(invocation -> assertArrayEquals(expected, invocation.wire()));
+    }
+
+    @Test
+    void executesServerNotifyUniqueIdentifierThroughGenericTtlvRoutes() throws Exception {
+        JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
+        String caseId = "test-norm-payload-server-notify-request-20-001";
+        List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
+
+        LocalCatalogRouteChecks.executeServerPayloadScalarFields(catalog, "2.0", Set.of(caseId),
+                invocations::add);
+
+        assertEquals(6, invocations.size());
+        assertEquals(Set.of("KMIPKIT-PAYLOAD-SERVER-NOTIFY-REQUEST-20-001", "KMIPKIT-ELEM-OP-S2C-NOTIFY"),
+                invocations.stream().map(LocalCatalogRouteChecks.Invocation::targetId)
+                        .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(Set.of(caseId), invocations.stream().map(LocalCatalogRouteChecks.Invocation::caseId)
+                .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(1, invocations.stream().map(LocalCatalogRouteChecks.Invocation::wire)
+                .mapToInt(wire -> wire.length).distinct().count());
     }
 }
