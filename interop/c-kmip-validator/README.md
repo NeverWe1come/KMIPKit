@@ -222,3 +222,11 @@ fields and generic TTLV payload. The controlled response includes the fixture
 key identifier and the Cryptographic Algorithm and Cryptographic Length
 references; this validates response shape and accessors, not external KMS
 behavior.
+
+The `test-batch-order-required-placeholder-resolution` and
+`test-batch-order-omitted-defaults-true` fixtures send Create followed by
+Activate using ID Placeholder. The first explicitly enables Batch Order
+Option; the second omits it and checks the KMIP §9.8 default of true. Both
+verify ordered typed results, response identifier correlation, and a separate
+Revoke/Destroy cleanup exchange against the controlled TLS peer. This checks
+the C API and protocol behavior without claiming external KMS interoperability.

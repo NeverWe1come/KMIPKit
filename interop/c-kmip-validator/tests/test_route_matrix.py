@@ -4057,6 +4057,57 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual((1, 18, 10), operations[:3])
         self.assertEqual('batch_placeholder_chain', workflow)
 
+    def test_batch_order_placeholder_scenarios_have_two_item_recipes(self):
+        """Map the KMIP 2.0/2.1 §§8.1–8.6 ordered placeholder cases to C peer recipes."""
+        from route_peer import RECIPES
+
+        expected_cases = {
+            'test-batch-order-required-placeholder-resolution':
+                ((1, 18), 'batch_order_placeholder_two_item'),
+            'test-batch-order-omitted-defaults-true':
+                ((1, 18), 'batch_order_placeholder_two_item'),
+        }
+        for case_id, expected in expected_cases.items():
+            with self.subTest(case_id=case_id):
+                self.assertEqual(RECIPES.get(case_id), expected,
+                                 'ordered Create/Activate route recipe is missing or mismatched')
+
+    def test_batch_order_placeholder_scenarios_execute_exact_peer_exchanges(self):
+        """OASIS KMIP 2.0/2.1 §§8.2–8.6 require ordered Create/Activate placeholder execution."""
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_ids = {
+            'test-batch-order-required-placeholder-resolution',
+            'test-batch-order-omitted-defaults-true',
+        }
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] in case_ids]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 24,
+                         'both order-option forms must run in 12 version/encoding/transport cells')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        for check in checks:
+            self.assertEqual(check['peer_request_operations'], [1, 18])
+            self.assertEqual(check['peer_response_operation_values'], [1, 18])
+            self.assertEqual(check['peer_response_result_statuses'], [0, 0])
+            self.assertEqual(check['peer_request_batch_order_option'],
+                             [1] if check['case_id'] ==
+                             'test-batch-order-required-placeholder-resolution' else [])
+            self.assertEqual(check['peer_cleanup_operations'], [19, 20])
+            self.assertTrue(check['peer_final_state_matches_setup'])
+            self.assertIn('kmipkit_client_execute', check['public_api_trace_symbols'])
+            self.assertIn('kmipkit_client_batch_item_create', check['public_api_trace_symbols'])
+            self.assertIn('kmipkit_client_batch_item_activate', check['public_api_trace_symbols'])
+            if check['case_id'] == 'test-batch-order-required-placeholder-resolution':
+                self.assertIn('kmipkit_client_batch_set_order_option',
+                              check['public_api_trace_symbols'])
+
 
     def test_batch_placeholder_chain_resolves_the_same_object_and_cleans_up(self):
         from artifact_support import ROOT
