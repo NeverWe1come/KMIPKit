@@ -208,3 +208,70 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
 - Verification: route-manifest validation passed; focused route tests passed
   65/65; shared interop tests passed 189/189; workflow contract tests passed
   96/96; Rust 1.94 validator tests passed 72/72; and `git diff --check` passed.
+
+## Development evidence: Java Boolean field route execution
+
+- Red commit `4651a7c4c` required Java generic TTLV evidence for the catalogued
+  Boolean message-field case; Red commit `a62eda031` added a focused fixture
+  that failed because the controlled peer emitted no per-route Boolean
+  construction or decode evidence.
+- Green commit `98a4dabc9` executes all 12 selected Boolean message-field and
+  structure-member cases through their applicable generic routes. It also
+  invokes the typed Request/Response Message parsers for Criticality Indicator,
+  checks Attestation Capable Indicator and Batch Order Option in a valid
+  two-item request, and exercises Random IV through the Cryptographic
+  Parameters builder, typed attribute converters, and AttributeSet.
+- Refactor documentation updates the Java consumer README, FR-003 traceability,
+  and the current ledger snapshot while leaving T006, T007, and T009 open.
+- The route ledger was regenerated with the repository validator using
+  `--selected-scope --write-ledger`, then checked with
+  `tools/compare_route_ledger.py --refresh-reference` and the normal comparer;
+  no generated file was edited by hand.
+- Verification: the focused `LocalCatalogRouteChecksTest` and controlled TLS
+  evidence test pass. `validate_route_evidence.py` accepts 26,745/26,745
+  selected cells with zero failed cells, and the ledger comparison passes.
+  The full Java matrix remains incomplete at 26,745/71,649 executed and 44,904
+  pending cells across 1,266 case IDs; T006, T007, and T009 remain open and
+  this work does not make the PR ready for review.
+- The complete Java validator suite passes 56/56 tests with zero failures,
+  errors, or skips. Temporary JVM files were placed under the validator's
+  ignored `build/java-temp` directory because `/tmp` was nearly full.
+
+## Development evidence: Java Item Type enum routes
+
+- Red commit `8534357d6` requires every catalogued Item Type enum value to
+  execute the four applicable generic TTLV routes; the focused test failed to
+  compile because the dedicated recipe was absent. The general enum fixture
+  correctly does not handle this family because it has no same-named Tag.
+- Green commit `86887bae4` reads all 11 values from the approved catalog,
+  verifies each code with `TtlvItemType.fromCode`, round-trips the value as a
+  generic Enumeration Item, and emits the constructor, Item create, Item view,
+  and codec decode route evidence for KMIP 2.0 and 2.1.
+- The generated ledger was refreshed only after `validate_route_evidence.py`
+  accepted the selected report; both the reference refresh and normal ledger
+  comparison passed.
+- Verification: `LocalCatalogRouteChecksTest` and the controlled TLS evidence
+  test pass; the selected scope accepts 26,833/26,833 cells with zero failed
+  cells. The full Java matrix remains incomplete at 26,833/71,649 executed and
+  44,816 pending cells across 1,265 case IDs. T006, T007, and T009 remain open.
+- Full-suite verification: the Java validator Gradle suite passes 57/57 tests
+  with zero failures, errors, or skips. The selected-scope validator and both
+  ledger comparison commands pass; `git diff --check` passes.
+
+## Development evidence: Java Item Type individual value cases
+
+- Red commit `875ccfa80` requires the 11 catalogued Item Type values to emit
+  generic TTLV route evidence under their individual normative case IDs as
+  well as the aggregate. The focused local test fails because only the
+  aggregate has evidence.
+- Green commit `57c6b2160` associates each catalog value with its unique
+  normative test case, emits the four applicable routes for both case levels,
+  and includes the individual IDs in the controlled report scope. The generated
+  route ledger is refreshed from the accepted report, not edited by hand.
+- Verification: the focused local and controlled-TLS tests pass; the
+  selected-scope validator accepts 26,921/26,921 cells with zero failures and
+  both ledger comparisons pass. The full Java validator suite passes 57/57
+  tests with zero failures, errors, or skips; `git diff --check` passes.
+- The matrix remains incomplete at 26,921/71,649 executed and 44,728 pending
+  cells across 1,254 case IDs. T006, T007, and T009 remain open; the PR stays
+  WIP.

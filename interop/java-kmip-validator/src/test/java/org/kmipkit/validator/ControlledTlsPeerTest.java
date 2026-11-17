@@ -381,14 +381,22 @@ class ControlledTlsPeerTest {
             new NormativeTarget("test-norm-message-field-message-field-9-7-batch-item",
                     "KMIPKIT-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM"),
             new NormativeTarget("test-norm-message-field-message-field-9-13-message-extension",
-                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION"));
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION"),
+            new NormativeTarget("test-norm-message-field-message-field-9-13-criticality-indicator",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-CRITICALITY-INDICATOR"));
     private static final List<NormativeTarget> REQUEST_MESSAGE_PARSE_TARGETS = List.of(
+            new NormativeTarget("test-norm-message-field-message-field-9-3-attestation-capable-indicator",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-3-ATTESTATION-CAPABLE-INDICATOR"),
             new NormativeTarget("test-norm-message-field-message-field-9-5-batch-count",
                     "KMIPKIT-ELEM-MESSAGE-FIELD-9-5-BATCH-COUNT"),
+            new NormativeTarget("test-norm-message-field-message-field-9-8-batch-order-option",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-8-BATCH-ORDER-OPTION"),
             new NormativeTarget("test-norm-message-field-message-field-9-7-batch-item",
                     "KMIPKIT-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM"),
             new NormativeTarget("test-norm-message-field-message-field-9-13-message-extension",
-                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION"));
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION"),
+            new NormativeTarget("test-norm-message-field-message-field-9-13-criticality-indicator",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-CRITICALITY-INDICATOR"));
     private static final List<NormativeTarget> BATCH_ITEM_FIELD_TARGETS = List.of(
             new NormativeTarget("test-norm-message-field-message-field-8-6-batch-item",
                     "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM"),
@@ -650,12 +658,22 @@ class ControlledTlsPeerTest {
         byte[] queryOperation = queryOperationTtlv();
         String requestTreeHash = normalizedTreeSha256(queryOperation);
         int typedTagIdentityEventCount = 0;
+        int booleanFieldRouteEventCount = 0;
+        int itemTypeRouteEventCount = 0;
+        Set<String> booleanFieldCaseIds = new java.util.HashSet<>();
 
         for (String protocolVersion : KMIP_2_0_AND_2_1) {
             appendLocalQueryRouteEvents(events, protocolVersion, requestTreeHash);
             appendTagRangeRouteEvents(events, protocolVersion);
             appendActivationDateLocalRouteEvents(events, protocolVersion);
             appendGenericEnumerationRouteEvents(events, enumerationFixtures, protocolVersion);
+            List<LocalCatalogRouteChecks.Invocation> itemTypeInvocations = new ArrayList<>();
+            LocalCatalogRouteChecks.executeItemTypeEnumerations(readRouteEvidenceCatalog(), protocolVersion,
+                    itemTypeInvocations::add);
+            itemTypeRouteEventCount += itemTypeInvocations.size();
+            for (LocalCatalogRouteChecks.Invocation invocation : itemTypeInvocations) {
+                appendLocalCatalogInvocation(events, protocolVersion, invocation);
+            }
             appendGenericLocalEnumerationRouteEvents(events, localEnumerationFixtures, protocolVersion);
             appendGenericBitmaskRouteEvents(events, bitmaskFixtures, protocolVersion);
             appendGenericDataTypeRouteEvents(events, dataTypeFixtures, dataTypeVectors, protocolVersion);
@@ -689,6 +707,16 @@ class ControlledTlsPeerTest {
                     invocation -> appendAggregateTagInvocation(events, protocolVersion, invocation));
             LocalCatalogRouteChecks.executeReferencedEnums(readRouteEvidenceCatalog(), protocolVersion,
                     invocation -> appendLocalCatalogInvocation(events, protocolVersion, invocation));
+            Set<String> missingBooleanFieldCases = missingBooleanFieldRouteCaseIds(events, protocolVersion);
+            booleanFieldCaseIds.addAll(missingBooleanFieldCases);
+            List<LocalCatalogRouteChecks.Invocation> booleanFieldInvocations = new ArrayList<>();
+            LocalCatalogRouteChecks.executeBooleanFields(readRouteEvidenceCatalog(), protocolVersion,
+                    missingBooleanFieldCases, booleanFieldInvocations::add);
+            booleanFieldRouteEventCount += booleanFieldInvocations.size();
+            for (LocalCatalogRouteChecks.Invocation invocation : booleanFieldInvocations) {
+                appendLocalCatalogInvocation(events, protocolVersion, invocation);
+            }
+            assertBooleanFieldGenericRouteEvidence(events, protocolVersion);
             byte[] serverCertificatePem = fixture("server-cert.pem");
             byte[] serverPrivateKeyPem = fixture("server-key.pem");
             byte[] clientCertificatePem = fixture("client-cert.pem");
@@ -1146,7 +1174,7 @@ class ControlledTlsPeerTest {
         int batchItemAdditionalResponseRouteEventCount = KMIP_2_0_AND_2_1.size() * 12;
         int batchItemRenderedResponseViewEventCount = KMIP_2_0_AND_2_1.size() * 3 * 3;
         int normativeMessageFieldGenericRouteEventCount = KMIP_2_0_AND_2_1.size() * 31;
-        int normativeMessageFieldParserRouteEventCount = KMIP_2_0_AND_2_1.size() * 10;
+        int normativeMessageFieldParserRouteEventCount = KMIP_2_0_AND_2_1.size() * 14;
         int normativeBatchItemAccessorRouteEventCount = KMIP_2_0_AND_2_1.size() * 10;
         int newAttributePayloadRouteEventCount = KMIP_2_0_AND_2_1.size() * 3 * 20;
         int objectGroupLocalRouteEventCount = 3;
@@ -1210,6 +1238,7 @@ class ControlledTlsPeerTest {
                         + structureMemberStructureRouteEventCount + structureMemberByteStringRouteEventCount
                         + structureMemberValueRouteEventCount
                         + batchErrorContinuationEventCount + genericTagEventCount + typedTagIdentityEventCount
+                        + booleanFieldRouteEventCount + itemTypeRouteEventCount
                         + tagAggregateEventCount
                         + referencedEnumEventCount + referencedEnumAggregateEventCount,
                 report.path("events").size());
@@ -1233,16 +1262,25 @@ class ControlledTlsPeerTest {
         long dataTypeCaseCount = dataTypeFixtures.stream().map(DataTypeFixture::caseId).distinct().count();
         long localEnumerationCaseCount = localEnumerationFixtures.stream()
                 .map(EnumerationFixture::caseId).distinct().count();
+        Set<String> itemTypeValueCaseIds = new java.util.HashSet<>();
+        for (JsonNode event : report.path("events")) {
+            String caseId = event.path("case_id").asText();
+            if (caseId.startsWith("test-norm-enumeration-value-enum-value-item-type-")) {
+                itemTypeValueCaseIds.add(caseId);
+            }
+        }
+        assertEquals(11, itemTypeValueCaseIds.size(),
+                "Every catalogued Item Type enumeration value needs its own case evidence.");
         assertEquals(16 + OPERATION_STRUCTURE_FIXTURES.size() + SCALAR_OPERATION_STRUCTURE_FIXTURES.size()
                         + enumerationFixtures.size() + localEnumerationCaseCount + bitmaskCaseCount
                         + dataTypeCaseCount
                         + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + genericTagCaseIds.size()
                         + 3
                         + typedTagIdentityCaseIds().size() + referencedEnumCaseCount
-                        + 11 + STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size()
+                        + 11 + itemTypeValueCaseIds.size() + STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size()
                         + STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.size()
                         + STRUCTURE_MEMBER_VALUE_FIXTURES.size() + PROFILE_INFORMATION_CASE_IDS.size()
-                        + SERVER_INFORMATION_CASE_IDS.size() + 1,
+                        + SERVER_INFORMATION_CASE_IDS.size() + 2 + booleanFieldCaseIds.size(),
                 report.path("case_ids").size());
         List<String> expectedCredentialCaseIds = CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().toList();
         int credentialCaseStart = report.path("case_ids").size() - expectedCredentialCaseIds.size();
@@ -3570,9 +3608,12 @@ class ControlledTlsPeerTest {
                 caseIds.add(testCase.path("case_id").asText());
             }
         }
+        appendBooleanFieldCaseIds(caseIds, events);
+        appendItemTypeEnumerationCaseIds(caseIds, events);
         caseIds.add("test-enum-pkcs#11-function");
         caseIds.add("test-enum-pkcs#11-return-code");
         caseIds.add("test-enum-tag");
+        caseIds.add("test-enum-item-type");
         CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().forEach(caseIds::add);
         report.putArray("protocol_versions").add("2.0").add("2.1");
         ObjectNode combination = mapper.createObjectNode();
@@ -3582,6 +3623,33 @@ class ControlledTlsPeerTest {
         report.set("events", events);
         Files.createDirectories(reportPath.toAbsolutePath().normalize().getParent());
         mapper.writerWithDefaultPrettyPrinter().writeValue(reportPath.toFile(), report);
+    }
+
+    private static void appendBooleanFieldCaseIds(ArrayNode caseIds, JsonNode events) {
+        Set<String> existing = new java.util.HashSet<>();
+        for (JsonNode caseId : caseIds) existing.add(caseId.asText());
+        Set<String> booleanFieldCases = new java.util.LinkedHashSet<>();
+        for (JsonNode event : events) {
+            if ("java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.boolean"
+                    .equals(event.path("route_id").asText())) {
+                booleanFieldCases.add(event.path("case_id").asText());
+            }
+        }
+        for (String caseId : booleanFieldCases) {
+            if (existing.add(caseId)) caseIds.add(caseId);
+        }
+    }
+
+    private static void appendItemTypeEnumerationCaseIds(ArrayNode caseIds, JsonNode events) {
+        Set<String> existing = new java.util.HashSet<>();
+        for (JsonNode caseId : caseIds) existing.add(caseId.asText());
+        for (JsonNode event : events) {
+            String caseId = event.path("case_id").asText();
+            if (caseId.startsWith("test-norm-enumeration-value-enum-value-item-type-")
+                    && existing.add(caseId)) {
+                caseIds.add(caseId);
+            }
+        }
     }
 
     private static JsonNode findEvent(JsonNode events, String action, String protocolVersion) {
@@ -3770,6 +3838,71 @@ class ControlledTlsPeerTest {
             } else {
                 assertEquals(requiredRoutes.size(), present,
                         "Generic Tag evidence must be complete before it is reused for " + caseId);
+            }
+        }
+        return missing;
+    }
+
+    private static void assertBooleanFieldGenericRouteEvidence(JsonNode events, String version) throws Exception {
+        JsonNode catalog = readRouteEvidenceCatalog();
+        Map<String, JsonNode> targets = new HashMap<>();
+        for (JsonNode target : catalog.path("normative_targets")) {
+            targets.put(target.path("target_id").asText(), target);
+        }
+        List<String> requiredRoutes = List.of(
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.boolean",
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode");
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            JsonNode requires = testCase.path("requires");
+            String targetKind = requires.path("target_kind").asText();
+            if (!("message_field".equals(targetKind) || "structure_member".equals(targetKind))
+                    || !"local_model".equals(testCase.path("execution").path("mode").asText())
+                    || !appliesToVersion(testCase, version)) continue;
+            String caseId = testCase.path("case_id").asText();
+            String targetId = requires.path("normative_target_id").asText();
+            JsonNode target = targets.get(targetId);
+            if (target == null || !"Boolean".equals(target.path("source_encoding").asText())) continue;
+            for (String route : requiredRoutes) {
+                JsonNode event = findRouteEvent(events, caseId, route, version, targetId);
+                assertEquals("passed", event.path("status").asText(), caseId + " / " + route);
+                assertEquals(1, event.path("invocation_count").asInt(), caseId + " / " + route);
+            }
+        }
+    }
+
+    private static Set<String> missingBooleanFieldRouteCaseIds(JsonNode events, String version) throws Exception {
+        JsonNode catalog = readRouteEvidenceCatalog();
+        Map<String, JsonNode> targets = new HashMap<>();
+        for (JsonNode target : catalog.path("normative_targets")) {
+            targets.put(target.path("target_id").asText(), target);
+        }
+        List<String> requiredRoutes = List.of(
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.boolean",
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode");
+        Set<String> missing = new java.util.LinkedHashSet<>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            JsonNode requires = testCase.path("requires");
+            String targetKind = requires.path("target_kind").asText();
+            if (!("message_field".equals(targetKind) || "structure_member".equals(targetKind))
+                    || !"local_model".equals(testCase.path("execution").path("mode").asText())
+                    || !appliesToVersion(testCase, version)) continue;
+            String caseId = testCase.path("case_id").asText();
+            String targetId = requires.path("normative_target_id").asText();
+            JsonNode target = targets.get(targetId);
+            if (target == null || !"Boolean".equals(target.path("source_encoding").asText())) continue;
+            int present = 0;
+            for (String route : requiredRoutes) {
+                if (hasRouteEvent(events, caseId, route, version, targetId)) present++;
+            }
+            if (present == 0) {
+                missing.add(caseId);
+            } else {
+                assertEquals(requiredRoutes.size(), present,
+                        "Boolean field route evidence must be complete before reuse for " + caseId);
             }
         }
         return missing;
@@ -6314,11 +6447,15 @@ class ControlledTlsPeerTest {
         String treeHash = normalizedTreeSha256(requestMessageWire(minorVersion));
         try (RequestMessage message = RequestMessage.fromTtlv(requestMessageStructure(minorVersion));
                 var header = message.header();
-                var item = message.batchItemAt(0)) {
-            assertEquals(1, header.batchCount());
-            assertEquals(1, message.batchItemCount());
+                var item = message.batchItemAt(0);
+                var secondItem = message.batchItemAt(1)) {
+            assertEquals(2, header.batchCount());
+            assertEquals(java.util.Optional.of(true), header.attestationCapableIndicator());
+            assertEquals(java.util.Optional.of(true), header.batchOrderOption());
+            assertEquals(2, message.batchItemCount());
             assertEquals(0x18L, item.operation().orElseThrow());
             assertEquals(1L, item.extensionCount());
+            assertEquals(0x18L, secondItem.operation().orElseThrow());
         }
         for (NormativeTarget field : REQUEST_MESSAGE_PARSE_TARGETS) {
             appendRouteEvent(events, field.caseId(),
@@ -6392,35 +6529,47 @@ class ControlledTlsPeerTest {
         version = appendTtlvItem(version, 0x42006b, TtlvValue.Integer(protocolMinorVersion), limits);
         TtlvStructure header = TtlvStructure.create();
         header = appendTtlvItem(header, 0x420069, TtlvValue.structure(version, limits), limits);
+        header = appendTtlvItem(header, 0x4200d3, TtlvValue.Boolean(true), limits);
+        header = appendTtlvItem(header, 0x420010, TtlvValue.Boolean(true), limits);
         header = appendTtlvItem(header, 0x420092, TtlvValue.DateTime(1), limits);
-        header = appendTtlvItem(header, 0x42000d, TtlvValue.Integer(1), limits);
+        header = appendTtlvItem(header, 0x42000d, TtlvValue.Integer(2), limits);
 
+        TtlvStructure message = TtlvStructure.create();
+        message = appendTtlvItem(message, 0x420077, TtlvValue.structure(header, limits), limits);
+        message = appendTtlvItem(message, 0x42000f,
+                TtlvValue.structure(requestBatchItem(limits, "item-0"), limits), limits);
+        return appendTtlvItem(message, 0x42000f,
+                TtlvValue.structure(requestBatchItem(limits, "item-1"), limits), limits);
+    }
+
+    private static TtlvStructure requestBatchItem(CodecLimits limits, String uniqueId) {
         TtlvStructure payload = TtlvStructure.create();
         payload = appendTtlvItem(payload, 0x420074, TtlvValue.Enumeration(1), limits);
         TtlvStructure requestItem = TtlvStructure.create();
         requestItem = appendTtlvItem(requestItem, 0x42005c, TtlvValue.Enumeration(0x18), limits);
         requestItem = appendTtlvItem(requestItem, 0x420093,
-                TtlvValue.ByteString("item-0".getBytes(StandardCharsets.US_ASCII), limits), limits);
+                TtlvValue.ByteString(uniqueId.getBytes(StandardCharsets.US_ASCII), limits), limits);
         requestItem = appendTtlvItem(requestItem, 0x420079, TtlvValue.structure(payload, limits), limits);
-        requestItem = appendTtlvItem(requestItem, 0x420051,
+        return appendTtlvItem(requestItem, 0x420051,
                 TtlvValue.structure(messageExtensionStructure(), limits), limits);
-
-        TtlvStructure message = TtlvStructure.create();
-        message = appendTtlvItem(message, 0x420077, TtlvValue.structure(header, limits), limits);
-        return appendTtlvItem(message, 0x42000f, TtlvValue.structure(requestItem, limits), limits);
     }
 
     private static byte[] requestMessageWire(int protocolMinorVersion) throws Exception {
         byte[] version = structure(0x420069,
                 item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(protocolMinorVersion)));
         byte[] header = structure(0x420077, version,
-                item(0x420092, 9, longBytes(1)), item(0x42000d, 2, intBytes(1)));
+                item(0x4200d3, 6, longBytes(1)), item(0x420010, 6, longBytes(1)),
+                item(0x420092, 9, longBytes(1)), item(0x42000d, 2, intBytes(2)));
         byte[] requestPayload = structure(0x420079, item(0x420074, 5, intBytes(1)));
-        byte[] requestItem = structure(0x42000f,
+        byte[] firstRequestItem = structure(0x42000f,
                 item(0x42005c, 5, intBytes(0x18)),
                 item(0x420093, 8, "item-0".getBytes(StandardCharsets.US_ASCII)),
                 requestPayload, messageExtensionWire());
-        return structure(0x420078, header, requestItem);
+        byte[] secondRequestItem = structure(0x42000f,
+                item(0x42005c, 5, intBytes(0x18)),
+                item(0x420093, 8, "item-1".getBytes(StandardCharsets.US_ASCII)),
+                requestPayload, messageExtensionWire());
+        return structure(0x420078, header, firstRequestItem, secondRequestItem);
     }
 
     private static void assertBatchItemResponseRouteEvidence(ArrayNode events,
