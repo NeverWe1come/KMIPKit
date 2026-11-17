@@ -50,7 +50,31 @@ fn build_policy_payloads(
 }
 ```
 
-With a configured `Client`, call `get_constraints`, `get_usage_allocation`, `set_constraints`, or `set_defaults`. Each convenience method performs one exchange and does not retry or poll automatically. Inspect the operation-specific response through `response.outcome().response()`; preserve `Pending` and its correlation value when using an asynchronous batch.
+With a configured `Client`, call `get_constraints`, `get_usage_allocation`, `set_constraints`, or `set_defaults`. Each convenience method performs one exchange and does not retry or poll automatically. Rust also offers an operation-oriented builder for Get Usage Allocation. Supply the Unique Identifier for a standalone call; it may be omitted when an earlier operation in the same batch establishes the KMIP ID Placeholder:
+
+```rust
+use kmipkit_client::Client;
+use kmipkit_protocol::UniqueIdentifier;
+use kmipkit_ttlv::codec::CodecLimits;
+
+fn allocate(
+    client: &mut Client,
+    object_id: UniqueIdentifier,
+    requested_units: i64,
+    limits: &CodecLimits,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let response = client
+        .request()
+        .get_usage_allocation()
+        .unique_identifier(object_id)
+        .usage_limits_count(requested_units)
+        .execute(limits)?;
+    let _outcome = response.outcome(); // Inspect Success, Pending, or Failure.
+    Ok(())
+}
+```
+
+Inspect the operation-specific response through `response.outcome().response()`; preserve `Pending` and its correlation value when using an asynchronous batch.
 
 ## Guard usage-limited protection
 
@@ -60,7 +84,7 @@ OASIS §6.1.23 places usage allocation obligations on the client. The caller sup
 use kmipkit_client::{
     Client, ClientBatchItemResponse, ClientError, ClientRequest, UsageAllocationContext,
 };
-use kmipkit_protocol::{EncryptRequest, GetUsageAllocationRequest, UniqueIdentifier};
+use kmipkit_protocol::{EncryptRequest, UniqueIdentifier};
 use kmipkit_ttlv::codec::CodecLimits;
 
 fn allocate_for_object(
@@ -70,11 +94,12 @@ fn allocate_for_object(
     usage_limits_unit: u32,
     limits: &CodecLimits,
 ) -> Result<UsageAllocationContext, Box<dyn std::error::Error>> {
-    let response = client.get_usage_allocation(
-        GetUsageAllocationRequest::new(requested_units)
-            .with_unique_identifier(object_id),
-        limits,
-    )?;
+    let response = client
+        .request()
+        .get_usage_allocation()
+        .unique_identifier(object_id)
+        .usage_limits_count(requested_units)
+        .execute(limits)?;
     let response_view = response.outcome().response();
     let allocation = response_view
         .get_usage_allocation()

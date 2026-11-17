@@ -41,10 +41,12 @@ T102_BLOCKED_CANDIDATES = 0
 # KMIPKIT-0126 additions.
 # The Rust-only Ping slice adds nine blocked declarations and nine exact
 # standard-trait exclusions while its C/Java/Python fluent parity is pending.
-T102_PUBLIC_DECLARATIONS = 20_303
+# The Rust-only Get Usage Allocation slice adds 22 blocked declarations and
+# 18 exact standard-trait exclusions while the same parity is pending.
+T102_PUBLIC_DECLARATIONS = 20_325
 T102_KMIP30_DRAFT_ROUTE_DECLARATIONS = 36
-T102_APPROVED_EXCLUSIONS = 23_519
-# The current totals correspond to the November 16 report.
+T102_APPROVED_EXCLUSIONS = 23_537
+# The current Rust audit report remains the immutable November 16 snapshot.
 T102_RUST_AUDIT_MANIFEST = 10_380
 T102_RUST_AUDIT_EXCLUDED = 21_649
 T102_RUST_AUDIT_OBSERVED = 32_029

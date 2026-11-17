@@ -1178,3 +1178,51 @@
   --all-features` sequentially after coverage completed: the full workspace
   suite passes, including compile-fail boundaries and doctests. Hosted CI must
   independently verify the PR head.
+
+## Rust Get Usage Allocation fluent builder slice
+
+### Red
+
+- Commit `7ffbdbd63` added fake-transport tests for the required Usage Limits
+  Count, exact signed `i64` request field, typed batch conversion, one-exchange
+  Success, and Pending correlation without follow-up, based on OASIS KMIP v2.1
+  §6.1.23, Tables 232–234, and §7.40, Table 392.
+- Reproduced the missing `RequestBuilder::get_usage_allocation` and
+  `FluentBuildError::MissingUsageLimitsCount` with
+  `cargo test --locked -p kmipkit-client --lib
+  get_usage_allocation_execution_tests` before implementation.
+
+### Green
+
+- Commit `c1b7375eb` added `GetUsageAllocationBuilder`, preserving the existing
+  typed request, batch item, version gate, asynchronous indicator, options,
+  delivery state, and client execution path. The builder does not invent a
+  positive-count rule; the existing typed model accepts and preserves zero.
+- `cargo test --locked -p kmipkit-client --lib
+  get_usage_allocation_execution_tests` passes all ten tests.
+
+### Refactor and API inventory
+
+- Commit `d68b79ebf` reused the existing sanitized
+  `fluent_client_validation_error` mapping for missing required fields and
+  added a test proving the error remains `NotSent` with zero exchanges.
+- Commit `14c90bc22` updated the English and Spanish usage-control guides,
+  compiled their fluent example, added a requirement traceability row, and
+  regenerated the public API inventory through the Rust 1.94 audit,
+  `reconcile_rust_exports.py`, and `generate.py`.
+- The compiler report identified 22 new Rust declaration paths and 18 exact
+  standard-trait exclusions. All new public Rust declarations are blocked
+  under KMIPKIT-0093-FR-011 until C, Java, and Python parity lands. The
+  regenerated manifest contract verifies those root and module paths. The
+  Linux Rust audit has zero missing paths after reconciliation; eight
+  pre-existing KMIP 3.0 `object_class_mask` paths remain target-specific and
+  unobserved on this host.
+- Updated the full-manifest snapshot totals for the 22 declarations and 18
+  exclusions while preserving the separately identified November 16 Rust
+  audit report totals. Both the new builder inventory contract and the
+  two-test manifest totals suite pass.
+- Focused checks pass: the operation tests (10), compiled bilingual guide
+  tests (3), builder manifest contract (1), `cargo fmt --all --check`, and
+  `python3 -B tools/api_manifest/generate.py --check`. The full manifest suite
+  and hosted exact-head CI are still pending. This remains WIP and does not
+  close FR-011 or operation-wide O001/O002.
