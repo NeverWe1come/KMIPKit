@@ -14,7 +14,7 @@ use kmipkit_protocol::{
     GetUsageAllocationRequest, HashRequest, LocateRequest, MacRequest, MacVerifyRequest,
     ManagedObject, NewAttribute, ObjectGroupMember, ObjectType, OpaqueObjectContext, OperationData,
     PingRequest, RecertifyRequest, RecoverRequest, RegisterRequest, RekeyKeyPairRequest,
-    RekeyRequest, RevocationReason, RevokeRequest, RngRetrieveRequest, SecretBytes,
+    RekeyRequest, RevocationReason, RevokeRequest, RngRetrieveRequest, RngSeedRequest, SecretBytes,
     SetAttributeRequest, SignRequest, SignatureVerifyRequest, SplitKeyMethod, StorageStatusMask,
     UniqueIdentifier, ValidateKmipRequest,
 };
@@ -108,6 +108,8 @@ pub enum FluentBuildError {
     MissingUsageLimitsCount,
     /// RNG Retrieve is missing the caller-selected Data Length.
     MissingRngRetrieveDataLength,
+    /// RNG Seed is missing its caller-supplied secret Data.
+    MissingRngSeedData,
     /// Register is missing its object.
     MissingRegisterObject,
     /// Register's object or context is invalid.
@@ -158,6 +160,7 @@ impl fmt::Display for FluentBuildError {
             }
             Self::MissingUsageLimitsCount => "Get Usage Allocation requires Usage Limits Count",
             Self::MissingRngRetrieveDataLength => "RNG Retrieve requires Data Length",
+            Self::MissingRngSeedData => "RNG Seed requires secret Data",
             Self::MissingRegisterObject => "Register requires an object",
             Self::InvalidRegisterObject => "Register object or context is invalid",
             Self::MissingSetAttributeAttribute => "Set Attribute requires one New Attribute",
@@ -294,6 +297,12 @@ impl<'a> RequestBuilder<'a> {
     #[must_use]
     pub fn rng_retrieve(self) -> RngRetrieveBuilder<'a> {
         RngRetrieveBuilder::new(self.client)
+    }
+
+    /// Begins a typed RNG Seed request with secret Data unset.
+    #[must_use]
+    pub fn rng_seed(self) -> RngSeedBuilder<'a> {
+        RngSeedBuilder::new(self.client)
     }
 
     /// Begins constructing a typed Destroy request for an explicit identifier.
@@ -739,6 +748,95 @@ impl<'a> RngRetrieveBuilder<'a> {
             .map_err(fluent_client_validation_error)?;
         self.execution
             .run(ClientRequest::rng_retrieve(request), limits)
+    }
+}
+
+/// A fluent RNG Seed builder for OASIS KMIP v2.1 §6.1.50, Tables 319–321.
+/// Caller Data is kept in the existing zeroizing secret owner.
+pub struct RngSeedBuilder<'a> {
+    execution: FluentBuilderExecution<'a>,
+    data: Option<SecretBytes>,
+}
+
+impl<'a> RngSeedBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            execution: FluentBuilderExecution::new(client),
+            data: None,
+        }
+    }
+
+    /// Moves caller-supplied seed bytes into `KMIPKit`'s zeroizing secret owner.
+    #[must_use]
+    pub fn data(mut self, value: SecretBytes) -> Self {
+        self.data = Some(value);
+        self
+    }
+
+    /// Sets exchange-local options without changing client policy.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.execution = self.execution.with_options(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.execution = self.execution.with_asynchronous_indicator(value);
+        self
+    }
+
+    /// Validates that the required secret Data was supplied.
+    ///
+    /// # Errors
+    /// Returns [`FluentBuildError::MissingRngSeedData`] when Data is absent.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        self.data
+            .as_ref()
+            .map(|_| ())
+            .ok_or(FluentBuildError::MissingRngSeedData)
+    }
+
+    fn into_request_and_execution(
+        self,
+    ) -> Result<(RngSeedRequest, FluentBuilderExecution<'a>), FluentBuildError> {
+        let data = self.data.ok_or(FluentBuildError::MissingRngSeedData)?;
+        Ok((RngSeedRequest::new(data), self.execution))
+    }
+
+    /// Builds the existing typed RNG Seed request.
+    ///
+    /// # Errors
+    /// Returns [`FluentBuildError::MissingRngSeedData`] when Data is absent.
+    pub fn build(self) -> Result<RngSeedRequest, FluentBuildError> {
+        self.into_request_and_execution()
+            .map(|(request, _execution)| request)
+    }
+
+    /// Converts the request to a typed batch item without sending it.
+    ///
+    /// # Errors
+    /// Returns [`FluentBuildError::MissingRngSeedData`] when Data is absent.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        Ok(ClientBatchItem::new(ClientRequest::rng_seed(self.build()?)))
+    }
+
+    /// Executes at most one exchange through the existing typed client path.
+    ///
+    /// Pending remains explicit; this builder does not poll or retry.
+    ///
+    /// # Errors
+    /// Returns the existing sanitized validation, protocol, or transport error
+    /// with its request-delivery evidence.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let (request, execution) = self
+            .into_request_and_execution()
+            .map_err(fluent_client_validation_error)?;
+        execution.run(ClientRequest::rng_seed(request), limits)
     }
 }
 

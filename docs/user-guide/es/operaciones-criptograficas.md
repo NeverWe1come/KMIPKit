@@ -435,3 +435,47 @@ los bytes al liberarse. Usa `with_bytes` solo durante la vida del callback; no
 formatees la salida ni la copies a cadenas ordinarias. Operation Pending sigue
 siendo explícito si el llamador habilita respuestas asíncronas; el builder
 nunca ejecuta Poll ni reintenta.
+
+## Sembrar el RNG de un servidor KMIP
+
+OASIS KMIP v2.1 §6.1.50 Tabla 319 requiere Data y la Tabla 320 informa de la
+longitud Data que usó el servidor. La entrada es secreta. Pásala mediante
+`SecretBytes` para que KMIPKit posea y ponga a cero su copia. Una longitud
+Data igual a cero en una respuesta correcta es válida e indica que el servidor
+no usó la semilla recibida. El builder fluido de Rust usa la petición tipada
+existente y una ruta de un solo intercambio:
+
+```rust,kmipkit-test
+use kmipkit_client::{Client, ClientBatchItemResponse, ClientError};
+use kmipkit_protocol::SecretBytes;
+use kmipkit_ttlv::codec::CodecLimits;
+
+#[allow(dead_code)]
+fn sembrar_rng_del_servidor(
+    client: &mut Client,
+    seed: Vec<u8>,
+    limits: &CodecLimits,
+) -> Result<ClientBatchItemResponse, ClientError> {
+    client
+        .request()
+        .rng_seed()
+        .data(SecretBytes::new(seed))
+        .execute(limits)
+}
+
+#[allow(dead_code)]
+fn longitud_semilla_informada(response: &ClientBatchItemResponse) -> Option<i32> {
+    response
+        .outcome()
+        .response()
+        .rng_seed()
+        .and_then(|value| value.data_length())
+}
+
+fn main() {}
+```
+
+La semilla permanece en el propietario secreto de KMIPKit durante la
+codificación de la petición; ese propietario pone los bytes a cero al
+liberarse. Pending sigue siendo explícito si el llamador habilita respuestas
+asíncronas; el builder nunca ejecuta Poll ni reintenta.

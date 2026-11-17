@@ -1338,3 +1338,53 @@
   manifest, and this slice adds no lifecycle declarations. Exact-head hosted
   CI remains pending. This remains WIP and does not close FR-011 or
   operation-wide O001/O002.
+
+## Rust RNG Seed fluent builder slice
+
+### Red
+
+- Commit `31ff95540` added fake-transport tests for required secret Data,
+  explicit typed build/batch conversion, one-exchange Success, zero Data
+  Length semantics, Pending correlation, and missing-data NotSent behavior.
+  The focused test failed before implementation because
+  `RequestBuilder::rng_seed` and `FluentBuildError::MissingRngSeedData` were
+  absent.
+- The test sources cite OASIS KMIP v2.1 §6.1.50, Tables 319–321, and
+  `KMIPKIT-REQ-SPEC-6.1.50-001`; the tests verify a zero Data Length remains a
+  successful response and never trigger a Poll or retry.
+
+### Green
+
+- Commit `df3e01dae` added `RngSeedBuilder` over the existing typed request,
+  batch item, and one-exchange client path. `.data(SecretBytes)` transfers the
+  required seed in the existing zeroizing owner; options and asynchronous
+  correlation use the shared execution adapter.
+- All eight RNG Seed runtime tests pass after Green, including direct-route
+  Failure, malformed response, transport delivery state, and the four new
+  fluent cases.
+
+### Refactor, documentation, and generated inventory
+
+- Commit `b54506742` records the shared execution conversion, shared test
+  assertions, bilingual usage examples, compile-checked guide snippets,
+  traceability, and regenerated public API inventory.
+- Commit `21949d69c` added the manifest contract and CI invocation. Its Red
+  run failed because the required root/module builder declarations and
+  `MissingRngSeedData` variants were absent from the generated catalog.
+- Added a shared request/error conversion helper, shared seed-response and
+  secret-redaction test assertions, bilingual examples, a compile-check for
+  both guides, a traceability row, and RSG slice tasks. The guides describe
+  the zero-length success behavior and keep seed bytes in `SecretBytes`.
+- Rust 1.94 export reconciliation observed 20 new declaration paths and 18
+  exact standard-trait exclusions. All builder declarations remain blocked
+  under `KMIPKIT-0093-FR-011` until C, Java, and Python parity lands. The final
+  Linux audit reports 11,303 manifest declarations, 21,730 approved
+  exclusions, and 33,033 observed paths, with zero missing, unobserved, kind,
+  conditional, or other issue records.
+- The full-manifest snapshot is 20,373 declarations and 23,591 exclusions;
+  the dated November 16 and November 1 audit snapshots remain unchanged.
+  Focused RNG Seed and guide tests pass (10), as do all 953 client library
+  tests and the 62 builder manifest, T102, and binding-export tests. The
+  generator check, format, and workspace Clippy also pass.
+  Exact-head hosted CI remains pending. This remains WIP and does not close
+  FR-011 or operation-wide O001/O002.

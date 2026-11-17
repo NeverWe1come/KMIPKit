@@ -47,11 +47,13 @@ T102_BLOCKED_CANDIDATES = 0
 # exact standard-trait exclusions while the same parity is pending.
 # The Rust-only RNG Retrieve slice adds 20 blocked declarations and 18 exact
 # standard-trait exclusions while the same parity is pending.
+# The Rust-only RNG Seed slice adds 20 blocked declarations and 18 exact
+# standard-trait exclusions while the same parity is pending.
 # Named-value reconciliation removed eight stale KMIP 3.0 Object Class Mask
 # enumeration paths and corrected their cross-language mappings to bitmask.
-T102_PUBLIC_DECLARATIONS = 20_353
+T102_PUBLIC_DECLARATIONS = 20_373
 T102_KMIP30_DRAFT_ROUTE_DECLARATIONS = 36
-T102_APPROVED_EXCLUSIONS = 23_573
+T102_APPROVED_EXCLUSIONS = 23_591
 # The current Rust audit report remains the immutable November 16 snapshot.
 T102_RUST_AUDIT_MANIFEST = 10_380
 T102_RUST_AUDIT_EXCLUDED = 21_649
