@@ -445,6 +445,21 @@ class ControlledTlsPeerTest {
                     "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION"),
             new NormativeTarget("test-norm-message-field-message-field-9-13-criticality-indicator",
                     "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-CRITICALITY-INDICATOR"));
+    private static final List<NormativeTarget> REQUEST_HEADER_SCALAR_ROUTE_TARGETS = List.of(
+            new NormativeTarget("test-norm-message-field-message-field-8-2-asynchronous-indicator",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ASYNCHRONOUS-INDICATOR"),
+            new NormativeTarget("test-norm-message-field-message-field-8-2-batch-count",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-COUNT"),
+            new NormativeTarget("test-norm-message-field-message-field-8-2-batch-error-continuation-option",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION"),
+            new NormativeTarget("test-norm-message-field-message-field-8-2-client-correlation-value",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-CLIENT-CORRELATION-VALUE"),
+            new NormativeTarget("test-norm-message-field-message-field-8-2-maximum-response-size",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-MAXIMUM-RESPONSE-SIZE"),
+            new NormativeTarget("test-norm-message-field-message-field-8-2-server-correlation-value",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-SERVER-CORRELATION-VALUE"),
+            new NormativeTarget("test-norm-message-field-message-field-8-2-time-stamp",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-TIME-STAMP"));
     private static final List<NormativeTarget> SCALAR_REQUEST_MESSAGE_PARSE_TARGETS = List.of(
             new NormativeTarget("test-norm-message-field-message-field-9-10-server-correlation-value",
                     "KMIPKIT-ELEM-MESSAGE-FIELD-9-10-SERVER-CORRELATION-VALUE"),
@@ -1208,6 +1223,28 @@ class ControlledTlsPeerTest {
                 assertEquals("passed", event.path("status").asText());
             }
         }
+        List<String> requestHeaderScalarRoutes = List.of(
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode",
+                "java.typed-protocol.model.org.kmipkit.message.requestmessage.fromttlv");
+        for (NormativeTarget field : REQUEST_HEADER_SCALAR_ROUTE_TARGETS) {
+            for (String route : requestHeaderScalarRoutes) {
+                assertEquals(KMIP_2_0_AND_2_1.size(), routeEventCount(report.path("events"),
+                        field.caseId(), route),
+                        field.caseId() + " must complete its exact generic or typed route cells.");
+                for (String version : KMIP_2_0_AND_2_1) {
+                    JsonNode event = findRouteEvent(report.path("events"), field.caseId(), route,
+                            version, field.targetId());
+                    assertEquals("passed", event.path("status").asText());
+                }
+            }
+        }
+        NormativeTarget batchErrorContinuationHeader = REQUEST_HEADER_SCALAR_ROUTE_TARGETS.get(2);
+        assertEquals(KMIP_2_0_AND_2_1.size(), routeEventCount(report.path("events"),
+                batchErrorContinuationHeader.caseId(),
+                "java.typed-protocol.function.client_batch_add_error_continuation_value"),
+                "The 8.2 Batch Error Continuation Option must exercise its explicit ClientBatch setter.");
         List<String> genericEnumerationRoutes = List.of(
                 "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
                 "java.generic-ttlv.ttlv_item.create",
