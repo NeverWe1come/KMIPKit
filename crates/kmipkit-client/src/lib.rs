@@ -393,6 +393,10 @@ mod usage_allocation_guard_tests;
 mod policy_controls_guide_examples;
 
 #[cfg(test)]
+#[path = "../tests/unit/rng_retrieve_guide_examples.rs"]
+mod rng_retrieve_guide_examples;
+
+#[cfg(test)]
 #[path = "../tests/unit/attribute_mutation_execution_tests.rs"]
 mod attribute_mutation_execution_tests;
 
@@ -462,8 +466,8 @@ pub use fluent::{
     FluentBuildError, GetAttributeListBuilder, GetAttributesBuilder, GetBuilder,
     GetConstraintsBuilder, GetUsageAllocationBuilder, HashBuilder, LocateBuilder, MacBuilder,
     MacVerifyBuilder, RecertifyBuilder, RecoverBuilder, RegisterBuilder, RekeyBuilder,
-    RekeyKeyPairBuilder, RequestBuilder, RevokeBuilder, SetAttributeBuilder, SignBuilder,
-    SignatureVerifyBuilder,
+    RekeyKeyPairBuilder, RequestBuilder, RevokeBuilder, RngRetrieveBuilder, SetAttributeBuilder,
+    SignBuilder, SignatureVerifyBuilder,
 };
 pub use kmipkit_protocol::{
     ProfileObjectState, ProfileTransport, ProfileValidationContext, ProfileValidationError,

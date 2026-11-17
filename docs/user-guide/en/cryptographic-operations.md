@@ -308,3 +308,45 @@ returns. The variable TTLV BigInteger, TextString, and ByteString constructors
 also clear their owned staging arrays. These paths do not modify caller-owned
 input. Immutable Python `bytes` and `str` values and other runtime copies
 remain outside deterministic zeroization.
+
+## Request random output from a KMIP server
+
+OASIS KMIP v2.1 §6.1.49 Table 316 requires Data Length. Table 317 returns the
+requested Data as secret output. KMIPKit forwards the caller's length to the
+existing typed request; it does not generate random bytes locally. The Rust
+fluent builder uses the same one-exchange client path:
+
+```rust,kmipkit-test
+use kmipkit_client::{Client, ClientBatchItemResponse, ClientError};
+use kmipkit_ttlv::codec::CodecLimits;
+
+#[allow(dead_code)]
+fn request_rng_output(
+    client: &mut Client,
+    data_length: i32,
+    limits: &CodecLimits,
+) -> Result<ClientBatchItemResponse, ClientError> {
+    client
+        .request()
+        .rng_retrieve()
+        .data_length(data_length)
+        .execute(limits)
+}
+
+#[allow(dead_code)]
+fn returned_rng_output_length(response: &ClientBatchItemResponse) -> Option<usize> {
+    response
+        .outcome()
+        .response()
+        .rng_retrieve()
+        .and_then(|value| value.data())
+        .map(|bytes| bytes.with_bytes(<[u8]>::len))
+}
+
+fn main() {}
+```
+
+The response keeps Data in the existing zeroizing `SecretBytes` owner. Use
+`with_bytes` only for the callback's lifetime; avoid formatting or copying the
+output into ordinary strings. Operation Pending remains explicit when the
+caller opts into asynchronous results; the builder never polls or retries.

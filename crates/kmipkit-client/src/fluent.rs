@@ -14,9 +14,9 @@ use kmipkit_protocol::{
     GetUsageAllocationRequest, HashRequest, LocateRequest, MacRequest, MacVerifyRequest,
     ManagedObject, NewAttribute, ObjectGroupMember, ObjectType, OpaqueObjectContext, OperationData,
     PingRequest, RecertifyRequest, RecoverRequest, RegisterRequest, RekeyKeyPairRequest,
-    RekeyRequest, RevocationReason, RevokeRequest, SecretBytes, SetAttributeRequest, SignRequest,
-    SignatureVerifyRequest, SplitKeyMethod, StorageStatusMask, UniqueIdentifier,
-    ValidateKmipRequest,
+    RekeyRequest, RevocationReason, RevokeRequest, RngRetrieveRequest, SecretBytes,
+    SetAttributeRequest, SignRequest, SignatureVerifyRequest, SplitKeyMethod, StorageStatusMask,
+    UniqueIdentifier, ValidateKmipRequest,
 };
 use kmipkit_transport::{RequestDeliveryState, RequestOptions};
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
@@ -106,6 +106,8 @@ pub enum FluentBuildError {
     MissingHashCryptographicParameters,
     /// Get Usage Allocation is missing Usage Limits Count.
     MissingUsageLimitsCount,
+    /// RNG Retrieve is missing the caller-selected Data Length.
+    MissingRngRetrieveDataLength,
     /// Register is missing its object.
     MissingRegisterObject,
     /// Register's object or context is invalid.
@@ -155,6 +157,7 @@ impl fmt::Display for FluentBuildError {
                 "Hash requires caller-selected Cryptographic Parameters"
             }
             Self::MissingUsageLimitsCount => "Get Usage Allocation requires Usage Limits Count",
+            Self::MissingRngRetrieveDataLength => "RNG Retrieve requires Data Length",
             Self::MissingRegisterObject => "Register requires an object",
             Self::InvalidRegisterObject => "Register object or context is invalid",
             Self::MissingSetAttributeAttribute => "Set Attribute requires one New Attribute",
@@ -285,6 +288,12 @@ impl<'a> RequestBuilder<'a> {
     #[must_use]
     pub fn get_usage_allocation(self) -> GetUsageAllocationBuilder<'a> {
         GetUsageAllocationBuilder::new(self.client)
+    }
+
+    /// Begins a typed RNG Retrieve request with Data Length unset.
+    #[must_use]
+    pub fn rng_retrieve(self) -> RngRetrieveBuilder<'a> {
+        RngRetrieveBuilder::new(self.client)
     }
 
     /// Begins constructing a typed Destroy request for an explicit identifier.
@@ -633,6 +642,103 @@ impl<'a> GetUsageAllocationBuilder<'a> {
             .map_err(fluent_client_validation_error)?;
         self.execution
             .run(ClientRequest::get_usage_allocation(request), limits)
+    }
+}
+
+/// A fluent RNG Retrieve builder for OASIS KMIP v2.1 §6.1.49, Tables 316–318.
+/// The returned Data remains in the existing zeroizing secret owner.
+pub struct RngRetrieveBuilder<'a> {
+    execution: FluentBuilderExecution<'a>,
+    data_length: Option<i32>,
+}
+
+impl<'a> RngRetrieveBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            execution: FluentBuilderExecution::new(client),
+            data_length: None,
+        }
+    }
+
+    /// Sets the caller-selected number of random output bytes to request.
+    ///
+    /// The value is passed to the existing typed request without adding a
+    /// range rule beyond that request's validator.
+    #[must_use]
+    pub const fn data_length(mut self, value: i32) -> Self {
+        self.data_length = Some(value);
+        self
+    }
+
+    /// Sets exchange-local options without changing client policy.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.execution = self.execution.with_options(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.execution = self.execution.with_asynchronous_indicator(value);
+        self
+    }
+
+    fn typed_request(&self) -> Result<RngRetrieveRequest, FluentBuildError> {
+        let data_length = self
+            .data_length
+            .ok_or(FluentBuildError::MissingRngRetrieveDataLength)?;
+        let request = RngRetrieveRequest::new(data_length);
+        validate_fluent_request(&request)?;
+        Ok(request)
+    }
+
+    /// Validates the required Data Length and existing typed request rules.
+    ///
+    /// # Errors
+    /// Returns [`FluentBuildError::MissingRngRetrieveDataLength`] when Data
+    /// Length is absent, or [`FluentBuildError::InvalidRequest`] when the
+    /// typed request rejects the supplied values.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        self.typed_request().map(drop)
+    }
+
+    /// Builds the existing typed RNG Retrieve request.
+    ///
+    /// # Errors
+    /// Returns a build error when Data Length is absent or typed validation
+    /// fails.
+    pub fn build(self) -> Result<RngRetrieveRequest, FluentBuildError> {
+        self.typed_request()
+    }
+
+    /// Converts the request to a typed batch item without sending it.
+    ///
+    /// # Errors
+    /// Returns a build error when Data Length is absent or typed validation
+    /// fails.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        Ok(ClientBatchItem::new(ClientRequest::rng_retrieve(
+            self.build()?,
+        )))
+    }
+
+    /// Executes at most one exchange through the existing typed client path.
+    ///
+    /// Pending remains explicit; this builder does not poll or retry.
+    ///
+    /// # Errors
+    /// Returns the existing sanitized validation, protocol, or transport error
+    /// with its request-delivery evidence.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let request = self
+            .typed_request()
+            .map_err(fluent_client_validation_error)?;
+        self.execution
+            .run(ClientRequest::rng_retrieve(request), limits)
     }
 }
 

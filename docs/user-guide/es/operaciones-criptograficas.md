@@ -392,3 +392,46 @@ también si devuelve un error. Los constructores TTLV variables BigInteger,
 TextString y ByteString también limpian sus arrays de staging. Estas rutas no
 modifican la entrada del llamador. Los valores inmutables `bytes` y `str` y
 otras copias del runtime quedan fuera de la puesta a cero determinista.
+
+## Solicitar salida aleatoria al servidor KMIP
+
+OASIS KMIP v2.1 §6.1.49 Tabla 316 exige Data Length. La Tabla 317 devuelve Data
+como salida secreta. KMIPKit envía la longitud indicada por el llamador en la
+petición tipada existente; no genera bytes aleatorios localmente. El builder
+fluido de Rust usa la misma ruta de cliente de un solo intercambio:
+
+```rust,kmipkit-test
+use kmipkit_client::{Client, ClientBatchItemResponse, ClientError};
+use kmipkit_ttlv::codec::CodecLimits;
+
+#[allow(dead_code)]
+fn solicitar_salida_rng(
+    client: &mut Client,
+    data_length: i32,
+    limits: &CodecLimits,
+) -> Result<ClientBatchItemResponse, ClientError> {
+    client
+        .request()
+        .rng_retrieve()
+        .data_length(data_length)
+        .execute(limits)
+}
+
+#[allow(dead_code)]
+fn longitud_salida_rng(response: &ClientBatchItemResponse) -> Option<usize> {
+    response
+        .outcome()
+        .response()
+        .rng_retrieve()
+        .and_then(|value| value.data())
+        .map(|bytes| bytes.with_bytes(<[u8]>::len))
+}
+
+fn main() {}
+```
+
+La respuesta conserva Data en el propietario `SecretBytes`, que pone a cero
+los bytes al liberarse. Usa `with_bytes` solo durante la vida del callback; no
+formatees la salida ni la copies a cadenas ordinarias. Operation Pending sigue
+siendo explícito si el llamador habilita respuestas asíncronas; el builder
+nunca ejecuta Poll ni reintenta.
