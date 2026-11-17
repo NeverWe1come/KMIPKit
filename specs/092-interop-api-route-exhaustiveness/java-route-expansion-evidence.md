@@ -2528,3 +2528,42 @@ python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-refe
 python3 interop/java-kmip-validator/tools/compare_route_ledger.py
 git diff --check
 ```
+
+## Java server Query scalar payload routes — 2026-11-17
+
+Red commit `a1ea1b088` requires construction and decoding evidence for the
+server-initiated Query Function field and its dual catalog identity. It failed
+before a fixture existed. Green commit `87adc236c` selects source-backed
+values from the normative catalog and exercises the installed generic TTLV
+Item constructor, view, and decoder for both the payload-field target and its
+operation target. The fixtures cover Query Function (Query Operations), Object
+Type (Symmetric Key), Vendor Identification, Attestation Type (TPM Quote), and
+Client Registration Method (Client Generated), for KMIP 2.0/2.1. The values
+follow OASIS KMIP 2.1 §6.2.4 and §§11.4, 11.10, 11.34, and 11.44; tags use
+§11.56. No server listener or sending route is claimed.
+
+The selected scope validates 27,704/27,704 cells with zero failed cells. The
+Java matrix records 71,641 planned, 27,704 executed, and 43,937 pending cells
+across 1,160 pending case IDs. The full Java validator suite passes 60/60 tests
+with no skips or failures. The 68 route-capability tests pass, the generated
+route check confirms 1,507 routes, and the refreshed ledger compares cleanly.
+The installed artifact remains the pinned release artifact recorded above;
+these are local TTLV results, not vendor interoperability or a complete Java
+matrix. PR #187 remains WIP.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-tmp" \
+  bash bindings/java/gradlew -p interop/java-kmip-validator \
+  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" test
+python3 -m unittest interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+git diff --check
+```
