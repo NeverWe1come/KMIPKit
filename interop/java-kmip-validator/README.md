@@ -101,8 +101,8 @@ baseline, regenerate the checked-in ledger with
 rejects generated ledgers that do not record successful invocations.
 The generated ledger retains the artifact
 SHA-256 for each build; that build-specific digest is not used as a coverage
-baseline. These recipes execute 27,214 of 71,641 planned Java route cells, with
-no failed cells; the ledger records the other 44,427 as pending and does not imply
+baseline. These recipes execute 27,222 of 71,641 planned Java route cells, with
+no failed cells; the ledger records the other 44,419 as pending and does not imply
 vendor interoperability or full-matrix completion. Local TTLV recipes exercise 51
 enumeration families, all six bitmask aggregate cases, and all 44 individual
 bitmask value cases through the applicable
@@ -116,6 +116,9 @@ Enumeration members (§§7.23–7.24, Tables 375–376). The optional, repeatabl
 The separate required Object Defaults member exercises Item creation, view, and decoding
 with its version-specific shape: an Object Type Enumeration in KMIP 2.0 (§7.18
 Table 338) and an ObjectTypes Structure in KMIP 2.1 (§7.22 Table 374).
+The required-if-PBKDF2 Salt member covers its Byte String constructor, Item,
+view, and decoder routes in both versions (KMIP 2.0 §7.8 Table 328 and KMIP 2.1
+§7.12 Table 364; tag allocation §§11.54/11.56).
 Data Length, Final Indicator, Interop Identifier, Log Message, and MAC Data
 exercise their six applicable local generic routes in KMIP 2.0 and 2.1 with
 their source-defined Integer, Boolean, Text String, or Byte String values
