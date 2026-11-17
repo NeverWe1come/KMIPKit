@@ -73,6 +73,20 @@ Dependent work branches from the unmerged parent head while review is pending.
 - [ ] PING004 Push a WIP draft PR and fix every exact-head CI failure. Keep
   the slice WIP until required C, Java, and Python fluent parity is complete.
 
+### Rust Get Usage Allocation builder slice
+
+- [x] GUA001 Add and commit Red fake-transport tests for required Usage Limits
+  Count, typed build/batch conversion, one-exchange Success, and Pending.
+- [x] GUA002 Reproduce the missing fluent constructor and required-field error
+  in a distinct Red commit.
+- [x] GUA003 Implement the typed builder and one-exchange execution path in a
+  separate Green commit.
+- [x] GUA004 Refactor validation error mapping; update bilingual guide examples,
+  traceability, and compiler-reconciled generated manifest artifacts.
+- [ ] GUA005 Push a WIP draft PR targeting the Ping slice and fix every exact-
+  head CI failure. Keep the slice WIP until C, Java, and Python fluent parity
+  and remaining operation work are complete.
+
 - [ ] B001 Add failing C consumer tests for opaque handle ownership,
   operation construction, typed results, direct tasks and ABI stability.
 - [ ] B002 Generate and implement the C ABI on the Rust owner; run sanitizer,
