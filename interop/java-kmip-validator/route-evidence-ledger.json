@@ -955,6 +955,7 @@
     "test-norm-tag-tag-420055",
     "test-norm-tag-tag-420058",
     "test-norm-tag-tag-42005a",
+    "test-norm-tag-tag-42005c",
     "test-norm-tag-tag-42005d",
     "test-norm-tag-tag-42005e",
     "test-norm-tag-tag-420060",
@@ -978,6 +979,7 @@
     "test-norm-tag-tag-420076",
     "test-norm-tag-tag-420077",
     "test-norm-tag-tag-420079",
+    "test-norm-tag-tag-42007c",
     "test-norm-tag-tag-42007d",
     "test-norm-tag-tag-42007e",
     "test-norm-tag-tag-42007f",
@@ -1429,6 +1431,23 @@
     "test-norm-structure-member-structure-member-7-5-batch-undo-capability",
     "test-norm-structure-member-structure-member-7-5-quantum-safe-capability",
     "test-norm-structure-member-structure-member-7-5-streaming-capability",
+    "test-norm-message-field-message-field-9-1-asynchronous-correlation-value",
+    "test-norm-message-field-message-field-9-10-server-correlation-value",
+    "test-norm-message-field-message-field-9-12-maximum-response-size",
+    "test-norm-message-field-message-field-9-13-vendor-identification",
+    "test-norm-message-field-message-field-9-14-nonce-id",
+    "test-norm-message-field-message-field-9-14-nonce-value",
+    "test-norm-message-field-message-field-9-15-operation",
+    "test-norm-message-field-message-field-9-16-protocol-version-major",
+    "test-norm-message-field-message-field-9-16-protocol-version-minor",
+    "test-norm-message-field-message-field-9-17-result-message",
+    "test-norm-message-field-message-field-9-18-result-reason",
+    "test-norm-message-field-message-field-9-19-result-status",
+    "test-norm-message-field-message-field-9-2-asynchronous-indicator",
+    "test-norm-message-field-message-field-9-20-time-stamp",
+    "test-norm-message-field-message-field-9-21-unique-batch-item-id",
+    "test-norm-message-field-message-field-9-6-batch-error-continuation-option",
+    "test-norm-message-field-message-field-9-9-client-correlation-value",
     "test-norm-enumeration-value-enum-value-item-type-big-integer-00000004",
     "test-norm-enumeration-value-enum-value-item-type-boolean-00000006",
     "test-norm-enumeration-value-enum-value-item-type-byte-string-00000008",
@@ -1449,7 +1468,7 @@
     "test-norm-credential-credential-hashed-password",
     "test-norm-credential-credential-username-and-password"
   ],
-  "executed_cells": 26921,
+  "executed_cells": 27135,
   "language": "java",
   "library_commit": "12496d646d11d4069b58bcc88fc76cc619211ec6",
   "pending_case_ids": [
@@ -1616,28 +1635,11 @@
     "test-norm-message-field-message-field-8-6-result-reason",
     "test-norm-message-field-message-field-8-6-result-status",
     "test-norm-message-field-message-field-8-6-unique-batch-item-id",
-    "test-norm-message-field-message-field-9-1-asynchronous-correlation-value",
-    "test-norm-message-field-message-field-9-10-server-correlation-value",
-    "test-norm-message-field-message-field-9-12-maximum-response-size",
     "test-norm-message-field-message-field-9-13-vendor-extension",
-    "test-norm-message-field-message-field-9-13-vendor-identification",
     "test-norm-message-field-message-field-9-14-nonce",
-    "test-norm-message-field-message-field-9-14-nonce-id",
-    "test-norm-message-field-message-field-9-14-nonce-value",
-    "test-norm-message-field-message-field-9-15-operation",
     "test-norm-message-field-message-field-9-16-protocol-version",
-    "test-norm-message-field-message-field-9-16-protocol-version-major",
-    "test-norm-message-field-message-field-9-16-protocol-version-minor",
-    "test-norm-message-field-message-field-9-17-result-message",
-    "test-norm-message-field-message-field-9-18-result-reason",
-    "test-norm-message-field-message-field-9-19-result-status",
-    "test-norm-message-field-message-field-9-2-asynchronous-indicator",
-    "test-norm-message-field-message-field-9-20-time-stamp",
-    "test-norm-message-field-message-field-9-21-unique-batch-item-id",
     "test-norm-message-field-message-field-9-4-authentication",
     "test-norm-message-field-message-field-9-4-credential-may-be-repeated",
-    "test-norm-message-field-message-field-9-6-batch-error-continuation-option",
-    "test-norm-message-field-message-field-9-9-client-correlation-value",
     "test-norm-object-structure-object-structure-3-10-key-material",
     "test-norm-object-structure-object-structure-3-11-key-material",
     "test-norm-object-structure-object-structure-3-12-key-material",
@@ -2596,14 +2598,12 @@
     "test-norm-tag-tag-420045",
     "test-norm-tag-tag-420046",
     "test-norm-tag-tag-42005b",
-    "test-norm-tag-tag-42005c",
     "test-norm-tag-tag-42005f",
     "test-norm-tag-tag-420064",
     "test-norm-tag-tag-42006d",
     "test-norm-tag-tag-420078",
     "test-norm-tag-tag-42007a",
     "test-norm-tag-tag-42007b",
-    "test-norm-tag-tag-42007c",
     "test-norm-tag-tag-420083",
     "test-norm-tag-tag-420085",
     "test-norm-tag-tag-420089",
@@ -3283,7 +3283,7 @@
     },
     {
       "case_id": "test-norm-message-field-message-field-8-3-operation",
-      "pending_cells": 10
+      "pending_cells": 8
     },
     {
       "case_id": "test-norm-message-field-message-field-8-3-request-payload",
@@ -3339,11 +3339,11 @@
     },
     {
       "case_id": "test-norm-message-field-message-field-8-6-operation",
-      "pending_cells": 10
+      "pending_cells": 8
     },
     {
       "case_id": "test-norm-message-field-message-field-8-6-response-payload",
-      "pending_cells": 10
+      "pending_cells": 8
     },
     {
       "case_id": "test-norm-message-field-message-field-8-6-result-message",
@@ -3362,76 +3362,16 @@
       "pending_cells": 10
     },
     {
-      "case_id": "test-norm-message-field-message-field-9-1-asynchronous-correlation-value",
-      "pending_cells": 10
-    },
-    {
-      "case_id": "test-norm-message-field-message-field-9-10-server-correlation-value",
-      "pending_cells": 12
-    },
-    {
-      "case_id": "test-norm-message-field-message-field-9-12-maximum-response-size",
-      "pending_cells": 10
-    },
-    {
       "case_id": "test-norm-message-field-message-field-9-13-vendor-extension",
       "pending_cells": 12
-    },
-    {
-      "case_id": "test-norm-message-field-message-field-9-13-vendor-identification",
-      "pending_cells": 10
     },
     {
       "case_id": "test-norm-message-field-message-field-9-14-nonce",
       "pending_cells": 14
     },
     {
-      "case_id": "test-norm-message-field-message-field-9-14-nonce-id",
-      "pending_cells": 12
-    },
-    {
-      "case_id": "test-norm-message-field-message-field-9-14-nonce-value",
-      "pending_cells": 12
-    },
-    {
-      "case_id": "test-norm-message-field-message-field-9-15-operation",
-      "pending_cells": 14
-    },
-    {
       "case_id": "test-norm-message-field-message-field-9-16-protocol-version",
       "pending_cells": 12
-    },
-    {
-      "case_id": "test-norm-message-field-message-field-9-16-protocol-version-major",
-      "pending_cells": 12
-    },
-    {
-      "case_id": "test-norm-message-field-message-field-9-16-protocol-version-minor",
-      "pending_cells": 12
-    },
-    {
-      "case_id": "test-norm-message-field-message-field-9-17-result-message",
-      "pending_cells": 10
-    },
-    {
-      "case_id": "test-norm-message-field-message-field-9-18-result-reason",
-      "pending_cells": 10
-    },
-    {
-      "case_id": "test-norm-message-field-message-field-9-19-result-status",
-      "pending_cells": 10
-    },
-    {
-      "case_id": "test-norm-message-field-message-field-9-2-asynchronous-indicator",
-      "pending_cells": 10
-    },
-    {
-      "case_id": "test-norm-message-field-message-field-9-20-time-stamp",
-      "pending_cells": 12
-    },
-    {
-      "case_id": "test-norm-message-field-message-field-9-21-unique-batch-item-id",
-      "pending_cells": 14
     },
     {
       "case_id": "test-norm-message-field-message-field-9-4-authentication",
@@ -3440,14 +3380,6 @@
     {
       "case_id": "test-norm-message-field-message-field-9-4-credential-may-be-repeated",
       "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-message-field-message-field-9-6-batch-error-continuation-option",
-      "pending_cells": 12
-    },
-    {
-      "case_id": "test-norm-message-field-message-field-9-9-client-correlation-value",
-      "pending_cells": 12
     },
     {
       "case_id": "test-norm-object-structure-object-structure-3-10-key-material",
@@ -5383,7 +5315,7 @@
     },
     {
       "case_id": "test-norm-payload-client-query-response-20-001",
-      "pending_cells": 31
+      "pending_cells": 30
     },
     {
       "case_id": "test-norm-payload-client-query-response-20-002",
@@ -5443,7 +5375,7 @@
     },
     {
       "case_id": "test-norm-payload-client-query-response-21-001",
-      "pending_cells": 31
+      "pending_cells": 30
     },
     {
       "case_id": "test-norm-payload-client-query-response-21-002",
@@ -6279,7 +6211,7 @@
     },
     {
       "case_id": "test-norm-payload-server-query-response-20-001",
-      "pending_cells": 7
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-payload-server-query-response-20-002",
@@ -6327,7 +6259,7 @@
     },
     {
       "case_id": "test-norm-payload-server-query-response-21-001",
-      "pending_cells": 7
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-payload-server-query-response-21-002",
@@ -6823,7 +6755,7 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-60-vendor-identification",
-      "pending_cells": 12
+      "pending_cells": 14
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-61-certificate-serial-number",
@@ -6871,11 +6803,11 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-5-5-attribute-reference",
-      "pending_cells": 6
+      "pending_cells": 8
     },
     {
       "case_id": "test-norm-structure-member-structure-member-5-5-vendor-identification",
-      "pending_cells": 6
+      "pending_cells": 8
     },
     {
       "case_id": "test-norm-structure-member-structure-member-5-6-any-attribute-in-4-object-attributes",
@@ -6931,7 +6863,7 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-7-13-extension-type",
-      "pending_cells": 6
+      "pending_cells": 8
     },
     {
       "case_id": "test-norm-structure-member-structure-member-7-18-attribute-name",
@@ -6971,7 +6903,7 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-7-25-operation",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-structure-member-structure-member-7-26-pkcs-11-function",
@@ -7282,10 +7214,6 @@
       "pending_cells": 12
     },
     {
-      "case_id": "test-norm-tag-tag-42005c",
-      "pending_cells": 12
-    },
-    {
       "case_id": "test-norm-tag-tag-42005f",
       "pending_cells": 12
     },
@@ -7307,10 +7235,6 @@
     },
     {
       "case_id": "test-norm-tag-tag-42007b",
-      "pending_cells": 12
-    },
-    {
-      "case_id": "test-norm-tag-tag-42007c",
       "pending_cells": 12
     },
     {
@@ -7726,16 +7650,16 @@
       "pending_cells": 15
     }
   ],
-  "pending_cells": 44728,
+  "pending_cells": 44506,
   "pending_reason": "No validated per-cell route execution evidence is recorded for this cell.",
   "pending_reason_code": "route_evidence_not_emitted",
-  "planned_cells": 71649,
+  "planned_cells": 71641,
   "route_action_axis_summary": [
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 2666,
-      "pending_cells": 1418,
+      "executed_cells": 2685,
+      "pending_cells": 1399,
       "protocol_version": "2.0",
       "required_cells": 4084,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item",
@@ -7744,8 +7668,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 2705,
-      "pending_cells": 1474,
+      "executed_cells": 2724,
+      "pending_cells": 1455,
       "protocol_version": "2.1",
       "required_cells": 4179,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item",
@@ -7754,8 +7678,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 698,
-      "pending_cells": 50,
+      "executed_cells": 700,
+      "pending_cells": 48,
       "protocol_version": "2.0",
       "required_cells": 748,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.rawtag.checked",
@@ -7764,8 +7688,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 698,
-      "pending_cells": 50,
+      "executed_cells": 700,
+      "pending_cells": 48,
       "protocol_version": "2.1",
       "required_cells": 748,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.rawtag.checked",
@@ -7774,8 +7698,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 698,
-      "pending_cells": 50,
+      "executed_cells": 700,
+      "pending_cells": 48,
       "protocol_version": "2.0",
       "required_cells": 748,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.rawtag.fromraw",
@@ -7784,8 +7708,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 698,
-      "pending_cells": 50,
+      "executed_cells": 700,
+      "pending_cells": 48,
       "protocol_version": "2.1",
       "required_cells": 748,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.rawtag.fromraw",
@@ -7874,8 +7798,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 6,
-      "pending_cells": 30,
+      "executed_cells": 10,
+      "pending_cells": 26,
       "protocol_version": "2.0",
       "required_cells": 36,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.bytestring",
@@ -7884,8 +7808,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 8,
-      "pending_cells": 30,
+      "executed_cells": 12,
+      "pending_cells": 26,
       "protocol_version": "2.1",
       "required_cells": 38,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.bytestring",
@@ -7894,8 +7818,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 2,
-      "pending_cells": 11,
+      "executed_cells": 3,
+      "pending_cells": 10,
       "protocol_version": "2.0",
       "required_cells": 13,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.datetime",
@@ -7904,8 +7828,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 2,
-      "pending_cells": 12,
+      "executed_cells": 3,
+      "pending_cells": 11,
       "protocol_version": "2.1",
       "required_cells": 14,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.datetime",
@@ -7934,28 +7858,28 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 1802,
-      "pending_cells": 66,
+      "executed_cells": 1807,
+      "pending_cells": 63,
       "protocol_version": "2.0",
-      "required_cells": 1868,
+      "required_cells": 1870,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
       "transport": null
     },
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 1828,
-      "pending_cells": 67,
+      "executed_cells": 1833,
+      "pending_cells": 64,
       "protocol_version": "2.1",
-      "required_cells": 1895,
+      "required_cells": 1897,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
       "transport": null
     },
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 138,
-      "pending_cells": 29,
+      "executed_cells": 141,
+      "pending_cells": 26,
       "protocol_version": "2.0",
       "required_cells": 167,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.integer",
@@ -7964,8 +7888,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 138,
-      "pending_cells": 30,
+      "executed_cells": 141,
+      "pending_cells": 27,
       "protocol_version": "2.1",
       "required_cells": 168,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.integer",
@@ -8034,28 +7958,28 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 13,
-      "pending_cells": 42,
+      "executed_cells": 17,
+      "pending_cells": 41,
       "protocol_version": "2.0",
-      "required_cells": 55,
+      "required_cells": 58,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring",
       "transport": null
     },
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 13,
-      "pending_cells": 43,
+      "executed_cells": 17,
+      "pending_cells": 42,
       "protocol_version": "2.1",
-      "required_cells": 56,
+      "required_cells": 59,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring",
       "transport": null
     },
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 2714,
-      "pending_cells": 1417,
+      "executed_cells": 2733,
+      "pending_cells": 1398,
       "protocol_version": "2.0",
       "required_cells": 4131,
       "route_id": "java.generic-ttlv.ttlv_codec.decode",
@@ -8064,8 +7988,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 2753,
-      "pending_cells": 1473,
+      "executed_cells": 2772,
+      "pending_cells": 1454,
       "protocol_version": "2.1",
       "required_cells": 4226,
       "route_id": "java.generic-ttlv.ttlv_codec.decode",
@@ -8074,8 +7998,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 2666,
-      "pending_cells": 1417,
+      "executed_cells": 2685,
+      "pending_cells": 1398,
       "protocol_version": "2.0",
       "required_cells": 4083,
       "route_id": "java.generic-ttlv.ttlv_item.create",
@@ -8084,8 +8008,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 2705,
-      "pending_cells": 1473,
+      "executed_cells": 2724,
+      "pending_cells": 1454,
       "protocol_version": "2.1",
       "required_cells": 4178,
       "route_id": "java.generic-ttlv.ttlv_item.create",
@@ -30654,28 +30578,18 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 9,
-      "protocol_version": "2.0",
-      "required_cells": 9,
-      "route_id": "java.typed-protocol.function.client_async_operation_outcome_response_payload_ttlv",
-      "transport": null
-    },
-    {
-      "action": "decode",
-      "encoding": "TTLV",
       "executed_cells": 1,
-      "pending_cells": 9,
+      "pending_cells": 0,
       "protocol_version": "2.1",
-      "required_cells": 10,
+      "required_cells": 1,
       "route_id": "java.typed-protocol.function.client_async_operation_outcome_response_payload_ttlv",
       "transport": null
     },
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 8,
-      "pending_cells": 10,
+      "executed_cells": 9,
+      "pending_cells": 9,
       "protocol_version": "2.0",
       "required_cells": 18,
       "route_id": "java.typed-protocol.function.client_batch_add_error_continuation_value",
@@ -30684,8 +30598,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 8,
-      "pending_cells": 10,
+      "executed_cells": 9,
+      "pending_cells": 9,
       "protocol_version": "2.1",
       "required_cells": 18,
       "route_id": "java.typed-protocol.function.client_batch_add_error_continuation_value",
@@ -32114,8 +32028,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 3,
-      "pending_cells": 36,
+      "executed_cells": 4,
+      "pending_cells": 35,
       "protocol_version": "2.0",
       "required_cells": 39,
       "route_id": "java.typed-protocol.function.client_batch_item_response_unique_batch_item_id",
@@ -32124,8 +32038,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 3,
-      "pending_cells": 36,
+      "executed_cells": 4,
+      "pending_cells": 35,
       "protocol_version": "2.1",
       "required_cells": 39,
       "route_id": "java.typed-protocol.function.client_batch_item_response_unique_batch_item_id",
@@ -32554,8 +32468,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 6,
+      "executed_cells": 2,
+      "pending_cells": 4,
       "protocol_version": "2.0",
       "required_cells": 6,
       "route_id": "java.typed-protocol.model.org.kmipkit.credentials.nonce.fromttlv",
@@ -32564,8 +32478,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 6,
+      "executed_cells": 2,
+      "pending_cells": 4,
       "protocol_version": "2.1",
       "required_cells": 6,
       "route_id": "java.typed-protocol.model.org.kmipkit.credentials.nonce.fromttlv",
@@ -32654,8 +32568,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 7,
-      "pending_cells": 37,
+      "executed_cells": 18,
+      "pending_cells": 26,
       "protocol_version": "2.0",
       "required_cells": 44,
       "route_id": "java.typed-protocol.model.org.kmipkit.message.requestmessage.fromttlv",
@@ -32664,8 +32578,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 7,
-      "pending_cells": 37,
+      "executed_cells": 18,
+      "pending_cells": 26,
       "protocol_version": "2.1",
       "required_cells": 44,
       "route_id": "java.typed-protocol.model.org.kmipkit.message.requestmessage.fromttlv",
@@ -32674,8 +32588,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 8,
-      "pending_cells": 35,
+      "executed_cells": 22,
+      "pending_cells": 21,
       "protocol_version": "2.0",
       "required_cells": 43,
       "route_id": "java.typed-protocol.model.org.kmipkit.message.responsemessage.fromttlv",
@@ -32684,8 +32598,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 8,
-      "pending_cells": 35,
+      "executed_cells": 22,
+      "pending_cells": 21,
       "protocol_version": "2.1",
       "required_cells": 43,
       "route_id": "java.typed-protocol.model.org.kmipkit.message.responsemessage.fromttlv",
@@ -34312,23 +34226,23 @@
       "transport": "raw_tls"
     }
   ],
-  "route_manifest_sha256": "411aad566ee5f53e36d8db10a6f5792c6411559871fc53a52a9425dba9911cc8",
+  "route_manifest_sha256": "8e26f2efe33c63d3fc4dcd0cb11e465b15bbe9135ab56809c354f032a7aeac59",
   "route_summary": [
     {
-      "executed_cells": 5371,
-      "pending_cells": 2892,
+      "executed_cells": 5409,
+      "pending_cells": 2854,
       "required_cells": 8263,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item"
     },
     {
-      "executed_cells": 1396,
-      "pending_cells": 100,
+      "executed_cells": 1400,
+      "pending_cells": 96,
       "required_cells": 1496,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.rawtag.checked"
     },
     {
-      "executed_cells": 1396,
-      "pending_cells": 100,
+      "executed_cells": 1400,
+      "pending_cells": 96,
       "required_cells": 1496,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.rawtag.fromraw"
     },
@@ -34357,14 +34271,14 @@
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.boolean"
     },
     {
-      "executed_cells": 14,
-      "pending_cells": 60,
+      "executed_cells": 22,
+      "pending_cells": 52,
       "required_cells": 74,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.bytestring"
     },
     {
-      "executed_cells": 4,
-      "pending_cells": 23,
+      "executed_cells": 6,
+      "pending_cells": 21,
       "required_cells": 27,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.datetime"
     },
@@ -34375,14 +34289,14 @@
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.datetimeextended"
     },
     {
-      "executed_cells": 3630,
-      "pending_cells": 133,
-      "required_cells": 3763,
+      "executed_cells": 3640,
+      "pending_cells": 127,
+      "required_cells": 3767,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration"
     },
     {
-      "executed_cells": 276,
-      "pending_cells": 59,
+      "executed_cells": 282,
+      "pending_cells": 53,
       "required_cells": 335,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.integer"
     },
@@ -34405,20 +34319,20 @@
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure"
     },
     {
-      "executed_cells": 26,
-      "pending_cells": 85,
-      "required_cells": 111,
+      "executed_cells": 34,
+      "pending_cells": 83,
+      "required_cells": 117,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring"
     },
     {
-      "executed_cells": 5467,
-      "pending_cells": 2890,
+      "executed_cells": 5505,
+      "pending_cells": 2852,
       "required_cells": 8357,
       "route_id": "java.generic-ttlv.ttlv_codec.decode"
     },
     {
-      "executed_cells": 5371,
-      "pending_cells": 2890,
+      "executed_cells": 5409,
+      "pending_cells": 2852,
       "required_cells": 8261,
       "route_id": "java.generic-ttlv.ttlv_item.create"
     },
@@ -34874,13 +34788,13 @@
     },
     {
       "executed_cells": 1,
-      "pending_cells": 18,
-      "required_cells": 19,
+      "pending_cells": 0,
+      "required_cells": 1,
       "route_id": "java.typed-protocol.function.client_async_operation_outcome_response_payload_ttlv"
     },
     {
-      "executed_cells": 16,
-      "pending_cells": 20,
+      "executed_cells": 18,
+      "pending_cells": 18,
       "required_cells": 36,
       "route_id": "java.typed-protocol.function.client_batch_add_error_continuation_value"
     },
@@ -35323,8 +35237,8 @@
       "route_id": "java.typed-protocol.function.client_batch_item_response_ttlv_hex"
     },
     {
-      "executed_cells": 6,
-      "pending_cells": 72,
+      "executed_cells": 8,
+      "pending_cells": 70,
       "required_cells": 78,
       "route_id": "java.typed-protocol.function.client_batch_item_response_unique_batch_item_id"
     },
@@ -35461,8 +35375,8 @@
       "route_id": "java.typed-protocol.model.org.kmipkit.credentials.hashedpasswordcredential.fromttlv"
     },
     {
-      "executed_cells": 0,
-      "pending_cells": 12,
+      "executed_cells": 4,
+      "pending_cells": 8,
       "required_cells": 12,
       "route_id": "java.typed-protocol.model.org.kmipkit.credentials.nonce.fromttlv"
     },
@@ -35491,14 +35405,14 @@
       "route_id": "java.typed-protocol.model.org.kmipkit.extensions.queryasyncrequestsrequest.withoperations"
     },
     {
-      "executed_cells": 14,
-      "pending_cells": 74,
+      "executed_cells": 36,
+      "pending_cells": 52,
       "required_cells": 88,
       "route_id": "java.typed-protocol.model.org.kmipkit.message.requestmessage.fromttlv"
     },
     {
-      "executed_cells": 16,
-      "pending_cells": 70,
+      "executed_cells": 44,
+      "pending_cells": 42,
       "required_cells": 86,
       "route_id": "java.typed-protocol.model.org.kmipkit.message.responsemessage.fromttlv"
     },
@@ -35786,7 +35700,7 @@
     }
   ],
   "schema_version": "1.0",
-  "selected_scope_cells": 26921,
+  "selected_scope_cells": 27135,
   "selected_scope_complete": true,
   "vendor_interoperability_claim": false
 }
