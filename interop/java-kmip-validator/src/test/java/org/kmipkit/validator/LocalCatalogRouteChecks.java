@@ -348,8 +348,8 @@ final class LocalCatalogRouteChecks {
         }
     }
 
-    /** Executes generic TTLV routes for client payload correlation values. */
-    static void executeClientPayloadScalarFields(JsonNode catalog, String version, Set<String> selectedCaseIds,
+    /** Executes generic TTLV routes for operation payload correlation values. */
+    static void executeCorrelationPayloadScalarFields(JsonNode catalog, String version, Set<String> selectedCaseIds,
             EvidenceSink sink) throws Exception {
         Set<String> emitted = new java.util.HashSet<>();
         CodecLimits limits = CodecLimits.defaults();
@@ -366,8 +366,8 @@ final class LocalCatalogRouteChecks {
             String operationId = requires.path("operation_id").asText();
             if (!"operation_payload_field".equals(requires.path("target_kind").asText())
                     || !"Asynchronous Correlation Value".equals(fieldName)
-                    || !"request".equals(requires.path("payload_role").asText())) {
-                throw new IllegalArgumentException("Selected case is not a client correlation payload field: "
+                    || !Set.of("request", "response").contains(requires.path("payload_role").asText())) {
+                throw new IllegalArgumentException("Selected case is not a correlation payload field: "
                         + caseId);
             }
             String targetId = requires.path("normative_target_id").asText();
