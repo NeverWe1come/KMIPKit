@@ -3345,6 +3345,36 @@ class RouteMatrixTests(unittest.TestCase):
                             ['Create Key Pair', 'Activate', 'Sign', 'Revoke', 'Destroy', 'Destroy']
                             for event in send_events))
 
+    def test_signature_verify_operation_uses_public_key_pair_and_installed_route(self):
+        """OASIS KMIP 2.0 §6.1.50 and 2.1 §6.1.56 define Signature Verify."""
+        from artifact_support import ROOT
+        from route_peer import RECIPES, execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_id = 'test-op-signature-verify'
+        self.assertIn(case_id, RECIPES, 'Signature Verify has no controlled-peer route recipe')
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12,
+                         'Signature Verify must pass both versions and all six wire routes')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertEqual({event['target_id'] for event in events},
+                         {'KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY'})
+        send_events = [event for event in events if event['action'] == 'send']
+        self.assertEqual(len(send_events), 12)
+        self.assertTrue(all(event['peer_observed_operation_sequence'] ==
+                            ['Create Key Pair', 'Activate', 'Signature Verify',
+                             'Revoke', 'Destroy', 'Destroy'] and
+                            event['peer_observed_effects'] ==
+                            ['key_pair_created', 'activated', 'signature_verified', 'revoked',
+                             'destroyed', 'destroyed']
+                            for event in send_events))
+
     def test_export_operation_executes_installed_request_and_response_routes(self):
         """OASIS KMIP 2.0/2.1 §6.1.18 Tables 202–203/217–218 define Export."""
         from artifact_support import INSTALL, ROOT
