@@ -101,8 +101,8 @@ baseline, regenerate the checked-in ledger with
 rejects generated ledgers that do not record successful invocations.
 The generated ledger retains the artifact
 SHA-256 for each build; that build-specific digest is not used as a coverage
-baseline. These recipes execute 27,298 of 71,641 planned Java route cells, with
-no failed cells; the ledger records the other 44,343 as pending and does not imply
+baseline. These recipes execute 27,306 of 71,641 planned Java route cells, with
+no failed cells; the ledger records the other 44,335 as pending and does not imply
 vendor interoperability or full-matrix completion. Local TTLV recipes exercise 51
 enumeration families, all six bitmask aggregate cases, and all 44 individual
 bitmask value cases through the applicable
@@ -220,7 +220,7 @@ evidence for both `RawTag` identity routes and the `ClientBatch` setter. The
 setter's evidence comes from the serialized header of a controlled two-item
 Query request in KMIP 2.0 and 2.1 (KMIP 2.0 §11.54; KMIP 2.1 §11.56).
 
-The 44,343 pending cells span 1,215 case IDs listed in the generated ledger;
+The 44,335 pending cells span 1,214 case IDs listed in the generated ledger;
 every one has the reason `route_evidence_not_emitted`. The applicability rule
 is the shared catalog and capability matrix after protocol-version,
 public-route, encoding/transport, and source-backed exclusion filters. A cell
@@ -324,8 +324,11 @@ Enumeration through the installed generic TTLV item constructor, view, and
 decoder, as required by KMIP 2.1 §6.1.36. The combined branch also covers the
 Usage Limits and Right Usage Limits fields, and Endpoint Role request and
 response payloads in KMIP 2.0 plus the request in KMIP 2.1. The selected report
-validates 27,298/27,298 cells; 44,343 of the full 71,641-cell Java matrix
+validates 27,306/27,306 cells; 44,335 of the full 71,641-cell Java matrix
 remain pending, so this does not complete the Java matrix. The two KMIP 2.1
 §4.53 structure-member cases each exercise all seven applicable generic and
 typed routes through the enclosing `Rotate Name` Attribute with both required
 members from Table 135.
+The Batch Order Option message-field case completes three generic TTLV routes
+and `RequestMessage.fromTtlv` in both KMIP 2.0 and 2.1 (§8.2; §9.8 Tables 369
+and 407).

@@ -462,6 +462,8 @@ class ControlledTlsPeerTest {
                     "KMIPKIT-ELEM-MESSAGE-FIELD-9-3-ATTESTATION-CAPABLE-INDICATOR"),
             new NormativeTarget("test-norm-message-field-message-field-9-5-batch-count",
                     "KMIPKIT-ELEM-MESSAGE-FIELD-9-5-BATCH-COUNT"),
+            new NormativeTarget(LocalCatalogRouteChecks.BATCH_ORDER_OPTION_CASE_ID,
+                    LocalCatalogRouteChecks.BATCH_ORDER_OPTION_TARGET_ID),
             new NormativeTarget("test-norm-message-field-message-field-9-8-batch-order-option",
                     "KMIPKIT-ELEM-MESSAGE-FIELD-9-8-BATCH-ORDER-OPTION"),
             new NormativeTarget("test-norm-message-field-message-field-9-7-batch-item",
@@ -865,6 +867,13 @@ class ControlledTlsPeerTest {
             for (LocalCatalogRouteChecks.Invocation invocation : booleanFieldInvocations) {
                 appendLocalCatalogInvocation(events, protocolVersion, invocation);
             }
+            List<LocalCatalogRouteChecks.Invocation> batchOrderOptionInvocations = new ArrayList<>();
+            LocalCatalogRouteChecks.executeBatchOrderOption(readRouteEvidenceCatalog(), protocolVersion,
+                    batchOrderOptionInvocations::add);
+            booleanFieldRouteEventCount += batchOrderOptionInvocations.size();
+            for (LocalCatalogRouteChecks.Invocation invocation : batchOrderOptionInvocations) {
+                appendLocalCatalogInvocation(events, protocolVersion, invocation);
+            }
             assertBooleanFieldGenericRouteEvidence(events, protocolVersion);
             Set<String> missingScalarMessageFieldCases = missingScalarMessageFieldRouteCaseIds(events,
                     protocolVersion);
@@ -1191,6 +1200,22 @@ class ControlledTlsPeerTest {
                     route, "2.1", LocalCatalogRouteChecks.ROTATE_NAME_VALUE_TARGET_ID);
             assertEquals("passed", event.path("status").asText());
         }
+        List<String> batchOrderOptionRoutes = List.of(
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode",
+                "java.typed-protocol.model.org.kmipkit.message.requestmessage.fromttlv");
+        for (String route : batchOrderOptionRoutes) {
+            assertEquals(KMIP_2_0_AND_2_1.size(), routeEventCount(report.path("events"),
+                    LocalCatalogRouteChecks.BATCH_ORDER_OPTION_CASE_ID, route),
+                    "Batch Order Option must complete its KMIP 2.0 and 2.1 route cells.");
+            for (String version : KMIP_2_0_AND_2_1) {
+                JsonNode event = findRouteEvent(report.path("events"),
+                        LocalCatalogRouteChecks.BATCH_ORDER_OPTION_CASE_ID,
+                        route, version, LocalCatalogRouteChecks.BATCH_ORDER_OPTION_TARGET_ID);
+                assertEquals("passed", event.path("status").asText());
+            }
+        }
         List<String> genericEnumerationRoutes = List.of(
                 "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
                 "java.generic-ttlv.ttlv_item.create",
@@ -1393,7 +1418,7 @@ class ControlledTlsPeerTest {
         int batchItemAdditionalResponseRouteEventCount = KMIP_2_0_AND_2_1.size() * 12;
         int batchItemRenderedResponseViewEventCount = KMIP_2_0_AND_2_1.size() * 3 * 3;
         int normativeMessageFieldGenericRouteEventCount = KMIP_2_0_AND_2_1.size() * 31;
-        int normativeMessageFieldParserRouteEventCount = KMIP_2_0_AND_2_1.size() * 14;
+        int normativeMessageFieldParserRouteEventCount = KMIP_2_0_AND_2_1.size() * 15;
         int normativeBatchItemAccessorRouteEventCount = KMIP_2_0_AND_2_1.size() * 10;
         int newAttributePayloadRouteEventCount = KMIP_2_0_AND_2_1.size() * 3 * 20;
         int objectGroupLocalRouteEventCount = 3;
@@ -1514,6 +1539,7 @@ class ControlledTlsPeerTest {
                         + booleanFieldCaseIds.size()
                         + 1 // KMIP 2.1 §4.53 Rotate Name Type member case.
                         + 1 // KMIP 2.1 §4.53 Rotate Name Value member case.
+                        + 1 // KMIP 2.0/2.1 §8.2 Batch Order Option message-field case.
                         // Four scalar header cases are already included by the baseline report groups.
                         + scalarMessageFieldCaseIds(report.path("events")).size() - 4,
                 report.path("case_ids").size());
@@ -3836,6 +3862,7 @@ class ControlledTlsPeerTest {
         STRUCTURE_MEMBER_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         caseIds.add(LocalCatalogRouteChecks.ROTATE_NAME_TYPE_CASE_ID);
         caseIds.add(LocalCatalogRouteChecks.ROTATE_NAME_VALUE_CASE_ID);
+        caseIds.add(LocalCatalogRouteChecks.BATCH_ORDER_OPTION_CASE_ID);
         STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         STRUCTURE_MEMBER_VALUE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         caseIds.add("test-norm-payload-client-add-attribute-request-20-002");
