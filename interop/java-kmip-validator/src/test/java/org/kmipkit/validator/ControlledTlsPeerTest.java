@@ -684,6 +684,9 @@ class ControlledTlsPeerTest {
             LocalCatalogRouteChecks.executeTagIdentities(readRouteEvidenceCatalog(), protocolVersion,
                     typedTagIdentityCases,
                     invocation -> appendLocalCatalogInvocation(events, protocolVersion, invocation));
+            Set<String> missingGenericTagCases = missingGenericTagRouteCaseIds(events, protocolVersion);
+            LocalCatalogRouteChecks.executeTags(readRouteEvidenceCatalog(), protocolVersion, missingGenericTagCases,
+                    invocation -> appendAggregateTagInvocation(events, protocolVersion, invocation));
             LocalCatalogRouteChecks.executeReferencedEnums(readRouteEvidenceCatalog(), protocolVersion,
                     invocation -> appendLocalCatalogInvocation(events, protocolVersion, invocation));
             byte[] serverCertificatePem = fixture("server-cert.pem");
@@ -818,6 +821,9 @@ class ControlledTlsPeerTest {
             assertNewlyCataloguedLocalRoutesAreInvoked(events, protocolVersion);
         }
 
+        int tagAggregateEventCount = appendTagAggregateRouteEvents(events);
+        assertEquals(expectedTagAggregateEventCount(), tagAggregateEventCount,
+                "The Tag aggregate must represent every catalogued tag and tag-allocation range cell.");
         writeRouteExecutionReport(reportPath, mapper, events);
         assertTrue(Files.isRegularFile(reportPath),
                 "Installed Query calls against the controlled peer must emit route execution evidence.");
@@ -1204,6 +1210,7 @@ class ControlledTlsPeerTest {
                         + structureMemberStructureRouteEventCount + structureMemberByteStringRouteEventCount
                         + structureMemberValueRouteEventCount
                         + batchErrorContinuationEventCount + genericTagEventCount + typedTagIdentityEventCount
+                        + tagAggregateEventCount
                         + referencedEnumEventCount + referencedEnumAggregateEventCount,
                 report.path("events").size());
         long bitmaskEvents = 0;
@@ -1235,7 +1242,7 @@ class ControlledTlsPeerTest {
                         + 11 + STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size()
                         + STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.size()
                         + STRUCTURE_MEMBER_VALUE_FIXTURES.size() + PROFILE_INFORMATION_CASE_IDS.size()
-                        + SERVER_INFORMATION_CASE_IDS.size(),
+                        + SERVER_INFORMATION_CASE_IDS.size() + 1,
                 report.path("case_ids").size());
         List<String> expectedCredentialCaseIds = CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().toList();
         int credentialCaseStart = report.path("case_ids").size() - expectedCredentialCaseIds.size();
@@ -3604,6 +3611,13 @@ class ControlledTlsPeerTest {
                 construction ? treeHash : null, construction ? null : treeHash);
     }
 
+    private static void appendAggregateTagInvocation(ArrayNode events, String version,
+            LocalCatalogRouteChecks.Invocation invocation) throws Exception {
+        appendLocalCatalogInvocation(events, version, new LocalCatalogRouteChecks.Invocation(
+                "test-enum-tag", invocation.targetId(), invocation.routeId(), invocation.symbol(),
+                invocation.action(), invocation.wire(), invocation.rejectionCode()));
+    }
+
     // OASIS KMIP 2.0 §11.54 and KMIP 2.1 §11.56: exact Tag assignments and reservations.
     private static void assertGenericOnlyTagInventoryEvidence(JsonNode events) throws Exception {
         Set<String> selected = genericOnlyTagCaseIds();
@@ -3637,22 +3651,75 @@ class ControlledTlsPeerTest {
                 tagCaseIds.add(testCase.path("case_id").asText());
             }
         }
+        Set<JsonNode> normalizedAggregateEvents = new java.util.HashSet<>();
+        for (JsonNode event : events) {
+            if (!"test-enum-tag".equals(event.path("case_id").asText())) continue;
+            ObjectNode normalized = ((ObjectNode) event).deepCopy();
+            normalized.remove(List.of("case_id", "invocation_id"));
+            normalizedAggregateEvents.add(normalized);
+        }
         for (JsonNode event : events) {
             if (!tagCaseIds.contains(event.path("case_id").asText())
                     || !event.path("route_id").asText().startsWith("java.generic-ttlv.")) {
                 continue;
             }
             ObjectNode expected = ((ObjectNode) event).deepCopy();
-            expected.put("case_id", "test-enum-tag");
-            boolean present = false;
-            for (JsonNode candidate : events) {
-                if (expected.equals(candidate)) {
-                    present = true;
-                    break;
-                }
-            }
-            assertTrue(present, "The Tag aggregate must retain each generic TTLV invocation: " + expected);
+            expected.remove(List.of("case_id", "invocation_id"));
+            assertTrue(normalizedAggregateEvents.contains(expected),
+                    "The Tag aggregate must retain each generic TTLV invocation: " + event);
         }
+    }
+
+    private static int appendTagAggregateRouteEvents(ArrayNode events) throws Exception {
+        Set<String> tagCaseIds = new java.util.HashSet<>();
+        for (JsonNode testCase : readRouteEvidenceCatalog().path("test_cases")) {
+            String targetKind = testCase.path("requires").path("target_kind").asText();
+            if ("tag".equals(targetKind) || "tag_range".equals(targetKind)) {
+                tagCaseIds.add(testCase.path("case_id").asText());
+            }
+        }
+
+        Map<String, ObjectNode> aggregateEvents = new java.util.LinkedHashMap<>();
+        Set<String> existingAggregateKeys = new java.util.HashSet<>();
+        for (JsonNode event : events) {
+            if (!"test-enum-tag".equals(event.path("case_id").asText())) continue;
+            ObjectNode aggregate = ((ObjectNode) event).deepCopy();
+            String key = tagAggregateEventKey(aggregate);
+            ObjectNode previous = aggregateEvents.putIfAbsent(key, aggregate);
+            assertEquals(null, previous, "A Tag aggregate matrix cell must be emitted only once.");
+            existingAggregateKeys.add(key);
+        }
+        for (JsonNode event : events) {
+            if (!tagCaseIds.contains(event.path("case_id").asText())
+                    || !event.path("route_id").asText().startsWith("java.generic-ttlv.")) {
+                continue;
+            }
+            ObjectNode aggregate = ((ObjectNode) event).deepCopy();
+            aggregate.put("case_id", "test-enum-tag");
+            String key = tagAggregateEventKey(aggregate);
+            ObjectNode previous = aggregateEvents.putIfAbsent(key, aggregate);
+            if (previous != null) {
+                ObjectNode comparablePrevious = previous.deepCopy();
+                ObjectNode comparableCurrent = aggregate.deepCopy();
+                comparablePrevious.remove(List.of("case_id", "invocation_id"));
+                comparableCurrent.remove(List.of("case_id", "invocation_id"));
+                assertEquals(comparablePrevious, comparableCurrent,
+                        "Repeated Tag evidence must agree for the same aggregate matrix cell.");
+            }
+        }
+        for (Map.Entry<String, ObjectNode> entry : aggregateEvents.entrySet()) {
+            if (existingAggregateKeys.contains(entry.getKey())) continue;
+            ObjectNode aggregate = entry.getValue();
+            aggregate.put("invocation_id", java.util.UUID.randomUUID().toString());
+            events.add(aggregate);
+        }
+        return aggregateEvents.size();
+    }
+
+    private static String tagAggregateEventKey(JsonNode event) {
+        return String.join("|", event.path("target_id").asText(), event.path("route_id").asText(),
+                event.path("action").asText(), event.path("protocol_version").asText(),
+                event.path("encoding").asText(), event.path("transport").asText());
     }
 
     private static Set<String> genericOnlyTagCaseIds() throws Exception {
@@ -3675,6 +3742,54 @@ class ControlledTlsPeerTest {
         }
         assertTrue(!selected.isEmpty(), "The catalog must retain executable generic-only Tag cases.");
         return selected;
+    }
+
+    private static Set<String> missingGenericTagRouteCaseIds(JsonNode events, String version) throws Exception {
+        Set<String> missing = new java.util.LinkedHashSet<>();
+        List<String> genericRoutes = List.of(
+                "java.generic-ttlv.model.org.kmipkit.ttlv.rawtag.fromraw",
+                "java.generic-ttlv.model.org.kmipkit.ttlv.rawtag.checked",
+                "java.generic-ttlv.ttlv_codec.decode");
+        for (JsonNode testCase : readRouteEvidenceCatalog().path("test_cases")) {
+            JsonNode requires = testCase.path("requires");
+            if (!"tag".equals(requires.path("target_kind").asText())
+                    || !appliesToVersion(testCase, version)) continue;
+            String caseId = testCase.path("case_id").asText();
+            String targetId = requires.path("normative_target_id").asText();
+            List<String> requiredRoutes = new ArrayList<>(genericRoutes);
+            if ("assigned".equals(requires.path("allocation").asText())) {
+                requiredRoutes.add("java.generic-ttlv.ttlv_item.create");
+                requiredRoutes.add("java.generic-ttlv.function.ttlv_item_view_from_item");
+            }
+            int present = 0;
+            for (String route : requiredRoutes) {
+                if (hasRouteEvent(events, caseId, route, version, targetId)) present++;
+            }
+            if (present == 0) {
+                missing.add(caseId);
+            } else {
+                assertEquals(requiredRoutes.size(), present,
+                        "Generic Tag evidence must be complete before it is reused for " + caseId);
+            }
+        }
+        return missing;
+    }
+
+    private static int expectedTagAggregateEventCount() throws Exception {
+        int count = 0;
+        for (JsonNode testCase : readRouteEvidenceCatalog().path("test_cases")) {
+            JsonNode requires = testCase.path("requires");
+            int routes;
+            if ("tag".equals(requires.path("target_kind").asText())) {
+                routes = "assigned".equals(requires.path("allocation").asText()) ? 5 : 3;
+            } else if ("tag_range".equals(requires.path("target_kind").asText())) {
+                routes = "extension".equals(requires.path("allocation").asText()) ? 3 : 1;
+            } else {
+                continue;
+            }
+            count += routes * testCase.path("execution").path("protocol_versions").size();
+        }
+        return count;
     }
 
     private static Set<String> missingTypedTagIdentityCaseIds(JsonNode events, String version) throws Exception {
