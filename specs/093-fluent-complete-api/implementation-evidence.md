@@ -1365,6 +1365,9 @@
 
 ### Refactor, documentation, and generated inventory
 
+- Commit `b54506742` records the shared execution conversion, shared test
+  assertions, bilingual usage examples, compile-checked guide snippets,
+  traceability, and regenerated public API inventory.
 - Commit `21949d69c` added the manifest contract and CI invocation. Its Red
   run failed because the required root/module builder declarations and
   `MissingRngSeedData` variants were absent from the generated catalog.
