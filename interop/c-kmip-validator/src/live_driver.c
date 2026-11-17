@@ -623,6 +623,21 @@ static bool destroy_response_matches_key(
         same_text_identifier(created_identifier, &destroyed_identifier);
 }
 
+static bool archive_response_matches_key(
+    kmipkit_client_batch_item_response_t *response_item,
+    const kmipkit_unique_identifier_v1_t *created_identifier,
+    int32_t *out_status) {
+    uint8_t present = 0;
+    kmipkit_unique_identifier_v1_t archived_identifier = {
+        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
+        .abi_version = 1
+    };
+    *out_status = kmipkit_client_batch_item_response_archive(
+        response_item, &present, &archived_identifier);
+    return *out_status == 0 && present &&
+        same_text_identifier(created_identifier, &archived_identifier);
+}
+
 static bool structure_view_find_value(kmipkit_ttlv_structure_view_t *structure,
                                       uint32_t expected_tag,
                                       uint8_t expected_type,
@@ -4896,7 +4911,9 @@ static void record_kmip_result(kmip_execution_outcome_t *outcome,
 
 static kmip_execution_outcome_t execute_created_key_crypto(kmip_live_client_t *client,
                                                            uint32_t operation) {
-    /* OASIS KMIP 2.x §§6.1.11, 6.1.17, 6.1.31–6.1.33: isolate a key around crypto. */
+    /* Archive follows KMIP 2.0/2.1 §6.1.4; crypto fixtures follow §§6.1.11,
+     * 6.1.17, and 6.1.31–6.1.33. Each fixture isolates and cleans up its key. */
+    bool archive = operation == KMIPKIT_ENUMERATION_OPERATION_ARCHIVE;
     bool decrypt = operation == KMIPKIT_ENUMERATION_OPERATION_DECRYPT;
     bool mac_verify = operation == KMIPKIT_ENUMERATION_OPERATION_MAC_VERIFY;
     bool mac = operation == KMIPKIT_ENUMERATION_OPERATION_MAC || mac_verify;
@@ -4919,10 +4936,15 @@ static kmip_execution_outcome_t execute_created_key_crypto(kmip_live_client_t *c
         "mac-verify-create", "mac-verify-activate", "mac-verify-target",
         "mac-verify-revoke", "mac-verify-destroy"
     };
+    static const char *const archive_item_ids[] = {
+        "archive-create", "archive-activate", "archive-target", "archive-revoke",
+        "archive-destroy"
+    };
     const char *const *item_ids = mac_verify ? mac_verify_item_ids :
+        archive ? archive_item_ids :
         mac ? mac_item_ids : decrypt ? decrypt_item_ids : encrypt_item_ids;
     const char *operation_name = mac_verify ? "MAC Verify" :
-        mac ? "MAC" : decrypt ? "Decrypt" : "Encrypt";
+        archive ? "Archive" : mac ? "MAC" : decrypt ? "Decrypt" : "Encrypt";
     kmip_execution_outcome_t outcome = {.executed = true};
     kmipkit_client_batch_t *batch = NULL;
     kmipkit_client_batch_response_t *response = NULL;
@@ -4948,7 +4970,8 @@ static kmip_execution_outcome_t execute_created_key_crypto(kmip_live_client_t *c
     uint32_t key_algorithm = mac ? KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_HMAC_SHA256 :
         KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES;
     uint32_t key_length = mac ? 256U : 128U;
-    uint32_t usage_mask = mac_verify ? KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_MAC_VERIFY :
+    uint32_t usage_mask = archive ? KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_ENCRYPT :
+        mac_verify ? KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_MAC_VERIFY :
         mac ? KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_MAC_GENERATE :
         decrypt ? KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_DECRYPT :
         KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_ENCRYPT;
@@ -4961,24 +4984,28 @@ static kmip_execution_outcome_t execute_created_key_crypto(kmip_live_client_t *c
         KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY, attributes, NULL, &items[0]);
     if (status == 0) status = kmipkit_client_batch_item_activate(&placeholder, &items[1]);
     if (status == 0) status = kmipkit_ttlv_structure_create(&parameters);
-    if (status == 0 && !mac) status = kmipkit_ttlv_value_enumeration(
+    if (status == 0 && !mac && !archive) status = kmipkit_ttlv_value_enumeration(
         KMIPKIT_ENUMERATION_BLOCK_CIPHER_MODE_ECB, &value);
-    if (status == 0 && !mac && !append_ttlv_value(
+    if (status == 0 && !mac && !archive && !append_ttlv_value(
             client, &parameters, UINT32_C(0x420011), &value)) status = -1;
-    if (status == 0 && !mac) status = kmipkit_ttlv_value_enumeration(
+    if (status == 0 && !mac && !archive) status = kmipkit_ttlv_value_enumeration(
         KMIPKIT_ENUMERATION_PADDING_METHOD_NONE, &value);
-    if (status == 0 && !mac && !append_ttlv_value(
+    if (status == 0 && !mac && !archive && !append_ttlv_value(
             client, &parameters, UINT32_C(0x42005F), &value)) status = -1;
-    if (status == 0) status = kmipkit_ttlv_value_enumeration(key_algorithm, &value);
-    if (status == 0 && !append_ttlv_value(client, &parameters, UINT32_C(0x420028), &value)) status = -1;
+    if (status == 0 && !archive) status = kmipkit_ttlv_value_enumeration(key_algorithm, &value);
+    if (status == 0 && !archive &&
+        !append_ttlv_value(client, &parameters, UINT32_C(0x420028), &value)) status = -1;
     const uint8_t *input = decrypt ? BATCH_CRYPTO_CIPHERTEXT : BATCH_CRYPTO_PLAINTEXT;
-    if (status == 0) status = batch_crypto_secret_value(input, sizeof(BATCH_CRYPTO_PLAINTEXT), &plaintext);
+    if (status == 0 && !archive) status = batch_crypto_secret_value(
+        input, sizeof(BATCH_CRYPTO_PLAINTEXT), &plaintext);
     if (status == 0 && mac_verify) status = kmipkit_client_batch_item_mac_verify(
         &placeholder, parameters, plaintext, &mac_data, NULL, 0, 0, &items[2]);
     else if (status == 0 && mac) status = kmipkit_client_batch_item_mac(
         &placeholder, parameters, plaintext, NULL, 0, 0, &items[2]);
     else if (status == 0 && decrypt) status = kmipkit_client_batch_item_decrypt(
         &placeholder, parameters, plaintext, NULL, NULL, NULL, 0, 0, NULL, &items[2]);
+    else if (status == 0 && archive) status = kmipkit_client_batch_item_archive(
+        &placeholder, &items[2]);
     else if (status == 0) status = kmipkit_client_batch_item_encrypt(
         &placeholder, parameters, plaintext, NULL, NULL, 0, 0, NULL, &items[2]);
     if (status == 0) status = create_revocation_item(&placeholder, &items[3]);
@@ -5057,7 +5084,8 @@ static kmip_execution_outcome_t execute_created_key_crypto(kmip_live_client_t *c
         identifier.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING &&
         identifier.text_data && identifier.text_length &&
         activate_response_matches_created_key(responses[1], &identifier, &status) &&
-        created_key_crypto_response_matches(responses[2], &identifier, operation, &status) &&
+        (archive ? archive_response_matches_key(responses[2], &identifier, &status) :
+         created_key_crypto_response_matches(responses[2], &identifier, operation, &status)) &&
         revoke_response_matches_created_key(responses[3], &identifier, &status) &&
         response_ttlv_matches_identifier(responses[3], kmipkit_client_batch_item_response_revoke_ttlv,
                                          &identifier, &status) &&
@@ -6038,6 +6066,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         return execute_registered_crypto_batch(client);
     if (strcmp(test_case->case_id, "test-op-encrypt") == 0)
         return execute_created_key_crypto(client, KMIPKIT_ENUMERATION_OPERATION_ENCRYPT);
+    if (strcmp(test_case->case_id, "test-op-archive") == 0)
+        return execute_created_key_crypto(client, KMIPKIT_ENUMERATION_OPERATION_ARCHIVE);
     if (strcmp(test_case->case_id, "test-op-decrypt") == 0)
         return execute_created_key_crypto(client, KMIPKIT_ENUMERATION_OPERATION_DECRYPT);
     if (strcmp(test_case->case_id, "test-op-mac") == 0)

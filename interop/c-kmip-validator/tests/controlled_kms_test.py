@@ -243,7 +243,7 @@ def response(operations: tuple[int, ...], protocol_minor: int,
                 + enumeration(0x42013B, 0x420028)
                 + enumeration(0x42013B, 0x42002A)
             )
-        elif operation in (9, 18):
+        elif operation in (9, 18, 21):
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
         elif operation == 20:
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
@@ -269,6 +269,7 @@ def response(operations: tuple[int, ...], protocol_minor: int,
                                     20: b"interop-destroy",
                                     10: b"interop-get",
                                     9: b"interop-check",
+                                    21: b"interop-archive",
                                     18: b"interop-activate",
                                     19: b"interop-revoke",
                                     43: b"interop-export",
