@@ -49,3 +49,17 @@ The common serializer/response-reader route assertion loads the API manifest
 from the exact `library_commit` recorded in `route-capabilities.json`, so
 functions added to a later release cannot be required from an older installed
 artifact. This is part of the FR-006 artifact provenance check.
+
+### C Encrypt route follow-up
+
+For KMIPKIT-0092-FR-003, FR-005, FR-008, and FR-009, the C
+`test-op-encrypt` route checks OASIS KMIP v2.0/v2.1 §6.1.17 plus the ordered
+Activate, Revoke, and Destroy cleanup clauses (§6.1.1, §6.1.40/§6.1.44,
+§6.1.15) and batch/ID Placeholder rules (§6.1, §§8.2–8.4, 8.6). The installed
+C client sends the AES-128 Create/Activate/Encrypt/Revoke/Destroy request;
+the controlled peer validates the explicit AES/ECB/No Padding parameters,
+request/response IDs, returned Encrypt fields, and final object deletion. The
+focused test passed all 12 version/encoding/transport combinations, and CTest
+passed 7/7 with 164 C route-matrix contract tests. No request data is included
+in evidence. Other network rows remain `validator_recipe_pending`; this route
+does not close the full matrix or the cross-language FR-003/FR-005 gates.

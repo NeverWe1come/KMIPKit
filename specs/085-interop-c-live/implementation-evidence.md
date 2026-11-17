@@ -1098,3 +1098,29 @@ not included in evidence or diagnostics.
   python3 -B -m unittest test_route_matrix -v` passes 159/159 on the final
   source. The complete C matrix and exact-head CI remain open, so PR #170
   remains WIP.
+
+## C Encrypt request and response route
+
+OASIS KMIP v2.0 and v2.1 §6.1.17 defines Encrypt; §6.1.1 defines Activate,
+§6.1.40/§6.1.44 define Revoke, and §6.1.15 defines Destroy. Batch ordering and
+ID Placeholder behavior follow §6.1 and §§8.2–8.4, 8.6. The installed C
+consumer creates an AES-128 key with an explicit Encrypt usage mask, activates
+it, encrypts a fixed AES test-vector block with explicitly supplied AES/ECB/No
+Padding parameters, then revokes and destroys it in one ordered batch. It
+checks every typed result, response item ID, returned identifier and ciphertext,
+Revoke response TTLV, and final teardown. No plaintext, ciphertext, or key
+material is written to reports or diagnostics.
+
+- Red commit `c115083db`: the focused route test failed because `test-op-encrypt`
+  had no controlled-peer recipe or executable installed C request path.
+- Green commit `fbc04e833`: added the typed C batch route and peer checks for the
+  complete request, response, IDs, and lifecycle state. The request uses the
+  public C ABI and is exercised over TTLV, JSON, and XML with raw TLS and HTTPS.
+- Refactor/documentation commit records the test contract and evidence in this
+  file, the 0092 traceability record, and the validator README.
+- Verification: the focused route test passed all 12 combinations (KMIP
+  2.0/2.1 × three encodings × two transports); the CMake targets built; CTest
+  passed 7/7, including all 164 route-matrix contract tests and both controlled
+  TLS peers. `git diff --check` passed. The full installed C matrix and exact
+  head CI remain pending; this slice does not close the route-completeness gate
+  or establish vendor interoperability. PR #170 remains WIP.

@@ -117,3 +117,17 @@ fixtures. Those results are not inferred from this Python-only run.
   90.64 seconds, including 162 route-matrix contract tests; `python3 -m
   py_compile` and `git diff --check` passed. These results do not close the full C route matrix
   or KMIPKIT-0092-FR-003/FR-009.
+
+## C isolated Encrypt route
+
+For KMIPKIT-0092-FR-003, FR-005, FR-008, and FR-009, `test-op-encrypt` now
+constructs a typed Create/Activate/Encrypt/Revoke/Destroy batch using the
+installed public C ABI. The peer checks AES-128 creation attributes and
+Encrypt-only usage, ID Placeholder references, explicitly supplied AES/ECB/No
+Padding parameters, the known test-vector input, response item IDs and typed
+response fields, then verifies the object is revoked and deleted. The case is
+executed for KMIP 2.0/2.1, TTLV/JSON/XML, and raw TLS/HTTPS. The focused test
+passed all 12 peer exchanges. CTest passed 7/7, including 164 route-matrix
+contract tests and both controlled TLS peers. This adds one complete positive
+operation slice; it does not satisfy the remaining pending routes or the full
+FR-003/FR-005 matrix.

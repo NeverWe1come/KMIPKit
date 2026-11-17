@@ -145,3 +145,9 @@ Reserved tags can be represented by RawTag and rejected by the decoder/checked
 conversion; construction requiring an already checked Tag remains an explicit
 matrix-applicability question. Cross-language normalized-tree parity and vendor
 interoperability remain unverified.
+
+The `test-op-encrypt` controlled route also creates and activates an AES-128
+key with explicit Encrypt usage, sends an AES/ECB/No Padding request, checks
+the typed Encrypt response, then revokes and destroys the key. Its fixed AES
+test vector validates request and response handling only; it does not run
+cryptography locally or establish compatibility with an external KMS.
