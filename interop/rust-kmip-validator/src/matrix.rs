@@ -2843,12 +2843,7 @@ fn invoke_simple_protocol_route(symbol: &str, sample: &Item) -> Option<Result<It
     None
 }
 
-fn invoke_remaining_typed_routes(
-    symbol: &str,
-    sample: &Item,
-    target: &Json,
-    elements: &[Json],
-) -> Option<Result<Item>> {
+fn invoke_link_type_route(symbol: &str, sample: &Item) -> Option<Result<Item>> {
     if [
         "kmipkit_protocol::LinkType::from_v2_enumeration",
         "kmipkit_protocol::LinkType::from_v3_tag",
@@ -2873,7 +2868,10 @@ fn invoke_remaining_typed_routes(
                 let mappings = [
                     (0x0042_0190, kmipkit::protocol::LinkType::Certificate),
                     (0x0042_0191, kmipkit::protocol::LinkType::Child),
-                    (0x0042_0192, kmipkit::protocol::LinkType::DerivationBaseObject),
+                    (
+                        0x0042_0192,
+                        kmipkit::protocol::LinkType::DerivationBaseObject,
+                    ),
                     (0x0042_0193, kmipkit::protocol::LinkType::DerivedKey),
                     (0x0042_0194, kmipkit::protocol::LinkType::Next),
                     (0x0042_0195, kmipkit::protocol::LinkType::Parent),
@@ -2889,7 +2887,10 @@ fn invoke_remaining_typed_routes(
                     (0x0042_01a5, kmipkit::protocol::LinkType::Password),
                     (0x0042_01b3, kmipkit::protocol::LinkType::Group),
                     (0x0042_01b4, kmipkit::protocol::LinkType::SplitKeyBase),
-                    (0x0042_01b5, kmipkit::protocol::LinkType::JoinedSplitKeyParts),
+                    (
+                        0x0042_01b5,
+                        kmipkit::protocol::LinkType::JoinedSplitKeyParts,
+                    ),
                     (0x0042_01bc, kmipkit::protocol::LinkType::CertificateRequest),
                 ];
                 for (tag, expected) in mappings {
@@ -2901,88 +2902,97 @@ fn invoke_remaining_typed_routes(
                     return Err("unassigned KMIP 3.0 Link Type tag was accepted");
                 }
             }
-            sample.try_clone().map_err(|_| "Link Type fixture copy failed")
-        })());
-    }
-
-    if symbol == "kmipkit_protocol::EndpointRole::from_wire_name" {
-        return Some((|| {
-            let raw = sample.with_value(|value| match value {
-                ValueView::Enumeration(value) => Ok(*value),
-                _ => Err("Endpoint Role fixture is not an Enumeration"),
-            })?;
-            let role = kmipkit::protocol::EndpointRole::from_raw(raw);
-            let wire_name = if role.is_known() {
-                role.wire_name()
-            } else {
-                target["name"]
-                    .as_str()
-                    .ok_or("Endpoint Role fixture name is missing")?
-            };
-            let parsed = kmipkit::protocol::EndpointRole::from_wire_name(wire_name);
-            if role.is_known() && parsed != Some(role) {
-                return Err("Endpoint Role wire name did not resolve to its source value");
-            }
-            if !role.is_known() && parsed.is_some() {
-                return Err("unknown Endpoint Role wire name was accepted");
-            }
             sample
                 .try_clone()
-                .map_err(|_| "Endpoint Role fixture copy failed")
+                .map_err(|_| "Link Type fixture copy failed")
         })());
     }
+    None
+}
 
+fn invoke_endpoint_role_route(symbol: &str, sample: &Item, target: &Json) -> Option<Result<Item>> {
+    if symbol != "kmipkit_protocol::EndpointRole::from_wire_name" {
+        return None;
+    }
+    Some((|| {
+        let raw = sample.with_value(|value| match value {
+            ValueView::Enumeration(value) => Ok(*value),
+            _ => Err("Endpoint Role fixture is not an Enumeration"),
+        })?;
+        let role = kmipkit::protocol::EndpointRole::from_raw(raw);
+        let wire_name = if role.is_known() {
+            role.wire_name()
+        } else {
+            target["name"]
+                .as_str()
+                .ok_or("Endpoint Role fixture name is missing")?
+        };
+        let parsed = kmipkit::protocol::EndpointRole::from_wire_name(wire_name);
+        if role.is_known() && parsed != Some(role) {
+            return Err("Endpoint Role wire name did not resolve to its source value");
+        }
+        if !role.is_known() && parsed.is_some() {
+            return Err("unknown Endpoint Role wire name was accepted");
+        }
+        sample
+            .try_clone()
+            .map_err(|_| "Endpoint Role fixture copy failed")
+    })())
+}
+
+fn invoke_remaining_typed_routes(
+    symbol: &str,
+    sample: &Item,
+    target: &Json,
+    elements: &[Json],
+) -> Option<Result<Item>> {
     match symbol {
-        "kmipkit_protocol::DeactivateRequest::with_deactivation_date" => {
-            Some((|| {
-                let date = sample.with_value(|value| match value {
-                    ValueView::DateTime(value) => Ok(*value),
-                    _ => Err("Deactivation Date fixture is not a Date-Time"),
-                })?;
-                let payload = kmipkit::protocol::DeactivateRequest::new(
-                    kmipkit::protocol::UniqueIdentifier::from("route-matrix-key"),
-                )
-                .with_deactivation_date(date)
-                .into_ttlv_payload()
-                .map_err(|_| "Deactivate request fixture rejected")?;
-                metadata_expected_target(&request_payload_item(payload)?, target, elements)
-            })())
-        }
-        "kmipkit_protocol::ServerResponseBuilder::with_maximum_response_size" => {
-            Some((|| {
-                let max_size = sample.with_value(|value| match value {
-                    ValueView::Integer(value) => usize::try_from(*value)
-                        .map_err(|_| "Maximum Response Size fixture is negative"),
-                    _ => Err("Maximum Response Size fixture is not an Integer"),
-                })?;
-                let _builder = kmipkit::protocol::ServerResponseBuilder::new()
-                    .with_maximum_response_size(Some(max_size));
-                sample
-                    .try_clone()
-                    .map_err(|_| "Maximum Response Size fixture copy failed")
-            })())
-        }
-        "kmipkit_protocol::SetEndpointRoleRequest::with_vendor_identification" => {
-            Some((|| {
-                let vendor_id = sample.with_value(|value| match value {
-                    ValueView::TextString(value) => Ok(value.to_owned()),
-                    _ => Err("Vendor Identification fixture is not a Text String"),
-                })?;
-                let request = kmipkit::protocol::SetEndpointRoleRequest::new(
-                    kmipkit::protocol::EndpointRole::CLIENT,
-                )
-                .with_vendor_identification(vendor_id.clone());
-                if request.vendor_identification() != Some(vendor_id.as_str()) {
-                    return Err("Set Endpoint Role request did not retain Vendor Identification");
+        "kmipkit_protocol::DeactivateRequest::with_deactivation_date" => Some((|| {
+            let date = sample.with_value(|value| match value {
+                ValueView::DateTime(value) => Ok(*value),
+                _ => Err("Deactivation Date fixture is not a Date-Time"),
+            })?;
+            let payload = kmipkit::protocol::DeactivateRequest::new(
+                kmipkit::protocol::UniqueIdentifier::from("route-matrix-key"),
+            )
+            .with_deactivation_date(date)
+            .into_ttlv_payload()
+            .map_err(|_| "Deactivate request fixture rejected")?;
+            metadata_expected_target(&request_payload_item(payload)?, target, elements)
+        })()),
+        "kmipkit_protocol::ServerResponseBuilder::with_maximum_response_size" => Some((|| {
+            let max_size = sample.with_value(|value| match value {
+                ValueView::Integer(value) => {
+                    usize::try_from(*value).map_err(|_| "Maximum Response Size fixture is negative")
                 }
-                request
-                    .to_ttlv_payload()
-                    .map_err(|_| "Set Endpoint Role request fixture rejected")?;
-                sample
-                    .try_clone()
-                    .map_err(|_| "Vendor Identification fixture copy failed")
-            })())
-        }
+                _ => Err("Maximum Response Size fixture is not an Integer"),
+            })?;
+            let _builder = kmipkit::protocol::ServerResponseBuilder::new()
+                .with_maximum_response_size(Some(max_size));
+            sample
+                .try_clone()
+                .map_err(|_| "Maximum Response Size fixture copy failed")
+        })()),
+        "kmipkit_protocol::SetEndpointRoleRequest::with_vendor_identification" => Some((|| {
+            let vendor_id = sample.with_value(|value| match value {
+                ValueView::TextString(value) => Ok(value.to_owned()),
+                _ => Err("Vendor Identification fixture is not a Text String"),
+            })?;
+            let request = kmipkit::protocol::SetEndpointRoleRequest::new(
+                kmipkit::protocol::EndpointRole::CLIENT,
+            )
+            .with_vendor_identification(vendor_id.clone());
+            if request.vendor_identification() != Some(vendor_id.as_str()) {
+                return Err("Set Endpoint Role request did not retain Vendor Identification");
+            }
+            request
+                .to_ttlv_payload()
+                .map_err(|_| "Set Endpoint Role request fixture rejected")?;
+            sample
+                .try_clone()
+                .map_err(|_| "Vendor Identification fixture copy failed")
+        })(
+        )),
         _ => None,
     }
 }
@@ -4380,6 +4390,12 @@ fn invoke(
         })());
     }
     if let Some(result) = invoke_simple_protocol_route(symbol, sample) {
+        return Some(result);
+    }
+    if let Some(result) = invoke_link_type_route(symbol, sample) {
+        return Some(result);
+    }
+    if let Some(result) = invoke_endpoint_role_route(symbol, sample, target) {
         return Some(result);
     }
     if let Some(result) = invoke_remaining_typed_routes(symbol, sample, target, elements) {
@@ -5951,6 +5967,25 @@ fn run_response_network(matrix: &Path, connection: &Connection, output: &Path) -
 mod tests {
     use super::*;
 
+    fn assert_public_route_fixture(
+        catalog: &Json,
+        elements: &[Json],
+        symbol: &str,
+        target_id: &str,
+    ) {
+        let target = catalog["normative_targets"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|target| target["target_id"] == target_id)
+            .unwrap_or_else(|| panic!("missing fixture target {target_id}"));
+        let sample = sample_for_route_at_version(symbol, target, elements, "2.1")
+            .unwrap_or_else(|error| panic!("{symbol} fixture: {error}"));
+        let result = invoke(symbol, &sample, target, elements, "2.1")
+            .unwrap_or_else(|| panic!("{symbol} has no executable route"));
+        result.unwrap_or_else(|error| panic!("{symbol} invocation: {error}"));
+    }
+
     #[test]
     fn previously_missing_public_route_families_execute_from_normative_fixtures() {
         let catalog: Json = serde_json::from_str(include_str!(
@@ -5993,17 +6028,7 @@ mod tests {
         ];
 
         for (symbol, target_id) in routes {
-            let target = catalog["normative_targets"]
-                .as_array()
-                .unwrap()
-                .iter()
-                .find(|target| target["target_id"] == target_id)
-                .unwrap_or_else(|| panic!("missing fixture target {target_id}"));
-            let sample = sample_for_route_at_version(symbol, target, elements, "2.1")
-                .unwrap_or_else(|error| panic!("{symbol} fixture: {error}"));
-            let result = invoke(symbol, &sample, target, elements, "2.1")
-                .unwrap_or_else(|| panic!("{symbol} has no executable route"));
-            result.unwrap_or_else(|error| panic!("{symbol} invocation: {error}"));
+            assert_public_route_fixture(&catalog, elements, symbol, target_id);
         }
     }
 
