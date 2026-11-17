@@ -149,9 +149,12 @@ interoperability remain unverified.
 The `test-op-encrypt` controlled route also creates and activates an AES-128
 key with explicit Encrypt usage, sends an AES/ECB/No Padding request, checks
 the typed Encrypt response, then revokes and destroys the key. Its fixed AES
-test vector validates request and response handling only; it does not run
-cryptography locally or establish compatibility with an external KMS.
+fixture bytes validate request/response fields only; Create generates a random
+key, so they do not establish a correct encryption result. The route does not
+run cryptography locally or establish compatibility with an external KMS.
 The `test-op-decrypt` route uses the matching AES-128 Decrypt usage and
 explicit AES/ECB/No Padding parameters, checks the fixed ciphertext input and
-typed plaintext response, then performs the same revoke/destroy cleanup. The
-controlled vector is test evidence, not external KMS interoperability evidence.
+typed 16-byte plaintext response, then performs the same revoke/destroy
+cleanup. The fixture bytes are not cryptographically tied to the randomly
+generated key; they test field handling, not cryptographic correctness or
+external KMS interoperability.

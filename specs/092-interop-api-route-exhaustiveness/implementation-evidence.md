@@ -124,8 +124,11 @@ For KMIPKIT-0092-FR-003, FR-005, FR-008, and FR-009, `test-op-encrypt` now
 constructs a typed Create/Activate/Encrypt/Revoke/Destroy batch using the
 installed public C ABI. The peer checks AES-128 creation attributes and
 Encrypt-only usage, ID Placeholder references, explicitly supplied AES/ECB/No
-Padding parameters, the known test-vector input, response item IDs and typed
-response fields, then verifies the object is revoked and deleted. The case is
+Padding parameters, exact fixture input/response Data bytes, response item IDs
+and typed response fields, then verifies the object is revoked and deleted.
+The consumer checks a 16-byte Data field, not an exact ciphertext: the remote
+Create uses a random key and the fixture vector is not cryptographically tied
+to it. The case is
 executed for KMIP 2.0/2.1, TTLV/JSON/XML, and raw TLS/HTTPS. The focused test
 passed all 12 peer exchanges. CTest passed 7/7, including 164 route-matrix
 contract tests and both controlled TLS peers. This adds one complete positive
@@ -137,8 +140,10 @@ FR-003/FR-005 matrix.
 `test-op-decrypt` now uses the installed C ABI for a typed
 Create/Activate/Decrypt/Revoke/Destroy batch. The controlled peer checks the
 Decrypt usage mask, ID Placeholder target, AES/ECB/No Padding parameters,
-known ciphertext input, plaintext response, response IDs, and final object
-deletion. OASIS references are KMIP v2.0/v2.1 §6.1.11, §6.1.1, §6.1.40/§6.1.44,
+exact fixture ciphertext input and response Data bytes, response IDs, and final
+object deletion. The consumer checks a typed 16-byte plaintext field. Since
+Create generates a random key, the deterministic fixture does not assert
+cryptographic correctness. OASIS references are KMIP v2.0/v2.1 §6.1.11, §6.1.1, §6.1.40/§6.1.44,
 §6.1.15, §6.1, and §§8.2–8.4, 8.6. Encrypt and Decrypt focused tests passed
 12/12 checks each. CTest passed 7/7 with 165 route-matrix contract tests and
 both controlled TLS peers. Remaining C and cross-language matrix routes stay

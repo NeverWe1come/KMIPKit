@@ -1107,9 +1107,12 @@ ID Placeholder behavior follow §6.1 and §§8.2–8.4, 8.6. The installed C
 consumer creates an AES-128 key with an explicit Encrypt usage mask, activates
 it, encrypts a fixed AES test-vector block with explicitly supplied AES/ECB/No
 Padding parameters, then revokes and destroys it in one ordered batch. It
-checks every typed result, response item ID, returned identifier and ciphertext,
-Revoke response TTLV, and final teardown. No plaintext, ciphertext, or key
-material is written to reports or diagnostics.
+checks every typed result, response item ID, returned identifier, 16-byte
+Encrypt Data field, Revoke response TTLV, and final teardown. The peer checks
+the exact deterministic input and response Data bytes. Because Create generates
+a new remote key, these fixture bytes do not establish a valid encryption
+result for that key or cryptographic correctness. No plaintext, ciphertext, or
+key material is written to reports or diagnostics.
 
 - Red commit `c115083db`: the focused route test failed because `test-op-encrypt`
   had no controlled-peer recipe or executable installed C request path.
@@ -1134,8 +1137,11 @@ cleanup use §6.1.1 (Activate), §6.1.40/§6.1.44 (Revoke), and §6.1.15
 Decrypt usage, activates it, decrypts the fixed AES test-vector ciphertext
 with explicitly supplied AES/ECB/No Padding parameters, then revokes and
 destroys it. It checks each typed result and response ID, the created key
-identifier, plaintext response, Revoke TTLV, and teardown. Reports and
-diagnostics contain no cryptographic input or output.
+identifier, a 16-byte plaintext Data field, Revoke TTLV, and teardown. The peer
+checks the exact ciphertext input and deterministic plaintext response bytes;
+because the generated remote key does not match the test vector, this fixture
+does not assert cryptographic correctness. Reports and diagnostics contain no
+cryptographic input or output.
 
 - Red commit `2d8fe55eb`: the focused route test failed because `test-op-decrypt`
   had no controlled-peer recipe.

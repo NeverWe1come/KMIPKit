@@ -57,9 +57,12 @@ For KMIPKIT-0092-FR-003, FR-005, FR-008, and FR-009, the C
 Activate, Revoke, and Destroy cleanup clauses (§6.1.1, §6.1.40/§6.1.44,
 §6.1.15) and batch/ID Placeholder rules (§6.1, §§8.2–8.4, 8.6). The installed
 C client sends the AES-128 Create/Activate/Encrypt/Revoke/Destroy request;
-the controlled peer validates the explicit AES/ECB/No Padding parameters,
-request/response IDs, returned Encrypt fields, and final object deletion. The
-focused test passed all 12 version/encoding/transport combinations, and CTest
+the controlled peer validates the exact fixture input/response Data bytes,
+explicit AES/ECB/No Padding parameters, IDs, typed response fields, and final
+object deletion. The consumer checks typed response presence and length; the
+randomly generated remote key is not the key associated with the fixture
+vector, so no cryptographic correctness is inferred. The focused test passed
+all 12 version/encoding/transport combinations, and CTest
 passed 7/7 with 164 C route-matrix contract tests. No request data is included
 in evidence. Other network rows remain `validator_recipe_pending`; this route
 does not close the full matrix or the cross-language FR-003/FR-005 gates.
@@ -71,7 +74,10 @@ route checks OASIS KMIP v2.0/v2.1 §6.1.11 and its ordered key lifecycle:
 Activate (§6.1.1), Revoke (§6.1.40/§6.1.44), Destroy (§6.1.15), and batch/ID
 Placeholder processing (§6.1, §§8.2–8.4, 8.6). The installed client sends an
 AES-128 Decrypt-only key request with explicit AES/ECB/No Padding parameters;
-the peer validates ciphertext input, plaintext response, IDs, and deletion.
+the peer validates exact fixture ciphertext input and response Data bytes, IDs,
+and deletion. The consumer checks the typed 16-byte Data result. The random
+remote key is not associated with the fixture bytes, so this is not a
+cryptographic correctness test.
 Both Encrypt and Decrypt passed all 12 version/encoding/transport exchanges;
 CTest passed 7/7 with 165 C route-matrix contract tests. Other route cells
 remain pending, so this does not close the full FR-003/FR-005 gates.
