@@ -908,6 +908,10 @@ class ControlledTlsPeerTest {
                     serverPrivateKeyPem, clientCertificatePem, clientPrivateKeyPem);
             appendNewAttributeMutationEvents(events, protocolVersion, serverCertificatePem,
                     serverPrivateKeyPem, clientCertificatePem, clientPrivateKeyPem);
+            if ("2.1".equals(protocolVersion)) {
+                appendPingResponseRouteEvidence(events, serverCertificatePem, serverPrivateKeyPem,
+                        clientCertificatePem, clientPrivateKeyPem);
+            }
             if ("2.1".equals(protocolVersion)) appendObjectGroupLocalRouteEvents(events);
             if ("2.1".equals(protocolVersion)) appendStructureMemberStructureRouteEvents(events);
             if ("2.1".equals(protocolVersion)) appendStructureMemberByteStringRouteEvents(events);
@@ -1319,7 +1323,7 @@ class ControlledTlsPeerTest {
                         + genericTagEventCount + typedTagIdentityEventCount
                         + booleanFieldRouteEventCount + scalarMessageFieldRouteEventCount + itemTypeRouteEventCount
                         + scalarTypedParserEventCount
-                        + 4 // BEC headers, unique batch IDs, and the asynchronous structure payload.
+                        + 11 // BEC, batch IDs, async payload, and all seven Ping route cells.
                         + tagAggregateEventCount
                         + referencedEnumEventCount + referencedEnumAggregateEventCount,
                 report.path("events").size());
@@ -1356,7 +1360,7 @@ class ControlledTlsPeerTest {
                         + enumerationFixtures.size() + localEnumerationCaseCount + bitmaskCaseCount
                         + dataTypeCaseCount
                         + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + genericTagCaseIds.size()
-                        + 3
+                        + 4
                         + typedTagIdentityCaseIds().size() + referencedEnumCaseCount
                         + 11 + itemTypeValueCaseIds.size() + STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size()
                         + STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.size()
@@ -3698,6 +3702,7 @@ class ControlledTlsPeerTest {
         caseIds.add("test-enum-pkcs#11-return-code");
         caseIds.add("test-enum-tag");
         caseIds.add("test-norm-tag-tag-42000e");
+        caseIds.add("test-op-ping");
         caseIds.add("test-enum-item-type");
         CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().forEach(caseIds::add);
         report.putArray("protocol_versions").add("2.0").add("2.1");
@@ -4561,6 +4566,91 @@ class ControlledTlsPeerTest {
         byte[] header = structure(0x42007a, protocolVersion,
                 item(0x420092, 9, longBytes(1)), item(0x42000d, 2, intBytes(1)));
         return structure(0x42007b, header, queryResponseBatchItem());
+    }
+
+    private static byte[] pingResponse(int protocolMinorVersion) throws Exception {
+        byte[] protocolVersion = structure(0x420069,
+                item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(protocolMinorVersion)));
+        byte[] header = structure(0x42007a, protocolVersion,
+                item(0x420092, 9, longBytes(1)), item(0x42000d, 2, intBytes(1)));
+        byte[] pingItem = structure(0x42000f,
+                item(0x42005c, 5, intBytes(0x3b)),
+                item(0x420093, 8, "ping-route-fixture".getBytes(StandardCharsets.US_ASCII)),
+                item(0x42007f, 5, intBytes(0)), structure(0x42007c));
+        return structure(0x42007b, header, pingItem);
+    }
+
+    private void appendPingResponseRouteEvidence(ArrayNode events, byte[] serverCertificatePem,
+            byte[] serverPrivateKeyPem, byte[] clientCertificatePem, byte[] clientPrivateKeyPem) throws Exception {
+        SSLServerSocket listener = listener(certificate(serverCertificatePem), privateKey(serverPrivateKeyPem),
+                certificate(clientCertificatePem));
+        byte[] responseBytes = pingResponse(1);
+        String responseHash = normalizedTreeSha256(responseBytes);
+        FutureTask<byte[]> peer = new FutureTask<>(() -> serveOneResponse(listener, responseBytes));
+        Thread peerThread = new Thread(peer, "java-validator-controlled-ping-peer");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        Path connectionFile = temporaryDirectory.resolve("ping-route-connection.json");
+        Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
+                clientCertificatePem, clientPrivateKeyPem, false, "2.1"));
+        try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile));
+                ClientBatch batch = ClientBatch.create();
+                ClientBatchItem request = ClientBatchItem.ping()
+                        .withUniqueBatchItemId("ping-route-fixture".getBytes(StandardCharsets.US_ASCII))) {
+            batch.add(request);
+            try (ClientBatchResponse response = driver.executeBatchForEvidence(batch)) {
+                assertEquals(1, response.itemCount());
+                try (ClientBatchItemResult result = response.itemAt(0)) {
+                    assertTrue(result.pingResponse().orElseThrow());
+                }
+            }
+        } finally {
+            listener.close();
+        }
+        byte[] request = peer.get(15, TimeUnit.SECONDS);
+        assertEquals(0x3bL, requestOperation(request), "The controlled peer must parse the installed Ping request.");
+        String requestHash = normalizedTreeSha256(request);
+        appendPingOperationGenericRouteEvents(events, requestHash);
+        appendTypedNetworkRouteEvents(events, "test-op-ping", "java.typed-protocol.client_batch_item.ping",
+                "KMIPKIT-ELEM-OP-C2S-PING", "org.kmipkit.extensions.ClientBatchItem.ping", "2.1",
+                requestHash, responseHash);
+        appendRouteEvent(events, "test-op-ping", "java.typed-protocol.function.client_batch_item_response_ping",
+                "KMIPKIT-ELEM-OP-C2S-PING", "org.kmipkit.extensions.ClientBatchItemResult.pingResponse",
+                null, null, "decode", "2.1", null, null, responseHash);
+    }
+
+    private static void appendPingOperationGenericRouteEvents(ArrayNode events, String treeHash) throws Exception {
+        CodecLimits limits = CodecLimits.defaults();
+        int operationTag = 0x42005c;
+        byte[] wire = item(operationTag, TtlvItemType.Enumeration.code(), intBytes(0x3b));
+        try (TtlvValue value = TtlvValue.Enumeration(0x3b);
+                RawTag rawTag = RawTag.fromRaw(operationTag);
+                Tag tag = rawTag.checked();
+                TtlvItem item = TtlvItem.create(tag, value, limits);
+                var view = item.view();
+                var decodedTag = view.tag();
+                var decodedValue = view.value();
+                TtlvItem decoded = TtlvCodec.decode(wire);
+                var decodedView = decoded.view();
+                var roundTripTag = decodedView.tag();
+                var roundTripValue = decodedView.value()) {
+            assertEquals(operationTag, decodedTag.raw());
+            assertEquals(TtlvItemType.Enumeration, view.itemType());
+            assertEquals(0x3bL, decodedValue.enumeration());
+            assertEquals(operationTag, roundTripTag.raw());
+            assertEquals(TtlvItemType.Enumeration, decodedView.itemType());
+            assertEquals(0x3bL, roundTripValue.enumeration());
+        }
+        appendRouteEvent(events, "test-op-ping", "java.generic-ttlv.ttlv_item.create",
+                "KMIPKIT-ELEM-OP-C2S-PING", "org.kmipkit.ttlv.TtlvItem.create", null, null,
+                "construct", "2.1", null, treeHash, null);
+        appendRouteEvent(events, "test-op-ping", "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "KMIPKIT-ELEM-OP-C2S-PING", "org.kmipkit.ttlv.TtlvItem.view", null, null,
+                "decode", "2.1", null, null, treeHash);
+        appendRouteEvent(events, "test-op-ping", "java.generic-ttlv.ttlv_codec.decode",
+                "KMIPKIT-ELEM-OP-C2S-PING", "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
+                "decode", "2.1", null, null, treeHash);
     }
 
     private static byte[] queryResponseBatchItem() throws Exception {
