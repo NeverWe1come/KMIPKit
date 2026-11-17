@@ -96,6 +96,13 @@ class PingBuilderManifestTests(unittest.TestCase):
             "kmipkit_ping_builder_release",
             declarations["PingBuilder"]["c"]["releaseFunction"],
         )
+        public_declaration = next(
+            row
+            for row in self.manifest["publicDeclarations"]
+            if row["packageId"] == "c-kmipkit"
+            and row["exportName"] == "kmipkit_ping_builder_t"
+        )
+        self.assertEqual("type", public_declaration["kind"])
 
 
 if __name__ == "__main__":
