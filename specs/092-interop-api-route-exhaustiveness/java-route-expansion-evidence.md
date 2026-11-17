@@ -2176,6 +2176,39 @@ python3 interop/java-kmip-validator/tools/compare_route_ledger.py
 git diff --check
 ```
 
+## Extension Tag routes included in the Usage Limits stack — 2026-11-17
+
+The refreshed stack retains all Usage Limits and derivation evidence and adds
+the Extension Tag member as an Integer Item. The controlled fixture checks the
+assigned extension tag value and exercises the Integer constructor, generic
+Item creation, Item view, and TTLV decoder in KMIP 2.0 and 2.1 (KMIP 2.0 §7.9
+Table 329; KMIP 2.1 §7.13 Table 365; tag allocation §§11.54/11.56). The four
+routes contribute eight selected cells and one case ID. The complete Java
+Gradle suite passes 57/57 tests with `--rerun-tasks`; all 68 route-capability
+unit tests pass and the route generator check reports 1,507 routes. Selected-
+scope validation accepts 27,270/27,270 invoked cells with zero failures. The
+generated ledger records 71,641 planned, 27,270 executed, and 44,371 pending
+cells across 1,219 pending case IDs; the ledger comparer passes after refresh.
+This verifies selected local routes, not the unfinished complete matrix or
+vendor interoperability. The branch remains WIP.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$KMIPKIT_MAVEN_REPO" test --rerun-tasks
+python3 -m unittest interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+python3 interop/shared/tools/validate_route_evidence.py \
+  --selected-scope --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+git diff --check
+```
+
 The complete Java suite passes 57/57 tests; the shared suite passes 68/68.
 The route generator check and ledger comparison also pass. The evidence ledger
 was regenerated from the validated build report.
