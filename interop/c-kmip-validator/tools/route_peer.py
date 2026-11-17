@@ -361,7 +361,7 @@ RECIPES = {
     'test-v20-reject-get-constraints': ((56,), 'get_constraints'),
     'test-v20-reject-ping': ((59,), 'ping'),
     'test-op-create': ((1, 20), 'create'),
-    'test-op-archive': ((1, 18, 21, 19, 20), 'archive'),
+    'test-op-archive': ((1, 21, 19, 20), 'archive'),
     'test-op-export': ((1, 43, 19, 20), 'export'),
     'test-norm-payload-client-export-request-20-001': ((1, 43, 19, 20), 'export'),
     'test-norm-payload-client-export-request-20-002': ((1, 43, 19, 20), 'export'),
@@ -2702,8 +2702,6 @@ class PeerState:
                 if state is None:
                     status, reason, effect = 1, 55, 'object_not_found'
                 elif operation == 21:
-                    if state != 'active':
-                        raise ValueError('fixture_archive_key_not_active')
                     # KMIP §6.1.4 defines Archive as a client's indication;
                     # the KMS policy decides whether and when archival occurs.
                     self.archive_requests.append(identifier)
@@ -2847,8 +2845,6 @@ def verify_lifecycle(operations, response_tree):
             state = 'active'
             effects.append('activated')
         elif operation == 21:
-            if state != 'active':
-                raise ValueError('fixture_archive_key_not_active')
             # KMIP §6.1.4 leaves whether and when archival occurs to KMS policy.
             effects.append('archive_requested')
         elif operation in (31, 32, 35, 36):
@@ -3401,7 +3397,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             response_item_ids = CREATE_KEY_PAIR_ITEM_IDS
                                         elif recipe[1] == 'archive':
                                             response_item_ids = (
-                                                b'archive-create', b'archive-activate', b'archive-target',
+                                                b'archive-create', b'archive-target',
                                                 b'archive-revoke', b'archive-destroy')
                                         elif recipe[1] == 'certify':
                                             response_item_ids = CERTIFY_ITEM_IDS

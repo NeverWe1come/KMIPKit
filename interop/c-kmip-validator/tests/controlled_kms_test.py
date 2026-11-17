@@ -528,7 +528,7 @@ def main() -> int:
     expected_operations += (2, 18, 34, 19, 20, 20)
     expected_operations += (2, 20, 20)
     expected_operations += (2, 18, 6, 19, 20, 20, 20)
-    expected_operations += (1, 18, 21, 19, 20)
+    expected_operations += (1, 21, 19, 20)
     expected_cases += ("test-op-archive",)
     expected_operations += stop_on_first_failure_batch
     expected_operations += (1, 25)
@@ -750,10 +750,10 @@ def main() -> int:
                                         "isolated MAC Verify batch omitted or duplicated a unique item ID"
                                     )
                                 response_item_ids = expected_mac_verify_item_ids
-                            if operations == (1, 18, 21, 19, 20):
+                            if operations == (1, 21, 19, 20):
                                 expected_archive_item_ids = (
-                                    b"archive-create", b"archive-activate", b"archive-target",
-                                    b"archive-revoke", b"archive-destroy",
+                                    b"archive-create", b"archive-target", b"archive-revoke",
+                                    b"archive-destroy",
                                 )
                                 if any(request.count(tlv(0x420093, 8, item_id)) != 1
                                        for item_id in expected_archive_item_ids):
@@ -867,7 +867,7 @@ def main() -> int:
                             get_constraints_lifecycle = operations == (1, 56, 19, 20)
                             get_usage_allocation_lifecycle = operations == (1, 17, 19, 20)
                             export_lifecycle = operations == (1, 43, 19, 20)
-                            archive_lifecycle = operations == (1, 18, 21, 19, 20)
+                            archive_lifecycle = operations == (1, 21, 19, 20)
                             lifecycle_target = {operations[1]: {
                                 9: b"interop-check", 10: b"interop-get",
                                 11: b"interop-attributes", 12: b"interop-attributes"
@@ -907,8 +907,8 @@ def main() -> int:
                                 )
                             if archive_lifecycle:
                                 lifecycle_ids = (
-                                    b"archive-create", b"archive-activate", b"archive-target",
-                                    b"archive-revoke", b"archive-destroy"
+                                    b"archive-create", b"archive-target", b"archive-revoke",
+                                    b"archive-destroy"
                                 )
                             if lifecycle_target and any(
                                     tlv(0x420093, 8, item_id) not in request for item_id in lifecycle_ids):
@@ -940,9 +940,9 @@ def main() -> int:
                             if operations in ((1, 9, 19, 20), (1, 18, 19, 20), (1, 19, 20),
                                               (1, 20, 19, 20), (1, 56, 19, 20), (1, 17, 19, 20),
                                               (1, 43, 19, 20), (1, 10, 20),
-                                              (1, 18, 21, 19, 20)) and request.count(
+                                              (1, 21, 19, 20)) and request.count(
                                     enumeration(0x420094, 1)) < (
-                                        4 if archive_lifecycle else
+                                        3 if archive_lifecycle else
                                         3 if (check_lifecycle or activate_lifecycle or destroy_lifecycle or
                                               export_lifecycle) else 2):
                                 raise AssertionError("target operation and cleanup must consume the created ID Placeholder")

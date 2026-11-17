@@ -4972,11 +4972,15 @@ static kmip_execution_outcome_t execute_created_key_action(kmip_live_client_t *c
     bool decrypt = operation == KMIPKIT_ENUMERATION_OPERATION_DECRYPT;
     bool mac_verify = operation == KMIPKIT_ENUMERATION_OPERATION_MAC_VERIFY;
     bool mac = operation == KMIPKIT_ENUMERATION_OPERATION_MAC || mac_verify;
-    const uint32_t operations[] = {
+    const uint32_t active_key_operations[] = {
         KMIPKIT_ENUMERATION_OPERATION_CREATE, KMIPKIT_ENUMERATION_OPERATION_ACTIVATE,
         operation,
         KMIPKIT_ENUMERATION_OPERATION_REVOKE,
         KMIPKIT_ENUMERATION_OPERATION_DESTROY
+    };
+    const uint32_t archive_operations[] = {
+        KMIPKIT_ENUMERATION_OPERATION_CREATE, KMIPKIT_ENUMERATION_OPERATION_ARCHIVE,
+        KMIPKIT_ENUMERATION_OPERATION_REVOKE, KMIPKIT_ENUMERATION_OPERATION_DESTROY
     };
     static const char *const encrypt_item_ids[] = {
         "encrypt-create", "encrypt-activate", "encrypt-target", "encrypt-revoke", "encrypt-destroy"
@@ -4992,9 +4996,13 @@ static kmip_execution_outcome_t execute_created_key_action(kmip_live_client_t *c
         "mac-verify-revoke", "mac-verify-destroy"
     };
     static const char *const archive_item_ids[] = {
-        "archive-create", "archive-activate", "archive-target", "archive-revoke",
-        "archive-destroy"
+        "archive-create", "archive-target", "archive-revoke", "archive-destroy"
     };
+    const uint32_t *operations = archive ? archive_operations : active_key_operations;
+    size_t operation_count = archive ? 4U : 5U;
+    size_t target_index = archive ? 1U : 2U;
+    size_t revoke_index = archive ? 2U : 3U;
+    size_t destroy_index = archive ? 3U : 4U;
     const char *const *item_ids = mac_verify ? mac_verify_item_ids :
         archive ? archive_item_ids :
         mac ? mac_item_ids : decrypt ? decrypt_item_ids : encrypt_item_ids;
@@ -5037,7 +5045,9 @@ static kmip_execution_outcome_t execute_created_key_action(kmip_live_client_t *c
     if (status == 0 && !append_ttlv_value(client, &attributes, UINT32_C(0x42002C), &value)) status = -1;
     if (status == 0) status = kmipkit_client_batch_item_create(
         KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY, attributes, NULL, &items[0]);
-    if (status == 0) status = kmipkit_client_batch_item_activate(&placeholder, &items[1]);
+    /* Archive has no Active-state precondition in KMIP §6.1.4 or this catalog. */
+    if (status == 0 && !archive)
+        status = kmipkit_client_batch_item_activate(&placeholder, &items[1]);
     if (status == 0) status = kmipkit_ttlv_structure_create(&parameters);
     if (status == 0 && !mac && !archive) status = kmipkit_ttlv_value_enumeration(
         KMIPKIT_ENUMERATION_BLOCK_CIPHER_MODE_ECB, &value);
@@ -5054,19 +5064,19 @@ static kmip_execution_outcome_t execute_created_key_action(kmip_live_client_t *c
     if (status == 0 && !archive) status = batch_crypto_secret_value(
         input, sizeof(BATCH_CRYPTO_PLAINTEXT), &plaintext);
     if (status == 0 && mac_verify) status = kmipkit_client_batch_item_mac_verify(
-        &placeholder, parameters, plaintext, &mac_data, NULL, 0, 0, &items[2]);
+        &placeholder, parameters, plaintext, &mac_data, NULL, 0, 0, &items[target_index]);
     else if (status == 0 && mac) status = kmipkit_client_batch_item_mac(
-        &placeholder, parameters, plaintext, NULL, 0, 0, &items[2]);
+        &placeholder, parameters, plaintext, NULL, 0, 0, &items[target_index]);
     else if (status == 0 && decrypt) status = kmipkit_client_batch_item_decrypt(
-        &placeholder, parameters, plaintext, NULL, NULL, NULL, 0, 0, NULL, &items[2]);
+        &placeholder, parameters, plaintext, NULL, NULL, NULL, 0, 0, NULL, &items[target_index]);
     else if (status == 0 && archive) status = kmipkit_client_batch_item_archive(
-        &placeholder, &items[2]);
+        &placeholder, &items[target_index]);
     else if (status == 0) status = kmipkit_client_batch_item_encrypt(
-        &placeholder, parameters, plaintext, NULL, NULL, 0, 0, NULL, &items[2]);
-    if (status == 0) status = create_revocation_item(&placeholder, &items[3]);
-    if (status == 0) status = kmipkit_client_batch_item_destroy(&placeholder, &items[4]);
+        &placeholder, parameters, plaintext, NULL, NULL, 0, 0, NULL, &items[target_index]);
+    if (status == 0) status = create_revocation_item(&placeholder, &items[revoke_index]);
+    if (status == 0) status = kmipkit_client_batch_item_destroy(&placeholder, &items[destroy_index]);
     char validation_diagnostic[256] = {0};
-    for (size_t index = 0; status == 0 && index < 5; ++index) {
+    for (size_t index = 0; status == 0 && index < operation_count; ++index) {
         status = set_batch_item_id(&items[index], item_ids[index]);
         if (status == 0 && !request_item_is_valid(
                 items[index], validation_diagnostic, sizeof(validation_diagnostic)))
@@ -5076,7 +5086,7 @@ static kmip_execution_outcome_t execute_created_key_action(kmip_live_client_t *c
     if (status == 0) status = kmipkit_client_batch_set_order_option(batch, 1);
     if (status == 0) status = kmipkit_client_batch_add_error_continuation_value(
         batch, KMIPKIT_ENUMERATION_BATCH_ERROR_CONTINUATION_OPTION_CONTINUE);
-    for (size_t index = 0; status == 0 && index < 5; ++index)
+    for (size_t index = 0; status == 0 && index < operation_count; ++index)
         status = kmipkit_client_batch_add_item(batch, &items[index]);
     if (status == 0 && client->username_env[0] != '\0') {
         if (!create_authentication(client, &authentication)) status = KMIPKIT_ERROR_INVALID_INPUT;
@@ -5104,8 +5114,8 @@ static kmip_execution_outcome_t execute_created_key_action(kmip_live_client_t *c
     }
     uint64_t response_count = 0;
     status = kmipkit_client_batch_response_item_count(response, &response_count);
-    if (status == 0 && response_count != 5) status = KMIPKIT_ERROR_INVALID_INPUT;
-    for (size_t index = 0; status == 0 && index < 5; ++index) {
+    if (status == 0 && response_count != operation_count) status = KMIPKIT_ERROR_INVALID_INPUT;
+    for (size_t index = 0; status == 0 && index < operation_count; ++index) {
         kmipkit_client_batch_item_metadata_v2_t metadata = {
             .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t), .abi_version = 2
         };
@@ -5138,13 +5148,13 @@ static kmip_execution_outcome_t execute_created_key_action(kmip_live_client_t *c
         object_type == KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY &&
         identifier.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING &&
         identifier.text_data && identifier.text_length &&
-        activate_response_matches_created_key(responses[1], &identifier, &status) &&
-        (archive ? archive_response_matches_key(responses[2], &identifier, &status) :
-         created_key_crypto_response_matches(responses[2], &identifier, operation, &status)) &&
-        revoke_response_matches_created_key(responses[3], &identifier, &status) &&
-        response_ttlv_matches_identifier(responses[3], kmipkit_client_batch_item_response_revoke_ttlv,
+        (archive ? archive_response_matches_key(responses[1], &identifier, &status) :
+         (activate_response_matches_created_key(responses[1], &identifier, &status) &&
+          created_key_crypto_response_matches(responses[2], &identifier, operation, &status))) &&
+        revoke_response_matches_created_key(responses[revoke_index], &identifier, &status) &&
+        response_ttlv_matches_identifier(responses[revoke_index], kmipkit_client_batch_item_response_revoke_ttlv,
                                          &identifier, &status) &&
-        destroy_response_matches_key(responses[4], &identifier, &status);
+        destroy_response_matches_key(responses[destroy_index], &identifier, &status);
     outcome.success = valid;
     outcome.library_failed = status != 0;
     outcome.library_validated = status == 0;
