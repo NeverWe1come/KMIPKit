@@ -77,4 +77,28 @@ class LocalCatalogRouteChecksTest {
                                 || routeId.contains("attributeset"))
                         .collect(java.util.stream.Collectors.toSet()));
     }
+
+    @Test
+    void executesEveryItemTypeEnumerationThroughGenericTtlvRoutes() throws Exception {
+        JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
+        List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
+
+        LocalCatalogRouteChecks.executeItemTypeEnumerations(catalog, "2.1", invocations::add);
+
+        assertEquals(44, invocations.size());
+        assertEquals(Set.of(
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode"),
+                invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId)
+                        .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(11, invocations.stream().map(LocalCatalogRouteChecks.Invocation::targetId)
+                .distinct().count());
+        assertEquals(Set.of("test-enum-item-type"), invocations.stream()
+                .map(LocalCatalogRouteChecks.Invocation::caseId)
+                .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(11, invocations.stream()
+                .filter(invocation -> invocation.routeId().endsWith("ttlvvalue.enumeration")).count());
+    }
 }
