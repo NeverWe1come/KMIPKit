@@ -3375,6 +3375,33 @@ class RouteMatrixTests(unittest.TestCase):
                              'destroyed', 'destroyed']
                             for event in send_events))
 
+    def test_create_key_pair_operation_checks_both_identifiers_and_cleanup(self):
+        """OASIS KMIP 2.0/2.1 §6.1.8 returns distinct private and public key identifiers."""
+        from artifact_support import ROOT
+        from route_peer import RECIPES, execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_id = 'test-op-create-key-pair'
+        self.assertIn(case_id, RECIPES, 'Create Key Pair has no controlled-peer route recipe')
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12, 'Create Key Pair must pass both versions and all six wire routes')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertEqual({event['target_id'] for event in events},
+                         {'KMIPKIT-ELEM-OP-C2S-CREATE-KEY-PAIR'})
+        send_events = [event for event in events if event['action'] == 'send']
+        self.assertEqual(len(send_events), 12)
+        self.assertTrue(all(event['peer_observed_operation_sequence'] ==
+                            ['Create Key Pair', 'Destroy', 'Destroy'] and
+                            event['peer_observed_effects'] ==
+                            ['key_pair_created', 'destroyed', 'destroyed']
+                            for event in send_events))
+
     def test_export_operation_executes_installed_request_and_response_routes(self):
         """OASIS KMIP 2.0/2.1 §6.1.18 Tables 202–203/217–218 define Export."""
         from artifact_support import INSTALL, ROOT
