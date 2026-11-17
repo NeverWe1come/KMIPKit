@@ -927,6 +927,7 @@ class ControlledTlsPeerTest {
             if ("2.1".equals(protocolVersion)) appendStructureMemberByteStringRouteEvents(events);
             if ("2.1".equals(protocolVersion)) appendStructureMemberValueRouteEvents(events,
                     serverCertificatePem, serverPrivateKeyPem, clientCertificatePem, clientPrivateKeyPem);
+            appendObjectDefaultsObjectTypeRouteEvents(events, protocolVersion);
             assertObjectDefaultsObjectTypeRouteEvents(events, protocolVersion);
             assertNewlyCataloguedLocalRoutesAreInvoked(events, protocolVersion);
         }
@@ -1334,7 +1335,7 @@ class ControlledTlsPeerTest {
                         + genericTagEventCount + typedTagIdentityEventCount
                         + booleanFieldRouteEventCount + scalarMessageFieldRouteEventCount + itemTypeRouteEventCount
                         + scalarTypedParserEventCount
-                        + 29 // BEC, batch IDs, async payload, Ping, and KMIP 2.0/2.1 Endpoint Role cells.
+                        + 35 // BEC, batch IDs, async payload, Ping, Endpoint Role, and Object Defaults cells.
                         + tagAggregateEventCount
                         + referencedEnumEventCount + referencedEnumAggregateEventCount,
                 report.path("events").size());
@@ -1371,7 +1372,7 @@ class ControlledTlsPeerTest {
                         + enumerationFixtures.size() + localEnumerationCaseCount + bitmaskCaseCount
                         + dataTypeCaseCount
                         + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + genericTagCaseIds.size()
-                        + 5
+                        + 6
                         + typedTagIdentityCaseIds().size() + referencedEnumCaseCount
                         + 11 + itemTypeValueCaseIds.size() + STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size()
                         + STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.size()
@@ -6397,6 +6398,77 @@ class ControlledTlsPeerTest {
             assertRouteEventRecorded(events, OBJECT_DEFAULTS_OBJECT_TYPE_CASE_ID,
                     OBJECT_DEFAULTS_OBJECT_TYPE_TARGET_ID, route, action, protocolVersion);
         }
+    }
+
+    private static void appendObjectDefaultsObjectTypeRouteEvents(ArrayNode events, String protocolVersion)
+            throws Exception {
+        String caseId = OBJECT_DEFAULTS_OBJECT_TYPE_CASE_ID;
+        String targetId = OBJECT_DEFAULTS_OBJECT_TYPE_TARGET_ID;
+        CodecLimits limits = CodecLimits.defaults();
+        byte[] wire;
+        String treeHash;
+        if ("2.0".equals(protocolVersion)) {
+            long objectType = KmipValues.ObjectType.SYMMETRIC_KEY;
+            wire = item(0x420057, TtlvItemType.Enumeration.code(), intBytes(Math.toIntExact(objectType)));
+            treeHash = normalizedTreeSha256(wire);
+            try (TtlvValue value = TtlvValue.Enumeration(objectType);
+                    RawTag rawTag = RawTag.fromRaw(0x420057);
+                    Tag tag = rawTag.checked();
+                    TtlvItem created = TtlvItem.create(tag, value, limits);
+                    var view = created.view();
+                    Tag viewedTag = view.tag();
+                    var viewedValue = view.value()) {
+                assertEquals(0x420057, viewedTag.raw());
+                assertEquals(TtlvItemType.Enumeration, view.itemType());
+                assertEquals(objectType, viewedValue.enumeration());
+            }
+        } else {
+            long firstObjectType = KmipValues.ObjectType.SYMMETRIC_KEY;
+            long secondObjectType = KmipValues.ObjectType.PUBLIC_KEY;
+            wire = structure(0x420167,
+                    item(0x420057, TtlvItemType.Enumeration.code(), intBytes(Math.toIntExact(firstObjectType))),
+                    item(0x420057, TtlvItemType.Enumeration.code(), intBytes(Math.toIntExact(secondObjectType))));
+            treeHash = normalizedTreeSha256(wire);
+            TtlvStructure objectTypeValues = TtlvStructure.create();
+            objectTypeValues = appendCredentialValue(objectTypeValues, 0x420057,
+                    TtlvValue.Enumeration(firstObjectType), limits);
+            objectTypeValues = appendCredentialValue(objectTypeValues, 0x420057,
+                    TtlvValue.Enumeration(secondObjectType), limits);
+            TtlvStructure completeObjectTypeValues = objectTypeValues;
+            try (completeObjectTypeValues;
+                    TtlvValue value = TtlvValue.structure(completeObjectTypeValues, limits);
+                    RawTag rawTag = RawTag.fromRaw(0x420167);
+                    Tag tag = rawTag.checked();
+                    TtlvItem created = TtlvItem.create(tag, value, limits);
+                    var view = created.view();
+                    Tag viewedTag = view.tag();
+                    var viewedValue = view.value();
+                    var members = viewedValue.structure()) {
+                assertEquals(0x420167, viewedTag.raw());
+                assertEquals(TtlvItemType.Structure, view.itemType());
+                assertEquals(2, members.itemCount());
+            }
+        }
+        appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_item.create", targetId,
+                "org.kmipkit.ttlv.TtlvItem.create", null, null, "construct", protocolVersion,
+                null, treeHash, null);
+        try (TtlvItem decoded = TtlvCodec.decode(wire);
+                var view = decoded.view();
+                Tag tag = view.tag()) {
+            assertEquals("2.0".equals(protocolVersion) ? 0x420057 : 0x420167, tag.raw());
+            assertEquals("2.0".equals(protocolVersion) ? TtlvItemType.Enumeration : TtlvItemType.Structure,
+                    view.itemType());
+        }
+        appendRouteEvent(events, caseId, "java.generic-ttlv.function.ttlv_item_view_from_item", targetId,
+                "org.kmipkit.ttlv.TtlvItem.view", null, null, "decode", protocolVersion,
+                null, null, treeHash);
+        try (TtlvItem decoded = TtlvCodec.decode(wire)) {
+            assertEquals("2.0".equals(protocolVersion) ? TtlvItemType.Enumeration : TtlvItemType.Structure,
+                    decoded.view().itemType());
+        }
+        appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_codec.decode", targetId,
+                "org.kmipkit.ttlv.TtlvCodec.decode", null, null, "decode", protocolVersion,
+                null, null, treeHash);
     }
 
     private static void assertScalarOperationStructureRouteEvents(ArrayNode events,
