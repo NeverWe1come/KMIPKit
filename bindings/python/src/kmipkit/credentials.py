@@ -73,6 +73,8 @@ class CredentialType:
     ONE_TIME_PASSWORD = 4
     HASHED_PASSWORD = 5
     TICKET = 6
+    PASSWORD = 7
+    CERTIFICATE = 8
 
     def __init__(self, raw: int) -> None:
         checked = _integer_range(raw, 0, 0xFFFF_FFFF)
@@ -99,6 +101,8 @@ class CredentialType:
             4: "OneTimePassword",
             5: "HashedPassword",
             6: "Ticket",
+            7: "Password",
+            8: "Certificate",
         }
         if self._value in names:
             return names[self._value]

@@ -3314,6 +3314,84 @@ static int encrypt_decrypt_abi_is_callable_from_compiled_c(void) {
         response_correlation.length != 0) {
         goto cleanup;
     }
+
+    present = UINT8_MAX;
+    response_identifier.kind = UINT32_MAX;
+    response_identifier.text_data = (const uint8_t *)(uintptr_t)1;
+    response_identifier.text_length = UINT64_MAX;
+    if (kmipkit_client_batch_item_response_create_group(
+            0, &present, &response_identifier) != T076_ERROR_INVALID_INPUT ||
+        present != 0 || response_identifier.kind != 0 ||
+        response_identifier.text_data != 0 || response_identifier.text_length != 0) {
+        goto cleanup;
+    }
+
+    present = UINT8_MAX;
+    response_identifier.kind = UINT32_MAX;
+    response_identifier.text_data = (const uint8_t *)(uintptr_t)1;
+    response_identifier.text_length = UINT64_MAX;
+    if (kmipkit_client_batch_item_response_create_user(
+            0, &present, &response_identifier) != T076_ERROR_INVALID_INPUT ||
+        present != 0 || response_identifier.kind != 0 ||
+        response_identifier.text_data != 0 || response_identifier.text_length != 0) {
+        goto cleanup;
+    }
+
+    present = UINT8_MAX;
+    response_identifier.kind = UINT32_MAX;
+    response_identifier.text_data = (const uint8_t *)(uintptr_t)1;
+    response_identifier.text_length = UINT64_MAX;
+    if (kmipkit_client_batch_item_response_create_credential(
+            0, &present, &response_identifier) != T076_ERROR_INVALID_INPUT ||
+        present != 0 || response_identifier.kind != 0 ||
+        response_identifier.text_data != 0 || response_identifier.text_length != 0) {
+        goto cleanup;
+    }
+
+    present = UINT8_MAX;
+    if (kmipkit_client_batch_item_response_obliterate(
+            0, &present) != T076_ERROR_INVALID_INPUT ||
+        present != 0) {
+        goto cleanup;
+    }
+
+    present = UINT8_MAX;
+    response_identifier.kind = UINT32_MAX;
+    response_identifier.text_data = (const uint8_t *)(uintptr_t)1;
+    response_identifier.text_length = UINT64_MAX;
+    if (kmipkit_client_batch_item_response_deactivate(
+            0, &present, &response_identifier) != T076_ERROR_INVALID_INPUT ||
+        present != 0 || response_identifier.kind != 0 ||
+        response_identifier.text_data != 0 || response_identifier.text_length != 0) {
+        goto cleanup;
+    }
+
+    present = UINT8_MAX;
+    data_present = UINT8_MAX;
+    response_identifier.kind = UINT32_MAX;
+    response_identifier.text_data = (const uint8_t *)(uintptr_t)1;
+    response_identifier.text_length = UINT64_MAX;
+    response_data.data = (const uint8_t *)(uintptr_t)1;
+    response_data.length = UINT64_MAX;
+    if (kmipkit_client_batch_item_response_encapsulate(
+            0, &present, &response_identifier, &data_present, &response_data) != T076_ERROR_INVALID_INPUT ||
+        present != 0 || data_present != 0 ||
+        response_identifier.kind != 0 || response_identifier.text_data != 0 ||
+        response_identifier.text_length != 0 || response_data.data != 0 ||
+        response_data.length != 0) {
+        goto cleanup;
+    }
+
+    present = UINT8_MAX;
+    response_identifier.kind = UINT32_MAX;
+    response_identifier.text_data = (const uint8_t *)(uintptr_t)1;
+    response_identifier.text_length = UINT64_MAX;
+    if (kmipkit_client_batch_item_response_decapsulate(
+            0, &present, &response_identifier) != T076_ERROR_INVALID_INPUT ||
+        present != 0 || response_identifier.kind != 0 ||
+        response_identifier.text_data != 0 || response_identifier.text_length != 0) {
+        goto cleanup;
+    }
     result = 1;
 
 cleanup:

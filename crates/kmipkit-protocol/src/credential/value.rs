@@ -22,6 +22,10 @@ pub enum CredentialType {
     HashedPassword,
     /// Ticket, value `6`.
     Ticket,
+    /// Password, value `7` (OASIS KMIP 3.0 §11.11 Table 551).
+    Password,
+    /// Certificate, value `8` (OASIS KMIP 3.0 §11.11 Table 551).
+    Certificate,
     /// Extensions, values in the OASIS `8XXXXXXX` range.
     Extensions(u32),
     /// An unassigned raw enumeration value.
@@ -39,6 +43,8 @@ impl CredentialType {
             4 => Self::OneTimePassword,
             5 => Self::HashedPassword,
             6 => Self::Ticket,
+            7 => Self::Password,
+            8 => Self::Certificate,
             0x8000_0000..=0x8FFF_FFFF => Self::Extensions(raw),
             value => Self::Unknown(value),
         }
@@ -54,6 +60,8 @@ impl CredentialType {
             Self::OneTimePassword => 4,
             Self::HashedPassword => 5,
             Self::Ticket => 6,
+            Self::Password => 7,
+            Self::Certificate => 8,
             Self::Extensions(raw) | Self::Unknown(raw) => raw,
         }
     }
