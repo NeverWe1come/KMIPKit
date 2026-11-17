@@ -59,7 +59,7 @@ class LocalCatalogRouteChecksTest {
         String caseId = "test-norm-payload-client-cancel-request-21-001";
         List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
 
-        LocalCatalogRouteChecks.executeClientPayloadScalarFields(
+        LocalCatalogRouteChecks.executeCorrelationPayloadScalarFields(
                 catalog, "2.1", Set.of(caseId), invocations::add);
 
         assertEquals(List.of(
@@ -90,7 +90,7 @@ class LocalCatalogRouteChecksTest {
         String caseId = "test-norm-payload-client-cancel-response-21-001";
         List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
 
-        LocalCatalogRouteChecks.executeClientPayloadScalarFields(
+        LocalCatalogRouteChecks.executeCorrelationPayloadScalarFields(
                 catalog, "2.1", Set.of(caseId), invocations::add);
 
         assertEquals(6, invocations.size());
