@@ -125,6 +125,9 @@ class ControlledTlsPeerTest {
     private record ExtensionInformationMemberFixture(String caseId, String targetId, int rawTag,
             String textValue) { }
 
+    private record ExtensionInformationIntegerMemberFixture(String caseId, String targetId, int rawTag,
+            int value) { }
+
     private record DerivationByteStringFixture(String caseId, String targetId, int rawTag, byte[] value) { }
 
     private record DerivationIntegerFixture(String caseId, String targetId, int rawTag, int value) { }
@@ -251,6 +254,10 @@ class ControlledTlsPeerTest {
                     "test-norm-structure-member-structure-member-7-13-extension-description",
                     "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-13-EXTENSION-DESCRIPTION", 0x42012c,
                     "Controlled fixture extension description"));
+    private static final ExtensionInformationIntegerMemberFixture EXTENSION_TAG_FIXTURE =
+            new ExtensionInformationIntegerMemberFixture(
+                    "test-norm-structure-member-structure-member-7-13-extension-tag",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-13-EXTENSION-TAG", 0x4200a6, 0x540001);
     private static final List<String> SERVER_INFORMATION_CASE_IDS = List.of(
             SERVER_INFORMATION_CASE_ID,
             SERVER_INFORMATION_MEMBER_FIXTURES.get(0).caseId(),
@@ -6532,6 +6539,16 @@ class ControlledTlsPeerTest {
                 assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(), route, action,
                         protocolVersion);
             }
+        }
+        for (String route : List.of(
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.integer",
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode")) {
+            String action = route.endsWith("integer") || route.endsWith("ttlv_item.create")
+                    ? "construct" : "decode";
+            assertRouteEventRecorded(events, EXTENSION_TAG_FIXTURE.caseId(),
+                    EXTENSION_TAG_FIXTURE.targetId(), route, action, protocolVersion);
         }
     }
 
