@@ -184,5 +184,19 @@ KMIP 2.1 §6.1.4 Tables 173–174 do not require Activate; the Unique Identifier
 is optional and the client is only indicating that a KMS may archive the object.
 Red `b2e3ced75` asserts the catalogued recipe, Green `5707246cb` implements it,
 and Refactor `de029189b` clarifies the state handling. The route passed 12/12
-cells and CTest passed 7/7. The full C matrix has 24,673 pending cells, so the
+cells and CTest passed 7/7. At the Archive integration snapshot, the full C
+matrix had 24,673 pending cells, so the
 FR-003/FR-005 gates remain open.
+
+### C MAC and Sign response TTLV accessors
+
+For KMIPKIT-0092-FR-003 and FR-005, the installed consumer invokes the generic
+response-TTLV accessor for successful MAC and Sign responses. The corresponding
+normative sources are OASIS KMIP v2.0 §§6.1.31 and 6.1.49 and v2.1 §§6.1.32
+and 6.1.55. The fixture checks the complete response item's four outer fields
+without reading MAC Data or Signature Data. Red `29a3e1867` exposed the four
+missing decode cells; Green `3bbfc5180` invoked both accessors; Refactor
+`01b12cbb7` named the shared shape contract. The focused route test passes for
+both operations and versions, and CTest passes 7/7. The matrix at
+`01b12cbb7` has 66,736 expected, 42,067 invoked, zero failed, and 24,669
+pending cells; the global requirements remain incomplete.

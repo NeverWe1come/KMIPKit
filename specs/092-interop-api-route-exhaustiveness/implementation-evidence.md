@@ -284,6 +284,24 @@ and fails against the old extra Activate. Green `5707246cb` updates the C
 consumer, response indexing, route peer, and standalone TLS expected sequence;
 Refactor `de029189b` clarifies the Active-state distinction. The focused Archive
 route passed 12/12; CTest passed 7/7 in 97.26 seconds, including both standalone
-TLS peers. The current full local C matrix has 66,736 expected, 42,063 invoked,
-zero failed, and 24,673 pending cells; this route contributes 38 invoked cells
-and leaves FR-003/FR-005 incomplete.
+TLS peers. The full C matrix snapshot taken at this Archive slice had 66,736
+expected, 42,063 invoked, zero failed, and 24,673 pending cells; this route
+contributes 38 invoked cells and leaves FR-003/FR-005 incomplete.
+
+## C MAC and Sign response TTLV accessors
+
+The installed consumer now invokes the successful MAC and Sign generic
+response-TTLV accessors after checking their typed result fields. OASIS KMIP
+v2.0 §§6.1.31 and 6.1.49 and v2.1 §§6.1.32 and 6.1.55 define the operation
+payloads. The consumer checks the returned complete response item has the
+expected four outer fields; it does not read, compare, or record the MAC Data
+or Signature Data bytes. This verifies API route use and response shape, not
+cryptographic correctness.
+
+Red `29a3e1867` made the route test fail for the four missing decode cells.
+Green `3bbfc5180` added both accessors and their response-shape checks. Refactor
+`01b12cbb7` named the response field-count contract and added normative
+references to the test. The focused route test passed for both operations and
+both protocol versions; CTest passed 7/7 in 139.15 seconds. The full matrix at
+`01b12cbb7` has 66,736 expected, 42,067 invoked, zero failed, and 24,669
+pending cells. The exhaustive FR-003/FR-005 gates remain open.
