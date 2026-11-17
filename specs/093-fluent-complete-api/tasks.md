@@ -87,6 +87,19 @@ Dependent work branches from the unmerged parent head while review is pending.
   head CI failure. Keep the slice WIP until C, Java, and Python fluent parity
   and remaining operation work are complete.
 
+### Rust Get Constraints builder slice
+
+- [x] GC001 Add and commit Red fake-transport tests for empty typed request
+  construction, batch conversion, one-exchange Success, and Pending.
+- [x] GC002 Reproduce the missing fluent constructor in a distinct Red commit.
+- [x] GC003 Implement the builder through the existing typed client route in a
+  separate Green commit, then refactor batch conversion in its own commit.
+- [x] GC004 Update bilingual policy-control guides, compiled example tests,
+  traceability, and compiler-reconciled manifest artifacts.
+- [ ] GC005 Push a WIP draft PR targeting the Get Usage Allocation slice and
+  fix every exact-head CI failure. Keep this slice WIP while C, Java, and
+  Python parity and remaining operation work are incomplete.
+
 - [ ] B001 Add failing C consumer tests for opaque handle ownership,
   operation construction, typed results, direct tasks and ABI stability.
 - [ ] B002 Generate and implement the C ABI on the Rust owner; run sanitizer,

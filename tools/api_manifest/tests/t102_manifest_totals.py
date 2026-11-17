@@ -43,9 +43,11 @@ T102_BLOCKED_CANDIDATES = 0
 # standard-trait exclusions while its C/Java/Python fluent parity is pending.
 # The Rust-only Get Usage Allocation slice adds 22 blocked declarations and
 # 18 exact standard-trait exclusions while the same parity is pending.
-T102_PUBLIC_DECLARATIONS = 20_325
+# The Rust-only Get Constraints slice adds 16 blocked declarations and 18
+# exact standard-trait exclusions while the same parity is pending.
+T102_PUBLIC_DECLARATIONS = 20_341
 T102_KMIP30_DRAFT_ROUTE_DECLARATIONS = 36
-T102_APPROVED_EXCLUSIONS = 23_537
+T102_APPROVED_EXCLUSIONS = 23_555
 # The current Rust audit report remains the immutable November 16 snapshot.
 T102_RUST_AUDIT_MANIFEST = 10_380
 T102_RUST_AUDIT_EXCLUDED = 21_649

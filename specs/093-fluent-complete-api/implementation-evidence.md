@@ -1226,3 +1226,49 @@
   `python3 -B tools/api_manifest/generate.py --check`. The full manifest suite
   and hosted exact-head CI are still pending. This remains WIP and does not
   close FR-011 or operation-wide O001/O002.
+
+## Rust Get Constraints fluent builder slice
+
+### Red
+
+- Commit `d59ad8015` added fake-transport tests for empty typed request
+  construction, batch conversion, one-exchange Success, and Pending
+  correlation without follow-up, based on OASIS KMIP v2.1 §6.1.22,
+  Tables 229–231, and §7.7.
+- Reproduced the missing `RequestBuilder::get_constraints` with
+  `cargo test --locked -p kmipkit-client --lib
+  get_constraints_execution_tests` before implementation.
+- Added a manifest contract that initially failed because the 16 new builder
+  exports were absent from `public-api.json`.
+
+### Green and Refactor
+
+- Commit `df97b64c8` added `GetConstraintsBuilder` over the existing typed
+  request, validation, batch item, protocol-version gate, request options,
+  asynchronous indicator, and one-exchange client path.
+- Commit `69b2e80cf` made batch conversion construct the matching typed
+  `ClientRequest::GetConstraints` variant before producing the batch item.
+- The 10 focused Get Constraints tests pass, including existing Failure,
+  malformed-response, and delivery-state checks. The three policy-control
+  guide tests compile the bilingual fluent examples.
+
+### Refactor, documentation, and generated inventory
+
+- The Rust 1.94 export audit observed 16 new Get Constraints public paths and
+  18 exact standard-trait paths, with no audit issues. Reconciled the new
+  declarations as blocked under `KMIPKIT-0093-FR-011` until C, Java, and
+  Python parity lands, then regenerated the 12 API outputs with
+  `tools/api_manifest/generate.py`.
+- The reconciled Linux audit matches 11,263 declarations and 21,694 approved
+  exclusions across 32,957 observed paths. Eight existing KMIP 3.0
+  `object_class_mask` paths are not observed on this host, so audit `--check`
+  exits 1 for those paths despite zero missing exports and zero other audit
+  issues. The November 16 and November 1 audit snapshots remain unchanged.
+- Updated the full-manifest snapshot to 20,341 declarations and 23,555
+  exclusions. The new manifest contract requires all 16 paths to remain
+  blocked with FR-011 ownership and without language mappings.
+- Local verification: all 941 `kmipkit-client` library tests, three
+  guide-example tests, the new builder and inherited manifest contracts,
+  T102 totals, format, generated-output check, and workspace Clippy pass.
+  The eight host-unobserved paths and hosted exact-head CI remain pending.
+  This remains WIP and does not close FR-011 or operation-wide O001/O002.
