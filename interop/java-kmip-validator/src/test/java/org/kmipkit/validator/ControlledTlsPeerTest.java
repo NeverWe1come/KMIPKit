@@ -68,7 +68,7 @@ class ControlledTlsPeerTest {
                 .filter(value -> value.caseId().equals("test-op-discover-versions"))
                 .findFirst().orElseThrow();
 
-        ArtifactProvenance.load(manifestPath, "9692057c9ade474fb0c4e0b7130539da368eb794");
+        ArtifactProvenance.load(manifestPath, "12496d646d11d4069b58bcc88fc76cc619211ec6");
         JavaKmipDriver.CaseOutcome outcome;
         try (JavaKmipDriver driver = JavaKmipDriver.connect(connection)) {
             outcome = driver.execute(testCase);

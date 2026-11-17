@@ -198,6 +198,37 @@ class RouteMatrixTests(unittest.TestCase):
                     result = abi.roundtrip(encode(request))
                     self.assertIn('kmipkit_request_message_from_ttlv', result['invoked_symbols'])
 
+    def test_export_key_wrap_type_and_any_object_have_generic_ttlv_fixtures(self):
+        """OASIS KMIP 2.0 §6.1.18 Tables 202–203; KMIP 2.1 Tables 217–218."""
+        from artifact_support import INSTALL, ROOT
+        from route_ttlv import TreeAbi, encode, normalized
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        tags = self.runner.catalog_tag_values(catalog)
+        targets = {target['target_id']: target for target in catalog['normative_targets']}
+        case_ids = (
+            'test-norm-payload-client-export-request-20-003',
+            'test-norm-payload-client-export-request-21-003',
+            'test-norm-payload-client-export-response-20-004',
+            'test-norm-payload-client-export-response-21-004',
+        )
+        abi = TreeAbi(INSTALL / 'lib/libkmipkit_ffi.so')
+        for case_id in case_ids:
+            case = next(item for item in catalog['test_cases'] if item['case_id'] == case_id)
+            target = targets[case['requires']['normative_target_id']]
+            version = case['execution']['protocol_versions'][0]
+            with self.subTest(case_id=case_id):
+                fixtures = self.runner.generic_tree_fixtures(target, catalog, tags, version, case=case)
+                self.assertTrue(fixtures, f'{case_id} has no generic TTLV fixture')
+                result = abi.roundtrip(encode(fixtures[0]))
+                self.assertEqual(result['normalized_tree'], normalized(fixtures[0]))
+                self.assertIn('kmipkit_ttlv_item_create', result['invoked_symbols'])
+                self.assertIn('kmipkit_ttlv_decode', result['invoked_symbols'])
+                if 'request' in case_id:
+                    self.assertEqual(fixtures[0], (tags['Key Wrap Type'], 5, (1).to_bytes(4, 'big')))
+                else:
+                    self.assertEqual((fixtures[0][0], fixtures[0][1]), (tags['Symmetric Key'], 1))
+
     def test_request_message_context_fields_use_complete_parser_fixtures(self):
         """OASIS KMIP 2.0/2.1 §§8.1–8.3 define these Request Message branches (0092-FR-003)."""
         from artifact_support import INSTALL, ROOT
@@ -720,6 +751,260 @@ class RouteMatrixTests(unittest.TestCase):
                             check['public_api_success_symbols']
                             for check in checks), checks)
         self.assertFalse(any(event.get('workflow_operation') == 'Poll' for event in events))
+
+    def test_async_lifecycle_queries_and_polls_the_correlated_create(self):
+        """OASIS KMIP 2.1 §§6.1.8, 6.1.38, 6.1.41, 8.2–8.3, 8.6, 9.1–9.2."""
+        from artifact_support import ROOT
+        import route_peer
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        case = next(item for item in catalog['test_cases']
+                    if item['case_id'] == 'test-async-lifecycle-poll')
+
+        self.assertEqual(
+            route_peer.recipe_for_case(case, None),
+            ((1, 57, 26, 20), 'async_create_poll_lifecycle'))
+
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        selected = {**catalog, 'test_cases': [case]}
+        events, _, checks = route_peer.execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 6)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertTrue(all(check.get('peer_async_interleaving_operations') == [1, 57, 26, 20] and
+                            check.get('peer_async_response_statuses') == [2, 0, 0, 0] and
+                            check.get('peer_async_query_correlation_match') is True and
+                            check.get('peer_async_poll_correlation_match') is True and
+                            check.get('peer_async_poll_completed') is True and
+                            check.get('peer_cleanup_operations') == [20] and
+                            check.get('peer_final_state_matches_setup') is True
+                            for check in checks), checks)
+        for symbol, action, count in (
+                ('kmipkit_client_execute_query_async_requests', 'send', 6),
+                ('kmipkit_client_execute_poll', 'send', 6),
+                ('kmipkit_client_async_operation_outcome_query_async_requests_response_v1', 'decode', 1),
+                ('kmipkit_client_async_operation_outcome_poll_response_v1', 'decode', 1)):
+            with self.subTest(symbol=symbol, action=action):
+                self.assertEqual(sum(event['public_api_symbol'] == symbol and
+                                     event['action'] == action for event in events), count)
+
+    def test_async_query_filters_intersect_only_outstanding_requests(self):
+        """OASIS KMIP 2.1 §6.1.41 Tables 285–287 and §7.2 Table 353."""
+        from artifact_support import ROOT
+        import route_peer
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        case = next(item for item in catalog['test_cases']
+                    if item['case_id'] == 'test-async-query-outstanding-filter')
+
+        self.assertEqual(
+            route_peer.recipe_for_case(case, None),
+            ((1, 57), 'async_query_outstanding_filter'))
+
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        selected = {**catalog, 'test_cases': [case]}
+        events, _, checks = route_peer.execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 6)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertTrue(all(check.get('peer_async_query_operation_filter') is True and
+                            check.get('peer_async_query_correlation_filter') is True and
+                            check.get('peer_async_query_filters_intersect') is True and
+                            check.get('peer_async_query_excludes_completed') is True and
+                            check.get('peer_async_query_excludes_other_operation') is True and
+                            check.get('peer_async_query_result_is_exact') is True and
+                            check.get('peer_final_state_matches_setup') is True
+                            for check in checks), checks)
+        self.assertEqual(sum(event['public_api_symbol'] ==
+                             'kmipkit_client_execute_query_async_requests' and
+                             event['action'] == 'send' for event in events), 6)
+        self.assertEqual(sum(event['public_api_symbol'] ==
+                             'kmipkit_client_batch_item_response_create' and
+                             event['action'] == 'decode' for event in events), 1)
+
+    def test_async_unknown_correlation_is_rejected_with_typed_reason(self):
+        """OASIS KMIP 2.0 §6.1.36 Table 257 and KMIP 2.1 §6.1.38 Table 277."""
+        from artifact_support import ROOT
+        import route_peer
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        case = next(item for item in catalog['test_cases']
+                    if item['case_id'] == 'test-async-unknown-correlation-rejected')
+
+        self.assertEqual(
+            route_peer.recipe_for_case(case, None),
+            ((26,), 'async_unknown_correlation_rejected'))
+
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        selected = {**catalog, 'test_cases': [case]}
+        events, _, checks = route_peer.execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertTrue(all(check.get('peer_async_unknown_correlation_request') is True and
+                            check.get('peer_async_unknown_correlation_failure') is True and
+                            check.get('peer_async_unknown_correlation_not_remapped') is True and
+                            check.get('peer_final_state_matches_setup') is True and
+                            check.get('consumer_result_status_code') == 1 and
+                            check.get('consumer_result_reason_code') == 43 and
+                            check.get('consumer_library_correctness') == 'passed'
+                            for check in checks), checks)
+        for symbol, action, count in (
+                ('kmipkit_client_execute_poll', 'send', 12),
+                ('kmipkit_client_execute_poll', 'decode', 12),
+                ('kmipkit_client_async_operation_outcome_poll_response_v1', 'decode', 2)):
+            with self.subTest(symbol=symbol, action=action):
+                self.assertEqual(sum(event['public_api_symbol'] == symbol and
+                                     event['action'] == action for event in events), count)
+        self.assertEqual(sum(event['public_api_symbol'] ==
+                             'kmipkit_poll_request_to_ttlv_payload' and
+                             event['action'] == 'encode' for event in events), 2)
+        self.assertEqual(sum(event['public_api_symbol'] ==
+                             'kmipkit_poll_request_create' and
+                             event['action'] == 'construct' for event in events), 2)
+
+    def test_async_poll_and_cancel_responses_do_not_recurse(self):
+        """OASIS KMIP 2.1 §§6.1.5 and 6.1.38 keep Poll and Cancel terminal."""
+        from artifact_support import ROOT
+        import route_peer
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        case = next(item for item in catalog['test_cases']
+                    if item['case_id'] == 'test-async-no-recursive-async-poll-cancel')
+
+        self.assertEqual(
+            route_peer.recipe_for_case(case, None),
+            ((26, 25), 'async_poll_cancel_no_recursion'))
+
+        cancel_response_target = next(item for item in catalog['normative_targets']
+                                      if item['target_id'] ==
+                                      'KMIPKIT-PAYLOAD-CLIENT-CANCEL-RESPONSE-21-002')
+        tags = self.runner.catalog_tag_values(catalog)
+        self.assertEqual(
+            self.runner.generic_tree_fixtures(
+                cancel_response_target, catalog, tags, '2.1', case=case),
+            [(tags['Cancellation Result'], 5, (1).to_bytes(4, 'big'))])
+
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        selected = {**catalog, 'test_cases': [case]}
+        events, _, checks = route_peer.execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 6)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertTrue(all(check.get('peer_async_interleaving_operations') == [26, 25] and
+                            check.get('peer_async_response_statuses') == [0, 0] and
+                            check.get('peer_async_poll_no_correlation') is True and
+                            check.get('peer_async_cancel_echo_matches') is True and
+                            check.get('peer_async_indicator_absent') is True
+                            for check in checks), checks)
+        for symbol, action, count in (
+                ('kmipkit_client_execute_cancel', 'send', 12),
+                ('kmipkit_client_execute_poll', 'send', 6),
+                ('kmipkit_client_async_operation_outcome_cancel_response_v1', 'decode', 2),
+                ('kmipkit_client_async_operation_outcome_poll_response_v1', 'decode', 1)):
+            with self.subTest(symbol=symbol, action=action):
+                self.assertEqual(sum(event['public_api_symbol'] == symbol and
+                                     event['action'] == action for event in events), count)
+        self.assertEqual(sum(event['public_api_symbol'] == 'kmipkit_poll_request_create' and
+                             event['action'] == 'construct' and event['transport'] is None
+                             for event in events), 1)
+
+    def test_async_poll_final_failure_preserves_the_original_create_failure(self):
+        """OASIS KMIP 2.0/2.1 §§6.1.8 and 6.1.38 preserve a final Create failure."""
+        from artifact_support import ROOT
+        import route_peer
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        case = next(item for item in catalog['test_cases']
+                    if item['case_id'] == 'test-async-poll-final-operation-failure')
+
+        self.assertEqual(
+            route_peer.recipe_for_case(case, None),
+            ((1, 26), 'async_poll_final_failure'))
+
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        selected = {**catalog, 'test_cases': [case]}
+        events, _, checks = route_peer.execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertTrue(all(check.get('peer_async_interleaving_operations') == [1, 26, 26] and
+                            check.get('peer_async_response_statuses') == [2, 2, 1] and
+                            check.get('peer_async_create_indicator_mandatory') is True and
+                            check.get('peer_async_poll_correlations_match') is True and
+                            check.get('peer_async_final_failure_shape') is True and
+                            check.get('peer_final_state_matches_setup') is True
+                            for check in checks), checks)
+        self.assertEqual(sum(event['public_api_symbol'] == 'kmipkit_client_execute_poll' and
+                             event['action'] == 'send' for event in events), 12)
+
+    def test_async_repeated_pending_polls_keep_correlation_until_create_success(self):
+        """OASIS KMIP 2.0/2.1 §6.1.38 keeps one correlation across Pending Polls."""
+        from artifact_support import ROOT
+        import route_peer
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        case = next(item for item in catalog['test_cases']
+                    if item['case_id'] == 'test-async-poll-repeated-pending-to-success')
+
+        self.assertEqual(
+            route_peer.recipe_for_case(case, None),
+            ((1, 26), 'async_poll_repeated_pending_to_success'))
+
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        selected = {**catalog, 'test_cases': [case]}
+        events, _, checks = route_peer.execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertTrue(all(check.get('peer_async_interleaving_operations') == [1, 26, 26, 26, 20] and
+                            check.get('peer_async_response_statuses') == [2, 2, 2, 0, 0] and
+                            check.get('peer_async_create_indicator_mandatory') is True and
+                            check.get('peer_async_poll_correlations_match') is True and
+                            check.get('peer_async_final_poll_create_shape') is True and
+                            check.get('peer_final_state_matches_setup') is True
+                            for check in checks), checks)
+        self.assertEqual(sum(event['public_api_symbol'] == 'kmipkit_client_execute_poll' and
+                             event['action'] == 'send' for event in events), 12)
+
+    def test_async_process_changes_state_seen_by_correlated_poll(self):
+        """OASIS KMIP 2.1 §6.1.39 Tables 278–279 require correlated Process and Poll."""
+        from artifact_support import ROOT
+        import route_peer
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        case = next(item for item in catalog['test_cases']
+                    if item['case_id'] == 'test-async-process-then-poll-state')
+
+        self.assertEqual(
+            route_peer.recipe_for_case(case, None),
+            ((1, 58, 26), 'async_process_then_poll_state'))
+
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        selected = {**catalog, 'test_cases': [case]}
+        events, _, checks = route_peer.execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 6)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertTrue(all(check.get('peer_async_interleaving_operations') == [1, 58, 26, 20] and
+                            check.get('peer_async_response_statuses') == [2, 0, 0, 0] and
+                            check.get('peer_async_process_correlation_match') is True and
+                            check.get('peer_async_poll_correlation_match') is True and
+                            check.get('peer_async_process_is_synchronous') is True and
+                            check.get('peer_async_final_poll_create_shape') is True and
+                            check.get('peer_final_state_matches_setup') is True
+                            for check in checks), checks)
+        self.assertEqual(sum(event['public_api_symbol'] == 'kmipkit_client_execute_process' and
+                             event['action'] == 'send' for event in events), 6)
+        self.assertEqual(sum(event['public_api_symbol'] == 'kmipkit_client_execute_poll' and
+                             event['action'] == 'send' for event in events), 6)
 
     def test_stop_on_first_failure_case_has_a_controlled_peer_recipe(self):
         import route_peer
@@ -2917,6 +3202,110 @@ class RouteMatrixTests(unittest.TestCase):
 
         self.assertEqual(recipe, ((3, 20), 'register'))
 
+    def test_export_operation_executes_installed_request_and_response_routes(self):
+        """OASIS KMIP 2.0/2.1 §6.1.18 Tables 202–203/217–218 define Export."""
+        from artifact_support import INSTALL, ROOT
+        from route_matrix import catalog_tag_values, generic_tree_fixtures
+        from route_peer import RECIPES, execute_network_cells
+        from route_ttlv import TreeAbi, encode
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_id = 'test-op-export'
+        self.assertIn(case_id, RECIPES, 'Export has no controlled-peer route recipe')
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12, 'Export must pass both versions and all six network combinations')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertEqual({event['target_id'] for event in events},
+                         {'KMIPKIT-ELEM-OP-C2S-EXPORT'})
+        send_events = [event for event in events if event['action'] == 'send']
+        self.assertEqual(len(send_events), 12)
+        self.assertTrue(all(event['peer_observed_operation_sequence'] ==
+                            ['Create', 'Export', 'Revoke', 'Destroy'] and
+                            event['peer_observed_effects'] ==
+                            ['created', 'exported', 'revoked', 'destroyed'] and
+                            event['peer_observed_response_count'] == 4
+                            for event in send_events))
+        required_symbols = {
+            'kmipkit_client_batch_item_create',
+            'kmipkit_client_batch_item_export',
+            'kmipkit_client_batch_item_response_export',
+            'kmipkit_client_batch_item_response_export_ttlv',
+            'kmipkit_client_batch_item_revoke',
+            'kmipkit_client_batch_item_destroy',
+            'kmipkit_client_execute',
+        }
+        self.assertTrue(all(required_symbols <= set(check['public_api_trace_symbols'])
+                            for check in checks), checks)
+        export_response_decodes = [event for event in events
+                                   if event['public_api_symbol'] in {
+                                       'kmipkit_client_batch_item_response_export',
+                                       'kmipkit_client_batch_item_response_export_ttlv'}]
+        self.assertEqual({event['action'] for event in export_response_decodes}, {'decode'})
+        self.assertEqual(len(export_response_decodes), 4)
+
+        export_target = next(target for target in catalog['normative_targets']
+                             if target['target_id'] == 'KMIPKIT-ELEM-OP-C2S-EXPORT')
+        tags = catalog_tag_values(catalog)
+        abi = TreeAbi(INSTALL / 'lib/libkmipkit_ffi.so')
+        for version in ('2.0', '2.1'):
+            fixtures = generic_tree_fixtures(
+                export_target, catalog, tags, version,
+                case=next(case for case in selected['test_cases']
+                          if case['case_id'] == case_id))
+            self.assertEqual(len(fixtures), 1)
+            generic_route = abi.roundtrip(encode(fixtures[0]))
+            self.assertTrue({'kmipkit_ttlv_decode', 'kmipkit_ttlv_item_create'} <=
+                            generic_route['invoked_symbols'])
+
+    def test_export_request_payload_fields_reach_installed_consumer(self):
+        """OASIS KMIP 2.0/2.1 §6.1.18 Tables 202/217 define optional Export fields."""
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        cases = [case for case in catalog['test_cases']
+                 if case['case_id'].startswith('test-norm-payload-client-export-request-')]
+        selected = {**catalog, 'test_cases': cases}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 120,
+                         'Each of ten Export request fields must cover present and omitted branches')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertTrue({case['requires']['normative_target_id'] for case in cases} <=
+                        {event['target_id'] for event in events})
+        self.assertIn('KMIPKIT-ELEM-OP-C2S-EXPORT', {event['target_id'] for event in events})
+
+    def test_export_response_payload_fields_reject_missing_required_branches(self):
+        """OASIS KMIP 2.0/2.1 §6.1.18 Tables 203/218 require successful Export fields."""
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        cases = [case for case in catalog['test_cases']
+                 if case['case_id'].startswith('test-norm-payload-client-export-response-')]
+        selected = {**catalog, 'test_cases': cases}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 96,
+                         'Each of eight required Export response fields must cover present and missing branches')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertEqual(sum(check['constructor_variant'] == 'present' for check in checks), 48)
+        self.assertEqual(sum(check['constructor_variant'] == 'missing_rejected' for check in checks), 48)
+        self.assertTrue({case['requires']['normative_target_id'] for case in cases} <=
+                        {event['target_id'] for event in events})
+
     def test_register_operation_executes_the_installed_request_and_response_routes(self):
         from artifact_support import ROOT
         from route_peer import execute_network_cells
@@ -3026,6 +3415,7 @@ class RouteMatrixTests(unittest.TestCase):
 
 
     def test_two_item_batch_continuation_and_id_correlation(self):
+        """OASIS KMIP 2.0/2.1 §§6.1.19, 6.1.21, 8.2–8.6, and 9.5–9.7 define the ordered Get/Get Attribute List exchange."""
         from artifact_support import ROOT
         from route_peer import execute_network_cells
         catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
@@ -3040,7 +3430,8 @@ class RouteMatrixTests(unittest.TestCase):
                                                if case['case_id'] in case_ids]}
         events, _, checks = execute_network_cells(
             ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
-        self.assertEqual(len(checks), 48, 'all four two-item batch cases must pass on every version/transport cell')
+        self.assertEqual(len(checks), 60,
+                         'Get Attribute List must run through direct and request-based constructors')
         self.assertTrue(all(check['status'] == 'passed' for check in checks))
         expected_operations = {
             'KMIPKIT-ELEM-OP-C2S-GET', 'KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST',
@@ -3049,6 +3440,21 @@ class RouteMatrixTests(unittest.TestCase):
         for symbol in ('kmipkit_client_batch_item_get', 'kmipkit_client_batch_item_get_attribute_list'):
             self.assertTrue(any(event['public_api_symbol'] == symbol and event['action'] == 'send'
                                 for event in events), symbol)
+        standalone_get_attribute_list = [event for event in events
+                                         if event['case_id'] == 'test-batch-continue-after-failure'
+                                         and event['public_api_symbol'] ==
+                                         'kmipkit_client_batch_item_get_attribute_list_from_request'
+                                         and event['target_id'] == 'KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST'
+                                         and event.get('workflow_item_index') == 1]
+        self.assertEqual(len(standalone_get_attribute_list), 36)
+        self.assertEqual({event['action'] for event in standalone_get_attribute_list},
+                         {'construct', 'send', 'decode'})
+        self.assertEqual({(event['protocol_version'], event['encoding'], event['transport'])
+                          for event in standalone_get_attribute_list},
+                         {(version, encoding, transport)
+                          for version in ('2.0', '2.1')
+                          for encoding in ('TTLV', 'JSON', 'XML')
+                          for transport in ('raw_tls', 'https')})
         for check in checks:
             symbols = check['public_api_trace_symbols']
             self.assertTrue({'kmipkit_client_execute', 'kmipkit_client_batch_response_item_count',
@@ -3251,6 +3657,7 @@ class RouteMatrixTests(unittest.TestCase):
                 self.fail(str(error))
 
     def test_continued_batch_evidence_has_observed_unchanged_fixture_state(self):
+        """KMIP 2.1 §§6.1.19, 6.1.21, 8.2–8.6, and 9.5–9.7 cover these batch routes and results."""
         from artifact_support import ROOT
         from route_peer import execute_network_cells
         from validate_route_evidence import _key, _validate_batch_event
@@ -3263,13 +3670,26 @@ class RouteMatrixTests(unittest.TestCase):
             ROOT / 'interop/c-kmip-validator/build/kmip_validator_c',
             {**catalog, 'test_cases': [case]}, manifest,
             protocol_versions=('2.1',), network_combinations=(('TTLV', 'raw_tls'),))
-        self.assertEqual(len(checks), 1)
-        self.assertEqual(checks[0]['status'], 'passed')
+        self.assertEqual(len(checks), 2)
+        self.assertEqual({check['constructor_variant'] for check in checks},
+                         {'direct', 'standalone'})
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        direct = next(check for check in checks if check['constructor_variant'] == 'direct')
+        standalone = next(check for check in checks if check['constructor_variant'] == 'standalone')
+        self.assertIn('kmipkit_client_batch_item_get_attribute_list',
+                      direct['public_api_trace_symbols'])
+        self.assertIn('kmipkit_client_batch_item_get_attribute_list_from_request',
+                      standalone['public_api_trace_symbols'])
+        self.assertIn('kmipkit_get_attribute_list_request_to_ttlv_payload',
+                      standalone['public_api_trace_symbols'])
         expected_state = hashlib.sha256(json.dumps(
             {'objects': {'fixture-key-1': 'pre_active'}},
             sort_keys=True, separators=(',', ':')).encode()).hexdigest()
         send_events = [event for event in events if event['action'] == 'send']
         self.assertTrue(send_events)
+        send_symbols = {event['public_api_symbol'] for event in send_events}
+        self.assertIn('kmipkit_client_batch_item_get_attribute_list', send_symbols)
+        self.assertIn('kmipkit_client_batch_item_get_attribute_list_from_request', send_symbols)
         for event in send_events:
             self.assertEqual(event.get('peer_observed_effects'),
                              ['first_item_failed', 'second_item_executed'])

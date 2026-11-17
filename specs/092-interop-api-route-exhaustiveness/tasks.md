@@ -35,6 +35,39 @@ The `test-op-adjust-attribute` C route now has focused controlled-peer evidence
 for both direct and standalone C request construction across KMIP 2.0/2.1,
 TTLV/JSON/XML, and raw TLS/HTTPS. This operation slice contributes evidence to
 T006, T007, and T009; it does not close any of those cross-language tasks.
+## Development evidence: scoped Rust route evidence union
+
+- Red commit `351d9ccfd` added tests that require a route report to validate an
+  exact planned subset without claiming the full matrix. The focused tests
+  failed before scoped validation was implemented. Red commits `1b894a648` and
+  `80ade8a8a` then reproduced incomplete evidence unions, valid events outside
+  a declared scope, and the local runner selecting response routes that need a
+  live peer.
+- Green commit `045f86298` added exact scoped-report validation and collection
+  union checks, rejected events outside each scope, and isolated local
+  constructors from response accessors served by the controlled mTLS fixture.
+- The gate now measures pending local and network cells against the canonical
+  full Rust matrix even when a test supplies a smaller `--matrix` input.
+- Verification on 2026-11-12: all 25 tests in
+  `python3 -m unittest discover -s interop/shared/tests -p test_route_execution_evidence.py -v`
+  passed, and the focused response evidence gate test passed.
+- Full Rust route-gate execution reports 48,792 local cells and 287 controlled
+  response cells invoked, with zero failed invocations. It still correctly
+  exits nonzero with 26,376 network cells pending. T006 and T007 remain open.
+
+## Development evidence: stable controlled-peer identity
+
+- Red commit `5d1d764c9` added an assertion that the controlled mTLS peer has
+  the same configuration fingerprint for KMIP 2.0 and 2.1. It failed because
+  hashing the complete connection document included the selected protocol
+  version and ephemeral endpoint port.
+- Green commit `354da0bdf` fingerprints the server identity, selected endpoint
+  host, TLS trust certificate, client certificate, and SNI. It omits connection
+  details that vary per matrix cell, allowing response evidence from the same
+  peer configuration to be combined safely.
+- Verification on 2026-11-12: Rust validator Clippy passed; all 67 Rust unit
+  tests and 3 CLI tests passed; the controlled mTLS response-accessor test
+  passed for KMIP 2.0 and 2.1 with one shared fingerprint.
 
 ## Development evidence: Secret Data constructor applicability
 
@@ -92,13 +125,60 @@ T006, T007, and T009; it does not close any of those cross-language tasks.
 - Refactor/documentation: this record distinguishes the earlier missing fixture recipe from a protocol or installed-library failure and records the verified regression gates.
 - Verification: `ctest --test-dir interop/c-kmip-validator/build --output-on-failure` passed all 7 tests, including both controlled TLS peers; `python3 interop/c-kmip-validator/tests/test_route_matrix.py` passed all 109 contract tests; `git diff --check` passed. This verifies the controlled fixture and matrix contract, not external KMS interoperability.
 
-## Development evidence: release pin refresh after KMIPKIT-0120
+## Development evidence: C asynchronous Process then Poll route
+
+- Normative scope: OASIS KMIP 2.1 §6.1.39 and Tables 278–279 define Process correlation, the requirement that the next Poll not be Pending, and the empty Process response payload. This implements KMIPKIT-0092-FR-003 and FR-005 for `test-async-process-then-poll-state`.
+- Red commit `de923f2f`: the focused test failed because the C driver did not map the Process case to an isolated route.
+- Green commits `3e0d4a0f` and `bb4aca1d`: the installed C consumer executes Create(Pending) → Process(correlation, Prohibited) → Poll(Success with original Create payload) → authenticated Destroy. The controlled peer checks the exact correlation, response shape, fixture state, and cleanup; the general TLS peer also resets state before the next independent async case.
+- Refactor/documentation commit: records the normative source and per-cell evidence in KMIPKIT-0085 implementation evidence and this traceability record.
+- Verification: the focused Process/Poll test passed; the complete CTest suite passed 7/7. The matching matrix recorded 40,931/66,736 invoked cells, all passed, and 25,805 pending recipes. The installed artifact SHA-256 is `c93eb8f7daa60d3b6832d297887e99cd2101e4f9baf2d04f55ce4042ba4bb7a2`. Completeness remains open at `test-async-query-outstanding-filter`; no pending recipe is classified as an API limitation.
+
+## Development evidence: C asynchronous Query outstanding filters
+
+- Normative scope: OASIS KMIP 2.1 §6.1.41 Tables 285–287 defines the Query
+  Asynchronous Requests filter fields and response structure; §7.2 Table 353
+  defines the returned Asynchronous Request structure. This implements
+  KMIPKIT-0092-FR-003 and FR-005 for
+  `test-async-query-outstanding-filter`.
+- Red commit `62e393db`: the focused route test failed because the installed C
+  consumer had no Query outstanding-filter recipe.
+- Green commit `31fb6298`: added asynchronous Create/Create/Get setup, completed
+  one Create before Query, intersecting operation/correlation filters,
+  controlled response assertions, terminal Polls, and authenticated cleanup
+  across all six KMIP 2.1 encoding/transport pairs.
+- Supplemental Red commit `8b250b0d`: the focused test failed because the
+  recipe did not invoke `kmipkit_client_batch_item_response_create` for Pending
+  Create responses.
+- Supplemental Green commit `42a26232`: the consumer now uses
+  `read_pending_create_correlation()` for those responses, checking the typed
+  Create accessor's absent result payload and the exact server correlation.
+- Verification: the focused test passed, including six controlled peer checks;
+  CTest passed 7/7. The full matrix recorded 40,971/66,736 invoked cells, all
+  passed, and 25,765 pending `validator_recipe_pending` cells. The installed
+  artifact SHA-256 is
+  `c93eb8f7daa60d3b6832d297887e99cd2101e4f9baf2d04f55ce4042ba4bb7a2`. The
+  completeness validator next reports
+  `test-async-unknown-correlation-rejected`; coverage remains incomplete and
+  no pending recipe is treated as an API limitation.## Development evidence: release pin refresh after KMIPKIT-0120
 
 - The feature branch conflicted with the updated `release/1.0.0` after PR #204 (`KMIPKIT-0120`) merged as `489fafc79ef89db2524eafa7a6c6482f5cf75d97`. The release merge was preserved as a normal signed merge commit; two FFI coverage script conflicts were resolved by retaining both the isolated `--no-clean` run and the existing package-scoped report checks.
 - Red commit `072f4081a`: the focused release-pin contract test failed because the generated route inventory still identified the old commit.
 - Green commit `9d9dbb308`: the route generator now pins the exact current release commit and regenerates all 1,491 route records. The catalog semantics and route count are unchanged.
 - Refactor/documentation: the approved feature spec now records the updated release base and this evidence.
 - Verification: the focused Red was observed; `python3 -m unittest interop.shared.tests.test_route_capabilities -v` passed 63 tests, `python3 interop/shared/tools/route_capabilities.py --check` passed, and `python3 -m unittest scripts.tests.test_workflow -v` passed 95 tests after conflict resolution. Exact-head CI must still pass after this branch update.
+
+## Development evidence: complete Rust route matrix CI budget
+
+- Exact-head run `43470863653`, attempt 1, spent its full 30-minute job budget.
+  All preceding checks passed; the final canonical route-matrix step was
+  cancelled at timeout before it produced a completeness result.
+- Red commit `cf6ef367` added
+  `test_rust_interop_job_reserves_time_for_the_full_route_matrix`; the focused
+  test failed because the workflow allowed only 30 minutes.
+- Green commit `843be907` raised the bounded job timeout to 60 minutes. The
+  focused test and all 96 tests in `scripts/tests/test_workflow.py` pass.
+- Refactor/documentation commit records the CI time-budget reason in the
+  validator README. Exact-head interop CI is pending after this correction.
 
 ## Development evidence: session mutation policy
 
@@ -208,6 +288,28 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
   validator exits unsuccessfully at the remaining missing-route check because
   the matrix is incomplete; it no longer reports duplicate route cells.
 
+## Development evidence: C asynchronous Create, Query, and Poll lifecycle
+
+- Normative scope: OASIS KMIP 2.1 §§6.1.8, 6.1.11, 6.1.38, and 6.1.41 define
+  Create, Destroy, Poll, and Query Asynchronous Requests; §§8.2–8.3, 8.6,
+  9.1–9.2, and 11.3 define the request/response and asynchronous message
+  shapes. The route correlates Query and Poll to the same server-issued value,
+  accepts only terminal Poll Success with the original Create payload, then
+  cleans up the created object using authenticated Destroy.
+- Red commit `5a1e59d84`: the focused regression failed because
+  `test-async-lifecycle-poll` had no C route implementation.
+- Green commit `9ee886593`: the installed C ABI performs Create, Query, Poll,
+  and authenticated Destroy; the peer verifies exact request ordering,
+  correlation filtering, terminal payload, and cleanup state.
+- Refactor commit `02ae1ba91`: consolidate asynchronous peer step and exchange
+  checks.
+- Verification: six focused asynchronous route tests, the CMake build, Python
+  syntax checks, `test_c_validator`, and both controlled TLS CTest peers passed.
+  The full C matrix recorded 40,655/66,736 invoked cells, zero failed, and
+  26,081 `validator_recipe_pending`. The exact completeness validator still
+  fails on missing routes, next reporting
+  `test-async-no-recursive-async-poll-cancel`; the matrix gate remains open.
+
 ## Development evidence: C mandatory asynchronous Create
 
 - Normative scope: OASIS KMIP 2.0/2.1 §§8.2–8.3, 8.6, 9.1–9.2, and 11.3;
@@ -298,3 +400,136 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
   The full matrix recorded 40,594 invoked, zero failed, and 26,142 pending
   cells. The exact validator exits unsuccessfully on missing routes, now
   beginning with `test-async-lifecycle-poll`; T006, T007, and T009 remain open.
+
+## Development evidence: C request-based Get Attribute List batch route
+
+- Normative scope: OASIS KMIP 2.0/2.1 §§6.1.19, 6.1.21, 8.2–8.6, and 9.5–9.7.
+  The `test-batch-continue-after-failure` scenario contains Get followed by Get
+  Attribute List and must retain both item results when the first operation
+  fails under Batch Error Continuation Option Continue.
+- Red commit `3e00fdb7`: extended the controlled-peer test to require the
+  request-based Get Attribute List route across the case's version, encoding,
+  and transport matrix. Before the recipe change, the test failed with 48
+  checks instead of the required 60.
+- Green commit `a9c08eb7`: run the batch case through both direct and
+  `GetAttributeListRequest` constructors; the peer checks the same ordered
+  operations and per-item outcomes for each variant.
+- Refactor/documentation commit: cite the governing OASIS clauses on the
+  conformance test and link this evidence to FR-003 and FR-009.
+- Verification: the focused test passed all 60 peer checks, including 36
+  request-based route events for two versions × three encodings × two
+  transports × construct/send/decode. The full matrix and exact-head CI remain
+  open; T006, T007, and T009 are not complete.
+
+## CI follow-up: continued-batch route state assertion
+
+- Red evidence: exact-head C installed-consumer run `43569674395` on
+  `56b1c32a4a944c5d13047ce11b8441229335314e` failed because
+  `test_continued_batch_evidence_has_observed_unchanged_fixture_state` still
+  expected one check after the direct and standalone variants were both added.
+  The same focused test reproduced `AssertionError: 2 != 1` locally.
+- Green commit `d76df104`: require the two expected variants, verify each
+  passed, bind each variant to its public API trace symbols, and confirm the
+  controlled peer observed unchanged fixture state for every send event.
+- Refactor/documentation commit: record the exact CI regression and its
+  conformance-test coverage here and in FR-003 traceability.
+- Verification: the focused test passed for both constructor variants, and
+  `ctest --test-dir interop/c-kmip-validator/build -R
+  '^c_validator_route_matrix_contracts$' --output-on-failure` passed all route
+  matrix contract tests in 72.58 seconds. The full installed C route matrix
+  and exact-head CI remain open; T006, T007, and T009 are not complete.
+
+## Development evidence: C Adjust Attribute routes
+
+- Normative scope: OASIS KMIP 2.0 §6.1.3 Tables 155–156 and KMIP 2.1 §6.1.3
+  Tables 170–171 define the request and response. Sections 8.2–8.6 and 9.5–9.7
+  govern the client batch exchange and decoded result. Increment by five on an
+  absent integer attribute exercises §6.1.3's zero starting value.
+- Red commit `c994fa3b`: the focused installed-consumer test failed because the
+  C route registry produced zero checks instead of the required 24 direct and
+  standalone route checks.
+- Green commit `26d5f047`: build both `kmipkit_client_batch_item_adjust_attribute`
+  and `kmipkit_client_batch_item_adjust_attribute_from_request` requests, encode
+  the standalone payload, decode the typed response, and model the controlled
+  peer's numeric adjustment and cleanup.
+- Refactor/documentation commit: record the normative scope, local evidence,
+  and remaining full-matrix gate here and in FR-003 traceability; extend the
+  general TLS fixture to validate Adjust Attribute and its request fields.
+- Verification: the focused test passed all 24 checks across KMIP 2.0/2.1,
+  TTLV/JSON/XML, and raw TLS/HTTPS, with matching direct and standalone request
+  trees and successful response decoding. `cmake --build
+  interop/c-kmip-validator/build --parallel 2` passed. Full CTest passed 7/7
+  tests in 77.18 seconds, including the route matrix contracts and the
+  KMIP 2.0/2.1 controlled TLS peers. Feature traceability passed 31/31 tests.
+  Exact-head CI and the full C route matrix remain open.
+
+## Development evidence: C Export request and response routes
+
+- Normative scope: OASIS KMIP v2.0 §6.1.18 Tables 202–203 and v2.1 §6.1.18
+  Tables 217–218 define the Export Request and Response Payloads. The response
+  requires Object Type, Unique Identifier, Attributes, and Any Object. The
+  ordered Create/Export/Revoke/Destroy exchange exercises ID Placeholder use
+  and cleanup under §6.1 and §§8.2–8.6.
+- Red commit `76f402452`: the focused test failed because `test-op-export` had
+  no controlled-peer recipe.
+- Green commit `f4aa1a690`: the installed C consumer builds the typed Export request,
+  follows its Create with Export and cleanup, checks the typed response and
+  complete response TTLV, and returns the expected payload from a controlled
+  peer. The peer validates the four required response fields and the AES-128
+  attributes without including key bytes in diagnostics or evidence.
+- Refactor/documentation commit: record the scoped Export evidence, normative
+  payload fields, and remaining matrix gate in C implementation evidence and
+  requirement traceability.
+- The operation slice passes all 44 C cells for `test-op-export`: four local
+  generic TTLV cells, 36 constructor/send/decode cells across KMIP 2.0/2.1 and
+  TTLV/JSON/XML over raw TLS/HTTPS, and four response-accessor cells. All 12
+  controlled-peer checks pass and observe Create → Export → Revoke → Destroy
+  with cleanup returning fixture state to its initial value.
+- Request payload Red `4d4174e79` failed with zero checks; Green `367006d57`
+  passes all 120 present/omitted peer checks for the ten catalogued request
+  fields across both protocol versions and all six encoding/transport pairs.
+  Response payload Red `42f8238e4` failed with zero checks; Green `488fdf799`
+  passes all 96 checks for eight field/version cases, including 48 expected
+  rejections after a required response field is removed.
+- Generic TTLV Red `8a69dc91b` found four local Key Wrap Type/Any Object
+  cases without fixtures; Green `208380cb0` added catalog-backed enumeration
+  and Symmetric Key fixtures and passed the installed-ABI roundtrip test. The
+  full matrix now has no pending Export cells. Exact report `c-route-19dc4d35-1e4d-44d0-8d38-c7573e1226fc`
+  records 66,736 expected, 41,683 invoked, 0 failed and 25,053 pending overall.
+- Verification: the focused request and response tests pass 120/120 and 96/96;
+  the generic roundtrip test passes; full CTest passes 7/7 in 90.64 seconds,
+  including 162 route-matrix contract tests. Python compilation and
+  `git diff --check` pass. The full installed C route matrix and exact-head CI
+  remain open; these operation/payload slices do not close
+  KMIPKIT-0092-FR-003 or FR-009 globally.
+
+## Development evidence: JNI sanitizer workflow contract after release refresh
+
+- Red: rebasing the route-matrix branch onto the refreshed KMIPKIT-0092 base
+  exposed `test_ffi_sanitizer_job_runs_the_c_consumer_under_address_sanitizer`:
+  it required the literal `bindings/java/native/tests/zeroizing_bytes_test.cpp`
+  in the workflow job, while the refreshed job runs every
+  `bindings/java/native/tests/*.cpp` file. The file is therefore executed, but
+  the test contract did not recognize the wildcard route.
+- Green commit `6f43b17a4` accepts either the explicit source path or the
+  wildcard source set and separately verifies that the zeroization test exists.
+- Verification: `python3 -B -m unittest scripts.tests.test_workflow` passed
+  all 96 tests and `git diff --check` passed.
+- Refactor/documentation: the contract checks which test is covered without
+  depending on whether the workflow names it directly or through a wildcard.
+
+## Development evidence: route manifest after KMIPKIT-0092 refresh
+
+- Red: after updating this stack to the refreshed KMIPKIT-0092 base, the
+  existing route-manifest check and `test_route_capabilities` failed because
+  the checked-in generated mapping no longer matched `public-api.json` in
+  `normative_target_ids`. The route tests reported 6 failures and 1 error; the
+  validation mismatch also masked several negative-test assertions.
+- Green commit `35884ea32` regenerated `route-capabilities.json` using the
+  repository generator, restoring the mapping for all 1,491 routes pinned to
+  library commit `489fafc79ef89db2524eafa7a6c6482f5cf75d97`.
+- Refactor/documentation commit: records the generated-file refresh and fixes
+  the JNI sanitizer Green commit reference after rebasing the feature branch.
+- Verification: route-manifest validation passed; focused route tests passed
+  65/65; shared interop tests passed 189/189; workflow contract tests passed
+  96/96; Rust 1.94 validator tests passed 72/72; and `git diff --check` passed.

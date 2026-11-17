@@ -2676,6 +2676,14 @@ class StorageStatusMask:
         )
 
 # Exact assigned values added by later KMIP editions.
+V2_0_RESULT_REASON_ITEM_NOT_FOUND = 0x00000001  # kmip-2.0 §11.45, Table 457
+
+def v2_0_result_reason_name(raw: int) -> str | None:
+    """Return the assigned KMIP v2.0 Result Reason name."""
+    return {
+        0x00000001: 'Item Not Found',
+    }.get(raw)
+
 V2_1_OPERATION_SET_DEFAULTS = 0x00000036  # kmip-2.1 §11.36, Table 470
 V2_1_OPERATION_SET_CONSTRAINTS = 0x00000037  # kmip-2.1 §11.36, Table 470
 V2_1_OPERATION_GET_CONSTRAINTS = 0x00000038  # kmip-2.1 §11.36, Table 470
@@ -2740,4 +2748,244 @@ def v3_0_object_type_name(raw: int) -> str | None:
         0x0000000E: 'Device Credential',
         0x0000000F: 'One Time Password Credential',
         0x00000010: 'Hashed Password Credential',
+    }.get(raw)
+
+V3_0_CRYPTOGRAPHIC_ALGORITHM_ML_KEM_512 = 0x00000039  # kmip-3.0 §11.12, Table 552
+V3_0_CRYPTOGRAPHIC_ALGORITHM_ML_KEM_768 = 0x0000003A  # kmip-3.0 §11.12, Table 552
+V3_0_CRYPTOGRAPHIC_ALGORITHM_ML_KEM_1024 = 0x0000003B  # kmip-3.0 §11.12, Table 552
+V3_0_CRYPTOGRAPHIC_ALGORITHM_ML_DSA_44 = 0x0000003C  # kmip-3.0 §11.12, Table 552
+V3_0_CRYPTOGRAPHIC_ALGORITHM_ML_DSA_65 = 0x0000003D  # kmip-3.0 §11.12, Table 552
+V3_0_CRYPTOGRAPHIC_ALGORITHM_ML_DSA_87 = 0x0000003E  # kmip-3.0 §11.12, Table 552
+V3_0_CRYPTOGRAPHIC_ALGORITHM_SLH_DSA_SHA2_128S = 0x0000003F  # kmip-3.0 §11.12, Table 552
+V3_0_CRYPTOGRAPHIC_ALGORITHM_SLH_DSA_SHA2_128F = 0x00000040  # kmip-3.0 §11.12, Table 552
+V3_0_CRYPTOGRAPHIC_ALGORITHM_SLH_DSA_SHA2_192S = 0x00000041  # kmip-3.0 §11.12, Table 552
+V3_0_CRYPTOGRAPHIC_ALGORITHM_SLH_DSA_SHA2_192F = 0x00000042  # kmip-3.0 §11.12, Table 552
+V3_0_CRYPTOGRAPHIC_ALGORITHM_SLH_DSA_SHA2_256S = 0x00000043  # kmip-3.0 §11.12, Table 552
+V3_0_CRYPTOGRAPHIC_ALGORITHM_SLH_DSA_SHA2_256F = 0x00000044  # kmip-3.0 §11.12, Table 552
+V3_0_CRYPTOGRAPHIC_ALGORITHM_SLH_DSA_SHAKE_128S = 0x00000045  # kmip-3.0 §11.12, Table 552
+V3_0_CRYPTOGRAPHIC_ALGORITHM_SLH_DSA_SHAKE_128F = 0x00000046  # kmip-3.0 §11.12, Table 552
+V3_0_CRYPTOGRAPHIC_ALGORITHM_SLH_DSA_SHAKE_192S = 0x00000047  # kmip-3.0 §11.12, Table 552
+V3_0_CRYPTOGRAPHIC_ALGORITHM_SLH_DSA_SHAKE_192F = 0x00000048  # kmip-3.0 §11.12, Table 552
+V3_0_CRYPTOGRAPHIC_ALGORITHM_SLH_DSA_SHAKE_256S = 0x00000049  # kmip-3.0 §11.12, Table 552
+V3_0_CRYPTOGRAPHIC_ALGORITHM_SLH_DSA_SHAKE_256F = 0x0000004A  # kmip-3.0 §11.12, Table 552
+V3_0_CRYPTOGRAPHIC_ALGORITHM_HASH_SLH_DSA_SHA2_128S_WITH_SHA256 = 0x0000004B  # kmip-3.0 §11.12, Table 552
+V3_0_CRYPTOGRAPHIC_ALGORITHM_HASH_SLH_DSA_SHA2_128F_WITH_SHA256 = 0x0000004C  # kmip-3.0 §11.12, Table 552
+V3_0_CRYPTOGRAPHIC_ALGORITHM_HASH_SLH_DSA_SHA2_192S_WITH_SHA512 = 0x0000004D  # kmip-3.0 §11.12, Table 552
+V3_0_CRYPTOGRAPHIC_ALGORITHM_HASH_SLH_DSA_SHA2_192F_WITH_SHA512 = 0x0000004E  # kmip-3.0 §11.12, Table 552
+V3_0_CRYPTOGRAPHIC_ALGORITHM_HASH_SLH_DSA_SHA2_256S_WITH_SHA512 = 0x0000004F  # kmip-3.0 §11.12, Table 552
+V3_0_CRYPTOGRAPHIC_ALGORITHM_HASH_SLH_DSA_SHA2_256F_WITH_SHA512 = 0x00000050  # kmip-3.0 §11.12, Table 552
+V3_0_CRYPTOGRAPHIC_ALGORITHM_HASH_SLH_DSA_SHAKE_128S_WITH_SHAKE128 = 0x00000051  # kmip-3.0 §11.12, Table 552
+V3_0_CRYPTOGRAPHIC_ALGORITHM_HASH_SLH_DSA_SHAKE_128F_WITH_SHAKE128 = 0x00000052  # kmip-3.0 §11.12, Table 552
+V3_0_CRYPTOGRAPHIC_ALGORITHM_HASH_SLH_DSA_SHAKE_192S_WITH_SHAKE256 = 0x00000053  # kmip-3.0 §11.12, Table 552
+V3_0_CRYPTOGRAPHIC_ALGORITHM_HASH_SLH_DSA_SHAKE_192F_WITH_SHAKE256 = 0x00000054  # kmip-3.0 §11.12, Table 552
+V3_0_CRYPTOGRAPHIC_ALGORITHM_HASH_SLH_DSA_SHAKE_256S_WITH_SHAKE256 = 0x00000055  # kmip-3.0 §11.12, Table 552
+V3_0_CRYPTOGRAPHIC_ALGORITHM_HASH_SLH_DSA_SHAKE_256F_WITH_SHAKE256 = 0x00000056  # kmip-3.0 §11.12, Table 552
+V3_0_CRYPTOGRAPHIC_ALGORITHM_HASH_ML_DSA_44_WITH_SHA512 = 0x00000057  # kmip-3.0 §11.12, Table 552
+V3_0_CRYPTOGRAPHIC_ALGORITHM_HASH_ML_DSA_65_WITH_SHA512 = 0x00000058  # kmip-3.0 §11.12, Table 552
+V3_0_CRYPTOGRAPHIC_ALGORITHM_HASH_ML_DSA_87_WITH_SHA512 = 0x00000059  # kmip-3.0 §11.12, Table 552
+V3_0_CRYPTOGRAPHIC_ALGORITHM_X25519 = 0x0000005A  # kmip-3.0 §11.12, Table 552
+V3_0_CRYPTOGRAPHIC_ALGORITHM_X448 = 0x0000005B  # kmip-3.0 §11.12, Table 552
+V3_0_CRYPTOGRAPHIC_ALGORITHM_X25519MLKEM768 = 0x0000005C  # kmip-3.0 §11.12, Table 552
+V3_0_CRYPTOGRAPHIC_ALGORITHM_SECP256R1MLKEM768 = 0x0000005D  # kmip-3.0 §11.12, Table 552
+
+def v3_0_cryptographic_algorithm_name(raw: int) -> str | None:
+    """Return the assigned KMIP v3.0 Cryptographic Algorithm name."""
+    return {
+        0x00000039: 'ML-KEM-512',
+        0x0000003A: 'ML-KEM-768',
+        0x0000003B: 'ML-KEM-1024',
+        0x0000003C: 'ML-DSA-44',
+        0x0000003D: 'ML-DSA-65',
+        0x0000003E: 'ML-DSA-87',
+        0x0000003F: 'SLH-DSA-SHA2-128s',
+        0x00000040: 'SLH-DSA-SHA2-128f',
+        0x00000041: 'SLH-DSA-SHA2-192s',
+        0x00000042: 'SLH-DSA-SHA2-192f',
+        0x00000043: 'SLH-DSA-SHA2-256s',
+        0x00000044: 'SLH-DSA-SHA2-256f',
+        0x00000045: 'SLH-DSA-SHAKE-128s',
+        0x00000046: 'SLH-DSA-SHAKE-128f',
+        0x00000047: 'SLH-DSA-SHAKE-192s',
+        0x00000048: 'SLH-DSA-SHAKE-192f',
+        0x00000049: 'SLH-DSA-SHAKE-256s',
+        0x0000004A: 'SLH-DSA-SHAKE-256f',
+        0x0000004B: 'Hash-SLH-DSA-SHA2-128s-with-SHA256',
+        0x0000004C: 'Hash-SLH-DSA-SHA2-128f-with-SHA256',
+        0x0000004D: 'Hash-SLH-DSA-SHA2-192s-with-SHA512',
+        0x0000004E: 'Hash-SLH-DSA-SHA2-192f-with-SHA512',
+        0x0000004F: 'Hash-SLH-DSA-SHA2-256s-with-SHA512',
+        0x00000050: 'Hash-SLH-DSA-SHA2-256f-with-SHA512',
+        0x00000051: 'Hash-SLH-DSA-SHAKE-128s-with-SHAKE128',
+        0x00000052: 'Hash-SLH-DSA-SHAKE-128f-with-SHAKE128',
+        0x00000053: 'Hash-SLH-DSA-SHAKE-192s-with-SHAKE256',
+        0x00000054: 'Hash-SLH-DSA-SHAKE-192f-with-SHAKE256',
+        0x00000055: 'Hash-SLH-DSA-SHAKE-256s-with-SHAKE256',
+        0x00000056: 'Hash-SLH-DSA-SHAKE-256f-with-SHAKE256',
+        0x00000057: 'Hash-ML-DSA-44-with-SHA512',
+        0x00000058: 'Hash-ML-DSA-65-with-SHA512',
+        0x00000059: 'Hash-ML-DSA-87-with-SHA512',
+        0x0000005A: 'X25519',
+        0x0000005B: 'X448',
+        0x0000005C: 'X25519MLKEM768',
+        0x0000005D: 'SECP256R1MLKEM768',
+    }.get(raw)
+
+V3_0_DATA_ENCAPSULATE = 0x00000008  # kmip-3.0 §11.13, Table 553
+V3_0_DATA_DECAPSULATE = 0x00000009  # kmip-3.0 §11.13, Table 553
+
+def v3_0_data_name(raw: int) -> str | None:
+    """Return the assigned KMIP v3.0 Data name."""
+    return {
+        0x00000008: 'Encapsulate',
+        0x00000009: 'Decapsulate',
+    }.get(raw)
+
+V3_0_DEACTIVATION_REASON_CODE_UNSPECIFIED = 0x00000001  # kmip-3.0 §11.14, Table 554
+V3_0_DEACTIVATION_REASON_CODE_DEACTIVATION_DATE = 0x00000002  # kmip-3.0 §11.14, Table 554
+V3_0_DEACTIVATION_REASON_CODE_PROTECT_STOP_DATE = 0x00000003  # kmip-3.0 §11.14, Table 554
+V3_0_DEACTIVATION_REASON_CODE_USAGE_LIMIT = 0x00000004  # kmip-3.0 §11.14, Table 554
+
+def v3_0_deactivation_reason_code_name(raw: int) -> str | None:
+    """Return the assigned KMIP v3.0 Deactivation Reason Code name."""
+    return {
+        0x00000001: 'Unspecified',
+        0x00000002: 'Deactivation Date',
+        0x00000003: 'Protect Stop Date',
+        0x00000004: 'Usage Limit',
+    }.get(raw)
+
+V3_0_KEM_ALGORITHM_RSASVE = 0x00000001  # kmip-3.0 §11.26, Table 572
+V3_0_KEM_ALGORITHM_DHKEM = 0x00000002  # kmip-3.0 §11.26, Table 572
+V3_0_KEM_ALGORITHM_MLKEM = 0x00000003  # kmip-3.0 §11.26, Table 572
+
+def v3_0_kem_algorithm_name(raw: int) -> str | None:
+    """Return the assigned KMIP v3.0 KEM Algorithm name."""
+    return {
+        0x00000001: 'RSASVE',
+        0x00000002: 'DHKEM',
+        0x00000003: 'MLKEM',
+    }.get(raw)
+
+V3_0_KEY_FORMAT_TYPE_SEED_PRIVATE_KEY = 0x00000018  # kmip-3.0 §11.28, Table 575
+
+def v3_0_key_format_type_name(raw: int) -> str | None:
+    """Return the assigned KMIP v3.0 Key Format Type name."""
+    return {
+        0x00000018: 'Seed Private Key',
+    }.get(raw)
+
+V3_0_OTP_ALGORITHM_HOTP = 0x00000001  # kmip-3.0 §11.38, Table 586
+V3_0_OTP_ALGORITHM_TOTP = 0x00000002  # kmip-3.0 §11.38, Table 586
+
+def v3_0_otp_algorithm_name(raw: int) -> str | None:
+    """Return the assigned KMIP v3.0 OTP Algorithm name."""
+    return {
+        0x00000001: 'HOTP',
+        0x00000002: 'TOTP',
+    }.get(raw)
+
+V3_0_RESULT_REASON_CIRCULAR_LINK_ERROR = 0x0000004D  # kmip-3.0 §11.48, Table 594
+
+def v3_0_result_reason_name(raw: int) -> str | None:
+    """Return the assigned KMIP v3.0 Result Reason name."""
+    return {
+        0x0000004D: 'Circular Link Error',
+    }.get(raw)
+
+V3_0_OBJECT_CLASS_MASK_USER = 0x00000001  # kmip-3.0 §12.2, Table 616
+V3_0_OBJECT_CLASS_MASK_SYSTEM = 0x00000002  # kmip-3.0 §12.2, Table 616
+
+def v3_0_object_class_mask_name(raw: int) -> str | None:
+    """Return the assigned KMIP v3.0 Object Class Mask name."""
+    return {
+        0x00000001: 'User',
+        0x00000002: 'System',
+    }.get(raw)
+
+V3_0_SPLIT_KEY_POLYNOMIAL_POLYNOMIAL_283 = 0x00000001  # kmip-3.0 §11.56, Table 603
+V3_0_SPLIT_KEY_POLYNOMIAL_POLYNOMIAL_285 = 0x00000002  # kmip-3.0 §11.56, Table 603
+
+def v3_0_split_key_polynomial_name(raw: int) -> str | None:
+    """Return the assigned KMIP v3.0 Split Key Polynomial name."""
+    return {
+        0x00000001: 'Polynomial-283',
+        0x00000002: 'Polynomial-285',
+    }.get(raw)
+
+V3_0_CREDENTIAL_TYPE_PASSWORD = 0x00000007  # kmip-3.0 §11.11, Table 551
+V3_0_CREDENTIAL_TYPE_CERTIFICATE = 0x00000008  # kmip-3.0 §11.11, Table 551
+
+def v3_0_credential_type_name(raw: int) -> str | None:
+    """Return the assigned KMIP v3.0 Credential Type name."""
+    return {
+        0x00000007: 'Password',
+        0x00000008: 'Certificate',
+    }.get(raw)
+
+V3_0_ITEM_TYPE_IDENTIFIER = 0x0000000C  # kmip-3.0 §11.25, Table 568
+V3_0_ITEM_TYPE_REFERENCE = 0x0000000D  # kmip-3.0 §11.25, Table 568
+V3_0_ITEM_TYPE_NAME_REFERENCE = 0x0000000E  # kmip-3.0 §11.25, Table 568
+
+def v3_0_item_type_name(raw: int) -> str | None:
+    """Return the assigned KMIP v3.0 Item Type name."""
+    return {
+        0x0000000C: 'Identifier',
+        0x0000000D: 'Reference',
+        0x0000000E: 'Name Reference',
+    }.get(raw)
+
+V3_0_QUERY_FUNCTION_QUERY_CREDENTIAL_INFORMATION = 0x0000000F  # kmip-3.0 §11.46, Table 591
+
+def v3_0_query_function_name(raw: int) -> str | None:
+    """Return the assigned KMIP v3.0 Query Function name."""
+    return {
+        0x0000000F: 'Query Credential Information',
+    }.get(raw)
+
+V3_0_RECOMMENDED_CURVE_ANSIX9C2PNB176W1 = 0x00000047  # kmip-3.0 §11.47, Table 592
+V3_0_RECOMMENDED_CURVE_ANSIX9C2TNB191V4 = 0x00000048  # kmip-3.0 §11.47, Table 592
+V3_0_RECOMMENDED_CURVE_ANSIX9C2TNB191V5 = 0x00000049  # kmip-3.0 §11.47, Table 592
+V3_0_RECOMMENDED_CURVE_ANSIX9C2TNB239V4 = 0x0000004A  # kmip-3.0 §11.47, Table 592
+V3_0_RECOMMENDED_CURVE_ANSIX9C2TNB239V5 = 0x0000004B  # kmip-3.0 §11.47, Table 592
+V3_0_RECOMMENDED_CURVE_CURVE25519PH = 0x0000004C  # kmip-3.0 §11.47, Table 592
+V3_0_RECOMMENDED_CURVE_CURVE448PH = 0x0000004D  # kmip-3.0 §11.47, Table 592
+V3_0_RECOMMENDED_CURVE_OPENPGP_ED25519 = 0x0000004E  # kmip-3.0 §11.47, Table 592
+V3_0_RECOMMENDED_CURVE_OPENPGP_CURVE25519 = 0x0000004F  # kmip-3.0 §11.47, Table 592
+
+def v3_0_recommended_curve_name(raw: int) -> str | None:
+    """Return the assigned KMIP v3.0 Recommended Curve name."""
+    return {
+        0x00000047: 'ANSIX9C2PNB176W1',
+        0x00000048: 'ANSIX9C2TNB191V4',
+        0x00000049: 'ANSIX9C2TNB191V5',
+        0x0000004A: 'ANSIX9C2TNB239V4',
+        0x0000004B: 'ANSIX9C2TNB239V5',
+        0x0000004C: 'CURVE25519PH',
+        0x0000004D: 'CURVE448PH',
+        0x0000004E: 'OpenPGP Ed25519',
+        0x0000004F: 'OpenPGP Curve25519',
+    }.get(raw)
+
+V3_0_REVOCATION_REASON_CODE_CERTIFICATE_HOLD = 0x00000008  # kmip-3.0 §11.50, Table 595
+V3_0_REVOCATION_REASON_CODE_REMOVE_FROM_CRL = 0x00000009  # kmip-3.0 §11.50, Table 595
+V3_0_REVOCATION_REASON_CODE_AA_COMPROMISE = 0x0000000A  # kmip-3.0 §11.50, Table 595
+
+def v3_0_revocation_reason_code_name(raw: int) -> str | None:
+    """Return the assigned KMIP v3.0 Revocation Reason Code name."""
+    return {
+        0x00000008: 'Certificate Hold',
+        0x00000009: 'Remove From CRL',
+        0x0000000A: 'AA Compromise',
+    }.get(raw)
+
+V3_0_UNIQUE_IDENTIFIER_CREATE_USER = 0x00000013  # kmip-3.0 §11.60, Table 607
+V3_0_UNIQUE_IDENTIFIER_CREATE_GROUP = 0x00000014  # kmip-3.0 §11.60, Table 607
+V3_0_UNIQUE_IDENTIFIER_CREATE_CREDENTIAL = 0x00000015  # kmip-3.0 §11.60, Table 607
+
+def v3_0_unique_identifier_name(raw: int) -> str | None:
+    """Return the assigned KMIP v3.0 Unique Identifier name."""
+    return {
+        0x00000013: 'Create User',
+        0x00000014: 'Create Group',
+        0x00000015: 'Create Credential',
     }.get(raw)

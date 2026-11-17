@@ -123,6 +123,10 @@ fn decode_with_limits_enforces_configured_item_count_boundary() {
 }
 
 #[test]
+#[cfg_attr(
+    miri,
+    ignore = "16 MiB stress allocation is verified natively; Miri verifies bounded limits and synthetic preflight"
+)]
 fn raised_message_limit_decodes_an_input_above_the_default_cap() {
     // Project resource policy only: KMIPKit FR-007. The bounded fixture is default + 8 bytes.
     let max_message = CodecLimits::DEFAULT_MAX_MESSAGE_BYTES;
@@ -142,6 +146,10 @@ fn raised_message_limit_decodes_an_input_above_the_default_cap() {
 }
 
 #[test]
+#[cfg_attr(
+    miri,
+    ignore = "100,001-item stress allocation is verified natively; Miri verifies bounded limits and synthetic preflight"
+)]
 fn raised_item_limit_decodes_more_than_the_default_number_of_items() {
     // Project resource policy only: KMIPKit FR-007. The 800,008-byte fixture
     // contains one root plus 100,000 empty Structure children.

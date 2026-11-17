@@ -3,6 +3,10 @@
 from __future__ import annotations
 
 import ssl
+import json
+import xml.etree.ElementTree as ET
+
+import pytest
 import struct
 from pathlib import Path
 
@@ -14,7 +18,7 @@ from _test_support import (
     ttlv_item,
     ttlv_structure,
 )
-from kmipkit import client, extensions, ttlv
+from kmipkit import client, errors, extensions, ttlv
 
 _TLS_FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
 _QUERY_ID = b"raw-query"
@@ -110,6 +114,7 @@ def test_raw_response_copies_navigate_vendor_extensions_and_outlive_result_close
     batch_result = None
     raw_query = None
     raw_get = None
+    rendered = []
     limits = ttlv.codec_limits_defaults()
     try:
         with (
@@ -130,13 +135,54 @@ def test_raw_response_copies_navigate_vendor_extensions_and_outlive_result_close
         raw_get = batch_result.items[1].raw()
         assert raw_query is not None and raw_get is not None
         assert "opaque-key-material" not in repr(batch_result.items[1])
+        # KMIPKIT-0095-FR-001..005; KMIP 2.1 §§8.4–8.6: all views retain header and batch order.
+        item = batch_result.items[1]
+        rendered = [item.ttlv_hex(limits), item.json(limits), item.xml(limits)]
+        expected = _response_message()
+        identical = rendered[0].with_bytes(lambda view: bytes(view)) == expected.hex().upper().encode()
+        assert identical, "canonical rendering preserves the complete response"
+        with ttlv.codec_limits_create(len(expected), 64, 100_000) as binary_only:
+            with pytest.raises(errors.ResourceLimitError):
+                with item.ttlv_hex(binary_only):
+                    pass
+        hex_length = 2 * len(expected)
+        with ttlv.codec_limits_create(hex_length, 64, 100_000) as exact_limits:
+            with item.ttlv_hex(exact_limits) as exact:
+                assert exact.with_bytes(lambda view: len(view)) == hex_length
+        json_document = rendered[1].with_bytes(lambda view: json.loads(bytes(view)))
+        assert json_document["tag"] == "ResponseMessage"
+        assert [field["tag"] for field in json_document["value"]] == ["ResponseHeader", "BatchItem", "BatchItem"]
+        xml_document = rendered[2].with_bytes(lambda view: ET.fromstring(bytes(view)))
+        assert xml_document.tag == "ResponseMessage"
+        assert [field.tag for field in xml_document] == ["ResponseHeader", "BatchItem", "BatchItem"]
+        for name in ["ttlv_hex", "json", "xml"]:
+            for values in [(32, 64, 100_000), (16_777_216, 1, 100_000), (16_777_216, 64, 1)]:
+                with ttlv.codec_limits_create(*values) as restricted:
+                    with pytest.raises(errors.ResourceLimitError) as rejected:
+                        getattr(item, name)(restricted)
+                    assert "opaque-key-material" not in str(rejected.value)
+        assert all("opaque-key-material" not in repr(owner) for owner in rendered)
+        borrowed = []
+        rendered[1].with_bytes(lambda view: borrowed.append(view.obj))
+        assert borrowed[0] and not any(borrowed[0]), "temporary callback storage is wiped"
+        def fail_after_borrow(view):
+            borrowed.append(view.obj)
+            raise RuntimeError("callback failed")
+        with pytest.raises(RuntimeError, match="callback failed"):
+            rendered[1].with_bytes(fail_after_borrow)
+        assert borrowed[1] and not any(borrowed[1])
         batch_result.close()
 
+        # The client, transport and source response are closed; owned renderings remain usable.
+        identical = rendered[0].with_bytes(lambda view: bytes(view)) == expected.hex().upper().encode()
+        assert identical, "canonical rendering preserves the complete response"
         assert _integer_at_path(raw_query, (0x420088, 0x540001, 0x540002)) == 0x1234
         assert _integer_at_path(raw_get, (0x42008F, 0x420040, 0x540001, 0x540002)) == 0x5678
         assert failures.empty(), "the TLS 1.3 mTLS peer must complete the response exchange"
         assert len(received) == 1
     finally:
+        for owner in rendered:
+            owner.close()
         if raw_get is not None:
             raw_get.close()
         if raw_query is not None:

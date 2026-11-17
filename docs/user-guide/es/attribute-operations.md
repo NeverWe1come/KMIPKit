@@ -188,3 +188,123 @@ Los modelos de respuesta exponen el `KmipOperationResult` del servidor, incluido
 Las comprobaciones de política de mutación rechazan solo prohibiciones incondicionales respaldadas por la fuente que puedan determinarse con la petición suministrada. Esos fallos tienen estado de entrega `NotSent` y no invocan el transporte. Los casos dependientes del estado remoto o no reconocidos se envían al servidor. Las peticiones no se reintentan automáticamente. Un resultado `Pending` conserva la respuesta tipada y el valor de correlación asíncrona; consulta el flujo asíncrono en [Ejecución del cliente](client-execution.md).
 
 Las pruebas del protocolo usan vectores derivados y entradas malformadas. No afirman que todos los servidores KMIP admitan todos los atributos ni que se haya superado un caso oficial de OASIS cuyo fixture no está disponible.
+
+## Petición fluida Set Attribute
+
+En Rust, se puede construir y enviar Set Attribute mediante el cliente tipado existente, sin ensamblar a mano la estructura TTLV de New Attribute ni crear un batch:
+
+```rust
+use std::error::Error;
+
+use kmipkit_client::Client;
+use kmipkit_protocol::{attribute::typed, Attribute};
+use kmipkit_ttlv::codec::CodecLimits;
+
+fn set_comment(client: &mut Client) -> Result<String, Box<dyn Error>> {
+    let response = client
+        .request()
+        .set_attribute()
+        .unique_identifier("object-id-17")
+        .attribute(Attribute::<typed::Comment>::new("managed by service".to_owned())?)
+        .execute(&CodecLimits::defaults())?;
+
+    response
+        .outcome()
+        .response()
+        .set_attribute()
+        .and_then(|result| result.unique_identifier())
+        .map(str::to_owned)
+        .ok_or_else(|| "Set Attribute did not return a successful identifier".into())
+}
+```
+
+El builder valida localmente el valor catalogado y el payload de la operación. También ofrece `build`, `validate` y `to_batch_item` para controlar cada paso, y `attribute_item` para un `Item` TTLV con tipo explícito. Usa `vendor_attribute` para construir la estructura KMIP Vendor Attribute a partir del identificador del fabricante, el nombre y el valor. La petición usa el cliente existente en un único intercambio, sin Poll ni reintentos.
+
+## Petición fluida Add Attribute
+
+Add Attribute implementa KMIP v2.1 §6.1.2, Table 167; su New Attribute usa la estructura definida en §5.7, Table 163. La petición fluida construye el request tipado existente para añadir un atributo a un objeto identificado y acepta un `Attribute` catalogado, un `Item` TTLV con tipo explícito o un Vendor Attribute construido a partir de sus campos:
+
+```rust
+use std::error::Error;
+
+use kmipkit_client::Client;
+use kmipkit_protocol::{attribute::typed, Attribute};
+use kmipkit_ttlv::codec::CodecLimits;
+
+fn add_comment(client: &mut Client) -> Result<String, Box<dyn Error>> {
+    let response = client
+        .request()
+        .add_attribute()
+        .unique_identifier("object-id-17")
+        .attribute(Attribute::<typed::Comment>::new("reviewed by service".to_owned())?)
+        .execute(&CodecLimits::defaults())?;
+
+    response
+        .outcome()
+        .response()
+        .add_attribute()
+        .and_then(|result| result.unique_identifier())
+        .map(str::to_owned)
+        .ok_or_else(|| "Add Attribute did not return a successful identifier".into())
+}
+```
+
+La operación requiere un único New Attribute. El builder valida localmente el tipo TTLV catalogado y el payload; ofrece `build`, `validate` y `to_batch_item` para controlar cada paso. `attribute_item` acepta un `Item` con tipo explícito y `vendor_attribute` construye la estructura KMIP Vendor Attribute.
+
+| Lenguaje | Iniciar la petición | Añadir un atributo | Enviar y liberar |
+| --- | --- | --- | --- |
+| C | `kmipkit_add_attribute_builder_create` | `..._add_catalogued_attribute`, `..._add_attribute_item` o `..._add_vendor_attribute` | `..._execute_v1` o `..._build_batch_item`; liberar builder y resultados |
+| Java | `new FluentRequest(client).addAttribute()` | `cataloguedAttribute`, `attributeItem` o `vendorAttribute` | `execute(limits)` o `build`; cerrar builder y resultados |
+| Python | `fluent.Request(client).add_attribute()` | `catalogued_attribute`, `attribute_item` o `vendor_attribute` | `execute(limits)` o `build`; usar el builder como gestor de contexto |
+
+El intercambio usa una sola vez el cliente existente y no realiza Poll ni reintentos. Las comprobaciones de política del cliente pueden rechazar atributos prohibidos antes del transporte y marcar el envío como `NotSent`.
+
+El mismo builder está disponible en las fachadas de los cuatro lenguajes:
+
+| Lenguaje | Iniciar la petición | Atributo catalogado | TTLV experto o atributo de fabricante | Enviar y liberar |
+| --- | --- | --- | --- | --- |
+| C | `kmipkit_set_attribute_builder_create` | `kmipkit_set_attribute_builder_add_catalogued_attribute(..., KMIPKIT_STANDARD_ATTRIBUTE_DESCRIPTION, value)` | `..._add_attribute_item` o `..._add_vendor_attribute` | `..._execute_v1` o `..._build_batch_item`; liberar builder y resultados |
+| Java | `new FluentRequest(client).setAttribute()` | `cataloguedAttribute(StandardAttribute.DESCRIPTION, value)` | `attributeItem` o `vendorAttribute` | `execute(limits)` o `build`; cerrar el builder y sus resultados |
+| Python | `fluent.Request(client).set_attribute()` | `catalogued_attribute(StandardAttribute.DESCRIPTION, value)` | `attribute_item` o `vendor_attribute` | `execute(limits)` o `build`; usar el builder como gestor de contexto |
+
+Los valores catalogados se validan según el tipo TTLV del atributo. Los tags desconocidos requieren un `Item` con tipo explícito. El helper de fabricante construye la estructura Vendor Attribute del protocolo; un tag de fabricante por sí solo no representa esa estructura. Las pruebas del consumidor C compilado, de Java/JNI y de Python/CFFI verifican que la petición tipada y su conversión a batch conservan el mismo tipo de operación.
+
+## Petición fluida Delete Attribute
+
+Delete Attribute sigue OASIS KMIP v2.1 §6.1.13, Tablas 202–204. Current Attribute usa el `Item` directo definido en §5.6, Tabla 162, y Attribute Reference sigue §5.5, Tabla 161. El builder fluido crea el request tipado existente; no envía TTLV arbitrario. El llamador puede seleccionar el atributo por su valor actual, por una referencia o por ambos. El validador de la petición y el servidor determinan si la combinación es válida y si se puede eliminar ese atributo.
+
+En Rust se puede usar un atributo catalogado sin construir a mano la estructura TTLV de Current Attribute ni un batch:
+
+```rust
+use std::error::Error;
+
+use kmipkit_client::Client;
+use kmipkit_protocol::{attribute::typed, Attribute};
+use kmipkit_ttlv::codec::CodecLimits;
+
+fn delete_comment(client: &mut Client) -> Result<String, Box<dyn Error>> {
+    let response = client
+        .request()
+        .delete_attribute()
+        .unique_identifier("object-id-17")
+        .current_attribute(Attribute::<typed::Comment>::new("legacy value".to_owned())?)
+        .execute(&CodecLimits::defaults())?;
+
+    response
+        .outcome()
+        .response()
+        .delete_attribute()
+        .and_then(|result| result.unique_identifier())
+        .map(str::to_owned)
+        .ok_or_else(|| "Delete Attribute did not return a successful identifier".into())
+}
+```
+
+| Lenguaje | Iniciar la petición | Seleccionar el atributo actual | Validar o enviar |
+| --- | --- | --- | --- |
+| Rust | `client.request().delete_attribute()` | `current_attribute(Attribute<D>)`, `current_attribute_item(Item)`, `current_vendor_attribute(...)`, `attribute_reference(...)` | `validate`, `build_request`, `to_batch_item` o un único `execute` |
+| C | `kmipkit_delete_attribute_builder_create` | `..._set_catalogued_attribute`, `..._set_current_attribute_item`, `..._set_vendor_attribute`, `..._set_attribute_reference` | `..._validate`, `..._build_request`, `..._build_batch_item` o un único `..._execute_v1`; liberar cada handle propietario |
+| Java | `new FluentRequest(client).deleteAttribute()` | `cataloguedAttribute`, `currentAttribute(TtlvItem)`, `currentVendorAttribute`, `attributeReference` | `validate`, `buildRequest`, `toBatchItem` o un único `execute(limits)`; cerrar los valores propios |
+| Python | `fluent.Request(client).delete_attribute()` | `catalogued_attribute`, `current_attribute_item`, `current_vendor_attribute`, `attribute_reference` | `validate`, `build_request`, `to_batch_item` o un único `execute(limits)`; usar el builder como gestor de contexto |
+
+Los valores catalogados se comprueban contra el tipo TTLV del atributo. Los tags desconocidos requieren un `Item` con tipo explícito y el helper de fabricante construye la estructura KMIP Vendor Attribute. Las opciones de transporte se configuran con `with_options`; el Request Header Asynchronous Indicator tiene su propio setter. Cada `execute` realiza un intercambio mediante el cliente existente, sin Poll ni reintentos. Java y Python mantienen copias gestionadas por sus runtimes además del propietario nativo; cierra el request, el elemento de batch, el builder y la respuesta según la API de cada lenguaje.

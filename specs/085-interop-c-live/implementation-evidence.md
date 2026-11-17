@@ -11,7 +11,7 @@ network recipes. Library sources are unchanged.
 | KMIPKIT-0092-FR-002, FR-007, FR-009 | Per-cell evidence and explicit pending sidecar; duplicate protection; common schema and validator in CI. Incomplete recipes keep the gate failing. |
 | KMIPKIT-0092-FR-003 | Exact assigned scalar values, reserved-tag rejection, typed attributes, and cryptographic-parameter field/TTLV round trips are checked locally. Broader semantic branch/model recipes remain pending. No absent encoder/send/high-level API is fabricated. |
 | KMIPKIT-0092-FR-004 | Ordered, redacted tree digests are retained per cell. Cross-language digest normalization/parity is pending. |
-| KMIPKIT-0092-FR-005 | Controlled peers parse all six encoding/transport pairs, check recipe fields, numeric ordered results, lifecycle transitions and deletion. Check, Get Attribute List, Log, Revoke, and Interop response TTLV accessors are read and structurally checked. The C peer now covers catalogued asynchronous Cancel results and the KMIP 2.1 Poll/Cancel interleaving; other asynchronous and positive operation recipes remain pending. |
+| KMIPKIT-0092-FR-005 | Controlled peers parse all six encoding/transport pairs, check recipe fields, numeric ordered results, lifecycle transitions and deletion. Check, Get Attribute List, Log, Revoke, Interop, and Export response TTLV accessors are read and structurally checked; Export checks all required response fields and its AES-128 attributes. The C peer covers catalogued asynchronous Cancel results, KMIP 2.1 Poll/Cancel and Process/Poll interleavings, and Query filters whose intersection returns only the matching outstanding request; other asynchronous and positive operation recipes remain pending. |
 | KMIPKIT-0092-FR-008 | Reports contain public identities, axes, digests, sanitized failure codes and numeric outcomes. Request bodies and fixture keys/tickets never enter evidence. |
 
 The exact OASIS document and section remain on each case in the generated shared
@@ -1054,5 +1054,119 @@ transport combinations.
 - Verification: `RouteMatrixTests.test_single_item_batch_omits_optional_batch_options`
   passed; the CMake build and CTest passed, with 7/7 CTest cases. The full
   local matrix added 10 invoked cells with zero failures; this case now has no
-  pending cells. The overall C route matrix remains incomplete and the PR
+  pending cells. The overall C route matrix remains incomplete; PR #215 remains WIP.
+
+### C asynchronous Create, Query, and Poll lifecycle
+
+The installed C consumer now creates a key asynchronously, queries for the
+request using its exact server-issued correlation value, polls that same
+correlation to terminal Success, validates the returned Create payload, and
+destroys the created key with authenticated cleanup. The peer verifies the
+Create → Query → Poll → Destroy order, exact correlation filtering, terminal
+response shape, and restored fixture state. This follows OASIS KMIP 2.1
+§§6.1.8, 6.1.11, 6.1.38, 6.1.41, 8.2–8.3, 8.6, 9.1–9.2, and 11.3.
+
+- Red commit `5a1e59d84` failed because the C route matrix had no implementation
+  for `test-async-lifecycle-poll`.
+- Green commit `9ee886593` implements the typed Query/Poll lifecycle and checks
+  the correlation and terminal Create result through the installed ABI.
+- Refactor commit `02ae1ba91` consolidates controlled-peer state and exchange
+  checks shared by the asynchronous lifecycle routes.
+- Verification: six focused asynchronous route tests passed; the CMake build,
+  Python syntax checks, and three CTest cases (`test_c_validator` and both
+  controlled TLS peers) passed. The full route matrix recorded 40,655/66,736
+  invoked cells, zero failed, and 26,081 `validator_recipe_pending` cells.
+  The installed C artifact SHA-256 is
+  `c93eb8f7daa60d3b6832d297887e99cd2101e4f9baf2d04f55ce4042ba4bb7a2`. The
+  completeness validator still fails, next reporting
+  `test-async-no-recursive-async-poll-cancel`; PR #170 remains WIP.
+
+### C asynchronous Process then Poll state
+
+OASIS KMIP 2.1 §6.1.39 says Process changes the handling of the correlated
+asynchronous request so the next Poll SHALL NOT return Pending. Tables 278–279
+define the required correlation in the Process request and an empty Process
+response payload. The installed C consumer now sends Create(Pending) →
+Process(correlation, Asynchronous Indicator=Prohibited) → Poll(correlation)
+→ authenticated Destroy. It checks Process Success and its empty payload, then
+checks that Poll returns the original Create Success payload. The controlled
+peer checks the correlation and order, records Process as synchronous, and
+verifies that final fixture state matches setup.
+
+- Red commit `de923f2f`: the focused route test failed because the C driver had
+  no isolated Process case; the consumer reported that Create variations were
+  not mapped and the peer received no request.
+- Green commit `3e0d4a0f`: added the installed-ABI Process/Poll route, TTLV
+  construction checks, response assertions, controlled network recipe across
+  the six KMIP 2.1 encoding/transport pairs, and authenticated cleanup.
+- Green fixture correction `bb4aca1d`: added the route to the broad TLS peer
+  and reset its pending state after Process/Poll so the subsequent independent
+  Poll/Cancel route remains isolated.
+- Refactor/documentation commit: records the normative scope, traceability,
+  and exact verification evidence here and in the KMIPKIT-0092 task record.
+- Verification: the focused route test passed; `ctest --test-dir
+  interop/c-kmip-validator/build --output-on-failure` passed 7/7. The installed
+  C matrix recorded 40,931/66,736 invoked cells, all 40,931 passed, and 25,805
+  `validator_recipe_pending` cells. Its library SHA-256 is
+  `c93eb8f7daa60d3b6832d297887e99cd2101e4f9baf2d04f55ce4042ba4bb7a2`.
+  The completeness validator correctly remains failing at the next missing
+  recipe, `test-async-query-outstanding-filter`; PR #170 remains WIP.
+
+### C asynchronous Query outstanding filters
+
+OASIS KMIP 2.1 §6.1.41 Tables 285–287 defines the optional operation and
+correlation filters and the returned asynchronous-request details; §7.2
+Table 353 defines the returned `Asynchronous Request` structure. The installed
+C consumer starts two asynchronous Creates and one asynchronous Get, polls the
+first Create to completion, then sends Query with the Create operation filter
+and all three correlations. It verifies that only the second, still-pending
+Create is returned, excluding both the completed Create and the pending Get.
+It polls the remaining Create to success, polls the Get to its terminal
+failure, and destroys both created keys. Pending Create responses are checked
+through the typed Create response accessor and must expose no identifier while
+preserving their server-issued correlations.
+
+- Red commit `62e393db`: the route test failed because the C driver had no
+  Query outstanding-filter recipe.
+- Green commit `31fb6298`: added the installed-ABI lifecycle, Query filter
+  construction and inspection, typed Query response checks, controlled peer
+  state assertions, and cleanup across the six KMIP 2.1 encoding/transport
+  pairs.
+- Supplemental Red commit `8b250b0d`: the focused route test failed because
+  the Query scenario did not call the typed Create response accessor for its
+  Pending responses.
+- Supplemental Green commit `42a26232`: the route now uses
+  `read_pending_create_correlation()` for both Pending Create responses; that
+  helper calls the typed accessor and checks the absent Create payload and
+  exact correlation.
+- Verification: the focused Query test passed, including six controlled peer
+  checks; CTest passed 7/7. The full installed C matrix recorded
+  40,971/66,736 invoked cells, all 40,971 passed, and 25,765 pending cells,
+  all `validator_recipe_pending`. The artifact SHA-256 is
+  `c93eb8f7daa60d3b6832d297887e99cd2101e4f9baf2d04f55ce4042ba4bb7a2`.
+  The matching completeness validator now reports
+  `test-async-unknown-correlation-rejected` as the next missing recipe; PR
+  #170 remains WIP.
+
+### C Export request and response routes
+
+OASIS KMIP v2.0 §6.1.18 Tables 202–203 and v2.1 §6.1.18 Tables 217–218
+define the Export payloads. The installed C consumer sends Create → Export →
+Revoke → Destroy with ID Placeholder identifiers, checks the typed Object
+Type, Unique Identifier, and AES-128 Attributes, and verifies the complete
+response TTLV and the Symmetric Key object shape. The controlled peer checks
+the exact Export request and all four required response fields; key bytes are
+not included in evidence or diagnostics.
+
+- Red commit `76f402452`: the focused test failed because Export had no
+  controlled-peer route recipe.
+- Green commit `f4aa1a690`: implemented the C request/response path and peer
+  recipe across both versions and all six encoding/transport combinations.
+- Verification: the focused test covers all 44 C cells for `test-op-export`,
+  including four generic TTLV cells, 36 constructor/send/decode cells, and four
+  typed/generic response-accessor cells. All 12 controlled-peer checks pass.
+  The C target builds, CTest `test_c_validator` passes, and
+  `PYTHONPATH=interop/c-kmip-validator/tests:interop/c-kmip-validator/tools
+  python3 -B -m unittest test_route_matrix -v` passes 159/159 on the final
+  source. The complete C matrix and exact-head CI remain open, so PR #170
   remains WIP.

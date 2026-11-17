@@ -1205,10 +1205,13 @@ def _protocol_scenario_cases(
         sections=async_base + ["6.1.41"], versions=["2.1"], setup=["Configure multiple pending requests with distinct correlations"])
     add("test-async-no-recursive-async-poll-cancel", "asynchronous_workflows", ["Cancel", "Poll"],
         [correlation, cancel_op, poll_op, *cancel_request, *cancel_response],
-        parameters={"operations": ["Cancel", "Poll"], "asynchronous_indicator": "omitted"},
-        expected={"poll_or_cancel_response": "not Pending and contains no async correlation"},
+        parameters={"operations": ["Cancel", "Poll"], "asynchronous_indicator": "omitted",
+                    "cancel_result": "Canceled"},
+        expected={"poll_response": "terminal and contains no async correlation",
+                  "cancel_response": "not Pending and echoes the request correlation"},
         steps=["execute_poll_and_cancel_responses", "inspect_response_headers_and_payloads"],
-        assertions=["poll_and_cancel_are_not_returned_as_pending", "poll_and_cancel_responses_do_not_create_async_correlations"],
+        assertions=["poll_response_is_terminal_without_async_correlation",
+                    "cancel_success_echoes_request_correlation_without_pending_status"],
         sections=async_base + ["6.1.5", "6.1.38"], versions=["2.1"], mutation="read_only")
 
     sign_operation = operation("Sign")
