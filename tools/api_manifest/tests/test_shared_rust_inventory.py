@@ -570,3 +570,11 @@ class SharedRustInventoryTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+    def test_approved_owner_lookup_reads_bold_requirement_ids_without_trailing_colon(self) -> None:
+        owner_requirements = AUDIT._read_approved_owner("KMIPKIT-0095", REPO_ROOT)
+
+        self.assertEqual(
+            {f"KMIPKIT-0095-FR-{index:03}" for index in range(1, 6)},
+            owner_requirements,
+        )

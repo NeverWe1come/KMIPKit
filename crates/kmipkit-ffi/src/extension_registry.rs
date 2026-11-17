@@ -58,7 +58,8 @@ use crate::{
     kmipkit_client_batch_response_t, kmipkit_client_batch_t, kmipkit_client_configuration_t,
     kmipkit_client_extension_registry_t, kmipkit_client_request_message_extension_t,
     kmipkit_client_t, kmipkit_codec_limits_t, kmipkit_create_key_pair_builder_t,
-    kmipkit_credential_t, kmipkit_credential_validation_error_v1_t, kmipkit_credential_value_t,
+    kmipkit_create_key_pair_request_v1_t, kmipkit_credential_t,
+    kmipkit_credential_validation_error_v1_t, kmipkit_credential_value_t,
     kmipkit_credential_view_t, kmipkit_crypto_operation_builder_t,
     kmipkit_cryptographic_parameters_fields_v1_t, kmipkit_cryptographic_parameters_t,
     kmipkit_delete_attribute_builder_t, kmipkit_delete_attribute_request_t,
@@ -579,6 +580,8 @@ enum Kind {
     LocateBuilder,
     RevokeBuilder,
     CryptoOperationBuilder,
+    Kmip30OperationBuilder,
+    CreateCredentialObject,
 }
 
 #[derive(Clone, Copy, Eq, PartialEq)]
@@ -702,6 +705,8 @@ enum HandleValue {
     LocateBuilder(Mutex<LocateBuilderState>),
     RevokeBuilder(Mutex<RevokeBuilderState>),
     CryptoOperationBuilder(Mutex<CryptoOperationBuilder>),
+    Kmip30OperationBuilder(Mutex<client_abi::fluent_kmip30::Kmip30OperationBuilder>),
+    CreateCredentialObject(Item),
     BatchItemReadback(ClientBatchItemReadback),
     RegisterRequest(Box<RegisterRequest>),
     AddAttributeRequest(Box<AddAttributeRequest>),

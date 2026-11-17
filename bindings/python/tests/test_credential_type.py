@@ -8,6 +8,10 @@ import kmipkit
 
 
 class CredentialTypeTests(unittest.TestCase):
+    def test_kmip_3_0_constants_match_table_551(self) -> None:
+        self.assertEqual(7, kmipkit.CredentialType.PASSWORD)
+        self.assertEqual(8, kmipkit.CredentialType.CERTIFICATE)
+
     def test_from_raw_preserves_known_extension_and_unknown_values(self) -> None:
         credential_type = getattr(kmipkit, "CredentialType", None)
         self.assertIsNotNone(

@@ -2,6 +2,7 @@ package org.kmipkit.fluent;
 
 import org.kmipkit.extensions.UniqueIdentifier;
 import org.kmipkit.extensions.AttributeSet;
+import org.kmipkit.extensions.RevocationReason;
 import java.util.List;
 
 /** Entry point for one task-oriented, typed client operation. */
@@ -25,8 +26,54 @@ public final class FluentRequest {
     public RevokeBuilder revoke(long reasonCode, String revocationMessage) {
         return new RevokeBuilder(client, reasonCode, revocationMessage);
     }
+    public RevokeBuilder revoke(UniqueIdentifier id, RevocationReason reason) {
+        if (reason == null) throw new org.kmipkit.InvalidInputException("revocation reason is required");
+        RevokeBuilder builder = new RevokeBuilder(client, reason.rawCode(), reason.message().orElse(null));
+        return builder.uniqueIdentifier(id);
+    }
     public OperationBuilder get(UniqueIdentifier id) { return new OperationBuilder(client, id, false); }
     public OperationBuilder destroy(UniqueIdentifier id) { return new OperationBuilder(client, id, true); }
+
+    public OperationBuilder activate(UniqueIdentifier id) {
+        return new OperationBuilder(client, id, OperationBuilder.Kind.ACTIVATE);
+    }
+
+    public OperationBuilder archive(UniqueIdentifier id) {
+        return new OperationBuilder(client, id, OperationBuilder.Kind.ARCHIVE);
+    }
+
+    public OperationBuilder recover(UniqueIdentifier id) {
+        return new OperationBuilder(client, id, OperationBuilder.Kind.RECOVER);
+    }
+
+    public CreateCredentialBuilder createCredential(
+            AttributeSet attributes, CreateCredentialObject object) {
+        return new CreateCredentialBuilder(client, attributes, object);
+    }
+
+    public CreateGroupBuilder createGroup(AttributeSet attributes) {
+        return new CreateGroupBuilder(client, attributes);
+    }
+
+    public CreateUserBuilder createUser(AttributeSet attributes) {
+        return new CreateUserBuilder(client, attributes);
+    }
+
+    public DeactivateBuilder deactivate(UniqueIdentifier identifier) {
+        return new DeactivateBuilder(client, identifier);
+    }
+
+    public DecapsulateBuilder decapsulate(UniqueIdentifier identifier, byte[] ciphertext) {
+        return new DecapsulateBuilder(client, identifier, ciphertext);
+    }
+
+    public EncapsulateBuilder encapsulate(UniqueIdentifier identifier) {
+        return new EncapsulateBuilder(client, identifier);
+    }
+
+    public ObliterateBuilder obliterate(UniqueIdentifier identifier) {
+        return new ObliterateBuilder(client, identifier);
+    }
     public GetAttributesBuilder getAttributes(
             UniqueIdentifier id, List<org.kmipkit.extensions.AttributeReference> references) {
         return new GetAttributesBuilder(client, id, references);

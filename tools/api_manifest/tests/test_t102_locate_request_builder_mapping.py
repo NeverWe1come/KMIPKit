@@ -31,6 +31,13 @@ API_REQUIREMENTS = {
 }
 SERVER_ONLY_REQUIREMENT = "KMIPKIT-REQ-SPEC-6.1.28-011"
 LOCATE_ATTRIBUTE_REQUIREMENT = "KMIPKIT-REQ-SPEC-6.1.28-007"
+LOCATE_C_LIFECYCLE_DECLARATIONS = {
+    "client_locate_v1:c": "kmipkit_client_locate_v1",
+    "client_locate_with_options_v1:c": "kmipkit_client_locate_with_options_v1",
+}
+LOCATE_C_LIFECYCLE_REQUIREMENTS = {
+    f"KMIPKIT-0114-FR-{number:03}" for number in range(1, 6)
+}
 
 LOCATE_EXISTING_OPERATION_DECLARATIONS = {
     "rust-observed-0ed7f834e1e763c2bd24",
@@ -285,14 +292,27 @@ class T102LocateRequestBuilderMappingTests(unittest.TestCase):
             for declarations in operation["declarations"].values()
             for declaration_id in declarations
         }
-        self.assertEqual(74, len(locate_ids))
+        # KMIPKIT-0114 adds the direct and timeout-options C Locate helpers.
+        self.assertEqual(76, len(locate_ids))
         self.assertEqual(
-            LOCATE_EXISTING_OPERATION_DECLARATIONS | set(LOCATE_PROTOCOL_ALIASES) | {
-                declaration_id for declaration_id, _ in EXPECTED
-            },
+            LOCATE_EXISTING_OPERATION_DECLARATIONS
+            | set(LOCATE_PROTOCOL_ALIASES)
+            | set(LOCATE_C_LIFECYCLE_DECLARATIONS)
+            | {declaration_id for declaration_id, _ in EXPECTED},
             locate_ids,
         )
         self.assertEqual(23, len(LOCATE_PROTOCOL_ALIASES))
+        for declaration_id, export_name in LOCATE_C_LIFECYCLE_DECLARATIONS.items():
+            with self.subTest(c_lifecycle_helper=export_name):
+                helper = self.declarations[declaration_id]
+                self.assertEqual("c-kmipkit", helper["packageId"])
+                self.assertEqual(export_name, helper["exportName"])
+                self.assertEqual("fluent_c_lifecycle_facade", helper["capabilityId"])
+                self.assertEqual("declared", helper["declarationState"])
+                self.assertEqual(
+                    LOCATE_C_LIFECYCLE_REQUIREMENTS,
+                    set(helper["requirementIds"]),
+                )
         for declaration_id, export_name in LOCATE_PROTOCOL_ALIASES.items():
             with self.subTest(protocol_alias=export_name):
                 alias = self.declarations[declaration_id]

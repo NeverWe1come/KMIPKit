@@ -293,8 +293,8 @@ class T102Pkcs11RequestTraitExclusionTests(unittest.TestCase):
         self.assertIn("vendor-defined functions", research)
 
     def test_t102_slice_and_manifest_snapshots_remain_consistent(self) -> None:
-        # The checked-in API inventory includes the 0047 versioned values,
-        # 0048 typed attributes, and 0049 managed-object additions.
+        # The full manifest snapshot also tracks approved additions from later
+        # specs, including the 0114 C lifecycle direct-helper declarations.
         self.assertEqual(
             sum(
                 row.get("candidateSpecId") == "KMIPKIT-0043"

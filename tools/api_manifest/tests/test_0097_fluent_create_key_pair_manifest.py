@@ -1,4 +1,4 @@
-"""Reconcile the KMIPKIT-0097 Rust slice with KMIPKIT-0093 parity ownership."""
+"""Reconcile the KMIPKIT-0097 Rust slice with KMIPKIT-0093 journey parity."""
 
 import json
 import unittest
@@ -11,6 +11,11 @@ METHODS = {
     "public_attribute", "with_options", "with_asynchronous_indicator",
     "build", "build_request", "to_batch_item", "execute", "validate",
     "common_attributes", "private_key_attributes", "public_key_attributes",
+}
+JOURNEY_METHODS = {
+    "algorithm", "length", "private_usage_mask", "public_usage_mask",
+    "with_options", "with_asynchronous_indicator", "build", "to_batch_item",
+    "execute", "validate", "common_attribute",
 }
 DECLARED_PARITY_REQUIREMENTS = {
     "KMIPKIT-0093-FR-004",
@@ -38,7 +43,6 @@ class FluentCreateKeyPairManifestTests(unittest.TestCase):
                 expected[f"{prefix}CreateKeyPairBuilder<'a>::{method}"] = "associated-item"
             for variant in ("MissingCreateKeyPairAlgorithm", "MissingCreateKeyPairLength"):
                 expected[f"{prefix}FluentBuildError::{variant}"] = "variant"
-
         rows = [
             row for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit-client"
@@ -59,6 +63,22 @@ class FluentCreateKeyPairManifestTests(unittest.TestCase):
         for row in blocked_rows:
             with self.subTest(export=row["exportName"]):
                 self.assertEqual(row["packageId"], "rust-kmipkit-client")
+                self.assertEqual(row["parityScope"], "four-language")
+                self.assertIn("KMIPKIT-0097-FR-005", row["requirementIds"])
+                export = row["exportName"]
+                supported = export.startswith("kmipkit_client::fluent::") and (
+                    export.endswith(("::CreateKeyPairBuilder", "::create_key_pair"))
+                    or export.rsplit("::", 1)[-1] in JOURNEY_METHODS
+                )
+                if supported:
+                    self.assertEqual(row["declarationState"], "declared")
+                    self.assertEqual(row["capabilityId"], "fluent_dx_journeys")
+                    self.assertEqual(set(row["languageMappings"]), {"rust", "c", "java", "python"})
+                    self.assertIn("KMIPKIT-0093-FR-011", row["requirementIds"])
+                    self.assertEqual(row["approvalSource"]["path"], "specs/097-fluent-create-key-pair/spec.md")
+                    self.assertNotIn("blockedReason", row)
+                    continue
+                self.assertEqual(row["candidateSpecId"], "KMIPKIT-0097")
                 self.assertEqual(row["declarationState"], "blocked")
                 self.assertEqual(row["parityScope"], "four-language")
                 self.assertEqual(row["capabilityId"], "fluent_dx_api")
@@ -91,10 +111,37 @@ class FluentCreateKeyPairManifestTests(unittest.TestCase):
                 self.assertIn("KMIPKIT-0097-FR-005", row["evidence"])
                 self.assertNotIn("*", row["exportName"])
 
+    def test_local_key_pair_build_maps_to_a_local_c_constructor(self) -> None:
+        for row in self.manifest["publicDeclarations"]:
+            export = row["exportName"]
+            if row.get("capabilityId") != "fluent_dx_journeys":
+                continue
+            if ("CreateKeyPairBuilder" not in export
+                    or export.rsplit("::", 1)[-1].rsplit(".", 1)[-1]
+                    not in {"build", "to_batch_item", "toBatchItem", "validate"}):
+                continue
+            with self.subTest(export=export):
+                self.assertEqual(
+                    row["languageMappings"]["c"]["name"],
+                    "kmipkit_client_batch_item_create_key_pair",
+                )
+
+    def test_key_pair_execution_maps_to_existing_builder_signatures(self) -> None:
+        functions = {row["id"]: row for row in self.manifest["functions"]}
+        for function_id in ("client_create_key_pair_v1", "client_create_key_pair_with_options_v1"):
+            for language in ("java", "python"):
+                with self.subTest(function=function_id, language=language):
+                    self.assertEqual(
+                        functions[function_id][language]["parameters"],
+                        [{"name": "limits", "type": "CodecLimits"}],
+                    )
+
     def test_local_validation_and_prebuilt_sets_have_exact_requirement_owners(self) -> None:
         group_methods = {"common_attributes", "private_key_attributes", "public_key_attributes"}
         for row in self.manifest["publicDeclarations"]:
-            if row.get("packageId") != "rust-kmipkit-client":
+            if (row.get("packageId") != "rust-kmipkit-client"
+                    or "KMIPKIT-0097-FR-005" not in row.get("requirementIds", [])):
+                continue
                 continue
             name = row.get("exportName", "")
             if not name.endswith(tuple(f"::{method}" for method in group_methods | {"validate"})):

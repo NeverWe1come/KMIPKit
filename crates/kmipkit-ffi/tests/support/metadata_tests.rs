@@ -98,12 +98,16 @@ fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
             "fluent_create_key_pair_parity",
             "fluent_delete_attribute_parity",
             "fluent_dx_api",
+            "fluent_dx_journeys",
+            "fluent_java_python_lifecycle_facade",
             "fluent_locate_revoke_parity",
             "fluent_named_tag_values",
             "fluent_set_attribute_parity",
             "generic_ttlv_model",
             "hashed_password_timestamp_sequence",
+            "kmip30_credential_type_values",
             "kmip30_draft_routes",
+            "kmip30_fluent_operations",
             "kmip_protocol_version_selection",
             "named_protocol_values",
             "nonce_ttlv_parity",
@@ -483,6 +487,7 @@ fn source_c_exports() -> Vec<(String, bool)> {
         include_str!("../../src/extension_registry/typed_attributes.rs"),
         include_str!("../../src/extension_registry/client_abi/fluent.rs"),
         include_str!("../../src/extension_registry/client_abi/fluent_crypto.rs"),
+        include_str!("../../src/extension_registry/client_abi/fluent_kmip30.rs"),
     ];
     assert_managed_object_helpers_are_guarded(sources[4]);
     let mut exports: Vec<(String, bool)> = sources

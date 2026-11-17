@@ -14,6 +14,35 @@
 | FR-012 server direction | KMIP 2.1 §6.2, KMIPKIT-0066, ADR-0021 | Listener handler fixtures; no client send for server-only operation |
 | FR-013 journeys | KMIP 2.1 §§6.1.1, 6.1.19, 6.1.21, 6.1.28 and Profiles §§5.3–5.5 | Rust, C, Java, and Python execute all five progressive journeys against the controlled TLS fixture: symmetric-key lifecycle, explicit AES-GCM operations, ECDSA key-pair/signing, Vendor Attribute Create/Get/Destroy, and an ordered Create/Get batch where omitted Get Unique Identifier resolves the preceding ID Placeholder. |
 
-The next catalog slice expands this table to one row per assigned operation
-and one row per normative client requirement. A static count alone does not
-establish implementation or conformance.
+Task 3 review evidence explicitly checks Recommended Curve P-256 inside typed
+Cryptographic Domain Parameters in Common Attributes (KMIP 2.1 sections 4.14,
+6.1.2 and 11.45). `tests/consumers/0093-journeys/test_local_journey_responder.py`
+rejects absent, empty, wrong-type and secp256k1 curve selections. The Java Sign
+and Signature Verify consumers close their native builders with
+try-with-resources, including failures during execution or response inspection.
+
+The generated operation matrix now records one row per assigned operation and
+direction. Full field-level and normative client requirement coverage remains
+owned by the corresponding implementation slices. A static count or test
+reference alone does not establish execution success or conformance.
+
+## Generic Rust Create builder
+
+`RequestBuilder::create` and `CreateBuilder` implement the Rust construction
+slice of FR-004, FR-005, FR-006, FR-007, and FR-011 over `CreateRequest` and
+`ClientRequest::Create` (OASIS KMIP v2.1 §6.1.8, Tables 186–187).
+`fluent_request_tests::generic_create_builder_*` verifies the explicit Object
+Type, prebuilt ordered attributes and optional Protection Storage Masks,
+empty default attributes without cryptographic choices, unknown-value
+preservation, existing cardinality validation, sanitized `NotSent` errors
+with zero exchanges, batch conversion, explicit exchange options and
+Asynchronous Indicator, the default KMIP 2.1 header, and Success/Pending
+results with exactly one exchange. Local tests use the existing scripted
+transport and production typed executor; this slice alone does not establish
+four-language parity, external interoperability, or profile conformance.
+
+`execute_boundary_tests::generic_create_masks_exception_accepts_only_its_exact_typed_setter`
+checks that the existing AST boundary permits only the operation-specific
+`CreateBuilder::protection_storage_masks(Structure) -> Self` signature;
+wrong inputs, outputs, scope, builder names, and execution methods remain
+rejected.

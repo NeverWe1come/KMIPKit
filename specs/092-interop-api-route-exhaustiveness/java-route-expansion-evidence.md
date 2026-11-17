@@ -2195,31 +2195,62 @@ python3 interop/java-kmip-validator/tools/compare_route_ledger.py
 git diff --check
 ```
 
-## Java KMIP 2.1 Set Endpoint Role response routes — 2026-11-17
+## Java KMIP 2.1 Set Endpoint Role response route sync — 2026-11-17
 
-Red, commit `c0d99e17a`, adds the response case ID and per-route assertions; the
-focused controlled-peer test fails because the response's `TtlvItem.create`
-route has no event. Green, commit `9eecdae9e`, round-trips the required
-Endpoint Role response field and Set Endpoint Role Operation Enumeration via
-the installed generic TTLV constructor, Item view, and decoder. The fixture
-uses Client value 1 as the role accepted by the server (OASIS KMIP 2.1
-§6.1.54 Table 332; §11.19); Operation is `0x32` (§11.36). This adds six
-selected cells. The full Java suite passes 57/57 tests with `--rerun-tasks`.
-Refactor, commit `4382e0ea0`, extracts a shared helper for request and response
-Endpoint Role fields; the focused and full tests pass on the refactored code.
-All 68 route-capability tests pass, the generator check reports 1,507 routes,
-and selected-scope validation accepts 27,240/27,240 cells with zero failures.
-The ledger records 71,641 planned, 27,240 executed, and 44,401 pending cells
-across 1,222 pending case IDs. The ledger comparer passes after refresh. The
-global matrix remains incomplete and the PR stays WIP.
+The KMIP 3.0 builders branch includes the Java route-matrix response-field
+coverage from #187. OASIS KMIP 2.1 §6.1.54 Table 332 defines Endpoint Role as
+the role accepted by the server; §11.19 defines Client value 1. The controlled
+fixture exercises generic TTLV Item creation, view, and decode for the response
+field and operation Enumeration, adding six selected cells.
+
+The full Java suite passes 57/57 tests with `--rerun-tasks`; all 68 shared
+route-capability tests pass and the generator check reports 1,507 routes.
+Selected-scope validation accepts 27,240/27,240 cells with zero failures. The
+ledger records 71,641 planned, 27,240 executed, and 44,401 pending cells across
+1,222 pending case IDs. The comparer passes after refresh. The global matrix is
+incomplete and #213 stays WIP.
 
 Verification:
 
 ```sh
 JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
   bash ../../bindings/java/gradlew --no-daemon \
-  -PkmipkitMavenRepo="$PWD/build/maven-repository" test \
-  --tests org.kmipkit.validator.ControlledTlsPeerTest.controlledQueryProducesPerRouteEvidenceForBothProtocolVersions
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks
+python3 -m unittest interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+python3 interop/shared/tools/validate_route_evidence.py \
+  --selected-scope --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+git diff --check
+```
+
+## Extension Tag route sync into KMIP 3.0 builders stack — 2026-11-17
+
+The branch was synchronized with Java route-matrix head `bf123d1ad`, adding
+Extension Tag coverage without changing the KMIP 3.0 builder code. The fixture
+exercises the Integer constructor, generic Item creation/view, and decoder for
+the assigned Extension Tag value in KMIP 2.0 and 2.1 (KMIP 2.0 §7.9 Table 329;
+KMIP 2.1 §7.13 Table 365; tag allocation §§11.54/11.56). The added case
+contributes eight selected cells.
+
+The artifact was installed with the repository's pinned installer from release
+commit `12496d646d11d4069b58bcc88fc76cc619211ec6`; its SHA-256 is
+`504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`. The
+full Java suite passes 57/57 tests with `--rerun-tasks`. Selected-scope
+validation accepts 27,234/27,234 invoked cells with zero failures. The ledger
+records 71,641 planned, 27,234 executed, and 44,407 pending cells across 1,223
+pending case IDs. The comparer passes after refresh; the global Java matrix
+remains incomplete and the PR stays WIP.
+
+Verification:
+
+```sh
+TMPDIR="$PWD/build/java-temp" python3 tools/install_artifact.py \
+  --repository ../.. --pin-file library-pin.json \
+  --maven-repository build/maven-repository --manifest build/artifact-manifest.json
 JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
   bash ../../bindings/java/gradlew --no-daemon \
   -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks
@@ -2410,4 +2441,70 @@ python3 interop/shared/tools/validate_route_evidence.py \
   --write-ledger
 python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
 python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+```
+
+## KMIP 3.0 Java/Python branch synchronized with shared Request Header routes — 2026-11-17
+
+The KMIP 3.0 Java/Python branch now includes #187 head
+`8313b6019ab987f0f0612d9c3bd2c5df10ca6600`; its KMIP 3.0 builder changes and
+earlier Java routes remain present. The full Java validator suite passes 57/57
+tests with no failures, errors, or skips. Selected-scope validation accepts
+27,328/27,328 cells, with zero failures. The refreshed 71,641-cell Java ledger
+records 44,313 pending cells across 1,211 case IDs and matches the checked-in
+reference. Shared route-capability tests pass 68/68 and the generator confirms
+1,507 routes. The pinned package digest is
+`504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`. This is
+local-model evidence; the matrix remains incomplete and #213 stays WIP.
+
+## KMIP 3.0 Java/Python stack after Attestation Type sync — 2026-11-17
+
+The KMIP 3.0 Java/Python branch now includes #187 head
+`7647874fb44e9ef0d11ffd65b58cfdd9db43037a`; its builder changes remain in
+the branch. The full Java suite passes 57/57 tests with no failures, errors,
+or skips. The selected-scope validator accepts 27,336/27,336 cells with zero
+failed cells. The generated 71,641-cell ledger records 27,336 executed and
+44,305 pending cells across 1,210 pending case IDs, and the ledger comparer
+passes. Shared route-capability tests pass 68/68; the route generator check
+reports 1,507 routes. This remains local-model evidence; the matrix is
+incomplete and #213 stays WIP.
+
+The run uses pinned artifact commit
+`12496d646d11d4069b58bcc88fc76cc619211ec6` and SHA-256
+`504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+
+## KMIP 3.0 Java/Python stack synchronized with Client Correlation Value — 2026-11-17
+
+PR #213 was synchronized with Java route-matrix parent #187 head
+`8bf6631e3b4a4da3bd9f4974e10fa81e0a083673`, preserving its KMIP 3.0 builder
+work. The installed Java package remains pinned to release commit
+`12496d646d11d4069b58bcc88fc76cc619211ec6` with SHA-256
+`504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+
+The full Java suite passes 57/57 tests without failures, errors, or skips. All
+68 shared route-capability tests and 33 traceability tests pass; the route
+generator check reports 1,507 routes. Selected-scope validation accepts
+27,352/27,352 cells with zero failures. The generated ledger records 71,641
+planned, 27,352 executed, and 44,289 pending cells across 1,208 pending case
+IDs; ledger comparison passes. This is local-model evidence, not vendor
+interoperability or full-matrix completion. PR #213 remains WIP pending
+exact-head CI.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-temp" \
+  bash bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" \
+  -p interop/java-kmip-validator test --rerun-tasks
+python3 -m unittest interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+python3 -m unittest tools.normative_catalog.tests.test_feature_traceability \
+  scripts.tests.test_requirement_traceability
+python3 interop/shared/tools/validate_route_evidence.py \
+  --selected-scope --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+git diff --check
 ```

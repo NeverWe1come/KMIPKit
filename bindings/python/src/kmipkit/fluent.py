@@ -9,19 +9,21 @@ from . import attribute_operations, errors, extensions, ttlv
 from ._client_ffi import ffi, lib
 from ._ffi import ffi as _base_ffi
 from ._handles import _wrap_owned_handle
+from ._handles import NativeHandle
 from .client import (
-    _NATIVE_CALL_LOCK,
     Batch,
     BatchResult,
     Client,
     RequestOptions,
+    _NATIVE_CALL_LOCK,
     _batch_result,
     _raise_client_status,
     _request_options_record,
     _unsigned,
 )
 from .cryptographic_parameters import CryptographicParameters
-from .typed_attributes import StandardAttribute
+from .credentials import SecretBytes, SecretText
+from .typed_attributes import StandardAttribute, TypedAttribute
 
 _MAX_CRYPTO_INPUT_BYTES = 16 * 1024 * 1024
 
@@ -78,12 +80,13 @@ def _execute_direct(client: Client, function: Any, identifier: Any,
                     limits: ttlv.CodecLimits, options: RequestOptions | None) -> BatchResult:
     if not isinstance(client, Client) or not isinstance(limits, ttlv.CodecLimits):
         errors.raise_for_status(4)
-    record, owner = _identifier(identifier)
+    record, owner = _identifier(identifier) if identifier is not None else (None, None)
     options_record = _request_options_record(options) if options is not None else None
     output = ffi.new("kmipkit_client_batch_response_t **")
     with _NATIVE_CALL_LOCK:
         args = [_client_abi_pointer("kmipkit_client_t *", client._pointer())]
-        args.append(record if record is not None else ffi.NULL)
+        if record is not None:
+            args.append(record)
         args.append(
             _client_abi_pointer("kmipkit_codec_limits_t *", limits._pointer())
         )
@@ -107,6 +110,7 @@ def _execute_direct_attributes(
     limits: ttlv.CodecLimits,
     options: RequestOptions | None,
 ) -> BatchResult:
+    """Execute one Get Attributes request through the typed C ABI helper."""
     if not isinstance(client, Client) or not isinstance(limits, ttlv.CodecLimits):
         errors.raise_for_status(4)
     if options is not None and not isinstance(options, RequestOptions):
@@ -116,31 +120,20 @@ def _execute_direct_attributes(
         or unique_identifier.kind is not extensions.UniqueIdentifierKind.TEXT_STRING
     ):
         errors.raise_for_status(4)
-    if not isinstance(attribute_references, Sequence) or isinstance(
-        attribute_references, (str, bytes, bytearray)
-    ):
-        errors.raise_for_status(4)
     references = extensions._bounded_snapshot(
         attribute_references, extensions._MAX_ATTRIBUTE_REFERENCES
     )
-    if any(
-        not isinstance(reference, extensions.AttributeReference)
-        for reference in references
-    ):
+    if any(not isinstance(reference, extensions.AttributeReference) for reference in references):
         errors.raise_for_status(4)
 
+    output = ffi.new("kmipkit_client_batch_response_t **")
     with extensions._staging_buffer_scope() as staging_buffers:
-        identifier_record, identifier_owner = _identifier(unique_identifier)
-        staging_buffers.append(identifier_owner)
-        native_references, reference_count = (
-            extensions._client_native_attribute_reference_array(
-                references, staging_buffers
-            )
+        identifier = extensions._client_native_unique_identifier(
+            unique_identifier, staging_buffers
         )
-        options_record = (
-            _request_options_record(options) if options is not None else None
+        native_references, reference_count = extensions._client_native_attribute_reference_array(
+            references, staging_buffers
         )
-        output = ffi.new("kmipkit_client_batch_response_t **")
         function = (
             lib.kmipkit_client_get_attributes_with_options_v1
             if options is not None
@@ -148,13 +141,13 @@ def _execute_direct_attributes(
         )
         arguments = [
             _client_abi_pointer("kmipkit_client_t *", client._pointer()),
-            identifier_record if identifier_record is not None else ffi.NULL,
+            identifier,
             native_references if native_references is not None else ffi.NULL,
             reference_count,
             _client_abi_pointer("kmipkit_codec_limits_t *", limits._pointer()),
         ]
-        if options_record is not None:
-            arguments.append(options_record)
+        if options is not None:
+            arguments.append(_request_options_record(options))
         arguments.append(output)
         with _NATIVE_CALL_LOCK:
             try:
@@ -162,9 +155,9 @@ def _execute_direct_attributes(
             except (OverflowError, TypeError, ValueError):
                 errors.raise_for_status(4)
             _raise_client_status(status)
-        if output[0] == ffi.NULL:
-            errors.raise_for_status(7)
-        return _batch_result(output[0], limits)
+    if output[0] == ffi.NULL:
+        errors.raise_for_status(7)
+    return _batch_result(output[0], limits)
 
 
 def _execute_direct_create(client: Client, request: Any, limits: ttlv.CodecLimits,
@@ -197,19 +190,20 @@ def _execute_direct_create(client: Client, request: Any, limits: ttlv.CodecLimit
 
 def _execute_single_item(
     client: Client,
-    build: Callable[[], extensions.ClientBatchItem],
+    build: Callable[[], extensions.ClientBatchItem] | extensions.ClientBatchItem,
     limits: ttlv.CodecLimits,
     configured_options: RequestOptions | None,
     asynchronous_indicator: int | None,
     options: RequestOptions | None = None,
 ) -> BatchResult:
-    """Execute one typed item, preferring call-specific options over configured ones."""
+    """Execute one typed item, accepting an owned item or a deferred builder."""
     if not isinstance(client, Client) or not isinstance(limits, ttlv.CodecLimits):
         errors.raise_for_status(4)
     if options is not None and not isinstance(options, RequestOptions):
         errors.raise_for_status(4)
+    item = build() if callable(build) else build
     with Batch.create() as batch:
-        with build() as item:
+        with item:
             batch.add_item(item)
         if asynchronous_indicator is not None:
             batch.set_asynchronous_indicator(asynchronous_indicator)
@@ -217,6 +211,11 @@ def _execute_single_item(
         if selected_options is not None:
             return client.execute_with_options(batch, limits, selected_options)
         return client.execute(batch, limits)
+
+
+def _require_kmip30_client(client: Any) -> None:
+    if not isinstance(client, Client):
+        errors.raise_for_status(4)
 
 
 def _build_fluent_batch_item(
@@ -258,7 +257,7 @@ def _execute_fluent_builder(
 class Request:
     """Scoped fluent namespace for the foundation lifecycle operations."""
 
-    def __init__(self, client: Client) -> None:
+    def __init__(self, client: Client | None) -> None:
         self._client = client
 
     def create_symmetric_key(self) -> SymmetricKeyBuilder:
@@ -266,6 +265,32 @@ class Request:
 
     def create_key_pair(self) -> CreateKeyPairBuilder:
         return CreateKeyPairBuilder(client=self._client)
+
+    def create_group(self, attributes: Any) -> CreateGroupBuilder:
+        return CreateGroupBuilder(self._client, attributes)
+
+    def create_credential(
+        self, attributes: Any, credential_object: CreateCredentialObject,
+    ) -> CreateCredentialBuilder:
+        return CreateCredentialBuilder(self._client, attributes, credential_object)
+
+    def create_user(self, attributes: Any) -> CreateUserBuilder:
+        return CreateUserBuilder(self._client, attributes)
+
+    def deactivate(self, unique_identifier: extensions.UniqueIdentifier) -> DeactivateBuilder:
+        return DeactivateBuilder(self._client, unique_identifier)
+
+    def decapsulate(
+        self, unique_identifier: extensions.UniqueIdentifier,
+        ciphertext: bytes | bytearray | memoryview,
+    ) -> DecapsulateBuilder:
+        return DecapsulateBuilder(self._client, unique_identifier, ciphertext)
+
+    def encapsulate(self, unique_identifier: extensions.UniqueIdentifier) -> EncapsulateBuilder:
+        return EncapsulateBuilder(self._client, unique_identifier)
+
+    def obliterate(self, unique_identifier: extensions.UniqueIdentifier) -> ObliterateBuilder:
+        return ObliterateBuilder(self._client, unique_identifier)
 
     def set_attribute(self) -> SetAttributeBuilder:
         return SetAttributeBuilder(client=self._client)
@@ -277,15 +302,12 @@ class Request:
         return DeleteAttributeBuilder(client=self._client)
 
     def locate(
-        self,
-        attributes: attribute_operations.AttributeSet,
+        self, attributes: attribute_operations.AttributeSet,
     ) -> LocateBuilder:
         return LocateBuilder(self._client, attributes)
 
     def revoke(
-        self,
-        reason_code: int,
-        revocation_message: str | None = None,
+        self, reason_code: int, revocation_message: str | None = None,
     ) -> RevokeBuilder:
         return RevokeBuilder(self._client, reason_code, revocation_message)
 
@@ -294,6 +316,29 @@ class Request:
 
     def destroy(self, unique_identifier: extensions.UniqueIdentifier) -> Operation:
         return Operation(self._client, "destroy", unique_identifier)
+
+    def get_attributes(
+        self,
+        *,
+        unique_identifier: extensions.UniqueIdentifier | None = None,
+        attribute_references: Sequence[extensions.AttributeReference] = (),
+    ) -> GetAttributesBuilder:
+        return GetAttributesBuilder(self._client, unique_identifier, attribute_references)
+
+    def get_attribute_list(
+        self,
+        unique_identifier: extensions.UniqueIdentifier | None = None,
+    ) -> GetAttributeListBuilder:
+        return GetAttributeListBuilder(self._client, unique_identifier)
+
+    def activate(self, unique_identifier: extensions.UniqueIdentifier) -> Operation:
+        return Operation(self._client, "activate", unique_identifier)
+
+    def archive(self, unique_identifier: extensions.UniqueIdentifier) -> Operation:
+        return Operation(self._client, "archive", unique_identifier)
+
+    def recover(self, unique_identifier: extensions.UniqueIdentifier) -> Operation:
+        return Operation(self._client, "recover", unique_identifier)
 
     def encrypt(self) -> EncryptBuilder:
         return EncryptBuilder(client=self._client)
@@ -316,20 +361,438 @@ class Request:
     def hash(self) -> HashBuilder:
         return HashBuilder(client=self._client)
 
-    def get_attributes(
-        self,
-        unique_identifier: extensions.UniqueIdentifier | None = None,
-        attribute_references: Sequence[extensions.AttributeReference] = (),
-    ) -> GetAttributesBuilder:
-        return GetAttributesBuilder(
-            self._client, unique_identifier, attribute_references
+
+class _Kmip30OperationBuilder:
+    """Shared ownership and execution for opt-in KMIP 3.0 typed operations."""
+
+    def __init__(self, client: Client, handle: Any) -> None:
+        if not isinstance(client, Client) or handle == ffi.NULL:
+            errors.raise_for_status(4)
+        self._client = client
+        self._handle = handle
+        self._options: RequestOptions | None = None
+        self._asynchronous_indicator: int | None = None
+
+    def _ensure_open(self) -> None:
+        if self._handle == ffi.NULL:
+            errors.raise_for_status(4)
+
+    def with_options(self, options: RequestOptions) -> Self:
+        self._ensure_open()
+        if not isinstance(options, RequestOptions):
+            errors.raise_for_status(4)
+        self._options = options
+        return self
+
+    def asynchronous_indicator(self, value: int) -> Self:
+        self._ensure_open()
+        self._asynchronous_indicator = _unsigned(value, 32)
+        with _NATIVE_CALL_LOCK:
+            status = lib.kmipkit_kmip30_operation_builder_set_asynchronous_indicator(
+                self._handle, self._asynchronous_indicator
+            )
+            _raise_client_status(status)
+        return self
+
+    def validate(self) -> None:
+        self._ensure_open()
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_kmip30_operation_builder_validate(self._handle))
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        output = ffi.new("kmipkit_client_batch_item_t **")
+        with _NATIVE_CALL_LOCK:
+            status = lib.kmipkit_kmip30_operation_builder_build_batch_item(self._handle, output)
+            _raise_client_status(status)
+        if output[0] == ffi.NULL:
+            errors.raise_for_status(7)
+        handle = _base_ffi.cast(
+            "kmipkit_client_batch_item_t *", int(ffi.cast("uintptr_t", output[0]))
+        )
+        return _wrap_owned_handle(extensions.ClientBatchItem, handle)
+
+    to_batch_item = build
+
+    def execute(self, limits: ttlv.CodecLimits) -> BatchResult:
+        self._ensure_open()
+        if not isinstance(limits, ttlv.CodecLimits):
+            errors.raise_for_status(4)
+        return _execute_single_item(
+            self._client, self.build(), limits, self._options,
+            self._asynchronous_indicator,
         )
 
-    def get_attribute_list(
-        self,
-        unique_identifier: extensions.UniqueIdentifier | None = None,
-    ) -> GetAttributeListBuilder:
-        return GetAttributeListBuilder(self._client, unique_identifier)
+    def close(self) -> None:
+        if self._handle != ffi.NULL:
+            with _NATIVE_CALL_LOCK:
+                lib.kmipkit_kmip30_operation_builder_release(self._handle)
+            self._handle = ffi.NULL
+
+    def __enter__(self) -> Self:
+        self._ensure_open()
+        return self
+
+    def __exit__(self, *_: object) -> None:
+        self.close()
+
+    def __del__(self) -> None:
+        try:
+            self.close()
+        except Exception:  # noqa: BLE001 - finalizers must not raise during shutdown.
+            pass
+
+
+def _attribute_set_handle(attributes: Any) -> Any:
+    from .attribute_operations import AttributeSet
+
+    if not isinstance(attributes, AttributeSet):
+        errors.raise_for_status(4)
+    return _client_abi_pointer("kmipkit_attribute_set_t *", attributes._pointer())
+
+
+def _new_create_credential_object(function: Any, *arguments: Any) -> CreateCredentialObject:
+    output = ffi.new("kmipkit_create_credential_object_t **")
+    with _NATIVE_CALL_LOCK:
+        _raise_client_status(function(*arguments, output))
+    if output[0] == ffi.NULL:
+        errors.raise_for_status(7)
+    handle = _base_ffi.cast(
+        "kmipkit_create_credential_object_t *", int(ffi.cast("uintptr_t", output[0]))
+    )
+    return _wrap_owned_handle(CreateCredentialObject, handle)
+
+
+def _credential_span(value: bytes | bytearray | memoryview) -> tuple[Any, Any, bytearray]:
+    staged, pointer = _stage_crypto_bytes(value)
+    span = ffi.new("kmipkit_byte_span_v1_t *", {"data": pointer, "length": len(staged)})
+    return span, pointer, staged
+
+
+def _credential_text_span(value: str) -> tuple[Any, Any, bytearray]:
+    if not isinstance(value, str):
+        errors.raise_for_status(4)
+    try:
+        staged = bytearray(value.encode("utf-8", "strict"))
+    except UnicodeError:
+        errors.raise_for_status(4)
+    if len(staged) > _MAX_CRYPTO_INPUT_BYTES:
+        _wipe_crypto_stage(staged)
+        errors.raise_for_status(6)
+    pointer = ffi.from_buffer("const uint8_t[]", staged) if staged else ffi.NULL
+    span = ffi.new("kmipkit_byte_span_v1_t *", {"data": pointer, "length": len(staged)})
+    return span, pointer, staged
+
+
+def _secret_bytes_copy(value: SecretBytes | None) -> bytearray | None:
+    if value is None:
+        return None
+    if not isinstance(value, SecretBytes):
+        errors.raise_for_status(4)
+    return value.with_bytes(lambda view: bytearray(view))
+
+
+def _secret_text_copy(value: SecretText | None) -> bytearray | None:
+    if value is None:
+        return None
+    if not isinstance(value, SecretText):
+        errors.raise_for_status(4)
+    # The runtime's decoded str copy cannot be reliably erased; encoded staging is.
+    return value.with_str(lambda text: bytearray(text.encode("utf-8", "strict")))
+
+
+def _staged_secret_span(staged: bytearray) -> Any:
+    pointer = ffi.from_buffer("const uint8_t[]", staged) if staged else ffi.NULL
+    return ffi.new("kmipkit_byte_span_v1_t *", {"data": pointer, "length": len(staged)})
+
+
+class CreateCredentialObject(NativeHandle):
+    """One closed, zeroizing KMIP Create Credential object alternative."""
+
+    _release_name = "kmipkit_create_credential_object_release"
+
+    @classmethod
+    def certificate(cls, certificate: ttlv.TtlvItem) -> CreateCredentialObject:
+        if not isinstance(certificate, ttlv.TtlvItem):
+            errors.raise_for_status(4)
+        pointer = extensions._client_native_item(certificate)
+        return _new_create_credential_object(
+            lib.kmipkit_create_credential_object_certificate, pointer
+        )
+
+    @classmethod
+    def password(
+        cls, *, password: SecretText | None = None,
+        password_salt: SecretBytes | None = None,
+        password_salt_algorithm: int | None = None,
+        salted_password: SecretBytes | None = None,
+        iteration_count: int | None = None,
+    ) -> CreateCredentialObject:
+        staged: list[bytearray] = []
+        spans: list[Any] = []
+        try:
+            for value, is_text in ((password, True), (password_salt, False),
+                                   (salted_password, False)):
+                if value is None:
+                    spans.append(ffi.NULL)
+                    continue
+                value = _secret_text_copy(value) if is_text else _secret_bytes_copy(value)
+                assert value is not None
+                staged.append(value)
+                spans.append(_staged_secret_span(value))
+            algorithm = None if password_salt_algorithm is None else _unsigned(password_salt_algorithm, 32)
+            iterations = None if iteration_count is None else _unsigned(iteration_count, 31)
+            return _new_create_credential_object(
+                lib.kmipkit_create_credential_object_password,
+                spans[0], spans[1], int(algorithm is not None), algorithm or 0,
+                spans[2], int(iterations is not None), iterations or 0,
+            )
+        finally:
+            for owner in staged:
+                _wipe_crypto_stage(owner)
+
+    @classmethod
+    def device(
+        cls, *, serial_number: str | None = None, device_identifier: str | None = None,
+        network_identifier: str | None = None, machine_identifier: str | None = None,
+        media_identifier: str | None = None,
+    ) -> CreateCredentialObject:
+        staged: list[bytearray] = []
+        spans: list[Any] = []
+        try:
+            for value in (serial_number, device_identifier, network_identifier,
+                          machine_identifier, media_identifier):
+                if value is None:
+                    spans.append(ffi.NULL)
+                else:
+                    span, _pointer, owner = _credential_text_span(value)
+                    spans.append(span)
+                    staged.append(owner)
+            return _new_create_credential_object(
+                lib.kmipkit_create_credential_object_device, *spans
+            )
+        finally:
+            for owner in staged:
+                _wipe_crypto_stage(owner)
+
+    @classmethod
+    def hashed_password(
+        cls, hashed_username_password: SecretBytes,
+        hashed_password_username: SecretBytes, *,
+        hashing_algorithm: int | None = None,
+    ) -> CreateCredentialObject:
+        first_owner: bytearray | None = None
+        second_owner: bytearray | None = None
+        try:
+            first_owner = _secret_bytes_copy(hashed_username_password)
+            second_owner = _secret_bytes_copy(hashed_password_username)
+            if first_owner is None or second_owner is None:
+                errors.raise_for_status(4)
+            first = _staged_secret_span(first_owner)
+            second = _staged_secret_span(second_owner)
+            algorithm = None if hashing_algorithm is None else _unsigned(hashing_algorithm, 32)
+            return _new_create_credential_object(
+                lib.kmipkit_create_credential_object_hashed_password,
+                int(algorithm is not None), algorithm or 0, first, second,
+            )
+        finally:
+            if first_owner is not None:
+                _wipe_crypto_stage(first_owner)
+            if second_owner is not None:
+                _wipe_crypto_stage(second_owner)
+
+    @classmethod
+    def one_time_password(
+        cls, algorithm: int, *, digest: int | None = None,
+        serial: str | None = None,
+        seed: SecretBytes | None = None,
+        interval: int | None = None, digits: int | None = None,
+    ) -> CreateCredentialObject:
+        serial_span: Any = ffi.NULL
+        seed_span: Any = ffi.NULL
+        staged: list[bytearray] = []
+        try:
+            if serial is not None:
+                serial_span, _pointer, owner = _credential_text_span(serial)
+                staged.append(owner)
+            if seed is not None:
+                secret_seed = _secret_bytes_copy(seed)
+                assert secret_seed is not None
+                staged.append(secret_seed)
+                seed_span = _staged_secret_span(secret_seed)
+            algorithm_value = _unsigned(algorithm, 32)
+            digest_value = None if digest is None else _unsigned(digest, 32)
+            interval_value = None if interval is None else _unsigned(interval, 32)
+            digits_value = None if digits is None else _unsigned(digits, 31)
+            return _new_create_credential_object(
+                lib.kmipkit_create_credential_object_one_time_password,
+                algorithm_value, int(digest_value is not None), digest_value or 0,
+                serial_span, seed_span, int(interval_value is not None), interval_value or 0,
+                int(digits_value is not None), digits_value or 0,
+            )
+        finally:
+            for owner in staged:
+                _wipe_crypto_stage(owner)
+
+
+class CreateCredentialBuilder(_Kmip30OperationBuilder):
+    """Build a typed Create Credential from its closed object alternative."""
+
+    def __init__(self, client: Client, attributes: Any,
+                 credential_object: CreateCredentialObject) -> None:
+        _require_kmip30_client(client)
+        if not isinstance(credential_object, CreateCredentialObject):
+            errors.raise_for_status(4)
+        output = ffi.new("kmipkit_kmip30_operation_builder_t **")
+        attributes_pointer = _attribute_set_handle(attributes)
+        object_pointer = _client_abi_pointer(
+            "kmipkit_create_credential_object_t *", credential_object._pointer()
+        )
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_create_credential_builder_create(
+                attributes_pointer, object_pointer, output
+            ))
+        if output[0] == ffi.NULL:
+            errors.raise_for_status(7)
+        super().__init__(client, output[0])
+
+
+def _kmip30_builder(create_function: Any, *arguments: Any) -> Any:
+    output = ffi.new("kmipkit_kmip30_operation_builder_t **")
+    with _NATIVE_CALL_LOCK:
+        _raise_client_status(create_function(*arguments, output))
+    if output[0] == ffi.NULL:
+        errors.raise_for_status(7)
+    return output[0]
+
+
+class CreateGroupBuilder(_Kmip30OperationBuilder):
+    """Create a KMIP 3.0 Group with an ordered AttributeSet."""
+
+    def __init__(self, client: Client, attributes: Any) -> None:
+        _require_kmip30_client(client)
+        handle = _kmip30_builder(
+            lib.kmipkit_create_group_builder_create, _attribute_set_handle(attributes)
+        )
+        super().__init__(client, handle)
+
+
+class CreateUserBuilder(_Kmip30OperationBuilder):
+    """Create a KMIP 3.0 User with an ordered AttributeSet."""
+
+    def __init__(self, client: Client, attributes: Any) -> None:
+        _require_kmip30_client(client)
+        handle = _kmip30_builder(
+            lib.kmipkit_create_user_builder_create, _attribute_set_handle(attributes)
+        )
+        super().__init__(client, handle)
+
+
+def _kmip30_identifier(value: extensions.UniqueIdentifier) -> tuple[Any, Any]:
+    if not isinstance(value, extensions.UniqueIdentifier):
+        errors.raise_for_status(4)
+    return _identifier(value)
+
+
+class DeactivateBuilder(_Kmip30OperationBuilder):
+    """Deactivate one object, with optional typed reason and date fields."""
+
+    def __init__(self, client: Client, unique_identifier: extensions.UniqueIdentifier) -> None:
+        _require_kmip30_client(client)
+        record, owner = _kmip30_identifier(unique_identifier)
+        handle = _kmip30_builder(lib.kmipkit_deactivate_builder_create, record)
+        del owner
+        super().__init__(client, handle)
+
+    def deactivation_reason(self, reason: ttlv.Structure) -> Self:
+        self._ensure_open()
+        if not isinstance(reason, ttlv.Structure):
+            errors.raise_for_status(4)
+        pointer = _client_abi_pointer("kmipkit_ttlv_structure_t *", reason._pointer())
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_kmip30_operation_builder_set_deactivation_reason(
+                self._handle, pointer
+            ))
+        return self
+
+    def deactivation_date(self, unix_seconds: int) -> Self:
+        self._ensure_open()
+        if not isinstance(unix_seconds, int) or isinstance(unix_seconds, bool):
+            errors.raise_for_status(4)
+        if not -(1 << 63) <= unix_seconds < (1 << 63):
+            errors.raise_for_status(4)
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_kmip30_operation_builder_set_deactivation_date(
+                self._handle, unix_seconds
+            ))
+        return self
+
+
+class _KemBuilder(_Kmip30OperationBuilder):
+    def attributes(self, attributes: Any) -> Self:
+        self._ensure_open()
+        pointer = _attribute_set_handle(attributes)
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_kmip30_operation_builder_set_attributes(
+                self._handle, pointer
+            ))
+        return self
+
+    def cryptographic_parameters(self, parameters: CryptographicParameters) -> Self:
+        self._ensure_open()
+        if not isinstance(parameters, CryptographicParameters):
+            errors.raise_for_status(4)
+        pointer = _client_abi_pointer(
+            "kmipkit_cryptographic_parameters_t *", parameters._pointer()
+        )
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_kmip30_operation_builder_set_cryptographic_parameters(
+                self._handle, pointer
+            ))
+        return self
+
+
+class DecapsulateBuilder(_KemBuilder):
+    """Decapsulate public ciphertext without exposing the server-managed secret."""
+
+    def __init__(
+        self, client: Client, unique_identifier: extensions.UniqueIdentifier,
+        ciphertext: bytes | bytearray | memoryview,
+    ) -> None:
+        _require_kmip30_client(client)
+        record, identifier_owner = _kmip30_identifier(unique_identifier)
+        staged, data_pointer = _stage_crypto_bytes(ciphertext)
+        span = ffi.new("kmipkit_byte_span_v1_t *", {"data": data_pointer, "length": len(staged)})
+        try:
+            handle = _kmip30_builder(
+                lib.kmipkit_decapsulate_builder_create, record, span
+            )
+        finally:
+            _wipe_crypto_stage(staged)
+            del identifier_owner
+        super().__init__(client, handle)
+
+
+class EncapsulateBuilder(_KemBuilder):
+    """Encapsulate to the supplied key, returning only its identifier and public Data."""
+
+    def __init__(self, client: Client, unique_identifier: extensions.UniqueIdentifier) -> None:
+        _require_kmip30_client(client)
+        record, owner = _kmip30_identifier(unique_identifier)
+        handle = _kmip30_builder(lib.kmipkit_encapsulate_builder_create, record)
+        del owner
+        super().__init__(client, handle)
+
+
+class ObliterateBuilder(_Kmip30OperationBuilder):
+    """Obliterate the object identified by an explicit KMIP Unique Identifier."""
+
+    def __init__(self, client: Client, unique_identifier: extensions.UniqueIdentifier) -> None:
+        _require_kmip30_client(client)
+        record, owner = _kmip30_identifier(unique_identifier)
+        handle = _kmip30_builder(lib.kmipkit_obliterate_builder_create, record)
+        del owner
+        super().__init__(client, handle)
 
 
 class LocateBuilder:
@@ -998,21 +1461,10 @@ class DeleteAttributeBuilder:
 
 
 class _AttributeReadBuilder:
-    """Shared one-exchange lifecycle for typed attribute read requests."""
+    """Shared execution options for typed attribute-read builders."""
 
-    def __init__(
-        self,
-        client: Client,
-        unique_identifier: extensions.UniqueIdentifier | None,
-    ) -> None:
-        if unique_identifier is not None and not (
-            isinstance(unique_identifier, extensions.UniqueIdentifier)
-            and unique_identifier.kind
-            is extensions.UniqueIdentifierKind.TEXT_STRING
-        ):
-            errors.raise_for_status(4)
+    def __init__(self, client: Client) -> None:
         self._client = client
-        self._unique_identifier = unique_identifier
         self._options: RequestOptions | None = None
         self._asynchronous_indicator: int | None = None
 
@@ -1026,65 +1478,92 @@ class _AttributeReadBuilder:
         self._asynchronous_indicator = _unsigned(value, 32)
         return self
 
-    def validate(self) -> None:
-        with self.build():
-            pass
-
-    def to_batch_item(self) -> extensions.ClientBatchItem:
-        return self.build()
-
     def execute(self, limits: ttlv.CodecLimits) -> BatchResult:
-        if not isinstance(self._client, Client) or not isinstance(
-            limits, ttlv.CodecLimits
-        ):
+        if not isinstance(limits, ttlv.CodecLimits):
             errors.raise_for_status(4)
-        with Batch.create() as batch:
-            with self.build() as item:
-                batch.add_item(item)
-            if self._asynchronous_indicator is not None:
-                batch.set_asynchronous_indicator(self._asynchronous_indicator)
-            if self._options is not None:
-                return self._client.execute_with_options(
-                    batch, limits, self._options
-                )
-            return self._client.execute(batch, limits)
+        with self.build() as item:
+            return _execute_single_item(
+                self._client,
+                item,
+                limits,
+                self._options,
+                self._asynchronous_indicator,
+            )
 
 
 class GetAttributesBuilder(_AttributeReadBuilder):
-    """Typed Get Attributes request preserving reference order."""
+    """Typed KMIP Get Attributes builder preserving ordered references."""
 
     def __init__(
         self,
         client: Client,
-        unique_identifier: extensions.UniqueIdentifier | None,
-        attribute_references: Sequence[extensions.AttributeReference],
+        unique_identifier: extensions.UniqueIdentifier | None = None,
+        attribute_references: Sequence[extensions.AttributeReference] = (),
     ) -> None:
-        if not isinstance(attribute_references, Sequence) or isinstance(
-            attribute_references, (str, bytes, bytearray)
+        if unique_identifier is not None and (
+            not isinstance(unique_identifier, extensions.UniqueIdentifier)
+            or unique_identifier.kind is not extensions.UniqueIdentifierKind.TEXT_STRING
         ):
             errors.raise_for_status(4)
-        if len(attribute_references) > 100_000:
-            errors.raise_for_status(5)
-        references = tuple(attribute_references)
-        if any(not isinstance(reference, extensions.AttributeReference)
-               for reference in references):
+        references = extensions._bounded_snapshot(
+            attribute_references, extensions._MAX_ATTRIBUTE_REFERENCES
+        )
+        if any(not isinstance(reference, extensions.AttributeReference) for reference in references):
             errors.raise_for_status(4)
-        super().__init__(client, unique_identifier)
+        super().__init__(client)
+        self._unique_identifier = unique_identifier
         self._attribute_references = references
 
-    def build(self) -> extensions.ClientBatchItem:
-        return extensions.client_batch_item_get_attributes(
+    def _build_request(self) -> Any:
+        from .attribute_operations import GetAttributesRequest
+
+        return GetAttributesRequest.create(
             self._unique_identifier, self._attribute_references
         )
 
-
-class GetAttributeListBuilder(_AttributeReadBuilder):
-    """Typed Get Attribute List request with an optional object identifier."""
+    def validate(self) -> None:
+        with self._build_request():
+            pass
 
     def build(self) -> extensions.ClientBatchItem:
-        return extensions.client_batch_item_get_attribute_list(
-            self._unique_identifier
-        )
+        with self._build_request() as request:
+            return request.to_batch_item()
+
+    def to_batch_item(self) -> extensions.ClientBatchItem:
+        return self.build()
+
+
+class GetAttributeListBuilder(_AttributeReadBuilder):
+    """Typed KMIP Get Attribute List builder preserving an omitted identifier."""
+
+    def __init__(
+        self,
+        client: Client,
+        unique_identifier: extensions.UniqueIdentifier | None = None,
+    ) -> None:
+        if unique_identifier is not None and (
+            not isinstance(unique_identifier, extensions.UniqueIdentifier)
+            or unique_identifier.kind is not extensions.UniqueIdentifierKind.TEXT_STRING
+        ):
+            errors.raise_for_status(4)
+        super().__init__(client)
+        self._unique_identifier = unique_identifier
+
+    def _build_request(self) -> Any:
+        from .attribute_operations import GetAttributeListRequest
+
+        return GetAttributeListRequest.create(self._unique_identifier)
+
+    def validate(self) -> None:
+        with self._build_request():
+            pass
+
+    def build(self) -> extensions.ClientBatchItem:
+        with self._build_request() as request:
+            return request.to_batch_item()
+
+    def to_batch_item(self) -> extensions.ClientBatchItem:
+        return self.build()
 
 
 class Operation:
@@ -1107,23 +1586,33 @@ class Operation:
         return self
 
     def build(self) -> extensions.ClientBatchItem:
-        """Build the existing typed Get or Destroy batch item without sending it."""
-        if self._operation == "get":
-            return extensions.client_batch_item_get(self._identifier)
-        return extensions.client_batch_item_destroy(self._identifier)
+        """Build an existing typed lifecycle item without sending it."""
+        constructors = {
+            "get": extensions.client_batch_item_get,
+            "destroy": extensions.client_batch_item_destroy,
+            "activate": extensions.client_batch_item_activate,
+            "archive": extensions.client_batch_item_archive,
+            "recover": extensions.client_batch_item_recover,
+        }
+        try:
+            constructor = constructors[self._operation]
+        except KeyError:
+            errors.raise_for_status(4)
+        return constructor(self._identifier)
 
     def to_batch_item(self) -> extensions.ClientBatchItem:
         """Alias for :meth:`build` for consistency with the Rust builder."""
         return self.build()
 
+    def validate(self) -> None:
+        """Validate locally without sending a request."""
+        self.build().close()
+
     def execute(self, limits: ttlv.CodecLimits) -> BatchResult:
-        with Batch.create() as batch:
-            batch.add_item(self.build())
-            if self._asynchronous_indicator is not None:
-                batch.set_asynchronous_indicator(self._asynchronous_indicator)
-            if self._options is not None:
-                return self._client.execute_with_options(batch, limits, self._options)
-            return self._client.execute(batch, limits)
+        return _execute_single_item(
+            self._client, self.build(), limits, self._options,
+            self._asynchronous_indicator,
+        )
 
 
 class SymmetricKeyBuilder:
@@ -1360,6 +1849,13 @@ class CreateKeyPairBuilder:
         return self._add_item(
             lib.kmipkit_create_key_pair_builder_add_common_attribute_item, item
         )
+
+    def common_attribute(self, value: TypedAttribute) -> CreateKeyPairBuilder:
+        """Copy a typed attribute into the Common Attributes group."""
+        if not isinstance(value, TypedAttribute):
+            errors.raise_for_status(4)
+        with value.as_item() as item:
+            return self.add_common_attribute_item(item)
 
     def add_private_attribute_item(self, item: ttlv.TtlvItem) -> CreateKeyPairBuilder:
         return self._add_item(

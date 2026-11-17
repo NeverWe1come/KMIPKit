@@ -599,6 +599,7 @@ def test_built_wheel_artifact_contains_py_typed_and_adjacent_native_library(
         members = set(wheel.namelist())
 
     assert "kmipkit/py.typed" in members
+    assert "kmipkit/fluent.pyi" in members
     native_libraries = {
         name
         for name in members

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import json
 import unittest
 from pathlib import Path
@@ -605,6 +606,30 @@ class NamedValueGeneratorTests(unittest.TestCase):
         )
 
         self.assertEqual(3, outputs.count(r'"Name\042\134\012"'))
+
+
+
+    def test_manifest_reconciliation_preserves_reviewed_requirement_order(self) -> None:
+        declaration = {
+            "declarationId": "existing",
+            "packageId": "rust-kmipkit",
+            "kind": "constant",
+            "exportName": "example",
+            "capabilityId": "named_protocol_values",
+            "requirementIds": ["KMIPKIT-0047-FR-009", "KMIPKIT-0047-FR-005"],
+            "declarationState": "declared",
+            "parityScope": "four-language",
+            "approvalSource": reconcile_named_value_manifest.APPROVAL_SOURCE,
+            "languageMappings": {"rust": {"packageId": "rust-kmipkit", "name": "example"}},
+        }
+        existing = copy.deepcopy(declaration)
+        existing["requirementIds"] = ["KMIPKIT-0047-FR-005", "KMIPKIT-0047-FR-009"]
+        reconciled = reconcile_named_value_manifest.reconcile(
+            {"requirementIds": [], "capabilities": [], "publicDeclarations": [existing]},
+            [declaration],
+            {"rust": ["example"]},
+        )
+        self.assertEqual(existing["requirementIds"], reconciled["publicDeclarations"][0]["requirementIds"])
 
 
 if __name__ == "__main__":

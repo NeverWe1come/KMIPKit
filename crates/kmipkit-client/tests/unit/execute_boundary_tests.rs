@@ -883,13 +883,17 @@ struct BoundaryAudit {
     current_inline_modules: Vec<String>,
     allowed_call_target: bool,
     logged_sensitive_value: bool,
+    approved_kmip30_builder_macro_defined: bool,
 }
 
 impl BoundaryAudit {
     fn visit_source_file(&mut self, file: &syn::File, source_path: &Path) {
         let previous_source_path = self.current_source_path.replace(source_path.to_path_buf());
         let previous_inline_modules = std::mem::take(&mut self.current_inline_modules);
+        let previous_kmip30_macro =
+            std::mem::replace(&mut self.approved_kmip30_builder_macro_defined, false);
         visit::visit_file(self, file);
+        self.approved_kmip30_builder_macro_defined = previous_kmip30_macro;
         self.current_source_path = previous_source_path;
         self.current_inline_modules = previous_inline_modules;
     }
@@ -1014,6 +1018,9 @@ impl BoundaryAudit {
             is_exact_batch_response_iterator(execute_root_scope, impl_type, signature);
         let raw_response_accessor =
             is_exact_raw_response_accessor(execute_root_scope, impl_type, signature);
+        let fluent_root_scope = self.is_source_root(Path::new("fluent.rs"));
+        let fluent_kmip30_ciphertext =
+            is_exact_fluent_kmip30_ciphertext(fluent_root_scope, impl_type, signature);
         let registry_value_validation = is_exact_registry_value_validation(
             self.is_source_root(Path::new("extension_registry.rs")),
             impl_type,
@@ -1029,7 +1036,6 @@ impl BoundaryAudit {
             impl_type,
             signature,
         );
-        let fluent_root_scope = self.is_source_root(Path::new("fluent.rs"));
         let fluent_catalogued_attribute =
             is_exact_fluent_catalogued_attribute(fluent_root_scope, impl_type, signature);
         let fluent_explicit_attribute_item =
@@ -1070,6 +1076,7 @@ impl BoundaryAudit {
                     || fluent_explicit_attribute_item
                         && is_exact_fluent_explicit_attribute_argument(signature, index)
                     || fluent_explicit_value && index == 1
+                    || fluent_kmip30_ciphertext && index == 2
                 {
                     continue;
                 }
@@ -1133,6 +1140,23 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
 
     fn visit_item_macro(&mut self, item: &'ast syn::ItemMacro) {
         // Declarative/procedural item macros have opaque expansion behavior.
+        // Approved fluent macros require an exact checked-in body; 3.0 builder
+        // invocations are additionally confined to their seven root-level types.
+        let kmip30_root = self.is_source_root(Path::new("fluent.rs"))
+            && self.current_impl_type.is_none()
+            && self.current_function.is_none();
+        if is_approved_fluent_option_setter_definition(item) {
+            return;
+        }
+        if kmip30_root && is_approved_kmip30_builder_macro(item) {
+            if item.ident.is_some() {
+                self.approved_kmip30_builder_macro_defined = true;
+                return;
+            }
+            if self.approved_kmip30_builder_macro_defined {
+                return;
+            }
+        }
         if is_sensitive_log_macro(&item.mac.path)
             && contains_logged_sensitive_value(&item.mac.tokens.to_string())
         {
@@ -1567,9 +1591,12 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
             self.logged_sensitive_value = true;
             self.reject("sensitive request metadata appears in a logger macro");
         }
+        let approved_fluent_option_setters =
+            is_approved_fluent_option_setter_invocation(macro_call);
         if !(macro_call.path.is_ident("write")
             || macro_call.path.is_ident("matches")
-            || macro_call.path.is_ident("vec"))
+            || macro_call.path.is_ident("vec")
+            || approved_fluent_option_setters)
         {
             let path = macro_call
                 .path
@@ -1579,15 +1606,121 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
                 .collect::<Vec<_>>()
                 .join("::");
             self.reject(format!("unsupported macro: {path}"));
-        } else if allowed_macro_contains_forbidden_content(macro_call) {
+        } else if !approved_fluent_option_setters
+            && allowed_macro_contains_forbidden_content(macro_call)
+        {
             self.reject(
                 "nested macro or execute invocation appears in an allowed macro token tree",
             );
         }
-        if contains_protected_macro_tokens(&tokens) {
+        if !approved_fluent_option_setters && contains_protected_macro_tokens(&tokens) {
             self.reject("protected boundary tokens appear in opaque macro input");
         }
     }
+}
+
+fn is_approved_kmip30_builder_macro(item: &syn::ItemMacro) -> bool {
+    if !item.attrs.is_empty() {
+        return false;
+    }
+    if item.ident.is_none()
+        && item.mac.path.is_ident("impl_kmip30_builder_methods")
+        && matches!(item.mac.delimiter, syn::MacroDelimiter::Paren(_))
+    {
+        return syn::parse2::<syn::Ident>(item.mac.tokens.clone()).is_ok_and(|builder| {
+            matches!(
+                builder.to_string().as_str(),
+                "CreateCredentialBuilder"
+                    | "CreateGroupBuilder"
+                    | "CreateUserBuilder"
+                    | "DeactivateBuilder"
+                    | "DecapsulateBuilder"
+                    | "EncapsulateBuilder"
+                    | "ObliterateBuilder"
+            )
+        });
+    }
+    if item
+        .ident
+        .as_ref()
+        .is_none_or(|name| name != "impl_kmip30_builder_methods")
+        || !item.mac.path.is_ident("macro_rules")
+        || !matches!(item.mac.delimiter, syn::MacroDelimiter::Brace(_))
+    {
+        return false;
+    }
+    let approved = syn::parse_file(include_str!(
+        "../fixtures/execute_boundary/kmip30_builder_methods_macro.rs"
+    ))
+    .expect("the pinned macro fixture parses");
+    approved.items.into_iter().any(|approved| {
+        matches!(approved,
+        Item::Macro(approved) if approved.mac.tokens.to_string() == item.mac.tokens.to_string())
+    })
+}
+
+fn is_approved_fluent_option_setter_definition(item: &syn::ItemMacro) -> bool {
+    if !item.attrs.is_empty()
+        || item.ident.as_ref().map(ToString::to_string).as_deref()
+            != Some("fluent_option_field_setters")
+        || !item.mac.path.is_ident("macro_rules")
+    {
+        return false;
+    }
+
+    let Ok(approved_file) = syn::parse_file(include_str!(
+        "../../tests/fixtures/execute_boundary/fluent_option_setter_macro.rs"
+    )) else {
+        return false;
+    };
+    approved_file.items.into_iter().any(|approved_item| {
+        let Item::Macro(approved_macro) = approved_item else {
+            return false;
+        };
+        approved_macro
+            .ident
+            .as_ref()
+            .map(ToString::to_string)
+            .as_deref()
+            == Some("fluent_option_field_setters")
+            && approved_macro.mac.path.is_ident("macro_rules")
+            && approved_macro.mac.tokens.to_string() == item.mac.tokens.to_string()
+    })
+}
+
+fn is_approved_fluent_option_setter_invocation(macro_call: &syn::Macro) -> bool {
+    // The matcher accepts only a documentation literal, two fixed field paths,
+    // and the async-method constness selector; it cannot inject executable code.
+    if !macro_call.path.is_ident("fluent_option_field_setters")
+        || !matches!(macro_call.delimiter, syn::MacroDelimiter::Paren(_))
+    {
+        return false;
+    }
+
+    let tokens = macro_call.tokens.to_string();
+    let parts = tokens.split(';').map(str::trim).collect::<Vec<_>>();
+    if parts.len() != 4 || syn::parse_str::<LitStr>(parts[0]).is_err() {
+        return false;
+    }
+    let compact = |path: &str| {
+        path.chars()
+            .filter(|character| !character.is_whitespace())
+            .collect::<String>()
+    };
+    let options_path = compact(parts[1]);
+    let indicator_path = compact(parts[2]);
+    let mode = parts[3];
+
+    matches!(
+        options_path.as_str(),
+        "options" | "execution.options" | "state.options" | "state.execution.options"
+    ) && matches!(
+        indicator_path.as_str(),
+        "asynchronous_indicator"
+            | "execution.asynchronous_indicator"
+            | "state.asynchronous_indicator"
+            | "state.execution.asynchronous_indicator"
+    ) && matches!(mode, "const" | "non_const")
 }
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
@@ -2255,6 +2388,55 @@ fn has_public_type_or_const_generics(signature: &syn::Signature) -> bool {
     })
 }
 
+fn is_exact_fluent_kmip30_ciphertext(
+    fluent_root_scope: bool,
+    impl_type: Option<&str>,
+    signature: &syn::Signature,
+) -> bool {
+    if !fluent_root_scope
+        || impl_type != Some("RequestBuilder")
+        || signature.ident != "decapsulate"
+        || !signature.generics.params.is_empty()
+        || signature.generics.where_clause.is_some()
+        || signature.asyncness.is_some()
+        || signature.constness.is_some()
+        || signature.unsafety.is_some()
+        || signature.abi.is_some()
+        || signature.variadic.is_some()
+        || signature.inputs.len() != 3
+        || !matches!(signature.inputs.first(), Some(syn::FnArg::Receiver(receiver))
+            if receiver.reference.is_none() && receiver.colon_token.is_none() && receiver.attrs.is_empty())
+        || !matches!(signature.inputs.get(1), Some(syn::FnArg::Typed(argument))
+            if argument.attrs.is_empty() && is_plain_type_path(&argument.ty, "UniqueIdentifier"))
+    {
+        return false;
+    }
+    let syn::ReturnType::Type(_, output) = &signature.output else {
+        return false;
+    };
+    let Type::Path(output) = output.as_ref() else {
+        return false;
+    };
+    let output_is_builder = output.qself.is_none()
+        && output.path.leading_colon.is_none()
+        && output.path.segments.len() == 1
+        && output.path.segments[0].ident == "DecapsulateBuilder"
+        && matches!(&output.path.segments[0].arguments, syn::PathArguments::AngleBracketed(arguments)
+            if arguments.args.len() == 1 && matches!(arguments.args.first(),
+                Some(syn::GenericArgument::Lifetime(lifetime)) if lifetime.ident == "a"));
+    let Some(syn::FnArg::Typed(argument)) = signature.inputs.get(2) else {
+        return false;
+    };
+    output_is_builder
+        && argument.attrs.is_empty()
+        && matches!(argument.ty.as_ref(), Type::Path(path)
+            if path.qself.is_none() && path.path.leading_colon.is_none()
+                && path.path.segments.len() == 1 && path.path.segments[0].ident == "Vec"
+                && matches!(&path.path.segments[0].arguments, syn::PathArguments::AngleBracketed(arguments)
+                    if arguments.args.len() == 1 && matches!(arguments.args.first(),
+                        Some(syn::GenericArgument::Type(ty)) if is_plain_type_path(ty, "u8"))))
+}
+
 fn is_exact_fluent_catalogued_attribute(
     fluent_root_scope: bool,
     impl_type: Option<&str>,
@@ -2439,7 +2621,10 @@ fn is_exact_fluent_builder_explicit_value(
         (
             Some("CreateSplitKeyBuilder"),
             "prime_field_size" | "protection_storage_masks"
-        ) | (Some("RegisterBuilder"), "protection_storage_masks")
+        ) | (
+            Some("CreateBuilder" | "RegisterBuilder"),
+            "protection_storage_masks"
+        ) | (Some("DeactivateBuilder"), "deactivation_reason")
     );
     if !fluent_root_scope
         || !supported_method
@@ -2480,9 +2665,12 @@ fn is_exact_fluent_builder_explicit_value(
                             && matches!(arguments.args.first(),
                                 Some(syn::GenericArgument::Type(ty))
                                     if is_plain_type_path(ty, "u8")))),
+        "deactivation_reason" => is_plain_type_path(&argument.ty, "Structure"),
         "protection_storage_masks" => {
-            matches!(impl_type, Some("CreateSplitKeyBuilder" | "RegisterBuilder"))
-                && is_plain_type_path(&argument.ty, "Structure")
+            matches!(
+                impl_type,
+                Some("CreateBuilder" | "CreateSplitKeyBuilder" | "RegisterBuilder")
+            ) && is_plain_type_path(&argument.ty, "Structure")
         }
         _ => false,
     }
@@ -2624,6 +2812,43 @@ fn is_plain_reference_to_str(ty: &Type) -> bool {
         if reference.lifetime.is_none()
             && reference.mutability.is_none()
             && is_plain_type_path(&reference.elem, "str"))
+}
+
+#[test]
+fn generic_create_masks_exception_accepts_only_its_exact_typed_setter() {
+    let masks = syn::parse_str::<syn::Signature>(
+        "fn protection_storage_masks(self, masks: Structure) -> Self",
+    )
+    .unwrap();
+    assert!(is_exact_fluent_builder_explicit_value(
+        true,
+        Some("CreateBuilder"),
+        &masks
+    ));
+    assert!(!is_exact_fluent_builder_explicit_value(
+        false,
+        Some("CreateBuilder"),
+        &masks
+    ));
+    assert!(!is_exact_fluent_builder_explicit_value(
+        true,
+        Some("OtherBuilder"),
+        &masks
+    ));
+    for signature in [
+        "fn protection_storage_masks(self, masks: Item) -> Self",
+        "fn protection_storage_masks(self, masks: Vec<u8>) -> Self",
+        "fn protection_storage_masks(self, masks: Structure) -> Item",
+        "fn execute(self, masks: Structure) -> Self",
+        "fn prime_field_size(self, value: Vec<u8>) -> Self",
+    ] {
+        let signature = syn::parse_str::<syn::Signature>(signature).unwrap();
+        assert!(!is_exact_fluent_builder_explicit_value(
+            true,
+            Some("CreateBuilder"),
+            &signature
+        ));
+    }
 }
 
 #[test]
@@ -4995,6 +5220,39 @@ fn source_inventory_fails_closed_for_uninspected_constructs() {
 }
 
 #[test]
+fn exact_fluent_option_setter_macro_is_audited_as_a_fixed_safe_expansion() {
+    let safe = include_str!("../../tests/fixtures/execute_boundary/fluent_option_setter_macro.rs");
+    let unsafe_macro =
+        include_str!("../../tests/fixtures/execute_boundary/unsafe_fluent_option_setter_macro.rs");
+    let safe_with_exchange = format!("{safe}\n{CANONICAL_EXECUTE_EXCHANGE_FIXTURE}");
+    let unsafe_with_exchange = format!("{unsafe_macro}\n{CANONICAL_EXECUTE_EXCHANGE_FIXTURE}");
+    let unsafe_invocation = safe.replace(
+        "options; asynchronous_indicator; const",
+        "client.execute; asynchronous_indicator; const",
+    );
+    let unsafe_invocation_with_exchange =
+        format!("{unsafe_invocation}\n{CANONICAL_EXECUTE_EXCHANGE_FIXTURE}");
+
+    let parsed_safe = syn::parse_file(&safe_with_exchange).expect("safe macro fixture parses");
+    let mut safe_audit = BoundaryAudit::default();
+    safe_audit.visit_source_file(&parsed_safe, Path::new("fixture.rs"));
+    let safe_result = safe_audit.finish_fixture();
+    assert!(
+        safe_result.is_ok(),
+        "the exact common option setter macro should be auditable: {safe_result:?}, reasons={:?}",
+        safe_audit.rejection_reasons
+    );
+    assert!(
+        audit_source(&unsafe_with_exchange).is_err(),
+        "a modified macro that executes a request must remain rejected"
+    );
+    assert!(
+        audit_source(&unsafe_invocation_with_exchange).is_err(),
+        "an invocation with a path outside the fixed setter fields must remain rejected"
+    );
+}
+
+#[test]
 fn fixture_inventory_is_explicit_nonempty_and_confined_to_client_tests() {
     let actual_ids = FIXTURES
         .iter()
@@ -5051,5 +5309,122 @@ fn fixture_inventory_is_explicit_nonempty_and_confined_to_client_tests() {
                     | "matches_guard_logical_not"
             )),
         }
+    }
+}
+
+#[test]
+fn kmip30_fluent_macro_exception_accepts_only_the_pinned_body_and_seven_root_invocations() {
+    let safe = include_str!("../fixtures/execute_boundary/kmip30_builder_methods_macro.rs");
+    for builder in [
+        "CreateCredentialBuilder",
+        "CreateGroupBuilder",
+        "CreateUserBuilder",
+        "DeactivateBuilder",
+        "DecapsulateBuilder",
+        "EncapsulateBuilder",
+        "ObliterateBuilder",
+    ] {
+        let source = format!("{safe} impl_kmip30_builder_methods!({builder});");
+        let parsed = syn::parse_file(&source).unwrap();
+        let mut audit = BoundaryAudit::default();
+        audit.visit_source_file(&parsed, Path::new("fluent.rs"));
+        assert!(
+            !audit.is_rejected(),
+            "{builder}: {:?}",
+            audit.rejection_reasons
+        );
+    }
+    for source in [
+        safe.replace(
+            "execution.execute(request, limits)",
+            "execution.client.exchange(request)",
+        ),
+        safe.replace("pub fn build(self)", "pub fn raw(self)"),
+        format!("{safe} impl_kmip30_builder_methods!(UnreviewedBuilder);"),
+        format!("{safe} impl_kmip30_builder_methods!(CreateGroupBuilder, OtherBuilder);"),
+        format!("{safe} impl_kmip30_builder_methods!{{CreateGroupBuilder}}"),
+        format!("{safe} #[macro_export] impl_kmip30_builder_methods!(CreateGroupBuilder);"),
+        format!("mod nested {{ {safe} impl_kmip30_builder_methods!(CreateGroupBuilder); }}"),
+        "macro_rules! other { () => {} } other!();".to_owned(),
+        "impl_kmip30_builder_methods!(CreateGroupBuilder);".to_owned(),
+        "pub fn raw(self, body: Vec<u8>) -> ClientRequest { loop {} }".to_owned(),
+    ] {
+        let parsed = syn::parse_file(&source).unwrap();
+        let mut audit = BoundaryAudit::default();
+        audit.visit_source_file(&parsed, Path::new("fluent.rs"));
+        assert!(
+            audit.is_rejected(),
+            "unreviewed macro/raw input was accepted"
+        );
+    }
+    let parsed = syn::parse_file(safe).unwrap();
+    let mut audit = BoundaryAudit::default();
+    audit.visit_source_file(&parsed, Path::new("other.rs"));
+    assert!(
+        audit.is_rejected(),
+        "macro exception must be confined to fluent.rs root"
+    );
+}
+
+#[test]
+fn kmip30_fluent_semantic_input_exceptions_reject_raw_signatures_and_wrong_scopes() {
+    let decapsulate = "impl<'a> RequestBuilder<'a> { pub fn decapsulate(self, unique_identifier: UniqueIdentifier, ciphertext: Vec<u8>) -> DecapsulateBuilder<'a> { loop {} } }";
+    let reason = "impl<'a> DeactivateBuilder<'a> { pub fn deactivation_reason(mut self, reason: Structure) -> Self { loop {} } }";
+    let encapsulate = "impl<'a> RequestBuilder<'a> { pub fn encapsulate(self, unique_identifier: UniqueIdentifier) -> EncapsulateBuilder<'a> { loop {} } }";
+    for source in [decapsulate, reason, encapsulate] {
+        let parsed = syn::parse_file(source).unwrap();
+        let mut audit = BoundaryAudit::default();
+        audit.visit_source_file(&parsed, Path::new("fluent.rs"));
+        assert!(
+            !audit.is_rejected(),
+            "semantic input rejected: {:?}",
+            audit.rejection_reasons
+        );
+    }
+    for source in [
+        decapsulate.replace("DecapsulateBuilder<'a>", "Vec<u8>"),
+        decapsulate.replace("RequestBuilder<'a>", "OtherBuilder<'a>"),
+        decapsulate.replace(
+            "unique_identifier: UniqueIdentifier",
+            "unique_identifier: Structure",
+        ),
+        decapsulate.replace("ciphertext: Vec<u8>", "ciphertext: &[u8]"),
+        decapsulate.replace("fn decapsulate", "fn raw"),
+        decapsulate.replace("fn decapsulate", "fn decapsulate<T>"),
+        reason.replace("DeactivateBuilder<'a>", "OtherBuilder<'a>"),
+        reason.replace("reason: Structure", "reason: Item"),
+        reason.replace("reason: Structure", "reason: Vec<u8>"),
+        reason.replace("-> Self", "-> Structure"),
+        encapsulate.replace(
+            "unique_identifier: UniqueIdentifier",
+            "unique_identifier: Vec<u8>",
+        ),
+        format!("mod nested {{ {decapsulate} }}"),
+        format!("mod nested {{ {reason} }}"),
+    ] {
+        let parsed = syn::parse_file(&source).unwrap();
+        let mut audit = BoundaryAudit::default();
+        audit.visit_source_file(&parsed, Path::new("fluent.rs"));
+        assert!(
+            audit.is_rejected(),
+            "unreviewed public input accepted: {source}"
+        );
+    }
+    let wrong_element = syn::parse_str::<syn::Signature>(
+        "fn decapsulate(self, unique_identifier: UniqueIdentifier, ciphertext: Vec<u16>) -> DecapsulateBuilder<'a>"
+    ).unwrap();
+    assert!(!is_exact_fluent_kmip30_ciphertext(
+        true,
+        Some("RequestBuilder"),
+        &wrong_element
+    ));
+    for source in [decapsulate, reason] {
+        let parsed = syn::parse_file(source).unwrap();
+        let mut audit = BoundaryAudit::default();
+        audit.visit_source_file(&parsed, Path::new("other.rs"));
+        assert!(
+            audit.is_rejected(),
+            "semantic input exception escaped fluent.rs"
+        );
     }
 }

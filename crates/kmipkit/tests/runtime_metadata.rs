@@ -9,99 +9,41 @@ fn public_version_matches_the_synchronized_package_version() {
 
 #[test]
 fn capability_query_matches_manifest_ready_capabilities() {
-    assert_eq!(
-        kmipkit::capability_is_available("client_profile_readiness"),
-        Ok(true)
-    );
-    assert_eq!(
-        kmipkit::capability_is_available("client_operation_identity"),
-        Ok(true)
-    );
-    assert_eq!(
-        kmipkit::capability_is_available("ffi_runtime_metadata"),
-        Ok(true)
-    );
-    assert_eq!(
-        kmipkit::capability_is_available("fluent_create_key_pair_parity"),
-        Ok(true)
-    );
-    assert_eq!(kmipkit::capability_is_available("fluent_dx_api"), Ok(true));
-    assert_eq!(
-        kmipkit::capability_is_available("fluent_set_attribute_parity"),
-        Ok(true)
-    );
-    assert_eq!(
-        kmipkit::capability_is_available("fluent_locate_revoke_parity"),
-        Ok(true)
-    );
-    assert_eq!(
-        kmipkit::capability_is_available("fluent_named_tag_values"),
-        Ok(true)
-    );
-    assert_eq!(
-        kmipkit::capability_is_available("generic_ttlv_model"),
-        Ok(true)
-    );
-    assert_eq!(
-        kmipkit::capability_is_available("ttlv_wire_codec"),
-        Ok(true)
-    );
-    assert_eq!(
-        kmipkit::capability_is_available("vendor_extension_registry"),
-        Ok(true)
-    );
-    assert_eq!(
-        kmipkit::capability_is_available("discover_versions_request_item"),
-        Ok(true)
-    );
-    assert_eq!(
-        kmipkit::capability_is_available("usage_allocation_guard"),
-        Ok(true)
-    );
-    assert_eq!(
-        kmipkit::capability_is_available("opaque_register_context"),
-        Ok(true)
-    );
-    assert_eq!(
-        kmipkit::capability_is_available("server_generated_creation"),
-        Ok(true)
-    );
-    assert_eq!(
-        kmipkit::capability_is_available("typed_message_model"),
-        Ok(true)
-    );
-    assert_eq!(
-        kmipkit::capability_is_available("typed_async_response_readers"),
-        Ok(true)
-    );
-    assert_eq!(
-        kmipkit::capability_is_available("credential_ttlv_parity"),
-        Ok(true)
-    );
-    assert_eq!(
-        kmipkit::capability_is_available("credential_type_parity"),
-        Ok(true)
-    );
-    assert_eq!(
-        kmipkit::capability_is_available("credential_validation_error_parity"),
-        Ok(true)
-    );
-    assert_eq!(
-        kmipkit::capability_is_available("credential_secret_parity"),
-        Ok(true)
-    );
-    assert_eq!(
-        kmipkit::capability_is_available("nonce_ttlv_parity"),
-        Ok(true)
-    );
-    assert_eq!(
-        kmipkit::capability_is_available("hashed_password_timestamp_sequence"),
-        Ok(true)
-    );
-    assert_eq!(
-        kmipkit::capability_is_available("public_binding_surface"),
-        Ok(true)
-    );
+    let ready_capabilities = [
+        "client_profile_readiness",
+        "client_operation_identity",
+        "ffi_runtime_metadata",
+        "fluent_create_key_pair_parity",
+        "fluent_dx_api",
+        "fluent_dx_journeys",
+        "fluent_set_attribute_parity",
+        "fluent_locate_revoke_parity",
+        "fluent_named_tag_values",
+        "generic_ttlv_model",
+        "ttlv_wire_codec",
+        "vendor_extension_registry",
+        "discover_versions_request_item",
+        "usage_allocation_guard",
+        "opaque_register_context",
+        "server_generated_creation",
+        "typed_message_model",
+        "typed_async_response_readers",
+        "credential_ttlv_parity",
+        "credential_type_parity",
+        "credential_validation_error_parity",
+        "credential_secret_parity",
+        "nonce_ttlv_parity",
+        "hashed_password_timestamp_sequence",
+        "public_binding_surface",
+    ];
+
+    for capability in ready_capabilities {
+        assert_eq!(
+            kmipkit::capability_is_available(capability),
+            Ok(true),
+            "manifest-ready capability {capability} must be available"
+        );
+    }
     assert_eq!(
         kmipkit::capability_is_available("unknown_capability"),
         Ok(false)
@@ -112,6 +54,10 @@ fn capability_query_matches_manifest_ready_capabilities() {
 fn capability_query_reports_the_opt_in_kmip30_draft_routes() {
     assert_eq!(
         kmipkit::capability_is_available("kmip30_draft_routes"),
+        Ok(true)
+    );
+    assert_eq!(
+        kmipkit::capability_is_available("kmip30_credential_type_values"),
         Ok(true)
     );
 }

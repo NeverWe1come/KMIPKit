@@ -9,10 +9,10 @@ import org.jspecify.annotations.Nullable;
 /** Package-private JNI bridge so fluent builder handles do not expand public exports. */
 final class NativeFluentRegistry {
     static final int CRYPTO_OPERATION_BUILDER = 72;
-    static final int CREATE_KEY_PAIR_BUILDER = 73;
-    static final int SET_ATTRIBUTE_BUILDER = 74;
-    static final int ADD_ATTRIBUTE_BUILDER = 75;
-    static final int DELETE_ATTRIBUTE_BUILDER = 76;
+    static final int CREATE_KEY_PAIR_BUILDER = 75;
+    static final int SET_ATTRIBUTE_BUILDER = 76;
+    static final int ADD_ATTRIBUTE_BUILDER = 77;
+    static final int DELETE_ATTRIBUTE_BUILDER = 78;
     static final int SYMMETRIC_KEY_BUILDER = 71;
 
     private NativeFluentRegistry() {}

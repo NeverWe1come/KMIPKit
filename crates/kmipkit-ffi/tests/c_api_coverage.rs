@@ -330,7 +330,7 @@ fn public_c_fluent_builder_covers_expert_attributes_options_and_validation() {
 }
 
 #[test]
-fn public_c_fluent_client_completes_create_get_destroy_over_mutual_tls() {
+fn public_c_fluent_client_executes_lifecycle_helpers_over_mutual_tls() {
     const LIFECYCLE_ID: &[u8] = b"fluent-key-42";
     let pki = EphemeralPki::generate().expect("ephemeral test PKI is generated");
     let identity = pki.client_identity();
@@ -348,7 +348,22 @@ fn public_c_fluent_client_completes_create_get_destroy_over_mutual_tls() {
     let server_config = mtls_server_config(&pki);
     let peer = thread::spawn(move || -> io::Result<()> {
         let deadline = Instant::now() + Duration::from_secs(3);
-        for expected_operation in [1_u32, 10, 20] {
+        let expected = [
+            (0_usize, 1_u32),
+            (1, 10),
+            (2, 18),
+            (3, 18),
+            (4, 21),
+            (5, 21),
+            (6, 8),
+            (7, 8),
+            (8, 22),
+            (9, 22),
+            (10, 19),
+            (11, 19),
+            (12, 20),
+        ];
+        for (stage, expected_operation) in expected {
             let (stream, _) = loop {
                 match listener.accept() {
                     Ok(accepted) => break accepted,
@@ -356,7 +371,7 @@ fn public_c_fluent_client_completes_create_get_destroy_over_mutual_tls() {
                         if Instant::now() >= deadline {
                             return Err(io::Error::new(
                                 io::ErrorKind::TimedOut,
-                                "the C fluent lifecycle did not send all three requests",
+                                "the C fluent client did not send all thirteen fixture requests",
                             ));
                         }
                         thread::sleep(Duration::from_millis(5));
@@ -371,8 +386,8 @@ fn public_c_fluent_client_completes_create_get_destroy_over_mutual_tls() {
                 .expect("the mutual-TLS server configuration is valid");
             let mut tls = StreamOwned::new(connection, stream);
             let request = read_ttlv_frame(&mut tls)?;
-            assert_fluent_lifecycle_request(&request, expected_operation, LIFECYCLE_ID);
-            tls.write_all(&fluent_lifecycle_response(expected_operation))?;
+            assert_fluent_lifecycle_request(&request, expected_operation, LIFECYCLE_ID, stage);
+            tls.write_all(&fluent_lifecycle_response(stage))?;
             tls.flush()?;
             let _ = tls.get_ref().shutdown(Shutdown::Both);
         }
@@ -403,7 +418,13 @@ fn public_c_fluent_client_completes_create_get_destroy_over_mutual_tls() {
     peer_result.expect("the TLS fixture received typed Create, Get, and Destroy requests");
 }
 
-fn assert_fluent_lifecycle_request(encoded: &[u8], operation: u32, identifier: &[u8]) {
+fn assert_fluent_lifecycle_request(
+    encoded: &[u8],
+    operation: u32,
+    identifier: &[u8],
+    stage: usize,
+) {
+    let is_locate = matches!(stage, 6 | 7);
     let request = decode_test_request(encoded).expect("the request is valid TTLV");
     request.with_value(|value| {
         let ValueView::Structure(message) = value else {
@@ -419,30 +440,113 @@ fn assert_fluent_lifecycle_request(encoded: &[u8], operation: u32, identifier: &
                 panic!("the Batch Item is a structure");
             };
             let children = batch_item.children();
-            assert!(children.iter().any(|item| {
-                item.tag().raw() == 0x0042_005C
-                    && item.with_value(|value| matches!(value, ValueView::Enumeration(actual) if *actual == operation))
-            }));
+            assert!(
+                children.iter().any(|item| {
+                    item.tag().raw() == 0x0042_005C
+                        && item.with_value(|value| matches!(value, ValueView::Enumeration(actual) if *actual == operation))
+                }),
+                "expected KMIP operation {operation}, locate payload: {is_locate}"
+            );
             if operation != 1 {
                 let payload = children
                     .iter()
                     .find(|item| item.tag().raw() == 0x0042_0079)
-                    .expect("Get and Destroy carry a Request Payload");
+                    .expect("non-Create operations carry a Request Payload");
                 payload.with_value(|value| {
                     let ValueView::Structure(payload) = value else {
                         panic!("the Request Payload is a structure");
                     };
-                    assert!(payload.children().iter().any(|item| {
-                        item.tag().raw() == 0x0042_0094
-                            && item.with_value(|value| matches!(value, ValueView::TextString(actual) if actual.as_bytes() == identifier))
-                    }));
+                    if is_locate {
+                        let attributes = payload
+                            .children()
+                            .iter()
+                            .find(|item| item.tag().raw() == 0x0042_0125)
+                            .expect("Locate carries its required Attributes structure");
+                        attributes.with_value(|value| {
+                            let ValueView::Structure(attributes) = value else {
+                                panic!("Locate Attributes is a structure");
+                            };
+                            assert_eq!(attributes.children().len(), 1);
+                            let object_type = &attributes.children()[0];
+                            assert_eq!(object_type.tag().raw(), 0x0042_0057);
+                            assert!(object_type.with_value(|value| {
+                                matches!(value, ValueView::Enumeration(actual) if *actual == 2)
+                            }));
+                        });
+                        assert!(!payload
+                            .children()
+                            .iter()
+                            .any(|item| item.tag().raw() == 0x0042_0094));
+                    } else {
+                        assert!(payload.children().iter().any(|item| {
+                            item.tag().raw() == 0x0042_0094
+                                && item.with_value(|value| matches!(value, ValueView::TextString(actual) if actual.as_bytes() == identifier))
+                        }));
+                        if operation == 19 {
+                            let reason = payload
+                                .children()
+                                .iter()
+                                .find(|item| item.tag().raw() == 0x0042_0081)
+                                .expect("Revoke carries a Revocation Reason");
+                            reason.with_value(|value| {
+                                let ValueView::Structure(reason) = value else {
+                                    panic!("Revocation Reason is a structure");
+                                };
+                                assert!(reason.children().iter().any(|item| {
+                                    item.tag().raw() == 0x0042_0082
+                                        && item.with_value(|value| {
+                                            matches!(value, ValueView::Enumeration(code) if *code == 2)
+                                        })
+                                }));
+                                let message = reason
+                                    .children()
+                                    .iter()
+                                    .find(|item| item.tag().raw() == 0x0042_0080);
+                                if stage == 11 {
+                                    assert!(message.is_some_and(|item| {
+                                        item.with_value(|value| {
+                                            matches!(value, ValueView::TextString(actual) if actual == "audit")
+                                        })
+                                    }));
+                                } else {
+                                    assert!(message.is_none());
+                                }
+                            });
+                            assert!(payload.children().iter().any(|item| {
+                                item.tag().raw() == 0x0042_0021
+                                    && item.with_value(|value| {
+                                        matches!(value, ValueView::DateTime(date) if *date == 1)
+                                    })
+                            }));
+                        }
+                    }
                 });
             }
         });
     });
 }
 
-fn fluent_lifecycle_response(operation: u32) -> Vec<u8> {
+fn fluent_lifecycle_get_response_payload() -> Vec<u8> {
+    let key_block = structure(
+        0x0042_0040,
+        [
+            enumeration(0x0042_0042, 1),
+            structure(0x0042_0045, [ttlv_item(0x0042_0043, 0x08, &[0xA5; 32])]),
+            enumeration(0x0042_0028, 3),
+            integer(0x0042_002A, 256),
+        ],
+    );
+    structure(
+        0x0042_007C,
+        [
+            enumeration(0x0042_0057, 2),
+            ttlv_item(0x0042_0094, 0x07, b"fluent-key-42"),
+            structure(0x0042_008F, [key_block]),
+        ],
+    )
+}
+
+fn fluent_lifecycle_response(stage: usize) -> Vec<u8> {
     let protocol_version = structure(
         0x0042_0069,
         [integer(0x0042_006A, 2), integer(0x0042_006B, 1)],
@@ -455,38 +559,64 @@ fn fluent_lifecycle_response(operation: u32) -> Vec<u8> {
             integer(0x0042_000D, 1),
         ],
     );
-    let payload = match operation {
-        1 => structure(
-            0x0042_007C,
-            [
-                enumeration(0x0042_0057, 2),
-                ttlv_item(0x0042_0094, 0x07, b"fluent-key-42"),
-            ],
-        ),
-        10 => {
-            let key_block = structure(
-                0x0042_0040,
-                [
-                    enumeration(0x0042_0042, 1),
-                    structure(0x0042_0045, [ttlv_item(0x0042_0043, 0x08, &[0xA5; 32])]),
-                    enumeration(0x0042_0028, 3),
-                    integer(0x0042_002A, 256),
-                ],
-            );
+    let (operation, payload) = match stage {
+        0 => (
+            1,
             structure(
                 0x0042_007C,
                 [
                     enumeration(0x0042_0057, 2),
                     ttlv_item(0x0042_0094, 0x07, b"fluent-key-42"),
-                    structure(0x0042_008F, [key_block]),
                 ],
-            )
-        }
-        20 => structure(
-            0x0042_007C,
-            [ttlv_item(0x0042_0094, 0x07, b"fluent-key-42")],
+            ),
         ),
-        _ => unreachable!("the lifecycle fixture only handles Create, Get, and Destroy"),
+        1 => (10, fluent_lifecycle_get_response_payload()),
+        2 | 3 => (
+            18,
+            structure(
+                0x0042_007C,
+                [ttlv_item(0x0042_0094, 0x07, b"fluent-key-42")],
+            ),
+        ),
+        4 | 5 => (
+            21,
+            structure(
+                0x0042_007C,
+                [ttlv_item(0x0042_0094, 0x07, b"fluent-key-42")],
+            ),
+        ),
+        6 | 7 => (
+            8,
+            structure(
+                0x0042_007C,
+                [
+                    integer(0x0042_00D5, 1),
+                    ttlv_item(0x0042_0094, 0x07, b"fluent-key-42"),
+                ],
+            ),
+        ),
+        8 | 9 => (
+            22,
+            structure(
+                0x0042_007C,
+                [ttlv_item(0x0042_0094, 0x07, b"fluent-key-42")],
+            ),
+        ),
+        10 | 11 => (
+            19,
+            structure(
+                0x0042_007C,
+                [ttlv_item(0x0042_0094, 0x07, b"fluent-key-42")],
+            ),
+        ),
+        12 => (
+            20,
+            structure(
+                0x0042_007C,
+                [ttlv_item(0x0042_0094, 0x07, b"fluent-key-42")],
+            ),
+        ),
+        _ => unreachable!("the lifecycle fixture stage is fixed by the test"),
     };
     let item = structure(
         0x0042_000F,
@@ -1548,8 +1678,6 @@ fn c_abi_consumer_matches_shared_registry_cleanup_fixture() {
 
 #[test]
 fn existing_c_consumer_exercises_the_exported_abi_in_the_coverage_process() {
-    kmipkit_ffi::__coverage_consumer_test_link_anchor();
-
     let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../tests/fixtures/extensions/cases.json")
         .canonicalize()
@@ -6005,4 +6133,249 @@ fn ttlv_item(tag: u32, item_type: u8, value: &[u8]) -> Vec<u8> {
     encoded.extend_from_slice(value);
     encoded.resize(8 + value.len().div_ceil(8) * 8, 0);
     encoded
+}
+
+#[link(name = "kmipkit_fluent_kmip30_consumer", kind = "static")]
+unsafe extern "C" {
+    fn kmipkit_c_kmip30_builders_probe() -> i32;
+    fn kmipkit_c_kmip30_tls_probe(
+        port: u16,
+        leaf_certificate: *const u8,
+        leaf_certificate_length: u64,
+        intermediate_certificate: *const u8,
+        intermediate_certificate_length: u64,
+        private_key: *const u8,
+        private_key_length: u64,
+        trust_root: *const u8,
+        trust_root_length: u64,
+        out_version_rejection_verified: *mut u8,
+    ) -> i32;
+}
+
+#[test]
+fn public_c_kmip30_builders_copy_semantic_inputs_and_reject_wrong_types() {
+    // KMIPKIT-0116 FR-001/003/005; KMIP 3.0 WD Tables 277/280/290/293/296/317/374.
+    // SAFETY: the compiled C fixture owns and releases all temporary handles.
+    assert_eq!(unsafe { kmipkit_c_kmip30_builders_probe() }, 0);
+}
+
+#[test]
+fn public_c_kmip30_executes_all_seven_typed_routes_with_explicit_version() {
+    // The first and second halves exercise direct and builder APIs. Create Credential
+    // cycles through every KMIP 3.0 §11.11 Table 551 object alternative.
+    const OPERATIONS: [u32; 22] = [
+        63, 63, 63, 63, 63, 60, 62, 64, 66, 65, 61, 63, 63, 63, 63, 63, 60, 62, 64, 66, 65, 61,
+    ];
+    const CREDENTIAL_TYPES: [u32; 5] = [8, 7, 2, 5, 4];
+    let pki = EphemeralPki::generate().expect("ephemeral test PKI is generated");
+    let identity = pki.client_identity();
+    let certificates = identity.certificate_chain_der();
+    let private_key = zeroize::Zeroizing::new(identity.private_key_der().to_vec());
+    let listener =
+        TcpListener::bind(("127.0.0.1", 0)).expect("an ephemeral local TLS port is available");
+    let port = listener
+        .local_addr()
+        .expect("the TLS peer has an address")
+        .port();
+    listener
+        .set_nonblocking(true)
+        .expect("the TLS fixture accepts with a bounded wait");
+    let server_config = mtls_server_config(&pki);
+    let peer = thread::spawn(move || -> io::Result<()> {
+        let deadline = Instant::now() + Duration::from_secs(5);
+        for (stage, expected_operation) in OPERATIONS.into_iter().enumerate() {
+            let (stream, _) = loop {
+                match listener.accept() {
+                    Ok(accepted) => break accepted,
+                    Err(error) if error.kind() == io::ErrorKind::WouldBlock => {
+                        if Instant::now() >= deadline {
+                            return Err(io::Error::new(
+                                io::ErrorKind::TimedOut,
+                                "the fluent C crypto client did not send all KMIP 3.0 requests",
+                            ));
+                        }
+                        thread::sleep(Duration::from_millis(5));
+                    }
+                    Err(error) => return Err(error),
+                }
+            };
+            stream.set_nonblocking(false)?;
+            stream.set_read_timeout(Some(Duration::from_secs(5)))?;
+            stream.set_write_timeout(Some(Duration::from_secs(5)))?;
+            let connection = ServerConnection::new(Arc::clone(&server_config))
+                .expect("the mutual-TLS server configuration is valid");
+            let mut tls = StreamOwned::new(connection, stream);
+            let request = read_ttlv_frame(&mut tls)?;
+            let expected_credential_type = match stage {
+                0..=4 => Some(CREDENTIAL_TYPES[stage]),
+                11..=15 => Some(CREDENTIAL_TYPES[stage - 11]),
+                _ => None,
+            };
+            assert_c_kmip30_request(
+                &request,
+                expected_operation,
+                stage >= 11,
+                expected_credential_type,
+            );
+            tls.write_all(&c_kmip30_response(expected_operation, stage >= 11))?;
+            tls.flush()?;
+            let _ = tls.get_ref().shutdown(Shutdown::Both);
+        }
+        Ok(())
+    });
+
+    let mut version_rejection_verified = 0_u8;
+    // SAFETY: the PKI buffers remain live for this synchronous C call; the consumer owns and
+    // releases its builder, client, codec, response, and configuration handles.
+    let status = unsafe {
+        kmipkit_c_kmip30_tls_probe(
+            port,
+            certificates[0].as_ptr(),
+            u64::try_from(certificates[0].len()).expect("leaf certificate length fits"),
+            certificates[1].as_ptr(),
+            u64::try_from(certificates[1].len()).expect("intermediate certificate length fits"),
+            private_key.as_ptr(),
+            u64::try_from(private_key.len()).expect("private key length fits"),
+            pki.authority_certificate_der().as_ptr(),
+            u64::try_from(pki.authority_certificate_der().len())
+                .expect("trust certificate length fits"),
+            &raw mut version_rejection_verified,
+        )
+    };
+    let peer_result = peer.join().expect("the local TLS peer thread completes");
+    assert_eq!(
+        status, 0,
+        "C executes all seven typed KMIP 3.0 operations; peer result: {peer_result:?}"
+    );
+    peer_result.expect("the TLS fixture received exactly one request for every operation");
+    assert_eq!(
+        version_rejection_verified, 1,
+        "unsupported protocol versions are rejected before transport"
+    );
+}
+
+fn assert_c_kmip30_request(
+    encoded: &[u8],
+    operation: u32,
+    builder_path: bool,
+    expected_credential_type: Option<u32>,
+) {
+    // KMIPKIT-0116 FR-002/FR-005; KMIP 3.0 WD §§2.1.3.1, 11.11 Table 551,
+    // and 11.37 Table 584.
+    let root = decode_test_request(encoded).expect("valid encoded request");
+    let tree = root.with_value(|value| match value {
+        ValueView::Structure(tree) => tree.try_clone().expect("copied test request"),
+        _ => panic!("expected Request Message structure"),
+    });
+    let request = kmipkit_protocol::RequestMessage::try_from_ttlv(tree).expect("valid request");
+    assert_eq!(
+        request.header().protocol_version(),
+        kmipkit_protocol::ProtocolVersion::V3_0
+    );
+    assert_eq!(
+        request.header().asynchronous_indicator(),
+        if builder_path { Some(2) } else { None }
+    );
+    assert_eq!(request.batch_items().len(), 1);
+    let batch = request.batch_items().next().expect("one batch item");
+    assert_eq!(batch.operation(), Some(operation));
+    batch
+        .with_request_payload(|payload| {
+            let tags = payload
+                .children()
+                .iter()
+                .map(|item| item.tag().raw())
+                .collect::<Vec<_>>();
+            let expected = match operation {
+                63 => {
+                    let object_tag = match expected_credential_type {
+                        Some(8) => 0x0042_0013,
+                        Some(7) => 0x0042_01A1,
+                        Some(2) => 0x0042_01A6,
+                        Some(5) => 0x0042_01AF,
+                        Some(4) => 0x0042_01A7,
+                        other => panic!("unexpected C credential type {other:?}"),
+                    };
+                    vec![0x0042_0024, 0x0042_0125, object_tag]
+                }
+                60 | 62 => vec![0x0042_0125],
+                64 if builder_path => vec![0x0042_0094, 0x0042_002F],
+                65 if builder_path => vec![0x0042_0094, 0x0042_002B, 0x0042_0125],
+                66 if builder_path => vec![0x0042_0094, 0x0042_002B, 0x0042_00C2, 0x0042_0125],
+                66 => vec![0x0042_0094, 0x0042_00C2],
+                _ => vec![0x0042_0094],
+            };
+            assert_eq!(tags, expected, "typed fields retain pinned Table order");
+            for field in payload.children() {
+                if field.tag().raw() == 0x0042_0024 {
+                    field.with_value(|value| {
+                        assert!(matches!(
+                            value,
+                            ValueView::Enumeration(raw)
+                                if Some(*raw) == expected_credential_type
+                        ));
+                    });
+                }
+                if field.tag().raw() == 0x0042_01A1 {
+                    field.with_value(|value| {
+                        let ValueView::Structure(object) = value else {
+                            panic!("typed credential object");
+                        };
+                        let password = &object.children()[0];
+                        assert_eq!(password.tag().raw(), 0x0042_00A1);
+                        password.with_value(|value| {
+                            assert!(matches!(value, ValueView::TextString("credential")));
+                        });
+                    });
+                }
+                if field.tag().raw() == 0x0042_002F {
+                    field.with_value(|value| assert!(matches!(value, ValueView::DateTime(42))));
+                }
+                if field.tag().raw() == 0x0042_00C2 {
+                    field.with_value(|value| {
+                        assert!(matches!(value, ValueView::ByteString(b"credential")));
+                    });
+                }
+            }
+        })
+        .expect("typed payload");
+}
+
+fn c_kmip30_response(operation: u32, builder_path: bool) -> Vec<u8> {
+    let header = structure(
+        0x0042_007A,
+        [
+            structure(
+                0x0042_0069,
+                [integer(0x0042_006A, 3), integer(0x0042_006B, 0)],
+            ),
+            date_time(0x0042_0092, 1_700_000_000),
+            integer(0x0042_000D, 1),
+        ],
+    );
+    let status = match operation {
+        60 if builder_path => 2,
+        62 => 1,
+        _ => 0,
+    };
+    let mut fields = vec![
+        enumeration(0x0042_005C, operation),
+        enumeration(0x0042_007F, status),
+    ];
+    if status == 2 {
+        fields.push(ttlv_item(0x0042_0006, 0x08, b"pending-correlation"));
+        fields.push(structure(0x0042_007C, []));
+    } else if status == 1 {
+        fields.push(enumeration(0x0042_007E, 256));
+    } else {
+        let mut payload = Vec::new();
+        if operation != 61 {
+            payload.push(ttlv_item(0x0042_0094, 0x07, b"result-id"));
+        }
+        if operation == 65 {
+            payload.push(ttlv_item(0x0042_00C2, 0x08, b"public-ciphertext"));
+        }
+        fields.push(structure(0x0042_007C, payload));
+    }
+    structure(0x0042_007B, [header, structure(0x0042_000F, fields)])
 }

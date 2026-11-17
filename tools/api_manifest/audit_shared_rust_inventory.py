@@ -90,6 +90,8 @@ RUST_ONLY_DECLARATIONS = {
 }
 DRAFT_SPEC_IDS = {"KMIPKIT-0010"}
 # The 0047 release-stack and 0048 snapshots remain immutable historical evidence.
+RUST_REPORT_PATH = Path("specs/051-pre-send-validation/reports/rust-export-report-2026-11-11.json")
+REPORT_PATH = Path("specs/051-pre-send-validation/reports/shared-rust-inventory-2026-11-11.json")
 _REPORTS_DIR = Path("specs") / "051-pre-send-validation" / "reports"
 RUST_REPORT_PATH = _REPORTS_DIR / "rust-export-report-2026-11-16.json"
 REPORT_PATH = _REPORTS_DIR / "shared-rust-inventory-2026-11-16.json"
@@ -280,7 +282,7 @@ def _verify_ready_mapping_exports(
         row
         for row in manifest.get("publicDeclarations", [])
         if row.get("declarationState") in {"declared", "verified"}
-        and capability_scopes.get(row.get("capabilityId")) != "c-only"
+        and row.get("parityScope", capability_scopes.get(row.get("capabilityId"))) != "c-only"
     ]
     shared_capability_ids = {
         row.get("capabilityId") for row in manifest.get("capabilities", [])

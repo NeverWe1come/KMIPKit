@@ -1,5 +1,7 @@
 #![cfg(feature = "coverage-c-consumer")]
 
+// Link the exported C symbols through Cargo, independently of its artifact layout.
+use kmipkit_ffi as _;
 #[path = "support/ffi_link_exports.rs"]
 mod ffi_link_exports;
 use ffi_link_exports::{kmipkit_client_batch_create, kmipkit_client_batch_release};

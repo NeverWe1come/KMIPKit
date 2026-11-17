@@ -6,22 +6,28 @@ import argparse
 import json
 import re
 import sys
+from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any
 
 if __package__:
+    from .generate_named_values import PINNED_VERSION_SOURCES, load_versioned_values
     from .safe_io import PathSecurityError, atomic_write_bytes, safe_read_bytes
     from .validate import MAX_BYTES
 else:
+    from generate_named_values import PINNED_VERSION_SOURCES, load_versioned_values
     from safe_io import PathSecurityError, atomic_write_bytes, safe_read_bytes
     from validate import MAX_BYTES
 
 BASE_PATH = "specification/catalog/kmip-2.1.json"
 VERSIONED_PATH = "specification/catalog/kmip-versioned-values.json"
 MANIFEST_PATH = "specification/api/public-api.json"
+EVIDENCE_PATH = "specification/catalog/operation-matrix-evidence.json"
+DRAFT_API_PATH = "specification/api/kmip-3.0-draft-api.json"
 MODEL_OWNERS_PATH = "specification/catalog/fluent-operation-model-owners.json"
 OUTPUT_PATH = "specification/catalog/fluent-operation-inventory.json"
 MAX_SOURCE_BYTES = 64 * 1024 * 1024
+KMIP30_FLUENT_OPERATION_CODES = frozenset(range(0x3C, 0x43))
 OWNER_PATH_PATTERN = r"^crates/kmipkit-protocol/src/(?:[a-z0-9_]+/)*[a-z0-9_]+\.rs$"
 OWNER_TYPE_PATTERN = r"^[A-Za-z][A-Za-z0-9]*$"
 TEST_EVIDENCE_PATTERN = r"^(?:bindings|crates|specs|tests|tools)/[A-Za-z0-9_./-]+$"
@@ -87,6 +93,8 @@ def build_inventory(
     versioned_catalog: dict[str, Any],
     manifest: dict[str, Any],
     model_owners: dict[str, Any],
+    evidence_catalog: dict[str, Any] | None = None,
+    draft_api_catalog: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Join assigned operations with direction, owner clause and API scope."""
     v21_values = {
@@ -111,6 +119,18 @@ def build_inventory(
         and element.get("kind") == "enumeration_value"
         and "KMIPKIT-ELEM-ENUMERATION-OPERATION" in element.get("parent_element_ids", [])
     }
+    # The wildcard extension allocation is not an assigned operation symbol.
+    assigned_values = {value for name, value in operation_values.items() if name != "Extensions"}
+    names_by_assignment: dict[str, str] = {}
+    for name, value in operation_values.items():
+        if name == "Extensions":
+            continue
+        previous_name = names_by_assignment.get(value)
+        if previous_name is not None and previous_name != name:
+            raise ValueError(f"duplicate KMIP 2.1 operation wire value: {value}")
+        names_by_assignment[value] = name
+    if assigned_values != {f"{value:08X}" for value in range(1, 60)}:
+        raise ValueError("KMIP 2.1 operation assignment set is incomplete or reserved")
     for name, wire_value in v21_values.items():
         if operation_values.get(name) != wire_value:
             raise ValueError(f"KMIP 2.1 operation delta has no matching assigned value for {name}")
@@ -124,7 +144,8 @@ def build_inventory(
             raise ValueError("KMIP 2.1 operation name is missing")
         if not isinstance(refs, list) or not refs:
             raise ValueError(f"KMIP 2.1 operation {name} has no source reference")
-        section = refs[0].get("section")
+        if element.get("direction") not in {"client_to_server", "server_to_client"}:
+            raise ValueError(f"KMIP 2.1 operation {name} has invalid direction")
         wire_value = operation_values.get(name)
         if not isinstance(wire_value, str) or len(wire_value) != 8:
             raise ValueError(f"KMIP 2.1 operation {name} has no assigned wire value")
@@ -148,6 +169,9 @@ def build_inventory(
             "sourceRefs": [{"sourceId": ref.get("source_id"), "section": ref.get("section")}
                            for ref in refs],
             "featureSpec": element.get("feature_spec"),
+            "payloadTables": element.get("payload_tables", []),
+            "catalogImplementationRefs": element.get("implementation_refs", []),
+            "catalogVerificationRefs": element.get("verification_refs", []),
         })
 
     manifest_operations = manifest.get("operations")
@@ -157,7 +181,10 @@ def build_inventory(
         row.get("name"): row for row in manifest_operations
         if isinstance(row, dict) and row.get("scope") == "client_1_0"
     }
-    for value in _v3_operations(versioned_catalog):
+    v3_values = _v3_operations(versioned_catalog)
+    if {int(value["wire_value"], 16) for value in v3_values} != set(range(60, 67)):
+        raise ValueError("KMIP 3.0 operation assignment set is incomplete or reserved")
+    for value in v3_values:
         name = value.get("name")
         wire_value = value.get("wire_value")
         if not isinstance(name, str) or not isinstance(wire_value, str):
@@ -178,14 +205,38 @@ def build_inventory(
             "scopeState": "client_3_0_draft",
             "sourceRefs": [{"sourceId": "kmip-3.0", "section": section}],
             "featureSpec": "KMIPKIT-0071",
+            "payloadTables": [],
+            "catalogImplementationRefs": [],
+            "catalogVerificationRefs": [],
         })
 
+    evidence = _evidence_by_route(evidence_catalog, rows)
+    kmip30_fluent_routes, kmip30_fluent_capability = _kmip30_fluent_routes(
+        manifest, draft_api_catalog
+    )
     for row in rows:
+        detail = evidence[(row["name"], row["direction"])]
+        row["versionSourceRefs"] = detail["versionSourceRefs"]
+        row["earliestSupportedVersion"] = detail["versionSourceRefs"][0]["version"]
+        row["typedOwners"] = detail["typedOwners"]
+        row["route"] = detail["route"]
+        row["testEvidence"] = {"focused": detail["testRefs"], "parity": []}
+        row["serverCapabilityClaim"] = False
         public = public_by_name.get(row["name"]) if row["direction"] == "client_to_server" else None
-        row["publicApiScope"] = public.get("scope") if public else None
-        row["publicApiState"] = public.get("apiState") if public else None
-        row["clientSend"] = row["direction"] == "client_to_server"
-        row["listenerRoute"] = row["direction"] == "server_to_client"
+        if row["version"] == "3.0" and kmip30_fluent_capability is not None:
+            row["publicApiScope"] = "client_3_0_draft"
+            row["publicApiState"] = kmip30_fluent_capability["capabilityState"]
+            row["publicApiMappings"] = kmip30_fluent_routes[int(row["wireValue"], 16)]
+            row["testEvidence"]["parity"] = kmip30_fluent_capability.get(
+                "parityEvidenceIds", []
+            )
+        else:
+            row["publicApiScope"] = public.get("scope") if public else None
+            row["publicApiState"] = public.get("apiState") if public else None
+            row["testEvidence"]["parity"] = public.get("parityEvidenceIds", []) if public else []
+        implemented = row["route"]["state"] == "implemented"
+        row["clientSend"] = row["route"]["kind"] == "client" and implemented
+        row["listenerRoute"] = row["route"]["kind"] == "listener" and implemented
 
     owners = model_owners.get("owners")
     if model_owners.get("formatVersion") != 1 or not isinstance(owners, list):
@@ -235,23 +286,245 @@ def build_inventory(
                 raise ValueError(f"typed operation test evidence is stale for {row['name']}")
         row["typedRequestOwner"] = owner["requestOwner"]
         row["typedResponseOwner"] = owner["responseOwner"]
-        row["testEvidence"] = owner["testEvidence"]
+        row["testEvidence"]["parity"] = owner["testEvidence"]
 
     rows.sort(key=lambda row: (row["version"], int(row["wireValue"], 16)))
     return {
         "formatVersion": 2,
-        "sources": [BASE_PATH, VERSIONED_PATH, MANIFEST_PATH, MODEL_OWNERS_PATH],
+        "sources": [BASE_PATH, VERSIONED_PATH, MANIFEST_PATH, EVIDENCE_PATH, DRAFT_API_PATH, MODEL_OWNERS_PATH],
+        "versionMeaning": (
+            "Earliest directional availability in supported pinned source editions; "
+            "local client route verification is recorded separately from server capability."
+        ),
+        "evidenceMeaning": (
+            "Existing executable test references, not recorded passing results "
+            "or server capability claims."
+        ),
         "operations": rows,
     }
 
 
+def _kmip30_fluent_routes(
+    manifest: dict[str, Any], draft_api_catalog: dict[str, Any] | None
+) -> tuple[dict[str, dict[str, str]], dict[str, Any] | None]:
+    """Resolve the separate, explicitly approved KMIP 3.0 fluent capability."""
+    capabilities = manifest.get("capabilities", [])
+    matches = [
+        capability
+        for capability in capabilities
+        if isinstance(capability, dict)
+        and capability.get("capabilityId") == "kmip30_fluent_operations"
+    ]
+    if not matches:
+        return {}, None
+    if len(matches) != 1:
+        raise ValueError("KMIP 3.0 fluent capability is duplicated")
+    capability = matches[0]
+    if capability.get("capabilityState") not in {"declared", "verified"}:
+        raise ValueError("KMIP 3.0 fluent capability has an invalid state")
+    if not isinstance(draft_api_catalog, dict):
+        raise ValueError("KMIP 3.0 fluent capability has no operation route catalog")
+    operations = draft_api_catalog.get("operations")
+    if not isinstance(operations, list) or len(operations) != 7:
+        raise ValueError("KMIP 3.0 fluent route catalog must contain seven operations")
+    expected_languages = {"rust", "c", "java", "python"}
+    routes: dict[int, dict[str, str]] = {}
+    names: set[str] = set()
+    for operation in operations:
+        if (
+            not isinstance(operation, dict)
+            or not isinstance(operation.get("operation"), str)
+            or not operation["operation"]
+        ):
+            raise ValueError("KMIP 3.0 fluent operation mapping is malformed")
+        name = operation["operation"]
+        code = operation.get("operationCode")
+        mappings = operation.get("fluentApi")
+        if (
+            name in names
+            or isinstance(code, bool)
+            or not isinstance(code, int)
+            or code not in KMIP30_FLUENT_OPERATION_CODES
+            or code in routes
+            or not isinstance(mappings, dict)
+            or set(mappings) != expected_languages
+            or any(not isinstance(value, str) or not value for value in mappings.values())
+        ):
+            raise ValueError(f"KMIP 3.0 fluent route mapping is incomplete: {name}")
+        names.add(name)
+        routes[code] = mappings
+    if set(routes) != KMIP30_FLUENT_OPERATION_CODES:
+        raise ValueError("KMIP 3.0 fluent routes do not cover all seven assigned operation codes")
+    language_mappings = capability.get("mappings")
+    if not isinstance(language_mappings, dict) or set(language_mappings) != expected_languages:
+        raise ValueError("KMIP 3.0 fluent capability language mappings are incomplete")
+    for language in expected_languages:
+        expected = {route[language] for route in routes.values()}
+        declared = language_mappings[language]
+        if (
+            not isinstance(declared, list)
+            or any(not isinstance(mapping, str) or not mapping.strip() for mapping in declared)
+            or len(declared) != len(set(declared))
+            or not expected.issubset(declared)
+        ):
+            raise ValueError(f"KMIP 3.0 fluent capability mapping omits a route for {language}")
+    if capability["capabilityState"] == "verified" and not capability.get("parityEvidenceIds"):
+        raise ValueError("verified KMIP 3.0 fluent capability lacks parity evidence")
+    return routes, capability
+
+
+def _evidence_by_route(
+    document: dict[str, Any] | None, rows: list[dict[str, Any]],
+) -> dict[tuple[str, str], dict[str, Any]]:
+    """Require reviewed metadata for each directional assignment without inventing owners."""
+    if not isinstance(document, dict) or document.get("formatVersion") != 1:
+        raise ValueError("operation matrix evidence is missing or unsupported")
+    details = document.get("operations")
+    if not isinstance(details, list):
+        raise ValueError("operation matrix evidence has no operation rows")
+    result = {}
+    for detail in details:
+        key = (detail["name"], detail["direction"])
+        if key in result:
+            raise ValueError(f"duplicate operation matrix evidence: {key}")
+        refs = detail.get("versionSourceRefs")
+        if not isinstance(refs, list) or not refs:
+            raise ValueError(f"operation matrix evidence has no version sources: {key}")
+        versions = [ref.get("version") for ref in refs]
+        if (any(v not in {"2.0", "2.1", "3.0"} for v in versions)
+                or versions != sorted(set(versions))):
+            raise ValueError(f"operation matrix evidence has invalid version order: {key}")
+        owners = detail.get("typedOwners", {})
+        route = detail.get("route", {})
+        if owners.get("state") not in {"available", "unverified"}:
+            raise ValueError(f"operation matrix evidence has invalid owner state: {key}")
+        if owners["state"] == "available" and not all(
+            owners.get(role) for role in ("request", "response")
+        ):
+            raise ValueError(f"operation matrix evidence has missing typed owners: {key}")
+        expected_kind = "client" if detail["direction"] == "client_to_server" else "listener"
+        if route.get("kind") != expected_kind or route.get("state") not in {"implemented", "unverified"}:
+            raise ValueError(f"operation matrix evidence has invalid route direction/state: {key}")
+        if route.get("versionVerification") != "not_established":
+            raise ValueError(f"operation matrix evidence cannot claim route-version execution: {key}")
+        if route["state"] == "implemented" and (
+            owners["state"] != "available" or not detail.get("testRefs")
+        ):
+            raise ValueError(f"implemented route lacks typed owners or test evidence: {key}")
+        result[key] = detail
+    if set(result) != {(row["name"], row["direction"]) for row in rows}:
+        raise ValueError("operation matrix evidence does not match assigned directions")
+    return result
+
+
+class _OperationHeadings(HTMLParser):
+    """Read only numbered operation headings from the pinned Word HTML editions."""
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.heading: str | None = None
+        self.parts: list[str] = []
+        self.operations: dict[str, str] = {}
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        classes = dict(attrs).get("class") or ""
+        if tag in {"h1", "h2", "h3", "h4", "h5", "h6"} or (
+            tag == "p" and re.fullmatch(r"MsoHeading[1-6]", classes)
+        ):
+            self.heading = tag
+            self.parts = []
+
+    def handle_data(self, data: str) -> None:
+        if self.heading:
+            self.parts.append(data)
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == self.heading:
+            title = " ".join("".join(self.parts).split())
+            section, separator, operation = title.partition(" ")
+            if separator and re.fullmatch(r"6\.[12]\.\d+", section):
+                self.operations[section] = operation
+            self.heading = None
+
+
+
+def _declares_owner(text: str, name: str, role: str) -> bool:
+    """Recognize existing concrete models, including the reviewed create-model macro."""
+    if re.search(r"pub (?:struct|enum) " + re.escape(name) + r"\b", text):
+        return True
+    stem = re.escape(name.removesuffix(role.title()))
+    return re.search(
+        r"define_create_request!\(\s*" + stem + r"Request,\s*" + stem + r"Response,",
+        text,
+    ) is not None
+
+
+def _validate_evidence_files(root: Path, inventory: dict[str, Any]) -> None:
+    headings = {}
+    for source_id, (path, _) in PINNED_VERSION_SOURCES.items():
+        parser = _OperationHeadings()
+        raw = safe_read_bytes(root, path, max_bytes=MAX_SOURCE_BYTES)
+        parser.feed(raw.decode("utf-8" if source_id == "kmip-3.0" else "cp1252"))
+        headings[source_id] = parser.operations
+    texts: dict[str, str] = {}
+
+    def read(path: str) -> str:
+        if path not in texts:
+            texts[path] = safe_read_bytes(root, path, max_bytes=MAX_SOURCE_BYTES).decode("utf-8")
+        return texts[path]
+
+    for row in inventory["operations"]:
+        prefix = "6.1." if row["direction"] == "client_to_server" else "6.2."
+        available = [source_id.removeprefix("kmip-") for source_id, sections in headings.items()
+                     if any(name == row["name"] and section.startswith(prefix)
+                            for section, name in sections.items())]
+        if row["earliestSupportedVersion"] != min(available):
+            raise ValueError(f"incorrect earliest directional source version: {row['name']}")
+        for ref in row["versionSourceRefs"]:
+            source_id = "kmip-" + ref["version"]
+            if (ref["sourceId"] != source_id or ref["path"] != PINNED_VERSION_SOURCES[source_id][0]
+                    or not ref["section"].startswith(prefix)
+                    or headings[source_id].get(ref["section"]) != row["name"]):
+                raise ValueError(f"invalid directional version source: {row['name']}")
+        owners = row["typedOwners"]
+        if owners["state"] == "available":
+            for role in ("request", "response"):
+                owner = owners[role]
+                name = owner["symbol"].split("::")[-1]
+                text = read(owner["path"])
+                if not _declares_owner(text, name, role):
+                    raise ValueError(f"missing typed {role} owner: {row['name']}")
+        route = row["route"]
+        if route["state"] == "implemented":
+            text = read(route["path"])
+            function = route["symbol"].split("::")[-1]
+            if not re.search(r"\bfn\s+" + re.escape(function) + r"\s*\(", text):
+                raise ValueError(f"missing route symbol: {row['name']}")
+            variant = route.get("requestVariant")
+            if variant:
+                variant_name = variant.split("::")[-1]
+                request_name = owners["request"]["symbol"].split("::")[-1]
+                if not re.search(r"\b" + re.escape(variant_name) + r"\(" + re.escape(request_name) + r"\)", text):
+                    raise ValueError(f"missing typed route variant: {row['name']}")
+        for ref in row["testEvidence"]["focused"]:
+            path, name = ref.split("::", 1)
+            if not re.search(r"#\[test\]\s*(?:#\[[^\]]*\]\s*)*fn\s+" + re.escape(name) + r"\s*\(", read(path)):
+                raise ValueError(f"missing executable test evidence: {ref}")
+        for ref in row["testEvidence"]["parity"]:
+            read(ref.split("::", 1)[0])
+
 def render(root: Path) -> bytes:
+    # Reuse the existing checksum and versioned-catalog validation boundary.
+    load_versioned_values(root)
     inventory = build_inventory(
         _read_json(root, BASE_PATH),
         _read_json(root, VERSIONED_PATH, max_bytes=MAX_SOURCE_BYTES),
         _read_json(root, MANIFEST_PATH, max_bytes=MAX_SOURCE_BYTES),
         _read_json(root, MODEL_OWNERS_PATH, max_bytes=MAX_SOURCE_BYTES),
+        _read_json(root, EVIDENCE_PATH),
+        _read_json(root, DRAFT_API_PATH, max_bytes=MAX_SOURCE_BYTES),
     )
+    _validate_evidence_files(root, inventory)
     return (json.dumps(inventory, indent=2, ensure_ascii=False) + "\n").encode()
 
 

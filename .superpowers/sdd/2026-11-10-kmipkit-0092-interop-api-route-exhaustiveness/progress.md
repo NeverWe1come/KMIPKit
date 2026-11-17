@@ -331,26 +331,15 @@ branches, and the common CI therefore reports a planned matrix only.
 - This adds local-model evidence and does not establish interoperability with
   a vendor KMS; the Java PR remains WIP.
 
-## 2026-11-17 Java KMIP 2.0/2.1 Batch Order Option routes
+## 2026-11-17 #213 stack sync with Rotate Name Value
 
-- `test-norm-message-field-message-field-8-2-batch-order-option` now completes
-  three generic TTLV routes and the typed `RequestMessage.fromTtlv` route in both
-  protocol versions. OASIS KMIP 2.0 §9.8 Table 369 and KMIP 2.1 §9.8 Table 407
-  define the field as Boolean; §8.2 identifies the request-header field. The
-  existing parser fixture confirms the field value is true.
-- Red: `234626a25` requires all eight exact route/version cells. The focused
-  controlled-peer test failed as intended (`expected 2 route events, got 0`).
-- Green: `4741dad52` emits the three generic route events per version and adds
-  the normative field to the existing typed RequestMessage parse evidence. The
-  focused test passes for both versions.
-- Refactor: `bd9cc43a5` reuses the stable case and target IDs between fixture
-  and assertions; the focused test still passes.
-- The full Java suite passes 57/57 tests, with no failures or skips, under
-  `--rerun-tasks`. Selected-scope validation passes 27,262/27,262 cells with
-  zero failures. The regenerated ledger comparison passes; the global matrix
-  has 44,379 pending cells across 1,219 case IDs. These results use pinned
-  artifact commit `12496d646d11d4069b58bcc88fc76cc619211ec6` with SHA-256
-  `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+- Updated the KMIP 3.0 Java/Python branch from the latest #187 head. The Java
+  controlled report invokes 27,254/27,254 selected cells with zero failures;
+  44,387/71,641 global cells remain pending across 1,220 case IDs.
+- The complete Java suite passes 57/57 tests with no failures or skips under
+  `--rerun-tasks`. The generated ledger refresh and normal comparison pass.
+  Red/Green/Refactor evidence for the seven new cells is on #187 in commits
+  `b0576cd07`, `de16f5d1c`, and `52d7c14d4`.
 - Verification commands: `bash ../../bindings/java/gradlew --no-daemon
   -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks`;
   `python3 ../shared/tools/validate_route_evidence.py --selected-scope --report
@@ -358,6 +347,28 @@ branches, and the common CI therefore reports a planned matrix only.
   504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545
   --write-ledger`; `python3 tools/compare_route_ledger.py --refresh-reference`;
   `python3 tools/compare_route_ledger.py`.
+- This branch still has the Java global matrix incomplete and no vendor KMS
+  interoperability result; #213 remains WIP.
+
+## 2026-11-17 #213 Batch Order Option stack sync
+
+- Synced the latest #187 Batch Order Option slice into the KMIP 3.0
+  Java/Python branch. The combined Java report invokes 27,262/27,262 selected
+  cells with zero failures and leaves 44,379/71,641 global cells pending across
+  1,219 case IDs.
+- The complete Java suite passes 57/57 tests with no failures or skips.
+  Red/Green/Refactor commits are `234626a25`, `4741dad52`, and `bd9cc43a5` on
+  #187; the route validator and ledger comparisons pass.
+- Verification commands: `bash ../../bindings/java/gradlew --no-daemon
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks`;
+  `python3 ../shared/tools/validate_route_evidence.py --selected-scope --report
+  build/route-execution-evidence.json --artifact-sha256
+  504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545
+  --write-ledger`; `python3 tools/compare_route_ledger.py --refresh-reference`;
+  `python3 tools/compare_route_ledger.py`.
+- The ledger is regenerated from the validated report. Java matrix coverage is
+  incomplete and the controlled fixture does not establish vendor KMS
+  interoperability; #213 remains WIP.
 - This adds local-model evidence and does not complete the Java matrix or
   establish vendor interoperability; the Java PR remains WIP.
 
@@ -405,6 +416,23 @@ branches, and the common CI therefore reports a planned matrix only.
 - This adds local-model evidence; it does not complete the Java matrix or
   establish interoperability with a vendor KMS. The Java PR remains WIP.
 
+## 2026-11-17 #213 stack sync with shared Request Header routes
+
+- Merged current #187 head `8313b6019ab987f0f0612d9c3bd2c5df10ca6600` into the
+  KMIP 3.0 Java/Python branch. KMIP 3.0 builder work remains in place alongside
+  the shared Request Header, Attestation, Batch Order Option, and earlier Java
+  route evidence.
+- The Java validator suite passes 57/57 tests with no failures, errors, or
+  skips. Selected-scope validation passes 27,328/27,328 cells; the generated
+  Java ledger records 44,313 pending of 71,641 cells across 1,211 case IDs.
+  The ledger comparison passes after regeneration. Shared route-capability
+  tests pass 68/68 and the generator reports 1,507 routes on the common matrix.
+- The artifact was installed from pinned commit
+  `12496d646d11d4069b58bcc88fc76cc619211ec6` with SHA-256
+  `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+  This is local fixture evidence; it does not establish vendor interoperability
+  or complete the route matrix. #213 remains WIP.
+
 ## 2026-11-17 Java KMIP 2.0/2.1 shared Request Header scalar routes
 
 - The seven scalar targets under the shared §8.2 Request Header now complete
@@ -435,6 +463,19 @@ branches, and the common CI therefore reports a planned matrix only.
 - Verification commands are recorded in
   `specs/092-interop-api-route-exhaustiveness/java-route-expansion-evidence.md`.
 
+## 2026-11-17 KMIP 3.0 Java/Python branch synchronized with Response Attestation Type
+
+- Updated the KMIP 3.0 Java/Python branch from #187 head
+  `a543b6cd20b78ecc3b8d9bfd6c31cb5fd2ea2ca4`. Its existing builder work is
+  preserved; the Java test suite passes 57/57 tests with no skips or failures.
+- The combined selected-scope report validates 27,344/27,344 cells with zero
+  failed cells. The ledger records 71,641 planned, 27,344 executed, and 44,297
+  pending across 1,209 pending case IDs; the ledger comparer passes. Shared
+  route-capability tests pass 68/68 and the generator check reports 1,507
+  routes. Artifact commit `12496d646d11d4069b58bcc88fc76cc619211ec6`,
+  SHA-256 `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+- This is local-model evidence and does not complete the Java matrix or claim
+  vendor interoperability. PR #213 remains WIP during exact-head CI.
 ## 2026-11-17 Java KMIP 2.0/2.1 repeatable Response Header Attestation Type
 
 - OASIS KMIP 2.0/2.1 §8.5 identifies Response Header Attestation Type as
@@ -459,6 +500,7 @@ branches, and the common CI therefore reports a planned matrix only.
   `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
 - This completes eight local-model route cells. It does not establish vendor
   interoperability or complete the Java matrix; the PR remains WIP.
+
 
 ## 2026-11-17 Java KMIP 2.0/2.1 repeatable Request Header Attestation Type
 
@@ -495,6 +537,21 @@ branches, and the common CI therefore reports a planned matrix only.
   emits generic TTLV and typed parser evidence and asserts the response value.
   Refactor: `06d74f08b` shares the fixture text between construction and
   assertion.
+
+## 2026-11-17 KMIP 3.0 builders synchronized with Client Correlation Value
+
+- Updated #213 with Java route-matrix parent #187 head
+  `8bf6631e3b4a4da3bd9f4974e10fa81e0a083673`; KMIP 3.0 builder work remains
+  on top of that parent.
+- Full Java suite: 57/57 tests pass with no failures, errors, or skips. Shared
+  route-capability tests: 68/68; traceability tests: 33/33; route generator:
+  1,507 routes. Selected-scope validation accepts 27,352/27,352 cells with
+  zero failures. The generated ledger records 71,641 planned, 27,352 executed,
+  and 44,289 pending cells across 1,208 pending case IDs; comparison passes.
+- This is local-model evidence, not vendor interoperability or full Java matrix
+  completion. PR #213 remains WIP pending exact-head CI.
+- Verification commands are recorded in
+  `specs/092-interop-api-route-exhaustiveness/java-route-expansion-evidence.md`.
 - The full Java suite passes 57/57 tests with no failures, errors, or skips.
   Shared route-capability tests pass 68/68; the generated route check reports
   1,507 routes. Selected-scope validation accepts 27,352/27,352 cells with zero

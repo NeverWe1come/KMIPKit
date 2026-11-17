@@ -15,7 +15,7 @@ from _test_support import (
     start_tls13_mtls_peer,
 )
 from kmipkit import attribute_operations, client, errors, extensions, fluent, protocol_values, ttlv
-from kmipkit.typed_attributes import StandardAttribute
+from kmipkit.typed_attributes import StandardAttribute, TypedAttribute
 
 _FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
 
@@ -358,6 +358,13 @@ def _lifecycle_response(operation: int, identifier: bytes) -> bytes:
         ]
     elif operation == 20:
         payload_fields = [_item(0x420094, 7, identifier)]
+    elif operation in (0x12, 0x15, 0x16, 0x13):
+        payload_fields = [_item(0x420094, 7, identifier)]
+    elif operation == 0x08:
+        payload_fields = [
+            _item(0x4200D5, 2, struct.pack(">i", 1)),
+            _item(0x420094, 7, identifier),
+        ]
     elif operation == 11:
         payload_fields = [
             _item(0x420094, 7, identifier),
@@ -389,6 +396,7 @@ def _start_lifecycle_peer(
     *,
     expected_asynchronous_indicator: int | None = None,
     expected_indicators_by_operation: dict[int, int] | None = None,
+    response_identifier: bytes | None = None,
 ) -> tuple[int, list[tuple[int, bytes | None, bytes]], queue.Queue[BaseException], threading.Thread]:
     listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     listener.bind(("127.0.0.1", 0))
@@ -411,6 +419,10 @@ def _start_lifecycle_peer(
                 with raw, context.wrap_socket(raw, server_side=True) as stream:
                     require_tls13_mtls_peer(stream)
                     request = read_ttlv_frame(stream)
+                    if response_identifier is not None:
+                        stream.sendall(
+                            _lifecycle_response(expected_operation, response_identifier)
+                        )
                     expected_indicator = (expected_indicators_by_operation or {}).get(
                         expected_operation, expected_asynchronous_indicator
                     )
@@ -425,8 +437,12 @@ def _start_lifecycle_peer(
                     if operation != expected_operation:
                         raise AssertionError(f"expected operation {expected_operation}, got {operation}")
                     observations.append((operation, request_identifier, request))
-                    response_identifier = request_identifier or b"fluent-created-id"
-                    stream.sendall(_lifecycle_response(operation, response_identifier))
+                    if response_identifier is None:
+                        stream.sendall(
+                            _lifecycle_response(
+                                operation, request_identifier or b"fluent-created-id"
+                            )
+                        )
         except BaseException as error:  # noqa: BLE001 - make peer failures visible in the test.
             failures.put(error)
         finally:
@@ -1317,3 +1333,83 @@ def test_add_attribute_builder_finalizer_swallows_close_errors(
     builder = object.__new__(fluent.AddAttributeBuilder)
     builder.__del__()
     del builder
+
+
+# KMIPKIT-0116 KMIP 3.0 fluent-builder coverage.
+def test_key_pair_builder_requires_explicit_algorithm_and_length() -> None:
+    # KMIPKIT-0093-FR-011/013; KMIP 2.1 section 6.1.2 Create Key Pair.
+    builder = fluent.CreateKeyPairBuilder()
+    with pytest.raises(errors.KmipKitError):
+        builder.build()
+    builder.algorithm(6)
+    with pytest.raises(errors.KmipKitError):
+        builder.validate()
+    builder.length(256).private_usage_mask(1).public_usage_mask(2)
+    builder.validate()
+    item = builder.to_batch_item()
+    item.close()
+
+@pytest.mark.parametrize("method,value", [
+    ("algorithm", -1), ("algorithm", 1 << 32),
+    ("length", True), ("private_usage_mask", True),
+    ("public_usage_mask", 1 << 32), ("with_options", None),
+    ("asynchronous_indicator", -1), ("common_attribute", None),
+])
+def test_key_pair_builder_rejects_invalid_semantic_fields(method: str, value: object) -> None:
+    with fluent.CreateKeyPairBuilder() as builder, pytest.raises(errors.KmipKitError):
+        getattr(builder, method)(value)
+
+def test_key_pair_builder_copies_typed_common_attributes() -> None:
+    with ttlv.codec_limits_defaults() as limits:
+        with fluent.CreateKeyPairBuilder() as builder:
+            with ttlv.ttlv_value_text_string(b"key pair description", limits) as value:
+                with TypedAttribute.create(StandardAttribute.DESCRIPTION, value) as attribute:
+                    builder.algorithm(6).length(256).common_attribute(attribute)
+            builder.validate()
+
+def test_key_pair_builder_covers_common_attributes_and_execution_options() -> None:
+    with socket.socket() as reservation:
+        reservation.bind(("127.0.0.1", 0))
+        unused_port = reservation.getsockname()[1]
+    registry = extensions.create_client_extension_registry(
+        (), extensions.default_extension_registry_limits()
+    )
+    configuration = extensions.create_client_configuration(registry)
+    with configuration, client.Client.create(
+        configuration, mtls_transport_config(unused_port, _FIXTURES)
+    ) as kmip_client:
+        with ttlv.codec_limits_defaults() as limits:
+            parameters = ttlv.ttlv_structure_create()
+            value = ttlv.ttlv_value_structure(parameters, limits)
+            with value, TypedAttribute.create(
+                StandardAttribute.CRYPTOGRAPHIC_DOMAIN_PARAMETERS, value
+            ) as common_attribute:
+                builder = (
+                    kmip_client.request()
+                    .create_key_pair()
+                    .algorithm(6)
+                    .length(256)
+                    .private_usage_mask(1)
+                    .public_usage_mask(2)
+                    .common_attribute(common_attribute)
+                    .asynchronous_indicator(1)
+                )
+                with builder.build() as item:
+                    assert item.operation == 2
+                with pytest.raises(errors.KmipKitError):
+                    builder.execute(limits)
+                with pytest.raises(errors.KmipKitError):
+                    builder.with_options(client.RequestOptions()).execute(limits)
+
+def test_symmetric_builder_reports_wrong_catalogued_type_as_unsent_validation() -> None:
+    with ttlv.ttlv_value_integer(1) as wrong_value:
+        with fluent.SymmetricKeyBuilder() as builder:
+            with pytest.raises(errors.ClientExecutionError) as caught:
+                builder.add_attribute(StandardAttribute.OBJECT_GROUP, wrong_value)
+
+    failure = caught.value
+    assert failure.status == 13
+    assert failure.client_category is errors.ClientErrorCategory.VALIDATION
+    assert failure.cause is errors.ClientErrorCause.INVALID_INPUT
+    assert failure.delivery is errors.DeliveryState.NOT_SENT
+    assert failure.response_ttlv is None

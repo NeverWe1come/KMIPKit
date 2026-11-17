@@ -1,6 +1,9 @@
 use kmipkit_protocol::attribute::typed;
 use kmipkit_protocol::{
-    Attribute, AttributeDefinition, AttributeReference, CreateRequest, UniqueIdentifier,
+    AdjustmentType, Attribute, AttributeDefinition, AttributeReference, AttributeSet, CheckRequest,
+    CreateRequest, CurrentAttribute, DiscoverVersionsRequest, GetConstraintsRequest,
+    GetUsageAllocationRequest, NewAttribute, ObjectType, ObtainLeaseRequest, PingRequest,
+    ProtocolVersion, QueryFunction, QueryRequest, UniqueIdentifier,
 };
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::RequestOptions;
@@ -9,11 +12,20 @@ use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Value, ValueView};
 
 use crate::asynchronous_execution_test_support::client_for;
 use crate::execute::{ClientBatchOutcome, ClientOperation, ClientRequest, encode_message_for_test};
-use crate::execute_test_support::{test_item, test_structure};
+use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_structure};
 use crate::fluent::{
-    AddAttributeBuilder, CreateSymmetricKeyBuilder, CryptographicUsageMask, DeleteAttributeBuilder,
-    FluentAttributePosition, FluentBuildError, SetAttributeBuilder,
+    AddAttributeBuilder, AttributeAdjustmentValue, CreateSymmetricKeyBuilder,
+    CryptographicUsageMask, DeleteAttributeBuilder, FluentAttributePosition, FluentBuildError,
+    SetAttributeBuilder,
 };
+
+const PING_OPERATION: u32 = 0x0000_003b;
+const DISCOVER_VERSIONS_OPERATION: u32 = 0x0000_001e;
+const QUERY_OPERATION: u32 = 0x0000_0018;
+const CHECK_OPERATION: u32 = 0x0000_0009;
+const GET_CONSTRAINTS_OPERATION: u32 = 0x0000_0038;
+const GET_USAGE_ALLOCATION_OPERATION: u32 = 0x0000_0011;
+const OBTAIN_LEASE_OPERATION: u32 = 0x0000_0010;
 
 #[test]
 fn delete_attribute_builder_constructs_the_existing_typed_request() {
@@ -497,6 +509,40 @@ fn response_bytes(operation: u32, status: u32, correlation: Option<&[u8]>) -> Ve
         .expect("fixture response is valid TTLV")
 }
 
+fn attribute_success_response_bytes(operation: u32) -> Vec<u8> {
+    let mut payload = Structure::new();
+    payload
+        .try_push(test_item(
+            0x0042_0094,
+            Value::text_string("key-42".to_owned()),
+        ))
+        .expect("attribute operation response identifier fits");
+    let mut message = vec![test_item(
+        0x0042_007A,
+        Value::structure(test_structure([
+            test_item(
+                0x0042_0069,
+                Value::structure(test_structure([
+                    test_item(0x0042_006A, Value::integer(2)),
+                    test_item(0x0042_006B, Value::integer(1)),
+                ])),
+            ),
+            test_item(0x0042_0092, Value::date_time(1)),
+            test_item(0x0042_000D, Value::integer(1)),
+        ])),
+    )];
+    message.push(test_item(
+        0x0042_000F,
+        Value::structure(test_structure([
+            test_item(0x0042_005C, Value::enumeration(operation)),
+            test_item(0x0042_007F, Value::enumeration(0)),
+            test_item(0x0042_007C, Value::structure(payload)),
+        ])),
+    ));
+    encode_message_for_test(test_structure(message), &CodecLimits::defaults())
+        .expect("attribute operation fixture response is valid TTLV")
+}
+
 fn set_attribute_response_bytes() -> Vec<u8> {
     let payload = test_structure([test_item(
         0x0042_0094,
@@ -774,8 +820,32 @@ fn fluent_build_errors_have_stable_user_facing_messages() {
             "fluent Object Attribute value is invalid",
         ),
         (
-            FluentBuildError::MissingSetAttributeAttribute,
-            "Set Attribute requires one New Attribute",
+            FluentBuildError::InvalidProtocolVersions,
+            "fluent Discover Versions offers are empty or unsupported",
+        ),
+        (
+            FluentBuildError::MissingGetUsageAllocationCount,
+            "Get Usage Allocation requires a Usage Limits Count",
+        ),
+        (
+            FluentBuildError::MissingAddAttributeValue,
+            "Add Attribute requires a New Attribute",
+        ),
+        (
+            FluentBuildError::MissingModifyAttributeValue,
+            "Modify Attribute requires a New Attribute",
+        ),
+        (
+            FluentBuildError::MissingSetAttributeValue,
+            "Set Attribute requires a New Attribute",
+        ),
+        (
+            FluentBuildError::MissingAdjustAttributeReference,
+            "Adjust Attribute requires an Attribute Reference",
+        ),
+        (
+            FluentBuildError::MissingAdjustAttributeType,
+            "Adjust Attribute requires an Adjustment Type",
         ),
         (
             FluentBuildError::MissingAddAttributeAttribute,
@@ -1225,6 +1295,123 @@ fn execute_uses_typed_create_and_returns_the_existing_create_outcome() {
 }
 
 #[test]
+fn ping_fluent_builder_builds_the_existing_typed_request_and_executes_once() {
+    let request = failed_request_client()
+        .request()
+        .ping()
+        .build_request()
+        .expect("Ping's empty payload is a valid typed request");
+    assert_eq!(request, PingRequest::new());
+    let batch_item = failed_request_client()
+        .request()
+        .ping()
+        .to_batch_item()
+        .expect("Ping converts to the existing typed batch item");
+    assert_eq!(batch_item.operation(), PING_OPERATION);
+
+    let response =
+        asynchronous_response_bytes(PING_OPERATION, 0, None, None, Some(test_structure([])));
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: vec![2, 5],
+    });
+    let result = client
+        .request()
+        .ping()
+        .execute(&CodecLimits::defaults())
+        .expect("the scripted Ping response is valid");
+
+    assert_eq!(
+        result.outcome().operation(),
+        crate::execute::ClientOperation::Ping
+    );
+    assert_eq!(result.outcome().result().status().raw(), 0);
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn discover_versions_builder_preserves_offers_and_executes_once() {
+    let request = failed_request_client()
+        .request()
+        .discover_versions()
+        .protocol_versions(vec![ProtocolVersion::V2_0, ProtocolVersion::V2_1])
+        .build_request()
+        .expect("catalogued protocol offers build a typed Discover Versions request");
+    assert_eq!(
+        request.protocol_versions(),
+        &[ProtocolVersion::V2_0, ProtocolVersion::V2_1]
+    );
+    assert_eq!(
+        DiscoverVersionsRequest::new().protocol_versions(),
+        &[ProtocolVersion::V2_1]
+    );
+    let batch_item = failed_request_client()
+        .request()
+        .discover_versions()
+        .to_batch_item()
+        .expect("Discover Versions converts to the existing typed batch item");
+    assert_eq!(batch_item.operation(), DISCOVER_VERSIONS_OPERATION);
+
+    let response = asynchronous_response_bytes(
+        DISCOVER_VERSIONS_OPERATION,
+        0,
+        None,
+        None,
+        Some(test_structure([])),
+    );
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: vec![2, 5],
+    });
+    let result = client
+        .request()
+        .discover_versions()
+        .execute(&CodecLimits::defaults())
+        .expect("the scripted empty Discover Versions result is valid");
+
+    assert_eq!(
+        result.outcome().operation(),
+        crate::execute::ClientOperation::DiscoverVersions
+    );
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn discover_versions_builder_rejects_invalid_offers_before_transport() {
+    assert_eq!(
+        failed_request_client()
+            .request()
+            .discover_versions()
+            .protocol_versions(Vec::new())
+            .build_request()
+            .expect_err("an explicit empty offer is invalid"),
+        FluentBuildError::InvalidProtocolVersions
+    );
+    assert_eq!(
+        failed_request_client()
+            .request()
+            .discover_versions()
+            .protocol_versions(vec![ProtocolVersion::from_raw(1, 4)])
+            .validate()
+            .expect_err("an uncatalogued version cannot be offered"),
+        FluentBuildError::InvalidProtocolVersions
+    );
+
+    let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let error = client
+        .request()
+        .discover_versions()
+        .protocol_versions(Vec::new())
+        .execute(&CodecLimits::defaults())
+        .expect_err("invalid offers fail before transport");
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert_eq!(transport.borrow().exchange_count(), 0);
+}
+
+#[test]
 fn execute_exposes_pending_correlation_without_polling() {
     let response = response_bytes(1, 2, Some(b"pending-correlation"));
     let (mut client, fake, _) = client_for(ExchangeScript::Success {
@@ -1265,6 +1452,209 @@ fn invalid_fluent_create_execution_keeps_not_sent_delivery_state() {
     assert_eq!(
         error.delivery_state(),
         Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert_eq!(fake.borrow().exchange_count(), 0);
+}
+
+#[test]
+fn query_builder_preserves_functions_and_groups_and_executes_once() {
+    let request = failed_request_client()
+        .request()
+        .query()
+        .functions(vec![QueryFunction::OPERATIONS, QueryFunction::OBJECTS])
+        .object_groups(vec!["group-b".to_owned(), "group-a".to_owned()])
+        .build_request()
+        .expect("explicit Query functions form a typed request");
+    assert_eq!(
+        request.functions(),
+        &[QueryFunction::OPERATIONS, QueryFunction::OBJECTS]
+    );
+    assert_eq!(
+        request.object_groups(),
+        Some(["group-b".to_owned(), "group-a".to_owned()].as_slice())
+    );
+    let _: QueryRequest = request;
+    let batch_item = failed_request_client()
+        .request()
+        .query()
+        .functions(vec![QueryFunction::OPERATIONS])
+        .to_batch_item()
+        .expect("Query converts to the existing typed batch item");
+    assert_eq!(batch_item.operation(), QUERY_OPERATION);
+
+    let response = asynchronous_response_bytes(
+        QUERY_OPERATION,
+        0,
+        None,
+        None,
+        Some(test_structure([test_item(
+            0x0042_015f,
+            Value::structure(test_structure([])),
+        )])),
+    );
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: vec![2, 5],
+    });
+    let result = client
+        .request()
+        .query()
+        .functions(vec![QueryFunction::OPERATIONS])
+        .execute(&CodecLimits::defaults())
+        .expect("the scripted Query response is valid");
+
+    assert_eq!(
+        result.outcome().operation(),
+        crate::execute::ClientOperation::Query
+    );
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn query_builder_rejects_empty_functions_before_transport() {
+    assert_eq!(
+        failed_request_client()
+            .request()
+            .query()
+            .build_request()
+            .expect_err("Query requires at least one function"),
+        FluentBuildError::InvalidRequest
+    );
+
+    let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let error = client
+        .request()
+        .query()
+        .execute(&CodecLimits::defaults())
+        .expect_err("an empty Query is rejected before transport");
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert_eq!(transport.borrow().exchange_count(), 0);
+}
+
+#[test]
+fn check_builder_builds_typed_policy_request_and_executes_once() {
+    let identifier = UniqueIdentifier::TextString("checked-key".to_owned());
+    let request = failed_request_client()
+        .request()
+        .check()
+        .unique_identifier(identifier.clone())
+        .usage_limits_count(3)
+        .cryptographic_usage_mask(2)
+        .lease_time(60)
+        .build_request()
+        .expect("explicit Check policy fields build a typed request");
+    assert_eq!(request.unique_identifier(), Some(&identifier));
+    let _: CheckRequest = request;
+    let batch_item = failed_request_client()
+        .request()
+        .check()
+        .to_batch_item()
+        .expect("Check converts to the existing typed batch item");
+    assert_eq!(batch_item.operation(), CHECK_OPERATION);
+
+    let response = asynchronous_response_bytes(
+        CHECK_OPERATION,
+        0,
+        None,
+        None,
+        Some(test_structure([test_item(
+            0x0042_0094,
+            Value::text_string("checked-key".to_owned()),
+        )])),
+    );
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: vec![2, 5],
+    });
+    let result = client
+        .request()
+        .check()
+        .unique_identifier(identifier)
+        .execute(&CodecLimits::defaults())
+        .expect("the scripted Check result is valid");
+
+    assert_eq!(
+        result.outcome().operation(),
+        crate::execute::ClientOperation::Check
+    );
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn fluent_builders_validate_typed_requests_without_sending() {
+    let (mut client, fake, _) = client_for(ExchangeScript::FailBeforeWrite);
+
+    assert_eq!(
+        client.request().check().usage_limits_count(2).validate(),
+        Ok(())
+    );
+    assert_eq!(
+        client
+            .request()
+            .query()
+            .functions(vec![QueryFunction::OPERATIONS])
+            .validate(),
+        Ok(())
+    );
+    assert_eq!(
+        client
+            .request()
+            .discover_versions()
+            .protocol_versions(vec![ProtocolVersion::V2_1])
+            .validate(),
+        Ok(())
+    );
+    assert_eq!(client.request().ping().validate(), Ok(()));
+
+    let comment = || {
+        Attribute::<typed::Comment>::new("validated-comment".to_owned())
+            .expect("Comment is a catalogued Text String")
+    };
+    assert_eq!(
+        client
+            .request()
+            .add_attribute()
+            .attribute(comment())
+            .validate(),
+        Ok(())
+    );
+    assert_eq!(
+        client
+            .request()
+            .set_attribute()
+            .attribute(comment())
+            .validate(),
+        Ok(())
+    );
+    assert_eq!(
+        client
+            .request()
+            .modify_attribute()
+            .current_attribute(CurrentAttribute::from_typed(comment()))
+            .new_attribute(NewAttribute::from_typed(comment()))
+            .validate(),
+        Ok(())
+    );
+    assert_eq!(
+        client
+            .request()
+            .delete_attribute()
+            .current_attribute(comment())
+            .validate(),
+        Ok(())
+    );
+    assert_eq!(
+        client
+            .request()
+            .adjust_attribute()
+            .attribute_reference(AttributeReference::tag(typed::UsageLimits::TAG))
+            .adjustment_type(AdjustmentType::INCREMENT)
+            .adjustment_value(AttributeAdjustmentValue::integer(1))
+            .validate(),
+        Ok(())
     );
     assert_eq!(fake.borrow().exchange_count(), 0);
 }
@@ -1325,6 +1715,294 @@ fn every_key_preset_builds_a_typed_request_and_batch_item() {
 }
 
 #[test]
+fn fluent_attribute_mutation_validation_reports_missing_required_values() {
+    let mut client = failed_request_client();
+
+    assert_eq!(
+        client
+            .request()
+            .add_attribute()
+            .validate()
+            .expect_err("Add Attribute requires a New Attribute"),
+        FluentBuildError::MissingAddAttributeAttribute
+    );
+    assert_eq!(
+        client
+            .request()
+            .modify_attribute()
+            .validate()
+            .expect_err("Modify Attribute requires a New Attribute"),
+        FluentBuildError::MissingModifyAttributeValue
+    );
+    assert_eq!(
+        client
+            .request()
+            .set_attribute()
+            .validate()
+            .expect_err("Set Attribute requires a New Attribute"),
+        FluentBuildError::MissingSetAttributeAttribute
+    );
+    assert_eq!(
+        client
+            .request()
+            .adjust_attribute()
+            .validate()
+            .expect_err("Adjust Attribute requires an Attribute Reference"),
+        FluentBuildError::MissingAdjustAttributeReference
+    );
+    assert_eq!(
+        client
+            .request()
+            .adjust_attribute()
+            .attribute_reference(AttributeReference::tag(typed::UsageLimits::TAG))
+            .validate()
+            .expect_err("Adjust Attribute requires an Adjustment Type"),
+        FluentBuildError::MissingAdjustAttributeType
+    );
+}
+
+#[test]
+fn adjust_attribute_value_constructors_preserve_explicit_ttlv_types() {
+    let values = [
+        (
+            AttributeAdjustmentValue::long_integer(-7),
+            ItemType::LongInteger,
+        ),
+        (
+            AttributeAdjustmentValue::enumeration(u32::MAX),
+            ItemType::Enumeration,
+        ),
+        (AttributeAdjustmentValue::boolean(true), ItemType::Boolean),
+        (
+            AttributeAdjustmentValue::text_string("exact value".to_owned()),
+            ItemType::TextString,
+        ),
+        (AttributeAdjustmentValue::date_time(-11), ItemType::DateTime),
+        (
+            AttributeAdjustmentValue::interval(u32::MAX),
+            ItemType::Interval,
+        ),
+        (
+            AttributeAdjustmentValue::date_time_extended(-13),
+            ItemType::DateTimeExtended,
+        ),
+    ];
+    let mut client = failed_request_client();
+
+    for (value, expected_type) in values {
+        let builder = client
+            .request()
+            .adjust_attribute()
+            .attribute_reference(AttributeReference::tag(typed::UsageLimits::TAG))
+            .adjustment_type(AdjustmentType::INCREMENT)
+            .adjustment_value(value);
+        assert_eq!(builder.validate(), Ok(()));
+        let request = builder
+            .build_request()
+            .expect("an explicit Adjustment Value is retained");
+        assert_eq!(
+            request
+                .adjustment_value()
+                .expect("the caller supplied an Adjustment Value")
+                .item_type(),
+            expected_type
+        );
+    }
+}
+
+#[test]
+fn get_constraints_builder_builds_typed_request_and_executes_once() {
+    failed_request_client()
+        .request()
+        .get_constraints()
+        .validate()
+        .expect("the empty typed Get Constraints request is valid");
+    let request = failed_request_client()
+        .request()
+        .get_constraints()
+        .build_request()
+        .expect("Get Constraints is an empty typed request");
+    assert_eq!(request, GetConstraintsRequest::new());
+    let batch_item = failed_request_client()
+        .request()
+        .get_constraints()
+        .to_batch_item()
+        .expect("Get Constraints converts to the existing typed batch item");
+    assert_eq!(batch_item.operation(), GET_CONSTRAINTS_OPERATION);
+
+    let response = asynchronous_response_bytes(
+        GET_CONSTRAINTS_OPERATION,
+        0,
+        None,
+        None,
+        Some(test_structure([test_item(
+            0x0042_0168,
+            Value::structure(test_structure([])),
+        )])),
+    );
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: vec![2, 5],
+    });
+    let result = client
+        .request()
+        .get_constraints()
+        .execute(&CodecLimits::defaults())
+        .expect("the scripted Get Constraints response is valid");
+
+    assert_eq!(
+        result.outcome().operation(),
+        crate::execute::ClientOperation::GetConstraints
+    );
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn get_usage_allocation_builder_requires_count_and_executes_typed_request() {
+    assert_eq!(
+        failed_request_client()
+            .request()
+            .get_usage_allocation()
+            .build_request()
+            .expect_err("Get Usage Allocation requires its requested count"),
+        FluentBuildError::MissingGetUsageAllocationCount
+    );
+    failed_request_client()
+        .request()
+        .get_usage_allocation()
+        .usage_limits_count(3)
+        .validate()
+        .expect("a supplied Usage Limits Count validates locally");
+
+    let identifier = UniqueIdentifier::TextString("limited-key".to_owned());
+    let request = failed_request_client()
+        .request()
+        .get_usage_allocation()
+        .usage_limits_count(3)
+        .unique_identifier(identifier.clone())
+        .build_request()
+        .expect("an explicit count forms a typed request");
+    assert_eq!(request.usage_limits_count(), 3);
+    assert_eq!(request.unique_identifier(), Some(&identifier));
+    let _: GetUsageAllocationRequest = request;
+
+    let batch_item = failed_request_client()
+        .request()
+        .get_usage_allocation()
+        .usage_limits_count(3)
+        .to_batch_item()
+        .expect("Get Usage Allocation converts to the existing typed batch item");
+    assert_eq!(batch_item.operation(), GET_USAGE_ALLOCATION_OPERATION);
+
+    let response = asynchronous_response_bytes(
+        GET_USAGE_ALLOCATION_OPERATION,
+        0,
+        None,
+        None,
+        Some(test_structure([test_item(
+            0x0042_0094,
+            Value::text_string("limited-key".to_owned()),
+        )])),
+    );
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: vec![2, 5],
+    });
+    let result = client
+        .request()
+        .get_usage_allocation()
+        .usage_limits_count(3)
+        .unique_identifier(UniqueIdentifier::TextString("limited-key".to_owned()))
+        .execute(&CodecLimits::defaults())
+        .expect("the scripted usage allocation response is valid");
+
+    assert_eq!(
+        result.outcome().operation(),
+        crate::execute::ClientOperation::GetUsageAllocation
+    );
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn obtain_lease_builder_preserves_identifier_and_executes_once() {
+    let identifier = UniqueIdentifier::TextString("leased-key".to_owned());
+    let request = failed_request_client()
+        .request()
+        .obtain_lease()
+        .unique_identifier(identifier.clone())
+        .build_request()
+        .expect("the optional explicit object identifier is a typed request field");
+    assert_eq!(request.unique_identifier(), Some(&identifier));
+    let _: ObtainLeaseRequest = request;
+
+    let batch_item = failed_request_client()
+        .request()
+        .obtain_lease()
+        .unique_identifier(identifier.clone())
+        .to_batch_item()
+        .expect("Obtain Lease converts to the existing typed batch item");
+    assert_eq!(batch_item.operation(), OBTAIN_LEASE_OPERATION);
+
+    let response = asynchronous_response_bytes(
+        OBTAIN_LEASE_OPERATION,
+        0,
+        None,
+        None,
+        Some(test_structure([
+            test_item(0x0042_0094, Value::text_string("leased-key".to_owned())),
+            test_item(0x0042_0049, Value::interval(60)),
+            test_item(0x0042_0048, Value::date_time(1)),
+        ])),
+    );
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: vec![2, 5],
+    });
+    let result = client
+        .request()
+        .obtain_lease()
+        .unique_identifier(identifier)
+        .execute(&CodecLimits::defaults())
+        .expect("the scripted Obtain Lease result is valid");
+
+    assert_eq!(
+        result.outcome().operation(),
+        crate::execute::ClientOperation::ObtainLease
+    );
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn obtain_lease_builder_validates_placeholder_request_without_sending() {
+    let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
+
+    client
+        .request()
+        .obtain_lease()
+        .validate()
+        .expect("an omitted identifier is valid for an ID Placeholder batch item");
+
+    assert_eq!(transport.borrow().exchange_count(), 0);
+}
+
+#[test]
+fn obtain_lease_execute_requires_an_identifier_before_sending() {
+    let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
+
+    let error = client
+        .request()
+        .obtain_lease()
+        .execute(&CodecLimits::defaults())
+        .expect_err("single-request execution has no preceding ID Placeholder");
+
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert_eq!(transport.borrow().exchange_count(), 0);
+}
+
+#[test]
 fn create_get_and_destroy_execute_with_exchange_options() {
     let (mut client, _, _) = client_for(ExchangeScript::Success {
         response: response_bytes(1, 0, None),
@@ -1366,4 +2044,1175 @@ fn create_get_and_destroy_execute_with_exchange_options() {
             .delivery_state(),
         Some(kmipkit_transport::RequestDeliveryState::NotSent)
     );
+}
+
+#[test]
+fn attribute_value_mutation_builders_preserve_typed_selectors_and_existing_requests() {
+    let mut client = failed_request_client();
+    let add = client
+        .request()
+        .add_attribute()
+        .unique_identifier("key-42")
+        .attribute(
+            Attribute::<typed::Comment>::new("new-comment".to_owned())
+                .expect("Comment is a catalogued Text String"),
+        )
+        .build_request()
+        .expect("Add Attribute has its required New Attribute");
+    assert_eq!(add.unique_identifier(), Some("key-42"));
+    assert_eq!(add.new_attribute().item().tag().raw(), typed::Comment::TAG);
+    assert_eq!(
+        client
+            .request()
+            .add_attribute()
+            .attribute(
+                Attribute::<typed::Comment>::new("batch-comment".to_owned())
+                    .expect("Comment is a catalogued Text String"),
+            )
+            .to_batch_item()
+            .expect("Add Attribute converts to the existing batch item")
+            .operation(),
+        13
+    );
+
+    let modify = client
+        .request()
+        .modify_attribute()
+        .unique_identifier("key-42")
+        .current_attribute(CurrentAttribute::from_typed(
+            Attribute::<typed::Comment>::new("old-comment".to_owned())
+                .expect("Comment is a catalogued Text String"),
+        ))
+        .new_attribute(NewAttribute::from_typed(
+            Attribute::<typed::Comment>::new("updated-comment".to_owned())
+                .expect("Comment is a catalogued Text String"),
+        ))
+        .build_request()
+        .expect("Modify Attribute has its required New Attribute");
+    assert_eq!(modify.unique_identifier(), Some("key-42"));
+    assert_eq!(
+        modify
+            .current_attribute()
+            .expect("the optional current selector is preserved")
+            .item()
+            .tag()
+            .raw(),
+        typed::Comment::TAG
+    );
+    assert_eq!(
+        modify.new_attribute().item().tag().raw(),
+        typed::Comment::TAG
+    );
+    assert_eq!(
+        client
+            .request()
+            .modify_attribute()
+            .new_attribute(NewAttribute::from_typed(
+                Attribute::<typed::Comment>::new("batch-update".to_owned())
+                    .expect("Comment is a catalogued Text String"),
+            ))
+            .to_batch_item()
+            .expect("Modify Attribute converts to the existing batch item")
+            .operation(),
+        14
+    );
+
+    let set = client
+        .request()
+        .set_attribute()
+        .unique_identifier("key-42")
+        .attribute(
+            Attribute::<typed::Comment>::new("replacement-comment".to_owned())
+                .expect("Comment is a catalogued Text String"),
+        )
+        .build_request()
+        .expect("Set Attribute has its required New Attribute");
+    assert_eq!(set.unique_identifier(), Some("key-42"));
+    assert_eq!(set.new_attribute().item().tag().raw(), typed::Comment::TAG);
+    assert_eq!(
+        client
+            .request()
+            .set_attribute()
+            .attribute(
+                Attribute::<typed::Comment>::new("batch-replacement".to_owned())
+                    .expect("Comment is a catalogued Text String"),
+            )
+            .to_batch_item()
+            .expect("Set Attribute converts to the existing batch item")
+            .operation(),
+        49
+    );
+}
+
+#[test]
+fn attribute_selector_mutation_builders_preserve_explicit_values_and_requests() {
+    let mut client = failed_request_client();
+    let delete = client
+        .request()
+        .delete_attribute()
+        .unique_identifier("key-42")
+        .current_attribute(
+            Attribute::<typed::Comment>::new("old-comment".to_owned())
+                .expect("Comment is a catalogued Text String"),
+        )
+        .build_request()
+        .expect("Delete Attribute selectors form a valid typed request");
+    assert_eq!(delete.unique_identifier(), Some("key-42"));
+    assert_eq!(
+        delete
+            .current_attribute()
+            .expect("the selected current value is preserved")
+            .item()
+            .tag()
+            .raw(),
+        typed::Comment::TAG
+    );
+    assert_eq!(
+        client
+            .request()
+            .delete_attribute()
+            .unique_identifier("key-42")
+            .attribute_reference(AttributeReference::tag(typed::Comment::TAG))
+            .to_batch_item()
+            .expect("Delete Attribute converts to the existing batch item")
+            .operation(),
+        15
+    );
+
+    let adjust = client
+        .request()
+        .adjust_attribute()
+        .unique_identifier("key-42")
+        .attribute_reference(AttributeReference::tag(typed::UsageLimits::TAG))
+        .adjustment_type(AdjustmentType::INCREMENT)
+        .adjustment_value(AttributeAdjustmentValue::integer(1))
+        .build_request()
+        .expect("Adjust Attribute retains the selected type and caller value");
+    assert_eq!(adjust.unique_identifier(), Some("key-42"));
+    assert_eq!(
+        adjust.attribute_reference().tag_value(),
+        Some(typed::UsageLimits::TAG)
+    );
+    assert_eq!(adjust.adjustment_type(), AdjustmentType::INCREMENT);
+    assert!(adjust.adjustment_value().is_some());
+    assert_eq!(
+        client
+            .request()
+            .adjust_attribute()
+            .attribute_reference(AttributeReference::tag(typed::UsageLimits::TAG))
+            .adjustment_type(AdjustmentType::INCREMENT)
+            .adjustment_value(AttributeAdjustmentValue::integer(1))
+            .to_batch_item()
+            .expect("Adjust Attribute converts to the existing batch item")
+            .operation(),
+        48
+    );
+}
+
+#[test]
+fn invalid_attribute_mutation_is_rejected_without_sending() {
+    let (mut client, fake, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let error = client
+        .request()
+        .add_attribute()
+        .attribute_item(item(
+            typed::CryptographicLength::TAG,
+            Value::text_string("wrong-ttlv-type".to_owned()),
+        ))
+        .execute(&CodecLimits::defaults())
+        .expect_err("a catalogued attribute with the wrong TTLV type is rejected locally");
+
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert_eq!(fake.borrow().exchange_count(), 0);
+}
+
+#[test]
+fn adjust_attribute_requires_explicit_reference_and_type_before_sending() {
+    let mut client = failed_request_client();
+    assert_eq!(
+        client
+            .request()
+            .adjust_attribute()
+            .build_request()
+            .expect_err("the reference is required"),
+        FluentBuildError::MissingAdjustAttributeReference
+    );
+
+    let (mut client, fake, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let error = client
+        .request()
+        .adjust_attribute()
+        .attribute_reference(AttributeReference::tag(typed::UsageLimits::TAG))
+        .execute(&CodecLimits::defaults())
+        .expect_err("an explicit adjustment type is required before transport");
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert_eq!(fake.borrow().exchange_count(), 0);
+}
+
+#[test]
+fn attribute_mutation_builders_execute_the_matching_typed_route_once() {
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response: attribute_success_response_bytes(13),
+        request_write_chunks: Vec::new(),
+    });
+    let response = client
+        .request()
+        .add_attribute()
+        .unique_identifier("key-42")
+        .attribute(
+            Attribute::<typed::Comment>::new("added".to_owned())
+                .expect("Comment is a catalogued Text String"),
+        )
+        .execute(&CodecLimits::defaults())
+        .expect("Add Attribute uses its existing typed client route");
+    assert_eq!(
+        response.outcome().operation(),
+        crate::execute::ClientOperation::AddAttribute
+    );
+    assert_eq!(fake.borrow().exchange_count(), 1);
+
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response: attribute_success_response_bytes(14),
+        request_write_chunks: Vec::new(),
+    });
+    let builder = client
+        .request()
+        .modify_attribute()
+        .unique_identifier("key-42")
+        .current_attribute(CurrentAttribute::from_typed(
+            Attribute::<typed::Comment>::new("before-modify".to_owned())
+                .expect("Comment is a catalogued Text String"),
+        ))
+        .new_attribute(NewAttribute::from_typed(
+            Attribute::<typed::Comment>::new("modified".to_owned())
+                .expect("Comment is a catalogued Text String"),
+        ));
+    assert_eq!(builder.validate(), Ok(()));
+    let response = builder
+        .execute(&CodecLimits::defaults())
+        .expect("Modify Attribute uses its existing typed client route");
+    assert_eq!(
+        response.outcome().operation(),
+        crate::execute::ClientOperation::ModifyAttribute
+    );
+    assert_eq!(fake.borrow().exchange_count(), 1);
+
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response: attribute_success_response_bytes(49),
+        request_write_chunks: Vec::new(),
+    });
+    let response = client
+        .request()
+        .set_attribute()
+        .unique_identifier("key-42")
+        .attribute(
+            Attribute::<typed::Comment>::new("set".to_owned())
+                .expect("Comment is a catalogued Text String"),
+        )
+        .execute(&CodecLimits::defaults())
+        .expect("Set Attribute uses its existing typed client route");
+    assert_eq!(
+        response.outcome().operation(),
+        crate::execute::ClientOperation::SetAttribute
+    );
+    assert_eq!(fake.borrow().exchange_count(), 1);
+
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response: attribute_success_response_bytes(15),
+        request_write_chunks: Vec::new(),
+    });
+    let response = client
+        .request()
+        .delete_attribute()
+        .unique_identifier("key-42")
+        .attribute_reference(AttributeReference::tag(typed::Comment::TAG))
+        .execute(&CodecLimits::defaults())
+        .expect("Delete Attribute uses its existing typed client route");
+    assert_eq!(
+        response.outcome().operation(),
+        crate::execute::ClientOperation::DeleteAttribute
+    );
+    assert_eq!(fake.borrow().exchange_count(), 1);
+
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response: attribute_success_response_bytes(48),
+        request_write_chunks: Vec::new(),
+    });
+    let response = client
+        .request()
+        .adjust_attribute()
+        .unique_identifier("key-42")
+        .attribute_reference(AttributeReference::tag(typed::UsageLimits::TAG))
+        .adjustment_type(AdjustmentType::INCREMENT)
+        .adjustment_value(AttributeAdjustmentValue::integer(1))
+        .execute(&CodecLimits::defaults())
+        .expect("Adjust Attribute uses its existing typed client route");
+    assert_eq!(
+        response.outcome().operation(),
+        crate::execute::ClientOperation::AdjustAttribute
+    );
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+// KMIPKIT-0093-FR-004 through FR-007, FR-011; OASIS KMIP v2.1
+// §6.1.8, Tables 186–187: retain actual Create fields and reuse typed execution.
+#[test]
+fn generic_create_builder_preserves_explicit_fields() {
+    let mut client = failed_request_client();
+    let attributes = AttributeSet::try_new([item(
+        typed::ObjectGroup::TAG,
+        Value::text_string("explicit-group".to_owned()),
+    )])
+    .unwrap();
+    let masks = test_structure([item(0x0042_0159, Value::integer(3))]);
+    let builder = client
+        .request()
+        .create()
+        .object_type(ObjectType::from_raw(2))
+        .attributes(attributes)
+        .protection_storage_masks(masks);
+    assert_eq!(builder.validate(), Ok(()));
+    let request = builder.build_request().unwrap();
+    assert_eq!(request.object_type(), ObjectType::from_raw(2));
+    assert_eq!(request.attributes().len(), 1);
+    let attribute = &request.attributes().as_items()[0];
+    assert_eq!(attribute.tag().raw(), typed::ObjectGroup::TAG);
+    assert!(attribute.with_value(|value| matches!(value,
+        ValueView::TextString(value) if value == "explicit-group")));
+    let masks = request.protection_storage_masks().unwrap().view();
+    assert_eq!(masks.children().len(), 1);
+    assert_eq!(masks.children()[0].tag().raw(), 0x0042_0159);
+    assert_eq!(read_integer(&masks.children()[0]), Some(3));
+}
+
+#[test]
+fn generic_create_builder_requires_object_type_before_transport() {
+    let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let builder = client.request().create();
+    assert_eq!(
+        builder.validate(),
+        Err(FluentBuildError::MissingCreateObjectType)
+    );
+    assert_eq!(
+        builder.build_request().err(),
+        Some(FluentBuildError::MissingCreateObjectType)
+    );
+    let error = builder.execute(&CodecLimits::defaults()).unwrap_err();
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert_eq!(transport.borrow().exchange_count(), 0);
+    assert_eq!(
+        FluentBuildError::MissingCreateObjectType.to_string(),
+        "Create requires Object Type"
+    );
+}
+
+#[test]
+fn generic_create_builder_defaults_only_to_empty_attributes() {
+    let mut client = failed_request_client();
+    let builder = client
+        .request()
+        .create()
+        .object_type(ObjectType::from_raw(0xf000_0002));
+    let request = builder.build_request().unwrap();
+    assert_eq!(request.object_type().raw(), 0xf000_0002);
+    assert!(request.attributes().is_empty());
+    assert!(request.protection_storage_masks().is_none());
+    assert_eq!(builder.validate(), Ok(()));
+    assert_eq!(builder.to_batch_item().unwrap().operation(), 1);
+}
+
+#[test]
+fn generic_create_builder_preserves_unknown_attribute_order_and_values() {
+    let mut client = failed_request_client();
+    let attributes = AttributeSet::try_new([
+        item(0x0054_0001, Value::enumeration(0xf000_0001)),
+        item(
+            typed::ObjectGroup::TAG,
+            Value::text_string("group".to_owned()),
+        ),
+        item(0x0054_0002, Value::integer(17)),
+    ])
+    .unwrap();
+    let request = client
+        .request()
+        .create()
+        .object_type(ObjectType::from_raw(2))
+        .attributes(attributes)
+        .build_request()
+        .unwrap();
+    let attributes = request.attributes().as_items();
+    assert_eq!(
+        attributes
+            .iter()
+            .map(|attribute| attribute.tag().raw())
+            .collect::<Vec<_>>(),
+        [0x0054_0001, typed::ObjectGroup::TAG, 0x0054_0002]
+    );
+    assert_eq!(read_enumeration(&attributes[0]), Some(0xf000_0001));
+    assert_eq!(read_integer(&attributes[2]), Some(17));
+}
+
+#[test]
+fn generic_create_builder_rejects_invalid_cardinality_with_redacted_not_sent_error() {
+    let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let attributes = AttributeSet::try_new([
+        item(
+            typed::ContactInformation::TAG,
+            Value::text_string("PRIVATE_SENTINEL".to_owned()),
+        ),
+        item(
+            typed::ContactInformation::TAG,
+            Value::text_string("PRIVATE_SENTINEL".to_owned()),
+        ),
+    ])
+    .unwrap();
+    let builder = client
+        .request()
+        .create()
+        .object_type(ObjectType::from_raw(2))
+        .attributes(attributes);
+    assert_eq!(builder.validate(), Err(FluentBuildError::InvalidRequest));
+    assert_eq!(
+        builder.build_request().err(),
+        Some(FluentBuildError::InvalidRequest)
+    );
+    let error = builder.execute(&CodecLimits::defaults()).unwrap_err();
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert!(!format!("{error:?} {error}").contains("PRIVATE_SENTINEL"));
+    assert_eq!(transport.borrow().exchange_count(), 0);
+}
+
+#[test]
+fn generic_create_builder_executes_one_typed_exchange_with_explicit_options() {
+    use crate::asynchronous_execution_test_support::client_for_with_options_observer;
+    use std::cell::RefCell;
+    use std::rc::Rc;
+    let options = RequestOptions::default()
+        .with_wire_encoding(kmipkit_transport::WireEncoding::Ttlv)
+        .with_read(kmipkit_transport::TimeoutLimit::Bounded(
+            std::time::Duration::from_secs(4),
+        ));
+    let observed = Rc::new(RefCell::new(Vec::new()));
+    let (mut client, transport, captured) = client_for_with_options_observer(
+        ExchangeScript::Success {
+            response: response_bytes(1, 0, None),
+            request_write_chunks: Vec::new(),
+        },
+        Rc::clone(&observed),
+    );
+    let response = client
+        .request()
+        .create()
+        .object_type(ObjectType::from_raw(2))
+        .with_options(options)
+        .with_asynchronous_indicator(1)
+        .execute(&CodecLimits::defaults())
+        .unwrap();
+    assert_eq!(response.outcome().operation(), ClientOperation::Create);
+    assert_eq!(response.outcome().result().status().raw(), 0);
+    assert_eq!(transport.borrow().exchange_count(), 1);
+    assert_eq!(&*observed.borrow(), &[options]);
+    let captured = captured.borrow();
+    let root = kmipkit_ttlv::codec::decode_with_limits(
+        captured.as_ref().unwrap(),
+        &CodecLimits::defaults(),
+    )
+    .unwrap();
+    let message = kmipkit_protocol::RequestMessage::try_from_ttlv(
+        root.as_structure().unwrap().try_clone().unwrap(),
+    )
+    .unwrap();
+    assert_eq!(message.header().protocol_version(), ProtocolVersion::V2_1);
+    assert_eq!(message.header().asynchronous_indicator(), Some(1));
+    assert_eq!(message.batch_items().len(), 1);
+}
+
+#[test]
+fn generic_create_builder_preserves_pending_without_follow_up() {
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response: response_bytes(1, 2, Some(b"create-correlation")),
+        request_write_chunks: Vec::new(),
+    });
+    let response = client
+        .request()
+        .create()
+        .object_type(ObjectType::from_raw(2))
+        .with_asynchronous_indicator(1)
+        .execute(&CodecLimits::defaults())
+        .unwrap();
+    let ClientBatchOutcome::Pending(pending) = response.outcome() else {
+        panic!("expected Pending")
+    };
+    assert_eq!(pending.operation(), ClientOperation::Create);
+    assert_eq!(
+        pending.asynchronous_correlation_value(),
+        b"create-correlation"
+    );
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn kmip30_fluent_builders_cover_all_assigned_client_routes() {
+    use crate::ClientRequest;
+    use kmipkit_protocol::{
+        CreateCredentialObject, PasswordCredentialObject, PasswordCredentialObjectFields,
+        SecretText,
+    };
+
+    let mut client = failed_request_client();
+    let id = || UniqueIdentifier::TextString("kmip30-id".to_owned());
+    let requests = [
+        client.request().create_group(AttributeSet::new()).build(),
+        client.request().obliterate(id()).build(),
+        client.request().create_user(AttributeSet::new()).build(),
+        client
+            .request()
+            .create_credential(
+                AttributeSet::new(),
+                CreateCredentialObject::PasswordCredential(
+                    PasswordCredentialObject::try_new(PasswordCredentialObjectFields {
+                        password: Some(SecretText::new("credential".to_owned())),
+                        ..PasswordCredentialObjectFields::default()
+                    })
+                    .unwrap(),
+                ),
+            )
+            .build(),
+        client.request().deactivate(id()).build(),
+        client.request().encapsulate(id()).build(),
+        client.request().decapsulate(id(), vec![1, 2, 3]).build(),
+    ];
+    assert!(matches!(requests[0], ClientRequest::CreateGroup(_)));
+    assert!(matches!(requests[1], ClientRequest::Obliterate(_)));
+    assert!(matches!(requests[2], ClientRequest::CreateUser(_)));
+    assert!(matches!(requests[3], ClientRequest::CreateCredential(_)));
+    assert!(matches!(requests[4], ClientRequest::Deactivate(_)));
+    assert!(matches!(requests[5], ClientRequest::Encapsulate(_)));
+    assert!(matches!(requests[6], ClientRequest::Decapsulate(_)));
+}
+
+#[test]
+fn kmip30_create_credential_request_derives_type_from_its_object() {
+    let request = kmipkit_protocol::CreateCredentialRequest::new(
+        AttributeSet::new(),
+        kmip30_password_credential(),
+    );
+
+    assert!(request.into_ttlv_payload().is_ok());
+}
+
+#[test]
+fn kmip30_fluent_execute_requires_an_explicit_v3_version() {
+    let (mut client, transport, captured) = client_for(ExchangeScript::FailBeforeWrite);
+    let builder = client.request().create_group(AttributeSet::new());
+    assert_eq!(builder.validate(), Ok(()));
+    let error = builder.execute(&CodecLimits::defaults()).unwrap_err();
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert_eq!(transport.borrow().exchange_count(), 0);
+    assert!(captured.borrow().is_none());
+}
+
+// KMIPKIT-0116-FR-001/002; pinned OASIS KMIP 3.0 WD (13 July 2026)
+// §11.37 Table 584 and operation request Tables 277, 280, 290, 293, 296, 317, 374.
+#[test]
+fn kmip30_fluent_batch_conversion_preserves_all_seven_operation_codes_without_sending() {
+    let (mut client, transport, captured) = client_for(ExchangeScript::FailBeforeWrite);
+    let id = || UniqueIdentifier::Integer(42);
+    let batches = [
+        client
+            .request()
+            .create_group(AttributeSet::new())
+            .to_batch_item(),
+        client.request().obliterate(id()).to_batch_item(),
+        client
+            .request()
+            .create_user(AttributeSet::new())
+            .to_batch_item(),
+        client
+            .request()
+            .create_credential(AttributeSet::new(), kmip30_password_credential())
+            .to_batch_item(),
+        client.request().deactivate(id()).to_batch_item(),
+        client.request().encapsulate(id()).to_batch_item(),
+        client
+            .request()
+            .decapsulate(id(), vec![1, 2, 3])
+            .to_batch_item(),
+    ];
+    assert_eq!(
+        batches.map(|batch| batch.operation()),
+        [0x3c, 0x3d, 0x3e, 0x3f, 0x40, 0x41, 0x42]
+    );
+    assert_eq!(transport.borrow().exchange_count(), 0);
+    assert!(captured.borrow().is_none());
+}
+
+fn kmip30_password_credential() -> kmipkit_protocol::CreateCredentialObject {
+    use kmipkit_protocol::{
+        CreateCredentialObject, PasswordCredentialObject, PasswordCredentialObjectFields,
+        SecretText,
+    };
+    CreateCredentialObject::PasswordCredential(
+        PasswordCredentialObject::try_new(PasswordCredentialObjectFields {
+            password: Some(SecretText::new("CREDENTIAL_PRIVATE_SENTINEL".to_owned())),
+            ..PasswordCredentialObjectFields::default()
+        })
+        .unwrap(),
+    )
+}
+
+#[test]
+fn kmip30_fluent_execute_encodes_all_explicit_v3_routes_once_with_not_sent_failures() {
+    macro_rules! assert_route {
+        ($method:ident($($argument:expr),*), $operation:literal) => {{
+            let (mut client, transport, captured) = client_for(ExchangeScript::FailBeforeWrite);
+            let builder = client.request().$method($($argument),*);
+            assert_eq!(builder.validate(), Ok(()));
+            let error = builder
+                .with_options(RequestOptions::default().with_protocol_version(ProtocolVersion::V3_0))
+                .execute(&CodecLimits::defaults()).unwrap_err();
+            assert_eq!(error.delivery_state(), Some(kmipkit_transport::RequestDeliveryState::NotSent));
+            assert_eq!(transport.borrow().exchange_count(), 1);
+            let captured = captured.borrow();
+            let root = kmipkit_ttlv::codec::decode_with_limits(
+                captured.as_ref().unwrap(), &CodecLimits::defaults(),
+            ).unwrap();
+            let message = kmipkit_protocol::RequestMessage::try_from_ttlv(
+                root.as_structure().unwrap().try_clone().unwrap(),
+            ).unwrap();
+            assert_eq!(message.header().protocol_version(), ProtocolVersion::V3_0);
+            assert_eq!(message.batch_items().len(), 1);
+            assert_eq!(message.batch_items().next().unwrap().operation(), Some($operation));
+        }};
+    }
+    let id = || UniqueIdentifier::TextString("kmip30-route-id".to_owned());
+    assert_route!(create_group(AttributeSet::new()), 0x3c);
+    assert_route!(obliterate(id()), 0x3d);
+    assert_route!(create_user(AttributeSet::new()), 0x3e);
+    assert_route!(
+        create_credential(AttributeSet::new(), kmip30_password_credential()),
+        0x3f
+    );
+    assert_route!(deactivate(id()), 0x40);
+    assert_route!(encapsulate(id()), 0x41);
+    assert_route!(decapsulate(id(), vec![1, 2, 3]), 0x42);
+}
+
+#[test]
+fn kmip30_fluent_all_routes_reject_explicit_incompatible_versions_before_transport() {
+    macro_rules! assert_version_gate {
+        ($method:ident($($argument:expr),*)) => {{
+            for version in [ProtocolVersion::V2_0, ProtocolVersion::V2_1] {
+                let (mut client, transport, captured) = client_for(ExchangeScript::FailBeforeWrite);
+                let error = client.request().$method($($argument),*)
+                    .with_options(RequestOptions::default().with_protocol_version(version))
+                    .execute(&CodecLimits::defaults()).unwrap_err();
+                assert_eq!(error.delivery_state(), Some(kmipkit_transport::RequestDeliveryState::NotSent));
+                assert_eq!(transport.borrow().exchange_count(), 0);
+                assert!(captured.borrow().is_none());
+            }
+        }};
+    }
+    let id = || UniqueIdentifier::Integer(42);
+    assert_version_gate!(create_group(AttributeSet::new()));
+    assert_version_gate!(obliterate(id()));
+    assert_version_gate!(create_user(AttributeSet::new()));
+    assert_version_gate!(create_credential(
+        AttributeSet::new(),
+        kmip30_password_credential()
+    ));
+    assert_version_gate!(deactivate(id()));
+    assert_version_gate!(encapsulate(id()));
+    assert_version_gate!(decapsulate(id(), vec![1, 2, 3]));
+}
+
+fn kmip30_ordered_attributes() -> AttributeSet {
+    AttributeSet::try_new([
+        item(0x0054_0001, Value::integer(17)),
+        item(
+            typed::ObjectGroup::TAG,
+            Value::text_string("PRIVATE_GROUP_SENTINEL".to_owned()),
+        ),
+        item(0x0054_0002, Value::enumeration(0xf000_0002)),
+    ])
+    .unwrap()
+}
+
+fn assert_kmip30_ordered_attributes(attribute: &Item) {
+    let attributes = attribute.as_structure().unwrap();
+    let fields = attributes.children();
+    assert_eq!(
+        fields
+            .iter()
+            .map(|field| field.tag().raw())
+            .collect::<Vec<_>>(),
+        [0x0054_0001, typed::ObjectGroup::TAG, 0x0054_0002]
+    );
+    assert_eq!(read_integer(&fields[0]), Some(17));
+    assert!(fields[1].with_value(|value| matches!(value,
+        ValueView::TextString(value) if value == "PRIVATE_GROUP_SENTINEL")));
+    assert_eq!(read_enumeration(&fields[2]), Some(0xf000_0002));
+}
+
+// KMIPKIT-0116-FR-001/003; KMIP 3.0 WD §§2.1.3.1, 6.1.9/10/13 and 11.11,
+// Tables 277/280/290/551.
+#[test]
+fn kmip30_fluent_create_builders_preserve_attribute_order_and_closed_credential_value() {
+    let mut client = failed_request_client();
+    let crate::ClientRequest::CreateGroup(group) = client
+        .request()
+        .create_group(kmip30_ordered_attributes())
+        .build()
+    else {
+        panic!("typed Create Group")
+    };
+    let payload = group.into_ttlv_payload().unwrap();
+    assert_kmip30_ordered_attributes(&payload.view().children()[0]);
+    let crate::ClientRequest::CreateUser(user) = client
+        .request()
+        .create_user(kmip30_ordered_attributes())
+        .build()
+    else {
+        panic!("typed Create User")
+    };
+    let payload = user.into_ttlv_payload().unwrap();
+    assert_kmip30_ordered_attributes(&payload.view().children()[0]);
+    let request = client
+        .request()
+        .create_credential(kmip30_ordered_attributes(), kmip30_password_credential())
+        .build();
+    assert!(!format!("{request:?}").contains("CREDENTIAL_PRIVATE_SENTINEL"));
+    let crate::ClientRequest::CreateCredential(credential) = request else {
+        panic!("typed Create Credential")
+    };
+    let payload = credential.into_ttlv_payload().unwrap();
+    let fields = payload.view();
+    assert_eq!(fields.children()[0].tag().raw(), 0x0042_0024);
+    assert_eq!(read_enumeration(&fields.children()[0]), Some(7));
+    assert_kmip30_ordered_attributes(&fields.children()[1]);
+    assert_eq!(fields.children()[2].tag().raw(), 0x0042_01A1);
+    let credential = fields.children()[2].as_structure().unwrap();
+    assert_eq!(credential.children().len(), 1);
+    assert_eq!(credential.children()[0].tag().raw(), 0x0042_00A1);
+    assert!(credential.children()[0].with_value(|value| matches!(value,
+        ValueView::TextString(value) if value == "CREDENTIAL_PRIVATE_SENTINEL")));
+}
+
+// KMIPKIT-0116-FR-003; KMIP 3.0 WD §6.1.14/15/22, Tables 293/296/317.
+#[test]
+fn kmip30_fluent_optional_setters_preserve_values_and_protocol_field_order() {
+    use kmipkit_protocol::{CryptographicParameters, UniqueIdentifier};
+    let parameters = || {
+        CryptographicParameters::try_from_ttlv(test_structure([item(
+            0x0042_0038,
+            Value::enumeration(6),
+        )]))
+        .unwrap()
+    };
+    let mut client = failed_request_client();
+    let crate::ClientRequest::Deactivate(request) = client
+        .request()
+        .deactivate(UniqueIdentifier::Integer(42))
+        .deactivation_date(1_700_000_000)
+        .deactivation_reason(test_structure([item(0x0054_0001, Value::integer(9))]))
+        .build()
+    else {
+        panic!("typed Deactivate")
+    };
+    let payload = request.into_ttlv_payload().unwrap();
+    let fields = payload.view();
+    assert_eq!(
+        fields
+            .children()
+            .iter()
+            .map(|field| field.tag().raw())
+            .collect::<Vec<_>>(),
+        [0x0042_0094, 0x0042_01B8, 0x0042_002F]
+    );
+    assert_eq!(read_integer(&fields.children()[0]), Some(42));
+    assert_eq!(
+        read_integer(&fields.children()[1].as_structure().unwrap().children()[0]),
+        Some(9)
+    );
+    assert!(fields.children()[2].with_value(|value| matches!(value,
+        ValueView::DateTime(value) if *value == 1_700_000_000)));
+
+    let crate::ClientRequest::Encapsulate(request) = client
+        .request()
+        .encapsulate(UniqueIdentifier::Integer(42))
+        .attributes(kmip30_ordered_attributes())
+        .cryptographic_parameters(parameters())
+        .build()
+    else {
+        panic!("typed Encapsulate")
+    };
+    let payload = request.into_ttlv_payload().unwrap();
+    let fields = payload.view();
+    assert_eq!(
+        fields
+            .children()
+            .iter()
+            .map(|field| field.tag().raw())
+            .collect::<Vec<_>>(),
+        [0x0042_0094, 0x0042_002B, 0x0042_0125]
+    );
+    assert_eq!(
+        read_enumeration(&fields.children()[1].as_structure().unwrap().children()[0]),
+        Some(6)
+    );
+    assert_kmip30_ordered_attributes(&fields.children()[2]);
+
+    let ciphertext = b"CIPHERTEXT_PRIVATE_SENTINEL".to_vec();
+    let request = client
+        .request()
+        .decapsulate(UniqueIdentifier::Integer(42), ciphertext.clone())
+        .attributes(kmip30_ordered_attributes())
+        .cryptographic_parameters(parameters())
+        .build();
+    assert!(!format!("{request:?}").contains("CIPHERTEXT_PRIVATE_SENTINEL"));
+    let crate::ClientRequest::Decapsulate(request) = request else {
+        panic!("typed Decapsulate")
+    };
+    assert_eq!(request.ciphertext(), ciphertext);
+    let payload = request.into_ttlv_payload().unwrap();
+    let fields = payload.view();
+    assert_eq!(
+        fields
+            .children()
+            .iter()
+            .map(|field| field.tag().raw())
+            .collect::<Vec<_>>(),
+        [0x0042_0094, 0x0042_002B, 0x0042_00C2, 0x0042_0125]
+    );
+    assert_eq!(
+        read_enumeration(&fields.children()[1].as_structure().unwrap().children()[0]),
+        Some(6)
+    );
+    assert!(fields.children()[2].with_value(|value| matches!(value,
+        ValueView::ByteString(value) if value == ciphertext)));
+    assert_kmip30_ordered_attributes(&fields.children()[3]);
+}
+
+fn kmip30_response_bytes(
+    operation: u32,
+    status: u32,
+    reason: Option<u32>,
+    correlation: Option<&[u8]>,
+    payload: Option<Structure>,
+) -> Vec<u8> {
+    crate::execute_test_support::asynchronous_response_bytes_with_version(
+        ProtocolVersion::V3_0,
+        operation,
+        status,
+        reason,
+        correlation,
+        payload,
+    )
+}
+
+// KMIPKIT-0116-FR-002/004; KMIP 3.0 WD §6.1.22, Tables 317–318.
+#[test]
+fn kmip30_fluent_success_preserves_typed_encapsulate_fields_options_and_async_header() {
+    use crate::asynchronous_execution_test_support::client_for_with_options_observer;
+    use crate::execute::Kmip30OperationResponse;
+    use std::{cell::RefCell, rc::Rc};
+    let options = RequestOptions::default()
+        .with_protocol_version(ProtocolVersion::V3_0)
+        .with_wire_encoding(kmipkit_transport::WireEncoding::Ttlv)
+        .with_read(kmipkit_transport::TimeoutLimit::Bounded(
+            std::time::Duration::from_secs(4),
+        ));
+    let observed = Rc::new(RefCell::new(Vec::new()));
+    let (mut client, transport, captured) = client_for_with_options_observer(
+        ExchangeScript::Success {
+            response: kmip30_response_bytes(
+                0x41,
+                0,
+                None,
+                None,
+                Some(test_structure([
+                    item(
+                        0x0042_0094,
+                        Value::text_string("RESPONSE_ID_PRIVATE_SENTINEL".to_owned()),
+                    ),
+                    item(
+                        0x0042_00C2,
+                        Value::byte_string(b"PUBLIC_CIPHERTEXT_SENTINEL".to_vec()),
+                    ),
+                ])),
+            ),
+            request_write_chunks: Vec::new(),
+        },
+        Rc::clone(&observed),
+    );
+    let response = client
+        .request()
+        .encapsulate(UniqueIdentifier::Integer(42))
+        .with_options(options)
+        .with_asynchronous_indicator(1)
+        .execute(&CodecLimits::defaults())
+        .unwrap();
+    let Kmip30OperationResponse::Encapsulate(typed) = response.kmip30_response().unwrap() else {
+        panic!("typed Encapsulate response")
+    };
+    assert_eq!(
+        typed.unique_identifier(),
+        Some(&UniqueIdentifier::TextString(
+            "RESPONSE_ID_PRIVATE_SENTINEL".to_owned()
+        ))
+    );
+    assert_eq!(typed.data(), Some(b"PUBLIC_CIPHERTEXT_SENTINEL".as_slice()));
+    assert_eq!(typed.result().status().raw(), 0);
+    assert!(typed.result().reason().is_none());
+    assert!(typed.result().message().is_none());
+    assert!(
+        response
+            .outcome()
+            .asynchronous_correlation_value()
+            .is_none()
+    );
+    assert_eq!(response.outcome().operation(), ClientOperation::Encapsulate);
+    let diagnostics = format!(
+        "{typed:?} {response:?} {:?} {}",
+        response.outcome(),
+        response.outcome()
+    );
+    assert!(!diagnostics.contains("RESPONSE_ID_PRIVATE_SENTINEL"));
+    assert!(!diagnostics.contains("PUBLIC_CIPHERTEXT_SENTINEL"));
+    assert_eq!(&*observed.borrow(), &[options]);
+    assert_eq!(transport.borrow().exchange_count(), 1);
+    let captured = captured.borrow();
+    let root = kmipkit_ttlv::codec::decode_with_limits(
+        captured.as_ref().unwrap(),
+        &CodecLimits::defaults(),
+    )
+    .unwrap();
+    let message = kmipkit_protocol::RequestMessage::try_from_ttlv(
+        root.as_structure().unwrap().try_clone().unwrap(),
+    )
+    .unwrap();
+    assert_eq!(message.header().protocol_version(), ProtocolVersion::V3_0);
+    assert_eq!(message.header().asynchronous_indicator(), Some(1));
+    assert_eq!(message.batch_items().len(), 1);
+    assert_eq!(
+        message.batch_items().next().unwrap().operation(),
+        Some(0x41)
+    );
+}
+
+#[test]
+fn kmip30_fluent_pending_preserves_exact_correlation_without_poll_or_retry() {
+    let correlation = b"CORRELATION_PRIVATE_SENTINEL";
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response: kmip30_response_bytes(0x3c, 2, None, Some(correlation), Some(Structure::new())),
+        request_write_chunks: Vec::new(),
+    });
+    let response = client
+        .request()
+        .create_group(AttributeSet::new())
+        .with_options(RequestOptions::default().with_protocol_version(ProtocolVersion::V3_0))
+        .with_asynchronous_indicator(1)
+        .execute(&CodecLimits::defaults())
+        .unwrap();
+    let ClientBatchOutcome::Pending(pending) = response.outcome() else {
+        panic!("typed Pending")
+    };
+    assert_eq!(pending.operation(), ClientOperation::CreateGroup);
+    assert_eq!(pending.asynchronous_correlation_value(), correlation);
+    assert_eq!(
+        response.outcome().asynchronous_correlation_value(),
+        Some(correlation.as_slice())
+    );
+    assert_eq!(response.outcome().result().status().raw(), 2);
+    let crate::execute::Kmip30OperationResponse::CreateGroup(typed) =
+        response.kmip30_response().unwrap()
+    else {
+        panic!("typed Create Group Pending")
+    };
+    assert_eq!(typed.result().status().raw(), 2);
+    assert!(typed.unique_identifier().is_none());
+    assert!(typed.with_ttlv(|_| ()).is_none());
+    assert!(
+        !format!("{response:?} {pending:?} {}", response.outcome())
+            .contains("CORRELATION_PRIVATE_SENTINEL")
+    );
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn kmip30_fluent_failure_preserves_typed_reason_and_absent_fields_without_retry() {
+    use crate::execute::Kmip30OperationResponse;
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response: kmip30_response_bytes(0x42, 1, Some(1), None, None),
+        request_write_chunks: Vec::new(),
+    });
+    let response = client
+        .request()
+        .decapsulate(UniqueIdentifier::Integer(42), vec![1, 2, 3])
+        .with_options(RequestOptions::default().with_protocol_version(ProtocolVersion::V3_0))
+        .execute(&CodecLimits::defaults())
+        .unwrap();
+    let Kmip30OperationResponse::Decapsulate(typed) = response.kmip30_response().unwrap() else {
+        panic!("typed Decapsulate Failure")
+    };
+    assert_eq!(typed.result().status().raw(), 1);
+    assert_eq!(typed.result().reason().unwrap().raw(), 1);
+    assert!(typed.unique_identifier().is_none());
+    assert!(typed.with_ttlv(|_| ()).is_none());
+    assert!(
+        response
+            .outcome()
+            .asynchronous_correlation_value()
+            .is_none()
+    );
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn kmip30_fluent_transport_failure_preserves_delivery_state_and_redacts_error_sources() {
+    use kmipkit_transport::RequestDeliveryState;
+    use std::fmt::Write as _;
+    for (script, expected) in [
+        (
+            ExchangeScript::FailBeforeWrite,
+            RequestDeliveryState::NotSent,
+        ),
+        (
+            ExchangeScript::FailAfterPartialWrite { written_bytes: 1 },
+            RequestDeliveryState::PossiblySent,
+        ),
+        (
+            ExchangeScript::FailAfterPartialRead {
+                written_bytes: 1,
+                response_bytes: b"RESPONSE_PRIVATE_SENTINEL".to_vec(),
+            },
+            RequestDeliveryState::ResponseStarted,
+        ),
+    ] {
+        let (mut client, transport, _) = client_for(script);
+        let error = client
+            .request()
+            .decapsulate(
+                UniqueIdentifier::TextString("REQUEST_ID_PRIVATE_SENTINEL".to_owned()),
+                b"REQUEST_BODY_PRIVATE_SENTINEL".to_vec(),
+            )
+            .with_options(RequestOptions::default().with_protocol_version(ProtocolVersion::V3_0))
+            .execute(&CodecLimits::defaults())
+            .unwrap_err();
+        assert_eq!(error.delivery_state(), Some(expected));
+        assert!(error.response_ttlv().is_none());
+        let mut diagnostics = format!("{error:?} {error}");
+        let mut source = std::error::Error::source(&error);
+        while let Some(error) = source {
+            write!(diagnostics, "{error:?} {error}").unwrap();
+            source = error.source();
+        }
+        for sentinel in [
+            "REQUEST_ID_PRIVATE_SENTINEL",
+            "REQUEST_BODY_PRIVATE_SENTINEL",
+            "RESPONSE_PRIVATE_SENTINEL",
+        ] {
+            assert!(!diagnostics.contains(sentinel));
+        }
+        assert_eq!(transport.borrow().exchange_count(), 1);
+    }
+}
+
+// KMIPKIT-0116-FR-003/004; KMIP 3.0 WD §6.1.15, Table 297 returns only UID.
+#[test]
+fn kmip30_fluent_decapsulate_success_returns_only_server_managed_secret_identifier() {
+    use crate::execute::Kmip30OperationResponse;
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response: kmip30_response_bytes(
+            0x42,
+            0,
+            None,
+            None,
+            Some(test_structure([item(
+                0x0042_0094,
+                Value::text_string("SERVER_SECRET_ID_PRIVATE_SENTINEL".to_owned()),
+            )])),
+        ),
+        request_write_chunks: Vec::new(),
+    });
+    let response = client
+        .request()
+        .decapsulate(UniqueIdentifier::Integer(42), vec![1, 2, 3])
+        .with_options(RequestOptions::default().with_protocol_version(ProtocolVersion::V3_0))
+        .execute(&CodecLimits::defaults())
+        .unwrap();
+    let Kmip30OperationResponse::Decapsulate(typed) = response.kmip30_response().unwrap() else {
+        panic!("typed Decapsulate Success")
+    };
+    assert_eq!(
+        typed.unique_identifier(),
+        Some(&UniqueIdentifier::TextString(
+            "SERVER_SECRET_ID_PRIVATE_SENTINEL".to_owned()
+        ))
+    );
+    assert_eq!(typed.result().status().raw(), 0);
+    assert_eq!(
+        typed.with_ttlv(
+            |response| crate::execute_test_support::structure_contains_tag(&response, 0x0042_00C2)
+        ),
+        Some(false)
+    );
+    assert!(
+        !format!("{typed:?} {response:?} {}", response.outcome())
+            .contains("SERVER_SECRET_ID_PRIVATE_SENTINEL")
+    );
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn kmip30_fluent_decapsulate_rejects_response_shared_secret_data_with_redacted_error() {
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response: kmip30_response_bytes(
+            0x42,
+            0,
+            None,
+            None,
+            Some(test_structure([
+                item(
+                    0x0042_0094,
+                    Value::text_string("SERVER_SECRET_ID_PRIVATE_SENTINEL".to_owned()),
+                ),
+                item(
+                    0x0042_00C2,
+                    Value::byte_string(b"SHARED_SECRET_PRIVATE_SENTINEL".to_vec()),
+                ),
+            ])),
+        ),
+        request_write_chunks: Vec::new(),
+    });
+    let error = client
+        .request()
+        .decapsulate(UniqueIdentifier::Integer(42), vec![1, 2, 3])
+        .with_options(RequestOptions::default().with_protocol_version(ProtocolVersion::V3_0))
+        .execute(&CodecLimits::defaults())
+        .unwrap_err();
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::ResponseStarted)
+    );
+    assert!(error.response_ttlv().is_none());
+    let diagnostics = format!("{error:?} {error}");
+    assert!(!diagnostics.contains("SERVER_SECRET_ID_PRIVATE_SENTINEL"));
+    assert!(!diagnostics.contains("SHARED_SECRET_PRIVATE_SENTINEL"));
+    assert_eq!(transport.borrow().exchange_count(), 1);
 }

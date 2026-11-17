@@ -126,24 +126,64 @@ inventory above, and does not claim full KMIP 3.0 protocol support.
 [`kmip-versioned-tags.json`](kmip-versioned-tags.json) records all 60 exact
 KMIP 3.0 tag assignments from §11.58, Table 605. Its 36-entry `v2_1_tags` set
 cross-checks all KMIP 2.1 tag names and introduction versions against the
-canonical KMIP 2.1 catalog, §11.56, Table 487. The 20 link assignments also retain their
-§4.35 definition references. The named-value generator exposes assigned
-KMIP 2.1 and 3.0 tags in Rust, C, Java, and Python; it emits no reserved or
-unassigned values. The `generate_ttlv_tags.py` tool verifies the pinned source
-checksum and merges the explicit KMIP 3.0 assignments into the supported-version
-tag-allocation union. The union allows construction and decoding of assigned
-tags; it does not establish that a tag is valid for the effective protocol
-version or that the feature is otherwise supported.
+canonical KMIP 2.1 catalog, §11.56, Table 487. The 20 link assignments retain
+their §4.35 definition references. The named-value generator exposes assigned
+KMIP 2.1 and 3.0 tags in Rust, C, Java, and Python and emits no reserved or
+unassigned values. The `generate_ttlv_tags.py` tool verifies pinned source
+checksums and merges explicit KMIP 3.0 assignments into the supported-version
+tag-allocation union. This permits construction and decoding of assigned tags;
+it does not establish their validity for an effective protocol version or that
+a feature is otherwise supported.
 
 ## Fluent operation matrix
 
-[`fluent-operation-model-owners.json`](fluent-operation-model-owners.json) is
-the reviewed project mapping from each assigned version/name/direction route
-to its typed Rust request and response owner and test evidence. It is kept
-separate from the OASIS assignment catalog because these are implementation
-references, not normative protocol data. The generated
-[`fluent-operation-inventory.json`](fluent-operation-inventory.json) includes
-those owners, test evidence, and earliest supported version for all 2.1 and 3.0 rows. Its generator requires the
-owner catalog to match the operation route set exactly and emits inventory
-format version 2; missing, duplicate, malformed, or extra owner entries block
-generation.
+[`operation-matrix-evidence.json`](operation-matrix-evidence.json) records
+version, direction, model owner, client route, and existing focused test
+references. [`fluent-operation-model-owners.json`](fluent-operation-model-owners.json)
+contains the reviewed typed Rust request/response owners and test evidence for
+each assigned route. These are project implementation references, not
+normative protocol data. The generated
+[`fluent-operation-inventory.json`](fluent-operation-inventory.json) joins the
+KMIP 2.1 inventory, versioned assignment supplement, operation evidence, public
+API manifest, and owner catalog. Regenerate or verify it with:
+
+```sh
+python3 -B tools/normative_catalog/generate_fluent_operation_inventory.py --repo-root .
+python3 -B tools/normative_catalog/generate_fluent_operation_inventory.py --repo-root . --check
+python3 -B -m unittest tools.normative_catalog.tests.test_fluent_operation_inventory -v
+```
+
+The matrix has 66 assigned codes and 69 directional rows: 59 KMIP 2.1 values
+plus seven KMIP 3.0 Working Draft assignments, with separate client and
+listener rows for shared values. Numeric completeness checks reject reserved
+values; they never generate public symbols from a range. Existing named-value
+and public API generators retain ownership of public exports.
+
+`version` identifies the catalog edition that supplied a row.
+`earliestSupportedVersion` identifies the earliest directional operation
+clause among supported pinned source editions (2.0, 2.1, 3.0). It is not
+historical KMIP 1.x introduction, a verified execution-version span, or a
+server capability declaration. Each `versionSourceRefs` entry supplies an
+edition, pinned path, and exact operation section. The generator verifies the
+source checksums, headings, and directions; it does not infer listener-version
+availability from a shared operation number.
+
+`typedOwners` names existing request and response model definitions and paths.
+`route` names the existing client execution entry point and typed request
+variant, or listener handler, incoming variant, and dispatcher. Cancel, Poll,
+Process, and Query Asynchronous Requests use their explicit asynchronous
+client entry points. `implemented` is static evidence that the route and typed
+model exist. `unverified` is representable without a fabricated owner or send
+route; `clientSend` and `listenerRoute` remain false for an unverified route.
+`route.versionVerification: not_established` explicitly keeps execution under
+each protocol version unclaimed by this inventory.
+
+`testEvidence.focused` references registered Rust tests by exact path and name;
+`testEvidence.parity` preserves client-manifest evidence paths. Catalog
+implementation/verification references and payload tables remain separate from
+these reviewed route references, including empty catalog fields. The generator
+checks owner declarations, route and variant presence, test registration syntax,
+and evidence paths. These checks do not execute the Rust or binding suites and
+do not prove the cited tests pass. Every row sets `serverCapabilityClaim: false`.
+Fixture, external-server, profile, and runtime-version verification remain
+separate evidence obligations under KMIPKIT-0093.

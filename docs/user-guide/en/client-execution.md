@@ -176,6 +176,9 @@ not perform AES. This proves the client path and typed exchange, not
 cryptographic execution or interoperability with an external KMS. Pending
 remains an explicit outcome; the client does not poll or retry automatically.
 
+For the five runnable cross-language examples, including the ordered batch
+ID Placeholder flow, see the [Fluent API journeys](fluent-api-journeys.md).
+
 ## Fluent Create Key Pair in Rust
 
 KMIPKIT-0097 adds `client.request().create_key_pair()` over the existing typed
@@ -915,102 +918,6 @@ certificate identifier or a certificate request value and its type; Revoke
 rejects a Compromise Occurrence Date unless the reason is Key Compromise or CA
 Compromise. Supplying exchange-local `RequestOptions` remains separate from
 the Request Header Asynchronous Indicator.
-
-## Fluent attribute reads in Rust
-
-KMIPKIT-0108 adds `get_attributes()` and `get_attribute_list()` builders. They
-preserve the existing typed request and response contracts, including ordered
-Attribute References, duplicate-reference rejection, missing versus present
-empty Attributes, and Pending/Failure results.
-
-```rust,kmipkit-test
-use kmipkit_client::Client;
-use kmipkit_protocol::AttributeReference;
-use kmipkit_ttlv::codec::CodecLimits;
-
-#[allow(dead_code)]
-fn fluent_attribute_reads(client: &mut Client) -> Result<(), Box<dyn std::error::Error>> {
-    let limits = CodecLimits::defaults();
-    let attributes = client.request().get_attributes()
-        .unique_identifier("existing-key")
-        .attribute_reference(AttributeReference::tag(0x0042_002F))
-        .execute(&limits)?;
-    let _typed_attributes = attributes.outcome().response().get_attributes();
-
-    let names = client.request().get_attribute_list()
-        .unique_identifier("existing-key")
-        .execute(&limits)?;
-    let _typed_names = names.outcome().response().get_attribute_list();
-
-    let placeholder = client.request().get_attribute_list().to_batch_item()?;
-    let _ = placeholder;
-    Ok(())
-}
-
-fn main() {
-    let _ = fluent_attribute_reads;
-}
-```
-
-`execute()` sends one standalone operation, so provide its identifier. The
-identifier may be omitted when converting to a batch item that uses the KMIP
-ID Placeholder after a preceding operation. The returned operation-specific
-response view preserves fields actually present on the wire; it does not fetch
-missing attributes or retry.
-
-### Attribute reads in C, Java, and Python
-
-KMIPKIT-0109 adds task-oriented entry points in the three bindings. They use
-the typed Get Attributes and Get Attribute List requests, preserve ordered
-references, and execute one exchange. Standalone calls require a text object
-identifier. Builders can omit it when producing a batch item that follows an
-ID Placeholder producer. Failure, Pending, and delivery metadata remain on the
-existing batch result; no builder polls or retries.
-
-In C, use the direct functions instead of assembling a batch:
-
-```c
-kmipkit_client_get_attributes_v1(
-    client, &key_id, references, reference_count, limits, &response);
-kmipkit_client_get_attribute_list_v1(client, &key_id, limits, &response);
-```
-
-The `_with_options_v1` variants accept exchange-local timeouts. The functions
-copy their versioned inputs synchronously and return an owned batch response;
-release the response with `kmipkit_client_batch_response_release`.
-
-Java and Python expose the same operations through their request namespaces:
-
-```java
-try (ClientBatchResponse response = client.request()
-        .getAttributes(keyId, references).execute(limits);
-        ClientBatchItemResult item = response.itemAt(0);
-        ClientBatchItemResult.GetAttributesResponse attributes =
-                item.getAttributesResponse().orElseThrow()) {
-    String resolvedId = attributes.uniqueIdentifier();
-}
-```
-
-```python
-result = kmip_client.request().get_attributes(
-    unique_identifier=key_id,
-    attribute_references=[AttributeReference.tag(0x0042002A)],
-).execute(limits)
-try:
-    resolved_id = result.items[0].get_attributes_response.unique_identifier
-finally:
-    result.close()
-```
-
-Python also exposes direct single-exchange methods when a batch is unnecessary:
-
-```python
-result = kmip_client.get_attribute_list(unique_identifier=key_id, limits=limits)
-```
-
-Use `getAttributeList()` or `get_attribute_list()` with no identifier when
-building a placeholder-aware batch item. Direct C and Python methods require
-an identifier because a standalone exchange cannot resolve an ID Placeholder.
 
 ## Fluent cryptographic requests in Rust
 
