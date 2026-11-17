@@ -259,7 +259,7 @@ def response(operations: tuple[int, ...], protocol_minor: int,
                                     13: b"interop-attributes",
                                     14: b"interop-attributes",
                                     15: b"interop-delete-attribute",
-                                    48: b"interop-attributes",
+                                    48: b"interop-adjust-attribute",
                                     49: b"interop-attributes",
                                     54: b"interop-set-defaults",
                                     55: b"interop-set-constraints",
@@ -495,6 +495,7 @@ def main() -> int:
     expected_operations += (37, 38, 39)
     expected_operations += (39, 37, 38)
     expected_operations += (1, 13, 19, 20)
+    expected_operations += (1, 48, 19, 20)
     expected_operations += (1, 49, 19, 20)
     expected_operations += (1, 17, 19, 20)
     if protocol_version == "2.1":
@@ -505,7 +506,6 @@ def main() -> int:
     expected_operations += (1, 18, 12, 19, 20)
     expected_operations += (1, 18, 10, 19, 20)
     expected_operations += (1, 18, 19, 20, 1, 18, 19, 20)
-    expected_operations += (1, 48, 19, 20)
     expected_operations += (52, 52, 52)
     expected_operations += (26,)
     expected_cases += ("test-async-unknown-correlation-rejected",)
@@ -566,13 +566,13 @@ def main() -> int:
     expected_cases += ("test-batch-stop-on-first-failure",)
     expected_cases += ("test-neg-destroy-active-without-revoke",)
     expected_cases += ("test-op-add-attribute",)
+    expected_cases += ("test-op-adjust-attribute",)
     expected_cases += ("test-op-set-attribute",)
     expected_cases += ("test-op-get-usage-allocation",)
     if protocol_version == "2.1":
         expected_cases += ("test-op-set-constraints", "test-op-set-defaults")
     expected_cases += ("test-op-delete-attribute",)
     expected_cases += ("test-op-modify-attribute",)
-    expected_cases += ("test-op-adjust-attribute",)
     expected_cases += ("test-batch-create-activate-destroy",)
     expected_cases += ("test-batch-placeholder-chain-resolves",)
     expected_cases += (
@@ -966,15 +966,25 @@ def main() -> int:
                                     raise AssertionError("Locate request omitted its required Attributes structure")
                                 if integer(0x42004F, 3) not in request:
                                     raise AssertionError("Locate request omitted its bounded Maximum Items value")
-                            if operations == (48,) and (
-                                    request.count(tlv(0x420094, 7, b"fixture-key-1")) != 1 or
-                                    request.count(tlv(0x42009D, 7, b"KMIPKit")) != 1 or
-                                    request.count(tlv(0x42000A, 7, b"Counter")) != 1 or
-                                    enumeration(0x420158, 1) not in request or
-                                    integer(0x420162, 5) not in request):
-                                raise AssertionError(
-                                    "Adjust Attribute request did not target the fixture Counter with Increment 5"
+                            if operations == (48,):
+                                common_fields = (
+                                    request.count(tlv(0x420094, 7, b"fixture-key-1")) == 1 and
+                                    enumeration(0x420158, 1) in request
                                 )
+                                vendor_counter = (
+                                    tlv(0x42009D, 7, b"KMIPKit") in request and
+                                    tlv(0x42000A, 7, b"Counter") in request and
+                                    integer(0x420162, 5) in request
+                                )
+                                standard_usage_limit = (
+                                    enumeration(0x42013B, 0x420097) in request and
+                                    integer(0x420162, 1) not in request and
+                                    integer(0x420162, 5) not in request
+                                )
+                                if not common_fields or not (vendor_counter or standard_usage_limit):
+                                    raise AssertionError(
+                                        "Adjust Attribute request did not match a controlled Counter or Usage Limits fixture"
+                                    )
                             if integer(0x42006A, 2) not in request or \
                                     integer(0x42006B, protocol_minor) not in request:
                                 raise AssertionError(

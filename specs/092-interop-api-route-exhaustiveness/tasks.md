@@ -29,6 +29,12 @@ generated matrix, invokes every named public route, exchanges requests and
 responses with a controlled peer, and emits validated per-cell evidence. A
 passing shared-contract job does not satisfy those language-level requirements.
 
+### C route slice recorded in `specs/085-interop-c-live`
+
+The `test-op-adjust-attribute` C route now has focused controlled-peer evidence
+for both direct and standalone C request construction across KMIP 2.0/2.1,
+TTLV/JSON/XML, and raw TLS/HTTPS. This operation slice contributes evidence to
+T006, T007, and T009; it does not close any of those cross-language tasks.
 ## Development evidence: scoped Rust route evidence union
 
 - Red commit `351d9ccfd` added tests that require a route report to validate an
