@@ -398,6 +398,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & $python -B -m unittest tools.api_manifest.tests.test_0093_rng_retrieve_builder_manifest -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & $python -B -m unittest tools.api_manifest.tests.test_0093_rng_seed_builder_manifest -v
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & $python -B -m unittest tools.api_manifest.tests.test_binding_exports -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & $python -B -m unittest tools.api_manifest.tests.test_0095_response_view_bindings -v
