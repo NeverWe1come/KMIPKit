@@ -175,7 +175,8 @@ KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS = {
 # The non-target snapshot includes Create Key Pair declarations and KMIPKIT-0126 additions.
 # KMIPKIT-0093 adds 2,077 catalog-backed fluent tag declarations and corrects
 # the generated KMIP 3.0 Object Class Mask paths from enumeration to bitmask.
-DECLARATIONS_SHA256 = "52a266dfb37eb02c629f06c50e5fb2f1586f3a4808b8e748d595ac3dbdff99a2"
+# KMIPKIT-0093 also adds the blocked Ping builder declaration inventory.
+DECLARATIONS_SHA256 = "110958be068c9e491e630ec59c4124cc2ecfab918722ca50f7c9fe94fbe1f070"
 OPERATIONS_SHA256 = "11a39efdadf8e9c7791a8479e3d8b3ae05f82b8dee94e8d21ed2ff2192a147ac"
 
 

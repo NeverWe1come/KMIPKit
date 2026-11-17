@@ -62,6 +62,17 @@ Dependent work branches from the unmerged parent head while review is pending.
 
 ## Binding PRs
 
+### Rust Ping builder slice
+
+- [x] PING001 Commit and reproduce Red tests for the fluent Ping constructor,
+  typed build/batch conversion, Success, Pending, and KMIP 2.0 no-send gate.
+- [x] PING002 Implement the Rust builder over the existing typed Ping request
+  and one-exchange client path; record separate Green and Refactor commits.
+- [x] PING003 Reconcile compiler-observed exports through repository tooling,
+  update bilingual guides and traceability, and pass focused/local checks.
+- [ ] PING004 Push a WIP draft PR and fix every exact-head CI failure. Keep
+  the slice WIP until required C, Java, and Python fluent parity is complete.
+
 - [ ] B001 Add failing C consumer tests for opaque handle ownership,
   operation construction, typed results, direct tasks and ABI stability.
 - [ ] B002 Generate and implement the C ABI on the Rust owner; run sanitizer,

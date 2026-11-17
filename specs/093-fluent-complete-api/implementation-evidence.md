@@ -1115,3 +1115,66 @@
   and regenerated the public API projections. This keeps the owner catalog's
   exact-evidence check aligned with the operation inventory after the builder
   tests landed. The API and fluent inventory generators both pass `--check`.
+
+## Rust Ping fluent builder slice
+
+### Red
+
+- Commit `801ae9b78` defines construction, local validation, typed build and
+  batch conversion, one-exchange Success, explicit Pending correlation, and
+  KMIP 2.0 rejection before exchange (OASIS KMIP v2.1 §6.1.36, Tables 271–272).
+- Reproduced with `cargo test --locked -p kmipkit-client --lib
+  ping_execution_tests`: compilation failed with five E0599 diagnostics because
+  `RequestBuilder::ping` did not exist.
+
+### Green
+
+- Added the Rust-only `PingBuilder` around the existing empty `PingRequest`.
+  Execution uses `ClientRequest::Ping` and the private shared typed exchange
+  path, preserving typed Success/Pending and the existing version gate.
+- `cargo test --locked -p kmipkit-client --lib ping_execution_tests` passes
+  all eight Ping tests. No transport, decoder, or generic-send API was added.
+- This slice remains WIP pending C, Java, and Python fluent builder parity and
+  exact-head CI verification. It does not close operation-wide O001/O002 or
+  FR-011 parity.
+
+### Refactor
+
+- Reused the existing private exchange-state helper for Ping instead of
+  duplicating its client/options/asynchronous fields. Renamed that helper to
+  `FluentBuilderExecution` to reflect its shared use; public cryptographic
+  builder behavior is unchanged.
+- `cargo test --locked -p kmipkit-client --lib ping_execution_tests` again
+  passes all eight Ping tests after the refactor.
+
+### Inventory, documentation, and local verification
+
+- Reconciled the fresh Rust 1.94 compiler inventory with
+  `tools/api_manifest/reconcile_rust_exports.py --report
+  target/ping-rust-exports.json --candidate-spec-id KMIPKIT-0093
+  --requirement-id KMIPKIT-0093-FR-011 --write`: nine blocked Ping declarations
+  and nine exact standard-trait exclusions were added. Preserved the original
+  order and exact contents of existing exclusions through the reconciler's
+  serializer, then regenerated all outputs with
+  `python3 -B tools/api_manifest/generate.py --write`.
+- The manifest snapshot test first failed at `20303 != 20294`; its expected
+  full-manifest totals now include exactly the nine new declarations and nine
+  trait exclusions. All eight focused snapshot/PKCS#11 contracts pass.
+- The independent Rust export report also found eight pre-existing stale
+  `object_class_mask` module/value paths in the generated KMIP 3.0 namespace
+  under `kmipkit_protocol` and `kmipkit::protocol`. No new Ping path remains
+  missing after reconciliation; this is not a claim of a globally clean Rust
+  audit. Historical checked-in audit snapshots remain unchanged.
+- Passed `cargo fmt --all --check`,
+  `cargo clippy --locked --workspace --all-targets --all-features -- -D warnings`,
+  38 Rust export/reconciliation contracts, and 33 requirement/feature
+  traceability contracts. Six marked examples in the English and Spanish
+  Query/Ping guides compile through `scripts/test_user_guide_examples.py`.
+- `cargo llvm-cov test --locked -p kmipkit-client --lib --all-features --lcov
+  --output-path target/ping.lcov ping_execution_tests` passes eight tests.
+  The Ping constructor/builder region has 29/29 covered executable lines.
+- A first workspace run hit an infrastructure ENOENT in trybuild while coverage
+  cleanup ran concurrently. Reran `cargo test --locked --workspace
+  --all-features` sequentially after coverage completed: the full workspace
+  suite passes, including compile-fail boundaries and doctests. Hosted CI must
+  independently verify the PR head.

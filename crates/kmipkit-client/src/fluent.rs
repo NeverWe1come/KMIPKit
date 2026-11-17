@@ -12,10 +12,10 @@ use kmipkit_protocol::{
     DecryptRequest, DeleteAttributeRequest, DestroyRequest, EncryptRequest,
     GetAttributeListRequest, GetAttributesRequest, GetRequest, HashRequest, LocateRequest,
     MacRequest, MacVerifyRequest, ManagedObject, NewAttribute, ObjectGroupMember, ObjectType,
-    OpaqueObjectContext, OperationData, RecertifyRequest, RecoverRequest, RegisterRequest,
-    RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest, SecretBytes,
-    SetAttributeRequest, SignRequest, SignatureVerifyRequest, SplitKeyMethod, StorageStatusMask,
-    UniqueIdentifier, ValidateKmipRequest,
+    OpaqueObjectContext, OperationData, PingRequest, RecertifyRequest, RecoverRequest,
+    RegisterRequest, RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest,
+    SecretBytes, SetAttributeRequest, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
+    StorageStatusMask, UniqueIdentifier, ValidateKmipRequest,
 };
 use kmipkit_transport::{RequestDeliveryState, RequestOptions};
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
@@ -368,15 +368,85 @@ impl<'a> RequestBuilder<'a> {
     pub fn hash(self) -> HashBuilder<'a> {
         HashBuilder::new(self.client)
     }
+
+    /// Begins an empty typed Ping request (OASIS KMIP v2.1 §6.1.36).
+    #[must_use]
+    pub fn ping(self) -> PingBuilder<'a> {
+        PingBuilder {
+            execution: FluentBuilderExecution::new(self.client),
+        }
+    }
 }
 
-struct CryptoBuilderExecution<'a> {
+/// A fluent builder for the empty Ping payload in OASIS KMIP v2.1 §6.1.36,
+/// Table 271. Execution preserves the existing typed result and Pending outcome.
+pub struct PingBuilder<'a> {
+    execution: FluentBuilderExecution<'a>,
+}
+
+impl PingBuilder<'_> {
+    /// Sets exchange-local options without changing client policy.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.execution = self.execution.with_options(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.execution = self.execution.with_asynchronous_indicator(value);
+        self
+    }
+
+    /// Validates the typed empty payload without sending it.
+    ///
+    /// Protocol-version eligibility is checked by the client before sending.
+    ///
+    /// # Errors
+    /// Returns [`FluentBuildError::InvalidRequest`] if typed validation fails.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        validate_fluent_request(&PingRequest::new())
+    }
+
+    /// Builds the empty typed Ping request without sending it.
+    #[must_use]
+    pub const fn build(self) -> PingRequest {
+        PingRequest::new()
+    }
+
+    /// Converts the empty request to a typed batch item.
+    ///
+    /// Exchange options and the asynchronous indicator belong to the batch
+    /// header and are not retained in an individual batch item.
+    #[must_use]
+    pub fn to_batch_item(self) -> ClientBatchItem {
+        ClientBatchItem::new(ClientRequest::Ping(self.build()))
+    }
+
+    /// Executes at most one exchange through the existing typed client path.
+    ///
+    /// Pending preserves its correlation value without a follow-up or retry.
+    ///
+    /// # Errors
+    /// Returns the existing sanitized validation, protocol, or transport error
+    /// with its request-delivery evidence. KMIP 2.0 is rejected before sending.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execution
+            .run(ClientRequest::Ping(PingRequest::new()), limits)
+    }
+}
+
+struct FluentBuilderExecution<'a> {
     client: &'a mut Client,
     options: Option<RequestOptions>,
     asynchronous_indicator: Option<u32>,
 }
 
-impl<'a> CryptoBuilderExecution<'a> {
+impl<'a> FluentBuilderExecution<'a> {
     fn new(client: &'a mut Client) -> Self {
         Self {
             client,
@@ -414,14 +484,14 @@ impl<'a> CryptoBuilderExecution<'a> {
 // Byte conversion and validation live here so each public facade follows the
 // same ownership and execution rules without duplicating that logic.
 struct CryptoRequestState<'a, R> {
-    execution: CryptoBuilderExecution<'a>,
+    execution: FluentBuilderExecution<'a>,
     request: R,
 }
 
 impl<'a, R: ValidateKmipRequest> CryptoRequestState<'a, R> {
     fn new(client: &'a mut Client, request: R) -> Self {
         Self {
-            execution: CryptoBuilderExecution::new(client),
+            execution: FluentBuilderExecution::new(client),
             request,
         }
     }
@@ -443,7 +513,7 @@ impl<'a, R: ValidateKmipRequest> CryptoRequestState<'a, R> {
         self.field(SecretBytes::new(value), setter)
     }
 
-    fn into_parts(self) -> Result<(R, CryptoBuilderExecution<'a>), FluentBuildError> {
+    fn into_parts(self) -> Result<(R, FluentBuilderExecution<'a>), FluentBuildError> {
         validate_fluent_request(&self.request)?;
         Ok((self.request, self.execution))
     }
@@ -656,14 +726,14 @@ impl CipherBuilderCore {
 
 /// A fluent builder for a typed KMIP Encrypt request.
 pub struct EncryptBuilder<'a> {
-    execution: CryptoBuilderExecution<'a>,
+    execution: FluentBuilderExecution<'a>,
     core: CipherBuilderCore,
 }
 
 impl<'a> EncryptBuilder<'a> {
     fn new(client: &'a mut Client) -> Self {
         Self {
-            execution: CryptoBuilderExecution::new(client),
+            execution: FluentBuilderExecution::new(client),
             core: CipherBuilderCore::new(),
         }
     }
@@ -752,7 +822,7 @@ impl<'a> EncryptBuilder<'a> {
 
     fn into_request_and_execution(
         self,
-    ) -> Result<(EncryptRequest, CryptoBuilderExecution<'a>), FluentBuildError> {
+    ) -> Result<(EncryptRequest, FluentBuilderExecution<'a>), FluentBuildError> {
         let Self { execution, core } = self;
         let request = core.into_request(&CipherRequestAdapter {
             new: EncryptRequest::new,
@@ -803,7 +873,7 @@ impl<'a> EncryptBuilder<'a> {
 
 /// A fluent builder for a typed KMIP Decrypt request.
 pub struct DecryptBuilder<'a> {
-    execution: CryptoBuilderExecution<'a>,
+    execution: FluentBuilderExecution<'a>,
     core: CipherBuilderCore,
     authenticated_encryption_tag: Option<SecretBytes>,
 }
@@ -811,7 +881,7 @@ pub struct DecryptBuilder<'a> {
 impl<'a> DecryptBuilder<'a> {
     fn new(client: &'a mut Client) -> Self {
         Self {
-            execution: CryptoBuilderExecution::new(client),
+            execution: FluentBuilderExecution::new(client),
             core: CipherBuilderCore::new(),
             authenticated_encryption_tag: None,
         }
@@ -908,7 +978,7 @@ impl<'a> DecryptBuilder<'a> {
 
     fn into_request_and_execution(
         self,
-    ) -> Result<(DecryptRequest, CryptoBuilderExecution<'a>), FluentBuildError> {
+    ) -> Result<(DecryptRequest, FluentBuilderExecution<'a>), FluentBuildError> {
         let Self {
             execution,
             core,
@@ -1061,7 +1131,7 @@ impl<'a> SignBuilder<'a> {
 
     fn into_request_and_execution(
         self,
-    ) -> Result<(SignRequest, CryptoBuilderExecution<'a>), FluentBuildError> {
+    ) -> Result<(SignRequest, FluentBuilderExecution<'a>), FluentBuildError> {
         self.state.into_parts()
     }
 
@@ -1212,7 +1282,7 @@ impl<'a> SignatureVerifyBuilder<'a> {
 
     fn into_request_and_execution(
         self,
-    ) -> Result<(SignatureVerifyRequest, CryptoBuilderExecution<'a>), FluentBuildError> {
+    ) -> Result<(SignatureVerifyRequest, FluentBuilderExecution<'a>), FluentBuildError> {
         self.state.into_parts()
     }
 
@@ -1337,7 +1407,7 @@ impl<'a> MacBuilder<'a> {
 
     fn into_request_and_execution(
         self,
-    ) -> Result<(MacRequest, CryptoBuilderExecution<'a>), FluentBuildError> {
+    ) -> Result<(MacRequest, FluentBuilderExecution<'a>), FluentBuildError> {
         self.state.into_parts()
     }
 
@@ -1477,7 +1547,7 @@ impl<'a> MacVerifyBuilder<'a> {
 
     fn into_request_and_execution(
         self,
-    ) -> Result<(MacVerifyRequest, CryptoBuilderExecution<'a>), FluentBuildError> {
+    ) -> Result<(MacVerifyRequest, FluentBuilderExecution<'a>), FluentBuildError> {
         self.state.into_parts()
     }
 
@@ -1516,7 +1586,7 @@ impl<'a> MacVerifyBuilder<'a> {
 
 /// A fluent builder for a typed KMIP Hash request.
 pub struct HashBuilder<'a> {
-    execution: CryptoBuilderExecution<'a>,
+    execution: FluentBuilderExecution<'a>,
     fields: CryptoRequestFields,
 }
 
@@ -1529,7 +1599,7 @@ impl CryptoFieldsOwner for HashBuilder<'_> {
 impl<'a> HashBuilder<'a> {
     fn new(client: &'a mut Client) -> Self {
         Self {
-            execution: CryptoBuilderExecution::new(client),
+            execution: FluentBuilderExecution::new(client),
             fields: CryptoRequestFields::default(),
         }
     }
@@ -1598,7 +1668,7 @@ impl<'a> HashBuilder<'a> {
 
     fn into_request_and_execution(
         self,
-    ) -> Result<(HashRequest, CryptoBuilderExecution<'a>), FluentBuildError> {
+    ) -> Result<(HashRequest, FluentBuilderExecution<'a>), FluentBuildError> {
         let Self { execution, fields } = self;
         let CryptoRequestFields {
             data,
