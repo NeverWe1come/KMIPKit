@@ -101,8 +101,8 @@ baseline, regenerate the checked-in ledger with
 rejects generated ledgers that do not record successful invocations.
 The generated ledger retains the artifact
 SHA-256 for each build; that build-specific digest is not used as a coverage
-baseline. These recipes execute 27,278 of 71,641 planned Java route cells, with
-no failed cells; the ledger records the other 44,363 as pending and does not imply
+baseline. These recipes execute 27,284 of 71,641 planned Java route cells, with
+no failed cells; the ledger records the other 44,357 as pending and does not imply
 vendor interoperability or full-matrix completion. Local TTLV recipes exercise 51
 enumeration families, all six bitmask aggregate cases, and all 44 individual
 bitmask value cases through the applicable
@@ -321,5 +321,5 @@ Enumeration through the installed generic TTLV item constructor, view, and
 decoder, as required by KMIP 2.1 §6.1.36. The combined branch also covers the
 Usage Limits and Right Usage Limits fields, and Endpoint Role request and
 response payloads in KMIP 2.0 plus the request in KMIP 2.1. The selected report
-validates 27,278/27,278 cells; 44,363 of the full 71,641-cell Java matrix
+validates 27,284/27,284 cells; 44,357 of the full 71,641-cell Java matrix
 remain pending, so this does not complete the Java matrix.

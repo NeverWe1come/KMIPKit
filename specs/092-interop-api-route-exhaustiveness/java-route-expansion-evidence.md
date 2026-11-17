@@ -2035,6 +2035,38 @@ python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-refe
 python3 interop/java-kmip-validator/tools/compare_route_ledger.py
 ```
 
+## Java KMIP 2.1 Set Endpoint Role response routes in Right Usage Limits stack — 2026-11-17
+
+The Right Usage Limits branch now includes the response-field route slice
+from #187 and #216. OASIS KMIP 2.1 §6.1.54 Table 332 defines Endpoint Role as
+the role accepted by the server; §11.19 defines Client value 1. The controlled
+fixture exercises generic TTLV Item creation, view, and decoder for both the
+response field and operation Enumeration, adding six selected cells.
+
+The full Java suite passes 57/57 tests with `--rerun-tasks`; all 68 shared
+route-capability tests pass and the generator check reports 1,507 routes.
+Selected-scope validation accepts 27,284/27,284 cells with zero failures. The
+generated ledger records 71,641 planned, 27,284 executed, and 44,357 pending
+cells across 1,217 pending case IDs. The ledger comparer passes after refresh.
+The full matrix remains incomplete and #217 stays WIP.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$KMIPKIT_MAVEN_REPO" test --rerun-tasks
+python3 -m unittest interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+python3 interop/shared/tools/validate_route_evidence.py \
+  --selected-scope --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+git diff --check
+```
+
 ## Java Item Type enum routes
 
 Red commit `8534357d6` adds a focused assertion for the 11 catalogued Item
