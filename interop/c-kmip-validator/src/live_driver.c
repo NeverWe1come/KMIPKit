@@ -256,6 +256,9 @@ static int32_t register_payload_identifier_status(
 typedef int32_t (*client_response_ttlv_accessor_t)(
     kmipkit_client_batch_item_response_t *, uint8_t *, kmipkit_ttlv_structure_t **);
 
+/* A successful response item includes Operation, Result Status, its batch ID, and payload. */
+static const uint64_t COMPLETE_RESPONSE_ITEM_TTLV_FIELD_COUNT = UINT64_C(4);
+
 static bool response_ttlv_matches_identifier(
     kmipkit_client_batch_item_response_t *response_item,
     client_response_ttlv_accessor_t accessor,
@@ -4741,7 +4744,8 @@ static bool created_key_crypto_response_matches(kmipkit_client_batch_item_respon
         !iv_present && !correlation_present && !tag_present;
     if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_MAC) {
         valid = response_ttlv_matches_field_count(
-            item, kmipkit_client_batch_item_response_mac_ttlv, 4, out_status);
+            item, kmipkit_client_batch_item_response_mac_ttlv,
+            COMPLETE_RESPONSE_ITEM_TTLV_FIELD_COUNT, out_status);
     }
     return valid;
 }
@@ -5149,7 +5153,8 @@ static bool created_key_signature_response_matches(
             output_present && output.data && output.length == 256U && !correlation_present;
         if (valid) {
             valid = response_ttlv_matches_field_count(
-                item, kmipkit_client_batch_item_response_sign_ttlv, 4, out_status);
+                item, kmipkit_client_batch_item_response_sign_ttlv,
+                COMPLETE_RESPONSE_ITEM_TTLV_FIELD_COUNT, out_status);
         }
         return valid;
     }
