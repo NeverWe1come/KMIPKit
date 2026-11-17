@@ -249,6 +249,105 @@ final class LocalCatalogRouteChecks {
         }
     }
 
+    /** Executes scalar fields from OASIS KMIP 2.0/2.1 §6.2.4 Query payloads. */
+    static void executeQueryPayloadScalarFields(JsonNode catalog, String version, Set<String> selectedCaseIds,
+            EvidenceSink sink) throws Exception {
+        Set<String> emitted = new java.util.HashSet<>();
+        CodecLimits limits = CodecLimits.defaults();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String caseId = testCase.path("case_id").asText();
+            if (!selectedCaseIds.contains(caseId)
+                    || !"local_model".equals(testCase.path("execution").path("mode").asText())
+                    || !applies(testCase, version)) continue;
+            JsonNode requires = testCase.path("requires");
+            if (!"operation_payload_field".equals(requires.path("target_kind").asText())
+                    || !"KMIPKIT-ELEM-OP-S2C-QUERY".equals(requires.path("operation_id").asText())) {
+                throw new IllegalArgumentException("Selected case is not a Query payload field: " + caseId);
+            }
+            String fieldName = requires.path("field_name").asText();
+            QueryPayloadValue fixture = queryPayloadValue(catalog, fieldName);
+            int tagCode = tagCodeNamed(catalog, fieldName, version);
+            TtlvItemType itemType = scalarMessageFieldType(fixture.encoding());
+            byte[] wire = scalarWire(tagCode, itemType.code(), fixture.bytes());
+            try (TtlvValue value = scalarMessageFieldValue(fixture.encoding(), fixture.bytes(),
+                    fixture.number(), limits);
+                    RawTag raw = RawTag.fromRaw(tagCode);
+                    Tag tag = raw.checked();
+                    TtlvItem item = TtlvItem.create(tag, value, limits);
+                    var itemView = item.view();
+                    var itemTag = itemView.tag();
+                    var itemValue = itemView.value()) {
+                assertEquals(tagCode, itemTag.raw());
+                assertScalarMessageFieldValue(itemValue, itemType, fixture.bytes(), fixture.number());
+            }
+            try (TtlvItem decoded = TtlvCodec.decode(wire);
+                    var decodedView = decoded.view();
+                    var decodedTag = decodedView.tag();
+                    var decodedValue = decodedView.value()) {
+                assertEquals(tagCode, decodedTag.raw());
+                assertScalarMessageFieldValue(decodedValue, itemType, fixture.bytes(), fixture.number());
+            }
+            String targetId = requires.path("normative_target_id").asText();
+            String operationId = requires.path("operation_id").asText();
+            for (String evidenceTargetId : List.of(targetId, operationId)) {
+                emitRoute(sink, caseId, evidenceTargetId, "java.generic-ttlv.ttlv_item.create",
+                        "org.kmipkit.ttlv.TtlvItem.create", "construct", wire);
+                emitRoute(sink, caseId, evidenceTargetId,
+                        "java.generic-ttlv.function.ttlv_item_view_from_item",
+                        "org.kmipkit.ttlv.TtlvItem.view", "decode", wire);
+                emitRoute(sink, caseId, evidenceTargetId, "java.generic-ttlv.ttlv_codec.decode",
+                        "org.kmipkit.ttlv.TtlvCodec.decode", "decode", wire);
+            }
+            emitted.add(caseId);
+        }
+        if (!emitted.equals(selectedCaseIds)) {
+            throw new IllegalArgumentException("Selected Query payload cases were not executed for " + version);
+        }
+    }
+
+    private static QueryPayloadValue queryPayloadValue(JsonNode catalog, String fieldName) {
+        return switch (fieldName) {
+            case "Query Function" -> queryEnumeration(catalog, "QUERY-FUNCTION", "Query Operations");
+            case "Object Type" -> queryEnumeration(catalog, "OBJECT-TYPE", "Symmetric Key");
+            case "Attestation Type" -> queryEnumeration(catalog, "ATTESTATION-TYPE", "TPM Quote");
+            case "Client Registration Method" -> queryEnumeration(catalog,
+                    "CLIENT-REGISTRATION-METHOD", "Client Generated");
+            case "Vendor Identification" -> new QueryPayloadValue("Text String", 0,
+                    "KMIPKit Java validator".getBytes(StandardCharsets.US_ASCII));
+            default -> throw new IllegalArgumentException("No source-backed scalar Query payload fixture: "
+                    + fieldName);
+        };
+    }
+
+    private static QueryPayloadValue queryEnumeration(JsonNode catalog, String enumType, String valueName) {
+        long number = enumValue(catalog, enumType, valueName);
+        byte[] bytes = ByteBuffer.allocate(Integer.BYTES).putInt(Math.toIntExact(number)).array();
+        return new QueryPayloadValue("Enumeration", number, bytes);
+    }
+
+    private static long enumValue(JsonNode catalog, String enumType, String valueName) {
+        String parentId = "KMIPKIT-ELEM-ENUMERATION-" + enumType;
+        JsonNode match = null;
+        for (JsonNode target : catalog.path("normative_targets")) {
+            if (!"enumeration_value".equals(target.path("kind").asText())
+                    || !valueName.equals(target.path("name").asText())
+                    || !"assigned".equals(target.path("allocation").asText())) continue;
+            boolean belongsToType = false;
+            for (JsonNode parent : target.path("parent_element_ids")) {
+                if (parentId.equals(parent.asText())) belongsToType = true;
+            }
+            if (!belongsToType) continue;
+            if (match != null) throw new IllegalArgumentException("Duplicate assigned enumeration value: "
+                    + enumType + " / " + valueName);
+            match = target;
+        }
+        if (match == null) throw new IllegalArgumentException("Missing assigned enumeration value: "
+                + enumType + " / " + valueName);
+        return Long.parseUnsignedLong(match.path("wire_value").asText().replaceFirst("^0[xX]", ""), 16);
+    }
+
+    private record QueryPayloadValue(String encoding, long number, byte[] bytes) { }
+
     /**
      * Executes the repeatable Any object-attribute member with a Name attribute.
      * The Name structure follows OASIS KMIP 2.0/2.1 §4.32; the six member cases

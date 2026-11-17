@@ -827,12 +827,14 @@ class ControlledTlsPeerTest {
         int booleanFieldRouteEventCount = 0;
         int scalarMessageFieldRouteEventCount = 0;
         int scalarStructureMemberRouteEventCount = 0;
+        int queryPayloadRouteEventCount = 0;
         int anyObjectAttributeRouteEventCount = 0;
         int scalarTypedParserEventCount = 0;
         int itemTypeRouteEventCount = 0;
         Set<String> booleanFieldCaseIds = new java.util.HashSet<>();
         Set<String> anyObjectAttributeCaseIds = new java.util.HashSet<>();
         Set<String> scalarStructureMemberCaseIds = new java.util.LinkedHashSet<>();
+        Set<String> queryPayloadCaseIds = new java.util.LinkedHashSet<>();
 
         for (String protocolVersion : KMIP_2_0_AND_2_1) {
             appendLocalQueryRouteEvents(events, protocolVersion, requestTreeHash);
@@ -1100,13 +1102,22 @@ class ControlledTlsPeerTest {
             }
             scalarStructureMemberRouteEventCount += scalarStructureMemberInvocations.size();
             assertScalarStructureMemberGenericRouteEvidence(events, protocolVersion);
+            Set<String> missingQueryPayloadCases = missingQueryPayloadScalarCaseIds(events, protocolVersion);
+            queryPayloadCaseIds.addAll(missingQueryPayloadCases);
+            List<LocalCatalogRouteChecks.Invocation> queryPayloadInvocations = new ArrayList<>();
+            LocalCatalogRouteChecks.executeQueryPayloadScalarFields(readRouteEvidenceCatalog(), protocolVersion,
+                    missingQueryPayloadCases, queryPayloadInvocations::add);
+            for (LocalCatalogRouteChecks.Invocation invocation : queryPayloadInvocations) {
+                appendLocalCatalogInvocation(events, protocolVersion, invocation);
+            }
+            queryPayloadRouteEventCount += queryPayloadInvocations.size();
         }
 
         int tagAggregateEventCount = appendTagAggregateRouteEvents(events);
         assertEquals(expectedTagAggregateEventCount(), tagAggregateEventCount,
                 "The Tag aggregate must represent every catalogued tag and tag-allocation range cell.");
-        int scalarStructureMemberCaseCountAdded = writeRouteExecutionReport(reportPath, mapper, events,
-                scalarStructureMemberCaseIds);
+        int additionalCaseIdCount = writeRouteExecutionReport(reportPath, mapper, events,
+                scalarStructureMemberCaseIds, queryPayloadCaseIds);
         assertTrue(Files.isRegularFile(reportPath),
                 "Installed Query calls against the controlled peer must emit route execution evidence.");
         JsonNode report = new ObjectMapper().readTree(reportPath.toFile());
@@ -1644,6 +1655,7 @@ class ControlledTlsPeerTest {
                         + genericTagEventCount + typedTagIdentityEventCount
                         + booleanFieldRouteEventCount + scalarMessageFieldRouteEventCount
                         + scalarStructureMemberRouteEventCount + itemTypeRouteEventCount
+                        + queryPayloadRouteEventCount
                         + anyObjectAttributeRouteEventCount
                         + scalarTypedParserEventCount
                         + 97 // BEC, batch IDs, async payload, Ping, Endpoint Role, Object Defaults, derivation, and Extension Information member cells.
@@ -1698,7 +1710,7 @@ class ControlledTlsPeerTest {
                         + 1 // KMIP 2.0/2.1 §8.2 Attestation Capable Indicator message-field case.
                         // Four scalar header cases are already included by the baseline report groups.
                         + scalarMessageFieldCaseIds(report.path("events")).size() - 4
-                        + scalarStructureMemberCaseCountAdded,
+                        + additionalCaseIdCount,
                 report.path("case_ids").size());
         List<String> expectedCredentialCaseIds = CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().toList();
         int credentialCaseStart = report.path("case_ids").size() - expectedCredentialCaseIds.size();
@@ -3968,7 +3980,8 @@ class ControlledTlsPeerTest {
     }
 
     private static int writeRouteExecutionReport(Path reportPath, ObjectMapper mapper,
-            ArrayNode events, Set<String> scalarStructureMemberCaseIds) throws Exception {
+            ArrayNode events, Set<String> scalarStructureMemberCaseIds, Set<String> queryPayloadCaseIds)
+            throws Exception {
         Path catalogPath = routeEvidenceCatalogPath();
         Path manifestPath = Path.of("../shared/coverage/route-capabilities.json");
         Path pinPath = Path.of("library-pin.json");
@@ -4052,8 +4065,9 @@ class ControlledTlsPeerTest {
         }
         appendBooleanFieldCaseIds(caseIds, events);
         appendScalarMessageFieldCaseIds(caseIds, events);
-        int scalarStructureMemberCaseCountAdded = appendScalarStructureMemberCaseIds(caseIds,
+        int additionalCaseIdCount = appendCaseIds(caseIds,
                 scalarStructureMemberCaseIds);
+        additionalCaseIdCount += appendCaseIds(caseIds, queryPayloadCaseIds);
         appendItemTypeEnumerationCaseIds(caseIds, events);
         caseIds.add("test-enum-pkcs#11-function");
         caseIds.add("test-enum-pkcs#11-return-code");
@@ -4075,7 +4089,7 @@ class ControlledTlsPeerTest {
         report.set("events", events);
         Files.createDirectories(reportPath.toAbsolutePath().normalize().getParent());
         mapper.writerWithDefaultPrettyPrinter().writeValue(reportPath.toFile(), report);
-        return scalarStructureMemberCaseCountAdded;
+        return additionalCaseIdCount;
     }
 
     private static void appendBooleanFieldCaseIds(ArrayNode caseIds, JsonNode events) {
@@ -4102,7 +4116,7 @@ class ControlledTlsPeerTest {
         }
     }
 
-    private static int appendScalarStructureMemberCaseIds(ArrayNode caseIds, Set<String> caseIdsToAppend) {
+    private static int appendCaseIds(ArrayNode caseIds, Set<String> caseIdsToAppend) {
         Set<String> existing = new java.util.HashSet<>();
         caseIds.forEach(caseId -> existing.add(caseId.asText()));
         int added = 0;
@@ -4566,6 +4580,38 @@ class ControlledTlsPeerTest {
             } else {
                 assertEquals(requiredRoutes.size(), present,
                         "Scalar structure member route evidence must be complete before reuse for " + caseId);
+            }
+        }
+        return missing;
+    }
+
+    private static Set<String> missingQueryPayloadScalarCaseIds(JsonNode events, String version) throws Exception {
+        JsonNode catalog = readRouteEvidenceCatalog();
+        List<String> routes = List.of("java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item", "java.generic-ttlv.ttlv_codec.decode");
+        Set<String> supportedFields = Set.of("Query Function", "Object Type", "Vendor Identification",
+                "Attestation Type", "Client Registration Method");
+        Set<String> missing = new java.util.LinkedHashSet<>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            JsonNode requires = testCase.path("requires");
+            if (!"operation_payload_field".equals(requires.path("target_kind").asText())
+                    || !"KMIPKIT-ELEM-OP-S2C-QUERY".equals(requires.path("operation_id").asText())
+                    || !supportedFields.contains(requires.path("field_name").asText())
+                    || !"local_model".equals(testCase.path("execution").path("mode").asText())
+                    || !appliesToVersion(testCase, version)) continue;
+            String caseId = testCase.path("case_id").asText();
+            String targetId = requires.path("normative_target_id").asText();
+            int present = 0;
+            for (String evidenceTargetId : List.of(targetId, requires.path("operation_id").asText())) {
+                for (String route : routes) {
+                    if (hasRouteEvent(events, caseId, route, version, evidenceTargetId)) present++;
+                }
+            }
+            if (present == 0) {
+                missing.add(caseId);
+            } else {
+                assertEquals(routes.size() * 2, present,
+                        "Query payload route evidence must be complete before reuse for " + caseId);
             }
         }
         return missing;
