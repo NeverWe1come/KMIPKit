@@ -2482,10 +2482,1072 @@ public final class KmipValues {
     /** Named KMIP 2.1 values for Tag. */
     public static final class Tag {
         private Tag() {}
+        /** Activation Date; KMIPKIT-ELEM-TAG-420001; KMIPKIT-SRC-spec §11.56. */
+        public static final long ACTIVATION_DATE = 0x00420001L;
+        /** Application Data; KMIPKIT-ELEM-TAG-420002; KMIPKIT-SRC-spec §11.56. */
+        public static final long APPLICATION_DATA = 0x00420002L;
+        /** Application Namespace; KMIPKIT-ELEM-TAG-420003; KMIPKIT-SRC-spec §11.56. */
+        public static final long APPLICATION_NAMESPACE = 0x00420003L;
+        /** Application Specific Information; KMIPKIT-ELEM-TAG-420004; KMIPKIT-SRC-spec §11.56. */
+        public static final long APPLICATION_SPECIFIC_INFORMATION = 0x00420004L;
+        /** Archive Date; KMIPKIT-ELEM-TAG-420005; KMIPKIT-SRC-spec §11.56. */
+        public static final long ARCHIVE_DATE = 0x00420005L;
+        /** Asynchronous Correlation Value; KMIPKIT-ELEM-TAG-420006; KMIPKIT-SRC-spec §11.56. */
+        public static final long ASYNCHRONOUS_CORRELATION_VALUE = 0x00420006L;
+        /** Asynchronous Indicator; KMIPKIT-ELEM-TAG-420007; KMIPKIT-SRC-spec §11.56. */
+        public static final long ASYNCHRONOUS_INDICATOR = 0x00420007L;
+        /** Attribute; KMIPKIT-ELEM-TAG-420008; KMIPKIT-SRC-spec §11.56. */
+        public static final long ATTRIBUTE = 0x00420008L;
+        /** Attribute Name; KMIPKIT-ELEM-TAG-42000A; KMIPKIT-SRC-spec §11.56. */
+        public static final long ATTRIBUTE_NAME = 0x0042000AL;
+        /** Attribute Value; KMIPKIT-ELEM-TAG-42000B; KMIPKIT-SRC-spec §11.56. */
+        public static final long ATTRIBUTE_VALUE = 0x0042000BL;
+        /** Authentication; KMIPKIT-ELEM-TAG-42000C; KMIPKIT-SRC-spec §11.56. */
+        public static final long AUTHENTICATION = 0x0042000CL;
+        /** Batch Count; KMIPKIT-ELEM-TAG-42000D; KMIPKIT-SRC-spec §11.56. */
+        public static final long BATCH_COUNT = 0x0042000DL;
+        /** Batch Error Continuation Option; KMIPKIT-ELEM-TAG-42000E; KMIPKIT-SRC-spec §11.56. */
+        public static final long BATCH_ERROR_CONTINUATION_OPTION = 0x0042000EL;
+        /** Batch Item; KMIPKIT-ELEM-TAG-42000F; KMIPKIT-SRC-spec §11.56. */
+        public static final long BATCH_ITEM = 0x0042000FL;
+        /** Batch Order Option; KMIPKIT-ELEM-TAG-420010; KMIPKIT-SRC-spec §11.56. */
+        public static final long BATCH_ORDER_OPTION = 0x00420010L;
+        /** Block Cipher Mode; KMIPKIT-ELEM-TAG-420011; KMIPKIT-SRC-spec §11.56. */
+        public static final long BLOCK_CIPHER_MODE = 0x00420011L;
+        /** Cancellation Result; KMIPKIT-ELEM-TAG-420012; KMIPKIT-SRC-spec §11.56. */
+        public static final long CANCELLATION_RESULT = 0x00420012L;
+        /** Certificate; KMIPKIT-ELEM-TAG-420013; KMIPKIT-SRC-spec §11.56. */
+        public static final long CERTIFICATE = 0x00420013L;
+        /** Certificate Request; KMIPKIT-ELEM-TAG-420018; KMIPKIT-SRC-spec §11.56. */
+        public static final long CERTIFICATE_REQUEST = 0x00420018L;
+        /** Certificate Request Type; KMIPKIT-ELEM-TAG-420019; KMIPKIT-SRC-spec §11.56. */
+        public static final long CERTIFICATE_REQUEST_TYPE = 0x00420019L;
+        /** Certificate Type; KMIPKIT-ELEM-TAG-42001D; KMIPKIT-SRC-spec §11.56. */
+        public static final long CERTIFICATE_TYPE = 0x0042001DL;
+        /** Certificate Value; KMIPKIT-ELEM-TAG-42001E; KMIPKIT-SRC-spec §11.56. */
+        public static final long CERTIFICATE_VALUE = 0x0042001EL;
+        /** Compromise Date; KMIPKIT-ELEM-TAG-420020; KMIPKIT-SRC-spec §11.56. */
+        public static final long COMPROMISE_DATE = 0x00420020L;
+        /** Compromise Occurrence Date; KMIPKIT-ELEM-TAG-420021; KMIPKIT-SRC-spec §11.56. */
+        public static final long COMPROMISE_OCCURRENCE_DATE = 0x00420021L;
+        /** Contact Information; KMIPKIT-ELEM-TAG-420022; KMIPKIT-SRC-spec §11.56. */
+        public static final long CONTACT_INFORMATION = 0x00420022L;
+        /** Credential; KMIPKIT-ELEM-TAG-420023; KMIPKIT-SRC-spec §11.56. */
+        public static final long CREDENTIAL = 0x00420023L;
+        /** Credential Type; KMIPKIT-ELEM-TAG-420024; KMIPKIT-SRC-spec §11.56. */
+        public static final long CREDENTIAL_TYPE = 0x00420024L;
+        /** Credential Value; KMIPKIT-ELEM-TAG-420025; KMIPKIT-SRC-spec §11.56. */
+        public static final long CREDENTIAL_VALUE = 0x00420025L;
+        /** Criticality Indicator; KMIPKIT-ELEM-TAG-420026; KMIPKIT-SRC-spec §11.56. */
+        public static final long CRITICALITY_INDICATOR = 0x00420026L;
+        /** CRT Coefficient; KMIPKIT-ELEM-TAG-420027; KMIPKIT-SRC-spec §11.56. */
+        public static final long CRT_COEFFICIENT = 0x00420027L;
+        /** Cryptographic Algorithm; KMIPKIT-ELEM-TAG-420028; KMIPKIT-SRC-spec §11.56. */
+        public static final long CRYPTOGRAPHIC_ALGORITHM = 0x00420028L;
+        /** Cryptographic Domain Parameters; KMIPKIT-ELEM-TAG-420029; KMIPKIT-SRC-spec §11.56. */
+        public static final long CRYPTOGRAPHIC_DOMAIN_PARAMETERS = 0x00420029L;
+        /** Cryptographic Length; KMIPKIT-ELEM-TAG-42002A; KMIPKIT-SRC-spec §11.56. */
+        public static final long CRYPTOGRAPHIC_LENGTH = 0x0042002AL;
+        /** Cryptographic Parameters; KMIPKIT-ELEM-TAG-42002B; KMIPKIT-SRC-spec §11.56. */
+        public static final long CRYPTOGRAPHIC_PARAMETERS = 0x0042002BL;
+        /** Cryptographic Usage Mask; KMIPKIT-ELEM-TAG-42002C; KMIPKIT-SRC-spec §11.56. */
+        public static final long CRYPTOGRAPHIC_USAGE_MASK = 0x0042002CL;
+        /** D; KMIPKIT-ELEM-TAG-42002E; KMIPKIT-SRC-spec §11.56. */
+        public static final long D = 0x0042002EL;
+        /** Deactivation Date; KMIPKIT-ELEM-TAG-42002F; KMIPKIT-SRC-spec §11.56. */
+        public static final long DEACTIVATION_DATE = 0x0042002FL;
+        /** Derivation Data; KMIPKIT-ELEM-TAG-420030; KMIPKIT-SRC-spec §11.56. */
+        public static final long DERIVATION_DATA = 0x00420030L;
+        /** Derivation Method; KMIPKIT-ELEM-TAG-420031; KMIPKIT-SRC-spec §11.56. */
+        public static final long DERIVATION_METHOD = 0x00420031L;
+        /** Derivation Parameters; KMIPKIT-ELEM-TAG-420032; KMIPKIT-SRC-spec §11.56. */
+        public static final long DERIVATION_PARAMETERS = 0x00420032L;
+        /** Destroy Date; KMIPKIT-ELEM-TAG-420033; KMIPKIT-SRC-spec §11.56. */
+        public static final long DESTROY_DATE = 0x00420033L;
+        /** Digest; KMIPKIT-ELEM-TAG-420034; KMIPKIT-SRC-spec §11.56. */
+        public static final long DIGEST = 0x00420034L;
+        /** Digest Value; KMIPKIT-ELEM-TAG-420035; KMIPKIT-SRC-spec §11.56. */
+        public static final long DIGEST_VALUE = 0x00420035L;
+        /** Encryption Key Information; KMIPKIT-ELEM-TAG-420036; KMIPKIT-SRC-spec §11.56. */
+        public static final long ENCRYPTION_KEY_INFORMATION = 0x00420036L;
+        /** G; KMIPKIT-ELEM-TAG-420037; KMIPKIT-SRC-spec §11.56. */
+        public static final long G = 0x00420037L;
+        /** Hashing Algorithm; KMIPKIT-ELEM-TAG-420038; KMIPKIT-SRC-spec §11.56. */
+        public static final long HASHING_ALGORITHM = 0x00420038L;
+        /** Initial Date; KMIPKIT-ELEM-TAG-420039; KMIPKIT-SRC-spec §11.56. */
+        public static final long INITIAL_DATE = 0x00420039L;
+        /** Initialization Vector; KMIPKIT-ELEM-TAG-42003A; KMIPKIT-SRC-spec §11.56. */
+        public static final long INITIALIZATION_VECTOR = 0x0042003AL;
+        /** Iteration Count; KMIPKIT-ELEM-TAG-42003C; KMIPKIT-SRC-spec §11.56. */
+        public static final long ITERATION_COUNT = 0x0042003CL;
+        /** IV/Counter/Nonce; KMIPKIT-ELEM-TAG-42003D; KMIPKIT-SRC-spec §11.56. */
+        public static final long IV_COUNTER_NONCE = 0x0042003DL;
+        /** J; KMIPKIT-ELEM-TAG-42003E; KMIPKIT-SRC-spec §11.56. */
+        public static final long J = 0x0042003EL;
+        /** Key; KMIPKIT-ELEM-TAG-42003F; KMIPKIT-SRC-spec §11.56. */
+        public static final long KEY = 0x0042003FL;
+        /** Key Block; KMIPKIT-ELEM-TAG-420040; KMIPKIT-SRC-spec §11.56. */
+        public static final long KEY_BLOCK = 0x00420040L;
+        /** Key Compression Type; KMIPKIT-ELEM-TAG-420041; KMIPKIT-SRC-spec §11.56. */
+        public static final long KEY_COMPRESSION_TYPE = 0x00420041L;
+        /** Key Format Type; KMIPKIT-ELEM-TAG-420042; KMIPKIT-SRC-spec §11.56. */
+        public static final long KEY_FORMAT_TYPE = 0x00420042L;
+        /** Key Material; KMIPKIT-ELEM-TAG-420043; KMIPKIT-SRC-spec §11.56. */
+        public static final long KEY_MATERIAL = 0x00420043L;
+        /** Key Part Identifier; KMIPKIT-ELEM-TAG-420044; KMIPKIT-SRC-spec §11.56. */
+        public static final long KEY_PART_IDENTIFIER = 0x00420044L;
+        /** Key Value; KMIPKIT-ELEM-TAG-420045; KMIPKIT-SRC-spec §11.56. */
+        public static final long KEY_VALUE = 0x00420045L;
+        /** Key Wrapping Data; KMIPKIT-ELEM-TAG-420046; KMIPKIT-SRC-spec §11.56. */
+        public static final long KEY_WRAPPING_DATA = 0x00420046L;
+        /** Key Wrapping Specification; KMIPKIT-ELEM-TAG-420047; KMIPKIT-SRC-spec §11.56. */
+        public static final long KEY_WRAPPING_SPECIFICATION = 0x00420047L;
+        /** Last Change Date; KMIPKIT-ELEM-TAG-420048; KMIPKIT-SRC-spec §11.56. */
+        public static final long LAST_CHANGE_DATE = 0x00420048L;
+        /** Lease Time; KMIPKIT-ELEM-TAG-420049; KMIPKIT-SRC-spec §11.56. */
+        public static final long LEASE_TIME = 0x00420049L;
+        /** Link; KMIPKIT-ELEM-TAG-42004A; KMIPKIT-SRC-spec §11.56. */
+        public static final long LINK = 0x0042004AL;
+        /** Link Type; KMIPKIT-ELEM-TAG-42004B; KMIPKIT-SRC-spec §11.56. */
+        public static final long LINK_TYPE = 0x0042004BL;
+        /** Linked Object Identifier; KMIPKIT-ELEM-TAG-42004C; KMIPKIT-SRC-spec §11.56. */
+        public static final long LINKED_OBJECT_IDENTIFIER = 0x0042004CL;
+        /** MAC/Signature; KMIPKIT-ELEM-TAG-42004D; KMIPKIT-SRC-spec §11.56. */
+        public static final long MAC_SIGNATURE = 0x0042004DL;
+        /** MAC/Signature Key Information; KMIPKIT-ELEM-TAG-42004E; KMIPKIT-SRC-spec §11.56. */
+        public static final long MAC_SIGNATURE_KEY_INFORMATION = 0x0042004EL;
+        /** Maximum Items; KMIPKIT-ELEM-TAG-42004F; KMIPKIT-SRC-spec §11.56. */
+        public static final long MAXIMUM_ITEMS = 0x0042004FL;
+        /** Maximum Response Size; KMIPKIT-ELEM-TAG-420050; KMIPKIT-SRC-spec §11.56. */
+        public static final long MAXIMUM_RESPONSE_SIZE = 0x00420050L;
+        /** Message Extension; KMIPKIT-ELEM-TAG-420051; KMIPKIT-SRC-spec §11.56. */
+        public static final long MESSAGE_EXTENSION = 0x00420051L;
+        /** Modulus; KMIPKIT-ELEM-TAG-420052; KMIPKIT-SRC-spec §11.56. */
+        public static final long MODULUS = 0x00420052L;
+        /** Name; KMIPKIT-ELEM-TAG-420053; KMIPKIT-SRC-spec §11.56. */
+        public static final long NAME = 0x00420053L;
+        /** Name Type; KMIPKIT-ELEM-TAG-420054; KMIPKIT-SRC-spec §11.56. */
+        public static final long NAME_TYPE = 0x00420054L;
+        /** Name Value; KMIPKIT-ELEM-TAG-420055; KMIPKIT-SRC-spec §11.56. */
+        public static final long NAME_VALUE = 0x00420055L;
+        /** Object Group; KMIPKIT-ELEM-TAG-420056; KMIPKIT-SRC-spec §11.56. */
+        public static final long OBJECT_GROUP = 0x00420056L;
+        /** Object Type; KMIPKIT-ELEM-TAG-420057; KMIPKIT-SRC-spec §11.56. */
+        public static final long OBJECT_TYPE = 0x00420057L;
+        /** Offset; KMIPKIT-ELEM-TAG-420058; KMIPKIT-SRC-spec §11.56. */
+        public static final long OFFSET = 0x00420058L;
+        /** Opaque Data Type; KMIPKIT-ELEM-TAG-420059; KMIPKIT-SRC-spec §11.56. */
+        public static final long OPAQUE_DATA_TYPE = 0x00420059L;
+        /** Opaque Data Value; KMIPKIT-ELEM-TAG-42005A; KMIPKIT-SRC-spec §11.56. */
+        public static final long OPAQUE_DATA_VALUE = 0x0042005AL;
+        /** Opaque Object; KMIPKIT-ELEM-TAG-42005B; KMIPKIT-SRC-spec §11.56. */
+        public static final long OPAQUE_OBJECT = 0x0042005BL;
+        /** Operation; KMIPKIT-ELEM-TAG-42005C; KMIPKIT-SRC-spec §11.56. */
+        public static final long OPERATION = 0x0042005CL;
+        /** P; KMIPKIT-ELEM-TAG-42005E; KMIPKIT-SRC-spec §11.56. */
+        public static final long P = 0x0042005EL;
+        /** Padding Method; KMIPKIT-ELEM-TAG-42005F; KMIPKIT-SRC-spec §11.56. */
+        public static final long PADDING_METHOD = 0x0042005FL;
+        /** Prime Exponent P; KMIPKIT-ELEM-TAG-420060; KMIPKIT-SRC-spec §11.56. */
+        public static final long PRIME_EXPONENT_P = 0x00420060L;
+        /** Prime Exponent Q; KMIPKIT-ELEM-TAG-420061; KMIPKIT-SRC-spec §11.56. */
+        public static final long PRIME_EXPONENT_Q = 0x00420061L;
+        /** Prime Field Size; KMIPKIT-ELEM-TAG-420062; KMIPKIT-SRC-spec §11.56. */
+        public static final long PRIME_FIELD_SIZE = 0x00420062L;
+        /** Private Exponent; KMIPKIT-ELEM-TAG-420063; KMIPKIT-SRC-spec §11.56. */
+        public static final long PRIVATE_EXPONENT = 0x00420063L;
+        /** Private Key; KMIPKIT-ELEM-TAG-420064; KMIPKIT-SRC-spec §11.56. */
+        public static final long PRIVATE_KEY = 0x00420064L;
+        /** Private Key Unique Identifier; KMIPKIT-ELEM-TAG-420066; KMIPKIT-SRC-spec §11.56. */
+        public static final long PRIVATE_KEY_UNIQUE_IDENTIFIER = 0x00420066L;
+        /** Process Start Date; KMIPKIT-ELEM-TAG-420067; KMIPKIT-SRC-spec §11.56. */
+        public static final long PROCESS_START_DATE = 0x00420067L;
+        /** Protect Stop Date; KMIPKIT-ELEM-TAG-420068; KMIPKIT-SRC-spec §11.56. */
+        public static final long PROTECT_STOP_DATE = 0x00420068L;
+        /** Protocol Version; KMIPKIT-ELEM-TAG-420069; KMIPKIT-SRC-spec §11.56. */
+        public static final long PROTOCOL_VERSION = 0x00420069L;
+        /** Protocol Version Major; KMIPKIT-ELEM-TAG-42006A; KMIPKIT-SRC-spec §11.56. */
+        public static final long PROTOCOL_VERSION_MAJOR = 0x0042006AL;
+        /** Protocol Version Minor; KMIPKIT-ELEM-TAG-42006B; KMIPKIT-SRC-spec §11.56. */
+        public static final long PROTOCOL_VERSION_MINOR = 0x0042006BL;
+        /** Public Exponent; KMIPKIT-ELEM-TAG-42006C; KMIPKIT-SRC-spec §11.56. */
+        public static final long PUBLIC_EXPONENT = 0x0042006CL;
+        /** Public Key; KMIPKIT-ELEM-TAG-42006D; KMIPKIT-SRC-spec §11.56. */
+        public static final long PUBLIC_KEY = 0x0042006DL;
+        /** Public Key Unique Identifier; KMIPKIT-ELEM-TAG-42006F; KMIPKIT-SRC-spec §11.56. */
+        public static final long PUBLIC_KEY_UNIQUE_IDENTIFIER = 0x0042006FL;
+        /** Put Function; KMIPKIT-ELEM-TAG-420070; KMIPKIT-SRC-spec §11.56. */
+        public static final long PUT_FUNCTION = 0x00420070L;
+        /** Q; KMIPKIT-ELEM-TAG-420071; KMIPKIT-SRC-spec §11.56. */
+        public static final long Q = 0x00420071L;
+        /** Q String; KMIPKIT-ELEM-TAG-420072; KMIPKIT-SRC-spec §11.56. */
+        public static final long Q_STRING = 0x00420072L;
+        /** Qlength; KMIPKIT-ELEM-TAG-420073; KMIPKIT-SRC-spec §11.56. */
+        public static final long QLENGTH = 0x00420073L;
+        /** Query Function; KMIPKIT-ELEM-TAG-420074; KMIPKIT-SRC-spec §11.56. */
+        public static final long QUERY_FUNCTION = 0x00420074L;
+        /** Recommended Curve; KMIPKIT-ELEM-TAG-420075; KMIPKIT-SRC-spec §11.56. */
+        public static final long RECOMMENDED_CURVE = 0x00420075L;
+        /** Replaced Unique Identifier; KMIPKIT-ELEM-TAG-420076; KMIPKIT-SRC-spec §11.56. */
+        public static final long REPLACED_UNIQUE_IDENTIFIER = 0x00420076L;
+        /** Request Header; KMIPKIT-ELEM-TAG-420077; KMIPKIT-SRC-spec §11.56. */
+        public static final long REQUEST_HEADER = 0x00420077L;
+        /** Request Message; KMIPKIT-ELEM-TAG-420078; KMIPKIT-SRC-spec §11.56. */
+        public static final long REQUEST_MESSAGE = 0x00420078L;
+        /** Request Payload; KMIPKIT-ELEM-TAG-420079; KMIPKIT-SRC-spec §11.56. */
+        public static final long REQUEST_PAYLOAD = 0x00420079L;
+        /** Response Header; KMIPKIT-ELEM-TAG-42007A; KMIPKIT-SRC-spec §11.56. */
+        public static final long RESPONSE_HEADER = 0x0042007AL;
+        /** Response Message; KMIPKIT-ELEM-TAG-42007B; KMIPKIT-SRC-spec §11.56. */
+        public static final long RESPONSE_MESSAGE = 0x0042007BL;
+        /** Response Payload; KMIPKIT-ELEM-TAG-42007C; KMIPKIT-SRC-spec §11.56. */
+        public static final long RESPONSE_PAYLOAD = 0x0042007CL;
+        /** Result Message; KMIPKIT-ELEM-TAG-42007D; KMIPKIT-SRC-spec §11.56. */
+        public static final long RESULT_MESSAGE = 0x0042007DL;
+        /** Result Reason; KMIPKIT-ELEM-TAG-42007E; KMIPKIT-SRC-spec §11.56. */
+        public static final long RESULT_REASON = 0x0042007EL;
+        /** Result Status; KMIPKIT-ELEM-TAG-42007F; KMIPKIT-SRC-spec §11.56. */
+        public static final long RESULT_STATUS = 0x0042007FL;
+        /** Revocation Message; KMIPKIT-ELEM-TAG-420080; KMIPKIT-SRC-spec §11.56. */
+        public static final long REVOCATION_MESSAGE = 0x00420080L;
+        /** Revocation Reason; KMIPKIT-ELEM-TAG-420081; KMIPKIT-SRC-spec §11.56. */
+        public static final long REVOCATION_REASON = 0x00420081L;
+        /** Revocation Reason Code; KMIPKIT-ELEM-TAG-420082; KMIPKIT-SRC-spec §11.56. */
+        public static final long REVOCATION_REASON_CODE = 0x00420082L;
+        /** Key Role Type; KMIPKIT-ELEM-TAG-420083; KMIPKIT-SRC-spec §11.56. */
+        public static final long KEY_ROLE_TYPE = 0x00420083L;
+        /** Salt; KMIPKIT-ELEM-TAG-420084; KMIPKIT-SRC-spec §11.56. */
+        public static final long SALT = 0x00420084L;
+        /** Secret Data; KMIPKIT-ELEM-TAG-420085; KMIPKIT-SRC-spec §11.56. */
+        public static final long SECRET_DATA = 0x00420085L;
+        /** Secret Data Type; KMIPKIT-ELEM-TAG-420086; KMIPKIT-SRC-spec §11.56. */
+        public static final long SECRET_DATA_TYPE = 0x00420086L;
+        /** Server Information; KMIPKIT-ELEM-TAG-420088; KMIPKIT-SRC-spec §11.56. */
+        public static final long SERVER_INFORMATION = 0x00420088L;
+        /** Split Key; KMIPKIT-ELEM-TAG-420089; KMIPKIT-SRC-spec §11.56. */
+        public static final long SPLIT_KEY = 0x00420089L;
+        /** Split Key Method; KMIPKIT-ELEM-TAG-42008A; KMIPKIT-SRC-spec §11.56. */
+        public static final long SPLIT_KEY_METHOD = 0x0042008AL;
+        /** Split Key Parts; KMIPKIT-ELEM-TAG-42008B; KMIPKIT-SRC-spec §11.56. */
+        public static final long SPLIT_KEY_PARTS = 0x0042008BL;
+        /** Split Key Threshold; KMIPKIT-ELEM-TAG-42008C; KMIPKIT-SRC-spec §11.56. */
+        public static final long SPLIT_KEY_THRESHOLD = 0x0042008CL;
+        /** State; KMIPKIT-ELEM-TAG-42008D; KMIPKIT-SRC-spec §11.56. */
+        public static final long STATE = 0x0042008DL;
+        /** Storage Status Mask; KMIPKIT-ELEM-TAG-42008E; KMIPKIT-SRC-spec §11.56. */
+        public static final long STORAGE_STATUS_MASK = 0x0042008EL;
+        /** Symmetric Key; KMIPKIT-ELEM-TAG-42008F; KMIPKIT-SRC-spec §11.56. */
+        public static final long SYMMETRIC_KEY = 0x0042008FL;
+        /** Time Stamp; KMIPKIT-ELEM-TAG-420092; KMIPKIT-SRC-spec §11.56. */
+        public static final long TIME_STAMP = 0x00420092L;
+        /** Unique Batch Item ID; KMIPKIT-ELEM-TAG-420093; KMIPKIT-SRC-spec §11.56. */
+        public static final long UNIQUE_BATCH_ITEM_ID = 0x00420093L;
+        /** Unique Identifier; KMIPKIT-ELEM-TAG-420094; KMIPKIT-SRC-spec §11.56. */
+        public static final long UNIQUE_IDENTIFIER = 0x00420094L;
+        /** Usage Limits; KMIPKIT-ELEM-TAG-420095; KMIPKIT-SRC-spec §11.56. */
+        public static final long USAGE_LIMITS = 0x00420095L;
+        /** Usage Limits Count; KMIPKIT-ELEM-TAG-420096; KMIPKIT-SRC-spec §11.56. */
+        public static final long USAGE_LIMITS_COUNT = 0x00420096L;
+        /** Usage Limits Total; KMIPKIT-ELEM-TAG-420097; KMIPKIT-SRC-spec §11.56. */
+        public static final long USAGE_LIMITS_TOTAL = 0x00420097L;
+        /** Usage Limits Unit; KMIPKIT-ELEM-TAG-420098; KMIPKIT-SRC-spec §11.56. */
+        public static final long USAGE_LIMITS_UNIT = 0x00420098L;
+        /** Username; KMIPKIT-ELEM-TAG-420099; KMIPKIT-SRC-spec §11.56. */
+        public static final long USERNAME = 0x00420099L;
+        /** Validity Date; KMIPKIT-ELEM-TAG-42009A; KMIPKIT-SRC-spec §11.56. */
+        public static final long VALIDITY_DATE = 0x0042009AL;
+        /** Validity Indicator; KMIPKIT-ELEM-TAG-42009B; KMIPKIT-SRC-spec §11.56. */
+        public static final long VALIDITY_INDICATOR = 0x0042009BL;
+        /** Vendor Extension; KMIPKIT-ELEM-TAG-42009C; KMIPKIT-SRC-spec §11.56. */
+        public static final long VENDOR_EXTENSION = 0x0042009CL;
+        /** Vendor Identification; KMIPKIT-ELEM-TAG-42009D; KMIPKIT-SRC-spec §11.56. */
+        public static final long VENDOR_IDENTIFICATION = 0x0042009DL;
+        /** Wrapping Method; KMIPKIT-ELEM-TAG-42009E; KMIPKIT-SRC-spec §11.56. */
+        public static final long WRAPPING_METHOD = 0x0042009EL;
+        /** X; KMIPKIT-ELEM-TAG-42009F; KMIPKIT-SRC-spec §11.56. */
+        public static final long X = 0x0042009FL;
+        /** Y; KMIPKIT-ELEM-TAG-4200A0; KMIPKIT-SRC-spec §11.56. */
+        public static final long Y = 0x004200A0L;
+        /** Password; KMIPKIT-ELEM-TAG-4200A1; KMIPKIT-SRC-spec §11.56. */
+        public static final long PASSWORD = 0x004200A1L;
+        /** Device Identifier; KMIPKIT-ELEM-TAG-4200A2; KMIPKIT-SRC-spec §11.56. */
+        public static final long DEVICE_IDENTIFIER = 0x004200A2L;
+        /** Encoding Option; KMIPKIT-ELEM-TAG-4200A3; KMIPKIT-SRC-spec §11.56. */
+        public static final long ENCODING_OPTION = 0x004200A3L;
+        /** Extension Information; KMIPKIT-ELEM-TAG-4200A4; KMIPKIT-SRC-spec §11.56. */
+        public static final long EXTENSION_INFORMATION = 0x004200A4L;
+        /** Extension Name; KMIPKIT-ELEM-TAG-4200A5; KMIPKIT-SRC-spec §11.56. */
+        public static final long EXTENSION_NAME = 0x004200A5L;
+        /** Extension Tag; KMIPKIT-ELEM-TAG-4200A6; KMIPKIT-SRC-spec §11.56. */
+        public static final long EXTENSION_TAG = 0x004200A6L;
+        /** Extension Type; KMIPKIT-ELEM-TAG-4200A7; KMIPKIT-SRC-spec §11.56. */
+        public static final long EXTENSION_TYPE = 0x004200A7L;
+        /** Fresh; KMIPKIT-ELEM-TAG-4200A8; KMIPKIT-SRC-spec §11.56. */
+        public static final long FRESH = 0x004200A8L;
+        /** Machine Identifier; KMIPKIT-ELEM-TAG-4200A9; KMIPKIT-SRC-spec §11.56. */
+        public static final long MACHINE_IDENTIFIER = 0x004200A9L;
+        /** Media Identifier; KMIPKIT-ELEM-TAG-4200AA; KMIPKIT-SRC-spec §11.56. */
+        public static final long MEDIA_IDENTIFIER = 0x004200AAL;
+        /** Network Identifier; KMIPKIT-ELEM-TAG-4200AB; KMIPKIT-SRC-spec §11.56. */
+        public static final long NETWORK_IDENTIFIER = 0x004200ABL;
+        /** Object Group Member; KMIPKIT-ELEM-TAG-4200AC; KMIPKIT-SRC-spec §11.56. */
+        public static final long OBJECT_GROUP_MEMBER = 0x004200ACL;
+        /** Certificate Length; KMIPKIT-ELEM-TAG-4200AD; KMIPKIT-SRC-spec §11.56. */
+        public static final long CERTIFICATE_LENGTH = 0x004200ADL;
+        /** Digital Signature Algorithm; KMIPKIT-ELEM-TAG-4200AE; KMIPKIT-SRC-spec §11.56. */
+        public static final long DIGITAL_SIGNATURE_ALGORITHM = 0x004200AEL;
+        /** Certificate Serial Number; KMIPKIT-ELEM-TAG-4200AF; KMIPKIT-SRC-spec §11.56. */
+        public static final long CERTIFICATE_SERIAL_NUMBER = 0x004200AFL;
+        /** Device Serial Number; KMIPKIT-ELEM-TAG-4200B0; KMIPKIT-SRC-spec §11.56. */
+        public static final long DEVICE_SERIAL_NUMBER = 0x004200B0L;
+        /** Issuer Alternative Name; KMIPKIT-ELEM-TAG-4200B1; KMIPKIT-SRC-spec §11.56. */
+        public static final long ISSUER_ALTERNATIVE_NAME = 0x004200B1L;
+        /** Issuer Distinguished Name; KMIPKIT-ELEM-TAG-4200B2; KMIPKIT-SRC-spec §11.56. */
+        public static final long ISSUER_DISTINGUISHED_NAME = 0x004200B2L;
+        /** Subject Alternative Name; KMIPKIT-ELEM-TAG-4200B3; KMIPKIT-SRC-spec §11.56. */
+        public static final long SUBJECT_ALTERNATIVE_NAME = 0x004200B3L;
+        /** Subject Distinguished Name; KMIPKIT-ELEM-TAG-4200B4; KMIPKIT-SRC-spec §11.56. */
+        public static final long SUBJECT_DISTINGUISHED_NAME = 0x004200B4L;
+        /** X.509 Certificate Identifier; KMIPKIT-ELEM-TAG-4200B5; KMIPKIT-SRC-spec §11.56. */
+        public static final long X_509_CERTIFICATE_IDENTIFIER = 0x004200B5L;
+        /** X.509 Certificate Issuer; KMIPKIT-ELEM-TAG-4200B6; KMIPKIT-SRC-spec §11.56. */
+        public static final long X_509_CERTIFICATE_ISSUER = 0x004200B6L;
+        /** X.509 Certificate Subject; KMIPKIT-ELEM-TAG-4200B7; KMIPKIT-SRC-spec §11.56. */
+        public static final long X_509_CERTIFICATE_SUBJECT = 0x004200B7L;
+        /** Key Value Location; KMIPKIT-ELEM-TAG-4200B8; KMIPKIT-SRC-spec §11.56. */
+        public static final long KEY_VALUE_LOCATION = 0x004200B8L;
+        /** Key Value Location Value; KMIPKIT-ELEM-TAG-4200B9; KMIPKIT-SRC-spec §11.56. */
+        public static final long KEY_VALUE_LOCATION_VALUE = 0x004200B9L;
+        /** Key Value Location Type; KMIPKIT-ELEM-TAG-4200BA; KMIPKIT-SRC-spec §11.56. */
+        public static final long KEY_VALUE_LOCATION_TYPE = 0x004200BAL;
+        /** Key Value Present; KMIPKIT-ELEM-TAG-4200BB; KMIPKIT-SRC-spec §11.56. */
+        public static final long KEY_VALUE_PRESENT = 0x004200BBL;
+        /** Original Creation Date; KMIPKIT-ELEM-TAG-4200BC; KMIPKIT-SRC-spec §11.56. */
+        public static final long ORIGINAL_CREATION_DATE = 0x004200BCL;
+        /** PGP Key; KMIPKIT-ELEM-TAG-4200BD; KMIPKIT-SRC-spec §11.56. */
+        public static final long PGP_KEY = 0x004200BDL;
+        /** PGP Key Version; KMIPKIT-ELEM-TAG-4200BE; KMIPKIT-SRC-spec §11.56. */
+        public static final long PGP_KEY_VERSION = 0x004200BEL;
+        /** Alternative Name; KMIPKIT-ELEM-TAG-4200BF; KMIPKIT-SRC-spec §11.56. */
+        public static final long ALTERNATIVE_NAME = 0x004200BFL;
+        /** Alternative Name Value; KMIPKIT-ELEM-TAG-4200C0; KMIPKIT-SRC-spec §11.56. */
+        public static final long ALTERNATIVE_NAME_VALUE = 0x004200C0L;
+        /** Alternative Name Type; KMIPKIT-ELEM-TAG-4200C1; KMIPKIT-SRC-spec §11.56. */
+        public static final long ALTERNATIVE_NAME_TYPE = 0x004200C1L;
+        /** Data; KMIPKIT-ELEM-TAG-4200C2; KMIPKIT-SRC-spec §11.56. */
+        public static final long DATA = 0x004200C2L;
+        /** Signature Data; KMIPKIT-ELEM-TAG-4200C3; KMIPKIT-SRC-spec §11.56. */
+        public static final long SIGNATURE_DATA = 0x004200C3L;
+        /** Data Length; KMIPKIT-ELEM-TAG-4200C4; KMIPKIT-SRC-spec §11.56. */
+        public static final long DATA_LENGTH = 0x004200C4L;
+        /** Random IV; KMIPKIT-ELEM-TAG-4200C5; KMIPKIT-SRC-spec §11.56. */
+        public static final long RANDOM_IV = 0x004200C5L;
+        /** MAC Data; KMIPKIT-ELEM-TAG-4200C6; KMIPKIT-SRC-spec §11.56. */
+        public static final long MAC_DATA = 0x004200C6L;
+        /** Attestation Type; KMIPKIT-ELEM-TAG-4200C7; KMIPKIT-SRC-spec §11.56. */
+        public static final long ATTESTATION_TYPE = 0x004200C7L;
+        /** Nonce; KMIPKIT-ELEM-TAG-4200C8; KMIPKIT-SRC-spec §11.56. */
+        public static final long NONCE = 0x004200C8L;
+        /** Nonce ID; KMIPKIT-ELEM-TAG-4200C9; KMIPKIT-SRC-spec §11.56. */
+        public static final long NONCE_ID = 0x004200C9L;
+        /** Nonce Value; KMIPKIT-ELEM-TAG-4200CA; KMIPKIT-SRC-spec §11.56. */
+        public static final long NONCE_VALUE = 0x004200CAL;
+        /** Attestation Measurement; KMIPKIT-ELEM-TAG-4200CB; KMIPKIT-SRC-spec §11.56. */
+        public static final long ATTESTATION_MEASUREMENT = 0x004200CBL;
+        /** Attestation Assertion; KMIPKIT-ELEM-TAG-4200CC; KMIPKIT-SRC-spec §11.56. */
+        public static final long ATTESTATION_ASSERTION = 0x004200CCL;
+        /** IV Length; KMIPKIT-ELEM-TAG-4200CD; KMIPKIT-SRC-spec §11.56. */
+        public static final long IV_LENGTH = 0x004200CDL;
+        /** Tag Length; KMIPKIT-ELEM-TAG-4200CE; KMIPKIT-SRC-spec §11.56. */
+        public static final long TAG_LENGTH = 0x004200CEL;
+        /** Fixed Field Length; KMIPKIT-ELEM-TAG-4200CF; KMIPKIT-SRC-spec §11.56. */
+        public static final long FIXED_FIELD_LENGTH = 0x004200CFL;
+        /** Counter Length; KMIPKIT-ELEM-TAG-4200D0; KMIPKIT-SRC-spec §11.56. */
+        public static final long COUNTER_LENGTH = 0x004200D0L;
+        /** Initial Counter Value; KMIPKIT-ELEM-TAG-4200D1; KMIPKIT-SRC-spec §11.56. */
+        public static final long INITIAL_COUNTER_VALUE = 0x004200D1L;
+        /** Invocation Field Length; KMIPKIT-ELEM-TAG-4200D2; KMIPKIT-SRC-spec §11.56. */
+        public static final long INVOCATION_FIELD_LENGTH = 0x004200D2L;
+        /** Attestation Capable Indicator; KMIPKIT-ELEM-TAG-4200D3; KMIPKIT-SRC-spec §11.56. */
+        public static final long ATTESTATION_CAPABLE_INDICATOR = 0x004200D3L;
+        /** Offset Items; KMIPKIT-ELEM-TAG-4200D4; KMIPKIT-SRC-spec §11.56. */
+        public static final long OFFSET_ITEMS = 0x004200D4L;
+        /** Located Items; KMIPKIT-ELEM-TAG-4200D5; KMIPKIT-SRC-spec §11.56. */
+        public static final long LOCATED_ITEMS = 0x004200D5L;
+        /** Correlation Value; KMIPKIT-ELEM-TAG-4200D6; KMIPKIT-SRC-spec §11.56. */
+        public static final long CORRELATION_VALUE = 0x004200D6L;
+        /** Init Indicator; KMIPKIT-ELEM-TAG-4200D7; KMIPKIT-SRC-spec §11.56. */
+        public static final long INIT_INDICATOR = 0x004200D7L;
+        /** Final Indicator; KMIPKIT-ELEM-TAG-4200D8; KMIPKIT-SRC-spec §11.56. */
+        public static final long FINAL_INDICATOR = 0x004200D8L;
+        /** RNG Parameters; KMIPKIT-ELEM-TAG-4200D9; KMIPKIT-SRC-spec §11.56. */
+        public static final long RNG_PARAMETERS = 0x004200D9L;
+        /** RNG Algorithm; KMIPKIT-ELEM-TAG-4200DA; KMIPKIT-SRC-spec §11.56. */
+        public static final long RNG_ALGORITHM = 0x004200DAL;
+        /** DRBG Algorithm; KMIPKIT-ELEM-TAG-4200DB; KMIPKIT-SRC-spec §11.56. */
+        public static final long DRBG_ALGORITHM = 0x004200DBL;
+        /** FIPS186 Variation; KMIPKIT-ELEM-TAG-4200DC; KMIPKIT-SRC-spec §11.56. */
+        public static final long FIPS186_VARIATION = 0x004200DCL;
+        /** Prediction Resistance; KMIPKIT-ELEM-TAG-4200DD; KMIPKIT-SRC-spec §11.56. */
+        public static final long PREDICTION_RESISTANCE = 0x004200DDL;
+        /** Random Number Generator; KMIPKIT-ELEM-TAG-4200DE; KMIPKIT-SRC-spec §11.56. */
+        public static final long RANDOM_NUMBER_GENERATOR = 0x004200DEL;
+        /** Validation Information; KMIPKIT-ELEM-TAG-4200DF; KMIPKIT-SRC-spec §11.56. */
+        public static final long VALIDATION_INFORMATION = 0x004200DFL;
+        /** Validation Authority Type; KMIPKIT-ELEM-TAG-4200E0; KMIPKIT-SRC-spec §11.56. */
+        public static final long VALIDATION_AUTHORITY_TYPE = 0x004200E0L;
+        /** Validation Authority Country; KMIPKIT-ELEM-TAG-4200E1; KMIPKIT-SRC-spec §11.56. */
+        public static final long VALIDATION_AUTHORITY_COUNTRY = 0x004200E1L;
+        /** Validation Authority URI; KMIPKIT-ELEM-TAG-4200E2; KMIPKIT-SRC-spec §11.56. */
+        public static final long VALIDATION_AUTHORITY_URI = 0x004200E2L;
+        /** Validation Version Major; KMIPKIT-ELEM-TAG-4200E3; KMIPKIT-SRC-spec §11.56. */
+        public static final long VALIDATION_VERSION_MAJOR = 0x004200E3L;
+        /** Validation Version Minor; KMIPKIT-ELEM-TAG-4200E4; KMIPKIT-SRC-spec §11.56. */
+        public static final long VALIDATION_VERSION_MINOR = 0x004200E4L;
+        /** Validation Type; KMIPKIT-ELEM-TAG-4200E5; KMIPKIT-SRC-spec §11.56. */
+        public static final long VALIDATION_TYPE = 0x004200E5L;
+        /** Validation Level; KMIPKIT-ELEM-TAG-4200E6; KMIPKIT-SRC-spec §11.56. */
+        public static final long VALIDATION_LEVEL = 0x004200E6L;
+        /** Validation Certificate Identifier; KMIPKIT-ELEM-TAG-4200E7; KMIPKIT-SRC-spec §11.56. */
+        public static final long VALIDATION_CERTIFICATE_IDENTIFIER = 0x004200E7L;
+        /** Validation Certificate URI; KMIPKIT-ELEM-TAG-4200E8; KMIPKIT-SRC-spec §11.56. */
+        public static final long VALIDATION_CERTIFICATE_URI = 0x004200E8L;
+        /** Validation Vendor URI; KMIPKIT-ELEM-TAG-4200E9; KMIPKIT-SRC-spec §11.56. */
+        public static final long VALIDATION_VENDOR_URI = 0x004200E9L;
+        /** Validation Profile; KMIPKIT-ELEM-TAG-4200EA; KMIPKIT-SRC-spec §11.56. */
+        public static final long VALIDATION_PROFILE = 0x004200EAL;
+        /** Profile Information; KMIPKIT-ELEM-TAG-4200EB; KMIPKIT-SRC-spec §11.56. */
+        public static final long PROFILE_INFORMATION = 0x004200EBL;
+        /** Profile Name; KMIPKIT-ELEM-TAG-4200EC; KMIPKIT-SRC-spec §11.56. */
+        public static final long PROFILE_NAME = 0x004200ECL;
+        /** Server URI; KMIPKIT-ELEM-TAG-4200ED; KMIPKIT-SRC-spec §11.56. */
+        public static final long SERVER_URI = 0x004200EDL;
+        /** Server Port; KMIPKIT-ELEM-TAG-4200EE; KMIPKIT-SRC-spec §11.56. */
+        public static final long SERVER_PORT = 0x004200EEL;
+        /** Streaming Capability; KMIPKIT-ELEM-TAG-4200EF; KMIPKIT-SRC-spec §11.56. */
+        public static final long STREAMING_CAPABILITY = 0x004200EFL;
+        /** Asynchronous Capability; KMIPKIT-ELEM-TAG-4200F0; KMIPKIT-SRC-spec §11.56. */
+        public static final long ASYNCHRONOUS_CAPABILITY = 0x004200F0L;
+        /** Attestation Capability; KMIPKIT-ELEM-TAG-4200F1; KMIPKIT-SRC-spec §11.56. */
+        public static final long ATTESTATION_CAPABILITY = 0x004200F1L;
+        /** Unwrap Mode; KMIPKIT-ELEM-TAG-4200F2; KMIPKIT-SRC-spec §11.56. */
+        public static final long UNWRAP_MODE = 0x004200F2L;
+        /** Destroy Action; KMIPKIT-ELEM-TAG-4200F3; KMIPKIT-SRC-spec §11.56. */
+        public static final long DESTROY_ACTION = 0x004200F3L;
+        /** Shredding Algorithm; KMIPKIT-ELEM-TAG-4200F4; KMIPKIT-SRC-spec §11.56. */
+        public static final long SHREDDING_ALGORITHM = 0x004200F4L;
+        /** RNG Mode; KMIPKIT-ELEM-TAG-4200F5; KMIPKIT-SRC-spec §11.56. */
+        public static final long RNG_MODE = 0x004200F5L;
+        /** Client Registration Method; KMIPKIT-ELEM-TAG-4200F6; KMIPKIT-SRC-spec §11.56. */
+        public static final long CLIENT_REGISTRATION_METHOD = 0x004200F6L;
+        /** Capability Information; KMIPKIT-ELEM-TAG-4200F7; KMIPKIT-SRC-spec §11.56. */
+        public static final long CAPABILITY_INFORMATION = 0x004200F7L;
+        /** Key Wrap Type; KMIPKIT-ELEM-TAG-4200F8; KMIPKIT-SRC-spec §11.56. */
+        public static final long KEY_WRAP_TYPE = 0x004200F8L;
+        /** Batch Undo Capability; KMIPKIT-ELEM-TAG-4200F9; KMIPKIT-SRC-spec §11.56. */
+        public static final long BATCH_UNDO_CAPABILITY = 0x004200F9L;
+        /** Batch Continue Capability; KMIPKIT-ELEM-TAG-4200FA; KMIPKIT-SRC-spec §11.56. */
+        public static final long BATCH_CONTINUE_CAPABILITY = 0x004200FAL;
+        /** PKCS#12 Friendly Name; KMIPKIT-ELEM-TAG-4200FB; KMIPKIT-SRC-spec §11.56. */
+        public static final long PKCS_12_FRIENDLY_NAME = 0x004200FBL;
+        /** Description; KMIPKIT-ELEM-TAG-4200FC; KMIPKIT-SRC-spec §11.56. */
+        public static final long DESCRIPTION = 0x004200FCL;
+        /** Comment; KMIPKIT-ELEM-TAG-4200FD; KMIPKIT-SRC-spec §11.56. */
+        public static final long COMMENT = 0x004200FDL;
+        /** Authenticated Encryption Additional Data; KMIPKIT-ELEM-TAG-4200FE; KMIPKIT-SRC-spec §11.56. */
+        public static final long AUTHENTICATED_ENCRYPTION_ADDITIONAL_DATA = 0x004200FEL;
+        /** Authenticated Encryption Tag; KMIPKIT-ELEM-TAG-4200FF; KMIPKIT-SRC-spec §11.56. */
+        public static final long AUTHENTICATED_ENCRYPTION_TAG = 0x004200FFL;
+        /** Salt Length; KMIPKIT-ELEM-TAG-420100; KMIPKIT-SRC-spec §11.56. */
+        public static final long SALT_LENGTH = 0x00420100L;
+        /** Mask Generator; KMIPKIT-ELEM-TAG-420101; KMIPKIT-SRC-spec §11.56. */
+        public static final long MASK_GENERATOR = 0x00420101L;
+        /** Mask Generator Hashing Algorithm; KMIPKIT-ELEM-TAG-420102; KMIPKIT-SRC-spec §11.56. */
+        public static final long MASK_GENERATOR_HASHING_ALGORITHM = 0x00420102L;
+        /** P Source; KMIPKIT-ELEM-TAG-420103; KMIPKIT-SRC-spec §11.56. */
+        public static final long P_SOURCE = 0x00420103L;
+        /** Trailer Field; KMIPKIT-ELEM-TAG-420104; KMIPKIT-SRC-spec §11.56. */
+        public static final long TRAILER_FIELD = 0x00420104L;
+        /** Client Correlation Value; KMIPKIT-ELEM-TAG-420105; KMIPKIT-SRC-spec §11.56. */
+        public static final long CLIENT_CORRELATION_VALUE = 0x00420105L;
+        /** Server Correlation Value; KMIPKIT-ELEM-TAG-420106; KMIPKIT-SRC-spec §11.56. */
+        public static final long SERVER_CORRELATION_VALUE = 0x00420106L;
+        /** Digested Data; KMIPKIT-ELEM-TAG-420107; KMIPKIT-SRC-spec §11.56. */
+        public static final long DIGESTED_DATA = 0x00420107L;
+        /** Certificate Subject CN; KMIPKIT-ELEM-TAG-420108; KMIPKIT-SRC-spec §11.56. */
+        public static final long CERTIFICATE_SUBJECT_CN = 0x00420108L;
+        /** Certificate Subject O; KMIPKIT-ELEM-TAG-420109; KMIPKIT-SRC-spec §11.56. */
+        public static final long CERTIFICATE_SUBJECT_O = 0x00420109L;
+        /** Certificate Subject OU; KMIPKIT-ELEM-TAG-42010A; KMIPKIT-SRC-spec §11.56. */
+        public static final long CERTIFICATE_SUBJECT_OU = 0x0042010AL;
+        /** Certificate Subject Email; KMIPKIT-ELEM-TAG-42010B; KMIPKIT-SRC-spec §11.56. */
+        public static final long CERTIFICATE_SUBJECT_EMAIL = 0x0042010BL;
+        /** Certificate Subject C; KMIPKIT-ELEM-TAG-42010C; KMIPKIT-SRC-spec §11.56. */
+        public static final long CERTIFICATE_SUBJECT_C = 0x0042010CL;
+        /** Certificate Subject ST; KMIPKIT-ELEM-TAG-42010D; KMIPKIT-SRC-spec §11.56. */
+        public static final long CERTIFICATE_SUBJECT_ST = 0x0042010DL;
+        /** Certificate Subject L; KMIPKIT-ELEM-TAG-42010E; KMIPKIT-SRC-spec §11.56. */
+        public static final long CERTIFICATE_SUBJECT_L = 0x0042010EL;
+        /** Certificate Subject UID; KMIPKIT-ELEM-TAG-42010F; KMIPKIT-SRC-spec §11.56. */
+        public static final long CERTIFICATE_SUBJECT_UID = 0x0042010FL;
+        /** Certificate Subject Serial Number; KMIPKIT-ELEM-TAG-420110; KMIPKIT-SRC-spec §11.56. */
+        public static final long CERTIFICATE_SUBJECT_SERIAL_NUMBER = 0x00420110L;
+        /** Certificate Subject Title; KMIPKIT-ELEM-TAG-420111; KMIPKIT-SRC-spec §11.56. */
+        public static final long CERTIFICATE_SUBJECT_TITLE = 0x00420111L;
+        /** Certificate Subject DC; KMIPKIT-ELEM-TAG-420112; KMIPKIT-SRC-spec §11.56. */
+        public static final long CERTIFICATE_SUBJECT_DC = 0x00420112L;
+        /** Certificate Subject DN Qualifier; KMIPKIT-ELEM-TAG-420113; KMIPKIT-SRC-spec §11.56. */
+        public static final long CERTIFICATE_SUBJECT_DN_QUALIFIER = 0x00420113L;
+        /** Certificate Issuer CN; KMIPKIT-ELEM-TAG-420114; KMIPKIT-SRC-spec §11.56. */
+        public static final long CERTIFICATE_ISSUER_CN = 0x00420114L;
+        /** Certificate Issuer O; KMIPKIT-ELEM-TAG-420115; KMIPKIT-SRC-spec §11.56. */
+        public static final long CERTIFICATE_ISSUER_O = 0x00420115L;
+        /** Certificate Issuer OU; KMIPKIT-ELEM-TAG-420116; KMIPKIT-SRC-spec §11.56. */
+        public static final long CERTIFICATE_ISSUER_OU = 0x00420116L;
+        /** Certificate Issuer Email; KMIPKIT-ELEM-TAG-420117; KMIPKIT-SRC-spec §11.56. */
+        public static final long CERTIFICATE_ISSUER_EMAIL = 0x00420117L;
+        /** Certificate Issuer C; KMIPKIT-ELEM-TAG-420118; KMIPKIT-SRC-spec §11.56. */
+        public static final long CERTIFICATE_ISSUER_C = 0x00420118L;
+        /** Certificate Issuer ST; KMIPKIT-ELEM-TAG-420119; KMIPKIT-SRC-spec §11.56. */
+        public static final long CERTIFICATE_ISSUER_ST = 0x00420119L;
+        /** Certificate Issuer L; KMIPKIT-ELEM-TAG-42011A; KMIPKIT-SRC-spec §11.56. */
+        public static final long CERTIFICATE_ISSUER_L = 0x0042011AL;
+        /** Certificate Issuer UID; KMIPKIT-ELEM-TAG-42011B; KMIPKIT-SRC-spec §11.56. */
+        public static final long CERTIFICATE_ISSUER_UID = 0x0042011BL;
+        /** Certificate Issuer Serial Number; KMIPKIT-ELEM-TAG-42011C; KMIPKIT-SRC-spec §11.56. */
+        public static final long CERTIFICATE_ISSUER_SERIAL_NUMBER = 0x0042011CL;
+        /** Certificate Issuer Title; KMIPKIT-ELEM-TAG-42011D; KMIPKIT-SRC-spec §11.56. */
+        public static final long CERTIFICATE_ISSUER_TITLE = 0x0042011DL;
+        /** Certificate Issuer DC; KMIPKIT-ELEM-TAG-42011E; KMIPKIT-SRC-spec §11.56. */
+        public static final long CERTIFICATE_ISSUER_DC = 0x0042011EL;
+        /** Certificate Issuer DN Qualifier; KMIPKIT-ELEM-TAG-42011F; KMIPKIT-SRC-spec §11.56. */
+        public static final long CERTIFICATE_ISSUER_DN_QUALIFIER = 0x0042011FL;
+        /** Sensitive; KMIPKIT-ELEM-TAG-420120; KMIPKIT-SRC-spec §11.56. */
+        public static final long SENSITIVE = 0x00420120L;
+        /** Always Sensitive; KMIPKIT-ELEM-TAG-420121; KMIPKIT-SRC-spec §11.56. */
+        public static final long ALWAYS_SENSITIVE = 0x00420121L;
+        /** Extractable; KMIPKIT-ELEM-TAG-420122; KMIPKIT-SRC-spec §11.56. */
+        public static final long EXTRACTABLE = 0x00420122L;
+        /** Never Extractable; KMIPKIT-ELEM-TAG-420123; KMIPKIT-SRC-spec §11.56. */
+        public static final long NEVER_EXTRACTABLE = 0x00420123L;
+        /** Replace Existing; KMIPKIT-ELEM-TAG-420124; KMIPKIT-SRC-spec §11.56. */
+        public static final long REPLACE_EXISTING = 0x00420124L;
+        /** Attributes; KMIPKIT-ELEM-TAG-420125; KMIPKIT-SRC-spec §11.56. */
+        public static final long ATTRIBUTES = 0x00420125L;
+        /** Common Attributes; KMIPKIT-ELEM-TAG-420126; KMIPKIT-SRC-spec §11.56. */
+        public static final long COMMON_ATTRIBUTES = 0x00420126L;
+        /** Private Key Attributes; KMIPKIT-ELEM-TAG-420127; KMIPKIT-SRC-spec §11.56. */
+        public static final long PRIVATE_KEY_ATTRIBUTES = 0x00420127L;
+        /** Public Key Attributes; KMIPKIT-ELEM-TAG-420128; KMIPKIT-SRC-spec §11.56. */
+        public static final long PUBLIC_KEY_ATTRIBUTES = 0x00420128L;
+        /** Extension Enumeration; KMIPKIT-ELEM-TAG-420129; KMIPKIT-SRC-spec §11.56. */
+        public static final long EXTENSION_ENUMERATION = 0x00420129L;
+        /** Extension Attribute; KMIPKIT-ELEM-TAG-42012A; KMIPKIT-SRC-spec §11.56. */
+        public static final long EXTENSION_ATTRIBUTE = 0x0042012AL;
+        /** Extension Parent Structure Tag; KMIPKIT-ELEM-TAG-42012B; KMIPKIT-SRC-spec §11.56. */
+        public static final long EXTENSION_PARENT_STRUCTURE_TAG = 0x0042012BL;
+        /** Extension Description; KMIPKIT-ELEM-TAG-42012C; KMIPKIT-SRC-spec §11.56. */
+        public static final long EXTENSION_DESCRIPTION = 0x0042012CL;
+        /** Server Name; KMIPKIT-ELEM-TAG-42012D; KMIPKIT-SRC-spec §11.56. */
+        public static final long SERVER_NAME = 0x0042012DL;
+        /** Server Serial Number; KMIPKIT-ELEM-TAG-42012E; KMIPKIT-SRC-spec §11.56. */
+        public static final long SERVER_SERIAL_NUMBER = 0x0042012EL;
+        /** Server Version; KMIPKIT-ELEM-TAG-42012F; KMIPKIT-SRC-spec §11.56. */
+        public static final long SERVER_VERSION = 0x0042012FL;
+        /** Server Load; KMIPKIT-ELEM-TAG-420130; KMIPKIT-SRC-spec §11.56. */
+        public static final long SERVER_LOAD = 0x00420130L;
+        /** Product Name; KMIPKIT-ELEM-TAG-420131; KMIPKIT-SRC-spec §11.56. */
+        public static final long PRODUCT_NAME = 0x00420131L;
+        /** Build Level; KMIPKIT-ELEM-TAG-420132; KMIPKIT-SRC-spec §11.56. */
+        public static final long BUILD_LEVEL = 0x00420132L;
+        /** Build Date; KMIPKIT-ELEM-TAG-420133; KMIPKIT-SRC-spec §11.56. */
+        public static final long BUILD_DATE = 0x00420133L;
+        /** Cluster Info; KMIPKIT-ELEM-TAG-420134; KMIPKIT-SRC-spec §11.56. */
+        public static final long CLUSTER_INFO = 0x00420134L;
+        /** Alternate Failover Endpoints; KMIPKIT-ELEM-TAG-420135; KMIPKIT-SRC-spec §11.56. */
+        public static final long ALTERNATE_FAILOVER_ENDPOINTS = 0x00420135L;
+        /** Short Unique Identifier; KMIPKIT-ELEM-TAG-420136; KMIPKIT-SRC-spec §11.56. */
+        public static final long SHORT_UNIQUE_IDENTIFIER = 0x00420136L;
+        /** Tag; KMIPKIT-ELEM-TAG-420138; KMIPKIT-SRC-spec §11.56. */
+        public static final long TAG = 0x00420138L;
+        /** Certificate Request Unique Identifier; KMIPKIT-ELEM-TAG-420139; KMIPKIT-SRC-spec §11.56. */
+        public static final long CERTIFICATE_REQUEST_UNIQUE_IDENTIFIER = 0x00420139L;
+        /** NIST Key Type; KMIPKIT-ELEM-TAG-42013A; KMIPKIT-SRC-spec §11.56. */
+        public static final long NIST_KEY_TYPE = 0x0042013AL;
+        /** Attribute Reference; KMIPKIT-ELEM-TAG-42013B; KMIPKIT-SRC-spec §11.56. */
+        public static final long ATTRIBUTE_REFERENCE = 0x0042013BL;
+        /** Current Attribute; KMIPKIT-ELEM-TAG-42013C; KMIPKIT-SRC-spec §11.56. */
+        public static final long CURRENT_ATTRIBUTE = 0x0042013CL;
+        /** New Attribute; KMIPKIT-ELEM-TAG-42013D; KMIPKIT-SRC-spec §11.56. */
+        public static final long NEW_ATTRIBUTE = 0x0042013DL;
+        /** Certificate Request Value; KMIPKIT-ELEM-TAG-420140; KMIPKIT-SRC-spec §11.56. */
+        public static final long CERTIFICATE_REQUEST_VALUE = 0x00420140L;
+        /** Log Message; KMIPKIT-ELEM-TAG-420141; KMIPKIT-SRC-spec §11.56. */
+        public static final long LOG_MESSAGE = 0x00420141L;
+        /** Profile Version; KMIPKIT-ELEM-TAG-420142; KMIPKIT-SRC-spec §11.56. */
+        public static final long PROFILE_VERSION = 0x00420142L;
+        /** Profile Version Major; KMIPKIT-ELEM-TAG-420143; KMIPKIT-SRC-spec §11.56. */
+        public static final long PROFILE_VERSION_MAJOR = 0x00420143L;
+        /** Profile Version Minor; KMIPKIT-ELEM-TAG-420144; KMIPKIT-SRC-spec §11.56. */
+        public static final long PROFILE_VERSION_MINOR = 0x00420144L;
+        /** Protection Level; KMIPKIT-ELEM-TAG-420145; KMIPKIT-SRC-spec §11.56. */
+        public static final long PROTECTION_LEVEL = 0x00420145L;
+        /** Protection Period; KMIPKIT-ELEM-TAG-420146; KMIPKIT-SRC-spec §11.56. */
+        public static final long PROTECTION_PERIOD = 0x00420146L;
+        /** Quantum Safe; KMIPKIT-ELEM-TAG-420147; KMIPKIT-SRC-spec §11.56. */
+        public static final long QUANTUM_SAFE = 0x00420147L;
+        /** Quantum Safe Capability; KMIPKIT-ELEM-TAG-420148; KMIPKIT-SRC-spec §11.56. */
+        public static final long QUANTUM_SAFE_CAPABILITY = 0x00420148L;
+        /** Ticket; KMIPKIT-ELEM-TAG-420149; KMIPKIT-SRC-spec §11.56. */
+        public static final long TICKET = 0x00420149L;
+        /** Ticket Type; KMIPKIT-ELEM-TAG-42014A; KMIPKIT-SRC-spec §11.56. */
+        public static final long TICKET_TYPE = 0x0042014AL;
+        /** Ticket Value; KMIPKIT-ELEM-TAG-42014B; KMIPKIT-SRC-spec §11.56. */
+        public static final long TICKET_VALUE = 0x0042014BL;
+        /** Request Count; KMIPKIT-ELEM-TAG-42014C; KMIPKIT-SRC-spec §11.56. */
+        public static final long REQUEST_COUNT = 0x0042014CL;
+        /** Rights; KMIPKIT-ELEM-TAG-42014D; KMIPKIT-SRC-spec §11.56. */
+        public static final long RIGHTS = 0x0042014DL;
+        /** Objects; KMIPKIT-ELEM-TAG-42014E; KMIPKIT-SRC-spec §11.56. */
+        public static final long OBJECTS = 0x0042014EL;
+        /** Operations; KMIPKIT-ELEM-TAG-42014F; KMIPKIT-SRC-spec §11.56. */
+        public static final long OPERATIONS = 0x0042014FL;
+        /** Right; KMIPKIT-ELEM-TAG-420150; KMIPKIT-SRC-spec §11.56. */
+        public static final long RIGHT = 0x00420150L;
+        /** Endpoint Role; KMIPKIT-ELEM-TAG-420151; KMIPKIT-SRC-spec §11.56. */
+        public static final long ENDPOINT_ROLE = 0x00420151L;
+        /** Defaults Information; KMIPKIT-ELEM-TAG-420152; KMIPKIT-SRC-spec §11.56. */
+        public static final long DEFAULTS_INFORMATION = 0x00420152L;
+        /** Object Defaults; KMIPKIT-ELEM-TAG-420153; KMIPKIT-SRC-spec §11.56. */
+        public static final long OBJECT_DEFAULTS = 0x00420153L;
+        /** Ephemeral; KMIPKIT-ELEM-TAG-420154; KMIPKIT-SRC-spec §11.56. */
+        public static final long EPHEMERAL = 0x00420154L;
+        /** Server Hashed Password; KMIPKIT-ELEM-TAG-420155; KMIPKIT-SRC-spec §11.56. */
+        public static final long SERVER_HASHED_PASSWORD = 0x00420155L;
+        /** One Time Password; KMIPKIT-ELEM-TAG-420156; KMIPKIT-SRC-spec §11.56. */
+        public static final long ONE_TIME_PASSWORD = 0x00420156L;
+        /** Hashed Password; KMIPKIT-ELEM-TAG-420157; KMIPKIT-SRC-spec §11.56. */
+        public static final long HASHED_PASSWORD = 0x00420157L;
+        /** Adjustment Type; KMIPKIT-ELEM-TAG-420158; KMIPKIT-SRC-spec §11.56. */
+        public static final long ADJUSTMENT_TYPE = 0x00420158L;
+        /** PKCS#11 Interface; KMIPKIT-ELEM-TAG-420159; KMIPKIT-SRC-spec §11.56. */
+        public static final long PKCS_11_INTERFACE = 0x00420159L;
+        /** PKCS#11 Function; KMIPKIT-ELEM-TAG-42015A; KMIPKIT-SRC-spec §11.56. */
+        public static final long PKCS_11_FUNCTION = 0x0042015AL;
+        /** PKCS#11 Input Parameters; KMIPKIT-ELEM-TAG-42015B; KMIPKIT-SRC-spec §11.56. */
+        public static final long PKCS_11_INPUT_PARAMETERS = 0x0042015BL;
+        /** PKCS#11 Output Parameters; KMIPKIT-ELEM-TAG-42015C; KMIPKIT-SRC-spec §11.56. */
+        public static final long PKCS_11_OUTPUT_PARAMETERS = 0x0042015CL;
+        /** PKCS#11 Return Code; KMIPKIT-ELEM-TAG-42015D; KMIPKIT-SRC-spec §11.56. */
+        public static final long PKCS_11_RETURN_CODE = 0x0042015DL;
+        /** Protection Storage Mask; KMIPKIT-ELEM-TAG-42015E; KMIPKIT-SRC-spec §11.56. */
+        public static final long PROTECTION_STORAGE_MASK = 0x0042015EL;
+        /** Protection Storage Masks; KMIPKIT-ELEM-TAG-42015F; KMIPKIT-SRC-spec §11.56. */
+        public static final long PROTECTION_STORAGE_MASKS = 0x0042015FL;
+        /** Interop Function; KMIPKIT-ELEM-TAG-420160; KMIPKIT-SRC-spec §11.56. */
+        public static final long INTEROP_FUNCTION = 0x00420160L;
+        /** Interop Identifier; KMIPKIT-ELEM-TAG-420161; KMIPKIT-SRC-spec §11.56. */
+        public static final long INTEROP_IDENTIFIER = 0x00420161L;
+        /** Adjustment Value; KMIPKIT-ELEM-TAG-420162; KMIPKIT-SRC-spec §11.56. */
+        public static final long ADJUSTMENT_VALUE = 0x00420162L;
+        /** Common Protection Storage Masks; KMIPKIT-ELEM-TAG-420163; KMIPKIT-SRC-spec §11.56. */
+        public static final long COMMON_PROTECTION_STORAGE_MASKS = 0x00420163L;
+        /** Private Protection Storage Masks; KMIPKIT-ELEM-TAG-420164; KMIPKIT-SRC-spec §11.56. */
+        public static final long PRIVATE_PROTECTION_STORAGE_MASKS = 0x00420164L;
+        /** Public Protection Storage Masks; KMIPKIT-ELEM-TAG-420165; KMIPKIT-SRC-spec §11.56. */
+        public static final long PUBLIC_PROTECTION_STORAGE_MASKS = 0x00420165L;
+        /** Object Groups; KMIPKIT-ELEM-TAG-420166; KMIPKIT-SRC-spec §11.56. */
+        public static final long OBJECT_GROUPS = 0x00420166L;
+        /** Object Types; KMIPKIT-ELEM-TAG-420167; KMIPKIT-SRC-spec §11.56. */
+        public static final long OBJECT_TYPES = 0x00420167L;
+        /** Constraints; KMIPKIT-ELEM-TAG-420168; KMIPKIT-SRC-spec §11.56. */
+        public static final long CONSTRAINTS = 0x00420168L;
+        /** Constraint; KMIPKIT-ELEM-TAG-420169; KMIPKIT-SRC-spec §11.56. */
+        public static final long CONSTRAINT = 0x00420169L;
+        /** Rotate Interval; KMIPKIT-ELEM-TAG-42016A; KMIPKIT-SRC-spec §11.56. */
+        public static final long ROTATE_INTERVAL = 0x0042016AL;
+        /** Rotate Automatic; KMIPKIT-ELEM-TAG-42016B; KMIPKIT-SRC-spec §11.56. */
+        public static final long ROTATE_AUTOMATIC = 0x0042016BL;
+        /** Rotate Offset; KMIPKIT-ELEM-TAG-42016C; KMIPKIT-SRC-spec §11.56. */
+        public static final long ROTATE_OFFSET = 0x0042016CL;
+        /** Rotate Date; KMIPKIT-ELEM-TAG-42016D; KMIPKIT-SRC-spec §11.56. */
+        public static final long ROTATE_DATE = 0x0042016DL;
+        /** Rotate Generation; KMIPKIT-ELEM-TAG-42016E; KMIPKIT-SRC-spec §11.56. */
+        public static final long ROTATE_GENERATION = 0x0042016EL;
+        /** Rotate Name; KMIPKIT-ELEM-TAG-42016F; KMIPKIT-SRC-spec §11.56. */
+        public static final long ROTATE_NAME = 0x0042016FL;
+        /** Rotate Name Value; KMIPKIT-ELEM-TAG-420170; KMIPKIT-SRC-spec §11.56. */
+        public static final long ROTATE_NAME_VALUE = 0x00420170L;
+        /** Rotate Name Type; KMIPKIT-ELEM-TAG-420171; KMIPKIT-SRC-spec §11.56. */
+        public static final long ROTATE_NAME_TYPE = 0x00420171L;
+        /** Rotate Latest; KMIPKIT-ELEM-TAG-420172; KMIPKIT-SRC-spec §11.56. */
+        public static final long ROTATE_LATEST = 0x00420172L;
+        /** Asynchronous Request; KMIPKIT-ELEM-TAG-420173; KMIPKIT-SRC-spec §11.56. */
+        public static final long ASYNCHRONOUS_REQUEST = 0x00420173L;
+        /** Submission Date; KMIPKIT-ELEM-TAG-420174; KMIPKIT-SRC-spec §11.56. */
+        public static final long SUBMISSION_DATE = 0x00420174L;
+        /** Processing Stage; KMIPKIT-ELEM-TAG-420175; KMIPKIT-SRC-spec §11.56. */
+        public static final long PROCESSING_STAGE = 0x00420175L;
+        /** Asynchronous Correlation Values; KMIPKIT-ELEM-TAG-420176; KMIPKIT-SRC-spec §11.56. */
+        public static final long ASYNCHRONOUS_CORRELATION_VALUES = 0x00420176L;
         /** Returns the assigned catalog name, or null for an unknown raw value. */
         public static String name(long raw) {
             if (raw < 0 || raw > 0xFFFF_FFFFL) return null;
             return switch ((int) raw) {
+                case 0x00420001 -> "Activation Date";
+                case 0x00420002 -> "Application Data";
+                case 0x00420003 -> "Application Namespace";
+                case 0x00420004 -> "Application Specific Information";
+                case 0x00420005 -> "Archive Date";
+                case 0x00420006 -> "Asynchronous Correlation Value";
+                case 0x00420007 -> "Asynchronous Indicator";
+                case 0x00420008 -> "Attribute";
+                case 0x0042000A -> "Attribute Name";
+                case 0x0042000B -> "Attribute Value";
+                case 0x0042000C -> "Authentication";
+                case 0x0042000D -> "Batch Count";
+                case 0x0042000E -> "Batch Error Continuation Option";
+                case 0x0042000F -> "Batch Item";
+                case 0x00420010 -> "Batch Order Option";
+                case 0x00420011 -> "Block Cipher Mode";
+                case 0x00420012 -> "Cancellation Result";
+                case 0x00420013 -> "Certificate";
+                case 0x00420018 -> "Certificate Request";
+                case 0x00420019 -> "Certificate Request Type";
+                case 0x0042001D -> "Certificate Type";
+                case 0x0042001E -> "Certificate Value";
+                case 0x00420020 -> "Compromise Date";
+                case 0x00420021 -> "Compromise Occurrence Date";
+                case 0x00420022 -> "Contact Information";
+                case 0x00420023 -> "Credential";
+                case 0x00420024 -> "Credential Type";
+                case 0x00420025 -> "Credential Value";
+                case 0x00420026 -> "Criticality Indicator";
+                case 0x00420027 -> "CRT Coefficient";
+                case 0x00420028 -> "Cryptographic Algorithm";
+                case 0x00420029 -> "Cryptographic Domain Parameters";
+                case 0x0042002A -> "Cryptographic Length";
+                case 0x0042002B -> "Cryptographic Parameters";
+                case 0x0042002C -> "Cryptographic Usage Mask";
+                case 0x0042002E -> "D";
+                case 0x0042002F -> "Deactivation Date";
+                case 0x00420030 -> "Derivation Data";
+                case 0x00420031 -> "Derivation Method";
+                case 0x00420032 -> "Derivation Parameters";
+                case 0x00420033 -> "Destroy Date";
+                case 0x00420034 -> "Digest";
+                case 0x00420035 -> "Digest Value";
+                case 0x00420036 -> "Encryption Key Information";
+                case 0x00420037 -> "G";
+                case 0x00420038 -> "Hashing Algorithm";
+                case 0x00420039 -> "Initial Date";
+                case 0x0042003A -> "Initialization Vector";
+                case 0x0042003C -> "Iteration Count";
+                case 0x0042003D -> "IV/Counter/Nonce";
+                case 0x0042003E -> "J";
+                case 0x0042003F -> "Key";
+                case 0x00420040 -> "Key Block";
+                case 0x00420041 -> "Key Compression Type";
+                case 0x00420042 -> "Key Format Type";
+                case 0x00420043 -> "Key Material";
+                case 0x00420044 -> "Key Part Identifier";
+                case 0x00420045 -> "Key Value";
+                case 0x00420046 -> "Key Wrapping Data";
+                case 0x00420047 -> "Key Wrapping Specification";
+                case 0x00420048 -> "Last Change Date";
+                case 0x00420049 -> "Lease Time";
+                case 0x0042004A -> "Link";
+                case 0x0042004B -> "Link Type";
+                case 0x0042004C -> "Linked Object Identifier";
+                case 0x0042004D -> "MAC/Signature";
+                case 0x0042004E -> "MAC/Signature Key Information";
+                case 0x0042004F -> "Maximum Items";
+                case 0x00420050 -> "Maximum Response Size";
+                case 0x00420051 -> "Message Extension";
+                case 0x00420052 -> "Modulus";
+                case 0x00420053 -> "Name";
+                case 0x00420054 -> "Name Type";
+                case 0x00420055 -> "Name Value";
+                case 0x00420056 -> "Object Group";
+                case 0x00420057 -> "Object Type";
+                case 0x00420058 -> "Offset";
+                case 0x00420059 -> "Opaque Data Type";
+                case 0x0042005A -> "Opaque Data Value";
+                case 0x0042005B -> "Opaque Object";
+                case 0x0042005C -> "Operation";
+                case 0x0042005E -> "P";
+                case 0x0042005F -> "Padding Method";
+                case 0x00420060 -> "Prime Exponent P";
+                case 0x00420061 -> "Prime Exponent Q";
+                case 0x00420062 -> "Prime Field Size";
+                case 0x00420063 -> "Private Exponent";
+                case 0x00420064 -> "Private Key";
+                case 0x00420066 -> "Private Key Unique Identifier";
+                case 0x00420067 -> "Process Start Date";
+                case 0x00420068 -> "Protect Stop Date";
+                case 0x00420069 -> "Protocol Version";
+                case 0x0042006A -> "Protocol Version Major";
+                case 0x0042006B -> "Protocol Version Minor";
+                case 0x0042006C -> "Public Exponent";
+                case 0x0042006D -> "Public Key";
+                case 0x0042006F -> "Public Key Unique Identifier";
+                case 0x00420070 -> "Put Function";
+                case 0x00420071 -> "Q";
+                case 0x00420072 -> "Q String";
+                case 0x00420073 -> "Qlength";
+                case 0x00420074 -> "Query Function";
+                case 0x00420075 -> "Recommended Curve";
+                case 0x00420076 -> "Replaced Unique Identifier";
+                case 0x00420077 -> "Request Header";
+                case 0x00420078 -> "Request Message";
+                case 0x00420079 -> "Request Payload";
+                case 0x0042007A -> "Response Header";
+                case 0x0042007B -> "Response Message";
+                case 0x0042007C -> "Response Payload";
+                case 0x0042007D -> "Result Message";
+                case 0x0042007E -> "Result Reason";
+                case 0x0042007F -> "Result Status";
+                case 0x00420080 -> "Revocation Message";
+                case 0x00420081 -> "Revocation Reason";
+                case 0x00420082 -> "Revocation Reason Code";
+                case 0x00420083 -> "Key Role Type";
+                case 0x00420084 -> "Salt";
+                case 0x00420085 -> "Secret Data";
+                case 0x00420086 -> "Secret Data Type";
+                case 0x00420088 -> "Server Information";
+                case 0x00420089 -> "Split Key";
+                case 0x0042008A -> "Split Key Method";
+                case 0x0042008B -> "Split Key Parts";
+                case 0x0042008C -> "Split Key Threshold";
+                case 0x0042008D -> "State";
+                case 0x0042008E -> "Storage Status Mask";
+                case 0x0042008F -> "Symmetric Key";
+                case 0x00420092 -> "Time Stamp";
+                case 0x00420093 -> "Unique Batch Item ID";
+                case 0x00420094 -> "Unique Identifier";
+                case 0x00420095 -> "Usage Limits";
+                case 0x00420096 -> "Usage Limits Count";
+                case 0x00420097 -> "Usage Limits Total";
+                case 0x00420098 -> "Usage Limits Unit";
+                case 0x00420099 -> "Username";
+                case 0x0042009A -> "Validity Date";
+                case 0x0042009B -> "Validity Indicator";
+                case 0x0042009C -> "Vendor Extension";
+                case 0x0042009D -> "Vendor Identification";
+                case 0x0042009E -> "Wrapping Method";
+                case 0x0042009F -> "X";
+                case 0x004200A0 -> "Y";
+                case 0x004200A1 -> "Password";
+                case 0x004200A2 -> "Device Identifier";
+                case 0x004200A3 -> "Encoding Option";
+                case 0x004200A4 -> "Extension Information";
+                case 0x004200A5 -> "Extension Name";
+                case 0x004200A6 -> "Extension Tag";
+                case 0x004200A7 -> "Extension Type";
+                case 0x004200A8 -> "Fresh";
+                case 0x004200A9 -> "Machine Identifier";
+                case 0x004200AA -> "Media Identifier";
+                case 0x004200AB -> "Network Identifier";
+                case 0x004200AC -> "Object Group Member";
+                case 0x004200AD -> "Certificate Length";
+                case 0x004200AE -> "Digital Signature Algorithm";
+                case 0x004200AF -> "Certificate Serial Number";
+                case 0x004200B0 -> "Device Serial Number";
+                case 0x004200B1 -> "Issuer Alternative Name";
+                case 0x004200B2 -> "Issuer Distinguished Name";
+                case 0x004200B3 -> "Subject Alternative Name";
+                case 0x004200B4 -> "Subject Distinguished Name";
+                case 0x004200B5 -> "X.509 Certificate Identifier";
+                case 0x004200B6 -> "X.509 Certificate Issuer";
+                case 0x004200B7 -> "X.509 Certificate Subject";
+                case 0x004200B8 -> "Key Value Location";
+                case 0x004200B9 -> "Key Value Location Value";
+                case 0x004200BA -> "Key Value Location Type";
+                case 0x004200BB -> "Key Value Present";
+                case 0x004200BC -> "Original Creation Date";
+                case 0x004200BD -> "PGP Key";
+                case 0x004200BE -> "PGP Key Version";
+                case 0x004200BF -> "Alternative Name";
+                case 0x004200C0 -> "Alternative Name Value";
+                case 0x004200C1 -> "Alternative Name Type";
+                case 0x004200C2 -> "Data";
+                case 0x004200C3 -> "Signature Data";
+                case 0x004200C4 -> "Data Length";
+                case 0x004200C5 -> "Random IV";
+                case 0x004200C6 -> "MAC Data";
+                case 0x004200C7 -> "Attestation Type";
+                case 0x004200C8 -> "Nonce";
+                case 0x004200C9 -> "Nonce ID";
+                case 0x004200CA -> "Nonce Value";
+                case 0x004200CB -> "Attestation Measurement";
+                case 0x004200CC -> "Attestation Assertion";
+                case 0x004200CD -> "IV Length";
+                case 0x004200CE -> "Tag Length";
+                case 0x004200CF -> "Fixed Field Length";
+                case 0x004200D0 -> "Counter Length";
+                case 0x004200D1 -> "Initial Counter Value";
+                case 0x004200D2 -> "Invocation Field Length";
+                case 0x004200D3 -> "Attestation Capable Indicator";
+                case 0x004200D4 -> "Offset Items";
+                case 0x004200D5 -> "Located Items";
+                case 0x004200D6 -> "Correlation Value";
+                case 0x004200D7 -> "Init Indicator";
+                case 0x004200D8 -> "Final Indicator";
+                case 0x004200D9 -> "RNG Parameters";
+                case 0x004200DA -> "RNG Algorithm";
+                case 0x004200DB -> "DRBG Algorithm";
+                case 0x004200DC -> "FIPS186 Variation";
+                case 0x004200DD -> "Prediction Resistance";
+                case 0x004200DE -> "Random Number Generator";
+                case 0x004200DF -> "Validation Information";
+                case 0x004200E0 -> "Validation Authority Type";
+                case 0x004200E1 -> "Validation Authority Country";
+                case 0x004200E2 -> "Validation Authority URI";
+                case 0x004200E3 -> "Validation Version Major";
+                case 0x004200E4 -> "Validation Version Minor";
+                case 0x004200E5 -> "Validation Type";
+                case 0x004200E6 -> "Validation Level";
+                case 0x004200E7 -> "Validation Certificate Identifier";
+                case 0x004200E8 -> "Validation Certificate URI";
+                case 0x004200E9 -> "Validation Vendor URI";
+                case 0x004200EA -> "Validation Profile";
+                case 0x004200EB -> "Profile Information";
+                case 0x004200EC -> "Profile Name";
+                case 0x004200ED -> "Server URI";
+                case 0x004200EE -> "Server Port";
+                case 0x004200EF -> "Streaming Capability";
+                case 0x004200F0 -> "Asynchronous Capability";
+                case 0x004200F1 -> "Attestation Capability";
+                case 0x004200F2 -> "Unwrap Mode";
+                case 0x004200F3 -> "Destroy Action";
+                case 0x004200F4 -> "Shredding Algorithm";
+                case 0x004200F5 -> "RNG Mode";
+                case 0x004200F6 -> "Client Registration Method";
+                case 0x004200F7 -> "Capability Information";
+                case 0x004200F8 -> "Key Wrap Type";
+                case 0x004200F9 -> "Batch Undo Capability";
+                case 0x004200FA -> "Batch Continue Capability";
+                case 0x004200FB -> "PKCS#12 Friendly Name";
+                case 0x004200FC -> "Description";
+                case 0x004200FD -> "Comment";
+                case 0x004200FE -> "Authenticated Encryption Additional Data";
+                case 0x004200FF -> "Authenticated Encryption Tag";
+                case 0x00420100 -> "Salt Length";
+                case 0x00420101 -> "Mask Generator";
+                case 0x00420102 -> "Mask Generator Hashing Algorithm";
+                case 0x00420103 -> "P Source";
+                case 0x00420104 -> "Trailer Field";
+                case 0x00420105 -> "Client Correlation Value";
+                case 0x00420106 -> "Server Correlation Value";
+                case 0x00420107 -> "Digested Data";
+                case 0x00420108 -> "Certificate Subject CN";
+                case 0x00420109 -> "Certificate Subject O";
+                case 0x0042010A -> "Certificate Subject OU";
+                case 0x0042010B -> "Certificate Subject Email";
+                case 0x0042010C -> "Certificate Subject C";
+                case 0x0042010D -> "Certificate Subject ST";
+                case 0x0042010E -> "Certificate Subject L";
+                case 0x0042010F -> "Certificate Subject UID";
+                case 0x00420110 -> "Certificate Subject Serial Number";
+                case 0x00420111 -> "Certificate Subject Title";
+                case 0x00420112 -> "Certificate Subject DC";
+                case 0x00420113 -> "Certificate Subject DN Qualifier";
+                case 0x00420114 -> "Certificate Issuer CN";
+                case 0x00420115 -> "Certificate Issuer O";
+                case 0x00420116 -> "Certificate Issuer OU";
+                case 0x00420117 -> "Certificate Issuer Email";
+                case 0x00420118 -> "Certificate Issuer C";
+                case 0x00420119 -> "Certificate Issuer ST";
+                case 0x0042011A -> "Certificate Issuer L";
+                case 0x0042011B -> "Certificate Issuer UID";
+                case 0x0042011C -> "Certificate Issuer Serial Number";
+                case 0x0042011D -> "Certificate Issuer Title";
+                case 0x0042011E -> "Certificate Issuer DC";
+                case 0x0042011F -> "Certificate Issuer DN Qualifier";
+                case 0x00420120 -> "Sensitive";
+                case 0x00420121 -> "Always Sensitive";
+                case 0x00420122 -> "Extractable";
+                case 0x00420123 -> "Never Extractable";
+                case 0x00420124 -> "Replace Existing";
+                case 0x00420125 -> "Attributes";
+                case 0x00420126 -> "Common Attributes";
+                case 0x00420127 -> "Private Key Attributes";
+                case 0x00420128 -> "Public Key Attributes";
+                case 0x00420129 -> "Extension Enumeration";
+                case 0x0042012A -> "Extension Attribute";
+                case 0x0042012B -> "Extension Parent Structure Tag";
+                case 0x0042012C -> "Extension Description";
+                case 0x0042012D -> "Server Name";
+                case 0x0042012E -> "Server Serial Number";
+                case 0x0042012F -> "Server Version";
+                case 0x00420130 -> "Server Load";
+                case 0x00420131 -> "Product Name";
+                case 0x00420132 -> "Build Level";
+                case 0x00420133 -> "Build Date";
+                case 0x00420134 -> "Cluster Info";
+                case 0x00420135 -> "Alternate Failover Endpoints";
+                case 0x00420136 -> "Short Unique Identifier";
+                case 0x00420138 -> "Tag";
+                case 0x00420139 -> "Certificate Request Unique Identifier";
+                case 0x0042013A -> "NIST Key Type";
+                case 0x0042013B -> "Attribute Reference";
+                case 0x0042013C -> "Current Attribute";
+                case 0x0042013D -> "New Attribute";
+                case 0x00420140 -> "Certificate Request Value";
+                case 0x00420141 -> "Log Message";
+                case 0x00420142 -> "Profile Version";
+                case 0x00420143 -> "Profile Version Major";
+                case 0x00420144 -> "Profile Version Minor";
+                case 0x00420145 -> "Protection Level";
+                case 0x00420146 -> "Protection Period";
+                case 0x00420147 -> "Quantum Safe";
+                case 0x00420148 -> "Quantum Safe Capability";
+                case 0x00420149 -> "Ticket";
+                case 0x0042014A -> "Ticket Type";
+                case 0x0042014B -> "Ticket Value";
+                case 0x0042014C -> "Request Count";
+                case 0x0042014D -> "Rights";
+                case 0x0042014E -> "Objects";
+                case 0x0042014F -> "Operations";
+                case 0x00420150 -> "Right";
+                case 0x00420151 -> "Endpoint Role";
+                case 0x00420152 -> "Defaults Information";
+                case 0x00420153 -> "Object Defaults";
+                case 0x00420154 -> "Ephemeral";
+                case 0x00420155 -> "Server Hashed Password";
+                case 0x00420156 -> "One Time Password";
+                case 0x00420157 -> "Hashed Password";
+                case 0x00420158 -> "Adjustment Type";
+                case 0x00420159 -> "PKCS#11 Interface";
+                case 0x0042015A -> "PKCS#11 Function";
+                case 0x0042015B -> "PKCS#11 Input Parameters";
+                case 0x0042015C -> "PKCS#11 Output Parameters";
+                case 0x0042015D -> "PKCS#11 Return Code";
+                case 0x0042015E -> "Protection Storage Mask";
+                case 0x0042015F -> "Protection Storage Masks";
+                case 0x00420160 -> "Interop Function";
+                case 0x00420161 -> "Interop Identifier";
+                case 0x00420162 -> "Adjustment Value";
+                case 0x00420163 -> "Common Protection Storage Masks";
+                case 0x00420164 -> "Private Protection Storage Masks";
+                case 0x00420165 -> "Public Protection Storage Masks";
+                case 0x00420166 -> "Object Groups";
+                case 0x00420167 -> "Object Types";
+                case 0x00420168 -> "Constraints";
+                case 0x00420169 -> "Constraint";
+                case 0x0042016A -> "Rotate Interval";
+                case 0x0042016B -> "Rotate Automatic";
+                case 0x0042016C -> "Rotate Offset";
+                case 0x0042016D -> "Rotate Date";
+                case 0x0042016E -> "Rotate Generation";
+                case 0x0042016F -> "Rotate Name";
+                case 0x00420170 -> "Rotate Name Value";
+                case 0x00420171 -> "Rotate Name Type";
+                case 0x00420172 -> "Rotate Latest";
+                case 0x00420173 -> "Asynchronous Request";
+                case 0x00420174 -> "Submission Date";
+                case 0x00420175 -> "Processing Stage";
+                case 0x00420176 -> "Asynchronous Correlation Values";
                 default -> null;
             };
         }
@@ -3277,6 +4339,193 @@ public final class KmipValues {
             case 0x00000013 -> "Create User";
             case 0x00000014 -> "Create Group";
             case 0x00000015 -> "Create Credential";
+            default -> null;
+        };
+    }
+    /** Certificate Link; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_CERTIFICATE_LINK = 0x00420190L;
+    /** Child Link; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_CHILD_LINK = 0x00420191L;
+    /** Derivation Base Object Link; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_DERIVATION_BASE_OBJECT_LINK = 0x00420192L;
+    /** Derived Object Link; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_DERIVED_OBJECT_LINK = 0x00420193L;
+    /** Next Link; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_NEXT_LINK = 0x00420194L;
+    /** Parent Link; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_PARENT_LINK = 0x00420195L;
+    /** PKCS#12 Certificate Link; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_PKCS_12_CERTIFICATE_LINK = 0x00420196L;
+    /** PKCS#12 Password Link; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_PKCS_12_PASSWORD_LINK = 0x00420197L;
+    /** Previous Link; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_PREVIOUS_LINK = 0x00420198L;
+    /** Private Key Link; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_PRIVATE_KEY_LINK = 0x00420199L;
+    /** Public Key Link; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_PUBLIC_KEY_LINK = 0x0042019AL;
+    /** Replaced Object Link; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_REPLACED_OBJECT_LINK = 0x0042019BL;
+    /** Replacement Object Link; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_REPLACEMENT_OBJECT_LINK = 0x0042019CL;
+    /** Wrapping Key Link; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_WRAPPING_KEY_LINK = 0x0042019DL;
+    /** Object Class; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_OBJECT_CLASS = 0x0042019EL;
+    /** Object Class Mask; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_OBJECT_CLASS_MASK = 0x0042019FL;
+    /** Credential Link; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_CREDENTIAL_LINK = 0x004201A0L;
+    /** Password Credential; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_PASSWORD_CREDENTIAL = 0x004201A1L;
+    /** Password Salt; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_PASSWORD_SALT = 0x004201A2L;
+    /** Password Salt Algorithm; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_PASSWORD_SALT_ALGORITHM = 0x004201A3L;
+    /** Salted Password; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_SALTED_PASSWORD = 0x004201A4L;
+    /** Password Link; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_PASSWORD_LINK = 0x004201A5L;
+    /** Device Credential; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_DEVICE_CREDENTIAL = 0x004201A6L;
+    /** OTP Credential; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_OTP_CREDENTIAL = 0x004201A7L;
+    /** OTP Algorithm; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_OTP_ALGORITHM = 0x004201A8L;
+    /** OTP Digest; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_OTP_DIGEST = 0x004201A9L;
+    /** OTP Serial; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_OTP_SERIAL = 0x004201AAL;
+    /** OTP Seed; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_OTP_SEED = 0x004201ABL;
+    /** OTP Interval; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_OTP_INTERVAL = 0x004201ACL;
+    /** OTP Digits; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_OTP_DIGITS = 0x004201ADL;
+    /** OTP Counter; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_OTP_COUNTER = 0x004201AEL;
+    /** Hashed Password Credential; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_HASHED_PASSWORD_CREDENTIAL = 0x004201AFL;
+    /** Hashed Username Password; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_HASHED_USERNAME_PASSWORD = 0x004201B0L;
+    /** Hashed Password Username; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_HASHED_PASSWORD_USERNAME = 0x004201B1L;
+    /** Credential Information; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_CREDENTIAL_INFORMATION = 0x004201B2L;
+    /** Group Link; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_GROUP_LINK = 0x004201B3L;
+    /** Split Key Base Link; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_SPLIT_KEY_BASE_LINK = 0x004201B4L;
+    /** Joined Split Key Parts Link; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_JOINED_SPLIT_KEY_PARTS_LINK = 0x004201B5L;
+    /** Split Key Polynomial; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_SPLIT_KEY_POLYNOMIAL = 0x004201B6L;
+    /** Deactivation Message; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_DEACTIVATION_MESSAGE = 0x004201B7L;
+    /** Deactivation Reason; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_DEACTIVATION_REASON = 0x004201B8L;
+    /** Deactivation Reason Code; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_DEACTIVATION_REASON_CODE = 0x004201B9L;
+    /** Certificate Subject DN; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_CERTIFICATE_SUBJECT_DN = 0x004201BAL;
+    /** Certificate Issuer DN; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_CERTIFICATE_ISSUER_DN = 0x004201BBL;
+    /** Certificate Request Link; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_CERTIFICATE_REQUEST_LINK = 0x004201BCL;
+    /** Certify Counter; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_CERTIFY_COUNTER = 0x004201BDL;
+    /** Decrypt Counter; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_DECRYPT_COUNTER = 0x004201BEL;
+    /** Encrypt Counter; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_ENCRYPT_COUNTER = 0x004201BFL;
+    /** Sign Counter; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_SIGN_COUNTER = 0x004201C0L;
+    /** Signature Verify Counter; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_SIGNATURE_VERIFY_COUNTER = 0x004201C1L;
+    /** NIST Security Category; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_NIST_SECURITY_CATEGORY = 0x004201C2L;
+    /** KEM Algorithm; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_KEM_ALGORITHM = 0x004201C3L;
+    /** Deterministic; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_DETERMINISTIC = 0x004201C4L;
+    /** Context String; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_CONTEXT_STRING = 0x004201C5L;
+    /** Seed; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_SEED = 0x004201C6L;
+    /** Input Key Material; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_INPUT_KEY_MATERIAL = 0x004201C7L;
+    /** Internal; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_INTERNAL = 0x004201C8L;
+    /** External Mu; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_EXTERNAL_MU = 0x004201C9L;
+    /** Random; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_RANDOM = 0x004201CAL;
+    /** Performs CRL Checks; kmip-3.0 §11.58, Table 605. */
+    public static final long V3_0_TAG_PERFORMS_CRL_CHECKS = 0x004201CBL;
+    /** Returns the KMIP v3.0 Tag name, or null for an unassigned value. */
+    public static String v3_0TagName(long raw) {
+        if (raw < 0 || raw > 0xFFFF_FFFFL) return null;
+        return switch ((int) raw) {
+            case 0x00420190 -> "Certificate Link";
+            case 0x00420191 -> "Child Link";
+            case 0x00420192 -> "Derivation Base Object Link";
+            case 0x00420193 -> "Derived Object Link";
+            case 0x00420194 -> "Next Link";
+            case 0x00420195 -> "Parent Link";
+            case 0x00420196 -> "PKCS#12 Certificate Link";
+            case 0x00420197 -> "PKCS#12 Password Link";
+            case 0x00420198 -> "Previous Link";
+            case 0x00420199 -> "Private Key Link";
+            case 0x0042019A -> "Public Key Link";
+            case 0x0042019B -> "Replaced Object Link";
+            case 0x0042019C -> "Replacement Object Link";
+            case 0x0042019D -> "Wrapping Key Link";
+            case 0x0042019E -> "Object Class";
+            case 0x0042019F -> "Object Class Mask";
+            case 0x004201A0 -> "Credential Link";
+            case 0x004201A1 -> "Password Credential";
+            case 0x004201A2 -> "Password Salt";
+            case 0x004201A3 -> "Password Salt Algorithm";
+            case 0x004201A4 -> "Salted Password";
+            case 0x004201A5 -> "Password Link";
+            case 0x004201A6 -> "Device Credential";
+            case 0x004201A7 -> "OTP Credential";
+            case 0x004201A8 -> "OTP Algorithm";
+            case 0x004201A9 -> "OTP Digest";
+            case 0x004201AA -> "OTP Serial";
+            case 0x004201AB -> "OTP Seed";
+            case 0x004201AC -> "OTP Interval";
+            case 0x004201AD -> "OTP Digits";
+            case 0x004201AE -> "OTP Counter";
+            case 0x004201AF -> "Hashed Password Credential";
+            case 0x004201B0 -> "Hashed Username Password";
+            case 0x004201B1 -> "Hashed Password Username";
+            case 0x004201B2 -> "Credential Information";
+            case 0x004201B3 -> "Group Link";
+            case 0x004201B4 -> "Split Key Base Link";
+            case 0x004201B5 -> "Joined Split Key Parts Link";
+            case 0x004201B6 -> "Split Key Polynomial";
+            case 0x004201B7 -> "Deactivation Message";
+            case 0x004201B8 -> "Deactivation Reason";
+            case 0x004201B9 -> "Deactivation Reason Code";
+            case 0x004201BA -> "Certificate Subject DN";
+            case 0x004201BB -> "Certificate Issuer DN";
+            case 0x004201BC -> "Certificate Request Link";
+            case 0x004201BD -> "Certify Counter";
+            case 0x004201BE -> "Decrypt Counter";
+            case 0x004201BF -> "Encrypt Counter";
+            case 0x004201C0 -> "Sign Counter";
+            case 0x004201C1 -> "Signature Verify Counter";
+            case 0x004201C2 -> "NIST Security Category";
+            case 0x004201C3 -> "KEM Algorithm";
+            case 0x004201C4 -> "Deterministic";
+            case 0x004201C5 -> "Context String";
+            case 0x004201C6 -> "Seed";
+            case 0x004201C7 -> "Input Key Material";
+            case 0x004201C8 -> "Internal";
+            case 0x004201C9 -> "External Mu";
+            case 0x004201CA -> "Random";
+            case 0x004201CB -> "Performs CRL Checks";
             default -> null;
         };
     }

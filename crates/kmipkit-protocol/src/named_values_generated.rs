@@ -417,6 +417,13 @@ pub mod values {
             #[must_use]
             pub const fn name(raw: u32) -> Option<&'static str> {
                 match raw {
+                    0x0000_0001..=0x0000_0030 => name_chunk_0(raw),
+                    0x0000_0031..=0x0000_0038 => name_chunk_1(raw),
+                    _ => None,
+                }
+            }
+            const fn name_chunk_0(raw: u32) -> Option<&'static str> {
+                match raw {
                     0x0000_0001 => Some("DES"),
                     0x0000_0002 => Some("3DES"),
                     0x0000_0003 => Some("AES"),
@@ -465,6 +472,11 @@ pub mod values {
                     0x0000_002E => Some("GOST R 34.10-2012"),
                     0x0000_002F => Some("GOST R 34.11-2012"),
                     0x0000_0030 => Some("GOST R 34.13-2015"),
+                    _ => None,
+                }
+            }
+            const fn name_chunk_1(raw: u32) -> Option<&'static str> {
+                match raw {
                     0x0000_0031 => Some("GOST 28147-89"),
                     0x0000_0032 => Some("XMSS"),
                     0x0000_0033 => Some("SPHINCS-256"),
@@ -1411,6 +1423,13 @@ pub mod values {
             #[must_use]
             pub const fn name(raw: u32) -> Option<&'static str> {
                 match raw {
+                    0x0000_0001..=0x0000_0030 => name_chunk_0(raw),
+                    0x0000_0031..=0x0000_003B => name_chunk_1(raw),
+                    _ => None,
+                }
+            }
+            const fn name_chunk_0(raw: u32) -> Option<&'static str> {
+                match raw {
                     0x0000_0001 => Some("Create"),
                     0x0000_0002 => Some("Create Key Pair"),
                     0x0000_0003 => Some("Register"),
@@ -1459,6 +1478,11 @@ pub mod values {
                     0x0000_002E => Some("Logout"),
                     0x0000_002F => Some("Delegated Login"),
                     0x0000_0030 => Some("Adjust Attribute"),
+                    _ => None,
+                }
+            }
+            const fn name_chunk_1(raw: u32) -> Option<&'static str> {
+                match raw {
                     0x0000_0031 => Some("Set Attribute"),
                     0x0000_0032 => Some("Set Endpoint Role"),
                     0x0000_0033 => Some("PKCS#11"),
@@ -1909,6 +1933,13 @@ pub mod values {
             #[must_use]
             pub const fn name(raw: u32) -> Option<&'static str> {
                 match raw {
+                    0x0000_0001..=0x0000_0030 => name_chunk_0(raw),
+                    0x0000_0031..=0x0000_0046 => name_chunk_1(raw),
+                    _ => None,
+                }
+            }
+            const fn name_chunk_0(raw: u32) -> Option<&'static str> {
+                match raw {
                     0x0000_0001 => Some("P-192"),
                     0x0000_0002 => Some("K-163"),
                     0x0000_0003 => Some("B-163"),
@@ -1957,6 +1988,11 @@ pub mod values {
                     0x0000_002E => Some("ANSIX9C2PNB208W1"),
                     0x0000_002F => Some("ANSIX9C2TNB239V1"),
                     0x0000_0030 => Some("ANSIX9C2TNB239V2"),
+                    _ => None,
+                }
+            }
+            const fn name_chunk_1(raw: u32) -> Option<&'static str> {
+                match raw {
                     0x0000_0031 => Some("ANSIX9C2TNB239V3"),
                     0x0000_0032 => Some("ANSIX9C2PNB272W1"),
                     0x0000_0033 => Some("ANSIX9C2PNB304W1"),
@@ -2132,6 +2168,13 @@ pub mod values {
             #[must_use]
             pub const fn name(raw: u32) -> Option<&'static str> {
                 match raw {
+                    0x0000_0001..=0x0000_0035 => name_chunk_0(raw),
+                    0x0000_0036..=0x0000_0100 => name_chunk_1(raw),
+                    _ => None,
+                }
+            }
+            const fn name_chunk_0(raw: u32) -> Option<&'static str> {
+                match raw {
                     0x0000_0001 => Some("Item Not Found"),
                     0x0000_0002 => Some("Response Too Large"),
                     0x0000_0003 => Some("Authentication Not Successful"),
@@ -2180,6 +2223,11 @@ pub mod values {
                     0x0000_0032 => Some("Key Wrap Type Not Supported"),
                     0x0000_0034 => Some("Missing Initialization Vector"),
                     0x0000_0035 => Some("Non Unique Name Attribute"),
+                    _ => None,
+                }
+            }
+            const fn name_chunk_1(raw: u32) -> Option<&'static str> {
+                match raw {
                     0x0000_0036 => Some("Object Destroyed"),
                     0x0000_0037 => Some("Object Not Found"),
                     0x0000_0039 => Some("Not Authorised"),
@@ -2420,10 +2468,1122 @@ pub mod values {
 
         /// Values for the KMIP Tag Enumeration.
         pub mod tag {
+            /// `Activation Date`; KMIPKIT-ELEM-TAG-420001; KMIPKIT-SRC-spec §11.56.
+            pub const ACTIVATION_DATE: u32 = 0x0042_0001;
+            /// `Application Data`; KMIPKIT-ELEM-TAG-420002; KMIPKIT-SRC-spec §11.56.
+            pub const APPLICATION_DATA: u32 = 0x0042_0002;
+            /// `Application Namespace`; KMIPKIT-ELEM-TAG-420003; KMIPKIT-SRC-spec §11.56.
+            pub const APPLICATION_NAMESPACE: u32 = 0x0042_0003;
+            /// `Application Specific Information`; KMIPKIT-ELEM-TAG-420004; KMIPKIT-SRC-spec §11.56.
+            pub const APPLICATION_SPECIFIC_INFORMATION: u32 = 0x0042_0004;
+            /// `Archive Date`; KMIPKIT-ELEM-TAG-420005; KMIPKIT-SRC-spec §11.56.
+            pub const ARCHIVE_DATE: u32 = 0x0042_0005;
+            /// `Asynchronous Correlation Value`; KMIPKIT-ELEM-TAG-420006; KMIPKIT-SRC-spec §11.56.
+            pub const ASYNCHRONOUS_CORRELATION_VALUE: u32 = 0x0042_0006;
+            /// `Asynchronous Indicator`; KMIPKIT-ELEM-TAG-420007; KMIPKIT-SRC-spec §11.56.
+            pub const ASYNCHRONOUS_INDICATOR: u32 = 0x0042_0007;
+            /// `Attribute`; KMIPKIT-ELEM-TAG-420008; KMIPKIT-SRC-spec §11.56.
+            pub const ATTRIBUTE: u32 = 0x0042_0008;
+            /// `Attribute Name`; KMIPKIT-ELEM-TAG-42000A; KMIPKIT-SRC-spec §11.56.
+            pub const ATTRIBUTE_NAME: u32 = 0x0042_000A;
+            /// `Attribute Value`; KMIPKIT-ELEM-TAG-42000B; KMIPKIT-SRC-spec §11.56.
+            pub const ATTRIBUTE_VALUE: u32 = 0x0042_000B;
+            /// `Authentication`; KMIPKIT-ELEM-TAG-42000C; KMIPKIT-SRC-spec §11.56.
+            pub const AUTHENTICATION: u32 = 0x0042_000C;
+            /// `Batch Count`; KMIPKIT-ELEM-TAG-42000D; KMIPKIT-SRC-spec §11.56.
+            pub const BATCH_COUNT: u32 = 0x0042_000D;
+            /// `Batch Error Continuation Option`; KMIPKIT-ELEM-TAG-42000E; KMIPKIT-SRC-spec §11.56.
+            pub const BATCH_ERROR_CONTINUATION_OPTION: u32 = 0x0042_000E;
+            /// `Batch Item`; KMIPKIT-ELEM-TAG-42000F; KMIPKIT-SRC-spec §11.56.
+            pub const BATCH_ITEM: u32 = 0x0042_000F;
+            /// `Batch Order Option`; KMIPKIT-ELEM-TAG-420010; KMIPKIT-SRC-spec §11.56.
+            pub const BATCH_ORDER_OPTION: u32 = 0x0042_0010;
+            /// `Block Cipher Mode`; KMIPKIT-ELEM-TAG-420011; KMIPKIT-SRC-spec §11.56.
+            pub const BLOCK_CIPHER_MODE: u32 = 0x0042_0011;
+            /// `Cancellation Result`; KMIPKIT-ELEM-TAG-420012; KMIPKIT-SRC-spec §11.56.
+            pub const CANCELLATION_RESULT: u32 = 0x0042_0012;
+            /// `Certificate`; KMIPKIT-ELEM-TAG-420013; KMIPKIT-SRC-spec §11.56.
+            pub const CERTIFICATE: u32 = 0x0042_0013;
+            /// `Certificate Request`; KMIPKIT-ELEM-TAG-420018; KMIPKIT-SRC-spec §11.56.
+            pub const CERTIFICATE_REQUEST: u32 = 0x0042_0018;
+            /// `Certificate Request Type`; KMIPKIT-ELEM-TAG-420019; KMIPKIT-SRC-spec §11.56.
+            pub const CERTIFICATE_REQUEST_TYPE: u32 = 0x0042_0019;
+            /// `Certificate Type`; KMIPKIT-ELEM-TAG-42001D; KMIPKIT-SRC-spec §11.56.
+            pub const CERTIFICATE_TYPE: u32 = 0x0042_001D;
+            /// `Certificate Value`; KMIPKIT-ELEM-TAG-42001E; KMIPKIT-SRC-spec §11.56.
+            pub const CERTIFICATE_VALUE: u32 = 0x0042_001E;
+            /// `Compromise Date`; KMIPKIT-ELEM-TAG-420020; KMIPKIT-SRC-spec §11.56.
+            pub const COMPROMISE_DATE: u32 = 0x0042_0020;
+            /// `Compromise Occurrence Date`; KMIPKIT-ELEM-TAG-420021; KMIPKIT-SRC-spec §11.56.
+            pub const COMPROMISE_OCCURRENCE_DATE: u32 = 0x0042_0021;
+            /// `Contact Information`; KMIPKIT-ELEM-TAG-420022; KMIPKIT-SRC-spec §11.56.
+            pub const CONTACT_INFORMATION: u32 = 0x0042_0022;
+            /// `Credential`; KMIPKIT-ELEM-TAG-420023; KMIPKIT-SRC-spec §11.56.
+            pub const CREDENTIAL: u32 = 0x0042_0023;
+            /// `Credential Type`; KMIPKIT-ELEM-TAG-420024; KMIPKIT-SRC-spec §11.56.
+            pub const CREDENTIAL_TYPE: u32 = 0x0042_0024;
+            /// `Credential Value`; KMIPKIT-ELEM-TAG-420025; KMIPKIT-SRC-spec §11.56.
+            pub const CREDENTIAL_VALUE: u32 = 0x0042_0025;
+            /// `Criticality Indicator`; KMIPKIT-ELEM-TAG-420026; KMIPKIT-SRC-spec §11.56.
+            pub const CRITICALITY_INDICATOR: u32 = 0x0042_0026;
+            /// `CRT Coefficient`; KMIPKIT-ELEM-TAG-420027; KMIPKIT-SRC-spec §11.56.
+            pub const CRT_COEFFICIENT: u32 = 0x0042_0027;
+            /// `Cryptographic Algorithm`; KMIPKIT-ELEM-TAG-420028; KMIPKIT-SRC-spec §11.56.
+            pub const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
+            /// `Cryptographic Domain Parameters`; KMIPKIT-ELEM-TAG-420029; KMIPKIT-SRC-spec §11.56.
+            pub const CRYPTOGRAPHIC_DOMAIN_PARAMETERS: u32 = 0x0042_0029;
+            /// `Cryptographic Length`; KMIPKIT-ELEM-TAG-42002A; KMIPKIT-SRC-spec §11.56.
+            pub const CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002A;
+            /// `Cryptographic Parameters`; KMIPKIT-ELEM-TAG-42002B; KMIPKIT-SRC-spec §11.56.
+            pub const CRYPTOGRAPHIC_PARAMETERS: u32 = 0x0042_002B;
+            /// `Cryptographic Usage Mask`; KMIPKIT-ELEM-TAG-42002C; KMIPKIT-SRC-spec §11.56.
+            pub const CRYPTOGRAPHIC_USAGE_MASK: u32 = 0x0042_002C;
+            /// `D`; KMIPKIT-ELEM-TAG-42002E; KMIPKIT-SRC-spec §11.56.
+            pub const D: u32 = 0x0042_002E;
+            /// `Deactivation Date`; KMIPKIT-ELEM-TAG-42002F; KMIPKIT-SRC-spec §11.56.
+            pub const DEACTIVATION_DATE: u32 = 0x0042_002F;
+            /// `Derivation Data`; KMIPKIT-ELEM-TAG-420030; KMIPKIT-SRC-spec §11.56.
+            pub const DERIVATION_DATA: u32 = 0x0042_0030;
+            /// `Derivation Method`; KMIPKIT-ELEM-TAG-420031; KMIPKIT-SRC-spec §11.56.
+            pub const DERIVATION_METHOD: u32 = 0x0042_0031;
+            /// `Derivation Parameters`; KMIPKIT-ELEM-TAG-420032; KMIPKIT-SRC-spec §11.56.
+            pub const DERIVATION_PARAMETERS: u32 = 0x0042_0032;
+            /// `Destroy Date`; KMIPKIT-ELEM-TAG-420033; KMIPKIT-SRC-spec §11.56.
+            pub const DESTROY_DATE: u32 = 0x0042_0033;
+            /// `Digest`; KMIPKIT-ELEM-TAG-420034; KMIPKIT-SRC-spec §11.56.
+            pub const DIGEST: u32 = 0x0042_0034;
+            /// `Digest Value`; KMIPKIT-ELEM-TAG-420035; KMIPKIT-SRC-spec §11.56.
+            pub const DIGEST_VALUE: u32 = 0x0042_0035;
+            /// `Encryption Key Information`; KMIPKIT-ELEM-TAG-420036; KMIPKIT-SRC-spec §11.56.
+            pub const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
+            /// `G`; KMIPKIT-ELEM-TAG-420037; KMIPKIT-SRC-spec §11.56.
+            pub const G: u32 = 0x0042_0037;
+            /// `Hashing Algorithm`; KMIPKIT-ELEM-TAG-420038; KMIPKIT-SRC-spec §11.56.
+            pub const HASHING_ALGORITHM: u32 = 0x0042_0038;
+            /// `Initial Date`; KMIPKIT-ELEM-TAG-420039; KMIPKIT-SRC-spec §11.56.
+            pub const INITIAL_DATE: u32 = 0x0042_0039;
+            /// `Initialization Vector`; KMIPKIT-ELEM-TAG-42003A; KMIPKIT-SRC-spec §11.56.
+            pub const INITIALIZATION_VECTOR: u32 = 0x0042_003A;
+            /// `Iteration Count`; KMIPKIT-ELEM-TAG-42003C; KMIPKIT-SRC-spec §11.56.
+            pub const ITERATION_COUNT: u32 = 0x0042_003C;
+            /// `IV/Counter/Nonce`; KMIPKIT-ELEM-TAG-42003D; KMIPKIT-SRC-spec §11.56.
+            pub const IV_COUNTER_NONCE: u32 = 0x0042_003D;
+            /// `J`; KMIPKIT-ELEM-TAG-42003E; KMIPKIT-SRC-spec §11.56.
+            pub const J: u32 = 0x0042_003E;
+            /// `Key`; KMIPKIT-ELEM-TAG-42003F; KMIPKIT-SRC-spec §11.56.
+            pub const KEY: u32 = 0x0042_003F;
+            /// `Key Block`; KMIPKIT-ELEM-TAG-420040; KMIPKIT-SRC-spec §11.56.
+            pub const KEY_BLOCK: u32 = 0x0042_0040;
+            /// `Key Compression Type`; KMIPKIT-ELEM-TAG-420041; KMIPKIT-SRC-spec §11.56.
+            pub const KEY_COMPRESSION_TYPE: u32 = 0x0042_0041;
+            /// `Key Format Type`; KMIPKIT-ELEM-TAG-420042; KMIPKIT-SRC-spec §11.56.
+            pub const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
+            /// `Key Material`; KMIPKIT-ELEM-TAG-420043; KMIPKIT-SRC-spec §11.56.
+            pub const KEY_MATERIAL: u32 = 0x0042_0043;
+            /// `Key Part Identifier`; KMIPKIT-ELEM-TAG-420044; KMIPKIT-SRC-spec §11.56.
+            pub const KEY_PART_IDENTIFIER: u32 = 0x0042_0044;
+            /// `Key Value`; KMIPKIT-ELEM-TAG-420045; KMIPKIT-SRC-spec §11.56.
+            pub const KEY_VALUE: u32 = 0x0042_0045;
+            /// `Key Wrapping Data`; KMIPKIT-ELEM-TAG-420046; KMIPKIT-SRC-spec §11.56.
+            pub const KEY_WRAPPING_DATA: u32 = 0x0042_0046;
+            /// `Key Wrapping Specification`; KMIPKIT-ELEM-TAG-420047; KMIPKIT-SRC-spec §11.56.
+            pub const KEY_WRAPPING_SPECIFICATION: u32 = 0x0042_0047;
+            /// `Last Change Date`; KMIPKIT-ELEM-TAG-420048; KMIPKIT-SRC-spec §11.56.
+            pub const LAST_CHANGE_DATE: u32 = 0x0042_0048;
+            /// `Lease Time`; KMIPKIT-ELEM-TAG-420049; KMIPKIT-SRC-spec §11.56.
+            pub const LEASE_TIME: u32 = 0x0042_0049;
+            /// `Link`; KMIPKIT-ELEM-TAG-42004A; KMIPKIT-SRC-spec §11.56.
+            pub const LINK: u32 = 0x0042_004A;
+            /// `Link Type`; KMIPKIT-ELEM-TAG-42004B; KMIPKIT-SRC-spec §11.56.
+            pub const LINK_TYPE: u32 = 0x0042_004B;
+            /// `Linked Object Identifier`; KMIPKIT-ELEM-TAG-42004C; KMIPKIT-SRC-spec §11.56.
+            pub const LINKED_OBJECT_IDENTIFIER: u32 = 0x0042_004C;
+            /// `MAC/Signature`; KMIPKIT-ELEM-TAG-42004D; KMIPKIT-SRC-spec §11.56.
+            pub const MAC_SIGNATURE: u32 = 0x0042_004D;
+            /// `MAC/Signature Key Information`; KMIPKIT-ELEM-TAG-42004E; KMIPKIT-SRC-spec §11.56.
+            pub const MAC_SIGNATURE_KEY_INFORMATION: u32 = 0x0042_004E;
+            /// `Maximum Items`; KMIPKIT-ELEM-TAG-42004F; KMIPKIT-SRC-spec §11.56.
+            pub const MAXIMUM_ITEMS: u32 = 0x0042_004F;
+            /// `Maximum Response Size`; KMIPKIT-ELEM-TAG-420050; KMIPKIT-SRC-spec §11.56.
+            pub const MAXIMUM_RESPONSE_SIZE: u32 = 0x0042_0050;
+            /// `Message Extension`; KMIPKIT-ELEM-TAG-420051; KMIPKIT-SRC-spec §11.56.
+            pub const MESSAGE_EXTENSION: u32 = 0x0042_0051;
+            /// `Modulus`; KMIPKIT-ELEM-TAG-420052; KMIPKIT-SRC-spec §11.56.
+            pub const MODULUS: u32 = 0x0042_0052;
+            /// `Name`; KMIPKIT-ELEM-TAG-420053; KMIPKIT-SRC-spec §11.56.
+            pub const NAME: u32 = 0x0042_0053;
+            /// `Name Type`; KMIPKIT-ELEM-TAG-420054; KMIPKIT-SRC-spec §11.56.
+            pub const NAME_TYPE: u32 = 0x0042_0054;
+            /// `Name Value`; KMIPKIT-ELEM-TAG-420055; KMIPKIT-SRC-spec §11.56.
+            pub const NAME_VALUE: u32 = 0x0042_0055;
+            /// `Object Group`; KMIPKIT-ELEM-TAG-420056; KMIPKIT-SRC-spec §11.56.
+            pub const OBJECT_GROUP: u32 = 0x0042_0056;
+            /// `Object Type`; KMIPKIT-ELEM-TAG-420057; KMIPKIT-SRC-spec §11.56.
+            pub const OBJECT_TYPE: u32 = 0x0042_0057;
+            /// `Offset`; KMIPKIT-ELEM-TAG-420058; KMIPKIT-SRC-spec §11.56.
+            pub const OFFSET: u32 = 0x0042_0058;
+            /// `Opaque Data Type`; KMIPKIT-ELEM-TAG-420059; KMIPKIT-SRC-spec §11.56.
+            pub const OPAQUE_DATA_TYPE: u32 = 0x0042_0059;
+            /// `Opaque Data Value`; KMIPKIT-ELEM-TAG-42005A; KMIPKIT-SRC-spec §11.56.
+            pub const OPAQUE_DATA_VALUE: u32 = 0x0042_005A;
+            /// `Opaque Object`; KMIPKIT-ELEM-TAG-42005B; KMIPKIT-SRC-spec §11.56.
+            pub const OPAQUE_OBJECT: u32 = 0x0042_005B;
+            /// `Operation`; KMIPKIT-ELEM-TAG-42005C; KMIPKIT-SRC-spec §11.56.
+            pub const OPERATION: u32 = 0x0042_005C;
+            /// `P`; KMIPKIT-ELEM-TAG-42005E; KMIPKIT-SRC-spec §11.56.
+            pub const P: u32 = 0x0042_005E;
+            /// `Padding Method`; KMIPKIT-ELEM-TAG-42005F; KMIPKIT-SRC-spec §11.56.
+            pub const PADDING_METHOD: u32 = 0x0042_005F;
+            /// `Prime Exponent P`; KMIPKIT-ELEM-TAG-420060; KMIPKIT-SRC-spec §11.56.
+            pub const PRIME_EXPONENT_P: u32 = 0x0042_0060;
+            /// `Prime Exponent Q`; KMIPKIT-ELEM-TAG-420061; KMIPKIT-SRC-spec §11.56.
+            pub const PRIME_EXPONENT_Q: u32 = 0x0042_0061;
+            /// `Prime Field Size`; KMIPKIT-ELEM-TAG-420062; KMIPKIT-SRC-spec §11.56.
+            pub const PRIME_FIELD_SIZE: u32 = 0x0042_0062;
+            /// `Private Exponent`; KMIPKIT-ELEM-TAG-420063; KMIPKIT-SRC-spec §11.56.
+            pub const PRIVATE_EXPONENT: u32 = 0x0042_0063;
+            /// `Private Key`; KMIPKIT-ELEM-TAG-420064; KMIPKIT-SRC-spec §11.56.
+            pub const PRIVATE_KEY: u32 = 0x0042_0064;
+            /// `Private Key Unique Identifier`; KMIPKIT-ELEM-TAG-420066; KMIPKIT-SRC-spec §11.56.
+            pub const PRIVATE_KEY_UNIQUE_IDENTIFIER: u32 = 0x0042_0066;
+            /// `Process Start Date`; KMIPKIT-ELEM-TAG-420067; KMIPKIT-SRC-spec §11.56.
+            pub const PROCESS_START_DATE: u32 = 0x0042_0067;
+            /// `Protect Stop Date`; KMIPKIT-ELEM-TAG-420068; KMIPKIT-SRC-spec §11.56.
+            pub const PROTECT_STOP_DATE: u32 = 0x0042_0068;
+            /// `Protocol Version`; KMIPKIT-ELEM-TAG-420069; KMIPKIT-SRC-spec §11.56.
+            pub const PROTOCOL_VERSION: u32 = 0x0042_0069;
+            /// `Protocol Version Major`; KMIPKIT-ELEM-TAG-42006A; KMIPKIT-SRC-spec §11.56.
+            pub const PROTOCOL_VERSION_MAJOR: u32 = 0x0042_006A;
+            /// `Protocol Version Minor`; KMIPKIT-ELEM-TAG-42006B; KMIPKIT-SRC-spec §11.56.
+            pub const PROTOCOL_VERSION_MINOR: u32 = 0x0042_006B;
+            /// `Public Exponent`; KMIPKIT-ELEM-TAG-42006C; KMIPKIT-SRC-spec §11.56.
+            pub const PUBLIC_EXPONENT: u32 = 0x0042_006C;
+            /// `Public Key`; KMIPKIT-ELEM-TAG-42006D; KMIPKIT-SRC-spec §11.56.
+            pub const PUBLIC_KEY: u32 = 0x0042_006D;
+            /// `Public Key Unique Identifier`; KMIPKIT-ELEM-TAG-42006F; KMIPKIT-SRC-spec §11.56.
+            pub const PUBLIC_KEY_UNIQUE_IDENTIFIER: u32 = 0x0042_006F;
+            /// `Put Function`; KMIPKIT-ELEM-TAG-420070; KMIPKIT-SRC-spec §11.56.
+            pub const PUT_FUNCTION: u32 = 0x0042_0070;
+            /// `Q`; KMIPKIT-ELEM-TAG-420071; KMIPKIT-SRC-spec §11.56.
+            pub const Q: u32 = 0x0042_0071;
+            /// `Q String`; KMIPKIT-ELEM-TAG-420072; KMIPKIT-SRC-spec §11.56.
+            pub const Q_STRING: u32 = 0x0042_0072;
+            /// `Qlength`; KMIPKIT-ELEM-TAG-420073; KMIPKIT-SRC-spec §11.56.
+            pub const QLENGTH: u32 = 0x0042_0073;
+            /// `Query Function`; KMIPKIT-ELEM-TAG-420074; KMIPKIT-SRC-spec §11.56.
+            pub const QUERY_FUNCTION: u32 = 0x0042_0074;
+            /// `Recommended Curve`; KMIPKIT-ELEM-TAG-420075; KMIPKIT-SRC-spec §11.56.
+            pub const RECOMMENDED_CURVE: u32 = 0x0042_0075;
+            /// `Replaced Unique Identifier`; KMIPKIT-ELEM-TAG-420076; KMIPKIT-SRC-spec §11.56.
+            pub const REPLACED_UNIQUE_IDENTIFIER: u32 = 0x0042_0076;
+            /// `Request Header`; KMIPKIT-ELEM-TAG-420077; KMIPKIT-SRC-spec §11.56.
+            pub const REQUEST_HEADER: u32 = 0x0042_0077;
+            /// `Request Message`; KMIPKIT-ELEM-TAG-420078; KMIPKIT-SRC-spec §11.56.
+            pub const REQUEST_MESSAGE: u32 = 0x0042_0078;
+            /// `Request Payload`; KMIPKIT-ELEM-TAG-420079; KMIPKIT-SRC-spec §11.56.
+            pub const REQUEST_PAYLOAD: u32 = 0x0042_0079;
+            /// `Response Header`; KMIPKIT-ELEM-TAG-42007A; KMIPKIT-SRC-spec §11.56.
+            pub const RESPONSE_HEADER: u32 = 0x0042_007A;
+            /// `Response Message`; KMIPKIT-ELEM-TAG-42007B; KMIPKIT-SRC-spec §11.56.
+            pub const RESPONSE_MESSAGE: u32 = 0x0042_007B;
+            /// `Response Payload`; KMIPKIT-ELEM-TAG-42007C; KMIPKIT-SRC-spec §11.56.
+            pub const RESPONSE_PAYLOAD: u32 = 0x0042_007C;
+            /// `Result Message`; KMIPKIT-ELEM-TAG-42007D; KMIPKIT-SRC-spec §11.56.
+            pub const RESULT_MESSAGE: u32 = 0x0042_007D;
+            /// `Result Reason`; KMIPKIT-ELEM-TAG-42007E; KMIPKIT-SRC-spec §11.56.
+            pub const RESULT_REASON: u32 = 0x0042_007E;
+            /// `Result Status`; KMIPKIT-ELEM-TAG-42007F; KMIPKIT-SRC-spec §11.56.
+            pub const RESULT_STATUS: u32 = 0x0042_007F;
+            /// `Revocation Message`; KMIPKIT-ELEM-TAG-420080; KMIPKIT-SRC-spec §11.56.
+            pub const REVOCATION_MESSAGE: u32 = 0x0042_0080;
+            /// `Revocation Reason`; KMIPKIT-ELEM-TAG-420081; KMIPKIT-SRC-spec §11.56.
+            pub const REVOCATION_REASON: u32 = 0x0042_0081;
+            /// `Revocation Reason Code`; KMIPKIT-ELEM-TAG-420082; KMIPKIT-SRC-spec §11.56.
+            pub const REVOCATION_REASON_CODE: u32 = 0x0042_0082;
+            /// `Key Role Type`; KMIPKIT-ELEM-TAG-420083; KMIPKIT-SRC-spec §11.56.
+            pub const KEY_ROLE_TYPE: u32 = 0x0042_0083;
+            /// `Salt`; KMIPKIT-ELEM-TAG-420084; KMIPKIT-SRC-spec §11.56.
+            pub const SALT: u32 = 0x0042_0084;
+            /// `Secret Data`; KMIPKIT-ELEM-TAG-420085; KMIPKIT-SRC-spec §11.56.
+            pub const SECRET_DATA: u32 = 0x0042_0085;
+            /// `Secret Data Type`; KMIPKIT-ELEM-TAG-420086; KMIPKIT-SRC-spec §11.56.
+            pub const SECRET_DATA_TYPE: u32 = 0x0042_0086;
+            /// `Server Information`; KMIPKIT-ELEM-TAG-420088; KMIPKIT-SRC-spec §11.56.
+            pub const SERVER_INFORMATION: u32 = 0x0042_0088;
+            /// `Split Key`; KMIPKIT-ELEM-TAG-420089; KMIPKIT-SRC-spec §11.56.
+            pub const SPLIT_KEY: u32 = 0x0042_0089;
+            /// `Split Key Method`; KMIPKIT-ELEM-TAG-42008A; KMIPKIT-SRC-spec §11.56.
+            pub const SPLIT_KEY_METHOD: u32 = 0x0042_008A;
+            /// `Split Key Parts`; KMIPKIT-ELEM-TAG-42008B; KMIPKIT-SRC-spec §11.56.
+            pub const SPLIT_KEY_PARTS: u32 = 0x0042_008B;
+            /// `Split Key Threshold`; KMIPKIT-ELEM-TAG-42008C; KMIPKIT-SRC-spec §11.56.
+            pub const SPLIT_KEY_THRESHOLD: u32 = 0x0042_008C;
+            /// `State`; KMIPKIT-ELEM-TAG-42008D; KMIPKIT-SRC-spec §11.56.
+            pub const STATE: u32 = 0x0042_008D;
+            /// `Storage Status Mask`; KMIPKIT-ELEM-TAG-42008E; KMIPKIT-SRC-spec §11.56.
+            pub const STORAGE_STATUS_MASK: u32 = 0x0042_008E;
+            /// `Symmetric Key`; KMIPKIT-ELEM-TAG-42008F; KMIPKIT-SRC-spec §11.56.
+            pub const SYMMETRIC_KEY: u32 = 0x0042_008F;
+            /// `Time Stamp`; KMIPKIT-ELEM-TAG-420092; KMIPKIT-SRC-spec §11.56.
+            pub const TIME_STAMP: u32 = 0x0042_0092;
+            /// `Unique Batch Item ID`; KMIPKIT-ELEM-TAG-420093; KMIPKIT-SRC-spec §11.56.
+            pub const UNIQUE_BATCH_ITEM_ID: u32 = 0x0042_0093;
+            /// `Unique Identifier`; KMIPKIT-ELEM-TAG-420094; KMIPKIT-SRC-spec §11.56.
+            pub const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+            /// `Usage Limits`; KMIPKIT-ELEM-TAG-420095; KMIPKIT-SRC-spec §11.56.
+            pub const USAGE_LIMITS: u32 = 0x0042_0095;
+            /// `Usage Limits Count`; KMIPKIT-ELEM-TAG-420096; KMIPKIT-SRC-spec §11.56.
+            pub const USAGE_LIMITS_COUNT: u32 = 0x0042_0096;
+            /// `Usage Limits Total`; KMIPKIT-ELEM-TAG-420097; KMIPKIT-SRC-spec §11.56.
+            pub const USAGE_LIMITS_TOTAL: u32 = 0x0042_0097;
+            /// `Usage Limits Unit`; KMIPKIT-ELEM-TAG-420098; KMIPKIT-SRC-spec §11.56.
+            pub const USAGE_LIMITS_UNIT: u32 = 0x0042_0098;
+            /// `Username`; KMIPKIT-ELEM-TAG-420099; KMIPKIT-SRC-spec §11.56.
+            pub const USERNAME: u32 = 0x0042_0099;
+            /// `Validity Date`; KMIPKIT-ELEM-TAG-42009A; KMIPKIT-SRC-spec §11.56.
+            pub const VALIDITY_DATE: u32 = 0x0042_009A;
+            /// `Validity Indicator`; KMIPKIT-ELEM-TAG-42009B; KMIPKIT-SRC-spec §11.56.
+            pub const VALIDITY_INDICATOR: u32 = 0x0042_009B;
+            /// `Vendor Extension`; KMIPKIT-ELEM-TAG-42009C; KMIPKIT-SRC-spec §11.56.
+            pub const VENDOR_EXTENSION: u32 = 0x0042_009C;
+            /// `Vendor Identification`; KMIPKIT-ELEM-TAG-42009D; KMIPKIT-SRC-spec §11.56.
+            pub const VENDOR_IDENTIFICATION: u32 = 0x0042_009D;
+            /// `Wrapping Method`; KMIPKIT-ELEM-TAG-42009E; KMIPKIT-SRC-spec §11.56.
+            pub const WRAPPING_METHOD: u32 = 0x0042_009E;
+            /// `X`; KMIPKIT-ELEM-TAG-42009F; KMIPKIT-SRC-spec §11.56.
+            pub const X: u32 = 0x0042_009F;
+            /// `Y`; KMIPKIT-ELEM-TAG-4200A0; KMIPKIT-SRC-spec §11.56.
+            pub const Y: u32 = 0x0042_00A0;
+            /// `Password`; KMIPKIT-ELEM-TAG-4200A1; KMIPKIT-SRC-spec §11.56.
+            pub const PASSWORD: u32 = 0x0042_00A1;
+            /// `Device Identifier`; KMIPKIT-ELEM-TAG-4200A2; KMIPKIT-SRC-spec §11.56.
+            pub const DEVICE_IDENTIFIER: u32 = 0x0042_00A2;
+            /// `Encoding Option`; KMIPKIT-ELEM-TAG-4200A3; KMIPKIT-SRC-spec §11.56.
+            pub const ENCODING_OPTION: u32 = 0x0042_00A3;
+            /// `Extension Information`; KMIPKIT-ELEM-TAG-4200A4; KMIPKIT-SRC-spec §11.56.
+            pub const EXTENSION_INFORMATION: u32 = 0x0042_00A4;
+            /// `Extension Name`; KMIPKIT-ELEM-TAG-4200A5; KMIPKIT-SRC-spec §11.56.
+            pub const EXTENSION_NAME: u32 = 0x0042_00A5;
+            /// `Extension Tag`; KMIPKIT-ELEM-TAG-4200A6; KMIPKIT-SRC-spec §11.56.
+            pub const EXTENSION_TAG: u32 = 0x0042_00A6;
+            /// `Extension Type`; KMIPKIT-ELEM-TAG-4200A7; KMIPKIT-SRC-spec §11.56.
+            pub const EXTENSION_TYPE: u32 = 0x0042_00A7;
+            /// `Fresh`; KMIPKIT-ELEM-TAG-4200A8; KMIPKIT-SRC-spec §11.56.
+            pub const FRESH: u32 = 0x0042_00A8;
+            /// `Machine Identifier`; KMIPKIT-ELEM-TAG-4200A9; KMIPKIT-SRC-spec §11.56.
+            pub const MACHINE_IDENTIFIER: u32 = 0x0042_00A9;
+            /// `Media Identifier`; KMIPKIT-ELEM-TAG-4200AA; KMIPKIT-SRC-spec §11.56.
+            pub const MEDIA_IDENTIFIER: u32 = 0x0042_00AA;
+            /// `Network Identifier`; KMIPKIT-ELEM-TAG-4200AB; KMIPKIT-SRC-spec §11.56.
+            pub const NETWORK_IDENTIFIER: u32 = 0x0042_00AB;
+            /// `Object Group Member`; KMIPKIT-ELEM-TAG-4200AC; KMIPKIT-SRC-spec §11.56.
+            pub const OBJECT_GROUP_MEMBER: u32 = 0x0042_00AC;
+            /// `Certificate Length`; KMIPKIT-ELEM-TAG-4200AD; KMIPKIT-SRC-spec §11.56.
+            pub const CERTIFICATE_LENGTH: u32 = 0x0042_00AD;
+            /// `Digital Signature Algorithm`; KMIPKIT-ELEM-TAG-4200AE; KMIPKIT-SRC-spec §11.56.
+            pub const DIGITAL_SIGNATURE_ALGORITHM: u32 = 0x0042_00AE;
+            /// `Certificate Serial Number`; KMIPKIT-ELEM-TAG-4200AF; KMIPKIT-SRC-spec §11.56.
+            pub const CERTIFICATE_SERIAL_NUMBER: u32 = 0x0042_00AF;
+            /// `Device Serial Number`; KMIPKIT-ELEM-TAG-4200B0; KMIPKIT-SRC-spec §11.56.
+            pub const DEVICE_SERIAL_NUMBER: u32 = 0x0042_00B0;
+            /// `Issuer Alternative Name`; KMIPKIT-ELEM-TAG-4200B1; KMIPKIT-SRC-spec §11.56.
+            pub const ISSUER_ALTERNATIVE_NAME: u32 = 0x0042_00B1;
+            /// `Issuer Distinguished Name`; KMIPKIT-ELEM-TAG-4200B2; KMIPKIT-SRC-spec §11.56.
+            pub const ISSUER_DISTINGUISHED_NAME: u32 = 0x0042_00B2;
+            /// `Subject Alternative Name`; KMIPKIT-ELEM-TAG-4200B3; KMIPKIT-SRC-spec §11.56.
+            pub const SUBJECT_ALTERNATIVE_NAME: u32 = 0x0042_00B3;
+            /// `Subject Distinguished Name`; KMIPKIT-ELEM-TAG-4200B4; KMIPKIT-SRC-spec §11.56.
+            pub const SUBJECT_DISTINGUISHED_NAME: u32 = 0x0042_00B4;
+            /// `X.509 Certificate Identifier`; KMIPKIT-ELEM-TAG-4200B5; KMIPKIT-SRC-spec §11.56.
+            pub const X_509_CERTIFICATE_IDENTIFIER: u32 = 0x0042_00B5;
+            /// `X.509 Certificate Issuer`; KMIPKIT-ELEM-TAG-4200B6; KMIPKIT-SRC-spec §11.56.
+            pub const X_509_CERTIFICATE_ISSUER: u32 = 0x0042_00B6;
+            /// `X.509 Certificate Subject`; KMIPKIT-ELEM-TAG-4200B7; KMIPKIT-SRC-spec §11.56.
+            pub const X_509_CERTIFICATE_SUBJECT: u32 = 0x0042_00B7;
+            /// `Key Value Location`; KMIPKIT-ELEM-TAG-4200B8; KMIPKIT-SRC-spec §11.56.
+            pub const KEY_VALUE_LOCATION: u32 = 0x0042_00B8;
+            /// `Key Value Location Value`; KMIPKIT-ELEM-TAG-4200B9; KMIPKIT-SRC-spec §11.56.
+            pub const KEY_VALUE_LOCATION_VALUE: u32 = 0x0042_00B9;
+            /// `Key Value Location Type`; KMIPKIT-ELEM-TAG-4200BA; KMIPKIT-SRC-spec §11.56.
+            pub const KEY_VALUE_LOCATION_TYPE: u32 = 0x0042_00BA;
+            /// `Key Value Present`; KMIPKIT-ELEM-TAG-4200BB; KMIPKIT-SRC-spec §11.56.
+            pub const KEY_VALUE_PRESENT: u32 = 0x0042_00BB;
+            /// `Original Creation Date`; KMIPKIT-ELEM-TAG-4200BC; KMIPKIT-SRC-spec §11.56.
+            pub const ORIGINAL_CREATION_DATE: u32 = 0x0042_00BC;
+            /// `PGP Key`; KMIPKIT-ELEM-TAG-4200BD; KMIPKIT-SRC-spec §11.56.
+            pub const PGP_KEY: u32 = 0x0042_00BD;
+            /// `PGP Key Version`; KMIPKIT-ELEM-TAG-4200BE; KMIPKIT-SRC-spec §11.56.
+            pub const PGP_KEY_VERSION: u32 = 0x0042_00BE;
+            /// `Alternative Name`; KMIPKIT-ELEM-TAG-4200BF; KMIPKIT-SRC-spec §11.56.
+            pub const ALTERNATIVE_NAME: u32 = 0x0042_00BF;
+            /// `Alternative Name Value`; KMIPKIT-ELEM-TAG-4200C0; KMIPKIT-SRC-spec §11.56.
+            pub const ALTERNATIVE_NAME_VALUE: u32 = 0x0042_00C0;
+            /// `Alternative Name Type`; KMIPKIT-ELEM-TAG-4200C1; KMIPKIT-SRC-spec §11.56.
+            pub const ALTERNATIVE_NAME_TYPE: u32 = 0x0042_00C1;
+            /// `Data`; KMIPKIT-ELEM-TAG-4200C2; KMIPKIT-SRC-spec §11.56.
+            pub const DATA: u32 = 0x0042_00C2;
+            /// `Signature Data`; KMIPKIT-ELEM-TAG-4200C3; KMIPKIT-SRC-spec §11.56.
+            pub const SIGNATURE_DATA: u32 = 0x0042_00C3;
+            /// `Data Length`; KMIPKIT-ELEM-TAG-4200C4; KMIPKIT-SRC-spec §11.56.
+            pub const DATA_LENGTH: u32 = 0x0042_00C4;
+            /// `Random IV`; KMIPKIT-ELEM-TAG-4200C5; KMIPKIT-SRC-spec §11.56.
+            pub const RANDOM_IV: u32 = 0x0042_00C5;
+            /// `MAC Data`; KMIPKIT-ELEM-TAG-4200C6; KMIPKIT-SRC-spec §11.56.
+            pub const MAC_DATA: u32 = 0x0042_00C6;
+            /// `Attestation Type`; KMIPKIT-ELEM-TAG-4200C7; KMIPKIT-SRC-spec §11.56.
+            pub const ATTESTATION_TYPE: u32 = 0x0042_00C7;
+            /// `Nonce`; KMIPKIT-ELEM-TAG-4200C8; KMIPKIT-SRC-spec §11.56.
+            pub const NONCE: u32 = 0x0042_00C8;
+            /// `Nonce ID`; KMIPKIT-ELEM-TAG-4200C9; KMIPKIT-SRC-spec §11.56.
+            pub const NONCE_ID: u32 = 0x0042_00C9;
+            /// `Nonce Value`; KMIPKIT-ELEM-TAG-4200CA; KMIPKIT-SRC-spec §11.56.
+            pub const NONCE_VALUE: u32 = 0x0042_00CA;
+            /// `Attestation Measurement`; KMIPKIT-ELEM-TAG-4200CB; KMIPKIT-SRC-spec §11.56.
+            pub const ATTESTATION_MEASUREMENT: u32 = 0x0042_00CB;
+            /// `Attestation Assertion`; KMIPKIT-ELEM-TAG-4200CC; KMIPKIT-SRC-spec §11.56.
+            pub const ATTESTATION_ASSERTION: u32 = 0x0042_00CC;
+            /// `IV Length`; KMIPKIT-ELEM-TAG-4200CD; KMIPKIT-SRC-spec §11.56.
+            pub const IV_LENGTH: u32 = 0x0042_00CD;
+            /// `Tag Length`; KMIPKIT-ELEM-TAG-4200CE; KMIPKIT-SRC-spec §11.56.
+            pub const TAG_LENGTH: u32 = 0x0042_00CE;
+            /// `Fixed Field Length`; KMIPKIT-ELEM-TAG-4200CF; KMIPKIT-SRC-spec §11.56.
+            pub const FIXED_FIELD_LENGTH: u32 = 0x0042_00CF;
+            /// `Counter Length`; KMIPKIT-ELEM-TAG-4200D0; KMIPKIT-SRC-spec §11.56.
+            pub const COUNTER_LENGTH: u32 = 0x0042_00D0;
+            /// `Initial Counter Value`; KMIPKIT-ELEM-TAG-4200D1; KMIPKIT-SRC-spec §11.56.
+            pub const INITIAL_COUNTER_VALUE: u32 = 0x0042_00D1;
+            /// `Invocation Field Length`; KMIPKIT-ELEM-TAG-4200D2; KMIPKIT-SRC-spec §11.56.
+            pub const INVOCATION_FIELD_LENGTH: u32 = 0x0042_00D2;
+            /// `Attestation Capable Indicator`; KMIPKIT-ELEM-TAG-4200D3; KMIPKIT-SRC-spec §11.56.
+            pub const ATTESTATION_CAPABLE_INDICATOR: u32 = 0x0042_00D3;
+            /// `Offset Items`; KMIPKIT-ELEM-TAG-4200D4; KMIPKIT-SRC-spec §11.56.
+            pub const OFFSET_ITEMS: u32 = 0x0042_00D4;
+            /// `Located Items`; KMIPKIT-ELEM-TAG-4200D5; KMIPKIT-SRC-spec §11.56.
+            pub const LOCATED_ITEMS: u32 = 0x0042_00D5;
+            /// `Correlation Value`; KMIPKIT-ELEM-TAG-4200D6; KMIPKIT-SRC-spec §11.56.
+            pub const CORRELATION_VALUE: u32 = 0x0042_00D6;
+            /// `Init Indicator`; KMIPKIT-ELEM-TAG-4200D7; KMIPKIT-SRC-spec §11.56.
+            pub const INIT_INDICATOR: u32 = 0x0042_00D7;
+            /// `Final Indicator`; KMIPKIT-ELEM-TAG-4200D8; KMIPKIT-SRC-spec §11.56.
+            pub const FINAL_INDICATOR: u32 = 0x0042_00D8;
+            /// `RNG Parameters`; KMIPKIT-ELEM-TAG-4200D9; KMIPKIT-SRC-spec §11.56.
+            pub const RNG_PARAMETERS: u32 = 0x0042_00D9;
+            /// `RNG Algorithm`; KMIPKIT-ELEM-TAG-4200DA; KMIPKIT-SRC-spec §11.56.
+            pub const RNG_ALGORITHM: u32 = 0x0042_00DA;
+            /// `DRBG Algorithm`; KMIPKIT-ELEM-TAG-4200DB; KMIPKIT-SRC-spec §11.56.
+            pub const DRBG_ALGORITHM: u32 = 0x0042_00DB;
+            /// `FIPS186 Variation`; KMIPKIT-ELEM-TAG-4200DC; KMIPKIT-SRC-spec §11.56.
+            pub const FIPS186_VARIATION: u32 = 0x0042_00DC;
+            /// `Prediction Resistance`; KMIPKIT-ELEM-TAG-4200DD; KMIPKIT-SRC-spec §11.56.
+            pub const PREDICTION_RESISTANCE: u32 = 0x0042_00DD;
+            /// `Random Number Generator`; KMIPKIT-ELEM-TAG-4200DE; KMIPKIT-SRC-spec §11.56.
+            pub const RANDOM_NUMBER_GENERATOR: u32 = 0x0042_00DE;
+            /// `Validation Information`; KMIPKIT-ELEM-TAG-4200DF; KMIPKIT-SRC-spec §11.56.
+            pub const VALIDATION_INFORMATION: u32 = 0x0042_00DF;
+            /// `Validation Authority Type`; KMIPKIT-ELEM-TAG-4200E0; KMIPKIT-SRC-spec §11.56.
+            pub const VALIDATION_AUTHORITY_TYPE: u32 = 0x0042_00E0;
+            /// `Validation Authority Country`; KMIPKIT-ELEM-TAG-4200E1; KMIPKIT-SRC-spec §11.56.
+            pub const VALIDATION_AUTHORITY_COUNTRY: u32 = 0x0042_00E1;
+            /// `Validation Authority URI`; KMIPKIT-ELEM-TAG-4200E2; KMIPKIT-SRC-spec §11.56.
+            pub const VALIDATION_AUTHORITY_URI: u32 = 0x0042_00E2;
+            /// `Validation Version Major`; KMIPKIT-ELEM-TAG-4200E3; KMIPKIT-SRC-spec §11.56.
+            pub const VALIDATION_VERSION_MAJOR: u32 = 0x0042_00E3;
+            /// `Validation Version Minor`; KMIPKIT-ELEM-TAG-4200E4; KMIPKIT-SRC-spec §11.56.
+            pub const VALIDATION_VERSION_MINOR: u32 = 0x0042_00E4;
+            /// `Validation Type`; KMIPKIT-ELEM-TAG-4200E5; KMIPKIT-SRC-spec §11.56.
+            pub const VALIDATION_TYPE: u32 = 0x0042_00E5;
+            /// `Validation Level`; KMIPKIT-ELEM-TAG-4200E6; KMIPKIT-SRC-spec §11.56.
+            pub const VALIDATION_LEVEL: u32 = 0x0042_00E6;
+            /// `Validation Certificate Identifier`; KMIPKIT-ELEM-TAG-4200E7; KMIPKIT-SRC-spec §11.56.
+            pub const VALIDATION_CERTIFICATE_IDENTIFIER: u32 = 0x0042_00E7;
+            /// `Validation Certificate URI`; KMIPKIT-ELEM-TAG-4200E8; KMIPKIT-SRC-spec §11.56.
+            pub const VALIDATION_CERTIFICATE_URI: u32 = 0x0042_00E8;
+            /// `Validation Vendor URI`; KMIPKIT-ELEM-TAG-4200E9; KMIPKIT-SRC-spec §11.56.
+            pub const VALIDATION_VENDOR_URI: u32 = 0x0042_00E9;
+            /// `Validation Profile`; KMIPKIT-ELEM-TAG-4200EA; KMIPKIT-SRC-spec §11.56.
+            pub const VALIDATION_PROFILE: u32 = 0x0042_00EA;
+            /// `Profile Information`; KMIPKIT-ELEM-TAG-4200EB; KMIPKIT-SRC-spec §11.56.
+            pub const PROFILE_INFORMATION: u32 = 0x0042_00EB;
+            /// `Profile Name`; KMIPKIT-ELEM-TAG-4200EC; KMIPKIT-SRC-spec §11.56.
+            pub const PROFILE_NAME: u32 = 0x0042_00EC;
+            /// `Server URI`; KMIPKIT-ELEM-TAG-4200ED; KMIPKIT-SRC-spec §11.56.
+            pub const SERVER_URI: u32 = 0x0042_00ED;
+            /// `Server Port`; KMIPKIT-ELEM-TAG-4200EE; KMIPKIT-SRC-spec §11.56.
+            pub const SERVER_PORT: u32 = 0x0042_00EE;
+            /// `Streaming Capability`; KMIPKIT-ELEM-TAG-4200EF; KMIPKIT-SRC-spec §11.56.
+            pub const STREAMING_CAPABILITY: u32 = 0x0042_00EF;
+            /// `Asynchronous Capability`; KMIPKIT-ELEM-TAG-4200F0; KMIPKIT-SRC-spec §11.56.
+            pub const ASYNCHRONOUS_CAPABILITY: u32 = 0x0042_00F0;
+            /// `Attestation Capability`; KMIPKIT-ELEM-TAG-4200F1; KMIPKIT-SRC-spec §11.56.
+            pub const ATTESTATION_CAPABILITY: u32 = 0x0042_00F1;
+            /// `Unwrap Mode`; KMIPKIT-ELEM-TAG-4200F2; KMIPKIT-SRC-spec §11.56.
+            pub const UNWRAP_MODE: u32 = 0x0042_00F2;
+            /// `Destroy Action`; KMIPKIT-ELEM-TAG-4200F3; KMIPKIT-SRC-spec §11.56.
+            pub const DESTROY_ACTION: u32 = 0x0042_00F3;
+            /// `Shredding Algorithm`; KMIPKIT-ELEM-TAG-4200F4; KMIPKIT-SRC-spec §11.56.
+            pub const SHREDDING_ALGORITHM: u32 = 0x0042_00F4;
+            /// `RNG Mode`; KMIPKIT-ELEM-TAG-4200F5; KMIPKIT-SRC-spec §11.56.
+            pub const RNG_MODE: u32 = 0x0042_00F5;
+            /// `Client Registration Method`; KMIPKIT-ELEM-TAG-4200F6; KMIPKIT-SRC-spec §11.56.
+            pub const CLIENT_REGISTRATION_METHOD: u32 = 0x0042_00F6;
+            /// `Capability Information`; KMIPKIT-ELEM-TAG-4200F7; KMIPKIT-SRC-spec §11.56.
+            pub const CAPABILITY_INFORMATION: u32 = 0x0042_00F7;
+            /// `Key Wrap Type`; KMIPKIT-ELEM-TAG-4200F8; KMIPKIT-SRC-spec §11.56.
+            pub const KEY_WRAP_TYPE: u32 = 0x0042_00F8;
+            /// `Batch Undo Capability`; KMIPKIT-ELEM-TAG-4200F9; KMIPKIT-SRC-spec §11.56.
+            pub const BATCH_UNDO_CAPABILITY: u32 = 0x0042_00F9;
+            /// `Batch Continue Capability`; KMIPKIT-ELEM-TAG-4200FA; KMIPKIT-SRC-spec §11.56.
+            pub const BATCH_CONTINUE_CAPABILITY: u32 = 0x0042_00FA;
+            /// `PKCS#12 Friendly Name`; KMIPKIT-ELEM-TAG-4200FB; KMIPKIT-SRC-spec §11.56.
+            pub const PKCS_12_FRIENDLY_NAME: u32 = 0x0042_00FB;
+            /// `Description`; KMIPKIT-ELEM-TAG-4200FC; KMIPKIT-SRC-spec §11.56.
+            pub const DESCRIPTION: u32 = 0x0042_00FC;
+            /// `Comment`; KMIPKIT-ELEM-TAG-4200FD; KMIPKIT-SRC-spec §11.56.
+            pub const COMMENT: u32 = 0x0042_00FD;
+            /// `Authenticated Encryption Additional Data`; KMIPKIT-ELEM-TAG-4200FE; KMIPKIT-SRC-spec §11.56.
+            pub const AUTHENTICATED_ENCRYPTION_ADDITIONAL_DATA: u32 = 0x0042_00FE;
+            /// `Authenticated Encryption Tag`; KMIPKIT-ELEM-TAG-4200FF; KMIPKIT-SRC-spec §11.56.
+            pub const AUTHENTICATED_ENCRYPTION_TAG: u32 = 0x0042_00FF;
+            /// `Salt Length`; KMIPKIT-ELEM-TAG-420100; KMIPKIT-SRC-spec §11.56.
+            pub const SALT_LENGTH: u32 = 0x0042_0100;
+            /// `Mask Generator`; KMIPKIT-ELEM-TAG-420101; KMIPKIT-SRC-spec §11.56.
+            pub const MASK_GENERATOR: u32 = 0x0042_0101;
+            /// `Mask Generator Hashing Algorithm`; KMIPKIT-ELEM-TAG-420102; KMIPKIT-SRC-spec §11.56.
+            pub const MASK_GENERATOR_HASHING_ALGORITHM: u32 = 0x0042_0102;
+            /// `P Source`; KMIPKIT-ELEM-TAG-420103; KMIPKIT-SRC-spec §11.56.
+            pub const P_SOURCE: u32 = 0x0042_0103;
+            /// `Trailer Field`; KMIPKIT-ELEM-TAG-420104; KMIPKIT-SRC-spec §11.56.
+            pub const TRAILER_FIELD: u32 = 0x0042_0104;
+            /// `Client Correlation Value`; KMIPKIT-ELEM-TAG-420105; KMIPKIT-SRC-spec §11.56.
+            pub const CLIENT_CORRELATION_VALUE: u32 = 0x0042_0105;
+            /// `Server Correlation Value`; KMIPKIT-ELEM-TAG-420106; KMIPKIT-SRC-spec §11.56.
+            pub const SERVER_CORRELATION_VALUE: u32 = 0x0042_0106;
+            /// `Digested Data`; KMIPKIT-ELEM-TAG-420107; KMIPKIT-SRC-spec §11.56.
+            pub const DIGESTED_DATA: u32 = 0x0042_0107;
+            /// `Certificate Subject CN`; KMIPKIT-ELEM-TAG-420108; KMIPKIT-SRC-spec §11.56.
+            pub const CERTIFICATE_SUBJECT_CN: u32 = 0x0042_0108;
+            /// `Certificate Subject O`; KMIPKIT-ELEM-TAG-420109; KMIPKIT-SRC-spec §11.56.
+            pub const CERTIFICATE_SUBJECT_O: u32 = 0x0042_0109;
+            /// `Certificate Subject OU`; KMIPKIT-ELEM-TAG-42010A; KMIPKIT-SRC-spec §11.56.
+            pub const CERTIFICATE_SUBJECT_OU: u32 = 0x0042_010A;
+            /// `Certificate Subject Email`; KMIPKIT-ELEM-TAG-42010B; KMIPKIT-SRC-spec §11.56.
+            pub const CERTIFICATE_SUBJECT_EMAIL: u32 = 0x0042_010B;
+            /// `Certificate Subject C`; KMIPKIT-ELEM-TAG-42010C; KMIPKIT-SRC-spec §11.56.
+            pub const CERTIFICATE_SUBJECT_C: u32 = 0x0042_010C;
+            /// `Certificate Subject ST`; KMIPKIT-ELEM-TAG-42010D; KMIPKIT-SRC-spec §11.56.
+            pub const CERTIFICATE_SUBJECT_ST: u32 = 0x0042_010D;
+            /// `Certificate Subject L`; KMIPKIT-ELEM-TAG-42010E; KMIPKIT-SRC-spec §11.56.
+            pub const CERTIFICATE_SUBJECT_L: u32 = 0x0042_010E;
+            /// `Certificate Subject UID`; KMIPKIT-ELEM-TAG-42010F; KMIPKIT-SRC-spec §11.56.
+            pub const CERTIFICATE_SUBJECT_UID: u32 = 0x0042_010F;
+            /// `Certificate Subject Serial Number`; KMIPKIT-ELEM-TAG-420110; KMIPKIT-SRC-spec §11.56.
+            pub const CERTIFICATE_SUBJECT_SERIAL_NUMBER: u32 = 0x0042_0110;
+            /// `Certificate Subject Title`; KMIPKIT-ELEM-TAG-420111; KMIPKIT-SRC-spec §11.56.
+            pub const CERTIFICATE_SUBJECT_TITLE: u32 = 0x0042_0111;
+            /// `Certificate Subject DC`; KMIPKIT-ELEM-TAG-420112; KMIPKIT-SRC-spec §11.56.
+            pub const CERTIFICATE_SUBJECT_DC: u32 = 0x0042_0112;
+            /// `Certificate Subject DN Qualifier`; KMIPKIT-ELEM-TAG-420113; KMIPKIT-SRC-spec §11.56.
+            pub const CERTIFICATE_SUBJECT_DN_QUALIFIER: u32 = 0x0042_0113;
+            /// `Certificate Issuer CN`; KMIPKIT-ELEM-TAG-420114; KMIPKIT-SRC-spec §11.56.
+            pub const CERTIFICATE_ISSUER_CN: u32 = 0x0042_0114;
+            /// `Certificate Issuer O`; KMIPKIT-ELEM-TAG-420115; KMIPKIT-SRC-spec §11.56.
+            pub const CERTIFICATE_ISSUER_O: u32 = 0x0042_0115;
+            /// `Certificate Issuer OU`; KMIPKIT-ELEM-TAG-420116; KMIPKIT-SRC-spec §11.56.
+            pub const CERTIFICATE_ISSUER_OU: u32 = 0x0042_0116;
+            /// `Certificate Issuer Email`; KMIPKIT-ELEM-TAG-420117; KMIPKIT-SRC-spec §11.56.
+            pub const CERTIFICATE_ISSUER_EMAIL: u32 = 0x0042_0117;
+            /// `Certificate Issuer C`; KMIPKIT-ELEM-TAG-420118; KMIPKIT-SRC-spec §11.56.
+            pub const CERTIFICATE_ISSUER_C: u32 = 0x0042_0118;
+            /// `Certificate Issuer ST`; KMIPKIT-ELEM-TAG-420119; KMIPKIT-SRC-spec §11.56.
+            pub const CERTIFICATE_ISSUER_ST: u32 = 0x0042_0119;
+            /// `Certificate Issuer L`; KMIPKIT-ELEM-TAG-42011A; KMIPKIT-SRC-spec §11.56.
+            pub const CERTIFICATE_ISSUER_L: u32 = 0x0042_011A;
+            /// `Certificate Issuer UID`; KMIPKIT-ELEM-TAG-42011B; KMIPKIT-SRC-spec §11.56.
+            pub const CERTIFICATE_ISSUER_UID: u32 = 0x0042_011B;
+            /// `Certificate Issuer Serial Number`; KMIPKIT-ELEM-TAG-42011C; KMIPKIT-SRC-spec §11.56.
+            pub const CERTIFICATE_ISSUER_SERIAL_NUMBER: u32 = 0x0042_011C;
+            /// `Certificate Issuer Title`; KMIPKIT-ELEM-TAG-42011D; KMIPKIT-SRC-spec §11.56.
+            pub const CERTIFICATE_ISSUER_TITLE: u32 = 0x0042_011D;
+            /// `Certificate Issuer DC`; KMIPKIT-ELEM-TAG-42011E; KMIPKIT-SRC-spec §11.56.
+            pub const CERTIFICATE_ISSUER_DC: u32 = 0x0042_011E;
+            /// `Certificate Issuer DN Qualifier`; KMIPKIT-ELEM-TAG-42011F; KMIPKIT-SRC-spec §11.56.
+            pub const CERTIFICATE_ISSUER_DN_QUALIFIER: u32 = 0x0042_011F;
+            /// `Sensitive`; KMIPKIT-ELEM-TAG-420120; KMIPKIT-SRC-spec §11.56.
+            pub const SENSITIVE: u32 = 0x0042_0120;
+            /// `Always Sensitive`; KMIPKIT-ELEM-TAG-420121; KMIPKIT-SRC-spec §11.56.
+            pub const ALWAYS_SENSITIVE: u32 = 0x0042_0121;
+            /// `Extractable`; KMIPKIT-ELEM-TAG-420122; KMIPKIT-SRC-spec §11.56.
+            pub const EXTRACTABLE: u32 = 0x0042_0122;
+            /// `Never Extractable`; KMIPKIT-ELEM-TAG-420123; KMIPKIT-SRC-spec §11.56.
+            pub const NEVER_EXTRACTABLE: u32 = 0x0042_0123;
+            /// `Replace Existing`; KMIPKIT-ELEM-TAG-420124; KMIPKIT-SRC-spec §11.56.
+            pub const REPLACE_EXISTING: u32 = 0x0042_0124;
+            /// `Attributes`; KMIPKIT-ELEM-TAG-420125; KMIPKIT-SRC-spec §11.56.
+            pub const ATTRIBUTES: u32 = 0x0042_0125;
+            /// `Common Attributes`; KMIPKIT-ELEM-TAG-420126; KMIPKIT-SRC-spec §11.56.
+            pub const COMMON_ATTRIBUTES: u32 = 0x0042_0126;
+            /// `Private Key Attributes`; KMIPKIT-ELEM-TAG-420127; KMIPKIT-SRC-spec §11.56.
+            pub const PRIVATE_KEY_ATTRIBUTES: u32 = 0x0042_0127;
+            /// `Public Key Attributes`; KMIPKIT-ELEM-TAG-420128; KMIPKIT-SRC-spec §11.56.
+            pub const PUBLIC_KEY_ATTRIBUTES: u32 = 0x0042_0128;
+            /// `Extension Enumeration`; KMIPKIT-ELEM-TAG-420129; KMIPKIT-SRC-spec §11.56.
+            pub const EXTENSION_ENUMERATION: u32 = 0x0042_0129;
+            /// `Extension Attribute`; KMIPKIT-ELEM-TAG-42012A; KMIPKIT-SRC-spec §11.56.
+            pub const EXTENSION_ATTRIBUTE: u32 = 0x0042_012A;
+            /// `Extension Parent Structure Tag`; KMIPKIT-ELEM-TAG-42012B; KMIPKIT-SRC-spec §11.56.
+            pub const EXTENSION_PARENT_STRUCTURE_TAG: u32 = 0x0042_012B;
+            /// `Extension Description`; KMIPKIT-ELEM-TAG-42012C; KMIPKIT-SRC-spec §11.56.
+            pub const EXTENSION_DESCRIPTION: u32 = 0x0042_012C;
+            /// `Server Name`; KMIPKIT-ELEM-TAG-42012D; KMIPKIT-SRC-spec §11.56.
+            pub const SERVER_NAME: u32 = 0x0042_012D;
+            /// `Server Serial Number`; KMIPKIT-ELEM-TAG-42012E; KMIPKIT-SRC-spec §11.56.
+            pub const SERVER_SERIAL_NUMBER: u32 = 0x0042_012E;
+            /// `Server Version`; KMIPKIT-ELEM-TAG-42012F; KMIPKIT-SRC-spec §11.56.
+            pub const SERVER_VERSION: u32 = 0x0042_012F;
+            /// `Server Load`; KMIPKIT-ELEM-TAG-420130; KMIPKIT-SRC-spec §11.56.
+            pub const SERVER_LOAD: u32 = 0x0042_0130;
+            /// `Product Name`; KMIPKIT-ELEM-TAG-420131; KMIPKIT-SRC-spec §11.56.
+            pub const PRODUCT_NAME: u32 = 0x0042_0131;
+            /// `Build Level`; KMIPKIT-ELEM-TAG-420132; KMIPKIT-SRC-spec §11.56.
+            pub const BUILD_LEVEL: u32 = 0x0042_0132;
+            /// `Build Date`; KMIPKIT-ELEM-TAG-420133; KMIPKIT-SRC-spec §11.56.
+            pub const BUILD_DATE: u32 = 0x0042_0133;
+            /// `Cluster Info`; KMIPKIT-ELEM-TAG-420134; KMIPKIT-SRC-spec §11.56.
+            pub const CLUSTER_INFO: u32 = 0x0042_0134;
+            /// `Alternate Failover Endpoints`; KMIPKIT-ELEM-TAG-420135; KMIPKIT-SRC-spec §11.56.
+            pub const ALTERNATE_FAILOVER_ENDPOINTS: u32 = 0x0042_0135;
+            /// `Short Unique Identifier`; KMIPKIT-ELEM-TAG-420136; KMIPKIT-SRC-spec §11.56.
+            pub const SHORT_UNIQUE_IDENTIFIER: u32 = 0x0042_0136;
+            /// `Tag`; KMIPKIT-ELEM-TAG-420138; KMIPKIT-SRC-spec §11.56.
+            pub const TAG: u32 = 0x0042_0138;
+            /// `Certificate Request Unique Identifier`; KMIPKIT-ELEM-TAG-420139; KMIPKIT-SRC-spec §11.56.
+            pub const CERTIFICATE_REQUEST_UNIQUE_IDENTIFIER: u32 = 0x0042_0139;
+            /// `NIST Key Type`; KMIPKIT-ELEM-TAG-42013A; KMIPKIT-SRC-spec §11.56.
+            pub const NIST_KEY_TYPE: u32 = 0x0042_013A;
+            /// `Attribute Reference`; KMIPKIT-ELEM-TAG-42013B; KMIPKIT-SRC-spec §11.56.
+            pub const ATTRIBUTE_REFERENCE: u32 = 0x0042_013B;
+            /// `Current Attribute`; KMIPKIT-ELEM-TAG-42013C; KMIPKIT-SRC-spec §11.56.
+            pub const CURRENT_ATTRIBUTE: u32 = 0x0042_013C;
+            /// `New Attribute`; KMIPKIT-ELEM-TAG-42013D; KMIPKIT-SRC-spec §11.56.
+            pub const NEW_ATTRIBUTE: u32 = 0x0042_013D;
+            /// `Certificate Request Value`; KMIPKIT-ELEM-TAG-420140; KMIPKIT-SRC-spec §11.56.
+            pub const CERTIFICATE_REQUEST_VALUE: u32 = 0x0042_0140;
+            /// `Log Message`; KMIPKIT-ELEM-TAG-420141; KMIPKIT-SRC-spec §11.56.
+            pub const LOG_MESSAGE: u32 = 0x0042_0141;
+            /// `Profile Version`; KMIPKIT-ELEM-TAG-420142; KMIPKIT-SRC-spec §11.56.
+            pub const PROFILE_VERSION: u32 = 0x0042_0142;
+            /// `Profile Version Major`; KMIPKIT-ELEM-TAG-420143; KMIPKIT-SRC-spec §11.56.
+            pub const PROFILE_VERSION_MAJOR: u32 = 0x0042_0143;
+            /// `Profile Version Minor`; KMIPKIT-ELEM-TAG-420144; KMIPKIT-SRC-spec §11.56.
+            pub const PROFILE_VERSION_MINOR: u32 = 0x0042_0144;
+            /// `Protection Level`; KMIPKIT-ELEM-TAG-420145; KMIPKIT-SRC-spec §11.56.
+            pub const PROTECTION_LEVEL: u32 = 0x0042_0145;
+            /// `Protection Period`; KMIPKIT-ELEM-TAG-420146; KMIPKIT-SRC-spec §11.56.
+            pub const PROTECTION_PERIOD: u32 = 0x0042_0146;
+            /// `Quantum Safe`; KMIPKIT-ELEM-TAG-420147; KMIPKIT-SRC-spec §11.56.
+            pub const QUANTUM_SAFE: u32 = 0x0042_0147;
+            /// `Quantum Safe Capability`; KMIPKIT-ELEM-TAG-420148; KMIPKIT-SRC-spec §11.56.
+            pub const QUANTUM_SAFE_CAPABILITY: u32 = 0x0042_0148;
+            /// `Ticket`; KMIPKIT-ELEM-TAG-420149; KMIPKIT-SRC-spec §11.56.
+            pub const TICKET: u32 = 0x0042_0149;
+            /// `Ticket Type`; KMIPKIT-ELEM-TAG-42014A; KMIPKIT-SRC-spec §11.56.
+            pub const TICKET_TYPE: u32 = 0x0042_014A;
+            /// `Ticket Value`; KMIPKIT-ELEM-TAG-42014B; KMIPKIT-SRC-spec §11.56.
+            pub const TICKET_VALUE: u32 = 0x0042_014B;
+            /// `Request Count`; KMIPKIT-ELEM-TAG-42014C; KMIPKIT-SRC-spec §11.56.
+            pub const REQUEST_COUNT: u32 = 0x0042_014C;
+            /// `Rights`; KMIPKIT-ELEM-TAG-42014D; KMIPKIT-SRC-spec §11.56.
+            pub const RIGHTS: u32 = 0x0042_014D;
+            /// `Objects`; KMIPKIT-ELEM-TAG-42014E; KMIPKIT-SRC-spec §11.56.
+            pub const OBJECTS: u32 = 0x0042_014E;
+            /// `Operations`; KMIPKIT-ELEM-TAG-42014F; KMIPKIT-SRC-spec §11.56.
+            pub const OPERATIONS: u32 = 0x0042_014F;
+            /// `Right`; KMIPKIT-ELEM-TAG-420150; KMIPKIT-SRC-spec §11.56.
+            pub const RIGHT: u32 = 0x0042_0150;
+            /// `Endpoint Role`; KMIPKIT-ELEM-TAG-420151; KMIPKIT-SRC-spec §11.56.
+            pub const ENDPOINT_ROLE: u32 = 0x0042_0151;
+            /// `Defaults Information`; KMIPKIT-ELEM-TAG-420152; KMIPKIT-SRC-spec §11.56.
+            pub const DEFAULTS_INFORMATION: u32 = 0x0042_0152;
+            /// `Object Defaults`; KMIPKIT-ELEM-TAG-420153; KMIPKIT-SRC-spec §11.56.
+            pub const OBJECT_DEFAULTS: u32 = 0x0042_0153;
+            /// `Ephemeral`; KMIPKIT-ELEM-TAG-420154; KMIPKIT-SRC-spec §11.56.
+            pub const EPHEMERAL: u32 = 0x0042_0154;
+            /// `Server Hashed Password`; KMIPKIT-ELEM-TAG-420155; KMIPKIT-SRC-spec §11.56.
+            pub const SERVER_HASHED_PASSWORD: u32 = 0x0042_0155;
+            /// `One Time Password`; KMIPKIT-ELEM-TAG-420156; KMIPKIT-SRC-spec §11.56.
+            pub const ONE_TIME_PASSWORD: u32 = 0x0042_0156;
+            /// `Hashed Password`; KMIPKIT-ELEM-TAG-420157; KMIPKIT-SRC-spec §11.56.
+            pub const HASHED_PASSWORD: u32 = 0x0042_0157;
+            /// `Adjustment Type`; KMIPKIT-ELEM-TAG-420158; KMIPKIT-SRC-spec §11.56.
+            pub const ADJUSTMENT_TYPE: u32 = 0x0042_0158;
+            /// `PKCS#11 Interface`; KMIPKIT-ELEM-TAG-420159; KMIPKIT-SRC-spec §11.56.
+            pub const PKCS_11_INTERFACE: u32 = 0x0042_0159;
+            /// `PKCS#11 Function`; KMIPKIT-ELEM-TAG-42015A; KMIPKIT-SRC-spec §11.56.
+            pub const PKCS_11_FUNCTION: u32 = 0x0042_015A;
+            /// `PKCS#11 Input Parameters`; KMIPKIT-ELEM-TAG-42015B; KMIPKIT-SRC-spec §11.56.
+            pub const PKCS_11_INPUT_PARAMETERS: u32 = 0x0042_015B;
+            /// `PKCS#11 Output Parameters`; KMIPKIT-ELEM-TAG-42015C; KMIPKIT-SRC-spec §11.56.
+            pub const PKCS_11_OUTPUT_PARAMETERS: u32 = 0x0042_015C;
+            /// `PKCS#11 Return Code`; KMIPKIT-ELEM-TAG-42015D; KMIPKIT-SRC-spec §11.56.
+            pub const PKCS_11_RETURN_CODE: u32 = 0x0042_015D;
+            /// `Protection Storage Mask`; KMIPKIT-ELEM-TAG-42015E; KMIPKIT-SRC-spec §11.56.
+            pub const PROTECTION_STORAGE_MASK: u32 = 0x0042_015E;
+            /// `Protection Storage Masks`; KMIPKIT-ELEM-TAG-42015F; KMIPKIT-SRC-spec §11.56.
+            pub const PROTECTION_STORAGE_MASKS: u32 = 0x0042_015F;
+            /// `Interop Function`; KMIPKIT-ELEM-TAG-420160; KMIPKIT-SRC-spec §11.56.
+            pub const INTEROP_FUNCTION: u32 = 0x0042_0160;
+            /// `Interop Identifier`; KMIPKIT-ELEM-TAG-420161; KMIPKIT-SRC-spec §11.56.
+            pub const INTEROP_IDENTIFIER: u32 = 0x0042_0161;
+            /// `Adjustment Value`; KMIPKIT-ELEM-TAG-420162; KMIPKIT-SRC-spec §11.56.
+            pub const ADJUSTMENT_VALUE: u32 = 0x0042_0162;
+            /// `Common Protection Storage Masks`; KMIPKIT-ELEM-TAG-420163; KMIPKIT-SRC-spec §11.56.
+            pub const COMMON_PROTECTION_STORAGE_MASKS: u32 = 0x0042_0163;
+            /// `Private Protection Storage Masks`; KMIPKIT-ELEM-TAG-420164; KMIPKIT-SRC-spec §11.56.
+            pub const PRIVATE_PROTECTION_STORAGE_MASKS: u32 = 0x0042_0164;
+            /// `Public Protection Storage Masks`; KMIPKIT-ELEM-TAG-420165; KMIPKIT-SRC-spec §11.56.
+            pub const PUBLIC_PROTECTION_STORAGE_MASKS: u32 = 0x0042_0165;
+            /// `Object Groups`; KMIPKIT-ELEM-TAG-420166; KMIPKIT-SRC-spec §11.56.
+            pub const OBJECT_GROUPS: u32 = 0x0042_0166;
+            /// `Object Types`; KMIPKIT-ELEM-TAG-420167; KMIPKIT-SRC-spec §11.56.
+            pub const OBJECT_TYPES: u32 = 0x0042_0167;
+            /// `Constraints`; KMIPKIT-ELEM-TAG-420168; KMIPKIT-SRC-spec §11.56.
+            pub const CONSTRAINTS: u32 = 0x0042_0168;
+            /// `Constraint`; KMIPKIT-ELEM-TAG-420169; KMIPKIT-SRC-spec §11.56.
+            pub const CONSTRAINT: u32 = 0x0042_0169;
+            /// `Rotate Interval`; KMIPKIT-ELEM-TAG-42016A; KMIPKIT-SRC-spec §11.56.
+            pub const ROTATE_INTERVAL: u32 = 0x0042_016A;
+            /// `Rotate Automatic`; KMIPKIT-ELEM-TAG-42016B; KMIPKIT-SRC-spec §11.56.
+            pub const ROTATE_AUTOMATIC: u32 = 0x0042_016B;
+            /// `Rotate Offset`; KMIPKIT-ELEM-TAG-42016C; KMIPKIT-SRC-spec §11.56.
+            pub const ROTATE_OFFSET: u32 = 0x0042_016C;
+            /// `Rotate Date`; KMIPKIT-ELEM-TAG-42016D; KMIPKIT-SRC-spec §11.56.
+            pub const ROTATE_DATE: u32 = 0x0042_016D;
+            /// `Rotate Generation`; KMIPKIT-ELEM-TAG-42016E; KMIPKIT-SRC-spec §11.56.
+            pub const ROTATE_GENERATION: u32 = 0x0042_016E;
+            /// `Rotate Name`; KMIPKIT-ELEM-TAG-42016F; KMIPKIT-SRC-spec §11.56.
+            pub const ROTATE_NAME: u32 = 0x0042_016F;
+            /// `Rotate Name Value`; KMIPKIT-ELEM-TAG-420170; KMIPKIT-SRC-spec §11.56.
+            pub const ROTATE_NAME_VALUE: u32 = 0x0042_0170;
+            /// `Rotate Name Type`; KMIPKIT-ELEM-TAG-420171; KMIPKIT-SRC-spec §11.56.
+            pub const ROTATE_NAME_TYPE: u32 = 0x0042_0171;
+            /// `Rotate Latest`; KMIPKIT-ELEM-TAG-420172; KMIPKIT-SRC-spec §11.56.
+            pub const ROTATE_LATEST: u32 = 0x0042_0172;
+            /// `Asynchronous Request`; KMIPKIT-ELEM-TAG-420173; KMIPKIT-SRC-spec §11.56.
+            pub const ASYNCHRONOUS_REQUEST: u32 = 0x0042_0173;
+            /// `Submission Date`; KMIPKIT-ELEM-TAG-420174; KMIPKIT-SRC-spec §11.56.
+            pub const SUBMISSION_DATE: u32 = 0x0042_0174;
+            /// `Processing Stage`; KMIPKIT-ELEM-TAG-420175; KMIPKIT-SRC-spec §11.56.
+            pub const PROCESSING_STAGE: u32 = 0x0042_0175;
+            /// `Asynchronous Correlation Values`; KMIPKIT-ELEM-TAG-420176; KMIPKIT-SRC-spec §11.56.
+            pub const ASYNCHRONOUS_CORRELATION_VALUES: u32 = 0x0042_0176;
             /// Returns the assigned catalog name for a known raw value.
             #[must_use]
-            pub const fn name(_raw: u32) -> Option<&'static str> {
-                None
+            pub const fn name(raw: u32) -> Option<&'static str> {
+                match raw {
+                    0x0042_0001..=0x0042_003A => name_chunk_0(raw),
+                    0x0042_003C..=0x0042_006D => name_chunk_1(raw),
+                    0x0042_006F..=0x0042_00A1 => name_chunk_2(raw),
+                    0x0042_00A2..=0x0042_00D1 => name_chunk_3(raw),
+                    0x0042_00D2..=0x0042_0101 => name_chunk_4(raw),
+                    0x0042_0102..=0x0042_0131 => name_chunk_5(raw),
+                    0x0042_0132..=0x0042_0164 => name_chunk_6(raw),
+                    0x0042_0165..=0x0042_0176 => name_chunk_7(raw),
+                    _ => None,
+                }
+            }
+            const fn name_chunk_0(raw: u32) -> Option<&'static str> {
+                match raw {
+                    0x0042_0001 => Some("Activation Date"),
+                    0x0042_0002 => Some("Application Data"),
+                    0x0042_0003 => Some("Application Namespace"),
+                    0x0042_0004 => Some("Application Specific Information"),
+                    0x0042_0005 => Some("Archive Date"),
+                    0x0042_0006 => Some("Asynchronous Correlation Value"),
+                    0x0042_0007 => Some("Asynchronous Indicator"),
+                    0x0042_0008 => Some("Attribute"),
+                    0x0042_000A => Some("Attribute Name"),
+                    0x0042_000B => Some("Attribute Value"),
+                    0x0042_000C => Some("Authentication"),
+                    0x0042_000D => Some("Batch Count"),
+                    0x0042_000E => Some("Batch Error Continuation Option"),
+                    0x0042_000F => Some("Batch Item"),
+                    0x0042_0010 => Some("Batch Order Option"),
+                    0x0042_0011 => Some("Block Cipher Mode"),
+                    0x0042_0012 => Some("Cancellation Result"),
+                    0x0042_0013 => Some("Certificate"),
+                    0x0042_0018 => Some("Certificate Request"),
+                    0x0042_0019 => Some("Certificate Request Type"),
+                    0x0042_001D => Some("Certificate Type"),
+                    0x0042_001E => Some("Certificate Value"),
+                    0x0042_0020 => Some("Compromise Date"),
+                    0x0042_0021 => Some("Compromise Occurrence Date"),
+                    0x0042_0022 => Some("Contact Information"),
+                    0x0042_0023 => Some("Credential"),
+                    0x0042_0024 => Some("Credential Type"),
+                    0x0042_0025 => Some("Credential Value"),
+                    0x0042_0026 => Some("Criticality Indicator"),
+                    0x0042_0027 => Some("CRT Coefficient"),
+                    0x0042_0028 => Some("Cryptographic Algorithm"),
+                    0x0042_0029 => Some("Cryptographic Domain Parameters"),
+                    0x0042_002A => Some("Cryptographic Length"),
+                    0x0042_002B => Some("Cryptographic Parameters"),
+                    0x0042_002C => Some("Cryptographic Usage Mask"),
+                    0x0042_002E => Some("D"),
+                    0x0042_002F => Some("Deactivation Date"),
+                    0x0042_0030 => Some("Derivation Data"),
+                    0x0042_0031 => Some("Derivation Method"),
+                    0x0042_0032 => Some("Derivation Parameters"),
+                    0x0042_0033 => Some("Destroy Date"),
+                    0x0042_0034 => Some("Digest"),
+                    0x0042_0035 => Some("Digest Value"),
+                    0x0042_0036 => Some("Encryption Key Information"),
+                    0x0042_0037 => Some("G"),
+                    0x0042_0038 => Some("Hashing Algorithm"),
+                    0x0042_0039 => Some("Initial Date"),
+                    0x0042_003A => Some("Initialization Vector"),
+                    _ => None,
+                }
+            }
+            const fn name_chunk_1(raw: u32) -> Option<&'static str> {
+                match raw {
+                    0x0042_003C => Some("Iteration Count"),
+                    0x0042_003D => Some("IV/Counter/Nonce"),
+                    0x0042_003E => Some("J"),
+                    0x0042_003F => Some("Key"),
+                    0x0042_0040 => Some("Key Block"),
+                    0x0042_0041 => Some("Key Compression Type"),
+                    0x0042_0042 => Some("Key Format Type"),
+                    0x0042_0043 => Some("Key Material"),
+                    0x0042_0044 => Some("Key Part Identifier"),
+                    0x0042_0045 => Some("Key Value"),
+                    0x0042_0046 => Some("Key Wrapping Data"),
+                    0x0042_0047 => Some("Key Wrapping Specification"),
+                    0x0042_0048 => Some("Last Change Date"),
+                    0x0042_0049 => Some("Lease Time"),
+                    0x0042_004A => Some("Link"),
+                    0x0042_004B => Some("Link Type"),
+                    0x0042_004C => Some("Linked Object Identifier"),
+                    0x0042_004D => Some("MAC/Signature"),
+                    0x0042_004E => Some("MAC/Signature Key Information"),
+                    0x0042_004F => Some("Maximum Items"),
+                    0x0042_0050 => Some("Maximum Response Size"),
+                    0x0042_0051 => Some("Message Extension"),
+                    0x0042_0052 => Some("Modulus"),
+                    0x0042_0053 => Some("Name"),
+                    0x0042_0054 => Some("Name Type"),
+                    0x0042_0055 => Some("Name Value"),
+                    0x0042_0056 => Some("Object Group"),
+                    0x0042_0057 => Some("Object Type"),
+                    0x0042_0058 => Some("Offset"),
+                    0x0042_0059 => Some("Opaque Data Type"),
+                    0x0042_005A => Some("Opaque Data Value"),
+                    0x0042_005B => Some("Opaque Object"),
+                    0x0042_005C => Some("Operation"),
+                    0x0042_005E => Some("P"),
+                    0x0042_005F => Some("Padding Method"),
+                    0x0042_0060 => Some("Prime Exponent P"),
+                    0x0042_0061 => Some("Prime Exponent Q"),
+                    0x0042_0062 => Some("Prime Field Size"),
+                    0x0042_0063 => Some("Private Exponent"),
+                    0x0042_0064 => Some("Private Key"),
+                    0x0042_0066 => Some("Private Key Unique Identifier"),
+                    0x0042_0067 => Some("Process Start Date"),
+                    0x0042_0068 => Some("Protect Stop Date"),
+                    0x0042_0069 => Some("Protocol Version"),
+                    0x0042_006A => Some("Protocol Version Major"),
+                    0x0042_006B => Some("Protocol Version Minor"),
+                    0x0042_006C => Some("Public Exponent"),
+                    0x0042_006D => Some("Public Key"),
+                    _ => None,
+                }
+            }
+            const fn name_chunk_2(raw: u32) -> Option<&'static str> {
+                match raw {
+                    0x0042_006F => Some("Public Key Unique Identifier"),
+                    0x0042_0070 => Some("Put Function"),
+                    0x0042_0071 => Some("Q"),
+                    0x0042_0072 => Some("Q String"),
+                    0x0042_0073 => Some("Qlength"),
+                    0x0042_0074 => Some("Query Function"),
+                    0x0042_0075 => Some("Recommended Curve"),
+                    0x0042_0076 => Some("Replaced Unique Identifier"),
+                    0x0042_0077 => Some("Request Header"),
+                    0x0042_0078 => Some("Request Message"),
+                    0x0042_0079 => Some("Request Payload"),
+                    0x0042_007A => Some("Response Header"),
+                    0x0042_007B => Some("Response Message"),
+                    0x0042_007C => Some("Response Payload"),
+                    0x0042_007D => Some("Result Message"),
+                    0x0042_007E => Some("Result Reason"),
+                    0x0042_007F => Some("Result Status"),
+                    0x0042_0080 => Some("Revocation Message"),
+                    0x0042_0081 => Some("Revocation Reason"),
+                    0x0042_0082 => Some("Revocation Reason Code"),
+                    0x0042_0083 => Some("Key Role Type"),
+                    0x0042_0084 => Some("Salt"),
+                    0x0042_0085 => Some("Secret Data"),
+                    0x0042_0086 => Some("Secret Data Type"),
+                    0x0042_0088 => Some("Server Information"),
+                    0x0042_0089 => Some("Split Key"),
+                    0x0042_008A => Some("Split Key Method"),
+                    0x0042_008B => Some("Split Key Parts"),
+                    0x0042_008C => Some("Split Key Threshold"),
+                    0x0042_008D => Some("State"),
+                    0x0042_008E => Some("Storage Status Mask"),
+                    0x0042_008F => Some("Symmetric Key"),
+                    0x0042_0092 => Some("Time Stamp"),
+                    0x0042_0093 => Some("Unique Batch Item ID"),
+                    0x0042_0094 => Some("Unique Identifier"),
+                    0x0042_0095 => Some("Usage Limits"),
+                    0x0042_0096 => Some("Usage Limits Count"),
+                    0x0042_0097 => Some("Usage Limits Total"),
+                    0x0042_0098 => Some("Usage Limits Unit"),
+                    0x0042_0099 => Some("Username"),
+                    0x0042_009A => Some("Validity Date"),
+                    0x0042_009B => Some("Validity Indicator"),
+                    0x0042_009C => Some("Vendor Extension"),
+                    0x0042_009D => Some("Vendor Identification"),
+                    0x0042_009E => Some("Wrapping Method"),
+                    0x0042_009F => Some("X"),
+                    0x0042_00A0 => Some("Y"),
+                    0x0042_00A1 => Some("Password"),
+                    _ => None,
+                }
+            }
+            const fn name_chunk_3(raw: u32) -> Option<&'static str> {
+                match raw {
+                    0x0042_00A2 => Some("Device Identifier"),
+                    0x0042_00A3 => Some("Encoding Option"),
+                    0x0042_00A4 => Some("Extension Information"),
+                    0x0042_00A5 => Some("Extension Name"),
+                    0x0042_00A6 => Some("Extension Tag"),
+                    0x0042_00A7 => Some("Extension Type"),
+                    0x0042_00A8 => Some("Fresh"),
+                    0x0042_00A9 => Some("Machine Identifier"),
+                    0x0042_00AA => Some("Media Identifier"),
+                    0x0042_00AB => Some("Network Identifier"),
+                    0x0042_00AC => Some("Object Group Member"),
+                    0x0042_00AD => Some("Certificate Length"),
+                    0x0042_00AE => Some("Digital Signature Algorithm"),
+                    0x0042_00AF => Some("Certificate Serial Number"),
+                    0x0042_00B0 => Some("Device Serial Number"),
+                    0x0042_00B1 => Some("Issuer Alternative Name"),
+                    0x0042_00B2 => Some("Issuer Distinguished Name"),
+                    0x0042_00B3 => Some("Subject Alternative Name"),
+                    0x0042_00B4 => Some("Subject Distinguished Name"),
+                    0x0042_00B5 => Some("X.509 Certificate Identifier"),
+                    0x0042_00B6 => Some("X.509 Certificate Issuer"),
+                    0x0042_00B7 => Some("X.509 Certificate Subject"),
+                    0x0042_00B8 => Some("Key Value Location"),
+                    0x0042_00B9 => Some("Key Value Location Value"),
+                    0x0042_00BA => Some("Key Value Location Type"),
+                    0x0042_00BB => Some("Key Value Present"),
+                    0x0042_00BC => Some("Original Creation Date"),
+                    0x0042_00BD => Some("PGP Key"),
+                    0x0042_00BE => Some("PGP Key Version"),
+                    0x0042_00BF => Some("Alternative Name"),
+                    0x0042_00C0 => Some("Alternative Name Value"),
+                    0x0042_00C1 => Some("Alternative Name Type"),
+                    0x0042_00C2 => Some("Data"),
+                    0x0042_00C3 => Some("Signature Data"),
+                    0x0042_00C4 => Some("Data Length"),
+                    0x0042_00C5 => Some("Random IV"),
+                    0x0042_00C6 => Some("MAC Data"),
+                    0x0042_00C7 => Some("Attestation Type"),
+                    0x0042_00C8 => Some("Nonce"),
+                    0x0042_00C9 => Some("Nonce ID"),
+                    0x0042_00CA => Some("Nonce Value"),
+                    0x0042_00CB => Some("Attestation Measurement"),
+                    0x0042_00CC => Some("Attestation Assertion"),
+                    0x0042_00CD => Some("IV Length"),
+                    0x0042_00CE => Some("Tag Length"),
+                    0x0042_00CF => Some("Fixed Field Length"),
+                    0x0042_00D0 => Some("Counter Length"),
+                    0x0042_00D1 => Some("Initial Counter Value"),
+                    _ => None,
+                }
+            }
+            const fn name_chunk_4(raw: u32) -> Option<&'static str> {
+                match raw {
+                    0x0042_00D2 => Some("Invocation Field Length"),
+                    0x0042_00D3 => Some("Attestation Capable Indicator"),
+                    0x0042_00D4 => Some("Offset Items"),
+                    0x0042_00D5 => Some("Located Items"),
+                    0x0042_00D6 => Some("Correlation Value"),
+                    0x0042_00D7 => Some("Init Indicator"),
+                    0x0042_00D8 => Some("Final Indicator"),
+                    0x0042_00D9 => Some("RNG Parameters"),
+                    0x0042_00DA => Some("RNG Algorithm"),
+                    0x0042_00DB => Some("DRBG Algorithm"),
+                    0x0042_00DC => Some("FIPS186 Variation"),
+                    0x0042_00DD => Some("Prediction Resistance"),
+                    0x0042_00DE => Some("Random Number Generator"),
+                    0x0042_00DF => Some("Validation Information"),
+                    0x0042_00E0 => Some("Validation Authority Type"),
+                    0x0042_00E1 => Some("Validation Authority Country"),
+                    0x0042_00E2 => Some("Validation Authority URI"),
+                    0x0042_00E3 => Some("Validation Version Major"),
+                    0x0042_00E4 => Some("Validation Version Minor"),
+                    0x0042_00E5 => Some("Validation Type"),
+                    0x0042_00E6 => Some("Validation Level"),
+                    0x0042_00E7 => Some("Validation Certificate Identifier"),
+                    0x0042_00E8 => Some("Validation Certificate URI"),
+                    0x0042_00E9 => Some("Validation Vendor URI"),
+                    0x0042_00EA => Some("Validation Profile"),
+                    0x0042_00EB => Some("Profile Information"),
+                    0x0042_00EC => Some("Profile Name"),
+                    0x0042_00ED => Some("Server URI"),
+                    0x0042_00EE => Some("Server Port"),
+                    0x0042_00EF => Some("Streaming Capability"),
+                    0x0042_00F0 => Some("Asynchronous Capability"),
+                    0x0042_00F1 => Some("Attestation Capability"),
+                    0x0042_00F2 => Some("Unwrap Mode"),
+                    0x0042_00F3 => Some("Destroy Action"),
+                    0x0042_00F4 => Some("Shredding Algorithm"),
+                    0x0042_00F5 => Some("RNG Mode"),
+                    0x0042_00F6 => Some("Client Registration Method"),
+                    0x0042_00F7 => Some("Capability Information"),
+                    0x0042_00F8 => Some("Key Wrap Type"),
+                    0x0042_00F9 => Some("Batch Undo Capability"),
+                    0x0042_00FA => Some("Batch Continue Capability"),
+                    0x0042_00FB => Some("PKCS#12 Friendly Name"),
+                    0x0042_00FC => Some("Description"),
+                    0x0042_00FD => Some("Comment"),
+                    0x0042_00FE => Some("Authenticated Encryption Additional Data"),
+                    0x0042_00FF => Some("Authenticated Encryption Tag"),
+                    0x0042_0100 => Some("Salt Length"),
+                    0x0042_0101 => Some("Mask Generator"),
+                    _ => None,
+                }
+            }
+            const fn name_chunk_5(raw: u32) -> Option<&'static str> {
+                match raw {
+                    0x0042_0102 => Some("Mask Generator Hashing Algorithm"),
+                    0x0042_0103 => Some("P Source"),
+                    0x0042_0104 => Some("Trailer Field"),
+                    0x0042_0105 => Some("Client Correlation Value"),
+                    0x0042_0106 => Some("Server Correlation Value"),
+                    0x0042_0107 => Some("Digested Data"),
+                    0x0042_0108 => Some("Certificate Subject CN"),
+                    0x0042_0109 => Some("Certificate Subject O"),
+                    0x0042_010A => Some("Certificate Subject OU"),
+                    0x0042_010B => Some("Certificate Subject Email"),
+                    0x0042_010C => Some("Certificate Subject C"),
+                    0x0042_010D => Some("Certificate Subject ST"),
+                    0x0042_010E => Some("Certificate Subject L"),
+                    0x0042_010F => Some("Certificate Subject UID"),
+                    0x0042_0110 => Some("Certificate Subject Serial Number"),
+                    0x0042_0111 => Some("Certificate Subject Title"),
+                    0x0042_0112 => Some("Certificate Subject DC"),
+                    0x0042_0113 => Some("Certificate Subject DN Qualifier"),
+                    0x0042_0114 => Some("Certificate Issuer CN"),
+                    0x0042_0115 => Some("Certificate Issuer O"),
+                    0x0042_0116 => Some("Certificate Issuer OU"),
+                    0x0042_0117 => Some("Certificate Issuer Email"),
+                    0x0042_0118 => Some("Certificate Issuer C"),
+                    0x0042_0119 => Some("Certificate Issuer ST"),
+                    0x0042_011A => Some("Certificate Issuer L"),
+                    0x0042_011B => Some("Certificate Issuer UID"),
+                    0x0042_011C => Some("Certificate Issuer Serial Number"),
+                    0x0042_011D => Some("Certificate Issuer Title"),
+                    0x0042_011E => Some("Certificate Issuer DC"),
+                    0x0042_011F => Some("Certificate Issuer DN Qualifier"),
+                    0x0042_0120 => Some("Sensitive"),
+                    0x0042_0121 => Some("Always Sensitive"),
+                    0x0042_0122 => Some("Extractable"),
+                    0x0042_0123 => Some("Never Extractable"),
+                    0x0042_0124 => Some("Replace Existing"),
+                    0x0042_0125 => Some("Attributes"),
+                    0x0042_0126 => Some("Common Attributes"),
+                    0x0042_0127 => Some("Private Key Attributes"),
+                    0x0042_0128 => Some("Public Key Attributes"),
+                    0x0042_0129 => Some("Extension Enumeration"),
+                    0x0042_012A => Some("Extension Attribute"),
+                    0x0042_012B => Some("Extension Parent Structure Tag"),
+                    0x0042_012C => Some("Extension Description"),
+                    0x0042_012D => Some("Server Name"),
+                    0x0042_012E => Some("Server Serial Number"),
+                    0x0042_012F => Some("Server Version"),
+                    0x0042_0130 => Some("Server Load"),
+                    0x0042_0131 => Some("Product Name"),
+                    _ => None,
+                }
+            }
+            const fn name_chunk_6(raw: u32) -> Option<&'static str> {
+                match raw {
+                    0x0042_0132 => Some("Build Level"),
+                    0x0042_0133 => Some("Build Date"),
+                    0x0042_0134 => Some("Cluster Info"),
+                    0x0042_0135 => Some("Alternate Failover Endpoints"),
+                    0x0042_0136 => Some("Short Unique Identifier"),
+                    0x0042_0138 => Some("Tag"),
+                    0x0042_0139 => Some("Certificate Request Unique Identifier"),
+                    0x0042_013A => Some("NIST Key Type"),
+                    0x0042_013B => Some("Attribute Reference"),
+                    0x0042_013C => Some("Current Attribute"),
+                    0x0042_013D => Some("New Attribute"),
+                    0x0042_0140 => Some("Certificate Request Value"),
+                    0x0042_0141 => Some("Log Message"),
+                    0x0042_0142 => Some("Profile Version"),
+                    0x0042_0143 => Some("Profile Version Major"),
+                    0x0042_0144 => Some("Profile Version Minor"),
+                    0x0042_0145 => Some("Protection Level"),
+                    0x0042_0146 => Some("Protection Period"),
+                    0x0042_0147 => Some("Quantum Safe"),
+                    0x0042_0148 => Some("Quantum Safe Capability"),
+                    0x0042_0149 => Some("Ticket"),
+                    0x0042_014A => Some("Ticket Type"),
+                    0x0042_014B => Some("Ticket Value"),
+                    0x0042_014C => Some("Request Count"),
+                    0x0042_014D => Some("Rights"),
+                    0x0042_014E => Some("Objects"),
+                    0x0042_014F => Some("Operations"),
+                    0x0042_0150 => Some("Right"),
+                    0x0042_0151 => Some("Endpoint Role"),
+                    0x0042_0152 => Some("Defaults Information"),
+                    0x0042_0153 => Some("Object Defaults"),
+                    0x0042_0154 => Some("Ephemeral"),
+                    0x0042_0155 => Some("Server Hashed Password"),
+                    0x0042_0156 => Some("One Time Password"),
+                    0x0042_0157 => Some("Hashed Password"),
+                    0x0042_0158 => Some("Adjustment Type"),
+                    0x0042_0159 => Some("PKCS#11 Interface"),
+                    0x0042_015A => Some("PKCS#11 Function"),
+                    0x0042_015B => Some("PKCS#11 Input Parameters"),
+                    0x0042_015C => Some("PKCS#11 Output Parameters"),
+                    0x0042_015D => Some("PKCS#11 Return Code"),
+                    0x0042_015E => Some("Protection Storage Mask"),
+                    0x0042_015F => Some("Protection Storage Masks"),
+                    0x0042_0160 => Some("Interop Function"),
+                    0x0042_0161 => Some("Interop Identifier"),
+                    0x0042_0162 => Some("Adjustment Value"),
+                    0x0042_0163 => Some("Common Protection Storage Masks"),
+                    0x0042_0164 => Some("Private Protection Storage Masks"),
+                    _ => None,
+                }
+            }
+            const fn name_chunk_7(raw: u32) -> Option<&'static str> {
+                match raw {
+                    0x0042_0165 => Some("Public Protection Storage Masks"),
+                    0x0042_0166 => Some("Object Groups"),
+                    0x0042_0167 => Some("Object Types"),
+                    0x0042_0168 => Some("Constraints"),
+                    0x0042_0169 => Some("Constraint"),
+                    0x0042_016A => Some("Rotate Interval"),
+                    0x0042_016B => Some("Rotate Automatic"),
+                    0x0042_016C => Some("Rotate Offset"),
+                    0x0042_016D => Some("Rotate Date"),
+                    0x0042_016E => Some("Rotate Generation"),
+                    0x0042_016F => Some("Rotate Name"),
+                    0x0042_0170 => Some("Rotate Name Value"),
+                    0x0042_0171 => Some("Rotate Name Type"),
+                    0x0042_0172 => Some("Rotate Latest"),
+                    0x0042_0173 => Some("Asynchronous Request"),
+                    0x0042_0174 => Some("Submission Date"),
+                    0x0042_0175 => Some("Processing Stage"),
+                    0x0042_0176 => Some("Asynchronous Correlation Values"),
+                    _ => None,
+                }
             }
         }
 
@@ -3289,6 +4449,196 @@ pub mod values {
                             0x0000_0013 => Some("Create User"),
                             0x0000_0014 => Some("Create Group"),
                             0x0000_0015 => Some("Create Credential"),
+                            _ => None,
+                        }
+                    }
+                }
+                /// KMIP Tag values from §11.58, Table 605.
+                pub mod tag {
+                    /// `Certificate Link`; kmip-3.0 §11.58, Table 605.
+                    pub const CERTIFICATE_LINK: u32 = 0x0042_0190;
+                    /// `Child Link`; kmip-3.0 §11.58, Table 605.
+                    pub const CHILD_LINK: u32 = 0x0042_0191;
+                    /// `Derivation Base Object Link`; kmip-3.0 §11.58, Table 605.
+                    pub const DERIVATION_BASE_OBJECT_LINK: u32 = 0x0042_0192;
+                    /// `Derived Object Link`; kmip-3.0 §11.58, Table 605.
+                    pub const DERIVED_OBJECT_LINK: u32 = 0x0042_0193;
+                    /// `Next Link`; kmip-3.0 §11.58, Table 605.
+                    pub const NEXT_LINK: u32 = 0x0042_0194;
+                    /// `Parent Link`; kmip-3.0 §11.58, Table 605.
+                    pub const PARENT_LINK: u32 = 0x0042_0195;
+                    /// `PKCS#12 Certificate Link`; kmip-3.0 §11.58, Table 605.
+                    pub const PKCS_12_CERTIFICATE_LINK: u32 = 0x0042_0196;
+                    /// `PKCS#12 Password Link`; kmip-3.0 §11.58, Table 605.
+                    pub const PKCS_12_PASSWORD_LINK: u32 = 0x0042_0197;
+                    /// `Previous Link`; kmip-3.0 §11.58, Table 605.
+                    pub const PREVIOUS_LINK: u32 = 0x0042_0198;
+                    /// `Private Key Link`; kmip-3.0 §11.58, Table 605.
+                    pub const PRIVATE_KEY_LINK: u32 = 0x0042_0199;
+                    /// `Public Key Link`; kmip-3.0 §11.58, Table 605.
+                    pub const PUBLIC_KEY_LINK: u32 = 0x0042_019A;
+                    /// `Replaced Object Link`; kmip-3.0 §11.58, Table 605.
+                    pub const REPLACED_OBJECT_LINK: u32 = 0x0042_019B;
+                    /// `Replacement Object Link`; kmip-3.0 §11.58, Table 605.
+                    pub const REPLACEMENT_OBJECT_LINK: u32 = 0x0042_019C;
+                    /// `Wrapping Key Link`; kmip-3.0 §11.58, Table 605.
+                    pub const WRAPPING_KEY_LINK: u32 = 0x0042_019D;
+                    /// `Object Class`; kmip-3.0 §11.58, Table 605.
+                    pub const OBJECT_CLASS: u32 = 0x0042_019E;
+                    /// `Object Class Mask`; kmip-3.0 §11.58, Table 605.
+                    pub const OBJECT_CLASS_MASK: u32 = 0x0042_019F;
+                    /// `Credential Link`; kmip-3.0 §11.58, Table 605.
+                    pub const CREDENTIAL_LINK: u32 = 0x0042_01A0;
+                    /// `Password Credential`; kmip-3.0 §11.58, Table 605.
+                    pub const PASSWORD_CREDENTIAL: u32 = 0x0042_01A1;
+                    /// `Password Salt`; kmip-3.0 §11.58, Table 605.
+                    pub const PASSWORD_SALT: u32 = 0x0042_01A2;
+                    /// `Password Salt Algorithm`; kmip-3.0 §11.58, Table 605.
+                    pub const PASSWORD_SALT_ALGORITHM: u32 = 0x0042_01A3;
+                    /// `Salted Password`; kmip-3.0 §11.58, Table 605.
+                    pub const SALTED_PASSWORD: u32 = 0x0042_01A4;
+                    /// `Password Link`; kmip-3.0 §11.58, Table 605.
+                    pub const PASSWORD_LINK: u32 = 0x0042_01A5;
+                    /// `Device Credential`; kmip-3.0 §11.58, Table 605.
+                    pub const DEVICE_CREDENTIAL: u32 = 0x0042_01A6;
+                    /// `OTP Credential`; kmip-3.0 §11.58, Table 605.
+                    pub const OTP_CREDENTIAL: u32 = 0x0042_01A7;
+                    /// `OTP Algorithm`; kmip-3.0 §11.58, Table 605.
+                    pub const OTP_ALGORITHM: u32 = 0x0042_01A8;
+                    /// `OTP Digest`; kmip-3.0 §11.58, Table 605.
+                    pub const OTP_DIGEST: u32 = 0x0042_01A9;
+                    /// `OTP Serial`; kmip-3.0 §11.58, Table 605.
+                    pub const OTP_SERIAL: u32 = 0x0042_01AA;
+                    /// `OTP Seed`; kmip-3.0 §11.58, Table 605.
+                    pub const OTP_SEED: u32 = 0x0042_01AB;
+                    /// `OTP Interval`; kmip-3.0 §11.58, Table 605.
+                    pub const OTP_INTERVAL: u32 = 0x0042_01AC;
+                    /// `OTP Digits`; kmip-3.0 §11.58, Table 605.
+                    pub const OTP_DIGITS: u32 = 0x0042_01AD;
+                    /// `OTP Counter`; kmip-3.0 §11.58, Table 605.
+                    pub const OTP_COUNTER: u32 = 0x0042_01AE;
+                    /// `Hashed Password Credential`; kmip-3.0 §11.58, Table 605.
+                    pub const HASHED_PASSWORD_CREDENTIAL: u32 = 0x0042_01AF;
+                    /// `Hashed Username Password`; kmip-3.0 §11.58, Table 605.
+                    pub const HASHED_USERNAME_PASSWORD: u32 = 0x0042_01B0;
+                    /// `Hashed Password Username`; kmip-3.0 §11.58, Table 605.
+                    pub const HASHED_PASSWORD_USERNAME: u32 = 0x0042_01B1;
+                    /// `Credential Information`; kmip-3.0 §11.58, Table 605.
+                    pub const CREDENTIAL_INFORMATION: u32 = 0x0042_01B2;
+                    /// `Group Link`; kmip-3.0 §11.58, Table 605.
+                    pub const GROUP_LINK: u32 = 0x0042_01B3;
+                    /// `Split Key Base Link`; kmip-3.0 §11.58, Table 605.
+                    pub const SPLIT_KEY_BASE_LINK: u32 = 0x0042_01B4;
+                    /// `Joined Split Key Parts Link`; kmip-3.0 §11.58, Table 605.
+                    pub const JOINED_SPLIT_KEY_PARTS_LINK: u32 = 0x0042_01B5;
+                    /// `Split Key Polynomial`; kmip-3.0 §11.58, Table 605.
+                    pub const SPLIT_KEY_POLYNOMIAL: u32 = 0x0042_01B6;
+                    /// `Deactivation Message`; kmip-3.0 §11.58, Table 605.
+                    pub const DEACTIVATION_MESSAGE: u32 = 0x0042_01B7;
+                    /// `Deactivation Reason`; kmip-3.0 §11.58, Table 605.
+                    pub const DEACTIVATION_REASON: u32 = 0x0042_01B8;
+                    /// `Deactivation Reason Code`; kmip-3.0 §11.58, Table 605.
+                    pub const DEACTIVATION_REASON_CODE: u32 = 0x0042_01B9;
+                    /// `Certificate Subject DN`; kmip-3.0 §11.58, Table 605.
+                    pub const CERTIFICATE_SUBJECT_DN: u32 = 0x0042_01BA;
+                    /// `Certificate Issuer DN`; kmip-3.0 §11.58, Table 605.
+                    pub const CERTIFICATE_ISSUER_DN: u32 = 0x0042_01BB;
+                    /// `Certificate Request Link`; kmip-3.0 §11.58, Table 605.
+                    pub const CERTIFICATE_REQUEST_LINK: u32 = 0x0042_01BC;
+                    /// `Certify Counter`; kmip-3.0 §11.58, Table 605.
+                    pub const CERTIFY_COUNTER: u32 = 0x0042_01BD;
+                    /// `Decrypt Counter`; kmip-3.0 §11.58, Table 605.
+                    pub const DECRYPT_COUNTER: u32 = 0x0042_01BE;
+                    /// `Encrypt Counter`; kmip-3.0 §11.58, Table 605.
+                    pub const ENCRYPT_COUNTER: u32 = 0x0042_01BF;
+                    /// `Sign Counter`; kmip-3.0 §11.58, Table 605.
+                    pub const SIGN_COUNTER: u32 = 0x0042_01C0;
+                    /// `Signature Verify Counter`; kmip-3.0 §11.58, Table 605.
+                    pub const SIGNATURE_VERIFY_COUNTER: u32 = 0x0042_01C1;
+                    /// `NIST Security Category`; kmip-3.0 §11.58, Table 605.
+                    pub const NIST_SECURITY_CATEGORY: u32 = 0x0042_01C2;
+                    /// `KEM Algorithm`; kmip-3.0 §11.58, Table 605.
+                    pub const KEM_ALGORITHM: u32 = 0x0042_01C3;
+                    /// `Deterministic`; kmip-3.0 §11.58, Table 605.
+                    pub const DETERMINISTIC: u32 = 0x0042_01C4;
+                    /// `Context String`; kmip-3.0 §11.58, Table 605.
+                    pub const CONTEXT_STRING: u32 = 0x0042_01C5;
+                    /// `Seed`; kmip-3.0 §11.58, Table 605.
+                    pub const SEED: u32 = 0x0042_01C6;
+                    /// `Input Key Material`; kmip-3.0 §11.58, Table 605.
+                    pub const INPUT_KEY_MATERIAL: u32 = 0x0042_01C7;
+                    /// `Internal`; kmip-3.0 §11.58, Table 605.
+                    pub const INTERNAL: u32 = 0x0042_01C8;
+                    /// `External Mu`; kmip-3.0 §11.58, Table 605.
+                    pub const EXTERNAL_MU: u32 = 0x0042_01C9;
+                    /// `Random`; kmip-3.0 §11.58, Table 605.
+                    pub const RANDOM: u32 = 0x0042_01CA;
+                    /// `Performs CRL Checks`; kmip-3.0 §11.58, Table 605.
+                    pub const PERFORMS_CRL_CHECKS: u32 = 0x0042_01CB;
+                    /// Returns the assigned name for a known value.
+                    #[must_use]
+                    pub const fn name(raw: u32) -> Option<&'static str> {
+                        match raw {
+                            0x0042_0190 => Some("Certificate Link"),
+                            0x0042_0191 => Some("Child Link"),
+                            0x0042_0192 => Some("Derivation Base Object Link"),
+                            0x0042_0193 => Some("Derived Object Link"),
+                            0x0042_0194 => Some("Next Link"),
+                            0x0042_0195 => Some("Parent Link"),
+                            0x0042_0196 => Some("PKCS#12 Certificate Link"),
+                            0x0042_0197 => Some("PKCS#12 Password Link"),
+                            0x0042_0198 => Some("Previous Link"),
+                            0x0042_0199 => Some("Private Key Link"),
+                            0x0042_019A => Some("Public Key Link"),
+                            0x0042_019B => Some("Replaced Object Link"),
+                            0x0042_019C => Some("Replacement Object Link"),
+                            0x0042_019D => Some("Wrapping Key Link"),
+                            0x0042_019E => Some("Object Class"),
+                            0x0042_019F => Some("Object Class Mask"),
+                            0x0042_01A0 => Some("Credential Link"),
+                            0x0042_01A1 => Some("Password Credential"),
+                            0x0042_01A2 => Some("Password Salt"),
+                            0x0042_01A3 => Some("Password Salt Algorithm"),
+                            0x0042_01A4 => Some("Salted Password"),
+                            0x0042_01A5 => Some("Password Link"),
+                            0x0042_01A6 => Some("Device Credential"),
+                            0x0042_01A7 => Some("OTP Credential"),
+                            0x0042_01A8 => Some("OTP Algorithm"),
+                            0x0042_01A9 => Some("OTP Digest"),
+                            0x0042_01AA => Some("OTP Serial"),
+                            0x0042_01AB => Some("OTP Seed"),
+                            0x0042_01AC => Some("OTP Interval"),
+                            0x0042_01AD => Some("OTP Digits"),
+                            0x0042_01AE => Some("OTP Counter"),
+                            0x0042_01AF => Some("Hashed Password Credential"),
+                            0x0042_01B0 => Some("Hashed Username Password"),
+                            0x0042_01B1 => Some("Hashed Password Username"),
+                            0x0042_01B2 => Some("Credential Information"),
+                            0x0042_01B3 => Some("Group Link"),
+                            0x0042_01B4 => Some("Split Key Base Link"),
+                            0x0042_01B5 => Some("Joined Split Key Parts Link"),
+                            0x0042_01B6 => Some("Split Key Polynomial"),
+                            0x0042_01B7 => Some("Deactivation Message"),
+                            0x0042_01B8 => Some("Deactivation Reason"),
+                            0x0042_01B9 => Some("Deactivation Reason Code"),
+                            0x0042_01BA => Some("Certificate Subject DN"),
+                            0x0042_01BB => Some("Certificate Issuer DN"),
+                            0x0042_01BC => Some("Certificate Request Link"),
+                            0x0042_01BD => Some("Certify Counter"),
+                            0x0042_01BE => Some("Decrypt Counter"),
+                            0x0042_01BF => Some("Encrypt Counter"),
+                            0x0042_01C0 => Some("Sign Counter"),
+                            0x0042_01C1 => Some("Signature Verify Counter"),
+                            0x0042_01C2 => Some("NIST Security Category"),
+                            0x0042_01C3 => Some("KEM Algorithm"),
+                            0x0042_01C4 => Some("Deterministic"),
+                            0x0042_01C5 => Some("Context String"),
+                            0x0042_01C6 => Some("Seed"),
+                            0x0042_01C7 => Some("Input Key Material"),
+                            0x0042_01C8 => Some("Internal"),
+                            0x0042_01C9 => Some("External Mu"),
+                            0x0042_01CA => Some("Random"),
+                            0x0042_01CB => Some("Performs CRL Checks"),
                             _ => None,
                         }
                     }
