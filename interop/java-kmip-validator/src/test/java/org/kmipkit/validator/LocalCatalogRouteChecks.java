@@ -32,6 +32,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 /** Executes source-backed local catalog obligations through the installed public package. */
 final class LocalCatalogRouteChecks {
     private static final int TAG_VALUE_SENTINEL = 0x12345678;
+    static final String ROTATE_NAME_TYPE_CASE_ID =
+            "test-norm-structure-member-structure-member-4-53-rotate-name-type";
+    static final String ROTATE_NAME_TYPE_TARGET_ID = "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-53-ROTATE-NAME-TYPE";
 
     private LocalCatalogRouteChecks() { }
 
@@ -448,6 +451,100 @@ final class LocalCatalogRouteChecks {
         emitRoute(sink, caseId, targetId,
                 "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
                 "org.kmipkit.extensions.AttributeSet.tryNew", "construct", attributesWire);
+    }
+
+    // OASIS KMIP 2.1 §4.53 Table 135: Rotate Name Value and Rotate Name Type are required members.
+    static void executeRotateNameType(JsonNode catalog, String version, EvidenceSink sink) throws Exception {
+        if (!"2.1".equals(version)) return;
+        String caseId = ROTATE_NAME_TYPE_CASE_ID;
+        String targetId = ROTATE_NAME_TYPE_TARGET_ID;
+        JsonNode target = findTarget(catalog, targetId);
+        assertEquals("Rotate Name Type", target.path("name").asText());
+        assertEquals("Enumeration", target.path("source_encoding").asText());
+        assertEquals("structure_member", target.path("kind").asText());
+
+        int rotateNameValueTag = 0x420170;
+        int rotateNameTypeTag = 0x420171;
+        long rotateNameType = 2L; // URI, OASIS KMIP 2.1 §11.51 Table 482.
+        byte[] nameBytes = "urn:kmipkit:rotate-name-fixture".getBytes(
+                java.nio.charset.StandardCharsets.UTF_8);
+        byte[] typeBytes = ByteBuffer.allocate(4).putInt((int) rotateNameType).array();
+        byte[] memberWire = itemWire(rotateNameTypeTag, 5, typeBytes);
+        byte[] rotateNameWire = structureWire(0x42016f,
+                concat(itemWire(rotateNameValueTag, 7, nameBytes), memberWire));
+
+        try (TtlvValue genericValue = TtlvValue.Enumeration(rotateNameType);
+                RawTag raw = RawTag.fromRaw(rotateNameTypeTag);
+                Tag tag = raw.checked();
+                TtlvItem genericItem = TtlvItem.create(tag, genericValue, CodecLimits.defaults());
+                TtlvItemView genericView = genericItem.view();
+                Tag viewedTag = genericView.tag();
+                TtlvValueView viewedValue = genericView.value();
+                TtlvItem genericDecoded = TtlvCodec.decode(memberWire);
+                TtlvItemView decodedView = genericDecoded.view();
+                Tag decodedTag = decodedView.tag();
+                TtlvValueView decodedValue = decodedView.value()) {
+            assertEquals(rotateNameTypeTag, viewedTag.raw());
+            assertEquals(TtlvItemType.Enumeration, genericView.itemType());
+            assertEquals(rotateNameType, viewedValue.enumeration());
+            assertEquals(rotateNameTypeTag, decodedTag.raw());
+            assertEquals(TtlvItemType.Enumeration, decodedView.itemType());
+            assertEquals(rotateNameType, decodedValue.enumeration());
+        }
+        emitRoute(sink, caseId, targetId,
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
+                "org.kmipkit.ttlv.TtlvValue.Enumeration", "construct", memberWire);
+        emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_item.create",
+                "org.kmipkit.ttlv.TtlvItem.create", "construct", memberWire);
+        emitRoute(sink, caseId, targetId,
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "org.kmipkit.ttlv.TtlvItem.view", "decode", memberWire);
+        emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_codec.decode",
+                "org.kmipkit.ttlv.TtlvCodec.decode", "decode", memberWire);
+
+        try (TtlvStructure empty = TtlvStructure.create();
+                TtlvValue nameValue = TtlvValue.TextString(nameBytes, CodecLimits.defaults());
+                TtlvStructure withName = append(empty, rotateNameValueTag, nameValue);
+                TtlvValue typeValue = TtlvValue.Enumeration(rotateNameType);
+                TtlvStructure rotateName = append(withName, rotateNameTypeTag, typeValue);
+                TtlvValue rotateNameValue = TtlvValue.structure(rotateName, CodecLimits.defaults());
+                TypedAttribute typed = TypedAttribute.create(StandardAttribute.ROTATE_NAME, rotateNameValue);
+                TtlvItem typedItem = typed.asItem();
+                TypedAttribute decoded = TypedAttribute.fromItem(StandardAttribute.ROTATE_NAME, typedItem);
+                TtlvItem attributeSetItem = decoded.asItem();
+                TtlvStructure emptyAttributes = TtlvStructure.create();
+                TtlvStructure attributeItems = TtlvStructure.withItem(
+                        emptyAttributes, attributeSetItem, CodecLimits.defaults());
+                AttributeSet attributes = AttributeSet.tryNew(attributeItems);
+                TtlvItem decodedItem = decoded.asItem();
+                TtlvItemView attributeView = decodedItem.view();
+                TtlvValueView attributeValue = attributeView.value();
+                TtlvStructureView rotateNameView = attributeValue.structure();
+                TtlvItemView decodedName = rotateNameView.itemAt(0);
+                Tag decodedNameTag = decodedName.tag();
+                TtlvValueView decodedNameValue = decodedName.value();
+                TtlvItemView decodedType = rotateNameView.itemAt(1);
+                Tag decodedTypeTag = decodedType.tag();
+                TtlvValueView decodedTypeValue = decodedType.value()) {
+            assertEquals(StandardAttribute.ROTATE_NAME, decoded.attribute());
+            assertEquals(2L, rotateNameView.itemCount());
+            assertEquals(rotateNameValueTag, decodedNameTag.raw());
+            assertArrayEquals(nameBytes, decodedNameValue.bytes());
+            assertEquals(rotateNameTypeTag, decodedTypeTag.raw());
+            assertEquals(rotateNameType, decodedTypeValue.enumeration());
+            assertEquals(1, attributes.len());
+            assertEquals(1, attributes.typedCount(StandardAttribute.ROTATE_NAME));
+        }
+        emitRoute(sink, caseId, targetId,
+                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
+                "org.kmipkit.ttlv.TypedAttribute.create", "construct", rotateNameWire);
+        emitRoute(sink, caseId, targetId,
+                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
+                "org.kmipkit.ttlv.TypedAttribute.fromItem", "construct", rotateNameWire);
+        emitRoute(sink, caseId, targetId,
+                "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
+                "org.kmipkit.extensions.AttributeSet.tryNew", "construct",
+                structureWire(0x420125, rotateNameWire));
     }
 
     // OASIS KMIP 2.0 §11.54 / 2.1 §11.56 and §10.1: tag identity and allocation.

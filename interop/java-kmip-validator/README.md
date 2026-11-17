@@ -101,8 +101,8 @@ baseline, regenerate the checked-in ledger with
 rejects generated ledgers that do not record successful invocations.
 The generated ledger retains the artifact
 SHA-256 for each build; that build-specific digest is not used as a coverage
-baseline. These recipes execute 27,240 of 71,641 planned Java route cells, with
-no failed cells; the ledger records the other 44,401 as pending and does not imply
+baseline. These recipes execute 27,247 of 71,641 planned Java route cells, with
+no failed cells; the ledger records the other 44,394 as pending and does not imply
 vendor interoperability or full-matrix completion. Local TTLV recipes exercise 51
 enumeration families, all six bitmask aggregate cases, and all 44 individual
 bitmask value cases through the applicable
@@ -208,7 +208,7 @@ evidence for both `RawTag` identity routes and the `ClientBatch` setter. The
 setter's evidence comes from the serialized header of a controlled two-item
 Query request in KMIP 2.0 and 2.1 (KMIP 2.0 §11.54; KMIP 2.1 §11.56).
 
-The 44,401 pending cells belong to 1,222 case IDs listed in the generated
+The 44,394 pending cells belong to 1,221 case IDs listed in the generated
 ledger; every one has the reason `route_evidence_not_emitted`. The applicability
 rule is the shared catalog and capability matrix after protocol-version,
 public-route, encoding/transport, and source-backed exclusion filters. A cell
@@ -227,8 +227,11 @@ All 19 Block Cipher Mode values now complete their five applicable generic and
 Cryptographic Parameters builder routes in both KMIP 2.0 and 2.1 (§§4.16,
 11.6); other enum families remain pending where the ledger says so. The three
 Rotate Name Type values complete their four applicable generic TTLV routes in
-KMIP 2.1 (§11.51). NIST Key Type completes four generic and three typed routes
-for all 20 values in KMIP 2.0/2.1 (§§4.34, 11.32 in both; tag allocation
+KMIP 2.1 (§11.51). The separate §4.53 structure-member case also completes its
+four generic field routes and three typed routes through the enclosing
+`Rotate Name` Attribute, using both required members from Table 135. NIST Key
+Type completes four generic and three typed routes for all 20 values in KMIP
+2.0/2.1 (§§4.34, 11.32 in both; tag allocation
 §11.54 in 2.0 and §11.56 in 2.1). Key Role Type completes four generic routes
 and its Cryptographic Parameters builder for all 25 values in KMIP 2.0/2.1
 (§§4.16, 11.26). Hashing Algorithm completes four generic routes and its
@@ -307,7 +310,7 @@ the peer-observed Operation, and reads the successful response through
 `ClientBatchItemResult.pingResponse()`. The same case round-trips the Operation
 Enumeration through the installed generic TTLV item constructor, view, and
 decoder, as required by KMIP 2.1 §6.1.36. The selected Java report now validates
-27,240/27,240 cells; 44,401 of the full 71,641-cell Java matrix remain pending,
+27,247/27,247 cells; 44,394 of the full 71,641-cell Java matrix remain pending,
 so this does not complete the Java matrix. The Set Endpoint Role request field
 and Operation now have generic TTLV item creation, view, and decode evidence for
 the KMIP 2.1 request and both KMIP 2.0 request and response cases (KMIP 2.0
