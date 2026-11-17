@@ -3793,6 +3793,33 @@ class RouteMatrixTests(unittest.TestCase):
             self.assertTrue(response_accessors <= set(check['public_api_trace_symbols']),
                             check['case_id'])
 
+    def test_batch_count_mismatch_is_recomputed_before_transport(self):
+        """OASIS KMIP 2.0/2.1 §§8.2–8.6 and 9.5–9.7 require a count matching the items."""
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        case_id = 'test-batch-count-mismatch-rejected'
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 24,
+                         'both C constructors must keep Batch Count equal to the two request items')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertEqual({check['constructor_variant'] for check in checks},
+                         {'direct', 'standalone'})
+        self.assertTrue(all(check['peer_response_operation_values'] == [10, 12]
+                            for check in checks))
+        self.assertTrue(all(check['peer_response_result_statuses'] == [0, 0]
+                            for check in checks))
+        send_events = [event for event in events if event['action'] == 'send']
+        self.assertEqual(len(send_events), 24)
+        self.assertTrue(all(event['peer_observed_operation_sequence'] ==
+                            ['Get', 'Get Attribute List'] for event in send_events))
+
 
     def test_stop_batch_returns_only_the_failed_item_and_stops_processing(self):
         from artifact_support import ROOT
