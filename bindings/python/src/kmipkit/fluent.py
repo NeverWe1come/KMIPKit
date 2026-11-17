@@ -257,9 +257,7 @@ def _execute_fluent_builder(
 class Request:
     """Scoped fluent namespace for the foundation lifecycle operations."""
 
-    def __init__(self, client: Client) -> None:
-        if client is None:
-            errors.raise_for_status(4)
+    def __init__(self, client: Client | None) -> None:
         self._client = client
 
     def create_symmetric_key(self) -> SymmetricKeyBuilder:
