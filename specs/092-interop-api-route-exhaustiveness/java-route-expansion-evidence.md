@@ -1797,7 +1797,7 @@ The generated ledger was refreshed only after the selected report passed the
 repository validator. The full Java consumer test suite passes 56/56 tests;
 the selected-scope report validates 26,745/26,745 cells with zero failed
 invocations, and the normal ledger comparison passes. The ledger now records
-71,649 planned, 26,745 executed, and 44,904 pending cells across 1,267 case
+71,649 planned, 26,745 executed, and 44,904 pending cells across 1,266 case
 IDs. Pending cells remain `route_evidence_not_emitted`; T006, T007, and T009
 remain open and the PR must remain WIP.
 

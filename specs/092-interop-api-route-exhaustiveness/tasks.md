@@ -231,7 +231,7 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
   evidence test pass. `validate_route_evidence.py` accepts 26,745/26,745
   selected cells with zero failed cells, and the ledger comparison passes.
   The full Java matrix remains incomplete at 26,745/71,649 executed and 44,904
-  pending cells across 1,267 case IDs; T006, T007, and T009 remain open and
+  pending cells across 1,266 case IDs; T006, T007, and T009 remain open and
   this work does not make the PR ready for review.
 - The complete Java validator suite passes 56/56 tests with zero failures,
   errors, or skips. Temporary JVM files were placed under the validator's
