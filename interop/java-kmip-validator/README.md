@@ -116,6 +116,9 @@ Enumeration members (§§7.23–7.24, Tables 375–376). The optional, repeatabl
 The separate required Object Defaults member exercises Item creation, view, and decoding
 with its version-specific shape: an Object Type Enumeration in KMIP 2.0 (§7.18
 Table 338) and an ObjectTypes Structure in KMIP 2.1 (§7.22 Table 374).
+The required-if-PBKDF2 Salt member covers its Byte String constructor, Item,
+view, and decoder routes in both versions (KMIP 2.0 §7.8 Table 328 and KMIP 2.1
+§7.12 Table 364; tag allocation §§11.54/11.56).
 Data Length, Final Indicator, Interop Identifier, Log Message, and MAC Data
 exercise their six applicable local generic routes in KMIP 2.0 and 2.1 with
 their source-defined Integer, Boolean, Text String, or Byte String values

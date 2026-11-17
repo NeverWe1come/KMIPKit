@@ -855,6 +855,7 @@
     "test-norm-tag-tag-420051",
     "test-norm-message-field-message-field-8-3-ephemeral",
     "test-norm-structure-member-structure-member-7-23-object-group",
+    "test-norm-structure-member-structure-member-7-12-salt",
     "test-norm-structure-member-structure-member-7-22-object-type-objecttypes",
     "test-norm-operation-structure-operation-structure-7-2-asynchronous-request",
     "test-norm-operation-structure-operation-structure-7-13-extension-information",
@@ -2511,7 +2512,6 @@
     "test-norm-structure-member-structure-member-7-12-derivation-data",
     "test-norm-structure-member-structure-member-7-12-initialization-vector",
     "test-norm-structure-member-structure-member-7-12-iteration-count",
-    "test-norm-structure-member-structure-member-7-12-salt",
     "test-norm-structure-member-structure-member-7-13-extension-description",
     "test-norm-structure-member-structure-member-7-13-extension-enumeration",
     "test-norm-structure-member-structure-member-7-13-extension-name",
@@ -6823,10 +6823,6 @@
       "pending_cells": 8
     },
     {
-      "case_id": "test-norm-structure-member-structure-member-7-12-salt",
-      "pending_cells": 8
-    },
-    {
       "case_id": "test-norm-structure-member-structure-member-7-13-extension-description",
       "pending_cells": 8
     },
@@ -7759,8 +7755,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 10,
-      "pending_cells": 26,
+      "executed_cells": 11,
+      "pending_cells": 25,
       "protocol_version": "2.0",
       "required_cells": 36,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.bytestring",
@@ -7769,8 +7765,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 12,
-      "pending_cells": 26,
+      "executed_cells": 13,
+      "pending_cells": 25,
       "protocol_version": "2.1",
       "required_cells": 38,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.bytestring",
@@ -34232,8 +34228,8 @@
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.boolean"
     },
     {
-      "executed_cells": 22,
-      "pending_cells": 52,
+      "executed_cells": 24,
+      "pending_cells": 50,
       "required_cells": 74,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.bytestring"
     },
