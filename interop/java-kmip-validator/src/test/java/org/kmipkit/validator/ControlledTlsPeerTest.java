@@ -778,6 +778,7 @@ class ControlledTlsPeerTest {
             appendServerInformationRouteEvents(events, protocolVersion);
             appendUsageLimitsRouteEvents(events, protocolVersion);
             appendRightUsageLimitsRouteEvents(events, protocolVersion);
+            appendBatchContinuationTagIdentityRouteEvents(events, protocolVersion);
             LocalCatalogRouteChecks.executeTags(readRouteEvidenceCatalog(), protocolVersion, genericOnlyTagCaseIds(),
                     invocation -> appendLocalCatalogInvocation(events, protocolVersion, invocation));
             Set<String> typedTagIdentityCases = missingTypedTagIdentityCaseIds(events, protocolVersion);
@@ -1212,6 +1213,16 @@ class ControlledTlsPeerTest {
         assertEquals(2, routeEventCount(report.path("events"), RESPONSE_BATCH_ITEM_CASE_ID,
                         "java.typed-protocol.function.client_batch_item_response_pending_correlation_value"),
                 "A controlled Pending response must expose its server-issued correlation value.");
+        assertEquals(KMIP_2_0_AND_2_1.size(), routeEventCount(report.path("events"),
+                        "test-norm-tag-tag-42000e",
+                        "java.typed-protocol.function.client_batch_add_error_continuation_value"),
+                "The Batch Error Continuation Option tag must be checked through the typed batch API.");
+        for (String version : KMIP_2_0_AND_2_1) {
+            JsonNode event = findRouteEvent(report.path("events"), "test-norm-tag-tag-42000e",
+                    "java.typed-protocol.function.client_batch_add_error_continuation_value", version,
+                    "KMIPKIT-ELEM-TAG-42000E");
+            assertEquals("passed", event.path("status").asText());
+        }
         for (EnumerationFixture fixture : enumerationFixtures) {
             String builderRoute = CRYPTOGRAPHIC_PARAMETER_BUILDER_ROUTES.get(fixture.parentName());
             if (builderRoute != null) {
@@ -1302,6 +1313,7 @@ class ControlledTlsPeerTest {
         int batchErrorContinuationEventCount = enumerationFixtures.stream()
                 .filter(fixture -> "BATCH-ERROR-CONTINUATION-OPTION".equals(fixture.parentName()))
                 .mapToInt(fixture -> fixture.protocolVersions().size()).sum();
+        int batchContinuationTagIdentityEventCount = KMIP_2_0_AND_2_1.size() * 6;
         int genericTagEventCount = 0;
         int referencedEnumEventCount = 0;
         int referencedEnumAggregateEventCount = 0;
@@ -1339,7 +1351,8 @@ class ControlledTlsPeerTest {
                         + pendingCorrelationAccessorEventCount
                         + structureMemberStructureRouteEventCount + structureMemberByteStringRouteEventCount
                         + structureMemberValueRouteEventCount
-                        + batchErrorContinuationEventCount + genericTagEventCount + typedTagIdentityEventCount
+                        + batchErrorContinuationEventCount + batchContinuationTagIdentityEventCount
+                        + genericTagEventCount + typedTagIdentityEventCount
                         + booleanFieldRouteEventCount + scalarMessageFieldRouteEventCount + itemTypeRouteEventCount
                         + scalarTypedParserEventCount
                         + 4 // BEC headers, unique batch IDs, and the asynchronous structure payload.
@@ -1384,7 +1397,7 @@ class ControlledTlsPeerTest {
                         + 11 + itemTypeValueCaseIds.size() + STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size()
                         + STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.size()
                         + STRUCTURE_MEMBER_VALUE_FIXTURES.size() + PROFILE_INFORMATION_CASE_IDS.size()
-                        + SERVER_INFORMATION_CASE_IDS.size() + USAGE_LIMITS_CASE_IDS.size() + 3
+                        + SERVER_INFORMATION_CASE_IDS.size() + USAGE_LIMITS_CASE_IDS.size() + 4
                         + booleanFieldCaseIds.size()
                         // Four scalar header cases are already included by the baseline report groups.
                         + scalarMessageFieldCaseIds(report.path("events")).size() - 4,
@@ -3723,6 +3736,7 @@ class ControlledTlsPeerTest {
         caseIds.add("test-enum-pkcs#11-function");
         caseIds.add("test-enum-pkcs#11-return-code");
         caseIds.add("test-enum-tag");
+        caseIds.add("test-norm-tag-tag-42000e");
         caseIds.add("test-enum-item-type");
         CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().forEach(caseIds::add);
         report.putArray("protocol_versions").add("2.0").add("2.1");
@@ -4702,6 +4716,17 @@ class ControlledTlsPeerTest {
                 "KMIPKIT-ELEM-MESSAGE-FIELD-9-6-BATCH-ERROR-CONTINUATION-OPTION",
                 "org.kmipkit.extensions.ClientBatch.addErrorContinuationValue",
                 null, null, "construct", protocolVersion, null, normalizedTreeSha256(requestBytes), null);
+        appendRouteEvent(events, "test-norm-tag-tag-42000e",
+                "java.typed-protocol.function.client_batch_add_error_continuation_value",
+                "KMIPKIT-ELEM-TAG-42000E", "org.kmipkit.extensions.ClientBatch.addErrorContinuationValue",
+                null, null, "construct", protocolVersion, null, normalizedTreeSha256(requestBytes), null);
+    }
+
+    private static void appendBatchContinuationTagIdentityRouteEvents(ArrayNode events, String protocolVersion)
+            throws Exception {
+        LocalCatalogRouteChecks.executeTags(readRouteEvidenceCatalog(), protocolVersion,
+                Set.of("test-norm-tag-tag-42000e"),
+                invocation -> appendLocalCatalogInvocation(events, protocolVersion, invocation));
     }
 
     private static void appendBatchItemGenericRouteEvents(ArrayNode events, String protocolVersion)
