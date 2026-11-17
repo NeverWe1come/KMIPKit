@@ -71,6 +71,13 @@ EXPECTED_0124_BATCH_BRIDGE_MEMBERS = frozenset(
         "clientBatchItemPollFromRequest",
         "clientBatchItemProcessFromRequest",
         "clientBatchItemQueryAsyncRequestsFromRequest",
+        "clientBatchItemResponseCreateCredential",
+        "clientBatchItemResponseCreateGroup",
+        "clientBatchItemResponseCreateUser",
+        "clientBatchItemResponseDeactivate",
+        "clientBatchItemResponseDecapsulate",
+        "clientBatchItemResponseEncapsulate",
+        "clientBatchItemResponseObliterate",
     }
 )
 
