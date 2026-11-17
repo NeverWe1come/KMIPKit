@@ -7832,6 +7832,9 @@ static int ping_builder_builds_typed_batch_item_from_c(void) {
     kmipkit_ping_builder_t *builder = NULL;
     kmipkit_client_batch_item_t *item = NULL;
     uint32_t operation = UINT32_C(0);
+    if (kmipkit_client_ping_v1(NULL, NULL, NULL) != KMIPKIT_ERROR_INVALID_INPUT) {
+        return 0;
+    }
     int32_t status = kmipkit_ping_builder_create(&builder);
     if (status == INT32_C(0)) {
         status = kmipkit_ping_builder_set_asynchronous_indicator(
