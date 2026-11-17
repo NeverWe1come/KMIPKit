@@ -1289,3 +1289,52 @@
   operation test supplies its builder, method set, and any extra exports.
 - Both operation manifest contracts pass after the refactor. The revised
   exact-head SonarCloud analysis and hosted CI are pending.
+
+## Rust RNG Retrieve fluent builder slice
+
+### Red
+
+- Commit `786dfcfa6` added fake-transport tests for the required Data Length,
+  exact request preservation, typed batch conversion, one-exchange Success,
+  and Pending correlation without follow-up, based on OASIS KMIP v2.1
+  §6.1.49, Tables 316–318.
+- Reproduced the missing `RequestBuilder::rng_retrieve` and
+  `FluentBuildError::MissingRngRetrieveDataLength` with
+  `cargo test -p kmipkit-client --lib fluent_rng_retrieve -- --nocapture`
+  before implementation. Added a manifest contract that initially failed
+  because the builder exports were absent from `public-api.json`.
+
+### Green
+
+- Commit `0d46c7098` added `RngRetrieveBuilder` over the existing typed request,
+  batch item, and one-exchange client path. The builder preserves the caller's
+  Data Length, existing delivery state, and asynchronous correlation. It does
+  not poll or retry, and missing Data Length fails before transport.
+- Existing typed RNG Retrieve and the fluent path preserve secret output in
+  `SecretBytes`; malformed secret responses remain redacted from errors.
+
+### Refactor, documentation, and generated inventory
+
+- Commit `2a22902e8` extracted shared secret-output redaction assertions while
+  retaining the direct-route checks. The focused RNG Retrieve suite passes all
+  10 tests, including both bilingual guide checks.
+- Commit `86a5fc0f7` added the blocked-export manifest contract and CI
+  invocation. Added bilingual guide examples, a compile test, a traceability
+  row, and slice tasks. Updated the generated public API inventory only with
+  `audit_rust_exports.py`, `reconcile_rust_exports.py`, and `generate.py`.
+- The Rust 1.94 audit found 20 new declaration paths and 18 exact
+  standard-trait exclusions. The new declarations remain blocked under
+  `KMIPKIT-0093-FR-011` until C, Java, and Python parity lands. After
+  reconciliation the Linux audit reports 11,283 manifest declarations,
+  21,712 approved exclusions, and 32,995 observed paths, with zero missing,
+  unobserved, kind, conditional, or other issue records.
+- Updated the full-manifest snapshot to 20,353 declarations and 23,573
+  exclusions; the dated November 16 and November 1 audit snapshots remain
+  unchanged. The builder contract, T102 totals, generator check, all 10
+  focused Rust tests, formatting, and workspace Clippy pass. Full manifest
+  unittest discovery stops at the pre-existing
+  `test_0101_fluent_lifecycle_manifest` KeyError for the absent `revoke`
+  constructor; that constructor is also absent from the exact #246 base
+  manifest, and this slice adds no lifecycle declarations. Exact-head hosted
+  CI remains pending. This remains WIP and does not close FR-011 or
+  operation-wide O001/O002.

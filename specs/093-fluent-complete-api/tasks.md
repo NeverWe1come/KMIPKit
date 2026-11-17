@@ -100,6 +100,21 @@ Dependent work branches from the unmerged parent head while review is pending.
   fix every exact-head CI failure. Keep this slice WIP while C, Java, and
   Python parity and remaining operation work are incomplete.
 
+### Rust RNG Retrieve builder slice
+
+- [x] RRG001 Add failing fake-transport tests for required Data Length,
+  typed batch conversion, one-exchange Success, Pending, and secret redaction;
+  reproduce the missing fluent constructor in a distinct Red commit.
+- [x] RRG002 Implement the builder over the existing typed RNG Retrieve
+  request and one-exchange client path in a distinct Green commit.
+- [x] RRG003 Refactor shared secret-output redaction assertions in a distinct
+  Refactor commit; preserve all existing direct-route checks.
+- [x] RRG004 Update bilingual RNG Retrieve examples, source traceability, and
+  compiler-reconciled generated API inventory; keep FR-011 and O001/O002 open.
+- [ ] RRG005 Push a WIP draft PR targeting the Get Constraints slice and fix
+  every exact-head CI failure. Keep this slice WIP while language parity and
+  remaining operation work are incomplete.
+
 - [ ] B001 Add failing C consumer tests for opaque handle ownership,
   operation construction, typed results, direct tasks and ABI stability.
 - [ ] B002 Generate and implement the C ABI on the Rust owner; run sanitizer,
