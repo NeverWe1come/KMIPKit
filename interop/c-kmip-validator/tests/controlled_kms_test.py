@@ -470,6 +470,7 @@ def main() -> int:
     expected_operations += (10, 12, 10, 12, 10, 12, 10, 12)
     expected_operations += registered_key_batch
     expected_operations += (1, 18, 31, 19, 20)
+    expected_operations += (1, 18, 32, 19, 20)
     expected_operations += stop_on_first_failure_batch
     expected_operations += (1, 25)
     expected_cases += ("test-op-cancel",)
@@ -506,6 +507,7 @@ def main() -> int:
     )
     expected_cases += ("test-batch-register-encrypt-decrypt-destroy",)
     expected_cases += ("test-op-encrypt",)
+    expected_cases += ("test-op-decrypt",)
     expected_cases += ("test-batch-stop-on-first-failure",)
     expected_cases += ("test-neg-destroy-active-without-revoke",)
     expected_cases += ("test-op-add-attribute",)
@@ -650,6 +652,17 @@ def main() -> int:
                                         "isolated Encrypt batch omitted or duplicated a unique item ID"
                                     )
                                 response_item_ids = expected_encrypt_item_ids
+                            if operations == (1, 18, 32, 19, 20):
+                                expected_decrypt_item_ids = (
+                                    b"decrypt-create", b"decrypt-activate", b"decrypt-target",
+                                    b"decrypt-revoke", b"decrypt-destroy",
+                                )
+                                if any(request.count(tlv(0x420093, 8, item_id)) != 1
+                                       for item_id in expected_decrypt_item_ids):
+                                    raise AssertionError(
+                                        "isolated Decrypt batch omitted or duplicated a unique item ID"
+                                    )
+                                response_item_ids = expected_decrypt_item_ids
                             if operations == stop_on_first_failure_batch:
                                 if (request.count(integer(0x42000D, 2)) != 1 or
                                         request.count(tlv(0x420094, 7, b"missing-key")) != 1 or

@@ -50,6 +50,8 @@ BATCH_CRYPTO_PLAINTEXT = bytes.fromhex('00112233445566778899aabbccddeeff')
 BATCH_CRYPTO_CIPHERTEXT = bytes.fromhex('69c4e0d86a7b0430d8cdb78070b4c55a')
 ENCRYPT_ITEM_IDS = (b'encrypt-create', b'encrypt-activate', b'encrypt-target',
                     b'encrypt-revoke', b'encrypt-destroy')
+DECRYPT_ITEM_IDS = (b'decrypt-create', b'decrypt-activate', b'decrypt-target',
+                    b'decrypt-revoke', b'decrypt-destroy')
 CANCEL_CORRELATION_VALUE = b'fixture-cancel-correlation'
 ASYNC_QUERY_CORRELATION_CREATE_COMPLETED = b'fixture-query-create-completed'
 ASYNC_QUERY_CORRELATION_CREATE_PENDING = b'fixture-query-create-pending'
@@ -368,6 +370,7 @@ RECIPES = {
     'test-norm-payload-client-export-response-21-004': ((1, 43, 19, 20), 'export'),
     'test-op-register': ((3, 20), 'register'),
     'test-op-encrypt': ((1, 18, 31, 19, 20), 'encrypt'),
+    'test-op-decrypt': ((1, 18, 32, 19, 20), 'decrypt'),
     'test-op-add-attribute': ((1, 13, 19, 20), 'add_attribute'),
     'test-norm-payload-client-add-attribute-request-20-002': ((1, 13, 19, 20), 'add_attribute'),
     'test-norm-payload-client-add-attribute-request-21-002': ((1, 13, 19, 20), 'add_attribute'),
@@ -683,21 +686,25 @@ def request_adjust_attribute_fields(batch_item):
             int.from_bytes(types[0][2], 'big'), adjustment_value)
 
 
-def assert_encrypt_request(node):
-    """Check the isolated Create/Activate/Encrypt/Revoke/Destroy request shape."""
+def assert_crypto_request(node, decrypt):
+    """Check an isolated Create/Activate/crypto/Revoke/Destroy request shape."""
+    operation = 32 if decrypt else 31
+    item_ids = DECRYPT_ITEM_IDS if decrypt else ENCRYPT_ITEM_IDS
+    usage_mask = 8 if decrypt else 4
+    input_data = BATCH_CRYPTO_CIPHERTEXT if decrypt else BATCH_CRYPTO_PLAINTEXT
     items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
     operations = [numbers(item, 0x42005C) for item in items]
-    item_ids = [byte_string_values(item, 0x420093) for item in items]
-    if (operations != [[1], [18], [31], [19], [20]] or
-            item_ids != [[item_id] for item_id in ENCRYPT_ITEM_IDS] or
+    observed_item_ids = [byte_string_values(item, 0x420093) for item in items]
+    if (operations != [[1], [18], [operation], [19], [20]] or
+            observed_item_ids != [[item_id] for item_id in item_ids] or
             numbers(items[0], 0x420057) != [2] or
             numbers(items[0], 0x420028) != [3] or
             numbers(items[0], 0x42002A) != [128] or
-            numbers(items[0], 0x42002C) != [4] or
+            numbers(items[0], 0x42002C) != [usage_mask] or
             any(not is_id_placeholder_identifier(identifier)
                 for item in items[1:]
                 for identifier in descendants(item, UNIQUE_IDENTIFIER_TAG))):
-        raise ValueError('fixture_encrypt_batch_lifecycle_mismatch')
+        raise ValueError('fixture_crypto_batch_lifecycle_mismatch')
     encrypt_payloads = [child for child in items[2][2]
                         if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
     if len(encrypt_payloads) != 1:
@@ -709,32 +716,35 @@ def assert_encrypt_request(node):
     if ([field[0] for field in fields] != [UNIQUE_IDENTIFIER_TAG, 0x42002B, 0x4200C2] or
             len(identifiers) != 1 or not is_id_placeholder_identifier(identifiers[0]) or
             len(parameters) != 1 or len(data) != 1 or
-            data[0][2] != BATCH_CRYPTO_PLAINTEXT):
-        raise ValueError('fixture_encrypt_request_fields_mismatch')
+            data[0][2] != input_data):
+        raise ValueError('fixture_crypto_request_fields_mismatch')
     parameter_fields = parameters[0][2]
     expected_parameters = [(0x420011, 5, (2).to_bytes(4, 'big')),
                            (0x42005F, 5, (1).to_bytes(4, 'big')),
                            (0x420028, 5, (3).to_bytes(4, 'big'))]
     if [(field[0], field[1], field[2]) for field in parameter_fields] != expected_parameters:
-        raise ValueError('fixture_encrypt_parameters_mismatch')
+        raise ValueError('fixture_crypto_parameters_mismatch')
 
 
-def verify_encrypt_response(response_tree):
-    """Check all lifecycle outcomes and the typed Encrypt response fields."""
-    verify_lifecycle(RECIPES['test-op-encrypt'][0], response_tree)
+def verify_crypto_response(response_tree, decrypt):
+    """Check all lifecycle outcomes and typed Encrypt or Decrypt fields."""
+    case_id = 'test-op-decrypt' if decrypt else 'test-op-encrypt'
+    item_ids = DECRYPT_ITEM_IDS if decrypt else ENCRYPT_ITEM_IDS
+    expected_data = BATCH_CRYPTO_PLAINTEXT if decrypt else BATCH_CRYPTO_CIPHERTEXT
+    verify_lifecycle(RECIPES[case_id][0], response_tree)
     items = [child for child in response_tree[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
-    if [byte_string_values(item, 0x420093) for item in items] != [[item_id] for item_id in ENCRYPT_ITEM_IDS]:
-        raise ValueError('fixture_encrypt_response_item_ids_mismatch')
+    if [byte_string_values(item, 0x420093) for item in items] != [[item_id] for item_id in item_ids]:
+        raise ValueError('fixture_crypto_response_item_ids_mismatch')
     payloads = [child for child in items[2][2]
                 if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1]
     if len(payloads) != 1:
-        raise ValueError('fixture_encrypt_response_payload_missing')
+        raise ValueError('fixture_crypto_response_payload_missing')
     fields = payloads[0][2]
     identifiers = [field for field in fields if field[0] == UNIQUE_IDENTIFIER_TAG and field[1] == 7]
     data = [field for field in fields if field[0] == 0x4200C2 and field[1] == 8]
     if (len(fields) != 2 or len(identifiers) != 1 or identifiers[0][2] != b'fixture-key-1' or
-            len(data) != 1 or data[0][2] != BATCH_CRYPTO_CIPHERTEXT):
-        raise ValueError('fixture_encrypt_response_fields_mismatch')
+            len(data) != 1 or data[0][2] != expected_data):
+        raise ValueError('fixture_crypto_response_fields_mismatch')
 
 
 def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
@@ -753,7 +763,9 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
     if selected_recipe[1] in ('cancel_async', 'cancel_poll_race'):
         assert_cancel_request(node)
     if selected_recipe[1] == 'encrypt':
-        assert_encrypt_request(node)
+        assert_crypto_request(node, False)
+    if selected_recipe[1] == 'decrypt':
+        assert_crypto_request(node, True)
     if (case_id in {
             'test-norm-payload-client-add-attribute-request-20-002',
             'test-norm-payload-client-add-attribute-request-21-002'} and
@@ -821,7 +833,7 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
         object_type = 4 if case_id == 'test-obj-private-key' else 3 if case_id == 'test-obj-public-key' else 2
         if numbers(node, 0x420057) != [object_type]:
             raise ValueError('fixture_object_type_mismatch')
-        expected_algorithms = ([3, 3] if selected_recipe[1] == 'encrypt' else
+        expected_algorithms = ([3, 3] if selected_recipe[1] in ('encrypt', 'decrypt') else
                                [4 if object_type in (3, 4) else 3])
         if numbers(node, 0x420028) != expected_algorithms:
             raise ValueError('fixture_algorithm_mismatch')
@@ -1118,7 +1130,8 @@ def assert_placeholder_usage(node, case_id):
     """Accept omitted or explicit ID Placeholder identifiers after Create."""
     if case_id not in ('test-batch-create-activate-destroy',
                        'test-batch-register-encrypt-decrypt-destroy',
-                       'test-batch-placeholder-chain-resolves', 'test-op-encrypt'):
+                       'test-batch-placeholder-chain-resolves', 'test-op-encrypt',
+                       'test-op-decrypt'):
         return
     batch_items = [child for child in node[2]
                    if child[0] == BATCH_ITEM_TAG and child[1] == 1]
@@ -2838,6 +2851,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             response_item_ids = BATCH_CRYPTO_ITEM_IDS
                                         elif recipe[1] == 'encrypt':
                                             response_item_ids = ENCRYPT_ITEM_IDS
+                                        elif recipe[1] == 'decrypt':
+                                            response_item_ids = DECRYPT_ITEM_IDS
                                         elif placeholder_chain_recipe:
                                             response_item_ids = (
                                                 (b'placeholder-revoke-cleanup', b'placeholder-destroy-cleanup')
@@ -3126,8 +3141,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 verify_lifecycle((20,), response_tree)
                                         elif recipe[1] == 'interop':
                                             verify_interop_response(response_tree)
-                                        elif recipe[1] == 'encrypt':
-                                            verify_encrypt_response(response_tree)
+                                        elif recipe[1] in ('encrypt', 'decrypt'):
+                                            verify_crypto_response(response_tree, recipe[1] == 'decrypt')
                                         elif recipe[1] == 'async_create_sync_default' and exchange_index == 0:
                                             verify_sync_create_response(response_tree)
                                         elif recipe[1] in ('async_create_optional_complete',
