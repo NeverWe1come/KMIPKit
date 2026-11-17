@@ -830,11 +830,13 @@ class ControlledTlsPeerTest {
         int serverPayloadRouteEventCount = 0;
         int anyObjectAttributeRouteEventCount = 0;
         int scalarTypedParserEventCount = 0;
+        int clientPayloadScalarRouteEventCount = 0;
         int itemTypeRouteEventCount = 0;
         Set<String> booleanFieldCaseIds = new java.util.HashSet<>();
         Set<String> anyObjectAttributeCaseIds = new java.util.HashSet<>();
         Set<String> scalarStructureMemberCaseIds = new java.util.LinkedHashSet<>();
         Set<String> serverPayloadCaseIds = new java.util.LinkedHashSet<>();
+        Set<String> clientPayloadScalarCaseIds = new java.util.LinkedHashSet<>();
 
         for (String protocolVersion : KMIP_2_0_AND_2_1) {
             appendLocalQueryRouteEvents(events, protocolVersion, requestTreeHash);
@@ -1111,13 +1113,22 @@ class ControlledTlsPeerTest {
                 appendLocalCatalogInvocation(events, protocolVersion, invocation);
             }
             serverPayloadRouteEventCount += serverPayloadInvocations.size();
+            Set<String> missingClientPayloadCases = missingClientCorrelationPayloadCaseIds(events, protocolVersion);
+            clientPayloadScalarCaseIds.addAll(missingClientPayloadCases);
+            List<LocalCatalogRouteChecks.Invocation> clientPayloadInvocations = new ArrayList<>();
+            LocalCatalogRouteChecks.executeClientPayloadScalarFields(readRouteEvidenceCatalog(), protocolVersion,
+                    missingClientPayloadCases, clientPayloadInvocations::add);
+            for (LocalCatalogRouteChecks.Invocation invocation : clientPayloadInvocations) {
+                appendLocalCatalogInvocation(events, protocolVersion, invocation);
+            }
+            clientPayloadScalarRouteEventCount += clientPayloadInvocations.size();
         }
 
         int tagAggregateEventCount = appendTagAggregateRouteEvents(events);
         assertEquals(expectedTagAggregateEventCount(), tagAggregateEventCount,
                 "The Tag aggregate must represent every catalogued tag and tag-allocation range cell.");
         int additionalCaseIdCount = writeRouteExecutionReport(reportPath, mapper, events,
-                scalarStructureMemberCaseIds, serverPayloadCaseIds);
+                scalarStructureMemberCaseIds, serverPayloadCaseIds, clientPayloadScalarCaseIds);
         assertTrue(Files.isRegularFile(reportPath),
                 "Installed client calls against the controlled TLS peer must emit route execution evidence.");
         JsonNode report = new ObjectMapper().readTree(reportPath.toFile());
@@ -1656,6 +1667,7 @@ class ControlledTlsPeerTest {
                         + booleanFieldRouteEventCount + scalarMessageFieldRouteEventCount
                         + scalarStructureMemberRouteEventCount + itemTypeRouteEventCount
                         + serverPayloadRouteEventCount
+                        + clientPayloadScalarRouteEventCount
                         + anyObjectAttributeRouteEventCount
                         + scalarTypedParserEventCount
                         + 97 // BEC, batch IDs, async payload, Ping, Endpoint Role, Object Defaults, derivation, and Extension Information member cells.
@@ -3980,7 +3992,8 @@ class ControlledTlsPeerTest {
     }
 
     private static int writeRouteExecutionReport(Path reportPath, ObjectMapper mapper,
-            ArrayNode events, Set<String> scalarStructureMemberCaseIds, Set<String> serverPayloadCaseIds)
+            ArrayNode events, Set<String> scalarStructureMemberCaseIds, Set<String> serverPayloadCaseIds,
+            Set<String> clientPayloadScalarCaseIds)
             throws Exception {
         Path catalogPath = routeEvidenceCatalogPath();
         Path manifestPath = Path.of("../shared/coverage/route-capabilities.json");
@@ -4068,6 +4081,7 @@ class ControlledTlsPeerTest {
         int additionalCaseIdCount = appendCaseIds(caseIds,
                 scalarStructureMemberCaseIds);
         additionalCaseIdCount += appendCaseIds(caseIds, serverPayloadCaseIds);
+        additionalCaseIdCount += appendCaseIds(caseIds, clientPayloadScalarCaseIds);
         appendItemTypeEnumerationCaseIds(caseIds, events);
         caseIds.add("test-enum-pkcs#11-function");
         caseIds.add("test-enum-pkcs#11-return-code");
@@ -4627,6 +4641,38 @@ class ControlledTlsPeerTest {
             } else {
                 assertEquals(routes.size() * 2, present,
                         "Server payload route evidence must be complete before reuse for " + caseId);
+            }
+        }
+        return missing;
+    }
+
+    private static Set<String> missingClientCorrelationPayloadCaseIds(JsonNode events, String version)
+            throws Exception {
+        JsonNode catalog = readRouteEvidenceCatalog();
+        List<String> routes = List.of("java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item", "java.generic-ttlv.ttlv_codec.decode");
+        Set<String> missing = new java.util.LinkedHashSet<>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            JsonNode requires = testCase.path("requires");
+            if (!"operation_payload_field".equals(requires.path("target_kind").asText())
+                    || !"Asynchronous Correlation Value".equals(requires.path("field_name").asText())
+                    || !"request".equals(requires.path("payload_role").asText())
+                    || !"local_model".equals(testCase.path("execution").path("mode").asText())
+                    || !appliesToVersion(testCase, version)) continue;
+            String caseId = testCase.path("case_id").asText();
+            String targetId = requires.path("normative_target_id").asText();
+            String operationId = requires.path("operation_id").asText();
+            int present = 0;
+            for (String evidenceTargetId : List.of(targetId, operationId)) {
+                for (String route : routes) {
+                    if (hasRouteEvent(events, caseId, route, version, evidenceTargetId)) present++;
+                }
+            }
+            if (present == 0) {
+                missing.add(caseId);
+            } else {
+                assertEquals(routes.size() * 2, present,
+                        "Client correlation payload route evidence must be complete before reuse for " + caseId);
             }
         }
         return missing;

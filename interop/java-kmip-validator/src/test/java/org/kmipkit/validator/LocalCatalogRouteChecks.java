@@ -348,6 +348,66 @@ final class LocalCatalogRouteChecks {
         }
     }
 
+    /** Executes generic TTLV routes for client payload correlation values. */
+    static void executeClientPayloadScalarFields(JsonNode catalog, String version, Set<String> selectedCaseIds,
+            EvidenceSink sink) throws Exception {
+        Set<String> emitted = new java.util.HashSet<>();
+        CodecLimits limits = CodecLimits.defaults();
+        byte[] correlation = "kmipkit-correlation-fixture".getBytes(StandardCharsets.US_ASCII);
+        List<String> genericRoutes = List.of("java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item", "java.generic-ttlv.ttlv_codec.decode");
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String caseId = testCase.path("case_id").asText();
+            if (!selectedCaseIds.contains(caseId)
+                    || !"local_model".equals(testCase.path("execution").path("mode").asText())
+                    || !applies(testCase, version)) continue;
+            JsonNode requires = testCase.path("requires");
+            String fieldName = requires.path("field_name").asText();
+            String operationId = requires.path("operation_id").asText();
+            if (!"operation_payload_field".equals(requires.path("target_kind").asText())
+                    || !"Asynchronous Correlation Value".equals(fieldName)
+                    || !"request".equals(requires.path("payload_role").asText())) {
+                throw new IllegalArgumentException("Selected case is not a client correlation payload field: "
+                        + caseId);
+            }
+            String targetId = requires.path("normative_target_id").asText();
+            int tagCode = tagCodeNamed(catalog, fieldName, version);
+            byte[] wire = scalarWire(tagCode, TtlvItemType.ByteString.code(), correlation);
+            try (TtlvValue value = TtlvValue.ByteString(correlation, limits);
+                    RawTag raw = RawTag.fromRaw(tagCode);
+                    Tag tag = raw.checked();
+                    TtlvItem item = TtlvItem.create(tag, value, limits);
+                    var view = item.view();
+                    var viewedTag = view.tag();
+                    var viewedValue = view.value()) {
+                assertEquals(tagCode, viewedTag.raw());
+                assertEquals(TtlvItemType.ByteString, view.itemType());
+                assertArrayEquals(correlation, viewedValue.bytes());
+            }
+            try (TtlvItem decoded = TtlvCodec.decode(wire);
+                    var view = decoded.view();
+                    var viewedTag = view.tag();
+                    var viewedValue = view.value()) {
+                assertEquals(tagCode, viewedTag.raw());
+                assertEquals(TtlvItemType.ByteString, view.itemType());
+                assertArrayEquals(correlation, viewedValue.bytes());
+            }
+            for (String evidenceTargetId : List.of(targetId, operationId)) {
+                emitRoute(sink, caseId, evidenceTargetId, genericRoutes.get(0),
+                        "org.kmipkit.ttlv.TtlvItem.create", "construct", wire);
+                emitRoute(sink, caseId, evidenceTargetId, genericRoutes.get(1),
+                        "org.kmipkit.ttlv.TtlvItem.view", "decode", wire);
+                emitRoute(sink, caseId, evidenceTargetId, genericRoutes.get(2),
+                        "org.kmipkit.ttlv.TtlvCodec.decode", "decode", wire);
+            }
+            emitted.add(caseId);
+        }
+        if (!emitted.equals(selectedCaseIds)) {
+            throw new IllegalArgumentException("Selected client correlation payload cases were not executed for "
+                    + version);
+        }
+    }
+
     private static ServerPayloadValue serverPayloadValue(JsonNode catalog, String operationId, String fieldName) {
         if ("KMIPKIT-ELEM-OP-S2C-NOTIFY".equals(operationId) && "Unique Identifier".equals(fieldName)) {
             return new ServerPayloadValue("Text String", 0,
