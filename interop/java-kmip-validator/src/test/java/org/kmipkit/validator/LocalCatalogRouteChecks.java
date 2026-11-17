@@ -35,6 +35,9 @@ final class LocalCatalogRouteChecks {
     static final String ROTATE_NAME_TYPE_CASE_ID =
             "test-norm-structure-member-structure-member-4-53-rotate-name-type";
     static final String ROTATE_NAME_TYPE_TARGET_ID = "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-53-ROTATE-NAME-TYPE";
+    static final String ROTATE_NAME_VALUE_CASE_ID =
+            "test-norm-structure-member-structure-member-4-53-rotate-name-value";
+    static final String ROTATE_NAME_VALUE_TARGET_ID = "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-53-ROTATE-NAME-VALUE";
 
     private LocalCatalogRouteChecks() { }
 

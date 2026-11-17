@@ -1135,6 +1135,23 @@ class ControlledTlsPeerTest {
                     route, "2.1", LocalCatalogRouteChecks.ROTATE_NAME_TYPE_TARGET_ID);
             assertEquals("passed", event.path("status").asText());
         }
+        List<String> rotateNameValueMemberRoutes = List.of(
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring",
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode",
+                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
+                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
+                "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew");
+        for (String route : rotateNameValueMemberRoutes) {
+            assertEquals(1, routeEventCount(report.path("events"),
+                    LocalCatalogRouteChecks.ROTATE_NAME_VALUE_CASE_ID, route),
+                    "Rotate Name Value must complete its exact KMIP 2.1 structure-member route.");
+            JsonNode event = findRouteEvent(report.path("events"),
+                    LocalCatalogRouteChecks.ROTATE_NAME_VALUE_CASE_ID,
+                    route, "2.1", LocalCatalogRouteChecks.ROTATE_NAME_VALUE_TARGET_ID);
+            assertEquals("passed", event.path("status").asText());
+        }
         List<String> genericEnumerationRoutes = List.of(
                 "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
                 "java.generic-ttlv.ttlv_item.create",
@@ -1407,6 +1424,7 @@ class ControlledTlsPeerTest {
                         + scalarTypedParserEventCount
                         + 97 // BEC, batch IDs, async payload, Ping, Endpoint Role, Object Defaults, derivation, and Extension Information member cells.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Type generic and typed Attribute routes.
+                        + 7 // KMIP 2.1 §4.53 Rotate Name Value generic and typed Attribute routes.
                         + tagAggregateEventCount
                         + referencedEnumEventCount + referencedEnumAggregateEventCount,
                 report.path("events").size());
@@ -1450,6 +1468,7 @@ class ControlledTlsPeerTest {
                         + STRUCTURE_MEMBER_VALUE_FIXTURES.size() + PROFILE_INFORMATION_CASE_IDS.size()
                         + SERVER_INFORMATION_CASE_IDS.size() + 7 + booleanFieldCaseIds.size()
                         + 1 // KMIP 2.1 §4.53 Rotate Name Type member case.
+                        + 1 // KMIP 2.1 §4.53 Rotate Name Value member case.
                         // Four scalar header cases are already included by the baseline report groups.
                         + scalarMessageFieldCaseIds(report.path("events")).size() - 4,
                 report.path("case_ids").size());
