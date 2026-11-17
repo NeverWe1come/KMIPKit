@@ -193,6 +193,284 @@ final class LocalCatalogRouteChecks {
         }
     }
 
+    /** Executes generic TTLV routes for catalogued scalar structure members. */
+    static void executeScalarStructureMembers(JsonNode catalog, String version, Set<String> selectedCaseIds,
+            EvidenceSink sink) throws Exception {
+        Set<String> emitted = new java.util.HashSet<>();
+        CodecLimits limits = CodecLimits.defaults();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String caseId = testCase.path("case_id").asText();
+            if (!selectedCaseIds.contains(caseId)
+                    || !"local_model".equals(testCase.path("execution").path("mode").asText())
+                    || !applies(testCase, version)) continue;
+            JsonNode requires = testCase.path("requires");
+            if (!"structure_member".equals(requires.path("target_kind").asText())) {
+                throw new IllegalArgumentException("Selected case is not a structure member: " + caseId);
+            }
+            String targetId = requires.path("normative_target_id").asText();
+            JsonNode target = findTarget(catalog, targetId);
+            String encoding = target.path("source_encoding").asText();
+            TtlvItemType itemType = scalarMessageFieldType(encoding);
+            String targetName = target.path("name").asText();
+            int tagCode = tagCodeNamed(catalog, targetName, version);
+            byte[] valueBytes = scalarMessageFieldBytes(caseId, encoding);
+            long numericValue = scalarMessageFieldNumber(caseId, encoding);
+            byte[] wire = scalarWire(tagCode, itemType.code(), valueBytes);
+            try (TtlvValue value = scalarMessageFieldValue(encoding, valueBytes, numericValue, limits);
+                    RawTag raw = RawTag.fromRaw(tagCode);
+                    Tag tag = raw.checked();
+                    TtlvItem item = TtlvItem.create(tag, value, limits);
+                    var itemView = item.view();
+                    var itemTag = itemView.tag();
+                    var itemValue = itemView.value()) {
+                assertEquals(tagCode, itemTag.raw());
+                assertScalarMessageFieldValue(itemValue, itemType, valueBytes, numericValue);
+            }
+            try (TtlvItem decoded = TtlvCodec.decode(wire);
+                    var decodedView = decoded.view();
+                    var decodedTag = decodedView.tag();
+                    var decodedValue = decodedView.value()) {
+                assertEquals(tagCode, decodedTag.raw());
+                assertScalarMessageFieldValue(decodedValue, itemType, valueBytes, numericValue);
+            }
+            emitRoute(sink, caseId, targetId, scalarMessageFieldConstructorRoute(encoding),
+                    scalarMessageFieldConstructor(encoding), "construct", wire);
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_item.create",
+                    "org.kmipkit.ttlv.TtlvItem.create", "construct", wire);
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.function.ttlv_item_view_from_item",
+                    "org.kmipkit.ttlv.TtlvItem.view", "decode", wire);
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_codec.decode",
+                    "org.kmipkit.ttlv.TtlvCodec.decode", "decode", wire);
+            emitted.add(caseId);
+        }
+        if (!emitted.equals(selectedCaseIds)) {
+            throw new IllegalArgumentException("Selected scalar structure member cases were not executed for "
+                    + version);
+        }
+    }
+
+    /** Executes selected scalar fields from OASIS KMIP 2.0/2.1 server-initiated operation payloads. */
+    static void executeServerPayloadScalarFields(JsonNode catalog, String version, Set<String> selectedCaseIds,
+            EvidenceSink sink) throws Exception {
+        Set<String> emitted = new java.util.HashSet<>();
+        CodecLimits limits = CodecLimits.defaults();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String caseId = testCase.path("case_id").asText();
+            if (!selectedCaseIds.contains(caseId)
+                    || !"local_model".equals(testCase.path("execution").path("mode").asText())
+                    || !applies(testCase, version)) continue;
+            JsonNode requires = testCase.path("requires");
+            String operationId = requires.path("operation_id").asText();
+            if (!"operation_payload_field".equals(requires.path("target_kind").asText())
+                    || !Set.of("KMIPKIT-ELEM-OP-S2C-QUERY", "KMIPKIT-ELEM-OP-S2C-NOTIFY")
+                            .contains(operationId)) {
+                throw new IllegalArgumentException("Selected case is not a supported server payload field: " + caseId);
+            }
+            String fieldName = requires.path("field_name").asText();
+            ServerPayloadValue fixture = serverPayloadValue(catalog, operationId, fieldName);
+            int tagCode = tagCodeNamed(catalog, fieldName, version);
+            TtlvItemType itemType = scalarMessageFieldType(fixture.encoding());
+            byte[] wire = scalarWire(tagCode, itemType.code(), fixture.bytes());
+            try (TtlvValue value = scalarMessageFieldValue(fixture.encoding(), fixture.bytes(),
+                    fixture.number(), limits);
+                    RawTag raw = RawTag.fromRaw(tagCode);
+                    Tag tag = raw.checked();
+                    TtlvItem item = TtlvItem.create(tag, value, limits);
+                    var itemView = item.view();
+                    var itemTag = itemView.tag();
+                    var itemValue = itemView.value()) {
+                assertEquals(tagCode, itemTag.raw());
+                assertScalarMessageFieldValue(itemValue, itemType, fixture.bytes(), fixture.number());
+            }
+            try (TtlvItem decoded = TtlvCodec.decode(wire);
+                    var decodedView = decoded.view();
+                    var decodedTag = decodedView.tag();
+                    var decodedValue = decodedView.value()) {
+                assertEquals(tagCode, decodedTag.raw());
+                assertScalarMessageFieldValue(decodedValue, itemType, fixture.bytes(), fixture.number());
+            }
+            String targetId = requires.path("normative_target_id").asText();
+            for (String evidenceTargetId : List.of(targetId, operationId)) {
+                emitRoute(sink, caseId, evidenceTargetId, "java.generic-ttlv.ttlv_item.create",
+                        "org.kmipkit.ttlv.TtlvItem.create", "construct", wire);
+                emitRoute(sink, caseId, evidenceTargetId,
+                        "java.generic-ttlv.function.ttlv_item_view_from_item",
+                        "org.kmipkit.ttlv.TtlvItem.view", "decode", wire);
+                emitRoute(sink, caseId, evidenceTargetId, "java.generic-ttlv.ttlv_codec.decode",
+                        "org.kmipkit.ttlv.TtlvCodec.decode", "decode", wire);
+            }
+            emitted.add(caseId);
+        }
+        if (!emitted.equals(selectedCaseIds)) {
+            throw new IllegalArgumentException("Selected Query payload cases were not executed for " + version);
+        }
+    }
+
+    private static ServerPayloadValue serverPayloadValue(JsonNode catalog, String operationId, String fieldName) {
+        if ("KMIPKIT-ELEM-OP-S2C-NOTIFY".equals(operationId) && "Unique Identifier".equals(fieldName)) {
+            return new ServerPayloadValue("Text String", 0,
+                    "kmipkit-notify-validator".getBytes(StandardCharsets.US_ASCII));
+        }
+        if (!"KMIPKIT-ELEM-OP-S2C-QUERY".equals(operationId)) {
+            throw new IllegalArgumentException("No source-backed scalar server payload fixture: " + operationId
+                    + " / " + fieldName);
+        }
+        return switch (fieldName) {
+            case "Query Function" -> queryEnumeration(catalog, "QUERY-FUNCTION", "Query Operations");
+            case "Object Type" -> queryEnumeration(catalog, "OBJECT-TYPE", "Symmetric Key");
+            case "Attestation Type" -> queryEnumeration(catalog, "ATTESTATION-TYPE", "TPM Quote");
+            case "Client Registration Method" -> queryEnumeration(catalog,
+                    "CLIENT-REGISTRATION-METHOD", "Client Generated");
+            case "Vendor Identification" -> new ServerPayloadValue("Text String", 0,
+                    "KMIPKit Java validator".getBytes(StandardCharsets.US_ASCII));
+            default -> throw new IllegalArgumentException("No source-backed scalar Query payload fixture: "
+                    + fieldName);
+        };
+    }
+
+    private static ServerPayloadValue queryEnumeration(JsonNode catalog, String enumType, String valueName) {
+        long number = enumValue(catalog, enumType, valueName);
+        byte[] bytes = ByteBuffer.allocate(Integer.BYTES).putInt(Math.toIntExact(number)).array();
+        return new ServerPayloadValue("Enumeration", number, bytes);
+    }
+
+    private static long enumValue(JsonNode catalog, String enumType, String valueName) {
+        String parentId = "KMIPKIT-ELEM-ENUMERATION-" + enumType;
+        JsonNode match = null;
+        for (JsonNode target : catalog.path("normative_targets")) {
+            if (!"enumeration_value".equals(target.path("kind").asText())
+                    || !valueName.equals(target.path("name").asText())
+                    || !"assigned".equals(target.path("allocation").asText())) continue;
+            boolean belongsToType = false;
+            for (JsonNode parent : target.path("parent_element_ids")) {
+                if (parentId.equals(parent.asText())) belongsToType = true;
+            }
+            if (!belongsToType) continue;
+            if (match != null) throw new IllegalArgumentException("Duplicate assigned enumeration value: "
+                    + enumType + " / " + valueName);
+            match = target;
+        }
+        if (match == null) throw new IllegalArgumentException("Missing assigned enumeration value: "
+                + enumType + " / " + valueName);
+        return Long.parseUnsignedLong(match.path("wire_value").asText().replaceFirst("^0[xX]", ""), 16);
+    }
+
+    private record ServerPayloadValue(String encoding, long number, byte[] bytes) { }
+
+    /**
+     * Executes the repeatable Any object-attribute member with a Name attribute.
+     * The Name structure follows OASIS KMIP 2.0/2.1 §4.32; the six member cases
+     * are defined by §§5.1–5.7, and the Name tags by §§11.54/11.56.
+     */
+    static void executeAnyObjectAttributeMembers(JsonNode catalog, String version, Set<String> selectedCaseIds,
+            EvidenceSink sink) throws Exception {
+        Set<String> emitted = new java.util.HashSet<>();
+        CodecLimits limits = CodecLimits.defaults();
+        int nameTag = tagCodeNamed(catalog, "Name", version);
+        int nameTypeTag = tagCodeNamed(catalog, "Name Type", version);
+        int nameValueTag = tagCodeNamed(catalog, "Name Value", version);
+        byte[] nameBytes = "kmipkit-object-attribute-fixture".getBytes(StandardCharsets.UTF_8);
+        byte[] nameTypeWire = scalarWire(nameTypeTag, TtlvItemType.Enumeration.code(), 1);
+        byte[] nameValueWire = itemWire(nameValueTag, TtlvItemType.TextString.code(), nameBytes);
+        byte[] attributeWire = structureWire(nameTag, concat(nameTypeWire, nameValueWire));
+
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String caseId = testCase.path("case_id").asText();
+            if (!selectedCaseIds.contains(caseId)
+                    || !"local_model".equals(testCase.path("execution").path("mode").asText())
+                    || !applies(testCase, version)) continue;
+            JsonNode requires = testCase.path("requires");
+            String targetId = requires.path("normative_target_id").asText();
+            JsonNode target = findTarget(catalog, targetId);
+            if (!"structure_member".equals(requires.path("target_kind").asText())
+                    || !target.path("name").asText().startsWith("Any attribute in ")
+                    || !target.path("source_encoding").asText().startsWith("Any")) {
+                throw new IllegalArgumentException("Selected case is not a repeatable Any object attribute: " + caseId);
+            }
+
+            try (TtlvStructure empty = TtlvStructure.create();
+                    TtlvValue typeValue = TtlvValue.Enumeration(1);
+                    TtlvStructure withNameType = append(empty, nameTypeTag, typeValue);
+                    TtlvValue nameValue = TtlvValue.TextString(nameBytes, limits);
+                    TtlvStructure nameAttribute = append(withNameType, nameValueTag, nameValue);
+                    TtlvValue attributeValue = TtlvValue.structure(nameAttribute, limits);
+                    RawTag raw = RawTag.fromRaw(nameTag);
+                    Tag tag = raw.checked();
+                    TtlvItem item = TtlvItem.create(tag, attributeValue, limits);
+                    var itemView = item.view();
+                    var itemTag = itemView.tag();
+                    var itemValue = itemView.value();
+                    TtlvItem decoded = TtlvCodec.decode(attributeWire);
+                    var decodedView = decoded.view();
+                    var decodedTag = decodedView.tag();
+                    var decodedValue = decodedView.value()) {
+                assertEquals(nameTag, itemTag.raw());
+                assertEquals(TtlvItemType.Structure, itemView.itemType());
+                assertEquals(nameTag, decodedTag.raw());
+                assertEquals(TtlvItemType.Structure, decodedView.itemType());
+                try (TtlvStructureView structure = decodedValue.structure()) {
+                    assertEquals(2, structure.itemCount());
+                }
+                try (TtlvStructureView structure = itemValue.structure()) {
+                    assertEquals(2, structure.itemCount());
+                }
+            }
+
+        try (TtlvStructure emptyAttributes = TtlvStructure.create()) {
+            try (TtlvStructureView absentView = emptyAttributes.view()) {
+                assertEquals(0, absentView.itemCount());
+            }
+            try (TtlvStructure emptyName = TtlvStructure.create();
+                    TtlvValue typeValue = TtlvValue.Enumeration(1);
+                    TtlvStructure withNameType = append(emptyName, nameTypeTag, typeValue);
+                    TtlvValue nameValue = TtlvValue.TextString(nameBytes, limits);
+                    TtlvStructure nameAttribute = append(withNameType, nameValueTag, nameValue);
+                    TtlvValue attributeValue = TtlvValue.structure(nameAttribute, limits);
+                    RawTag raw = RawTag.fromRaw(nameTag); Tag tag = raw.checked();
+                    TtlvItem item = TtlvItem.create(tag, attributeValue, limits);
+                    TtlvStructure once = TtlvStructure.withItem(emptyAttributes, item, limits)) {
+                try (TtlvStructureView onceView = once.view()) {
+                    assertEquals(1, onceView.itemCount());
+                }
+                try (TtlvItem repeatedItem = TtlvCodec.decode(attributeWire);
+                        TtlvStructure twice = TtlvStructure.withItem(once, repeatedItem, limits);
+                        TtlvStructureView repeatedView = twice.view()) {
+                    assertEquals(2, repeatedView.itemCount());
+                }
+            }
+        }
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_item.create",
+                    "org.kmipkit.ttlv.TtlvItem.create", "construct", attributeWire);
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.function.ttlv_item_view_from_item",
+                    "org.kmipkit.ttlv.TtlvItem.view", "decode", attributeWire);
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_codec.decode",
+                    "org.kmipkit.ttlv.TtlvCodec.decode", "decode", attributeWire);
+            emitted.add(caseId);
+        }
+        if (!emitted.equals(selectedCaseIds)) {
+            throw new IllegalArgumentException("Selected Any object attribute cases were not executed for " + version);
+        }
+    }
+
+    private static int tagCodeNamed(JsonNode catalog, String name, String version) {
+        String normalizedName = normalizeName(name);
+        int tagCode = -1;
+        int matches = 0;
+        for (JsonNode candidate : catalog.path("normative_targets")) {
+            if (!"tag".equals(candidate.path("kind").asText())
+                    || !normalizedName.equals(normalizeName(candidate.path("name").asText()))
+                    || !supportsVersion(candidate, version)) continue;
+            if (!"assigned".equals(candidate.path("allocation").asText())) {
+                throw new IllegalArgumentException("Fixture Tag is not assigned: " + name);
+            }
+            tagCode = Integer.parseUnsignedInt(
+                    candidate.path("wire_value").asText().replaceFirst("^0[xX]", ""), 16);
+            matches++;
+        }
+        if (matches != 1) throw new IllegalArgumentException("Expected one assigned fixture Tag: " + name);
+        return tagCode;
+    }
+
     private static JsonNode findTarget(JsonNode catalog, String targetId) {
         for (JsonNode target : catalog.path("normative_targets")) {
             if (targetId.equals(target.path("target_id").asText())) return target;

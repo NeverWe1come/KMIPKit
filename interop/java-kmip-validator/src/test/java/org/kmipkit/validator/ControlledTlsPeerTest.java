@@ -460,9 +460,19 @@ class ControlledTlsPeerTest {
             "java.generic-ttlv.function.ttlv_item_view_from_item",
             "java.generic-ttlv.ttlv_codec.decode",
             "java.typed-protocol.model.org.kmipkit.message.responsemessage.fromttlv");
+    private static final String RESPONSE_HEADER_SERVER_CORRELATION_VALUE_TEXT = "response-server-correlation";
+    private static final NormativeTarget RESPONSE_HEADER_SERVER_CORRELATION_VALUE = new NormativeTarget(
+            "test-norm-message-field-message-field-8-5-server-correlation-value",
+            "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-SERVER-CORRELATION-VALUE");
+    private static final List<String> RESPONSE_HEADER_SERVER_CORRELATION_VALUE_ROUTES = List.of(
+            "java.generic-ttlv.ttlv_item.create",
+            "java.generic-ttlv.function.ttlv_item_view_from_item",
+            "java.generic-ttlv.ttlv_codec.decode",
+            "java.typed-protocol.model.org.kmipkit.message.responsemessage.fromttlv");
     private static final List<NormativeTarget> RESPONSE_MESSAGE_PARSE_TARGETS = List.of(
             RESPONSE_HEADER_ATTESTATION_TYPE,
             RESPONSE_HEADER_CLIENT_CORRELATION_VALUE,
+            RESPONSE_HEADER_SERVER_CORRELATION_VALUE,
             new NormativeTarget("test-norm-message-field-message-field-8-5-batch-count",
                     "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-BATCH-COUNT"),
             new NormativeTarget("test-norm-message-field-message-field-8-6-batch-item",
@@ -845,9 +855,15 @@ class ControlledTlsPeerTest {
         int typedTagIdentityEventCount = 0;
         int booleanFieldRouteEventCount = 0;
         int scalarMessageFieldRouteEventCount = 0;
+        int scalarStructureMemberRouteEventCount = 0;
+        int serverPayloadRouteEventCount = 0;
+        int anyObjectAttributeRouteEventCount = 0;
         int scalarTypedParserEventCount = 0;
         int itemTypeRouteEventCount = 0;
         Set<String> booleanFieldCaseIds = new java.util.HashSet<>();
+        Set<String> anyObjectAttributeCaseIds = new java.util.HashSet<>();
+        Set<String> scalarStructureMemberCaseIds = new java.util.LinkedHashSet<>();
+        Set<String> serverPayloadCaseIds = new java.util.LinkedHashSet<>();
 
         for (String protocolVersion : KMIP_2_0_AND_2_1) {
             appendLocalQueryRouteEvents(events, protocolVersion, requestTreeHash);
@@ -1098,14 +1114,45 @@ class ControlledTlsPeerTest {
             appendExtensionTagRouteEvents(events, protocolVersion, CodecLimits.defaults());
             assertExtensionTagRouteEvents(events, protocolVersion);
             assertNewlyCataloguedLocalRoutesAreInvoked(events, protocolVersion);
+            Set<String> missingAnyObjectAttributeCases = missingAnyObjectAttributeCaseIds(
+                    readRouteEvidenceCatalog(), events, protocolVersion);
+            anyObjectAttributeCaseIds.addAll(missingAnyObjectAttributeCases);
+            List<LocalCatalogRouteChecks.Invocation> anyObjectAttributeInvocations = new ArrayList<>();
+            LocalCatalogRouteChecks.executeAnyObjectAttributeMembers(readRouteEvidenceCatalog(), protocolVersion,
+                    missingAnyObjectAttributeCases, anyObjectAttributeInvocations::add);
+            for (LocalCatalogRouteChecks.Invocation invocation : anyObjectAttributeInvocations) {
+                appendLocalCatalogInvocation(events, protocolVersion, invocation);
+            }
+            anyObjectAttributeRouteEventCount += anyObjectAttributeInvocations.size();
+            Set<String> missingScalarStructureMemberCases = missingScalarStructureMemberRouteCaseIds(events,
+                    protocolVersion);
+            scalarStructureMemberCaseIds.addAll(missingScalarStructureMemberCases);
+            List<LocalCatalogRouteChecks.Invocation> scalarStructureMemberInvocations = new ArrayList<>();
+            LocalCatalogRouteChecks.executeScalarStructureMembers(readRouteEvidenceCatalog(), protocolVersion,
+                    missingScalarStructureMemberCases, scalarStructureMemberInvocations::add);
+            for (LocalCatalogRouteChecks.Invocation invocation : scalarStructureMemberInvocations) {
+                appendLocalCatalogInvocation(events, protocolVersion, invocation);
+            }
+            scalarStructureMemberRouteEventCount += scalarStructureMemberInvocations.size();
+            assertScalarStructureMemberGenericRouteEvidence(events, protocolVersion);
+            Set<String> missingServerPayloadCases = missingServerPayloadScalarCaseIds(events, protocolVersion);
+            serverPayloadCaseIds.addAll(missingServerPayloadCases);
+            List<LocalCatalogRouteChecks.Invocation> serverPayloadInvocations = new ArrayList<>();
+            LocalCatalogRouteChecks.executeServerPayloadScalarFields(readRouteEvidenceCatalog(), protocolVersion,
+                    missingServerPayloadCases, serverPayloadInvocations::add);
+            for (LocalCatalogRouteChecks.Invocation invocation : serverPayloadInvocations) {
+                appendLocalCatalogInvocation(events, protocolVersion, invocation);
+            }
+            serverPayloadRouteEventCount += serverPayloadInvocations.size();
         }
 
         int tagAggregateEventCount = appendTagAggregateRouteEvents(events);
         assertEquals(expectedTagAggregateEventCount(), tagAggregateEventCount,
                 "The Tag aggregate must represent every catalogued tag and tag-allocation range cell.");
-        writeRouteExecutionReport(reportPath, mapper, events);
+        int additionalCaseIdCount = writeRouteExecutionReport(reportPath, mapper, events,
+                scalarStructureMemberCaseIds, serverPayloadCaseIds);
         assertTrue(Files.isRegularFile(reportPath),
-                "Installed Query calls against the controlled peer must emit route execution evidence.");
+                "Installed client calls against the controlled TLS peer must emit route execution evidence.");
         JsonNode report = new ObjectMapper().readTree(reportPath.toFile());
         assertEquals("java", report.path("language").asText());
         assertGenericOnlyTagInventoryEvidence(report.path("events"));
@@ -1346,6 +1393,17 @@ class ControlledTlsPeerTest {
                 JsonNode event = findRouteEvent(report.path("events"),
                         RESPONSE_HEADER_CLIENT_CORRELATION_VALUE.caseId(), route, version,
                         RESPONSE_HEADER_CLIENT_CORRELATION_VALUE.targetId());
+                assertEquals("passed", event.path("status").asText());
+            }
+        }
+        for (String route : RESPONSE_HEADER_SERVER_CORRELATION_VALUE_ROUTES) {
+            assertEquals(KMIP_2_0_AND_2_1.size(), routeEventCount(report.path("events"),
+                    RESPONSE_HEADER_SERVER_CORRELATION_VALUE.caseId(), route),
+                    "Response Header Server Correlation Value must complete its generic or typed route cells.");
+            for (String version : KMIP_2_0_AND_2_1) {
+                JsonNode event = findRouteEvent(report.path("events"),
+                        RESPONSE_HEADER_SERVER_CORRELATION_VALUE.caseId(), route, version,
+                        RESPONSE_HEADER_SERVER_CORRELATION_VALUE.targetId());
                 assertEquals("passed", event.path("status").asText());
             }
         }
@@ -1590,6 +1648,8 @@ class ControlledTlsPeerTest {
                 .mapToInt(fixture -> fixture.protocolVersions().size()).sum();
         int batchErrorContinuationHeaderRouteEventCount = KMIP_2_0_AND_2_1.size();
         int batchContinuationTagIdentityEventCount = KMIP_2_0_AND_2_1.size() * 6;
+        int responseHeaderServerCorrelationEventCount =
+                RESPONSE_HEADER_SERVER_CORRELATION_VALUE_ROUTES.size() * KMIP_2_0_AND_2_1.size();
         int genericTagEventCount = 0;
         int referencedEnumEventCount = 0;
         int referencedEnumAggregateEventCount = 0;
@@ -1629,8 +1689,12 @@ class ControlledTlsPeerTest {
                         + structureMemberValueRouteEventCount
                         + batchErrorContinuationEventCount + batchErrorContinuationHeaderRouteEventCount
                         + batchContinuationTagIdentityEventCount
+                        + responseHeaderServerCorrelationEventCount
                         + genericTagEventCount + typedTagIdentityEventCount
-                        + booleanFieldRouteEventCount + scalarMessageFieldRouteEventCount + itemTypeRouteEventCount
+                        + booleanFieldRouteEventCount + scalarMessageFieldRouteEventCount
+                        + scalarStructureMemberRouteEventCount + itemTypeRouteEventCount
+                        + serverPayloadRouteEventCount
+                        + anyObjectAttributeRouteEventCount
                         + scalarTypedParserEventCount
                         + 97 // BEC, batch IDs, async payload, Ping, Endpoint Role, Object Defaults, derivation, and Extension Information member cells.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Type generic and typed Attribute routes.
@@ -1673,10 +1737,11 @@ class ControlledTlsPeerTest {
                         + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + genericTagCaseIds.size()
                         + 12
                         + typedTagIdentityCaseIds().size() + referencedEnumCaseCount
+                        + anyObjectAttributeCaseIds.size()
                         + 11 + itemTypeValueCaseIds.size() + STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size()
                         + STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.size()
                         + STRUCTURE_MEMBER_VALUE_FIXTURES.size() + PROFILE_INFORMATION_CASE_IDS.size()
-                        + SERVER_INFORMATION_CASE_IDS.size() + USAGE_LIMITS_CASE_IDS.size() + 9
+                        + SERVER_INFORMATION_CASE_IDS.size() + USAGE_LIMITS_CASE_IDS.size() + 10
                         + booleanFieldCaseIds.size()
                         + 1 // KMIP 2.0/2.1 §7.28/7.34 Right Usage Limits member case.
                         + 1 // KMIP 2.1 §4.53 Rotate Name Type member case.
@@ -1684,7 +1749,8 @@ class ControlledTlsPeerTest {
                         + 1 // KMIP 2.0/2.1 §8.2 Batch Order Option message-field case.
                         + 1 // KMIP 2.0/2.1 §8.2 Attestation Capable Indicator message-field case.
                         // Four scalar header cases are already included by the baseline report groups.
-                        + scalarMessageFieldCaseIds(report.path("events")).size() - 4,
+                        + scalarMessageFieldCaseIds(report.path("events")).size() - 4
+                        + additionalCaseIdCount,
                 report.path("case_ids").size());
         List<String> expectedCredentialCaseIds = CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().toList();
         int credentialCaseStart = report.path("case_ids").size() - expectedCredentialCaseIds.size();
@@ -3953,8 +4019,9 @@ class ControlledTlsPeerTest {
         return event;
     }
 
-    private static void writeRouteExecutionReport(Path reportPath, ObjectMapper mapper,
-            ArrayNode events) throws Exception {
+    private static int writeRouteExecutionReport(Path reportPath, ObjectMapper mapper,
+            ArrayNode events, Set<String> scalarStructureMemberCaseIds, Set<String> serverPayloadCaseIds)
+            throws Exception {
         Path catalogPath = routeEvidenceCatalogPath();
         Path manifestPath = Path.of("../shared/coverage/route-capabilities.json");
         Path pinPath = Path.of("library-pin.json");
@@ -3989,6 +4056,7 @@ class ControlledTlsPeerTest {
         caseIds.add(RESPONSE_BATCH_ITEM_CASE_ID);
         caseIds.add(RESPONSE_HEADER_ATTESTATION_TYPE.caseId());
         caseIds.add(RESPONSE_HEADER_CLIENT_CORRELATION_VALUE.caseId());
+        caseIds.add(RESPONSE_HEADER_SERVER_CORRELATION_VALUE.caseId());
         caseIds.add("test-norm-message-field-message-field-8-5-batch-count");
         caseIds.add("test-norm-message-field-message-field-9-5-batch-count");
         caseIds.add("test-norm-message-field-message-field-8-6-batch-item");
@@ -4039,6 +4107,9 @@ class ControlledTlsPeerTest {
         }
         appendBooleanFieldCaseIds(caseIds, events);
         appendScalarMessageFieldCaseIds(caseIds, events);
+        int additionalCaseIdCount = appendCaseIds(caseIds,
+                scalarStructureMemberCaseIds);
+        additionalCaseIdCount += appendCaseIds(caseIds, serverPayloadCaseIds);
         appendItemTypeEnumerationCaseIds(caseIds, events);
         caseIds.add("test-enum-pkcs#11-function");
         caseIds.add("test-enum-pkcs#11-return-code");
@@ -4050,6 +4121,7 @@ class ControlledTlsPeerTest {
         caseIds.add("test-norm-payload-client-set-endpoint-role-request-21-001");
         caseIds.add("test-norm-payload-client-set-endpoint-role-response-21-001");
         caseIds.add("test-enum-item-type");
+        appendAnyObjectAttributeCaseIds(caseIds, events);
         CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().forEach(caseIds::add);
         report.putArray("protocol_versions").add("2.0").add("2.1");
         ObjectNode combination = mapper.createObjectNode();
@@ -4059,6 +4131,7 @@ class ControlledTlsPeerTest {
         report.set("events", events);
         Files.createDirectories(reportPath.toAbsolutePath().normalize().getParent());
         mapper.writerWithDefaultPrettyPrinter().writeValue(reportPath.toFile(), report);
+        return additionalCaseIdCount;
     }
 
     private static void appendBooleanFieldCaseIds(ArrayNode caseIds, JsonNode events) {
@@ -4083,6 +4156,19 @@ class ControlledTlsPeerTest {
         for (String caseId : scalarMessageFieldCases) {
             if (existing.add(caseId)) caseIds.add(caseId);
         }
+    }
+
+    private static int appendCaseIds(ArrayNode caseIds, Set<String> caseIdsToAppend) {
+        Set<String> existing = new java.util.HashSet<>();
+        caseIds.forEach(caseId -> existing.add(caseId.asText()));
+        int added = 0;
+        for (String caseId : caseIdsToAppend) {
+            if (existing.add(caseId)) {
+                caseIds.add(caseId);
+                added++;
+            }
+        }
+        return added;
     }
 
     private static Set<String> scalarMessageFieldCaseIds(JsonNode events) {
@@ -4116,6 +4202,21 @@ class ControlledTlsPeerTest {
         for (JsonNode event : events) {
             String caseId = event.path("case_id").asText();
             if (caseId.startsWith("test-norm-enumeration-value-enum-value-item-type-")
+                    && existing.add(caseId)) {
+                caseIds.add(caseId);
+            }
+        }
+    }
+
+    private static void appendAnyObjectAttributeCaseIds(ArrayNode caseIds, JsonNode events) {
+        Set<String> existing = new java.util.HashSet<>();
+        caseIds.forEach(caseId -> existing.add(caseId.asText()));
+        for (JsonNode event : events) {
+            String caseId = event.path("case_id").asText();
+            String targetId = event.path("target_id").asText();
+            if (targetId.startsWith("KMIPKIT-ELEM-STRUCTURE-MEMBER-5-")
+                    && targetId.contains("-ANY-ATTRIBUTE-IN-4-OBJECT-ATTRIBUTES")
+                    && "java.generic-ttlv.ttlv_item.create".equals(event.path("route_id").asText())
                     && existing.add(caseId)) {
                 caseIds.add(caseId);
             }
@@ -4385,6 +4486,35 @@ class ControlledTlsPeerTest {
         }
     }
 
+    private static void assertScalarStructureMemberGenericRouteEvidence(JsonNode events, String version)
+            throws Exception {
+        JsonNode catalog = readRouteEvidenceCatalog();
+        Map<String, JsonNode> targets = new HashMap<>();
+        Set<String> typedTargetIds = javaTypedProtocolTargetIds();
+        for (JsonNode target : catalog.path("normative_targets")) {
+            targets.put(target.path("target_id").asText(), target);
+        }
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            JsonNode requires = testCase.path("requires");
+            if (!"structure_member".equals(requires.path("target_kind").asText())
+                    || !"local_model".equals(testCase.path("execution").path("mode").asText())
+                    || !appliesToVersion(testCase, version)) continue;
+            String targetId = requires.path("normative_target_id").asText();
+            JsonNode target = targets.get(targetId);
+            if (target == null || typedTargetIds.contains(targetId)
+                    || !isSupportedScalarMessageFieldEncoding(
+                    target.path("source_encoding").asText())) continue;
+            for (String route : scalarMessageFieldRoutes(testCase.path("case_id").asText(),
+                    target.path("source_encoding").asText())) {
+                JsonNode event = findRouteEvent(events, testCase.path("case_id").asText(), route, version, targetId);
+                assertEquals("passed", event.path("status").asText(), testCase.path("case_id").asText()
+                        + " / " + route);
+                assertEquals(1, event.path("invocation_count").asInt(), testCase.path("case_id").asText()
+                        + " / " + route);
+            }
+        }
+    }
+
     private static Set<String> missingBooleanFieldRouteCaseIds(JsonNode events, String version) throws Exception {
         JsonNode catalog = readRouteEvidenceCatalog();
         Map<String, JsonNode> targets = new HashMap<>();
@@ -4458,6 +4588,125 @@ class ControlledTlsPeerTest {
             }
         }
         return missing;
+    }
+
+    private static Set<String> missingScalarStructureMemberRouteCaseIds(JsonNode events, String version)
+            throws Exception {
+        JsonNode catalog = readRouteEvidenceCatalog();
+        Map<String, JsonNode> targets = new HashMap<>();
+        Set<String> typedTargetIds = javaTypedProtocolTargetIds();
+        for (JsonNode target : catalog.path("normative_targets")) {
+            targets.put(target.path("target_id").asText(), target);
+        }
+        Set<String> missing = new java.util.LinkedHashSet<>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            JsonNode requires = testCase.path("requires");
+            if (!"structure_member".equals(requires.path("target_kind").asText())
+                    || !"local_model".equals(testCase.path("execution").path("mode").asText())
+                    || !appliesToVersion(testCase, version)) continue;
+            String targetId = requires.path("normative_target_id").asText();
+            JsonNode target = targets.get(targetId);
+            if (target == null || typedTargetIds.contains(targetId) || !appliesToTargetVersion(target, version)) {
+                continue;
+            }
+            String encoding = target.path("source_encoding").asText();
+            if (!isSupportedScalarMessageFieldEncoding(encoding)) continue;
+            String caseId = testCase.path("case_id").asText();
+            List<String> requiredRoutes = scalarMessageFieldRoutes(caseId, encoding);
+            int present = 0;
+            for (String route : requiredRoutes) {
+                if (hasRouteEvent(events, caseId, route, version, targetId)) present++;
+            }
+            if (present == 0) {
+                missing.add(caseId);
+            } else {
+                assertEquals(requiredRoutes.size(), present,
+                        "Scalar structure member route evidence must be complete before reuse for " + caseId);
+            }
+        }
+        return missing;
+    }
+
+    private static Set<String> missingServerPayloadScalarCaseIds(JsonNode events, String version) throws Exception {
+        JsonNode catalog = readRouteEvidenceCatalog();
+        List<String> routes = List.of("java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item", "java.generic-ttlv.ttlv_codec.decode");
+        Set<String> queryFields = Set.of("Query Function", "Object Type", "Vendor Identification",
+                "Attestation Type", "Client Registration Method");
+        Set<String> missing = new java.util.LinkedHashSet<>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            JsonNode requires = testCase.path("requires");
+            String operationId = requires.path("operation_id").asText();
+            boolean supportedQueryField = "KMIPKIT-ELEM-OP-S2C-QUERY".equals(operationId)
+                    && queryFields.contains(requires.path("field_name").asText());
+            boolean supportedNotifyField = "KMIPKIT-ELEM-OP-S2C-NOTIFY".equals(operationId)
+                    && "Unique Identifier".equals(requires.path("field_name").asText());
+            if (!"operation_payload_field".equals(requires.path("target_kind").asText())
+                    || !(supportedQueryField || supportedNotifyField)
+                    || !"local_model".equals(testCase.path("execution").path("mode").asText())
+                    || !appliesToVersion(testCase, version)) continue;
+            String caseId = testCase.path("case_id").asText();
+            String targetId = requires.path("normative_target_id").asText();
+            int present = 0;
+            for (String evidenceTargetId : List.of(targetId, requires.path("operation_id").asText())) {
+                for (String route : routes) {
+                    if (hasRouteEvent(events, caseId, route, version, evidenceTargetId)) present++;
+                }
+            }
+            if (present == 0) {
+                missing.add(caseId);
+            } else {
+                assertEquals(routes.size() * 2, present,
+                        "Server payload route evidence must be complete before reuse for " + caseId);
+            }
+        }
+        return missing;
+    }
+
+    private static Set<String> javaTypedProtocolTargetIds() throws Exception {
+        JsonNode manifest = new ObjectMapper().readTree(
+                Path.of("../shared/coverage/route-capabilities.json").toFile());
+        Set<String> targetIds = new java.util.HashSet<>();
+        for (JsonNode route : manifest.path("routes")) {
+            if (!"java".equals(route.path("language").asText())
+                    || !"typed-protocol".equals(route.path("api_level").asText())) continue;
+            route.path("normative_target_ids").forEach(target -> targetIds.add(target.asText()));
+        }
+        return targetIds;
+    }
+
+    private static Set<String> missingAnyObjectAttributeCaseIds(JsonNode catalog, JsonNode events, String version) {
+        Map<String, JsonNode> targets = new HashMap<>();
+        catalog.path("normative_targets").forEach(target ->
+                targets.put(target.path("target_id").asText(), target));
+        List<String> routes = List.of("java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item", "java.generic-ttlv.ttlv_codec.decode");
+        Set<String> missing = new java.util.TreeSet<>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            JsonNode requires = testCase.path("requires");
+            if (!"structure_member".equals(requires.path("target_kind").asText())
+                    || !"local_model".equals(testCase.path("execution").path("mode").asText())
+                    || !appliesToVersion(testCase, version)) continue;
+            String targetId = requires.path("normative_target_id").asText();
+            JsonNode target = targets.get(targetId);
+            if (target == null || !target.path("name").asText().startsWith("Any attribute in ")
+                    || !target.path("source_encoding").asText().startsWith("Any")
+                    || !appliesToTargetVersion(target, version)) continue;
+            String caseId = testCase.path("case_id").asText();
+            long present = routes.stream().filter(route -> hasRouteEvent(events, caseId, route, version, targetId))
+                    .count();
+            if (present == 0) missing.add(caseId);
+            else assertEquals(routes.size(), present,
+                    "Any object attribute route evidence must be complete before reuse: " + caseId);
+        }
+        return Set.copyOf(missing);
+    }
+
+    private static boolean appliesToTargetVersion(JsonNode target, String version) {
+        for (JsonNode candidate : target.path("protocol_versions")) {
+            if (version.equals(candidate.asText())) return true;
+        }
+        return false;
     }
 
     private static boolean isSupportedScalarMessageFieldEncoding(String encoding) {
@@ -5276,6 +5525,10 @@ class ControlledTlsPeerTest {
         appendMessageFieldTextStringRoutes(events, RESPONSE_HEADER_CLIENT_CORRELATION_VALUE.caseId(),
                 RESPONSE_HEADER_CLIENT_CORRELATION_VALUE.targetId(), 0x420105,
                 RESPONSE_HEADER_CLIENT_CORRELATION_VALUE_TEXT, protocolVersion);
+        // OASIS KMIP 2.0/2.1 §8.5 defines Server Correlation Value as an optional Response Header Text String.
+        appendMessageFieldTextStringRoutes(events, RESPONSE_HEADER_SERVER_CORRELATION_VALUE.caseId(),
+                RESPONSE_HEADER_SERVER_CORRELATION_VALUE.targetId(), 0x420106,
+                RESPONSE_HEADER_SERVER_CORRELATION_VALUE_TEXT, protocolVersion);
         appendMessageFieldIntegerRoutes(events, "test-norm-message-field-message-field-8-5-batch-count",
                 "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-BATCH-COUNT", protocolVersion, false);
         appendMessageFieldIntegerRoutes(events, "test-norm-message-field-message-field-9-5-batch-count",
@@ -8227,6 +8480,9 @@ class ControlledTlsPeerTest {
                     "Response Header must preserve each repeated Attestation Type in wire order.");
             assertEquals(java.util.Optional.of(RESPONSE_HEADER_CLIENT_CORRELATION_VALUE_TEXT), header.clientCorrelationValue(),
                     "Response Header must preserve its optional Client Correlation Value.");
+            assertEquals(java.util.Optional.of(RESPONSE_HEADER_SERVER_CORRELATION_VALUE_TEXT),
+                    header.serverCorrelationValue(),
+                    "Response Header must preserve its optional Server Correlation Value.");
         }
         appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID,
                 "java.typed-protocol.model.org.kmipkit.message.responsemessage.fromttlv",
@@ -8298,6 +8554,9 @@ class ControlledTlsPeerTest {
         }
         header = appendTtlvItem(header, 0x420105,
                 TtlvValue.TextString(RESPONSE_HEADER_CLIENT_CORRELATION_VALUE_TEXT.getBytes(StandardCharsets.US_ASCII), limits),
+                limits);
+        header = appendTtlvItem(header, 0x420106,
+                TtlvValue.TextString(RESPONSE_HEADER_SERVER_CORRELATION_VALUE_TEXT.getBytes(StandardCharsets.US_ASCII), limits),
                 limits);
         header = appendTtlvItem(header, 0x42000d, TtlvValue.Integer(1), limits);
         TtlvStructure message = TtlvStructure.create();
