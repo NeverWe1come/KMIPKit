@@ -505,6 +505,7 @@ def main() -> int:
     expected_operations += (1, 13, 14, 19, 20)
     expected_operations += (1, 18, 12, 19, 20)
     expected_operations += (1, 18, 10, 19, 20)
+    expected_operations += (1, 18, 19, 20, 1, 18, 19, 20)
     expected_operations += (52, 52, 52)
     expected_operations += (26,)
     expected_cases += ("test-async-unknown-correlation-rejected",)
@@ -574,6 +575,10 @@ def main() -> int:
     expected_cases += ("test-op-modify-attribute",)
     expected_cases += ("test-batch-create-activate-destroy",)
     expected_cases += ("test-batch-placeholder-chain-resolves",)
+    expected_cases += (
+        "test-batch-order-required-placeholder-resolution",
+        "test-batch-order-omitted-defaults-true",
+    )
     expected_cases += (
         "test-batch-count-matches-items",
         "test-batch-unique-item-id-response-correlation",
@@ -682,12 +687,25 @@ def main() -> int:
                                     raise AssertionError("Interop function order or shared identifier mismatch")
                             two_read_batch = operations == (10, 12)
                             placeholder_chain = operations == (1, 18, 10)
+                            batch_order_placeholder = operations == (1, 18)
                             placeholder_cleanup = operations == (19, 20) and \
                                 tlv(0x420093, 8, b"placeholder-revoke-cleanup") in request
                             response_operations = operations
                             response_item_ids = None
                             if operations == (52, 52, 52):
                                 response_item_ids = (b"interop-begin", b"interop-end", b"interop-reset")
+                            if batch_order_placeholder:
+                                is_required_option_case = handled_batches.count((1, 18)) == 0
+                                expected_item_ids = (b"ordered-create", b"ordered-activate")
+                                batch_order_option = tlv(0x420010, 6, b"\x00" * 7 + b"\x01")
+                                if (request.count(enumeration(0x420094, 1)) != 1 or
+                                        any(request.count(tlv(0x420093, 8, item_id)) != 1
+                                            for item_id in expected_item_ids) or
+                                        ((batch_order_option in request) != is_required_option_case)):
+                                    raise AssertionError(
+                                        "Batch Order placeholder request shape or option mismatch"
+                                    )
+                                response_item_ids = expected_item_ids
                             if operations == registered_key_batch:
                                 if any(request.count(tlv(0x420093, 8, item_id)) != 1
                                        for item_id in registered_key_batch_item_ids):
