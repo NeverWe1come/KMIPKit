@@ -58,6 +58,17 @@ response header TTLV, metadata, Unique Batch Item ID, and absent pending
 correlation value through the installed ABI. The local matrix reports all 10
 cells for this case invoked and no pending cells; complete language parity and
 the full route matrix remain open.
+### C Batch Order and ID Placeholder cases
+
+For KMIPKIT-0092-FR-003, FR-005, and FR-009, the C installed consumer now
+executes the catalogued Create → Activate cases with explicit Batch Order
+Option true and with the option omitted. The controlled TLS peer checks
+request/response order, Unique Batch Item ID correlation, ID Placeholder
+resolution, and cleanup. OASIS KMIP 2.0/2.1 §§8.1–8.6, 9.5–9.8, 9.21, 6.1.1,
+and 6.1.8 are the catalogued references; §9.8 defines the omitted option's
+effective value as true. Both scenarios pass all 24 version/encoding/transport
+cells. This is one route slice only: the full C matrix and the cross-language
+FR-003/FR-005 gates remain open.
 
 ### C batch route follow-up
 
@@ -224,5 +235,19 @@ KMIP 2.1 §6.1.4 Tables 173–174 do not require Activate; the Unique Identifier
 is optional and the client is only indicating that a KMS may archive the object.
 Red `b2e3ced75` asserts the catalogued recipe, Green `5707246cb` implements it,
 and Refactor `de029189b` clarifies the state handling. The route passed 12/12
-cells and CTest passed 7/7. The full C matrix has 24,673 pending cells, so the
+cells and CTest passed 7/7. At the Archive integration snapshot, the full C
+matrix had 24,673 pending cells, so the
 FR-003/FR-005 gates remain open.
+
+### C MAC and Sign response TTLV accessors
+
+For KMIPKIT-0092-FR-003 and FR-005, the installed consumer invokes the generic
+response-TTLV accessor for successful MAC and Sign responses. The corresponding
+normative sources are OASIS KMIP v2.0 §§6.1.31 and 6.1.49 and v2.1 §§6.1.32
+and 6.1.55. The fixture checks the complete response item's four outer fields
+without reading MAC Data or Signature Data. Red `29a3e1867` exposed the four
+missing decode cells; Green `3bbfc5180` invoked both accessors; Refactor
+`01b12cbb7` named the shared shape contract. The focused route test passes for
+both operations and versions, and CTest passes 7/7. The matrix at
+`01b12cbb7` has 66,736 expected, 42,067 invoked, zero failed, and 24,669
+pending cells; the global requirements remain incomplete.

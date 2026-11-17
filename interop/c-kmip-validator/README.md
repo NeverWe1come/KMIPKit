@@ -137,10 +137,10 @@ The `*.gaps.json` sidecar identifies every unexecuted matrix obligation rather
 than misclassifying it as an unavailable library route. Other sidecars retain
 installed-artifact availability checks and sanitized controlled-peer outcomes.
 The evidence JSON passes the shared schema independently of completeness.
-The latest local matrix run after aligning Archive with its catalog recipe has
-66,736 expected cells, 42,063 invoked, zero failed, and 24,673 pending; the
-Archive slice contributes 38 invoked cells and does not close the exhaustive
-gate.
+The latest full local C matrix run at `01b12cbb7` has 66,736 expected cells,
+42,067 invoked, zero failed, and 24,669 pending. The MAC and Sign response
+TTLV accessors contribute four local decode cells across KMIP 2.0/2.1. This
+slice does not close the exhaustive gate.
 
 A generic TTLV wire encoder, generic-TTLV request dispatcher, and high-level
 C client are absent from the exact installed public artifact. The harness's
@@ -220,3 +220,11 @@ fields and generic TTLV payload. The controlled response includes the fixture
 key identifier and the Cryptographic Algorithm and Cryptographic Length
 references; this validates response shape and accessors, not external KMS
 behavior.
+
+The `test-batch-order-required-placeholder-resolution` and
+`test-batch-order-omitted-defaults-true` fixtures send Create followed by
+Activate using ID Placeholder. The first explicitly enables Batch Order
+Option; the second omits it and checks the KMIP §9.8 default of true. Both
+verify ordered typed results, response identifier correlation, and a separate
+Revoke/Destroy cleanup exchange against the controlled TLS peer. This checks
+the C API and protocol behavior without claiming external KMS interoperability.

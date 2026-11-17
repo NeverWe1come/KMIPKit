@@ -533,3 +533,42 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
 - Verification: route-manifest validation passed; focused route tests passed
   65/65; shared interop tests passed 189/189; workflow contract tests passed
   96/96; Rust 1.94 validator tests passed 72/72; and `git diff --check` passed.
+
+## Development evidence: C Batch Order and ID Placeholder cases
+
+- Normative scope: OASIS KMIP 2.0 and 2.1 §§8.1–8.6, 9.5–9.8, 9.21, 6.1.1,
+  and 6.1.8, as recorded by the two catalog entries. §9.8 gives an omitted
+  Batch Order Option its effective value of true.
+- Red commits `f371958ab` and `46d77c92c` require exact route recipes and
+  controlled-peer exchanges for `test-batch-order-required-placeholder-resolution`
+  and `test-batch-order-omitted-defaults-true`. Both focused tests failed before
+  the route was implemented.
+- Green commit `b692631bf` adds a two-item Create/Activate batch to the C
+  installed consumer. It verifies the typed result identifiers, checks that
+  Activate resolves to the identifier returned by Create, and cleans up in a
+  second exchange. The peer checks order, response correlation, option presence
+  or omission, placeholder resolution, and fixture-state restoration.
+- Verification: the focused peer tests pass for all 24 KMIP 2.0/2.1,
+  TTLV/JSON/XML, and raw TLS/HTTPS combinations. CTest passes 7/7 in 115.95
+  seconds, including both standalone controlled TLS peers. Exact-head CI and
+  the global FR-003/FR-005 matrix remain open.
+
+## Development evidence: C MAC and Sign response TTLV accessors
+
+- Normative scope: OASIS KMIP v2.0 §6.1.31 MAC and §6.1.49 Sign; v2.1
+  §6.1.32 MAC and §6.1.55 Sign. KMIPKIT-0092-FR-003 and FR-005 require the
+  applicable response decode routes to be invoked and checked.
+- Red commit `29a3e1867` extends the focused route test and fails because the
+  installed consumer does not invoke the MAC and Sign generic response TTLV
+  accessors for either protocol version.
+- Green commit `3bbfc5180` invokes both accessors after the existing typed
+  response checks and verifies each returned complete response item has four
+  outer fields. It does not read or record the MAC Data or Signature Data
+  bytes.
+- Refactor commit `01b12cbb7` names the complete response item field count and
+  adds the normative references to the route test.
+- Verification: the focused route test passes for both operations and both
+  versions. Full CTest passes 7/7 in 139.15 seconds. The full matrix report at
+  `01b12cbb7` records 66,736 expected, 42,067 invoked, zero failed, and 24,669
+  pending. It adds the four expected MAC/Sign TTLV decode cells; FR-003/FR-005
+  and the completeness gate remain open.

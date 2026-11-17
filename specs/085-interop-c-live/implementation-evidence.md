@@ -1362,3 +1362,34 @@ member.
   The full C route matrix and exact-head CI remain open. The peer validates
   protocol shape and lifecycle only, not certificate or signature
   cryptography.
+
+## C Batch Order and ID Placeholder routes
+
+The installed C consumer now executes both catalogued two-item batch cases:
+`test-batch-order-required-placeholder-resolution` sends Create followed by
+Activate with ID Placeholder and Batch Order Option true;
+`test-batch-order-omitted-defaults-true` sends the same dependent items without
+Batch Order Option. The consumer checks both successful typed results, verifies
+that Activate returns the identifier produced by Create, and revokes/destroys
+the created key in a second exchange. The controlled peer verifies request and
+response order, exact Unique Batch Item IDs, the option's presence or omission,
+placeholder resolution, and restoration of its initial fixture state.
+
+The catalog supplies the KMIP 2.0/2.1 normative mapping. Applicable clauses are
+§§8.1–8.6, 9.5–9.8, 9.21, 6.1.1, and 6.1.8. In particular, omission of Batch
+Order Option has effective value true under §9.8. The standalone Activate item
+is not schema-validated outside its batch because the ID Placeholder's
+eligibility depends on the preceding Create; the complete ordered batch is
+validated by KMIPKit before transport. The fixture verifies protocol structure
+and state transitions only, not behavior of an external KMS.
+
+- Red commits `f371958ab` and `46d77c92c` added recipe and exact-exchange
+  assertions; the focused tests failed because both C routes were absent.
+- Green commit `b692631bf` added the installed consumer route, the controlled
+  peer request/response checks, and cleanup through the existing typed C API.
+- Verification: both focused tests pass; the exact peer suite passes all 24
+  KMIP 2.0/2.1 × TTLV/JSON/XML × raw TLS/HTTPS cells. The C target builds and
+  both Python peer modules pass compilation. Full CTest passes 7/7 in 115.95
+  seconds, including 112.82 seconds for the route-matrix contract suite and
+  both standalone TLS peers. The exhaustive C matrix and exact-head CI remain
+  open; this slice does not close FR-003/FR-005 globally.

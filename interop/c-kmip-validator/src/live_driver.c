@@ -256,6 +256,9 @@ static int32_t register_payload_identifier_status(
 typedef int32_t (*client_response_ttlv_accessor_t)(
     kmipkit_client_batch_item_response_t *, uint8_t *, kmipkit_ttlv_structure_t **);
 
+/* A successful response item includes Operation, Result Status, its batch ID, and payload. */
+static const uint64_t COMPLETE_RESPONSE_ITEM_TTLV_FIELD_COUNT = UINT64_C(4);
+
 static bool response_ttlv_matches_identifier(
     kmipkit_client_batch_item_response_t *response_item,
     client_response_ttlv_accessor_t accessor,
@@ -4770,9 +4773,15 @@ static bool created_key_crypto_response_matches(kmipkit_client_batch_item_respon
     uint64_t expected_length = operation == KMIPKIT_ENUMERATION_OPERATION_MAC ? 32U :
         (uint64_t)sizeof(BATCH_CRYPTO_PLAINTEXT);
     *out_status = status;
-    return status == 0 && present && same_text_identifier(identifier, &result_identifier) &&
+    bool valid = status == 0 && present && same_text_identifier(identifier, &result_identifier) &&
         data_present && data.length == expected_length && data.data &&
         !iv_present && !correlation_present && !tag_present;
+    if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_MAC) {
+        valid = response_ttlv_matches_field_count(
+            item, kmipkit_client_batch_item_response_mac_ttlv,
+            COMPLETE_RESPONSE_ITEM_TTLV_FIELD_COUNT, out_status);
+    }
+    return valid;
 }
 
 static kmip_execution_outcome_t execute_registered_crypto_batch(kmip_live_client_t *client) {
@@ -5174,8 +5183,14 @@ static bool created_key_signature_response_matches(
             item, &present, &result_identifier, &output_present, &output,
             &correlation_present, &correlation);
         *out_status = status;
-        return status == 0 && present && same_text_identifier(identifier, &result_identifier) &&
+        bool valid = status == 0 && present && same_text_identifier(identifier, &result_identifier) &&
             output_present && output.data && output.length == 256U && !correlation_present;
+        if (valid) {
+            valid = response_ttlv_matches_field_count(
+                item, kmipkit_client_batch_item_response_sign_ttlv,
+                COMPLETE_RESPONSE_ITEM_TTLV_FIELD_COUNT, out_status);
+        }
+        return valid;
     }
 
     uint8_t validity_present = 0, recovered_data_present = 0;
@@ -6160,6 +6175,14 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         strcmp(test_case->case_id, "test-batch-create-activate-destroy") == 0;
     bool batch_placeholder_chain_workflow =
         strcmp(test_case->case_id, "test-batch-placeholder-chain-resolves") == 0;
+    bool batch_order_placeholder_workflow =
+        strcmp(test_case->case_id,
+               "test-batch-order-required-placeholder-resolution") == 0 ||
+        strcmp(test_case->case_id,
+               "test-batch-order-omitted-defaults-true") == 0;
+    bool batch_order_placeholder_option_omitted =
+        strcmp(test_case->case_id,
+               "test-batch-order-omitted-defaults-true") == 0;
     bool add_attribute_workflow = strcmp(test_case->case_id, "test-op-add-attribute") == 0;
     bool read_back_attribute_workflow = test_case->attribute_reference_kind[0] != '\0';
     uint32_t read_back_attribute_tag = 0;
@@ -6277,13 +6300,13 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         batch_create_activate_get_attribute_list_revoke_destroy_workflow;
     bool object_lifecycle_workflow = create_workflow ||
         batch_create_activate_get_attribute_list_revoke_destroy_workflow ||
-        batch_placeholder_chain_workflow || revoke_workflow ||
+        batch_placeholder_chain_workflow || batch_order_placeholder_workflow || revoke_workflow ||
         revoke_cleanup_workflow || export_workflow || get_workflow ||
         get_attributes_workflow || get_attribute_list_workflow || get_constraints_workflow ||
         get_usage_allocation_workflow || add_attribute_workflow;
     if (strcmp(test_case->operation, "Create") == 0 && !create_workflow &&
         !batch_create_activate_get_attribute_list_revoke_destroy_workflow &&
-        !batch_placeholder_chain_workflow) {
+        !batch_placeholder_chain_workflow && !batch_order_placeholder_workflow) {
         return outcome_not_run("Create variations are not yet mapped to isolated C fixtures");
     }
     if (strcmp(test_case->operation, "Check") == 0 && !check_workflow) {
@@ -6554,15 +6577,17 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                         item, request_validation_diagnostic, sizeof(request_validation_diagnostic))) {
                     status = KMIPKIT_ERROR_INVALID_INPUT;
                 }
-            } else if (batch_placeholder_chain_workflow) {
+            } else if (batch_placeholder_chain_workflow || batch_order_placeholder_workflow) {
                 status = kmipkit_client_batch_item_activate(&placeholder, &activate_item);
-                if (status == 0 && !request_item_is_valid(
+                /* ID Placeholder validation depends on the preceding Create item and
+                 * effective Batch Order Option, so validate the complete batch below. */
+                if (status == 0 && !batch_order_placeholder_workflow && !request_item_is_valid(
                         activate_item, request_validation_diagnostic, sizeof(request_validation_diagnostic))) {
                     status = KMIPKIT_ERROR_INVALID_INPUT;
                 }
-                if (status == 0) status = kmipkit_client_batch_item_get(
+                if (status == 0 && batch_placeholder_chain_workflow) status = kmipkit_client_batch_item_get(
                     &placeholder, 0, 0, 0, 0, 0, 0, NULL, &item);
-                if (status == 0 && !request_item_is_valid(
+                if (status == 0 && !batch_order_placeholder_workflow && !request_item_is_valid(
                         item, request_validation_diagnostic, sizeof(request_validation_diagnostic))) {
                     status = KMIPKIT_ERROR_INVALID_INPUT;
                 }
@@ -6672,7 +6697,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                         &get_attribute_list_identifier : NULL;
                 status = build_get_attribute_list_item(identifier, &item);
             }
-            if (status == 0 && !request_item_is_valid(
+            if (status == 0 && !batch_order_placeholder_workflow && !request_item_is_valid(
                     item, request_validation_diagnostic, sizeof(request_validation_diagnostic))) {
                 status = KMIPKIT_ERROR_INVALID_INPUT;
             }
@@ -6685,7 +6710,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                 status = KMIPKIT_ERROR_INVALID_INPUT;
             }
         }
-        if (status == 0 && !batch_placeholder_chain_workflow) {
+        if (status == 0 && !batch_placeholder_chain_workflow &&
+            !batch_order_placeholder_workflow) {
             request_construction_step = "Destroy using ID Placeholder";
             status = kmipkit_client_batch_item_destroy(&placeholder, &cleanup_item);
             if (status == 0 && !request_item_is_valid(
@@ -6701,15 +6727,18 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             } else {
                 status = set_batch_item_id(&setup_item,
                     register_certificate_workflow ? "interop-register" :
+                    batch_order_placeholder_workflow ? "ordered-create" :
                     batch_placeholder_chain_workflow ? "placeholder-create" : "interop-create");
                 if (status == 0 && (active_destroy_negative_workflow ||
                                     batch_placeholder_chain_workflow ||
+                                    batch_order_placeholder_workflow ||
                                     batch_create_activate_get_attribute_list_revoke_destroy_workflow)) {
                     status = set_batch_item_id(&activate_item,
                         active_destroy_negative_workflow ? "interop-activate-before-destroy" :
+                        batch_order_placeholder_workflow ? "ordered-activate" :
                         batch_placeholder_chain_workflow ? "placeholder-activate" : "interop-activate");
                 }
-                if (status == 0) status = set_batch_item_id(
+                if (status == 0 && !batch_order_placeholder_workflow) status = set_batch_item_id(
                     &item, batch_placeholder_chain_workflow ? "placeholder-get" :
                            active_destroy_negative_workflow ? "interop-destroy-active-target" :
                            check_workflow ? "interop-check" :
@@ -6729,7 +6758,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                             "interop-revoke-cleanup" : "interop-revoke");
                 }
             }
-            if (status == 0 && !batch_placeholder_chain_workflow) status = set_batch_item_id(&cleanup_item,
+            if (status == 0 && !batch_placeholder_chain_workflow &&
+                !batch_order_placeholder_workflow) status = set_batch_item_id(&cleanup_item,
                 (destroy_workflow || active_destroy_negative_workflow) ?
                     "interop-destroy-cleanup" : "interop-destroy");
         }
@@ -6811,20 +6841,26 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         if (status == 0) status = kmipkit_client_batch_add_item(batch, &item);
         if (status == 0) status = kmipkit_client_batch_add_item(batch, &cleanup_item);
     } else if (status == 0 && object_lifecycle_workflow) {
-        status = kmipkit_client_batch_set_order_option(batch, 1);
+        if (!batch_order_placeholder_option_omitted) {
+            status = kmipkit_client_batch_set_order_option(batch, 1);
+        }
         if (status == 0) status = kmipkit_client_batch_add_error_continuation_value(
             batch, KMIPKIT_ENUMERATION_BATCH_ERROR_CONTINUATION_OPTION_CONTINUE);
         if (status == 0) status = kmipkit_client_batch_add_item(batch, &setup_item);
         if (status == 0 && (active_destroy_negative_workflow ||
                             batch_placeholder_chain_workflow ||
+                            batch_order_placeholder_workflow ||
                             batch_create_activate_get_attribute_list_revoke_destroy_workflow)) {
             status = kmipkit_client_batch_add_item(batch, &activate_item);
         }
-        if (status == 0) status = kmipkit_client_batch_add_item(batch, &item);
+        if (status == 0 && !batch_order_placeholder_workflow) {
+            status = kmipkit_client_batch_add_item(batch, &item);
+        }
         if (status == 0 && revoke_cleanup_workflow) {
             status = kmipkit_client_batch_add_item(batch, &revoke_item);
         }
-        if (status == 0 && !batch_placeholder_chain_workflow) {
+        if (status == 0 && !batch_placeholder_chain_workflow &&
+            !batch_order_placeholder_workflow) {
             status = kmipkit_client_batch_add_item(batch, &cleanup_item);
         }
     } else if (status == 0) {
@@ -6880,6 +6916,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         stop_on_first_failure_workflow ? 1 :
         get_usage_allocation_identifier_variants_workflow ? 3 :
         batch_two_read_items_workflow ? 2 : create_workflow ? 2 :
+        batch_order_placeholder_workflow ? 2 :
         batch_placeholder_chain_workflow ? 3 :
         (active_destroy_negative_workflow ||
          batch_create_activate_get_attribute_list_revoke_destroy_workflow) ? 5 :
@@ -7093,6 +7130,54 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                      continue_after_failure_workflow ?
                          "KMIPKit did not correlate both Continue batch responses by Unique Batch Item ID" :
                          "KMIPKit did not correlate both read responses by Unique Batch Item ID");
+            goto cleanup;
+        }
+        outcome.success = true;
+        outcome.library_validated = true;
+        goto cleanup;
+    }
+    if (batch_order_placeholder_workflow) {
+        kmipkit_client_batch_item_metadata_v2_t create_metadata = {
+            .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t),
+            .abi_version = 2
+        };
+        kmipkit_client_batch_item_metadata_v2_t activate_metadata = {
+            .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t),
+            .abi_version = 2
+        };
+        status = kmipkit_client_batch_response_item_at(response, 0, &setup_response_item);
+        if (status == 0) status = kmipkit_client_batch_response_item_at(
+            response, 1, &activate_response_item);
+        if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
+            setup_response_item, &create_metadata);
+        if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
+            activate_response_item, &activate_metadata);
+        uint32_t response_object_type = 0;
+        if (status == 0 && create_metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
+            status = kmipkit_client_batch_item_response_create(
+                setup_response_item, &created_identifier_present,
+                &response_object_type, &created_identifier);
+        }
+        bool create_response_valid = status == 0 && created_identifier_present &&
+            response_object_type == KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY &&
+            created_identifier.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING &&
+            created_identifier.text_length != 0 && created_identifier.text_data &&
+            create_metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS &&
+            activate_metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS;
+        bool activate_response_valid = create_response_valid &&
+            activate_response_matches_created_key(activate_response_item, &created_identifier, &status);
+        if (!activate_response_valid) {
+            outcome.library_failed = status != 0;
+            outcome.library_validated = status == 0;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit did not resolve ordered Create/Activate responses to one object");
+            goto cleanup;
+        }
+        if (!cleanup_placeholder_chain_object(client, &created_identifier, true, &status)) {
+            outcome.library_failed = status != 0;
+            outcome.library_validated = status == 0;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit did not complete Revoke/Destroy fixture cleanup");
             goto cleanup;
         }
         outcome.success = true;
