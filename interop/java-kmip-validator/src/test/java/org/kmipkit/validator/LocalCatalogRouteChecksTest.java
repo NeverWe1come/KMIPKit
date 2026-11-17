@@ -82,10 +82,17 @@ class LocalCatalogRouteChecksTest {
     void executesEveryItemTypeEnumerationThroughGenericTtlvRoutes() throws Exception {
         JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
         List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
+        Set<String> expectedIndividualCaseIds = new java.util.HashSet<>();
+        catalog.path("test_cases").forEach(testCase -> {
+            String targetId = testCase.path("requires").path("normative_target_id").asText();
+            if (targetId.startsWith("KMIPKIT-ELEM-ENUM-VALUE-ITEM-TYPE-")) {
+                expectedIndividualCaseIds.add(testCase.path("case_id").asText());
+            }
+        });
 
         LocalCatalogRouteChecks.executeItemTypeEnumerations(catalog, "2.1", invocations::add);
 
-        assertEquals(44, invocations.size());
+        assertEquals(88, invocations.size());
         assertEquals(Set.of(
                 "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
                 "java.generic-ttlv.ttlv_item.create",
@@ -95,10 +102,17 @@ class LocalCatalogRouteChecksTest {
                         .collect(java.util.stream.Collectors.toSet()));
         assertEquals(11, invocations.stream().map(LocalCatalogRouteChecks.Invocation::targetId)
                 .distinct().count());
-        assertEquals(Set.of("test-enum-item-type"), invocations.stream()
+        assertEquals(expectedIndividualCaseIds, invocations.stream()
                 .map(LocalCatalogRouteChecks.Invocation::caseId)
+                .filter(caseId -> !"test-enum-item-type".equals(caseId))
                 .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(44, invocations.stream()
+                .filter(invocation -> "test-enum-item-type".equals(invocation.caseId())).count());
         assertEquals(11, invocations.stream()
-                .filter(invocation -> invocation.routeId().endsWith("ttlvvalue.enumeration")).count());
+                .filter(invocation -> invocation.routeId().endsWith("ttlvvalue.enumeration")
+                        && "test-enum-item-type".equals(invocation.caseId())).count());
+        for (String caseId : expectedIndividualCaseIds) {
+            assertEquals(4, invocations.stream().filter(invocation -> caseId.equals(invocation.caseId())).count());
+        }
     }
 }
