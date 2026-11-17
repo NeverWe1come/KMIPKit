@@ -129,3 +129,19 @@ server and the verification input is not derived from the pair. Catalog Red
 catalog Green `bd6d9b0c8` and route Green `389ac4465`. Both focused routes passed
 all 12 version/encoding/transport cells; CTest passed 7/7. Other C and
 cross-language route cells remain pending under FR-003/FR-005.
+
+### C Create Key Pair route follow-up
+
+The installed C route for `test-op-create-key-pair` covers OASIS KMIP v2.0 and
+v2.1 §6.1.9. It constructs the typed Create Key Pair request with RSA-2048 and
+explicit usage masks, reads both typed response identifiers, requires them to
+be distinct, and destroys each returned object using the corresponding
+Create Key Pair Private Key or Public Key selector. The controlled peer checks
+the ordered three-item batch, exact attribute structures, response fields,
+Unique Batch Item IDs, and final state. Red `36034c7a6` recorded the missing
+catalog cleanup and C route; Green `89bd02b79` added generator-backed catalog
+cleanup and the installed C route. The focused route passes all 12
+version/encoding/transport cells; the normative inventory passes 26/26, the
+catalog generation check passes, and CTest passes 7/7. Key material is not
+inspected or cryptographically validated. Remaining C and cross-language
+operation routes remain pending under FR-003/FR-005.

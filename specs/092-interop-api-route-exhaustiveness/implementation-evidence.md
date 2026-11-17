@@ -200,3 +200,25 @@ behavior only, not cryptographic correctness. Red `e80371257`, `2782a91dc`, and
 `bd6d9b0c8` and `389ac4465` corrected the generated recipe and implemented both
 routes. Each focused route passed 12/12 combinations; catalog checks passed;
 CTest passed 7/7. Other route cells remain pending under FR-003/FR-005.
+
+## C direct Create Key Pair route
+
+`test-op-create-key-pair` exercises OASIS KMIP v2.0/v2.1 §6.1.9 through the
+installed C client. The catalog generator now specifies cleanup of both
+objects returned by Create Key Pair. The C consumer creates an RSA-2048 pair
+with explicit Sign and Verify usage masks, then destroys the Private Key and
+Public Key by their Create Key Pair identifier selectors. It validates the
+typed pair response, distinct identifiers, each successful result, and the
+identifier returned by both Destroy operations. The controlled peer validates
+the complete request fields and response mapping, including the unique item IDs
+and final state. This is protocol-shape and lifecycle evidence; generated key
+material is not inspected or cryptographically validated.
+
+Red `36034c7a6` added the failing catalog and route requirements. Green
+`89bd02b79` updated the generator and generated catalog, implemented the C
+route, and added the controlled-peer request/response checks. The focused route
+passed 12/12 KMIP-version, encoding, and transport combinations; Sign and
+Signature Verify also passed 12/12 each. The normative inventory passed
+26/26, catalog `--check` passed, and CTest passed 7/7 in 96.00 seconds,
+including both controlled TLS peers. These results add one C operation route;
+other C route cells and cross-language FR-003/FR-005 coverage remain pending.

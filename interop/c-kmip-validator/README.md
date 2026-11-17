@@ -181,3 +181,11 @@ revokes and destroys the selected key and destroys its pair. The request uses
 the explicit SHA-256 with RSA signature algorithm. The peer checks the full
 request tree and typed response shape. Create generates a random pair, so the
 fixed signature inputs and response do not establish cryptographic validity.
+
+The direct `test-op-create-key-pair` route constructs an RSA-2048 pair with
+explicit Sign and Verify usage masks, checks that the typed response returns
+two distinct text identifiers, and destroys the Private Key and Public Key by
+their Create Key Pair identifier selectors. The peer checks the exact request
+attributes, response identifier fields, item-ID correlation, and cleanup
+mapping. It verifies protocol shape and lifecycle only; it does not inspect or
+validate generated key material.

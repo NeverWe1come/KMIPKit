@@ -1239,3 +1239,29 @@ typed access only; it makes no cryptographic correctness claim.
   combinations. The normative inventory test and catalog `--check` passed;
   CTest passed 7/7 in 95.47 seconds, including both controlled TLS peers. The
   complete C matrix and exact-head CI remain open.
+
+## C Create Key Pair route
+
+OASIS KMIP v2.0 and v2.1 §6.1.9 define Create Key Pair. The generated catalog
+now describes cleanup of both returned objects. The installed C consumer
+sends an RSA-2048 Create Key Pair request with explicit Sign usage on the
+Private Key and Verify usage on the Public Key, then sends two Destroy requests
+using the Create Key Pair Private Key and Public Key identifier selectors. It
+checks all three typed successful results, the two distinct returned text
+identifiers, and that each Destroy response names the matching object. The
+controlled peer checks the exact attribute structures, selectors, response
+fields, item IDs, and final object cleanup. This route tests protocol and API
+behavior; it does not inspect or validate key material.
+
+- Red commit `36034c7a6`: the normative inventory test rejected the generic
+  single-object cleanup recipe and the focused C test failed because the
+  controlled peer had no Create Key Pair route.
+- Green commit `89bd02b79`: updated the catalog generator and generated
+  catalog, added the installed C batch and typed response checks, and extended
+  both controlled TLS peers to verify the pair and cleanup.
+- Verification: the Create Key Pair route passed all 12 KMIP version,
+  encoding, and transport combinations. Sign and Signature Verify each passed
+  all 12 combinations. The normative inventory passed 26/26 and catalog
+  `--check` passed. CTest passed 7/7 in 96.00 seconds, including both TLS peers
+  and the route-matrix contract suite. The complete C matrix and exact-head CI
+  remain open.
