@@ -433,8 +433,8 @@ class ControlledTlsPeerTest {
                     "KMIPKIT-ELEM-MESSAGE-FIELD-9-3-ATTESTATION-CAPABLE-INDICATOR"),
             new NormativeTarget("test-norm-message-field-message-field-9-5-batch-count",
                     "KMIPKIT-ELEM-MESSAGE-FIELD-9-5-BATCH-COUNT"),
-            new NormativeTarget("test-norm-message-field-message-field-8-2-batch-order-option",
-                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION"),
+            new NormativeTarget(LocalCatalogRouteChecks.BATCH_ORDER_OPTION_CASE_ID,
+                    LocalCatalogRouteChecks.BATCH_ORDER_OPTION_TARGET_ID),
             new NormativeTarget("test-norm-message-field-message-field-9-8-batch-order-option",
                     "KMIPKIT-ELEM-MESSAGE-FIELD-9-8-BATCH-ORDER-OPTION"),
             new NormativeTarget("test-norm-message-field-message-field-9-7-batch-item",
@@ -1174,12 +1174,12 @@ class ControlledTlsPeerTest {
                 "java.typed-protocol.model.org.kmipkit.message.requestmessage.fromttlv");
         for (String route : batchOrderOptionRoutes) {
             assertEquals(KMIP_2_0_AND_2_1.size(), routeEventCount(report.path("events"),
-                    "test-norm-message-field-message-field-8-2-batch-order-option", route),
+                    LocalCatalogRouteChecks.BATCH_ORDER_OPTION_CASE_ID, route),
                     "Batch Order Option must complete its KMIP 2.0 and 2.1 route cells.");
             for (String version : KMIP_2_0_AND_2_1) {
                 JsonNode event = findRouteEvent(report.path("events"),
-                        "test-norm-message-field-message-field-8-2-batch-order-option",
-                        route, version, "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION");
+                        LocalCatalogRouteChecks.BATCH_ORDER_OPTION_CASE_ID,
+                        route, version, LocalCatalogRouteChecks.BATCH_ORDER_OPTION_TARGET_ID);
                 assertEquals("passed", event.path("status").asText());
             }
         }
@@ -3821,7 +3821,7 @@ class ControlledTlsPeerTest {
         STRUCTURE_MEMBER_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         caseIds.add(LocalCatalogRouteChecks.ROTATE_NAME_TYPE_CASE_ID);
         caseIds.add(LocalCatalogRouteChecks.ROTATE_NAME_VALUE_CASE_ID);
-        caseIds.add("test-norm-message-field-message-field-8-2-batch-order-option");
+        caseIds.add(LocalCatalogRouteChecks.BATCH_ORDER_OPTION_CASE_ID);
         STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         STRUCTURE_MEMBER_VALUE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         caseIds.add("test-norm-payload-client-add-attribute-request-20-002");
