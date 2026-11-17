@@ -1411,7 +1411,7 @@ class ControlledTlsPeerTest {
                         + genericTagEventCount + typedTagIdentityEventCount
                         + booleanFieldRouteEventCount + scalarMessageFieldRouteEventCount + itemTypeRouteEventCount
                         + scalarTypedParserEventCount
-                        + 91 // BEC, batch IDs, async payload, Ping, Endpoint Role, Object Defaults, derivation, and Extension Information member cells.
+                        + 97 // BEC, batch IDs, async payload, Ping, Endpoint Role, Object Defaults, derivation, and Extension Information member cells.
                         + tagAggregateEventCount
                         + referencedEnumEventCount + referencedEnumAggregateEventCount,
                 report.path("events").size());
@@ -1453,7 +1453,7 @@ class ControlledTlsPeerTest {
                         + 11 + itemTypeValueCaseIds.size() + STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size()
                         + STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.size()
                         + STRUCTURE_MEMBER_VALUE_FIXTURES.size() + PROFILE_INFORMATION_CASE_IDS.size()
-                        + SERVER_INFORMATION_CASE_IDS.size() + USAGE_LIMITS_CASE_IDS.size() + 6
+                        + SERVER_INFORMATION_CASE_IDS.size() + USAGE_LIMITS_CASE_IDS.size() + 7
                         + booleanFieldCaseIds.size()
                         // Four scalar header cases are already included by the baseline report groups.
                         + scalarMessageFieldCaseIds(report.path("events")).size() - 4,
@@ -3802,6 +3802,7 @@ class ControlledTlsPeerTest {
         caseIds.add("test-norm-payload-client-set-endpoint-role-request-20-001");
         caseIds.add("test-norm-payload-client-set-endpoint-role-response-20-001");
         caseIds.add("test-norm-payload-client-set-endpoint-role-request-21-001");
+        caseIds.add("test-norm-payload-client-set-endpoint-role-response-21-001");
         caseIds.add("test-enum-item-type");
         CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().forEach(caseIds::add);
         report.putArray("protocol_versions").add("2.0").add("2.1");
@@ -4756,14 +4757,23 @@ class ControlledTlsPeerTest {
     // §11.19 defines the Endpoint Role Enumeration used by its value.
     private static void appendEndpointRolePayloadGenericRouteEvents(ArrayNode events, String protocolVersion)
             throws Exception {
-        appendGenericEnumerationRouteEvents(events,
+        appendEndpointRolePayloadFieldRouteEvents(events,
                 "test-norm-payload-client-set-endpoint-role-request-21-001",
                 "KMIPKIT-PAYLOAD-CLIENT-SET-ENDPOINT-ROLE-REQUEST-21-001",
-                0x420151, 1, protocolVersion);
-        appendGenericEnumerationRouteEvents(events,
-                "test-norm-payload-client-set-endpoint-role-request-21-001",
-                "KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE",
-                0x42005c, 0x32, protocolVersion);
+                1, protocolVersion);
+        // KMIP 2.1 §6.1.54 Table 332 returns the role accepted by the server; §11.19 assigns Client value 1.
+        appendEndpointRolePayloadFieldRouteEvents(events,
+                "test-norm-payload-client-set-endpoint-role-response-21-001",
+                "KMIPKIT-PAYLOAD-CLIENT-SET-ENDPOINT-ROLE-RESPONSE-21-001",
+                1, protocolVersion);
+    }
+
+    private static void appendEndpointRolePayloadFieldRouteEvents(ArrayNode events, String caseId,
+            String fieldTargetId, long role, String protocolVersion) throws Exception {
+        appendGenericEnumerationRouteEvents(events, caseId, fieldTargetId,
+                0x420151, role, protocolVersion);
+        appendGenericEnumerationRouteEvents(events, caseId,
+                "KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE", 0x42005c, 0x32, protocolVersion);
     }
 
     // OASIS KMIP 2.0 §6.1.48 Tables 299–300 requires Endpoint Role in both
@@ -5351,6 +5361,18 @@ class ControlledTlsPeerTest {
                     String action = route.endsWith("ttlv_item.create") ? "construct" : "decode";
                     assertRouteEventRecorded(events,
                             "test-norm-payload-client-set-endpoint-role-request-21-001",
+                            targetId, route, action, protocolVersion);
+                }
+            }
+            for (String targetId : List.of(
+                    "KMIPKIT-PAYLOAD-CLIENT-SET-ENDPOINT-ROLE-RESPONSE-21-001",
+                    "KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE")) {
+                for (String route : List.of("java.generic-ttlv.ttlv_item.create",
+                        "java.generic-ttlv.function.ttlv_item_view_from_item",
+                        "java.generic-ttlv.ttlv_codec.decode")) {
+                    String action = route.endsWith("ttlv_item.create") ? "construct" : "decode";
+                    assertRouteEventRecorded(events,
+                            "test-norm-payload-client-set-endpoint-role-response-21-001",
                             targetId, route, action, protocolVersion);
                 }
             }
