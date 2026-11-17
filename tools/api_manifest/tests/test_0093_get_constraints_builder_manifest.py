@@ -1,57 +1,27 @@
 """Keep the Rust Get Constraints builder blocked until binding parity lands."""
 
-import json
 import unittest
-from pathlib import Path
 
-
-ROOT = Path(__file__).resolve().parents[3]
-METHODS = {
-    "build",
-    "execute",
-    "to_batch_item",
-    "validate",
-    "with_asynchronous_indicator",
-    "with_options",
-}
+from tools.api_manifest.tests.fluent_builder_manifest_contract import (
+    assert_fluent_builder_manifest_contract,
+)
 
 
 class FluentGetConstraintsBuilderManifestTests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls) -> None:
-        cls.manifest = json.loads(
-            (ROOT / "specification/api/public-api.json").read_text(encoding="utf-8")
-        )
-        cls.declarations = {
-            row["exportName"]: row
-            for row in cls.manifest["publicDeclarations"]
-            if row.get("packageId") == "rust-kmipkit-client"
-        }
-
     def test_builder_exports_are_traced_and_blocked_for_four_language_parity(self) -> None:
-        expected = {
-            "kmipkit_client::GetConstraintsBuilder",
-            "kmipkit_client::fluent::GetConstraintsBuilder",
-            "kmipkit_client::RequestBuilder<'a>::get_constraints",
-            "kmipkit_client::fluent::RequestBuilder<'a>::get_constraints",
-        }
-        for module in ("kmipkit_client", "kmipkit_client::fluent"):
-            expected.update(
-                f"{module}::GetConstraintsBuilder<'a>::{method}"
-                for method in METHODS
-            )
-
-        self.assertTrue(expected <= self.declarations.keys())
-        for export_name in expected:
-            with self.subTest(export=export_name):
-                declaration = self.declarations[export_name]
-                self.assertEqual("blocked", declaration["declarationState"])
-                self.assertEqual("four-language", declaration["parityScope"])
-                self.assertEqual("KMIPKIT-0093", declaration["candidateSpecId"])
-                self.assertEqual(["KMIPKIT-0093-FR-011"], declaration["requirementIds"])
-                self.assertEqual("public_binding_surface", declaration["capabilityId"])
-                self.assertNotIn("languageMappings", declaration)
-                self.assertNotIn("approvalSource", declaration)
+        assert_fluent_builder_manifest_contract(
+            self,
+            builder_name="GetConstraintsBuilder",
+            operation_name="get_constraints",
+            methods={
+                "build",
+                "execute",
+                "to_batch_item",
+                "validate",
+                "with_asynchronous_indicator",
+                "with_options",
+            },
+        )
 
 
 if __name__ == "__main__":

@@ -1279,3 +1279,13 @@
   T102 totals, format, generated-output check, and workspace Clippy pass.
   The hosted exact-head CI remains pending.
   This remains WIP and does not close FR-011 or operation-wide O001/O002.
+
+### SonarCloud duplication follow-up
+
+- Exact head `1970a4ecf` failed the SonarCloud Quality Gate at 5.9% new-code
+  duplication (18 lines), all from the parallel Get Constraints and Get Usage
+  Allocation manifest contracts. Extracted their common declaration checks
+  into `tools/api_manifest/tests/fluent_builder_manifest_contract.py`; each
+  operation test supplies its builder, method set, and any extra exports.
+- Both operation manifest contracts pass after the refactor. The revised
+  exact-head SonarCloud analysis and hosted CI are pending.
