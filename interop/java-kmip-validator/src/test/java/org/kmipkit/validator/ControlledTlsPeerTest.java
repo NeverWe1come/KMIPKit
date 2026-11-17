@@ -125,6 +125,10 @@ class ControlledTlsPeerTest {
     private record ExtensionInformationMemberFixture(String caseId, String targetId, int rawTag,
             String textValue) { }
 
+    private record DerivationByteStringFixture(String caseId, String targetId, int rawTag, byte[] value) { }
+
+    private record DerivationIntegerFixture(String caseId, String targetId, int rawTag, int value) { }
+
     private static final String PROFILE_INFORMATION_CASE_ID =
             "test-norm-operation-structure-operation-structure-7-31-profile-information";
     private static final String PROFILE_INFORMATION_TARGET_ID =
@@ -144,6 +148,19 @@ class ControlledTlsPeerTest {
     private static final String DERIVATION_SALT_CASE_ID =
             "test-norm-structure-member-structure-member-7-12-salt";
     private static final String DERIVATION_SALT_TARGET_ID = "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-12-SALT";
+    private static final List<DerivationByteStringFixture> DERIVATION_BYTE_STRING_FIXTURES = List.of(
+            new DerivationByteStringFixture(
+                    "test-norm-structure-member-structure-member-7-12-initialization-vector",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-12-INITIALIZATION-VECTOR", 0x42003a,
+                    new byte[] {0x00, 0x1f, 0x40, (byte) 0xe2}),
+            new DerivationByteStringFixture(
+                    "test-norm-structure-member-structure-member-7-12-derivation-data",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-12-DERIVATION-DATA", 0x420030,
+                    new byte[] {0x51, 0x02, (byte) 0xfe, 0x07}));
+    private static final DerivationIntegerFixture DERIVATION_ITERATION_COUNT_FIXTURE =
+            new DerivationIntegerFixture(
+                    "test-norm-structure-member-structure-member-7-12-iteration-count",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-12-ITERATION-COUNT", 0x42003c, 4096);
     private static final String CONSTRAINT_CASE_ID =
             "test-norm-operation-structure-operation-structure-7-6-constraint";
     private static final String CONSTRAINT_TARGET_ID =
@@ -972,6 +989,8 @@ class ControlledTlsPeerTest {
             assertObjectDefaultsObjectTypeRouteEvents(events, protocolVersion);
             appendDerivationSaltRouteEvents(events, protocolVersion);
             assertDerivationSaltRouteEvents(events, protocolVersion);
+            appendDerivationParameterRouteEvents(events, protocolVersion);
+            assertDerivationParameterRouteEvents(events, protocolVersion);
             appendExtensionInformationMemberRouteEvents(events, protocolVersion);
             assertExtensionInformationMemberRouteEvents(events, protocolVersion);
             assertNewlyCataloguedLocalRoutesAreInvoked(events, protocolVersion);
@@ -1383,7 +1402,7 @@ class ControlledTlsPeerTest {
                         + genericTagEventCount + typedTagIdentityEventCount
                         + booleanFieldRouteEventCount + scalarMessageFieldRouteEventCount + itemTypeRouteEventCount
                         + scalarTypedParserEventCount
-                        + 59 // BEC, batch IDs, async payload, Ping, Endpoint Role, Object Defaults, Salt, and Extension Information member cells.
+                        + 83 // BEC, batch IDs, async payload, Ping, Endpoint Role, Object Defaults, derivation, and Extension Information member cells.
                         + tagAggregateEventCount
                         + referencedEnumEventCount + referencedEnumAggregateEventCount,
                 report.path("events").size());
@@ -1420,7 +1439,7 @@ class ControlledTlsPeerTest {
                         + enumerationFixtures.size() + localEnumerationCaseCount + bitmaskCaseCount
                         + dataTypeCaseCount
                         + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + genericTagCaseIds.size()
-                        + 9
+                        + 12
                         + typedTagIdentityCaseIds().size() + referencedEnumCaseCount
                         + 11 + itemTypeValueCaseIds.size() + STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size()
                         + STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.size()
@@ -3730,6 +3749,8 @@ class ControlledTlsPeerTest {
         caseIds.add("test-norm-message-field-message-field-8-3-ephemeral");
         caseIds.add("test-norm-structure-member-structure-member-7-23-object-group");
         caseIds.add(DERIVATION_SALT_CASE_ID);
+        DERIVATION_BYTE_STRING_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
+        caseIds.add(DERIVATION_ITERATION_COUNT_FIXTURE.caseId());
         EXTENSION_INFORMATION_MEMBER_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         caseIds.add(OBJECT_DEFAULTS_OBJECT_TYPE_CASE_ID);
         caseIds.add("test-norm-operation-structure-operation-structure-7-2-asynchronous-request");
@@ -6480,6 +6501,71 @@ class ControlledTlsPeerTest {
                     ? "construct" : "decode";
             assertRouteEventRecorded(events, DERIVATION_SALT_CASE_ID, DERIVATION_SALT_TARGET_ID,
                     route, action, protocolVersion);
+        }
+    }
+
+    private static void assertDerivationParameterRouteEvents(ArrayNode events, String protocolVersion) {
+        for (DerivationByteStringFixture fixture : DERIVATION_BYTE_STRING_FIXTURES) {
+            assertScalarStructureMemberRouteEvents(events, fixture.caseId(), fixture.targetId(),
+                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.bytestring", protocolVersion);
+        }
+        assertScalarStructureMemberRouteEvents(events, DERIVATION_ITERATION_COUNT_FIXTURE.caseId(),
+                DERIVATION_ITERATION_COUNT_FIXTURE.targetId(),
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.integer", protocolVersion);
+    }
+
+    private static void appendDerivationParameterRouteEvents(ArrayNode events, String protocolVersion)
+            throws Exception {
+        CodecLimits limits = CodecLimits.defaults();
+        for (DerivationByteStringFixture fixture : DERIVATION_BYTE_STRING_FIXTURES) {
+            byte[] wire = item(fixture.rawTag(), TtlvItemType.ByteString.code(), fixture.value());
+            String treeHash = normalizedTreeSha256(wire);
+            try (TtlvValue value = TtlvValue.ByteString(fixture.value(), limits);
+                    RawTag raw = RawTag.fromRaw(fixture.rawTag());
+                    Tag tag = raw.checked();
+                    TtlvItem created = TtlvItem.create(tag, value, limits);
+                    TtlvItemView view = created.view()) {
+                assertByteStringItemView(view, fixture.rawTag(), fixture.value());
+            }
+            appendRouteEvent(events, fixture.caseId(),
+                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.bytestring", fixture.targetId(),
+                    "org.kmipkit.ttlv.TtlvValue.ByteString", null, null, "construct", protocolVersion,
+                    null, treeHash, null);
+            appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_item.create", fixture.targetId(),
+                    "org.kmipkit.ttlv.TtlvItem.create", null, null, "construct", protocolVersion,
+                    null, treeHash, null);
+            try (TtlvItem decoded = TtlvCodec.decode(wire);
+                    TtlvItemView view = decoded.view()) {
+                assertByteStringItemView(view, fixture.rawTag(), fixture.value());
+            }
+            appendRouteEvent(events, fixture.caseId(),
+                    "java.generic-ttlv.function.ttlv_item_view_from_item", fixture.targetId(),
+                    "org.kmipkit.ttlv.TtlvItem.view", null, null, "decode", protocolVersion,
+                    null, null, treeHash);
+            appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_codec.decode", fixture.targetId(),
+                    "org.kmipkit.ttlv.TtlvCodec.decode", null, null, "decode", protocolVersion,
+                    null, null, treeHash);
+        }
+
+        DerivationIntegerFixture fixture = DERIVATION_ITERATION_COUNT_FIXTURE;
+        byte[] wire = item(fixture.rawTag(), TtlvItemType.Integer.code(), intBytes(fixture.value()));
+        try (TtlvValue value = TtlvValue.Integer(fixture.value())) {
+            appendRouteEvent(events, fixture.caseId(),
+                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.integer", fixture.targetId(),
+                    "org.kmipkit.ttlv.TtlvValue.Integer", null, null, "construct", protocolVersion,
+                    null, normalizedTreeSha256(wire), null);
+        }
+        appendLocalTtlvRoundtripEvents(events, fixture.caseId(), fixture.targetId(), fixture.rawTag(),
+                TtlvItemType.Integer, TtlvValue.Integer(fixture.value()), wire, protocolVersion, fixture.value());
+    }
+
+    private static void assertScalarStructureMemberRouteEvents(ArrayNode events, String caseId,
+            String targetId, String valueRoute, String protocolVersion) {
+        for (String route : List.of(valueRoute, "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item", "java.generic-ttlv.ttlv_codec.decode")) {
+            String action = route.equals(valueRoute) || route.endsWith("ttlv_item.create")
+                    ? "construct" : "decode";
+            assertRouteEventRecorded(events, caseId, targetId, route, action, protocolVersion);
         }
     }
 
