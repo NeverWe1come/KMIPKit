@@ -80,6 +80,15 @@ final class FluentFacadeShapeTest {
     }
 
     @Test
+    void pingBuilderCreatesTheEmptyTypedPingItem() {
+        PingBuilder builder = new PingBuilder(null);
+        builder.validate();
+        try (ClientBatchItem item = builder.toBatchItem()) {
+            assertEquals(59, item.operation());
+        }
+    }
+
+    @Test
     void buildersExposeBuildBatchAndExecutionMethods() throws Exception {
         assertNotNull(SymmetricKeyBuilder.class.getMethod("build"));
         assertNotNull(SymmetricKeyBuilder.class.getMethod("toBatchItem"));
