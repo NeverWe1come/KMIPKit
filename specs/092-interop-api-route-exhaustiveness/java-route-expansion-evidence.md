@@ -2690,21 +2690,53 @@ python3 interop/shared/tools/route_capabilities.py --check
 git diff --check
 ```
 
-## Usage Limits branch synchronized with client correlation TTLV routes — 2026-11-18
+## Client asynchronous correlation response TTLV routes — 2026-11-18
 
-The Java Usage Limits branch now includes parent head `c5579390d`, which adds
-generic TTLV evidence for the client Cancel, Poll, and Process correlation
-fields. The existing Usage Limits member and its KMIP-version-specific route
-evidence are retained in this combined branch.
+Red commit `bc8c4abef` requires the Cancel response correlation field to run the
+same generic Item construction, view, and decoder routes as the request-side
+field. Green commit `81f1348de` exercises the catalogued Byte String through
+those routes for KMIP 2.0 and 2.1, recording the field and enclosing Cancel
+operation identities. The evidence remains a local model roundtrip and does
+not claim that a server response was received for those cells.
 
-The full Java consumer suite passes 62 tests with no failures, errors, or skips.
-The selected report validates 28,446/28,446 cells with zero failures. The global
-ledger records 28,446 executed and 43,195 pending of 71,641 cells across 1,155
-pending case IDs. The Python route-evidence, schema, and capability suites pass
-108 tests; the route check confirms 1,507 routes. This selected scope is green,
-but the full matrix remains incomplete, so #216 stays WIP. Evidence uses the
-pinned release artifact and controlled TLS peer; it does not assert vendor
-interoperability.
+The full Java suite passes 62 tests with no failures, errors, or skips. The
+selected scope validates 28,430/28,430 cells with zero failures. The ledger
+records 28,430 executed and 43,211 pending of 71,641 cells across 1,158 pending
+case IDs. The Python route-evidence, schema, and capability suites pass 108
+tests; the route check confirms 1,507 routes. Full Java matrix completion is
+still pending, and #187 remains WIP.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-tmp" \
+  bash bindings/java/gradlew -p interop/java-kmip-validator \
+  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" \
+  test --rerun-tasks --refresh-dependencies
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+python3 -m unittest interop.shared.tests.test_route_execution_evidence \
+  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+git diff --check
+```
+
+## Usage Limits branch synchronized with async response correlation routes — 2026-11-18
+
+The #216 branch now includes Java route-matrix parent head `fa3863e78`, which
+adds generic TTLV evidence for the Cancel response correlation field in KMIP
+2.0 and 2.1. The Usage Limits routes and earlier request-side correlation
+routes remain present.
+
+The Java consumer suite passes 62 tests with no failures, errors, or skips. The
+selected report validates 28,458/28,458 cells with zero failures. The ledger
+records 28,458 executed and 43,183 pending of 71,641 cells across 1,155 pending
+case IDs. The shared Python suites pass 108 tests and the route check confirms
+1,507 routes. The matrix is still incomplete; #216 remains WIP.
 
 Verification:
 
@@ -2777,6 +2809,38 @@ IDs. Shared Python validation passes 108 tests, and the route capability check
 confirms 1,507 routes. The full matrix remains incomplete, so #217 stays WIP.
 The evidence is from the pinned artifact and controlled TLS peer, not an
 external KMS.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-tmp" \
+  bash bindings/java/gradlew -p interop/java-kmip-validator \
+  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" \
+  test --rerun-tasks --refresh-dependencies
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+python3 -m unittest interop.shared.tests.test_route_execution_evidence \
+  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+git diff --check
+```
+
+## Right Usage Limits stack after async response correlation coverage — 2026-11-18
+
+The #217 branch now includes updated #216 head `70f6a3d3a`, containing Java
+route-matrix head `fa3863e78` and the Cancel response correlation TTLV routes.
+The Right Usage Limits fixture and its eight routes remain part of the combined
+branch.
+
+The Java suite passes 62 tests with no failures, errors, or skips. The selected
+report validates 28,466/28,466 cells with zero failures. The ledger records
+28,466 executed and 43,175 pending of 71,641 cells across 1,154 pending case
+IDs. Shared Python validation passes 108 tests and the route capability check
+confirms 1,507 routes. The full matrix remains incomplete; #217 stays WIP.
 
 Verification:
 
