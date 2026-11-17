@@ -2653,3 +2653,39 @@ python3 -m unittest interop.shared.tests.test_route_execution_evidence \
 python3 interop/shared/tools/route_capabilities.py --check
 git diff --check
 ```
+
+## Client asynchronous correlation payload TTLV routes — 2026-11-18
+
+Red commit `b99d1b3a1` requires generic TTLV item creation, item view, and
+codec-decode evidence for client payload correlation fields. Green commit
+`67ceb732a` runs those routes against a catalogued Byte String Tag for Cancel
+and Poll in KMIP 2.0/2.1 and Process in KMIP 2.1. The controlled peer suite
+still verifies the installed async operation routes separately; this increment
+only records the local generic TTLV obligations and does not infer the other
+payload fields from these correlation fixtures.
+
+The full Java suite passes 62 tests with no failures, errors, or skips. The
+selected scope validates 28,418/28,418 cells with zero failures. The Java
+ledger records 28,418 executed and 43,223 pending of 71,641 cells across 1,158
+pending case IDs. Shared route-evidence, schema, and capability tests pass 108
+tests, and the capability check confirms 1,507 routes. The full route matrix
+remains incomplete and the PR remains WIP.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-tmp" \
+  bash bindings/java/gradlew -p interop/java-kmip-validator \
+  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" \
+  test --rerun-tasks --refresh-dependencies
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+python3 -m unittest interop.shared.tests.test_route_execution_evidence \
+  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+git diff --check
+```
