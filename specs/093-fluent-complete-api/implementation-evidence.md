@@ -1075,3 +1075,24 @@
   This fix only aligns their named-tag capability inventory and its parity
   assertions. `rustfmt +1.94 --edition 2024 --check` on the three changed Rust
   files and `git diff --check` pass.
+
+### Current-head Script Contracts repair
+
+- **Red — CI run `43978049870`, job `133693896521`**: the T102 contract suite
+  could not import `T102_HISTORICAL_RUST_AUDIT_EXCLUDED` because the historical
+  November 1 Rust audit totals were not exposed separately from the current
+  November 16 totals. Restoring distinct historical constants keeps the old
+  snapshot immutable while allowing current audit totals to advance.
+- The full local API-manifest suite then identified stale binding-export
+  counts for C, Java, and Python. Regenerated
+  `binding-export-report-2026-11-16-kmipkit-0093-tag-values.json` through
+  `audit_binding_exports.run` using the built Rust 1.94 C ABI, then refreshed
+  the report table in `binding-export-audit.md`. The report now matches all
+  declarations: C 2,643/2,643, Java 3,055/3,055, and Python 3,319/3,319, with
+  no missing, stale, or kind-mismatched entries.
+- **Green — local verification**: the 25 focused tests across
+  `test_c_api_docs`, `test_t102_certify_request_builder_mapping`,
+  `test_t102_pkcs11_request_trait_exclusions`, and
+  `test_t102_usage_allocation_context_trait_exclusions` pass; `git diff
+  --check` passes. Exact-head CI must still pass before this PR is ready for
+  human review.

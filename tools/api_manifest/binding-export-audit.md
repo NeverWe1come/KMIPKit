@@ -217,6 +217,6 @@ catalog-backed fluent tag declarations delivered by KMIPKIT-0093.
 
 | Package | Scanner complete | Observed | Manifest declarations | Exact matches | Exact exclusions | Missing | Stale | Kind mismatches | Issues | `matchesManifest` |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| C | yes | 2,640 | 2,580 | 2,580 | 60 | 0 | 0 | 0 | 0 | yes |
-| Java | yes | 3,696 | 2,985 | 2,985 | 711 | 0 | 0 | 0 | 0 | yes |
-| Python | yes | 4,245 | 3,236 | 3,236 | 1,009 | 0 | 0 | 0 | 0 | yes |
+| C | yes | 2,704 | 2,643 | 2,643 | 61 | 0 | 0 | 0 | 0 | yes |
+| Java | yes | 3,766 | 3,055 | 3,055 | 711 | 0 | 0 | 0 | 0 | yes |
+| Python | yes | 4,328 | 3,319 | 3,319 | 1,009 | 0 | 0 | 0 | 0 | yes |
