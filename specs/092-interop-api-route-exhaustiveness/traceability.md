@@ -81,3 +81,17 @@ cryptographic correctness test.
 Both Encrypt and Decrypt passed all 12 version/encoding/transport exchanges;
 CTest passed 7/7 with 165 C route-matrix contract tests. Other route cells
 remain pending, so this does not close the full FR-003/FR-005 gates.
+
+### C MAC route follow-up
+
+For KMIPKIT-0092-FR-003, FR-005, FR-008, and FR-009, C
+`test-op-mac` exercises KMIP v2.0 §6.1.31 and v2.1 §6.1.32 through the
+installed client API. It creates an HMAC-SHA256 Symmetric Key with explicit
+MAC Generate usage, activates it, sends MAC with explicit HMAC-SHA256
+Cryptographic Parameters, and revokes/destroys it. The peer checks the exact
+request tree, deterministic MAC Data response bytes, item IDs, and final
+deletion; the C consumer checks the typed response, UID, and 32-byte MAC Data
+length. Since the server generates a random key, this controlled response does
+not prove cryptographic MAC validity. The focused test passes all 12 cells;
+CTest passes 7/7 including 166 matrix-contract tests. Other C route cells and
+cross-language FR-003/FR-005 remain pending.

@@ -1154,3 +1154,28 @@ cryptographic input or output.
   version/encoding/transport combinations. CTest passed 7/7 in 90.92 seconds,
   including 165 route-matrix contract tests and both controlled TLS peers;
   `git diff --check` passed. The full C matrix and exact-head CI remain open.
+
+## C MAC request and response route
+
+OASIS KMIP v2.0 §6.1.31 and v2.1 §6.1.32 define MAC. The installed C
+consumer creates a symmetric HMAC-SHA256 key with a 256-bit length and an
+explicit MAC Generate usage mask, activates it, sends one MAC request with
+explicit HMAC-SHA256 Cryptographic Parameters and test data, then revokes and
+destroys the key. It checks the ordered typed results, item IDs, created-key
+identifier, and typed MAC Data field with its required 32-byte length. The
+controlled peer checks the exact request tree and deterministic 32-byte MAC
+response fixture; since the server-generated key is random, the fixture does
+not validate the MAC cryptographically. No cryptographic input or output is
+included in reports or diagnostics.
+
+- Red commit `99bf12638`: the focused route test failed because `test-op-mac`
+  had no controlled-peer route recipe.
+- Green commit `aff753bb0`: added the C HMAC-SHA256 request path, typed response
+  access, and peer checks for the request, response, unique IDs, and cleanup.
+- Refactor/documentation commit records the normative scope and limits in this
+  file, the 0092 traceability record, and the validator README.
+- Verification: the focused MAC test passed all 12 combinations (KMIP 2.0/2.1
+  × TTLV/JSON/XML × raw TLS/HTTPS); the combined Encrypt/Decrypt/MAC tests
+  passed 36/36 peer exchanges. CTest passed 7/7 in 92.08 seconds, including
+  166 route-matrix contract tests and both controlled TLS peers. The complete C
+  matrix and exact-head CI remain open.
