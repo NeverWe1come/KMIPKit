@@ -48,6 +48,22 @@ BATCH_CRYPTO_ITEM_IDS = (b'crypto-register', b'crypto-activate', b'crypto-encryp
 BATCH_CRYPTO_KEY = bytes(range(16))
 BATCH_CRYPTO_PLAINTEXT = bytes.fromhex('00112233445566778899aabbccddeeff')
 BATCH_CRYPTO_CIPHERTEXT = bytes.fromhex('69c4e0d86a7b0430d8cdb78070b4c55a')
+ENCRYPT_ITEM_IDS = (b'encrypt-create', b'encrypt-activate', b'encrypt-target',
+                    b'encrypt-revoke', b'encrypt-destroy')
+DECRYPT_ITEM_IDS = (b'decrypt-create', b'decrypt-activate', b'decrypt-target',
+                    b'decrypt-revoke', b'decrypt-destroy')
+MAC_ITEM_IDS = (b'mac-create', b'mac-activate', b'mac-target', b'mac-revoke', b'mac-destroy')
+MAC_VERIFY_ITEM_IDS = (b'mac-verify-create', b'mac-verify-activate', b'mac-verify-target',
+                       b'mac-verify-revoke', b'mac-verify-destroy')
+SIGN_ITEM_IDS = (b'sign-create-pair', b'sign-activate', b'sign-target', b'sign-revoke',
+                 b'sign-destroy-private', b'sign-destroy-public')
+SIGNATURE_VERIFY_ITEM_IDS = (b'verify-create-pair', b'verify-activate', b'verify-target',
+                             b'verify-revoke', b'verify-destroy-public', b'verify-destroy-private')
+CREATE_KEY_PAIR_ITEM_IDS = (b'create-pair', b'destroy-private', b'destroy-public')
+CERTIFY_ITEM_IDS = (b'certify-create-pair', b'certify-activate-private', b'certify-public-key',
+                    b'certify-revoke-private', b'certify-destroy-certificate',
+                    b'certify-destroy-private', b'certify-destroy-public')
+MAC_TEST_OUTPUT = bytes(range(32))
 CANCEL_CORRELATION_VALUE = b'fixture-cancel-correlation'
 ASYNC_QUERY_CORRELATION_CREATE_COMPLETED = b'fixture-query-create-completed'
 ASYNC_QUERY_CORRELATION_CREATE_PENDING = b'fixture-query-create-pending'
@@ -365,6 +381,14 @@ RECIPES = {
     'test-norm-payload-client-export-response-21-003': ((1, 43, 19, 20), 'export'),
     'test-norm-payload-client-export-response-21-004': ((1, 43, 19, 20), 'export'),
     'test-op-register': ((3, 20), 'register'),
+    'test-op-encrypt': ((1, 18, 31, 19, 20), 'encrypt'),
+    'test-op-decrypt': ((1, 18, 32, 19, 20), 'decrypt'),
+    'test-op-mac': ((1, 18, 35, 19, 20), 'mac'),
+    'test-op-mac-verify': ((1, 18, 36, 19, 20), 'mac_verify'),
+    'test-op-sign': ((2, 18, 33, 19, 20, 20), 'sign'),
+    'test-op-signature-verify': ((2, 18, 34, 19, 20, 20), 'signature_verify'),
+    'test-op-create-key-pair': ((2, 20, 20), 'create_key_pair'),
+    'test-op-certify': ((2, 18, 6, 19, 20, 20, 20), 'certify'),
     'test-op-add-attribute': ((1, 13, 19, 20), 'add_attribute'),
     'test-op-adjust-attribute': ((1, 48, 19, 20), 'adjust_attribute'),
     'test-norm-payload-client-add-attribute-request-20-002': ((1, 13, 19, 20), 'add_attribute'),
@@ -682,6 +706,377 @@ def request_adjust_attribute_fields(batch_item):
             int.from_bytes(types[0][2], 'big'), adjustment_value)
 
 
+def assert_crypto_request(node, decrypt):
+    """Check an isolated Create/Activate/crypto/Revoke/Destroy request shape."""
+    operation = 32 if decrypt else 31
+    item_ids = DECRYPT_ITEM_IDS if decrypt else ENCRYPT_ITEM_IDS
+    usage_mask = 8 if decrypt else 4
+    input_data = BATCH_CRYPTO_CIPHERTEXT if decrypt else BATCH_CRYPTO_PLAINTEXT
+    items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    operations = [numbers(item, 0x42005C) for item in items]
+    observed_item_ids = [byte_string_values(item, 0x420093) for item in items]
+    if (operations != [[1], [18], [operation], [19], [20]] or
+            observed_item_ids != [[item_id] for item_id in item_ids] or
+            numbers(items[0], 0x420057) != [2] or
+            numbers(items[0], 0x420028) != [3] or
+            numbers(items[0], 0x42002A) != [128] or
+            numbers(items[0], 0x42002C) != [usage_mask] or
+            any(not is_id_placeholder_identifier(identifier)
+                for item in items[1:]
+                for identifier in descendants(item, UNIQUE_IDENTIFIER_TAG))):
+        raise ValueError('fixture_crypto_batch_lifecycle_mismatch')
+    encrypt_payloads = [child for child in items[2][2]
+                        if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+    if len(encrypt_payloads) != 1:
+        raise ValueError('fixture_encrypt_payload_missing')
+    fields = encrypt_payloads[0][2]
+    parameters = [field for field in fields if field[0] == 0x42002B and field[1] == 1]
+    identifiers = [field for field in fields if field[0] == UNIQUE_IDENTIFIER_TAG]
+    data = [field for field in fields if field[0] == 0x4200C2 and field[1] == 8]
+    if ([field[0] for field in fields] != [UNIQUE_IDENTIFIER_TAG, 0x42002B, 0x4200C2] or
+            len(identifiers) != 1 or not is_id_placeholder_identifier(identifiers[0]) or
+            len(parameters) != 1 or len(data) != 1 or
+            data[0][2] != input_data):
+        raise ValueError('fixture_crypto_request_fields_mismatch')
+    parameter_fields = parameters[0][2]
+    expected_parameters = [(0x420011, 5, (2).to_bytes(4, 'big')),
+                           (0x42005F, 5, (1).to_bytes(4, 'big')),
+                           (0x420028, 5, (3).to_bytes(4, 'big'))]
+    if [(field[0], field[1], field[2]) for field in parameter_fields] != expected_parameters:
+        raise ValueError('fixture_crypto_parameters_mismatch')
+
+
+def verify_crypto_response(response_tree, decrypt):
+    """Check all lifecycle outcomes and typed Encrypt or Decrypt fields."""
+    case_id = 'test-op-decrypt' if decrypt else 'test-op-encrypt'
+    item_ids = DECRYPT_ITEM_IDS if decrypt else ENCRYPT_ITEM_IDS
+    expected_data = BATCH_CRYPTO_PLAINTEXT if decrypt else BATCH_CRYPTO_CIPHERTEXT
+    verify_lifecycle(RECIPES[case_id][0], response_tree)
+    items = [child for child in response_tree[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if [byte_string_values(item, 0x420093) for item in items] != [[item_id] for item_id in item_ids]:
+        raise ValueError('fixture_crypto_response_item_ids_mismatch')
+    payloads = [child for child in items[2][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1]
+    if len(payloads) != 1:
+        raise ValueError('fixture_crypto_response_payload_missing')
+    fields = payloads[0][2]
+    identifiers = [field for field in fields if field[0] == UNIQUE_IDENTIFIER_TAG and field[1] == 7]
+    data = [field for field in fields if field[0] == 0x4200C2 and field[1] == 8]
+    if (len(fields) != 2 or len(identifiers) != 1 or identifiers[0][2] != b'fixture-key-1' or
+            len(data) != 1 or data[0][2] != expected_data):
+        raise ValueError('fixture_crypto_response_fields_mismatch')
+
+
+def assert_mac_request(node):
+    """Check the isolated HMAC-SHA256 Create/Activate/MAC/Revoke/Destroy request."""
+    items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if ([numbers(item, 0x42005C) for item in items] != [[1], [18], [35], [19], [20]] or
+            [byte_string_values(item, 0x420093) for item in items] !=
+            [[item_id] for item_id in MAC_ITEM_IDS] or
+            numbers(items[0], 0x420057) != [2] or numbers(items[0], 0x420028) != [9] or
+            numbers(items[0], 0x42002A) != [256] or numbers(items[0], 0x42002C) != [128] or
+            any(not is_id_placeholder_identifier(identifier)
+                for item in items[1:]
+                for identifier in descendants(item, UNIQUE_IDENTIFIER_TAG))):
+        raise ValueError('fixture_mac_batch_lifecycle_mismatch')
+    payloads = [child for child in items[2][2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+    if len(payloads) != 1:
+        raise ValueError('fixture_mac_request_payload_missing')
+    fields = payloads[0][2]
+    parameters = [field for field in fields if field[0] == 0x42002B and field[1] == 1]
+    identifiers = [field for field in fields if field[0] == UNIQUE_IDENTIFIER_TAG]
+    data = [field for field in fields if field[0] == 0x4200C2 and field[1] == 8]
+    if ([field[0] for field in fields] != [UNIQUE_IDENTIFIER_TAG, 0x42002B, 0x4200C2] or
+            len(identifiers) != 1 or not is_id_placeholder_identifier(identifiers[0]) or
+            len(parameters) != 1 or len(data) != 1 or data[0][2] != BATCH_CRYPTO_PLAINTEXT or
+            [field[0] for field in parameters[0][2]] != [0x420028] or
+            numbers(parameters[0], 0x420028) != [9]):
+        raise ValueError('fixture_mac_request_fields_mismatch')
+
+
+def verify_mac_response(response_tree):
+    """Check the complete MAC response fields and ordered lifecycle."""
+    verify_lifecycle(RECIPES['test-op-mac'][0], response_tree)
+    items = [child for child in response_tree[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if [byte_string_values(item, 0x420093) for item in items] != [[item_id] for item_id in MAC_ITEM_IDS]:
+        raise ValueError('fixture_mac_response_item_ids_mismatch')
+    payloads = [child for child in items[2][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1]
+    if len(payloads) != 1:
+        raise ValueError('fixture_mac_response_payload_missing')
+    fields = payloads[0][2]
+    identifiers = [field for field in fields if field[0] == UNIQUE_IDENTIFIER_TAG and field[1] == 7]
+    mac_data = [field for field in fields if field[0] == 0x4200C6 and field[1] == 8]
+    if (len(fields) != 2 or len(identifiers) != 1 or identifiers[0][2] != b'fixture-key-1' or
+            len(mac_data) != 1 or mac_data[0][2] != MAC_TEST_OUTPUT):
+        raise ValueError('fixture_mac_response_fields_mismatch')
+
+
+def assert_mac_verify_request(node):
+    """Check an isolated HMAC-SHA256 MAC Verify request and cleanup."""
+    items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if ([numbers(item, 0x42005C) for item in items] != [[1], [18], [36], [19], [20]] or
+            [byte_string_values(item, 0x420093) for item in items] !=
+            [[item_id] for item_id in MAC_VERIFY_ITEM_IDS] or
+            numbers(items[0], 0x420057) != [2] or numbers(items[0], 0x420028) != [9] or
+            numbers(items[0], 0x42002A) != [256] or numbers(items[0], 0x42002C) != [256] or
+            any(not is_id_placeholder_identifier(identifier)
+                for item in items[1:]
+                for identifier in descendants(item, UNIQUE_IDENTIFIER_TAG))):
+        raise ValueError('fixture_mac_verify_batch_lifecycle_mismatch')
+    payloads = [child for child in items[2][2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+    if len(payloads) != 1:
+        raise ValueError('fixture_mac_verify_request_payload_missing')
+    fields = payloads[0][2]
+    parameters = [field for field in fields if field[0] == 0x42002B and field[1] == 1]
+    identifiers = [field for field in fields if field[0] == UNIQUE_IDENTIFIER_TAG]
+    data = [field for field in fields if field[0] == 0x4200C2 and field[1] == 8]
+    mac_data = [field for field in fields if field[0] == 0x4200C6 and field[1] == 8]
+    if ([field[0] for field in fields] !=
+            [UNIQUE_IDENTIFIER_TAG, 0x42002B, 0x4200C2, 0x4200C6] or
+            len(identifiers) != 1 or not is_id_placeholder_identifier(identifiers[0]) or
+            len(parameters) != 1 or len(data) != 1 or data[0][2] != BATCH_CRYPTO_PLAINTEXT or
+            len(mac_data) != 1 or mac_data[0][2] != MAC_TEST_OUTPUT or
+            [field[0] for field in parameters[0][2]] != [0x420028] or
+            numbers(parameters[0], 0x420028) != [9]):
+        raise ValueError('fixture_mac_verify_request_fields_mismatch')
+
+
+def verify_mac_verify_response(response_tree):
+    """Check the Valid MAC Verify fixture result and full ordered lifecycle."""
+    verify_lifecycle(RECIPES['test-op-mac-verify'][0], response_tree)
+    items = [child for child in response_tree[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if [byte_string_values(item, 0x420093) for item in items] != [[item_id] for item_id in MAC_VERIFY_ITEM_IDS]:
+        raise ValueError('fixture_mac_verify_response_item_ids_mismatch')
+    payloads = [child for child in items[2][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1]
+    if len(payloads) != 1:
+        raise ValueError('fixture_mac_verify_response_payload_missing')
+    fields = payloads[0][2]
+    identifiers = [field for field in fields if field[0] == UNIQUE_IDENTIFIER_TAG and field[1] == 7]
+    validity = [field for field in fields if field[0] == 0x42009B and field[1] == 5]
+    if (len(fields) != 2 or len(identifiers) != 1 or identifiers[0][2] != b'fixture-key-1' or
+            len(validity) != 1 or int.from_bytes(validity[0][2], 'big') != 1):
+        raise ValueError('fixture_mac_verify_response_fields_mismatch')
+
+
+def assert_signature_request(node, verify):
+    """Check a key-pair-backed RSA Sign or Signature Verify batch."""
+    operation = 34 if verify else 33
+    item_ids = SIGNATURE_VERIFY_ITEM_IDS if verify else SIGN_ITEM_IDS
+    items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if ([numbers(item, 0x42005C) for item in items] != [[2], [18], [operation], [19], [20], [20]] or
+            [byte_string_values(item, 0x420093) for item in items] != [[item_id] for item_id in item_ids]):
+        raise ValueError('fixture_signature_batch_lifecycle_mismatch')
+    create_payloads = [child for child in items[0][2]
+                       if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+    if len(create_payloads) != 1:
+        raise ValueError('fixture_signature_create_pair_payload_missing')
+    fields = create_payloads[0][2]
+    if [field[0] for field in fields] != [0x420126, 0x420127, 0x420128]:
+        raise ValueError('fixture_signature_create_pair_fields_mismatch')
+    common, private, public = fields
+    if (numbers(common, 0x420028) != [4] or numbers(common, 0x42002A) != [2048] or
+            numbers(private, 0x42002C) != [1] or numbers(public, 0x42002C) != [2]):
+        raise ValueError('fixture_signature_key_usage_mismatch')
+    target_uid = 6 if verify else 5
+    other_uid = 5 if verify else 6
+    if ([numbers(item, UNIQUE_IDENTIFIER_TAG) for item in items[1:]] !=
+            [[target_uid], [target_uid], [target_uid], [target_uid], [other_uid]]):
+        raise ValueError('fixture_signature_unique_identifier_mapping_mismatch')
+    payloads = [child for child in items[2][2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+    if len(payloads) != 1:
+        raise ValueError('fixture_signature_request_payload_missing')
+    fields = payloads[0][2]
+    expected_tags = [UNIQUE_IDENTIFIER_TAG, 0x42002B, 0x4200C2]
+    if verify:
+        expected_tags.append(0x4200C3)
+    if ([field[0] for field in fields] != expected_tags or
+            len([field for field in fields if field[0] == UNIQUE_IDENTIFIER_TAG and field[1] == 5]) != 1 or
+            [field[0] for field in fields[1][2]] != [0x42004E] or
+            numbers(fields[1], 0x42004E) != [5] or
+            len([field for field in fields if field[0] == 0x4200C2 and field[1] == 8]) != 1 or
+            [field[2] for field in fields if field[0] == 0x4200C2] != [BATCH_CRYPTO_PLAINTEXT]):
+        raise ValueError('fixture_signature_request_fields_mismatch')
+    if verify:
+        signature = [field for field in fields if field[0] == 0x4200C3 and field[1] == 8]
+        if len(signature) != 1 or signature[0][2] != bytes(256):
+            raise ValueError('fixture_signature_verify_input_mismatch')
+
+
+def verify_signature_response(response_tree, verify):
+    """Check typed key-pair outputs and a shape-only signature result."""
+    operation = 34 if verify else 33
+    item_ids = SIGNATURE_VERIFY_ITEM_IDS if verify else SIGN_ITEM_IDS
+    items = [child for child in response_tree[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if ([numbers(item, 0x42005C) for item in items] != [[2], [18], [operation], [19], [20], [20]] or
+            [byte_string_values(item, 0x420093) for item in items] != [[item_id] for item_id in item_ids] or
+            [numbers(item, 0x42007F) for item in items] != [[0]] * 6):
+        raise ValueError('fixture_signature_response_lifecycle_mismatch')
+    payloads = [child for child in items[0][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1]
+    if len(payloads) != 1:
+        raise ValueError('fixture_signature_key_pair_response_missing')
+    private_ids = [field for field in payloads[0][2] if field[0] == 0x420066 and field[1] == 7]
+    public_ids = [field for field in payloads[0][2] if field[0] == 0x42006F and field[1] == 7]
+    if (len(payloads[0][2]) != 2 or len(private_ids) != 1 or len(public_ids) != 1 or
+            private_ids[0][2] != b'fixture-private-key-1' or
+            public_ids[0][2] != b'fixture-public-key-1'):
+        raise ValueError('fixture_signature_key_pair_response_mismatch')
+    target_identifier = b'fixture-public-key-1' if verify else b'fixture-private-key-1'
+    other_identifier = b'fixture-private-key-1' if verify else b'fixture-public-key-1'
+    expected_lifecycle_identifiers = [
+        target_identifier.decode('ascii'), target_identifier.decode('ascii'),
+        target_identifier.decode('ascii'), target_identifier.decode('ascii'),
+        other_identifier.decode('ascii'),
+    ]
+    if [text_values(item, UNIQUE_IDENTIFIER_TAG) for item in items[1:]] != [
+            [identifier] for identifier in expected_lifecycle_identifiers]:
+        raise ValueError('fixture_signature_lifecycle_identifiers_mismatch')
+    target_payloads = [child for child in items[2][2]
+                       if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1]
+    if len(target_payloads) != 1:
+        raise ValueError('fixture_signature_operation_response_missing')
+    fields = target_payloads[0][2]
+    if verify:
+        if (len(fields) != 2 or text_values(items[2], UNIQUE_IDENTIFIER_TAG) != [target_identifier.decode()] or
+                numbers(items[2], 0x42009B) != [1]):
+            raise ValueError('fixture_signature_verify_response_fields_mismatch')
+    else:
+        signature = [field for field in fields if field[0] == 0x4200C3 and field[1] == 8]
+        if (len(fields) != 2 or text_values(items[2], UNIQUE_IDENTIFIER_TAG) != [target_identifier.decode()] or
+                len(signature) != 1 or len(signature[0][2]) != 256):
+            raise ValueError('fixture_sign_response_fields_mismatch')
+
+
+def assert_create_key_pair_request(node):
+    """Check a Create Key Pair request and cleanup of both returned objects."""
+    items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if ([numbers(item, 0x42005C) for item in items] != [[2], [20], [20]] or
+            [byte_string_values(item, 0x420093) for item in items] !=
+            [[item_id] for item_id in CREATE_KEY_PAIR_ITEM_IDS]):
+        raise ValueError('fixture_create_key_pair_batch_mismatch')
+    payloads = [child for child in items[0][2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+    if len(payloads) != 1:
+        raise ValueError('fixture_create_key_pair_payload_missing')
+    fields = payloads[0][2]
+    if [field[0] for field in fields] != [0x420126, 0x420127, 0x420128]:
+        raise ValueError('fixture_create_key_pair_attribute_fields_mismatch')
+    common, private, public = fields
+    if (numbers(common, 0x420028) != [4] or numbers(common, 0x42002A) != [2048] or
+            numbers(private, 0x42002C) != [1] or numbers(public, 0x42002C) != [2]):
+        raise ValueError('fixture_create_key_pair_attributes_mismatch')
+    if [numbers(item, UNIQUE_IDENTIFIER_TAG) for item in items[1:]] != [[5], [6]]:
+        raise ValueError('fixture_create_key_pair_cleanup_identifiers_mismatch')
+
+
+def verify_create_key_pair_response(response_tree):
+    """Check distinct response IDs and exact cleanup identifier mapping."""
+    items = [child for child in response_tree[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if ([numbers(item, 0x42005C) for item in items] != [[2], [20], [20]] or
+            [byte_string_values(item, 0x420093) for item in items] !=
+            [[item_id] for item_id in CREATE_KEY_PAIR_ITEM_IDS] or
+            [numbers(item, 0x42007F) for item in items] != [[0], [0], [0]]):
+        raise ValueError('fixture_create_key_pair_response_lifecycle_mismatch')
+    payloads = [child for child in items[0][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1]
+    if len(payloads) != 1:
+        raise ValueError('fixture_create_key_pair_response_payload_missing')
+    fields = payloads[0][2]
+    private_ids = [field for field in fields if field[0] == 0x420066 and field[1] == 7]
+    public_ids = [field for field in fields if field[0] == 0x42006F and field[1] == 7]
+    if (len(fields) != 2 or len(private_ids) != 1 or len(public_ids) != 1 or
+            private_ids[0][2] != b'fixture-private-key-1' or
+            public_ids[0][2] != b'fixture-public-key-1'):
+        raise ValueError('fixture_create_key_pair_response_identifiers_mismatch')
+    if [text_values(item, UNIQUE_IDENTIFIER_TAG) for item in items[1:]] != [
+            ['fixture-private-key-1'], ['fixture-public-key-1']]:
+        raise ValueError('fixture_create_key_pair_cleanup_mapping_mismatch')
+
+
+def assert_certify_request(node):
+    """Check Certify of the Public Key and Certificate Sign capability."""
+    items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    operations = [[2], [18], [6], [19], [20], [20], [20]]
+    if ([numbers(item, 0x42005C) for item in items] != operations or
+            [byte_string_values(item, 0x420093) for item in items] !=
+            [[item_id] for item_id in CERTIFY_ITEM_IDS]):
+        raise ValueError('fixture_certify_batch_mismatch')
+    create_payloads = [child for child in items[0][2]
+                       if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+    if len(create_payloads) != 1:
+        raise ValueError('fixture_certify_create_pair_payload_missing')
+    create_fields = create_payloads[0][2]
+    if [field[0] for field in create_fields] != [0x420126, 0x420127, 0x420128]:
+        raise ValueError('fixture_certify_create_pair_attribute_fields_mismatch')
+    common, private, public = create_fields
+    if (numbers(common, 0x420028) != [4] or numbers(common, 0x42002A) != [2048] or
+            numbers(private, 0x42002C) != [4096] or numbers(public, 0x42002C) != [2]):
+        raise ValueError('fixture_certify_key_pair_attributes_mismatch')
+    if ([numbers(item, UNIQUE_IDENTIFIER_TAG) for item in items[1:]] !=
+            [[5], [6], [5], [ID_PLACEHOLDER_ENUMERATION], [5], [6]]):
+        raise ValueError('fixture_certify_unique_identifier_mapping_mismatch')
+    certify_payloads = [child for child in items[2][2]
+                        if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+    if len(certify_payloads) != 1:
+        raise ValueError('fixture_certify_payload_missing')
+    fields = certify_payloads[0][2]
+    identifier_fields = [field for field in fields
+                         if field[0] == UNIQUE_IDENTIFIER_TAG and field[1] == 5]
+    attribute_fields = [field for field in fields
+                        if field[0] == 0x420125 and field[1] == 1]
+    if (len(fields) != 2 or len(identifier_fields) != 1 or
+            int.from_bytes(identifier_fields[0][2], 'big') != 6 or len(attribute_fields) != 1):
+        raise ValueError('fixture_certify_public_key_selector_mismatch')
+    attributes = attribute_fields[0][2]
+    certificate_types = [field for field in attributes
+                         if field[0] == 0x42001D and field[1] == 5]
+    if (len(attributes) != 1 or len(certificate_types) != 1 or
+            int.from_bytes(certificate_types[0][2], 'big') != 1):
+        raise ValueError('fixture_certify_certificate_type_attribute_mismatch')
+
+
+def verify_certify_response(response_tree):
+    """Check the generated certificate ID and all three cleanup results."""
+    items = [child for child in response_tree[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    operations = [[2], [18], [6], [19], [20], [20], [20]]
+    if ([numbers(item, 0x42005C) for item in items] != operations or
+            [byte_string_values(item, 0x420093) for item in items] !=
+            [[item_id] for item_id in CERTIFY_ITEM_IDS] or
+            [numbers(item, 0x42007F) for item in items] != [[0]] * 7):
+        raise ValueError('fixture_certify_response_lifecycle_mismatch')
+    create_payloads = [child for child in items[0][2]
+                       if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1]
+    if len(create_payloads) != 1:
+        raise ValueError('fixture_certify_response_create_pair_payload_missing')
+    pair_fields = create_payloads[0][2]
+    private_ids = [field for field in pair_fields if field[0] == 0x420066 and field[1] == 7]
+    public_ids = [field for field in pair_fields if field[0] == 0x42006F and field[1] == 7]
+    if (len(pair_fields) != 2 or len(private_ids) != 1 or len(public_ids) != 1 or
+            private_ids[0][2] != b'fixture-private-key-1' or
+            public_ids[0][2] != b'fixture-public-key-1'):
+        raise ValueError('fixture_certify_pair_response_identifiers_mismatch')
+    certify_payloads = [child for child in items[2][2]
+                        if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1]
+    certificate_ids = [field for field in certify_payloads[0][2]
+                       if field[0] == UNIQUE_IDENTIFIER_TAG and field[1] == 7] \
+        if len(certify_payloads) == 1 else []
+    if (len(certify_payloads) != 1 or len(certify_payloads[0][2]) != 1 or
+            len(certificate_ids) != 1 or certificate_ids[0][2] != b'fixture-certificate-1'):
+        raise ValueError('fixture_certify_response_certificate_identifier_mismatch')
+    expected_identifiers = [
+        ['fixture-private-key-1'], ['fixture-certificate-1'],
+        ['fixture-private-key-1'], ['fixture-certificate-1'],
+        ['fixture-private-key-1'], ['fixture-public-key-1'],
+    ]
+    if [text_values(item, UNIQUE_IDENTIFIER_TAG) for item in items[1:]] != expected_identifiers:
+        raise ValueError('fixture_certify_response_cleanup_identifiers_mismatch')
+
+
 def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
                   constructor_variant=None, export_field=None):
     selected_recipe = recipe or RECIPES[case_id]
@@ -697,6 +1092,20 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
         raise ValueError('fixture_batch_count_mismatch')
     if selected_recipe[1] in ('cancel_async', 'cancel_poll_race'):
         assert_cancel_request(node)
+    if selected_recipe[1] == 'encrypt':
+        assert_crypto_request(node, False)
+    if selected_recipe[1] == 'decrypt':
+        assert_crypto_request(node, True)
+    if selected_recipe[1] == 'mac':
+        assert_mac_request(node)
+    if selected_recipe[1] == 'mac_verify':
+        assert_mac_verify_request(node)
+    if selected_recipe[1] in ('sign', 'signature_verify'):
+        assert_signature_request(node, selected_recipe[1] == 'signature_verify')
+    if selected_recipe[1] == 'create_key_pair':
+        assert_create_key_pair_request(node)
+    if selected_recipe[1] == 'certify':
+        assert_certify_request(node)
     if (case_id in {
             'test-norm-payload-client-add-attribute-request-20-002',
             'test-norm-payload-client-add-attribute-request-21-002'} and
@@ -775,9 +1184,14 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
         object_type = 4 if case_id == 'test-obj-private-key' else 3 if case_id == 'test-obj-public-key' else 2
         if numbers(node, 0x420057) != [object_type]:
             raise ValueError('fixture_object_type_mismatch')
-        if numbers(node, 0x420028) != [4 if object_type in (3, 4) else 3]:
+        expected_algorithms = ([3, 3] if selected_recipe[1] in ('encrypt', 'decrypt') else
+                               [9, 9] if selected_recipe[1] in ('mac', 'mac_verify') else
+                               [4 if object_type in (3, 4) else 3])
+        if numbers(node, 0x420028) != expected_algorithms:
             raise ValueError('fixture_algorithm_mismatch')
-        if numbers(node, 0x42002A) != [2048 if object_type in (3, 4) else 128]:
+        expected_key_length = 256 if selected_recipe[1] in ('mac', 'mac_verify') else (
+            2048 if object_type in (3, 4) else 128)
+        if numbers(node, 0x42002A) != [expected_key_length]:
             raise ValueError('fixture_key_length_mismatch')
         if numbers(node, 0x42000E) != [1]:
             raise ValueError('fixture_cleanup_continuation_missing')
@@ -1070,7 +1484,8 @@ def assert_placeholder_usage(node, case_id):
     """Accept omitted or explicit ID Placeholder identifiers after Create."""
     if case_id not in ('test-batch-create-activate-destroy',
                        'test-batch-register-encrypt-decrypt-destroy',
-                       'test-batch-placeholder-chain-resolves'):
+                       'test-batch-placeholder-chain-resolves', 'test-op-encrypt',
+                       'test-op-decrypt', 'test-op-mac', 'test-op-mac-verify'):
         return
     batch_items = [child for child in node[2]
                    if child[0] == BATCH_ITEM_TAG and child[1] == 1]
@@ -2039,6 +2454,7 @@ class PeerState:
         self.usage_allocation_totals = {'fixture-key-1': 1000} if usage_allocation_ready else {}
         self.usage_allocation_counts = {'fixture-key-1': 0} if usage_allocation_ready else {}
         self.interop_sessions = {}
+        self.key_pair_identifiers = {}
 
     def digest(self):
         state_value = {'objects': self.objects}
@@ -2089,10 +2505,21 @@ class PeerState:
             operation = numbers(item, 0x42005C)[0]
             request_payloads = [child for child in item[2]
                                 if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
-            identifiers = [child[2].decode('utf-8') for child in request_payloads[0][2]
-                           if child[0] == UNIQUE_IDENTIFIER_TAG and child[1] == 7] \
+            identifier_fields = [child for child in request_payloads[0][2]
+                                 if child[0] == UNIQUE_IDENTIFIER_TAG] \
                 if len(request_payloads) == 1 else []
-            identifier = identifiers[0] if identifiers else placeholder
+            text_identifiers = [child[2].decode('utf-8') for child in identifier_fields
+                                if child[1] == 7]
+            enum_identifiers = [int.from_bytes(child[2], 'big') for child in identifier_fields
+                                if child[1] == 5]
+            if text_identifiers:
+                identifier = text_identifiers[0]
+            elif enum_identifiers and enum_identifiers[0] in self.key_pair_identifiers:
+                identifier = self.key_pair_identifiers[enum_identifiers[0]]
+            elif enum_identifiers and enum_identifiers[0] == ID_PLACEHOLDER_ENUMERATION:
+                identifier = placeholder
+            else:
+                identifier = placeholder
             status, reason = 0, 0
             if operation == rejected_operation:
                 status, reason, effect = rejection_status, rejection_reason, 'operation_rejected'
@@ -2119,6 +2546,37 @@ class PeerState:
                     effect = 'interop_reset'
                 else:
                     raise ValueError('fixture_interop_function_unknown')
+            elif operation == 2:
+                private_identifier = 'fixture-private-key-1'
+                public_identifier = 'fixture-public-key-1'
+                if private_identifier in self.objects or public_identifier in self.objects:
+                    raise ValueError('fixture_duplicate_create_key_pair')
+                self.objects[private_identifier] = 'pre_active'
+                self.objects[public_identifier] = 'pre_active'
+                self.attributes[private_identifier] = set()
+                self.attributes[public_identifier] = set()
+                self.attribute_values[private_identifier] = {}
+                self.attribute_values[public_identifier] = {}
+                self.adjustable_attribute_values[private_identifier] = {}
+                self.adjustable_attribute_values[public_identifier] = {}
+                self.key_pair_identifiers = {5: private_identifier, 6: public_identifier}
+                effect = 'key_pair_created'
+            elif operation == 6:
+                private_identifier = self.key_pair_identifiers.get(5)
+                public_identifier = self.key_pair_identifiers.get(6)
+                certificate_identifier = 'fixture-certificate-1'
+                if (identifier != public_identifier or public_identifier not in self.objects or
+                        private_identifier not in self.objects or
+                        self.objects[private_identifier] != 'active' or
+                        self.objects[public_identifier] != 'pre_active' or
+                        certificate_identifier in self.objects):
+                    raise ValueError('fixture_certify_key_pair_state_mismatch')
+                self.objects[certificate_identifier] = 'pre_active'
+                self.attributes[certificate_identifier] = set()
+                self.attribute_values[certificate_identifier] = {}
+                self.adjustable_attribute_values[certificate_identifier] = {}
+                placeholder = certificate_identifier
+                effect = 'certified'
             elif operation in (1, 3):
                 identifier = 'fixture-key-1'
                 if identifier in self.objects:
@@ -2137,7 +2595,7 @@ class PeerState:
                 identifier = matching_identifiers[0]
                 placeholder = identifier
                 effect = 'located'
-            elif operation in (9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 20, 31, 32, 43, 48, 49, 56):
+            elif operation in (9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 20, 31, 32, 33, 34, 35, 36, 43, 48, 49, 56):
                 state = self.objects.get(identifier)
                 if state is None:
                     status, reason, effect = 1, 55, 'object_not_found'
@@ -2162,10 +2620,12 @@ class PeerState:
                         raise ValueError('fixture_activate_state_mismatch')
                     self.objects[identifier] = 'active'
                     effect = 'activated'
-                elif operation in (31, 32):
+                elif operation in (31, 32, 33, 34, 35, 36):
                     if state != 'active':
                         raise ValueError('fixture_registered_crypto_key_not_active')
-                    effect = 'encrypted' if operation == 31 else 'decrypted'
+                    effect = {31: 'encrypted', 32: 'decrypted', 33: 'signed',
+                              34: 'signature_verified', 35: 'mac_generated',
+                              36: 'mac_verified'}[operation]
                 elif operation == 19:
                     self.objects[identifier] = 'revoked'
                     effect = 'revoked'
@@ -2305,10 +2765,11 @@ def verify_lifecycle(operations, response_tree):
                 raise ValueError('fixture_activate_state_mismatch')
             state = 'active'
             effects.append('activated')
-        elif operation in (31, 32):
+        elif operation in (31, 32, 35, 36):
             if state != 'active':
                 raise ValueError('fixture_registered_crypto_key_not_active')
-            effects.append('encrypted' if operation == 31 else 'decrypted')
+            effects.append({31: 'encrypted', 32: 'decrypted', 35: 'mac_generated',
+                             36: 'mac_verified'}[operation])
         elif operation == 19:
             state = 'revoked'
             effects.append('revoked')
@@ -2614,7 +3075,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 'async_process_then_poll_state',
                                                 'async_query_outstanding_filter',
                                                 'async_unknown_correlation_rejected') and
-                                            recipe[0][0] not in (1, 3))),
+                                            recipe[0][0] not in (1, 2, 3))),
                             usage_allocation_ready=recipe[1] == 'get_usage_allocation_uid_variants')
                         boundary = case_id in (
                             'test-v20-reject-get-constraints', 'test-v20-reject-ping')
@@ -2825,6 +3286,22 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 b'interop-revoke', b'interop-destroy')
                                         elif recipe[1] == 'batch_register_crypto':
                                             response_item_ids = BATCH_CRYPTO_ITEM_IDS
+                                        elif recipe[1] == 'encrypt':
+                                            response_item_ids = ENCRYPT_ITEM_IDS
+                                        elif recipe[1] == 'decrypt':
+                                            response_item_ids = DECRYPT_ITEM_IDS
+                                        elif recipe[1] == 'mac':
+                                            response_item_ids = MAC_ITEM_IDS
+                                        elif recipe[1] == 'mac_verify':
+                                            response_item_ids = MAC_VERIFY_ITEM_IDS
+                                        elif recipe[1] == 'sign':
+                                            response_item_ids = SIGN_ITEM_IDS
+                                        elif recipe[1] == 'signature_verify':
+                                            response_item_ids = SIGNATURE_VERIFY_ITEM_IDS
+                                        elif recipe[1] == 'create_key_pair':
+                                            response_item_ids = CREATE_KEY_PAIR_ITEM_IDS
+                                        elif recipe[1] == 'certify':
+                                            response_item_ids = CERTIFY_ITEM_IDS
                                         elif placeholder_chain_recipe:
                                             response_item_ids = (
                                                 (b'placeholder-revoke-cleanup', b'placeholder-destroy-cleanup')
@@ -3117,6 +3594,12 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 verify_lifecycle((20,), response_tree)
                                         elif recipe[1] == 'interop':
                                             verify_interop_response(response_tree)
+                                        elif recipe[1] in ('encrypt', 'decrypt'):
+                                            verify_crypto_response(response_tree, recipe[1] == 'decrypt')
+                                        elif recipe[1] == 'mac':
+                                            verify_mac_response(response_tree)
+                                        elif recipe[1] == 'mac_verify':
+                                            verify_mac_verify_response(response_tree)
                                         elif recipe[1] == 'async_create_sync_default' and exchange_index == 0:
                                             verify_sync_create_response(response_tree)
                                         elif recipe[1] in ('async_create_optional_complete',
@@ -3148,6 +3631,13 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             else:
                                                 verify_export_response(response_tree)
                                             verify_lifecycle(recipe[0], response_tree)
+                                        elif recipe[1] in ('sign', 'signature_verify'):
+                                            verify_signature_response(
+                                                response_tree, recipe[1] == 'signature_verify')
+                                        elif recipe[1] == 'create_key_pair':
+                                            verify_create_key_pair_response(response_tree)
+                                        elif recipe[1] == 'certify':
+                                            verify_certify_response(response_tree)
                                         elif recipe[1] == 'get_usage_allocation_uid_variants':
                                             verify_usage_allocation_identifier_variants(response_tree)
                                         elif reject_this_exchange:
