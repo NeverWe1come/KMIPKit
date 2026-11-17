@@ -417,5 +417,9 @@ KMIP 2.1 §6.1.4 Tables 173–174 do not require Activate; the Unique Identifier
 is optional and the client is only indicating that a KMS may archive the object.
 Red `b2e3ced75` asserts the catalogued recipe, Green `5707246cb` implements it,
 and Refactor `de029189b` clarifies the state handling. The route passed 12/12
-cells and CTest passed 7/7. The full C matrix has 24,673 pending cells, so the
-FR-003/FR-005 gates remain open.
+cells and CTest passed 7/7. The integrated C matrix snapshot at `055fa2715`
+has 66,692 expected, 43,372 invoked, zero failed, and 23,320 pending cells, so
+the FR-003/FR-005 gates remain open. Follow-up response-ID correlation was
+developed as Red `ebe666902`, Green `ba59fb7ec`, and Refactor `eb701e0a8`; its
+focused Archive operation, payload, and response-ID tests pass. The full matrix
+snapshot predates those helper/refactor commits.

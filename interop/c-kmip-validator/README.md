@@ -138,10 +138,11 @@ The `*.gaps.json` sidecar identifies every unexecuted matrix obligation rather
 than misclassifying it as an unavailable library route. Other sidecars retain
 installed-artifact availability checks and sanitized controlled-peer outcomes.
 The evidence JSON passes the shared schema independently of completeness.
-The latest local matrix run after aligning Archive with its catalog recipe has
-66,736 expected cells, 42,063 invoked, zero failed, and 24,673 pending; the
-Archive slice contributes 38 invoked cells and does not close the exhaustive
-gate.
+The latest full local C matrix run on the integrated Archive stack at
+`055fa2715` has 66,692 expected cells, 43,372 invoked, zero failed, and 23,320
+pending. The Archive lifecycle adds 38 invoked cells. Follow-up commits add
+focused response-item-ID correlation coverage and do not change that matrix
+snapshot; the exhaustive gate remains open.
 
 A generic TTLV wire encoder, generic-TTLV request dispatcher, and high-level
 C client are absent from the exact installed public artifact. The harness's

@@ -291,6 +291,17 @@ and fails against the old extra Activate. Green `5707246cb` updates the C
 consumer, response indexing, route peer, and standalone TLS expected sequence;
 Refactor `de029189b` clarifies the Active-state distinction. The focused Archive
 route passed 12/12; CTest passed 7/7 in 97.26 seconds, including both standalone
-TLS peers. The current full local C matrix has 66,736 expected, 42,063 invoked,
-zero failed, and 24,673 pending cells; this route contributes 38 invoked cells
-and leaves FR-003/FR-005 incomplete.
+TLS peers. The integrated stack matrix run at `055fa2715` has 66,692 expected,
+43,372 invoked, zero failed, and 23,320 pending cells; the Archive route
+contributes 38 invoked cells and leaves FR-003/FR-005 incomplete. Follow-up
+response-item-ID coverage adds focused assertions without changing the matrix
+snapshot.
+
+The controlled peer's Archive response item IDs now follow the exact request
+recipe, including the installed consumer's `interop-*` IDs. Red `ebe666902`
+adds a regression test and fails because the response-ID mapping helper is
+absent; Green `ba59fb7ec` adds the mapping used by the response builder;
+Refactor `eb701e0a8` names the mapping constants. The focused Archive operation,
+payload, and response-ID tests pass after Refactor. The integrated matrix
+snapshot above predates these equivalent helper/refactor commits and is not
+presented as a rerun at their later SHA.
