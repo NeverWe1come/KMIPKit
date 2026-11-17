@@ -826,9 +826,11 @@ class ControlledTlsPeerTest {
         int typedTagIdentityEventCount = 0;
         int booleanFieldRouteEventCount = 0;
         int scalarMessageFieldRouteEventCount = 0;
+        int anyObjectAttributeRouteEventCount = 0;
         int scalarTypedParserEventCount = 0;
         int itemTypeRouteEventCount = 0;
         Set<String> booleanFieldCaseIds = new java.util.HashSet<>();
+        Set<String> anyObjectAttributeCaseIds = new java.util.HashSet<>();
 
         for (String protocolVersion : KMIP_2_0_AND_2_1) {
             appendLocalQueryRouteEvents(events, protocolVersion, requestTreeHash);
@@ -1075,6 +1077,16 @@ class ControlledTlsPeerTest {
             appendExtensionInformationMemberRouteEvents(events, protocolVersion);
             assertExtensionInformationMemberRouteEvents(events, protocolVersion);
             assertNewlyCataloguedLocalRoutesAreInvoked(events, protocolVersion);
+            Set<String> missingAnyObjectAttributeCases = missingAnyObjectAttributeCaseIds(
+                    readRouteEvidenceCatalog(), events, protocolVersion);
+            anyObjectAttributeCaseIds.addAll(missingAnyObjectAttributeCases);
+            List<LocalCatalogRouteChecks.Invocation> anyObjectAttributeInvocations = new ArrayList<>();
+            LocalCatalogRouteChecks.executeAnyObjectAttributeMembers(readRouteEvidenceCatalog(), protocolVersion,
+                    missingAnyObjectAttributeCases, anyObjectAttributeInvocations::add);
+            for (LocalCatalogRouteChecks.Invocation invocation : anyObjectAttributeInvocations) {
+                appendLocalCatalogInvocation(events, protocolVersion, invocation);
+            }
+            anyObjectAttributeRouteEventCount += anyObjectAttributeInvocations.size();
         }
 
         int tagAggregateEventCount = appendTagAggregateRouteEvents(events);
@@ -1617,6 +1629,7 @@ class ControlledTlsPeerTest {
                         + responseHeaderServerCorrelationEventCount
                         + genericTagEventCount + typedTagIdentityEventCount
                         + booleanFieldRouteEventCount + scalarMessageFieldRouteEventCount + itemTypeRouteEventCount
+                        + anyObjectAttributeRouteEventCount
                         + scalarTypedParserEventCount
                         + 97 // BEC, batch IDs, async payload, Ping, Endpoint Role, Object Defaults, derivation, and Extension Information member cells.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Type generic and typed Attribute routes.
@@ -1659,6 +1672,7 @@ class ControlledTlsPeerTest {
                         + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + genericTagCaseIds.size()
                         + 12
                         + typedTagIdentityCaseIds().size() + referencedEnumCaseCount
+                        + anyObjectAttributeCaseIds.size()
                         + 11 + itemTypeValueCaseIds.size() + STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size()
                         + STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.size()
                         + STRUCTURE_MEMBER_VALUE_FIXTURES.size() + PROFILE_INFORMATION_CASE_IDS.size()
@@ -4033,6 +4047,7 @@ class ControlledTlsPeerTest {
         caseIds.add("test-norm-payload-client-set-endpoint-role-request-21-001");
         caseIds.add("test-norm-payload-client-set-endpoint-role-response-21-001");
         caseIds.add("test-enum-item-type");
+        appendAnyObjectAttributeCaseIds(caseIds, events);
         CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().forEach(caseIds::add);
         report.putArray("protocol_versions").add("2.0").add("2.1");
         ObjectNode combination = mapper.createObjectNode();
@@ -4099,6 +4114,21 @@ class ControlledTlsPeerTest {
         for (JsonNode event : events) {
             String caseId = event.path("case_id").asText();
             if (caseId.startsWith("test-norm-enumeration-value-enum-value-item-type-")
+                    && existing.add(caseId)) {
+                caseIds.add(caseId);
+            }
+        }
+    }
+
+    private static void appendAnyObjectAttributeCaseIds(ArrayNode caseIds, JsonNode events) {
+        Set<String> existing = new java.util.HashSet<>();
+        caseIds.forEach(caseId -> existing.add(caseId.asText()));
+        for (JsonNode event : events) {
+            String caseId = event.path("case_id").asText();
+            String targetId = event.path("target_id").asText();
+            if (targetId.startsWith("KMIPKIT-ELEM-STRUCTURE-MEMBER-5-")
+                    && targetId.contains("-ANY-ATTRIBUTE-IN-4-OBJECT-ATTRIBUTES")
+                    && "java.generic-ttlv.ttlv_item.create".equals(event.path("route_id").asText())
                     && existing.add(caseId)) {
                 caseIds.add(caseId);
             }
@@ -4441,6 +4471,40 @@ class ControlledTlsPeerTest {
             }
         }
         return missing;
+    }
+
+    private static Set<String> missingAnyObjectAttributeCaseIds(JsonNode catalog, JsonNode events, String version) {
+        Map<String, JsonNode> targets = new HashMap<>();
+        catalog.path("normative_targets").forEach(target ->
+                targets.put(target.path("target_id").asText(), target));
+        List<String> routes = List.of("java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item", "java.generic-ttlv.ttlv_codec.decode");
+        Set<String> missing = new java.util.TreeSet<>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            JsonNode requires = testCase.path("requires");
+            if (!"structure_member".equals(requires.path("target_kind").asText())
+                    || !"local_model".equals(testCase.path("execution").path("mode").asText())
+                    || !appliesToVersion(testCase, version)) continue;
+            String targetId = requires.path("normative_target_id").asText();
+            JsonNode target = targets.get(targetId);
+            if (target == null || !target.path("name").asText().startsWith("Any attribute in ")
+                    || !target.path("source_encoding").asText().startsWith("Any")
+                    || !appliesToTargetVersion(target, version)) continue;
+            String caseId = testCase.path("case_id").asText();
+            long present = routes.stream().filter(route -> hasRouteEvent(events, caseId, route, version, targetId))
+                    .count();
+            if (present == 0) missing.add(caseId);
+            else assertEquals(routes.size(), present,
+                    "Any object attribute route evidence must be complete before reuse: " + caseId);
+        }
+        return Set.copyOf(missing);
+    }
+
+    private static boolean appliesToTargetVersion(JsonNode target, String version) {
+        for (JsonNode candidate : target.path("protocol_versions")) {
+            if (version.equals(candidate.asText())) return true;
+        }
+        return false;
     }
 
     private static boolean isSupportedScalarMessageFieldEncoding(String encoding) {

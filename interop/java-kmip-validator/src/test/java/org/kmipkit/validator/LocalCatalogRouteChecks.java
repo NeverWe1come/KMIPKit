@@ -193,6 +193,116 @@ final class LocalCatalogRouteChecks {
         }
     }
 
+    /** Executes the repeatable Any object-attribute member with a well-formed Name attribute. */
+    static void executeAnyObjectAttributeMembers(JsonNode catalog, String version, Set<String> selectedCaseIds,
+            EvidenceSink sink) throws Exception {
+        Set<String> emitted = new java.util.HashSet<>();
+        CodecLimits limits = CodecLimits.defaults();
+        int nameTag = tagCodeNamed(catalog, "Name", version);
+        int nameTypeTag = tagCodeNamed(catalog, "Name Type", version);
+        int nameValueTag = tagCodeNamed(catalog, "Name Value", version);
+        byte[] nameBytes = "kmipkit-object-attribute-fixture".getBytes(StandardCharsets.UTF_8);
+        byte[] nameTypeWire = scalarWire(nameTypeTag, TtlvItemType.Enumeration.code(), 1);
+        byte[] nameValueWire = itemWire(nameValueTag, TtlvItemType.TextString.code(), nameBytes);
+        byte[] attributeWire = structureWire(nameTag, concat(nameTypeWire, nameValueWire));
+
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String caseId = testCase.path("case_id").asText();
+            if (!selectedCaseIds.contains(caseId)
+                    || !"local_model".equals(testCase.path("execution").path("mode").asText())
+                    || !applies(testCase, version)) continue;
+            JsonNode requires = testCase.path("requires");
+            String targetId = requires.path("normative_target_id").asText();
+            JsonNode target = findTarget(catalog, targetId);
+            if (!"structure_member".equals(requires.path("target_kind").asText())
+                    || !target.path("name").asText().startsWith("Any attribute in ")
+                    || !target.path("source_encoding").asText().startsWith("Any")) {
+                throw new IllegalArgumentException("Selected case is not a repeatable Any object attribute: " + caseId);
+            }
+
+            try (TtlvStructure empty = TtlvStructure.create();
+                    TtlvValue typeValue = TtlvValue.Enumeration(1);
+                    TtlvStructure withNameType = append(empty, nameTypeTag, typeValue);
+                    TtlvValue nameValue = TtlvValue.TextString(nameBytes, limits);
+                    TtlvStructure nameAttribute = append(withNameType, nameValueTag, nameValue);
+                    TtlvValue attributeValue = TtlvValue.structure(nameAttribute, limits);
+                    RawTag raw = RawTag.fromRaw(nameTag);
+                    Tag tag = raw.checked();
+                    TtlvItem item = TtlvItem.create(tag, attributeValue, limits);
+                    var itemView = item.view();
+                    var itemTag = itemView.tag();
+                    var itemValue = itemView.value();
+                    TtlvItem decoded = TtlvCodec.decode(attributeWire);
+                    var decodedView = decoded.view();
+                    var decodedTag = decodedView.tag();
+                    var decodedValue = decodedView.value()) {
+                assertEquals(nameTag, itemTag.raw());
+                assertEquals(TtlvItemType.Structure, itemView.itemType());
+                assertEquals(nameTag, decodedTag.raw());
+                assertEquals(TtlvItemType.Structure, decodedView.itemType());
+                try (TtlvStructureView structure = decodedValue.structure()) {
+                    assertEquals(2, structure.itemCount());
+                }
+                try (TtlvStructureView structure = itemValue.structure()) {
+                    assertEquals(2, structure.itemCount());
+                }
+            }
+
+        try (TtlvStructure emptyAttributes = TtlvStructure.create()) {
+            try (TtlvStructureView absentView = emptyAttributes.view()) {
+                assertEquals(0, absentView.itemCount());
+            }
+            try (TtlvStructure emptyName = TtlvStructure.create();
+                    TtlvValue typeValue = TtlvValue.Enumeration(1);
+                    TtlvStructure withNameType = append(emptyName, nameTypeTag, typeValue);
+                    TtlvValue nameValue = TtlvValue.TextString(nameBytes, limits);
+                    TtlvStructure nameAttribute = append(withNameType, nameValueTag, nameValue);
+                    TtlvValue attributeValue = TtlvValue.structure(nameAttribute, limits);
+                    RawTag raw = RawTag.fromRaw(nameTag); Tag tag = raw.checked();
+                    TtlvItem item = TtlvItem.create(tag, attributeValue, limits);
+                    TtlvStructure once = TtlvStructure.withItem(emptyAttributes, item, limits)) {
+                try (TtlvStructureView onceView = once.view()) {
+                    assertEquals(1, onceView.itemCount());
+                }
+                try (TtlvItem repeatedItem = TtlvCodec.decode(attributeWire);
+                        TtlvStructure twice = TtlvStructure.withItem(once, repeatedItem, limits);
+                        TtlvStructureView repeatedView = twice.view()) {
+                    assertEquals(2, repeatedView.itemCount());
+                }
+            }
+        }
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_item.create",
+                    "org.kmipkit.ttlv.TtlvItem.create", "construct", attributeWire);
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.function.ttlv_item_view_from_item",
+                    "org.kmipkit.ttlv.TtlvItem.view", "decode", attributeWire);
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_codec.decode",
+                    "org.kmipkit.ttlv.TtlvCodec.decode", "decode", attributeWire);
+            emitted.add(caseId);
+        }
+        if (!emitted.equals(selectedCaseIds)) {
+            throw new IllegalArgumentException("Selected Any object attribute cases were not executed for " + version);
+        }
+    }
+
+    private static int tagCodeNamed(JsonNode catalog, String name, String version) {
+        String normalizedName = normalizeName(name);
+        int tagCode = -1;
+        int matches = 0;
+        for (JsonNode candidate : catalog.path("normative_targets")) {
+            if (!"tag".equals(candidate.path("kind").asText())
+                    || !normalizedName.equals(normalizeName(candidate.path("name").asText()))
+                    || !supportsVersion(candidate, version)) continue;
+            if (!"assigned".equals(candidate.path("allocation").asText())) {
+                throw new IllegalArgumentException("Fixture Tag is not assigned: " + name);
+            }
+            tagCode = Integer.parseUnsignedInt(
+                    candidate.path("wire_value").asText().replaceFirst("^0[xX]", ""), 16);
+            matches++;
+        }
+        if (matches != 1) throw new IllegalArgumentException("Expected one assigned fixture Tag: " + name);
+        return tagCode;
+    }
+
     private static JsonNode findTarget(JsonNode catalog, String targetId) {
         for (JsonNode target : catalog.path("normative_targets")) {
             if (targetId.equals(target.path("target_id").asText())) return target;
