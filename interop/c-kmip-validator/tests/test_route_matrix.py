@@ -1,5 +1,6 @@
 """Matrix coverage must be backed by actual installed ABI calls (0092 FR-002/009)."""
 from pathlib import Path
+import collections
 import importlib.util
 import hashlib
 import json
@@ -2172,6 +2173,40 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(all(event['public_api_symbol'] == 'kmipkit_client_batch_item_create'
                             for event in fields))
 
+    def test_archive_executes_isolated_key_lifecycle_and_reads_typed_response(self):
+        """Exercise KMIP 2.0/2.1 §6.1.4 Archive request and response fields."""
+        from artifact_support import ROOT
+        from route_peer import RECIPES, execute_network_cells
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        self.assertEqual(RECIPES['test-op-archive'][0], (1, 21, 19, 20),
+                         'Archive fixture must match its catalogued create/archive/cleanup lifecycle')
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                                if case['case_id'] == 'test-op-archive']}
+        network_combinations = tuple((encoding, transport)
+                                     for encoding in ('TTLV', 'JSON', 'XML')
+                                     for transport in ('raw_tls', 'https'))
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest,
+            network_combinations=network_combinations)
+        self.assertEqual(len(checks), 12)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        required_symbols = {
+            'kmipkit_client_batch_item_archive',
+            'kmipkit_client_batch_item_response_archive',
+        }
+        self.assertTrue(all(required_symbols <= set(check['public_api_trace_symbols'])
+                            for check in checks), checks)
+        archive_events = [event for event in events
+                          if event['target_id'] == 'KMIPKIT-ELEM-OP-C2S-ARCHIVE']
+        self.assertEqual(collections.Counter(
+            (event['action'], event['public_api_symbol']) for event in archive_events), {
+                ('construct', 'kmipkit_client_batch_item_archive'): 12,
+                ('send', 'kmipkit_client_batch_item_archive'): 12,
+                ('decode', 'kmipkit_client_batch_item_archive'): 12,
+                ('decode', 'kmipkit_client_batch_item_response_archive'): 2,
+            })
+
     def test_lifecycle_peer_requires_cleanup_and_checks_illegal_destroy(self):
         import route_peer
         self.assertTrue(hasattr(route_peer, 'verify_lifecycle'), 'stateful lifecycle verification is missing')
@@ -2742,6 +2777,7 @@ class RouteMatrixTests(unittest.TestCase):
             self.assertTrue(any(event['public_api_symbol'] == symbol and event['action'] == 'send' for event in events), symbol)
 
     def test_operation_response_ttlv_accessors_are_executed(self):
+        """OASIS KMIP 2.0 §§6.1.31, 6.1.49 and 2.1 §§6.1.32, 6.1.55."""
         from artifact_support import ROOT
         from route_peer import execute_network_cells
         catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
@@ -2750,7 +2786,9 @@ class RouteMatrixTests(unittest.TestCase):
             'test-op-check': 'kmipkit_client_batch_item_response_check_ttlv',
             'test-op-get-attribute-list': 'kmipkit_client_batch_item_response_get_attribute_list_payload_ttlv',
             'test-op-log': 'kmipkit_client_batch_item_response_log_ttlv',
+            'test-op-mac': 'kmipkit_client_batch_item_response_mac_ttlv',
             'test-op-revoke': 'kmipkit_client_batch_item_response_revoke_ttlv',
+            'test-op-sign': 'kmipkit_client_batch_item_response_sign_ttlv',
         }
         selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
                                                if case['case_id'] in expected]}
@@ -2778,6 +2816,41 @@ class RouteMatrixTests(unittest.TestCase):
         selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
                                                if case['case_id'] == 'test-op-delegated-login']}
         return ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest
+
+    def test_delegated_login_peer_accepts_optional_request_payload_fields(self):
+        """OASIS KMIP 2.0/2.1 §6.1.12: optional fields coexist with required Rights."""
+        import route_peer
+
+        def integer(tag, value, *, item_type=2, width=4):
+            return (tag, item_type, value.to_bytes(width, 'big', signed=item_type == 2))
+
+        def request_for(minor, payload_fields):
+            header = (0x420077, 1, [
+                (0x420069, 1, [integer(0x42006A, 2), integer(0x42006B, minor)]),
+                integer(0x42000D, 1),
+            ])
+            item = (0x42000F, 1, [
+                (0x42005C, 5, (47).to_bytes(4, 'big')),
+                (0x420079, 1, payload_fields),
+            ])
+            return (0x420078, 1, [header, item])
+
+        for version, minor in (('20', 0), ('21', 1)):
+            variants = (
+                ('001', [(0x420049, 10, (60).to_bytes(4, 'big'))]),
+                ('002', [integer(0x42014C, 2)]),
+                ('003', [(0x420095, 1, [
+                    integer(0x420097, 10, item_type=3, width=8),
+                    integer(0x420096, 10, item_type=3, width=8),
+                    (0x420098, 5, (1).to_bytes(4, 'big')),
+                ])]),
+            )
+            for suffix, optional_fields in variants:
+                case_id = f'test-norm-payload-client-delegated-login-request-{version}-{suffix}'
+                with self.subTest(case_id=case_id):
+                    request = request_for(minor, [*optional_fields, (0x42014D, 1, [])])
+                    route_peer.assert_recipe(request, case_id, f'2.{minor}',
+                                             ((47,), 'delegated_login'))
 
     def test_delegated_login_response_accessors_read_the_ticket_for_both_versions(self):
         """OASIS KMIP v2.0 §6.1.12 Table 185 and v2.1 §6.1.12 Table 200."""
@@ -3399,6 +3472,225 @@ class RouteMatrixTests(unittest.TestCase):
 
         self.assertEqual(recipe, ((3, 20), 'register'))
 
+    def test_encrypt_operation_executes_installed_request_and_response_routes(self):
+        """OASIS KMIP 2.0/2.1 §6.1.17 requires a typed Encrypt exchange."""
+        from artifact_support import ROOT
+        from route_peer import RECIPES, execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_id = 'test-op-encrypt'
+        self.assertIn(case_id, RECIPES, 'Encrypt has no controlled-peer route recipe')
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12, 'Encrypt must pass both versions and all six wire routes')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertEqual({event['target_id'] for event in events},
+                         {'KMIPKIT-ELEM-OP-C2S-ENCRYPT'})
+        send_events = [event for event in events if event['action'] == 'send']
+        self.assertEqual(len(send_events), 12)
+        self.assertTrue(all(event['peer_observed_operation_sequence'] ==
+                            ['Create', 'Activate', 'Encrypt', 'Revoke', 'Destroy'] and
+                            event['peer_observed_effects'] ==
+                            ['created', 'activated', 'encrypted', 'revoked', 'destroyed']
+                            for event in send_events))
+
+    def test_decrypt_operation_executes_installed_request_and_response_routes(self):
+        """OASIS KMIP 2.0/2.1 §6.1.11 requires a typed Decrypt exchange."""
+        from artifact_support import ROOT
+        from route_peer import RECIPES, execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_id = 'test-op-decrypt'
+        self.assertIn(case_id, RECIPES, 'Decrypt has no controlled-peer route recipe')
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12, 'Decrypt must pass both versions and all six wire routes')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertEqual({event['target_id'] for event in events},
+                         {'KMIPKIT-ELEM-OP-C2S-DECRYPT'})
+        send_events = [event for event in events if event['action'] == 'send']
+        self.assertEqual(len(send_events), 12)
+        self.assertTrue(all(event['peer_observed_operation_sequence'] ==
+                            ['Create', 'Activate', 'Decrypt', 'Revoke', 'Destroy'] and
+                            event['peer_observed_effects'] ==
+                            ['created', 'activated', 'decrypted', 'revoked', 'destroyed']
+                            for event in send_events))
+
+    def test_mac_operation_executes_installed_request_and_response_routes(self):
+        """OASIS KMIP 2.0 §6.1.31 and 2.1 §6.1.32 define MAC."""
+        from artifact_support import ROOT
+        from route_peer import RECIPES, execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_id = 'test-op-mac'
+        self.assertIn(case_id, RECIPES, 'MAC has no controlled-peer route recipe')
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12, 'MAC must pass both versions and all six wire routes')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertEqual({event['target_id'] for event in events},
+                         {'KMIPKIT-ELEM-OP-C2S-MAC'})
+        send_events = [event for event in events if event['action'] == 'send']
+        self.assertEqual(len(send_events), 12)
+        self.assertTrue(all(event['peer_observed_operation_sequence'] ==
+                            ['Create', 'Activate', 'MAC', 'Revoke', 'Destroy'] and
+                            event['peer_observed_effects'] ==
+                            ['created', 'activated', 'mac_generated', 'revoked', 'destroyed']
+                            for event in send_events))
+
+    def test_mac_verify_operation_executes_installed_request_and_response_routes(self):
+        """OASIS KMIP 2.0 §6.1.32 and 2.1 §6.1.33 define MAC Verify."""
+        from artifact_support import ROOT
+        from route_peer import RECIPES, execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_id = 'test-op-mac-verify'
+        self.assertIn(case_id, RECIPES, 'MAC Verify has no controlled-peer route recipe')
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12, 'MAC Verify must pass both versions and all six wire routes')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertEqual({event['target_id'] for event in events},
+                         {'KMIPKIT-ELEM-OP-C2S-MAC-VERIFY'})
+        send_events = [event for event in events if event['action'] == 'send']
+        self.assertEqual(len(send_events), 12)
+        self.assertTrue(all(event['peer_observed_operation_sequence'] ==
+                            ['Create', 'Activate', 'MAC Verify', 'Revoke', 'Destroy'] and
+                            event['peer_observed_effects'] ==
+                            ['created', 'activated', 'mac_verified', 'revoked', 'destroyed']
+                            for event in send_events))
+
+    def test_sign_operation_uses_private_key_pair_and_installed_request_route(self):
+        """OASIS KMIP 2.0 §6.1.49 and 2.1 §6.1.55 define Sign."""
+        from artifact_support import ROOT
+        from route_peer import RECIPES, execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_id = 'test-op-sign'
+        self.assertIn(case_id, RECIPES, 'Sign has no controlled-peer route recipe')
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12, 'Sign must pass both versions and all six wire routes')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertEqual({event['target_id'] for event in events},
+                         {'KMIPKIT-ELEM-OP-C2S-SIGN'})
+        send_events = [event for event in events if event['action'] == 'send']
+        self.assertEqual(len(send_events), 12)
+        self.assertTrue(all(event['peer_observed_operation_sequence'] ==
+                            ['Create Key Pair', 'Activate', 'Sign', 'Revoke', 'Destroy', 'Destroy']
+                            for event in send_events))
+
+    def test_signature_verify_operation_uses_public_key_pair_and_installed_route(self):
+        """OASIS KMIP 2.0 §6.1.50 and 2.1 §6.1.56 define Signature Verify."""
+        from artifact_support import ROOT
+        from route_peer import RECIPES, execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_id = 'test-op-signature-verify'
+        self.assertIn(case_id, RECIPES, 'Signature Verify has no controlled-peer route recipe')
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12,
+                         'Signature Verify must pass both versions and all six wire routes')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertEqual({event['target_id'] for event in events},
+                         {'KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY'})
+        send_events = [event for event in events if event['action'] == 'send']
+        self.assertEqual(len(send_events), 12)
+        self.assertTrue(all(event['peer_observed_operation_sequence'] ==
+                            ['Create Key Pair', 'Activate', 'Signature Verify',
+                             'Revoke', 'Destroy', 'Destroy'] and
+                            event['peer_observed_effects'] ==
+                            ['key_pair_created', 'activated', 'signature_verified', 'revoked',
+                             'destroyed', 'destroyed']
+                            for event in send_events))
+
+    def test_create_key_pair_operation_checks_both_identifiers_and_cleanup(self):
+        """OASIS KMIP 2.0/2.1 §6.1.9 returns distinct private and public key identifiers."""
+        from artifact_support import ROOT
+        from route_peer import RECIPES, execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_id = 'test-op-create-key-pair'
+        self.assertIn(case_id, RECIPES, 'Create Key Pair has no controlled-peer route recipe')
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12, 'Create Key Pair must pass both versions and all six wire routes')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertEqual({event['target_id'] for event in events},
+                         {'KMIPKIT-ELEM-OP-C2S-CREATE-KEY-PAIR'})
+        send_events = [event for event in events if event['action'] == 'send']
+        self.assertEqual(len(send_events), 12)
+        self.assertTrue(all(event['peer_observed_operation_sequence'] ==
+                            ['Create Key Pair', 'Destroy', 'Destroy'] and
+                            event['peer_observed_effects'] ==
+                            ['key_pair_created', 'destroyed', 'destroyed']
+                            for event in send_events))
+
+    def test_certify_operation_targets_public_key_and_cleans_up_certificate_pair(self):
+        """OASIS KMIP 2.0/2.1 §6.1.6 Certify targets a public key and returns a certificate ID."""
+        from artifact_support import ROOT
+        from route_peer import RECIPES, execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_id = 'test-op-certify'
+        self.assertIn(case_id, RECIPES, 'Certify has no controlled-peer route recipe')
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12, 'Certify must pass both versions and all six wire routes')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertEqual({event['target_id'] for event in events},
+                         {'KMIPKIT-ELEM-OP-C2S-CERTIFY'})
+        send_events = [event for event in events if event['action'] == 'send']
+        self.assertEqual(len(send_events), 12)
+        self.assertTrue(all(event['peer_observed_operation_sequence'] ==
+                            ['Create Key Pair', 'Activate', 'Certify', 'Revoke',
+                             'Destroy', 'Destroy', 'Destroy'] and
+                            event['peer_observed_effects'] ==
+                            ['key_pair_created', 'activated', 'certified', 'revoked',
+                             'destroyed', 'destroyed', 'destroyed']
+                            for event in send_events))
+
     def test_export_operation_executes_installed_request_and_response_routes(self):
         """OASIS KMIP 2.0/2.1 §6.1.18 Tables 202–203/217–218 define Export."""
         from artifact_support import INSTALL, ROOT
@@ -3672,6 +3964,11 @@ class RouteMatrixTests(unittest.TestCase):
             self.assertEqual(check['peer_response_result_statuses'], expected_statuses)
             if check['case_id'] == 'test-batch-continue-after-failure':
                 self.assertIn('kmipkit_client_batch_add_error_continuation_value', symbols)
+                self.assertTrue({
+                    'kmipkit_client_batch_item_response_get',
+                    'kmipkit_client_batch_item_response_get_attribute_list',
+                    'kmipkit_client_batch_item_response_get_attribute_list_payload_ttlv',
+                } <= set(symbols), 'Continue must inspect the failed Get and successful attribute-list payload')
 
 
     def test_stop_batch_returns_only_the_failed_item_and_stops_processing(self):

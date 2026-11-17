@@ -7,6 +7,10 @@
 - [ ] Añadir recetas tipadas y cobertura exhaustiva para ambas versiones.
 - [x] Ejecutar Batch Error Continuation Option Stop y validar el resultado parcial de Get fallido en KMIP 2.0/2.1.
 - [x] Ejecutar Login y Logout con el Ticket retornado por Login en KMIP 2.0 y 2.1, verificando los lectores tipado y TTLV.
+
+- [x] Ejecutar Batch Error Continuation Option Continue y validar el Get fallido sin Response Payload, el Get Attribute List tipado y su TTLV en KMIP 2.0/2.1.
+- [x] Execute Archive against the isolated C key fixture, validate the required response identifier, and clean up under KMIP 2.0/2.1.
+- [x] Ejecutar Login y Logout con el Ticket retornado por Login en KMIP 2.0 y 2.1; verificar la limitación de Get Constraints en KMIP 2.0.
 - [x] Ejecutar Interop con Begin, End y Reset ordenados en KMIP 2.0 y 2.1, incluyendo IDs de lote únicos y respuestas TTLV tipadas.
 - [x] Verificar construcción/navegación TTLV y registrar la indisponibilidad de envío TTLV genérico.
 - [x] Añadir un peer TLS local con respuestas deterministas para Discover Versions, Ping, Query y Log; verificar autenticación Username/Password.

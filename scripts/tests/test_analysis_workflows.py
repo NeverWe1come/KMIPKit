@@ -63,6 +63,23 @@ class AnalysisWorkflowTests(unittest.TestCase):
         self.assertIn("advanced-security:", workflow)
         self.assertIn("version: v1.31.1", workflow)
 
+    def test_interop_workflow_checkouts_do_not_persist_credentials(self) -> None:
+        for filename in (
+            "interop-c.yml",
+            "interop-java.yml",
+            "interop-python.yml",
+            "interop-rust.yml",
+        ):
+            with self.subTest(workflow=filename):
+                workflow = self.read_workflow(filename)
+                checkout_steps = [
+                    step for step in re.split(r"(?m)^      - ", workflow)
+                    if "uses: actions/checkout@" in step
+                ]
+                self.assertTrue(checkout_steps, f"The {filename} workflow must check out its source.")
+                for step in checkout_steps:
+                    self.assertIn("persist-credentials: false", step)
+
     def test_sonar_automatic_analysis_is_not_duplicated_by_actions(self) -> None:
         self.assertFalse((WORKFLOWS / "sonar.yml").exists())
 

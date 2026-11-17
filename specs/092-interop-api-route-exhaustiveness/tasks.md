@@ -580,3 +580,23 @@ peer validates Batch Count 2 against the two Batch Items. This demonstrates
 that the typed send path derives the count from its items and exposes no count
 override. Its 12 focused checks pass; this does not complete T006/T007/T009 or
 the cross-language matrix.
+
+## Development evidence: C MAC and Sign response TTLV accessors
+
+- Normative scope: OASIS KMIP v2.0 §6.1.31 MAC and §6.1.49 Sign; v2.1
+  §6.1.32 MAC and §6.1.55 Sign. KMIPKIT-0092-FR-003 and FR-005 require the
+  applicable response decode routes to be invoked and checked.
+- Red commit `29a3e1867` extends the focused route test and fails because the
+  installed consumer does not invoke the MAC and Sign generic response TTLV
+  accessors for either protocol version.
+- Green commit `3bbfc5180` invokes both accessors after the existing typed
+  response checks and verifies each returned complete response item has four
+  outer fields. It does not read or record the MAC Data or Signature Data
+  bytes.
+- Refactor commit `01b12cbb7` names the complete response item field count and
+  adds the normative references to the route test.
+- Verification: the focused route test passes for both operations and both
+  versions. Full CTest passes 7/7 in 139.15 seconds. The full matrix report at
+  `01b12cbb7` records 66,736 expected, 42,067 invoked, zero failed, and 24,669
+  pending. It adds the four expected MAC/Sign TTLV decode cells; FR-003/FR-005
+  and the completeness gate remain open.
