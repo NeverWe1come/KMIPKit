@@ -27,6 +27,7 @@ import org.kmipkit.credentials.Credential;
 import org.kmipkit.credentials.CredentialType;
 import org.kmipkit.credentials.DeviceCredential;
 import org.kmipkit.credentials.HashedPasswordCredential;
+import org.kmipkit.credentials.Nonce;
 import org.kmipkit.credentials.UsernameAndPasswordCredential;
 import org.kmipkit.message.ResponseMessage;
 import org.kmipkit.message.RequestMessage;
@@ -426,6 +427,56 @@ class ControlledTlsPeerTest {
                     "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION"),
             new NormativeTarget("test-norm-message-field-message-field-9-13-criticality-indicator",
                     "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-CRITICALITY-INDICATOR"));
+    private static final List<NormativeTarget> SCALAR_REQUEST_MESSAGE_PARSE_TARGETS = List.of(
+            new NormativeTarget("test-norm-message-field-message-field-9-10-server-correlation-value",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-10-SERVER-CORRELATION-VALUE"),
+            new NormativeTarget("test-norm-message-field-message-field-9-12-maximum-response-size",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-12-MAXIMUM-RESPONSE-SIZE"),
+            new NormativeTarget("test-norm-message-field-message-field-9-13-vendor-identification",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-VENDOR-IDENTIFICATION"),
+            new NormativeTarget("test-norm-message-field-message-field-9-15-operation",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-15-OPERATION"),
+            new NormativeTarget("test-norm-message-field-message-field-9-16-protocol-version-major",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-16-PROTOCOL-VERSION-MAJOR"),
+            new NormativeTarget("test-norm-message-field-message-field-9-16-protocol-version-minor",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-16-PROTOCOL-VERSION-MINOR"),
+            new NormativeTarget("test-norm-message-field-message-field-9-2-asynchronous-indicator",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-2-ASYNCHRONOUS-INDICATOR"),
+            new NormativeTarget("test-norm-message-field-message-field-9-20-time-stamp",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-20-TIME-STAMP"),
+            new NormativeTarget("test-norm-message-field-message-field-9-21-unique-batch-item-id",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-21-UNIQUE-BATCH-ITEM-ID"),
+            new NormativeTarget("test-norm-message-field-message-field-9-6-batch-error-continuation-option",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-6-BATCH-ERROR-CONTINUATION-OPTION"),
+            new NormativeTarget("test-norm-message-field-message-field-9-9-client-correlation-value",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-9-CLIENT-CORRELATION-VALUE"));
+    private static final List<NormativeTarget> SCALAR_RESPONSE_MESSAGE_PARSE_TARGETS = List.of(
+            new NormativeTarget("test-norm-message-field-message-field-9-10-server-correlation-value",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-10-SERVER-CORRELATION-VALUE"),
+            new NormativeTarget("test-norm-message-field-message-field-9-13-vendor-identification",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-VENDOR-IDENTIFICATION"),
+            new NormativeTarget("test-norm-message-field-message-field-9-14-nonce-id",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-14-NONCE-ID"),
+            new NormativeTarget("test-norm-message-field-message-field-9-14-nonce-value",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-14-NONCE-VALUE"),
+            new NormativeTarget("test-norm-message-field-message-field-9-15-operation",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-15-OPERATION"),
+            new NormativeTarget("test-norm-message-field-message-field-9-16-protocol-version-major",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-16-PROTOCOL-VERSION-MAJOR"),
+            new NormativeTarget("test-norm-message-field-message-field-9-16-protocol-version-minor",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-16-PROTOCOL-VERSION-MINOR"),
+            new NormativeTarget("test-norm-message-field-message-field-9-17-result-message",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-17-RESULT-MESSAGE"),
+            new NormativeTarget("test-norm-message-field-message-field-9-18-result-reason",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-18-RESULT-REASON"),
+            new NormativeTarget("test-norm-message-field-message-field-9-19-result-status",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-19-RESULT-STATUS"),
+            new NormativeTarget("test-norm-message-field-message-field-9-20-time-stamp",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-20-TIME-STAMP"),
+            new NormativeTarget("test-norm-message-field-message-field-9-21-unique-batch-item-id",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-21-UNIQUE-BATCH-ITEM-ID"),
+            new NormativeTarget("test-norm-message-field-message-field-9-9-client-correlation-value",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-9-CLIENT-CORRELATION-VALUE"));
     private static final List<NormativeTarget> BATCH_ITEM_FIELD_TARGETS = List.of(
             new NormativeTarget("test-norm-message-field-message-field-8-6-batch-item",
                     "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM"),
@@ -688,6 +739,8 @@ class ControlledTlsPeerTest {
         String requestTreeHash = normalizedTreeSha256(queryOperation);
         int typedTagIdentityEventCount = 0;
         int booleanFieldRouteEventCount = 0;
+        int scalarMessageFieldRouteEventCount = 0;
+        int scalarTypedParserEventCount = 0;
         int itemTypeRouteEventCount = 0;
         Set<String> booleanFieldCaseIds = new java.util.HashSet<>();
 
@@ -708,6 +761,7 @@ class ControlledTlsPeerTest {
             appendGenericDataTypeRouteEvents(events, dataTypeFixtures, dataTypeVectors, protocolVersion);
             appendNormativeMessageFieldGenericRouteEvents(events, protocolVersion);
             appendNormativeRequestMessageParseEvents(events, protocolVersion);
+            scalarTypedParserEventCount += appendScalarMessageFieldTypedParserEvents(events, protocolVersion);
             if ("2.1".equals(protocolVersion)) {
                 appendAsynchronousRequestOperationStructureRouteEvents(events);
                 for (OperationStructureFixture fixture : OPERATION_STRUCTURE_FIXTURES) {
@@ -748,6 +802,16 @@ class ControlledTlsPeerTest {
                 appendLocalCatalogInvocation(events, protocolVersion, invocation);
             }
             assertBooleanFieldGenericRouteEvidence(events, protocolVersion);
+            Set<String> missingScalarMessageFieldCases = missingScalarMessageFieldRouteCaseIds(events,
+                    protocolVersion);
+            List<LocalCatalogRouteChecks.Invocation> scalarMessageFieldInvocations = new ArrayList<>();
+            LocalCatalogRouteChecks.executeScalarMessageFields(readRouteEvidenceCatalog(), protocolVersion,
+                    missingScalarMessageFieldCases, scalarMessageFieldInvocations::add);
+            for (LocalCatalogRouteChecks.Invocation invocation : scalarMessageFieldInvocations) {
+                appendLocalCatalogInvocation(events, protocolVersion, invocation);
+            }
+            scalarMessageFieldRouteEventCount += scalarMessageFieldInvocations.size();
+            assertScalarMessageFieldGenericRouteEvidence(events, protocolVersion);
             byte[] serverCertificatePem = fixture("server-cert.pem");
             byte[] serverPrivateKeyPem = fixture("server-key.pem");
             byte[] clientCertificatePem = fixture("client-cert.pem");
@@ -869,6 +933,8 @@ class ControlledTlsPeerTest {
             appendControlledActivationDateNetworkEvents(events, protocolVersion);
             appendControlledKeyFormatRawResponseRouteEvents(events, protocolVersion);
             appendPendingQueryCorrelationEvidence(events, protocolVersion, serverCertificatePem,
+                    serverPrivateKeyPem, clientCertificatePem, clientPrivateKeyPem);
+            appendCancelResponsePayloadEvidence(events, protocolVersion, serverCertificatePem,
                     serverPrivateKeyPem, clientCertificatePem, clientPrivateKeyPem);
             appendNewAttributeMutationEvents(events, protocolVersion, serverCertificatePem,
                     serverPrivateKeyPem, clientCertificatePem, clientPrivateKeyPem);
@@ -1274,7 +1340,9 @@ class ControlledTlsPeerTest {
                         + structureMemberStructureRouteEventCount + structureMemberByteStringRouteEventCount
                         + structureMemberValueRouteEventCount
                         + batchErrorContinuationEventCount + genericTagEventCount + typedTagIdentityEventCount
-                        + booleanFieldRouteEventCount + itemTypeRouteEventCount
+                        + booleanFieldRouteEventCount + scalarMessageFieldRouteEventCount + itemTypeRouteEventCount
+                        + scalarTypedParserEventCount
+                        + 4 // BEC headers, unique batch IDs, and the asynchronous structure payload.
                         + tagAggregateEventCount
                         + referencedEnumEventCount + referencedEnumAggregateEventCount,
                 report.path("events").size());
@@ -1317,7 +1385,9 @@ class ControlledTlsPeerTest {
                         + STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.size()
                         + STRUCTURE_MEMBER_VALUE_FIXTURES.size() + PROFILE_INFORMATION_CASE_IDS.size()
                         + SERVER_INFORMATION_CASE_IDS.size() + USAGE_LIMITS_CASE_IDS.size() + 3
-                        + booleanFieldCaseIds.size(),
+                        + booleanFieldCaseIds.size()
+                        // Four scalar header cases are already included by the baseline report groups.
+                        + scalarMessageFieldCaseIds(report.path("events")).size() - 4,
                 report.path("case_ids").size());
         List<String> expectedCredentialCaseIds = CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().toList();
         int credentialCaseStart = report.path("case_ids").size() - expectedCredentialCaseIds.size();
@@ -3648,6 +3718,7 @@ class ControlledTlsPeerTest {
             }
         }
         appendBooleanFieldCaseIds(caseIds, events);
+        appendScalarMessageFieldCaseIds(caseIds, events);
         appendItemTypeEnumerationCaseIds(caseIds, events);
         caseIds.add("test-enum-pkcs#11-function");
         caseIds.add("test-enum-pkcs#11-return-code");
@@ -3677,6 +3748,34 @@ class ControlledTlsPeerTest {
         for (String caseId : booleanFieldCases) {
             if (existing.add(caseId)) caseIds.add(caseId);
         }
+    }
+
+    private static void appendScalarMessageFieldCaseIds(ArrayNode caseIds, JsonNode events) {
+        Set<String> existing = new java.util.HashSet<>();
+        for (JsonNode caseId : caseIds) existing.add(caseId.asText());
+        Set<String> scalarMessageFieldCases = scalarMessageFieldCaseIds(events);
+        for (String caseId : scalarMessageFieldCases) {
+            if (existing.add(caseId)) caseIds.add(caseId);
+        }
+    }
+
+    private static Set<String> scalarMessageFieldCaseIds(JsonNode events) {
+        Set<String> scalarMessageFieldCases = new java.util.LinkedHashSet<>();
+        Set<String> constructorRoutes = Set.of(
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.boolean",
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.bytestring",
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.datetime",
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.integer",
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring");
+        for (JsonNode event : events) {
+            String caseId = event.path("case_id").asText();
+            if (caseId.startsWith("test-norm-message-field-message-field-9-")
+                    && constructorRoutes.contains(event.path("route_id").asText())) {
+                scalarMessageFieldCases.add(caseId);
+            }
+        }
+        return scalarMessageFieldCases;
     }
 
     private static void appendItemTypeEnumerationCaseIds(ArrayNode caseIds, JsonNode events) {
@@ -3911,6 +4010,49 @@ class ControlledTlsPeerTest {
         }
     }
 
+    private static void assertScalarMessageFieldGenericRouteEvidence(JsonNode events, String version)
+            throws Exception {
+        JsonNode catalog = readRouteEvidenceCatalog();
+        Map<String, JsonNode> targets = new HashMap<>();
+        for (JsonNode target : catalog.path("normative_targets")) {
+            targets.put(target.path("target_id").asText(), target);
+        }
+        Map<String, String> constructorRoutes = Map.of(
+                "Boolean", "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.boolean",
+                "Byte String", "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.bytestring",
+                "Date-Time", "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.datetime",
+                "Enumeration", "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
+                "Integer", "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.integer",
+                "Text String", "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring",
+                "Text String (with usage limited to alphanumeric, underscore and period – i.e. [A-Za-z0-9_.])",
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring");
+        List<String> commonRoutes = List.of("java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode");
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            JsonNode requires = testCase.path("requires");
+            if (!"message_field".equals(requires.path("target_kind").asText())
+                    || !"local_model".equals(testCase.path("execution").path("mode").asText())
+                    || !appliesToVersion(testCase, version)) continue;
+            String targetId = requires.path("normative_target_id").asText();
+            JsonNode target = targets.get(targetId);
+            if (target == null) continue;
+            String encoding = requires.path("source_encoding").asText(
+                    target.path("source_encoding").asText());
+            String constructorRoute = constructorRoutes.get(encoding);
+            if (constructorRoute == null) continue;
+            String caseId = testCase.path("case_id").asText();
+            List<String> requiredRoutes = new ArrayList<>();
+            requiredRoutes.add(constructorRoute);
+            requiredRoutes.addAll(commonRoutes);
+            for (String route : requiredRoutes) {
+                JsonNode event = findRouteEvent(events, caseId, route, version, targetId);
+                assertEquals("passed", event.path("status").asText(), caseId + " / " + route);
+                assertEquals(1, event.path("invocation_count").asInt(), caseId + " / " + route);
+            }
+        }
+    }
+
     private static Set<String> missingBooleanFieldRouteCaseIds(JsonNode events, String version) throws Exception {
         JsonNode catalog = readRouteEvidenceCatalog();
         Map<String, JsonNode> targets = new HashMap<>();
@@ -3945,6 +4087,63 @@ class ControlledTlsPeerTest {
             }
         }
         return missing;
+    }
+
+    private static Set<String> missingScalarMessageFieldRouteCaseIds(JsonNode events, String version)
+            throws Exception {
+        JsonNode catalog = readRouteEvidenceCatalog();
+        Map<String, JsonNode> targets = new HashMap<>();
+        for (JsonNode target : catalog.path("normative_targets")) {
+            targets.put(target.path("target_id").asText(), target);
+        }
+        Set<String> missing = new java.util.LinkedHashSet<>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            JsonNode requires = testCase.path("requires");
+            if (!"message_field".equals(requires.path("target_kind").asText())
+                    || !"local_model".equals(testCase.path("execution").path("mode").asText())
+                    || !appliesToVersion(testCase, version)) continue;
+            String targetId = requires.path("normative_target_id").asText();
+            JsonNode target = targets.get(targetId);
+            if (target == null) continue;
+            String encoding = requires.path("source_encoding").asText(
+                    target.path("source_encoding").asText());
+            if (!isSupportedScalarMessageFieldEncoding(encoding)) continue;
+            String caseId = testCase.path("case_id").asText();
+            List<String> requiredRoutes = scalarMessageFieldRoutes(encoding);
+            int present = 0;
+            for (String route : requiredRoutes) {
+                if (hasRouteEvent(events, caseId, route, version, targetId)) present++;
+            }
+            if (present == 0) {
+                missing.add(caseId);
+            } else {
+                assertEquals(requiredRoutes.size(), present,
+                        "Scalar message field route evidence must be complete before reuse for " + caseId);
+            }
+        }
+        return missing;
+    }
+
+    private static boolean isSupportedScalarMessageFieldEncoding(String encoding) {
+        return List.of("Boolean", "Byte String", "Date-Time", "Enumeration", "Integer", "Text String",
+                "Text String (with usage limited to alphanumeric, underscore and period – i.e. [A-Za-z0-9_.])")
+                .contains(encoding);
+    }
+
+    private static List<String> scalarMessageFieldRoutes(String encoding) {
+        String constructor = switch (encoding) {
+            case "Boolean" -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.boolean";
+            case "Byte String" -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.bytestring";
+            case "Date-Time" -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.datetime";
+            case "Enumeration" -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration";
+            case "Integer" -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.integer";
+            case "Text String",
+                    "Text String (with usage limited to alphanumeric, underscore and period – i.e. [A-Za-z0-9_.])"
+                    -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring";
+            default -> throw new IllegalArgumentException("Unsupported scalar message field encoding: " + encoding);
+        };
+        return List.of(constructor, "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item", "java.generic-ttlv.ttlv_codec.decode");
     }
 
     private static int expectedTagAggregateEventCount() throws Exception {
@@ -4317,6 +4516,27 @@ class ControlledTlsPeerTest {
         return structure(0x42007b, header, structure(0x42000f, fields.toArray(byte[][]::new)));
     }
 
+    private static byte[] asynchronousBatchResponse(byte[] correlation, int protocolMinorVersion)
+            throws Exception {
+        byte[] version = structure(0x420069,
+                item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(protocolMinorVersion)));
+        byte[] header = structure(0x42007a, version,
+                item(0x420092, 9, longBytes(1)), item(0x42000d, 2, intBytes(2)));
+        byte[] pendingItem = structure(0x42000f,
+                item(0x42005c, 5, intBytes(0x18)),
+                item(0x420093, 8, "item-0".getBytes(StandardCharsets.US_ASCII)),
+                item(0x42007f, 5, intBytes(2)),
+                item(0x420006, 8, correlation), structure(0x42007c));
+        byte[] queryPayload = structure(0x42007c,
+                item(0x42005c, 5, intBytes(0x3b)), profileInformationWire(),
+                serverInformationWire(), structure(0x42015f));
+        byte[] successfulItem = structure(0x42000f,
+                item(0x42005c, 5, intBytes(0x18)),
+                item(0x420093, 8, "item-1".getBytes(StandardCharsets.US_ASCII)),
+                item(0x42007f, 5, intBytes(0)), queryPayload, messageExtensionWire());
+        return structure(0x42007b, header, pendingItem, successfulItem);
+    }
+
     private static byte[] requestCorrelation(byte[] request) {
         for (int offset = 0; offset <= request.length - 8; offset++) {
             if (request[offset] == 0x42 && request[offset + 1] == 0x00 && request[offset + 2] == 0x06
@@ -4425,7 +4645,7 @@ class ControlledTlsPeerTest {
         int protocolMinorVersion = "2.0".equals(protocolVersion) ? 0 : 1;
         SSLServerSocket listener = listener(certificate(serverCertificatePem),
                 privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
-        byte[] responseBytes = asynchronousResponse(0x18, correlation, protocolMinorVersion);
+        byte[] responseBytes = asynchronousBatchResponse(correlation, protocolMinorVersion);
         FutureTask<byte[]> peer = new FutureTask<>(() -> serveOneResponse(listener, responseBytes));
         Thread peerThread = new Thread(peer, "java-validator-pending-query-peer-" + protocolVersion);
         peerThread.setDaemon(true);
@@ -4436,12 +4656,19 @@ class ControlledTlsPeerTest {
         try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile));
                 ClientBatch batch = ClientBatch.create()) {
             batch.asynchronousIndicator(1);
-            ClientBatchItem request = ClientBatchItem.query(new int[] {1}, null);
-            batch.add(request);
+            assertTrue(batch.addErrorContinuationValue(1) == batch,
+                    "Batch Error Continuation Option must remain configured on the active batch.");
+            batch.add(ClientBatchItem.query(new int[] {1}, null)
+                    .withUniqueBatchItemId("item-0".getBytes(StandardCharsets.US_ASCII)));
+            batch.add(ClientBatchItem.query(new int[] {1}, null)
+                    .withUniqueBatchItemId("item-1".getBytes(StandardCharsets.US_ASCII)));
             try (ClientBatchResponse response = driver.executeBatchForEvidence(batch);
-                    ClientBatchItemResult result = response.itemAt(0)) {
+                    ClientBatchItemResult result = response.itemAt(0);
+                    ClientBatchItemResult secondResult = response.itemAt(1)) {
+                assertEquals(2, response.itemCount());
                 assertEquals(2L, result.resultStatus());
                 assertArrayEquals(correlation, result.pendingCorrelationValue().orElseThrow());
+                assertEquals(0L, secondResult.resultStatus());
                 appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID,
                         "java.typed-protocol.function.client_batch_item_response_pending_correlation_value",
                         RESPONSE_BATCH_ITEM_TARGET_ID,
@@ -4467,6 +4694,14 @@ class ControlledTlsPeerTest {
         byte[] requestBytes = peer.get(15, TimeUnit.SECONDS);
         assertEquals(0x18L, requestOperation(requestBytes));
         assertEquals(protocolMinorVersion, requestProtocolMinorVersion(requestBytes));
+        assertTrue(contains(requestBytes, item(0x42000e, 5, intBytes(1))),
+                "The typed ClientBatch option must reach the controlled KMIP request header.");
+        appendRouteEvent(events,
+                "test-norm-message-field-message-field-9-6-batch-error-continuation-option",
+                "java.typed-protocol.function.client_batch_add_error_continuation_value",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-9-6-BATCH-ERROR-CONTINUATION-OPTION",
+                "org.kmipkit.extensions.ClientBatch.addErrorContinuationValue",
+                null, null, "construct", protocolVersion, null, normalizedTreeSha256(requestBytes), null);
     }
 
     private static void appendBatchItemGenericRouteEvents(ArrayNode events, String protocolVersion)
@@ -5005,10 +5240,6 @@ class ControlledTlsPeerTest {
                 assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(),
                         "java.generic-ttlv.ttlv_codec.decode", "decode", protocolVersion);
             }
-            StructureMemberValueFixture operationFixture = structureMemberValueFixture(0x42005c);
-            assertRouteEventRecorded(events, operationFixture.caseId(), operationFixture.targetId(),
-                    "java.typed-protocol.function.client_async_operation_outcome_response_payload_ttlv",
-                    "decode", protocolVersion);
         }
 
         String ephemeralCase = "test-norm-message-field-message-field-8-3-ephemeral";
@@ -5335,9 +5566,11 @@ class ControlledTlsPeerTest {
                 assertStructureMemberValue(requestFields, 2, structureMemberValueFixture(0x420175));
                 assertStructureMemberValue(requestFields, 3, structureMemberValueFixture(0x420174));
             }
-            appendRouteEvent(events, operationFixture.caseId(),
+            appendRouteEvent(events,
+                    "test-norm-operation-structure-operation-structure-7-2-asynchronous-request",
                     "java.typed-protocol.function.client_async_operation_outcome_response_payload_ttlv",
-                    operationFixture.targetId(), "org.kmipkit.extensions.AsyncOperationOutcome.responsePayloadTtlv",
+                    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-2-ASYNCHRONOUS-REQUEST",
+                    "org.kmipkit.extensions.AsyncOperationOutcome.responsePayloadTtlv",
                     null, null, "decode", "2.1", null, null, normalizedTreeSha256(responseBytes));
         } finally {
             listener.close();
@@ -5347,6 +5580,48 @@ class ControlledTlsPeerTest {
         assertEquals(1, requestProtocolMinorVersion(requestBytes));
         assertTrue(contains(requestBytes, item(0x42005c, 5, intBytes(0x18))),
                 "The typed Query Asynchronous Requests filter must reach the controlled KMIP 2.1 peer.");
+    }
+
+    private void appendCancelResponsePayloadEvidence(ArrayNode events, String protocolVersion,
+            byte[] serverCertificatePem, byte[] serverPrivateKeyPem,
+            byte[] clientCertificatePem, byte[] clientPrivateKeyPem) throws Exception {
+        byte[] correlation = {0x43, 0x41, 0x4e, (byte) protocolVersion.charAt(2)};
+        int protocolMinorVersion = "2.0".equals(protocolVersion) ? 0 : 1;
+        SSLServerSocket listener = listener(certificate(serverCertificatePem),
+                privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+        byte[] responseBytes = asynchronousResponse(0x19, correlation, protocolMinorVersion);
+        FutureTask<byte[]> peer = new FutureTask<>(() -> serveOneResponse(listener, responseBytes));
+        Thread peerThread = new Thread(peer, "java-validator-cancel-response-payload-peer-" + protocolVersion);
+        peerThread.setDaemon(true);
+        peerThread.start();
+        Path connectionFile = temporaryDirectory.resolve("cancel-response-payload-" + protocolVersion + ".json");
+        Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
+                clientCertificatePem, clientPrivateKeyPem, true, protocolVersion));
+        try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile));
+                var outcome = driver.executeCancelForResponsePayloadEvidence(correlation);
+                var payload = outcome.responsePayloadTtlv().orElseThrow();
+                TtlvStructureView payloadView = payload.view()) {
+            assertEquals(0x19L, outcome.metadataV1().operation());
+            assertEquals(0L, outcome.metadataV1().resultStatus());
+            assertEquals(2, payloadView.itemCount());
+            try (TtlvItemView correlationField = payloadView.itemAt(0);
+                    Tag correlationTag = correlationField.tag();
+                    var correlationValue = correlationField.value()) {
+                assertEquals(0x420006, correlationTag.raw());
+                assertArrayEquals(correlation, correlationValue.bytes());
+            }
+            try (TtlvItemView cancellationResult = payloadView.itemAt(1);
+                    Tag cancellationResultTag = cancellationResult.tag();
+                    var cancellationResultValue = cancellationResult.value()) {
+                assertEquals(0x420012, cancellationResultTag.raw());
+                assertEquals(1L, cancellationResultValue.enumeration());
+            }
+        } finally {
+            listener.close();
+        }
+        byte[] requestBytes = peer.get(15, TimeUnit.SECONDS);
+        assertEquals(0x19L, requestOperation(requestBytes));
+        assertEquals(protocolMinorVersion, requestProtocolMinorVersion(requestBytes));
     }
 
     private static TtlvValue structureMemberValue(StructureMemberValueFixture fixture) {
@@ -6724,6 +6999,63 @@ class ControlledTlsPeerTest {
         appendEphemeralRequestMessageParseEvent(events, protocolVersion);
     }
 
+    private static int appendScalarMessageFieldTypedParserEvents(ArrayNode events,
+            String protocolVersion) throws Exception {
+        int minorVersion = "2.0".equals(protocolVersion) ? 0 : 1;
+        byte[] requestWire = requestMessageWire(minorVersion);
+        try (RequestMessage request = RequestMessage.fromTtlv(requestMessageStructure(minorVersion))) {
+            assertEquals(2, request.batchItemCount());
+            String treeHash = normalizedTreeSha256(requestWire);
+            for (NormativeTarget field : SCALAR_REQUEST_MESSAGE_PARSE_TARGETS) {
+                appendRouteEvent(events, field.caseId(),
+                        "java.typed-protocol.model.org.kmipkit.message.requestmessage.fromttlv",
+                        field.targetId(), "org.kmipkit.message.RequestMessage.fromTtlv", null, null,
+                        "construct", protocolVersion, null, treeHash, null);
+            }
+        }
+
+        byte[] responseWire = scalarResponseMessageWire(minorVersion);
+        try (ResponseMessage response = ResponseMessage.fromTtlv(scalarResponseMessageStructure(minorVersion))) {
+            assertEquals(1, response.batchItemCount());
+            String treeHash = normalizedTreeSha256(responseWire);
+            for (NormativeTarget field : SCALAR_RESPONSE_MESSAGE_PARSE_TARGETS) {
+                appendRouteEvent(events, field.caseId(),
+                        "java.typed-protocol.model.org.kmipkit.message.responsemessage.fromttlv",
+                        field.targetId(), "org.kmipkit.message.ResponseMessage.fromTtlv", null, null,
+                        "construct", protocolVersion, null, treeHash, null);
+            }
+        }
+
+        CodecLimits limits = CodecLimits.defaults();
+        TtlvStructure nonceStructure = nonceStructure(limits);
+        try (nonceStructure; Nonce nonce = Nonce.fromTtlv(nonceStructure)) {
+            assertEquals(Long.valueOf(2L), nonce.withTtlv(view -> view.itemCount()));
+        }
+        String nonceHash = normalizedTreeSha256(nonceWire());
+        for (NormativeTarget field : List.of(
+                new NormativeTarget("test-norm-message-field-message-field-9-14-nonce-id",
+                        "KMIPKIT-ELEM-MESSAGE-FIELD-9-14-NONCE-ID"),
+                new NormativeTarget("test-norm-message-field-message-field-9-14-nonce-value",
+                        "KMIPKIT-ELEM-MESSAGE-FIELD-9-14-NONCE-VALUE"))) {
+            appendRouteEvent(events, field.caseId(),
+                    "java.typed-protocol.model.org.kmipkit.credentials.nonce.fromttlv",
+                    field.targetId(), "org.kmipkit.credentials.Nonce.fromTtlv", null, null,
+                    "construct", protocolVersion, null, nonceHash, null);
+        }
+
+        byte[] pendingWire = scalarPendingResponseMessageWire(minorVersion);
+        try (ResponseMessage pending = ResponseMessage.fromTtlv(
+                scalarPendingResponseMessageStructure(minorVersion))) {
+            assertEquals(1, pending.batchItemCount());
+            appendRouteEvent(events, "test-norm-message-field-message-field-9-1-asynchronous-correlation-value",
+                    "java.typed-protocol.model.org.kmipkit.message.responsemessage.fromttlv",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-1-ASYNCHRONOUS-CORRELATION-VALUE",
+                    "org.kmipkit.message.ResponseMessage.fromTtlv", null, null,
+                    "construct", protocolVersion, null, normalizedTreeSha256(pendingWire), null);
+        }
+        return SCALAR_REQUEST_MESSAGE_PARSE_TARGETS.size() + SCALAR_RESPONSE_MESSAGE_PARSE_TARGETS.size() + 3;
+    }
+
     private static void appendEphemeralRequestMessageParseEvent(ArrayNode events,
             String protocolVersion) throws Exception {
         int minorVersion = "2.0".equals(protocolVersion) ? 0 : 1;
@@ -6787,7 +7119,14 @@ class ControlledTlsPeerTest {
         version = appendTtlvItem(version, 0x42006b, TtlvValue.Integer(protocolMinorVersion), limits);
         TtlvStructure header = TtlvStructure.create();
         header = appendTtlvItem(header, 0x420069, TtlvValue.structure(version, limits), limits);
+        header = appendTtlvItem(header, 0x420050, TtlvValue.Integer(1_024), limits);
+        header = appendTtlvItem(header, 0x420105,
+                TtlvValue.TextString("client-correlation".getBytes(StandardCharsets.US_ASCII), limits), limits);
+        header = appendTtlvItem(header, 0x420106,
+                TtlvValue.TextString("server-correlation".getBytes(StandardCharsets.US_ASCII), limits), limits);
+        header = appendTtlvItem(header, 0x420007, TtlvValue.Enumeration(1), limits);
         header = appendTtlvItem(header, 0x4200d3, TtlvValue.Boolean(true), limits);
+        header = appendTtlvItem(header, 0x42000e, TtlvValue.Enumeration(2), limits);
         header = appendTtlvItem(header, 0x420010, TtlvValue.Boolean(true), limits);
         header = appendTtlvItem(header, 0x420092, TtlvValue.DateTime(1), limits);
         header = appendTtlvItem(header, 0x42000d, TtlvValue.Integer(2), limits);
@@ -6816,7 +7155,11 @@ class ControlledTlsPeerTest {
         byte[] version = structure(0x420069,
                 item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(protocolMinorVersion)));
         byte[] header = structure(0x420077, version,
-                item(0x4200d3, 6, longBytes(1)), item(0x420010, 6, longBytes(1)),
+                item(0x420050, 2, intBytes(1_024)),
+                item(0x420105, 7, "client-correlation".getBytes(StandardCharsets.US_ASCII)),
+                item(0x420106, 7, "server-correlation".getBytes(StandardCharsets.US_ASCII)),
+                item(0x420007, 5, intBytes(1)), item(0x4200d3, 6, longBytes(1)),
+                item(0x42000e, 5, intBytes(2)), item(0x420010, 6, longBytes(1)),
                 item(0x420092, 9, longBytes(1)), item(0x42000d, 2, intBytes(2)));
         byte[] requestPayload = structure(0x420079, item(0x420074, 5, intBytes(1)));
         byte[] firstRequestItem = structure(0x42000f,
@@ -6928,6 +7271,11 @@ class ControlledTlsPeerTest {
                 "java.typed-protocol.function.client_batch_item_response_unique_batch_item_id",
                 RESPONSE_BATCH_ITEM_TARGET_ID, "org.kmipkit.extensions.ClientBatchItemResult.uniqueBatchItemId",
                 null, null, "decode", protocolVersion, null, null, responseHash);
+        appendRouteEvent(events, "test-norm-message-field-message-field-9-21-unique-batch-item-id",
+                "java.typed-protocol.function.client_batch_item_response_unique_batch_item_id",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-9-21-UNIQUE-BATCH-ITEM-ID",
+                "org.kmipkit.extensions.ClientBatchItemResult.uniqueBatchItemId",
+                null, null, "decode", protocolVersion, null, null, responseHash);
         appendBatchItemFieldRouteEvents(events,
                 "java.typed-protocol.function.client_batch_item_response_unique_batch_item_id",
                 "org.kmipkit.extensions.ClientBatchItemResult.uniqueBatchItemId", protocolVersion, responseHash);
@@ -7006,6 +7354,96 @@ class ControlledTlsPeerTest {
         TtlvStructure message = TtlvStructure.create();
         message = appendTtlvItem(message, 0x42007a, TtlvValue.structure(header, limits), limits);
         return appendTtlvItem(message, 0x42000f, TtlvValue.structure(batchItemStructure(), limits), limits);
+    }
+
+    private static TtlvStructure scalarResponseMessageStructure(int protocolMinorVersion) {
+        CodecLimits limits = CodecLimits.defaults();
+        TtlvStructure message = TtlvStructure.create();
+        message = appendTtlvItem(message, 0x42007a,
+                TtlvValue.structure(scalarResponseHeaderStructure(protocolMinorVersion, limits), limits), limits);
+        TtlvStructure item = TtlvStructure.create();
+        item = appendTtlvItem(item, 0x42005c, TtlvValue.Enumeration(1), limits);
+        item = appendTtlvItem(item, 0x420093,
+                TtlvValue.ByteString("item-0".getBytes(StandardCharsets.US_ASCII), limits), limits);
+        item = appendTtlvItem(item, 0x42007f, TtlvValue.Enumeration(1), limits);
+        item = appendTtlvItem(item, 0x42007e, TtlvValue.Enumeration(2), limits);
+        item = appendTtlvItem(item, 0x42007d,
+                TtlvValue.TextString("operation failed".getBytes(StandardCharsets.US_ASCII), limits), limits);
+        item = appendTtlvItem(item, 0x420051,
+                TtlvValue.structure(messageExtensionStructure(), limits), limits);
+        return appendTtlvItem(message, 0x42000f, TtlvValue.structure(item, limits), limits);
+    }
+
+    private static TtlvStructure scalarPendingResponseMessageStructure(int protocolMinorVersion) {
+        CodecLimits limits = CodecLimits.defaults();
+        TtlvStructure message = TtlvStructure.create();
+        message = appendTtlvItem(message, 0x42007a,
+                TtlvValue.structure(scalarResponseHeaderStructure(protocolMinorVersion, limits), limits), limits);
+        TtlvStructure item = TtlvStructure.create();
+        item = appendTtlvItem(item, 0x42005c, TtlvValue.Enumeration(0x1a), limits);
+        item = appendTtlvItem(item, 0x420093,
+                TtlvValue.ByteString("item-0".getBytes(StandardCharsets.US_ASCII), limits), limits);
+        item = appendTtlvItem(item, 0x42007f, TtlvValue.Enumeration(2), limits);
+        item = appendTtlvItem(item, 0x420006,
+                TtlvValue.ByteString(new byte[] {0x50, 0x45, 0x4e, 0x44}, limits), limits);
+        return appendTtlvItem(message, 0x42000f, TtlvValue.structure(item, limits), limits);
+    }
+
+    private static TtlvStructure scalarResponseHeaderStructure(int protocolMinorVersion, CodecLimits limits) {
+        TtlvStructure version = TtlvStructure.create();
+        version = appendTtlvItem(version, 0x42006a, TtlvValue.Integer(2), limits);
+        version = appendTtlvItem(version, 0x42006b, TtlvValue.Integer(protocolMinorVersion), limits);
+        TtlvStructure header = TtlvStructure.create();
+        header = appendTtlvItem(header, 0x420069, TtlvValue.structure(version, limits), limits);
+        header = appendTtlvItem(header, 0x420092, TtlvValue.DateTime(1_700_000_000L), limits);
+        header = appendTtlvItem(header, 0x4200c8, TtlvValue.structure(nonceStructure(limits), limits), limits);
+        header = appendTtlvItem(header, 0x420105,
+                TtlvValue.TextString("client-correlation".getBytes(StandardCharsets.US_ASCII), limits), limits);
+        header = appendTtlvItem(header, 0x420106,
+                TtlvValue.TextString("server-correlation".getBytes(StandardCharsets.US_ASCII), limits), limits);
+        return appendTtlvItem(header, 0x42000d, TtlvValue.Integer(1), limits);
+    }
+
+    private static TtlvStructure nonceStructure(CodecLimits limits) {
+        TtlvStructure nonce = TtlvStructure.create();
+        nonce = appendTtlvItem(nonce, 0x4200c9,
+                TtlvValue.ByteString(new byte[] {0x4e, 0x49, 0x44}, limits), limits);
+        return appendTtlvItem(nonce, 0x4200ca,
+                TtlvValue.ByteString(new byte[] {0x4e, 0x56, 0x41, 0x4c}, limits), limits);
+    }
+
+    private static byte[] scalarResponseMessageWire(int protocolMinorVersion) throws Exception {
+        return structure(0x42007b, scalarResponseHeaderWire(protocolMinorVersion),
+                structure(0x42000f,
+                        item(0x42005c, 5, intBytes(1)),
+                        item(0x420093, 8, "item-0".getBytes(StandardCharsets.US_ASCII)),
+                        item(0x42007f, 5, intBytes(1)), item(0x42007e, 5, intBytes(2)),
+                        item(0x42007d, 7, "operation failed".getBytes(StandardCharsets.US_ASCII)),
+                        messageExtensionWire()));
+    }
+
+    private static byte[] scalarPendingResponseMessageWire(int protocolMinorVersion) throws Exception {
+        return structure(0x42007b, scalarResponseHeaderWire(protocolMinorVersion),
+                structure(0x42000f,
+                        item(0x42005c, 5, intBytes(0x1a)),
+                        item(0x420093, 8, "item-0".getBytes(StandardCharsets.US_ASCII)),
+                        item(0x42007f, 5, intBytes(2)),
+                        item(0x420006, 8, new byte[] {0x50, 0x45, 0x4e, 0x44})));
+    }
+
+    private static byte[] scalarResponseHeaderWire(int protocolMinorVersion) throws Exception {
+        byte[] version = structure(0x420069, item(0x42006a, 2, intBytes(2)),
+                item(0x42006b, 2, intBytes(protocolMinorVersion)));
+        return structure(0x42007a, version, item(0x420092, 9, longBytes(1_700_000_000L)),
+                nonceWire(), item(0x420105, 7, "client-correlation".getBytes(StandardCharsets.US_ASCII)),
+                item(0x420106, 7, "server-correlation".getBytes(StandardCharsets.US_ASCII)),
+                item(0x42000d, 2, intBytes(1)));
+    }
+
+    private static byte[] nonceWire() throws Exception {
+        return structure(0x4200c8,
+                item(0x4200c9, 8, new byte[] {0x4e, 0x49, 0x44}),
+                item(0x4200ca, 8, new byte[] {0x4e, 0x56, 0x41, 0x4c}));
     }
 
     private static TtlvStructure appendTtlvItem(TtlvStructure structure, int rawTag,

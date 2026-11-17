@@ -23,3 +23,31 @@ The common serializer/response-reader route assertion loads the API manifest
 from the exact `library_commit` recorded in `route-capabilities.json`, so
 functions added to a later release cannot be required from an older installed
 artifact. This is part of the FR-006 artifact provenance check.
+
+## Java selected-scope update — 2026-11-17
+
+- **FR-001/FR-009:** The Java async response-payload accessor is now mapped to
+  the observed KMIP 2.1 Asynchronous Request structure (§7.2 Table 353). The
+  Operation member inside that structure is not mapped to Message Field 9.15.
+  The shared route model also recognizes restricted Text String source
+  encodings when selecting the corresponding generic constructors.
+- **FR-003/FR-005:** Controlled mTLS evidence invokes the Java response-payload
+  accessor for Query Asynchronous Requests in KMIP 2.1 and Cancel in KMIP 2.0
+  and 2.1. The client batch builder's Batch Error Continuation Option is
+  verified on a two-item request in both protocol versions, and the returned
+  Unique Batch Item ID accessor is exercised against controlled responses.
+  Scalar request/response message fields and typed message parsers are also
+  covered by valid 2.0/2.1 fixtures.
+- The selected Java report validates 27,135/27,135 invoked cells with zero
+  failures. The generated ledger has 71,641 planned, 27,135 executed, and
+  44,506 pending cells. This is selected-scope evidence only; FR-002, FR-003,
+  FR-005, and the runtime portion of FR-006 remain open until the full matrix
+  and four-language peer runs are complete.
+- After synchronizing Usage Limits with the latest Java route-matrix parent,
+  the combined selected report validates 27,171/27,171 cells with zero
+  failures. The regenerated ledger records 71,641 planned, 27,171 executed,
+  and 44,470 pending cells. The full matrix remains open.
+- After synchronizing Right Usage Limits with updated #216, the selected report
+  validates 27,179/27,179 cells with zero failures. The generated ledger has
+  71,641 planned, 27,179 executed, and 44,462 pending cells; full-matrix
+  coverage remains open.

@@ -2174,3 +2174,88 @@ The selected report validates 26,965/26,965 cells with zero failures. The
 ledger records 71,649 planned, 26,965 executed, and 44,684 pending cells across
 1,249 case IDs. The full Java suite passes 57/57 tests with zero failures,
 errors, or skips; the matrix remains incomplete and the PR stays WIP.
+
+## Java scalar fields, batch option, and asynchronous payload slice
+
+Red: the new `test_async_response_payload_accessor_claims_only_response_payload_fields`
+failed because name matching assigned the generic asynchronous response-payload
+accessor 12 targets, including Message Field 9.15 Operation. The controlled
+fixture returns the KMIP 2.1 Asynchronous Request operation structure (§7.2
+Table 353); its Operation member is a structure member, not Message Field 9.15.
+The source-backed route override now names only the Asynchronous Request
+structure. The same controlled TLS fixture invokes `AsyncOperationOutcome.responsePayloadTtlv`
+for Query Asynchronous Requests in KMIP 2.1 and Cancel in KMIP 2.0 and 2.1,
+checking the payload values and order.
+
+The controlled pending Query fixture now exercises `ClientBatch.addErrorContinuationValue`
+with two Query items and verifies the option on the serialized request header
+for KMIP 2.0 and 2.1. The first experiment used a single-item batch and failed
+at the existing `SingleItemBatchErrorContinuation` validation; the corrected
+fixture follows the rule that Batch Error Continuation Option requires
+Batch Count greater than one. The response contains both correlated results
+under Continue. The real `ClientBatchItemResult.uniqueBatchItemId()` call is
+also recorded against Unique Batch Item ID (§9.21). These fixtures emit no
+raw protocol body to evidence.
+
+The scalar-field slice adds generic constructor, Item, view, and decoder routes
+for the applicable Boolean, Integer, Enumeration, DateTime, Text String, and
+Byte String header fields, and exercises `RequestMessage.fromTtlv`,
+`ResponseMessage.fromTtlv`, and `Nonce.fromTtlv` on valid KMIP 2.0/2.1
+messages. The vendor-identification `Text String` target is now normalized
+from its restricted source-encoding description, so all four languages retain
+the appropriate generic constructor route.
+
+Verification on 2026-11-17:
+
+```sh
+python3 -m unittest \
+  interop.shared.tests.test_route_capabilities.RouteCapabilitiesTests.test_async_response_payload_accessor_claims_only_response_payload_fields \
+  interop.shared.tests.test_route_capabilities.RouteCapabilitiesTests.test_text_string_constructor_covers_normatively_restricted_text_encoding
+python3 interop/shared/tools/route_capabilities.py --check
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks \
+  --tests org.kmipkit.validator.ControlledTlsPeerTest.controlledQueryProducesPerRouteEvidenceForBothProtocolVersions
+python3 ../../interop/shared/tools/validate_route_evidence.py \
+  --selected-scope --report build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+```
+
+The focused TLS test and both focused shared tests pass. Route validation
+reports 27,135/27,135 selected Java cells invoked, zero failed cells, and a
+complete selected scope. The generated ledger records 71,641 planned cells,
+27,135 executed cells, and 44,506 still pending across the global matrix.
+The normal ledger comparison matches the checked-in reference. This is not
+full KMIPKIT-0092 closure; the remaining global cells are still required, and
+the PR remains WIP.
+
+## Combined Usage Limits stack verification — 2026-11-17
+
+The Usage Limits branch includes the Java route-matrix changes from
+`fc34daee988554cff654e960b0d03e7a47bdd610`; the controlled-peer case list keeps
+both its Usage Limits cases and the added scalar-field cases. The route
+capability manifest and selected-scope ledger were regenerated with the
+repository tools after resolving the merge conflicts.
+
+The selected report validates 27,171/27,171 invoked cells with zero failures.
+The ledger records 71,641 planned, 27,171 executed, and 44,470 pending cells.
+The Java validator suite passes 57/57 tests with zero failures, errors, or
+skips; all 68 shared route-capability tests pass. This remains selected-scope
+evidence, so the full matrix is incomplete and the PR remains WIP.
+
+## Combined Right Usage Limits stack verification — 2026-11-17
+
+The Right Usage Limits branch now includes updated #216 head
+`f3548382b` and the Java route-matrix changes from #187. Its optional
+Right Usage Limits cases remain alongside the Usage Limits and scalar-field
+cases. The route capability manifest and selected-scope ledger were regenerated
+with the repository tools after resolving the stack merge.
+
+The selected report validates 27,179/27,179 invoked cells with zero failures.
+The ledger records 71,641 planned, 27,179 executed, and 44,462 pending cells
+across 1,230 pending case IDs. The Java validator suite passes 57/57 tests and
+the shared route-capability suite passes 68/68 tests, with no failures or
+skips. The full matrix remains incomplete and the PR remains WIP.
