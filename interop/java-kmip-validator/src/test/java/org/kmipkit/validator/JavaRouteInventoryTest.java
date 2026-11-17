@@ -101,7 +101,10 @@ class JavaRouteInventoryTest {
             assertFalse(route.reason().isBlank(), route.operation());
             assertTrue(route.status() != JavaRouteInventory.Status.UNCLASSIFIED, route.operation());
         }
-        assertTrue(inventory.values().stream()
-                .noneMatch(route -> route.status() == JavaRouteInventory.Status.PAYLOAD_ONLY));
+        assertEquals(Set.of(),
+                inventory.values().stream()
+                        .filter(route -> route.status() == JavaRouteInventory.Status.PAYLOAD_ONLY)
+                        .map(JavaRouteInventory.Route::operation)
+                        .collect(Collectors.toSet()));
     }
 }

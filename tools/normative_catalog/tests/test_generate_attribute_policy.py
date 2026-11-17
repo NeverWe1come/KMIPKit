@@ -515,6 +515,27 @@ class AttributePolicyGeneratorCliTests(unittest.TestCase):
             self.assertIn("failed", result.stderr.lower())
             self.assertFalse(output.exists())
 
+    def test_v3_0_attributes_retain_normative_always_required_rules(self) -> None:
+        renderer = _load_renderer(self)
+        versioned_tags = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-versioned-tags.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        rendered = renderer(_load_catalog(), versioned_tags=versioned_tags)
+
+        # Object Class (0x42019E) is mandatory in KMIP 3.0 (§4.40)
+        object_class_record = _attribute_policy_record(self, rendered, "42019E")
+        self.assertIn('source_always_required: "Yes"', object_class_record)
+
+        # Split Key Method (0x42008A) is mandatory in Split Key (§4.64)
+        split_key_method_record = _attribute_policy_record(self, rendered, "42008A")
+        self.assertIn('source_always_required: "Yes"', split_key_method_record)
+
+        # Deactivation Reason (0x4201BC) is optional (§4.21)
+        deactivation_reason_record = _attribute_policy_record(self, rendered, "4201BC")
+        self.assertIn('source_always_required: "No"', deactivation_reason_record)
+
 
 if __name__ == "__main__":
     unittest.main()

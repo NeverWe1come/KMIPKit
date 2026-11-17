@@ -207,6 +207,13 @@ final class OperationFacadeParityMatrixTest {
         response.signResponse();
         response.signatureVerifyResponse();
         response.validateResponse();
+        response.createGroupResponse();
+        response.createUserResponse();
+        response.createCredentialResponse();
+        response.obliterateResponse();
+        response.deactivateResponse();
+        response.encapsulateResponse();
+        response.decapsulateResponse();
     }
 
     private static BatchResponseAccessor result(
