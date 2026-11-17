@@ -59573,10 +59573,12 @@
       "isolation_recipe": {
         "unique_name_prefix": "kmipkit-sign",
         "setup_steps": [
-          "Create Key Pair with Sign usage on Private Key"
+          "Create Key Pair with Sign usage on Private Key",
+          "Activate Private Key"
         ],
         "target_step": "Execute Sign",
         "teardown_steps": [
+          "Revoke Private Key",
           "Destroy Private Key",
           "Destroy Public Key"
         ],
@@ -59645,12 +59647,14 @@
       "isolation_recipe": {
         "unique_name_prefix": "kmipkit-signature-verify",
         "setup_steps": [
-          "Create Key Pair with Verify usage on Public Key"
+          "Create Key Pair with Verify usage on Public Key",
+          "Activate Public Key"
         ],
         "target_step": "Execute Signature Verify",
         "teardown_steps": [
-          "Destroy Private Key",
-          "Destroy Public Key"
+          "Revoke Public Key",
+          "Destroy Public Key",
+          "Destroy Private Key"
         ],
         "normalized_fields": [
           "TimeStamp",

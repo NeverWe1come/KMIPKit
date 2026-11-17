@@ -26,12 +26,12 @@ class NormativeInventoryTests(unittest.TestCase):
         """OASIS KMIP 2.0/2.1 §12.1 restrict Sign and Verify key types."""
         expected = {
             "test-op-sign": (
-                ["Create Key Pair with Sign usage on Private Key"],
-                ["Destroy Private Key", "Destroy Public Key"],
+                ["Create Key Pair with Sign usage on Private Key", "Activate Private Key"],
+                ["Revoke Private Key", "Destroy Private Key", "Destroy Public Key"],
             ),
             "test-op-signature-verify": (
-                ["Create Key Pair with Verify usage on Public Key"],
-                ["Destroy Private Key", "Destroy Public Key"],
+                ["Create Key Pair with Verify usage on Public Key", "Activate Public Key"],
+                ["Revoke Public Key", "Destroy Public Key", "Destroy Private Key"],
             ),
         }
         for case_id, (setup_steps, teardown_steps) in expected.items():

@@ -1507,11 +1507,11 @@ def generate_catalog(normative_catalog_path: Path) -> dict:
         setup = []
         teardown = []
         if name == "Sign":
-            setup = ["Create Key Pair with Sign usage on Private Key"]
-            teardown = ["Destroy Private Key", "Destroy Public Key"]
+            setup = ["Create Key Pair with Sign usage on Private Key", "Activate Private Key"]
+            teardown = ["Revoke Private Key", "Destroy Private Key", "Destroy Public Key"]
         elif name == "Signature Verify":
-            setup = ["Create Key Pair with Verify usage on Public Key"]
-            teardown = ["Destroy Private Key", "Destroy Public Key"]
+            setup = ["Create Key Pair with Verify usage on Public Key", "Activate Public Key"]
+            teardown = ["Revoke Public Key", "Destroy Public Key", "Destroy Private Key"]
         elif name not in {"Create", "Create Key Pair", "Create Split Key", "Register", "Import", "Locate"}:
             setup = ["Create unique SymmetricKey"]
             teardown = ["Revoke SymmetricKey", "Destroy SymmetricKey"]

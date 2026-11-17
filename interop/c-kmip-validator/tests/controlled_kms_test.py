@@ -108,7 +108,22 @@ def response(operations: tuple[int, ...], protocol_minor: int,
         if result_statuses is not None:
             result_status = result_statuses[item_index]
             result_reason = result_reasons[item_index] if result_reasons is not None else None
-        if operation == 30:
+        if operations in ((2, 18, 33, 19, 20, 20), (2, 18, 34, 19, 20, 20)):
+            verify = operations[2] == 34
+            target_identifier = b"fixture-public-key-1" if verify else b"fixture-private-key-1"
+            other_identifier = b"fixture-private-key-1" if verify else b"fixture-public-key-1"
+            if item_index == 0:
+                payload_value = tlv(0x420066, 7, b"fixture-private-key-1") + \
+                    tlv(0x42006F, 7, b"fixture-public-key-1")
+            elif item_index == 2 and verify:
+                payload_value = tlv(0x420094, 7, target_identifier) + enumeration(0x42009B, 1)
+            elif item_index == 2:
+                payload_value = tlv(0x420094, 7, target_identifier) + \
+                    tlv(0x4200C3, 8, bytes(256))
+            else:
+                response_identifier = other_identifier if item_index == 5 else target_identifier
+                payload_value = tlv(0x420094, 7, response_identifier)
+        elif operation == 30:
             payload_value = tlv(
             0x420069, 1,
             integer(0x42006A, 2) + integer(0x42006B, protocol_minor),
@@ -478,6 +493,8 @@ def main() -> int:
     expected_operations += (1, 18, 32, 19, 20)
     expected_operations += (1, 18, 35, 19, 20)
     expected_operations += (1, 18, 36, 19, 20)
+    expected_operations += (2, 18, 33, 19, 20, 20)
+    expected_operations += (2, 18, 34, 19, 20, 20)
     expected_operations += stop_on_first_failure_batch
     expected_operations += (1, 25)
     expected_cases += ("test-op-cancel",)
@@ -517,6 +534,7 @@ def main() -> int:
     expected_cases += ("test-op-decrypt",)
     expected_cases += ("test-op-mac",)
     expected_cases += ("test-op-mac-verify",)
+    expected_cases += ("test-op-sign", "test-op-signature-verify")
     expected_cases += ("test-batch-stop-on-first-failure",)
     expected_cases += ("test-neg-destroy-active-without-revoke",)
     expected_cases += ("test-op-add-attribute",)
@@ -694,6 +712,20 @@ def main() -> int:
                                         "isolated MAC Verify batch omitted or duplicated a unique item ID"
                                     )
                                 response_item_ids = expected_mac_verify_item_ids
+                            if operations in ((2, 18, 33, 19, 20, 20), (2, 18, 34, 19, 20, 20)):
+                                expected_signature_item_ids = (
+                                    (b"sign-create-pair", b"sign-activate", b"sign-target",
+                                     b"sign-revoke", b"sign-destroy-private", b"sign-destroy-public")
+                                    if operations[2] == 33 else
+                                    (b"verify-create-pair", b"verify-activate", b"verify-target",
+                                     b"verify-revoke", b"verify-destroy-public", b"verify-destroy-private")
+                                )
+                                if any(request.count(tlv(0x420093, 8, item_id)) != 1
+                                       for item_id in expected_signature_item_ids):
+                                    raise AssertionError(
+                                        "signature key-pair batch omitted or duplicated a unique item ID"
+                                    )
+                                response_item_ids = expected_signature_item_ids
                             if operations == stop_on_first_failure_batch:
                                 if (request.count(integer(0x42000D, 2)) != 1 or
                                         request.count(tlv(0x420094, 7, b"missing-key")) != 1 or
