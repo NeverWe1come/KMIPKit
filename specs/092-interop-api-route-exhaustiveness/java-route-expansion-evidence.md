@@ -1849,3 +1849,38 @@ ledger records 71,649 planned, 26,833 executed, and 44,816 pending cells across
 The complete Java validator Gradle suite passes 57/57 tests with zero failures,
 errors, or skips. The selected-scope report, generated ledger refresh, normal
 ledger comparison, and `git diff --check` all pass.
+
+## Java Item Type individual value cases
+
+Red commit `875ccfa80` changes the focused fixture expectation so each of the
+11 catalogued Item Type values must emit routes under its individual normative
+case ID as well as under the aggregate. It fails while the fixture emits only
+the aggregate. Green commit `57c6b2160` maps each value target to its unique
+catalog case, emits the four generic TTLV Enumeration routes under both case
+IDs, and adds the new individual IDs to the controlled report scope.
+
+Verification:
+
+```sh
+TMPDIR="$PWD/build/java-temp" \
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+bash ../../bindings/java/gradlew \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test \
+  --tests org.kmipkit.validator.LocalCatalogRouteChecksTest \
+  --tests org.kmipkit.validator.ControlledTlsPeerTest.controlledQueryProducesPerRouteEvidenceForBothProtocolVersions
+TMPDIR="$PWD/build/java-temp" \
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+bash ../../bindings/java/gradlew -PkmipkitMavenRepo="$PWD/build/maven-repository" test
+python3 interop/shared/tools/validate_route_evidence.py \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --selected-scope --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+```
+
+The selected report validates 26,921/26,921 invoked cells with zero failures;
+the ledger contains 71,649 planned, 26,921 executed, and 44,728 pending cells
+across 1,254 case IDs. The complete Java validator suite passes 57/57 tests
+with zero failures, errors, or skips. The full matrix remains incomplete and
+the PR stays WIP.

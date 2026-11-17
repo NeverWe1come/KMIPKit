@@ -257,3 +257,21 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
 - Full-suite verification: the Java validator Gradle suite passes 57/57 tests
   with zero failures, errors, or skips. The selected-scope validator and both
   ledger comparison commands pass; `git diff --check` passes.
+
+## Development evidence: Java Item Type individual value cases
+
+- Red commit `875ccfa80` requires the 11 catalogued Item Type values to emit
+  generic TTLV route evidence under their individual normative case IDs as
+  well as the aggregate. The focused local test fails because only the
+  aggregate has evidence.
+- Green commit `57c6b2160` associates each catalog value with its unique
+  normative test case, emits the four applicable routes for both case levels,
+  and includes the individual IDs in the controlled report scope. The generated
+  route ledger is refreshed from the accepted report, not edited by hand.
+- Verification: the focused local and controlled-TLS tests pass; the
+  selected-scope validator accepts 26,921/26,921 cells with zero failures and
+  both ledger comparisons pass. The full Java validator suite passes 57/57
+  tests with zero failures, errors, or skips; `git diff --check` passes.
+- The matrix remains incomplete at 26,921/71,649 executed and 44,728 pending
+  cells across 1,254 case IDs. T006, T007, and T009 remain open; the PR stays
+  WIP.
