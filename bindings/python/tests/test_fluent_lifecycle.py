@@ -33,11 +33,18 @@ def test_fluent_lifecycle_builds_typed_batch_items() -> None:
                 request.recover(identifier).build(),
             ]
             with extensions.RevocationReason.create(1, "scheduled rotation") as reason:
-                builder = request.revoke(identifier, reason)
+                builder = (
+                    request.revoke(reason.raw_code, reason.message)
+                    .unique_identifier(identifier)
+                )
                 assert "scheduled rotation" not in repr(builder)
                 with pytest.raises(errors.KmipKitError):
-                    request.revoke(None, reason)  # type: ignore[arg-type]
-                revoke = request.revoke(identifier, reason).build()
+                    request.revoke(1).unique_identifier(object())  # type: ignore[arg-type]
+                revoke = (
+                    request.revoke(reason.raw_code, reason.message)
+                    .unique_identifier(identifier)
+                    .build()
+                )
                 items.append(revoke)
             try:
                 assert [item.operation for item in items] == [0x12, 0x15, 0x08, 0x16, 0x13]
@@ -47,8 +54,7 @@ def test_fluent_lifecycle_builds_typed_batch_items() -> None:
 
 
 def test_lifecycle_builders_validate_and_reject_invalid_arguments() -> None:
-    with pytest.raises(errors.KmipKitError):
-        fluent.Request(None)  # type: ignore[arg-type]
+    fluent.Request(None)
     request = fluent.Request(object())  # type: ignore[arg-type]
     identifier = extensions.UniqueIdentifier.text_string("lifecycle-target")
     with pytest.raises(errors.KmipKitError):
@@ -73,13 +79,13 @@ def test_lifecycle_builders_validate_and_reject_invalid_arguments() -> None:
                     locate.execute(limits)
 
             with extensions.RevocationReason.create(1, "scheduled rotation") as reason:
-                revoke = request.revoke(identifier, reason)
+                revoke = request.revoke(reason.raw_code, reason.message).unique_identifier(identifier)
                 revoke.with_options(client.RequestOptions()).asynchronous_indicator(0)
                 revoke.validate()
                 item = revoke.to_batch_item()
                 item.close()
                 with pytest.raises(errors.KmipKitError):
-                    request.revoke(identifier, None)  # type: ignore[arg-type]
+                    request.revoke(1, object())  # type: ignore[arg-type]
                 with pytest.raises(errors.KmipKitError):
                     revoke.with_options(object())  # type: ignore[arg-type]
                 with pytest.raises(errors.KmipKitError):
@@ -129,6 +135,10 @@ def test_direct_lifecycle_helpers_forward_optional_arguments(
 
         def compromise_occurrence_date(self, value: int) -> Builder:
             self.calls.append(("compromise_occurrence_date", value))
+            return self
+
+        def unique_identifier(self, value: object) -> Builder:
+            self.calls.append(("unique_identifier", value))
             return self
 
         def execute(self, limits: object) -> object:
@@ -188,11 +198,14 @@ def test_direct_lifecycle_helpers_forward_optional_arguments(
     assert any(name == "storage_status_mask" for name, _ in request.builders[3].calls)
     assert any(name == "object_group_member" for name, _ in request.builders[3].calls)
     assert any(name == "compromise_occurrence_date" for name, _ in request.builders[4].calls)
+    assert any(name == "unique_identifier" for name, _ in request.builders[4].calls)
 
 
 def test_fluent_and_direct_lifecycle_helpers_roundtrip_over_mtls() -> None:
     operations = (0x12, 0x15, 0x08, 0x16, 0x13) * 2
-    port, observations, peer_failures, peer = _start_lifecycle_peer(operations)
+    port, observations, peer_failures, peer = _start_lifecycle_peer(
+        operations, response_identifier=b"lifecycle-target"
+    )
     registry = extensions.create_client_extension_registry(
         (), extensions.default_extension_registry_limits()
     )
@@ -214,7 +227,11 @@ def test_fluent_and_direct_lifecycle_helpers_roundtrip_over_mtls() -> None:
                         kmip_client.request().recover(identifier),
                     ]
                     with extensions.RevocationReason.create(1, "scheduled rotation") as reason:
-                        builders.append(kmip_client.request().revoke(identifier, reason))
+                        builders.append(
+                            kmip_client.request().revoke(
+                                reason.raw_code, reason.message
+                            ).unique_identifier(identifier)
+                        )
                     for builder in builders:
                         results.append(builder.execute(limits))
                     results.extend(

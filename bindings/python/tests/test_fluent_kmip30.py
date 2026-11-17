@@ -52,8 +52,10 @@ def test_create_credential_infers_type_from_closed_object_alternative() -> None:
 
 
 def test_request_rejects_invalid_client_before_creating_operation_handles() -> None:
-    with pytest.raises(errors.InvalidInputError):
-        fluent.Request(None)  # type: ignore[arg-type]
+    builder = fluent.Request(None).create_symmetric_key()
+    with ttlv.codec_limits_defaults() as limits:
+        with pytest.raises(errors.InvalidInputError):
+            builder.execute(limits)
 
 
 def test_hashed_password_wipes_first_copy_if_second_copy_fails(monkeypatch: pytest.MonkeyPatch) -> None:
