@@ -1,8 +1,8 @@
 //! Fake-transport Ping behavior derived from OASIS KMIP v2.1 §6.1.36,
 //! Tables 271–272. These tests are not official fixture passes.
 
-use kmipkit_test_support::ExchangeScript;
 use kmipkit_protocol::ProtocolVersion;
+use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::{RequestDeliveryState, RequestOptions};
 use kmipkit_ttlv::ValueView;
 use kmipkit_ttlv::codec::{CodecLimits, decode_with_limits};
@@ -153,8 +153,7 @@ fn malformed_ping_response_is_rejected_after_one_exchange() {
 
 #[test]
 fn fluent_ping_builder_builds_the_existing_typed_request_and_batch_item() {
-    let (mut client, transport, _) =
-        client_for(ExchangeScript::FailBeforeWrite);
+    let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
 
     let builder = client.request().ping();
     builder
@@ -226,8 +225,7 @@ fn fluent_ping_builder_preserves_pending_without_follow_up() {
 
 #[test]
 fn fluent_ping_builder_rejects_kmip_2_0_before_exchange() {
-    let (mut client, transport, _) =
-        client_for(ExchangeScript::FailBeforeWrite);
+    let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
 
     let error = client
         .request()

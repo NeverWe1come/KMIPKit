@@ -1115,3 +1115,25 @@
   and regenerated the public API projections. This keeps the owner catalog's
   exact-evidence check aligned with the operation inventory after the builder
   tests landed. The API and fluent inventory generators both pass `--check`.
+
+## Rust Ping fluent builder slice
+
+### Red
+
+- Commit `801ae9b78` defines construction, local validation, typed build and
+  batch conversion, one-exchange Success, explicit Pending correlation, and
+  KMIP 2.0 rejection before exchange (OASIS KMIP v2.1 §6.1.36, Tables 271–272).
+- Reproduced with `cargo test --locked -p kmipkit-client --lib
+  ping_execution_tests`: compilation failed with five E0599 diagnostics because
+  `RequestBuilder::ping` did not exist.
+
+### Green
+
+- Added the Rust-only `PingBuilder` around the existing empty `PingRequest`.
+  Execution uses `ClientRequest::Ping` and the private shared typed exchange
+  path, preserving typed Success/Pending and the existing version gate.
+- `cargo test --locked -p kmipkit-client --lib ping_execution_tests` passes
+  all eight Ping tests. No transport, decoder, or generic-send API was added.
+- This slice remains WIP pending C, Java, and Python fluent builder parity and
+  exact-head CI verification. It does not close operation-wide O001/O002 or
+  FR-011 parity.

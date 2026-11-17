@@ -12,10 +12,10 @@ use kmipkit_protocol::{
     DecryptRequest, DeleteAttributeRequest, DestroyRequest, EncryptRequest,
     GetAttributeListRequest, GetAttributesRequest, GetRequest, HashRequest, LocateRequest,
     MacRequest, MacVerifyRequest, ManagedObject, NewAttribute, ObjectGroupMember, ObjectType,
-    OpaqueObjectContext, OperationData, RecertifyRequest, RecoverRequest, RegisterRequest,
-    RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest, SecretBytes,
-    SetAttributeRequest, SignRequest, SignatureVerifyRequest, SplitKeyMethod, StorageStatusMask,
-    UniqueIdentifier, ValidateKmipRequest,
+    OpaqueObjectContext, OperationData, PingRequest, RecertifyRequest, RecoverRequest,
+    RegisterRequest, RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest,
+    SecretBytes, SetAttributeRequest, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
+    StorageStatusMask, UniqueIdentifier, ValidateKmipRequest,
 };
 use kmipkit_transport::{RequestDeliveryState, RequestOptions};
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
@@ -367,6 +367,85 @@ impl<'a> RequestBuilder<'a> {
     #[must_use]
     pub fn hash(self) -> HashBuilder<'a> {
         HashBuilder::new(self.client)
+    }
+
+    /// Begins an empty typed Ping request (OASIS KMIP v2.1 §6.1.36).
+    #[must_use]
+    pub fn ping(self) -> PingBuilder<'a> {
+        PingBuilder {
+            client: self.client,
+            options: None,
+            asynchronous_indicator: None,
+        }
+    }
+}
+
+/// A fluent builder for the empty Ping payload in OASIS KMIP v2.1 §6.1.36,
+/// Table 271. Execution preserves the existing typed result and Pending outcome.
+pub struct PingBuilder<'a> {
+    client: &'a mut Client,
+    options: Option<RequestOptions>,
+    asynchronous_indicator: Option<u32>,
+}
+
+impl PingBuilder<'_> {
+    /// Sets exchange-local options without changing client policy.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.options = Some(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.asynchronous_indicator = Some(value);
+        self
+    }
+
+    /// Validates the typed empty payload without sending it.
+    ///
+    /// Protocol-version eligibility is checked by the client before sending.
+    ///
+    /// # Errors
+    /// Returns [`FluentBuildError::InvalidRequest`] if typed validation fails.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        validate_fluent_request(&PingRequest::new())
+    }
+
+    /// Builds the empty typed Ping request without sending it.
+    #[must_use]
+    pub const fn build(self) -> PingRequest {
+        PingRequest::new()
+    }
+
+    /// Converts the empty request to a typed batch item.
+    ///
+    /// Exchange options and the asynchronous indicator belong to the batch
+    /// header and are not retained in an individual batch item.
+    #[must_use]
+    pub fn to_batch_item(self) -> ClientBatchItem {
+        ClientBatchItem::new(ClientRequest::Ping(self.build()))
+    }
+
+    /// Executes at most one exchange through the existing typed client path.
+    ///
+    /// Pending preserves its correlation value without a follow-up or retry.
+    ///
+    /// # Errors
+    /// Returns the existing sanitized validation, protocol, or transport error
+    /// with its request-delivery evidence. KMIP 2.0 is rejected before sending.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        execute_fluent_request(
+            self.client,
+            ClientRequest::Ping(PingRequest::new()),
+            self.asynchronous_indicator,
+            self.options,
+            limits,
+        )
     }
 }
 
