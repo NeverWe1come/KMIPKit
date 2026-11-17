@@ -57,8 +57,9 @@ use crate::{
     kmipkit_client_batch_item_response_t, kmipkit_client_batch_item_t,
     kmipkit_client_batch_response_t, kmipkit_client_batch_t, kmipkit_client_configuration_t,
     kmipkit_client_extension_registry_t, kmipkit_client_request_message_extension_t,
-    kmipkit_client_t, kmipkit_codec_limits_t, kmipkit_create_key_pair_builder_t,
-    kmipkit_credential_t, kmipkit_credential_validation_error_v1_t, kmipkit_credential_value_t,
+    kmipkit_client_t, kmipkit_codec_limits_t, kmipkit_create_builder_t,
+    kmipkit_create_key_pair_builder_t, kmipkit_credential_t,
+    kmipkit_credential_validation_error_v1_t, kmipkit_credential_value_t,
     kmipkit_credential_view_t, kmipkit_crypto_operation_builder_t,
     kmipkit_cryptographic_parameters_fields_v1_t, kmipkit_cryptographic_parameters_t,
     kmipkit_delete_attribute_builder_t, kmipkit_delete_attribute_request_t,
@@ -119,7 +120,7 @@ use kmipkit_protocol::{
     RevokeRequest, RngRetrieveRequest, RngSeedRequest, SecretBytes, SecretText,
     SetAttributeRequest, SetConstraintsRequest, SetDefaultsRequest, SignRequest,
     SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference, StorageStatusMask, Ticket,
-    UniqueIdentifier, ValidateRequest,
+    UniqueIdentifier, ValidateKmipRequest, ValidateRequest,
 };
 use kmipkit_protocol::{
     AttestationCredential, Authentication, Credential, CredentialType, CredentialValidationError,
@@ -572,6 +573,7 @@ enum Kind {
     ProcessRequest,
     QueryAsyncRequestsRequest,
     SymmetricKeyBuilder,
+    CreateBuilder,
     CreateKeyPairBuilder,
     SetAttributeBuilder,
     AddAttributeBuilder,
@@ -618,6 +620,36 @@ struct CryptoOperationBuilder {
 struct CreateKeyPairBuilderState {
     builder: kmipkit_client::fluent::CreateKeyPairBuilder<'static>,
     asynchronous_indicator: Option<u32>,
+}
+
+struct CreateBuilderState {
+    object_type: Option<ObjectType>,
+    attributes: AttributeSet,
+    protection_storage_masks: Option<Structure>,
+    asynchronous_indicator: Option<u32>,
+}
+
+impl CreateBuilderState {
+    fn build_request(&self) -> FfiResult<CreateRequest> {
+        let object_type = self.object_type.ok_or(ERROR_INVALID_INPUT)?;
+        let mut items = Vec::new();
+        items
+            .try_reserve_exact(self.attributes.len())
+            .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+        for item in self.attributes.as_items() {
+            items.push(item.try_clone().map_err(model_status)?);
+        }
+        let attributes = AttributeSet::try_new(items).map_err(|_| ERROR_INVALID_INPUT)?;
+        let mut request = CreateRequest::new(object_type, attributes);
+        if let Some(masks) = &self.protection_storage_masks {
+            request = request
+                .with_protection_storage_masks(masks.view().try_clone().map_err(model_status)?);
+        }
+        if !request.validate().is_valid() {
+            return Err(ERROR_INVALID_INPUT);
+        }
+        Ok(request)
+    }
 }
 
 struct SetAttributeBuilderState {
@@ -695,6 +727,7 @@ enum HandleValue {
     AttributeSet(Mutex<AttributeSet>),
     BatchItem(Box<ClientBatchItem>),
     SymmetricKeyBuilder(Mutex<Option<kmipkit_client::fluent::CreateSymmetricKeyBuilder<'static>>>),
+    CreateBuilder(Mutex<CreateBuilderState>),
     CreateKeyPairBuilder(Mutex<Option<CreateKeyPairBuilderState>>),
     SetAttributeBuilder(Mutex<Option<SetAttributeBuilderState>>),
     AddAttributeBuilder(Mutex<Option<AddAttributeBuilderState>>),

@@ -95,6 +95,7 @@ fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
             "discover_versions_request_item",
             "ffi_runtime_metadata",
             "fluent_add_attribute_parity",
+            "fluent_create_builder_parity",
             "fluent_create_key_pair_parity",
             "fluent_delete_attribute_parity",
             "fluent_dx_api",

@@ -35,6 +35,34 @@ def test_fluent_request_exposes_locate_and_revoke_builders():
     assert "RevokeBuilder" in fluent.__all__
 
 
+def test_create_builder_requires_object_type_and_builds_a_typed_create_item():
+    with ttlv.ttlv_structure_create() as empty_items:
+        with attribute_operations.AttributeSet.try_new(empty_items) as attributes:
+            builder = fluent.Request(None).create()
+            with pytest.raises(errors.InvalidInputError):
+                builder.validate()
+            with pytest.raises(errors.InvalidInputError):
+                builder.with_asynchronous_indicator(1 << 32)
+            builder.close()
+
+            builder = (
+                fluent.Request(None).create()
+                .object_type(protocol_values.ObjectType.SYMMETRIC_KEY)
+                .attributes(attributes)
+                .protection_storage_masks(empty_items)
+                .with_asynchronous_indicator(protocol_values.AsynchronousIndicator.PROHIBITED)
+                .with_options(client.RequestOptions())
+            )
+            attributes.close()
+            empty_items.close()
+            item = builder.to_batch_item()
+            try:
+                assert item.operation == protocol_values.Operation.CREATE
+            finally:
+                item.close()
+                builder.close()
+
+
 def test_locate_and_revoke_build_typed_items_with_explicit_optional_fields():
     with ttlv.ttlv_structure_create() as empty_items:
         with attribute_operations.AttributeSet.try_new(empty_items) as attributes:

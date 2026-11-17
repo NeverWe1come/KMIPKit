@@ -88,6 +88,42 @@ final class FluentFacadeShapeTest {
                         java.util.List.class));
         assertNotNull(Class.forName("org.kmipkit.fluent.FluentRequest")
                 .getMethod("getAttributeList", org.kmipkit.extensions.UniqueIdentifier.class));
+        assertNotNull(Class.forName("org.kmipkit.fluent.FluentRequest").getMethod("create"));
+        assertNotNull(Class.forName("org.kmipkit.fluent.CreateBuilder")
+                .getMethod("objectType", long.class));
+        assertNotNull(Class.forName("org.kmipkit.fluent.CreateBuilder")
+                .getMethod("attributes", org.kmipkit.extensions.AttributeSet.class));
+        assertNotNull(Class.forName("org.kmipkit.fluent.CreateBuilder")
+                .getMethod("build"));
+        assertNotNull(Class.forName("org.kmipkit.fluent.CreateBuilder")
+                .getMethod("toBatchItem"));
+    }
+
+    @Test
+    void createBuilderRequiresExplicitObjectTypeAndBuildsTypedCreateItem() {
+        try (org.kmipkit.ttlv.TtlvStructure emptyItems =
+                        org.kmipkit.ttlv.TtlvStructure.create();
+                org.kmipkit.extensions.AttributeSet attributes =
+                        org.kmipkit.extensions.AttributeSet.tryNew(emptyItems)) {
+            CreateBuilder incomplete = new CreateBuilder(null);
+            assertThrows(InvalidInputException.class, incomplete::validate);
+            assertThrows(InvalidInputException.class,
+                    () -> incomplete.withAsynchronousIndicator(0x1_0000_0000L));
+
+            CreateBuilder configured = new CreateBuilder(null)
+                    .objectType(org.kmipkit.protocol.KmipValues.ObjectType.SYMMETRIC_KEY)
+                    .attributes(attributes)
+                    .withAsynchronousIndicator(
+                            org.kmipkit.protocol.KmipValues.AsynchronousIndicator.PROHIBITED)
+                    .withOptions(org.kmipkit.extensions.RequestOptions.defaults());
+            try (configured) {
+                attributes.close();
+                emptyItems.close();
+                try (ClientBatchItem item = configured.toBatchItem()) {
+                    assertEquals(org.kmipkit.protocol.KmipValues.Operation.CREATE, item.operation());
+                }
+            }
+        }
     }
 
     @Test

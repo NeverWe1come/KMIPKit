@@ -51,6 +51,44 @@ Masks. Comprueba el resultado KMIP y el identificador devueltos; una respuesta
 correcta no demuestra que el servidor haya aplicado la política de la
 aplicación.
 
+Los bindings de C, Java y Python exponen el mismo builder tipado. En C se pasa
+un Structure TTLV ordenado y se recibe un batch item propio; Java y Python
+reciben un `AttributeSet`, que el binding copia en la request nativa. Por
+ejemplo, Java puede construir el item sin enviarlo:
+
+```java
+try (TtlvStructure directItems = TtlvStructure.create();
+     AttributeSet attributes = AttributeSet.tryNew(directItems);
+     CreateBuilder create = client.request().create()
+         .objectType(KmipValues.ObjectType.SYMMETRIC_KEY)
+         .attributes(attributes)) {
+    create.validate();
+    try (ClientBatchItem item = create.build()) {
+        assert item.operation() == KmipValues.Operation.CREATE;
+    }
+}
+```
+
+Python usa la misma operación y Object Type con argumentos nombrados:
+
+```python
+with ttlv.ttlv_structure_create() as direct_items:
+    with attribute_operations.AttributeSet.try_new(direct_items) as attributes:
+        with client.request().create() as create:
+            create.object_type(protocol_values.ObjectType.SYMMETRIC_KEY)
+            create.attributes(attributes).validate()
+            with create.build() as item:
+                assert item.operation == protocol_values.Operation.CREATE
+```
+
+En C, pasa `KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY` a
+`kmipkit_create_builder_set_object_type`; después llama a
+`kmipkit_create_builder_set_attributes` y
+`kmipkit_create_builder_build_batch_item`; libera el item y el builder con sus
+funciones correspondientes. Los tres bindings ofrecen validación, conversión a
+batch, opciones de intercambio y el Asynchronous Indicator explícito del
+Request Header. Construir el batch item no envía la request.
+
 ## Material de clave en claro
 
 Elige explícitamente el Key Format Type. Para bytes Raw, puedes construir un

@@ -236,6 +236,10 @@ pub struct kmipkit_create_key_pair_builder_t {
     _private: [u8; 0],
 }
 #[repr(C)]
+pub struct kmipkit_create_builder_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
 pub struct kmipkit_set_attribute_builder_t {
     _private: [u8; 0],
 }

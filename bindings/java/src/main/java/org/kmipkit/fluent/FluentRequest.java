@@ -12,6 +12,7 @@ public final class FluentRequest {
         this.client = client;
     }
     public SymmetricKeyBuilder createSymmetricKey() { return new SymmetricKeyBuilder(client); }
+    public CreateBuilder create() { return new CreateBuilder(client); }
     public CreateKeyPairBuilder createKeyPair() { return new CreateKeyPairBuilder(client); }
     public AddAttributeBuilder addAttribute() { return new AddAttributeBuilder(client); }
     public SetAttributeBuilder setAttribute() { return new SetAttributeBuilder(client); }

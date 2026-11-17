@@ -8752,6 +8752,48 @@ int kmipkit_client_abi_c_consumer_checks_fluent_attribute_read_entrypoints(void)
     return 1;
 }
 
+int kmipkit_client_abi_c_consumer_checks_fluent_create_builder(void) {
+    kmipkit_create_builder_t *builder = 0;
+    kmipkit_ttlv_structure_t *attributes = 0;
+    kmipkit_ttlv_structure_t *protection_masks = 0;
+    kmipkit_client_batch_item_t *item = 0;
+    uint32_t operation = 0;
+    int result = 0;
+
+    if (kmipkit_create_builder_create(&builder) != 0 || builder == 0 ||
+        kmipkit_create_builder_validate(builder) == 0) {
+        goto cleanup;
+    }
+    if (kmipkit_ttlv_structure_create(&attributes) != 0 || attributes == 0 ||
+        kmipkit_ttlv_structure_create(&protection_masks) != 0 || protection_masks == 0 ||
+        kmipkit_create_builder_set_attributes(builder, attributes) != 0 ||
+        kmipkit_create_builder_set_protection_storage_masks(builder, protection_masks) != 0) {
+        goto cleanup;
+    }
+    kmipkit_ttlv_structure_release(attributes);
+    attributes = 0;
+    kmipkit_ttlv_structure_release(protection_masks);
+    protection_masks = 0;
+    if (kmipkit_create_builder_set_object_type(
+            builder, KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY) != 0 ||
+        kmipkit_create_builder_set_asynchronous_indicator(
+            builder, KMIPKIT_ENUMERATION_ASYNCHRONOUS_INDICATOR_MANDATORY) != 0 ||
+        kmipkit_create_builder_validate(builder) != 0 ||
+        kmipkit_create_builder_build_batch_item(builder, &item) != 0 || item == 0 ||
+        kmipkit_client_batch_item_operation(item, &operation) != 0 ||
+        operation != KMIPKIT_ENUMERATION_OPERATION_CREATE) {
+        goto cleanup;
+    }
+    result = 1;
+
+cleanup:
+    kmipkit_ttlv_structure_release(attributes);
+    kmipkit_ttlv_structure_release(protection_masks);
+    kmipkit_client_batch_item_release(item);
+    kmipkit_create_builder_release(builder);
+    return result;
+}
+
 int kmipkit_client_abi_c_consumer_executes_fluent_attribute_reads(
     kmipkit_client_t *client, kmipkit_codec_limits_t *limits) {
     static const uint8_t identifier_bytes[] = "attribute-read-key";

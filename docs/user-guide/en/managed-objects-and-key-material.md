@@ -51,6 +51,44 @@ attributes and any Protection Storage Masks explicitly. Inspect the returned
 KMIP result and identifier; a successful response does not establish that the
 server followed application-specific policy.
 
+The C, Java, and Python bindings expose the same typed builder. C callers pass
+an ordered TTLV Structure and receive an owned batch item; Java and Python
+callers pass an `AttributeSet`, which the binding copies into the native
+request. For example, Java can build the item without sending it:
+
+```java
+try (TtlvStructure directItems = TtlvStructure.create();
+     AttributeSet attributes = AttributeSet.tryNew(directItems);
+     CreateBuilder create = client.request().create()
+         .objectType(KmipValues.ObjectType.SYMMETRIC_KEY)
+         .attributes(attributes)) {
+    create.validate();
+    try (ClientBatchItem item = create.build()) {
+        assert item.operation() == KmipValues.Operation.CREATE;
+    }
+}
+```
+
+Python uses the same operation and object type with named arguments:
+
+```python
+with ttlv.ttlv_structure_create() as direct_items:
+    with attribute_operations.AttributeSet.try_new(direct_items) as attributes:
+        with client.request().create() as create:
+            create.object_type(protocol_values.ObjectType.SYMMETRIC_KEY)
+            create.attributes(attributes).validate()
+            with create.build() as item:
+                assert item.operation == protocol_values.Operation.CREATE
+```
+
+In C, pass `KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY` to
+`kmipkit_create_builder_set_object_type`, then call
+`kmipkit_create_builder_set_attributes`, and
+`kmipkit_create_builder_build_batch_item`; release the returned item and builder
+with their matching release functions. All three bindings expose validation,
+batch conversion, exchange options, and the explicit Request Header
+Asynchronous Indicator. Building the batch item does not send a request.
+
 ## Plaintext key material
 
 Choose the Key Format Type explicitly. For Raw key bytes, a typed value can be
