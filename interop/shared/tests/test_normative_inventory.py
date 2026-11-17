@@ -22,6 +22,33 @@ class NormativeInventoryTests(unittest.TestCase):
         cls.source = json.loads(SOURCE_PATH.read_text(encoding="utf-8"))
         cls.targets = cls.catalog.get("normative_targets", [])
 
+    def test_signature_operation_fixtures_use_key_types_allowed_by_usage_masks(self) -> None:
+        """OASIS KMIP 2.0/2.1 §12.1 restrict Sign and Verify key types."""
+        expected = {
+            "test-op-sign": (
+                ["Create Key Pair with Sign usage on Private Key"],
+                ["Destroy Private Key", "Destroy Public Key"],
+            ),
+            "test-op-signature-verify": (
+                ["Create Key Pair with Verify usage on Public Key"],
+                ["Destroy Private Key", "Destroy Public Key"],
+            ),
+        }
+        for case_id, (setup_steps, teardown_steps) in expected.items():
+            with self.subTest(case_id=case_id):
+                case = next(item for item in self.catalog["test_cases"]
+                            if item["case_id"] == case_id)
+                self.assertEqual(case["isolation_recipe"]["setup_steps"], setup_steps)
+                self.assertEqual(case["isolation_recipe"]["teardown_steps"], teardown_steps)
+                self.assertIn(
+                    {"document": "OASIS KMIP 2.0 Specification", "section": "12.1"},
+                    case["normative_refs"],
+                )
+                self.assertIn(
+                    {"document": "OASIS KMIP 2.1 Specification", "section": "12.1"},
+                    case["normative_refs"],
+                )
+
     def test_ephemeral_message_field_preserves_its_boolean_source_encoding(self) -> None:
         """KMIP 2.0 §8.3 Table 358 and KMIP 2.1 §8.3 Table 396 identify Ephemeral as Boolean."""
         target_id = "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-EPHEMERAL"
