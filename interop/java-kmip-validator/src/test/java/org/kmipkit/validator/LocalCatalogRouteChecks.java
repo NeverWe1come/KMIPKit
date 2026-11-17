@@ -41,6 +41,10 @@ final class LocalCatalogRouteChecks {
     static final String BATCH_ORDER_OPTION_CASE_ID =
             "test-norm-message-field-message-field-8-2-batch-order-option";
     static final String BATCH_ORDER_OPTION_TARGET_ID = "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION";
+    static final String ATTESTATION_CAPABLE_CASE_ID =
+            "test-norm-message-field-message-field-8-2-attestation-capable-indicator";
+    static final String ATTESTATION_CAPABLE_TARGET_ID =
+            "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ATTESTATION-CAPABLE-INDICATOR";
 
     private LocalCatalogRouteChecks() { }
 
@@ -646,11 +650,24 @@ final class LocalCatalogRouteChecks {
 
     // OASIS KMIP 2.0/2.1 §9.8 Tables 369/407: Batch Order Option is a Boolean.
     static void executeBatchOrderOption(JsonNode catalog, String version, EvidenceSink sink) throws Exception {
+        executeBooleanMessageField(catalog, version, BATCH_ORDER_OPTION_CASE_ID,
+                BATCH_ORDER_OPTION_TARGET_ID, "Batch Order Option", sink);
+    }
+
+    // OASIS KMIP 2.0/2.1 §9.3 Tables 364/402: Attestation Capable Indicator is a Boolean.
+    static void executeAttestationCapableIndicator(JsonNode catalog, String version, EvidenceSink sink)
+            throws Exception {
+        executeBooleanMessageField(catalog, version, ATTESTATION_CAPABLE_CASE_ID,
+                ATTESTATION_CAPABLE_TARGET_ID, "Attestation Capable Indicator", sink);
+    }
+
+    private static void executeBooleanMessageField(JsonNode catalog, String version, String caseId,
+            String targetId, String name, EvidenceSink sink) throws Exception {
         if (!"2.0".equals(version) && !"2.1".equals(version)) return;
-        JsonNode target = findTarget(catalog, BATCH_ORDER_OPTION_TARGET_ID);
-        assertEquals("Batch Order Option", target.path("name").asText());
+        JsonNode target = findTarget(catalog, targetId);
+        assertEquals(name, target.path("name").asText());
         assertEquals("message_field", target.path("kind").asText());
-        int tagCode = messageFieldTag(catalog, BATCH_ORDER_OPTION_TARGET_ID, version);
+        int tagCode = messageFieldTag(catalog, targetId, version);
         byte[] wire = booleanWire(tagCode, true);
 
         try (TtlvValue value = TtlvValue.Boolean(true);
@@ -672,13 +689,13 @@ final class LocalCatalogRouteChecks {
             assertEquals(TtlvItemType.Boolean, decodedView.itemType());
             assertEquals(true, decodedValue.booleanValue());
         }
-        emitRoute(sink, BATCH_ORDER_OPTION_CASE_ID, BATCH_ORDER_OPTION_TARGET_ID,
+        emitRoute(sink, caseId, targetId,
                 "java.generic-ttlv.ttlv_item.create", "org.kmipkit.ttlv.TtlvItem.create",
                 "construct", wire);
-        emitRoute(sink, BATCH_ORDER_OPTION_CASE_ID, BATCH_ORDER_OPTION_TARGET_ID,
+        emitRoute(sink, caseId, targetId,
                 "java.generic-ttlv.function.ttlv_item_view_from_item", "org.kmipkit.ttlv.TtlvItem.view",
                 "decode", wire);
-        emitRoute(sink, BATCH_ORDER_OPTION_CASE_ID, BATCH_ORDER_OPTION_TARGET_ID,
+        emitRoute(sink, caseId, targetId,
                 "java.generic-ttlv.ttlv_codec.decode", "org.kmipkit.ttlv.TtlvCodec.decode",
                 "decode", wire);
     }

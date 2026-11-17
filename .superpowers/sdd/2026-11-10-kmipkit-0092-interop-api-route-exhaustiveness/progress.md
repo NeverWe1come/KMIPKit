@@ -390,3 +390,86 @@ branches, and the common CI therefore reports a planned matrix only.
 - The ledger is regenerated from the validated report; the full Java matrix
   remains incomplete and no vendor KMS interoperability has been exercised.
   #217 remains WIP.
+- The ledger is regenerated from the validated report; the full matrix remains
+  incomplete and no vendor KMS interoperability has been exercised. #216
+  remains WIP.
+- This adds local-model evidence and does not complete the Java matrix or
+  establish vendor interoperability; the Java PR remains WIP.
+
+## 2026-11-17 Java KMIP 2.0/2.1 Attestation Capable Indicator routes
+
+- `test-norm-message-field-message-field-8-2-attestation-capable-indicator`
+  now completes three generic TTLV routes and the typed
+  `RequestMessage.fromTtlv` route in both protocol versions. OASIS KMIP 2.0
+  §8.2 and §9.3 Table 364 and KMIP 2.1 §8.2 and §9.3 Table 402 define the
+  request-header Boolean; the existing controlled request fixture carries
+  `true` and the typed parser asserts that value.
+- Red: `c40efe3d8` requires all eight exact route/version cells. The focused
+  test failed as intended (`expected 2 route events, got 0`). Its first run
+  exposed a stale installed-artifact manifest pointing to the #217 worktree;
+  reinstalling via `tools/install_artifact.py` restored the pinned artifact
+  before the conclusive Red result.
+- Green: `3271bd8f1` emits the generic Item create, Item view, and decoder
+  events for each version and includes this catalog target in typed request
+  parsing. The focused controlled-peer test passes for both versions.
+- Refactor: `60f4eb8e1` shares the Boolean message-field fixture between this
+  case and Batch Order Option; the focused test passes after the refactor.
+- The full Java suite passes 57/57 tests, with no failures, errors, or skips.
+  Selected-scope validation passes 27,270/27,270 cells with zero failed cells.
+  The regenerated ledger comparison passes; 44,371 cells remain pending across
+  1,218 case IDs in the 71,641-cell matrix. Evidence uses pinned artifact
+  commit `12496d646d11d4069b58bcc88fc76cc619211ec6` with SHA-256
+  `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+- Verification commands:
+
+  ```sh
+  JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+    bash ../../bindings/java/gradlew --no-daemon \
+    -PkmipkitMavenRepo="$PWD/build/maven-repository" test \
+    --tests org.kmipkit.validator.ControlledTlsPeerTest.controlledQueryProducesPerRouteEvidenceForBothProtocolVersions --rerun-tasks
+  JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+    bash ../../bindings/java/gradlew --no-daemon \
+    -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks
+  python3 ../shared/tools/validate_route_evidence.py \
+    --selected-scope --report build/route-execution-evidence.json \
+    --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+    --write-ledger
+  python3 tools/compare_route_ledger.py --refresh-reference
+  python3 tools/compare_route_ledger.py
+  ```
+- This adds local-model evidence; it does not complete the Java matrix or
+  establish interoperability with a vendor KMS. The Java PR remains WIP.
+
+## 2026-11-17 #216 stack sync with Attestation Capable Indicator
+
+- Merged #187 head `912b90a08711fe486c747776e99bd12f5562428c` into the Usage
+  Limits branch. Usage Limits, Rotate Name, Batch Order Option, Attestation
+  Capable Indicator, and other previously recorded route evidence remain
+  present.
+- The complete Java suite passes 57/57 tests, with no failures, errors, or
+  skips. Selected-scope validation passes 27,306/27,306 cells; the generated
+  ledger records 44,335 pending of 71,641 cells across 1,214 case IDs. The
+  comparer passes after the official ledger regeneration.
+- The artifact installer was run in this worktree so the manifest and package
+  JAR locations match. Artifact source commit and digest are
+  `12496d646d11d4069b58bcc88fc76cc619211ec6` and
+  `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+  This remains local fixture evidence; the matrix is incomplete and #216 stays
+  WIP.
+
+## 2026-11-17 #217 stack sync with Attestation Capable Indicator
+
+- Merged #216 head `ab9b014cbff50c059563e75425528f3f09b63d36` into the Right
+  Usage Limits branch. Its Right Usage Limits routes and all accumulated
+  Usage Limits, derivation, Batch Order Option, Rotate Name, Endpoint Role,
+  and Attestation evidence remain present.
+- The full Java suite passes 57/57 tests with no failures, errors, or skips.
+  Selected-scope validation passes 27,314/27,314 cells; the generated ledger
+  records 44,327 pending of 71,641 cells across 1,213 case IDs. Ledger
+  regeneration and comparison pass.
+- The artifact installer was run in this worktree so the manifest and package
+  JAR paths match. Artifact source commit and digest are
+  `12496d646d11d4069b58bcc88fc76cc619211ec6` and
+  `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+  This remains controlled local fixture evidence; the Java matrix is incomplete
+  and #217 stays WIP.
