@@ -463,6 +463,20 @@ branches, and the common CI therefore reports a planned matrix only.
 - Verification commands are recorded in
   `specs/092-interop-api-route-exhaustiveness/java-route-expansion-evidence.md`.
 
+## 2026-11-17 KMIP 3.0 Java/Python branch synchronized with Attestation Type
+
+- Updated the KMIP 3.0 Java/Python branch from #187 head
+  `7647874fb44e9ef0d11ffd65b58cfdd9db43037a`. Its existing builder work is
+  preserved; the Java test suite passes 57/57 tests with no skips or failures.
+- The combined selected-scope report validates 27,336/27,336 cells with zero
+  failed cells. The ledger records 71,641 planned, 27,336 executed, and 44,305
+  pending across 1,210 pending case IDs; the ledger comparer passes. Shared
+  route-capability tests pass 68/68 and the generator check reports 1,507
+  routes. Artifact commit `12496d646d11d4069b58bcc88fc76cc619211ec6`,
+  SHA-256 `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+- This is local-model evidence and does not complete the Java matrix or claim
+  vendor interoperability. PR #213 remains WIP during exact-head CI.
+
 ## 2026-11-17 Java KMIP 2.0/2.1 repeatable Request Header Attestation Type
 
 - OASIS KMIP 2.0/2.1 §8.2 marks Request Header Attestation Type optional and

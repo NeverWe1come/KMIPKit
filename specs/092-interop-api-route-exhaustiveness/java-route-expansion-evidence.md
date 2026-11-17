@@ -2365,3 +2365,19 @@ reference. Shared route-capability tests pass 68/68 and the generator confirms
 1,507 routes. The pinned package digest is
 `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`. This is
 local-model evidence; the matrix remains incomplete and #213 stays WIP.
+
+## KMIP 3.0 Java/Python stack after Attestation Type sync — 2026-11-17
+
+The KMIP 3.0 Java/Python branch now includes #187 head
+`7647874fb44e9ef0d11ffd65b58cfdd9db43037a`; its builder changes remain in
+the branch. The full Java suite passes 57/57 tests with no failures, errors,
+or skips. The selected-scope validator accepts 27,336/27,336 cells with zero
+failed cells. The generated 71,641-cell ledger records 27,336 executed and
+44,305 pending cells across 1,210 pending case IDs, and the ledger comparer
+passes. Shared route-capability tests pass 68/68; the route generator check
+reports 1,507 routes. This remains local-model evidence; the matrix is
+incomplete and #213 stays WIP.
+
+The run uses pinned artifact commit
+`12496d646d11d4069b58bcc88fc76cc619211ec6` and SHA-256
+`504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
