@@ -59,6 +59,7 @@ SIGN_ITEM_IDS = (b'sign-create-pair', b'sign-activate', b'sign-target', b'sign-r
                  b'sign-destroy-private', b'sign-destroy-public')
 SIGNATURE_VERIFY_ITEM_IDS = (b'verify-create-pair', b'verify-activate', b'verify-target',
                              b'verify-revoke', b'verify-destroy-public', b'verify-destroy-private')
+CREATE_KEY_PAIR_ITEM_IDS = (b'create-pair', b'destroy-private', b'destroy-public')
 MAC_TEST_OUTPUT = bytes(range(32))
 CANCEL_CORRELATION_VALUE = b'fixture-cancel-correlation'
 ASYNC_QUERY_CORRELATION_CREATE_COMPLETED = b'fixture-query-create-completed'
@@ -383,6 +384,7 @@ RECIPES = {
     'test-op-mac-verify': ((1, 18, 36, 19, 20), 'mac_verify'),
     'test-op-sign': ((2, 18, 33, 19, 20, 20), 'sign'),
     'test-op-signature-verify': ((2, 18, 34, 19, 20, 20), 'signature_verify'),
+    'test-op-create-key-pair': ((2, 20, 20), 'create_key_pair'),
     'test-op-add-attribute': ((1, 13, 19, 20), 'add_attribute'),
     'test-norm-payload-client-add-attribute-request-20-002': ((1, 13, 19, 20), 'add_attribute'),
     'test-norm-payload-client-add-attribute-request-21-002': ((1, 13, 19, 20), 'add_attribute'),
@@ -944,6 +946,52 @@ def verify_signature_response(response_tree, verify):
             raise ValueError('fixture_sign_response_fields_mismatch')
 
 
+def assert_create_key_pair_request(node):
+    """Check a Create Key Pair request and cleanup of both returned objects."""
+    items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if ([numbers(item, 0x42005C) for item in items] != [[2], [20], [20]] or
+            [byte_string_values(item, 0x420093) for item in items] !=
+            [[item_id] for item_id in CREATE_KEY_PAIR_ITEM_IDS]):
+        raise ValueError('fixture_create_key_pair_batch_mismatch')
+    payloads = [child for child in items[0][2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+    if len(payloads) != 1:
+        raise ValueError('fixture_create_key_pair_payload_missing')
+    fields = payloads[0][2]
+    if [field[0] for field in fields] != [0x420126, 0x420127, 0x420128]:
+        raise ValueError('fixture_create_key_pair_attribute_fields_mismatch')
+    common, private, public = fields
+    if (numbers(common, 0x420028) != [4] or numbers(common, 0x42002A) != [2048] or
+            numbers(private, 0x42002C) != [1] or numbers(public, 0x42002C) != [2]):
+        raise ValueError('fixture_create_key_pair_attributes_mismatch')
+    if [numbers(item, UNIQUE_IDENTIFIER_TAG) for item in items[1:]] != [[5], [6]]:
+        raise ValueError('fixture_create_key_pair_cleanup_identifiers_mismatch')
+
+
+def verify_create_key_pair_response(response_tree):
+    """Check distinct response IDs and exact cleanup identifier mapping."""
+    items = [child for child in response_tree[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if ([numbers(item, 0x42005C) for item in items] != [[2], [20], [20]] or
+            [byte_string_values(item, 0x420093) for item in items] !=
+            [[item_id] for item_id in CREATE_KEY_PAIR_ITEM_IDS] or
+            [numbers(item, 0x42007F) for item in items] != [[0], [0], [0]]):
+        raise ValueError('fixture_create_key_pair_response_lifecycle_mismatch')
+    payloads = [child for child in items[0][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1]
+    if len(payloads) != 1:
+        raise ValueError('fixture_create_key_pair_response_payload_missing')
+    fields = payloads[0][2]
+    private_ids = [field for field in fields if field[0] == 0x420066 and field[1] == 7]
+    public_ids = [field for field in fields if field[0] == 0x42006F and field[1] == 7]
+    if (len(fields) != 2 or len(private_ids) != 1 or len(public_ids) != 1 or
+            private_ids[0][2] != b'fixture-private-key-1' or
+            public_ids[0][2] != b'fixture-public-key-1'):
+        raise ValueError('fixture_create_key_pair_response_identifiers_mismatch')
+    if [text_values(item, UNIQUE_IDENTIFIER_TAG) for item in items[1:]] != [
+            ['fixture-private-key-1'], ['fixture-public-key-1']]:
+        raise ValueError('fixture_create_key_pair_cleanup_mapping_mismatch')
+
+
 def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
                   constructor_variant=None, export_field=None):
     selected_recipe = recipe or RECIPES[case_id]
@@ -969,6 +1017,8 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
         assert_mac_verify_request(node)
     if selected_recipe[1] in ('sign', 'signature_verify'):
         assert_signature_request(node, selected_recipe[1] == 'signature_verify')
+    if selected_recipe[1] == 'create_key_pair':
+        assert_create_key_pair_request(node)
     if (case_id in {
             'test-norm-payload-client-add-attribute-request-20-002',
             'test-norm-payload-client-add-attribute-request-21-002'} and
@@ -3097,6 +3147,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             response_item_ids = SIGN_ITEM_IDS
                                         elif recipe[1] == 'signature_verify':
                                             response_item_ids = SIGNATURE_VERIFY_ITEM_IDS
+                                        elif recipe[1] == 'create_key_pair':
+                                            response_item_ids = CREATE_KEY_PAIR_ITEM_IDS
                                         elif placeholder_chain_recipe:
                                             response_item_ids = (
                                                 (b'placeholder-revoke-cleanup', b'placeholder-destroy-cleanup')
@@ -3425,6 +3477,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         elif recipe[1] in ('sign', 'signature_verify'):
                                             verify_signature_response(
                                                 response_tree, recipe[1] == 'signature_verify')
+                                        elif recipe[1] == 'create_key_pair':
+                                            verify_create_key_pair_response(response_tree)
                                         elif recipe[1] == 'get_usage_allocation_uid_variants':
                                             verify_usage_allocation_identifier_variants(response_tree)
                                         elif reject_this_exchange:

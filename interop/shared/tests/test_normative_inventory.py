@@ -50,7 +50,7 @@ class NormativeInventoryTests(unittest.TestCase):
                 )
 
     def test_create_key_pair_fixture_cleans_up_both_returned_objects(self) -> None:
-        """OASIS KMIP 2.0/2.1 §6.1.8 creates a private and public key object."""
+        """OASIS KMIP 2.0/2.1 §6.1.9 creates a private and public key object."""
         case = next(item for item in self.catalog["test_cases"]
                     if item["case_id"] == "test-op-create-key-pair")
         self.assertEqual([], case["isolation_recipe"]["setup_steps"])
@@ -59,11 +59,11 @@ class NormativeInventoryTests(unittest.TestCase):
             case["isolation_recipe"]["teardown_steps"],
         )
         self.assertIn(
-            {"document": "OASIS KMIP 2.0 Specification", "section": "6.1.8"},
+            {"document": "OASIS KMIP 2.0 Specification", "section": "6.1.9"},
             case["normative_refs"],
         )
         self.assertIn(
-            {"document": "OASIS KMIP 2.1 Specification", "section": "6.1.8"},
+            {"document": "OASIS KMIP 2.1 Specification", "section": "6.1.9"},
             case["normative_refs"],
         )
 

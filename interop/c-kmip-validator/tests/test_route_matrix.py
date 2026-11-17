@@ -3376,7 +3376,7 @@ class RouteMatrixTests(unittest.TestCase):
                             for event in send_events))
 
     def test_create_key_pair_operation_checks_both_identifiers_and_cleanup(self):
-        """OASIS KMIP 2.0/2.1 §6.1.8 returns distinct private and public key identifiers."""
+        """OASIS KMIP 2.0/2.1 §6.1.9 returns distinct private and public key identifiers."""
         from artifact_support import ROOT
         from route_peer import RECIPES, execute_network_cells
 

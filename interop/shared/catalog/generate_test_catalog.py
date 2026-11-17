@@ -1515,6 +1515,8 @@ def generate_catalog(normative_catalog_path: Path) -> dict:
         elif name not in {"Create", "Create Key Pair", "Create Split Key", "Register", "Import", "Locate"}:
             setup = ["Create unique SymmetricKey"]
             teardown = ["Revoke SymmetricKey", "Destroy SymmetricKey"]
+        elif name == "Create Key Pair":
+            teardown = ["Destroy Private Key", "Destroy Public Key"]
         elif name in {"Create", "Create Key Pair", "Create Split Key", "Register", "Import"}:
             teardown = ["Destroy object"]
 

@@ -57190,7 +57190,8 @@
         "setup_steps": [],
         "target_step": "Execute Create Key Pair",
         "teardown_steps": [
-          "Destroy object"
+          "Destroy Private Key",
+          "Destroy Public Key"
         ],
         "normalized_fields": [
           "TimeStamp",

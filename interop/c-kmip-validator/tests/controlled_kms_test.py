@@ -123,6 +123,13 @@ def response(operations: tuple[int, ...], protocol_minor: int,
             else:
                 response_identifier = other_identifier if item_index == 5 else target_identifier
                 payload_value = tlv(0x420094, 7, response_identifier)
+        elif operations == (2, 20, 20):
+            if item_index == 0:
+                payload_value = tlv(0x420066, 7, b"fixture-private-key-1") + \
+                    tlv(0x42006F, 7, b"fixture-public-key-1")
+            else:
+                identifier = b"fixture-private-key-1" if item_index == 1 else b"fixture-public-key-1"
+                payload_value = tlv(0x420094, 7, identifier)
         elif operation == 30:
             payload_value = tlv(
             0x420069, 1,
@@ -495,6 +502,7 @@ def main() -> int:
     expected_operations += (1, 18, 36, 19, 20)
     expected_operations += (2, 18, 33, 19, 20, 20)
     expected_operations += (2, 18, 34, 19, 20, 20)
+    expected_operations += (2, 20, 20)
     expected_operations += stop_on_first_failure_batch
     expected_operations += (1, 25)
     expected_cases += ("test-op-cancel",)
@@ -535,6 +543,7 @@ def main() -> int:
     expected_cases += ("test-op-mac",)
     expected_cases += ("test-op-mac-verify",)
     expected_cases += ("test-op-sign", "test-op-signature-verify")
+    expected_cases += ("test-op-create-key-pair",)
     expected_cases += ("test-batch-stop-on-first-failure",)
     expected_cases += ("test-neg-destroy-active-without-revoke",)
     expected_cases += ("test-op-add-attribute",)
@@ -726,6 +735,16 @@ def main() -> int:
                                         "signature key-pair batch omitted or duplicated a unique item ID"
                                     )
                                 response_item_ids = expected_signature_item_ids
+                            if operations == (2, 20, 20):
+                                expected_pair_item_ids = (
+                                    b"create-pair", b"destroy-private", b"destroy-public"
+                                )
+                                if any(request.count(tlv(0x420093, 8, item_id)) != 1
+                                       for item_id in expected_pair_item_ids):
+                                    raise AssertionError(
+                                        "Create Key Pair batch omitted or duplicated a unique item ID"
+                                    )
+                                response_item_ids = expected_pair_item_ids
                             if operations == stop_on_first_failure_batch:
                                 if (request.count(integer(0x42000D, 2)) != 1 or
                                         request.count(tlv(0x420094, 7, b"missing-key")) != 1 or
