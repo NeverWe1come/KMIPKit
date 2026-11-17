@@ -13,6 +13,7 @@ final class NativeFluentRegistry {
     static final int SET_ATTRIBUTE_BUILDER = 74;
     static final int ADD_ATTRIBUTE_BUILDER = 75;
     static final int DELETE_ATTRIBUTE_BUILDER = 76;
+    static final int CREATE_BUILDER = 77;
     static final int SYMMETRIC_KEY_BUILDER = 71;
 
     private NativeFluentRegistry() {}
@@ -150,4 +151,18 @@ final class NativeFluentRegistry {
             @Nullable AttributeReference reference);
 
     static native long deleteAttributeBuilderBuildBatchItem(long builder);
+
+    static native long createBuilderCreate();
+
+    static native void createBuilderSetObjectType(long builder, long objectType);
+
+    static native void createBuilderSetAttributes(long builder, long attributes);
+
+    static native void createBuilderSetProtectionStorageMasks(long builder, long masks);
+
+    static native void createBuilderSetAsynchronousIndicator(long builder, long value);
+
+    static native void createBuilderValidate(long builder);
+
+    static native long createBuilderBuildBatchItem(long builder);
 }

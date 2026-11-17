@@ -18,6 +18,7 @@ pub(crate) const C_AVAILABLE_CAPABILITIES: &[&str] = &[
     "discover_versions_request_item",
     "ffi_runtime_metadata",
     "fluent_add_attribute_parity",
+    "fluent_create_builder_parity",
     "fluent_create_key_pair_parity",
     "fluent_delete_attribute_parity",
     "fluent_dx_api",
@@ -44143,5 +44144,115 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit-0093-rust-kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::tag::name",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::tag::name",
+    ),
+    (
+        "rust-observed-83201efb61a8baf4bae1",
+        "rust-kmipkit-client",
+        "kmipkit_client::CreateBuilder",
+    ),
+    (
+        "rust-observed-b006f54549f4d1ec0112",
+        "rust-kmipkit-client",
+        "kmipkit_client::CreateBuilder<'a>::attributes",
+    ),
+    (
+        "rust-observed-fa26e6115475e10666cf",
+        "rust-kmipkit-client",
+        "kmipkit_client::CreateBuilder<'a>::build",
+    ),
+    (
+        "rust-observed-b1a8d2ae35d21ffc920d",
+        "rust-kmipkit-client",
+        "kmipkit_client::CreateBuilder<'a>::execute",
+    ),
+    (
+        "rust-observed-a591e89743a49b4e61e4",
+        "rust-kmipkit-client",
+        "kmipkit_client::CreateBuilder<'a>::object_type",
+    ),
+    (
+        "rust-observed-fbf7a2689d87b6fa4150",
+        "rust-kmipkit-client",
+        "kmipkit_client::CreateBuilder<'a>::protection_storage_masks",
+    ),
+    (
+        "rust-observed-e458c890e31b084018fe",
+        "rust-kmipkit-client",
+        "kmipkit_client::CreateBuilder<'a>::to_batch_item",
+    ),
+    (
+        "rust-observed-2d1a10b73efd59ba7bfd",
+        "rust-kmipkit-client",
+        "kmipkit_client::CreateBuilder<'a>::validate",
+    ),
+    (
+        "rust-observed-7233c7469e673654f478",
+        "rust-kmipkit-client",
+        "kmipkit_client::CreateBuilder<'a>::with_asynchronous_indicator",
+    ),
+    (
+        "rust-observed-b5e0c2840ec7c47fef71",
+        "rust-kmipkit-client",
+        "kmipkit_client::CreateBuilder<'a>::with_options",
+    ),
+    (
+        "rust-observed-ca764276bbdb1f3297ed",
+        "rust-kmipkit-client",
+        "kmipkit_client::RequestBuilder<'a>::create",
+    ),
+    (
+        "rust-observed-5497d9ca1731fa486742",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::CreateBuilder",
+    ),
+    (
+        "rust-observed-64bb813d2268a6076d73",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::CreateBuilder<'a>::attributes",
+    ),
+    (
+        "rust-observed-ce4a50d7fad56e90322e",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::CreateBuilder<'a>::build",
+    ),
+    (
+        "rust-observed-db1947a057f4b3a5582e",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::CreateBuilder<'a>::execute",
+    ),
+    (
+        "rust-observed-b8c13ee919062245f7ff",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::CreateBuilder<'a>::object_type",
+    ),
+    (
+        "rust-observed-d406438c8745be79597a",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::CreateBuilder<'a>::protection_storage_masks",
+    ),
+    (
+        "rust-observed-a926ef6509c2ea6c3e69",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::CreateBuilder<'a>::to_batch_item",
+    ),
+    (
+        "rust-observed-96d3fd92db42bb92d105",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::CreateBuilder<'a>::validate",
+    ),
+    (
+        "rust-observed-1b903f440a9ec89db1c8",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::CreateBuilder<'a>::with_asynchronous_indicator",
+    ),
+    (
+        "rust-observed-e6afdd201755d09c344b",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::CreateBuilder<'a>::with_options",
+    ),
+    (
+        "rust-observed-79a9768cfa5fac15b767",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::RequestBuilder<'a>::create",
     ),
 ];

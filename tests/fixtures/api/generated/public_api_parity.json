@@ -334640,6 +334640,93 @@
         "KMIPKIT-0093-FR-001",
         "KMIPKIT-0093-FR-002"
       ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_create_builder_parity",
+      "capabilityState": "declared",
+      "mappings": {
+        "c": [
+          "kmipkit_create_builder_build_batch_item",
+          "kmipkit_create_builder_create",
+          "kmipkit_create_builder_execute_v1",
+          "kmipkit_create_builder_execute_with_options_v1",
+          "kmipkit_create_builder_release",
+          "kmipkit_create_builder_set_asynchronous_indicator",
+          "kmipkit_create_builder_set_attributes",
+          "kmipkit_create_builder_set_object_type",
+          "kmipkit_create_builder_set_protection_storage_masks",
+          "kmipkit_create_builder_t",
+          "kmipkit_create_builder_validate"
+        ],
+        "java": [
+          "org.kmipkit.fluent.CreateBuilder",
+          "org.kmipkit.fluent.CreateBuilder.attributes",
+          "org.kmipkit.fluent.CreateBuilder.build",
+          "org.kmipkit.fluent.CreateBuilder.close",
+          "org.kmipkit.fluent.CreateBuilder.execute",
+          "org.kmipkit.fluent.CreateBuilder.objectType",
+          "org.kmipkit.fluent.CreateBuilder.protectionStorageMasks",
+          "org.kmipkit.fluent.CreateBuilder.toBatchItem",
+          "org.kmipkit.fluent.CreateBuilder.validate",
+          "org.kmipkit.fluent.CreateBuilder.withAsynchronousIndicator",
+          "org.kmipkit.fluent.CreateBuilder.withOptions",
+          "org.kmipkit.fluent.FluentRequest.create"
+        ],
+        "python": [
+          "kmipkit.fluent.CreateBuilder",
+          "kmipkit.fluent.CreateBuilder.__enter__",
+          "kmipkit.fluent.CreateBuilder.__exit__",
+          "kmipkit.fluent.CreateBuilder.__init__",
+          "kmipkit.fluent.CreateBuilder.attributes",
+          "kmipkit.fluent.CreateBuilder.build",
+          "kmipkit.fluent.CreateBuilder.close",
+          "kmipkit.fluent.CreateBuilder.execute",
+          "kmipkit.fluent.CreateBuilder.object_type",
+          "kmipkit.fluent.CreateBuilder.protection_storage_masks",
+          "kmipkit.fluent.CreateBuilder.to_batch_item",
+          "kmipkit.fluent.CreateBuilder.validate",
+          "kmipkit.fluent.CreateBuilder.with_asynchronous_indicator",
+          "kmipkit.fluent.CreateBuilder.with_options",
+          "kmipkit.fluent.Request.create"
+        ],
+        "rust": [
+          "kmipkit_client::CreateBuilder",
+          "kmipkit_client::CreateBuilder<'a>::attributes",
+          "kmipkit_client::CreateBuilder<'a>::build",
+          "kmipkit_client::CreateBuilder<'a>::execute",
+          "kmipkit_client::CreateBuilder<'a>::object_type",
+          "kmipkit_client::CreateBuilder<'a>::protection_storage_masks",
+          "kmipkit_client::CreateBuilder<'a>::to_batch_item",
+          "kmipkit_client::CreateBuilder<'a>::validate",
+          "kmipkit_client::CreateBuilder<'a>::with_asynchronous_indicator",
+          "kmipkit_client::CreateBuilder<'a>::with_options",
+          "kmipkit_client::RequestBuilder<'a>::create",
+          "kmipkit_client::fluent::CreateBuilder",
+          "kmipkit_client::fluent::CreateBuilder<'a>::attributes",
+          "kmipkit_client::fluent::CreateBuilder<'a>::build",
+          "kmipkit_client::fluent::CreateBuilder<'a>::execute",
+          "kmipkit_client::fluent::CreateBuilder<'a>::object_type",
+          "kmipkit_client::fluent::CreateBuilder<'a>::protection_storage_masks",
+          "kmipkit_client::fluent::CreateBuilder<'a>::to_batch_item",
+          "kmipkit_client::fluent::CreateBuilder<'a>::validate",
+          "kmipkit_client::fluent::CreateBuilder<'a>::with_asynchronous_indicator",
+          "kmipkit_client::fluent::CreateBuilder<'a>::with_options",
+          "kmipkit_client::fluent::RequestBuilder<'a>::create"
+        ]
+      },
+      "ownerSpecId": "KMIPKIT-0093",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
     }
   ],
   "errorCategories": [
@@ -392787,6 +392874,696 @@
         ],
         "requestBoundary": "not-applicable",
         "returnType": "ClientBatchItemResponse"
+      }
+    },
+    {
+      "c": {
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "output",
+            "name": "out_builder",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_create_builder_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_create_builder_create"
+      },
+      "id": "create_builder_create",
+      "java": {
+        "class": "FluentRequest",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "method": "create",
+        "package": "org.kmipkit.fluent",
+        "parameters": [],
+        "returnType": "CreateBuilder"
+      },
+      "legacyRegistry": false,
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_create_builder_create",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "Request.create",
+        "module": "kmipkit.fluent",
+        "parameters": [],
+        "returnType": "CreateBuilder"
+      },
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::RequestBuilder",
+        "name": "create",
+        "owner": "client",
+        "parameters": [],
+        "requestBoundary": "not-applicable",
+        "returnType": "CreateBuilder"
+      }
+    },
+    {
+      "c": {
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "builder",
+            "ownership": "borrowed",
+            "type": "kmipkit_create_builder_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "object_type",
+            "type": "uint32_t"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_create_builder_set_object_type"
+      },
+      "id": "create_builder_set_object_type",
+      "java": {
+        "class": "CreateBuilder",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "method": "objectType",
+        "package": "org.kmipkit.fluent",
+        "parameters": [
+          {
+            "name": "objectType",
+            "type": "long"
+          }
+        ],
+        "returnType": "void"
+      },
+      "legacyRegistry": false,
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_create_builder_set_object_type",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "CreateBuilder.object_type",
+        "module": "kmipkit.fluent",
+        "parameters": [
+          {
+            "name": "object_type",
+            "type": "int"
+          }
+        ],
+        "returnType": "void"
+      },
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::CreateBuilder",
+        "name": "object_type",
+        "owner": "client",
+        "parameters": [],
+        "requestBoundary": "not-applicable",
+        "returnType": "void"
+      }
+    },
+    {
+      "c": {
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "builder",
+            "ownership": "borrowed",
+            "type": "kmipkit_create_builder_t *"
+          },
+          {
+            "kind": "handle",
+            "name": "attributes",
+            "ownership": "borrowed",
+            "type": "kmipkit_ttlv_structure_t *"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_create_builder_set_attributes"
+      },
+      "id": "create_builder_set_attributes",
+      "java": {
+        "class": "CreateBuilder",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "method": "attributes",
+        "package": "org.kmipkit.fluent",
+        "parameters": [
+          {
+            "name": "attributes",
+            "type": "AttributeSet"
+          }
+        ],
+        "returnType": "void"
+      },
+      "legacyRegistry": false,
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_create_builder_set_attributes",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "CreateBuilder.attributes",
+        "module": "kmipkit.fluent",
+        "parameters": [
+          {
+            "name": "attributes",
+            "type": "AttributeSet"
+          }
+        ],
+        "returnType": "void"
+      },
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::CreateBuilder",
+        "name": "attributes",
+        "owner": "client",
+        "parameters": [],
+        "requestBoundary": "not-applicable",
+        "returnType": "void"
+      }
+    },
+    {
+      "c": {
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "builder",
+            "ownership": "borrowed",
+            "type": "kmipkit_create_builder_t *"
+          },
+          {
+            "kind": "handle",
+            "name": "protection_storage_masks",
+            "ownership": "borrowed",
+            "type": "kmipkit_ttlv_structure_t *"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_create_builder_set_protection_storage_masks"
+      },
+      "id": "create_builder_set_protection_storage_masks",
+      "java": {
+        "class": "CreateBuilder",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "method": "protectionStorageMasks",
+        "package": "org.kmipkit.fluent",
+        "parameters": [
+          {
+            "name": "masks",
+            "type": "TtlvStructure"
+          }
+        ],
+        "returnType": "void"
+      },
+      "legacyRegistry": false,
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_create_builder_set_protection_storage_masks",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "CreateBuilder.protection_storage_masks",
+        "module": "kmipkit.fluent",
+        "parameters": [
+          {
+            "name": "masks",
+            "type": "TtlvStructure | None"
+          }
+        ],
+        "returnType": "void"
+      },
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::CreateBuilder",
+        "name": "protection_storage_masks",
+        "owner": "client",
+        "parameters": [],
+        "requestBoundary": "not-applicable",
+        "returnType": "void"
+      }
+    },
+    {
+      "c": {
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "builder",
+            "ownership": "borrowed",
+            "type": "kmipkit_create_builder_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "value",
+            "type": "uint32_t"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_create_builder_set_asynchronous_indicator"
+      },
+      "id": "create_builder_set_asynchronous_indicator",
+      "java": {
+        "class": "CreateBuilder",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "method": "withAsynchronousIndicator",
+        "package": "org.kmipkit.fluent",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "long"
+          }
+        ],
+        "returnType": "void"
+      },
+      "legacyRegistry": false,
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_create_builder_set_asynchronous_indicator",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "CreateBuilder.with_asynchronous_indicator",
+        "module": "kmipkit.fluent",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "int"
+          }
+        ],
+        "returnType": "void"
+      },
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::CreateBuilder",
+        "name": "with_asynchronous_indicator",
+        "owner": "client",
+        "parameters": [],
+        "requestBoundary": "not-applicable",
+        "returnType": "void"
+      }
+    },
+    {
+      "c": {
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "builder",
+            "ownership": "borrowed",
+            "type": "kmipkit_create_builder_t *"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_create_builder_validate"
+      },
+      "id": "create_builder_validate",
+      "java": {
+        "class": "CreateBuilder",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "method": "validate",
+        "package": "org.kmipkit.fluent",
+        "parameters": [],
+        "returnType": "void"
+      },
+      "legacyRegistry": false,
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_create_builder_validate",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "CreateBuilder.validate",
+        "module": "kmipkit.fluent",
+        "parameters": [],
+        "returnType": "void"
+      },
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::CreateBuilder",
+        "name": "validate",
+        "owner": "client",
+        "parameters": [],
+        "requestBoundary": "not-applicable",
+        "returnType": "void"
+      }
+    },
+    {
+      "c": {
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "builder",
+            "ownership": "borrowed",
+            "type": "kmipkit_create_builder_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_item",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_client_batch_item_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_create_builder_build_batch_item"
+      },
+      "id": "create_builder_build_batch_item",
+      "java": {
+        "class": "CreateBuilder",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "method": "build",
+        "package": "org.kmipkit.fluent",
+        "parameters": [],
+        "returnType": "ClientBatchItem"
+      },
+      "legacyRegistry": false,
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_create_builder_build_batch_item",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "CreateBuilder.build",
+        "module": "kmipkit.fluent",
+        "parameters": [],
+        "returnType": "ClientBatchItem"
+      },
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::CreateBuilder",
+        "name": "to_batch_item",
+        "owner": "client",
+        "parameters": [],
+        "requestBoundary": "not-applicable",
+        "returnType": "ClientBatchItem"
+      }
+    },
+    {
+      "c": {
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "builder",
+            "ownership": "borrowed",
+            "type": "kmipkit_create_builder_t *"
+          },
+          {
+            "kind": "handle",
+            "name": "client",
+            "ownership": "borrowed",
+            "type": "kmipkit_client_t *"
+          },
+          {
+            "kind": "handle",
+            "name": "limits",
+            "ownership": "borrowed",
+            "type": "kmipkit_codec_limits_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_response",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_client_batch_response_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_create_builder_execute_v1"
+      },
+      "id": "create_builder_execute_v1",
+      "java": {
+        "class": "CreateBuilder",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "method": "execute",
+        "package": "org.kmipkit.fluent",
+        "parameters": [
+          {
+            "name": "client",
+            "type": "Client"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "returnType": "ClientBatchResponse"
+      },
+      "legacyRegistry": false,
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_create_builder_execute_v1",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "CreateBuilder.execute",
+        "module": "kmipkit.fluent",
+        "parameters": [
+          {
+            "name": "client",
+            "type": "Client"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "returnType": "ClientBatchResponse"
+      },
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::CreateBuilder",
+        "name": "execute",
+        "owner": "client",
+        "parameters": [],
+        "requestBoundary": "not-applicable",
+        "returnType": "ClientBatchResponse"
+      }
+    },
+    {
+      "c": {
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "builder",
+            "ownership": "borrowed",
+            "type": "kmipkit_create_builder_t *"
+          },
+          {
+            "kind": "handle",
+            "name": "client",
+            "ownership": "borrowed",
+            "type": "kmipkit_client_t *"
+          },
+          {
+            "kind": "handle",
+            "name": "limits",
+            "ownership": "borrowed",
+            "type": "kmipkit_codec_limits_t *"
+          },
+          {
+            "kind": "input-value-pointer",
+            "name": "options",
+            "ownership": "borrowed",
+            "type": "const kmipkit_request_options_v1_t *",
+            "valueType": "kmipkit_request_options_v1_t"
+          },
+          {
+            "kind": "output",
+            "name": "out_response",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_client_batch_response_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_create_builder_execute_with_options_v1"
+      },
+      "id": "create_builder_execute_with_options_v1",
+      "java": {
+        "class": "CreateBuilder",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "method": "withOptions",
+        "package": "org.kmipkit.fluent",
+        "parameters": [
+          {
+            "name": "client",
+            "type": "Client"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          },
+          {
+            "name": "options",
+            "type": "RequestOptions"
+          }
+        ],
+        "returnType": "ClientBatchResponse"
+      },
+      "legacyRegistry": false,
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_create_builder_execute_with_options_v1",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "CreateBuilder.with_options",
+        "module": "kmipkit.fluent",
+        "parameters": [
+          {
+            "name": "client",
+            "type": "Client"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          },
+          {
+            "name": "options",
+            "type": "RequestOptions"
+          }
+        ],
+        "returnType": "ClientBatchResponse"
+      },
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::CreateBuilder",
+        "name": "with_options",
+        "owner": "client",
+        "parameters": [],
+        "requestBoundary": "not-applicable",
+        "returnType": "ClientBatchResponse"
       }
     }
   ],
@@ -1214008,6 +1214785,2768 @@
         "KMIPKIT-0093-FR-001",
         "KMIPKIT-0093-FR-002"
       ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "rust-observed-83201efb61a8baf4bae1",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::CreateBuilder",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::CreateBuilder",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "rust-observed-b006f54549f4d1ec0112",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::CreateBuilder<'a>::attributes",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_set_attributes",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.attributes",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.attributes",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::CreateBuilder<'a>::attributes",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "rust-observed-fa26e6115475e10666cf",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::CreateBuilder<'a>::build",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_build_batch_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.build",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.build",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::CreateBuilder<'a>::build",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "rust-observed-b1a8d2ae35d21ffc920d",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::CreateBuilder<'a>::execute",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_execute_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.execute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.execute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::CreateBuilder<'a>::execute",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "rust-observed-a591e89743a49b4e61e4",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::CreateBuilder<'a>::object_type",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_set_object_type",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.objectType",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.object_type",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::CreateBuilder<'a>::object_type",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "rust-observed-fbf7a2689d87b6fa4150",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::CreateBuilder<'a>::protection_storage_masks",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_set_protection_storage_masks",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.protectionStorageMasks",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.protection_storage_masks",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::CreateBuilder<'a>::protection_storage_masks",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "rust-observed-e458c890e31b084018fe",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::CreateBuilder<'a>::to_batch_item",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_build_batch_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.build",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.build",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::CreateBuilder<'a>::to_batch_item",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "rust-observed-2d1a10b73efd59ba7bfd",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::CreateBuilder<'a>::validate",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_validate",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.validate",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.validate",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::CreateBuilder<'a>::validate",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "rust-observed-7233c7469e673654f478",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::CreateBuilder<'a>::with_asynchronous_indicator",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_set_asynchronous_indicator",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.withAsynchronousIndicator",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.with_asynchronous_indicator",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::CreateBuilder<'a>::with_asynchronous_indicator",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "rust-observed-b5e0c2840ec7c47fef71",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::CreateBuilder<'a>::with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_execute_with_options_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.withOptions",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.with_options",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::CreateBuilder<'a>::with_options",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "rust-observed-ca764276bbdb1f3297ed",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::RequestBuilder<'a>::create",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_create",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.FluentRequest.create",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.Request.create",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::RequestBuilder<'a>::create",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "rust-observed-5497d9ca1731fa486742",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::fluent::CreateBuilder",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "rust-observed-64bb813d2268a6076d73",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::fluent::CreateBuilder<'a>::attributes",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_set_attributes",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.attributes",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.attributes",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder<'a>::attributes",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "rust-observed-ce4a50d7fad56e90322e",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::fluent::CreateBuilder<'a>::build",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_build_batch_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.build",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.build",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder<'a>::build",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "rust-observed-db1947a057f4b3a5582e",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::fluent::CreateBuilder<'a>::execute",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_execute_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.execute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.execute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder<'a>::execute",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "rust-observed-b8c13ee919062245f7ff",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::fluent::CreateBuilder<'a>::object_type",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_set_object_type",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.objectType",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.object_type",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder<'a>::object_type",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "rust-observed-d406438c8745be79597a",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::fluent::CreateBuilder<'a>::protection_storage_masks",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_set_protection_storage_masks",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.protectionStorageMasks",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.protection_storage_masks",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder<'a>::protection_storage_masks",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "rust-observed-a926ef6509c2ea6c3e69",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::fluent::CreateBuilder<'a>::to_batch_item",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_build_batch_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.build",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.build",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder<'a>::to_batch_item",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "rust-observed-96d3fd92db42bb92d105",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::fluent::CreateBuilder<'a>::validate",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_validate",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.validate",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.validate",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder<'a>::validate",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "rust-observed-1b903f440a9ec89db1c8",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::fluent::CreateBuilder<'a>::with_asynchronous_indicator",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_set_asynchronous_indicator",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.withAsynchronousIndicator",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.with_asynchronous_indicator",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder<'a>::with_asynchronous_indicator",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "rust-observed-e6afdd201755d09c344b",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::fluent::CreateBuilder<'a>::with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_execute_with_options_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.withOptions",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.with_options",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder<'a>::with_options",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "rust-observed-79a9768cfa5fac15b767",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::fluent::RequestBuilder<'a>::create",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_create",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.FluentRequest.create",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.Request.create",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::RequestBuilder<'a>::create",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "kmipkit-0093-create-builder-create-c",
+      "declarationState": "declared",
+      "exportName": "kmipkit_create_builder_create",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_create",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.FluentRequest.create",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.Request.create",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::RequestBuilder<'a>::create",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "kmipkit-0093-create-builder-create-java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.FluentRequest.create",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_create",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.FluentRequest.create",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.Request.create",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::RequestBuilder<'a>::create",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "kmipkit-0093-create-builder-create-python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.Request.create",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_create",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.FluentRequest.create",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.Request.create",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::RequestBuilder<'a>::create",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "kmipkit-0093-create-builder-set_object_type-c",
+      "declarationState": "declared",
+      "exportName": "kmipkit_create_builder_set_object_type",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_set_object_type",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.objectType",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.object_type",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder<'a>::object_type",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "kmipkit-0093-create-builder-set_object_type-java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.CreateBuilder.objectType",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_set_object_type",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.objectType",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.object_type",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder<'a>::object_type",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "kmipkit-0093-create-builder-set_object_type-python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.CreateBuilder.object_type",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_set_object_type",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.objectType",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.object_type",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder<'a>::object_type",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "kmipkit-0093-create-builder-set_attributes-c",
+      "declarationState": "declared",
+      "exportName": "kmipkit_create_builder_set_attributes",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_set_attributes",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.attributes",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.attributes",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder<'a>::attributes",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "kmipkit-0093-create-builder-set_attributes-java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.CreateBuilder.attributes",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_set_attributes",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.attributes",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.attributes",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder<'a>::attributes",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "kmipkit-0093-create-builder-set_attributes-python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.CreateBuilder.attributes",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_set_attributes",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.attributes",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.attributes",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder<'a>::attributes",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "kmipkit-0093-create-builder-set_protection_storage_masks-c",
+      "declarationState": "declared",
+      "exportName": "kmipkit_create_builder_set_protection_storage_masks",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_set_protection_storage_masks",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.protectionStorageMasks",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.protection_storage_masks",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder<'a>::protection_storage_masks",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "kmipkit-0093-create-builder-set_protection_storage_masks-java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.CreateBuilder.protectionStorageMasks",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_set_protection_storage_masks",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.protectionStorageMasks",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.protection_storage_masks",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder<'a>::protection_storage_masks",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "kmipkit-0093-create-builder-set_protection_storage_masks-python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.CreateBuilder.protection_storage_masks",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_set_protection_storage_masks",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.protectionStorageMasks",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.protection_storage_masks",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder<'a>::protection_storage_masks",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "kmipkit-0093-create-builder-set_asynchronous_indicator-c",
+      "declarationState": "declared",
+      "exportName": "kmipkit_create_builder_set_asynchronous_indicator",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_set_asynchronous_indicator",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.withAsynchronousIndicator",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.with_asynchronous_indicator",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder<'a>::with_asynchronous_indicator",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "kmipkit-0093-create-builder-set_asynchronous_indicator-java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.CreateBuilder.withAsynchronousIndicator",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_set_asynchronous_indicator",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.withAsynchronousIndicator",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.with_asynchronous_indicator",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder<'a>::with_asynchronous_indicator",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "kmipkit-0093-create-builder-set_asynchronous_indicator-python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.CreateBuilder.with_asynchronous_indicator",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_set_asynchronous_indicator",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.withAsynchronousIndicator",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.with_asynchronous_indicator",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder<'a>::with_asynchronous_indicator",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "kmipkit-0093-create-builder-validate-c",
+      "declarationState": "declared",
+      "exportName": "kmipkit_create_builder_validate",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_validate",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.validate",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.validate",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder<'a>::validate",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "kmipkit-0093-create-builder-validate-java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.CreateBuilder.validate",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_validate",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.validate",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.validate",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder<'a>::validate",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "kmipkit-0093-create-builder-validate-python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.CreateBuilder.validate",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_validate",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.validate",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.validate",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder<'a>::validate",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "kmipkit-0093-create-builder-build_batch_item-c",
+      "declarationState": "declared",
+      "exportName": "kmipkit_create_builder_build_batch_item",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_build_batch_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.build",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.build",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder<'a>::to_batch_item",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "kmipkit-0093-create-builder-build_batch_item-java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.CreateBuilder.build",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_build_batch_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.build",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.build",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder<'a>::to_batch_item",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "kmipkit-0093-create-builder-build_batch_item-python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.CreateBuilder.build",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_build_batch_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.build",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.build",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder<'a>::to_batch_item",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "kmipkit-0093-create-builder-execute_v1-c",
+      "declarationState": "declared",
+      "exportName": "kmipkit_create_builder_execute_v1",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_execute_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.execute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.execute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder<'a>::execute",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "kmipkit-0093-create-builder-execute_v1-java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.CreateBuilder.execute",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_execute_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.execute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.execute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder<'a>::execute",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "kmipkit-0093-create-builder-execute_v1-python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.CreateBuilder.execute",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_execute_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.execute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.execute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder<'a>::execute",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "kmipkit-0093-create-builder-execute_with_options_v1-c",
+      "declarationState": "declared",
+      "exportName": "kmipkit_create_builder_execute_with_options_v1",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_execute_with_options_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.withOptions",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.with_options",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder<'a>::with_options",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "kmipkit-0093-create-builder-execute_with_options_v1-java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.CreateBuilder.withOptions",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_execute_with_options_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.withOptions",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.with_options",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder<'a>::with_options",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "kmipkit-0093-create-builder-execute_with_options_v1-python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.CreateBuilder.with_options",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_execute_with_options_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.withOptions",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.with_options",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder<'a>::with_options",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "kmipkit-0093-create-builder-type-c",
+      "declarationState": "declared",
+      "exportName": "kmipkit_create_builder_t",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "kmipkit-0093-create-builder-type-java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.CreateBuilder",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "kmipkit-0093-create-builder-type-python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.CreateBuilder",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "kmipkit-0093-create-builder-python-init",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.CreateBuilder.__init__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_create",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.__init__",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "kmipkit-0093-create-builder-python-enter",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.CreateBuilder.__enter__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.__enter__",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "kmipkit-0093-create-builder-python-exit",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.CreateBuilder.__exit__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.__exit__",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "kmipkit-0093-create-builder-release",
+      "declarationState": "declared",
+      "exportName": "kmipkit_create_builder_release",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "KMIPKIT-0093:java:org.kmipkit.fluent.CreateBuilder.close",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.CreateBuilder.close",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "KMIPKIT-0093:java:org.kmipkit.fluent.CreateBuilder.toBatchItem",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.CreateBuilder.toBatchItem",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_build_batch_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.toBatchItem",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.build",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder<'a>::to_batch_item",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "KMIPKIT-0093:python:kmipkit.fluent.CreateBuilder.close",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.CreateBuilder.close",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "capabilityId": "fluent_create_builder_parity",
+      "declarationId": "KMIPKIT-0093:python:kmipkit.fluent.CreateBuilder.to_batch_item",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.CreateBuilder.to_batch_item",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_create_builder_build_batch_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.CreateBuilder.build",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.CreateBuilder.to_batch_item",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateBuilder<'a>::to_batch_item",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ]
     }
   ],
   "publicPackages": [
@@ -1219202,6 +1222741,35 @@
       "rust": {
         "module": "kmipkit_client::fluent",
         "name": "RevokeBuilder",
+        "owner": "client"
+      }
+    },
+    {
+      "c": {
+        "handleKind": "create_builder",
+        "kind": "opaque-handle",
+        "name": "kmipkit_create_builder_t",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_create_builder_release"
+      },
+      "id": "CreateBuilder",
+      "java": {
+        "name": "CreateBuilder",
+        "package": "org.kmipkit.fluent"
+      },
+      "kind": "struct",
+      "python": {
+        "module": "kmipkit.fluent",
+        "name": "CreateBuilder"
+      },
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent",
+        "name": "CreateBuilder",
         "owner": "client"
       }
     }

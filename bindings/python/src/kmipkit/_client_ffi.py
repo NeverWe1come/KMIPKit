@@ -26,6 +26,7 @@ ffi.cdef(
     typedef struct kmipkit_transport_config_t kmipkit_transport_config_t;
     typedef struct kmipkit_client_t kmipkit_client_t;
     typedef struct kmipkit_symmetric_key_builder_t kmipkit_symmetric_key_builder_t;
+    typedef struct kmipkit_create_builder_t kmipkit_create_builder_t;
     typedef struct kmipkit_create_key_pair_builder_t kmipkit_create_key_pair_builder_t;
     typedef struct kmipkit_set_attribute_builder_t kmipkit_set_attribute_builder_t;
     typedef struct kmipkit_add_attribute_builder_t kmipkit_add_attribute_builder_t;
@@ -291,6 +292,16 @@ ffi.cdef(
     int32_t kmipkit_symmetric_key_builder_execute_v1(kmipkit_symmetric_key_builder_t *, kmipkit_client_t *, kmipkit_codec_limits_t *, kmipkit_client_batch_response_t **);
     int32_t kmipkit_symmetric_key_builder_execute_with_options_v1(kmipkit_symmetric_key_builder_t *, kmipkit_client_t *, kmipkit_codec_limits_t *, const kmipkit_request_options_v1_t *, kmipkit_client_batch_response_t **);
     void kmipkit_symmetric_key_builder_release(kmipkit_symmetric_key_builder_t *);
+    int32_t kmipkit_create_builder_create(kmipkit_create_builder_t **);
+    int32_t kmipkit_create_builder_set_object_type(kmipkit_create_builder_t *, uint32_t);
+    int32_t kmipkit_create_builder_set_attributes(kmipkit_create_builder_t *, kmipkit_ttlv_structure_t *);
+    int32_t kmipkit_create_builder_set_protection_storage_masks(kmipkit_create_builder_t *, kmipkit_ttlv_structure_t *);
+    int32_t kmipkit_create_builder_set_asynchronous_indicator(kmipkit_create_builder_t *, uint32_t);
+    int32_t kmipkit_create_builder_validate(kmipkit_create_builder_t *);
+    int32_t kmipkit_create_builder_build_batch_item(kmipkit_create_builder_t *, kmipkit_client_batch_item_t **);
+    int32_t kmipkit_create_builder_execute_v1(kmipkit_create_builder_t *, kmipkit_client_t *, kmipkit_codec_limits_t *, kmipkit_client_batch_response_t **);
+    int32_t kmipkit_create_builder_execute_with_options_v1(kmipkit_create_builder_t *, kmipkit_client_t *, kmipkit_codec_limits_t *, const kmipkit_request_options_v1_t *, kmipkit_client_batch_response_t **);
+    void kmipkit_create_builder_release(kmipkit_create_builder_t *);
     int32_t kmipkit_create_key_pair_builder_create(kmipkit_create_key_pair_builder_t **);
     int32_t kmipkit_create_key_pair_builder_set_algorithm(kmipkit_create_key_pair_builder_t *, uint32_t);
     int32_t kmipkit_create_key_pair_builder_set_length(kmipkit_create_key_pair_builder_t *, int32_t);

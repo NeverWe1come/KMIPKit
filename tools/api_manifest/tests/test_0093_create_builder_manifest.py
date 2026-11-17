@@ -27,7 +27,6 @@ CREATE_FUNCTIONS = {
     "create_builder_build_batch_item",
     "create_builder_execute_v1",
     "create_builder_execute_with_options_v1",
-    "create_builder_release",
 }
 
 
@@ -63,7 +62,10 @@ class FluentCreateBuilderManifestTests(unittest.TestCase):
                 self.assertEqual("declared", row["declarationState"])
                 self.assertEqual("four-language", row["parityScope"])
                 self.assertEqual("KMIPKIT-0093", row["candidateSpecId"])
-                self.assertEqual(["KMIPKIT-0093-FR-011"], row["requirementIds"])
+                self.assertEqual(
+                    ["KMIPKIT-0093-FR-004", "KMIPKIT-0093-FR-005", "KMIPKIT-0093-FR-011"],
+                    row["requirementIds"],
+                )
                 self.assertEqual(
                     {"rust", "c", "java", "python"},
                     set(row["languageMappings"]),
@@ -77,6 +79,15 @@ class FluentCreateBuilderManifestTests(unittest.TestCase):
             if row["id"].startswith("create_builder_")
         }
         self.assertEqual(CREATE_FUNCTIONS, actual)
+        builder = next(
+            row
+            for row in self.manifest["types"]
+            if row.get("c", {}).get("name") == "kmipkit_create_builder_t"
+        )
+        self.assertEqual(
+            "kmipkit_create_builder_release",
+            builder["c"]["releaseFunction"],
+        )
 
     def test_python_builder_lifecycle_is_mapped(self) -> None:
         expected = {

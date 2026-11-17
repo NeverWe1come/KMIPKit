@@ -1424,6 +1424,7 @@ typedef struct kmipkit_set_attribute_builder_t kmipkit_set_attribute_builder_t;
 typedef struct kmipkit_delete_attribute_builder_t kmipkit_delete_attribute_builder_t;
 typedef struct kmipkit_locate_builder_t kmipkit_locate_builder_t;
 typedef struct kmipkit_revoke_builder_t kmipkit_revoke_builder_t;
+typedef struct kmipkit_create_builder_t kmipkit_create_builder_t;
 
 typedef struct kmipkit_byte_span_v1_t kmipkit_byte_span_v1_t;
 typedef struct kmipkit_client_batch_item_metadata_v1_t kmipkit_client_batch_item_metadata_v1_t;
@@ -1889,6 +1890,7 @@ void kmipkit_set_attribute_builder_release(kmipkit_set_attribute_builder_t *hand
 void kmipkit_delete_attribute_builder_release(kmipkit_delete_attribute_builder_t *handle);
 void kmipkit_locate_builder_release(kmipkit_locate_builder_t *handle);
 void kmipkit_revoke_builder_release(kmipkit_revoke_builder_t *handle);
+void kmipkit_create_builder_release(kmipkit_create_builder_t *handle);
 #define KMIPKIT_ERROR_COMPATIBILITY_MISMATCH ((int32_t)1)
 #define KMIPKIT_ERROR_DUPLICATE_KEY ((int32_t)2)
 #define KMIPKIT_ERROR_INVALID_IDENTITY ((int32_t)3)
@@ -3969,6 +3971,24 @@ int32_t kmipkit_revoke_builder_build_batch_item(kmipkit_revoke_builder_t * build
 int32_t kmipkit_revoke_builder_execute_v1(kmipkit_revoke_builder_t * builder, kmipkit_client_t * client, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
 /* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011, KMIPKIT-0101-FR-001, KMIPKIT-0101-FR-004, KMIPKIT-0101-FR-005, KMIPKIT-0101-FR-006 */
 int32_t kmipkit_revoke_builder_execute_with_options_v1(kmipkit_revoke_builder_t * builder, kmipkit_client_t * client, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response);
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011 */
+int32_t kmipkit_create_builder_create(kmipkit_create_builder_t ** out_builder);
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011 */
+int32_t kmipkit_create_builder_set_object_type(kmipkit_create_builder_t * builder, uint32_t object_type);
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011 */
+int32_t kmipkit_create_builder_set_attributes(kmipkit_create_builder_t * builder, kmipkit_ttlv_structure_t * attributes);
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011 */
+int32_t kmipkit_create_builder_set_protection_storage_masks(kmipkit_create_builder_t * builder, kmipkit_ttlv_structure_t * protection_storage_masks);
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011 */
+int32_t kmipkit_create_builder_set_asynchronous_indicator(kmipkit_create_builder_t * builder, uint32_t value);
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011 */
+int32_t kmipkit_create_builder_validate(kmipkit_create_builder_t * builder);
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011 */
+int32_t kmipkit_create_builder_build_batch_item(kmipkit_create_builder_t * builder, kmipkit_client_batch_item_t ** out_item);
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011 */
+int32_t kmipkit_create_builder_execute_v1(kmipkit_create_builder_t * builder, kmipkit_client_t * client, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011 */
+int32_t kmipkit_create_builder_execute_with_options_v1(kmipkit_create_builder_t * builder, kmipkit_client_t * client, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response);
 /* Returns an owned snapshot of safe profile validation IDs when the calling thread's last error is a profile validation failure.
  * Returns success and writes a null handle when no profile validation details are present; this leaves the last-error snapshot unchanged.
  * The returned handle remains valid when the thread-local error snapshot changes and must be released with kmipkit_profile_validation_error_release.

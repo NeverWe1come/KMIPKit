@@ -95,6 +95,8 @@ final class FluentFacadeShapeTest {
                 .getMethod("attributes", org.kmipkit.extensions.AttributeSet.class));
         assertNotNull(Class.forName("org.kmipkit.fluent.CreateBuilder")
                 .getMethod("build"));
+        assertNotNull(Class.forName("org.kmipkit.fluent.CreateBuilder")
+                .getMethod("toBatchItem"));
     }
 
     @Test
@@ -105,12 +107,21 @@ final class FluentFacadeShapeTest {
                         org.kmipkit.extensions.AttributeSet.tryNew(emptyItems)) {
             CreateBuilder incomplete = new CreateBuilder(null);
             assertThrows(InvalidInputException.class, incomplete::validate);
+            assertThrows(InvalidInputException.class,
+                    () -> incomplete.withAsynchronousIndicator(0x1_0000_0000L));
 
-            try (ClientBatchItem item = new CreateBuilder(null)
-                    .objectType(2)
+            CreateBuilder configured = new CreateBuilder(null)
+                    .objectType(org.kmipkit.protocol.KmipValues.ObjectType.SYMMETRIC_KEY)
                     .attributes(attributes)
-                    .build()) {
-                assertEquals(1, item.operation());
+                    .withAsynchronousIndicator(
+                            org.kmipkit.protocol.KmipValues.AsynchronousIndicator.PROHIBITED)
+                    .withOptions(org.kmipkit.extensions.RequestOptions.defaults());
+            try (configured) {
+                attributes.close();
+                emptyItems.close();
+                try (ClientBatchItem item = configured.toBatchItem()) {
+                    assertEquals(org.kmipkit.protocol.KmipValues.Operation.CREATE, item.operation());
+                }
             }
         }
     }

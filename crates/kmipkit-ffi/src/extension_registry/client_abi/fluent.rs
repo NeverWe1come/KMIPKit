@@ -4,6 +4,7 @@ use super::*;
 use std::sync::Arc;
 
 type SymmetricBuilder = kmipkit_client::fluent::CreateSymmetricKeyBuilder<'static>;
+type CreateBuilderState = super::super::CreateBuilderState;
 type KeyPairBuilder = kmipkit_client::fluent::CreateKeyPairBuilder<'static>;
 type SetAttributeBuilder = kmipkit_client::fluent::SetAttributeBuilder<'static>;
 type AddAttributeBuilder = kmipkit_client::fluent::AddAttributeBuilder<'static>;
@@ -215,6 +216,17 @@ fn update_symmetric_builder(
     Ok(())
 }
 
+fn create_builder_request(
+    builder: *mut kmipkit_create_builder_t,
+) -> FfiResult<(CreateRequest, Option<u32>)> {
+    let handle = reference_handle(builder, Kind::CreateBuilder)?;
+    let HandleValue::CreateBuilder(builder) = &handle.value else {
+        return Err(ERROR_INVALID_INPUT);
+    };
+    let state = builder.lock().map_err(|_| ERROR_INTERNAL)?;
+    Ok((state.build_request()?, state.asynchronous_indicator))
+}
+
 fn update_key_pair_builder(
     builder: *mut kmipkit_create_key_pair_builder_t,
     update: impl FnOnce(KeyPairBuilder) -> KeyPairBuilder,
@@ -403,6 +415,34 @@ fn execute_key_pair_builder(
     execute_fluent_item(
         client,
         ClientRequest::CreateKeyPair(request),
+        limits,
+        &options,
+        asynchronous_indicator,
+        out_response,
+    )
+}
+
+fn execute_create_builder(
+    builder: *mut kmipkit_create_builder_t,
+    client: *mut kmipkit_client_t,
+    limits: *mut kmipkit_codec_limits_t,
+    options: Option<&kmipkit_request_options_v1_t>,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    let (request, asynchronous_indicator) = match create_builder_request(builder) {
+        Ok(parts) => parts,
+        Err(status) => return record_ffi_error(status),
+    };
+    let options = match options {
+        Some(options) => match super::request_options_from_v1(options) {
+            Ok(options) => options,
+            Err(status) => return record_ffi_error(status),
+        },
+        None => RequestOptions::default(),
+    };
+    execute_fluent_item(
+        client,
+        ClientRequest::Create(request),
         limits,
         &options,
         asynchronous_indicator,
@@ -956,6 +996,182 @@ pub unsafe extern "C" fn kmipkit_client_destroy_by_id_with_options_v1(
             )
         }
     })
+}
+
+/// Creates an opaque, reusable generic Create builder.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_create_builder_create(
+    out_builder: *mut *mut kmipkit_create_builder_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_builder);
+        *out = try_ffi!(try_make_handle(
+            Kind::CreateBuilder,
+            HandleValue::CreateBuilder(Mutex::new(CreateBuilderState {
+                object_type: None,
+                attributes: AttributeSet::new(),
+                protection_storage_masks: None,
+                asynchronous_indicator: None,
+            })),
+        ));
+        SUCCESS
+    })
+}
+
+/// Selects the caller's explicit KMIP Object Type enumeration.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_create_builder_set_object_type(
+    builder: *mut kmipkit_create_builder_t,
+    object_type: u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let handle = try_ffi!(reference_handle(builder, Kind::CreateBuilder));
+        let HandleValue::CreateBuilder(builder) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(mut state) = builder.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        state.object_type = Some(ObjectType::from_raw(object_type));
+        SUCCESS
+    })
+}
+
+/// Copies the caller's direct ordered Attributes into the reusable builder.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_create_builder_set_attributes(
+    builder: *mut kmipkit_create_builder_t,
+    attributes: *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let attributes = match super::super::copy_attribute_set_handle(attributes, true) {
+            Ok(Some(attributes)) => attributes,
+            Ok(None) => return record_ffi_error(ERROR_INVALID_INPUT),
+            Err(status) => return record_ffi_error(status),
+        };
+        let handle = try_ffi!(reference_handle(builder, Kind::CreateBuilder));
+        let HandleValue::CreateBuilder(builder) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(mut state) = builder.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        state.attributes = attributes;
+        SUCCESS
+    })
+}
+
+/// Copies or clears the optional generic Protection Storage Masks structure.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_create_builder_set_protection_storage_masks(
+    builder: *mut kmipkit_create_builder_t,
+    protection_storage_masks: *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let masks = match super::super::copy_structure_handle(protection_storage_masks, true) {
+            Ok(masks) => masks,
+            Err(status) => return record_ffi_error(status),
+        };
+        let handle = try_ffi!(reference_handle(builder, Kind::CreateBuilder));
+        let HandleValue::CreateBuilder(builder) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(mut state) = builder.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        state.protection_storage_masks = masks;
+        SUCCESS
+    })
+}
+
+/// Sets the Request Header Asynchronous Indicator for the next exchange.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_create_builder_set_asynchronous_indicator(
+    builder: *mut kmipkit_create_builder_t,
+    value: u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let handle = try_ffi!(reference_handle(builder, Kind::CreateBuilder));
+        let HandleValue::CreateBuilder(builder) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(mut state) = builder.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        state.asynchronous_indicator = Some(value);
+        SUCCESS
+    })
+}
+
+/// Validates the configured typed Create request without sending it.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_create_builder_validate(builder: *mut kmipkit_create_builder_t) -> i32 {
+    ffi_entrypoint(|| match create_builder_request(builder) {
+        Ok(_) => SUCCESS,
+        Err(status) => record_ffi_error(status),
+    })
+}
+
+/// Builds an independently owned typed Create batch item.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_create_builder_build_batch_item(
+    builder: *mut kmipkit_create_builder_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let (request, _) = match create_builder_request(builder) {
+            Ok(parts) => parts,
+            Err(status) => return record_ffi_error(status),
+        };
+        *out = try_ffi!(try_make_handle(
+            Kind::BatchItem,
+            HandleValue::BatchItem(Box::new(ClientBatchItem::new(ClientRequest::Create(
+                request,
+            )))),
+        ));
+        SUCCESS
+    })
+}
+
+/// Executes the typed Create request with the client's default exchange options.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_create_builder_execute_v1(
+    builder: *mut kmipkit_create_builder_t,
+    client: *mut kmipkit_client_t,
+    limits: *mut kmipkit_codec_limits_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| execute_create_builder(builder, client, limits, None, out_response))
+}
+
+/// Executes the typed Create request with explicit exchange-local options.
+///
+/// # Safety
+/// `options` must point to an aligned, initialized v1 record. All handles and
+/// output pointers must satisfy their declared C ABI contracts.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_create_builder_execute_with_options_v1(
+    builder: *mut kmipkit_create_builder_t,
+    client: *mut kmipkit_client_t,
+    limits: *mut kmipkit_codec_limits_t,
+    options: *const kmipkit_request_options_v1_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if options.is_null() || !options.is_aligned() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        // SAFETY: The non-null aligned pointer must reference one readable v1 record.
+        let options = unsafe { &*options };
+        execute_create_builder(builder, client, limits, Some(options), out_response)
+    })
+}
+
+/// Releases the opaque generic Create builder.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_create_builder_release(builder: *mut kmipkit_create_builder_t) {
+    ffi_entrypoint(|| release(builder, Kind::CreateBuilder));
 }
 
 /// Creates a detached, reusable Create Key Pair builder.

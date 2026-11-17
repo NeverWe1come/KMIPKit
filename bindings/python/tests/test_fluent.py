@@ -41,18 +41,26 @@ def test_create_builder_requires_object_type_and_builds_a_typed_create_item():
             builder = fluent.Request(None).create()
             with pytest.raises(errors.InvalidInputError):
                 builder.validate()
+            with pytest.raises(errors.InvalidInputError):
+                builder.with_asynchronous_indicator(1 << 32)
+            builder.close()
 
-            item = (
-                fluent.Request(None)
-                .create()
+            builder = (
+                fluent.Request(None).create()
                 .object_type(protocol_values.ObjectType.SYMMETRIC_KEY)
                 .attributes(attributes)
-                .to_batch_item()
+                .protection_storage_masks(empty_items)
+                .with_asynchronous_indicator(protocol_values.AsynchronousIndicator.PROHIBITED)
+                .with_options(client.RequestOptions())
             )
+            attributes.close()
+            empty_items.close()
+            item = builder.to_batch_item()
             try:
-                assert item.operation == 1
+                assert item.operation == protocol_values.Operation.CREATE
             finally:
                 item.close()
+                builder.close()
 
 
 def test_locate_and_revoke_build_typed_items_with_explicit_optional_fields():

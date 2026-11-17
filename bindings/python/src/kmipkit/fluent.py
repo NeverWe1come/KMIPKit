@@ -264,6 +264,9 @@ class Request:
     def create_symmetric_key(self) -> SymmetricKeyBuilder:
         return SymmetricKeyBuilder(client=self._client)
 
+    def create(self) -> CreateBuilder:
+        return CreateBuilder(client=self._client)
+
     def create_key_pair(self) -> CreateKeyPairBuilder:
         return CreateKeyPairBuilder(client=self._client)
 
@@ -1287,6 +1290,118 @@ class SymmetricKeyBuilder:
             pass
 
 
+class CreateBuilder:
+    """Owns a Rust-backed builder for one typed KMIP Create request."""
+
+    def __init__(self, *, client: Client | None = None) -> None:
+        output = ffi.new("kmipkit_create_builder_t **")
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_create_builder_create(output))
+        if output[0] == ffi.NULL:
+            errors.raise_for_status(7)
+        self._handle = output[0]
+        self._client = client
+        self._object_type: int | None = None
+        self._options: RequestOptions | None = None
+        self._asynchronous_indicator: int | None = None
+
+    def object_type(self, value: int) -> CreateBuilder:
+        self._ensure_open()
+        object_type = _unsigned(value, 32)
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(
+                lib.kmipkit_create_builder_set_object_type(self._handle, object_type)
+            )
+        self._object_type = object_type
+        return self
+
+    def attributes(self, value: attribute_operations.AttributeSet) -> CreateBuilder:
+        if not isinstance(value, attribute_operations.AttributeSet):
+            errors.raise_for_status(4)
+        self._ensure_open()
+        with value.as_items() as items:
+            with _NATIVE_CALL_LOCK:
+                _raise_client_status(lib.kmipkit_create_builder_set_attributes(
+                    self._handle,
+                    _client_abi_pointer("kmipkit_ttlv_structure_t *", items._pointer()),
+                ))
+        return self
+
+    def protection_storage_masks(self, masks: ttlv.Structure | None) -> CreateBuilder:
+        if masks is not None and not isinstance(masks, ttlv.Structure):
+            errors.raise_for_status(4)
+        self._ensure_open()
+        pointer = (
+            ffi.NULL if masks is None else
+            _client_abi_pointer("kmipkit_ttlv_structure_t *", masks._pointer())
+        )
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_create_builder_set_protection_storage_masks(
+                self._handle, pointer
+            ))
+        return self
+
+    def with_options(self, options: RequestOptions) -> CreateBuilder:
+        self._ensure_open()
+        if not isinstance(options, RequestOptions):
+            errors.raise_for_status(4)
+        self._options = options
+        return self
+
+    def with_asynchronous_indicator(self, value: int) -> CreateBuilder:
+        self._ensure_open()
+        indicator = _unsigned(value, 32)
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_create_builder_set_asynchronous_indicator(
+                self._handle, indicator
+            ))
+        self._asynchronous_indicator = indicator
+        return self
+
+    def validate(self) -> None:
+        self._ensure_open()
+        if self._object_type is None:
+            errors.raise_for_status(4)
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_create_builder_validate(self._handle))
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        self.validate()
+        return _build_fluent_batch_item(
+            self._handle, lib.kmipkit_create_builder_build_batch_item
+        )
+
+    to_batch_item = build
+
+    def execute(
+        self, limits: ttlv.CodecLimits, client: Client | None = None
+    ) -> BatchResult:
+        return _execute_fluent_builder(self, limits, client)
+
+    def close(self) -> None:
+        if self._handle != ffi.NULL:
+            with _NATIVE_CALL_LOCK:
+                lib.kmipkit_create_builder_release(self._handle)
+            self._handle = ffi.NULL
+
+    def _ensure_open(self) -> None:
+        if self._handle == ffi.NULL:
+            raise RuntimeError("fluent builder is closed")
+
+    def __enter__(self) -> CreateBuilder:
+        return self
+
+    def __exit__(self, *_: object) -> None:
+        self.close()
+
+    def __del__(self) -> None:
+        try:
+            self.close()
+        except Exception:  # noqa: BLE001 - finalizers must not raise during shutdown.
+            pass
+
+
 class CreateKeyPairBuilder:
     """Owns a native builder for a typed KMIP Create Key Pair request."""
 
@@ -1810,6 +1925,7 @@ class HashBuilder(_CryptoOperationBuilder):
 
 __all__ = [
     "AddAttributeBuilder",
+    "CreateBuilder",
     "CreateKeyPairBuilder",
     "DeleteAttributeBuilder",
     "DecryptBuilder",
