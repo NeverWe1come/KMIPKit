@@ -1979,6 +1979,34 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(all(event['public_api_symbol'] == 'kmipkit_client_batch_item_create'
                             for event in fields))
 
+    def test_archive_executes_isolated_key_lifecycle_and_reads_typed_response(self):
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                                if case['case_id'] == 'test-op-archive']}
+        network_combinations = tuple((encoding, transport)
+                                     for encoding in ('TTLV', 'JSON', 'XML')
+                                     for transport in ('raw_tls', 'https'))
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest,
+            network_combinations=network_combinations)
+        self.assertEqual(len(checks), 12)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        required_symbols = {
+            'kmipkit_client_batch_item_archive',
+            'kmipkit_client_batch_item_response_archive',
+        }
+        self.assertTrue(all(required_symbols <= set(check['public_api_trace_symbols'])
+                            for check in checks), checks)
+        archive_events = [event for event in events
+                          if event['target_id'] == 'KMIPKIT-ELEM-OP-C2S-ARCHIVE']
+        self.assertEqual(len(archive_events), 24)
+        self.assertEqual({event['action'] for event in archive_events}, {'construct', 'send'})
+        self.assertTrue(all(event['public_api_symbol'] == 'kmipkit_client_batch_item_archive'
+                            for event in archive_events))
+
     def test_lifecycle_peer_requires_cleanup_and_checks_illegal_destroy(self):
         import route_peer
         self.assertTrue(hasattr(route_peer, 'verify_lifecycle'), 'stateful lifecycle verification is missing')
