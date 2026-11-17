@@ -547,6 +547,23 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
   seconds, including both standalone controlled TLS peers. Exact-head CI and
   the global FR-003/FR-005 matrix remain open.
 
+## Development evidence: C two-item batch read constructors
+
+- Normative scope: OASIS KMIP 2.0/2.1 §§6.1.19 (Get), 6.1.21 (Get Attribute
+  List), 8.2–8.6, and 9.5–9.8, as recorded in the batch cases.
+- Red commit `73c9e66da` adds a test requiring direct and
+  `GetAttributeListRequest`-based constructors for both
+  `test-batch-count-matches-items` and
+  `test-batch-order-false-correlates-response-items`; it failed with only the
+  direct constructor's 24 checks.
+- Green commit `37cb057b7` adds the two cases to the standalone constructor
+  variants. The installed batch path verifies request and response counts and
+  correlates typed responses by Unique Batch Item ID; the peer reverses the
+  responses for the Batch Order Option false case.
+- Verification: both focused tests pass across KMIP 2.0/2.1 and all six
+  encoding/transport pairs, with direct and standalone variants. The full C
+  matrix and exact-head CI remain open.
+
 ## Development evidence: C MAC and Sign response TTLV accessors
 
 - Normative scope: OASIS KMIP v2.0 §6.1.31 MAC and §6.1.49 Sign; v2.1

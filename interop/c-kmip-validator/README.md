@@ -228,3 +228,10 @@ Option; the second omits it and checks the KMIP §9.8 default of true. Both
 verify ordered typed results, response identifier correlation, and a separate
 Revoke/Destroy cleanup exchange against the controlled TLS peer. This checks
 the C API and protocol behavior without claiming external KMS interoperability.
+
+The `test-batch-count-matches-items` and
+`test-batch-order-false-correlates-response-items` fixtures exercise both
+direct Get Attribute List construction and the standalone
+`GetAttributeListRequest` constructor through the installed C ABI. The peer
+reverses the two responses for the unordered batch and verifies correlation by
+Unique Batch Item ID.

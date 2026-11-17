@@ -31,6 +31,20 @@ effective value as true. Both scenarios pass all 24 version/encoding/transport
 cells. This is one route slice only: the full C matrix and the cross-language
 FR-003/FR-005 gates remain open.
 
+### C two-item batch read constructors
+
+For KMIPKIT-0092-FR-003, FR-005, and FR-009, the C
+`test-batch-count-matches-items` and
+`test-batch-order-false-correlates-response-items` scenarios execute both the
+direct Get Attribute List builder and the standalone `GetAttributeListRequest`
+builder followed by `kmipkit_client_batch_item_get_attribute_list_from_request`.
+The controlled peer checks Batch Count, response count, and Unique Batch Item
+ID correlation; it returns the unordered case's two responses in reverse
+order. OASIS KMIP 2.0/2.1 §§6.1.19, 6.1.21, 8.2–8.6, and 9.5–9.8 are the
+catalogued references. The two cases pass 48 constructor/transport checks.
+This closes only these two batch-construction slices; the full C and
+cross-language matrix gates remain open.
+
 ### C batch route follow-up
 
 For KMIPKIT-0092-FR-003 and FR-009, the C `test-batch-continue-after-failure`

@@ -1321,3 +1321,28 @@ and state transitions only, not behavior of an external KMS.
   seconds, including 112.82 seconds for the route-matrix contract suite and
   both standalone TLS peers. The exhaustive C matrix and exact-head CI remain
   open; this slice does not close FR-003/FR-005 globally.
+
+## C Two-item batch read constructor routes
+
+`test-batch-count-matches-items` and
+`test-batch-order-false-correlates-response-items` now run each C consumer case
+through both `kmipkit_client_batch_item_get_attribute_list` and the standalone
+`GetAttributeListRequest` constructor ending at
+`kmipkit_client_batch_item_get_attribute_list_from_request`. The typed
+consumer checks the two-item request and response counts and matches both
+results by Unique Batch Item ID. For Batch Order Option false, the controlled
+peer returns the responses in reverse order and verifies that the client still
+correlates the Get and Get Attribute List results correctly.
+
+The catalog cites OASIS KMIP 2.0/2.1 §§6.1.19, 6.1.21, 8.2–8.6, and 9.5–9.8.
+The peer verifies protocol structures and response correlation only; it does
+not claim behavior from an external KMS.
+
+- Red commit `73c9e66da` adds the standalone-route matrix assertion. The
+  focused test failed because only 24 direct-constructor checks were emitted;
+  48 direct and standalone checks were required.
+- Green commit `37cb057b7` enables the standalone request variant for both
+  cases and updates the combined two-item batch check from 60 to 84 checks.
+- Verification: both focused tests pass, including 48 checks across both
+  cases, protocol versions, encodings, transports, and constructor variants.
+  The exhaustive C matrix and exact-head CI remain open.
