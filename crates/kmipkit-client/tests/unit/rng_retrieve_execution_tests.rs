@@ -5,6 +5,8 @@
 //! Traceability: KMIPKIT-0041 FR-001–FR-008, SC-001–SC-003. This is Rust-only
 //! fake-transport evidence; it does not establish cross-language parity or
 //! two-server interoperability.
+//! Fluent construction and execution additionally trace to KMIPKIT-0093-FR-004,
+//! FR-007, and FR-008.
 //! `KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE`,
 //! `KMIPKIT-ELEM-ENUM-VALUE-OPERATION-RNG-RETRIEVE-00000025`,
 //! `KMIPKIT-ELEM-OPERATION-STRUCTURE-7-10-DATA-LENGTH`, and
@@ -31,6 +33,15 @@ const OPERATION: u32 = 0x0042_005C;
 const REQUEST_PAYLOAD: u32 = 0x0042_0079;
 const PENDING_CORRELATION: &[u8] = b"RNG_RETRIEVE_PENDING\x00\xff";
 const OUTPUT_SENTINEL: &[u8] = b"KMIP_RNG_RETRIEVE_SECRET_SENTINEL";
+
+fn assert_output_sentinel_is_redacted(value: &(impl std::fmt::Debug + std::fmt::Display)) {
+    assert!(!format!("{value:?}").contains("KMIP_RNG_RETRIEVE_SECRET_SENTINEL"));
+    assert!(
+        !value
+            .to_string()
+            .contains("KMIP_RNG_RETRIEVE_SECRET_SENTINEL")
+    );
+}
 
 fn output_length() -> i32 {
     i32::try_from(OUTPUT_SENTINEL.len()).expect("test output length fits i32")
@@ -123,13 +134,7 @@ fn rng_retrieve_sends_required_length_once_and_returns_redacted_secret_output() 
     };
     let output = response.data().expect("Table 317 returns required Data");
     assert!(output.with_bytes(|bytes| bytes == OUTPUT_SENTINEL));
-    assert!(!format!("{:?}", item.outcome()).contains("KMIP_RNG_RETRIEVE_SECRET_SENTINEL"));
-    assert!(
-        !item
-            .outcome()
-            .to_string()
-            .contains("KMIP_RNG_RETRIEVE_SECRET_SENTINEL")
-    );
+    assert_output_sentinel_is_redacted(item.outcome());
     assert_eq!(
         request_operation_and_length(captured.borrow().as_deref().expect("request was captured")),
         Some((RNG_RETRIEVE, output_length()))
@@ -317,18 +322,14 @@ fn fluent_rng_retrieve_executes_once_and_keeps_secret_output_redacted() {
     let ClientBatchOutcome::RngRetrieve(response) = item.outcome() else {
         panic!("RNG Retrieve returns its typed outcome");
     };
-    assert!(response.data().is_some_and(|data| {
-        data.with_bytes(|bytes| bytes == OUTPUT_SENTINEL)
-    }));
-    assert!(!format!("{:?}", item.outcome()).contains("KMIP_RNG_RETRIEVE_SECRET_SENTINEL"));
-    assert!(!item
-        .outcome()
-        .to_string()
-        .contains("KMIP_RNG_RETRIEVE_SECRET_SENTINEL"));
+    assert!(
+        response
+            .data()
+            .is_some_and(|data| { data.with_bytes(|bytes| bytes == OUTPUT_SENTINEL) })
+    );
+    assert_output_sentinel_is_redacted(item.outcome());
     assert_eq!(
-        request_operation_and_length(
-            captured.borrow().as_deref().expect("request was captured")
-        ),
+        request_operation_and_length(captured.borrow().as_deref().expect("request was captured")),
         Some((RNG_RETRIEVE, output_length()))
     );
     assert_eq!(transport.borrow().exchange_count(), 1);
@@ -360,6 +361,9 @@ fn fluent_rng_retrieve_preserves_pending_without_polling() {
         panic!("Pending remains explicit for the caller");
     };
     assert_eq!(pending.operation(), ClientOperation::RngRetrieve);
-    assert_eq!(pending.asynchronous_correlation_value(), PENDING_CORRELATION);
+    assert_eq!(
+        pending.asynchronous_correlation_value(),
+        PENDING_CORRELATION
+    );
     assert_eq!(transport.borrow().exchange_count(), 1);
 }
