@@ -100,11 +100,22 @@ fn ping_server(
     client: &mut Client,
     limits: &CodecLimits,
 ) -> Result<ClientBatchItemResponse, ClientError> {
-    client.ping(limits)
+    client.request().ping().execute(limits)
 }
 
 fn main() {}
 ```
+
+The Rust fluent `PingBuilder` builds the existing empty `PingRequest` with
+`.build()`, checks its payload locally with `.validate()`, or converts it to a
+typed batch item with `.to_batch_item()`. KMIP 2.1 §6.1.36, Tables 271–272
+defines the empty request and successful response. The execution path rejects
+KMIP 2.0 before sending. `.with_options(...)` sets exchange-local options;
+`.with_asynchronous_indicator(1)` explicitly permits Pending and retains the
+typed correlation value without polling. Batch conversion retains only the
+request; configure exchange options and asynchronous behavior on the batch.
+`Client::ping` remains available. Fluent Ping builders for C, Java, and Python
+are pending; their existing typed Ping execution routes remain available.
 
 ## Results, errors, and retries
 

@@ -1146,3 +1146,33 @@
   builder behavior is unchanged.
 - `cargo test --locked -p kmipkit-client --lib ping_execution_tests` again
   passes all eight Ping tests after the refactor.
+
+### Inventory, documentation, and local verification
+
+- Reconciled the fresh Rust 1.94 compiler inventory with
+  `tools/api_manifest/reconcile_rust_exports.py --report
+  target/ping-rust-exports.json --candidate-spec-id KMIPKIT-0093
+  --requirement-id KMIPKIT-0093-FR-011 --write`: nine blocked Ping declarations
+  and nine exact standard-trait exclusions were added. Preserved the original
+  order and exact contents of existing exclusions through the reconciler's
+  serializer, then regenerated all outputs with
+  `python3 -B tools/api_manifest/generate.py --write`.
+- The manifest snapshot test first failed at `20303 != 20294`; its expected
+  full-manifest totals now include exactly the nine new declarations and nine
+  trait exclusions. All eight focused snapshot/PKCS#11 contracts pass.
+- The independent Rust export report also found eight pre-existing stale
+  `object_class_mask` module/value paths in the generated KMIP 3.0 namespace
+  under `kmipkit_protocol` and `kmipkit::protocol`. No new Ping path remains
+  missing after reconciliation; this is not a claim of a globally clean Rust
+  audit. Historical checked-in audit snapshots remain unchanged.
+- Passed `cargo fmt --all --check`,
+  `cargo clippy --locked --workspace --all-targets --all-features -- -D warnings`,
+  38 Rust export/reconciliation contracts, and 33 requirement/feature
+  traceability contracts. Six marked examples in the English and Spanish
+  Query/Ping guides compile through `scripts/test_user_guide_examples.py`.
+- `cargo llvm-cov test --locked -p kmipkit-client --lib --all-features --lcov
+  --output-path target/ping.lcov ping_execution_tests` passes eight tests.
+  The Ping constructor/builder region has 29/29 covered executable lines.
+- A first workspace run hit an infrastructure ENOENT in trybuild while coverage
+  cleanup ran concurrently. The workspace suite is being rerun sequentially
+  after coverage completed; hosted CI must independently verify the PR head.
