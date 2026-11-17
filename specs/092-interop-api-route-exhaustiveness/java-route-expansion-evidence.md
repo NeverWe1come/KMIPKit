@@ -2062,6 +2062,38 @@ python3 interop/java-kmip-validator/tools/compare_route_ledger.py
 git diff --check
 ```
 
+## Java KMIP 2.1 Set Endpoint Role response route sync — 2026-11-17
+
+The KMIP 3.0 builders branch includes the Java route-matrix response-field
+coverage from #187. OASIS KMIP 2.1 §6.1.54 Table 332 defines Endpoint Role as
+the role accepted by the server; §11.19 defines Client value 1. The controlled
+fixture exercises generic TTLV Item creation, view, and decode for the response
+field and operation Enumeration, adding six selected cells.
+
+The full Java suite passes 57/57 tests with `--rerun-tasks`; all 68 shared
+route-capability tests pass and the generator check reports 1,507 routes.
+Selected-scope validation accepts 27,240/27,240 cells with zero failures. The
+ledger records 71,641 planned, 27,240 executed, and 44,401 pending cells across
+1,222 pending case IDs. The comparer passes after refresh. The global matrix is
+incomplete and #213 stays WIP.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks
+python3 -m unittest interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+python3 interop/shared/tools/validate_route_evidence.py \
+  --selected-scope --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+git diff --check
+```
+
 ## Extension Tag route sync into KMIP 3.0 builders stack — 2026-11-17
 
 The branch was synchronized with Java route-matrix head `bf123d1ad`, adding
