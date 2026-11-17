@@ -377,13 +377,21 @@ fn fluent_builder_validates_builds_and_converts_to_the_typed_batch_item() {
         client.request().get_usage_allocation().validate(),
         Err(FluentBuildError::MissingUsageLimitsCount)
     );
+    client
+        .request()
+        .get_usage_allocation()
+        .usage_limits_count(0)
+        .validate()
+        .expect("the typed request does not impose a stateless positive-count rule");
     assert_eq!(
         client
             .request()
             .get_usage_allocation()
             .usage_limits_count(0)
-            .validate(),
-        Err(FluentBuildError::InvalidRequest)
+            .build()
+            .expect("zero is preserved by the existing typed request")
+            .usage_limits_count(),
+        0
     );
 
     let request = client
@@ -447,6 +455,7 @@ fn fluent_builder_preserves_pending_correlation_without_follow_up() {
         .request()
         .get_usage_allocation()
         .usage_limits_count(1)
+        .unique_identifier(UniqueIdentifier::TextString(OBJECT_ID.to_owned()))
         .with_asynchronous_indicator(1)
         .execute(&CodecLimits::defaults())
         .expect("Pending remains an explicit typed outcome");

@@ -10,12 +10,13 @@ use kmipkit_protocol::{
     AttributeReference, AttributeSet, AttributeSetError, CreateKeyPairRequest, CreateRequest,
     CreateSplitKeyRequest, CryptographicAlgorithm, CryptographicParameters, CurrentAttribute,
     DecryptRequest, DeleteAttributeRequest, DestroyRequest, EncryptRequest,
-    GetAttributeListRequest, GetAttributesRequest, GetRequest, HashRequest, LocateRequest,
-    MacRequest, MacVerifyRequest, ManagedObject, NewAttribute, ObjectGroupMember, ObjectType,
-    OpaqueObjectContext, OperationData, PingRequest, RecertifyRequest, RecoverRequest,
-    RegisterRequest, RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest,
-    SecretBytes, SetAttributeRequest, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
-    StorageStatusMask, UniqueIdentifier, ValidateKmipRequest,
+    GetAttributeListRequest, GetAttributesRequest, GetRequest, GetUsageAllocationRequest,
+    HashRequest, LocateRequest, MacRequest, MacVerifyRequest, ManagedObject, NewAttribute,
+    ObjectGroupMember, ObjectType, OpaqueObjectContext, OperationData, PingRequest,
+    RecertifyRequest, RecoverRequest, RegisterRequest, RekeyKeyPairRequest, RekeyRequest,
+    RevocationReason, RevokeRequest, SecretBytes, SetAttributeRequest, SignRequest,
+    SignatureVerifyRequest, SplitKeyMethod, StorageStatusMask, UniqueIdentifier,
+    ValidateKmipRequest,
 };
 use kmipkit_transport::{RequestDeliveryState, RequestOptions};
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
@@ -103,6 +104,8 @@ pub enum FluentBuildError {
     MissingCreateSplitKeyThreshold,
     /// Hash is missing its caller-selected Cryptographic Parameters.
     MissingHashCryptographicParameters,
+    /// Get Usage Allocation is missing Usage Limits Count.
+    MissingUsageLimitsCount,
     /// Register is missing its object.
     MissingRegisterObject,
     /// Register's object or context is invalid.
@@ -151,6 +154,7 @@ impl fmt::Display for FluentBuildError {
             Self::MissingHashCryptographicParameters => {
                 "Hash requires caller-selected Cryptographic Parameters"
             }
+            Self::MissingUsageLimitsCount => "Get Usage Allocation requires Usage Limits Count",
             Self::MissingRegisterObject => "Register requires an object",
             Self::InvalidRegisterObject => "Register object or context is invalid",
             Self::MissingSetAttributeAttribute => "Set Attribute requires one New Attribute",
@@ -266,6 +270,15 @@ impl<'a> RequestBuilder<'a> {
     #[must_use]
     pub fn get_attribute_list(self) -> GetAttributeListBuilder<'a> {
         GetAttributeListBuilder::new(self.client)
+    }
+
+    /// Begins a typed Get Usage Allocation request with Usage Limits Count unset.
+    ///
+    /// The Unique Identifier is optional when the surrounding batch context
+    /// establishes the KMIP ID Placeholder.
+    #[must_use]
+    pub fn get_usage_allocation(self) -> GetUsageAllocationBuilder<'a> {
+        GetUsageAllocationBuilder::new(self.client)
     }
 
     /// Begins constructing a typed Destroy request for an explicit identifier.
@@ -437,6 +450,122 @@ impl PingBuilder<'_> {
     ) -> Result<ClientBatchItemResponse, ClientError> {
         self.execution
             .run(ClientRequest::Ping(PingRequest::new()), limits)
+    }
+}
+
+/// A fluent Get Usage Allocation builder for OASIS KMIP v2.1 §6.1.23,
+/// Tables 232–234. It delegates request validation and protocol-version
+/// eligibility to the existing typed client path.
+pub struct GetUsageAllocationBuilder<'a> {
+    execution: FluentBuilderExecution<'a>,
+    unique_identifier: Option<UniqueIdentifier>,
+    usage_limits_count: Option<i64>,
+}
+
+impl<'a> GetUsageAllocationBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            execution: FluentBuilderExecution::new(client),
+            unique_identifier: None,
+            usage_limits_count: None,
+        }
+    }
+
+    /// Selects the object whose protection usage should be allocated.
+    ///
+    /// Omit this when the KMIP ID Placeholder resolves the object from an
+    /// earlier batch operation.
+    #[must_use]
+    pub fn unique_identifier(mut self, value: UniqueIdentifier) -> Self {
+        self.unique_identifier = Some(value);
+        self
+    }
+
+    /// Sets the caller-requested Usage Limits Count.
+    #[must_use]
+    pub const fn usage_limits_count(mut self, value: i64) -> Self {
+        self.usage_limits_count = Some(value);
+        self
+    }
+
+    /// Sets exchange-local options without changing client policy.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.execution = self.execution.with_options(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.execution = self.execution.with_asynchronous_indicator(value);
+        self
+    }
+
+    fn typed_request(&self) -> Result<GetUsageAllocationRequest, FluentBuildError> {
+        let count = self
+            .usage_limits_count
+            .ok_or(FluentBuildError::MissingUsageLimitsCount)?;
+        let mut request = GetUsageAllocationRequest::new(count);
+        if let Some(identifier) = &self.unique_identifier {
+            request = request.with_unique_identifier(identifier.clone());
+        }
+        validate_fluent_request(&request)?;
+        Ok(request)
+    }
+
+    /// Validates required builder fields and the existing typed request rules.
+    ///
+    /// # Errors
+    /// Returns [`FluentBuildError::MissingUsageLimitsCount`] when Usage Limits
+    /// Count is absent, or [`FluentBuildError::InvalidRequest`] when the typed
+    /// request rejects the supplied values.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        self.typed_request().map(drop)
+    }
+
+    /// Builds the existing typed Get Usage Allocation request.
+    ///
+    /// # Errors
+    /// Returns a build error when a required field is absent or typed request
+    /// validation fails.
+    pub fn build(self) -> Result<GetUsageAllocationRequest, FluentBuildError> {
+        self.typed_request()
+    }
+
+    /// Converts the request to a typed batch item without sending it.
+    ///
+    /// # Errors
+    /// Returns a build error when a required field is absent or typed request
+    /// validation fails.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        Ok(ClientBatchItem::new(ClientRequest::get_usage_allocation(
+            self.build()?,
+        )))
+    }
+
+    /// Executes at most one exchange through the existing typed client path.
+    ///
+    /// Pending remains an explicit outcome; this builder does not poll or
+    /// retry. Protocol-version eligibility is checked by the client before
+    /// sending.
+    ///
+    /// # Errors
+    /// Returns the existing sanitized validation, protocol, or transport error
+    /// with its request-delivery evidence.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let request = self.typed_request().map_err(|error| {
+            ClientError::validation(
+                ClientCauseCategory::InvalidInput,
+                RequestDeliveryState::NotSent,
+                error,
+            )
+        })?;
+        self.execution
+            .run(ClientRequest::get_usage_allocation(request), limits)
     }
 }
 
