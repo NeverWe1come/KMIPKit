@@ -8774,11 +8774,14 @@ int kmipkit_client_abi_c_consumer_checks_fluent_create_builder(void) {
     attributes = 0;
     kmipkit_ttlv_structure_release(protection_masks);
     protection_masks = 0;
-    if (kmipkit_create_builder_set_object_type(builder, UINT32_C(2)) != 0 ||
-        kmipkit_create_builder_set_asynchronous_indicator(builder, UINT32_C(1)) != 0 ||
+    if (kmipkit_create_builder_set_object_type(
+            builder, KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY) != 0 ||
+        kmipkit_create_builder_set_asynchronous_indicator(
+            builder, KMIPKIT_ENUMERATION_ASYNCHRONOUS_INDICATOR_MANDATORY) != 0 ||
         kmipkit_create_builder_validate(builder) != 0 ||
         kmipkit_create_builder_build_batch_item(builder, &item) != 0 || item == 0 ||
-        kmipkit_client_batch_item_operation(item, &operation) != 0 || operation != 1) {
+        kmipkit_client_batch_item_operation(item, &operation) != 0 ||
+        operation != KMIPKIT_ENUMERATION_OPERATION_CREATE) {
         goto cleanup;
     }
     result = 1;

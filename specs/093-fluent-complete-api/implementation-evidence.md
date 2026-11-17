@@ -1443,3 +1443,61 @@
 - The slice remains WIP; exact-head CI and workspace-level verification are
   still required. It does not close
   KMIPKIT-0093-FR-011 or operation-wide O001/O002.
+
+## Four-language generic Create builder slice
+
+### Red
+
+- Commit `f22c4447b` adds the C consumer, Java facade, Python behavior, and API
+  manifest contract tests. Before the bindings existed, the Java test failed to
+  compile because `CreateBuilder` was absent. The manifest test failed because
+  the C builder symbols and four-language declarations were missing.
+- The Python behavior test exposed that a missing Object Type reached the
+  generic client error path instead of raising the binding's local
+  `InvalidInputError`; this drove the explicit required-field validation in
+  `CreateBuilder.validate()`.
+- Red commit `ebcb832d0` adds a contract test for the Java and Python aliases.
+  It failed before reconciliation because those four declarations were absent.
+  The post-Green public export audit found the same unmapped aliases: Java
+  `close()`/`toBatchItem()` and Python `close()`/`to_batch_item()`. The new
+  complete audit reported two missing declarations for each binding while C
+  matched exactly.
+
+### Green
+
+- The C ABI now owns a reusable opaque Create builder over the typed Rust
+  `CreateRequest`, copies direct Attributes and optional Protection Storage
+  Masks, validates before sending, converts to a typed batch item, and executes
+  one item with request options and the explicit Asynchronous Indicator.
+- Java/JNI and Python/CFFI expose matching builders, local Object Type
+  validation, batch conversion, options, async indicators, and explicit close
+  or context-manager ownership. Both bindings copy the caller's Attributes
+  before retaining the request.
+- `specification/api/public-api.json` and its generated outputs now declare the
+  C ABI and four-language builder capability. The Rust runtime capability query
+  and FFI metadata inventory report the new capability.
+- Green commit `36e70cb36` adds the typed C ABI, JNI/CFFI facades, compiled
+  consumer checks, lifecycle parity, and generated manifest mappings.
+- The alias mappings are now declared in the canonical manifest and generated
+  outputs. The focused manifest tests pass 4/4 and the complete C/Java/Python
+  export audit passes with no missing, stale, kind-mismatched, or incomplete
+  declarations: C 2,723 observed / 2,663 matched, Java 3,815 / 3,089, and
+  Python 4,429 / 3,356.
+- Local verification: FFI tests pass 479/479, compiled C API tests 64/64, and
+  the 56-route parity test passes. The Python suite passes 1,383 tests and 121
+  subtests. The full Java suite succeeds with 730 reported cases, zero failures,
+  zero errors, and one skipped test; the focused Create ownership/async/alias
+  test also passes. Generated API outputs are current,
+  `cargo fmt --all --check`, `cargo clippy -p kmipkit-ffi
+  --all-targets --all-features -- -D warnings`, and `git diff --check` pass.
+
+### Refactor and documentation
+
+- The post-Green review aligned the runtime capability query with the newly
+  generated C capability list and records that C, Java, and Python take
+  independent copies of Attributes. English and Spanish managed-object guides
+  now show typed Create construction and explain that batch conversion does
+  not send a request.
+- Exact-head hosted CI has not yet run. This slice remains `[WIP]` pending its
+  draft PR checks; this evidence does not close operation-wide parity or the
+  overall KMIPKIT-0093 objective.

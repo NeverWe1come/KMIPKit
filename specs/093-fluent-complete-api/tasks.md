@@ -161,14 +161,25 @@ Dependent work branches from the unmerged parent head while review is pending.
   tools.api_manifest.tests.test_0093_create_builder_manifest -v` failed because
   Rust builder declarations remained blocked, the C ABI had no Create builder
   functions, and the Python lifecycle had no manifest mapping.
-- [ ] CRB002 Implement the opaque C builder over the typed Rust Create request,
+- [x] CRB002 Implement the opaque C builder over the typed Rust Create request,
   with copy-preserving attributes and masks, validation, batch conversion,
-  one-exchange execution, and explicit ownership.
-- [ ] CRB003 Add Java and Python Create builders with matching validation,
+  one-exchange execution, and explicit ownership. Green evidence: the focused
+  C consumer test `c_consumer_builds_a_typed_create_item_with_the_fluent_builder`
+  passed.
+- [x] CRB003 Add Java and Python Create builders with matching validation,
   batch conversion, exchange options, asynchronous indicators, and ownership.
-- [ ] CRB004 Reconcile the public API manifest through repository tooling,
+  Red evidence: the focused Java test failed to compile because `CreateBuilder`
+  was absent; the Python behavior test showed missing Object Type validation
+  surfaced as a generic client execution error. Green evidence: the focused
+  Java facade test and Python builder test passed after implementation.
+- [x] CRB004 Reconcile the public API manifest through repository tooling,
   regenerate declared outputs, update both user guides and traceability, and
-  pass focused tests and exact-head CI before human review.
+  pass focused tests plus the complete C/Java/Python export audit. The first
+  full audit found four missing alias mappings; the alias contract failed Red
+  and passes after all four declarations were generated.
+- [ ] CRB005 Push the `[WIP]` draft PR and fix every exact-head CI failure.
+  When all checks for its head pass, remove `[WIP]` and mark this slice ready
+  for human review; continue other KMIPKIT-0093 slices independently.
 
 ### Create Key Pair parity slice
 
