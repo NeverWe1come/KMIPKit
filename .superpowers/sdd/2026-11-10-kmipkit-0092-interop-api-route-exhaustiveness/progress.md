@@ -349,3 +349,23 @@ branches, and the common CI therefore reports a planned matrix only.
   `python3 tools/compare_route_ledger.py`.
 - This branch still has the Java global matrix incomplete and no vendor KMS
   interoperability result; #213 remains WIP.
+
+## 2026-11-17 #213 Batch Order Option stack sync
+
+- Synced the latest #187 Batch Order Option slice into the KMIP 3.0
+  Java/Python branch. The combined Java report invokes 27,262/27,262 selected
+  cells with zero failures and leaves 44,379/71,641 global cells pending across
+  1,219 case IDs.
+- The complete Java suite passes 57/57 tests with no failures or skips.
+  Red/Green/Refactor commits are `234626a25`, `4741dad52`, and `bd9cc43a5` on
+  #187; the route validator and ledger comparisons pass.
+- Verification commands: `bash ../../bindings/java/gradlew --no-daemon
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks`;
+  `python3 ../shared/tools/validate_route_evidence.py --selected-scope --report
+  build/route-execution-evidence.json --artifact-sha256
+  504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545
+  --write-ledger`; `python3 tools/compare_route_ledger.py --refresh-reference`;
+  `python3 tools/compare_route_ledger.py`.
+- The ledger is regenerated from the validated report. Java matrix coverage is
+  incomplete and the controlled fixture does not establish vendor KMS
+  interoperability; #213 remains WIP.
