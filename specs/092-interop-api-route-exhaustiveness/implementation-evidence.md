@@ -175,3 +175,28 @@ cryptographic validity. OASIS references are KMIP v2.0 §6.1.32 and v2.1
 C path and controlled peer. The focused test passes all 12 version/encoding/
 transport checks; CTest passes 7/7 with 167 route-matrix contract tests. The
 other pending operation routes remain open under FR-003/FR-005.
+
+## C isolated Sign and Signature Verify routes
+
+The authoritative test-catalog generator now models the normative key types:
+Create Key Pair with Sign usage on the Private Key for `test-op-sign`, and
+Create Key Pair with Verify usage on the Public Key for
+`test-op-signature-verify`. The setup activates the selected key and cleanup
+revokes/destroys it and destroys its pair. This corrects the prior generic
+SymmetricKey recipe based on OASIS KMIP v2.0/v2.1 §12.1 Table 61, which says Sign
+is valid for PGP Key or Private Key and Verify for PGP Key, Certificate, or
+Public Key. The generated cases include §12.1 alongside their operation
+sections.
+
+The installed C client executes ordered Create Key Pair/Activate/Sign or
+Signature Verify/Revoke/Destroy/Destroy batches with ID selectors for the
+respective pair members. Both keys use RSA-2048; the Private Key has Sign usage
+and the Public Key has Verify usage. The peer checks the exact request fields,
+result identifiers, typed 256-byte signature or `Valid` response, item IDs, and
+state cleanup. Since the key pair is random and the verify signature input is
+not derived from it, these fixtures verify request/response structure and API
+behavior only, not cryptographic correctness. Red `e80371257`, `2782a91dc`, and
+`5a855d802` demonstrated the misassigned fixture and missing C routes; Green
+`bd6d9b0c8` and `389ac4465` corrected the generated recipe and implemented both
+routes. Each focused route passed 12/12 combinations; catalog checks passed;
+CTest passed 7/7. Other route cells remain pending under FR-003/FR-005.

@@ -173,3 +173,11 @@ the key. The peer checks the complete ordered request and returns a typed
 Validity Indicator of `Valid`; the C consumer checks that typed field and the
 created key identifier. The generated key is random, so the fixture does not
 establish cryptographic validity of the supplied MAC.
+
+The `test-op-sign` and `test-op-signature-verify` routes create an RSA-2048 key
+pair with separate usage masks: Sign on the Private Key and Verify on the Public
+Key. Each ordered batch activates the selected key, executes the operation, then
+revokes and destroys the selected key and destroys its pair. The request uses
+the explicit SHA-256 with RSA signature algorithm. The peer checks the full
+request tree and typed response shape. Create generates a random pair, so the
+fixed signature inputs and response do not establish cryptographic validity.

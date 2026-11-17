@@ -1205,3 +1205,37 @@ or diagnostics.
   `git diff --check` passed. CTest passed 7/7 in 92.61 seconds, including 167
   route-matrix contract tests and both controlled TLS peers. The complete C
   matrix and exact-head CI remain open.
+
+## C Sign and Signature Verify routes
+
+OASIS KMIP v2.0 §6.1.49/§6.1.50 and v2.1 §6.1.55/§6.1.56 define Sign and
+Signature Verify; §12.1 defines the Cryptographic Usage Mask key-type
+constraints. The generated catalog previously assigned SymmetricKey setup to
+both operations, which conflicts with §12.1: Sign usage is valid for PGP Key or
+Private Key, and Verify usage is valid for PGP Key, Certificate, or Public Key.
+The generator now describes Create Key Pair setup with Sign on its Private Key
+and Verify on its Public Key, records the additional normative references, and
+models activation and cleanup explicitly.
+
+The installed C consumer exercises both routes through one ordered batch. It
+creates an RSA-2048 key pair with separate Sign and Verify masks, activates the
+selected key through the corresponding Create Key Pair identifier, sends
+SHA-256 with RSA parameters and fixed data (plus fixed Signature Data for
+Signature Verify), then revokes and destroys the selected key and destroys its
+pair. It checks both Create Key Pair identifiers, every typed lifecycle result,
+the 256-byte Sign Signature Data shape or the Signature Verify `Valid` enum,
+response IDs, and complete cleanup. The controlled peer checks the exact
+request structure and lifecycle. The pair is random and the Signature Verify
+input is not derived from it, so the fixture validates protocol fields and
+typed access only; it makes no cryptographic correctness claim.
+
+- Catalog Red `e80371257`: the new normative test failed because both cases
+  still specified `Create unique SymmetricKey`. Catalog Green `bd6d9b0c8`:
+  corrected the generator and regenerated the JSON with the §12.1 references.
+- Sign Red `2782a91dc` and Signature Verify Red `5a855d802`: focused route tests
+  failed because their installed C routes were missing. Green `389ac4465` adds
+  both typed routes, controlled-peer checks, and the key-type recipe assertions.
+- Verification: each focused C route passed all 12 version/encoding/transport
+  combinations. The normative inventory test and catalog `--check` passed;
+  CTest passed 7/7 in 95.47 seconds, including both controlled TLS peers. The
+  complete C matrix and exact-head CI remain open.
