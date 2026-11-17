@@ -1393,3 +1393,81 @@ and state transitions only, not behavior of an external KMS.
   seconds, including 112.82 seconds for the route-matrix contract suite and
   both standalone TLS peers. The exhaustive C matrix and exact-head CI remain
   open; this slice does not close FR-003/FR-005 globally.
+
+## C Two-item batch read constructor routes
+
+`test-batch-count-matches-items` and
+`test-batch-order-false-correlates-response-items` now run each C consumer case
+through both `kmipkit_client_batch_item_get_attribute_list` and the standalone
+`GetAttributeListRequest` constructor ending at
+`kmipkit_client_batch_item_get_attribute_list_from_request`. The typed
+consumer checks the two-item request and response counts and matches both
+results by Unique Batch Item ID. For Batch Order Option false, the controlled
+peer returns the responses in reverse order and verifies that the client still
+correlates the Get and Get Attribute List results correctly.
+
+The catalog cites OASIS KMIP 2.0/2.1 §§6.1.19, 6.1.21, 8.2–8.6, and 9.5–9.8.
+The peer verifies protocol structures and response correlation only; it does
+not claim behavior from an external KMS.
+
+- Red commit `73c9e66da` adds the standalone-route matrix assertion. The
+  focused test failed because only 24 direct-constructor checks were emitted;
+  48 direct and standalone checks were required.
+- Green commit `37cb057b7` enables the standalone request variant for both
+  cases and updates the combined two-item batch check from 60 to 84 checks.
+- Verification: both focused tests pass, including 48 checks across both
+  cases, protocol versions, encodings, transports, and constructor variants.
+  The exhaustive C matrix then reported both cases fully invoked and no
+  pending cells for either case.
+
+## C batch response view decoders
+
+For successful results in the two-item Get/Get Attribute List workflows, the
+installed C consumer also reads response metadata v1, raw TTLV payload,
+response header TTLV, and pending correlation. It checks that both payload and
+header structures are present and nonempty, that the v1 result status matches
+the typed v2 status, and that synchronous successful items have no pending
+correlation or Result Reason. The existing failed-Get path validates its
+header, absent payload, and absent correlation through the same public accessors.
+
+The catalog maps these routes to OASIS KMIP 2.0/2.1 §§6.1.19, 6.1.21, 8.3,
+8.6, and 9.7. The response view checks validate the controlled fixture shape;
+they do not claim external KMS behavior.
+
+- Red commit `8669cbb9b` requires all four response view accessors in both
+  batch read cases; the focused test failed because the installed consumer
+  exposed only typed v2 metadata and Unique Batch Item ID.
+- Green commit `292f0c5fe` reads and validates the v1 metadata, raw payload,
+  response header, and pending-correlation accessors for each successful item.
+- Verification: both focused tests pass, including count-matched batches,
+  reversed unordered responses, and the continued-batch failure route. Full
+  CTest passes 7/7, including 175 route-matrix contract tests, in 103.52
+  seconds. The exhaustive C matrix at `292f0c5fe` reports 42,349/66,736 cells
+  invoked, zero failed, and 24,387 pending; both target cases have zero pending
+  cells. The matrix gate remains open.
+
+## C Batch Count mismatch transport check
+
+The C `test-batch-count-mismatch-rejected` route sends the catalog's two-item
+Get/Get Attribute List case through both direct and standalone constructors.
+The catalog classifies the shared scenario as `local_model`; this C exchange is
+additional evidence for its assertion that no inconsistent count is sent.
+Before responding, the controlled TLS peer checks for `Batch Count = 2` and
+exactly two request items, then returns two successful results. It validates
+the C client and fixture request shape, not external KMS behavior.
+
+- Red commit `729fbc3a6` requires both constructors across KMIP 2.0/2.1 and the
+  six encoding/transport pairs; it failed with zero executed cells.
+- Green commit `a876c06a1` connects the case to the two-item C consumer and
+  controlled peer, which rejects any request without the matching count and
+  item cardinality.
+- Refactor commit `482a66413` reuses the named workflow selection in the C
+  driver and makes the peer reject duplicate Batch Count tags as well as wrong
+  values.
+- Normative scope: OASIS KMIP 2.0/2.1 §§8.1–8.6, 9.5–9.8, 9.21, 6.1.19, and
+  6.1.21.
+- Verification: after Refactor, CMake build and the focused test passed all
+  24 checks; CTest passed 7/7 in 152.03 seconds. The exhaustive matrix at the
+  Green commit recorded 42,475/66,736 cells invoked, zero failed, and 24,261
+  pending; this case has zero pending cells, a reduction of 126. The global
+  matrix gate remains open.
