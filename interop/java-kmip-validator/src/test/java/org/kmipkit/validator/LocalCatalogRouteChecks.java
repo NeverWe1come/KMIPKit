@@ -193,6 +193,62 @@ final class LocalCatalogRouteChecks {
         }
     }
 
+    /** Executes generic TTLV routes for catalogued scalar structure members. */
+    static void executeScalarStructureMembers(JsonNode catalog, String version, Set<String> selectedCaseIds,
+            EvidenceSink sink) throws Exception {
+        Set<String> emitted = new java.util.HashSet<>();
+        CodecLimits limits = CodecLimits.defaults();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String caseId = testCase.path("case_id").asText();
+            if (!selectedCaseIds.contains(caseId)
+                    || !"local_model".equals(testCase.path("execution").path("mode").asText())
+                    || !applies(testCase, version)) continue;
+            JsonNode requires = testCase.path("requires");
+            if (!"structure_member".equals(requires.path("target_kind").asText())) {
+                throw new IllegalArgumentException("Selected case is not a structure member: " + caseId);
+            }
+            String targetId = requires.path("normative_target_id").asText();
+            JsonNode target = findTarget(catalog, targetId);
+            String encoding = target.path("source_encoding").asText();
+            TtlvItemType itemType = scalarMessageFieldType(encoding);
+            String targetName = target.path("name").asText();
+            int tagCode = tagCodeNamed(catalog, targetName, version);
+            byte[] valueBytes = scalarMessageFieldBytes(caseId, encoding);
+            long numericValue = scalarMessageFieldNumber(caseId, encoding);
+            byte[] wire = scalarWire(tagCode, itemType.code(), valueBytes);
+            try (TtlvValue value = scalarMessageFieldValue(encoding, valueBytes, numericValue, limits);
+                    RawTag raw = RawTag.fromRaw(tagCode);
+                    Tag tag = raw.checked();
+                    TtlvItem item = TtlvItem.create(tag, value, limits);
+                    var itemView = item.view();
+                    var itemTag = itemView.tag();
+                    var itemValue = itemView.value()) {
+                assertEquals(tagCode, itemTag.raw());
+                assertScalarMessageFieldValue(itemValue, itemType, valueBytes, numericValue);
+            }
+            try (TtlvItem decoded = TtlvCodec.decode(wire);
+                    var decodedView = decoded.view();
+                    var decodedTag = decodedView.tag();
+                    var decodedValue = decodedView.value()) {
+                assertEquals(tagCode, decodedTag.raw());
+                assertScalarMessageFieldValue(decodedValue, itemType, valueBytes, numericValue);
+            }
+            emitRoute(sink, caseId, targetId, scalarMessageFieldConstructorRoute(encoding),
+                    scalarMessageFieldConstructor(encoding), "construct", wire);
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_item.create",
+                    "org.kmipkit.ttlv.TtlvItem.create", "construct", wire);
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.function.ttlv_item_view_from_item",
+                    "org.kmipkit.ttlv.TtlvItem.view", "decode", wire);
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_codec.decode",
+                    "org.kmipkit.ttlv.TtlvCodec.decode", "decode", wire);
+            emitted.add(caseId);
+        }
+        if (!emitted.equals(selectedCaseIds)) {
+            throw new IllegalArgumentException("Selected scalar structure member cases were not executed for "
+                    + version);
+        }
+    }
+
     /**
      * Executes the repeatable Any object-attribute member with a Name attribute.
      * The Name structure follows OASIS KMIP 2.0/2.1 §4.32; the six member cases

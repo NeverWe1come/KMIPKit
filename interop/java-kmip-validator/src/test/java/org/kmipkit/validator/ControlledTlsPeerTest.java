@@ -826,11 +826,13 @@ class ControlledTlsPeerTest {
         int typedTagIdentityEventCount = 0;
         int booleanFieldRouteEventCount = 0;
         int scalarMessageFieldRouteEventCount = 0;
+        int scalarStructureMemberRouteEventCount = 0;
         int anyObjectAttributeRouteEventCount = 0;
         int scalarTypedParserEventCount = 0;
         int itemTypeRouteEventCount = 0;
         Set<String> booleanFieldCaseIds = new java.util.HashSet<>();
         Set<String> anyObjectAttributeCaseIds = new java.util.HashSet<>();
+        Set<String> scalarStructureMemberCaseIds = new java.util.LinkedHashSet<>();
 
         for (String protocolVersion : KMIP_2_0_AND_2_1) {
             appendLocalQueryRouteEvents(events, protocolVersion, requestTreeHash);
@@ -1087,12 +1089,24 @@ class ControlledTlsPeerTest {
                 appendLocalCatalogInvocation(events, protocolVersion, invocation);
             }
             anyObjectAttributeRouteEventCount += anyObjectAttributeInvocations.size();
+            Set<String> missingScalarStructureMemberCases = missingScalarStructureMemberRouteCaseIds(events,
+                    protocolVersion);
+            scalarStructureMemberCaseIds.addAll(missingScalarStructureMemberCases);
+            List<LocalCatalogRouteChecks.Invocation> scalarStructureMemberInvocations = new ArrayList<>();
+            LocalCatalogRouteChecks.executeScalarStructureMembers(readRouteEvidenceCatalog(), protocolVersion,
+                    missingScalarStructureMemberCases, scalarStructureMemberInvocations::add);
+            for (LocalCatalogRouteChecks.Invocation invocation : scalarStructureMemberInvocations) {
+                appendLocalCatalogInvocation(events, protocolVersion, invocation);
+            }
+            scalarStructureMemberRouteEventCount += scalarStructureMemberInvocations.size();
+            assertScalarStructureMemberGenericRouteEvidence(events, protocolVersion);
         }
 
         int tagAggregateEventCount = appendTagAggregateRouteEvents(events);
         assertEquals(expectedTagAggregateEventCount(), tagAggregateEventCount,
                 "The Tag aggregate must represent every catalogued tag and tag-allocation range cell.");
-        writeRouteExecutionReport(reportPath, mapper, events);
+        int scalarStructureMemberCaseCountAdded = writeRouteExecutionReport(reportPath, mapper, events,
+                scalarStructureMemberCaseIds);
         assertTrue(Files.isRegularFile(reportPath),
                 "Installed Query calls against the controlled peer must emit route execution evidence.");
         JsonNode report = new ObjectMapper().readTree(reportPath.toFile());
@@ -1628,7 +1642,8 @@ class ControlledTlsPeerTest {
                         + batchContinuationTagIdentityEventCount
                         + responseHeaderServerCorrelationEventCount
                         + genericTagEventCount + typedTagIdentityEventCount
-                        + booleanFieldRouteEventCount + scalarMessageFieldRouteEventCount + itemTypeRouteEventCount
+                        + booleanFieldRouteEventCount + scalarMessageFieldRouteEventCount
+                        + scalarStructureMemberRouteEventCount + itemTypeRouteEventCount
                         + anyObjectAttributeRouteEventCount
                         + scalarTypedParserEventCount
                         + 97 // BEC, batch IDs, async payload, Ping, Endpoint Role, Object Defaults, derivation, and Extension Information member cells.
@@ -1682,7 +1697,8 @@ class ControlledTlsPeerTest {
                         + 1 // KMIP 2.0/2.1 §8.2 Batch Order Option message-field case.
                         + 1 // KMIP 2.0/2.1 §8.2 Attestation Capable Indicator message-field case.
                         // Four scalar header cases are already included by the baseline report groups.
-                        + scalarMessageFieldCaseIds(report.path("events")).size() - 4,
+                        + scalarMessageFieldCaseIds(report.path("events")).size() - 4
+                        + scalarStructureMemberCaseCountAdded,
                 report.path("case_ids").size());
         List<String> expectedCredentialCaseIds = CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().toList();
         int credentialCaseStart = report.path("case_ids").size() - expectedCredentialCaseIds.size();
@@ -3951,8 +3967,8 @@ class ControlledTlsPeerTest {
         return event;
     }
 
-    private static void writeRouteExecutionReport(Path reportPath, ObjectMapper mapper,
-            ArrayNode events) throws Exception {
+    private static int writeRouteExecutionReport(Path reportPath, ObjectMapper mapper,
+            ArrayNode events, Set<String> scalarStructureMemberCaseIds) throws Exception {
         Path catalogPath = routeEvidenceCatalogPath();
         Path manifestPath = Path.of("../shared/coverage/route-capabilities.json");
         Path pinPath = Path.of("library-pin.json");
@@ -4036,6 +4052,8 @@ class ControlledTlsPeerTest {
         }
         appendBooleanFieldCaseIds(caseIds, events);
         appendScalarMessageFieldCaseIds(caseIds, events);
+        int scalarStructureMemberCaseCountAdded = appendScalarStructureMemberCaseIds(caseIds,
+                scalarStructureMemberCaseIds);
         appendItemTypeEnumerationCaseIds(caseIds, events);
         caseIds.add("test-enum-pkcs#11-function");
         caseIds.add("test-enum-pkcs#11-return-code");
@@ -4057,6 +4075,7 @@ class ControlledTlsPeerTest {
         report.set("events", events);
         Files.createDirectories(reportPath.toAbsolutePath().normalize().getParent());
         mapper.writerWithDefaultPrettyPrinter().writeValue(reportPath.toFile(), report);
+        return scalarStructureMemberCaseCountAdded;
     }
 
     private static void appendBooleanFieldCaseIds(ArrayNode caseIds, JsonNode events) {
@@ -4081,6 +4100,19 @@ class ControlledTlsPeerTest {
         for (String caseId : scalarMessageFieldCases) {
             if (existing.add(caseId)) caseIds.add(caseId);
         }
+    }
+
+    private static int appendScalarStructureMemberCaseIds(ArrayNode caseIds, Set<String> caseIdsToAppend) {
+        Set<String> existing = new java.util.HashSet<>();
+        caseIds.forEach(caseId -> existing.add(caseId.asText()));
+        int added = 0;
+        for (String caseId : caseIdsToAppend) {
+            if (existing.add(caseId)) {
+                caseIds.add(caseId);
+                added++;
+            }
+        }
+        return added;
     }
 
     private static Set<String> scalarMessageFieldCaseIds(JsonNode events) {
@@ -4398,6 +4430,35 @@ class ControlledTlsPeerTest {
         }
     }
 
+    private static void assertScalarStructureMemberGenericRouteEvidence(JsonNode events, String version)
+            throws Exception {
+        JsonNode catalog = readRouteEvidenceCatalog();
+        Map<String, JsonNode> targets = new HashMap<>();
+        Set<String> typedTargetIds = javaTypedProtocolTargetIds();
+        for (JsonNode target : catalog.path("normative_targets")) {
+            targets.put(target.path("target_id").asText(), target);
+        }
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            JsonNode requires = testCase.path("requires");
+            if (!"structure_member".equals(requires.path("target_kind").asText())
+                    || !"local_model".equals(testCase.path("execution").path("mode").asText())
+                    || !appliesToVersion(testCase, version)) continue;
+            String targetId = requires.path("normative_target_id").asText();
+            JsonNode target = targets.get(targetId);
+            if (target == null || typedTargetIds.contains(targetId)
+                    || !isSupportedScalarMessageFieldEncoding(
+                    target.path("source_encoding").asText())) continue;
+            for (String route : scalarMessageFieldRoutes(testCase.path("case_id").asText(),
+                    target.path("source_encoding").asText())) {
+                JsonNode event = findRouteEvent(events, testCase.path("case_id").asText(), route, version, targetId);
+                assertEquals("passed", event.path("status").asText(), testCase.path("case_id").asText()
+                        + " / " + route);
+                assertEquals(1, event.path("invocation_count").asInt(), testCase.path("case_id").asText()
+                        + " / " + route);
+            }
+        }
+    }
+
     private static Set<String> missingBooleanFieldRouteCaseIds(JsonNode events, String version) throws Exception {
         JsonNode catalog = readRouteEvidenceCatalog();
         Map<String, JsonNode> targets = new HashMap<>();
@@ -4471,6 +4532,55 @@ class ControlledTlsPeerTest {
             }
         }
         return missing;
+    }
+
+    private static Set<String> missingScalarStructureMemberRouteCaseIds(JsonNode events, String version)
+            throws Exception {
+        JsonNode catalog = readRouteEvidenceCatalog();
+        Map<String, JsonNode> targets = new HashMap<>();
+        Set<String> typedTargetIds = javaTypedProtocolTargetIds();
+        for (JsonNode target : catalog.path("normative_targets")) {
+            targets.put(target.path("target_id").asText(), target);
+        }
+        Set<String> missing = new java.util.LinkedHashSet<>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            JsonNode requires = testCase.path("requires");
+            if (!"structure_member".equals(requires.path("target_kind").asText())
+                    || !"local_model".equals(testCase.path("execution").path("mode").asText())
+                    || !appliesToVersion(testCase, version)) continue;
+            String targetId = requires.path("normative_target_id").asText();
+            JsonNode target = targets.get(targetId);
+            if (target == null || typedTargetIds.contains(targetId) || !appliesToTargetVersion(target, version)) {
+                continue;
+            }
+            String encoding = target.path("source_encoding").asText();
+            if (!isSupportedScalarMessageFieldEncoding(encoding)) continue;
+            String caseId = testCase.path("case_id").asText();
+            List<String> requiredRoutes = scalarMessageFieldRoutes(caseId, encoding);
+            int present = 0;
+            for (String route : requiredRoutes) {
+                if (hasRouteEvent(events, caseId, route, version, targetId)) present++;
+            }
+            if (present == 0) {
+                missing.add(caseId);
+            } else {
+                assertEquals(requiredRoutes.size(), present,
+                        "Scalar structure member route evidence must be complete before reuse for " + caseId);
+            }
+        }
+        return missing;
+    }
+
+    private static Set<String> javaTypedProtocolTargetIds() throws Exception {
+        JsonNode manifest = new ObjectMapper().readTree(
+                Path.of("../shared/coverage/route-capabilities.json").toFile());
+        Set<String> targetIds = new java.util.HashSet<>();
+        for (JsonNode route : manifest.path("routes")) {
+            if (!"java".equals(route.path("language").asText())
+                    || !"typed-protocol".equals(route.path("api_level").asText())) continue;
+            route.path("normative_target_ids").forEach(target -> targetIds.add(target.asText()));
+        }
+        return targetIds;
     }
 
     private static Set<String> missingAnyObjectAttributeCaseIds(JsonNode catalog, JsonNode events, String version) {
