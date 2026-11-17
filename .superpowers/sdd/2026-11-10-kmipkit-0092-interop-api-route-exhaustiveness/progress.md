@@ -481,3 +481,27 @@ branches, and the common CI therefore reports a planned matrix only.
   interoperability or complete the Java matrix. The Java PR remains WIP.
 - Verification commands are recorded in
   `specs/092-interop-api-route-exhaustiveness/java-route-expansion-evidence.md`.
+
+## 2026-11-17 Java KMIP 2.0/2.1 Response Header Client Correlation Value
+
+- OASIS KMIP 2.0/2.1 §8.5 defines Client Correlation Value as an optional
+  Response Header Text String. The controlled response fixture exercises the
+  generic Item create/view/decode routes and typed
+  `ResponseMessage.fromTtlv`; `ResponseHeaderView.clientCorrelationValue()`
+  returns the configured text.
+- Red: `6e85b8b63` adds exact per-version assertions; after refreshing the
+  installed artifact manifest to the pinned package in this worktree, the
+  focused test fails because the target has zero events. Green: `220eeec3f`
+  emits generic TTLV and typed parser evidence and asserts the response value.
+  Refactor: `06d74f08b` shares the fixture text between construction and
+  assertion.
+- The full Java suite passes 57/57 tests with no failures, errors, or skips.
+  Shared route-capability tests pass 68/68; the generated route check reports
+  1,507 routes. Selected-scope validation accepts 27,352/27,352 cells with zero
+  failures. The generated ledger records 71,641 planned, 27,352 executed, and
+  44,289 pending cells across 1,208 pending case IDs; the ledger comparison
+  passes. Evidence uses artifact commit
+  `12496d646d11d4069b58bcc88fc76cc619211ec6`, SHA-256
+  `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+- This adds eight local-model cells. It does not establish server
+  interoperability or complete the Java matrix; the Java PR remains WIP.
