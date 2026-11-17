@@ -165,6 +165,22 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         self.assertEqual(2, summary["expected_cells"])
         self.assertEqual(2, summary["invoked_cells"])
 
+    def test_report_declared_scope_validates_exact_cells_without_claiming_full_matrix(self):
+        fields = ("case_id", "route_id", "target_id", "workflow_step_index", "workflow_operation",
+                  "workflow_item_index", "execution_route_id", "action", "protocol_version", "encoding",
+                  "transport")
+        scope = [{field: event[field] for field in fields if field in event} for event in self.report["events"][:2]]
+        report = copy.deepcopy(self.report)
+        report["events"] = copy.deepcopy(self.report["events"][:2])
+        report["scope_cells"] = copy.deepcopy(scope)
+
+        summary = self.validate(report)
+
+        self.assertTrue(summary["selected_scope_complete"])
+        self.assertFalse(summary["complete_matrix"])
+        self.assertEqual(2, summary["expected_cells"])
+        self.assertEqual(2, summary["invoked_cells"])
+
     def test_scoped_report_rejects_missing_or_out_of_scope_events(self):
         scope = self.report["events"][:2]
         report = copy.deepcopy(self.report)
