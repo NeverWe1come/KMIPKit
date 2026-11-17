@@ -183,4 +183,23 @@ class LocalCatalogRouteChecksTest {
                 0, 0, 0, 1, 0, 0, 0, 0};
         invocations.forEach(invocation -> assertArrayEquals(expected, invocation.wire()));
     }
+
+    @Test
+    void executesServerNotifyUniqueIdentifierThroughGenericTtlvRoutes() throws Exception {
+        JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
+        String caseId = "test-norm-payload-server-notify-request-20-001";
+        List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
+
+        LocalCatalogRouteChecks.executeServerPayloadScalarFields(catalog, "2.0", Set.of(caseId),
+                invocations::add);
+
+        assertEquals(6, invocations.size());
+        assertEquals(Set.of("KMIPKIT-PAYLOAD-SERVER-NOTIFY-REQUEST-20-001", "KMIPKIT-ELEM-OP-S2C-NOTIFY"),
+                invocations.stream().map(LocalCatalogRouteChecks.Invocation::targetId)
+                        .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(Set.of(caseId), invocations.stream().map(LocalCatalogRouteChecks.Invocation::caseId)
+                .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(1, invocations.stream().map(LocalCatalogRouteChecks.Invocation::wire)
+                .mapToInt(wire -> wire.length).distinct().count());
+    }
 }
