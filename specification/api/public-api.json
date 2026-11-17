@@ -176750,6 +176750,114 @@
     },
     {
       "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::DeriveKeyBuilder<'a> as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::DeriveKeyBuilder<'a> as core::borrow::Borrow<kmipkit_client::fluent::DeriveKeyBuilder<'a>>>::borrow",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::DeriveKeyBuilder<'a> as core::borrow::BorrowMut<kmipkit_client::fluent::DeriveKeyBuilder<'a>>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::DeriveKeyBuilder<'a> as core::convert::From<kmipkit_client::fluent::DeriveKeyBuilder<'a>>>::from",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::DeriveKeyBuilder<'a> as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::DeriveKeyBuilder<'a> as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::DeriveKeyBuilder<'a> as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::DeriveKeyBuilder<'a> as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::DeriveKeyBuilder<'a> as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
       "exportName": "<kmipkit_client::DestroyBuilder<'a> as core::any::Any>::type_id",
       "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
       "approvalSource": {
@@ -185812,6 +185920,114 @@
     {
       "packageId": "rust-kmipkit-client",
       "exportName": "<kmipkit_client::fluent::DeleteAttributeBuilder<'a> as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::DeriveKeyBuilder<'a> as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::DeriveKeyBuilder<'a> as core::borrow::Borrow<kmipkit_client::fluent::DeriveKeyBuilder<'a>>>::borrow",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::DeriveKeyBuilder<'a> as core::borrow::BorrowMut<kmipkit_client::fluent::DeriveKeyBuilder<'a>>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::DeriveKeyBuilder<'a> as core::convert::From<kmipkit_client::fluent::DeriveKeyBuilder<'a>>>::from",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::DeriveKeyBuilder<'a> as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::DeriveKeyBuilder<'a> as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::DeriveKeyBuilder<'a> as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::DeriveKeyBuilder<'a> as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::DeriveKeyBuilder<'a> as core::convert::TryInto<U>>::try_into",
       "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
       "approvalSource": {
         "kind": "feature-specification",
@@ -1254701,6 +1254917,510 @@
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::fluent::RequestBuilder<'a>::create",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-09ee8c1309d63d835dba",
+      "packageId": "rust-kmipkit-client",
+      "kind": "type",
+      "exportName": "kmipkit_client::DeriveKeyBuilder",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+    },
+    {
+      "declarationId": "rust-observed-85937b9a8fd93fac0d9e",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::DeriveKeyBuilder<'a>::attributes",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+    },
+    {
+      "declarationId": "rust-observed-80898a960b2eec09b012",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::DeriveKeyBuilder<'a>::build",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+    },
+    {
+      "declarationId": "rust-observed-d5dbc35fe093da2765ec",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::DeriveKeyBuilder<'a>::derivation_method",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+    },
+    {
+      "declarationId": "rust-observed-49014e8dedd306fa440b",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::DeriveKeyBuilder<'a>::derivation_parameters",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+    },
+    {
+      "declarationId": "rust-observed-e4767e9718f0441f913c",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::DeriveKeyBuilder<'a>::execute",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+    },
+    {
+      "declarationId": "rust-observed-e6b6ea0d975eb1922d87",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::DeriveKeyBuilder<'a>::object_type",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+    },
+    {
+      "declarationId": "rust-observed-2eb30315861b0c758c78",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::DeriveKeyBuilder<'a>::to_batch_item",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+    },
+    {
+      "declarationId": "rust-observed-7e0247b11ff43ff3e5ea",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::DeriveKeyBuilder<'a>::unique_identifier",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+    },
+    {
+      "declarationId": "rust-observed-0cff39b6b04f9773c8d9",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::DeriveKeyBuilder<'a>::validate",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+    },
+    {
+      "declarationId": "rust-observed-92d21028df856dc8a427",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::DeriveKeyBuilder<'a>::with_asynchronous_indicator",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+    },
+    {
+      "declarationId": "rust-observed-c20987cbc6599e53fded",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::DeriveKeyBuilder<'a>::with_options",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+    },
+    {
+      "declarationId": "rust-observed-632fc74e02dfb8d4586c",
+      "packageId": "rust-kmipkit-client",
+      "kind": "variant",
+      "exportName": "kmipkit_client::FluentBuildError::MissingDeriveKeyAttributes",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-7a16b7a9be3be7706a64",
+      "packageId": "rust-kmipkit-client",
+      "kind": "variant",
+      "exportName": "kmipkit_client::FluentBuildError::MissingDeriveKeyMethod",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-7f8b707de9b6fc1931c4",
+      "packageId": "rust-kmipkit-client",
+      "kind": "variant",
+      "exportName": "kmipkit_client::FluentBuildError::MissingDeriveKeyObjectType",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-629eba99159fdfd0473c",
+      "packageId": "rust-kmipkit-client",
+      "kind": "variant",
+      "exportName": "kmipkit_client::FluentBuildError::MissingDeriveKeyParameters",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-513047521fc22e690811",
+      "packageId": "rust-kmipkit-client",
+      "kind": "variant",
+      "exportName": "kmipkit_client::FluentBuildError::MissingDeriveKeyUniqueIdentifier",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-536b3cb5ad2ceb4c5ee4",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RequestBuilder<'a>::derive_key",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+    },
+    {
+      "declarationId": "rust-observed-ec71fd2bb300bc78d12c",
+      "packageId": "rust-kmipkit-client",
+      "kind": "type",
+      "exportName": "kmipkit_client::fluent::DeriveKeyBuilder",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-ee3135274742a8555ecf",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::DeriveKeyBuilder<'a>::attributes",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-7bd75426eb77f0cb355b",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::DeriveKeyBuilder<'a>::build",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-ba9797c24a3b86df9aa0",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::DeriveKeyBuilder<'a>::derivation_method",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-3616bbeb6463d694077e",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::DeriveKeyBuilder<'a>::derivation_parameters",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-55388594a085a88359fd",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::DeriveKeyBuilder<'a>::execute",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-8ed9a07563cee7abcad7",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::DeriveKeyBuilder<'a>::object_type",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-14a53d8389bd032a5cd7",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::DeriveKeyBuilder<'a>::to_batch_item",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-2546b430212ff5435d9b",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::DeriveKeyBuilder<'a>::unique_identifier",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-e6c7208f71586b16db64",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::DeriveKeyBuilder<'a>::validate",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-c02bcada4fddbea3ed5f",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::DeriveKeyBuilder<'a>::with_asynchronous_indicator",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-b242277a74d6074debae",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::DeriveKeyBuilder<'a>::with_options",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-9d8f4f6a4b708ba1b9b4",
+      "packageId": "rust-kmipkit-client",
+      "kind": "variant",
+      "exportName": "kmipkit_client::fluent::FluentBuildError::MissingDeriveKeyAttributes",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-13da665442cf97042b9a",
+      "packageId": "rust-kmipkit-client",
+      "kind": "variant",
+      "exportName": "kmipkit_client::fluent::FluentBuildError::MissingDeriveKeyMethod",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-fb17eedef31b0b79e28b",
+      "packageId": "rust-kmipkit-client",
+      "kind": "variant",
+      "exportName": "kmipkit_client::fluent::FluentBuildError::MissingDeriveKeyObjectType",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-362ca9e6a41c26402398",
+      "packageId": "rust-kmipkit-client",
+      "kind": "variant",
+      "exportName": "kmipkit_client::fluent::FluentBuildError::MissingDeriveKeyParameters",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-73b67202007925a9b4f4",
+      "packageId": "rust-kmipkit-client",
+      "kind": "variant",
+      "exportName": "kmipkit_client::fluent::FluentBuildError::MissingDeriveKeyUniqueIdentifier",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-bbe282e9d55e27328f09",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RequestBuilder<'a>::derive_key",
       "capabilityId": "public_binding_surface",
       "requirementIds": [
         "KMIPKIT-0093-FR-011"

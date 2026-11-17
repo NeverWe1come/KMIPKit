@@ -247,6 +247,10 @@ mod create_execution_tests;
 mod create_builder_execution_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/derive_key_fluent_builder_tests.rs"]
+mod derive_key_fluent_builder_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/create_guide_examples.rs"]
 mod create_guide_examples;
 
@@ -474,10 +478,10 @@ pub use execute::{
 pub use fluent::{
     ActivateBuilder, AddAttributeBuilder, ArchiveBuilder, CreateBuilder, CreateKeyPairBuilder,
     CreateSplitKeyBuilder, CreateSymmetricKeyBuilder, CryptographicUsageMask, DecryptBuilder,
-    DeleteAttributeBuilder, DestroyBuilder, EncryptBuilder, FluentAttributePosition,
-    FluentBuildError, GetAttributeListBuilder, GetAttributesBuilder, GetBuilder,
-    GetConstraintsBuilder, GetUsageAllocationBuilder, HashBuilder, LocateBuilder, MacBuilder,
-    MacVerifyBuilder, RecertifyBuilder, RecoverBuilder, RegisterBuilder, RekeyBuilder,
+    DeleteAttributeBuilder, DeriveKeyBuilder, DestroyBuilder, EncryptBuilder,
+    FluentAttributePosition, FluentBuildError, GetAttributeListBuilder, GetAttributesBuilder,
+    GetBuilder, GetConstraintsBuilder, GetUsageAllocationBuilder, HashBuilder, LocateBuilder,
+    MacBuilder, MacVerifyBuilder, RecertifyBuilder, RecoverBuilder, RegisterBuilder, RekeyBuilder,
     RekeyKeyPairBuilder, RequestBuilder, RevokeBuilder, RngRetrieveBuilder, RngSeedBuilder,
     SetAttributeBuilder, SignBuilder, SignatureVerifyBuilder,
 };

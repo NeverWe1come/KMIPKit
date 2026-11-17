@@ -26,12 +26,19 @@ Usage Mask incluya Derive Key. KMIPKit envía los identificadores indicados y
 no consulta atributos remotos para comprobar esta política elegida por el
 llamador.
 
+Rust también ofrece un constructor fluido para la petición de la Tabla 205.
+Añade una llamada a `unique_identifier` por cada objeto de origen y aporta
+después el método explícito, los parámetros tipados de §7.12 y los atributos
+de salida. El constructor conserva el validador, el propietario que pone a
+cero los bytes secretos y la ruta de un solo intercambio; no elige el método
+de derivación ni los parámetros criptográficos.
+
 ```rust,kmipkit-test
 use kmipkit_client::{Client, ClientBatchItemResponse, ClientError};
 use kmipkit_protocol::{
-    AttributeSet, DerivationMethod, DerivationParameters, DeriveKeyRequest,
-    ExportRequest, ImportRequest, JoinSplitKeyRequest, ObjectType, SecretBytes,
-    SplitKeyReference, UniqueIdentifier,
+    AttributeSet, DerivationMethod, DerivationParameters, ExportRequest,
+    ImportRequest, JoinSplitKeyRequest, ObjectType, SecretBytes, SplitKeyReference,
+    UniqueIdentifier,
 };
 use kmipkit_ttlv::codec::CodecLimits;
 use kmipkit_ttlv::{Item, RawTag, Structure, Value};
@@ -93,14 +100,17 @@ fn derive_key(
         .with_cryptographic_parameters(parameters)
         .with_salt(SecretBytes::new(b"synthetic-salt".to_vec()))
         .with_iteration_count(10_000);
-    let request = DeriveKeyRequest::new(
-        ObjectType::from_raw(2),
-        vec![UniqueIdentifier::TextString("source-key-example".to_owned())],
-        DerivationMethod::from_raw(1),
-        derivation,
-        output_attributes(),
-    );
-    client.derive_key(request, limits)
+    client
+        .request()
+        .derive_key()
+        .object_type(ObjectType::from_raw(2))
+        .unique_identifier(UniqueIdentifier::TextString(
+            "source-key-example".to_owned(),
+        ))
+        .derivation_method(DerivationMethod::from_raw(1))
+        .derivation_parameters(derivation)
+        .attributes(output_attributes())
+        .execute(limits)
 }
 
 #[allow(dead_code)]

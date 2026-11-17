@@ -180,7 +180,9 @@ KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS = {
 # KMIPKIT-0093 also adds the blocked Ping builder declaration inventory.
 # The Rust-only generic Create slice adds 24 blocked declarations and 18 exact
 # standard-trait exclusions while four-language fluent parity is pending.
-DECLARATIONS_SHA256 = "cca1ceddb4a2cc0991ef4779fc1158ff77ee5ebe1435e3adb28598787f6a87ef"
+# The Rust-only Derive Key slice adds 36 blocked declarations and 18 exact
+# standard-trait exclusions while four-language fluent parity is pending.
+DECLARATIONS_SHA256 = "d2051d9cb8ecc1fbce6753fca95847216a752ecc9523f3133b86ec09c4552261"
 OPERATIONS_SHA256 = "11a39efdadf8e9c7791a8479e3d8b3ae05f82b8dee94e8d21ed2ff2192a147ac"
 
 

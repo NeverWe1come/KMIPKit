@@ -51,11 +51,13 @@ T102_BLOCKED_CANDIDATES = 0
 # standard-trait exclusions while the same parity is pending.
 # The Rust-only generic Create slice adds 24 blocked declarations and 18 exact
 # standard-trait exclusions while the same parity is pending.
+# The Rust-only Derive Key slice adds 36 blocked declarations and 18 exact
+# standard-trait exclusions while the same parity is pending.
 # Named-value reconciliation removed eight stale KMIP 3.0 Object Class Mask
 # enumeration paths and corrected their cross-language mappings to bitmask.
-T102_PUBLIC_DECLARATIONS = 20_397
+T102_PUBLIC_DECLARATIONS = 20_433
 T102_KMIP30_DRAFT_ROUTE_DECLARATIONS = 36
-T102_APPROVED_EXCLUSIONS = 23_609
+T102_APPROVED_EXCLUSIONS = 23_627
 # The current Rust audit report remains the immutable November 16 snapshot.
 T102_RUST_AUDIT_MANIFEST = 10_380
 T102_RUST_AUDIT_EXCLUDED = 21_649
