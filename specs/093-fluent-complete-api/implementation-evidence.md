@@ -1443,3 +1443,67 @@
 - The slice remains WIP; exact-head CI and workspace-level verification are
   still required. It does not close
   KMIPKIT-0093-FR-011 or operation-wide O001/O002.
+
+## Rust Derive Key fluent builder slice
+
+### Red
+
+- Commit `2452177af` adds fake-transport contracts for required Table 205
+  fields, repeated explicit source identifiers, typed request and batch-item
+  construction, one-exchange execution, Pending correlation, and redacted
+  Derivation Data.
+- `cargo test -p kmipkit-client --lib fluent_derive_key -- --nocapture` fails
+  before implementation because `RequestBuilder::derive_key` and the five
+  required-field `FluentBuildError` variants are absent. The tests cite OASIS
+  KMIP v2.1 §6.1.14 Tables 205–207 and §7.12 Table 364.
+
+### Green
+
+- Commit `07e1cc0ec` adds `DeriveKeyBuilder` over the existing
+  `DeriveKeyRequest`, its validator, `ClientRequest::DeriveKey`, and the
+  one-exchange executor. Callers select Object Type, every source identifier,
+  method, typed parameters, and output attributes. The existing request
+  validator still prohibits the ID Placeholder and preserves the server's
+  authority over source-object state.
+- The focused builder suite passes 4 tests: missing-field diagnostics,
+  typed request and batch conversion, one-exchange server result with repeated
+  identifiers, and explicit Pending correlation. Derivation Data stays in
+  `SecretBytes` and is absent from request Debug formatting.
+
+### Refactor, documentation, and generated inventory
+
+- Commit `ba57c4543` re-exports `DeriveKeyBuilder` from the client crate root
+  and shares configured test setup. Commit `9a8463979` adds complete `# Errors`
+  rustdoc, verifies InvalidRequest and exchange-option handling, and drives
+  Pending through the fluent asynchronous-indicator method. The focused suite
+  now passes 6 tests.
+- Added fluent Derive Key examples in English and Spanish, preserving caller
+  selection of the derivation method, parameters, and output attributes. Added
+  the DKB task slice and traceability to KMIPKIT-0037 FR-001/-002/-003/-005,
+  the applicable §6.1.14 and §7.12 requirement IDs, the fake-transport tests,
+  and the existing secret owner/typed route.
+- Reconciled 36 new Rust export paths as blocked declarations and 18 exact
+  standard-trait exclusions using the pinned manifest tooling. The generated
+  inventory now contains 20,433 public declarations and 23,627 approved
+  exclusions; the T102 non-target declaration snapshot was refreshed for this
+  slice.
+- `audit_rust_exports.py --check` passes with 11,363 manifest paths matched,
+  21,766 exclusions, 33,129 observed paths, zero missing or unobserved paths,
+  and zero kind or conditional mismatches. `generate.py --check` verified all
+  12 generated API outputs.
+- The focused Derive Key suite passes 4 tests. English and Spanish guide
+  compilation passes for both marked examples. The Derive Key manifest
+  contract, manifest totals, and Certify non-target T102 snapshot pass in 11
+  focused tests. The full Python manifest suite was stopped after 15 minutes
+  while it repeatedly ran full generation; no failure was reported before
+  interruption. `cargo clippy --workspace --all-targets --all-features -- -D warnings`,
+  `cargo fmt --all --check`, and `cargo test --workspace --all-features` pass;
+  three local-KMS tests remain ignored by their declared environment
+  condition. `cargo llvm-cov --workspace --all-features --summary-only` also
+  passes at 90.32% workspace line coverage; `kmipkit-client/src/fluent.rs` is
+  97.27% line-covered. The instrumented run includes 972 passing client tests,
+  including the added invalid-request, exchange-options, and asynchronous
+  indicator contracts. PR publication and exact-head CI remain pending.
+- New Rust exports remain blocked under KMIPKIT-0093-FR-011 until C/Java/Python
+  fluent parity lands; this slice does not close FR-011 or operation-wide
+  O001/O002 and does not claim an official test-case pass.

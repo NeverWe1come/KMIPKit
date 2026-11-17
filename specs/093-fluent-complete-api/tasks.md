@@ -144,6 +144,21 @@ Dependent work branches from the unmerged parent head while review is pending.
   exact-head CI failure. Keep this slice WIP until C, Java, and Python fluent
   parity and remaining operation work are complete.
 
+### Rust Derive Key builder slice
+
+- [x] DKB001 Add and commit Red fake-transport tests for the required Table 205
+  fields, repeated source identifiers, typed batch conversion, one-exchange
+  Success, Pending correlation, and secret redaction, based on KMIP v2.1
+  §6.1.14 Tables 205–207 and §7.12 Table 364.
+- [x] DKB002 Implement `DeriveKeyBuilder` over the existing typed request,
+  request validator, and one-exchange client path in a separate Green commit.
+- [x] DKB003 Export the Rust builder, refactor shared test setup, update
+  bilingual executable examples and traceability, and reconcile generated
+  public API inventory artifacts with repository tooling.
+- [ ] DKB004 Push a WIP draft PR targeting the generic Create slice and fix
+  every exact-head CI failure. Keep this slice WIP until C, Java, and Python
+  fluent parity and remaining operation work are complete.
+
 - [ ] B001 Add failing C consumer tests for opaque handle ownership,
   operation construction, typed results, direct tasks and ABI stability.
 - [ ] B002 Generate and implement the C ABI on the Rust owner; run sanitizer,
