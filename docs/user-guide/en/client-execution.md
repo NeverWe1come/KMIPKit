@@ -57,10 +57,10 @@ Pending, its `PendingOutcome` retains that typed response and lends the opaque c
 `asynchronous_correlation_value()`. KMIPKit does not poll or retry
 automatically.
 
-The four-language package consumers execute Ping through their configured
-client APIs against a loopback-only TLS 1.3/mTLS fixture responder. This checks
-the client execution and typed-result path; the fixture is not a KMIP server
-implementation and does not provide interoperability evidence.
+The four-language package consumers execute Ping through the fluent builders
+(and the direct C helper) against a loopback-only TLS 1.3/mTLS fixture responder.
+This checks the client execution and typed-result path; the fixture is not a
+KMIP server implementation and does not provide interoperability evidence.
 
 KMIP 2.1 remains the default. KMIP 2.0 and the catalogued KMIP 3.0
 draft/standard surface are selected explicitly and checked before transport

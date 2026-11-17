@@ -61,10 +61,10 @@ tipada y presta el valor de correlación opaco mediante
 automáticamente.
 
 Los consumidores de paquetes de los cuatro lenguajes ejecutan Ping mediante
-sus APIs de cliente configuradas y un respondedor de prueba local limitado a
-loopback con TLS 1.3/mTLS. Esto comprueba la ejecución del cliente y la ruta del
-resultado tipado; el respondedor no es una implementación de servidor KMIP ni
-aporta evidencia de interoperabilidad.
+los builders fluidos (y la función directa de C) contra un respondedor de
+prueba local limitado a loopback con TLS 1.3/mTLS. Esto comprueba la ejecución
+del cliente y la ruta del resultado tipado; el respondedor no es una
+implementación de servidor KMIP ni aporta evidencia de interoperabilidad.
 
 KMIP 2.1 sigue siendo la versión predeterminada. KMIP 2.0 y la superficie
 catalogada del borrador/estándar KMIP 3.0 se seleccionan explícitamente y se
