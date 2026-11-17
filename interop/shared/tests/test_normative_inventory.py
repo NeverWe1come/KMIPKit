@@ -72,11 +72,11 @@ class NormativeInventoryTests(unittest.TestCase):
         case = next(item for item in self.catalog["test_cases"]
                     if item["case_id"] == "test-op-certify")
         self.assertEqual(
-            ["Create Key Pair with Certificate Sign usage on Private Key"],
+            ["Create Key Pair with Certificate Sign usage on Private Key", "Activate Private Key"],
             case["isolation_recipe"]["setup_steps"],
         )
         self.assertEqual(
-            ["Destroy Certificate", "Destroy Private Key", "Destroy Public Key"],
+            ["Revoke Private Key", "Destroy Certificate", "Destroy Private Key", "Destroy Public Key"],
             case["isolation_recipe"]["teardown_steps"],
         )
         for version in ("2.0", "2.1"):

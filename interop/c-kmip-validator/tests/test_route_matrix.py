@@ -3424,9 +3424,11 @@ class RouteMatrixTests(unittest.TestCase):
         send_events = [event for event in events if event['action'] == 'send']
         self.assertEqual(len(send_events), 12)
         self.assertTrue(all(event['peer_observed_operation_sequence'] ==
-                            ['Create Key Pair', 'Certify', 'Destroy', 'Destroy', 'Destroy'] and
+                            ['Create Key Pair', 'Activate', 'Certify', 'Revoke',
+                             'Destroy', 'Destroy', 'Destroy'] and
                             event['peer_observed_effects'] ==
-                            ['key_pair_created', 'certified', 'destroyed', 'destroyed', 'destroyed']
+                            ['key_pair_created', 'activated', 'certified', 'revoked',
+                             'destroyed', 'destroyed', 'destroyed']
                             for event in send_events))
 
     def test_export_operation_executes_installed_request_and_response_routes(self):
