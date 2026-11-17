@@ -2645,6 +2645,13 @@ def recipe_for_case(case, attribute_fixture):
     return None
 
 
+def archive_response_item_ids(case_id):
+    """Return the response IDs paired with the selected Archive request recipe."""
+    if case_id == 'test-op-archive':
+        return (b'archive-create', b'archive-target', b'archive-revoke', b'archive-destroy')
+    return (b'interop-create', b'interop-archive', b'interop-revoke', b'interop-destroy')
+
+
 def attribute_item_value(attribute_field):
     direct_comments = [child for child in attribute_field[2]
                        if child[0] == 0x4200FD and child[1] == 7]
@@ -3911,12 +3918,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         elif recipe[1] == 'create_key_pair':
                                             response_item_ids = CREATE_KEY_PAIR_ITEM_IDS
                                         elif recipe[1] == 'archive':
-                                            response_item_ids = (
-                                                (b'archive-create', b'archive-target',
-                                                 b'archive-revoke', b'archive-destroy')
-                                                if case_id == 'test-op-archive' else
-                                                (b'interop-create', b'interop-archive',
-                                                 b'interop-revoke', b'interop-destroy'))
+                                            response_item_ids = archive_response_item_ids(case_id)
                                         elif recipe[1] == 'certify':
                                             response_item_ids = CERTIFY_ITEM_IDS
                                         elif placeholder_chain_recipe:
