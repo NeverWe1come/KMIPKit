@@ -269,3 +269,33 @@ branches, and the common CI therefore reports a planned matrix only.
   reports 287 uninvoked response-accessor cells out of 49,079 local cells;
   network execution evidence for the 26,376 required network cells remains
   incomplete. The PR stays WIP and no vendor KMS run has been performed.
+
+## 2026-11-17 Java KMIP 2.1 Rotate Name Type structure-member routes
+
+- The Java matrix had seven pending cells for
+  `test-norm-structure-member-structure-member-4-53-rotate-name-type`: four
+  generic TTLV routes on the member and three typed attribute routes through
+  the enclosing `Rotate Name` Attribute. OASIS KMIP 2.1 §4.53 Table 135
+  requires both `Rotate Name Value` and `Rotate Name Type`; §11.51 Table 482
+  defines URI as value `0x00000002`.
+- Red: `8c342bde8` added a report assertion for all seven exact route cells.
+  The focused test failed as intended (`expected 1 route event, got 0`).
+- Green: `6029ef004` constructs the required two-member Rotate Name structure,
+  verifies the enumeration and nested field values through installed Java
+  generic and typed APIs, and records all seven per-cell events. The first
+  attempt exposed the native owner-transfer rule: a view retains its owner and
+  that owner cannot then be consumed by `TtlvStructure.withItem`. The fixture
+  uses separate copies for view and transfer routes. The focused test passes.
+- Refactor: `476ac865e` shares the case and target identifiers between the
+  fixture and its assertions; the focused test still passes.
+- The route-evidence validator requires declared case IDs as well as events.
+  The report now declares this structure-member case explicitly. The complete
+  Java suite passes 57/57 tests with `--rerun-tasks`; selected-scope validation
+  passes 27,247/27,247 cells with zero failed cells. Regenerated ledger
+  comparison passes; the full matrix remains at 44,394 pending cells in 1,221
+  case IDs. These results use artifact commit
+  `12496d646d11d4069b58bcc88fc76cc619211ec6` with SHA-256
+  `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+- This is local-model evidence for the installed pinned artifact. It does not
+  complete the Java matrix or establish interoperability with a vendor KMS;
+  the Java PR remains WIP.
