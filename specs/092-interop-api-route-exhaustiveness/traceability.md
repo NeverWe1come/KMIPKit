@@ -89,3 +89,11 @@ artifact. This is part of the FR-006 artifact provenance check.
   failures. The generated ledger records 71,641 planned, 27,204 executed, and
   44,437 pending cells across 1,228 pending case IDs. The complete matrix and
   four-language peer runs remain required.
+- **FR-003/FR-005:** The Right Usage Limits Java branch now carries KMIP 2.0
+  Set Endpoint Role generic TTLV evidence for the required request and response
+  Endpoint Role fields and Operation Enumeration. It retains the KMIP 2.1
+  request-field case and Right Usage Limits routes under their existing
+  references.
+- The selected report validates 27,216/27,216 Java cells with zero failures.
+  The ledger records 71,641 planned, 27,216 executed, and 44,425 pending cells
+  across 1,226 pending case IDs. Full-matrix closure remains required.

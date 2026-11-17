@@ -101,8 +101,8 @@ baseline, regenerate the checked-in ledger with
 rejects generated ledgers that do not record successful invocations.
 The generated ledger retains the artifact
 SHA-256 for each build; that build-specific digest is not used as a coverage
-baseline. These recipes execute 27,204 of 71,641 planned Java route cells, with
-no failed cells; the ledger records the other 44,437 as pending and does not imply
+baseline. These recipes execute 27,216 of 71,641 planned Java route cells, with
+no failed cells; the ledger records the other 44,425 as pending and does not imply
 vendor interoperability or full-matrix completion. Local TTLV recipes exercise 51
 enumeration families, all six bitmask aggregate cases, and all 44 individual
 bitmask value cases through the applicable
@@ -200,7 +200,7 @@ evidence for both `RawTag` identity routes and the `ClientBatch` setter. The
 setter's evidence comes from the serialized header of a controlled two-item
 Query request in KMIP 2.0 and 2.1 (KMIP 2.0 §11.54; KMIP 2.1 §11.56).
 
-The 44,450 pending cells belong to 1,229 case IDs listed in the generated
+The 44,425 pending cells belong to 1,226 case IDs listed in the generated
 ledger; every one has the reason `route_evidence_not_emitted`. The applicability
 rule is the shared catalog and capability matrix after protocol-version,
 public-route, encoding/transport, and source-backed exclusion filters. A cell
@@ -298,8 +298,8 @@ controlled mTLS fixture sends a real `ClientBatchItem.ping()` request, checks
 the peer-observed Operation, and reads the successful response through
 `ClientBatchItemResult.pingResponse()`. The same case round-trips the Operation
 Enumeration through the installed generic TTLV item constructor, view, and
-decoder, as required by KMIP 2.1 §6.1.36. After integrating the Usage Limits,
-Ping, and Endpoint Role routes, the selected report validates 27,204/27,204
-cells; 44,437 of the
-full 71,641-cell Java matrix remain pending, so this does not complete the
-Java matrix.
+decoder, as required by KMIP 2.1 §6.1.36. The combined branch also covers the
+Usage Limits and Right Usage Limits fields, and Endpoint Role request and
+response payloads in KMIP 2.0 plus the request in KMIP 2.1. The selected report
+validates 27,216/27,216 cells; 44,425 of the full 71,641-cell Java matrix
+remain pending, so this does not complete the Java matrix.
