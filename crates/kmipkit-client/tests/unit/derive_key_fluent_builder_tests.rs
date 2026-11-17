@@ -3,8 +3,8 @@
 //! case conformance.
 
 use kmipkit_protocol::{
-    AttributeSet, DerivationMethod, DerivationParameters, DeriveKeyRequest, ObjectType, SecretBytes,
-    UniqueIdentifier, ValidateKmipRequest,
+    AttributeSet, DerivationMethod, DerivationParameters, DeriveKeyRequest, ObjectType,
+    SecretBytes, UniqueIdentifier, ValidateKmipRequest,
 };
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_ttlv::Value;
@@ -15,7 +15,7 @@ use crate::execute::{
     ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientOperation, ClientRequest,
 };
 use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_structure};
-use crate::FluentBuildError;
+use crate::{DeriveKeyBuilder, FluentBuildError};
 
 const DERIVE_KEY: u32 = 0x0000_0005;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
@@ -39,7 +39,7 @@ fn derivation_parameters() -> DerivationParameters {
         .with_iteration_count(120_000)
 }
 
-fn valid_request(client: &mut crate::Client) -> DeriveKeyRequest {
+fn configured_builder<'a>(client: &'a mut crate::Client) -> DeriveKeyBuilder<'a> {
     client
         .request()
         .derive_key()
@@ -48,6 +48,10 @@ fn valid_request(client: &mut crate::Client) -> DeriveKeyRequest {
         .derivation_method(DerivationMethod::from_raw(1))
         .derivation_parameters(derivation_parameters())
         .attributes(output_attributes())
+}
+
+fn valid_request(client: &mut crate::Client) -> DeriveKeyRequest {
+    configured_builder(client)
         .build()
         .expect("the caller supplied every required Derive Key field")
 }
@@ -109,14 +113,7 @@ fn fluent_derive_key_builds_typed_request_and_batch_without_sending() {
     assert!(request.validate().is_valid());
     assert!(!format!("{request:?}").contains("FLUENT_DERIVE_KEY_SECRET_SENTINEL"));
 
-    let item = client
-        .request()
-        .derive_key()
-        .object_type(ObjectType::from_raw(2))
-        .unique_identifier(UniqueIdentifier::from("source-secret"))
-        .derivation_method(DerivationMethod::from_raw(1))
-        .derivation_parameters(derivation_parameters())
-        .attributes(output_attributes())
+    let item = configured_builder(&mut client)
         .to_batch_item()
         .expect("the builder produces the existing typed batch item");
 
@@ -141,15 +138,8 @@ fn fluent_derive_key_executes_once_and_preserves_server_result_and_secrets() {
         request_write_chunks: vec![3, 7],
     });
 
-    let result = client
-        .request()
-        .derive_key()
-        .object_type(ObjectType::from_raw(2))
-        .unique_identifier(UniqueIdentifier::from("source-secret"))
+    let result = configured_builder(&mut client)
         .unique_identifier(UniqueIdentifier::from("second-source"))
-        .derivation_method(DerivationMethod::from_raw(1))
-        .derivation_parameters(derivation_parameters())
-        .attributes(output_attributes())
         .execute(&CodecLimits::defaults())
         .expect("the existing typed Derive Key route returns its server result");
 
@@ -174,9 +164,9 @@ fn fluent_derive_key_pending_keeps_correlation_without_follow_up() {
         response,
         request_write_chunks: Vec::new(),
     });
-    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::DeriveKey(valid_request(
-        &mut client,
-    ))))
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::DeriveKey(
+        valid_request(&mut client),
+    )))
     .with_asynchronous_indicator(1);
 
     let response = client
@@ -188,6 +178,9 @@ fn fluent_derive_key_pending_keeps_correlation_without_follow_up() {
     };
 
     assert_eq!(pending.operation(), ClientOperation::DeriveKey);
-    assert_eq!(pending.asynchronous_correlation_value(), PENDING_CORRELATION);
+    assert_eq!(
+        pending.asynchronous_correlation_value(),
+        PENDING_CORRELATION
+    );
     assert_eq!(transport.borrow().exchange_count(), 1);
 }

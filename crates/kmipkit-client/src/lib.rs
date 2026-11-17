@@ -478,10 +478,10 @@ pub use execute::{
 pub use fluent::{
     ActivateBuilder, AddAttributeBuilder, ArchiveBuilder, CreateBuilder, CreateKeyPairBuilder,
     CreateSplitKeyBuilder, CreateSymmetricKeyBuilder, CryptographicUsageMask, DecryptBuilder,
-    DeleteAttributeBuilder, DestroyBuilder, EncryptBuilder, FluentAttributePosition,
-    FluentBuildError, GetAttributeListBuilder, GetAttributesBuilder, GetBuilder,
-    GetConstraintsBuilder, GetUsageAllocationBuilder, HashBuilder, LocateBuilder, MacBuilder,
-    MacVerifyBuilder, RecertifyBuilder, RecoverBuilder, RegisterBuilder, RekeyBuilder,
+    DeleteAttributeBuilder, DeriveKeyBuilder, DestroyBuilder, EncryptBuilder,
+    FluentAttributePosition, FluentBuildError, GetAttributeListBuilder, GetAttributesBuilder,
+    GetBuilder, GetConstraintsBuilder, GetUsageAllocationBuilder, HashBuilder, LocateBuilder,
+    MacBuilder, MacVerifyBuilder, RecertifyBuilder, RecoverBuilder, RegisterBuilder, RekeyBuilder,
     RekeyKeyPairBuilder, RequestBuilder, RevokeBuilder, RngRetrieveBuilder, RngSeedBuilder,
     SetAttributeBuilder, SignBuilder, SignatureVerifyBuilder,
 };
