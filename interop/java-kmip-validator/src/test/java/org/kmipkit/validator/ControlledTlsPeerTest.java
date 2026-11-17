@@ -413,7 +413,16 @@ class ControlledTlsPeerTest {
     private static final Set<String> ENUMS_WITH_KMIP_2_1_ONLY_VALUES = Set.of("Operation", "Result Reason");
     private static final String RESPONSE_BATCH_ITEM_TARGET_ID =
             "KMIPKIT-ELEM-MESSAGE-FIELD-8-4-BATCH-ITEM";
+    private static final NormativeTarget RESPONSE_HEADER_ATTESTATION_TYPE = new NormativeTarget(
+            "test-norm-message-field-message-field-8-5-attestation-type",
+            "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-ATTESTATION-TYPE");
+    private static final List<String> RESPONSE_HEADER_ATTESTATION_TYPE_ROUTES = List.of(
+            "java.generic-ttlv.ttlv_item.create",
+            "java.generic-ttlv.function.ttlv_item_view_from_item",
+            "java.generic-ttlv.ttlv_codec.decode",
+            "java.typed-protocol.model.org.kmipkit.message.responsemessage.fromttlv");
     private static final List<NormativeTarget> RESPONSE_MESSAGE_PARSE_TARGETS = List.of(
+            RESPONSE_HEADER_ATTESTATION_TYPE,
             new NormativeTarget("test-norm-message-field-message-field-8-5-batch-count",
                     "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-BATCH-COUNT"),
             new NormativeTarget("test-norm-message-field-message-field-8-6-batch-item",
@@ -1272,6 +1281,17 @@ class ControlledTlsPeerTest {
                 JsonNode event = findRouteEvent(report.path("events"),
                         REQUEST_HEADER_ATTESTATION_TYPE.caseId(), route, version,
                         REQUEST_HEADER_ATTESTATION_TYPE.targetId());
+                assertEquals("passed", event.path("status").asText());
+            }
+        }
+        for (String route : RESPONSE_HEADER_ATTESTATION_TYPE_ROUTES) {
+            assertEquals(KMIP_2_0_AND_2_1.size(), routeEventCount(report.path("events"),
+                    RESPONSE_HEADER_ATTESTATION_TYPE.caseId(), route),
+                    "Response Header Attestation Type must complete its repeatable generic or typed routes.");
+            for (String version : KMIP_2_0_AND_2_1) {
+                JsonNode event = findRouteEvent(report.path("events"),
+                        RESPONSE_HEADER_ATTESTATION_TYPE.caseId(), route, version,
+                        RESPONSE_HEADER_ATTESTATION_TYPE.targetId());
                 assertEquals("passed", event.path("status").asText());
             }
         }
