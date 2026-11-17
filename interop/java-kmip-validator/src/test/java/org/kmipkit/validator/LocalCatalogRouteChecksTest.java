@@ -2,6 +2,8 @@ package org.kmipkit.validator;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.kmipkit.ttlv.TtlvCodec;
+import org.kmipkit.ttlv.TtlvItemType;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
@@ -10,6 +12,7 @@ import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 class LocalCatalogRouteChecksTest {
     private static final Path CATALOG = Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json");
@@ -38,5 +41,40 @@ class LocalCatalogRouteChecksTest {
                 .collect(java.util.stream.Collectors.toSet()));
         assertEquals(1, invocations.stream().map(LocalCatalogRouteChecks.Invocation::wire)
                 .mapToInt(wire -> wire.length).distinct().count());
+        byte[] expected = new byte[] {0x42, 0x00, 0x26, 0x06, 0, 0, 0, 8,
+                0, 0, 0, 0, 0, 0, 0, 1};
+        invocations.forEach(invocation -> assertArrayEquals(expected, invocation.wire()));
+        try (var decoded = TtlvCodec.decode(expected); var view = decoded.view();
+                var tag = view.tag(); var value = view.value()) {
+            assertEquals(0x420026, tag.raw());
+            assertEquals(TtlvItemType.Boolean, view.itemType());
+            assertEquals(true, value.booleanValue());
+        }
+    }
+
+    @Test
+    void executesRandomIvThroughTheTypedCryptographicParametersBuilder() throws Exception {
+        JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
+        String caseId = "test-norm-structure-member-structure-member-4-16-random-iv";
+        List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
+
+        LocalCatalogRouteChecks.executeBooleanFields(catalog, "2.1", Set.of(caseId), invocations::add);
+
+        assertEquals(Set.of(
+                "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder",
+                "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.randomiv",
+                "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.build",
+                "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.fromttlv"),
+                invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId)
+                        .filter(routeId -> routeId.contains("cryptographicparameters"))
+                        .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(Set.of(
+                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
+                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
+                "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew"),
+                invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId)
+                        .filter(routeId -> routeId.contains("typedattribute")
+                                || routeId.contains("attributeset"))
+                        .collect(java.util.stream.Collectors.toSet()));
     }
 }

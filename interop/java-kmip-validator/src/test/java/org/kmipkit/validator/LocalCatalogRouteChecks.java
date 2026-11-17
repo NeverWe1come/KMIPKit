@@ -3,6 +3,7 @@ package org.kmipkit.validator;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.kmipkit.extensions.InvalidExtensionSchemaException;
 import org.kmipkit.extensions.AttributeSet;
+import org.kmipkit.protocol.CryptographicParameters;
 import org.kmipkit.ttlv.CodecLimits;
 import org.kmipkit.ttlv.RawTag;
 import org.kmipkit.ttlv.StandardAttribute;
@@ -12,9 +13,12 @@ import org.kmipkit.ttlv.TtlvCodec;
 import org.kmipkit.ttlv.TtlvDecodeErrorKind;
 import org.kmipkit.ttlv.TtlvDecodeException;
 import org.kmipkit.ttlv.TtlvItem;
+import org.kmipkit.ttlv.TtlvItemView;
 import org.kmipkit.ttlv.TtlvItemType;
 import org.kmipkit.ttlv.TtlvStructure;
+import org.kmipkit.ttlv.TtlvStructureView;
 import org.kmipkit.ttlv.TtlvValue;
+import org.kmipkit.ttlv.TtlvValueView;
 
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -36,6 +40,140 @@ final class LocalCatalogRouteChecks {
 
     record Invocation(String caseId, String targetId, String routeId, String symbol,
                       String action, byte[] wire, String rejectionCode) { }
+
+    /** Executes generic TTLV routes for Boolean fields using their catalogued tag identities. */
+    static void executeBooleanFields(JsonNode catalog, String version, Set<String> selectedCaseIds,
+            EvidenceSink sink) throws Exception {
+        Set<String> emitted = new java.util.HashSet<>();
+        JsonNode targets = catalog.path("normative_targets");
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String caseId = testCase.path("case_id").asText();
+            if (!selectedCaseIds.contains(caseId) || !"local_model".equals(
+                    testCase.path("execution").path("mode").asText()) || !applies(testCase, version)) continue;
+            String targetId = testCase.path("requires").path("normative_target_id").asText();
+            JsonNode target = null;
+            for (JsonNode candidate : targets) {
+                if (targetId.equals(candidate.path("target_id").asText())) {
+                    target = candidate;
+                    break;
+                }
+            }
+            if (target == null || !"Boolean".equals(target.path("source_encoding").asText())) {
+                throw new IllegalArgumentException("Selected case is not a catalogued Boolean field: " + caseId);
+            }
+            String name = normalizeName(target.path("name").asText());
+            int tagCode = -1;
+            int matches = 0;
+            for (JsonNode candidate : targets) {
+                if (!"tag".equals(candidate.path("kind").asText())
+                        || !name.equals(normalizeName(candidate.path("name").asText()))
+                        || !supportsVersion(candidate, version)) continue;
+                if (!"assigned".equals(candidate.path("allocation").asText())) {
+                    throw new IllegalArgumentException("Boolean field tag is not assigned: " + targetId);
+                }
+                tagCode = Integer.parseUnsignedInt(
+                        candidate.path("wire_value").asText().replaceFirst("^0[xX]", ""), 16);
+                matches++;
+            }
+            if (matches != 1) {
+                throw new IllegalArgumentException("Expected one assigned Tag for catalogued Boolean field: "
+                        + targetId);
+            }
+
+            byte[] wire = booleanWire(tagCode, true);
+            try (TtlvValue value = TtlvValue.Boolean(true);
+                    RawTag raw = RawTag.fromRaw(tagCode);
+                    Tag tag = raw.checked();
+                    TtlvItem item = TtlvItem.create(tag, value, CodecLimits.defaults());
+                    var itemView = item.view();
+                    var itemTag = itemView.tag();
+                    var itemValue = itemView.value();
+                    TtlvItem decoded = TtlvCodec.decode(wire);
+                    var decodedView = decoded.view();
+                    var decodedTag = decodedView.tag();
+                    var decodedValue = decodedView.value()) {
+                assertEquals(tagCode, raw.raw());
+                assertEquals(tagCode, itemTag.raw());
+                assertEquals(TtlvItemType.Boolean, itemView.itemType());
+                assertEquals(true, itemValue.booleanValue());
+                assertEquals(tagCode, decodedTag.raw());
+                assertEquals(TtlvItemType.Boolean, decodedView.itemType());
+                assertEquals(true, decodedValue.booleanValue());
+            }
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.boolean",
+                    "org.kmipkit.ttlv.TtlvValue.Boolean", "construct", wire);
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_item.create",
+                    "org.kmipkit.ttlv.TtlvItem.create", "construct", wire);
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.function.ttlv_item_view_from_item",
+                    "org.kmipkit.ttlv.TtlvItem.view", "decode", wire);
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_codec.decode",
+                    "org.kmipkit.ttlv.TtlvCodec.decode", "decode", wire);
+            if ("KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-RANDOM-IV".equals(targetId)) {
+                executeTypedRandomIv(caseId, targetId, tagCode, sink);
+            }
+            emitted.add(caseId);
+        }
+        if (!emitted.equals(selectedCaseIds)) {
+            throw new IllegalArgumentException("Selected Boolean field cases were not executed for " + version);
+        }
+    }
+
+    // OASIS KMIP 2.0/2.1 §4.16 Table 59 defines Random IV in Cryptographic Parameters.
+    private static void executeTypedRandomIv(String caseId, String targetId, int tagCode,
+            EvidenceSink sink) throws Exception {
+        byte[] childWire = booleanWire(tagCode, true);
+        byte[] wire = structureWire(0x42002b, childWire);
+        try (CryptographicParameters parameters = CryptographicParameters.builder().randomIv(true).build();
+                TtlvStructure source = parameters.intoTtlv();
+                CryptographicParameters parsed = CryptographicParameters.fromTtlv(source)) {
+            assertEquals(java.util.Optional.of(true), parsed.randomIv());
+            try (TtlvStructure output = parsed.intoTtlv(); TtlvStructureView structure = output.view();
+                    TtlvItemView randomIv = structure.itemAt(0); Tag tag = randomIv.tag();
+                    TtlvValueView value = randomIv.value()) {
+                assertEquals(1L, structure.itemCount());
+                assertEquals(tagCode, tag.raw());
+                assertEquals(TtlvItemType.Boolean, value.itemType());
+                assertEquals(true, value.booleanValue());
+            }
+        }
+        emitRoute(sink, caseId, targetId,
+                "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder",
+                "org.kmipkit.protocol.CryptographicParameters.builder", "construct", wire);
+        emitRoute(sink, caseId, targetId,
+                "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.randomiv",
+                "org.kmipkit.protocol.CryptographicParameters.Builder.randomIv", "construct", wire);
+        emitRoute(sink, caseId, targetId,
+                "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.build",
+                "org.kmipkit.protocol.CryptographicParameters.Builder.build", "construct", wire);
+        emitRoute(sink, caseId, targetId,
+                "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.fromttlv",
+                "org.kmipkit.protocol.CryptographicParameters.fromTtlv", "decode", wire);
+
+        byte[] cryptographicParametersWire = structureWire(0x42002b, childWire);
+        byte[] attributesWire = structureWire(0x420125, cryptographicParametersWire);
+        try (CryptographicParameters parameters = CryptographicParameters.builder().randomIv(true).build();
+                TtlvValue value = TtlvValue.structure(parameters.intoTtlv(), CodecLimits.defaults());
+                TypedAttribute typed = TypedAttribute.create(StandardAttribute.CRYPTOGRAPHIC_PARAMETERS, value);
+                TtlvItem item = typed.asItem();
+                TypedAttribute decoded = TypedAttribute.fromItem(StandardAttribute.CRYPTOGRAPHIC_PARAMETERS, item);
+                TtlvItem setItem = decoded.asItem();
+                TtlvStructure empty = TtlvStructure.create();
+                TtlvStructure items = TtlvStructure.withItem(empty, setItem, CodecLimits.defaults());
+                AttributeSet attributes = AttributeSet.tryNew(items)) {
+            assertEquals(StandardAttribute.CRYPTOGRAPHIC_PARAMETERS, decoded.attribute());
+            assertEquals(1, attributes.len());
+            assertEquals(1, attributes.typedCount(StandardAttribute.CRYPTOGRAPHIC_PARAMETERS));
+        }
+        emitRoute(sink, caseId, targetId,
+                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
+                "org.kmipkit.ttlv.TypedAttribute.create", "construct", cryptographicParametersWire);
+        emitRoute(sink, caseId, targetId,
+                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
+                "org.kmipkit.ttlv.TypedAttribute.fromItem", "construct", cryptographicParametersWire);
+        emitRoute(sink, caseId, targetId,
+                "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
+                "org.kmipkit.extensions.AttributeSet.tryNew", "construct", attributesWire);
+    }
 
     // OASIS KMIP 2.0 §11.54 / 2.1 §11.56 and §10.1: tag identity and allocation.
     static void executeTags(JsonNode catalog, String version, Set<String> selectedCaseIds,
@@ -320,5 +458,21 @@ final class LocalCatalogRouteChecks {
     private static byte[] scalarWire(int tag, int type, int value) {
         return ByteBuffer.allocate(16).put((byte) (tag >>> 16)).put((byte) (tag >>> 8)).put((byte) tag)
                 .put((byte) type).putInt(4).putInt(value).putInt(0).array();
+    }
+
+    private static byte[] booleanWire(int tag, boolean value) {
+        return ByteBuffer.allocate(16).put((byte) (tag >>> 16)).put((byte) (tag >>> 8)).put((byte) tag)
+                .put((byte) 6).putInt(8).putLong(value ? 1 : 0).array();
+    }
+
+    private static String normalizeName(String name) {
+        return name.toLowerCase(java.util.Locale.ROOT).replaceAll("[^a-z0-9]", "");
+    }
+
+    private static boolean supportsVersion(JsonNode target, String version) {
+        for (JsonNode candidate : target.path("protocol_versions")) {
+            if (version.equals(candidate.asText())) return true;
+        }
+        return false;
     }
 }
