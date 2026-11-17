@@ -963,6 +963,7 @@ class ControlledTlsPeerTest {
             assertObjectDefaultsObjectTypeRouteEvents(events, protocolVersion);
             appendDerivationSaltRouteEvents(events, protocolVersion);
             assertDerivationSaltRouteEvents(events, protocolVersion);
+            appendDerivationParameterRouteEvents(events, protocolVersion);
             assertDerivationParameterRouteEvents(events, protocolVersion);
             appendExtensionInformationMemberRouteEvents(events, protocolVersion);
             assertExtensionInformationMemberRouteEvents(events, protocolVersion);
@@ -6462,6 +6463,51 @@ class ControlledTlsPeerTest {
         assertScalarStructureMemberRouteEvents(events, DERIVATION_ITERATION_COUNT_FIXTURE.caseId(),
                 DERIVATION_ITERATION_COUNT_FIXTURE.targetId(),
                 "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.integer", protocolVersion);
+    }
+
+    private static void appendDerivationParameterRouteEvents(ArrayNode events, String protocolVersion)
+            throws Exception {
+        CodecLimits limits = CodecLimits.defaults();
+        for (DerivationByteStringFixture fixture : DERIVATION_BYTE_STRING_FIXTURES) {
+            byte[] wire = item(fixture.rawTag(), TtlvItemType.ByteString.code(), fixture.value());
+            String treeHash = normalizedTreeSha256(wire);
+            try (TtlvValue value = TtlvValue.ByteString(fixture.value(), limits);
+                    RawTag raw = RawTag.fromRaw(fixture.rawTag());
+                    Tag tag = raw.checked();
+                    TtlvItem created = TtlvItem.create(tag, value, limits);
+                    TtlvItemView view = created.view()) {
+                assertByteStringItemView(view, fixture.rawTag(), fixture.value());
+            }
+            appendRouteEvent(events, fixture.caseId(),
+                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.bytestring", fixture.targetId(),
+                    "org.kmipkit.ttlv.TtlvValue.ByteString", null, null, "construct", protocolVersion,
+                    null, treeHash, null);
+            appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_item.create", fixture.targetId(),
+                    "org.kmipkit.ttlv.TtlvItem.create", null, null, "construct", protocolVersion,
+                    null, treeHash, null);
+            try (TtlvItem decoded = TtlvCodec.decode(wire);
+                    TtlvItemView view = decoded.view()) {
+                assertByteStringItemView(view, fixture.rawTag(), fixture.value());
+            }
+            appendRouteEvent(events, fixture.caseId(),
+                    "java.generic-ttlv.function.ttlv_item_view_from_item", fixture.targetId(),
+                    "org.kmipkit.ttlv.TtlvItem.view", null, null, "decode", protocolVersion,
+                    null, null, treeHash);
+            appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_codec.decode", fixture.targetId(),
+                    "org.kmipkit.ttlv.TtlvCodec.decode", null, null, "decode", protocolVersion,
+                    null, null, treeHash);
+        }
+
+        DerivationIntegerFixture fixture = DERIVATION_ITERATION_COUNT_FIXTURE;
+        byte[] wire = item(fixture.rawTag(), TtlvItemType.Integer.code(), intBytes(fixture.value()));
+        try (TtlvValue value = TtlvValue.Integer(fixture.value())) {
+            appendRouteEvent(events, fixture.caseId(),
+                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.integer", fixture.targetId(),
+                    "org.kmipkit.ttlv.TtlvValue.Integer", null, null, "construct", protocolVersion,
+                    null, normalizedTreeSha256(wire), null);
+        }
+        appendLocalTtlvRoundtripEvents(events, fixture.caseId(), fixture.targetId(), fixture.rawTag(),
+                TtlvItemType.Integer, TtlvValue.Integer(fixture.value()), wire, protocolVersion, fixture.value());
     }
 
     private static void assertScalarStructureMemberRouteEvents(ArrayNode events, String caseId,
