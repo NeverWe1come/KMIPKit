@@ -3828,6 +3828,21 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual((1, 18, 10), operations[:3])
         self.assertEqual('batch_placeholder_chain', workflow)
 
+    def test_batch_order_placeholder_scenarios_have_two_item_recipes(self):
+        """Map the KMIP 2.0/2.1 §§8.1–8.6 ordered placeholder cases to C peer recipes."""
+        from route_peer import RECIPES
+
+        expected_cases = {
+            'test-batch-order-required-placeholder-resolution':
+                ((1, 18), 'batch_order_placeholder_two_item'),
+            'test-batch-order-omitted-defaults-true':
+                ((1, 18), 'batch_order_placeholder_two_item'),
+        }
+        for case_id, expected in expected_cases.items():
+            with self.subTest(case_id=case_id):
+                self.assertEqual(RECIPES.get(case_id), expected,
+                                 'ordered Create/Activate route recipe is missing or mismatched')
+
 
     def test_batch_placeholder_chain_resolves_the_same_object_and_cleans_up(self):
         from artifact_support import ROOT
