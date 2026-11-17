@@ -52,3 +52,12 @@ artifact. This is part of the FR-006 artifact provenance check.
   failures. The ledger records 71,641 planned, 27,147 executed, and 44,494
   pending cells. This remains selected-scope evidence; full-matrix closure is
   still required.
+- **FR-003/FR-005:** The Java KMIP 2.1 Ping case now invokes the installed
+  `ClientBatchItem.ping()` factory and `ClientBatchItemResult.pingResponse()`
+  against a controlled mTLS peer. The captured request confirms Operation
+  Ping, and the response is successful. Its generic TTLV Operation Enumeration
+  is also constructed, viewed, and decoded under §6.1.36.
+- The latest selected Java report validates 27,154/27,154 cells with zero
+  failures. Its generated ledger records 71,641 planned, 27,154 executed, and
+  44,487 pending cells. This remains partial selected-scope evidence; full
+  Java matrix closure and four-language peer runs are still required.
