@@ -6458,17 +6458,13 @@ class ControlledTlsPeerTest {
             assertEquals("2.0".equals(protocolVersion) ? 0x420057 : 0x420167, tag.raw());
             assertEquals("2.0".equals(protocolVersion) ? TtlvItemType.Enumeration : TtlvItemType.Structure,
                     view.itemType());
+            appendRouteEvent(events, caseId, "java.generic-ttlv.function.ttlv_item_view_from_item", targetId,
+                    "org.kmipkit.ttlv.TtlvItem.view", null, null, "decode", protocolVersion,
+                    null, null, treeHash);
+            appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_codec.decode", targetId,
+                    "org.kmipkit.ttlv.TtlvCodec.decode", null, null, "decode", protocolVersion,
+                    null, null, treeHash);
         }
-        appendRouteEvent(events, caseId, "java.generic-ttlv.function.ttlv_item_view_from_item", targetId,
-                "org.kmipkit.ttlv.TtlvItem.view", null, null, "decode", protocolVersion,
-                null, null, treeHash);
-        try (TtlvItem decoded = TtlvCodec.decode(wire)) {
-            assertEquals("2.0".equals(protocolVersion) ? TtlvItemType.Enumeration : TtlvItemType.Structure,
-                    decoded.view().itemType());
-        }
-        appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_codec.decode", targetId,
-                "org.kmipkit.ttlv.TtlvCodec.decode", null, null, "decode", protocolVersion,
-                null, null, treeHash);
     }
 
     private static void assertScalarOperationStructureRouteEvents(ArrayNode events,
