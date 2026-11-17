@@ -75,15 +75,15 @@ final class FluentFacadeShapeTest {
     void keyPairBuilderRequiresExplicitAlgorithmAndLength() {
         // KMIPKIT-0093-FR-011/013; KMIP 2.1 section 6.1.2 Create Key Pair.
         CreateKeyPairBuilder builder = new CreateKeyPairBuilder(null);
-        assertThrows(InvalidInputException.class, builder::build);
+        assertThrows(InvalidInputException.class, builder::validate);
         builder.algorithm(6);
-        assertThrows(InvalidInputException.class, builder::build);
+        assertThrows(InvalidInputException.class, builder::validate);
         builder.length(256).privateUsageMask(1).publicUsageMask(2);
         try (ClientBatchItem item = builder.toBatchItem()) {
             assertEquals(2, item.operation());
         }
         assertThrows(InvalidInputException.class, () -> builder.algorithm(-1));
-        assertThrows(InvalidInputException.class, () -> builder.commonAttribute(null));
+        assertThrows(InvalidInputException.class, () -> builder.commonAttributeItem(null));
         assertThrows(InvalidInputException.class, () -> builder.withOptions(null));
         assertThrows(InvalidInputException.class, () -> builder.asynchronousIndicator(-1));
         assertThrows(InvalidInputException.class,
@@ -450,9 +450,11 @@ final class FluentFacadeShapeTest {
             try (TtlvValue value = TtlvValue.structure(parameters, limits);
                     TypedAttribute attribute = TypedAttribute.create(
                             StandardAttribute.CRYPTOGRAPHIC_DOMAIN_PARAMETERS, value);
+                    TtlvItem commonAttributeItem = attribute.asItem();
                     ClientBatchItem keyPair = client.request().createKeyPair()
                             .algorithm(6).length(256).privateUsageMask(1).publicUsageMask(2)
-                            .commonAttribute(attribute).withOptions(RequestOptions.defaults())
+                            .commonAttributeItem(commonAttributeItem)
+                            .withOptions(RequestOptions.defaults())
                             .asynchronousIndicator(1).build()) {
                 assertEquals(2, keyPair.operation());
             }
