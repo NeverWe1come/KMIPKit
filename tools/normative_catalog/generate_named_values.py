@@ -1,7 +1,8 @@
-"""Generate four-language named KMIP Enumeration and Bit Mask values.
+"""Generate four-language named KMIP Enumeration, Bit Mask, and Tag values.
 
-The checked-in normative catalog is the sole source. `--check` performs no
-writes and fails if any generated language surface is missing or stale.
+The checked-in KMIP 2.1 and versioned catalogs are the sources. `--check`
+performs no writes and fails if any generated language surface is missing or
+stale.
 """
 
 from __future__ import annotations
@@ -17,9 +18,17 @@ from pathlib import Path
 from typing import Any
 
 if __package__:
+    from .generate_ttlv_tags import (
+        VERSIONED_TAG_CATALOG_PATH,
+        load_versioned_tag_allocations,
+    )
     from .safe_io import PathSecurityError, atomic_write_bytes, safe_read_bytes
     from .validate import MAX_BYTES, CatalogValidationError, load_validated_catalog
 else:
+    from generate_ttlv_tags import (
+        VERSIONED_TAG_CATALOG_PATH,
+        load_versioned_tag_allocations,
+    )
     from safe_io import PathSecurityError, atomic_write_bytes, safe_read_bytes
     from validate import MAX_BYTES, CatalogValidationError, load_validated_catalog
 
@@ -49,6 +58,8 @@ OUTPUTS = {
 }
 EXPECTED_CATALOG_COUNTS = (64, 723, 3, 44)
 EXPECTED_ASSIGNED_COUNTS = (644, 33)
+EXPECTED_ASSIGNED_TAG_COUNT = 354
+RUST_NAME_LOOKUP_CHUNK_SIZE = 48
 
 
 @dataclass(frozen=True)
@@ -72,6 +83,7 @@ class NamedGroup:
 class CatalogValues:
     enumerations: tuple[NamedGroup, ...]
     bitmasks: tuple[NamedGroup, ...]
+    tag_values: tuple[NamedValue, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -253,7 +265,40 @@ def load_versioned_values(root: Path) -> VersionedCatalog:
                     tuple(values),
                 )
             )
+    groups.append(_load_versioned_tag_group(root))
     return VersionedCatalog(tuple(groups))
+
+
+def _load_versioned_tag_group(root: Path) -> VersionedNamedGroup:
+    """Load assigned KMIP 3.0 tags from the checksum-pinned Table 605 input."""
+    allocations = load_versioned_tag_allocations(root)
+    raw = safe_read_bytes(root, VERSIONED_TAG_CATALOG_PATH, max_bytes=MAX_BYTES)
+    document = json.loads(raw)
+    tag_enumeration = document.get("tagEnumeration")
+    assignments = tag_enumeration.get("assignments") if isinstance(tag_enumeration, dict) else None
+    if not isinstance(assignments, list):
+        raise ValueError("versioned tag catalog has no assignment list")
+    values: list[VersionedNamedValue] = []
+    for assignment in assignments:
+        if assignment.get("introduced_in") != "3.0":
+            raise ValueError("versioned tag catalog contains a tag outside its KMIP 3.0 delta")
+        name = assignment["name"]
+        identifier = _identifier(name)
+        numeric = _wire_integer(assignment)
+        values.append(VersionedNamedValue(name, identifier, numeric))
+    values.sort(key=lambda value: (value.value, value.identifier))
+    if [(value, "assigned") for value in sorted(item.value for item in values)] != allocations:
+        raise ValueError("versioned tag names and assignments differ from the validated KMIP 3.0 catalog")
+    return VersionedNamedGroup(
+        "v3_0",
+        "enumeration",
+        "Tag",
+        "tag",
+        "kmip-3.0",
+        "11.58",
+        "605",
+        tuple(values),
+    )
 
 
 def collect_values(catalog: dict[str, Any]) -> CatalogValues:
@@ -348,7 +393,60 @@ def collect_values(catalog: dict[str, Any]) -> CatalogValues:
 
     for values in result.values():
         values.sort(key=lambda item: (item.identifier, item.element_id))
-    values = CatalogValues(tuple(result["enumeration"]), tuple(result["bitmask"]))
+    raw_tag_values: list[NamedValue] = []
+    seen_tag_names: set[str] = set()
+    seen_tag_values: set[int] = set()
+    for element in elements:
+        if not isinstance(element, dict) or element.get("kind") != "tag":
+            continue
+        if element.get("allocation") != "assigned":
+            continue
+        name = element.get("name")
+        element_id = element.get("element_id")
+        source_refs = element.get("source_refs")
+        if (
+            not isinstance(name, str)
+            or not name
+            or not isinstance(element_id, str)
+            or not isinstance(source_refs, list)
+            or not source_refs
+            or any(
+                not isinstance(reference, dict)
+                or not isinstance(reference.get("source_id"), str)
+                or not isinstance(reference.get("section"), str)
+                for reference in source_refs
+            )
+        ):
+            raise ValueError("catalog assigned tag lacks a stable name, identity, or source reference")
+        identifier = _identifier(name)
+        numeric = _wire_integer(element)
+        if identifier in seen_tag_names:
+            raise ValueError(f"catalog contains duplicate assigned tag name: {name}")
+        if numeric in seen_tag_values:
+            raise ValueError(f"catalog contains duplicate assigned tag value: {numeric:06X}")
+        seen_tag_names.add(identifier)
+        seen_tag_values.add(numeric)
+        raw_tag_values.append(
+            NamedValue(
+                element_id,
+                name,
+                identifier,
+                numeric,
+                tuple(
+                    (reference["source_id"], reference["section"])
+                    for reference in source_refs
+                ),
+            )
+        )
+    raw_tag_values.sort(key=lambda value: (value.value, value.identifier, value.element_id))
+    if len(raw_tag_values) != EXPECTED_ASSIGNED_TAG_COUNT:
+        raise ValueError(
+            "assigned tag count differs from audited KMIP 2.1 catalog: "
+            f"{len(raw_tag_values)}"
+        )
+    values = CatalogValues(
+        tuple(result["enumeration"]), tuple(result["bitmask"]), tuple(raw_tag_values)
+    )
     catalog_counts = (
         len(values.enumerations),
         catalog_value_counts["enumeration"],
@@ -366,6 +464,18 @@ def collect_values(catalog: dict[str, Any]) -> CatalogValues:
     return values
 
 
+def _group_values(
+    group: NamedGroup,
+    tag_values: tuple[NamedValue, ...],
+    *,
+    enumeration: bool,
+) -> tuple[NamedValue, ...]:
+    """Use the separately sourced assigned tag values for the Tag enumeration."""
+    if enumeration and group.name == "Tag":
+        return tag_values
+    return group.values
+
+
 def _render_rust(values: CatalogValues) -> str:
     lines = ["//! Generated catalog-backed KMIP 2.1 named values.", "", "/// KMIP protocol Enumeration and Bit Mask values.", "pub mod values {"]
     kinds = (("enumeration", values.enumerations), ("bitmask", values.bitmasks))
@@ -373,24 +483,64 @@ def _render_rust(values: CatalogValues) -> str:
         lines.append(f"    /// Assigned KMIP 2.1 {kind.title()} values.")
         lines.extend([f"    pub mod {kind} {{"])
         for group_index, group in enumerate(groups):
+            member_values = _group_values(
+                group,
+                values.tag_values,
+                enumeration=kind == "enumeration",
+            )
             lines.append(f"        /// Values for the KMIP {group.name} {kind.title()}.")
             lines.extend([f"        pub mod {_snake_identifier(group.name)} {{"])
-            for value in group.values:
+            for value in member_values:
                 source = _source_provenance(value.source_refs)
                 lines.append(f"            /// `{value.name}`; {value.element_id}; {source}.")
                 lines.append(
                     f"            pub const {value.identifier}: u32 = {_rust_u32_literal(value.value)};"
                 )
             if kind == "enumeration":
-                raw_parameter = "raw" if group.values else "_raw"
+                raw_parameter = "raw" if member_values else "_raw"
                 lines.extend([
                     "            /// Returns the assigned catalog name for a known raw value.",
                     "            #[must_use]",
                     f"            pub const fn name({raw_parameter}: u32) -> Option<&'static str> {{",
                 ])
-                if group.values:
+                if member_values:
+                    lookup_values = tuple(
+                        sorted(member_values, key=lambda value: (value.value, value.identifier))
+                    )
+                    if len(lookup_values) > RUST_NAME_LOOKUP_CHUNK_SIZE:
+                        chunks = tuple(
+                            lookup_values[offset:offset + RUST_NAME_LOOKUP_CHUNK_SIZE]
+                            for offset in range(0, len(lookup_values), RUST_NAME_LOOKUP_CHUNK_SIZE)
+                        )
+                        lines.append("                match raw {")
+                        for index, chunk in enumerate(chunks):
+                            low = _rust_u32_literal(chunk[0].value)
+                            high = _rust_u32_literal(chunk[-1].value)
+                            lines.append(
+                                f"                    {low}..={high} => name_chunk_{index}(raw),"
+                            )
+                        lines.extend(["                    _ => None,", "                }"])
+                        lines.extend(["            }"])
+                        for index, chunk in enumerate(chunks):
+                            lines.extend([
+                                f"            const fn name_chunk_{index}(raw: u32) -> Option<&'static str> {{",
+                                "                match raw {",
+                            ])
+                            for value in chunk:
+                                lines.append(
+                                    f"                    {_rust_u32_literal(value.value)} => Some({json.dumps(value.name, ensure_ascii=False)}),"
+                                )
+                            lines.extend([
+                                "                    _ => None,",
+                                "                }",
+                                "            }",
+                            ])
+                        lines.append("        }")
+                        if group_index + 1 < len(groups):
+                            lines.append("")
+                        continue
                     lines.append("                match raw {")
-                    for value in group.values:
+                    for value in lookup_values:
                         lines.append(
                             f"                    {_rust_u32_literal(value.value)} => Some({json.dumps(value.name, ensure_ascii=False)}),"
                         )
@@ -456,10 +606,15 @@ def _render_c(values: CatalogValues) -> str:
     lines.append("")
     for kind, groups in (("ENUMERATION", values.enumerations), ("BITMASK", values.bitmasks)):
         for group in groups:
+            member_values = _group_values(
+                group,
+                values.tag_values,
+                enumeration=kind == "ENUMERATION",
+            )
             prefix = f"KMIPKIT_{kind}_{group.identifier}"
             if kind == "ENUMERATION":
                 lines.extend([f"static inline const char *{prefix}_name(uint32_t raw) {{", "    switch (raw) {"])
-                for value in group.values:
+                for value in member_values:
                     lines.append(_render_c_name_case(kind, group, value))
                 lines.extend(["    default: return 0;", "    }", "}", ""])
             else:
@@ -495,9 +650,14 @@ def _render_java(values: CatalogValues) -> str:
     lines = ["package org.kmipkit.protocol;", "", "/** Generated KMIP 2.1 named values. */", "public final class KmipValues {", "    private KmipValues() {}", ""]
     for kind, groups in (("Enumeration", values.enumerations), ("BitMask", values.bitmasks)):
         for group in groups:
+            member_values = _group_values(
+                group,
+                values.tag_values,
+                enumeration=kind == "Enumeration",
+            )
             type_name = _type_identifier(group.name)
             lines.extend([f"    /** Named KMIP 2.1 values for {group.name}. */", f"    public static final class {type_name} {{", f"        private {type_name}() {{}}"])
-            for value in group.values:
+            for value in member_values:
                 source = _source_provenance(value.source_refs)
                 lines.append(f"        /** {value.name}; {value.element_id}; {source}. */")
                 lines.append(f"        public static final long {value.identifier} = 0x{value.value:08X}L;")
@@ -508,7 +668,7 @@ def _render_java(values: CatalogValues) -> str:
                     "            if (raw < 0 || raw > 0xFFFF_FFFFL) return null;",
                     "            return switch ((int) raw) {",
                 ])
-                for value in group.values:
+                for value in member_values:
                     escaped = value.name.replace("\\", "\\\\").replace('"', '\\"')
                     lines.append(f'                case 0x{value.value:08X} -> "{escaped}";')
                 lines.extend(["                default -> null;", "            };", "        }"])
@@ -540,16 +700,21 @@ def _render_python(values: CatalogValues) -> str:
     lines = ['"""Generated KMIP 2.1 named values."""', "", "from __future__ import annotations", ""]
     for kind, groups in (("enumeration", values.enumerations), ("bitmask", values.bitmasks)):
         for group in groups:
+            member_values = _group_values(
+                group,
+                values.tag_values,
+                enumeration=kind == "enumeration",
+            )
             type_name = _type_identifier(group.name)
             lines.extend([f"class {type_name}:", f'    """Named values for {group.name}."""'])
-            for value in group.values:
+            for value in member_values:
                 lines.append(
                     f"    # {value.element_id}; {_source_provenance(value.source_refs)}"
                 )
                 lines.append(f"    {value.identifier} = 0x{value.value:08X}")
             if kind == "enumeration":
                 lines.extend(["", "    @staticmethod", "    def name(raw: int) -> str | None:", '        """Return the assigned catalog name, or None for an unknown raw value."""', "        return {"])
-                for value in group.values:
+                for value in member_values:
                     lines.append(f"            0x{value.value:08X}: {value.name!r},")
                 lines.extend(["        }.get(raw)"])
             else:
@@ -713,6 +878,19 @@ def render_outputs(
                 ],
             }
             for group in versioned.groups
+        ],
+        "assignedTags": [
+            {
+                "elementId": value.element_id,
+                "name": value.name,
+                "identifier": value.identifier,
+                "wireValue": f"0x{value.value:06X}",
+                "sourceRefs": [
+                    {"sourceId": source_id, "section": section}
+                    for source_id, section in value.source_refs
+                ],
+            }
+            for value in values.tag_values
         ],
         "groups": [
             {
