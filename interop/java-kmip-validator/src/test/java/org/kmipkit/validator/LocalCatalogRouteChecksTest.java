@@ -85,6 +85,27 @@ class LocalCatalogRouteChecksTest {
     }
 
     @Test
+    void executesClientPayloadCorrelationResponseThroughGenericTtlvRoutes() throws Exception {
+        JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
+        String caseId = "test-norm-payload-client-cancel-response-21-001";
+        List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
+
+        LocalCatalogRouteChecks.executeClientPayloadScalarFields(
+                catalog, "2.1", Set.of(caseId), invocations::add);
+
+        assertEquals(6, invocations.size());
+        assertEquals(Set.of(
+                "KMIPKIT-PAYLOAD-CLIENT-CANCEL-RESPONSE-21-001",
+                "KMIPKIT-ELEM-OP-C2S-CANCEL"),
+                invocations.stream().map(LocalCatalogRouteChecks.Invocation::targetId)
+                        .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(Set.of("java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item", "java.generic-ttlv.ttlv_codec.decode"),
+                invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId)
+                        .collect(java.util.stream.Collectors.toSet()));
+    }
+
+    @Test
     void executesRandomIvThroughTheTypedCryptographicParametersBuilder() throws Exception {
         JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
         String caseId = "test-norm-structure-member-structure-member-4-16-random-iv";
