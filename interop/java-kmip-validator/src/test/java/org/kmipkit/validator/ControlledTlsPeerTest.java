@@ -824,6 +824,7 @@ class ControlledTlsPeerTest {
         JsonNode report = new ObjectMapper().readTree(reportPath.toFile());
         assertEquals("java", report.path("language").asText());
         assertGenericOnlyTagInventoryEvidence(report.path("events"));
+        assertTagAggregateEvidence(report.path("events"));
         assertTypedTagIdentityEvidence(report.path("events"));
         assertReferencedPkcs11Evidence(report.path("events"));
         assertTrue(enumerationFixtures.stream().noneMatch(fixture -> fixture.caseId().equals(
@@ -3564,6 +3565,7 @@ class ControlledTlsPeerTest {
         }
         caseIds.add("test-enum-pkcs#11-function");
         caseIds.add("test-enum-pkcs#11-return-code");
+        caseIds.add("test-enum-tag");
         CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().forEach(caseIds::add);
         report.putArray("protocol_versions").add("2.0").add("2.1");
         ObjectNode combination = mapper.createObjectNode();
@@ -3624,6 +3626,32 @@ class ControlledTlsPeerTest {
                     assertEquals(1, event.path("invocation_count").asInt());
                 }
             }
+        }
+    }
+
+    private static void assertTagAggregateEvidence(JsonNode events) throws Exception {
+        Set<String> tagCaseIds = new java.util.HashSet<>();
+        for (JsonNode testCase : readRouteEvidenceCatalog().path("test_cases")) {
+            String targetKind = testCase.path("requires").path("target_kind").asText();
+            if ("tag".equals(targetKind) || "tag_range".equals(targetKind)) {
+                tagCaseIds.add(testCase.path("case_id").asText());
+            }
+        }
+        for (JsonNode event : events) {
+            if (!tagCaseIds.contains(event.path("case_id").asText())
+                    || !event.path("route_id").asText().startsWith("java.generic-ttlv.")) {
+                continue;
+            }
+            ObjectNode expected = ((ObjectNode) event).deepCopy();
+            expected.put("case_id", "test-enum-tag");
+            boolean present = false;
+            for (JsonNode candidate : events) {
+                if (expected.equals(candidate)) {
+                    present = true;
+                    break;
+                }
+            }
+            assertTrue(present, "The Tag aggregate must retain each generic TTLV invocation: " + expected);
         }
     }
 
