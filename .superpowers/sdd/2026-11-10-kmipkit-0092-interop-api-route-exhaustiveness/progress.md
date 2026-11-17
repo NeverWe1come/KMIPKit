@@ -330,3 +330,22 @@ branches, and the common CI therefore reports a planned matrix only.
   `python3 tools/compare_route_ledger.py`.
 - This adds local-model evidence and does not establish interoperability with
   a vendor KMS; the Java PR remains WIP.
+
+## 2026-11-17 #213 stack sync with Rotate Name Value
+
+- Updated the KMIP 3.0 Java/Python branch from the latest #187 head. The Java
+  controlled report invokes 27,254/27,254 selected cells with zero failures;
+  44,387/71,641 global cells remain pending across 1,220 case IDs.
+- The complete Java suite passes 57/57 tests with no failures or skips under
+  `--rerun-tasks`. The generated ledger refresh and normal comparison pass.
+  Red/Green/Refactor evidence for the seven new cells is on #187 in commits
+  `b0576cd07`, `de16f5d1c`, and `52d7c14d4`.
+- Verification commands: `bash ../../bindings/java/gradlew --no-daemon
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks`;
+  `python3 ../shared/tools/validate_route_evidence.py --selected-scope --report
+  build/route-execution-evidence.json --artifact-sha256
+  504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545
+  --write-ledger`; `python3 tools/compare_route_ledger.py --refresh-reference`;
+  `python3 tools/compare_route_ledger.py`.
+- This branch still has the Java global matrix incomplete and no vendor KMS
+  interoperability result; #213 remains WIP.
