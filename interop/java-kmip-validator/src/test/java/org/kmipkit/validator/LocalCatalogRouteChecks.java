@@ -21,10 +21,12 @@ import org.kmipkit.ttlv.TtlvValue;
 import org.kmipkit.ttlv.TtlvValueView;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /** Executes source-backed local catalog obligations through the installed public package. */
@@ -116,6 +118,208 @@ final class LocalCatalogRouteChecks {
         if (!emitted.equals(selectedCaseIds)) {
             throw new IllegalArgumentException("Selected Boolean field cases were not executed for " + version);
         }
+    }
+
+    /** Executes generic TTLV routes for catalogued scalar message fields. */
+    static void executeScalarMessageFields(JsonNode catalog, String version, Set<String> selectedCaseIds,
+            EvidenceSink sink) throws Exception {
+        Set<String> emitted = new java.util.HashSet<>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String caseId = testCase.path("case_id").asText();
+            if (!selectedCaseIds.contains(caseId)
+                    || !"local_model".equals(testCase.path("execution").path("mode").asText())
+                    || !applies(testCase, version)) continue;
+            JsonNode requires = testCase.path("requires");
+            if (!"message_field".equals(requires.path("target_kind").asText())) {
+                throw new IllegalArgumentException("Selected case is not a message field: " + caseId);
+            }
+            String targetId = requires.path("normative_target_id").asText();
+            String encoding = requires.path("source_encoding").asText(
+                    findTarget(catalog, targetId).path("source_encoding").asText());
+            int tagCode = messageFieldTag(catalog, targetId, version);
+            TtlvItemType itemType = scalarMessageFieldType(encoding);
+            byte[] valueBytes = scalarMessageFieldBytes(caseId, encoding);
+            long numericValue = scalarMessageFieldNumber(caseId, encoding);
+            byte[] wire = scalarWire(tagCode, itemType.code(), valueBytes);
+            CodecLimits limits = CodecLimits.defaults();
+            try (TtlvValue value = scalarMessageFieldValue(encoding, valueBytes, numericValue, limits);
+                    RawTag raw = RawTag.fromRaw(tagCode);
+                    Tag tag = raw.checked();
+                    TtlvItem item = TtlvItem.create(tag, value, limits);
+                    var itemView = item.view();
+                    var itemTag = itemView.tag();
+                    var itemValue = itemView.value()) {
+                assertEquals(tagCode, itemTag.raw());
+                assertScalarMessageFieldValue(itemValue, itemType, valueBytes, numericValue);
+            }
+            try (TtlvItem decoded = TtlvCodec.decode(wire);
+                    var decodedView = decoded.view();
+                    var decodedTag = decodedView.tag();
+                    var decodedValue = decodedView.value()) {
+                assertEquals(tagCode, decodedTag.raw());
+                assertScalarMessageFieldValue(decodedValue, itemType, valueBytes, numericValue);
+            }
+            String constructorRoute = scalarMessageFieldConstructorRoute(encoding);
+            emitRoute(sink, caseId, targetId, constructorRoute, scalarMessageFieldConstructor(encoding),
+                    "construct", wire);
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_item.create",
+                    "org.kmipkit.ttlv.TtlvItem.create", "construct", wire);
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.function.ttlv_item_view_from_item",
+                    "org.kmipkit.ttlv.TtlvItem.view", "decode", wire);
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_codec.decode",
+                    "org.kmipkit.ttlv.TtlvCodec.decode", "decode", wire);
+            emitted.add(caseId);
+        }
+        if (!emitted.equals(selectedCaseIds)) {
+            throw new IllegalArgumentException("Selected scalar message field cases were not executed for "
+                    + version);
+        }
+    }
+
+    private static JsonNode findTarget(JsonNode catalog, String targetId) {
+        for (JsonNode target : catalog.path("normative_targets")) {
+            if (targetId.equals(target.path("target_id").asText())) return target;
+        }
+        throw new IllegalArgumentException("Missing catalogued message field target: " + targetId);
+    }
+
+    private static int messageFieldTag(JsonNode catalog, String targetId, String version) {
+        JsonNode target = findTarget(catalog, targetId);
+        String name = normalizeName(target.path("name").asText());
+        int tagCode = -1;
+        int matches = 0;
+        for (JsonNode candidate : catalog.path("normative_targets")) {
+            if (!"tag".equals(candidate.path("kind").asText())
+                    || !name.equals(normalizeName(candidate.path("name").asText()))
+                    || !supportsVersion(candidate, version)) continue;
+            if (!"assigned".equals(candidate.path("allocation").asText())) {
+                throw new IllegalArgumentException("Scalar message field tag is not assigned: " + targetId);
+            }
+            tagCode = Integer.parseUnsignedInt(
+                    candidate.path("wire_value").asText().replaceFirst("^0[xX]", ""), 16);
+            matches++;
+        }
+        if (matches != 1) {
+            throw new IllegalArgumentException("Expected one assigned Tag for scalar message field: " + targetId);
+        }
+        return tagCode;
+    }
+
+    private static TtlvItemType scalarMessageFieldType(String encoding) {
+        return switch (encoding) {
+            case "Boolean" -> TtlvItemType.Boolean;
+            case "Byte String" -> TtlvItemType.ByteString;
+            case "Date-Time" -> TtlvItemType.DateTime;
+            case "Enumeration" -> TtlvItemType.Enumeration;
+            case "Integer" -> TtlvItemType.Integer;
+            case "Text String",
+                    "Text String (with usage limited to alphanumeric, underscore and period – i.e. [A-Za-z0-9_.])"
+                    -> TtlvItemType.TextString;
+            default -> throw new IllegalArgumentException("Unsupported scalar message field encoding: " + encoding);
+        };
+    }
+
+    private static byte[] scalarMessageFieldBytes(String caseId, String encoding) {
+        return switch (encoding) {
+            case "Boolean" -> ByteBuffer.allocate(Long.BYTES).putLong(1L).array();
+            case "Byte String" -> new byte[] {0x11, 0x22, 0x33};
+            case "Date-Time" -> ByteBuffer.allocate(Long.BYTES).putLong(1_700_000_000L).array();
+            case "Enumeration" -> ByteBuffer.allocate(Integer.BYTES)
+                    .putInt(Math.toIntExact(scalarMessageFieldNumber(caseId, encoding))).array();
+            case "Integer" -> ByteBuffer.allocate(Integer.BYTES)
+                    .putInt(Math.toIntExact(scalarMessageFieldNumber(caseId, encoding))).array();
+            case "Text String",
+                    "Text String (with usage limited to alphanumeric, underscore and period – i.e. [A-Za-z0-9_.])"
+                    -> "kmipkit_route".getBytes(StandardCharsets.US_ASCII);
+            default -> throw new IllegalArgumentException("Unsupported scalar message field encoding: " + encoding);
+        };
+    }
+
+    private static long scalarMessageFieldNumber(String caseId, String encoding) {
+        if ("Date-Time".equals(encoding)) return 1_700_000_000L;
+        if ("Integer".equals(encoding)) {
+            if (caseId.endsWith("protocol-version-major")) return 2;
+            if (caseId.endsWith("protocol-version-minor")) return 1;
+            if (caseId.endsWith("batch-count")) return 1;
+            return 1_024;
+        }
+        if ("Enumeration".equals(encoding)) {
+            if (caseId.endsWith("operation")) return 1; // Create.
+            if (caseId.endsWith("result-reason")) return 2; // Response Too Large.
+            if (caseId.endsWith("result-status")) return 0; // Success.
+            if (caseId.endsWith("batch-error-continuation-option")) return 2; // Stop.
+            if (caseId.endsWith("asynchronous-indicator")) return 1; // Mandatory.
+        }
+        if ("Boolean".equals(encoding)) return 1;
+        return 0;
+    }
+
+    private static TtlvValue scalarMessageFieldValue(String encoding, byte[] bytes, long number,
+            CodecLimits limits) {
+        return switch (encoding) {
+            case "Boolean" -> TtlvValue.Boolean(number != 0);
+            case "Byte String" -> TtlvValue.ByteString(bytes, limits);
+            case "Date-Time" -> TtlvValue.DateTime(number);
+            case "Enumeration" -> TtlvValue.Enumeration(number);
+            case "Integer" -> TtlvValue.Integer(Math.toIntExact(number));
+            case "Text String",
+                    "Text String (with usage limited to alphanumeric, underscore and period – i.e. [A-Za-z0-9_.])"
+                    -> TtlvValue.TextString(bytes, limits);
+            default -> throw new IllegalArgumentException("Unsupported scalar message field encoding: " + encoding);
+        };
+    }
+
+    private static String scalarMessageFieldConstructorRoute(String encoding) {
+        return switch (encoding) {
+            case "Boolean" -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.boolean";
+            case "Byte String" -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.bytestring";
+            case "Date-Time" -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.datetime";
+            case "Enumeration" -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration";
+            case "Integer" -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.integer";
+            case "Text String",
+                    "Text String (with usage limited to alphanumeric, underscore and period – i.e. [A-Za-z0-9_.])"
+                    -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring";
+            default -> throw new IllegalArgumentException("Unsupported scalar message field encoding: " + encoding);
+        };
+    }
+
+    private static String scalarMessageFieldConstructor(String encoding) {
+        return switch (encoding) {
+            case "Boolean" -> "org.kmipkit.ttlv.TtlvValue.Boolean";
+            case "Byte String" -> "org.kmipkit.ttlv.TtlvValue.ByteString";
+            case "Date-Time" -> "org.kmipkit.ttlv.TtlvValue.DateTime";
+            case "Enumeration" -> "org.kmipkit.ttlv.TtlvValue.Enumeration";
+            case "Integer" -> "org.kmipkit.ttlv.TtlvValue.Integer";
+            case "Text String",
+                    "Text String (with usage limited to alphanumeric, underscore and period – i.e. [A-Za-z0-9_.])"
+                    -> "org.kmipkit.ttlv.TtlvValue.TextString";
+            default -> throw new IllegalArgumentException("Unsupported scalar message field encoding: " + encoding);
+        };
+    }
+
+    private static void assertScalarMessageFieldValue(org.kmipkit.ttlv.TtlvValueView value,
+            TtlvItemType type, byte[] bytes, long number) {
+        assertEquals(type, value.itemType());
+        if (type == TtlvItemType.Boolean) {
+            assertEquals(number != 0, value.booleanValue());
+        } else if (type == TtlvItemType.ByteString || type == TtlvItemType.TextString) {
+            assertArrayEquals(bytes, value.bytes());
+        } else if (type == TtlvItemType.DateTime) {
+            assertEquals(number, value.dateTime());
+        } else if (type == TtlvItemType.Enumeration) {
+            assertEquals(number, value.enumeration());
+        } else if (type == TtlvItemType.Integer) {
+            assertEquals(Math.toIntExact(number), value.integer());
+        } else {
+            throw new IllegalArgumentException("Unsupported scalar message field type: " + type);
+        }
+    }
+
+    private static byte[] scalarWire(int tag, int type, byte[] value) {
+        int padding = (8 - (value.length % 8)) % 8;
+        return ByteBuffer.allocate(8 + value.length + padding)
+                .put((byte) (tag >>> 16)).put((byte) (tag >>> 8)).put((byte) tag)
+                .put((byte) type).putInt(value.length).put(value).put(new byte[padding]).array();
     }
 
     /** Executes the Item Type enum values, which have no same-named standalone TTLV Tag. */
