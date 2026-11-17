@@ -1853,7 +1853,6 @@ python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-refe
 python3 interop/java-kmip-validator/tools/compare_route_ledger.py
 git diff --check
 ```
-
 ## Java repeatable Any object-attribute members — 2026-11-17
 
 Red commit `d9285a466` requires the generic Item creation, Item view, and
@@ -2602,5 +2601,55 @@ python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
   --write-ledger
 python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
 python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+git diff --check
+```
+
+## Java scalar structure routes and explicit cell scopes — 2026-11-18
+
+Red commits `513ce6d75` and `bfb348a47` require a source-assigned value for the
+`Certificate Type` enumeration and generic TTLV evidence even when a scalar
+structure member also has typed routes. The focused tests failed first because
+the fixture emitted enum code zero and the controlled report omitted the
+generic route cells for typed targets.
+
+Green commit `5c9c355a7` extends generic scalar structure execution to those
+typed targets and obtains enumeration fixtures from the catalog's assigned
+values or published extension ranges. It handles the KMIP-referenced PKCS#11
+enum values and the shared Hashing Algorithm enum for Mask Generator Hashing
+Algorithm. This contributes 672 generic TTLV cells. Those cases still remain
+pending in the full matrix wherever their other typed routes lack evidence.
+
+The first scoped Java report then exposed that the CLI accepted case scopes but
+did not consume the validator's existing exact-cell scope support. Red commit
+`8cba59f06` reproduces that mismatch. Green commit `507337f96` adds optional
+`scope_cells` to the report schema, validates it against planned cells, and
+preserves the full-matrix pending count when writing the ledger. The Java
+controlled-peer report now lists its exact executed cell identities. This
+allows the validator to prove each selected invocation without treating
+unexecuted routes for the same case as completed.
+
+The Java suite passes 62/62 tests with no failures, errors, or skips. The Python
+route-evidence, schema, and capability suites pass 108 tests. The generated
+route check confirms 1,507 routes; the ledger comparison passes. The selected
+scope validates 28,388/28,388 cells with zero failures. The global Java ledger
+records 28,388 executed and 43,253 pending of 71,641 cells across 1,158 pending
+case IDs. These are local installed-artifact and controlled-peer results, not
+vendor interoperability; #187 remains WIP.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-tmp" \
+  bash bindings/java/gradlew -p interop/java-kmip-validator \
+  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" test --rerun-tasks
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+python3 -m unittest interop.shared.tests.test_route_execution_evidence \
+  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
 git diff --check
 ```

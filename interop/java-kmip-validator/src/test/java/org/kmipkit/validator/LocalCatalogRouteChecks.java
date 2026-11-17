@@ -214,13 +214,12 @@ final class LocalCatalogRouteChecks {
             TtlvItemType itemType = scalarMessageFieldType(encoding);
             String targetName = target.path("name").asText();
             int tagCode = tagCodeNamed(catalog, targetName, version);
-            byte[] valueBytes = scalarMessageFieldBytes(caseId, encoding);
             long numericValue = "Enumeration".equals(encoding)
-                    ? firstAssignedEnumerationValue(catalog, targetName, version)
+                    ? representativeEnumerationValue(catalog, targetName, version)
                     : scalarMessageFieldNumber(caseId, encoding);
-            if ("Enumeration".equals(encoding)) {
-                valueBytes = ByteBuffer.allocate(Integer.BYTES).putInt((int) numericValue).array();
-            }
+            byte[] valueBytes = "Enumeration".equals(encoding)
+                    ? ByteBuffer.allocate(Integer.BYTES).putInt((int) numericValue).array()
+                    : scalarMessageFieldBytes(caseId, encoding);
             byte[] wire = scalarWire(tagCode, itemType.code(), valueBytes);
             try (TtlvValue value = scalarMessageFieldValue(encoding, valueBytes, numericValue, limits);
                     RawTag raw = RawTag.fromRaw(tagCode);
@@ -255,7 +254,7 @@ final class LocalCatalogRouteChecks {
         }
     }
 
-    private static long firstAssignedEnumerationValue(JsonNode catalog, String fieldName, String version) {
+    private static long representativeEnumerationValue(JsonNode catalog, String fieldName, String version) {
         String enumTypeName = "Mask Generator Hashing Algorithm".equals(fieldName)
                 ? "HASHING-ALGORITHM"
                 : fieldName.toUpperCase(Locale.ROOT).replaceAll("[^A-Z0-9]+", "-");
@@ -286,7 +285,7 @@ final class LocalCatalogRouteChecks {
             return Long.parseLong(extensionRange.substring(0, 1), 16) << 28;
         }
         if (!found) {
-            throw new IllegalArgumentException("No assigned versioned enumeration value for structure member: "
+            throw new IllegalArgumentException("No source-backed enumeration value for structure member: "
                     + fieldName + " / " + version);
         }
         return firstValue;

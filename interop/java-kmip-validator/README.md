@@ -208,17 +208,21 @@ evidence for both `RawTag` identity routes and the `ClientBatch` setter. The
 setter's evidence comes from the serialized header of a controlled two-item
 Query request in KMIP 2.0 and 2.1 (KMIP 2.0 §11.54; KMIP 2.1 §11.56).
 
-The 44,371 pending cells belong to 1,218 case IDs listed in the generated
-ledger; every one has the reason `route_evidence_not_emitted`. The applicability
-rule is the shared catalog and capability matrix after protocol-version,
-public-route, encoding/transport, and source-backed exclusion filters. A cell
-remaining in that matrix is planned and applicable; the current ledger gives
-none of these cells a non-applicability or API-unavailable reason. KMIPKIT-0092
-FR-002 and FR-009 therefore treat them as unfinished coverage, not accepted
-exceptions. This CI recipe validates only its declared `case_ids` selected
-scope and the ledger comparer checks stable ledger equality; a green selected
-scope does not mean the full-matrix completeness gate is satisfied. The PR
-remains WIP while any required Java route cells are pending.
+The current Java ledger has 43,253 pending cells across 1,158 case IDs; every
+one has the reason `route_evidence_not_emitted`. The applicability rule is the
+shared catalog and capability matrix after protocol-version, public-route,
+encoding/transport, and source-backed exclusion filters. A cell remaining in
+that matrix is planned and applicable; the ledger gives none of these cells a
+non-applicability or API-unavailable reason. KMIPKIT-0092 FR-002 and FR-009
+therefore treat them as unfinished coverage, not accepted exceptions.
+
+Reports may declare `scope_cells` when a run exercises only selected
+case/route/action/version/encoding/transport tuples. The validator checks that
+each declared cell is planned, appears exactly once, and has a matching passing
+invocation; the evidence ledger still measures execution against the complete
+matrix. If `scope_cells` is omitted, `case_ids` selects every planned cell for
+each listed case. A green selected scope does not mean the full-matrix gate is
+satisfied. The PR remains WIP while any required Java route cells are pending.
 The `test-enum-tag` aggregate now covers all 3,674 applicable generic TTLV
 cells for catalogued tags and tag-allocation ranges in KMIP 2.0 and 2.1. Fifty
 individual tag cases still have 652 pending typed-route cells; those remain
