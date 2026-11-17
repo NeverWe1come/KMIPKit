@@ -486,7 +486,8 @@ impl<'a> CreateBuilder<'a> {
         self,
     ) -> Result<(CreateRequest, FluentBuilderExecution<'a>), FluentBuildError> {
         let request = create_typed_request(
-            self.object_type,
+            self.object_type
+                .ok_or(FluentBuildError::MissingCreateObjectType)?,
             self.attributes,
             self.protection_storage_masks,
         )?;
@@ -548,11 +549,10 @@ impl<'a> CreateBuilder<'a> {
 }
 
 fn create_typed_request(
-    object_type: Option<ObjectType>,
+    object_type: ObjectType,
     attributes: AttributeSet,
     protection_storage_masks: Option<Structure>,
 ) -> Result<CreateRequest, FluentBuildError> {
-    let object_type = object_type.ok_or(FluentBuildError::MissingCreateObjectType)?;
     let mut request = CreateRequest::new(object_type, attributes);
     if let Some(masks) = protection_storage_masks {
         request = request.with_protection_storage_masks(masks);
