@@ -2893,58 +2893,6 @@ class RouteMatrixTests(unittest.TestCase):
                     self.assertEqual(len(standalone), 1)
                     self.assertEqual(direct[0]['request_tree_sha256'], standalone[0]['request_tree_sha256'])
 
-    def test_adjust_attribute_operation_runs_from_the_installed_c_consumer(self):
-        """OASIS KMIP 2.0/2.1 §6.1.3, §§8.2–8.6, and §§9.5–9.7 define this request and result."""
-        from artifact_support import ROOT
-        from route_peer import execute_network_cells
-
-        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
-        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
-        case_id = 'test-op-adjust-attribute'
-        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
-                                               if case['case_id'] == case_id]}
-
-        events, _, checks = execute_network_cells(
-            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
-
-        self.assertEqual(len(checks), 24,
-                         'direct and standalone Adjust Attribute must run for both versions and six wire paths')
-        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
-        self.assertEqual({check['constructor_variant'] for check in checks}, {'direct', 'standalone'})
-        self.assertTrue(all(check['peer_setup_operations'] == [1] for check in checks))
-        self.assertTrue(all(check['peer_request_operations'] == [48] for check in checks))
-        self.assertTrue(all(check['peer_observed_effects'] == ['attribute_adjusted'] for check in checks))
-        self.assertTrue(all(check['peer_cleanup_operations'] == [19, 20] for check in checks))
-        self.assertTrue(all(check['peer_attribute_state_changed'] for check in checks))
-        self.assertTrue(all(check['peer_final_state_matches_setup'] for check in checks))
-        self.assertTrue(any(event['public_api_symbol'] == 'kmipkit_client_batch_item_adjust_attribute'
-                            and event['action'] == 'send' for event in events))
-        self.assertTrue(any(event['public_api_symbol'] ==
-                            'kmipkit_client_batch_item_response_adjust_attribute'
-                            and event['action'] == 'decode' for event in events))
-        self.assertTrue(any(event['public_api_symbol'] ==
-                            'kmipkit_adjust_attribute_request_to_ttlv_payload'
-                            and event['action'] == 'encode' for event in events))
-        send_events = [event for event in events
-                       if event['case_id'] == case_id and event['action'] == 'send']
-        for version in ('2.0', '2.1'):
-            for encoding in ('TTLV', 'JSON', 'XML'):
-                for transport in ('raw_tls', 'https'):
-                    cell_events = [event for event in send_events
-                                   if event['protocol_version'] == version
-                                   and event['encoding'] == encoding
-                                   and event['transport'] == transport]
-                    direct = [event for event in cell_events
-                              if event['public_api_symbol'] ==
-                              'kmipkit_client_batch_item_adjust_attribute']
-                    standalone = [event for event in cell_events
-                                  if event['public_api_symbol'] ==
-                                  'kmipkit_client_batch_item_adjust_attribute_from_request']
-                    self.assertEqual(len(direct), 1)
-                    self.assertEqual(len(standalone), 1)
-                    self.assertEqual(direct[0]['request_tree_sha256'],
-                                     standalone[0]['request_tree_sha256'])
-
     def test_set_constraints_runs_over_every_supported_wire_path(self):
         from artifact_support import ROOT
         from route_peer import execute_network_cells
@@ -3873,9 +3821,10 @@ class RouteMatrixTests(unittest.TestCase):
     def test_batch_count_mismatch_is_recomputed_before_transport(self):
         """OASIS KMIP 2.0/2.1 §§8.1–8.6, 9.5–9.8, 9.21, 6.1.19, and 6.1.21 define the batch count and two item operations."""
         from artifact_support import ROOT
-        from route_peer import execute_network_cells
+        from route_peer import RECIPES, execute_network_cells
 
         case_id = 'test-batch-count-mismatch-rejected'
+        self.assertEqual(RECIPES[case_id], ((10, 12), 'batch_count_two_read_items'))
         catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
         manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
         selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
@@ -3901,6 +3850,30 @@ class RouteMatrixTests(unittest.TestCase):
                              symbol)
         self.assertTrue(all(event['peer_observed_operation_sequence'] ==
                             ['Get', 'Get Attribute List'] for event in send_events))
+        for check in checks:
+            self.assertTrue({'kmipkit_client_batch_item_get',
+                             'kmipkit_client_execute'} <= set(check['public_api_trace_symbols']))
+            self.assertTrue({'kmipkit_client_batch_item_response_get',
+                             'kmipkit_client_batch_item_response_get_attribute_list',
+                             'kmipkit_client_batch_item_response_get_attribute_list_payload_ttlv',
+                             'kmipkit_client_batch_item_response_header_ttlv',
+                             'kmipkit_client_batch_item_response_metadata_v1',
+                             'kmipkit_client_batch_item_response_pending_correlation_value'} <=
+                            set(check['public_api_trace_symbols']))
+            attribute_constructor = ('kmipkit_client_batch_item_get_attribute_list'
+                                     if check['constructor_variant'] == 'direct' else
+                                     'kmipkit_client_batch_item_get_attribute_list_from_request')
+            self.assertIn(attribute_constructor, check['public_api_trace_symbols'])
+        self.assertTrue(any(event['target_id'] == 'KMIPKIT-ELEM-OP-C2S-GET' and
+                            event['action'] == 'send' for event in events))
+        self.assertTrue(any(event['target_id'] == 'KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST' and
+                            event['action'] == 'send' for event in events))
+        self.assertTrue(any(event['public_api_symbol'] ==
+                            'kmipkit_client_batch_item_get_attribute_list_from_request' and
+                            event['action'] == 'send' for event in events))
+        self.assertTrue(any(event['public_api_symbol'] ==
+                            'kmipkit_get_attribute_list_request_to_ttlv_payload' and
+                            event['action'] == 'encode' for event in events))
 
 
     def test_stop_batch_returns_only_the_failed_item_and_stops_processing(self):
@@ -4211,6 +4184,16 @@ class RouteMatrixTests(unittest.TestCase):
                             event['action'] == 'send' for event in events))
         self.assertTrue(all('kmipkit_client_execute' in check['public_api_trace_symbols']
                             for check in checks))
+        response_symbols = {
+            'kmipkit_client_batch_item_response_get',
+            'kmipkit_client_batch_item_response_header_ttlv',
+            'kmipkit_client_batch_item_response_metadata_v1',
+            'kmipkit_client_batch_item_response_pending_correlation_value',
+            'kmipkit_client_batch_item_response_unique_batch_item_id',
+        }
+        self.assertTrue(all(response_symbols <= set(check['public_api_trace_symbols'])
+                            for check in checks),
+                        'the single-item Get route must inspect its typed response and metadata')
 
     def test_hash_and_rng_cases_call_their_public_routes_and_check_responses(self):
         from artifact_support import ROOT

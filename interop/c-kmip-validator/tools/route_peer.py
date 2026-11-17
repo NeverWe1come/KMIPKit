@@ -417,8 +417,8 @@ RECIPES = {
     'test-batch-order-omitted-defaults-true':
         ((1, 18), 'batch_order_placeholder_two_item'),
     'test-batch-single-item-options-omitted': ((10,), 'batch_single_item_options_omitted'),
-    'test-batch-count-matches-items': ((10, 12), 'batch_count_two_read_items'),
     'test-batch-count-mismatch-rejected': ((10, 12), 'batch_count_two_read_items'),
+    'test-batch-count-matches-items': ((10, 12), 'batch_count_two_read_items'),
     'test-batch-unique-item-id-response-correlation': ((10, 12), 'batch_count_two_read_items'),
     'test-batch-order-false-correlates-response-items': ((10, 12), 'batch_order_false_two_read_items'),
     'test-batch-continue-after-failure': ((10, 12), 'batch_continue_after_failure'),
@@ -467,6 +467,7 @@ RECIPES = {
 
 CONTROLLED_PEER_LOCAL_MODEL_CASES = frozenset({
     'test-batch-single-item-options-omitted',
+    'test-batch-count-mismatch-rejected',
     'test-norm-payload-client-get-request-20-001',
     'test-norm-payload-client-get-request-21-001',
     'test-norm-payload-client-get-attribute-list-request-20-001',
@@ -3054,35 +3055,49 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
             read_back_attribute_fixture(case, catalog, version, attribute_executor) is not None
             for version in case.get('execution', {}).get('protocol_versions', []))
     }
-    case_variants = [(case, variant) for case in catalog['test_cases'] for variant in
-        (('usage-allocation-explicit', 'usage-allocation-omitted')
-         if case['case_id'] in {
-             'test-norm-payload-client-get-usage-allocation-request-20-001',
-             'test-norm-payload-client-get-usage-allocation-request-21-001'} else
-         ('present', 'missing_rejected') if case['case_id'].startswith(
-             'test-norm-payload-client-export-response-') else
-         ('present', 'omitted') if case['case_id'].startswith(
-             'test-norm-payload-client-export-request-') else
-         ('direct', 'standalone') if case['case_id'] in {'test-op-get-attributes', 'test-op-get-attribute-list',
-                                                         'test-batch-continue-after-failure',
-                                                         'test-batch-count-matches-items',
-                                                         'test-batch-count-mismatch-rejected',
-                                                         'test-batch-order-false-correlates-response-items',
-                                                         'test-norm-payload-client-get-attribute-list-request-20-001',
-                                                         'test-norm-payload-client-get-attribute-list-request-21-001',
-                                                         'test-norm-payload-client-add-attribute-request-20-002',
-                                                         'test-norm-payload-client-add-attribute-request-21-002',
-                                                         'test-op-add-attribute',
-                                                         'test-op-adjust-attribute',
-                                                         'test-norm-payload-client-modify-attribute-request-20-002',
-                                                         'test-norm-payload-client-modify-attribute-request-20-003',
-                                                         'test-norm-payload-client-modify-attribute-response-20-001',
-                                                         'test-norm-payload-client-modify-attribute-request-21-002',
-                                                         'test-norm-payload-client-modify-attribute-request-21-003',
-                                                         'test-norm-payload-client-modify-attribute-response-21-001',
-                                                         'test-op-modify-attribute', 'test-op-set-attribute',
-                                                         'test-op-delete-attribute', 'test-op-adjust-attribute'}
-         or case['case_id'] in attribute_case_ids else ('direct',))]
+    def variants_for_case(case):
+        case_id = case['case_id']
+        if case_id in {
+            'test-norm-payload-client-get-usage-allocation-request-20-001',
+            'test-norm-payload-client-get-usage-allocation-request-21-001',
+        }:
+            return ('usage-allocation-explicit', 'usage-allocation-omitted')
+        if case_id.startswith('test-norm-payload-client-export-response-'):
+            return ('present', 'missing_rejected')
+        if case_id.startswith('test-norm-payload-client-export-request-'):
+            return ('present', 'omitted')
+        direct_and_standalone = {
+            'test-batch-count-matches-items',
+            'test-batch-count-mismatch-rejected',
+            'test-batch-order-false-correlates-response-items',
+            'test-batch-continue-after-failure',
+            'test-op-get-attributes',
+            'test-op-get-attribute-list',
+            'test-norm-payload-client-get-attribute-list-request-20-001',
+            'test-norm-payload-client-get-attribute-list-request-21-001',
+            'test-norm-payload-client-add-attribute-request-20-002',
+            'test-norm-payload-client-add-attribute-request-21-002',
+            'test-op-add-attribute',
+            'test-op-adjust-attribute',
+            'test-norm-payload-client-modify-attribute-request-20-002',
+            'test-norm-payload-client-modify-attribute-request-20-003',
+            'test-norm-payload-client-modify-attribute-response-20-001',
+            'test-norm-payload-client-modify-attribute-request-21-002',
+            'test-norm-payload-client-modify-attribute-request-21-003',
+            'test-norm-payload-client-modify-attribute-response-21-001',
+            'test-op-modify-attribute',
+            'test-op-set-attribute',
+            'test-op-delete-attribute',
+        }
+        if case_id in direct_and_standalone or case_id in attribute_case_ids:
+            return ('direct', 'standalone')
+        return ('direct',)
+
+    case_variants = [
+        (case, variant)
+        for case in catalog['test_cases']
+        for variant in variants_for_case(case)
+    ]
     cells_by_case = {}
     for cell in all_cells:
         cells_by_case.setdefault(cell['case_id'], []).append(cell)
@@ -3996,8 +4011,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                for item in observation[0][1][2]
                                                if item[0] == 0x42000F]}
                                                if observation and case_id in {
-                                                   'test-batch-count-matches-items',
                                                    'test-batch-count-mismatch-rejected',
+                                                   'test-batch-count-matches-items',
                                                    'test-batch-unique-item-id-response-correlation',
                                                    'test-batch-order-false-correlates-response-items',
                                                    'test-batch-order-required-placeholder-resolution',
@@ -4011,8 +4026,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                for item in observation[0][1][2]
                                                if item[0] == 0x42000F]}
                                                if observation and case_id in {
-                                                   'test-batch-count-matches-items',
                                                    'test-batch-count-mismatch-rejected',
+                                                   'test-batch-count-matches-items',
                                                    'test-batch-unique-item-id-response-correlation',
                                                    'test-batch-order-false-correlates-response-items',
                                                    'test-batch-order-required-placeholder-resolution',
