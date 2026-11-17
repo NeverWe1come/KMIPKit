@@ -52,6 +52,8 @@ ENCRYPT_ITEM_IDS = (b'encrypt-create', b'encrypt-activate', b'encrypt-target',
                     b'encrypt-revoke', b'encrypt-destroy')
 DECRYPT_ITEM_IDS = (b'decrypt-create', b'decrypt-activate', b'decrypt-target',
                     b'decrypt-revoke', b'decrypt-destroy')
+MAC_ITEM_IDS = (b'mac-create', b'mac-activate', b'mac-target', b'mac-revoke', b'mac-destroy')
+MAC_TEST_OUTPUT = bytes(range(32))
 CANCEL_CORRELATION_VALUE = b'fixture-cancel-correlation'
 ASYNC_QUERY_CORRELATION_CREATE_COMPLETED = b'fixture-query-create-completed'
 ASYNC_QUERY_CORRELATION_CREATE_PENDING = b'fixture-query-create-pending'
@@ -371,6 +373,7 @@ RECIPES = {
     'test-op-register': ((3, 20), 'register'),
     'test-op-encrypt': ((1, 18, 31, 19, 20), 'encrypt'),
     'test-op-decrypt': ((1, 18, 32, 19, 20), 'decrypt'),
+    'test-op-mac': ((1, 18, 35, 19, 20), 'mac'),
     'test-op-add-attribute': ((1, 13, 19, 20), 'add_attribute'),
     'test-norm-payload-client-add-attribute-request-20-002': ((1, 13, 19, 20), 'add_attribute'),
     'test-norm-payload-client-add-attribute-request-21-002': ((1, 13, 19, 20), 'add_attribute'),
@@ -747,6 +750,52 @@ def verify_crypto_response(response_tree, decrypt):
         raise ValueError('fixture_crypto_response_fields_mismatch')
 
 
+def assert_mac_request(node):
+    """Check the isolated HMAC-SHA256 Create/Activate/MAC/Revoke/Destroy request."""
+    items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if ([numbers(item, 0x42005C) for item in items] != [[1], [18], [35], [19], [20]] or
+            [byte_string_values(item, 0x420093) for item in items] !=
+            [[item_id] for item_id in MAC_ITEM_IDS] or
+            numbers(items[0], 0x420057) != [2] or numbers(items[0], 0x420028) != [9] or
+            numbers(items[0], 0x42002A) != [256] or numbers(items[0], 0x42002C) != [128] or
+            any(not is_id_placeholder_identifier(identifier)
+                for item in items[1:]
+                for identifier in descendants(item, UNIQUE_IDENTIFIER_TAG))):
+        raise ValueError('fixture_mac_batch_lifecycle_mismatch')
+    payloads = [child for child in items[2][2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+    if len(payloads) != 1:
+        raise ValueError('fixture_mac_request_payload_missing')
+    fields = payloads[0][2]
+    parameters = [field for field in fields if field[0] == 0x42002B and field[1] == 1]
+    identifiers = [field for field in fields if field[0] == UNIQUE_IDENTIFIER_TAG]
+    data = [field for field in fields if field[0] == 0x4200C2 and field[1] == 8]
+    if ([field[0] for field in fields] != [UNIQUE_IDENTIFIER_TAG, 0x42002B, 0x4200C2] or
+            len(identifiers) != 1 or not is_id_placeholder_identifier(identifiers[0]) or
+            len(parameters) != 1 or len(data) != 1 or data[0][2] != BATCH_CRYPTO_PLAINTEXT or
+            [field[0] for field in parameters[0][2]] != [0x420028] or
+            numbers(parameters[0], 0x420028) != [9]):
+        raise ValueError('fixture_mac_request_fields_mismatch')
+
+
+def verify_mac_response(response_tree):
+    """Check the complete MAC response fields and ordered lifecycle."""
+    verify_lifecycle(RECIPES['test-op-mac'][0], response_tree)
+    items = [child for child in response_tree[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if [byte_string_values(item, 0x420093) for item in items] != [[item_id] for item_id in MAC_ITEM_IDS]:
+        raise ValueError('fixture_mac_response_item_ids_mismatch')
+    payloads = [child for child in items[2][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1]
+    if len(payloads) != 1:
+        raise ValueError('fixture_mac_response_payload_missing')
+    fields = payloads[0][2]
+    identifiers = [field for field in fields if field[0] == UNIQUE_IDENTIFIER_TAG and field[1] == 7]
+    mac_data = [field for field in fields if field[0] == 0x4200C6 and field[1] == 8]
+    if (len(fields) != 2 or len(identifiers) != 1 or identifiers[0][2] != b'fixture-key-1' or
+            len(mac_data) != 1 or mac_data[0][2] != MAC_TEST_OUTPUT):
+        raise ValueError('fixture_mac_response_fields_mismatch')
+
+
 def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
                   constructor_variant=None, export_field=None):
     selected_recipe = recipe or RECIPES[case_id]
@@ -766,6 +815,8 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
         assert_crypto_request(node, False)
     if selected_recipe[1] == 'decrypt':
         assert_crypto_request(node, True)
+    if selected_recipe[1] == 'mac':
+        assert_mac_request(node)
     if (case_id in {
             'test-norm-payload-client-add-attribute-request-20-002',
             'test-norm-payload-client-add-attribute-request-21-002'} and
@@ -834,10 +885,13 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
         if numbers(node, 0x420057) != [object_type]:
             raise ValueError('fixture_object_type_mismatch')
         expected_algorithms = ([3, 3] if selected_recipe[1] in ('encrypt', 'decrypt') else
+                               [9, 9] if selected_recipe[1] == 'mac' else
                                [4 if object_type in (3, 4) else 3])
         if numbers(node, 0x420028) != expected_algorithms:
             raise ValueError('fixture_algorithm_mismatch')
-        if numbers(node, 0x42002A) != [2048 if object_type in (3, 4) else 128]:
+        expected_key_length = 256 if selected_recipe[1] == 'mac' else (
+            2048 if object_type in (3, 4) else 128)
+        if numbers(node, 0x42002A) != [expected_key_length]:
             raise ValueError('fixture_key_length_mismatch')
         if numbers(node, 0x42000E) != [1]:
             raise ValueError('fixture_cleanup_continuation_missing')
@@ -1131,7 +1185,7 @@ def assert_placeholder_usage(node, case_id):
     if case_id not in ('test-batch-create-activate-destroy',
                        'test-batch-register-encrypt-decrypt-destroy',
                        'test-batch-placeholder-chain-resolves', 'test-op-encrypt',
-                       'test-op-decrypt'):
+                       'test-op-decrypt', 'test-op-mac'):
         return
     batch_items = [child for child in node[2]
                    if child[0] == BATCH_ITEM_TAG and child[1] == 1]
@@ -2190,7 +2244,7 @@ class PeerState:
                 identifier = matching_identifiers[0]
                 placeholder = identifier
                 effect = 'located'
-            elif operation in (9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 20, 31, 32, 43, 48, 49, 56):
+            elif operation in (9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 20, 31, 32, 35, 43, 48, 49, 56):
                 state = self.objects.get(identifier)
                 if state is None:
                     status, reason, effect = 1, 55, 'object_not_found'
@@ -2215,10 +2269,10 @@ class PeerState:
                         raise ValueError('fixture_activate_state_mismatch')
                     self.objects[identifier] = 'active'
                     effect = 'activated'
-                elif operation in (31, 32):
+                elif operation in (31, 32, 35):
                     if state != 'active':
                         raise ValueError('fixture_registered_crypto_key_not_active')
-                    effect = 'encrypted' if operation == 31 else 'decrypted'
+                    effect = {31: 'encrypted', 32: 'decrypted', 35: 'mac_generated'}[operation]
                 elif operation == 19:
                     self.objects[identifier] = 'revoked'
                     effect = 'revoked'
@@ -2330,10 +2384,10 @@ def verify_lifecycle(operations, response_tree):
                 raise ValueError('fixture_activate_state_mismatch')
             state = 'active'
             effects.append('activated')
-        elif operation in (31, 32):
+        elif operation in (31, 32, 35):
             if state != 'active':
                 raise ValueError('fixture_registered_crypto_key_not_active')
-            effects.append('encrypted' if operation == 31 else 'decrypted')
+            effects.append({31: 'encrypted', 32: 'decrypted', 35: 'mac_generated'}[operation])
         elif operation == 19:
             state = 'revoked'
             effects.append('revoked')
@@ -2853,6 +2907,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             response_item_ids = ENCRYPT_ITEM_IDS
                                         elif recipe[1] == 'decrypt':
                                             response_item_ids = DECRYPT_ITEM_IDS
+                                        elif recipe[1] == 'mac':
+                                            response_item_ids = MAC_ITEM_IDS
                                         elif placeholder_chain_recipe:
                                             response_item_ids = (
                                                 (b'placeholder-revoke-cleanup', b'placeholder-destroy-cleanup')
@@ -3143,6 +3199,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             verify_interop_response(response_tree)
                                         elif recipe[1] in ('encrypt', 'decrypt'):
                                             verify_crypto_response(response_tree, recipe[1] == 'decrypt')
+                                        elif recipe[1] == 'mac':
+                                            verify_mac_response(response_tree)
                                         elif recipe[1] == 'async_create_sync_default' and exchange_index == 0:
                                             verify_sync_create_response(response_tree)
                                         elif recipe[1] in ('async_create_optional_complete',
