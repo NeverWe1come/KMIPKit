@@ -1815,3 +1815,37 @@ python3 interop/shared/tools/validate_route_evidence.py \
 python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
 python3 interop/java-kmip-validator/tools/compare_route_ledger.py
 ```
+
+## Java Item Type enum routes
+
+Red commit `8534357d6` adds a focused assertion for the 11 catalogued Item
+Type enum values and their four generic TTLV routes. It fails because the
+general enum recipe requires a same-named standalone Tag, which the §11.23
+Item Type enum does not have. Green commit `86887bae4` adds a dedicated local
+fixture that reads the enum values from the catalog, validates each through
+`TtlvItemType.fromCode`, then constructs and decodes a generic TTLV Enumeration
+Item for each code in KMIP 2.0 and 2.1.
+
+Verification:
+
+```sh
+TMPDIR="$PWD/build/java-temp" \
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+bash ../../bindings/java/gradlew \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test \
+  --tests org.kmipkit.validator.LocalCatalogRouteChecksTest \
+  --tests org.kmipkit.validator.ControlledTlsPeerTest.controlledQueryProducesPerRouteEvidenceForBothProtocolVersions
+python3 interop/shared/tools/validate_route_evidence.py \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --selected-scope --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+```
+
+The selected report validates 26,833/26,833 cells with zero failures; the
+ledger records 71,649 planned, 26,833 executed, and 44,816 pending cells across
+1,265 case IDs. The full matrix remains incomplete and the PR remains WIP.
+The complete Java validator Gradle suite passes 57/57 tests with zero failures,
+errors, or skips. The selected-scope report, generated ledger refresh, normal
+ledger comparison, and `git diff --check` all pass.

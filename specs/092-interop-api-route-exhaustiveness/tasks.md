@@ -236,3 +236,24 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
 - The complete Java validator suite passes 56/56 tests with zero failures,
   errors, or skips. Temporary JVM files were placed under the validator's
   ignored `build/java-temp` directory because `/tmp` was nearly full.
+
+## Development evidence: Java Item Type enum routes
+
+- Red commit `8534357d6` requires every catalogued Item Type enum value to
+  execute the four applicable generic TTLV routes; the focused test failed to
+  compile because the dedicated recipe was absent. The general enum fixture
+  correctly does not handle this family because it has no same-named Tag.
+- Green commit `86887bae4` reads all 11 values from the approved catalog,
+  verifies each code with `TtlvItemType.fromCode`, round-trips the value as a
+  generic Enumeration Item, and emits the constructor, Item create, Item view,
+  and codec decode route evidence for KMIP 2.0 and 2.1.
+- The generated ledger was refreshed only after `validate_route_evidence.py`
+  accepted the selected report; both the reference refresh and normal ledger
+  comparison passed.
+- Verification: `LocalCatalogRouteChecksTest` and the controlled TLS evidence
+  test pass; the selected scope accepts 26,833/26,833 cells with zero failed
+  cells. The full Java matrix remains incomplete at 26,833/71,649 executed and
+  44,816 pending cells across 1,265 case IDs. T006, T007, and T009 remain open.
+- Full-suite verification: the Java validator Gradle suite passes 57/57 tests
+  with zero failures, errors, or skips. The selected-scope validator and both
+  ledger comparison commands pass; `git diff --check` passes.
