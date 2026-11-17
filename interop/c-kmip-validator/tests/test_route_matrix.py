@@ -2593,6 +2593,17 @@ class RouteMatrixTests(unittest.TestCase):
         def integer(tag, value, *, item_type=2, width=4):
             return (tag, item_type, value.to_bytes(width, 'big', signed=item_type == 2))
 
+        def request_for(minor, payload_fields):
+            header = (0x420077, 1, [
+                (0x420069, 1, [integer(0x42006A, 2), integer(0x42006B, minor)]),
+                integer(0x42000D, 1),
+            ])
+            item = (0x42000F, 1, [
+                (0x42005C, 5, (47).to_bytes(4, 'big')),
+                (0x420079, 1, payload_fields),
+            ])
+            return (0x420078, 1, [header, item])
+
         for version, minor in (('20', 0), ('21', 1)):
             variants = (
                 ('001', [(0x420049, 10, (60).to_bytes(4, 'big'))]),
@@ -2606,15 +2617,7 @@ class RouteMatrixTests(unittest.TestCase):
             for suffix, optional_fields in variants:
                 case_id = f'test-norm-payload-client-delegated-login-request-{version}-{suffix}'
                 with self.subTest(case_id=case_id):
-                    header = (0x420077, 1, [
-                        (0x420069, 1, [integer(0x42006A, 2), integer(0x42006B, minor)]),
-                        integer(0x42000D, 1),
-                    ])
-                    item = (0x42000F, 1, [
-                        (0x42005C, 5, (47).to_bytes(4, 'big')),
-                        (0x420079, 1, [*optional_fields, (0x42014D, 1, [])]),
-                    ])
-                    request = (0x420078, 1, [header, item])
+                    request = request_for(minor, [*optional_fields, (0x42014D, 1, [])])
                     route_peer.assert_recipe(request, case_id, f'2.{minor}',
                                              ((47,), 'delegated_login'))
 
