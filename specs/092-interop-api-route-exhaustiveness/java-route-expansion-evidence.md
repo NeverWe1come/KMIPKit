@@ -1816,6 +1816,44 @@ python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-refe
 python3 interop/java-kmip-validator/tools/compare_route_ledger.py
 ```
 
+## Java KMIP 2.0/2.1 Response Header Server Correlation Value — 2026-11-17
+
+The previously committed Red assertions require the four generic TTLV and
+typed `ResponseMessage.fromTtlv` routes for
+`test-norm-message-field-message-field-8-5-server-correlation-value`. They
+failed while the controlled Query response omitted the optional field. The
+Green fixture now includes the catalogued Text String at tag `0x420106`, checks
+the parsed `ResponseMessage.serverCorrelationValue()`, and emits route evidence
+for KMIP 2.0 and 2.1. The event-count assertion accounts for all four routes in
+both versions. The normative basis is OASIS KMIP 2.0/2.1 §8.5 and the versioned
+Response Header field tables in §9.3.
+
+The focused controlled-peer test passes, and the complete Java consumer suite
+passes with no failures. The selected-scope validator accepts 27,360/27,360
+cells with zero failed cells. The refreshed ledger records 71,641 planned,
+27,360 executed, and 44,281 pending cells. This closes eight cells; the full
+Java matrix remains incomplete and the PR remains WIP.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-tmp" \
+  bash bindings/java/gradlew -p interop/java-kmip-validator \
+  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" \
+  test --tests org.kmipkit.validator.ControlledTlsPeerTest.controlledQueryProducesPerRouteEvidenceForBothProtocolVersions
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-tmp" \
+  bash bindings/java/gradlew -p interop/java-kmip-validator \
+  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" test
+python3 interop/shared/tools/validate_route_evidence.py \
+  --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+git diff --check
+```
+
 ## Java KMIP 2.0/2.1 repeatable Response Header Attestation Type — 2026-11-17
 
 OASIS KMIP 2.0/2.1 §8.5 specifies an optional, repeatable Attestation Type in
