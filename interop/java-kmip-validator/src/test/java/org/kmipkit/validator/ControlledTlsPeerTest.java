@@ -413,6 +413,7 @@ class ControlledTlsPeerTest {
     private static final Set<String> ENUMS_WITH_KMIP_2_1_ONLY_VALUES = Set.of("Operation", "Result Reason");
     private static final String RESPONSE_BATCH_ITEM_TARGET_ID =
             "KMIPKIT-ELEM-MESSAGE-FIELD-8-4-BATCH-ITEM";
+    private static final List<Long> ATTESTATION_TYPE_VALUES = List.of(1L, 2L);
     private static final NormativeTarget RESPONSE_HEADER_ATTESTATION_TYPE = new NormativeTarget(
             "test-norm-message-field-message-field-8-5-attestation-type",
             "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-ATTESTATION-TYPE");
@@ -421,7 +422,6 @@ class ControlledTlsPeerTest {
             "java.generic-ttlv.function.ttlv_item_view_from_item",
             "java.generic-ttlv.ttlv_codec.decode",
             "java.typed-protocol.model.org.kmipkit.message.responsemessage.fromttlv");
-    private static final List<Long> RESPONSE_HEADER_ATTESTATION_TYPE_VALUES = List.of(1L, 2L);
     private static final List<NormativeTarget> RESPONSE_MESSAGE_PARSE_TARGETS = List.of(
             RESPONSE_HEADER_ATTESTATION_TYPE,
             new NormativeTarget("test-norm-message-field-message-field-8-5-batch-count",
@@ -441,7 +441,6 @@ class ControlledTlsPeerTest {
     private static final NormativeTarget REQUEST_HEADER_ATTESTATION_TYPE = new NormativeTarget(
             "test-norm-message-field-message-field-8-2-attestation-type",
             "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ATTESTATION-TYPE");
-    private static final List<Long> REQUEST_HEADER_ATTESTATION_TYPE_VALUES = List.of(1L, 2L);
     private static final List<String> REQUEST_HEADER_ATTESTATION_TYPE_ROUTES = List.of(
             "java.generic-ttlv.ttlv_item.create",
             "java.generic-ttlv.function.ttlv_item_view_from_item",
@@ -5205,11 +5204,11 @@ class ControlledTlsPeerTest {
         // OASIS KMIP 2.0/2.1 §8.2 defines Attestation Type as a repeatable Enumeration in Request Header.
         appendGenericEnumerationRouteEvents(events, REQUEST_HEADER_ATTESTATION_TYPE.caseId(),
                 REQUEST_HEADER_ATTESTATION_TYPE.targetId(), 0x4200c7,
-                REQUEST_HEADER_ATTESTATION_TYPE_VALUES.get(0), protocolVersion);
+                ATTESTATION_TYPE_VALUES.get(0), protocolVersion);
         // OASIS KMIP 2.0/2.1 §8.5 defines Attestation Type as an optional, repeatable Response Header field.
         appendGenericEnumerationRouteEvents(events, RESPONSE_HEADER_ATTESTATION_TYPE.caseId(),
                 RESPONSE_HEADER_ATTESTATION_TYPE.targetId(), 0x4200c7,
-                RESPONSE_HEADER_ATTESTATION_TYPE_VALUES.get(0), protocolVersion);
+                ATTESTATION_TYPE_VALUES.get(0), protocolVersion);
         appendMessageFieldIntegerRoutes(events, "test-norm-message-field-message-field-8-5-batch-count",
                 "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-BATCH-COUNT", protocolVersion, false);
         appendMessageFieldIntegerRoutes(events, "test-norm-message-field-message-field-9-5-batch-count",
@@ -7588,7 +7587,7 @@ class ControlledTlsPeerTest {
             assertEquals(java.util.Optional.of("client-correlation"), header.clientCorrelationValue());
             assertEquals(java.util.OptionalLong.of(2L), header.batchErrorContinuationOption());
             assertEquals(java.util.OptionalLong.of(1L), header.timeStamp());
-            assertEquals(REQUEST_HEADER_ATTESTATION_TYPE_VALUES, header.attestationTypes(),
+            assertEquals(ATTESTATION_TYPE_VALUES, header.attestationTypes(),
                     "Request Header must preserve each repeated Attestation Type in wire order.");
             assertEquals(0x420106, serverCorrelationTag.raw());
             assertArrayEquals("server-correlation".getBytes(StandardCharsets.US_ASCII),
@@ -7736,7 +7735,7 @@ class ControlledTlsPeerTest {
                 TtlvValue.TextString("server-correlation".getBytes(StandardCharsets.US_ASCII), limits), limits);
         header = appendTtlvItem(header, 0x420007, TtlvValue.Enumeration(1), limits);
         header = appendTtlvItem(header, 0x4200d3, TtlvValue.Boolean(true), limits);
-        for (long value : REQUEST_HEADER_ATTESTATION_TYPE_VALUES) {
+        for (long value : ATTESTATION_TYPE_VALUES) {
             header = appendTtlvItem(header, 0x4200c7, TtlvValue.Enumeration(value), limits);
         }
         header = appendTtlvItem(header, 0x42000e, TtlvValue.Enumeration(2), limits);
@@ -7773,9 +7772,9 @@ class ControlledTlsPeerTest {
                 item(0x420106, 7, "server-correlation".getBytes(StandardCharsets.US_ASCII)),
                 item(0x420007, 5, intBytes(1)), item(0x4200d3, 6, longBytes(1)),
                 item(0x4200c7, 5,
-                        intBytes(Math.toIntExact(REQUEST_HEADER_ATTESTATION_TYPE_VALUES.get(0)))),
+                        intBytes(Math.toIntExact(ATTESTATION_TYPE_VALUES.get(0)))),
                 item(0x4200c7, 5,
-                        intBytes(Math.toIntExact(REQUEST_HEADER_ATTESTATION_TYPE_VALUES.get(1)))),
+                        intBytes(Math.toIntExact(ATTESTATION_TYPE_VALUES.get(1)))),
                 item(0x42000e, 5, intBytes(2)), item(0x420010, 6, longBytes(1)),
                 item(0x420092, 9, longBytes(1)), item(0x42000d, 2, intBytes(2)));
         byte[] requestPayload = structure(0x420079, item(0x420074, 5, intBytes(1)));
@@ -7903,7 +7902,7 @@ class ControlledTlsPeerTest {
                 var header = message.header()) {
             assertEquals(1, message.batchItemCount());
             assertEquals(0x18L, item.operation().orElseThrow());
-            assertEquals(RESPONSE_HEADER_ATTESTATION_TYPE_VALUES, header.attestationTypes(),
+            assertEquals(ATTESTATION_TYPE_VALUES, header.attestationTypes(),
                     "Response Header must preserve each repeated Attestation Type in wire order.");
         }
         appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID,
@@ -7971,7 +7970,7 @@ class ControlledTlsPeerTest {
         TtlvStructure header = TtlvStructure.create();
         header = appendTtlvItem(header, 0x420069, TtlvValue.structure(protocolVersion, limits), limits);
         header = appendTtlvItem(header, 0x420092, TtlvValue.DateTime(1), limits);
-        for (long value : RESPONSE_HEADER_ATTESTATION_TYPE_VALUES) {
+        for (long value : ATTESTATION_TYPE_VALUES) {
             header = appendTtlvItem(header, 0x4200c7, TtlvValue.Enumeration(value), limits);
         }
         header = appendTtlvItem(header, 0x42000d, TtlvValue.Integer(1), limits);
