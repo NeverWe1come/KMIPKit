@@ -64,6 +64,50 @@ effective value as true. Both scenarios pass all 24 version/encoding/transport
 cells. This is one route slice only: the full C matrix and the cross-language
 FR-003/FR-005 gates remain open.
 
+### C two-item batch read constructors
+
+For KMIPKIT-0092-FR-003, FR-005, and FR-009, the C
+`test-batch-count-matches-items` and
+`test-batch-order-false-correlates-response-items` scenarios execute both the
+direct Get Attribute List builder and the standalone `GetAttributeListRequest`
+builder followed by `kmipkit_client_batch_item_get_attribute_list_from_request`.
+The controlled peer checks Batch Count, response count, and Unique Batch Item
+ID correlation; it returns the unordered case's two responses in reverse
+order. OASIS KMIP 2.0/2.1 §§6.1.19, 6.1.21, 8.2–8.6, and 9.5–9.8 are the
+catalogued references. The two cases pass 48 constructor/transport checks.
+This closes only these two batch-construction slices; the full C and
+cross-language matrix gates remain open.
+
+### C Batch Count recomputation before transport
+
+For KMIPKIT-0092-FR-003, FR-005, and FR-009, the C validator supplements the
+catalog's local `test-batch-count-mismatch-rejected` construction check with a
+controlled TLS exchange. Both direct and standalone Get Attribute List
+constructors run with Get in KMIP 2.0/2.1 and all six encoding/transport
+combinations. The peer requires `Batch Count = 2` and two request Batch Items
+before returning success. Red `729fbc3a6` failed with zero invoked cells;
+Green `a876c06a1` passed 24 checks; Refactor `482a66413` also rejects duplicate
+Batch Count tags. This proves the installed C client sends
+the correct structure to the controlled peer and does not establish external
+KMS behavior. The Green-head matrix invoked 42,475/66,736 cells with zero
+failed and 24,261 pending; this scenario has zero pending cells. The global
+matrix remains incomplete.
+
+### C batch response view decoders
+
+For KMIPKIT-0092-FR-003, FR-005, and FR-009, each successful response in the
+two-item Get/Get Attribute List C workflows is inspected through response
+metadata v1, raw TTLV payload, header TTLV, and pending-correlation accessors.
+The installed consumer validates the metadata against its typed result and
+checks nonempty payload/header structures plus absence of pending correlation
+and Result Reason for synchronous success. Continue's failed Get is checked
+for its required header and absent payload/correlation. OASIS KMIP 2.0/2.1
+§§6.1.19, 6.1.21, 8.3, 8.6, and 9.7 are the catalogued references. These
+checks cover the controlled fixture response; external KMS behavior remains
+outside their claim. The exhaustive C matrix reports zero pending cells for
+these two cases and 24,387 pending cells overall; the FR-003/FR-005 global
+completeness gate remains open.
+
 ### C batch route follow-up
 
 For KMIPKIT-0092-FR-003 and FR-009, the C `test-batch-continue-after-failure`

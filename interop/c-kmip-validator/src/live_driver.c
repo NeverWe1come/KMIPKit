@@ -1091,6 +1091,56 @@ static bool single_item_get_response_accessors_match(
     return valid;
 }
 
+static bool successful_batch_response_common_fields_match(
+    kmipkit_client_batch_item_response_t *response_item,
+    uint32_t expected_result_status,
+    int32_t *out_status) {
+    kmipkit_client_batch_item_metadata_v1_t metadata = {
+        .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v1_t),
+        .abi_version = 1
+    };
+    uint8_t payload_present = 0;
+    kmipkit_ttlv_structure_t *payload = NULL;
+    kmipkit_ttlv_structure_view_t *payload_view = NULL;
+    uint64_t payload_item_count = 0;
+    uint8_t header_present = 0;
+    kmipkit_ttlv_structure_t *header = NULL;
+    kmipkit_ttlv_structure_view_t *header_view = NULL;
+    uint64_t header_item_count = 0;
+    uint8_t pending_present = 1;
+    kmipkit_byte_span_v1_t pending_value = {0};
+    int32_t status = kmipkit_client_batch_item_response_metadata_v1(
+        response_item, &metadata);
+    if (status == 0) status = kmipkit_client_batch_item_response_raw_ttlv(
+        response_item, &payload_present, &payload);
+    if (status == 0) status = kmipkit_client_batch_item_response_header_ttlv(
+        response_item, &header_present, &header);
+    if (status == 0) status = kmipkit_client_batch_item_response_pending_correlation_value(
+        response_item, &pending_present, &pending_value);
+    if (status == 0 && payload_present && payload) status = kmipkit_ttlv_structure_view(
+        payload, &payload_view);
+    if (status == 0 && payload_view) status = kmipkit_ttlv_structure_view_item_count(
+        payload_view, &payload_item_count);
+    if (status == 0 && header_present && header) status = kmipkit_ttlv_structure_view(
+        header, &header_view);
+    if (status == 0 && header_view) status = kmipkit_ttlv_structure_view_item_count(
+        header_view, &header_item_count);
+
+    bool valid = status == 0 && metadata.result_status == expected_result_status &&
+        metadata.has_result_reason == 0 && payload_present != 0 && payload != NULL &&
+        payload_view != NULL && payload_item_count > 0 && header_present != 0 &&
+        header != NULL && header_view != NULL && header_item_count > 0 &&
+        pending_present == 0 && pending_value.data == NULL && pending_value.length == 0;
+    if (status == 0 && !valid) status = KMIPKIT_ERROR_INVALID_INPUT;
+
+    if (header_view) kmipkit_ttlv_structure_view_release(header_view);
+    if (payload_view) kmipkit_ttlv_structure_view_release(payload_view);
+    if (header) kmipkit_ttlv_structure_release(header);
+    if (payload) kmipkit_ttlv_structure_release(payload);
+    *out_status = status;
+    return valid;
+}
+
 static bool undo_batch_response_item_matches(
     kmipkit_client_batch_item_response_t *response_item,
     uint32_t expected_operation,
@@ -8198,6 +8248,12 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                 *response_slot, &metadata);
             if (status == 0) status = kmipkit_client_batch_item_response_unique_batch_item_id(
                 *response_slot, &id_present, &id);
+            if (status == 0 && metadata.result_status ==
+                    KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS &&
+                !successful_batch_response_common_fields_match(
+                    *response_slot, metadata.result_status, &status)) {
+                if (status == 0) status = KMIPKIT_ERROR_INVALID_INPUT;
+            }
             if (status == 0 && !get_usage_allocation_identifier_variants_workflow &&
                 metadata.operation == KMIPKIT_ENUMERATION_OPERATION_GET) {
                 bool response_valid = false;
