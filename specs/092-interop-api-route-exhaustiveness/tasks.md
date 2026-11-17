@@ -208,3 +208,31 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
 - Verification: route-manifest validation passed; focused route tests passed
   65/65; shared interop tests passed 189/189; workflow contract tests passed
   96/96; Rust 1.94 validator tests passed 72/72; and `git diff --check` passed.
+
+## Development evidence: Java Boolean field route execution
+
+- Red commit `4651a7c4c` required Java generic TTLV evidence for the catalogued
+  Boolean message-field case; Red commit `a62eda031` added a focused fixture
+  that failed because the controlled peer emitted no per-route Boolean
+  construction or decode evidence.
+- Green commit `98a4dabc9` executes all 12 selected Boolean message-field and
+  structure-member cases through their applicable generic routes. It also
+  invokes the typed Request/Response Message parsers for Criticality Indicator,
+  checks Attestation Capable Indicator and Batch Order Option in a valid
+  two-item request, and exercises Random IV through the Cryptographic
+  Parameters builder, typed attribute converters, and AttributeSet.
+- Refactor documentation updates the Java consumer README, FR-003 traceability,
+  and the current ledger snapshot while leaving T006, T007, and T009 open.
+- The route ledger was regenerated with the repository validator using
+  `--selected-scope --write-ledger`, then checked with
+  `tools/compare_route_ledger.py --refresh-reference` and the normal comparer;
+  no generated file was edited by hand.
+- Verification: the focused `LocalCatalogRouteChecksTest` and controlled TLS
+  evidence test pass. `validate_route_evidence.py` accepts 26,745/26,745
+  selected cells with zero failed cells, and the ledger comparison passes.
+  The full Java matrix remains incomplete at 26,745/71,649 executed and 44,904
+  pending cells across 1,267 case IDs; T006, T007, and T009 remain open and
+  this work does not make the PR ready for review.
+- The complete Java validator suite passes 56/56 tests with zero failures,
+  errors, or skips. Temporary JVM files were placed under the validator's
+  ignored `build/java-temp` directory because `/tmp` was nearly full.

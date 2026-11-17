@@ -1778,3 +1778,40 @@ The focused controlled-peer test passes. The selected-scope validator accepts
 71,649 planned, 26,627 executed, and 45,022 pending cells across 1,278 case
 IDs. All pending cells remain `route_evidence_not_emitted`; the full matrix
 remains incomplete and T006/T007/T009 remain open. The PR must remain WIP.
+
+## Java Boolean field route execution
+
+Red commit `4651a7c4c` required generic TTLV evidence for catalogued Boolean
+message fields. Red commit `a62eda031` added a focused controlled-peer assertion
+and reproduced the missing-route failure. Green commit `98a4dabc9` executes all
+12 selected Boolean message-field and structure-member cases through their
+applicable generic TTLV routes. The valid two-item request exercises
+`RequestMessage.fromTtlv` for Attestation Capable Indicator and Batch Order
+Option; request and response fixtures exercise Criticality Indicator through
+both typed message parsers. Random IV is exercised via
+`CryptographicParameters.Builder.randomIv`, `build`, `CryptographicParameters.fromTtlv`,
+`TypedAttribute.create`, `TypedAttribute.fromItem`, and `AttributeSet.tryNew`
+(KMIP 2.0/2.1 §§4.16, 9.3, 9.8, 9.13; Tables 58–60).
+
+The generated ledger was refreshed only after the selected report passed the
+repository validator. The full Java consumer test suite passes 56/56 tests;
+the selected-scope report validates 26,745/26,745 cells with zero failed
+invocations, and the normal ledger comparison passes. The ledger now records
+71,649 planned, 26,745 executed, and 44,904 pending cells across 1,267 case
+IDs. Pending cells remain `route_evidence_not_emitted`; T006, T007, and T009
+remain open and the PR must remain WIP.
+
+Verification commands:
+
+```sh
+TMPDIR="$PWD/build/java-temp" \
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+bash ../../bindings/java/gradlew \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test
+python3 interop/shared/tools/validate_route_evidence.py \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --selected-scope --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+```
