@@ -397,6 +397,72 @@
   https_never_attributes_a_surplus_response_to_a_later_exchange -- --exact`
   passed 12 consecutive runs after the synchronization change.
 
+## KMIPKIT-0093 operation owner matrix validation follow-up
+
+### Red
+
+- Commit `6fd0618c2` adds a regression test that assigns Create the wire value
+  already used by another KMIP 2.1 operation. Before the fix,
+  the focused command failed because the generator did not raise the expected
+  `ValueError`:
+
+  ```text
+  python3 -B -m unittest tools.normative_catalog.tests.test_fluent_operation_inventory.FluentOperationInventoryTests.test_generator_rejects_one_wire_value_assigned_to_different_operations -v
+  ```
+
+### Green
+
+- Commit `fcef6948a` makes KMIP 2.1 operation assignments unique by operation
+  name while preserving legitimate repeated routes for the same operation in
+  opposite directions. KMIP 3.0 assignments remain unique across versions.
+- The complete matrix suite passes:
+  `python3 -B -m unittest tools.normative_catalog.tests.test_fluent_operation_inventory -v`
+  (9 tests). The deterministic matrix generation check passes:
+  `python3 -B tools/normative_catalog/generate_fluent_operation_inventory.py --check`.
+
+### Refactor
+
+- Renamed the assignment lookup to `operation_names_by_wire_value` so the
+  map's invariant is explicit at both the KMIP 2.1 and cross-version checks.
+  This changes no behavior. The same 9 tests and generation check pass after
+  the rename; `py_compile` and `git diff --check` also pass.
+- The full CI for the updated WIP PR head is still required; task M005 remains
+  open until every required check on that exact head completes successfully.
+
+## Operation owner matrix macOS Rust 1.94 CI repair
+
+### Red
+
+- PR #228 run `43785623352` failed only in Core / macOS / Rust 1.94 at
+  `successful_flush_progress_restarts_the_write_deadline`. The test used two
+  real 200 ms sleeps under 500 ms inactivity deadlines; macOS scheduling
+  delayed the first flush past its deadline.
+
+### Green
+
+- Changed the test to use Tokio's paused clock. Its release task and the
+  production timeout sleep now advance in deterministic 200 ms steps, so the
+  test continues to verify that a successful flush resets the write deadline
+  without depending on wall-clock scheduling.
+- `cargo test -p kmipkit-transport --locked --test timeout_delivery successful_flush_progress_restarts_the_write_deadline -- --exact --nocapture`
+  passes with the paused clock.
+
+### Refactor
+
+- The change is confined to the timing mode of the existing regression test;
+  production timeout behavior and the asserted deadline contract are
+  unchanged. PR #228 remains WIP until exact-head CI is green.
+
+## Rebase after Create Key Pair merged
+
+- PR #227 has merged into `release/1.0.0`; this branch was rebased from that
+  parent onto the release branch. On the resulting pre-follow-up head
+  `9eb7c61b3`, the operation inventory suite passes all 9 tests and
+  `generate_fluent_operation_inventory.py --check` passes.
+- The exact-head check list on `9eb7c61b3` contained only SonarCloud success;
+  the repository CI workflows had not produced runs for that SHA. PR #228
+  remains `[WIP]` until full CI reports every required result on its updated
+  head.
 ## KMIPKIT-0093 Rust Set Attribute fluent builder
 
 ### Red
@@ -862,3 +928,16 @@
   execution/result mapping tests pass. Exact-head hosted CI for the rebased
   PR remains required before it can leave WIP.
 
+### Owner matrix evidence refresh
+
+- **Red — `94c279c97`**: added a regression requiring the typed owner catalog's
+  evidence list to match the current public operation parity evidence. The
+  focused test failed for Delete Attribute because the owner catalog omitted
+  five tests added by the Delete Attribute binding slice on `release/1.0.0`.
+- **Green — `c4d98920c`**: added the five current C, Java, Python, Rust, and
+  manifest test paths to the source owner catalog and regenerated the fluent
+  operation inventory. The focused owner inventory suite passes all 10 tests;
+  `generate_fluent_operation_inventory.py --check` and `git diff --check` pass.
+- **Refactor**: kept the owner evidence synchronized with the canonical public
+  API manifest. Exact-head hosted CI remains required before M005 is complete
+  and this PR can leave WIP.
