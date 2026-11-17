@@ -2838,14 +2838,16 @@ pub extern "C" fn kmipkit_client_ping_v1(
     limits: *mut kmipkit_codec_limits_t,
     out_response: *mut *mut kmipkit_client_batch_response_t,
 ) -> i32 {
-    execute_fluent_item(
-        client,
-        ClientRequest::ping(),
-        limits,
-        &RequestOptions::default(),
-        None,
-        out_response,
-    )
+    ffi_entrypoint(|| {
+        execute_fluent_item(
+            client,
+            ClientRequest::ping(),
+            limits,
+            &RequestOptions::default(),
+            None,
+            out_response,
+        )
+    })
 }
 
 /// Executes one typed Ping exchange with the builder's options.

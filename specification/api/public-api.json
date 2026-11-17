@@ -403141,12 +403141,14 @@
           "org.kmipkit.fluent.PingBuilder.asynchronousIndicator",
           "org.kmipkit.fluent.PingBuilder.build",
           "org.kmipkit.fluent.PingBuilder.execute",
+          "org.kmipkit.fluent.PingBuilder.executeWithOptions",
           "org.kmipkit.fluent.PingBuilder.toBatchItem",
           "org.kmipkit.fluent.PingBuilder.validate",
           "org.kmipkit.fluent.PingBuilder.withOptions"
         ],
         "python": [
           "kmipkit.fluent.PingBuilder",
+          "kmipkit.fluent.PingBuilder.__init__",
           "kmipkit.fluent.PingBuilder.asynchronous_indicator",
           "kmipkit.fluent.PingBuilder.build",
           "kmipkit.fluent.PingBuilder.execute",
@@ -1253455,7 +1253457,7 @@
     {
       "declarationId": "KMIPKIT-0093-ping-c-kmipkit-kmipkit_ping_builder_t",
       "packageId": "c-kmipkit",
-      "kind": "c-symbol",
+      "kind": "type",
       "exportName": "kmipkit_ping_builder_t",
       "capabilityId": "fluent_ping_builder",
       "requirementIds": [
@@ -1253501,7 +1253503,7 @@
     {
       "declarationId": "KMIPKIT-0093-ping-java-kmipkit-org.kmipkit.fluent.PingBuilder",
       "packageId": "java-kmipkit",
-      "kind": "java-member",
+      "kind": "type",
       "exportName": "org.kmipkit.fluent.PingBuilder",
       "capabilityId": "fluent_ping_builder",
       "requirementIds": [
@@ -1253547,7 +1253549,7 @@
     {
       "declarationId": "KMIPKIT-0093-ping-python-kmipkit-kmipkit.fluent.PingBuilder",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "type",
       "exportName": "kmipkit.fluent.PingBuilder",
       "capabilityId": "fluent_ping_builder",
       "requirementIds": [
@@ -1253580,6 +1253582,52 @@
         "python": {
           "packageId": "python-kmipkit",
           "name": "kmipkit.fluent.PingBuilder"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "tools/api_manifest/tests/test_0093_ping_builder_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0093-ping-python-kmipkit-kmipkit.fluent.PingBuilder.__init__",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.PingBuilder.__init__",
+      "capabilityId": "fluent_ping_builder",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::RequestBuilder<'a>::ping"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ping_builder_create"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.FluentRequest.ping"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.PingBuilder.__init__"
         }
       },
       "parityEvidenceIds": [
@@ -1254048,6 +1254096,59 @@
         "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
         "bindings/python/tests/test_fluent.py",
         "tools/api_manifest/tests/test_0093_ping_builder_manifest.py"
+      ],
+      "javaSignatures": [
+        "public org.kmipkit.extensions.ClientBatchResponse execute(org.kmipkit.ttlv.CodecLimits) throws org.kmipkit.ClientOperationException",
+        "public org.kmipkit.extensions.ClientBatchResponse execute(org.kmipkit.ttlv.CodecLimits, org.kmipkit.extensions.RequestOptions) throws org.kmipkit.ClientOperationException"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0093-ping-java-kmipkit-org.kmipkit.fluent.PingBuilder.executeWithOptions",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.PingBuilder.executeWithOptions",
+      "capabilityId": "fluent_ping_builder",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-004",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "candidateSpecId": "KMIPKIT-0093",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::PingBuilder<'a>::execute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ping_builder_execute_with_options_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.PingBuilder.executeWithOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.PingBuilder.execute"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/fluent/FluentFacadeShapeTest.java",
+        "bindings/python/tests/test_fluent.py",
+        "tools/api_manifest/tests/test_0093_ping_builder_manifest.py"
+      ],
+      "javaSignatures": [
+        "public org.kmipkit.extensions.ClientBatchResponse executeWithOptions(org.kmipkit.ttlv.CodecLimits, org.kmipkit.extensions.RequestOptions) throws org.kmipkit.ClientOperationException"
       ]
     },
     {
