@@ -1521,9 +1521,9 @@ class ControlledTlsPeerTest {
         int batchItemGenericRouteEventCount = KMIP_2_0_AND_2_1.size() * 4;
         int batchItemAdditionalResponseRouteEventCount = KMIP_2_0_AND_2_1.size() * 12;
         int batchItemRenderedResponseViewEventCount = KMIP_2_0_AND_2_1.size() * 3 * 3;
-        int normativeMessageFieldGenericRouteEventCount = KMIP_2_0_AND_2_1.size() * 37;
+        int normativeMessageFieldGenericRouteEventCount = KMIP_2_0_AND_2_1.size() * 40;
         int normativeMessageFieldParserRouteEventCount = KMIP_2_0_AND_2_1.size()
-                * (18 + REQUEST_HEADER_SCALAR_ROUTE_TARGETS.size());
+                * (19 + REQUEST_HEADER_SCALAR_ROUTE_TARGETS.size());
         int normativeBatchItemAccessorRouteEventCount = KMIP_2_0_AND_2_1.size() * 10;
         int newAttributePayloadRouteEventCount = KMIP_2_0_AND_2_1.size() * 3 * 20;
         int objectGroupLocalRouteEventCount = 3;
@@ -1637,7 +1637,7 @@ class ControlledTlsPeerTest {
                         + 11 + itemTypeValueCaseIds.size() + STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size()
                         + STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.size()
                         + STRUCTURE_MEMBER_VALUE_FIXTURES.size() + PROFILE_INFORMATION_CASE_IDS.size()
-                        + SERVER_INFORMATION_CASE_IDS.size() + 8 + booleanFieldCaseIds.size()
+                        + SERVER_INFORMATION_CASE_IDS.size() + 9 + booleanFieldCaseIds.size()
                         + 1 // KMIP 2.1 §4.53 Rotate Name Type member case.
                         + 1 // KMIP 2.1 §4.53 Rotate Name Value member case.
                         + 1 // KMIP 2.0/2.1 §8.2 Batch Order Option message-field case.
@@ -3947,6 +3947,7 @@ class ControlledTlsPeerTest {
         genericDataTypeFixtures().forEach(fixture -> caseIds.add(fixture.caseId()));
         caseIds.add(RESPONSE_BATCH_ITEM_CASE_ID);
         caseIds.add(RESPONSE_HEADER_ATTESTATION_TYPE.caseId());
+        caseIds.add(RESPONSE_HEADER_CLIENT_CORRELATION_VALUE.caseId());
         caseIds.add("test-norm-message-field-message-field-8-5-batch-count");
         caseIds.add("test-norm-message-field-message-field-9-5-batch-count");
         caseIds.add("test-norm-message-field-message-field-8-6-batch-item");
@@ -5230,6 +5231,10 @@ class ControlledTlsPeerTest {
         appendGenericEnumerationRouteEvents(events, RESPONSE_HEADER_ATTESTATION_TYPE.caseId(),
                 RESPONSE_HEADER_ATTESTATION_TYPE.targetId(), 0x4200c7,
                 ATTESTATION_TYPE_VALUES.get(0), protocolVersion);
+        // OASIS KMIP 2.0/2.1 §8.5 defines Client Correlation Value as an optional Response Header Text String.
+        appendMessageFieldTextStringRoutes(events, RESPONSE_HEADER_CLIENT_CORRELATION_VALUE.caseId(),
+                RESPONSE_HEADER_CLIENT_CORRELATION_VALUE.targetId(), 0x420105,
+                "response-client-correlation", protocolVersion);
         appendMessageFieldIntegerRoutes(events, "test-norm-message-field-message-field-8-5-batch-count",
                 "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-BATCH-COUNT", protocolVersion, false);
         appendMessageFieldIntegerRoutes(events, "test-norm-message-field-message-field-9-5-batch-count",
@@ -7537,6 +7542,41 @@ class ControlledTlsPeerTest {
         }
     }
 
+    private static void appendMessageFieldTextStringRoutes(ArrayNode events, String caseId, String targetId,
+            int rawTag, String text, String protocolVersion) throws Exception {
+        CodecLimits limits = CodecLimits.defaults();
+        byte[] expected = text.getBytes(StandardCharsets.US_ASCII);
+        byte[] wire = item(rawTag, TtlvItemType.TextString.code(), expected);
+        String treeHash = normalizedTreeSha256(wire);
+        try (TtlvValue ttlvValue = TtlvValue.TextString(expected, limits);
+                RawTag raw = RawTag.fromRaw(rawTag);
+                Tag tag = raw.checked();
+                TtlvItem created = TtlvItem.create(tag, ttlvValue, limits);
+                var createdView = created.view();
+                var createdTag = createdView.tag();
+                var createdValue = createdView.value();
+                TtlvItem decoded = TtlvCodec.decode(wire);
+                var decodedView = decoded.view();
+                var decodedTag = decodedView.tag();
+                var decodedValue = decodedView.value()) {
+            assertEquals(rawTag, createdTag.raw());
+            assertEquals(TtlvItemType.TextString, createdView.itemType());
+            assertArrayEquals(expected, createdValue.bytes());
+            assertEquals(rawTag, decodedTag.raw());
+            assertEquals(TtlvItemType.TextString, decodedView.itemType());
+            assertArrayEquals(expected, decodedValue.bytes());
+        }
+        appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_item.create", targetId,
+                "org.kmipkit.ttlv.TtlvItem.create", null, null, "construct", protocolVersion,
+                null, treeHash, null);
+        appendRouteEvent(events, caseId, "java.generic-ttlv.function.ttlv_item_view_from_item", targetId,
+                "org.kmipkit.ttlv.TtlvItem.view", null, null, "decode", protocolVersion,
+                null, null, treeHash);
+        appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_codec.decode", targetId,
+                "org.kmipkit.ttlv.TtlvCodec.decode", null, null, "decode", protocolVersion,
+                null, null, treeHash);
+    }
+
     private static void appendMessageFieldStructureRoutes(ArrayNode events, String caseId, String targetId,
             int rawTag, byte[] wire, TtlvStructure content, String protocolVersion,
             boolean recordStructureConstructor, boolean recordRawTag) throws Exception {
@@ -7925,6 +7965,8 @@ class ControlledTlsPeerTest {
             assertEquals(0x18L, item.operation().orElseThrow());
             assertEquals(ATTESTATION_TYPE_VALUES, header.attestationTypes(),
                     "Response Header must preserve each repeated Attestation Type in wire order.");
+            assertEquals(java.util.Optional.of("response-client-correlation"), header.clientCorrelationValue(),
+                    "Response Header must preserve its optional Client Correlation Value.");
         }
         appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID,
                 "java.typed-protocol.model.org.kmipkit.message.responsemessage.fromttlv",
@@ -7994,6 +8036,9 @@ class ControlledTlsPeerTest {
         for (long value : ATTESTATION_TYPE_VALUES) {
             header = appendTtlvItem(header, 0x4200c7, TtlvValue.Enumeration(value), limits);
         }
+        header = appendTtlvItem(header, 0x420105,
+                TtlvValue.TextString("response-client-correlation".getBytes(StandardCharsets.US_ASCII), limits),
+                limits);
         header = appendTtlvItem(header, 0x42000d, TtlvValue.Integer(1), limits);
         TtlvStructure message = TtlvStructure.create();
         message = appendTtlvItem(message, 0x42007a, TtlvValue.structure(header, limits), limits);
