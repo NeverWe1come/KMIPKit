@@ -67,6 +67,24 @@ class NormativeInventoryTests(unittest.TestCase):
             case["normative_refs"],
         )
 
+    def test_certify_fixture_uses_public_key_and_cleans_up_certificate_and_pair(self) -> None:
+        """OASIS KMIP 2.0/2.1 §§6.1.6 and 12.1 define Certify and Certificate Sign use."""
+        case = next(item for item in self.catalog["test_cases"]
+                    if item["case_id"] == "test-op-certify")
+        self.assertEqual(
+            ["Create Key Pair with Certificate Sign usage on Private Key"],
+            case["isolation_recipe"]["setup_steps"],
+        )
+        self.assertEqual(
+            ["Destroy Certificate", "Destroy Private Key", "Destroy Public Key"],
+            case["isolation_recipe"]["teardown_steps"],
+        )
+        for version in ("2.0", "2.1"):
+            self.assertIn(
+                {"document": f"OASIS KMIP {version} Specification", "section": "12.1"},
+                case["normative_refs"],
+            )
+
     def test_ephemeral_message_field_preserves_its_boolean_source_encoding(self) -> None:
         """KMIP 2.0 §8.3 Table 358 and KMIP 2.1 §8.3 Table 396 identify Ephemeral as Boolean."""
         target_id = "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-EPHEMERAL"

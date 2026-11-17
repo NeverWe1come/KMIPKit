@@ -3402,6 +3402,33 @@ class RouteMatrixTests(unittest.TestCase):
                             ['key_pair_created', 'destroyed', 'destroyed']
                             for event in send_events))
 
+    def test_certify_operation_targets_public_key_and_cleans_up_certificate_pair(self):
+        """OASIS KMIP 2.0/2.1 §6.1.6 Certify targets a public key and returns a certificate ID."""
+        from artifact_support import ROOT
+        from route_peer import RECIPES, execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_id = 'test-op-certify'
+        self.assertIn(case_id, RECIPES, 'Certify has no controlled-peer route recipe')
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12, 'Certify must pass both versions and all six wire routes')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertEqual({event['target_id'] for event in events},
+                         {'KMIPKIT-ELEM-OP-C2S-CERTIFY'})
+        send_events = [event for event in events if event['action'] == 'send']
+        self.assertEqual(len(send_events), 12)
+        self.assertTrue(all(event['peer_observed_operation_sequence'] ==
+                            ['Create Key Pair', 'Certify', 'Destroy', 'Destroy', 'Destroy'] and
+                            event['peer_observed_effects'] ==
+                            ['key_pair_created', 'certified', 'destroyed', 'destroyed', 'destroyed']
+                            for event in send_events))
+
     def test_export_operation_executes_installed_request_and_response_routes(self):
         """OASIS KMIP 2.0/2.1 §6.1.18 Tables 202–203/217–218 define Export."""
         from artifact_support import INSTALL, ROOT
