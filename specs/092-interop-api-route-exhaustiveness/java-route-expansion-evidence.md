@@ -1816,6 +1816,49 @@ python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-refe
 python3 interop/java-kmip-validator/tools/compare_route_ledger.py
 ```
 
+## Java KMIP 2.0/2.1 repeatable Request Header Attestation Type — 2026-11-17
+
+Source: OASIS KMIP 2.0 Specification §8.2 and KMIP 2.1 Specification §8.2.
+The catalog marks Attestation Type optional and explicitly repeatable. Red
+commit `2c869bcab` adds exact per-version assertions for generic Item create,
+Item view, TTLV decode, and typed `RequestMessage.fromTtlv`; the focused test
+fails because all eight expected route/version cells are absent.
+
+Green commit `5b985bfd0` constructs and decodes the Attestation Type
+Enumeration, then parses two values in the Request Header and asserts that the
+typed `RequestHeaderView.attestationTypes()` preserves `[1, 2]` in wire order.
+The fixture places the repeated field after Attestation Capable Indicator, as
+required by the §8.2 Request Header ordering. Refactor commit `d0766d376`
+centralizes the values and four route IDs. The focused controlled-peer class
+passes 19/19 tests; the complete Java suite passes 57/57 tests with no skips,
+failures, or errors.
+
+Selected-scope validation accepts 27,336/27,336 cells with zero failed cells.
+The regenerated ledger records 71,641 planned, 27,336 executed, and 44,305
+pending cells across 1,210 pending case IDs. This slice closes eight cells,
+one per route and protocol version pair for the four applicable Java routes.
+The ledger comparer passes. Evidence uses pinned artifact commit
+`12496d646d11d4069b58bcc88fc76cc619211ec6` with SHA-256
+`504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+These are local-model routes, not vendor interoperability or full matrix
+completion; the Java PR remains WIP.
+
+Verification commands:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks
+python3 -m unittest interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+python3 interop/shared/tools/validate_route_evidence.py \
+  --selected-scope --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+```
+
 ## Java Item Type enum routes
 
 Red commit `8534357d6` adds a focused assertion for the 11 catalogued Item
