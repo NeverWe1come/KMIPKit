@@ -3706,6 +3706,8 @@ class ControlledTlsPeerTest {
         caseIds.add("test-enum-tag");
         caseIds.add("test-norm-tag-tag-42000e");
         caseIds.add("test-op-ping");
+        caseIds.add("test-norm-payload-client-set-endpoint-role-request-20-001");
+        caseIds.add("test-norm-payload-client-set-endpoint-role-response-20-001");
         caseIds.add("test-norm-payload-client-set-endpoint-role-request-21-001");
         caseIds.add("test-enum-item-type");
         CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().forEach(caseIds::add);
@@ -5206,6 +5208,23 @@ class ControlledTlsPeerTest {
 
     private static void assertNewlyCataloguedLocalRoutesAreInvoked(ArrayNode events,
             String protocolVersion) {
+        if ("2.0".equals(protocolVersion)) {
+            for (String caseId : List.of(
+                    "test-norm-payload-client-set-endpoint-role-request-20-001",
+                    "test-norm-payload-client-set-endpoint-role-response-20-001")) {
+                String fieldTarget = caseId.endsWith("request-20-001")
+                        ? "KMIPKIT-PAYLOAD-CLIENT-SET-ENDPOINT-ROLE-REQUEST-20-001"
+                        : "KMIPKIT-PAYLOAD-CLIENT-SET-ENDPOINT-ROLE-RESPONSE-20-001";
+                for (String targetId : List.of(fieldTarget, "KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE")) {
+                    for (String route : List.of("java.generic-ttlv.ttlv_item.create",
+                            "java.generic-ttlv.function.ttlv_item_view_from_item",
+                            "java.generic-ttlv.ttlv_codec.decode")) {
+                        String action = route.endsWith("ttlv_item.create") ? "construct" : "decode";
+                        assertRouteEventRecorded(events, caseId, targetId, route, action, protocolVersion);
+                    }
+                }
+            }
+        }
         if ("2.1".equals(protocolVersion)) {
             assertRouteEventRecorded(events, "test-op-ping", "KMIPKIT-ELEM-OP-C2S-PING",
                     "java.typed-protocol.function.client_batch_item_response_ping", "decode", protocolVersion);
