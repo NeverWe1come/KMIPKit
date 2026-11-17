@@ -431,9 +431,19 @@ class ControlledTlsPeerTest {
             "java.generic-ttlv.function.ttlv_item_view_from_item",
             "java.generic-ttlv.ttlv_codec.decode",
             "java.typed-protocol.model.org.kmipkit.message.responsemessage.fromttlv");
+    private static final String RESPONSE_HEADER_SERVER_CORRELATION_VALUE_TEXT = "response-server-correlation";
+    private static final NormativeTarget RESPONSE_HEADER_SERVER_CORRELATION_VALUE = new NormativeTarget(
+            "test-norm-message-field-message-field-8-5-server-correlation-value",
+            "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-SERVER-CORRELATION-VALUE");
+    private static final List<String> RESPONSE_HEADER_SERVER_CORRELATION_VALUE_ROUTES = List.of(
+            "java.generic-ttlv.ttlv_item.create",
+            "java.generic-ttlv.function.ttlv_item_view_from_item",
+            "java.generic-ttlv.ttlv_codec.decode",
+            "java.typed-protocol.model.org.kmipkit.message.responsemessage.fromttlv");
     private static final List<NormativeTarget> RESPONSE_MESSAGE_PARSE_TARGETS = List.of(
             RESPONSE_HEADER_ATTESTATION_TYPE,
             RESPONSE_HEADER_CLIENT_CORRELATION_VALUE,
+            RESPONSE_HEADER_SERVER_CORRELATION_VALUE,
             new NormativeTarget("test-norm-message-field-message-field-8-5-batch-count",
                     "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-BATCH-COUNT"),
             new NormativeTarget("test-norm-message-field-message-field-8-6-batch-item",
@@ -1316,6 +1326,17 @@ class ControlledTlsPeerTest {
                 assertEquals("passed", event.path("status").asText());
             }
         }
+        for (String route : RESPONSE_HEADER_SERVER_CORRELATION_VALUE_ROUTES) {
+            assertEquals(KMIP_2_0_AND_2_1.size(), routeEventCount(report.path("events"),
+                    RESPONSE_HEADER_SERVER_CORRELATION_VALUE.caseId(), route),
+                    "Response Header Server Correlation Value must complete its generic or typed route cells.");
+            for (String version : KMIP_2_0_AND_2_1) {
+                JsonNode event = findRouteEvent(report.path("events"),
+                        RESPONSE_HEADER_SERVER_CORRELATION_VALUE.caseId(), route, version,
+                        RESPONSE_HEADER_SERVER_CORRELATION_VALUE.targetId());
+                assertEquals("passed", event.path("status").asText());
+            }
+        }
         NormativeTarget batchErrorContinuationHeader = REQUEST_HEADER_SCALAR_ROUTE_TARGETS.get(2);
         assertEquals(KMIP_2_0_AND_2_1.size(), routeEventCount(report.path("events"),
                 batchErrorContinuationHeader.caseId(),
@@ -1638,7 +1659,7 @@ class ControlledTlsPeerTest {
                         + 11 + itemTypeValueCaseIds.size() + STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size()
                         + STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.size()
                         + STRUCTURE_MEMBER_VALUE_FIXTURES.size() + PROFILE_INFORMATION_CASE_IDS.size()
-                        + SERVER_INFORMATION_CASE_IDS.size() + 9 + booleanFieldCaseIds.size()
+                        + SERVER_INFORMATION_CASE_IDS.size() + 10 + booleanFieldCaseIds.size()
                         + 1 // KMIP 2.1 §4.53 Rotate Name Type member case.
                         + 1 // KMIP 2.1 §4.53 Rotate Name Value member case.
                         + 1 // KMIP 2.0/2.1 §8.2 Batch Order Option message-field case.
@@ -3949,6 +3970,7 @@ class ControlledTlsPeerTest {
         caseIds.add(RESPONSE_BATCH_ITEM_CASE_ID);
         caseIds.add(RESPONSE_HEADER_ATTESTATION_TYPE.caseId());
         caseIds.add(RESPONSE_HEADER_CLIENT_CORRELATION_VALUE.caseId());
+        caseIds.add(RESPONSE_HEADER_SERVER_CORRELATION_VALUE.caseId());
         caseIds.add("test-norm-message-field-message-field-8-5-batch-count");
         caseIds.add("test-norm-message-field-message-field-9-5-batch-count");
         caseIds.add("test-norm-message-field-message-field-8-6-batch-item");
@@ -7968,6 +7990,9 @@ class ControlledTlsPeerTest {
                     "Response Header must preserve each repeated Attestation Type in wire order.");
             assertEquals(java.util.Optional.of(RESPONSE_HEADER_CLIENT_CORRELATION_VALUE_TEXT), header.clientCorrelationValue(),
                     "Response Header must preserve its optional Client Correlation Value.");
+            assertEquals(java.util.Optional.of(RESPONSE_HEADER_SERVER_CORRELATION_VALUE_TEXT),
+                    header.serverCorrelationValue(),
+                    "Response Header must preserve its optional Server Correlation Value.");
         }
         appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID,
                 "java.typed-protocol.model.org.kmipkit.message.responsemessage.fromttlv",
