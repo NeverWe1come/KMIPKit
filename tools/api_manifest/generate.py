@@ -38,10 +38,9 @@ MANIFEST_PATH = "specification/api/public-api.json"
 SCHEMA_PATH = "specification/api/public-api.schema.json"
 CATALOG_PATH = "specification/catalog/kmip-2.1.json"
 # Public API parity records include exact declarations in all four languages.
-# KMIPKIT-0093 records the full fluent export inventory and exact Rust trait
-# exclusions. 64 MiB accommodates that reviewed inventory with bounded
-# headroom while retaining a strict upper bound on manifest input allocation.
-MAX_MANIFEST_BYTES = 64 * 1024 * 1024
+# 72 MiB accommodates the approved assigned-tag export inventory and planned
+# declaration growth while retaining a strict upper bound on input allocation.
+MAX_MANIFEST_BYTES = 72 * 1024 * 1024
 MAX_SCHEMA_BYTES = 4 * 1024 * 1024
 MAX_CATALOG_BYTES = 16 * 1024 * 1024
 MAX_DRAFT_API_CATALOG_BYTES = 1024 * 1024

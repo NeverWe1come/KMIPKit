@@ -156,6 +156,7 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
             | "fluent_dx_journeys"
             | "fluent_java_python_lifecycle_facade"
             | "fluent_locate_revoke_parity"
+            | "fluent_named_tag_values"
             | "fluent_set_attribute_parity"
             | "generic_ttlv_model"
             | "hashed_password_timestamp_sequence"

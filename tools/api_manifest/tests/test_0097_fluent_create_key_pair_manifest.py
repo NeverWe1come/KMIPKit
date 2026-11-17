@@ -1,5 +1,4 @@
-"""Pin the journey-supported key-pair subset and remaining parity gaps."""
-"""Pin the Rust-only KMIPKIT-0097 surface without claiming binding parity."""
+"""Reconcile the KMIPKIT-0097 Rust slice with KMIPKIT-0093 journey parity."""
 
 import json
 import unittest
@@ -18,6 +17,11 @@ JOURNEY_METHODS = {
     "with_options", "with_asynchronous_indicator", "build", "to_batch_item",
     "execute", "validate", "common_attribute",
 }
+DECLARED_PARITY_REQUIREMENTS = {
+    "KMIPKIT-0093-FR-004",
+    "KMIPKIT-0093-FR-005",
+    "KMIPKIT-0093-FR-011",
+}
 
 
 class FluentCreateKeyPairManifestTests(unittest.TestCase):
@@ -27,22 +31,36 @@ class FluentCreateKeyPairManifestTests(unittest.TestCase):
             (ROOT / "specification/api/public-api.json").read_text(encoding="utf-8")
         )
 
-    def test_exact_public_paths_remain_owned_and_blocked_for_binding_parity(self) -> None:
+    def test_exact_public_paths_separate_0093_parity_from_remaining_0097_candidates(self) -> None:
         expected = {}
         for prefix in ("kmipkit_client::", "kmipkit_client::fluent::"):
             expected[f"{prefix}CreateKeyPairBuilder"] = "type"
             expected[f"{prefix}RequestBuilder<'a>::create_key_pair"] = "associated-item"
-            for method in METHODS:
+            methods = METHODS | {"public_attribute"}
+            if prefix == "kmipkit_client::":
+                methods |= {"detached"}
+            for method in methods:
                 expected[f"{prefix}CreateKeyPairBuilder<'a>::{method}"] = "associated-item"
             for variant in ("MissingCreateKeyPairAlgorithm", "MissingCreateKeyPairLength"):
                 expected[f"{prefix}FluentBuildError::{variant}"] = "variant"
         rows = [
             row for row in self.manifest["publicDeclarations"]
-            if row.get("exportName") in expected
+            if row.get("packageId") == "rust-kmipkit-client"
+            and row.get("exportName") in expected
         ]
         self.assertEqual(expected, {row["exportName"]: row["kind"] for row in rows})
-        self.assertEqual(len(rows), 46)
-        for row in rows:
+        self.assertEqual(len(expected), len(rows))
+
+        blocked_paths = set()
+        for prefix in ("kmipkit_client::", "kmipkit_client::fluent::"):
+            blocked_paths.add(f"{prefix}CreateKeyPairBuilder<'a>::build_request")
+            blocked_paths.add(f"{prefix}RequestBuilder<'a>::create_key_pair")
+            for variant in ("MissingCreateKeyPairAlgorithm", "MissingCreateKeyPairLength"):
+                blocked_paths.add(f"{prefix}FluentBuildError::{variant}")
+        blocked_rows = [row for row in rows if row.get("candidateSpecId") == "KMIPKIT-0097"]
+        self.assertEqual(blocked_paths, {row["exportName"] for row in blocked_rows})
+        self.assertEqual(8, len(blocked_rows))
+        for row in blocked_rows:
             with self.subTest(export=row["exportName"]):
                 self.assertEqual(row["packageId"], "rust-kmipkit-client")
                 self.assertEqual(row["parityScope"], "four-language")
@@ -57,7 +75,7 @@ class FluentCreateKeyPairManifestTests(unittest.TestCase):
                     self.assertEqual(row["capabilityId"], "fluent_dx_journeys")
                     self.assertEqual(set(row["languageMappings"]), {"rust", "c", "java", "python"})
                     self.assertIn("KMIPKIT-0093-FR-011", row["requirementIds"])
-                    self.assertEqual(row["approvalSource"]["path"], "specs/093-fluent-complete-api/spec.md")
+                    self.assertEqual(row["approvalSource"]["path"], "specs/097-fluent-create-key-pair/spec.md")
                     self.assertNotIn("blockedReason", row)
                     continue
                 self.assertEqual(row["candidateSpecId"], "KMIPKIT-0097")
@@ -70,6 +88,16 @@ class FluentCreateKeyPairManifestTests(unittest.TestCase):
                 self.assertTrue(row["blockedReason"])
                 self.assertNotIn("languageMappings", row)
                 self.assertNotIn("parityEvidenceIds", row)
+
+        parity_rows = [row for row in rows if row.get("candidateSpecId") is None]
+        self.assertEqual(39, len(parity_rows))
+        for row in parity_rows:
+            with self.subTest(export=row["exportName"]):
+                self.assertEqual("declared", row["declarationState"])
+                self.assertEqual("fluent_create_key_pair_parity", row["capabilityId"])
+                self.assertEqual("four-language", row["parityScope"])
+                self.assertTrue(DECLARED_PARITY_REQUIREMENTS <= set(row["requirementIds"]))
+                self.assertEqual({"rust", "c", "java", "python"}, set(row["languageMappings"]))
 
     def test_exclusions_only_cover_exact_standard_trait_paths(self) -> None:
         rows = [row for row in self.manifest["approvedExclusions"]
@@ -109,11 +137,19 @@ class FluentCreateKeyPairManifestTests(unittest.TestCase):
                     )
 
     def test_local_validation_and_prebuilt_sets_have_exact_requirement_owners(self) -> None:
+        group_methods = {"common_attributes", "private_key_attributes", "public_key_attributes"}
         for row in self.manifest["publicDeclarations"]:
-            if "KMIPKIT-0097-FR-005" not in row.get("requirementIds", []):
+            if (row.get("packageId") != "rust-kmipkit-client"
+                    or "KMIPKIT-0097-FR-005" not in row.get("requirementIds", [])):
                 continue
-            method = row["exportName"].rsplit("::", 1)[-1]
+                continue
+            name = row.get("exportName", "")
+            if not name.endswith(tuple(f"::{method}" for method in group_methods | {"validate"})):
+                continue
+            if "CreateKeyPairBuilder<'a>" not in name:
+                continue
+            method = name.rsplit("::", 1)[-1]
             if method == "validate":
-                self.assertIn("KMIPKIT-0097-FR-006", row["requirementIds"])
-            elif method in {"common_attributes", "private_key_attributes", "public_key_attributes"}:
-                self.assertIn("KMIPKIT-0097-FR-007", row["requirementIds"])
+                self.assertIn("KMIPKIT-0093-FR-004", row["requirementIds"])
+            elif method in group_methods:
+                self.assertIn("KMIPKIT-0093-FR-005", row["requirementIds"])

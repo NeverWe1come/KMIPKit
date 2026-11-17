@@ -10,18 +10,21 @@ import unittest
 from unittest.mock import patch
 from pathlib import Path
 
+from tools.normative_catalog.generate_fluent_operation_inventory import build_inventory
+
 ROOT = Path(__file__).resolve().parents[3]
 BASE_CATALOG = ROOT / "specification/catalog/kmip-2.1.json"
 VERSIONED_VALUES = ROOT / "specification/catalog/kmip-versioned-values.json"
 DRAFT_API = ROOT / "specification/api/kmip-3.0-draft-api.json"
+MANIFEST = ROOT / "specification/api/public-api.json"
+MODEL_OWNERS = ROOT / "specification/catalog/fluent-operation-model-owners.json"
+EVIDENCE = ROOT / "specification/catalog/operation-matrix-evidence.json"
 from tools.normative_catalog.generate_fluent_operation_inventory import (
     _kmip30_fluent_routes,
     _validate_evidence_files,
     main,
-    build_inventory,
     render,
 )
-
 OUTPUT = ROOT / "specification/catalog/fluent-operation-inventory.json"
 
 
@@ -92,6 +95,17 @@ class FluentOperationInventoryTests(unittest.TestCase):
         self.assertEqual(actual, expected)
         self.assertEqual(len(base_rows), 62)
 
+        version_2_1_additions = {
+            (value["name"], value["wire_value"].removeprefix("0x").upper().zfill(8))
+            for group in versioned["versions"]["v2_1"]
+            if group["name"] == "Operation"
+            for value in group["values"]
+        }
+        for row in base_rows:
+            assigned_key = (row["name"], row["wireValue"])
+            expected_earliest = "2.1" if assigned_key in version_2_1_additions else "2.0"
+            self.assertEqual(row["earliestVersion"], expected_earliest)
+
         expected_3 = {
             (value["name"], value["wire_value"])
             for group in versioned["versions"]["v3_0"]
@@ -119,6 +133,9 @@ class FluentOperationInventoryTests(unittest.TestCase):
                 "Encapsulate": "00000041",
                 "Decapsulate": "00000042",
             },
+        )
+        self.assertTrue(
+            all(row["earliestVersion"] == "3.0" for row in operations if row["version"] == "3.0")
         )
 
     def test_kmip30_fluent_routes_are_visible_in_versioned_api_matrix(self) -> None:
@@ -179,6 +196,7 @@ class FluentOperationInventoryTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "assignment"):
             build_inventory(base, json.loads(VERSIONED_VALUES.read_text(encoding="utf-8")),
                             json.loads((ROOT / "specification/api/public-api.json").read_text(encoding="utf-8")),
+                            json.loads(MODEL_OWNERS.read_text(encoding="utf-8")),
                             draft_api_catalog=json.loads(DRAFT_API.read_text(encoding="utf-8")))
 
     def test_invalid_direction_is_rejected(self) -> None:
@@ -188,6 +206,7 @@ class FluentOperationInventoryTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "direction"):
             build_inventory(base, json.loads(VERSIONED_VALUES.read_text(encoding="utf-8")),
                             json.loads((ROOT / "specification/api/public-api.json").read_text(encoding="utf-8")),
+                            json.loads(MODEL_OWNERS.read_text(encoding="utf-8")),
                             draft_api_catalog=json.loads(DRAFT_API.read_text(encoding="utf-8")))
 
     def test_generated_inventory_is_deterministic_and_current(self) -> None:
@@ -200,11 +219,12 @@ class FluentOperationInventoryTests(unittest.TestCase):
         return build_inventory(json.loads(BASE_CATALOG.read_text(encoding="utf-8")),
                                json.loads(VERSIONED_VALUES.read_text(encoding="utf-8")),
                                json.loads((ROOT / "specification/api/public-api.json").read_text(encoding="utf-8")),
-                               evidence,
-                               json.loads(DRAFT_API.read_text(encoding="utf-8")))
+                               json.loads(MODEL_OWNERS.read_text(encoding="utf-8")),
+                               evidence_catalog=evidence,
+                               draft_api_catalog=json.loads(DRAFT_API.read_text(encoding="utf-8")))
 
     def test_missing_owner_cannot_claim_implemented_route(self) -> None:
-        evidence = json.loads((ROOT / "specification/catalog/operation-matrix-evidence.json").read_text(encoding="utf-8"))
+        evidence = json.loads(EVIDENCE.read_text(encoding="utf-8"))
         evidence["operations"][0]["typedOwners"]["request"] = None
         with self.assertRaisesRegex(ValueError, "missing typed owners"):
             self._build_with_evidence(evidence)
@@ -255,6 +275,7 @@ class FluentOperationInventoryTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "assignment"):
             build_inventory(json.loads(BASE_CATALOG.read_text(encoding="utf-8")), versioned,
                             json.loads((ROOT / "specification/api/public-api.json").read_text(encoding="utf-8")),
+                            json.loads(MODEL_OWNERS.read_text(encoding="utf-8")),
                             draft_api_catalog=json.loads(DRAFT_API.read_text(encoding="utf-8")))
 
     def test_incomplete_catalogs_and_duplicate_routes_are_rejected(self) -> None:
@@ -288,10 +309,13 @@ class FluentOperationInventoryTests(unittest.TestCase):
                     v["versions"]["v3_0"][0]["values"].append(
                         copy.deepcopy(v["versions"]["v3_0"][0]["values"][0]))
                 with self.assertRaises(ValueError):
-                    build_inventory(b, v, m, draft_api_catalog=json.loads(DRAFT_API.read_text(encoding="utf-8")))
+                    build_inventory(
+                        b, v, m, json.loads(MODEL_OWNERS.read_text(encoding="utf-8")),
+                        draft_api_catalog=json.loads(DRAFT_API.read_text(encoding="utf-8")),
+                    )
 
     def test_incomplete_or_overclaimed_review_evidence_is_rejected(self) -> None:
-        original = json.loads((ROOT / "specification/catalog/operation-matrix-evidence.json").read_text(encoding="utf-8"))
+        original = json.loads(EVIDENCE.read_text(encoding="utf-8"))
         for field in ("format", "operations", "version_sources", "version_order",
                       "owner_state", "route_kind", "route_state", "version_claim", "tests"):
             with self.subTest(field=field):
@@ -337,6 +361,123 @@ class FluentOperationInventoryTests(unittest.TestCase):
                 self.assertEqual(main(), 1)
             with patch("sys.argv", ["inventory", "--repo-root", str(ROOT / "absent-matrix-root")]):
                 self.assertEqual(main(), 1)
+
+    def test_every_operation_row_names_its_typed_request_and_response_owner(self) -> None:
+        inventory = json.loads(OUTPUT.read_text(encoding="utf-8"))
+        for row in inventory["operations"]:
+            with self.subTest(version=row["version"], name=row["name"], direction=row["direction"]):
+                for key in ("typedRequestOwner", "typedResponseOwner"):
+                    owner = row[key]
+                    self.assertEqual(set(owner), {"path", "type"})
+                    self.assertRegex(
+                        owner["path"],
+                        r"^crates/kmipkit-protocol/src/(?:[a-z0-9_]+/)*[a-z0-9_]+\.rs$",
+                    )
+                    self.assertRegex(owner["type"], r"^[A-Za-z][A-Za-z0-9]*$")
+
+                if row["version"] == "2.1":
+                    for key in ("typedRequestOwner", "typedResponseOwner"):
+                        owner = row[key]
+                        source = (ROOT / owner["path"]).read_text(encoding="utf-8")
+                        self.assertRegex(
+                            source,
+                            rf"pub (?:struct|enum|type) {owner['type']}\b",
+                        )
+                self.assertTrue(row["testEvidence"])
+                focused = row["testEvidence"]["focused"]
+                self.assertTrue(all(isinstance(path, str) for path in focused))
+                if row["version"] == "2.1":
+                    self.assertTrue(all((ROOT / ref.split("::", 1)[0]).exists() for ref in focused))
+
+    def test_owner_evidence_matches_current_public_api_parity_evidence(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        owners = json.loads(MODEL_OWNERS.read_text(encoding="utf-8"))
+        parity_evidence = {
+            operation["name"]: operation["parityEvidenceIds"]
+            for operation in manifest["operations"]
+        }
+
+        for owner in owners["owners"]:
+            if owner["version"] != "2.1" or owner["direction"] != "client_to_server":
+                continue
+            if owner["name"] not in parity_evidence:
+                continue
+            with self.subTest(operation=owner["name"]):
+                self.assertEqual(owner["testEvidence"], parity_evidence[owner["name"]])
+
+    def test_generator_rejects_missing_typed_owner_route(self) -> None:
+        base = json.loads(BASE_CATALOG.read_text(encoding="utf-8"))
+        versioned = json.loads(VERSIONED_VALUES.read_text(encoding="utf-8"))
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        owners = json.loads(MODEL_OWNERS.read_text(encoding="utf-8"))
+        owners["owners"].pop()
+        with self.assertRaisesRegex(ValueError, "typed operation owner coverage mismatch"):
+            build_inventory(base, versioned, manifest, owners,
+                            evidence_catalog=json.loads(EVIDENCE.read_text(encoding="utf-8")),
+                            draft_api_catalog=json.loads(DRAFT_API.read_text(encoding="utf-8")))
+
+    def test_generator_rejects_duplicate_typed_owner_route(self) -> None:
+        base = json.loads(BASE_CATALOG.read_text(encoding="utf-8"))
+        versioned = json.loads(VERSIONED_VALUES.read_text(encoding="utf-8"))
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        owners = json.loads(MODEL_OWNERS.read_text(encoding="utf-8"))
+        owners["owners"].append(owners["owners"][0])
+        with self.assertRaisesRegex(ValueError, "duplicate typed operation owner route"):
+            build_inventory(base, versioned, manifest, owners,
+                            evidence_catalog=json.loads(EVIDENCE.read_text(encoding="utf-8")),
+                            draft_api_catalog=json.loads(DRAFT_API.read_text(encoding="utf-8")))
+
+    def test_generator_rejects_owner_rows_without_test_evidence(self) -> None:
+        base = json.loads(BASE_CATALOG.read_text(encoding="utf-8"))
+        versioned = json.loads(VERSIONED_VALUES.read_text(encoding="utf-8"))
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        owners = json.loads(MODEL_OWNERS.read_text(encoding="utf-8"))
+        owners["owners"][0]["testEvidence"] = []
+        with self.assertRaisesRegex(ValueError, "test evidence is missing or invalid"):
+            build_inventory(base, versioned, manifest, owners,
+                            evidence_catalog=json.loads(EVIDENCE.read_text(encoding="utf-8")),
+                            draft_api_catalog=json.loads(DRAFT_API.read_text(encoding="utf-8")))
+
+    def test_generator_rejects_stale_public_operation_test_evidence(self) -> None:
+        base = json.loads(BASE_CATALOG.read_text(encoding="utf-8"))
+        versioned = json.loads(VERSIONED_VALUES.read_text(encoding="utf-8"))
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        owners = json.loads(MODEL_OWNERS.read_text(encoding="utf-8"))
+        owners["owners"][0]["testEvidence"].pop()
+        with self.assertRaisesRegex(ValueError, "typed operation test evidence is stale"):
+            build_inventory(base, versioned, manifest, owners,
+                            evidence_catalog=json.loads(EVIDENCE.read_text(encoding="utf-8")),
+                            draft_api_catalog=json.loads(DRAFT_API.read_text(encoding="utf-8")))
+
+
+    def test_generator_rejects_unmatched_kmip_2_1_version_delta(self) -> None:
+        base = json.loads(BASE_CATALOG.read_text(encoding="utf-8"))
+        versioned = json.loads(VERSIONED_VALUES.read_text(encoding="utf-8"))
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        owners = json.loads(MODEL_OWNERS.read_text(encoding="utf-8"))
+        next(group for group in versioned["versions"]["v2_1"]
+             if group["name"] == "Operation")["values"][0]["name"] = "Unassigned Operation"
+        with self.assertRaisesRegex(ValueError, "KMIP 2.1 operation delta has no matching assigned value"):
+            build_inventory(base, versioned, manifest, owners,
+                            evidence_catalog=json.loads(EVIDENCE.read_text(encoding="utf-8")),
+                            draft_api_catalog=json.loads(DRAFT_API.read_text(encoding="utf-8")))
+
+    def test_generator_rejects_one_wire_value_assigned_to_different_operations(self) -> None:
+        base = json.loads(BASE_CATALOG.read_text(encoding="utf-8"))
+        versioned = json.loads(VERSIONED_VALUES.read_text(encoding="utf-8"))
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        owners = json.loads(MODEL_OWNERS.read_text(encoding="utf-8"))
+        create_value = next(
+            element for element in base["elements"]
+            if element.get("kind") == "enumeration_value"
+            and element.get("name") == "Create"
+            and "KMIPKIT-ELEM-ENUMERATION-OPERATION" in element.get("parent_element_ids", [])
+        )
+        create_value["wire_value"] = "00000002"
+        with self.assertRaisesRegex(ValueError, "duplicate KMIP 2.1 operation wire value"):
+            build_inventory(base, versioned, manifest, owners,
+                            evidence_catalog=json.loads(EVIDENCE.read_text(encoding="utf-8")),
+                            draft_api_catalog=json.loads(DRAFT_API.read_text(encoding="utf-8")))
 
 
 if __name__ == "__main__":

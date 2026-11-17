@@ -10,9 +10,7 @@ from tools.api_manifest import generate
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST_PATH = ROOT / "specification" / "api" / "public-api.json"
-# The approved KMIPKIT-0093 declaration and trait-exclusion inventory requires
-# more room than the earlier KMIPKIT-0053 inventory while remaining bounded.
-EXPECTED_MANIFEST_LIMIT = 64 * 1024 * 1024
+EXPECTED_MANIFEST_LIMIT = 72 * 1024 * 1024
 
 
 class T102ManifestSizeLimitTests(unittest.TestCase):
