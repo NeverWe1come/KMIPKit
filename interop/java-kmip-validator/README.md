@@ -287,5 +287,7 @@ the peer-observed Operation, and reads the successful response through
 `ClientBatchItemResult.pingResponse()`. The same case round-trips the Operation
 Enumeration through the installed generic TTLV item constructor, view, and
 decoder, as required by KMIP 2.1 §6.1.36. The selected Java report now validates
-27,154/27,154 cells; 44,487 of the full 71,641-cell Java matrix remain pending,
-so this does not complete the Java matrix.
+27,160/27,160 cells; 44,481 of the full 71,641-cell Java matrix remain pending,
+so this does not complete the Java matrix. Six additional local cells exercise
+the Set Endpoint Role request field and Operation through generic TTLV item
+creation, view, and decode (KMIP 2.1 §6.1.54 Table 331, §11.19, and §11.36).

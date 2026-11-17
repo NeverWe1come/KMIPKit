@@ -61,3 +61,9 @@ artifact. This is part of the FR-006 artifact provenance check.
   failures. Its generated ledger records 71,641 planned, 27,154 executed, and
   44,487 pending cells. This remains partial selected-scope evidence; full
   Java matrix closure and four-language peer runs are still required.
+- **FR-003/FR-005:** The Java local recipe now covers the Set Endpoint Role
+  request field and its Operation Enumeration with generic TTLV item creation,
+  view, and decode, under KMIP 2.1 §6.1.54 Table 331, §11.19, and §11.36.
+- The latest selected report validates 27,160/27,160 cells with zero failures.
+  Its generated ledger records 71,641 planned, 27,160 executed, and 44,481
+  pending cells. Full-matrix closure remains required.
