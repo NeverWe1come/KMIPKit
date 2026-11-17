@@ -1253,3 +1253,195 @@ not included in evidence or diagnostics.
   python3 -B -m unittest test_route_matrix -v` passes 159/159 on the final
   source. The complete C matrix and exact-head CI remain open, so PR #170
   remains WIP.
+
+## C Encrypt request and response route
+
+OASIS KMIP v2.0 and v2.1 §6.1.17 defines Encrypt; §6.1.1 defines Activate,
+§6.1.40/§6.1.44 define Revoke, and §6.1.15 defines Destroy. Batch ordering and
+ID Placeholder behavior follow §6.1 and §§8.2–8.4, 8.6. The installed C
+consumer creates an AES-128 key with an explicit Encrypt usage mask, activates
+it, encrypts a fixed AES test-vector block with explicitly supplied AES/ECB/No
+Padding parameters, then revokes and destroys it in one ordered batch. It
+checks every typed result, response item ID, returned identifier, 16-byte
+Encrypt Data field, Revoke response TTLV, and final teardown. The peer checks
+the exact deterministic input and response Data bytes. Because Create generates
+a new remote key, these fixture bytes do not establish a valid encryption
+result for that key or cryptographic correctness. No plaintext, ciphertext, or
+key material is written to reports or diagnostics.
+
+- Red commit `c115083db`: the focused route test failed because `test-op-encrypt`
+  had no controlled-peer recipe or executable installed C request path.
+- Green commit `fbc04e833`: added the typed C batch route and peer checks for the
+  complete request, response, IDs, and lifecycle state. The request uses the
+  public C ABI and is exercised over TTLV, JSON, and XML with raw TLS and HTTPS.
+- Refactor/documentation commit records the test contract and evidence in this
+  file, the 0092 traceability record, and the validator README.
+- Verification: the focused route test passed all 12 combinations (KMIP
+  2.0/2.1 × three encodings × two transports); the CMake targets built; CTest
+  passed 7/7, including all 164 route-matrix contract tests and both controlled
+  TLS peers. `git diff --check` passed. The full installed C matrix and exact
+  head CI remain pending; this slice does not close the route-completeness gate
+  or establish vendor interoperability. PR #170 remains WIP.
+
+## C Decrypt request and response route
+
+OASIS KMIP v2.0 and v2.1 §6.1.11 defines Decrypt; the lifecycle setup and
+cleanup use §6.1.1 (Activate), §6.1.40/§6.1.44 (Revoke), and §6.1.15
+(Destroy), with ordered batch and ID Placeholder rules from §6.1 and
+§§8.2–8.4, 8.6. The installed C consumer creates an AES-128 key with explicit
+Decrypt usage, activates it, decrypts the fixed AES test-vector ciphertext
+with explicitly supplied AES/ECB/No Padding parameters, then revokes and
+destroys it. It checks each typed result and response ID, the created key
+identifier, a 16-byte plaintext Data field, Revoke TTLV, and teardown. The peer
+checks the exact ciphertext input and deterministic plaintext response bytes;
+because the generated remote key does not match the test vector, this fixture
+does not assert cryptographic correctness. Reports and diagnostics contain no
+cryptographic input or output.
+
+- Red commit `2d8fe55eb`: the focused route test failed because `test-op-decrypt`
+  had no controlled-peer recipe.
+- Green commit `3f02d5151`: added the typed Decrypt request/response path by
+  sharing the isolated crypto lifecycle builder with Encrypt; the peer checks
+  Decrypt usage, ciphertext input, plaintext response, IDs, and cleanup.
+- Refactor/documentation commit records the lifecycle, scope, and evidence in
+  this file, the 0092 traceability record, and the validator README.
+- Verification: Encrypt and Decrypt focused tests each passed all 12
+  version/encoding/transport combinations. CTest passed 7/7 in 90.92 seconds,
+  including 165 route-matrix contract tests and both controlled TLS peers;
+  `git diff --check` passed. The full C matrix and exact-head CI remain open.
+
+## C MAC request and response route
+
+OASIS KMIP v2.0 §6.1.31 and v2.1 §6.1.32 define MAC. The installed C
+consumer creates a symmetric HMAC-SHA256 key with a 256-bit length and an
+explicit MAC Generate usage mask, activates it, sends one MAC request with
+explicit HMAC-SHA256 Cryptographic Parameters and test data, then revokes and
+destroys the key. It checks the ordered typed results, item IDs, created-key
+identifier, and typed MAC Data field with its required 32-byte length. The
+controlled peer checks the exact request tree and deterministic 32-byte MAC
+response fixture; since the server-generated key is random, the fixture does
+not validate the MAC cryptographically. No cryptographic input or output is
+included in reports or diagnostics.
+
+- Red commit `99bf12638`: the focused route test failed because `test-op-mac`
+  had no controlled-peer route recipe.
+- Green commit `aff753bb0`: added the C HMAC-SHA256 request path, typed response
+  access, and peer checks for the request, response, unique IDs, and cleanup.
+- Refactor/documentation commit records the normative scope and limits in this
+  file, the 0092 traceability record, and the validator README.
+- Verification: the focused MAC test passed all 12 combinations (KMIP 2.0/2.1
+  × TTLV/JSON/XML × raw TLS/HTTPS); the combined Encrypt/Decrypt/MAC tests
+  passed 36/36 peer exchanges. CTest passed 7/7 in 92.08 seconds, including
+  166 route-matrix contract tests and both controlled TLS peers. The complete C
+  matrix and exact-head CI remain open.
+
+## C MAC Verify request and response route
+
+OASIS KMIP v2.0 §6.1.32 and v2.1 §6.1.33 define MAC Verify. The installed C
+consumer creates an HMAC-SHA256 Symmetric Key with a 256-bit length and an
+explicit MAC Verify usage mask, activates it, sends MAC Verify with explicit
+HMAC-SHA256 Cryptographic Parameters, fixed data, and a 32-byte MAC Data field,
+then revokes and destroys the key. The peer checks the complete request tree,
+ordered item IDs, and lifecycle state. It returns the created identifier and a
+typed Validity Indicator enum value of `Valid`; the C consumer checks those
+typed fields. Since the server-generated key is random and not associated with
+the fixture MAC, this response is a protocol-shape fixture and does not prove
+cryptographic validity. No cryptographic input or output is included in reports
+or diagnostics.
+
+- Red commit `b8a55dba9`: the focused route test failed because
+  `test-op-mac-verify` had no controlled-peer route recipe.
+- Green commit `e36920afc`: added the typed C MAC Verify batch path and peer
+  checks for the exact request, typed response, unique IDs, and cleanup.
+- Refactor/documentation commit records the scope and evidence in this file,
+  the 0092 traceability record, and the validator README.
+- Verification: the focused route passed all 12 combinations (KMIP 2.0/2.1 ×
+  TTLV/JSON/XML × raw TLS/HTTPS); Python compilation, C target builds, and
+  `git diff --check` passed. CTest passed 7/7 in 92.61 seconds, including 167
+  route-matrix contract tests and both controlled TLS peers. The complete C
+  matrix and exact-head CI remain open.
+
+## C Sign and Signature Verify routes
+
+OASIS KMIP v2.0 §6.1.49/§6.1.50 and v2.1 §6.1.55/§6.1.56 define Sign and
+Signature Verify; §12.1 defines the Cryptographic Usage Mask key-type
+constraints. The generated catalog previously assigned SymmetricKey setup to
+both operations, which conflicts with §12.1: Sign usage is valid for PGP Key or
+Private Key, and Verify usage is valid for PGP Key, Certificate, or Public Key.
+The generator now describes Create Key Pair setup with Sign on its Private Key
+and Verify on its Public Key, records the additional normative references, and
+models activation and cleanup explicitly.
+
+The installed C consumer exercises both routes through one ordered batch. It
+creates an RSA-2048 key pair with separate Sign and Verify masks, activates the
+selected key through the corresponding Create Key Pair identifier, sends
+SHA-256 with RSA parameters and fixed data (plus fixed Signature Data for
+Signature Verify), then revokes and destroys the selected key and destroys its
+pair. It checks both Create Key Pair identifiers, every typed lifecycle result,
+the 256-byte Sign Signature Data shape or the Signature Verify `Valid` enum,
+response IDs, and complete cleanup. The controlled peer checks the exact
+request structure and lifecycle. The pair is random and the Signature Verify
+input is not derived from it, so the fixture validates protocol fields and
+typed access only; it makes no cryptographic correctness claim.
+
+- Catalog Red `e80371257`: the new normative test failed because both cases
+  still specified `Create unique SymmetricKey`. Catalog Green `bd6d9b0c8`:
+  corrected the generator and regenerated the JSON with the §12.1 references.
+- Sign Red `2782a91dc` and Signature Verify Red `5a855d802`: focused route tests
+  failed because their installed C routes were missing. Green `389ac4465` adds
+  both typed routes, controlled-peer checks, and the key-type recipe assertions.
+- Verification: each focused C route passed all 12 version/encoding/transport
+  combinations. The normative inventory test and catalog `--check` passed;
+  CTest passed 7/7 in 95.47 seconds, including both controlled TLS peers. The
+  complete C matrix and exact-head CI remain open.
+
+## C Create Key Pair route
+
+OASIS KMIP v2.0 and v2.1 §6.1.9 define Create Key Pair. The generated catalog
+now describes cleanup of both returned objects. The installed C consumer
+sends an RSA-2048 Create Key Pair request with explicit Sign usage on the
+Private Key and Verify usage on the Public Key, then sends two Destroy requests
+using the Create Key Pair Private Key and Public Key identifier selectors. It
+checks all three typed successful results, the two distinct returned text
+identifiers, and that each Destroy response names the matching object. The
+controlled peer checks the exact attribute structures, selectors, response
+fields, item IDs, and final object cleanup. This route tests protocol and API
+behavior; it does not inspect or validate key material.
+
+- Red commit `36034c7a6`: the normative inventory test rejected the generic
+  single-object cleanup recipe and the focused C test failed because the
+  controlled peer had no Create Key Pair route.
+- Green commit `89bd02b79`: updated the catalog generator and generated
+  catalog, added the installed C batch and typed response checks, and extended
+  both controlled TLS peers to verify the pair and cleanup.
+- Verification: the Create Key Pair route passed all 12 KMIP version,
+  encoding, and transport combinations. Sign and Signature Verify each passed
+  all 12 combinations. The normative inventory passed 26/26 and catalog
+  `--check` passed. CTest passed 7/7 in 96.00 seconds, including both TLS peers
+  and the route-matrix contract suite. The complete C matrix and exact-head CI
+  remain open.
+
+## C Certify Public Key route
+
+OASIS KMIP v2.0/v2.1 §6.1.6 defines Certify. The generated catalog now creates
+an RSA-2048 pair with Certificate Sign usage on the Private Key, activates that
+signer, and uses the paired Public Key as the Certify target. The request
+includes the X.509 Certificate Type directly in the Attributes structure. It
+checks the typed certificate identifier, then destroys the certificate using
+ID Placeholder, revokes the signer, and destroys both pair members. OASIS
+§12.1 Table 495 identifies Certificate Sign as a Private Key usage, which is
+why the signer is the private member while the target remains the public
+member.
+
+- Red commits `109ff223e` and `b86d6d708`: required the missing C Certify route
+  and then its signer lifecycle; the focused test failed before the route
+  existed.
+- Green commit `eabd01402`: added the generated setup/cleanup recipe, installed
+  C batch and typed result checks, and controlled-peer request, response,
+  placeholder, and lifecycle validation.
+- Verification: the route passed all 12 KMIP-version, encoding, and transport
+  combinations; both controlled TLS peer tests passed; the normative inventory
+  passed 27/27; catalog `--check` passed; and CTest passed 7/7 in 97.46 seconds.
+  The full C route matrix and exact-head CI remain open. The peer validates
+  protocol shape and lifecycle only, not certificate or signature
+  cryptography.

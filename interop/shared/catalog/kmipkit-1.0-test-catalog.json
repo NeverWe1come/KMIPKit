@@ -56999,13 +56999,15 @@
       "isolation_recipe": {
         "unique_name_prefix": "kmipkit-certify",
         "setup_steps": [
-          "Create RSA 2048-bit key pair and target its PublicKey"
+          "Create Key Pair with Certificate Sign usage on Private Key",
+          "Activate Private Key"
         ],
-        "target_step": "Execute Certify",
+        "target_step": "Certify Public Key with Certificate Type X.509",
         "teardown_steps": [
-          "Destroy generated Certificate",
-          "Destroy PublicKey",
-          "Destroy PrivateKey"
+          "Revoke Private Key",
+          "Destroy Certificate",
+          "Destroy Private Key",
+          "Destroy Public Key"
         ],
         "normalized_fields": [
           "TimeStamp",
@@ -57024,6 +57026,14 @@
         {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.6"
+        },
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "12.1"
+        },
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "12.1"
         }
       ],
       "execution": {
@@ -57191,7 +57201,8 @@
         "setup_steps": [],
         "target_step": "Execute Create Key Pair",
         "teardown_steps": [
-          "Destroy object"
+          "Destroy Private Key",
+          "Destroy Public Key"
         ],
         "normalized_fields": [
           "TimeStamp",
@@ -59574,12 +59585,14 @@
       "isolation_recipe": {
         "unique_name_prefix": "kmipkit-sign",
         "setup_steps": [
-          "Create unique SymmetricKey"
+          "Create Key Pair with Sign usage on Private Key",
+          "Activate Private Key"
         ],
         "target_step": "Execute Sign",
         "teardown_steps": [
-          "Revoke SymmetricKey",
-          "Destroy SymmetricKey"
+          "Revoke Private Key",
+          "Destroy Private Key",
+          "Destroy Public Key"
         ],
         "normalized_fields": [
           "TimeStamp",
@@ -59598,6 +59611,14 @@
         {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.55"
+        },
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "12.1"
+        },
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "12.1"
         }
       ],
       "execution": {
@@ -59638,12 +59659,14 @@
       "isolation_recipe": {
         "unique_name_prefix": "kmipkit-signature-verify",
         "setup_steps": [
-          "Create unique SymmetricKey"
+          "Create Key Pair with Verify usage on Public Key",
+          "Activate Public Key"
         ],
         "target_step": "Execute Signature Verify",
         "teardown_steps": [
-          "Revoke SymmetricKey",
-          "Destroy SymmetricKey"
+          "Revoke Public Key",
+          "Destroy Public Key",
+          "Destroy Private Key"
         ],
         "normalized_fields": [
           "TimeStamp",
@@ -59662,6 +59685,14 @@
         {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.56"
+        },
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "12.1"
+        },
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "12.1"
         }
       ],
       "execution": {
