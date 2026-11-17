@@ -179,9 +179,9 @@ EXPECTED = (
 # KMIPKIT-0093 adds all audited Rust declaration candidates, exact trait
 # exclusions, and the 28 execution-wrapper requirement links.
 # Locate and Revoke add their 26 exact Rust root re-exports and Java signatures.
-UNCHANGED_DECLARATIONS_SHA256 = "3bc44954e9804aa6fcef2c3a4e69d7fe6845741eaaae02aa5864d04c74c2b5b9"
+UNCHANGED_DECLARATIONS_SHA256 = "9a0b926941273b7de008c7cced6fe6ac656cae17fd0327d41c83534ae1a429cf"
 # Delete Attribute records four-language fixture evidence on its operation row.
-UNCHANGED_OPERATIONS_SHA256 = "474e80929e0d09563d03ff2ae9542045ae784ba26e54b5f1152544c43e1adc0b"
+UNCHANGED_OPERATIONS_SHA256 = "9f04e672ec202fb4acdb911879d5519b7c57238d77aa67574b8e5471cc6fea57"
 # T098's maintainer-approved reconciliation updates lifecycle approval evidence
 # and inherited requirement links outside the T102 declaration/operation rows.
 # The test separately pins those T098 records; this fingerprint covers the
@@ -194,7 +194,7 @@ UNCHANGED_OPERATIONS_SHA256 = "474e80929e0d09563d03ff2ae9542045ae784ba26e54b5f11
 # reconciliation adds 419 blocked candidates, 666 exact trait exclusions, and
 # the FR-005/FR-008 wrapper links. Delete Attribute adds 77 ready declarations,
 # two blocked Rust candidates, and 18 exact trait exclusions.
-OTHER_MANIFEST_SHA256 = "19da1c043e9190b615470fec17e4b4b58cd0791c6a2af63d63e1a5dc29bc8bca"
+OTHER_MANIFEST_SHA256 = "2c247038e47342108cf2d77bca7d9b3730837cc14788361e9eca32689afacc36"
 EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = T102_BLOCKED_CANDIDATES
 LOCATE_REQUEST_BUILDER_IDS = {
     "rust-observed-e07fce825be9d33278e1",
@@ -628,7 +628,7 @@ class T102ResponseViewMappingTests(unittest.TestCase):
                         != "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java"
                     ]
         self.assertEqual(
-            "474e80929e0d09563d03ff2ae9542045ae784ba26e54b5f1152544c43e1adc0b",
+            "9f04e672ec202fb4acdb911879d5519b7c57238d77aa67574b8e5471cc6fea57",
             canonical_sha256(normalized_operations),
         )
         other_manifest = {

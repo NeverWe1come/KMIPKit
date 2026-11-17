@@ -514,6 +514,50 @@ class WireNameGeneratorCliTests(unittest.TestCase):
             self.assertEqual(stale_check.returncode, 1, stale_check.stderr)
             self.assertEqual(output.read_bytes(), b"stale metadata\n")
 
+    def test_merge_versioned_wire_data_validates_promoted_attributes_and_bitmasks(self) -> None:
+        from tools.normative_catalog.generate_wire_names import _merge_versioned_wire_data
+
+        tags = [(0x420001, "Activation Date")]
+        enum_fams = [(0x420001, "Activation Date")]
+        enum_vals = [("Activation Date", 1, "Active")]
+        mask_fams: list[tuple[int, str]] = []
+        mask_vals: list[tuple[str, int, str]] = []
+
+        # 1. v3_0_promoted_attributes must be validated fail-closed
+        bad_versioned_tags = {
+            "tagEnumeration": {"assignments": []},
+            "v3_0_promoted_attributes": [
+                {
+                    "name": "Promoted Missing Family",
+                    "wire_value": "0x420099",
+                    "source_encoding": "Enumeration",
+                }
+            ],
+        }
+        with self.assertRaisesRegex(ValueError, "has no enumeration_family"):
+            _merge_versioned_wire_data(
+                tags, enum_fams, enum_vals, mask_fams, mask_vals, bad_versioned_tags, None
+            )
+
+        # 2. Bitmask validation must trigger fail-closed even with Integer encoding
+        bad_bitmask_tags = {
+            "tagEnumeration": {
+                "assignments": [
+                    {
+                        "name": "Invalid Bitmask Tag",
+                        "wire_value": "0x42019F",
+                        "source_encoding": "Integer",
+                        "is_bitmask": True,
+                    }
+                ]
+            },
+            "v3_0_promoted_attributes": [],
+        }
+        with self.assertRaisesRegex(ValueError, "has no bitmask_family"):
+            _merge_versioned_wire_data(
+                tags, enum_fams, enum_vals, mask_fams, mask_vals, bad_bitmask_tags, None
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -303,14 +303,18 @@ def _versioned_policies(
         merged.append(copy)
 
     if versioned_tags is not None:
-        entries = list(versioned_tags.get("tagEnumeration", {}).get("assignments", []))
-        entries.extend(versioned_tags.get("v3_0_promoted_attributes", []))
+        tag_assignments = [
+            e
+            for e in versioned_tags.get("tagEnumeration", {}).get("assignments", [])
+            if e.get("introduced_in") == "3.0" and e.get("is_object_attribute")
+        ]
+        promoted_entries = [
+            e
+            for e in versioned_tags.get("v3_0_promoted_attributes", [])
+            if e.get("introduced_in") == "3.0"
+        ]
+        entries = tag_assignments + promoted_entries
         for entry in entries:
-            if entry.get("introduced_in") != "3.0":
-                continue
-            if "v3_0_promoted_attributes" and entry in versioned_tags.get("tagEnumeration", {}).get("assignments", []):
-                if not entry.get("is_object_attribute"):
-                    continue
             raw_val = entry["wire_value"]
             tag = int(raw_val.removeprefix("0x").removeprefix("0X"), 16)
             if tag in seen_tags:
@@ -328,7 +332,7 @@ def _versioned_policies(
                     "source_initially_set_by": entry.get("source_initially_set_by", "Client or Server"),
                     "source_modifiable_by_client": entry.get("source_modifiable_by_client", "No"),
                     "source_deletable_by_client": entry.get("source_deletable_by_client", "No"),
-                    "source_always_required": "No",
+                    "source_always_required": _required_text(entry, "source_always_required"),
                     "source_multiple_instances_permitted": entry.get("source_multiplicity", "No"),
                     "source_operation_restrictions": [],
                     "source_conditional_rules": [],

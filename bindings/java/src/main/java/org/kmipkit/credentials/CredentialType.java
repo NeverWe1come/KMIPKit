@@ -11,6 +11,8 @@ public final class CredentialType {
     public static final long ONE_TIME_PASSWORD = 4L;
     public static final long HASHED_PASSWORD = 5L;
     public static final long TICKET = 6L;
+    public static final long PASSWORD = 7L;
+    public static final long CERTIFICATE = 8L;
 
     private final long raw;
 
@@ -42,6 +44,8 @@ public final class CredentialType {
             case 4 -> "OneTimePassword";
             case 5 -> "HashedPassword";
             case 6 -> "Ticket";
+            case 7 -> "Password";
+            case 8 -> "Certificate";
             default -> raw >= 0x8000_0000L && raw <= 0x8fff_ffffL ? "Extensions" : "Unknown";
         };
     }
