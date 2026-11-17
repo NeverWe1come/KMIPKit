@@ -770,6 +770,12 @@ class ControlledTlsPeerTest {
                 for (LocalCatalogRouteChecks.Invocation invocation : rotateNameTypeInvocations) {
                     appendLocalCatalogInvocation(events, protocolVersion, invocation);
                 }
+                List<LocalCatalogRouteChecks.Invocation> rotateNameValueInvocations = new ArrayList<>();
+                LocalCatalogRouteChecks.executeRotateNameValue(readRouteEvidenceCatalog(), protocolVersion,
+                        rotateNameValueInvocations::add);
+                for (LocalCatalogRouteChecks.Invocation invocation : rotateNameValueInvocations) {
+                    appendLocalCatalogInvocation(events, protocolVersion, invocation);
+                }
             }
             List<LocalCatalogRouteChecks.Invocation> itemTypeInvocations = new ArrayList<>();
             LocalCatalogRouteChecks.executeItemTypeEnumerations(readRouteEvidenceCatalog(), protocolVersion,
@@ -3788,6 +3794,7 @@ class ControlledTlsPeerTest {
         SCALAR_OPERATION_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         STRUCTURE_MEMBER_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         caseIds.add(LocalCatalogRouteChecks.ROTATE_NAME_TYPE_CASE_ID);
+        caseIds.add(LocalCatalogRouteChecks.ROTATE_NAME_VALUE_CASE_ID);
         STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         STRUCTURE_MEMBER_VALUE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         caseIds.add("test-norm-payload-client-add-attribute-request-20-002");
