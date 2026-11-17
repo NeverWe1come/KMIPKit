@@ -69,6 +69,10 @@ CREATE_KEY_PAIR_ITEM_IDS = (b'create-pair', b'destroy-private', b'destroy-public
 CERTIFY_ITEM_IDS = (b'certify-create-pair', b'certify-activate-private', b'certify-public-key',
                     b'certify-revoke-private', b'certify-destroy-certificate',
                     b'certify-destroy-private', b'certify-destroy-public')
+ARCHIVE_ACTION_ITEM_IDS = (
+    b'archive-create', b'archive-target', b'archive-revoke', b'archive-destroy')
+ARCHIVE_PAYLOAD_ITEM_IDS = (
+    b'interop-create', b'interop-archive', b'interop-revoke', b'interop-destroy')
 MAC_TEST_OUTPUT = bytes(range(32))
 CANCEL_CORRELATION_VALUE = b'fixture-cancel-correlation'
 ASYNC_QUERY_CORRELATION_CREATE_COMPLETED = b'fixture-query-create-completed'
@@ -2647,9 +2651,7 @@ def recipe_for_case(case, attribute_fixture):
 
 def archive_response_item_ids(case_id):
     """Return the response IDs paired with the selected Archive request recipe."""
-    if case_id == 'test-op-archive':
-        return (b'archive-create', b'archive-target', b'archive-revoke', b'archive-destroy')
-    return (b'interop-create', b'interop-archive', b'interop-revoke', b'interop-destroy')
+    return ARCHIVE_ACTION_ITEM_IDS if case_id == 'test-op-archive' else ARCHIVE_PAYLOAD_ITEM_IDS
 
 
 def attribute_item_value(attribute_field):
