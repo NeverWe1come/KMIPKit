@@ -32,6 +32,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 /** Executes source-backed local catalog obligations through the installed public package. */
 final class LocalCatalogRouteChecks {
     private static final int TAG_VALUE_SENTINEL = 0x12345678;
+    static final String ROTATE_NAME_TYPE_CASE_ID =
+            "test-norm-structure-member-structure-member-4-53-rotate-name-type";
+    static final String ROTATE_NAME_TYPE_TARGET_ID = "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-53-ROTATE-NAME-TYPE";
 
     private LocalCatalogRouteChecks() { }
 
@@ -453,8 +456,8 @@ final class LocalCatalogRouteChecks {
     // OASIS KMIP 2.1 §4.53 Table 135: Rotate Name Value and Rotate Name Type are required members.
     static void executeRotateNameType(JsonNode catalog, String version, EvidenceSink sink) throws Exception {
         if (!"2.1".equals(version)) return;
-        String caseId = "test-norm-structure-member-structure-member-4-53-rotate-name-type";
-        String targetId = "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-53-ROTATE-NAME-TYPE";
+        String caseId = ROTATE_NAME_TYPE_CASE_ID;
+        String targetId = ROTATE_NAME_TYPE_TARGET_ID;
         JsonNode target = findTarget(catalog, targetId);
         assertEquals("Rotate Name Type", target.path("name").asText());
         assertEquals("Enumeration", target.path("source_encoding").asText());
