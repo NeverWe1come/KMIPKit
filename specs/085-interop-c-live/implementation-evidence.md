@@ -1179,3 +1179,29 @@ included in reports or diagnostics.
   passed 36/36 peer exchanges. CTest passed 7/7 in 92.08 seconds, including
   166 route-matrix contract tests and both controlled TLS peers. The complete C
   matrix and exact-head CI remain open.
+
+## C MAC Verify request and response route
+
+OASIS KMIP v2.0 §6.1.32 and v2.1 §6.1.33 define MAC Verify. The installed C
+consumer creates an HMAC-SHA256 Symmetric Key with a 256-bit length and an
+explicit MAC Verify usage mask, activates it, sends MAC Verify with explicit
+HMAC-SHA256 Cryptographic Parameters, fixed data, and a 32-byte MAC Data field,
+then revokes and destroys the key. The peer checks the complete request tree,
+ordered item IDs, and lifecycle state. It returns the created identifier and a
+typed Validity Indicator enum value of `Valid`; the C consumer checks those
+typed fields. Since the server-generated key is random and not associated with
+the fixture MAC, this response is a protocol-shape fixture and does not prove
+cryptographic validity. No cryptographic input or output is included in reports
+or diagnostics.
+
+- Red commit `b8a55dba9`: the focused route test failed because
+  `test-op-mac-verify` had no controlled-peer route recipe.
+- Green commit `e36920afc`: added the typed C MAC Verify batch path and peer
+  checks for the exact request, typed response, unique IDs, and cleanup.
+- Refactor/documentation commit records the scope and evidence in this file,
+  the 0092 traceability record, and the validator README.
+- Verification: the focused route passed all 12 combinations (KMIP 2.0/2.1 ×
+  TTLV/JSON/XML × raw TLS/HTTPS); Python compilation, C target builds, and
+  `git diff --check` passed. CTest passed 7/7 in 92.61 seconds, including 167
+  route-matrix contract tests and both controlled TLS peers. The complete C
+  matrix and exact-head CI remain open.

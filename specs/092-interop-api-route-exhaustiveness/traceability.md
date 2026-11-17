@@ -95,3 +95,18 @@ length. Since the server generates a random key, this controlled response does
 not prove cryptographic MAC validity. The focused test passes all 12 cells;
 CTest passes 7/7 including 166 matrix-contract tests. Other C route cells and
 cross-language FR-003/FR-005 remain pending.
+
+### C MAC Verify route follow-up
+
+For KMIPKIT-0092-FR-003, FR-005, FR-008, and FR-009, C
+`test-op-mac-verify` exercises OASIS KMIP v2.0 §6.1.32 and v2.1 §6.1.33 with a
+typed ordered Create/Activate/MAC Verify/Revoke/Destroy batch. It uses an
+HMAC-SHA256 key with explicit MAC Verify usage, explicit HMAC-SHA256 parameters,
+fixed data and MAC Data, and ID Placeholder references. The peer validates the
+exact request tree and lifecycle, and returns the created UID plus the typed
+Validity Indicator `Valid`; the consumer checks both fields. The server-created
+key is random and is not associated with the fixed MAC, so this fixture does
+not claim cryptographic validity. The focused test passed all 12
+version/encoding/transport exchanges; CTest passed 7/7 with 167 matrix-contract
+tests. Other operation and cross-language route cells remain pending under
+FR-003/FR-005.

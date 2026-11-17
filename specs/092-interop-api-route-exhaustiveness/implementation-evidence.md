@@ -161,3 +161,17 @@ cryptographic validity. OASIS references are KMIP v2.0 §6.1.31 and v2.1
 §6.1.32. All 12 version/encoding/transport checks pass; full CTest passes 7/7
 with 166 route-matrix contract tests. The other pending operation routes remain
 open under FR-003/FR-005.
+
+## C isolated MAC Verify route
+
+`test-op-mac-verify` uses the installed C ABI to create an HMAC-SHA256 key with
+explicit MAC Verify usage, activate it, verify fixed data and MAC Data with
+explicit HMAC-SHA256 parameters, then revoke and destroy the key. The peer
+checks the full ordered request and returns the typed Unique Identifier and
+Validity Indicator enum value `Valid`; the consumer checks both typed fields.
+The key is randomly generated, so the deterministic fixture does not establish
+cryptographic validity. OASIS references are KMIP v2.0 §6.1.32 and v2.1
+§6.1.33. Red `b8a55dba9` recorded the missing route; Green `e36920afc` added the
+C path and controlled peer. The focused test passes all 12 version/encoding/
+transport checks; CTest passes 7/7 with 167 route-matrix contract tests. The
+other pending operation routes remain open under FR-003/FR-005.
