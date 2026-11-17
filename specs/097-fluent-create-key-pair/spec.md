@@ -1,8 +1,8 @@
 # Feature Specification: Fluent Create Key Pair Builder (KMIPKIT-0097)
 
-**Branch**: `feature/KMIPKIT-0097-fluent-object-api`
-**Base**: `feature/KMIPKIT-0096-fluent-expert-attributes`
-**Status**: Approved for implementation by the maintainer's direct request to implement the complete KMIPKIT-0093 plan.
+**Branch**: `feature/KMIPKIT-0097-fluent-object-api`  
+**Base**: `feature/KMIPKIT-0096-fluent-expert-attributes`  
+**Status**: Approved for implementation by the maintainer's direct request to implement the complete KMIPKIT-0093 plan.  
 **Owning identifier**: KMIPKIT-0097
 
 ## Purpose

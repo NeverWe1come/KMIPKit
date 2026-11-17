@@ -1,8 +1,8 @@
 # Feature Specification: Fluent Attribute Read Builders (KMIPKIT-0108)
 
-**Branch**: `feature/KMIPKIT-0108-fluent-attribute-ops`
-**Base**: `feature/KMIPKIT-0093-typed-results` at `dc9819f610d9f34322f34e3b0b4fbfdbe8f5f776`
-**Status**: Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan.
+**Branch**: `feature/KMIPKIT-0108-fluent-attribute-ops`  
+**Base**: `feature/KMIPKIT-0093-typed-results` at `dc9819f610d9f34322f34e3b0b4fbfdbe8f5f776`  
+**Status**: Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan.  
 **Owning identifier**: KMIPKIT-0108
 
 ## Purpose
