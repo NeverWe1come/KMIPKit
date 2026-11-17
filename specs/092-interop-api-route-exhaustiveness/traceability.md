@@ -45,6 +45,21 @@ catalogued references. The two cases pass 48 constructor/transport checks.
 This closes only these two batch-construction slices; the full C and
 cross-language matrix gates remain open.
 
+### C Batch Count recomputation before transport
+
+For KMIPKIT-0092-FR-003, FR-005, and FR-009, the C validator supplements the
+catalog's local `test-batch-count-mismatch-rejected` construction check with a
+controlled TLS exchange. Both direct and standalone Get Attribute List
+constructors run with Get in KMIP 2.0/2.1 and all six encoding/transport
+combinations. The peer requires `Batch Count = 2` and two request Batch Items
+before returning success. Red `729fbc3a6` failed with zero invoked cells;
+Green `a876c06a1` passed 24 checks; Refactor `482a66413` also rejects duplicate
+Batch Count tags. This proves the installed C client sends
+the correct structure to the controlled peer and does not establish external
+KMS behavior. The Green-head matrix invoked 42,475/66,736 cells with zero
+failed and 24,261 pending; this scenario has zero pending cells. The global
+matrix remains incomplete.
+
 ### C batch response view decoders
 
 For KMIPKIT-0092-FR-003, FR-005, and FR-009, each successful response in the

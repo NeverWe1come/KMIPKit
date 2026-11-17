@@ -305,3 +305,27 @@ references to the test. The focused route test passed for both operations and
 both protocol versions; CTest passed 7/7 in 139.15 seconds. The full matrix at
 `01b12cbb7` has 66,736 expected, 42,067 invoked, zero failed, and 24,669
 pending cells. The exhaustive FR-003/FR-005 gates remain open.
+
+## C Batch Count recomputation before transport
+
+The C `test-batch-count-mismatch-rejected` route sends the catalog's two-item
+Get/Get Attribute List case through both direct and standalone constructors.
+The shared scenario remains classified as `local_model`; this C exchange is
+additional evidence for its assertion that no inconsistent count is sent.
+Before responding, the controlled TLS peer requires `Batch Count = 2` and
+exactly two request items, then returns two successful results. This validates
+the C client and fixture request shape, not external KMS behavior.
+
+- Red commit `729fbc3a6` requires both constructors across KMIP 2.0/2.1 and all
+  six encoding/transport pairs; it failed with zero invoked cells.
+- Green commit `a876c06a1` connects the case to the two-item C consumer and
+  controlled peer.
+- Refactor commit `482a66413` reuses the workflow selection and makes the peer
+  reject duplicate Batch Count tags as well as wrong values.
+- Normative scope: OASIS KMIP 2.0/2.1 §§8.1–8.6, 9.5–9.8, 9.21, 6.1.19, and
+  6.1.21.
+- Verification: after Refactor, CMake build and the focused test passed all
+  24 checks; CTest passed 7/7 in 152.03 seconds. The exhaustive matrix at the
+  Green commit records 42,475/66,736 cells invoked, zero failed, and 24,261
+  pending; this case has zero pending cells, a reduction of 126. FR-003/FR-005
+  and the global completeness gate remain open.

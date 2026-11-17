@@ -238,3 +238,11 @@ Unique Batch Item ID.
 
 The consumer also checks response metadata v1, the raw payload and header
 TTLV structures, and the absent pending correlation for synchronous success.
+
+The C `test-batch-count-mismatch-rejected` route also sends the catalog's
+two-item Get/Get Attribute List case through both direct and standalone
+constructors. The controlled peer checks that the request carries
+`Batch Count = 2` and contains exactly two Batch Items before returning a
+successful response. This is supplemental C exchange evidence for the
+catalog's local construction case: it proves no inconsistent count reaches
+this controlled peer and does not claim external KMS behavior.
