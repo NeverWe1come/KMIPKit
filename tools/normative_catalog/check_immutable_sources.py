@@ -17,7 +17,9 @@ PROJECT_INVENTORY_PATHS = {
     "specification/oasis/kmip-2.1/README.md",
     "specification/oasis/kmip-2.1/SOURCES.md",
 }
-APPROVED_VERSIONS = {"kmip-2.0", "kmip-2.1", "kmip-3.0"}
+# PKCS #11 3.0 is a normative reference from KMIP §§11.38–11.39, not a KMIP
+# protocol version. Its official source tree is pinned with the same protections.
+APPROVED_VERSIONS = {"kmip-2.0", "kmip-2.1", "kmip-3.0", "pkcs11-3.0"}
 APPROVED_VERSION_DOCS = {"README.md", "SOURCES.md", "CHECKSUMS.sha256"}
 
 
