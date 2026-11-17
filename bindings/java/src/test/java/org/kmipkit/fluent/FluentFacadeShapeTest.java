@@ -70,6 +70,16 @@ final class FluentFacadeShapeTest {
     }
 
     @Test
+    void exposesTaskOrientedPingBuilder() throws Exception {
+        Class<?> builder = Class.forName("org.kmipkit.fluent.PingBuilder");
+        assertEquals(builder, FluentRequest.class.getMethod("ping").getReturnType());
+        assertNotNull(builder.getMethod("validate"));
+        assertNotNull(builder.getMethod("toBatchItem"));
+        assertNotNull(builder.getMethod("execute", CodecLimits.class));
+        assertNotNull(builder.getMethod("asynchronousIndicator", long.class));
+    }
+
+    @Test
     void buildersExposeBuildBatchAndExecutionMethods() throws Exception {
         assertNotNull(SymmetricKeyBuilder.class.getMethod("build"));
         assertNotNull(SymmetricKeyBuilder.class.getMethod("toBatchItem"));

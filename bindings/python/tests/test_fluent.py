@@ -26,6 +26,12 @@ def test_fluent_request_exposes_a_delete_attribute_builder():
     assert "DeleteAttributeBuilder" in fluent.__all__
 
 
+def test_fluent_request_exposes_a_ping_builder():
+    assert callable(getattr(fluent.Request, "ping", None))
+    assert hasattr(fluent, "PingBuilder")
+    assert "PingBuilder" in fluent.__all__
+
+
 def test_fluent_request_exposes_locate_and_revoke_builders():
     assert callable(getattr(fluent.Request, "locate", None))
     assert callable(getattr(fluent.Request, "revoke", None))
