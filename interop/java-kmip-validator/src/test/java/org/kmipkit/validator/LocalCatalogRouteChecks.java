@@ -471,10 +471,9 @@ final class LocalCatalogRouteChecks {
         long rotateNameType = 2L; // URI, OASIS KMIP 2.1 §11.51 Table 482.
         byte[] nameBytes = "urn:kmipkit:rotate-name-fixture".getBytes(
                 java.nio.charset.StandardCharsets.UTF_8);
-        byte[] typeBytes = ByteBuffer.allocate(4).putInt((int) rotateNameType).array();
-        byte[] memberWire = itemWire(rotateNameTypeTag, 5, typeBytes);
-        byte[] rotateNameWire = structureWire(0x42016f,
-                concat(itemWire(rotateNameValueTag, 7, nameBytes), memberWire));
+        byte[] memberWire = itemWire(rotateNameTypeTag, 5,
+                ByteBuffer.allocate(4).putInt((int) rotateNameType).array());
+        byte[] rotateNameWire = rotateNameAttributeWire(nameBytes, rotateNameType);
 
         try (TtlvValue genericValue = TtlvValue.Enumeration(rotateNameType);
                 RawTag raw = RawTag.fromRaw(rotateNameTypeTag);
@@ -565,10 +564,8 @@ final class LocalCatalogRouteChecks {
         long rotateNameType = 2L; // URI, OASIS KMIP 2.1 §11.51 Table 482.
         byte[] nameBytes = "urn:kmipkit:rotate-name-fixture".getBytes(
                 java.nio.charset.StandardCharsets.UTF_8);
-        byte[] typeBytes = ByteBuffer.allocate(4).putInt((int) rotateNameType).array();
         byte[] memberWire = itemWire(rotateNameValueTag, 7, nameBytes);
-        byte[] rotateNameWire = structureWire(0x42016f,
-                concat(memberWire, itemWire(rotateNameTypeTag, 5, typeBytes)));
+        byte[] rotateNameWire = rotateNameAttributeWire(nameBytes, rotateNameType);
 
         try (TtlvValue genericValue = TtlvValue.TextString(nameBytes, CodecLimits.defaults());
                 RawTag raw = RawTag.fromRaw(rotateNameValueTag);
@@ -642,6 +639,12 @@ final class LocalCatalogRouteChecks {
                 "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
                 "org.kmipkit.extensions.AttributeSet.tryNew", "construct",
                 structureWire(0x420125, rotateNameWire));
+    }
+
+    private static byte[] rotateNameAttributeWire(byte[] nameBytes, long nameType) {
+        byte[] typeBytes = ByteBuffer.allocate(4).putInt((int) nameType).array();
+        return structureWire(0x42016f,
+                concat(itemWire(0x420170, 7, nameBytes), itemWire(0x420171, 5, typeBytes)));
     }
 
     // OASIS KMIP 2.0 §11.54 / 2.1 §11.56 and §10.1: tag identity and allocation.
