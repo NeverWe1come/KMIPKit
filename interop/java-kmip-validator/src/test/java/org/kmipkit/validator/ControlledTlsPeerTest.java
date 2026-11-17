@@ -422,8 +422,17 @@ class ControlledTlsPeerTest {
             "java.generic-ttlv.function.ttlv_item_view_from_item",
             "java.generic-ttlv.ttlv_codec.decode",
             "java.typed-protocol.model.org.kmipkit.message.responsemessage.fromttlv");
+    private static final NormativeTarget RESPONSE_HEADER_CLIENT_CORRELATION_VALUE = new NormativeTarget(
+            "test-norm-message-field-message-field-8-5-client-correlation-value",
+            "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-CLIENT-CORRELATION-VALUE");
+    private static final List<String> RESPONSE_HEADER_CLIENT_CORRELATION_VALUE_ROUTES = List.of(
+            "java.generic-ttlv.ttlv_item.create",
+            "java.generic-ttlv.function.ttlv_item_view_from_item",
+            "java.generic-ttlv.ttlv_codec.decode",
+            "java.typed-protocol.model.org.kmipkit.message.responsemessage.fromttlv");
     private static final List<NormativeTarget> RESPONSE_MESSAGE_PARSE_TARGETS = List.of(
             RESPONSE_HEADER_ATTESTATION_TYPE,
+            RESPONSE_HEADER_CLIENT_CORRELATION_VALUE,
             new NormativeTarget("test-norm-message-field-message-field-8-5-batch-count",
                     "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-BATCH-COUNT"),
             new NormativeTarget("test-norm-message-field-message-field-8-6-batch-item",
@@ -1292,6 +1301,17 @@ class ControlledTlsPeerTest {
                 JsonNode event = findRouteEvent(report.path("events"),
                         RESPONSE_HEADER_ATTESTATION_TYPE.caseId(), route, version,
                         RESPONSE_HEADER_ATTESTATION_TYPE.targetId());
+                assertEquals("passed", event.path("status").asText());
+            }
+        }
+        for (String route : RESPONSE_HEADER_CLIENT_CORRELATION_VALUE_ROUTES) {
+            assertEquals(KMIP_2_0_AND_2_1.size(), routeEventCount(report.path("events"),
+                    RESPONSE_HEADER_CLIENT_CORRELATION_VALUE.caseId(), route),
+                    "Response Header Client Correlation Value must complete its generic or typed route cells.");
+            for (String version : KMIP_2_0_AND_2_1) {
+                JsonNode event = findRouteEvent(report.path("events"),
+                        RESPONSE_HEADER_CLIENT_CORRELATION_VALUE.caseId(), route, version,
+                        RESPONSE_HEADER_CLIENT_CORRELATION_VALUE.targetId());
                 assertEquals("passed", event.path("status").asText());
             }
         }
