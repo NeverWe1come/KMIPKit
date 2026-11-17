@@ -763,6 +763,14 @@ class ControlledTlsPeerTest {
             appendTagRangeRouteEvents(events, protocolVersion);
             appendActivationDateLocalRouteEvents(events, protocolVersion);
             appendGenericEnumerationRouteEvents(events, enumerationFixtures, protocolVersion);
+            if ("2.1".equals(protocolVersion)) {
+                List<LocalCatalogRouteChecks.Invocation> rotateNameTypeInvocations = new ArrayList<>();
+                LocalCatalogRouteChecks.executeRotateNameType(readRouteEvidenceCatalog(), protocolVersion,
+                        rotateNameTypeInvocations::add);
+                for (LocalCatalogRouteChecks.Invocation invocation : rotateNameTypeInvocations) {
+                    appendLocalCatalogInvocation(events, protocolVersion, invocation);
+                }
+            }
             List<LocalCatalogRouteChecks.Invocation> itemTypeInvocations = new ArrayList<>();
             LocalCatalogRouteChecks.executeItemTypeEnumerations(readRouteEvidenceCatalog(), protocolVersion,
                     itemTypeInvocations::add);
@@ -1399,6 +1407,7 @@ class ControlledTlsPeerTest {
                         + booleanFieldRouteEventCount + scalarMessageFieldRouteEventCount + itemTypeRouteEventCount
                         + scalarTypedParserEventCount
                         + 97 // BEC, batch IDs, async payload, Ping, Endpoint Role, Object Defaults, derivation, and Extension Information member cells.
+                        + 7 // KMIP 2.1 §4.53 Rotate Name Type generic and typed Attribute routes.
                         + tagAggregateEventCount
                         + referencedEnumEventCount + referencedEnumAggregateEventCount,
                 report.path("events").size());
