@@ -534,7 +534,7 @@ def generic_model_inventory(api, targets):
                 continue
             ids = [t['target_id'] for t in targets if
                 (t['kind'] == 'data_type' and norm(t['name']) == norm(value_kind))
-                or norm(t.get('source_encoding', '').split(',')[0]) == norm(value_kind)
+                or norm(re.split(r'[,(]', t.get('source_encoding', ''), maxsplit=1)[0].strip()) == norm(value_kind)
                 or (value_kind == 'enumeration' and t['kind'] in {'enumeration_value', 'referenced_enum_value'})
                 or (value_kind == 'integer' and t['kind'] == 'bitmask_value')]
             rust_symbol = 'kmipkit_ttlv::Value::' + value_kind

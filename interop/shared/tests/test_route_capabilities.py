@@ -48,6 +48,31 @@ class RouteCapabilitiesTests(unittest.TestCase):
             self.assertTrue(all(r['combinations'] == [{'encoding': 'TTLV', 'transport': None}]
                                 for r in routes))
 
+    def test_text_string_constructor_covers_normatively_restricted_text_encoding(self):
+        target_id = 'KMIPKIT-ELEM-MESSAGE-FIELD-9-13-VENDOR-IDENTIFICATION'
+        symbols = {
+            'rust': 'kmipkit_ttlv::Value::text_string',
+            'c': 'kmipkit_ttlv_value_text_string',
+            'java': 'org.kmipkit.ttlv.TtlvValue.TextString',
+            'python': 'kmipkit.ttlv.ttlv_value_text_string',
+        }
+        manifest = self.module.build_manifest(ROOT)
+        for language, symbol in symbols.items():
+            route = next(route for route in manifest['routes']
+                         if route['language'] == language and route['public_api_symbol'] == symbol)
+            self.assertIn(target_id, route['normative_target_ids'], language)
+
+    def test_async_response_payload_accessor_claims_only_response_payload_fields(self):
+        expected = {
+            'KMIPKIT-ELEM-OPERATION-STRUCTURE-7-2-ASYNCHRONOUS-REQUEST',
+        }
+        manifest = self.module.build_manifest(ROOT)
+        routes = [route for route in manifest['routes']
+                  if route['route_id'].endswith('client_async_operation_outcome_response_payload_ttlv')]
+        self.assertEqual({'c', 'java', 'python'}, {route['language'] for route in routes})
+        for route in routes:
+            self.assertEqual(expected, set(route['normative_target_ids']), route['language'])
+
     def test_local_typed_model_routes_cover_objects_attributes_and_enum_wrappers(self):
         symbols = {r['public_api_symbol']: r for r in self.data['routes']}
         required = {
