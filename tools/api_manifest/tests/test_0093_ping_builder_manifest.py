@@ -115,6 +115,21 @@ class PingBuilderManifestTests(unittest.TestCase):
             with self.subTest(package=package):
                 self.assertEqual("type", declarations[(package, export)]["kind"])
 
+    def test_ping_builder_capability_mapping_covers_python_and_java_additions(self) -> None:
+        capability = next(
+            row
+            for row in self.manifest["capabilities"]
+            if row["capabilityId"] == "fluent_ping_builder"
+        )
+        self.assertIn(
+            "org.kmipkit.fluent.PingBuilder.executeWithOptions",
+            capability["mappings"]["java"],
+        )
+        self.assertIn(
+            "kmipkit.fluent.PingBuilder.__init__",
+            capability["mappings"]["python"],
+        )
+
     def test_ping_builder_c_abi_functions_are_in_the_catalog(self) -> None:
         symbols = {row["c"]["symbol"] for row in self.manifest["functions"]}
         self.assertTrue(EXPECTED_C_FUNCTIONS <= symbols)
