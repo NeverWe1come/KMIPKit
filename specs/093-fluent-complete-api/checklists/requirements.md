@@ -6,5 +6,5 @@
 - [x] Direction, version, raw insertion, and secret boundaries defined.
 - [x] Four-language and compatibility requirements stated.
 - [x] Stacked PR and CI readiness rule stated.
-- [ ] Per-operation catalog and exact clause map completed by catalog slice.
+- [x] Per-operation catalog and exact clause map completed by catalog slice.
 - [ ] Production implementation and fixture evidence completed by later slices.

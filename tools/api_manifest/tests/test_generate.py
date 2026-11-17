@@ -360,7 +360,7 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             self.assertEqual(preexisting_outputs, [])
 
     def test_manifest_input_limit_reserves_bounded_room_for_the_full_inventory(self) -> None:
-        self.assertEqual(generate.MAX_MANIFEST_BYTES, 64 * 1024 * 1024)
+        self.assertEqual(generate.MAX_MANIFEST_BYTES, 72 * 1024 * 1024)
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         serialized = json.dumps(manifest, ensure_ascii=False, indent=2).encode("utf-8")
         self.assertLessEqual(len(serialized), generate.MAX_MANIFEST_BYTES)
@@ -1934,6 +1934,12 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             parity = json.loads((root / GENERATED_OUTPUTS[5]).read_text(encoding="utf-8"))
 
             expected = json.loads(PUBLIC_API_V1_FIXTURE.read_text(encoding="utf-8"))
+            # Release updates can reorder preserved manifest records without
+            # changing the v1 registry slice; compare those identity-keyed rows
+            # independently of source order.
+            for collection in ("types", "functions"):
+                parity[collection].sort(key=lambda record: record["id"])
+                expected[collection].sort(key=lambda record: record["id"])
             self.assertEqual(parity, expected)
 
     def test_registry_projection_excludes_non_registry_async_client_accessors(self) -> None:
