@@ -2184,3 +2184,49 @@ python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-refe
 python3 interop/java-kmip-validator/tools/compare_route_ledger.py
 git diff --check
 ```
+
+## Java Attestation Capable Indicator request-header routes — 2026-11-17
+
+Red, commit `c40efe3d8`, asserts the three generic TTLV routes and typed
+`RequestMessage.fromTtlv` route for
+`test-norm-message-field-message-field-8-2-attestation-capable-indicator` in
+KMIP 2.0 and 2.1. The focused test fails as expected (`expected 2 route events,
+got 0`). The target's normative basis is OASIS KMIP 2.0 §8.2 and §9.3 Table
+364 and KMIP 2.1 §8.2 and §9.3 Table 402. The controlled request fixture
+contains a true Attestation Capable Indicator, and the typed parser asserts
+that value.
+
+Green, commit `3271bd8f1`, builds the Boolean Item from the catalogued target
+tag, validates the generic item view and decoder, emits all three generic
+events per protocol version, and includes the 8.2 target in typed request
+parsing. Refactor, commit `60f4eb8e1`, shares the Boolean message-field
+fixture with the existing Batch Order Option case. The focused controlled-peer
+test passes after both changes.
+
+The full Java suite passes 57 tests with no failures, errors, or skips. The
+selected scope validates 27,270/27,270 cells, with zero failed cells; the
+71,641-cell global matrix retains 44,371 pending cells across 1,218 case IDs.
+The ledger comparison passes after regeneration. These results use pinned Java
+artifact commit `12496d646d11d4069b58bcc88fc76cc619211ec6` with SHA-256
+`504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545` and
+provide local-model evidence, not vendor interoperability or complete matrix
+coverage.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test \
+  --tests org.kmipkit.validator.ControlledTlsPeerTest.controlledQueryProducesPerRouteEvidenceForBothProtocolVersions --rerun-tasks
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks
+python3 interop/shared/tools/validate_route_evidence.py \
+  --selected-scope --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+git diff --check
+```
