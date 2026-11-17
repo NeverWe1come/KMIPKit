@@ -173,10 +173,12 @@ KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS = {
 # narrowed T101 mappings. KMIPKIT-0124 adds 28 KMIP 3.0 fluent and 16 async
 # batch declarations to this non-target snapshot; the async request constructors
 # The non-target snapshot includes Create Key Pair declarations and KMIPKIT-0126 additions.
+# KMIPKIT-0093 Get Usage Allocation adds 22 observed Rust declarations, which
+# remain blocked until the required binding parity is implemented.
 # KMIPKIT-0093 adds 2,077 catalog-backed fluent tag declarations and corrects
 # the generated KMIP 3.0 Object Class Mask paths from enumeration to bitmask.
 # KMIPKIT-0093 also adds the blocked Ping builder declaration inventory.
-DECLARATIONS_SHA256 = "110958be068c9e491e630ec59c4124cc2ecfab918722ca50f7c9fe94fbe1f070"
+DECLARATIONS_SHA256 = "c0145cde4ed721e145580383a9357e9ab4eb6ecad4820a84b50fb8b7f075ebd2"
 OPERATIONS_SHA256 = "11a39efdadf8e9c7791a8479e3d8b3ae05f82b8dee94e8d21ed2ff2192a147ac"
 
 
