@@ -1471,18 +1471,84 @@
     "test-norm-message-field-message-field-9-21-unique-batch-item-id",
     "test-norm-message-field-message-field-9-6-batch-error-continuation-option",
     "test-norm-message-field-message-field-9-9-client-correlation-value",
+    "test-norm-structure-member-structure-member-2-1-certificate-certificate-type",
+    "test-norm-structure-member-structure-member-2-1-certificate-certificate-value",
+    "test-norm-structure-member-structure-member-2-2-certificate-request-certificate-request-type",
+    "test-norm-structure-member-structure-member-2-2-certificate-request-certificate-request-value",
+    "test-norm-structure-member-structure-member-2-3-opaque-object-opaque-data-type",
+    "test-norm-structure-member-structure-member-2-3-opaque-object-opaque-data-value",
+    "test-norm-structure-member-structure-member-2-4-pgp-key-pgp-key-version",
+    "test-norm-structure-member-structure-member-2-7-secret-data-secret-data-type",
+    "test-norm-structure-member-structure-member-2-8-split-key-key-part-identifier",
+    "test-norm-structure-member-structure-member-2-8-split-key-split-key-method",
+    "test-norm-structure-member-structure-member-2-8-split-key-split-key-parts",
+    "test-norm-structure-member-structure-member-2-8-split-key-split-key-threshold",
+    "test-norm-structure-member-structure-member-3-1-key-block-cryptographic-algorithm",
+    "test-norm-structure-member-structure-member-3-1-key-block-cryptographic-length",
+    "test-norm-structure-member-structure-member-3-1-key-block-key-compression-type",
+    "test-norm-structure-member-structure-member-3-1-key-block-key-format-type",
+    "test-norm-structure-member-structure-member-3-11-key-material-recommended-curve",
+    "test-norm-structure-member-structure-member-3-12-key-material-q-string",
+    "test-norm-structure-member-structure-member-3-12-key-material-recommended-curve",
+    "test-norm-structure-member-structure-member-3-3-key-wrapping-data-encoding-option",
+    "test-norm-structure-member-structure-member-3-3-key-wrapping-data-iv-counter-nonce",
+    "test-norm-structure-member-structure-member-3-3-key-wrapping-data-mac-signature",
+    "test-norm-structure-member-structure-member-3-3-key-wrapping-data-wrapping-method",
+    "test-norm-structure-member-structure-member-3-4-key-material-key",
+    "test-norm-structure-member-structure-member-4-14-qlength",
+    "test-norm-structure-member-structure-member-4-14-recommended-curve",
+    "test-norm-structure-member-structure-member-4-16-block-cipher-mode",
+    "test-norm-structure-member-structure-member-4-16-counter-length",
+    "test-norm-structure-member-structure-member-4-16-cryptographic-algorithm",
+    "test-norm-structure-member-structure-member-4-16-digital-signature-algorithm",
+    "test-norm-structure-member-structure-member-4-16-fixed-field-length",
+    "test-norm-structure-member-structure-member-4-16-hashing-algorithm",
+    "test-norm-structure-member-structure-member-4-16-initial-counter-value",
+    "test-norm-structure-member-structure-member-4-16-invocation-field-length",
+    "test-norm-structure-member-structure-member-4-16-iv-length",
+    "test-norm-structure-member-structure-member-4-16-key-role-type",
+    "test-norm-structure-member-structure-member-4-16-mask-generator",
+    "test-norm-structure-member-structure-member-4-16-mask-generator-hashing-algorithm",
+    "test-norm-structure-member-structure-member-4-16-p-source",
+    "test-norm-structure-member-structure-member-4-16-padding-method",
+    "test-norm-structure-member-structure-member-4-16-salt-length",
+    "test-norm-structure-member-structure-member-4-16-tag-length",
+    "test-norm-structure-member-structure-member-4-16-trailer-field",
+    "test-norm-structure-member-structure-member-4-2-alternative-name-type",
+    "test-norm-structure-member-structure-member-4-2-alternative-name-value",
+    "test-norm-structure-member-structure-member-4-21-digest-value",
+    "test-norm-structure-member-structure-member-4-21-hashing-algorithm",
+    "test-norm-structure-member-structure-member-4-21-key-format-type",
+    "test-norm-structure-member-structure-member-4-27-key-value-location-type",
+    "test-norm-structure-member-structure-member-4-27-key-value-location-value",
+    "test-norm-structure-member-structure-member-4-31-link-type",
+    "test-norm-structure-member-structure-member-4-32-name-type",
+    "test-norm-structure-member-structure-member-4-32-name-value",
+    "test-norm-structure-member-structure-member-4-4-application-data",
+    "test-norm-structure-member-structure-member-4-4-application-namespace",
+    "test-norm-structure-member-structure-member-4-47-revocation-message",
+    "test-norm-structure-member-structure-member-4-47-revocation-reason-code",
+    "test-norm-structure-member-structure-member-4-60-attribute-name",
+    "test-norm-structure-member-structure-member-4-60-vendor-identification",
+    "test-norm-structure-member-structure-member-4-61-certificate-serial-number",
+    "test-norm-structure-member-structure-member-4-61-issuer-distinguished-name",
+    "test-norm-structure-member-structure-member-4-62-issuer-distinguished-name",
+    "test-norm-structure-member-structure-member-4-63-subject-distinguished-name",
     "test-norm-structure-member-structure-member-5-5-attribute-name",
     "test-norm-structure-member-structure-member-5-5-vendor-identification",
     "test-norm-structure-member-structure-member-7-13-extension-enumeration",
     "test-norm-structure-member-structure-member-7-13-extension-parent-structure-tag",
     "test-norm-structure-member-structure-member-7-18-encoding-option",
     "test-norm-structure-member-structure-member-7-18-wrapping-method",
+    "test-norm-structure-member-structure-member-7-25-operation",
     "test-norm-structure-member-structure-member-7-26-pkcs-11-function",
     "test-norm-structure-member-structure-member-7-30-pkcs-11-return-code",
     "test-norm-structure-member-structure-member-7-31-profile-name",
+    "test-norm-structure-member-structure-member-7-36-cryptographic-algorithm",
     "test-norm-structure-member-structure-member-7-36-cryptographic-length",
     "test-norm-structure-member-structure-member-7-36-drbg-algorithm",
     "test-norm-structure-member-structure-member-7-36-fips186-variation",
+    "test-norm-structure-member-structure-member-7-36-hashing-algorithm",
     "test-norm-structure-member-structure-member-7-36-recommended-curve",
     "test-norm-structure-member-structure-member-7-36-rng-algorithm",
     "test-norm-structure-member-structure-member-7-39-ticket-type",
@@ -1502,6 +1568,24 @@
     "test-norm-structure-member-structure-member-7-5-rng-mode",
     "test-norm-structure-member-structure-member-7-5-shredding-algorithm",
     "test-norm-structure-member-structure-member-7-5-unwrap-mode",
+    "test-norm-structure-member-structure-member-9-11-attestation-attestation-assertion",
+    "test-norm-structure-member-structure-member-9-11-attestation-attestation-measurement",
+    "test-norm-structure-member-structure-member-9-11-attestation-attestation-type",
+    "test-norm-structure-member-structure-member-9-11-credential-credential-type",
+    "test-norm-structure-member-structure-member-9-11-device-device-identifier",
+    "test-norm-structure-member-structure-member-9-11-device-device-serial-number",
+    "test-norm-structure-member-structure-member-9-11-device-machine-identifier",
+    "test-norm-structure-member-structure-member-9-11-device-media-identifier",
+    "test-norm-structure-member-structure-member-9-11-device-network-identifier",
+    "test-norm-structure-member-structure-member-9-11-device-password",
+    "test-norm-structure-member-structure-member-9-11-hashed-password-hashed-password",
+    "test-norm-structure-member-structure-member-9-11-hashed-password-hashing-algorithm",
+    "test-norm-structure-member-structure-member-9-11-hashed-password-username",
+    "test-norm-structure-member-structure-member-9-11-one-time-password-one-time-password",
+    "test-norm-structure-member-structure-member-9-11-one-time-password-password",
+    "test-norm-structure-member-structure-member-9-11-one-time-password-username",
+    "test-norm-structure-member-structure-member-9-11-username-and-password-password",
+    "test-norm-structure-member-structure-member-9-11-username-and-password-username",
     "test-norm-payload-server-notify-request-20-001",
     "test-norm-payload-server-query-request-20-001",
     "test-norm-payload-server-query-response-20-002",
@@ -1546,7 +1630,7 @@
     "test-norm-credential-credential-hashed-password",
     "test-norm-credential-credential-username-and-password"
   ],
-  "executed_cells": 27716,
+  "executed_cells": 28388,
   "language": "java",
   "library_commit": "12496d646d11d4069b58bcc88fc76cc619211ec6",
   "pending_case_ids": [
@@ -6208,27 +6292,27 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-2-1-certificate-certificate-type",
-      "pending_cells": 14
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-structure-member-structure-member-2-1-certificate-certificate-value",
-      "pending_cells": 14
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-structure-member-structure-member-2-2-certificate-request-certificate-request-type",
-      "pending_cells": 14
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-structure-member-structure-member-2-2-certificate-request-certificate-request-value",
-      "pending_cells": 14
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-structure-member-structure-member-2-3-opaque-object-opaque-data-type",
-      "pending_cells": 14
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-structure-member-structure-member-2-3-opaque-object-opaque-data-value",
-      "pending_cells": 14
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-structure-member-structure-member-2-4-pgp-key-key-block",
@@ -6236,7 +6320,7 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-2-4-pgp-key-pgp-key-version",
-      "pending_cells": 14
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-structure-member-structure-member-2-5-private-key-key-block",
@@ -6252,7 +6336,7 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-2-7-secret-data-secret-data-type",
-      "pending_cells": 14
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-structure-member-structure-member-2-8-split-key-key-block",
@@ -6260,7 +6344,7 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-2-8-split-key-key-part-identifier",
-      "pending_cells": 14
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-structure-member-structure-member-2-8-split-key-prime-field-size",
@@ -6268,15 +6352,15 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-2-8-split-key-split-key-method",
-      "pending_cells": 14
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-structure-member-structure-member-2-8-split-key-split-key-parts",
-      "pending_cells": 14
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-structure-member-structure-member-2-8-split-key-split-key-threshold",
-      "pending_cells": 14
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-structure-member-structure-member-2-9-symmetric-key-key-block",
@@ -6284,19 +6368,19 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-1-key-block-cryptographic-algorithm",
-      "pending_cells": 30
+      "pending_cells": 22
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-1-key-block-cryptographic-length",
-      "pending_cells": 28
+      "pending_cells": 20
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-1-key-block-key-compression-type",
-      "pending_cells": 28
+      "pending_cells": 20
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-1-key-block-key-format-type",
-      "pending_cells": 30
+      "pending_cells": 22
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-1-key-block-key-value",
@@ -6332,15 +6416,15 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-11-key-material-recommended-curve",
-      "pending_cells": 36
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-12-key-material-q-string",
-      "pending_cells": 36
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-12-key-material-recommended-curve",
-      "pending_cells": 36
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-2-key-value-attributes",
@@ -6360,7 +6444,7 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-3-key-wrapping-data-encoding-option",
-      "pending_cells": 32
+      "pending_cells": 24
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-3-key-wrapping-data-encryption-key-information",
@@ -6368,11 +6452,11 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-3-key-wrapping-data-iv-counter-nonce",
-      "pending_cells": 32
+      "pending_cells": 24
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-3-key-wrapping-data-mac-signature",
-      "pending_cells": 32
+      "pending_cells": 24
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-3-key-wrapping-data-mac-signature-key-information",
@@ -6380,7 +6464,7 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-3-key-wrapping-data-wrapping-method",
-      "pending_cells": 32
+      "pending_cells": 24
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-3-mac-signature-key-information-cryptographic-parameters",
@@ -6392,7 +6476,7 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-4-key-material-key",
-      "pending_cells": 36
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-5-key-material-g",
@@ -6488,111 +6572,111 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-14-qlength",
-      "pending_cells": 14
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-14-recommended-curve",
-      "pending_cells": 14
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-16-block-cipher-mode",
-      "pending_cells": 22
+      "pending_cells": 14
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-16-counter-length",
-      "pending_cells": 22
+      "pending_cells": 14
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-16-cryptographic-algorithm",
-      "pending_cells": 22
+      "pending_cells": 14
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-16-digital-signature-algorithm",
-      "pending_cells": 22
+      "pending_cells": 14
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-16-fixed-field-length",
-      "pending_cells": 22
+      "pending_cells": 14
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-16-hashing-algorithm",
-      "pending_cells": 22
+      "pending_cells": 14
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-16-initial-counter-value",
-      "pending_cells": 22
+      "pending_cells": 14
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-16-invocation-field-length",
-      "pending_cells": 22
+      "pending_cells": 14
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-16-iv-length",
-      "pending_cells": 22
+      "pending_cells": 14
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-16-key-role-type",
-      "pending_cells": 22
+      "pending_cells": 14
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-16-mask-generator",
-      "pending_cells": 22
+      "pending_cells": 14
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-16-mask-generator-hashing-algorithm",
-      "pending_cells": 22
+      "pending_cells": 14
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-16-p-source",
-      "pending_cells": 22
+      "pending_cells": 14
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-16-padding-method",
-      "pending_cells": 22
+      "pending_cells": 14
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-16-salt-length",
-      "pending_cells": 22
+      "pending_cells": 14
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-16-tag-length",
-      "pending_cells": 22
+      "pending_cells": 14
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-16-trailer-field",
-      "pending_cells": 22
+      "pending_cells": 14
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-2-alternative-name-type",
-      "pending_cells": 14
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-2-alternative-name-value",
-      "pending_cells": 14
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-21-digest-value",
-      "pending_cells": 14
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-21-hashing-algorithm",
-      "pending_cells": 16
+      "pending_cells": 8
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-21-key-format-type",
-      "pending_cells": 14
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-27-key-value-location-type",
-      "pending_cells": 14
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-27-key-value-location-value",
-      "pending_cells": 14
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-31-link-type",
-      "pending_cells": 14
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-31-linked-object-identifier",
@@ -6600,31 +6684,31 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-32-name-type",
-      "pending_cells": 14
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-32-name-value",
-      "pending_cells": 14
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-4-application-data",
-      "pending_cells": 14
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-4-application-namespace",
-      "pending_cells": 14
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-47-revocation-message",
-      "pending_cells": 14
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-47-revocation-reason-code",
-      "pending_cells": 14
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-60-attribute-name",
-      "pending_cells": 14
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-60-attribute-value",
@@ -6632,15 +6716,15 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-60-vendor-identification",
-      "pending_cells": 14
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-61-certificate-serial-number",
-      "pending_cells": 14
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-61-issuer-distinguished-name",
-      "pending_cells": 14
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-62-issuer-alternative-name",
@@ -6648,7 +6732,7 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-62-issuer-distinguished-name",
-      "pending_cells": 14
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-63-subject-alternative-name",
@@ -6656,7 +6740,7 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-63-subject-distinguished-name",
-      "pending_cells": 14
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-structure-member-structure-member-5-5-attribute-reference",
@@ -6700,7 +6784,7 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-7-25-operation",
-      "pending_cells": 10
+      "pending_cells": 2
     },
     {
       "case_id": "test-norm-structure-member-structure-member-7-27-pkcs-11-input-parameters",
@@ -6736,11 +6820,11 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-7-36-cryptographic-algorithm",
-      "pending_cells": 10
+      "pending_cells": 2
     },
     {
       "case_id": "test-norm-structure-member-structure-member-7-36-hashing-algorithm",
-      "pending_cells": 10
+      "pending_cells": 2
     },
     {
       "case_id": "test-norm-structure-member-structure-member-7-40-usage-limits-count",
@@ -6756,15 +6840,15 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-9-11-attestation-attestation-assertion",
-      "pending_cells": 12
+      "pending_cells": 4
     },
     {
       "case_id": "test-norm-structure-member-structure-member-9-11-attestation-attestation-measurement",
-      "pending_cells": 12
+      "pending_cells": 4
     },
     {
       "case_id": "test-norm-structure-member-structure-member-9-11-attestation-attestation-type",
-      "pending_cells": 12
+      "pending_cells": 4
     },
     {
       "case_id": "test-norm-structure-member-structure-member-9-11-attestation-nonce",
@@ -6772,7 +6856,7 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-9-11-credential-credential-type",
-      "pending_cells": 12
+      "pending_cells": 4
     },
     {
       "case_id": "test-norm-structure-member-structure-member-9-11-credential-credential-value",
@@ -6780,35 +6864,35 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-9-11-device-device-identifier",
-      "pending_cells": 12
+      "pending_cells": 4
     },
     {
       "case_id": "test-norm-structure-member-structure-member-9-11-device-device-serial-number",
-      "pending_cells": 12
+      "pending_cells": 4
     },
     {
       "case_id": "test-norm-structure-member-structure-member-9-11-device-machine-identifier",
-      "pending_cells": 12
+      "pending_cells": 4
     },
     {
       "case_id": "test-norm-structure-member-structure-member-9-11-device-media-identifier",
-      "pending_cells": 12
+      "pending_cells": 4
     },
     {
       "case_id": "test-norm-structure-member-structure-member-9-11-device-network-identifier",
-      "pending_cells": 12
+      "pending_cells": 4
     },
     {
       "case_id": "test-norm-structure-member-structure-member-9-11-device-password",
-      "pending_cells": 12
+      "pending_cells": 4
     },
     {
       "case_id": "test-norm-structure-member-structure-member-9-11-hashed-password-hashed-password",
-      "pending_cells": 12
+      "pending_cells": 4
     },
     {
       "case_id": "test-norm-structure-member-structure-member-9-11-hashed-password-hashing-algorithm",
-      "pending_cells": 14
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-structure-member-structure-member-9-11-hashed-password-timestamp",
@@ -6816,19 +6900,19 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-9-11-hashed-password-username",
-      "pending_cells": 12
+      "pending_cells": 4
     },
     {
       "case_id": "test-norm-structure-member-structure-member-9-11-one-time-password-one-time-password",
-      "pending_cells": 10
+      "pending_cells": 2
     },
     {
       "case_id": "test-norm-structure-member-structure-member-9-11-one-time-password-password",
-      "pending_cells": 10
+      "pending_cells": 2
     },
     {
       "case_id": "test-norm-structure-member-structure-member-9-11-one-time-password-username",
-      "pending_cells": 10
+      "pending_cells": 2
     },
     {
       "case_id": "test-norm-structure-member-structure-member-9-11-ticket-ticket",
@@ -6836,11 +6920,11 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-9-11-username-and-password-password",
-      "pending_cells": 12
+      "pending_cells": 4
     },
     {
       "case_id": "test-norm-structure-member-structure-member-9-11-username-and-password-username",
-      "pending_cells": 12
+      "pending_cells": 4
     },
     {
       "case_id": "test-norm-tag-tag-42000c",
@@ -7343,7 +7427,7 @@
       "pending_cells": 15
     }
   ],
-  "pending_cells": 43925,
+  "pending_cells": 43253,
   "pending_reason": "No validated per-cell route execution evidence is recorded for this cell.",
   "pending_reason_code": "route_evidence_not_emitted",
   "planned_cells": 71641,
@@ -7351,8 +7435,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 2760,
-      "pending_cells": 1324,
+      "executed_cells": 2844,
+      "pending_cells": 1240,
       "protocol_version": "2.0",
       "required_cells": 4084,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item",
@@ -7361,8 +7445,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 2802,
-      "pending_cells": 1377,
+      "executed_cells": 2886,
+      "pending_cells": 1293,
       "protocol_version": "2.1",
       "required_cells": 4179,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item",
@@ -7491,8 +7575,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 14,
-      "pending_cells": 22,
+      "executed_cells": 30,
+      "pending_cells": 6,
       "protocol_version": "2.0",
       "required_cells": 36,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.bytestring",
@@ -7501,8 +7585,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 16,
-      "pending_cells": 22,
+      "executed_cells": 32,
+      "pending_cells": 6,
       "protocol_version": "2.1",
       "required_cells": 38,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.bytestring",
@@ -7551,8 +7635,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 1824,
-      "pending_cells": 46,
+      "executed_cells": 1858,
+      "pending_cells": 12,
       "protocol_version": "2.0",
       "required_cells": 1870,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
@@ -7561,8 +7645,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 1851,
-      "pending_cells": 46,
+      "executed_cells": 1885,
+      "pending_cells": 12,
       "protocol_version": "2.1",
       "required_cells": 1897,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
@@ -7571,8 +7655,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 149,
-      "pending_cells": 18,
+      "executed_cells": 163,
+      "pending_cells": 4,
       "protocol_version": "2.0",
       "required_cells": 167,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.integer",
@@ -7581,8 +7665,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 149,
-      "pending_cells": 19,
+      "executed_cells": 163,
+      "pending_cells": 5,
       "protocol_version": "2.1",
       "required_cells": 168,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.integer",
@@ -7651,8 +7735,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 26,
-      "pending_cells": 32,
+      "executed_cells": 46,
+      "pending_cells": 12,
       "protocol_version": "2.0",
       "required_cells": 58,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring",
@@ -7661,8 +7745,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 27,
-      "pending_cells": 32,
+      "executed_cells": 47,
+      "pending_cells": 12,
       "protocol_version": "2.1",
       "required_cells": 59,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring",
@@ -7671,8 +7755,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 2808,
-      "pending_cells": 1323,
+      "executed_cells": 2892,
+      "pending_cells": 1239,
       "protocol_version": "2.0",
       "required_cells": 4131,
       "route_id": "java.generic-ttlv.ttlv_codec.decode",
@@ -7681,8 +7765,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 2850,
-      "pending_cells": 1376,
+      "executed_cells": 2934,
+      "pending_cells": 1292,
       "protocol_version": "2.1",
       "required_cells": 4226,
       "route_id": "java.generic-ttlv.ttlv_codec.decode",
@@ -7691,8 +7775,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 2760,
-      "pending_cells": 1323,
+      "executed_cells": 2844,
+      "pending_cells": 1239,
       "protocol_version": "2.0",
       "required_cells": 4083,
       "route_id": "java.generic-ttlv.ttlv_item.create",
@@ -7701,8 +7785,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 2802,
-      "pending_cells": 1376,
+      "executed_cells": 2886,
+      "pending_cells": 1292,
       "protocol_version": "2.1",
       "required_cells": 4178,
       "route_id": "java.generic-ttlv.ttlv_item.create",
@@ -33922,8 +34006,8 @@
   "route_manifest_sha256": "8e26f2efe33c63d3fc4dcd0cb11e465b15bbe9135ab56809c354f032a7aeac59",
   "route_summary": [
     {
-      "executed_cells": 5562,
-      "pending_cells": 2701,
+      "executed_cells": 5730,
+      "pending_cells": 2533,
       "required_cells": 8263,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item"
     },
@@ -33964,8 +34048,8 @@
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.boolean"
     },
     {
-      "executed_cells": 30,
-      "pending_cells": 44,
+      "executed_cells": 62,
+      "pending_cells": 12,
       "required_cells": 74,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.bytestring"
     },
@@ -33982,14 +34066,14 @@
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.datetimeextended"
     },
     {
-      "executed_cells": 3675,
-      "pending_cells": 92,
+      "executed_cells": 3743,
+      "pending_cells": 24,
       "required_cells": 3767,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration"
     },
     {
-      "executed_cells": 298,
-      "pending_cells": 37,
+      "executed_cells": 326,
+      "pending_cells": 9,
       "required_cells": 335,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.integer"
     },
@@ -34012,20 +34096,20 @@
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure"
     },
     {
-      "executed_cells": 53,
-      "pending_cells": 64,
+      "executed_cells": 93,
+      "pending_cells": 24,
       "required_cells": 117,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring"
     },
     {
-      "executed_cells": 5658,
-      "pending_cells": 2699,
+      "executed_cells": 5826,
+      "pending_cells": 2531,
       "required_cells": 8357,
       "route_id": "java.generic-ttlv.ttlv_codec.decode"
     },
     {
-      "executed_cells": 5562,
-      "pending_cells": 2699,
+      "executed_cells": 5730,
+      "pending_cells": 2531,
       "required_cells": 8261,
       "route_id": "java.generic-ttlv.ttlv_item.create"
     },
@@ -35393,7 +35477,7 @@
     }
   ],
   "schema_version": "1.0",
-  "selected_scope_cells": 27716,
+  "selected_scope_cells": 28388,
   "selected_scope_complete": true,
   "vendor_interoperability_claim": false
 }

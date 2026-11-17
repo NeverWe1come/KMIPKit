@@ -15,6 +15,7 @@ from validate_route_evidence import (
     _expected_batch_operations,
     _expected_tag_decode_rejection_code,
     _validate_batch_event,
+    build_evidence_ledger,
     validate_collection,
     validate_parity_collection,
     validate_report,
@@ -180,6 +181,20 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         self.assertFalse(summary["complete_matrix"])
         self.assertEqual(2, summary["expected_cells"])
         self.assertEqual(2, summary["invoked_cells"])
+        ledger = build_evidence_ledger(
+            report, self.catalog, self.manifest, catalog_sha256="c" * 64,
+            route_manifest_sha256="d" * 64, expected_artifact_sha256="b" * 64,
+        )
+        self.assertFalse(ledger["complete_matrix"])
+        self.assertEqual(5, ledger["planned_cells"])
+        self.assertEqual(2, ledger["executed_cells"])
+        self.assertEqual(3, ledger["pending_cells"])
+        try:
+            import jsonschema
+        except ImportError:
+            return
+        schema = json.loads((SHARED / "schemas/route-execution-evidence.schema.json").read_text())
+        jsonschema.validate(report, schema)
 
     def test_scoped_report_rejects_missing_or_out_of_scope_events(self):
         scope = self.report["events"][:2]

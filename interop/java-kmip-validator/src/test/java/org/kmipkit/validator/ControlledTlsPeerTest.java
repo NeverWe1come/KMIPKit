@@ -4087,9 +4087,23 @@ class ControlledTlsPeerTest {
         combination.put("transport", "raw_tls");
         report.putArray("network_combinations").add(combination);
         report.set("events", events);
+        appendDeclaredRouteScope(report, events);
         Files.createDirectories(reportPath.toAbsolutePath().normalize().getParent());
         mapper.writerWithDefaultPrettyPrinter().writeValue(reportPath.toFile(), report);
         return additionalCaseIdCount;
+    }
+
+    private static void appendDeclaredRouteScope(ObjectNode report, ArrayNode events) {
+        List<String> identityFields = List.of("case_id", "route_id", "target_id", "workflow_step_index",
+                "workflow_operation", "workflow_item_index", "execution_route_id", "action",
+                "protocol_version", "encoding", "transport");
+        ArrayNode scopeCells = report.putArray("scope_cells");
+        for (JsonNode event : events) {
+            ObjectNode scopeCell = scopeCells.addObject();
+            for (String field : identityFields) {
+                if (event.has(field)) scopeCell.set(field, event.path(field).deepCopy());
+            }
+        }
     }
 
     private static void appendBooleanFieldCaseIds(ArrayNode caseIds, JsonNode events) {
