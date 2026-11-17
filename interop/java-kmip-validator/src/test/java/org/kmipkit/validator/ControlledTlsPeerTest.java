@@ -1575,6 +1575,8 @@ class ControlledTlsPeerTest {
                 .mapToInt(fixture -> fixture.protocolVersions().size()).sum();
         int batchErrorContinuationHeaderRouteEventCount = KMIP_2_0_AND_2_1.size();
         int batchContinuationTagIdentityEventCount = KMIP_2_0_AND_2_1.size() * 6;
+        int responseHeaderServerCorrelationEventCount =
+                RESPONSE_HEADER_SERVER_CORRELATION_VALUE_ROUTES.size() * KMIP_2_0_AND_2_1.size();
         int genericTagEventCount = 0;
         int referencedEnumEventCount = 0;
         int referencedEnumAggregateEventCount = 0;
@@ -1612,6 +1614,7 @@ class ControlledTlsPeerTest {
                         + structureMemberValueRouteEventCount
                         + batchErrorContinuationEventCount + batchErrorContinuationHeaderRouteEventCount
                         + batchContinuationTagIdentityEventCount
+                        + responseHeaderServerCorrelationEventCount
                         + genericTagEventCount + typedTagIdentityEventCount
                         + booleanFieldRouteEventCount + scalarMessageFieldRouteEventCount + itemTypeRouteEventCount
                         + scalarTypedParserEventCount
@@ -5258,6 +5261,10 @@ class ControlledTlsPeerTest {
         appendMessageFieldTextStringRoutes(events, RESPONSE_HEADER_CLIENT_CORRELATION_VALUE.caseId(),
                 RESPONSE_HEADER_CLIENT_CORRELATION_VALUE.targetId(), 0x420105,
                 RESPONSE_HEADER_CLIENT_CORRELATION_VALUE_TEXT, protocolVersion);
+        // OASIS KMIP 2.0/2.1 §8.5 defines Server Correlation Value as an optional Response Header Text String.
+        appendMessageFieldTextStringRoutes(events, RESPONSE_HEADER_SERVER_CORRELATION_VALUE.caseId(),
+                RESPONSE_HEADER_SERVER_CORRELATION_VALUE.targetId(), 0x420106,
+                RESPONSE_HEADER_SERVER_CORRELATION_VALUE_TEXT, protocolVersion);
         appendMessageFieldIntegerRoutes(events, "test-norm-message-field-message-field-8-5-batch-count",
                 "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-BATCH-COUNT", protocolVersion, false);
         appendMessageFieldIntegerRoutes(events, "test-norm-message-field-message-field-9-5-batch-count",
@@ -8064,6 +8071,9 @@ class ControlledTlsPeerTest {
         }
         header = appendTtlvItem(header, 0x420105,
                 TtlvValue.TextString(RESPONSE_HEADER_CLIENT_CORRELATION_VALUE_TEXT.getBytes(StandardCharsets.US_ASCII), limits),
+                limits);
+        header = appendTtlvItem(header, 0x420106,
+                TtlvValue.TextString(RESPONSE_HEADER_SERVER_CORRELATION_VALUE_TEXT.getBytes(StandardCharsets.US_ASCII), limits),
                 limits);
         header = appendTtlvItem(header, 0x42000d, TtlvValue.Integer(1), limits);
         TtlvStructure message = TtlvStructure.create();
