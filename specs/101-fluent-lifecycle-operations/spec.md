@@ -1,8 +1,8 @@
 # Feature Specification: Fluent Lifecycle and Lookup Operations (KMIPKIT-0101)
 
-**Branch**: `feature/KMIPKIT-0101-fluent-lifecycle-operations`  
+**Branch**: `feature/KMIPKIT-0101-fluent-lifecycle-operations` \
 **Base**: PR #183 head `8b4724ca5` after rebase
-**Status**: Approved within the maintainer's direct authorization of the complete KMIPKIT-0093 plan.  
+**Status**: Approved within the maintainer's direct authorization of the complete KMIPKIT-0093 plan. \
 **Owning identifier**: KMIPKIT-0101
 
 ## Purpose

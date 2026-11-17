@@ -7,4 +7,3 @@
 | KMIPKIT-0114-FR-003 | Existing `execute_simple_request` path and `borrow_fluent_request_options` | TLS fixture observes one exchange for each direct and timeout-options helper; all four timeout bounds are supplied on options calls | KMIPKIT-0093-FR-004, FR-007, FR-011 |
 | KMIPKIT-0114-FR-004 | Existing FFI status, response-owner, redaction, and delivery-state helpers | Compiled C consumer checks status and null output for invalid inputs; TLS test reads each typed response before releasing its handle | KMIPKIT-0007-FR-005, FR-006; KMIPKIT-0093-FR-011 |
 | KMIPKIT-0114-FR-005 | Compiled C consumer and controlled mutual-TLS fixture in `crates/kmipkit-ffi/tests/c_api_coverage.rs` | Compiled C consumer calls all ten symbols; fixture decodes and responds to all ten calls over mutual TLS; `python3 -B tools/api_manifest/generate.py --check` verifies generated declarations | KMIPKIT-0093-FR-013 |
-

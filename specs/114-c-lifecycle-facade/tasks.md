@@ -19,4 +19,3 @@
 - [x] T006 Run lifecycle C ABI, compiled consumer, sanitizer, traceability,
   manifest/export, coverage, format, Clippy, and relevant workspace checks.
   Exact-head hosted CI remains the final review gate on the draft PR.
-

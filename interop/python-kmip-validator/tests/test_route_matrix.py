@@ -1036,6 +1036,26 @@ class RouteMatrixTests(unittest.TestCase):
                        'kmipkit.client.AsyncOperationOutcome.')}
         self.assert_route_cells_pass(symbols)
 
+    def test_batch_item_complete_response_views_execute_with_controlled_tls(self):
+        symbols = {
+            'kmipkit.client.BatchItemResult.ttlv_hex',
+            'kmipkit.client.BatchItemResult.json',
+            'kmipkit.client.BatchItemResult.xml',
+        }
+        cases = {case['case_id']: case for case in self.catalog['test_cases']}
+        targets = {target['target_id']: target for target in self.catalog['normative_targets']}
+        for symbol in sorted(symbols):
+            cell = next(cell for cell in iter_cells(
+                self.catalog, self.manifest, languages=('python',))
+                if cell['public_api_symbol'] == symbol
+                and cell['protocol_version'] == '2.1')
+            kind, event = self.runner._execute_matrix_cell(
+                cell, cases[cell['case_id']], targets[cell['target_id']])
+            self.assertEqual('event', kind)
+            self.assertEqual('passed', event['status'])
+            self.assertEqual('response_received', event['request_delivery_state'])
+            self.assertEqual(1, event['peer_observed_response_count'])
+
     def test_query_response_field_accessors_preserve_wire_order(self):
         symbols = {
             'kmipkit.client.QueryResponse.field_at',

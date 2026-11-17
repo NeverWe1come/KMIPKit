@@ -4,7 +4,7 @@
 
 - Python feature branch: `feature/KMIPKIT-0087-interop-python-live`.
 - Common contract merge: `9632f116c`, merging contract head `4f157e50e`.
-- Private Python package pin: `489fafc79ef89db2524eafa7a6c6482f5cf75d97`.
+- Historical private Python package pin for this recorded run: `489fafc79ef89db2524eafa7a6c6482f5cf75d97`.
 - Wheel SHA-256: `399a9de433a460bd95237e9142c6b19ca082bdc2a94c2d31fe93765cf508a369`.
 - Shared catalog SHA-256: `e4a542bab4831a04e51f5bf04c9019da3f38845bc85839ae9b632dcc610a7d7f`.
 - Shared route manifest SHA-256: `b3867835e3f1f69308a3030f83be87e2728af852da3a82414a78a4ea91482ac5`.

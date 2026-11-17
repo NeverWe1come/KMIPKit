@@ -22,4 +22,3 @@ the public API manifest and regenerate outputs with the repository generator.
    sent; assert only the established `int32_t` status and delivery state.
 4. Run the C ABI, lifecycle, generated-manifest, export-audit, coverage,
    workspace format, Clippy, and relevant Rust/C test gates.
-

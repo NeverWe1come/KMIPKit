@@ -6,4 +6,3 @@
 - [ ] CHK004 Each C symbol is compiled and called from a C consumer, including invalid-input cases.
 - [ ] CHK005 Fixture tests decode each request and return an encoded typed response; failures preserve delivery state and redaction.
 - [ ] CHK006 Public API manifest, generated output, coverage, traceability, format, Clippy, and applicable CI checks pass on the final SHA.
-

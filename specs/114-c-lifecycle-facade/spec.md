@@ -74,4 +74,3 @@ existing explicit batch API; timeout options do not set Request Header fields.
    response.
 5. The API manifest and all generated declarations are current; ABI, coverage,
    traceability, format, Clippy, and relevant Rust/C tests pass.
-
