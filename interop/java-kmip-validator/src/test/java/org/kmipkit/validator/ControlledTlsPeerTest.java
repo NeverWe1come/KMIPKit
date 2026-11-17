@@ -5157,6 +5157,18 @@ class ControlledTlsPeerTest {
         if ("2.1".equals(protocolVersion)) {
             assertRouteEventRecorded(events, "test-op-ping", "KMIPKIT-ELEM-OP-C2S-PING",
                     "java.typed-protocol.function.client_batch_item_response_ping", "decode", protocolVersion);
+            for (String targetId : List.of(
+                    "KMIPKIT-PAYLOAD-CLIENT-SET-ENDPOINT-ROLE-REQUEST-21-001",
+                    "KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE")) {
+                for (String route : List.of("java.generic-ttlv.ttlv_item.create",
+                        "java.generic-ttlv.function.ttlv_item_view_from_item",
+                        "java.generic-ttlv.ttlv_codec.decode")) {
+                    String action = route.endsWith("ttlv_item.create") ? "construct" : "decode";
+                    assertRouteEventRecorded(events,
+                            "test-norm-payload-client-set-endpoint-role-request-21-001",
+                            targetId, route, action, protocolVersion);
+                }
+            }
         }
         for (ScalarOperationStructureFixture fixture : SCALAR_OPERATION_STRUCTURE_FIXTURES) {
             assertScalarOperationStructureRouteEvents(events, fixture, protocolVersion);
