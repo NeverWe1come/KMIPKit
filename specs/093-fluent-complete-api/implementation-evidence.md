@@ -1137,3 +1137,12 @@
 - This slice remains WIP pending C, Java, and Python fluent builder parity and
   exact-head CI verification. It does not close operation-wide O001/O002 or
   FR-011 parity.
+
+### Refactor
+
+- Reused the existing private exchange-state helper for Ping instead of
+  duplicating its client/options/asynchronous fields. Renamed that helper to
+  `FluentBuilderExecution` to reflect its shared use; public cryptographic
+  builder behavior is unchanged.
+- `cargo test --locked -p kmipkit-client --lib ping_execution_tests` again
+  passes all eight Ping tests after the refactor.
