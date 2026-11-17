@@ -932,6 +932,7 @@ class ControlledTlsPeerTest {
                     serverCertificatePem, serverPrivateKeyPem, clientCertificatePem, clientPrivateKeyPem);
             appendObjectDefaultsObjectTypeRouteEvents(events, protocolVersion);
             assertObjectDefaultsObjectTypeRouteEvents(events, protocolVersion);
+            appendDerivationSaltRouteEvents(events, protocolVersion);
             assertDerivationSaltRouteEvents(events, protocolVersion);
             assertNewlyCataloguedLocalRoutesAreInvoked(events, protocolVersion);
         }
@@ -1339,7 +1340,7 @@ class ControlledTlsPeerTest {
                         + genericTagEventCount + typedTagIdentityEventCount
                         + booleanFieldRouteEventCount + scalarMessageFieldRouteEventCount + itemTypeRouteEventCount
                         + scalarTypedParserEventCount
-                        + 35 // BEC, batch IDs, async payload, Ping, Endpoint Role, and Object Defaults cells.
+                        + 43 // BEC, batch IDs, async payload, Ping, Endpoint Role, Object Defaults, and Salt cells.
                         + tagAggregateEventCount
                         + referencedEnumEventCount + referencedEnumAggregateEventCount,
                 report.path("events").size());
@@ -1376,7 +1377,7 @@ class ControlledTlsPeerTest {
                         + enumerationFixtures.size() + localEnumerationCaseCount + bitmaskCaseCount
                         + dataTypeCaseCount
                         + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + genericTagCaseIds.size()
-                        + 6
+                        + 7
                         + typedTagIdentityCaseIds().size() + referencedEnumCaseCount
                         + 11 + itemTypeValueCaseIds.size() + STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size()
                         + STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.size()
@@ -6416,6 +6417,43 @@ class ControlledTlsPeerTest {
             assertRouteEventRecorded(events, DERIVATION_SALT_CASE_ID, DERIVATION_SALT_TARGET_ID,
                     route, action, protocolVersion);
         }
+    }
+
+    // OASIS KMIP 2.0 §7.8 Table 328 and KMIP 2.1 §7.12 Table 364: Salt is a Byte String;
+    // its tag is assigned by KMIP 2.0 §11.54 and KMIP 2.1 §11.56.
+    private static void appendDerivationSaltRouteEvents(ArrayNode events, String protocolVersion)
+            throws Exception {
+        byte[] salt = new byte[] {0x13, 0x00, (byte) 0xa7, 0x5c};
+        int rawTag = 0x420084;
+        CodecLimits limits = CodecLimits.defaults();
+        byte[] wire = item(rawTag, TtlvItemType.ByteString.code(), salt);
+        String treeHash = normalizedTreeSha256(wire);
+
+        try (TtlvValue value = TtlvValue.ByteString(salt, limits);
+                RawTag raw = RawTag.fromRaw(rawTag);
+                Tag tag = raw.checked();
+                TtlvItem created = TtlvItem.create(tag, value, limits);
+                TtlvItemView view = created.view()) {
+            assertByteStringItemView(view, rawTag, salt);
+        }
+        appendRouteEvent(events, DERIVATION_SALT_CASE_ID,
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.bytestring", DERIVATION_SALT_TARGET_ID,
+                "org.kmipkit.ttlv.TtlvValue.ByteString", null, null, "construct", protocolVersion,
+                null, treeHash, null);
+        appendRouteEvent(events, DERIVATION_SALT_CASE_ID, "java.generic-ttlv.ttlv_item.create",
+                DERIVATION_SALT_TARGET_ID, "org.kmipkit.ttlv.TtlvItem.create", null, null,
+                "construct", protocolVersion, null, treeHash, null);
+        try (TtlvItem decoded = TtlvCodec.decode(wire);
+                TtlvItemView view = decoded.view()) {
+            assertByteStringItemView(view, rawTag, salt);
+        }
+        appendRouteEvent(events, DERIVATION_SALT_CASE_ID,
+                "java.generic-ttlv.function.ttlv_item_view_from_item", DERIVATION_SALT_TARGET_ID,
+                "org.kmipkit.ttlv.TtlvItem.view", null, null, "decode", protocolVersion,
+                null, null, treeHash);
+        appendRouteEvent(events, DERIVATION_SALT_CASE_ID, "java.generic-ttlv.ttlv_codec.decode",
+                DERIVATION_SALT_TARGET_ID, "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
+                "decode", protocolVersion, null, null, treeHash);
     }
 
     private static void appendObjectDefaultsObjectTypeRouteEvents(ArrayNode events, String protocolVersion)
