@@ -6,6 +6,7 @@ request bodies, credentials, tickets, or key bytes.
 """
 from __future__ import annotations
 
+import copy
 import datetime as dt
 import hashlib
 import json
@@ -42,7 +43,6 @@ ENUMERATION_TTLV_TYPE = 5
 ID_PLACEHOLDER_ENUMERATION = 1
 PLACEHOLDER_CHAIN_OPERATIONS = (1, 18, 10)
 PLACEHOLDER_CLEANUP_OPERATIONS = (19, 20)
-BATCH_ORDER_PLACEHOLDER_ITEM_IDS = (b'ordered-create', b'ordered-activate')
 BATCH_CRYPTO_OPERATIONS = (3, 18, 31, 32, 19, 20)
 BATCH_CRYPTO_ITEM_IDS = (b'crypto-register', b'crypto-activate', b'crypto-encrypt',
                          b'crypto-decrypt', b'crypto-revoke', b'crypto-destroy')
@@ -56,6 +56,11 @@ DECRYPT_ITEM_IDS = (b'decrypt-create', b'decrypt-activate', b'decrypt-target',
 MAC_ITEM_IDS = (b'mac-create', b'mac-activate', b'mac-target', b'mac-revoke', b'mac-destroy')
 MAC_VERIFY_ITEM_IDS = (b'mac-verify-create', b'mac-verify-activate', b'mac-verify-target',
                        b'mac-verify-revoke', b'mac-verify-destroy')
+LEGACY_SIGN_ITEM_IDS = (b'interop-create', b'interop-activate', b'interop-sign',
+                        b'interop-revoke', b'interop-destroy')
+LEGACY_SIGNATURE_VERIFY_ITEM_IDS = (
+    b'interop-create', b'interop-activate', b'interop-signature-verify',
+    b'interop-revoke', b'interop-destroy')
 SIGN_ITEM_IDS = (b'sign-create-pair', b'sign-activate', b'sign-target', b'sign-revoke',
                  b'sign-destroy-private', b'sign-destroy-public')
 SIGNATURE_VERIFY_ITEM_IDS = (b'verify-create-pair', b'verify-activate', b'verify-target',
@@ -64,6 +69,10 @@ CREATE_KEY_PAIR_ITEM_IDS = (b'create-pair', b'destroy-private', b'destroy-public
 CERTIFY_ITEM_IDS = (b'certify-create-pair', b'certify-activate-private', b'certify-public-key',
                     b'certify-revoke-private', b'certify-destroy-certificate',
                     b'certify-destroy-private', b'certify-destroy-public')
+ARCHIVE_ACTION_ITEM_IDS = (
+    b'archive-create', b'archive-target', b'archive-revoke', b'archive-destroy')
+ARCHIVE_PAYLOAD_ITEM_IDS = (
+    b'interop-create', b'interop-archive', b'interop-revoke', b'interop-destroy')
 MAC_TEST_OUTPUT = bytes(range(32))
 CANCEL_CORRELATION_VALUE = b'fixture-cancel-correlation'
 ASYNC_QUERY_CORRELATION_CREATE_COMPLETED = b'fixture-query-create-completed'
@@ -233,6 +242,26 @@ def parse(data):
     return tag, kind, value
 
 
+def encode_ttlv_node(node):
+    tag, kind, value = node
+    body = b''.join(encode_ttlv_node(child) for child in value) if kind == 1 else value
+    return tlv(tag, kind, body)
+
+
+def replace_first_text(node, tag, previous, replacement):
+    if node[0] == tag and node[1] == 7 and node[2] == previous:
+        return (tag, 7, replacement), True
+    if node[1] != 1:
+        return node, False
+    children = []
+    replaced = False
+    for child in node[2]:
+        if not replaced:
+            child, replaced = replace_first_text(child, tag, previous, replacement)
+        children.append(child)
+    return (node[0], node[1], children), replaced
+
+
 def descendants(node, tag):
     if node[0] == tag:
         yield node
@@ -355,6 +384,10 @@ RECIPES = {
     'test-async-cancel-vs-poll-race': ((25,), 'cancel_poll_race'),
     'test-op-hash': ((39,), 'hash'),
     'test-crypto-hash-sha_256-0': ((39,), 'hash'),
+    'test-op-sign': ((1, 18, 33, 19, 20), 'sign'),
+    'test-crypto-sign-rsa-2048-pkcs1_v1_5': ((1, 18, 33, 19, 20), 'sign'),
+    'test-op-signature-verify': ((1, 18, 34, 19, 20), 'signature_verify'),
+    'test-crypto-signature-verify-rsa-2048-pkcs1_v1_5': ((1, 18, 34, 19, 20), 'signature_verify'),
     'test-op-rng-retrieve': ((37,), 'rng_retrieve'),
     'test-crypto-rng-retrieve-rng-32': ((37,), 'rng_retrieve'),
     'test-op-rng-seed': ((38,), 'rng_seed'),
@@ -362,7 +395,6 @@ RECIPES = {
     'test-v20-reject-get-constraints': ((56,), 'get_constraints'),
     'test-v20-reject-ping': ((59,), 'ping'),
     'test-op-create': ((1, 20), 'create'),
-    'test-op-archive': ((1, 21, 19, 20), 'archive'),
     'test-op-export': ((1, 43, 19, 20), 'export'),
     'test-norm-payload-client-export-request-20-001': ((1, 43, 19, 20), 'export'),
     'test-norm-payload-client-export-request-20-002': ((1, 43, 19, 20), 'export'),
@@ -387,10 +419,10 @@ RECIPES = {
     'test-op-decrypt': ((1, 18, 32, 19, 20), 'decrypt'),
     'test-op-mac': ((1, 18, 35, 19, 20), 'mac'),
     'test-op-mac-verify': ((1, 18, 36, 19, 20), 'mac_verify'),
-    'test-op-sign': ((2, 18, 33, 19, 20, 20), 'sign'),
-    'test-op-signature-verify': ((2, 18, 34, 19, 20, 20), 'signature_verify'),
-    'test-op-create-key-pair': ((2, 20, 20), 'create_key_pair'),
-    'test-op-certify': ((2, 18, 6, 19, 20, 20, 20), 'certify'),
+    'test-op-sign': ((2, 18, 33, 19, 20, 20), 'sign_pair'),
+    'test-op-signature-verify': ((2, 18, 34, 19, 20, 20), 'signature_verify_pair'),
+    'test-op-create-key-pair': ((2, 20, 20), 'create_key_pair_direct'),
+    'test-op-certify': ((2, 18, 6, 19, 20, 20, 20), 'certify_public_key'),
     'test-op-add-attribute': ((1, 13, 19, 20), 'add_attribute'),
     'test-norm-payload-client-add-attribute-request-20-002': ((1, 13, 19, 20), 'add_attribute'),
     'test-norm-payload-client-add-attribute-request-21-002': ((1, 13, 19, 20), 'add_attribute'),
@@ -411,10 +443,11 @@ RECIPES = {
     'test-batch-create-activate-destroy': ((1, 18, 12, 19, 20), 'create_activate_attribute_list_revoke_destroy'),
     'test-batch-register-encrypt-decrypt-destroy': (BATCH_CRYPTO_OPERATIONS, 'batch_register_crypto'),
     'test-batch-placeholder-chain-resolves': (PLACEHOLDER_CHAIN_OPERATIONS, 'batch_placeholder_chain'),
+    'test-batch-placeholder-forward-reference-rejected': ((18, 1), 'batch_placeholder_forward_reference'),
     'test-batch-order-required-placeholder-resolution':
-        ((1, 18), 'batch_order_placeholder_two_item'),
+        ((1, 18), 'batch_order_required_create_activate'),
     'test-batch-order-omitted-defaults-true':
-        ((1, 18), 'batch_order_placeholder_two_item'),
+        ((1, 18), 'batch_order_omitted_create_activate'),
     'test-batch-single-item-options-omitted': ((10,), 'batch_single_item_options_omitted'),
     'test-batch-count-matches-items': ((10, 12), 'batch_count_two_read_items'),
     'test-batch-count-mismatch-rejected': ((10, 12), 'batch_count_two_read_items'),
@@ -422,6 +455,7 @@ RECIPES = {
     'test-batch-order-false-correlates-response-items': ((10, 12), 'batch_order_false_two_read_items'),
     'test-batch-continue-after-failure': ((10, 12), 'batch_continue_after_failure'),
     'test-batch-stop-on-first-failure': ((10, 10), 'batch_stop_on_first_failure'),
+    'test-batch-undo-rolls-back-prior-success': ((1, 10), 'batch_undo_rolls_back_prior_success'),
     'test-norm-payload-client-create-request-20-001': ((1, 20), 'create'),
     'test-norm-payload-client-create-request-20-002': ((1, 20), 'create'),
     'test-norm-payload-client-create-request-21-001': ((1, 20), 'create'),
@@ -436,6 +470,13 @@ RECIPES = {
     'test-norm-payload-client-get-attribute-list-request-21-001': ((1, 12, 20), 'get_attribute_list'),
     'test-op-check': ((1, 9, 19, 20), 'check'),
     'test-op-activate': ((1, 18, 19, 20), 'activate'),
+    'test-op-archive': ((1, 21, 19, 20), 'archive'),
+    'test-norm-payload-client-archive-request-20-001': ((1, 21, 19, 20), 'archive'),
+    'test-norm-payload-client-archive-response-20-001': ((1, 21, 19, 20), 'archive'),
+    'test-norm-payload-client-archive-request-21-001': ((1, 21, 19, 20), 'archive'),
+    'test-norm-payload-client-archive-response-21-001': ((1, 21, 19, 20), 'archive'),
+    'test-op-create-split-key': ((40,), 'create_split_key'),
+    'test-op-derive-key': ((5,), 'derive_key'),
     'test-op-revoke': ((1, 19, 20), 'revoke'),
     'test-op-destroy': ((1, 20, 19, 20), 'destroy'),
     'test-op-get-constraints': ((1, 56, 19, 20), 'get_constraints'),
@@ -466,6 +507,11 @@ RECIPES = {
 
 CONTROLLED_PEER_LOCAL_MODEL_CASES = frozenset({
     'test-batch-single-item-options-omitted',
+    'test-batch-placeholder-forward-reference-rejected',
+    'test-norm-payload-client-archive-request-20-001',
+    'test-norm-payload-client-archive-response-20-001',
+    'test-norm-payload-client-archive-request-21-001',
+    'test-norm-payload-client-archive-response-21-001',
     'test-norm-payload-client-get-request-20-001',
     'test-norm-payload-client-get-request-21-001',
     'test-norm-payload-client-get-attribute-list-request-20-001',
@@ -1055,6 +1101,30 @@ def verify_signature_response(response_tree, verify):
             raise ValueError('fixture_sign_response_fields_mismatch')
 
 
+def verify_legacy_signature_response(response_tree, verify):
+    """Check the established single-key Sign and Signature Verify fixture shape."""
+    operation = 34 if verify else 33
+    item_ids = LEGACY_SIGNATURE_VERIFY_ITEM_IDS if verify else LEGACY_SIGN_ITEM_IDS
+    items = [child for child in response_tree[2]
+             if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if ([numbers(item, 0x42005C) for item in items] != [[1], [18], [operation], [19], [20]] or
+            [byte_string_values(item, 0x420093) for item in items] != [[item_id] for item_id in item_ids] or
+            [numbers(item, 0x42007F) for item in items] != [[0]] * 5):
+        raise ValueError('fixture_legacy_signature_response_lifecycle_mismatch')
+    payloads = [child for child in items[2][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1]
+    if len(payloads) != 1 or text_values(items[2], UNIQUE_IDENTIFIER_TAG) != ['fixture-key-1']:
+        raise ValueError('fixture_legacy_signature_response_identifier_mismatch')
+    fields = payloads[0][2]
+    if verify:
+        if len(fields) != 2 or numbers(items[2], 0x42009B) != [1]:
+            raise ValueError('fixture_legacy_signature_verify_response_mismatch')
+    else:
+        signatures = [field for field in fields if field[0] == 0x4200C3 and field[1] == 8]
+        if len(fields) != 2 or len(signatures) != 1 or signatures[0][2] != b'fixture-signature-data':
+            raise ValueError('fixture_legacy_sign_response_mismatch')
+
+
 def assert_create_key_pair_request(node):
     """Check a Create Key Pair request and cleanup of both returned objects."""
     items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
@@ -1077,7 +1147,7 @@ def assert_create_key_pair_request(node):
         raise ValueError('fixture_create_key_pair_cleanup_identifiers_mismatch')
 
 
-def verify_create_key_pair_response(response_tree):
+def verify_create_key_pair_batch_response(response_tree):
     """Check distinct response IDs and exact cleanup identifier mapping."""
     items = [child for child in response_tree[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
     if ([numbers(item, 0x42005C) for item in items] != [[2], [20], [20]] or
@@ -1101,7 +1171,7 @@ def verify_create_key_pair_response(response_tree):
         raise ValueError('fixture_create_key_pair_cleanup_mapping_mismatch')
 
 
-def assert_certify_request(node):
+def assert_certify_batch_request(node):
     """Check Certify of the Public Key and Certificate Sign capability."""
     items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
     operations = [[2], [18], [6], [19], [20], [20], [20]]
@@ -1143,7 +1213,7 @@ def assert_certify_request(node):
         raise ValueError('fixture_certify_certificate_type_attribute_mismatch')
 
 
-def verify_certify_response(response_tree):
+def verify_certify_batch_response(response_tree):
     """Check the generated certificate ID and all three cleanup results."""
     items = [child for child in response_tree[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
     operations = [[2], [18], [6], [19], [20], [20], [20]]
@@ -1202,16 +1272,6 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
         assert_login_request_payload(node, case_id)
     if selected_recipe[1] == 'delegated_login':
         assert_delegated_login_request_payload(node, case_id)
-    if selected_recipe[1] == 'archive':
-        archive_items = [item for item in node[2]
-                         if item[0] == BATCH_ITEM_TAG and numbers(item, 0x42005C) == [21]]
-        payloads = [child for child in archive_items[0][2]
-                    if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1] \
-            if len(archive_items) == 1 else []
-        identifiers = [child for child in payloads[0][2]
-                       if child[0] == UNIQUE_IDENTIFIER_TAG] if len(payloads) == 1 else []
-        if len(identifiers) != 1 or not is_id_placeholder_identifier(identifiers[0]):
-            raise ValueError('fixture_archive_identifier_mismatch')
     if selected_recipe[1] == 'encrypt':
         assert_crypto_request(node, False)
     if selected_recipe[1] == 'decrypt':
@@ -1220,12 +1280,12 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
         assert_mac_request(node)
     if selected_recipe[1] == 'mac_verify':
         assert_mac_verify_request(node)
-    if selected_recipe[1] in ('sign', 'signature_verify'):
-        assert_signature_request(node, selected_recipe[1] == 'signature_verify')
-    if selected_recipe[1] == 'create_key_pair':
+    if selected_recipe[1] in ('sign_pair', 'signature_verify_pair'):
+        assert_signature_request(node, selected_recipe[1] == 'signature_verify_pair')
+    if selected_recipe[1] == 'create_key_pair_direct':
         assert_create_key_pair_request(node)
-    if selected_recipe[1] == 'certify':
-        assert_certify_request(node)
+    if selected_recipe[1] == 'certify_public_key':
+        assert_certify_batch_request(node)
     if (case_id in {
             'test-norm-payload-client-add-attribute-request-20-002',
             'test-norm-payload-client-add-attribute-request-21-002'} and
@@ -1249,6 +1309,17 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
                 text_values(adjust_item, UNIQUE_IDENTIFIER_TAG) != ['fixture-key-1'] or
                 request_adjust_attribute_fields(adjust_item) != ('KMIPKit', 'Counter', 1, 5)):
             raise ValueError('fixture_adjust_attribute_request_fields_mismatch')
+    if selected_recipe[1] == 'archive':
+        archive_items = [item for item in node[2]
+                         if item[0] == BATCH_ITEM_TAG and item[1] == 1 and
+                         numbers(item, 0x42005C) == [21]]
+        omitted_identifier = case_id in (
+            'test-norm-payload-client-archive-request-20-001',
+            'test-norm-payload-client-archive-request-21-001')
+        expected_identifier = [] if omitted_identifier else [ID_PLACEHOLDER_ENUMERATION]
+        if (len(archive_items) != 1 or
+                numbers(archive_items[0], UNIQUE_IDENTIFIER_TAG) != expected_identifier):
+            raise ValueError('fixture_archive_unique_identifier_presence_mismatch')
     if selected_recipe[1] == 'export':
         export_item = next((item for item in node[2]
                             if item[0] == BATCH_ITEM_TAG and item[1] == 1 and
@@ -1290,7 +1361,10 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
                         identifiers[0][2] != b'fixture-wrapping-key'):
                     raise ValueError('fixture_export_key_wrapping_specification_mismatch')
     if expected[0] == 1:
-        object_type = 4 if case_id == 'test-obj-private-key' else 3 if case_id == 'test-obj-public-key' else 2
+        object_type = 4 if case_id in ('test-obj-private-key', 'test-op-sign',
+                                      'test-crypto-sign-rsa-2048-pkcs1_v1_5') else 3 if case_id in (
+            'test-obj-public-key', 'test-op-certify', 'test-op-signature-verify',
+            'test-crypto-signature-verify-rsa-2048-pkcs1_v1_5') else 2
         if numbers(node, 0x420057) != [object_type]:
             raise ValueError('fixture_object_type_mismatch')
         expected_algorithms = ([3, 3] if selected_recipe[1] in ('encrypt', 'decrypt') else
@@ -1302,7 +1376,9 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
             2048 if object_type in (3, 4) else 128)
         if numbers(node, 0x42002A) != [expected_key_length]:
             raise ValueError('fixture_key_length_mismatch')
-        if numbers(node, 0x42000E) != [1]:
+        expected_continuation = ([] if len(expected) == 1 else [
+            3 if case_id == 'test-batch-undo-rolls-back-prior-success' else 1])
+        if numbers(node, 0x42000E) != expected_continuation:
             raise ValueError('fixture_cleanup_continuation_missing')
         implicit_target = case_id in ('test-op-get-attributes', 'test-op-get-attribute-list',
             'test-norm-payload-client-get-attribute-list-request-20-001',
@@ -1310,7 +1386,13 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
             'test-batch-create-activate-destroy', 'test-attr-cryptographic-algorithm',
             'test-attr-cryptographic-length', 'test-op-get-constraints',
             'test-norm-payload-client-get-usage-allocation-request-20-001',
-            'test-norm-payload-client-get-usage-allocation-request-21-001') or attribute_fixture is not None
+            'test-norm-payload-client-get-usage-allocation-request-21-001',
+            'test-norm-payload-client-archive-request-20-001',
+            'test-norm-payload-client-archive-request-21-001') or attribute_fixture is not None
+        implicit_target = implicit_target or case_id in (
+            'test-batch-order-required-placeholder-resolution',
+            'test-batch-order-omitted-defaults-true')
+        implicit_target = implicit_target or case_id == 'test-op-certify'
         implicit_target = implicit_target or (
             selected_recipe[1] == 'export' and export_field == 'Unique Identifier' and
             constructor_variant == 'omitted')
@@ -1337,14 +1419,29 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
                 raise ValueError('fixture_placeholder_chain_shape_mismatch')
             if numbers(node, 0x42000E) != [1]:
                 raise ValueError('fixture_placeholder_chain_continue_option_missing')
-    if selected_recipe[1] == 'batch_order_placeholder_two_item':
+        if selected_recipe[1] in ('batch_order_required_create_activate',
+                                  'batch_order_omitted_create_activate'):
+            items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+            if ([numbers(item, 0x42005C) for item in items] != [[1], [18]] or
+                    [byte_string_values(item, 0x420093) for item in items] !=
+                    [[b'placeholder-create'], [b'placeholder-activate']] or
+                    numbers(node, 0x42000E) != [1]):
+                raise ValueError('fixture_ordered_placeholder_batch_shape_mismatch')
+            required_order = selected_recipe[1] == 'batch_order_required_create_activate'
+            if numbers(node, 0x420010) != ([1] if required_order else []):
+                raise ValueError('fixture_batch_order_option_presence_mismatch')
+    if selected_recipe[1] == 'batch_undo_rolls_back_prior_success':
         items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
-        is_required = case_id == 'test-batch-order-required-placeholder-resolution'
-        if ([numbers(item, 0x42005C) for item in items] != [[1], [18]] or
+        if (len(items) != 2 or [numbers(item, 0x42005C) for item in items] != [[1], [10]] or
+                numbers(node, 0x42000E) != [3] or numbers(node, 0x420010) != [1] or
                 [byte_string_values(item, 0x420093) for item in items] !=
-                [[BATCH_ORDER_PLACEHOLDER_ITEM_IDS[0]], [BATCH_ORDER_PLACEHOLDER_ITEM_IDS[1]]] or
-                numbers(node, 0x420010) != ([1] if is_required else [])):
-            raise ValueError('fixture_batch_order_placeholder_shape_mismatch')
+                [[b'undo-create'], [b'undo-failing-get']]):
+            raise ValueError('fixture_undo_batch_shape_mismatch')
+        get_payloads = [child for child in items[1][2]
+                        if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+        if (len(get_payloads) != 1 or
+                text_values(get_payloads[0], UNIQUE_IDENTIFIER_TAG) != ['missing-key']):
+            raise ValueError('fixture_undo_get_missing_identifier_mismatch')
     if selected_recipe[1] == 'get_usage_allocation_uid_variants':
         items = [child for child in node[2]
                  if child[0] == BATCH_ITEM_TAG and child[1] == 1]
@@ -1581,23 +1678,6 @@ def verify_placeholder_chain_response(node, operations):
             raise ValueError('fixture_placeholder_chain_get_object_missing')
 
 
-def verify_batch_order_placeholder_response(node):
-    """Verify Create then Activate responses remain correlated and target one object."""
-    items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
-    if ([numbers(item, 0x42005C) for item in items] != [[1], [18]] or
-            [numbers(item, 0x42007F) for item in items] != [[0], [0]] or
-            [byte_string_values(item, 0x420093) for item in items] !=
-            [[BATCH_ORDER_PLACEHOLDER_ITEM_IDS[0]], [BATCH_ORDER_PLACEHOLDER_ITEM_IDS[1]]] or
-            [text_values(item, 0x420094) for item in items] !=
-            [['fixture-key-1'], ['fixture-key-1']]):
-        raise ValueError('fixture_batch_order_placeholder_response_mismatch')
-    create_payloads = [child for child in items[0][2]
-                       if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1]
-    if (len(create_payloads) != 1 or
-            numbers(create_payloads[0], 0x420057) != [2]):
-        raise ValueError('fixture_batch_order_placeholder_create_payload_mismatch')
-
-
 def peer_cleanup_evidence(observations, include_state_hash=False):
     cleanup = observations[-1]
     state_after = cleanup[2]['peer_observed_state_after_sha256']
@@ -1618,11 +1698,10 @@ def assert_placeholder_usage(node, case_id):
     """Accept omitted or explicit ID Placeholder identifiers after Create."""
     if case_id not in ('test-batch-create-activate-destroy',
                        'test-batch-register-encrypt-decrypt-destroy',
-                       'test-batch-placeholder-chain-resolves',
-                       'test-batch-order-required-placeholder-resolution',
-                       'test-batch-order-omitted-defaults-true', 'test-op-encrypt',
+                       'test-batch-placeholder-chain-resolves', 'test-op-encrypt',
                        'test-op-decrypt', 'test-op-mac', 'test-op-mac-verify',
-                       'test-op-archive'):
+                       'test-batch-order-required-placeholder-resolution',
+                       'test-batch-order-omitted-defaults-true', 'test-op-archive'):
         return
     batch_items = [child for child in node[2]
                    if child[0] == BATCH_ITEM_TAG and child[1] == 1]
@@ -2520,6 +2599,10 @@ def target_operation_exchange_index(recipe):
         return 3
     if recipe is not None and recipe[1] == 'async_process_then_poll_state':
         return 0
+    if recipe is not None and recipe[1] == 'certify':
+        return 1
+    if recipe is not None and recipe[1] == 'derive_key':
+        return 2
     return 1 if recipe is not None and recipe[1] in ('login_logout', 'cancel_async') else 0
 
 
@@ -2566,6 +2649,11 @@ def recipe_for_case(case, attribute_fixture):
             return ((3, 11, 20), 'get_attributes')
         return ((1, 11, 20), 'get_attributes')
     return None
+
+
+def archive_response_item_ids(case_id):
+    """Return the response IDs paired with the selected Archive request recipe."""
+    return ARCHIVE_ACTION_ITEM_IDS if case_id == 'test-op-archive' else ARCHIVE_PAYLOAD_ITEM_IDS
 
 
 def attribute_item_value(attribute_field):
@@ -2622,9 +2710,12 @@ class PeerState:
         return hashlib.sha256(state.encode()).hexdigest()
 
     def execute(self, request_tree, *, continued_batch=False, stop_after_failure=False,
-                rejected_operation=None,
+                undo_prior_success=False, rejected_operation=None,
                 rejection_status=1, rejection_reason=5):
         before = self.digest()
+        undo_enabled = undo_prior_success or numbers(request_tree, 0x42000E) == [3]
+        prior_state = copy.deepcopy((self.objects, self.attributes, self.attribute_values,
+                                     self.adjustable_attribute_values)) if undo_enabled else None
         effects, statuses, reasons = [], [], []
         placeholder = None
         labels = {9: 'checked', 10: 'object_retrieved', 11: 'attributes_retrieved',
@@ -2635,7 +2726,7 @@ class PeerState:
                   43: 'exported',
                   17: 'usage_allocation_returned',
                   26: 'async_operation_polled',
-                  56: 'constraints_retrieved',
+                  56: 'constraints_retrieved', 21: 'archive_requested',
                   57: 'async_requests_queried'}
         items = [item for item in request_tree[2] if item[0] == BATCH_ITEM_TAG]
         for index, item in enumerate(items):
@@ -2724,6 +2815,29 @@ class PeerState:
                 self.adjustable_attribute_values[identifier] = {}
                 placeholder = identifier
                 effect = 'created'
+            elif operation == 5:
+                if identifier not in self.objects or self.objects[identifier] != 'active':
+                    raise ValueError('fixture_derive_key_source_not_active')
+                identifier = 'fixture-derived-key'
+                if identifier in self.objects:
+                    raise ValueError('fixture_duplicate_derived_key')
+                self.objects[identifier] = 'pre_active'
+                self.attributes[identifier] = set()
+                self.attribute_values[identifier] = {}
+                self.adjustable_attribute_values[identifier] = {}
+                placeholder = identifier
+                effect = 'derived_key_created'
+            elif operation == 40:
+                identifiers = ('fixture-split-part-one', 'fixture-split-part-two',
+                               'fixture-split-part-three')
+                if any(identifier in self.objects for identifier in identifiers):
+                    raise ValueError('fixture_duplicate_create_split_key')
+                for split_identifier in identifiers:
+                    self.objects[split_identifier] = 'pre_active'
+                    self.attributes[split_identifier] = set()
+                    self.attribute_values[split_identifier] = {}
+                    self.adjustable_attribute_values[split_identifier] = {}
+                effect = 'created_split_key_parts'
             elif operation == 8:
                 matching_identifiers = list(self.objects)
                 if len(matching_identifiers) != 1:
@@ -2846,6 +2960,16 @@ class PeerState:
             reasons.append(reason)
             if stop_after_failure and status != 0:
                 break
+        if undo_enabled:
+            failure_index = next((index for index, status in enumerate(statuses) if status != 0), None)
+            if failure_index is not None:
+                for index in range(failure_index):
+                    if statuses[index] == 0:
+                        statuses[index] = 3
+                        reasons[index] = 0
+                        effects[index] = 'operation_undone'
+                (self.objects, self.attributes, self.attribute_values,
+                 self.adjustable_attribute_values) = prior_state
         return {'effects': effects, 'statuses': statuses, 'reasons': reasons,
                 'peer_observed_state_before_sha256': before,
                 'peer_observed_state_after_sha256': self.digest()}
@@ -2862,7 +2986,7 @@ def verify_lifecycle(operations, response_tree):
               48: 'attribute_adjusted',
               43: 'exported',
               17: 'usage_allocation_returned',
-              56: 'constraints_retrieved'}
+              56: 'constraints_retrieved', 21: 'archive_requested'}
     for operation in operations:
         status, reason = 0, 0
         if operation in (1, 3):
@@ -2916,6 +3040,269 @@ def verify_lifecycle(operations, response_tree):
     return effects
 
 
+def verify_archive_response(response_tree):
+    """Require Archive Success to return the exact Unique Identifier (KMIP §6.1.4)."""
+    items = [child for child in response_tree[2]
+             if child[0] == BATCH_ITEM_TAG and child[1] == 1 and
+             numbers(child, 0x42005C) == [21]]
+    payloads = [child for child in items[0][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+    if (len(items) != 1 or numbers(items[0], 0x42007F) != [0] or
+            len(payloads) != 1 or text_values(payloads[0], UNIQUE_IDENTIFIER_TAG) !=
+            ['fixture-key-1']):
+        raise ValueError('fixture_archive_response_identifier_mismatch')
+
+
+def verify_create_key_pair_response(response_tree):
+    items = [item for item in response_tree[2]
+             if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+    private_ids = [child[2].decode('utf-8') for child in descendants(payloads[0], 0x420066)
+                   if child[1] == 7] if len(payloads) == 1 else []
+    public_ids = [child[2].decode('utf-8') for child in descendants(payloads[0], 0x42006F)
+                  if child[1] == 7] if len(payloads) == 1 else []
+    if (len(items) != 1 or numbers(items[0], 0x42005C) != [2] or
+            numbers(items[0], 0x42007F) != [0] or len(payloads) != 1 or
+            private_ids != ['fixture-private-key-1'] or
+            public_ids != ['fixture-public-key-1']):
+        raise ValueError('fixture_create_key_pair_response_mismatch')
+
+
+def verify_create_split_key_response(response_tree):
+    expected_identifiers = [
+        'fixture-split-part-one', 'fixture-split-part-two', 'fixture-split-part-three']
+    items = [item for item in response_tree[2]
+             if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+    identifiers = text_values(payloads[0], UNIQUE_IDENTIFIER_TAG) if len(payloads) == 1 else []
+    if (len(items) != 1 or numbers(items[0], 0x42005C) != [40] or
+            numbers(items[0], 0x42007F) != [0] or len(payloads) != 1 or
+            identifiers != expected_identifiers):
+        raise ValueError('fixture_create_split_key_response_mismatch')
+
+
+def assert_create_split_key_request(request_tree, version):
+    """Require a typed 3-part, 2-of-3 XOR split of an AES-128 symmetric key."""
+    assert_recipe(request_tree, 'test-op-create-split-key', version,
+                  ((40,), 'create_split_key'))
+    items = [item for item in request_tree[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+    if (len(items) != 1 or len(payloads) != 1 or
+            direct_numbers(payloads[0], 0x420057) != [2] or
+            direct_numbers(payloads[0], 0x42008B) != [3] or
+            direct_numbers(payloads[0], 0x42008C) != [2] or
+            direct_numbers(payloads[0], 0x42008A) != [1]):
+        raise ValueError('fixture_create_split_key_request_fields_mismatch')
+    attributes = [child for child in payloads[0][2]
+                  if child[0] == 0x420125 and child[1] == 1]
+    if (len(attributes) != 1 or numbers(attributes[0], 0x420028) != [3] or
+            numbers(attributes[0], 0x42002A) != [128]):
+        raise ValueError('fixture_create_split_key_aes_attributes_mismatch')
+
+
+def assert_create_split_key_cleanup_request(request_tree, version):
+    expected_identifiers = [
+        'fixture-split-part-one', 'fixture-split-part-two', 'fixture-split-part-three']
+    assert_recipe(request_tree, 'test-op-create-split-key', version,
+                  ((20, 20, 20), 'create_split_key_cleanup'))
+    items = [item for item in request_tree[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    if ([numbers(item, 0x42005C) for item in items] != [[20], [20], [20]] or
+            [text_values(item, UNIQUE_IDENTIFIER_TAG) for item in items] !=
+            [[identifier] for identifier in expected_identifiers]):
+        raise ValueError('fixture_create_split_key_cleanup_identifiers_mismatch')
+
+
+def assert_derive_key_setup_request(request_tree, version):
+    assert_recipe(request_tree, 'test-op-derive-key', version, ((1,), 'derive_key'))
+    items = [item for item in request_tree[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+    attributes = [child for child in payloads[0][2]
+                  if child[0] == 0x420125 and child[1] == 1] if len(payloads) == 1 else []
+    if (len(items) != 1 or len(payloads) != 1 or
+            numbers(items[0], 0x42005C) != [1] or
+            numbers(attributes[0], 0x420028) != [3] or
+            numbers(attributes[0], 0x42002A) != [128] or
+            numbers(attributes[0], 0x42002C) != [512]):
+        raise ValueError('fixture_derive_key_source_attributes_mismatch')
+
+
+def assert_derive_key_activate_request(request_tree, version):
+    assert_recipe(request_tree, 'test-op-derive-key', version, ((18,), 'derive_key'))
+    items = [item for item in request_tree[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    if (len(items) != 1 or numbers(items[0], 0x42005C) != [18] or
+            text_values(items[0], UNIQUE_IDENTIFIER_TAG) != ['fixture-key-1']):
+        raise ValueError('fixture_derive_key_activation_mismatch')
+
+
+def assert_derive_key_request(request_tree, version):
+    assert_recipe(request_tree, 'test-op-derive-key', version, ((5,), 'derive_key'))
+    items = [item for item in request_tree[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+    parameters = [child for child in payloads[0][2]
+                  if child[0] == 0x420032 and child[1] == 1] if len(payloads) == 1 else []
+    cryptographic_parameters = [child for child in parameters[0][2]
+                                if child[0] == 0x42002B and child[1] == 1] \
+        if len(parameters) == 1 else []
+    output_attributes = [child for child in payloads[0][2]
+                         if child[0] == 0x420125 and child[1] == 1] if len(payloads) == 1 else []
+    if (len(items) != 1 or len(payloads) != 1 or
+            numbers(items[0], 0x42005C) != [5] or
+            text_values(items[0], UNIQUE_IDENTIFIER_TAG) != ['fixture-key-1'] or
+            numbers(payloads[0], 0x420057) != [2] or
+            numbers(payloads[0], 0x420031) != [2] or
+            len(parameters) != 1 or len(cryptographic_parameters) != 1 or
+            numbers(cryptographic_parameters[0], 0x420038) != [6] or
+            len(output_attributes) != 1 or
+            numbers(output_attributes[0], 0x420028) != [3] or
+            numbers(output_attributes[0], 0x42002A) != [128]):
+        raise ValueError('fixture_derive_key_request_fields_mismatch')
+
+
+def assert_derive_key_cleanup_request(request_tree, version):
+    assert_recipe(request_tree, 'test-op-derive-key', version, ((19, 20, 20), 'derive_key'))
+    items = [item for item in request_tree[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    if ([numbers(item, 0x42005C) for item in items] != [[19], [20], [20]] or
+            [text_values(item, UNIQUE_IDENTIFIER_TAG) for item in items] !=
+            [['fixture-key-1'], ['fixture-key-1'], ['fixture-derived-key']]):
+        raise ValueError('fixture_derive_key_cleanup_identifiers_mismatch')
+
+
+def verify_derive_key_response(response_tree):
+    items = [item for item in response_tree[2]
+             if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+    if (len(items) != 1 or numbers(items[0], 0x42005C) != [5] or
+            numbers(items[0], 0x42007F) != [0] or len(payloads) != 1 or
+            text_values(payloads[0], UNIQUE_IDENTIFIER_TAG) != ['fixture-derived-key']):
+        raise ValueError('fixture_derive_key_response_mismatch')
+
+
+def assert_create_key_pair_cleanup_request(request_tree, version):
+    assert_recipe(request_tree, 'test-op-create-key-pair', version,
+                  ((20, 20), 'create_key_pair_cleanup'))
+    items = [item for item in request_tree[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    identifiers = [text_values(item, UNIQUE_IDENTIFIER_TAG) for item in items]
+    if identifiers != [['fixture-private-key-1'], ['fixture-public-key-1']]:
+        raise ValueError('fixture_create_key_pair_cleanup_identifier_mismatch')
+
+
+def verify_certify_response(response_tree):
+    items = [item for item in response_tree[2]
+             if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1] \
+        if len(items) == 1 else []
+    if (len(items) != 1 or [numbers(item, 0x42005C) for item in items] != [[6]] or
+            [numbers(item, 0x42007F) for item in items] != [[0]] or
+            len(payloads) != 1 or text_values(payloads[0], UNIQUE_IDENTIFIER_TAG) !=
+            ['fixture-certificate-1']):
+        raise ValueError('fixture_certify_response_identifier_mismatch')
+
+
+def assert_certify_setup_request(request_tree, version):
+    """Require the Certify fixture to create an RSA Public/Private Key Pair (§6.1.9)."""
+    assert_recipe(request_tree, 'test-op-create-key-pair', version,
+                  ((2,), 'create_key_pair'))
+    items = [item for item in request_tree[2]
+             if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1] \
+        if len(items) == 1 else []
+    if len(items) != 1 or len(payloads) != 1:
+        raise ValueError('fixture_certify_key_pair_attributes_missing')
+    key_attributes = {child[0]: child[2] for child in payloads[0][2]
+                      if child[0] in (0x420127, 0x420128) and child[1] == 1}
+    if set(key_attributes) != {0x420127, 0x420128}:
+        raise ValueError('fixture_certify_key_pair_attributes_missing')
+    for fields in key_attributes.values():
+        algorithms = [int.from_bytes(child[2], 'big') for child in fields
+                      if child[0] == 0x420028 and child[1] == 5]
+        lengths = [int.from_bytes(child[2], 'big', signed=True) for child in fields
+                   if child[0] == 0x42002A and child[1] == 2]
+        if algorithms != [4] or lengths != [2048]:
+            raise ValueError('fixture_certify_key_pair_rsa_attributes_mismatch')
+
+
+def assert_certify_request(request_tree, version):
+    assert_recipe(request_tree, 'test-op-certify', version, ((6,), 'certify'))
+    items = [item for item in request_tree[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    certify_items = [item for item in items if numbers(item, 0x42005C) == [6]]
+    if len(certify_items) != 1:
+        raise ValueError('fixture_certify_request_item_missing')
+    certify_uid_text = text_values(certify_items[0], UNIQUE_IDENTIFIER_TAG)
+    if len(certify_uid_text) != 1:
+        raise ValueError('fixture_certify_request_identifier_missing')
+    if certify_uid_text != ['fixture-public-key-1']:
+        raise ValueError('fixture_certify_request_identifier_value_mismatch')
+    certify_uid_types = [item[1] for item in descendants(certify_items[0], UNIQUE_IDENTIFIER_TAG)]
+    if certify_uid_types != [7]:
+        raise ValueError('fixture_certify_request_identifier_type_mismatch')
+    if numbers(certify_items[0], 0x42001D) != [1]:
+        raise ValueError('fixture_certify_request_certificate_type_mismatch')
+
+
+def assert_certify_cleanup_request(request_tree, version):
+    assert_recipe(request_tree, 'test-op-certify', version, ((20, 20, 20), 'certify_cleanup'))
+    items = [item for item in request_tree[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    identifiers = [text_values(item, UNIQUE_IDENTIFIER_TAG) for item in items]
+    if identifiers != [['fixture-certificate-1'], ['fixture-public-key-1'],
+                       ['fixture-private-key-1']]:
+        raise ValueError('fixture_certify_cleanup_identifier_mismatch')
+
+
+def assert_sign_request(request_tree, version, case_id):
+    recipe = RECIPES[case_id]
+    assert_recipe(request_tree, case_id, version, recipe)
+    items = [item for item in request_tree[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    sign_items = [item for item in items if numbers(item, 0x42005C) == [33]]
+    payloads = [child for child in sign_items[0][2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1] if len(sign_items) == 1 else []
+    parameters = [child for child in payloads[0][2]
+                  if child[0] == 0x42002B and child[1] == 1] if len(payloads) == 1 else []
+    data = [child for child in payloads[0][2]
+            if child[0] == 0x4200C2 and child[1] == 8] if len(payloads) == 1 else []
+    if (len(items) != 5 or [numbers(item, 0x42005C) for item in items] !=
+            [[1], [18], [33], [19], [20]]):
+        raise ValueError('fixture_sign_request_operations_mismatch')
+    if len(sign_items) != 1 or numbers(sign_items[0], UNIQUE_IDENTIFIER_TAG) != [1]:
+        raise ValueError('fixture_sign_request_identifier_mismatch')
+    if (len(payloads) != 1 or len(parameters) != 1 or
+            numbers(parameters[0], 0x420038) != [6] or
+            numbers(parameters[0], 0x42003D) != [5] or
+            len(data) != 1 or data[0][2] != b'abc'):
+        raise ValueError('fixture_sign_request_parameters_mismatch')
+
+
+def assert_signature_verify_request(request_tree, version, case_id):
+    recipe = RECIPES[case_id]
+    assert_recipe(request_tree, case_id, version, recipe)
+    items = [item for item in request_tree[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    verify_items = [item for item in items if numbers(item, 0x42005C) == [34]]
+    payloads = [child for child in verify_items[0][2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1] if len(verify_items) == 1 else []
+    parameters = [child for child in payloads[0][2]
+                  if child[0] == 0x42002B and child[1] == 1] if len(payloads) == 1 else []
+    data = [child for child in payloads[0][2]
+            if child[0] == 0x4200C2 and child[1] == 8] if len(payloads) == 1 else []
+    signatures = [child for child in payloads[0][2]
+                  if child[0] == 0x4200C3 and child[1] == 8] if len(payloads) == 1 else []
+    if (len(items) != 5 or [numbers(item, 0x42005C) for item in items] !=
+            [[1], [18], [34], [19], [20]]):
+        raise ValueError('fixture_signature_verify_request_operations_mismatch')
+    if len(verify_items) != 1 or numbers(verify_items[0], UNIQUE_IDENTIFIER_TAG) != [1]:
+        raise ValueError('fixture_signature_verify_request_identifier_mismatch')
+    if (len(payloads) != 1 or len(parameters) != 1 or
+            numbers(parameters[0], 0x420038) != [6] or
+            numbers(parameters[0], 0x42003D) != [5] or
+            len(data) != 1 or data[0][2] != b'abc' or
+            len(signatures) != 1 or signatures[0][2] != b'fixture-signature-data'):
+        raise ValueError('fixture_signature_verify_request_parameters_mismatch')
 def verify_export_response(response_tree):
     """Check the required KMIP v2.0/v2.1 §6.1.18 Export payload fields."""
     items = [child for child in response_tree[2]
@@ -3124,6 +3511,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
              'test-norm-payload-client-export-request-') else
          ('direct', 'standalone') if case['case_id'] in {'test-op-get-attributes', 'test-op-get-attribute-list',
                                                          'test-batch-continue-after-failure',
+                                                         'test-batch-create-activate-destroy',
                                                          'test-batch-count-matches-items',
                                                          'test-batch-count-mismatch-rejected',
                                                          'test-batch-order-false-correlates-response-items',
@@ -3181,7 +3569,10 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                         if cancel_result is None:
                             raise ValueError('fixture_cancel_result_unavailable')
                         placeholder_chain_recipe = recipe[1] == 'batch_placeholder_chain'
-                        batch_order_placeholder_recipe = recipe[1] == 'batch_order_placeholder_two_item'
+                        batch_order_placeholder_recipe = recipe[1] in (
+                            'batch_order_required_create_activate',
+                            'batch_order_omitted_create_activate')
+                        placeholder_cleanup_recipe = placeholder_chain_recipe or batch_order_placeholder_recipe
                         attribute_mutation_recipe = recipe[1] in (
                             'add_attribute', 'modify_attribute', 'set_attribute', 'delete_attribute',
                             'adjust_attribute')
@@ -3207,11 +3598,17 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 'async_poll_repeated_pending_to_success',
                                                 'async_process_then_poll_state',
                                                 'async_query_outstanding_filter',
+                                                'create_key_pair', 'create_key_pair_direct',
+                                                'create_split_key',
+                                                'derive_key',
+                                                'certify', 'certify_public_key',
                                                 'async_unknown_correlation_rejected') and
                                             recipe[0][0] not in (1, 2, 3))),
                             usage_allocation_ready=recipe[1] == 'get_usage_allocation_uid_variants')
                         boundary = case_id in (
                             'test-v20-reject-get-constraints', 'test-v20-reject-ping')
+                        local_batch_rejection = recipe[1] == 'batch_placeholder_forward_reference'
+                        preflight_rejection = boundary or local_batch_rejection
                         with socket.socket() as server:
                             server.bind(('127.0.0.1', 0))
                             server.listen(1)
@@ -3220,17 +3617,15 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                             def serve():
                                 stream = None
                                 try:
-                                    exchange_count = (
-                                        9 if recipe[1] == 'async_query_outstanding_filter' else
-                                        4 if seeded_attribute_recipe or
-                                        recipe[1] == 'async_create_poll_lifecycle' else
-                                        3 if attribute_mutation_recipe or
-                                        recipe[1] in ('cancel_poll_race', 'async_poll_final_failure') else
+                                    exchange_count = 9 if recipe[1] == 'async_query_outstanding_filter' else 4 if seeded_attribute_recipe or recipe[1] in ('async_create_poll_lifecycle', 'derive_key') else 3 if attribute_mutation_recipe or recipe[1] == 'certify' else (
+                                        3 if recipe[1] == 'cancel_poll_race' else
+                                        3 if recipe[1] == 'async_poll_final_failure' else
                                         5 if recipe[1] == 'async_poll_repeated_pending_to_success' else
                                         4 if recipe[1] == 'async_process_then_poll_state' else
-                                        2 if placeholder_chain_recipe or batch_order_placeholder_recipe or
-                                        recipe[1] in ('login_logout', 'cancel_async',
-                                                       'async_poll_cancel_no_recursion') else 1)
+                                        2 if placeholder_cleanup_recipe or recipe[1] in (
+                                            'login_logout', 'cancel_async',
+                                            'async_poll_cancel_no_recursion',
+                                            'create_key_pair', 'create_split_key') else 1)
                                     seed_rejected = False
                                     accepted, _ = server.accept()
                                     stream = context.wrap_socket(accepted, server_side=True)
@@ -3257,8 +3652,11 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         reject_this_exchange = reject_case and exchange_index == peer_rejection.get(
                                             'exchange_index')
                                         cleanup_exchange = (
-                                            (placeholder_chain_recipe or batch_order_placeholder_recipe) and
-                                            exchange_index == 1) or (
+                                            placeholder_cleanup_recipe and exchange_index == 1) or (
+                                            recipe[1] == 'create_key_pair' and exchange_index == 1) or (
+                                            recipe[1] == 'create_split_key' and exchange_index == 1) or (
+                                            recipe[1] == 'derive_key' and exchange_index == 3) or (
+                                            recipe[1] == 'certify' and exchange_index == 2) or (
                                             attribute_mutation_recipe and
                                             (exchange_index == attribute_cleanup_exchange_index or
                                              (delete_attribute_recipe and seed_rejected and
@@ -3268,6 +3666,85 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         if logout_recipe:
                                             assert_login_logout_exchange(request_tree, version, exchange_index)
                                             response_operations = ((45,) if exchange_index == 0 else (46,))
+                                        elif recipe[1] == 'certify_public_key':
+                                            assert_recipe(request_tree, case_id, version, recipe,
+                                                          attribute_fixture, variant)
+                                            response_operations = recipe[0]
+                                            response_item_ids = CERTIFY_ITEM_IDS
+                                        elif recipe[1] == 'certify':
+                                            if exchange_index == 0:
+                                                assert_certify_setup_request(request_tree, version)
+                                                response_operations = (2,)
+                                                response_item_ids = (b'interop-certify-create-key-pair',)
+                                            elif exchange_index == 1:
+                                                assert_certify_request(request_tree, version)
+                                                response_operations = (6,)
+                                                response_item_ids = (b'interop-certify-target',)
+                                            else:
+                                                assert_certify_cleanup_request(request_tree, version)
+                                                response_operations = (20, 20, 20)
+                                                response_item_ids = (b'interop-destroy-certificate',
+                                                                     b'interop-destroy-public-key',
+                                                                     b'interop-destroy-private-key')
+                                        elif recipe[1] == 'sign_pair':
+                                            assert_recipe(request_tree, case_id, version, recipe,
+                                                          attribute_fixture, variant)
+                                            response_operations = recipe[0]
+                                            response_item_ids = SIGN_ITEM_IDS
+                                        elif recipe[1] == 'signature_verify_pair':
+                                            assert_recipe(request_tree, case_id, version, recipe,
+                                                          attribute_fixture, variant)
+                                            response_operations = recipe[0]
+                                            response_item_ids = SIGNATURE_VERIFY_ITEM_IDS
+                                        elif recipe[1] == 'sign':
+                                            assert_sign_request(request_tree, version, case_id)
+                                            response_operations = recipe[0]
+                                            response_item_ids = LEGACY_SIGN_ITEM_IDS
+                                        elif recipe[1] == 'signature_verify':
+                                            assert_signature_verify_request(request_tree, version, case_id)
+                                            response_operations = recipe[0]
+                                            response_item_ids = LEGACY_SIGNATURE_VERIFY_ITEM_IDS
+                                        elif recipe[1] == 'create_key_pair':
+                                            if exchange_index == 0:
+                                                assert_recipe(request_tree, case_id, version, recipe,
+                                                              attribute_fixture, variant)
+                                                response_operations = (2,)
+                                                response_item_ids = (b'interop-create-key-pair',)
+                                            else:
+                                                assert_create_key_pair_cleanup_request(request_tree, version)
+                                                response_operations = (20, 20)
+                                                response_item_ids = (b'interop-destroy-private-key',
+                                                                     b'interop-destroy-public-key')
+                                        elif recipe[1] == 'create_split_key':
+                                            if exchange_index == 0:
+                                                assert_create_split_key_request(request_tree, version)
+                                                response_operations = (40,)
+                                                response_item_ids = (b'interop-create-split-key',)
+                                            else:
+                                                assert_create_split_key_cleanup_request(request_tree, version)
+                                                response_operations = (20, 20, 20)
+                                                response_item_ids = (b'interop-destroy-split-one',
+                                                                     b'interop-destroy-split-two',
+                                                                     b'interop-destroy-split-three')
+                                        elif recipe[1] == 'derive_key':
+                                            if exchange_index == 0:
+                                                assert_derive_key_setup_request(request_tree, version)
+                                                response_operations = (1,)
+                                                response_item_ids = (b'interop-derive-create',)
+                                            elif exchange_index == 1:
+                                                assert_derive_key_activate_request(request_tree, version)
+                                                response_operations = (18,)
+                                                response_item_ids = (b'interop-derive-activate',)
+                                            elif exchange_index == 2:
+                                                assert_derive_key_request(request_tree, version)
+                                                response_operations = (5,)
+                                                response_item_ids = (b'interop-derive-key',)
+                                            else:
+                                                assert_derive_key_cleanup_request(request_tree, version)
+                                                response_operations = (19, 20, 20)
+                                                response_item_ids = (b'interop-derive-revoke-source',
+                                                                     b'interop-derive-destroy-source',
+                                                                     b'interop-derive-destroy-result')
                                         elif recipe[1] == 'async_create_poll_lifecycle':
                                             response_operations, response_item_ids = \
                                                 assert_async_lifecycle_exchange(
@@ -3372,7 +3849,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             response_item_ids = (b'interop-begin', b'interop-end',
                                                                  b'interop-reset')
                                         elif cleanup_exchange:
-                                            if placeholder_chain_recipe or batch_order_placeholder_recipe:
+                                            if placeholder_cleanup_recipe:
                                                 assert_placeholder_cleanup_request(request_tree, version)
                                             else:
                                                 assert_add_attribute_cleanup_request(request_tree, version)
@@ -3413,7 +3890,10 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                             case_id, int(attribute_fixture.get(
                                                                 'attribute_response_tag', '000000'), 16)
                                                             if attribute_fixture else 0)
-                                        object_type = 4 if case_id == 'test-obj-private-key' else 3 if case_id == 'test-obj-public-key' else 2
+                                        object_type = 4 if case_id in ('test-obj-private-key', 'test-op-sign',
+                                                                       'test-crypto-sign-rsa-2048-pkcs1_v1_5') else 3 if case_id in (
+                                            'test-obj-public-key', 'test-op-certify', 'test-op-signature-verify',
+                                            'test-crypto-signature-verify-rsa-2048-pkcs1_v1_5') else 2
                                         if recipe[1] == 'get_usage_allocation_uid_variant':
                                             response_item_ids = (
                                                 b'interop-create',
@@ -3431,16 +3911,21 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             response_item_ids = MAC_ITEM_IDS
                                         elif recipe[1] == 'mac_verify':
                                             response_item_ids = MAC_VERIFY_ITEM_IDS
+                                        elif recipe[1] in ('sign_pair', 'signature_verify_pair'):
+                                            response_item_ids = (SIGN_ITEM_IDS if recipe[1] == 'sign_pair'
+                                                                 else SIGNATURE_VERIFY_ITEM_IDS)
+                                        elif recipe[1] == 'create_key_pair_direct':
+                                            response_item_ids = CREATE_KEY_PAIR_ITEM_IDS
+                                        elif recipe[1] == 'certify_public_key':
+                                            response_item_ids = CERTIFY_ITEM_IDS
                                         elif recipe[1] == 'sign':
-                                            response_item_ids = SIGN_ITEM_IDS
+                                            response_item_ids = LEGACY_SIGN_ITEM_IDS
                                         elif recipe[1] == 'signature_verify':
-                                            response_item_ids = SIGNATURE_VERIFY_ITEM_IDS
+                                            response_item_ids = LEGACY_SIGNATURE_VERIFY_ITEM_IDS
                                         elif recipe[1] == 'create_key_pair':
                                             response_item_ids = CREATE_KEY_PAIR_ITEM_IDS
                                         elif recipe[1] == 'archive':
-                                            response_item_ids = (
-                                                b'archive-create', b'archive-target',
-                                                b'archive-revoke', b'archive-destroy')
+                                            response_item_ids = archive_response_item_ids(case_id)
                                         elif recipe[1] == 'certify':
                                             response_item_ids = CERTIFY_ITEM_IDS
                                         elif placeholder_chain_recipe:
@@ -3451,7 +3936,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         elif batch_order_placeholder_recipe:
                                             response_item_ids = (
                                                 (b'placeholder-revoke-cleanup', b'placeholder-destroy-cleanup')
-                                                if cleanup_exchange else BATCH_ORDER_PLACEHOLDER_ITEM_IDS)
+                                                if cleanup_exchange else
+                                                (b'placeholder-create', b'placeholder-activate'))
                                         elif recipe[1] == 'export':
                                             response_item_ids = (
                                                 b'interop-create', b'interop-export',
@@ -3481,6 +3967,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         elif recipe[1] == 'batch_stop_on_first_failure':
                                             response_operations = (10,)
                                             response_item_ids = (b'item-a',)
+                                        elif recipe[1] == 'batch_undo_rolls_back_prior_success':
+                                            response_item_ids = (b'undo-create', b'undo-failing-get')
                                         if recipe[1] == 'async_query_outstanding_filter' and exchange_index < 9:
                                             state_digest = peer_state.digest()
                                             if exchange_index == 3:
@@ -3540,6 +4028,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 request_tree,
                                                 continued_batch=recipe[1] == 'batch_continue_after_failure',
                                                 stop_after_failure=recipe[1] == 'batch_stop_on_first_failure',
+                                                undo_prior_success=(recipe[1] ==
+                                                                    'batch_undo_rolls_back_prior_success'),
                                                 rejected_operation=peer_rejection.get('operation')
                                                 if reject_this_exchange else None,
                                                 rejection_status=peer_rejection.get('result_status', 1)
@@ -3673,7 +4163,51 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 if recipe[1] == 'rng_retrieve' else
                                                 len(byte_string_values(request_tree, 0x4200C2)[0])
                                                 if recipe[1] == 'rng_seed' else 16,
-                                                discover_versions=discover_versions_supported)
+                                                discover_versions=discover_versions_supported,
+                                                response_identifiers=(
+                                                    (b'fixture-certificate-1', b'fixture-public-key-1',
+                                                     b'fixture-private-key-1')
+                                                    if recipe[1] == 'certify' and exchange_index == 2
+                                                    else (b'fixture-split-part-one',
+                                                          b'fixture-split-part-two',
+                                                          b'fixture-split-part-three')
+                                                    if recipe[1] == 'create_split_key' and exchange_index == 1
+                                                    else (b'fixture-derived-key',)
+                                                    if recipe[1] == 'derive_key' and exchange_index == 2
+                                                    else (b'fixture-key-1', b'fixture-key-1',
+                                                          b'fixture-derived-key')
+                                                    if recipe[1] == 'derive_key' and exchange_index == 3
+                                                    else None))
+                                            if recipe[1] == 'create_key_pair':
+                                                response_node = parse(response_wire)
+                                                if exchange_index == 0:
+                                                    response_item = next(
+                                                        child for child in response_node[2]
+                                                        if child[0] == BATCH_ITEM_TAG)
+                                                    response_payload = (
+                                                        RESPONSE_PAYLOAD_TAG, 1,
+                                                        [(0x420066, 7, b'fixture-private-key-1'),
+                                                         (0x42006F, 7, b'fixture-public-key-1')])
+                                                    response_item = (
+                                                        response_item[0], response_item[1],
+                                                        [response_payload if child[0] == RESPONSE_PAYLOAD_TAG else child
+                                                         for child in response_item[2]])
+                                                    response_node = (
+                                                        response_node[0], response_node[1],
+                                                        [response_item if child[0] == BATCH_ITEM_TAG else child
+                                                         for child in response_node[2]])
+                                                else:
+                                                    response_node, private_replaced = replace_first_text(
+                                                        response_node, UNIQUE_IDENTIFIER_TAG, b'fixture-key-1',
+                                                        b'fixture-private-key-1')
+                                                    response_node, public_replaced = replace_first_text(
+                                                        response_node, UNIQUE_IDENTIFIER_TAG, b'fixture-key-1',
+                                                        b'fixture-public-key-1')
+                                                    if not private_replaced or not public_replaced:
+                                                        raise ValueError('fixture_create_key_pair_cleanup_ids_missing')
+                                                response_wire = encode_ttlv_node(response_node)
+                                            elif recipe[1] == 'certify' and exchange_index == 0:
+                                                verify_create_key_pair_response(parse(response_wire))
                                         export_response_negative = (
                                             case_id.startswith('test-norm-payload-client-export-response-') and
                                             variant == 'missing_rejected' and
@@ -3692,6 +4226,100 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                         if len(response_payloads) == 1 else None)
                                             if observed != list(discover_versions_supported):
                                                 raise ValueError('fixture_discover_versions_response_mismatch')
+                                        elif recipe[1] == 'create_key_pair':
+                                            if exchange_index == 0:
+                                                verify_create_key_pair_response(response_tree)
+                                            else:
+                                                response_items = [item for item in response_tree[2]
+                                                                  if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+                                                if [numbers(item, 0x42005C) for item in response_items] != [[20], [20]]:
+                                                    raise ValueError('fixture_create_key_pair_cleanup_operations_mismatch')
+                                                if [numbers(item, 0x42007F) for item in response_items] != [[0], [0]]:
+                                                    raise ValueError('fixture_create_key_pair_cleanup_status_mismatch')
+                                                if peer_state.objects:
+                                                    raise ValueError('fixture_create_key_pair_cleanup_state_mismatch')
+                                        elif recipe[1] == 'create_split_key':
+                                            if exchange_index == 0:
+                                                verify_create_split_key_response(response_tree)
+                                            else:
+                                                response_items = [item for item in response_tree[2]
+                                                                  if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+                                                if ([numbers(item, 0x42005C) for item in response_items] !=
+                                                        [[20], [20], [20]] or
+                                                        [numbers(item, 0x42007F) for item in response_items] !=
+                                                        [[0], [0], [0]] or
+                                                        [text_values(item, UNIQUE_IDENTIFIER_TAG)
+                                                         for item in response_items] !=
+                                                        [['fixture-split-part-one'],
+                                                         ['fixture-split-part-two'],
+                                                         ['fixture-split-part-three']]):
+                                                    raise ValueError('fixture_create_split_key_cleanup_response_mismatch')
+                                                if peer_state.objects:
+                                                    raise ValueError('fixture_create_split_key_cleanup_state_mismatch')
+                                        elif recipe[1] == 'derive_key':
+                                            if exchange_index == 2:
+                                                verify_derive_key_response(response_tree)
+                                            elif exchange_index == 3:
+                                                response_items = [item for item in response_tree[2]
+                                                                  if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+                                                if ([numbers(item, 0x42005C) for item in response_items] !=
+                                                        [[19], [20], [20]] or
+                                                        [numbers(item, 0x42007F) for item in response_items] !=
+                                                        [[0], [0], [0]] or peer_state.objects):
+                                                    raise ValueError('fixture_derive_key_cleanup_response_mismatch')
+                                        elif recipe[1] == 'sign_pair':
+                                            response_items = [item for item in response_tree[2]
+                                                              if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+                                            if ([numbers(item, 0x42005C) for item in response_items] !=
+                                                    [[2], [18], [33], [19], [20], [20]] or
+                                                    [numbers(item, 0x42007F) for item in response_items] !=
+                                                    [[0]] * 6 or peer_state.objects):
+                                                raise ValueError('fixture_sign_pair_response_lifecycle_mismatch')
+                                        elif recipe[1] == 'signature_verify_pair':
+                                            response_items = [item for item in response_tree[2]
+                                                              if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+                                            if ([numbers(item, 0x42005C) for item in response_items] !=
+                                                    [[2], [18], [34], [19], [20], [20]] or
+                                                    [numbers(item, 0x42007F) for item in response_items] !=
+                                                    [[0]] * 6 or peer_state.objects):
+                                                raise ValueError('fixture_signature_verify_pair_response_lifecycle_mismatch')
+                                        elif recipe[1] == 'create_key_pair_direct':
+                                            verify_create_key_pair_batch_response(response_tree)
+                                        elif recipe[1] == 'certify_public_key':
+                                            verify_certify_batch_response(response_tree)
+                                        elif recipe[1] == 'certify':
+                                            if exchange_index == 0:
+                                                verify_create_key_pair_response(response_tree)
+                                            elif exchange_index == 1:
+                                                verify_certify_response(response_tree)
+                                            else:
+                                                response_items = [item for item in response_tree[2]
+                                                                  if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+                                                if [numbers(item, 0x42005C) for item in response_items] != [[20], [20], [20]]:
+                                                    raise ValueError('fixture_certify_cleanup_operations_mismatch')
+                                                if [numbers(item, 0x42007F) for item in response_items] != [[0], [0], [0]]:
+                                                    raise ValueError('fixture_certify_cleanup_status_mismatch')
+                                                if peer_state.objects:
+                                                    raise ValueError('fixture_certify_cleanup_state_mismatch')
+                                        elif recipe[1] == 'sign':
+                                            response_items = [item for item in response_tree[2]
+                                                              if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+                                            if ([numbers(item, 0x42005C) for item in response_items] !=
+                                                    [[1], [18], [33], [19], [20]] or
+                                                    [numbers(item, 0x42007F) for item in response_items] !=
+                                                    [[0]] * 5 or peer_state.objects):
+                                                raise ValueError('fixture_sign_response_lifecycle_mismatch')
+                                        elif recipe[1] == 'signature_verify':
+                                            verify_items = [item for item in response_tree[2]
+                                                            if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+                                            if ([numbers(item, 0x42005C) for item in verify_items] !=
+                                                    [[1], [18], [34], [19], [20]] or
+                                                    [numbers(item, 0x42007F) for item in verify_items] !=
+                                                    [[0]] * 5 or
+                                                    numbers(verify_items[2], 0x42009B) != [1] or
+                                                    peer_state.objects):
+                                                raise ValueError(
+                                                    'fixture_signature_verify_response_lifecycle_mismatch')
                                         elif logout_recipe:
                                             verify_login_logout_response(response_tree, exchange_index)
                                         elif recipe[1] == 'async_poll_cancel_no_recursion':
@@ -3760,6 +4388,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 verify_lifecycle((20,), response_tree)
                                         elif recipe[1] == 'interop':
                                             verify_interop_response(response_tree)
+                                        elif recipe[1] == 'archive':
+                                            verify_archive_response(response_tree)
+                                            verify_lifecycle(recipe[0], response_tree)
                                         elif recipe[1] in ('encrypt', 'decrypt'):
                                             verify_crypto_response(response_tree, recipe[1] == 'decrypt')
                                         elif recipe[1] == 'mac':
@@ -3788,13 +4419,40 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                     [numbers(item, 0x42007F) for item in response_items] != [[1]] or
                                                     [numbers(item, 0x42007E) for item in response_items] != [[55]]):
                                                 raise ValueError('fixture_stop_partial_response_mismatch')
+                                        elif recipe[1] == 'batch_undo_rolls_back_prior_success':
+                                            response_items = [item for item in response_tree[2]
+                                                              if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+                                            undone_payloads = [child for child in response_items[0][2]
+                                                               if child[0] == RESPONSE_PAYLOAD_TAG and
+                                                               child[1] == 1] if response_items else []
+                                            if ([numbers(item, 0x42005C) for item in response_items] !=
+                                                    [[1], [10]] or
+                                                    [numbers(item, 0x42007F) for item in response_items] !=
+                                                    [[3], [1]] or
+                                                    [numbers(item, 0x42007E) for item in response_items] !=
+                                                    [[], [55]] or
+                                                    [byte_string_values(item, 0x420093)
+                                                     for item in response_items] !=
+                                                    [[b'undo-create'], [b'undo-failing-get']] or
+                                                    len(undone_payloads) != 1 or
+                                                    numbers(undone_payloads[0], 0x420057) != [2] or
+                                                    text_values(undone_payloads[0], UNIQUE_IDENTIFIER_TAG) !=
+                                                    ['fixture-key-1'] or
+                                                    peer_state.objects):
+                                                raise ValueError('fixture_undo_response_or_rollback_mismatch')
                                         elif placeholder_chain_recipe:
                                             verify_placeholder_chain_response(response_tree, response_operations)
                                         elif batch_order_placeholder_recipe:
-                                            if cleanup_exchange:
-                                                verify_lifecycle(PLACEHOLDER_CLEANUP_OPERATIONS, response_tree)
+                                            if exchange_index == 0:
+                                                verify_placeholder_chain_response(response_tree, (1, 18))
                                             else:
-                                                verify_batch_order_placeholder_response(response_tree)
+                                                response_items = [item for item in response_tree[2]
+                                                                  if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+                                                if ([numbers(item, 0x42005C) for item in response_items] !=
+                                                        [[19], [20]] or
+                                                        [numbers(item, 0x42007F) for item in response_items] !=
+                                                        [[0], [0]] or peer_state.objects):
+                                                    raise ValueError('fixture_ordered_placeholder_cleanup_mismatch')
                                         elif recipe[1] == 'export':
                                             if export_response_negative:
                                                 verify_export_response_missing_field(
@@ -3802,16 +4460,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             else:
                                                 verify_export_response(response_tree)
                                             verify_lifecycle(recipe[0], response_tree)
-                                        elif recipe[1] == 'archive':
-                                            verify_archive_response(response_tree)
-                                            verify_lifecycle(recipe[0], response_tree)
                                         elif recipe[1] in ('sign', 'signature_verify'):
-                                            verify_signature_response(
+                                            verify_legacy_signature_response(
                                                 response_tree, recipe[1] == 'signature_verify')
-                                        elif recipe[1] == 'create_key_pair':
-                                            verify_create_key_pair_response(response_tree)
-                                        elif recipe[1] == 'certify':
-                                            verify_certify_response(response_tree)
                                         elif recipe[1] == 'get_usage_allocation_uid_variants':
                                             verify_usage_allocation_identifier_variants(response_tree)
                                         elif reject_this_exchange:
@@ -3844,7 +4495,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 'async_poll_cancel_no_recursion',
                                                 'async_poll_final_failure',
                                                 'async_poll_repeated_pending_to_success',
-                                                'async_process_then_poll_state'):
+                                                'async_process_then_poll_state',
+                                                'create_key_pair', 'create_split_key', 'certify'):
                                             verify_lifecycle(recipe[0], response_tree)
                                         encoded_response = codec.encode(response_wire, encoding)
                                         if transport == 'https':
@@ -3873,7 +4525,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                     if stream is not None:
                                         stream.close()
                             thread = None
-                            if not boundary:
+                            if not preflight_rejection:
                                 thread = threading.Thread(target=serve, daemon=True)
                                 thread.start()
                             config = {'server_id': 'controlled-c-peer', 'server_vendor': '',
@@ -3943,20 +4595,39 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                             trace = [line.split('\t') for line in trace_path.read_text().splitlines()] if trace_path.exists() else []
                             called_symbols = {symbol for symbol, status in trace if status == '0'}
                             invoked_symbols = {symbol for symbol, _ in trace}
-                            if boundary:
+                            if preflight_rejection:
                                 if select.select([server], [], [], 0)[0]:
                                     errors.append('fixture_unexpected_transport_connection')
                                 if not result.get('cases') or result['cases'][0].get('server_compatibility') != 'unknown':
                                     errors.append('fixture_not_sent_outcome_missing')
-                                # The unsupported typed request has no payload fields.
-                                # Its recipe supplies the operation code; the configured
-                                # public client rejects it before transport, so no response exists.
-                                operation_code = recipe[0][0]
                                 version_node = (0x420069, 1, [(0x42006A, 2, bytes.fromhex('00000002')),
-                                    (0x42006B, 2, bytes(4))])
-                                attempted = (0x420078, 1, [(0x420077, 1, [version_node]),
-                                    (0x42000F, 1, [(0x42005C, 5, operation_code.to_bytes(4, 'big')),
-                                                   (0x420079, 1, [])])])
+                                    (0x42006B, 2, (1 if version == '2.1' else 0).to_bytes(4, 'big'))])
+                                if local_batch_rejection:
+                                    activate_item = (0x42000F, 1, [
+                                        (0x42005C, 5, (18).to_bytes(4, 'big')),
+                                        (0x420079, 1, [(UNIQUE_IDENTIFIER_TAG, 5, (1).to_bytes(4, 'big'))]),
+                                    ])
+                                    create_item = (0x42000F, 1, [
+                                        (0x42005C, 5, (1).to_bytes(4, 'big')),
+                                        (0x420079, 1, [
+                                            (0x420057, 5, (2).to_bytes(4, 'big')),
+                                            (0x420125, 1, [
+                                                (0x420028, 5, (3).to_bytes(4, 'big')),
+                                                (0x42002A, 2, (128).to_bytes(4, 'big', signed=True)),
+                                            ]),
+                                        ]),
+                                    ])
+                                    attempted = (0x420078, 1, [
+                                        (0x420077, 1, [version_node]), activate_item, create_item,
+                                    ])
+                                else:
+                                    # The unsupported typed request has no payload fields.
+                                    # Its recipe supplies the operation code; the configured
+                                    # public client rejects it before transport, so no response exists.
+                                    operation_code = recipe[0][0]
+                                    attempted = (0x420078, 1, [(0x420077, 1, [version_node]),
+                                        (0x42000F, 1, [(0x42005C, 5, operation_code.to_bytes(4, 'big')),
+                                                       (0x420079, 1, [])])])
                                 observation.append((attempted, None, {}))
                             code = errors[0] if errors else 'consumer_check_failed' if not case_passed else 'public_api_trace_missing' if not called_symbols else None
                             mutation_index = mutation_exchange_index if attribute_mutation_recipe else \
@@ -4058,7 +4729,13 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                               len(observation) == 1 else {}),
                                            **({'peer_final_state_matches_setup':
                                                    observation[0][2]['peer_observed_state_before_sha256'] ==
-                                                   observation[0][2]['peer_observed_state_after_sha256']}
+                                                   observation[0][2]['peer_observed_state_after_sha256'],
+                                               'peer_request_operations': [
+                                                   numbers(item, 0x42005C)[0]
+                                                   for item in observation[0][0][2]
+                                                   if item[0] == BATCH_ITEM_TAG],
+                                               'peer_setup_operations': [3, 18],
+                                               'peer_cleanup_operations': [19, 20]}
                                               if observation and recipe[1] == 'batch_register_crypto' else {}),
                                            **({'peer_seed_operations': [peer_rejection['operation']],
                                                'peer_seed_effects': observation[1][2]['effects'],
@@ -4083,6 +4760,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                    'test-batch-order-omitted-defaults-true',
                                                    'test-batch-continue-after-failure',
                                                    'test-batch-stop-on-first-failure',
+                                                   'test-batch-undo-rolls-back-prior-success',
                                                    'test-norm-payload-client-get-usage-allocation-request-20-001',
                                                    'test-norm-payload-client-get-usage-allocation-request-21-001'} else {}),
                                            **({'peer_response_result_statuses': [
@@ -4098,21 +4776,24 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                    'test-batch-order-omitted-defaults-true',
                                                    'test-batch-continue-after-failure',
                                                    'test-batch-stop-on-first-failure',
+                                                   'test-batch-undo-rolls-back-prior-success',
                                                    'test-norm-payload-client-get-usage-allocation-request-20-001',
                                                    'test-norm-payload-client-get-usage-allocation-request-21-001'} else {}),
                                            **({'peer_response_unique_batch_item_ids': [
                                                value.decode('utf-8') for item in observation[0][1][2]
                                                if item[0] == BATCH_ITEM_TAG
                                                for value in byte_string_values(item, 0x420093)]}
-                                              if observation and case_id ==
-                                              'test-batch-stop-on-first-failure' else {}),
+                                              if observation and case_id in {
+                                                  'test-batch-stop-on-first-failure',
+                                                  'test-batch-undo-rolls-back-prior-success'} else {}),
                                            **({'peer_observed_effects': observation[0][2]['effects'],
                                                'peer_observed_state_before_sha256': observation[0][2][
                                                    'peer_observed_state_before_sha256'],
                                                'peer_observed_state_after_sha256': observation[0][2][
                                                    'peer_observed_state_after_sha256']}
-                                              if observation and case_id ==
-                                              'test-batch-stop-on-first-failure' else {}),
+                                              if observation and case_id in {
+                                                  'test-batch-stop-on-first-failure',
+                                                  'test-batch-undo-rolls-back-prior-success'} else {}),
                                            **({'peer_request_unique_identifier_present_by_batch_item': [
                                                bool(text_values(item, UNIQUE_IDENTIFIER_TAG))
                                                for item in observation[0][0][2]
@@ -4146,16 +4827,123 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                               case_id.startswith(
                                                   'test-norm-payload-client-modify-attribute-request-') else {}),
                                            **(peer_cleanup_evidence(observation, include_state_hash=True)
-                                              if (placeholder_chain_recipe or batch_order_placeholder_recipe) and
+                                              if placeholder_chain_recipe and len(observation) == 2 else {}),
+                                           **({'peer_request_operations': [
+                                                   numbers(item, 0x42005C)[0]
+                                                   for item in observation[0][0][2]
+                                                   if item[0] == BATCH_ITEM_TAG],
+                                               'peer_setup_operations': [1],
+                                               'peer_cleanup_operations': [19, 20],
+                                               'peer_observed_effects': observation[0][2]['effects'],
+                                               'peer_final_state_matches_setup':
+                                                   observation[0][2]['peer_observed_state_before_sha256'] ==
+                                                   observation[0][2]['peer_observed_state_after_sha256']}
+                                              if observation and recipe[1] == 'archive' else {}),
+                                           **({'peer_request_operations': [
+                                                   numbers(item, 0x42005C)[0]
+                                                   for item in observation[0][0][2]
+                                                   if item[0] == BATCH_ITEM_TAG],
+                                               'peer_setup_operations': (
+                                                   [] if recipe[1] == 'create_key_pair_direct' else
+                                                   list(recipe[0][:2])),
+                                               'peer_cleanup_operations': [
+                                                   operation for operation in recipe[0]
+                                                   if operation in (19, 20)],
+                                               'peer_observed_effects': observation[0][2]['effects'],
+                                               'peer_final_state_matches_setup':
+                                                   observation[0][2]['peer_observed_state_before_sha256'] ==
+                                                   observation[0][2]['peer_observed_state_after_sha256']}
+                                              if observation and len(observation) == 1 and recipe[1] in (
+                                                  'encrypt', 'decrypt', 'mac', 'mac_verify',
+                                                  'sign_pair', 'signature_verify_pair',
+                                                  'create_key_pair_direct', 'certify_public_key') else {}),
+                                           **({'peer_request_operations': [
+                                                   numbers(item, 0x42005C)[0]
+                                                   for item in observation[0][0][2]
+                                                   if item[0] == BATCH_ITEM_TAG],
+                                               'peer_setup_operations': [],
+                                               'peer_cleanup_operations': [
+                                                   numbers(item, 0x42005C)[0]
+                                                   for item in observation[-1][0][2]
+                                                   if item[0] == BATCH_ITEM_TAG],
+                                               'peer_final_state_matches_setup':
+                                                   observation[0][2]['peer_observed_state_before_sha256'] ==
+                                                   observation[-1][2]['peer_observed_state_after_sha256']}
+                                              if observation and recipe[1] == 'create_key_pair' and
                                               len(observation) == 2 else {}),
                                            **({'peer_request_operations': [
                                                    numbers(item, 0x42005C)[0]
                                                    for item in observation[0][0][2]
                                                    if item[0] == BATCH_ITEM_TAG],
-                                               'peer_request_batch_order_option': numbers(
-                                                   observation[0][0], 0x420010)}
-                                              if batch_order_placeholder_recipe and
+                                               'peer_setup_operations': [],
+                                               'peer_cleanup_operations': [
+                                                   numbers(item, 0x42005C)[0]
+                                                   for item in observation[-1][0][2]
+                                                   if item[0] == BATCH_ITEM_TAG],
+                                               'peer_final_state_matches_setup':
+                                                   observation[0][2]['peer_observed_state_before_sha256'] ==
+                                                   observation[-1][2]['peer_observed_state_after_sha256']}
+                                              if observation and recipe[1] == 'create_split_key' and
                                               len(observation) == 2 else {}),
+                                           **({'peer_request_operations': [
+                                                   numbers(item, 0x42005C)[0]
+                                                   for item in observation[2][0][2]
+                                                   if item[0] == BATCH_ITEM_TAG],
+                                               'peer_setup_operations': [
+                                                   numbers(item, 0x42005C)[0]
+                                                   for request_observation in observation[:2]
+                                                   for item in request_observation[0][2]
+                                                   if item[0] == BATCH_ITEM_TAG],
+                                               'peer_cleanup_operations': [
+                                                   numbers(item, 0x42005C)[0]
+                                                   for item in observation[-1][0][2]
+                                                   if item[0] == BATCH_ITEM_TAG],
+                                               'peer_final_state_matches_setup':
+                                                   observation[0][2]['peer_observed_state_before_sha256'] ==
+                                                   observation[-1][2]['peer_observed_state_after_sha256']}
+                                              if observation and recipe[1] == 'derive_key' and
+                                              len(observation) == 4 else {}),
+                                           **({'peer_request_operations': [
+                                                   numbers(item, 0x42005C)[0]
+                                                   for item in observation[1][0][2]
+                                                   if item[0] == BATCH_ITEM_TAG],
+                                               'peer_setup_operations': [
+                                                   numbers(item, 0x42005C)[0]
+                                                   for item in observation[0][0][2]
+                                                   if item[0] == BATCH_ITEM_TAG],
+                                               'peer_cleanup_operations': [
+                                                   numbers(item, 0x42005C)[0]
+                                                   for item in observation[-1][0][2]
+                                                   if item[0] == BATCH_ITEM_TAG],
+                                               'peer_final_state_matches_setup':
+                                                   observation[0][2]['peer_observed_state_before_sha256'] ==
+                                                   observation[-1][2]['peer_observed_state_after_sha256']}
+                                              if observation and recipe[1] == 'certify' and
+                                              len(observation) == 3 else {}),
+                                           **({'peer_request_operations': [
+                                                   numbers(item, 0x42005C)[0]
+                                                   for item in observation[0][0][2]
+                                                   if item[0] == BATCH_ITEM_TAG],
+                                               'peer_setup_operations': [1],
+                                               'peer_cleanup_operations': [19, 20],
+                                               'peer_observed_effects': observation[0][2]['effects'],
+                                               'peer_final_state_matches_setup':
+                                                   observation[0][2]['peer_observed_state_before_sha256'] ==
+                                                   observation[0][2]['peer_observed_state_after_sha256']}
+                                              if observation and recipe[1] == 'sign' and
+                                              len(observation) == 1 else {}),
+                                           **({'peer_request_operations': [
+                                                   numbers(item, 0x42005C)[0]
+                                                   for item in observation[0][0][2]
+                                                   if item[0] == BATCH_ITEM_TAG],
+                                               'peer_setup_operations': [1],
+                                               'peer_cleanup_operations': [19, 20],
+                                               'peer_observed_effects': observation[0][2]['effects'],
+                                               'peer_final_state_matches_setup':
+                                                   observation[0][2]['peer_observed_state_before_sha256'] ==
+                                                   observation[0][2]['peer_observed_state_after_sha256']}
+                                              if observation and recipe[1] == 'signature_verify' and
+                                              len(observation) == 1 else {}),
                                            **({'peer_request_operations': [
                                                    numbers(item, 0x42005C)[0]
                                                    for item in observation[mutation_index][0][2]
@@ -4211,8 +4999,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                 else:
                                     # Accessor routes remain local TTLV obligations.
                                     # Emit them once from an actual decoded TLS response.
-                                    stop_continuation_constructor = (
-                                        case_id == 'test-batch-stop-on-first-failure' and
+                                    batch_continuation_constructor = (
+                                        case_id in ('test-batch-continue-after-failure',
+                                                    'test-batch-stop-on-first-failure') and
                                         cell['action'] == 'construct' and
                                         cell['public_api_symbol'] ==
                                         'kmipkit_client_batch_add_error_continuation_value')
@@ -4244,7 +5033,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             'kmipkit_query_async_requests_request_with_operations'})
                                     if ((encoding, transport) != ('TTLV', 'raw_tls') or
                                             (cell['action'] not in ('decode', 'encode') and
-                                             not stop_continuation_constructor and
+                                             not batch_continuation_constructor and
                                              not async_request_constructor and
                                              not async_process_constructor and
                                              not async_lifecycle_constructor)):
@@ -4319,8 +5108,13 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                 elif target['kind'] == 'enumeration_value':
                                     option_tag = codec.tag('Batch Error Continuation Option')
                                     expected_value = int(target['wire_value'], 16)
-                                    if (case_id != 'test-batch-stop-on-first-failure' or
+                                    expected_continuation = {
+                                        'test-batch-continue-after-failure': 1,
+                                        'test-batch-stop-on-first-failure': 2,
+                                    }.get(case_id)
+                                    if (expected_continuation is None or
                                             cell['action'] != 'construct' or
+                                            expected_value != expected_continuation or
                                             numbers(request_tree, option_tag) != [expected_value]):
                                         continue
                                 elif target['kind'] == 'operation_payload_field':
@@ -4350,13 +5144,22 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                     payload = next((child for child in target_item[2]
                                                     if child[0] == 0x420079 and child[1] == 1), None)
                                     digest_tree = payload or target_item
-                                event['response_tree_sha256' if cell['action'] == 'decode' else 'request_tree_sha256'] = tree_digest(digest_tree)
-                                if boundary and cell['action'] == 'send':
+                                if not (local_batch_rejection and cell['action'] == 'send'):
+                                    event['response_tree_sha256' if cell['action'] == 'decode' else 'request_tree_sha256'] = tree_digest(digest_tree)
+                                if preflight_rejection and cell['action'] == 'send':
                                     event.update(request_delivery_state='not_sent', transport_invocation_count=0)
                                 elif cell['action'] == 'send':
                                     event.update(request_delivery_state='response_received', transport_invocation_count=1)
-                                if (cell['action'] == 'send' and len(recipe[0]) > 1 and
-                                        not attribute_mutation_recipe):
+                                if cell['action'] == 'send' and local_batch_rejection:
+                                    event.update(
+                                        batch_operation_sequence=['Activate', 'Create'],
+                                        batch_item_count=2,
+                                        local_rejection_code='batch_placeholder_forward_reference',
+                                        client_error_category='validation',
+                                        client_error_cause='invalid_input',
+                                    )
+                                elif (cell['action'] == 'send' and response_tree is not None and
+                                      len(recipe[0]) > 1 and not attribute_mutation_recipe):
                                     operations = [next(t['name'] for t in catalog['normative_targets'] if t['kind'] == 'enumeration_value' and t.get('wire_value') == f'{op:08X}' and any(p.endswith('ENUMERATION-OPERATION') for p in t.get('parent_element_ids', []))) for op in recipe[0]]
                                     response_item_count = len([item for item in response_tree[2]
                                                                if item[0] == BATCH_ITEM_TAG and item[1] == 1])

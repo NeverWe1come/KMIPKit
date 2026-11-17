@@ -242,6 +242,13 @@ and CTest passed 7/7 in 97.46 seconds. This is protocol-shape and lifecycle
 evidence; the fixture does not validate certificate or signature cryptography.
 Other C routes and cross-language FR-003/FR-005 coverage remain pending.
 
+The follow-up integration with the direct C routes also checks the Certify
+response through `kmipkit_client_batch_item_response_certify_ttlv` and confirms
+that its Unique Identifier matches the typed response. After aligning the
+controlled peer with the single-batch lifecycle, the focused C route matrix
+passed 193/193 tests, both KMIP-version TLS peers passed, CTest passed 7/7, the
+normative inventory passed 27/27, and catalog generation `--check` passed.
+
 ## C batch Continue response accessors
 
 For KMIPKIT-0092-FR-003 and FR-005, the two-item Get/Get Attribute List
@@ -284,9 +291,20 @@ and fails against the old extra Activate. Green `5707246cb` updates the C
 consumer, response indexing, route peer, and standalone TLS expected sequence;
 Refactor `de029189b` clarifies the Active-state distinction. The focused Archive
 route passed 12/12; CTest passed 7/7 in 97.26 seconds, including both standalone
-TLS peers. The full C matrix snapshot taken at this Archive slice had 66,736
-expected, 42,063 invoked, zero failed, and 24,673 pending cells; this route
-contributes 38 invoked cells and leaves FR-003/FR-005 incomplete.
+TLS peers. The integrated stack matrix run at `055fa2715` has 66,692 expected,
+43,372 invoked, zero failed, and 23,320 pending cells; the Archive route
+contributes 38 invoked cells and leaves FR-003/FR-005 incomplete. Follow-up
+response-item-ID coverage adds focused assertions without changing the matrix
+snapshot.
+
+The controlled peer's Archive response item IDs now follow the exact request
+recipe, including the installed consumer's `interop-*` IDs. Red `ebe666902`
+adds a regression test and fails because the response-ID mapping helper is
+absent; Green `ba59fb7ec` adds the mapping used by the response builder;
+Refactor `eb701e0a8` names the mapping constants. The focused Archive operation,
+payload, and response-ID tests pass after Refactor. The integrated matrix
+snapshot above predates these equivalent helper/refactor commits and is not
+presented as a rerun at their later SHA.
 
 ## C MAC and Sign response TTLV accessors
 
@@ -305,6 +323,15 @@ references to the test. The focused route test passed for both operations and
 both protocol versions; CTest passed 7/7 in 139.15 seconds. The full matrix at
 `01b12cbb7` has 66,736 expected, 42,067 invoked, zero failed, and 24,669
 pending cells. The exhaustive FR-003/FR-005 gates remain open.
+
+### C Archive response dispatch consolidation
+
+SonarCloud flagged a second `archive` branch in the same response-decoder
+`if`/`elif` chain as unreachable. The route peer now has one Archive response
+branch that runs both the Archive response-shape check and lifecycle check;
+this removes the dead duplicate while preserving the effective validations.
+The Archive lifecycle, response-item-ID, and payload fixtures pass 3/3, and
+CTest passes 7/7, including both controlled TLS peers.
 
 ## C Batch Count recomputation before transport
 

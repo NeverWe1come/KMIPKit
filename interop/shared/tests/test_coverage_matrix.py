@@ -226,6 +226,16 @@ class CoverageMatrixTests(unittest.TestCase):
         self.assertEqual({"construct", "send"}, {cell["action"] for cell in network_cells})
         self.assertFalse(any("response" in cell["route_id"] for cell in cells))
 
+    def test_local_batch_rejection_has_no_response_decode_obligation(self):
+        case_id = "test-batch-placeholder-forward-reference-rejected"
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest)
+                 if cell["case_id"] == case_id and cell["language"] == "c"]
+        self.assertTrue(cells)
+        self.assertFalse(any(cell["action"] == "decode" for cell in cells))
+        network_cells = [cell for cell in cells if cell["mode"] == "network"]
+        self.assertTrue(network_cells)
+        self.assertEqual({"construct", "send"}, {cell["action"] for cell in network_cells})
+
     def test_network_request_field_targets_do_not_create_response_decode_cells(self):
         cells = [cell for cell in iter_cells(self.catalog, self.manifest)
                  if cell["case_id"] == "test-norm-payload-client-query-request-21-001"

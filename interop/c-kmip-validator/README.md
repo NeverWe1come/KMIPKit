@@ -139,10 +139,11 @@ The `*.gaps.json` sidecar identifies every unexecuted matrix obligation rather
 than misclassifying it as an unavailable library route. Other sidecars retain
 installed-artifact availability checks and sanitized controlled-peer outcomes.
 The evidence JSON passes the shared schema independently of completeness.
-The latest full local C matrix run at `01b12cbb7` has 66,736 expected cells,
-42,067 invoked, zero failed, and 24,669 pending. The MAC and Sign response
-TTLV accessors contribute four local decode cells across KMIP 2.0/2.1. This
-slice does not close the exhaustive gate.
+The latest full local C matrix run on the integrated Archive stack at
+`055fa2715` has 66,692 expected cells, 43,372 invoked, zero failed, and 23,320
+pending. The Archive lifecycle adds 38 invoked cells. Follow-up commits add
+focused response-item-ID correlation coverage and do not change that matrix
+snapshot; the exhaustive gate remains open.
 
 A generic TTLV wire encoder, generic-TTLV request dispatcher, and high-level
 C client are absent from the exact installed public artifact. The harness's
@@ -200,7 +201,9 @@ The direct `test-op-certify` route creates an RSA-2048 pair with explicit
 Certificate Sign usage on the Private Key and Verify usage on the Public Key,
 activates the signer, and certifies the paired Public Key with the X.509
 Certificate Type. It checks the typed certificate identifier and destroys the
-certificate by ID Placeholder before revoking and destroying both keys. The
+certificate by ID Placeholder before revoking and destroying both keys. It
+also checks that the operation's generic response TTLV contains the same
+certificate identifier. The
 controlled peer verifies the request tree, signer lifecycle, placeholder
 mapping, typed results, and final state. This validates KMIP request/response
 shape and lifecycle only; the fixture does not validate a real certificate or

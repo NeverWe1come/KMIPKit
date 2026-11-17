@@ -23,11 +23,80 @@
 - [ ] T009 Run common checks, review the scoped diff, commit Red/Green/Refactor
   evidence, push the feature branch, and remove `[WIP]` only after its exact-head
   CI passes.
+- [x] T010 Execute the C Archive operation through the installed public ABI
+  and controlled KMIP peers for both protocol versions, all three encodings,
+  and both supported transports; verify the response identifier and cleanup.
+- [x] T011 Execute C Sign through the installed public ABI and controlled KMIP
+  peers for both protocol versions, all three encodings, and both supported
+  transports; verify typed signature response data and object cleanup.
+- [x] T012 Execute the KMIP 2.0/2.1 Archive Unique Identifier request-present,
+  request-omitted, and required success-response fixtures through the installed
+  C ABI and controlled TLS peer across all six encoding/transport combinations
+  for each applicable version.
+- [x] T013 Exercise both direct and `GetAttributeListRequest`-converted C
+  Get Attribute List batch items in the Create/Activate/Get Attribute List/
+  Revoke/Destroy workflow across both protocol versions and all six
+  encoding/transport combinations.
+- [x] T014 Exercise required and omitted-default `Batch Order Option` C
+  Create/Activate placeholder batches through the installed ABI and controlled
+  peers across KMIP 2.0/2.1, TTLV/JSON/XML, and raw TLS/HTTPS.
+- [x] T015 Validate the ordered-batch response header, metadata, response item,
+  Unique Batch Item ID, and pending-correlation accessors. Do not read raw
+  response TTLV for ordinary successful responses; the repository security
+  invariant limits that accessor to its specified successful shape-failure
+  cases.
+- [x] T016 Validate the successful typed Get result and safe response metadata,
+  header, Unique Batch Item ID, and absent asynchronous correlation for the
+  single-item batch with both optional batch header fields omitted.
+- [x] T017 Execute a two-item C batch with Undo continuation, validate the
+  Operation Undone and failed Get results, and confirm fixture state rollback.
+- [x] T018 Validate failed Get response accessors for a two-item Continue
+  batch while confirming the following Get Attribute List still executes.
+- [x] T019 Execute the forward ID Placeholder rejection through the installed C
+  ABI, prove that the request was not sent, and omit response-decoding cells
+  that cannot exist after local rejection.
+- [x] T020 Execute the catalogued C Encrypt and Decrypt operation cases through
+  the installed typed ABI and controlled TLS peers for KMIP 2.0/2.1, TTLV/JSON/XML,
+  and raw TLS/HTTPS; validate typed ciphertext/plaintext responses and object cleanup.
+- [x] T021 Execute the catalogued C Create Split Key operation through the
+  installed typed ABI and controlled TLS peers for KMIP 2.0/2.1, TTLV/JSON/XML,
+  and raw TLS/HTTPS; validate every returned part identifier and destroy all
+  created parts.
+- [x] T022 Execute the catalogued C Derive Key operation through the installed
+  typed ABI and controlled TLS peers for KMIP 2.0/2.1, TTLV/JSON/XML, and raw
+  TLS/HTTPS; validate the derived identifier and clean up both source and
+  derived keys.
 
 T006 and T007 remain open until each separate language validator consumes the
 generated matrix, invokes every named public route, exchanges requests and
 responses with a controlled peer, and emits validated per-cell evidence. A
 passing shared-contract job does not satisfy those language-level requirements.
+
+## Development evidence: C Archive operation route
+
+- Normative scope: OASIS KMIP v2.0 §6.1.4 Tables 158–159 and KMIP v2.1
+  §6.1.4 Tables 173–174 define Archive request and response payloads. This
+  implements the C route slice of KMIPKIT-0092-FR-003, FR-005, and FR-009.
+- Red commit `1b63e95e`: the focused test failed because the installed C driver
+  emitted no Archive network checks.
+- Green commit `1db86e47`: the installed consumer executes Create → Archive →
+  Revoke → Destroy in one ordered batch, uses ID Placeholder after Create,
+  checks the Archive response Unique Identifier, and verifies observable peer
+  state and teardown across KMIP 2.0/2.1, TTLV/JSON/XML, and raw TLS/HTTPS.
+  Its 12 controlled-peer checks invoke the public Archive constructor and
+  response accessor.
+- Red commit `443f6923`: a regression test reproduced stale compiled catalog
+  provenance when the selected CMake build directory survived a branch rebase.
+- Green commit `04958e18`: the catalog file is now a CMake configure
+  dependency, so its provenance hash is refreshed whenever the catalog changes.
+- Verification: the Archive and provenance focused tests passed; CMake rebuilt
+  both validator targets with catalog SHA-256
+  `ffa991b5595773d543a8e667986ba2836a3abb784a58e88102c029197e326d8b`; CTest
+  passed 7/7, including both controlled TLS peer suites. The exhaustive C
+  matrix run `c-route-d957888d-c869-4519-8543-7e95081282b3` invoked 41,844 of
+  66,736 cells with zero failed cells and 24,892 pending validator recipes;
+  all 42 Archive events passed. The cross-language matrix and exact-head CI
+  remain open.
 
 ## Development evidence: scoped Rust route evidence union
 
@@ -509,6 +578,293 @@ peer validates Batch Count 2 against the two Batch Items. This demonstrates
 that the typed send path derives the count from its items and exposes no count
 override. Its 12 focused checks pass; this does not complete T006/T007/T009 or
 the cross-language matrix.
+
+## Development evidence: C Create Key Pair route
+
+For KMIPKIT-0092-FR-003 and FR-005, the installed C ABI now sends a typed
+Create Key Pair request with explicit RSA algorithm and key length, decodes
+both returned identifiers, and destroys each object in a follow-up request.
+The controlled peer checks the two response fields, the two cleanup targets,
+and that fixture state returns to its initial value. The route is exercised for
+KMIP 2.0 and 2.1, TTLV/JSON/XML, and raw TLS/HTTPS.
+
+- Normative source: OASIS KMIP v2.0 and v2.1 §6.1.9.
+- Red commit `da27e5dd`: the focused test failed because no Create Key Pair
+  network cells executed.
+- Green commit `1b1f6189`: the installed consumer invokes the public typed constructor,
+  typed response accessor, and Destroy accessors; the controlled peer supplies
+  both key identifiers and verifies complete teardown.
+- Verification: the C validator rebuilt; the focused route test passed 12/12
+  version/encoding/transport cells, with peer state restored in all 12. This
+  closes only the C Create Key Pair route slice. The full C matrix and
+  cross-language routes remain open.
+
+## Development evidence: C Certify route
+
+For KMIPKIT-0092-FR-003, FR-005, and FR-009, the installed C ABI now sends a
+typed Create Public Key followed by Certify with the required X.509 Certificate
+Type attribute, decodes the generated Certificate Unique Identifier and
+complete response TTLV, then destroys both the Certificate and Public Key.
+The fixture creates an RSA-2048 Public Key, as Certify applies to public keys.
+
+- Normative source: OASIS KMIP v2.0 and v2.1 §6.1.6, Tables 179 and 180.
+- Red commit `91a7bfc2`: the focused test failed because no Certify route cells
+  executed.
+- Green commit `8c73a2d0`: add the typed request/response route, controlled peer
+  behavior, and a generated catalog fixture with a Public Key setup and
+  Certificate/Public Key teardown.
+- Refactor/documentation commit: this evidence entry and the traceability
+  record capture the route boundary and remaining matrix work.
+- Verification: the focused Certify and Create Key Pair tests passed; each
+  covered 12 version/encoding/transport combinations. `ctest --test-dir
+  interop/c-kmip-validator/build --output-on-failure` passed all 7 tests in
+  82.26 seconds, including both controlled TLS protocol versions. The complete
+  C matrix, exact-head CI, and Rust/Java/Python parity remain open.
+
+## Development evidence: C Sign route
+
+For KMIPKIT-0092-FR-003, FR-005, and FR-009, the installed C ABI sends Create
+Private Key → Activate → Sign → Revoke → Destroy in one ordered batch. It
+selects RSA-2048, SHA-256, and SHA-256-with-RSA explicitly, signs the fixture
+input `abc`, checks the typed response Unique Identifier and Signature Data,
+and confirms the peer's object state returns to baseline.
+
+- Normative source: OASIS KMIP v2.0 §6.1.49, Tables 302–304; KMIP v2.1
+  §6.1.55, Tables 334–336.
+- Red commit `960ceb61`: the focused test failed because Sign had no C route
+  recipe or installed-consumer path.
+- Green commit `5a146dd6`: add the installed typed Sign request/response route
+  and the controlled peer's signature response and lifecycle checks.
+- Refactor/documentation commit: this evidence entry and the traceability
+  record capture the verified route slice and outstanding matrix work.
+- Verification: the focused test passed 24 version/encoding/transport checks
+  across the operation and RSA-2048 catalog cases. Full CTest passed 7/7 in
+  83.62 seconds, including both controlled TLS versions. Full C matrix,
+  exact-head CI, and Rust/Java/Python parity remain open.
+
+## Development evidence: C request-converted Get Attribute List batch variant
+
+- Normative scope: OASIS KMIP 2.0 §§6.1.8, 6.1.1, 6.1.21, 6.1.40, 6.1.15,
+  8.2–8.6, 9.5–9.8, and 4.50; KMIP 2.1 §§6.1.8, 6.1.1, 6.1.21, 6.1.44,
+  6.1.15, 8.2–8.6, 9.5–9.8, and 4.57. This extends KMIPKIT-0092-FR-003,
+  FR-005, and FR-009.
+- Red commit `4db6e3e93`: require 24 controlled exchanges and an observed
+  `kmipkit_client_batch_item_get_attribute_list_from_request` call in addition
+  to the direct constructor. The focused test failed at 12 checks before the
+  standalone variant was registered.
+- Green commit `983472f08`: run the same five-item batch through both direct
+  and `GetAttributeListRequest`-converted Get Attribute List construction.
+- Verification: the focused test passed all 24 controlled peer checks;
+  `ctest --test-dir interop/c-kmip-validator/build --output-on-failure` passed
+  7/7. Full local run `c-route-25ebc1e0-3153-40f3-a26e-f16553b6beb4`, using
+  pinned library commit `489fafc79ef89db2524eafa7a6c6482f5cf75d97` and
+  artifact SHA-256 `980e85fdf6982b52360895b9c0713fbef42b294d22fbeb7d71136fe32235af65`,
+  records 42,190 of 66,736 cells invoked, zero failed, and 24,546 pending
+  `validator_recipe_pending` cells. The 38-cell reduction covers this batch
+  variant; matrix completeness and exact-head CI remain open.
+
+## Development evidence: C ordered placeholder batch options and response accessors
+
+KMIPKIT-0092-FR-003, FR-005, and FR-009 now include two installed-C routes for
+the ordered Create/Activate batch: one explicitly sets `Batch Order Option`
+to `true`, and one omits the field to exercise its specified default. Both use
+the ID Placeholder only after Create and perform Revoke/Destroy cleanup in a
+later request. OASIS KMIP 2.0/2.1 §§6.1.1, 6.1.8, 8.2–8.6, and 9.5–9.8 define
+the operations, ordered processing, and batch header/item fields; the ID
+Placeholder is defined in §6.1 and uses the Unique Identifier value defined in
+KMIP 2.0 §4.50 / KMIP 2.1 §4.57.
+
+- Red commit `14c14b9ac`: the focused contract failed because neither ordered
+  placeholder route had a C recipe.
+- Green commit `5e7a48981`: add both request variants, typed Create/Activate
+  constructors and response checks, controlled-peer checks, and cleanup.
+- Red commit `feb6d2ac5`: the response-accessor contract failed because the
+  response header, metadata, response item, and Unique Batch Item ID accessors
+  were not observed on these routes.
+- Green commit `66c2b39f4`: inspect response header TTLV and metadata v1/v2,
+  retrieve each ordered response item, validate its Unique Batch Item ID, and
+  confirm no asynchronous correlation value is present.
+- Security boundary: the public raw response-TTLV accessor is intentionally not
+  called for these successful Create/Activate responses. Its allowed use is
+  restricted by the repository security invariant to the exact specified
+  successful MAC, MAC Verify, Sign, and Signature Verify shape failures.
+  Consequently the local matrix retains four such raw-TTLV cells as pending
+  rather than weakening the invariant.
+- Verification: both controlled peer scenarios pass across 24
+  version/encoding/transport combinations; the installed C matrix records 240
+  passing events for these routes. Full local CTest passed 7/7 in 91.51
+  seconds. Local matrix run `c-route-b31736b5-d66d-41da-bd15-009c3f016e78`,
+  using pinned library commit `489fafc79ef89db2524eafa7a6c6482f5cf75d97`
+  and artifact SHA-256
+  `980e85fdf6982b52360895b9c0713fbef42b294d22fbeb7d71136fe32235af65`,
+  records 42,386/66,736 cells invoked, zero failed, and 24,350 pending. Four
+  pending cells are the restricted raw-response-TTLV access described above;
+  other matrix gaps remain. Exact-head hosted CI and cross-language parity
+  remain open, so the PR stays WIP.
+
+## Development evidence: C single-item batch response accessors
+
+For KMIPKIT-0092-FR-003 and FR-009, the installed C consumer checks the
+single-item Get response for a typed Symmetric Key result with the fixture
+identifier, successful response metadata, nonempty response header, matching
+Unique Batch Item ID, and absent asynchronous correlation. The request also
+verifies that Batch Error Continuation Option and Batch Order Option remain
+omitted. OASIS KMIP 2.0/2.1 §§6.1.19, 8.2, 8.5–8.6, and 9.5, 9.7 define the
+Get operation and single-item message/batch shapes.
+
+- Red commit `5536660b0`: the focused test failed because the consumer trace
+  contained only the typed batch execution and metadata-v2 accessors.
+- Green commit `f697ad925`: call the typed Get response accessor and validate
+  the version-1 metadata, response-header TTLV, Unique Batch Item ID, and
+  absent pending-correlation value. The Any Object copy is released through
+  its zeroizing C release path and is not formatted or reported.
+- Verification: CMake rebuilt both validator executables; the focused
+  single-item route test passed all 12 controlled exchanges across both
+  protocol versions, three encodings, and two transports. Full CTest passed
+  7/7 in 104.44 seconds, including the full route-matrix contract suite and
+  both controlled TLS peers. A later matrix measurement is recorded below.
+
+## Development evidence: C Undo continuation and rollback response
+
+For KMIPKIT-0092-FR-003, FR-005, and FR-009, the installed C consumer sends a
+Create/Get batch with Batch Error Continuation Option set to Undo. The
+controlled peer executes Create, returns Object Not Found for Get, rolls back
+the created fixture object, and reports Operation Undone for Create. KMIP 2.0
+and 2.1 §8.6 requires Response Payload when Result Status is not Failure, so
+the Operation Undone Create response retains Object Type and Unique Identifier
+even though the peer's state is rolled back.
+
+- Red commit `382982aff`: the focused test failed because the route recipe and
+  installed C workflow were absent.
+- Green commit `e900464af`: add the typed two-item batch, validate both
+  response items and safe metadata, and make the fixture enforce Undo state
+  restoration and the §8.6 Operation Undone payload.
+- Verification: the focused route test passed all 12 version/encoding/
+  transport combinations. Full CTest passed 7/7 in 92.80 seconds; requirement
+  traceability passed 2 tests and normative feature traceability passed 31.
+  The subsequent installed-C matrix run `c-route-d5d7d97a-4121-4962-a588-6a83576e90d6`,
+  using pinned library commit `489fafc79ef89db2524eafa7a6c6482f5cf75d97` and
+  artifact SHA-256
+  `980e85fdf6982b52360895b9c0713fbef42b294d22fbeb7d71136fe32235af65`,
+  records 42,494/66,736 cells invoked, zero failed, and 24,242 pending
+  `validator_recipe_pending` cells. The matrix remains incomplete. Exact-head
+  hosted CI and remaining language/matrix coverage remain open; this PR stays
+  WIP.
+
+
+## Development evidence: C Continue failed-item response accessors
+
+For KMIPKIT-0092-FR-003, FR-005, and FR-009, the installed C consumer now
+validates the first failed Get response in a Continue batch: result status and
+reason, absent typed and raw payloads, response header, and absent pending
+correlation. It also validates the following successful Get Attribute List
+response through its typed identifiers and attribute references and the
+operation-specific payload TTLV accessor. OASIS KMIP 2.0/2.1 §§8.2–8.6 and 9.5–9.7 define batch
+continuation and response items; §11.5 defines the Object Not Found reason.
+
+- Red commit `371057393`: the focused test failed because Continue omitted the
+  failed-item response accessors and route evidence.
+- Green commit `196fad2e4`: use the existing safe failure accessor checks for
+  Continue and record the continuation enumeration and response routes in the
+  controlled-peer evidence.
+- Verification: the focused route test passed 24 constructor/transport/
+  version checks; full CTest passed 7/7 in 92.92 seconds. Exact-head CI, matrix
+  completeness, other languages, and the overall PR remain open and WIP.
+
+## Development evidence: C forward ID Placeholder rejection
+
+For KMIPKIT-0092-FR-002, FR-003, and FR-009, the C matrix executes the catalogued
+`Activate(ID Placeholder from item 2)`, `Create` scenario. OASIS KMIP 2.0/2.1
+§§8.3 and 9.7 are the catalogued references. The test requires a local
+validation error, zero transport calls, and no response decoder obligations.
+
+- Red commit `120855254`: focused tests failed because the matrix still planned
+  response-decoding cells for the locally rejected batch and the C validator
+  had no execution recipe.
+- Green commit `800798706`: classify the expected construction rejection as
+  send-only, run the C batch through client validation without a listening
+  peer, check Validation/Invalid Input/Not Sent, and record the two ordered
+  operation routes for every version, encoding, and transport.
+- Verification: the focused C route test passed 12 version/encoding/transport
+  checks and produced 24 not-sent item events. Full CTest passed 7/7 in 93.18
+  seconds; the shared coverage matrix passed 177 tests and route evidence
+  validation passed 33 tests. The full local C matrix recorded 42,560/66,736
+  cells invoked, zero failed, and 24,132 pending validator recipes. Exact-head
+  hosted CI and matrix completeness remain open; the PR stays WIP.
+
+## Development evidence: C Encrypt and Decrypt operation routes
+
+For KMIPKIT-0092-FR-003, FR-005, and FR-009, the catalogued `test-op-encrypt`
+and `test-op-decrypt` cases now use the installed C typed request constructors
+and typed response accessors. Their controlled peer drives the AES known
+answer through Register, Activate, Encrypt, Decrypt, Revoke, and Destroy.
+OASIS KMIP 2.0/2.1 §§6.1.17 and 6.1.11 define Encrypt and Decrypt; §§6.1.39/
+6.1.43, 6.1.1, 6.1.40/6.1.44, 6.1.15, 8.2–8.6, 9.5–9.8, and 4.50/4.57
+define the setup, cleanup, batch, and placeholder behavior exercised by this
+fixture.
+
+- Red commit `5d30c6208`: the focused integration test failed with zero
+  controlled-peer checks because neither operation case was routed through the
+  installed C consumer.
+- Green commit `82019abca`: dispatch both cases through the typed crypto batch,
+  validate all six peer-observed operations, and expose setup, cleanup, and
+  final-state evidence in each check.
+- Integration test commit `d57e11dd2`: include both new batches in the
+  controlled-peer operation-count contract.
+- Verification: `cmake --build interop/c-kmip-validator/build -j 2` passed;
+  the focused test passed 24 controlled TLS/HTTPS exchanges and 76/76 typed
+  route cells across both versions and all encoding/transport combinations.
+  Full CTest passed 7/7 in 94.61 seconds. The exhaustive local C matrix invoked
+  42,636/66,692 cells with zero failures and 24,056 pending validator recipes;
+  it remains incomplete. Exact-head hosted CI is still pending and the PR stays
+  WIP.
+
+## Development evidence: C Create Split Key operation route
+
+For KMIPKIT-0092-FR-003, FR-005, and FR-009, `test-op-create-split-key` now
+uses the installed typed C ABI to request a 3-part, 2-of-3 XOR split for an
+AES-128 symmetric key. The consumer reads the response count and every returned
+Unique Identifier through typed accessors, then sends a separate three-item
+Destroy batch. The controlled peer verifies request parameters, repeated
+response identifiers, cleanup identifiers, and restoration of its initial
+object state. Normative references are OASIS KMIP 2.0 §6.1.10 Tables 178–179
+and KMIP 2.1 §6.1.10 Tables 193–194.
+
+- Red commit `e00665d1e`: the focused test failed because no C Create Split Key
+  route produced controlled-peer evidence.
+- Green commit `420a7c597`: dispatch the operation through the installed
+  `kmipkit_client_batch_item_create_split_key` ABI, validate all three typed
+  identifiers, destroy each part, and add the corresponding stateful peer
+  recipe.
+- Verification: the focused test passed all 12 version/encoding/transport
+  exchanges; the route contract suite passed 179 tests; the CMake build passed,
+  and full CTest passed 7/7.
+  This closes only the C Create Split Key slice; exact-head hosted CI, the full
+  route matrix, and Rust/Java/Python parity remain open.
+
+## Development evidence: C Derive Key operation route
+
+For KMIPKIT-0092-FR-003, FR-005, and FR-009, `test-op-derive-key` now uses the
+installed typed C ABI to create and activate an AES-128 source key with the
+Derive Key usage bit, then sends a caller-selected HASH derivation using
+SHA-256 and AES-128 output attributes. The consumer reads the derived
+Unique Identifier through the typed accessor, inspects the successful generic
+response item through the operation-specific TTLV accessor, then revokes and
+destroys the source and destroys the derived key. The controlled peer checks
+each request, the response identifier, cleanup, and restored initial state.
+Normative references are OASIS KMIP 2.0 and 2.1 §6.1.14 Tables 205–207 and
+§7.12 Table 364.
+
+- Red commit `3fdc0acc1`: the focused test failed because the installed C
+  consumer did not send a Derive Key request.
+- Green commit `b5dbff1b9`: execute the four-exchange lifecycle through the
+  public C ABI, preserve response identifier lifetimes, and assert all setup,
+  request, response, cleanup, and final-state evidence.
+- Verification: the focused test passed all 12 KMIP version/encoding/transport
+  exchanges; the controlled TLS peer passed for KMIP 2.0 and 2.1; full CTest
+  passed 7/7 in 101.27 seconds. The broader C execution matrix and exact-head
+  hosted CI remain incomplete; T006, T007, and T009 remain open.
+
 ## Development evidence: C Export request and response routes
 
 - Normative scope: OASIS KMIP v2.0 §6.1.18 Tables 202–203 and v2.1 §6.1.18

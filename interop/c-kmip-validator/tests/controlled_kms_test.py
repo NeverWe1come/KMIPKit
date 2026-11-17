@@ -6,6 +6,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+from collections import Counter
 from pathlib import Path
 import re
 import socket
@@ -86,7 +87,8 @@ def response(operations: tuple[int, ...], protocol_minor: int,
              result_reasons: tuple[int | None, ...] | None = None,
              rng_length: int = 16,
              cancellation_result: int = 1,
-             discover_versions: tuple[tuple[int, int], ...] | None = None) -> bytes:
+             discover_versions: tuple[tuple[int, int], ...] | None = None,
+             response_identifiers: tuple[bytes, ...] | None = None) -> bytes:
     version = tlv(0x420069, 1,
                   integer(0x42006A, 2) + integer(0x42006B, protocol_minor))
     header = tlv(
@@ -215,18 +217,37 @@ def response(operations: tuple[int, ...], protocol_minor: int,
         elif operation == 1:
             payload_value = enumeration(0x420057, created_object_type) + \
                 tlv(0x420094, 7, b"fixture-key-1")
+        elif operation == 2:
+            payload_value = tlv(0x420066, 7, b"fixture-private-key-1") + \
+                tlv(0x42006F, 7, b"fixture-public-key-1")
         elif operation == 3:
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
+        elif operation == 5:
+            identifier = (response_identifiers[item_index]
+                          if response_identifiers is not None else b"fixture-derived-key")
+            payload_value = tlv(0x420094, 7, identifier)
+        elif operation == 6:
+            payload_value = tlv(0x420094, 7, b"fixture-certificate-1")
+        elif operation == 40:
+            payload_value = b"".join(
+                tlv(0x420094, 7, identifier)
+                for identifier in (b"fixture-split-part-one",
+                                   b"fixture-split-part-two",
+                                   b"fixture-split-part-three")
+            )
         elif operation == 31:
             payload_value = tlv(0x420094, 7, b"fixture-key-1") + tlv(
                 0x4200C2, 8, bytes.fromhex("69c4e0d86a7b0430d8cdb78070b4c55a"))
         elif operation == 32:
             payload_value = tlv(0x420094, 7, b"fixture-key-1") + tlv(
                 0x4200C2, 8, bytes.fromhex("00112233445566778899aabbccddeeff"))
+        elif operation == 33:
+            payload_value = tlv(0x420094, 7, b"fixture-key-1") + tlv(
+                0x4200C3, 8, b"fixture-signature-data")
         elif operation == 35:
             payload_value = tlv(0x420094, 7, b"fixture-key-1") + tlv(
                 0x4200C6, 8, bytes(range(32)))
-        elif operation == 36:
+        elif operation in (34, 36):
             payload_value = tlv(0x420094, 7, b"fixture-key-1") + enumeration(0x42009B, 1)
         elif operation in (13, 14, 15, 48, 49):
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
@@ -249,6 +270,10 @@ def response(operations: tuple[int, ...], protocol_minor: int,
         elif operation in (9, 18, 21):
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
         elif operation == 20:
+            identifier = (response_identifiers[item_index]
+                          if response_identifiers is not None else b"fixture-key-1")
+            payload_value = tlv(0x420094, 7, identifier)
+        elif operation == 21:
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
         elif operation == 17:
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
@@ -267,6 +292,8 @@ def response(operations: tuple[int, ...], protocol_minor: int,
                                     54: b"interop-set-defaults",
                                     55: b"interop-set-constraints",
                                     1: b"interop-create",
+                                    5: b"interop-derive-key",
+                                    40: b"interop-create-split-key",
                                     11: b"interop-attributes",
                                     12: b"interop-attributes",
                                     20: b"interop-destroy",
@@ -275,6 +302,7 @@ def response(operations: tuple[int, ...], protocol_minor: int,
                                     21: b"interop-archive",
                                     18: b"interop-activate",
                                     19: b"interop-revoke",
+                                    21: b"interop-archive",
                                     43: b"interop-export",
                                     56: b"interop-get-constraints",
                                     17: b"interop-get-usage-allocation",
@@ -296,7 +324,10 @@ def response(operations: tuple[int, ...], protocol_minor: int,
         item_fields += integer(0x42007F, result_status, 5)
         if result_reason is not None:
             item_fields += enumeration(0x42007E, result_reason)
-        if result_status == 0:
+        # KMIP 2.0/2.1 §8.6 requires a Response Payload when the result is
+        # not Failure. Operation Undone therefore retains the payload for
+        # the operation that was performed and then rolled back.
+        if result_status != 1:
             item_fields += tlv(0x42007C, 1, payload_value)
         batch_items.append(tlv(
             0x42000F,
@@ -500,6 +531,8 @@ def main() -> int:
     expected_cases += ("test-op-export",)
     expected_operations += (37, 38, 39)
     expected_operations += (39, 37, 38)
+    expected_operations += (1, 21, 19, 20)
+    expected_cases += ("test-op-archive",)
     expected_operations += (1, 13, 19, 20)
     expected_operations += (1, 49, 19, 20)
     expected_operations += (1, 17, 19, 20)
@@ -510,13 +543,14 @@ def main() -> int:
     expected_operations += (1, 13, 14, 19, 20)
     expected_operations += (1, 18, 12, 19, 20)
     expected_operations += (1, 18, 10, 19, 20)
-    expected_operations += (1, 18, 19, 20, 1, 18, 19, 20)
+    expected_operations += (1, 18, 19, 20) * 2
     expected_operations += (1, 48, 19, 20)
     expected_operations += (52, 52, 52)
     expected_operations += (26,)
     expected_cases += ("test-async-unknown-correlation-rejected",)
     expected_operations += (10, 12, 10, 12, 10, 12, 10, 12, 10, 12)
     expected_operations += registered_key_batch
+    expected_cases += ("test-op-encrypt", "test-op-decrypt")
     if protocol_version == "2.0":
         expected_operations += (45, 45, 46)
         expected_cases += ("test-op-login", "test-op-logout")
@@ -528,9 +562,9 @@ def main() -> int:
     expected_operations += (2, 18, 34, 19, 20, 20)
     expected_operations += (2, 20, 20)
     expected_operations += (2, 18, 6, 19, 20, 20, 20)
-    expected_operations += (1, 21, 19, 20)
-    expected_cases += ("test-op-archive",)
     expected_operations += stop_on_first_failure_batch
+    expected_operations += (1, 10)
+    expected_cases += ("test-batch-undo-rolls-back-prior-success",)
     expected_operations += (1, 25)
     expected_cases += ("test-op-cancel",)
     expected_operations += (1, 25) * len(ASYNC_CANCEL_RESULT_CASES)
@@ -582,6 +616,16 @@ def main() -> int:
     expected_cases += ("test-op-delete-attribute",)
     expected_cases += ("test-op-modify-attribute",)
     expected_cases += ("test-op-adjust-attribute",)
+    expected_operations += (40,)
+    expected_operations += (20, 20, 20)
+    expected_cases += ("test-op-certify", "test-op-create-key-pair", "test-op-create-split-key")
+    expected_operations += (1, 18, 5, 19, 20, 20)
+    expected_cases += ("test-op-derive-key",)
+    expected_operations += (1, 18, 33, 19, 20)
+    expected_cases += ("test-op-sign", "test-crypto-sign-rsa-2048-pkcs1_v1_5")
+    expected_operations += (1, 18, 34, 19, 20)
+    expected_cases += ("test-op-signature-verify",
+                       "test-crypto-signature-verify-rsa-2048-pkcs1_v1_5")
     expected_cases += ("test-batch-create-activate-destroy",)
     expected_cases += ("test-batch-placeholder-chain-resolves",)
     expected_cases += (
@@ -648,6 +692,7 @@ def main() -> int:
         handled = 0
         handled_operations: list[int] = []
         handled_batches: list[tuple[int, ...]] = []
+        ordered_placeholder_options: list[bool] = []
 
         def serve() -> None:
             nonlocal handled
@@ -697,25 +742,49 @@ def main() -> int:
                                     raise AssertionError("Interop function order or shared identifier mismatch")
                             two_read_batch = operations == (10, 12)
                             placeholder_chain = operations == (1, 18, 10)
-                            batch_order_placeholder = operations == (1, 18)
+                            ordered_placeholder_batch = operations == (1, 18)
+                            sign_lifecycle = operations == (1, 18, 33, 19, 20)
+                            signature_verify_lifecycle = operations == (1, 18, 34, 19, 20)
                             placeholder_cleanup = operations == (19, 20) and \
                                 tlv(0x420093, 8, b"placeholder-revoke-cleanup") in request
                             response_operations = operations
                             response_item_ids = None
+                            if sign_lifecycle:
+                                response_item_ids = (
+                                    b"interop-create", b"interop-activate", b"interop-sign",
+                                    b"interop-revoke", b"interop-destroy",
+                                )
+                                if (request.count(enumeration(0x420094, 1)) != 4 or
+                                        any(request.count(tlv(0x420093, 8, item_id)) != 1
+                                            for item_id in response_item_ids)):
+                                    raise AssertionError(
+                                        "Sign lifecycle must resolve the created ID Placeholder and correlate all items"
+                                    )
+                            if signature_verify_lifecycle:
+                                response_item_ids = (
+                                    b"interop-create", b"interop-activate",
+                                    b"interop-signature-verify", b"interop-revoke", b"interop-destroy",
+                                )
+                                if (request.count(enumeration(0x420094, 1)) != 4 or
+                                        any(request.count(tlv(0x420093, 8, item_id)) != 1
+                                            for item_id in response_item_ids)):
+                                    raise AssertionError(
+                                        "Signature Verify lifecycle must resolve the ID Placeholder and correlate all items"
+                                    )
+                            if operations == (2,):
+                                response_item_ids = (
+                                    (b"interop-certify-create-key-pair",)
+                                    if tlv(0x420093, 8, b"interop-certify-create-key-pair") in request
+                                    else (b"interop-create-key-pair",))
+                            elif operations == (6,):
+                                if (tlv(0x420094, 7, b"fixture-public-key-1") not in request or
+                                        enumeration(0x42001D, 1) not in request):
+                                    raise AssertionError(
+                                        "Certify must target the Public Key returned by Create Key Pair"
+                                    )
+                                response_item_ids = (b"interop-certify-target",)
                             if operations == (52, 52, 52):
                                 response_item_ids = (b"interop-begin", b"interop-end", b"interop-reset")
-                            if batch_order_placeholder:
-                                is_required_option_case = handled_batches.count((1, 18)) == 0
-                                expected_item_ids = (b"ordered-create", b"ordered-activate")
-                                batch_order_option = tlv(0x420010, 6, b"\x00" * 7 + b"\x01")
-                                if (request.count(enumeration(0x420094, 1)) != 1 or
-                                        any(request.count(tlv(0x420093, 8, item_id)) != 1
-                                            for item_id in expected_item_ids) or
-                                        ((batch_order_option in request) != is_required_option_case)):
-                                    raise AssertionError(
-                                        "Batch Order placeholder request shape or option mismatch"
-                                    )
-                                response_item_ids = expected_item_ids
                             if operations == registered_key_batch:
                                 if any(request.count(tlv(0x420093, 8, item_id)) != 1
                                        for item_id in registered_key_batch_item_ids):
@@ -828,6 +897,17 @@ def main() -> int:
                                 response_item_ids = (b"item-a",)
                                 response_statuses = (1,)
                                 response_reasons = (55,)
+                            if (operations == (1, 10) and
+                                    enumeration(0x42000E, 3) in request):
+                                expected_undo_item_ids = (b"undo-create", b"undo-failing-get")
+                                if (any(request.count(tlv(0x420093, 8, item_id)) != 1
+                                        for item_id in expected_undo_item_ids) or
+                                        request.count(tlv(0x420094, 7, b"missing-key")) != 1 or
+                                        tlv(0x420010, 6, bytes.fromhex("0000000000000001")) not in request):
+                                    raise AssertionError("Undo batch fields mismatch")
+                                response_item_ids = expected_undo_item_ids
+                                response_statuses = (3, 1)
+                                response_reasons = (None, 55)
                             if two_read_batch:
                                 continue_after_failure = tlv(0x420094, 7, b"missing-key") in request
                                 expected_fixture_identifiers = 1 if continue_after_failure else 2
@@ -855,7 +935,8 @@ def main() -> int:
                                     response_item_ids = (b"item-b", b"item-a")
                                     response_statuses = None
                                     response_reasons = None
-                            elif operations != stop_on_first_failure_batch:
+                            elif operations != stop_on_first_failure_batch and not (
+                                    operations == (1, 10) and enumeration(0x42000E, 3) in request):
                                 response_statuses = None
                                 response_reasons = None
                             if placeholder_chain:
@@ -867,6 +948,24 @@ def main() -> int:
                                             for item_id in expected_item_ids) or
                                         enumeration(0x42000E, 1) not in request):
                                     raise AssertionError("placeholder chain did not send two IDPlaceholder references")
+                                response_item_ids = expected_item_ids
+                            elif ordered_placeholder_batch:
+                                expected_item_ids = (
+                                    b"placeholder-create", b"placeholder-activate"
+                                )
+                                true_order_option = tlv(0x420010, 6, b"\x00\x00\x00\x00\x00\x00\x00\x01")
+                                false_order_option = tlv(0x420010, 6, bytes(8))
+                                order_option_present = true_order_option in request
+                                order_option_absent = true_order_option not in request and \
+                                    false_order_option not in request
+                                if (request.count(enumeration(0x420094, 1)) != 1 or
+                                        any(tlv(0x420093, 8, item_id) not in request
+                                            for item_id in expected_item_ids) or
+                                        not (order_option_present or order_option_absent)):
+                                    raise AssertionError(
+                                        "Create/Activate batch omitted ID Placeholder or invalid Batch Order Option"
+                                    )
+                                ordered_placeholder_options.append(order_option_present)
                                 response_item_ids = expected_item_ids
                             elif placeholder_cleanup:
                                 expected_cleanup_ids = (
@@ -1144,6 +1243,81 @@ def main() -> int:
                                 if operations == (25,) and request.count(
                                         tlv(0x420006, 8, b"fixture-cancel-correlation")) != 1:
                                     raise AssertionError("Cancel request omitted its exact pending correlation value")
+                                if operations == (40,):
+                                    response_item_ids = (b"interop-create-split-key",)
+                                if operations == (1,) and tlv(
+                                        0x420093, 8, b"interop-derive-create") in request:
+                                    response_item_ids = (b"interop-derive-create",)
+                                if operations == (18,) and tlv(
+                                        0x420093, 8, b"interop-derive-activate") in request:
+                                    response_item_ids = (b"interop-derive-activate",)
+                                response_identifiers = None
+                                if operations == (19, 20, 20) and tlv(
+                                        0x420093, 8, b"interop-derive-revoke-source") in request:
+                                    response_item_ids = (
+                                        b"interop-derive-revoke-source",
+                                        b"interop-derive-destroy-source",
+                                        b"interop-derive-destroy-result",
+                                    )
+                                    response_identifiers = (
+                                        b"fixture-key-1", b"fixture-key-1", b"fixture-derived-key")
+                                if operations == (20, 20, 20):
+                                    split_key_destroy_ids = (
+                                        b"interop-destroy-split-one",
+                                        b"interop-destroy-split-two",
+                                        b"interop-destroy-split-three",
+                                    )
+                                    if any(tlv(0x420093, 8, item_id) in request
+                                           for item_id in split_key_destroy_ids):
+                                        if any(request.count(tlv(0x420093, 8, item_id)) != 1
+                                               for item_id in split_key_destroy_ids):
+                                            raise AssertionError(
+                                                "Create Split Key teardown omitted or duplicated a unique batch item ID"
+                                            )
+                                        response_item_ids = split_key_destroy_ids
+                                        response_identifiers = (
+                                            b"fixture-split-part-one", b"fixture-split-part-two",
+                                            b"fixture-split-part-three")
+                                    else:
+                                        expected_destroy_ids = (
+                                            b"interop-destroy-certificate",
+                                            b"interop-destroy-public-key",
+                                            b"interop-destroy-private-key",
+                                        )
+                                        if any(tlv(0x420093, 8, item_id) not in request
+                                               for item_id in expected_destroy_ids):
+                                            raise AssertionError(
+                                                "Certify key-pair teardown omitted a unique batch item ID"
+                                            )
+                                        response_item_ids = expected_destroy_ids
+                                        response_identifiers = (
+                                            b"fixture-certificate-1", b"fixture-public-key-1",
+                                            b"fixture-private-key-1")
+                                if operations == (20, 20):
+                                    if tlv(0x420093, 8, b"interop-destroy-certificate") in request:
+                                        expected_destroy_ids = (
+                                            b"interop-destroy-certificate",
+                                            b"interop-destroy-public-key",
+                                        )
+                                        response_identifiers = (
+                                            b"fixture-certificate-1", b"fixture-key-1")
+                                        response_item_ids = expected_destroy_ids
+                                    elif tlv(0x420093, 8, b"interop-destroy-private-key") in request:
+                                        expected_destroy_ids = (
+                                            b"interop-destroy-private-key",
+                                            b"interop-destroy-public-key",
+                                        )
+                                        response_identifiers = (
+                                            b"fixture-private-key-1", b"fixture-public-key-1")
+                                        response_item_ids = expected_destroy_ids
+                                    else:
+                                        expected_destroy_ids = None
+                                    if expected_destroy_ids is not None and any(
+                                            request.count(tlv(0x420093, 8, item_id)) != 1
+                                            for item_id in expected_destroy_ids):
+                                        raise AssertionError(
+                                            "object-pair cleanup omitted or duplicated a batch item ID"
+                                        )
                                 stream.sendall(response(
                                     response_operations, protocol_minor, selected_attribute_tag,
                                     4 if private_key_create else 3 if public_key_create else 2,
@@ -1155,7 +1329,8 @@ def main() -> int:
                                     cancellation_result=cancellation_result,
                                     discover_versions=(
                                         () if protocol_minor == 0 else ((2, 1),)
-                                    ) if operations == (30,) else None))
+                                    ) if operations == (30,) else None,
+                                    response_identifiers=response_identifiers))
                                 if operations == (25,):
                                     async_request_pending = False
                                     async_poll_mode = "none"
@@ -1233,13 +1408,23 @@ def main() -> int:
                 f"stdout={run.stdout[:1200]!r}; stderr={run.stderr[-1200:]!r}"
             ) from server_errors[0]
         if (handled != len(expected_operations) or sorted(handled_operations) != sorted(expected_operations)
+                or sorted(ordered_placeholder_options) != [False, True]
                 or (1, 11, 20) not in handled_batches
                 or (1, 12, 20) not in handled_batches
                 or (1, 10, 20) not in handled_batches
                 or registered_key_batch not in handled_batches):
+            missing_operations = Counter(expected_operations) - Counter(handled_operations)
+            unexpected_operations = Counter(handled_operations) - Counter(expected_operations)
+            partial_result = json.loads(result_path.read_text(encoding="utf-8")) \
+                if result_path.is_file() else {}
+            failed_cases = [
+                {"case_id": case.get("case_id"), "diagnostic": case.get("diagnostic")}
+                for case in partial_result.get("cases", []) if case.get("status") == "failed"
+            ]
             raise AssertionError(
-                f"controlled peer observed batches {handled_batches!r}, "
-                f"expected {expected_operations!r}"
+                f"controlled peer operation count mismatch; missing={dict(missing_operations)!r}; "
+                f"unexpected={dict(unexpected_operations)!r}; failed_cases={failed_cases!r}; "
+                f"batches={handled_batches!r}; ordered_placeholder_options={ordered_placeholder_options!r}"
             )
         result = json.loads(result_path.read_text(encoding="utf-8"))
         try:
@@ -1311,11 +1496,11 @@ def main() -> int:
             raise AssertionError("opted-in controlled run must preserve uncovered-case classification")
         expected_summary = {
             "total": len(version_cases),
-            "passed": len(expected_cases) + local_value_cases,
+            "passed": len(set(expected_cases)) + local_value_cases,
             "failed": 0,
             "unsupported": 0,
             "policy_restricted": 0,
-            "not_run": len(version_cases) - len(expected_cases) - local_value_cases,
+            "not_run": len(version_cases) - len(set(expected_cases)) - local_value_cases,
         }
         if protocol_version == "2.1" and result["summary"] != expected_summary:
             raise AssertionError(
@@ -1324,11 +1509,11 @@ def main() -> int:
             )
         expected_kmip20_summary = {
             "total": len(version_cases),
-            "passed": len(expected_cases) + local_value_cases,
+            "passed": len(set(expected_cases)) + local_value_cases,
             "failed": 0,
             "unsupported": 0,
             "policy_restricted": 0,
-            "not_run": len(version_cases) - len(expected_cases) - local_value_cases,
+            "not_run": len(version_cases) - len(set(expected_cases)) - local_value_cases,
         }
         if protocol_version == "2.0" and result["summary"] != expected_kmip20_summary:
             raise AssertionError(
