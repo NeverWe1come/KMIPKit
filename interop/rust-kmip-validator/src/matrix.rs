@@ -5788,6 +5788,62 @@ fn run_response_network(matrix: &Path, connection: &Connection, output: &Path) -
 mod tests {
     use super::*;
 
+    #[test]
+    fn previously_missing_public_route_families_execute_from_normative_fixtures() {
+        let catalog: Json = serde_json::from_str(include_str!(
+            "../../shared/catalog/kmipkit-1.0-test-catalog.json"
+        ))
+        .unwrap();
+        let specification: Json =
+            serde_json::from_str(include_str!("../../../specification/catalog/kmip-2.1.json"))
+                .unwrap();
+        let elements = specification["elements"].as_array().unwrap();
+        let routes = [
+            (
+                "kmipkit_protocol::LinkType::from_v2_enumeration",
+                "KMIPKIT-ELEM-ENUM-VALUE-LINK-TYPE-CERTIFICATE-LINK-00000101",
+            ),
+            (
+                "kmipkit_protocol::LinkType::from_v3_tag",
+                "KMIPKIT-ELEM-ENUM-VALUE-LINK-TYPE-CERTIFICATE-LINK-00000101",
+            ),
+            (
+                "kmipkit_protocol::EndpointRole::from_wire_name",
+                "KMIPKIT-ELEM-ENUM-VALUE-ENDPOINT-ROLE-CLIENT-00000001",
+            ),
+            (
+                "kmipkit_client::ClientBatch::with_protocol_version",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-PROTOCOL-VERSION",
+            ),
+            (
+                "kmipkit_protocol::DeactivateRequest::with_deactivation_date",
+                "KMIPKIT-ELEM-ATTRIBUTE-DEACTIVATION-DATE",
+            ),
+            (
+                "kmipkit_protocol::ServerResponseBuilder::with_maximum_response_size",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-MAXIMUM-RESPONSE-SIZE",
+            ),
+            (
+                "kmipkit_protocol::SetEndpointRoleRequest::with_vendor_identification",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-VENDOR-IDENTIFICATION",
+            ),
+        ];
+
+        for (symbol, target_id) in routes {
+            let target = catalog["normative_targets"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|target| target["target_id"] == target_id)
+                .unwrap_or_else(|| panic!("missing fixture target {target_id}"));
+            let sample = sample_for_route_at_version(symbol, target, elements, "2.1")
+                .unwrap_or_else(|error| panic!("{symbol} fixture: {error}"));
+            let result = invoke(symbol, &sample, target, elements, "2.1")
+                .unwrap_or_else(|| panic!("{symbol} has no executable route"));
+            result.unwrap_or_else(|error| panic!("{symbol} invocation: {error}"));
+        }
+    }
+
     fn key_material_target(catalog: &Json) -> &Json {
         catalog["normative_targets"]
             .as_array()
