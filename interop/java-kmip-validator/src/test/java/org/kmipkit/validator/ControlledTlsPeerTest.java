@@ -1110,6 +1110,24 @@ class ControlledTlsPeerTest {
                 assertEquals("passed", event.path("status").asText());
             }
         }
+        String rotateNameTypeMemberCase =
+                "test-norm-structure-member-structure-member-4-53-rotate-name-type";
+        String rotateNameTypeMemberTarget = "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-53-ROTATE-NAME-TYPE";
+        List<String> rotateNameTypeMemberRoutes = List.of(
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode",
+                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
+                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
+                "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew");
+        for (String route : rotateNameTypeMemberRoutes) {
+            assertEquals(1, routeEventCount(report.path("events"), rotateNameTypeMemberCase, route),
+                    "Rotate Name Type must complete its exact KMIP 2.1 structure-member route.");
+            JsonNode event = findRouteEvent(report.path("events"), rotateNameTypeMemberCase,
+                    route, "2.1", rotateNameTypeMemberTarget);
+            assertEquals("passed", event.path("status").asText());
+        }
         List<String> genericEnumerationRoutes = List.of(
                 "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
                 "java.generic-ttlv.ttlv_item.create",
