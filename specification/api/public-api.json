@@ -391871,10 +391871,6 @@
           "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_class::SYSTEM",
           "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_class::USER",
           "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_class::name",
-          "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask",
-          "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::SYSTEM",
-          "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::USER",
-          "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::name",
           "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_type",
           "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_type::DEVICE_CREDENTIAL",
           "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_type::GROUP",
@@ -392844,10 +392840,6 @@
           "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::object_class::SYSTEM",
           "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::object_class::USER",
           "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::object_class::name",
-          "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask",
-          "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::SYSTEM",
-          "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::USER",
-          "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::name",
           "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::object_type",
           "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::object_type::DEVICE_CREDENTIAL",
           "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::object_type::GROUP",
@@ -636926,7 +636918,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::SYSTEM"
+          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::SYSTEM"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -636965,7 +636957,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::USER"
+          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::USER"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -637004,7 +636996,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::name"
+          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::name"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -673001,7 +672993,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::SYSTEM"
+          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::SYSTEM"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -673038,7 +673030,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::USER"
+          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::USER"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -675628,7 +675620,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::name"
+          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::name"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -707706,7 +707698,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::SYSTEM"
+          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::SYSTEM"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -707743,7 +707735,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::USER"
+          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::USER"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -710333,7 +710325,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::name"
+          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::name"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -744456,154 +744448,6 @@
         "python": {
           "packageId": "python-kmipkit",
           "name": "kmipkit.protocol_values.v3_0_object_class_name"
-        }
-      }
-    },
-    {
-      "declarationId": "kmipkit-0047-rust-kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask",
-      "packageId": "rust-kmipkit",
-      "kind": "module",
-      "exportName": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask",
-      "capabilityId": "named_protocol_values",
-      "requirementIds": [
-        "KMIPKIT-0047-FR-009",
-        "KMIPKIT-0047-FR-005"
-      ],
-      "declarationState": "declared",
-      "parityScope": "four-language",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/047-named-protocol-values/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved"
-      },
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "kmipkit_named_values_namespace_t"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.protocol.KmipValues"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.protocol_values"
-        }
-      }
-    },
-    {
-      "declarationId": "kmipkit-0047-rust-kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::SYSTEM",
-      "packageId": "rust-kmipkit",
-      "kind": "constant",
-      "exportName": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::SYSTEM",
-      "capabilityId": "named_protocol_values",
-      "requirementIds": [
-        "KMIPKIT-0047-FR-009",
-        "KMIPKIT-0047-FR-005"
-      ],
-      "declarationState": "declared",
-      "parityScope": "four-language",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/047-named-protocol-values/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved"
-      },
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::SYSTEM"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "KMIPKIT_V3_0_OBJECT_CLASS_MASK_SYSTEM"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.protocol.KmipValues.V3_0_OBJECT_CLASS_MASK_SYSTEM"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.protocol_values.V3_0_OBJECT_CLASS_MASK_SYSTEM"
-        }
-      }
-    },
-    {
-      "declarationId": "kmipkit-0047-rust-kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::USER",
-      "packageId": "rust-kmipkit",
-      "kind": "constant",
-      "exportName": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::USER",
-      "capabilityId": "named_protocol_values",
-      "requirementIds": [
-        "KMIPKIT-0047-FR-009",
-        "KMIPKIT-0047-FR-005"
-      ],
-      "declarationState": "declared",
-      "parityScope": "four-language",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/047-named-protocol-values/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved"
-      },
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::USER"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "KMIPKIT_V3_0_OBJECT_CLASS_MASK_USER"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.protocol.KmipValues.V3_0_OBJECT_CLASS_MASK_USER"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.protocol_values.V3_0_OBJECT_CLASS_MASK_USER"
-        }
-      }
-    },
-    {
-      "declarationId": "kmipkit-0047-rust-kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::name",
-      "packageId": "rust-kmipkit",
-      "kind": "function",
-      "exportName": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::name",
-      "capabilityId": "named_protocol_values",
-      "requirementIds": [
-        "KMIPKIT-0047-FR-009",
-        "KMIPKIT-0047-FR-005"
-      ],
-      "declarationState": "declared",
-      "parityScope": "four-language",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/047-named-protocol-values/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved"
-      },
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::name"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "KMIPKIT_V3_0_OBJECT_CLASS_MASK_name"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.protocol.KmipValues.v3_0ObjectClassMaskName"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.protocol_values.v3_0_object_class_mask_name"
         }
       }
     },
@@ -780268,154 +780112,6 @@
         "python": {
           "packageId": "python-kmipkit",
           "name": "kmipkit.protocol_values.v3_0_object_class_name"
-        }
-      }
-    },
-    {
-      "declarationId": "kmipkit-0047-rust-kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "module",
-      "exportName": "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask",
-      "capabilityId": "named_protocol_values",
-      "requirementIds": [
-        "KMIPKIT-0047-FR-009",
-        "KMIPKIT-0047-FR-005"
-      ],
-      "declarationState": "declared",
-      "parityScope": "four-language",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/047-named-protocol-values/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved"
-      },
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "kmipkit_named_values_namespace_t"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.protocol.KmipValues"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.protocol_values"
-        }
-      }
-    },
-    {
-      "declarationId": "kmipkit-0047-rust-kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::SYSTEM",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "constant",
-      "exportName": "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::SYSTEM",
-      "capabilityId": "named_protocol_values",
-      "requirementIds": [
-        "KMIPKIT-0047-FR-009",
-        "KMIPKIT-0047-FR-005"
-      ],
-      "declarationState": "declared",
-      "parityScope": "four-language",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/047-named-protocol-values/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved"
-      },
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::SYSTEM"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "KMIPKIT_V3_0_OBJECT_CLASS_MASK_SYSTEM"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.protocol.KmipValues.V3_0_OBJECT_CLASS_MASK_SYSTEM"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.protocol_values.V3_0_OBJECT_CLASS_MASK_SYSTEM"
-        }
-      }
-    },
-    {
-      "declarationId": "kmipkit-0047-rust-kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::USER",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "constant",
-      "exportName": "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::USER",
-      "capabilityId": "named_protocol_values",
-      "requirementIds": [
-        "KMIPKIT-0047-FR-009",
-        "KMIPKIT-0047-FR-005"
-      ],
-      "declarationState": "declared",
-      "parityScope": "four-language",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/047-named-protocol-values/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved"
-      },
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::USER"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "KMIPKIT_V3_0_OBJECT_CLASS_MASK_USER"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.protocol.KmipValues.V3_0_OBJECT_CLASS_MASK_USER"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.protocol_values.V3_0_OBJECT_CLASS_MASK_USER"
-        }
-      }
-    },
-    {
-      "declarationId": "kmipkit-0047-rust-kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::name",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "function",
-      "exportName": "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::name",
-      "capabilityId": "named_protocol_values",
-      "requirementIds": [
-        "KMIPKIT-0047-FR-009",
-        "KMIPKIT-0047-FR-005"
-      ],
-      "declarationState": "declared",
-      "parityScope": "four-language",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/047-named-protocol-values/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved"
-      },
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::object_class_mask::name"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "KMIPKIT_V3_0_OBJECT_CLASS_MASK_name"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.protocol.KmipValues.v3_0ObjectClassMaskName"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.protocol_values.v3_0_object_class_mask_name"
         }
       }
     },

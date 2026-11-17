@@ -45,7 +45,9 @@ T102_BLOCKED_CANDIDATES = 0
 # 18 exact standard-trait exclusions while the same parity is pending.
 # The Rust-only Get Constraints slice adds 16 blocked declarations and 18
 # exact standard-trait exclusions while the same parity is pending.
-T102_PUBLIC_DECLARATIONS = 20_341
+# Named-value reconciliation removed eight stale KMIP 3.0 Object Class Mask
+# enumeration paths and corrected their cross-language mappings to bitmask.
+T102_PUBLIC_DECLARATIONS = 20_333
 T102_KMIP30_DRAFT_ROUTE_DECLARATIONS = 36
 T102_APPROVED_EXCLUSIONS = 23_555
 # The current Rust audit report remains the immutable November 16 snapshot.

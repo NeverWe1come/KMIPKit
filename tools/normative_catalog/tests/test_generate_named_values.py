@@ -314,6 +314,56 @@ class NamedValueGeneratorTests(unittest.TestCase):
             "versioned bitmask declarations must use the generated bitmask namespace",
         )
 
+    def test_object_class_mask_manifest_uses_bitmask_paths_and_keeps_binding_exports(
+        self,
+    ) -> None:
+        catalog = generate_named_values.load_validated_catalog(
+            generate_named_values.safe_read_bytes(
+                ROOT,
+                generate_named_values.CATALOG_PATH,
+                max_bytes=generate_named_values.MAX_BYTES,
+            ),
+            ROOT,
+            require_complete=True,
+        )
+        declarations, mappings = reconcile_named_value_manifest.build_named_value_records(
+            catalog, generate_named_values.load_versioned_values(ROOT)
+        )
+        expected = {
+            row["declarationId"]: row
+            for row in declarations
+            if row.get("capabilityId") == reconcile_named_value_manifest.CAPABILITY_ID
+            and "object_class_mask"
+            in row.get("languageMappings", {}).get("rust", {}).get("name", "")
+        }
+        manifest = json.loads(
+            (ROOT / reconcile_named_value_manifest.MANIFEST_PATH).read_text(
+                encoding="utf-8"
+            )
+        )
+        actual = {
+            row["declarationId"]: row
+            for row in manifest["publicDeclarations"]
+            if row.get("capabilityId") == reconcile_named_value_manifest.CAPABILITY_ID
+            and "object_class_mask"
+            in row.get("languageMappings", {}).get("rust", {}).get("name", "")
+        }
+
+        self.assertEqual(expected, actual)
+        self.assertEqual(17, len(expected))
+
+        reconciled = reconcile_named_value_manifest.reconcile(
+            manifest, declarations, mappings
+        )
+        reconciled_rows = {
+            row["declarationId"]: row
+            for row in reconciled["publicDeclarations"]
+            if row.get("capabilityId") == reconcile_named_value_manifest.CAPABILITY_ID
+            and "object_class_mask"
+            in row.get("languageMappings", {}).get("rust", {}).get("name", "")
+        }
+        self.assertEqual(expected, reconciled_rows)
+
     def test_public_manifest_bound_covers_current_input_with_bounded_headroom(self) -> None:
         manifest_size = (ROOT / reconcile_named_value_manifest.MANIFEST_PATH).stat().st_size
 

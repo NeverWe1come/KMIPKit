@@ -1259,16 +1259,23 @@
   declarations as blocked under `KMIPKIT-0093-FR-011` until C, Java, and
   Python parity lands, then regenerated the 12 API outputs with
   `tools/api_manifest/generate.py`.
-- The reconciled Linux audit matches 11,263 declarations and 21,694 approved
-  exclusions across 32,957 observed paths. Eight existing KMIP 3.0
-  `object_class_mask` paths are not observed on this host, so audit `--check`
-  exits 1 for those paths despite zero missing exports and zero other audit
-  issues. The November 16 and November 1 audit snapshots remain unchanged.
-- Updated the full-manifest snapshot to 20,341 declarations and 23,555
+- The initial Rust audit found eight stale KMIP 3.0
+  `enumeration::object_class_mask` paths. The approved versioned catalog and
+  generated Rust source define Object Class Mask under `bitmask`; named-value
+  reconciliation removed only the eight stale Rust rows and corrected the
+  Rust mappings on the retained C, Java, and Python declarations. Their
+  language exports remain present.
+- Added a regression that failed against the stale manifest and now verifies
+  all 17 expected Object Class Mask declarations, bitmask paths, and preserved
+  cross-language mappings. The Rust 1.94 export audit now passes on Linux:
+  11,263 declarations plus 21,694 approved exclusions match all 32,957
+  observed paths, with zero missing, unobserved, kind, conditional, or issue
+  records. The November 16 and November 1 audit snapshots remain unchanged.
+- Updated the full-manifest snapshot to 20,333 declarations and 23,555
   exclusions. The new manifest contract requires all 16 paths to remain
   blocked with FR-011 ownership and without language mappings.
 - Local verification: all 941 `kmipkit-client` library tests, three
   guide-example tests, the new builder and inherited manifest contracts,
   T102 totals, format, generated-output check, and workspace Clippy pass.
-  The eight host-unobserved paths and hosted exact-head CI remain pending.
+  The hosted exact-head CI remains pending.
   This remains WIP and does not close FR-011 or operation-wide O001/O002.
