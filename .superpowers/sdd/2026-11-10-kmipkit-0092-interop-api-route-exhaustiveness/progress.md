@@ -330,3 +330,33 @@ branches, and the common CI therefore reports a planned matrix only.
   `python3 tools/compare_route_ledger.py`.
 - This adds local-model evidence and does not establish interoperability with
   a vendor KMS; the Java PR remains WIP.
+
+## 2026-11-17 Java KMIP 2.0/2.1 Batch Order Option routes
+
+- `test-norm-message-field-message-field-8-2-batch-order-option` now completes
+  three generic TTLV routes and the typed `RequestMessage.fromTtlv` route in both
+  protocol versions. OASIS KMIP 2.0 §9.8 Table 369 and KMIP 2.1 §9.8 Table 407
+  define the field as Boolean; §8.2 identifies the request-header field. The
+  existing parser fixture confirms the field value is true.
+- Red: `234626a25` requires all eight exact route/version cells. The focused
+  controlled-peer test failed as intended (`expected 2 route events, got 0`).
+- Green: `4741dad52` emits the three generic route events per version and adds
+  the normative field to the existing typed RequestMessage parse evidence. The
+  focused test passes for both versions.
+- Refactor: `bd9cc43a5` reuses the stable case and target IDs between fixture
+  and assertions; the focused test still passes.
+- The full Java suite passes 57/57 tests, with no failures or skips, under
+  `--rerun-tasks`. Selected-scope validation passes 27,262/27,262 cells with
+  zero failures. The regenerated ledger comparison passes; the global matrix
+  has 44,379 pending cells across 1,219 case IDs. These results use pinned
+  artifact commit `12496d646d11d4069b58bcc88fc76cc619211ec6` with SHA-256
+  `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+- Verification commands: `bash ../../bindings/java/gradlew --no-daemon
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks`;
+  `python3 ../shared/tools/validate_route_evidence.py --selected-scope --report
+  build/route-execution-evidence.json --artifact-sha256
+  504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545
+  --write-ledger`; `python3 tools/compare_route_ledger.py --refresh-reference`;
+  `python3 tools/compare_route_ledger.py`.
+- This adds local-model evidence and does not complete the Java matrix or
+  establish vendor interoperability; the Java PR remains WIP.
