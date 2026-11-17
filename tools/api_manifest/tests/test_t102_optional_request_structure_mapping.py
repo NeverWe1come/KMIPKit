@@ -202,8 +202,12 @@ PKCS11_REQUEST_SETTER_IDS = {
 # Attribute adds 77 ready declarations and two blocked Rust candidates. Its
 # operation row also gains the approved four-language fixture evidence.
 # Locate and Revoke add their 26 exact Rust root re-exports and Java signatures.
-OTHER_DECLARATIONS_SHA256 = "cf9e86c09e30de79c309bd62cc7ff4f0f8efdb5543199873e1a4a205546b8417"
-OTHER_OPERATIONS_SHA256 = "2ea94003f2877d0e6d84271d67d9add6f48a5c5b7a837c48b22fe40f41022d39"
+# The Rust-only generic Create slice adds 24 blocked declarations and 18 exact
+# standard-trait exclusions while four-language fluent parity is pending.
+OTHER_DECLARATIONS_SHA256 = "5af5261a35e8d8a7e0042eb80e6728e4636ad5b5dbf7670774c490fee1254f56"
+# The generic Create builder adds its exact declarations to the existing Create
+# operation row; no optional request-structure mapping is changed.
+OTHER_OPERATIONS_SHA256 = "e15b13391ce59b3c8f5ff4d2129d7f6d7a2bc890e0f169d590e47ef9635658e2"
 def canonical_sha256(value: object) -> str:
     encoded = json.dumps(
         value,
@@ -448,7 +452,7 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
                     if evidence_id not in RECERTIFY_OPERATION_ADDED_EVIDENCE
                 ]
         self.assertEqual(
-            "327bd4ccc9eb3c600fe49eed482a9f47840d555c4066560a39af67520dcf5b9a",
+            OTHER_OPERATIONS_SHA256,
             canonical_sha256(other_operations),
         )
 

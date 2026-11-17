@@ -7,6 +7,50 @@ los objetos y estructuras de clave sobre el modelo TTLV compartido. El Item
 Structure específico del objeto se pasa directamente a Register o Import; la
 Enumeration `Object Type` es un valor separado.
 
+## Create genérico con generación del servidor
+
+Usa el builder fluent de Create cuando la aplicación ya haya elegido el Object
+Type y sus Attributes directos. El builder incluye el Structure obligatorio de
+Attributes aunque esté vacío y también puede llevar el Structure opcional de
+Protection Storage Masks. El servidor crea el objeto. KMIPKit no elige los
+atributos criptográficos, el material ni la política de almacenamiento.
+
+```rust,kmipkit-test
+use kmipkit_client::{Client, ClientOperation};
+use kmipkit_protocol::{AttributeSet, ObjectType};
+use kmipkit_ttlv::codec::CodecLimits;
+
+fn create_object(
+    client: &mut Client,
+    limits: &CodecLimits,
+    object_type: ObjectType,
+    attributes: AttributeSet,
+) -> Result<(), kmipkit_client::ClientError> {
+    let item = client
+        .request()
+        .create()
+        .object_type(object_type)
+        .attributes(attributes)
+        .execute(limits)?;
+    let outcome = item.outcome();
+    assert_eq!(outcome.operation(), ClientOperation::Create);
+    let response_view = outcome.response();
+    let response = response_view.create().expect("typed Create response");
+    let _status = response.result().status().raw();
+    let _object_type = response.object_type();
+    let _unique_identifier = response.unique_identifier();
+    Ok(())
+}
+
+fn main() { let _example = create_object; }
+```
+
+Esta operación corresponde a KMIP v2.1 §6.1.8, Tablas 186–188. La aplicación
+suministra explícitamente todos los atributos y cualquier Protection Storage
+Masks. Comprueba el resultado KMIP y el identificador devueltos; una respuesta
+correcta no demuestra que el servidor haya aplicado la política de la
+aplicación.
+
 ## Material de clave en claro
 
 Elige explícitamente el Key Format Type. Para bytes Raw, puedes construir un

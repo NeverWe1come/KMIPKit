@@ -179,9 +179,13 @@ EXPECTED = (
 # KMIPKIT-0093 adds all audited Rust declaration candidates, exact trait
 # exclusions, and the 28 execution-wrapper requirement links.
 # Locate and Revoke add their 26 exact Rust root re-exports and Java signatures.
-UNCHANGED_DECLARATIONS_SHA256 = "9a0b926941273b7de008c7cced6fe6ac656cae17fd0327d41c83534ae1a429cf"
+# The Rust-only generic Create slice adds 24 blocked declarations and 18 exact
+# standard-trait exclusions while four-language fluent parity is pending.
+UNCHANGED_DECLARATIONS_SHA256 = "4488ecfda0a534b7304f5b73c5da1db49e57c430a0a4da341618dd6a306e1655"
 # Delete Attribute records four-language fixture evidence on its operation row.
-UNCHANGED_OPERATIONS_SHA256 = "9f04e672ec202fb4acdb911879d5519b7c57238d77aa67574b8e5471cc6fea57"
+# The generic Create builder adds its exact declarations to the existing Create
+# operation row; no response-view mappings are changed.
+UNCHANGED_OPERATIONS_SHA256 = "474e80929e0d09563d03ff2ae9542045ae784ba26e54b5f1152544c43e1adc0b"
 # T098's maintainer-approved reconciliation updates lifecycle approval evidence
 # and inherited requirement links outside the T102 declaration/operation rows.
 # The test separately pins those T098 records; this fingerprint covers the
@@ -193,8 +197,10 @@ UNCHANGED_OPERATIONS_SHA256 = "9f04e672ec202fb4acdb911879d5519b7c57238d77aa67574
 # copy caveat are normalized below and tested by the 0093 suite. The full Rust
 # reconciliation adds 419 blocked candidates, 666 exact trait exclusions, and
 # the FR-005/FR-008 wrapper links. Delete Attribute adds 77 ready declarations,
-# two blocked Rust candidates, and 18 exact trait exclusions.
-OTHER_MANIFEST_SHA256 = "2c247038e47342108cf2d77bca7d9b3730837cc14788361e9eca32689afacc36"
+# two blocked Rust candidates, and 18 exact trait exclusions. The Rust-only
+# generic Create slice adds 24 blocked declarations and 18 exact trait
+# exclusions while four-language fluent parity is pending.
+OTHER_MANIFEST_SHA256 = "9f4bb955d916c79c7ae523e6c2437afcb97a50e565a26e9ab4406d7bbfd0cc2d"
 EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = T102_BLOCKED_CANDIDATES
 LOCATE_REQUEST_BUILDER_IDS = {
     "rust-observed-e07fce825be9d33278e1",
@@ -628,7 +634,7 @@ class T102ResponseViewMappingTests(unittest.TestCase):
                         != "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java"
                     ]
         self.assertEqual(
-            "9f04e672ec202fb4acdb911879d5519b7c57238d77aa67574b8e5471cc6fea57",
+            UNCHANGED_OPERATIONS_SHA256,
             canonical_sha256(normalized_operations),
         )
         other_manifest = {
