@@ -1983,9 +1983,11 @@ class RouteMatrixTests(unittest.TestCase):
     def test_archive_executes_isolated_key_lifecycle_and_reads_typed_response(self):
         """Exercise KMIP 2.0/2.1 §6.1.4 Archive request and response fields."""
         from artifact_support import ROOT
-        from route_peer import execute_network_cells
+        from route_peer import RECIPES, execute_network_cells
         catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
         manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        self.assertEqual(RECIPES['test-op-archive'][0], (1, 21, 19, 20),
+                         'Archive fixture must match its catalogued create/archive/cleanup lifecycle')
         selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
                                                 if case['case_id'] == 'test-op-archive']}
         network_combinations = tuple((encoding, transport)
