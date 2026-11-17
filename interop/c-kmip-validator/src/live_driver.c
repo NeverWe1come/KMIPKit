@@ -4909,7 +4909,7 @@ static void record_kmip_result(kmip_execution_outcome_t *outcome,
     }
 }
 
-static kmip_execution_outcome_t execute_created_key_crypto(kmip_live_client_t *client,
+static kmip_execution_outcome_t execute_created_key_action(kmip_live_client_t *client,
                                                            uint32_t operation) {
     /* Archive follows KMIP 2.0/2.1 §6.1.4; crypto fixtures follow §§6.1.11,
      * 6.1.17, and 6.1.31–6.1.33. Each fixture isolates and cleans up its key. */
@@ -6065,15 +6065,15 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     if (strcmp(test_case->case_id, "test-batch-register-encrypt-decrypt-destroy") == 0)
         return execute_registered_crypto_batch(client);
     if (strcmp(test_case->case_id, "test-op-encrypt") == 0)
-        return execute_created_key_crypto(client, KMIPKIT_ENUMERATION_OPERATION_ENCRYPT);
+        return execute_created_key_action(client, KMIPKIT_ENUMERATION_OPERATION_ENCRYPT);
     if (strcmp(test_case->case_id, "test-op-archive") == 0)
-        return execute_created_key_crypto(client, KMIPKIT_ENUMERATION_OPERATION_ARCHIVE);
+        return execute_created_key_action(client, KMIPKIT_ENUMERATION_OPERATION_ARCHIVE);
     if (strcmp(test_case->case_id, "test-op-decrypt") == 0)
-        return execute_created_key_crypto(client, KMIPKIT_ENUMERATION_OPERATION_DECRYPT);
+        return execute_created_key_action(client, KMIPKIT_ENUMERATION_OPERATION_DECRYPT);
     if (strcmp(test_case->case_id, "test-op-mac") == 0)
-        return execute_created_key_crypto(client, KMIPKIT_ENUMERATION_OPERATION_MAC);
+        return execute_created_key_action(client, KMIPKIT_ENUMERATION_OPERATION_MAC);
     if (strcmp(test_case->case_id, "test-op-mac-verify") == 0)
-        return execute_created_key_crypto(client, KMIPKIT_ENUMERATION_OPERATION_MAC_VERIFY);
+        return execute_created_key_action(client, KMIPKIT_ENUMERATION_OPERATION_MAC_VERIFY);
     if (strcmp(test_case->case_id, "test-op-create-key-pair") == 0)
         return execute_create_key_pair(client);
     if (strcmp(test_case->case_id, "test-op-certify") == 0)
