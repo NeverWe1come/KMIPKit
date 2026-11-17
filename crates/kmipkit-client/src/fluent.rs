@@ -10,11 +10,11 @@ use kmipkit_protocol::{
     AttributeReference, AttributeSet, AttributeSetError, CreateKeyPairRequest, CreateRequest,
     CreateSplitKeyRequest, CryptographicAlgorithm, CryptographicParameters, CurrentAttribute,
     DecryptRequest, DeleteAttributeRequest, DestroyRequest, EncryptRequest,
-    GetAttributeListRequest, GetAttributesRequest, GetRequest, GetUsageAllocationRequest,
-    HashRequest, LocateRequest, MacRequest, MacVerifyRequest, ManagedObject, NewAttribute,
-    ObjectGroupMember, ObjectType, OpaqueObjectContext, OperationData, PingRequest,
-    RecertifyRequest, RecoverRequest, RegisterRequest, RekeyKeyPairRequest, RekeyRequest,
-    RevocationReason, RevokeRequest, SecretBytes, SetAttributeRequest, SignRequest,
+    GetAttributeListRequest, GetAttributesRequest, GetConstraintsRequest, GetRequest,
+    GetUsageAllocationRequest, HashRequest, LocateRequest, MacRequest, MacVerifyRequest,
+    ManagedObject, NewAttribute, ObjectGroupMember, ObjectType, OpaqueObjectContext, OperationData,
+    PingRequest, RecertifyRequest, RecoverRequest, RegisterRequest, RekeyKeyPairRequest,
+    RekeyRequest, RevocationReason, RevokeRequest, SecretBytes, SetAttributeRequest, SignRequest,
     SignatureVerifyRequest, SplitKeyMethod, StorageStatusMask, UniqueIdentifier,
     ValidateKmipRequest,
 };
@@ -272,6 +272,12 @@ impl<'a> RequestBuilder<'a> {
         GetAttributeListBuilder::new(self.client)
     }
 
+    /// Begins a typed empty Get Constraints request.
+    #[must_use]
+    pub fn get_constraints(self) -> GetConstraintsBuilder<'a> {
+        GetConstraintsBuilder::new(self.client)
+    }
+
     /// Begins a typed Get Usage Allocation request with Usage Limits Count unset.
     ///
     /// The Unique Identifier is optional when the surrounding batch context
@@ -450,6 +456,71 @@ impl PingBuilder<'_> {
     ) -> Result<ClientBatchItemResponse, ClientError> {
         self.execution
             .run(ClientRequest::Ping(PingRequest::new()), limits)
+    }
+}
+
+/// A fluent builder for the empty Get Constraints request in OASIS KMIP v2.1
+/// §6.1.22, Table 229. Its response requires the typed Constraints payload.
+pub struct GetConstraintsBuilder<'a> {
+    execution: FluentBuilderExecution<'a>,
+}
+
+impl<'a> GetConstraintsBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            execution: FluentBuilderExecution::new(client),
+        }
+    }
+
+    /// Sets exchange-local options without changing client policy.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.execution = self.execution.with_options(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.execution = self.execution.with_asynchronous_indicator(value);
+        self
+    }
+
+    /// Validates the empty typed request without sending it.
+    ///
+    /// # Errors
+    /// Returns [`FluentBuildError::InvalidRequest`] if typed validation fails.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        validate_fluent_request(&GetConstraintsRequest::new())
+    }
+
+    /// Builds the empty typed Get Constraints request without sending it.
+    #[must_use]
+    pub const fn build(self) -> GetConstraintsRequest {
+        GetConstraintsRequest::new()
+    }
+
+    /// Converts the empty request to a typed batch item.
+    ///
+    /// Exchange options and the asynchronous indicator belong to the batch
+    /// header and are not retained in an individual batch item.
+    #[must_use]
+    pub fn to_batch_item(self) -> ClientBatchItem {
+        ClientBatchItem::new(ClientRequest::GetConstraints(self.build()))
+    }
+
+    /// Executes at most one exchange through the existing typed client path.
+    ///
+    /// Pending remains explicit; this builder does not poll or retry.
+    ///
+    /// # Errors
+    /// Returns the existing sanitized protocol or transport error with its
+    /// request-delivery evidence.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execution.run(ClientRequest::get_constraints(), limits)
     }
 }
 

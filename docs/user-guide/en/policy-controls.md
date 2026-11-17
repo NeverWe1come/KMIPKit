@@ -50,7 +50,23 @@ fn build_policy_payloads(
 }
 ```
 
-With a configured `Client`, call `get_constraints`, `get_usage_allocation`, `set_constraints`, or `set_defaults`. Each convenience method performs one exchange and does not retry or poll automatically. Rust also offers an operation-oriented builder for Get Usage Allocation. Supply the Unique Identifier for a standalone call; it may be omitted when an earlier operation in the same batch establishes the KMIP ID Placeholder:
+With a configured `Client`, call `get_constraints`, `get_usage_allocation`, `set_constraints`, or `set_defaults`. Each convenience method performs one exchange and does not retry or poll automatically. Rust also offers an operation-oriented Get Constraints builder for the empty Table 229 request:
+
+```rust
+use kmipkit_client::{Client, ClientBatchItemResponse, ClientError};
+use kmipkit_ttlv::codec::CodecLimits;
+
+fn get_constraints(
+    client: &mut Client,
+    limits: &CodecLimits,
+) -> Result<ClientBatchItemResponse, ClientError> {
+    let response = client.request().get_constraints().execute(limits)?;
+    let _typed_response = response.outcome().response().get_constraints();
+    Ok(response)
+}
+```
+
+The builder uses the existing typed response and sends at most once. Pending is returned as an explicit outcome without automatic polling or retry. For Get Usage Allocation, supply the Unique Identifier for a standalone call; it may be omitted when an earlier operation in the same batch establishes the KMIP ID Placeholder:
 
 ```rust
 use kmipkit_client::Client;

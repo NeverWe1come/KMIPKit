@@ -51,7 +51,23 @@ fn build_policy_payloads(
 }
 ```
 
-Con un `Client` configurado, llama a `get_constraints`, `get_usage_allocation`, `set_constraints` o `set_defaults`. Cada método de conveniencia realiza un único intercambio; no reintenta ni consulta el estado asíncrono automáticamente. Rust también ofrece un constructor fluido para Get Usage Allocation. Indica el Unique Identifier en una llamada individual; puede omitirse cuando una operación anterior del mismo lote establece el KMIP ID Placeholder:
+Con un `Client` configurado, llama a `get_constraints`, `get_usage_allocation`, `set_constraints` o `set_defaults`. Cada método de conveniencia realiza un único intercambio; no reintenta ni consulta el estado asíncrono automáticamente. Rust también ofrece un constructor fluido para Get Constraints, cuya petición de la Tabla 229 está vacía:
+
+```rust
+use kmipkit_client::{Client, ClientBatchItemResponse, ClientError};
+use kmipkit_ttlv::codec::CodecLimits;
+
+fn get_constraints(
+    client: &mut Client,
+    limits: &CodecLimits,
+) -> Result<ClientBatchItemResponse, ClientError> {
+    let response = client.request().get_constraints().execute(limits)?;
+    let _typed_response = response.outcome().response().get_constraints();
+    Ok(response)
+}
+```
+
+El constructor reutiliza la respuesta tipada existente y realiza como máximo un envío. `Pending` se devuelve como un resultado explícito, sin consulta ni reintento automático. Para Get Usage Allocation, indica el Unique Identifier en una llamada individual; puede omitirse cuando una operación anterior del mismo lote establece el KMIP ID Placeholder:
 
 ```rust
 use kmipkit_client::Client;

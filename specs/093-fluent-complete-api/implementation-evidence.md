@@ -1226,3 +1226,66 @@
   `python3 -B tools/api_manifest/generate.py --check`. The full manifest suite
   and hosted exact-head CI are still pending. This remains WIP and does not
   close FR-011 or operation-wide O001/O002.
+
+## Rust Get Constraints fluent builder slice
+
+### Red
+
+- Commit `d59ad8015` added fake-transport tests for empty typed request
+  construction, batch conversion, one-exchange Success, and Pending
+  correlation without follow-up, based on OASIS KMIP v2.1 §6.1.22,
+  Tables 229–231, and §7.7.
+- Reproduced the missing `RequestBuilder::get_constraints` with
+  `cargo test --locked -p kmipkit-client --lib
+  get_constraints_execution_tests` before implementation.
+- Added a manifest contract that initially failed because the 16 new builder
+  exports were absent from `public-api.json`.
+
+### Green and Refactor
+
+- Commit `df97b64c8` added `GetConstraintsBuilder` over the existing typed
+  request, validation, batch item, protocol-version gate, request options,
+  asynchronous indicator, and one-exchange client path.
+- Commit `69b2e80cf` made batch conversion construct the matching typed
+  `ClientRequest::GetConstraints` variant before producing the batch item.
+- The 10 focused Get Constraints tests pass, including existing Failure,
+  malformed-response, and delivery-state checks. The three policy-control
+  guide tests compile the bilingual fluent examples.
+
+### Refactor, documentation, and generated inventory
+
+- The Rust 1.94 export audit observed 16 new Get Constraints public paths and
+  18 exact standard-trait paths, with no audit issues. Reconciled the new
+  declarations as blocked under `KMIPKIT-0093-FR-011` until C, Java, and
+  Python parity lands, then regenerated the 12 API outputs with
+  `tools/api_manifest/generate.py`.
+- The initial Rust audit found eight stale KMIP 3.0
+  `enumeration::object_class_mask` paths. The approved versioned catalog and
+  generated Rust source define Object Class Mask under `bitmask`; named-value
+  reconciliation removed only the eight stale Rust rows and corrected the
+  Rust mappings on the retained C, Java, and Python declarations. Their
+  language exports remain present.
+- Added a regression that failed against the stale manifest and now verifies
+  all 17 expected Object Class Mask declarations, bitmask paths, and preserved
+  cross-language mappings. The Rust 1.94 export audit now passes on Linux:
+  11,263 declarations plus 21,694 approved exclusions match all 32,957
+  observed paths, with zero missing, unobserved, kind, conditional, or issue
+  records. The November 16 and November 1 audit snapshots remain unchanged.
+- Updated the full-manifest snapshot to 20,333 declarations and 23,555
+  exclusions. The new manifest contract requires all 16 paths to remain
+  blocked with FR-011 ownership and without language mappings.
+- Local verification: all 941 `kmipkit-client` library tests, three
+  guide-example tests, the new builder and inherited manifest contracts,
+  T102 totals, format, generated-output check, and workspace Clippy pass.
+  The hosted exact-head CI remains pending.
+  This remains WIP and does not close FR-011 or operation-wide O001/O002.
+
+### SonarCloud duplication follow-up
+
+- Exact head `1970a4ecf` failed the SonarCloud Quality Gate at 5.9% new-code
+  duplication (18 lines), all from the parallel Get Constraints and Get Usage
+  Allocation manifest contracts. Extracted their common declaration checks
+  into `tools/api_manifest/tests/fluent_builder_manifest_contract.py`; each
+  operation test supplies its builder, method set, and any extra exports.
+- Both operation manifest contracts pass after the refactor. The revised
+  exact-head SonarCloud analysis and hosted CI are pending.
