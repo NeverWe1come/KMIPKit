@@ -1831,3 +1831,60 @@ python3 ../../interop/shared/tools/validate_route_evidence.py \
 python3 tools/compare_route_ledger.py --refresh-reference
 python3 tools/compare_route_ledger.py
 ```
+
+## KMIP Tag inventory aggregate routes
+
+Red commit `b9094b27c` added an assertion that every generic TTLV Tag and
+allocation-range invocation also satisfies the `test-enum-tag` aggregate. The
+focused controlled-peer test failed because the aggregate report omitted those
+cells. The failure exposed 50 assigned Tag identities that had no generic
+route invocation: their per-case typed route set was only partially available,
+so neither the generic-only nor the all-typed selection included them.
+
+Green commit `5ab78dd52` executes those 50 identities through the installed generic
+TTLV API under the aggregate case, duplicates existing per-identity and
+allocation-range evidence under the aggregate case, and checks that duplicate
+matrix cells have identical outcomes. This produces all 3,674 planned Tag
+aggregate cells across KMIP 2.0/2.1 with no duplicate or unplanned route event.
+The Refactor updates this evidence, traceability, README, and generated ledger;
+it does not remove or reclassify any planned route cell.
+
+Local verification used installed artifact SHA-256
+`504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`:
+
+```sh
+bash ../../bindings/java/gradlew \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test \
+  --tests org.kmipkit.validator.ControlledTlsPeerTest.controlledQueryProducesPerRouteEvidenceForBothProtocolVersions
+python3 ../../interop/shared/tools/validate_route_evidence.py \
+  --report build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --selected-scope --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+```
+
+The focused controlled-peer test passes. The selected-scope validator accepts
+26,627/26,627 invoked cells with zero failures. The full ledger now records
+71,649 planned, 26,627 executed, and 45,022 pending cells across 1,278 case
+IDs. All pending cells remain `route_evidence_not_emitted`; the full matrix
+remains incomplete and T006/T007/T009 remain open. The PR must remain WIP.
+
+## Merge of current matrix base into Usage Limits branch (2026-11-17)
+
+The Usage Limits branch now includes the current Java matrix parent, including
+its Server Information fixtures and complete generic Tag aggregate coverage.
+The controlled TLS route test passes against the pinned installed package:
+
+```text
+bash ../../bindings/java/gradlew \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" \
+  test --tests org.kmipkit.validator.ControlledTlsPeerTest.controlledQueryProducesPerRouteEvidenceForBothProtocolVersions
+```
+
+The selected-scope validator accepts 26,663/26,663 invoked cells with zero
+failures. The ledger records 71,649 planned, 26,663 executed, and 44,986
+pending cells; 1,274 case IDs still have pending route cells. Refreshing the
+checked-in reference with `tools/compare_route_ledger.py --refresh-reference`
+then comparing it succeeds. The full matrix remains incomplete and the branch
+stays WIP.
