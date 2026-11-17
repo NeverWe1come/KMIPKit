@@ -1925,6 +1925,51 @@ python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-refe
 python3 interop/java-kmip-validator/tools/compare_route_ledger.py
 ```
 
+## Java Usage Limits stack synchronized with Client Correlation Value — 2026-11-17
+
+The Usage Limits branch was updated with Java route-matrix parent
+`8bf6631e3b4a4da3bd9f4974e10fa81e0a083673`. Conflict resolution retained the
+existing Usage Limits and Derivation/Extension Metadata route evidence and
+combined it with the KMIP 2.0/2.1 Response Header Client Correlation Value
+slice. The controlled response fixture now validates the generic TTLV and
+typed `ResponseMessage.fromTtlv` routes and the `ResponseHeaderView` value.
+
+The full Java suite passes 57/57 tests with no failures, errors, or skips. All
+68 shared route-capability tests pass, and the generated route check reports
+1,507 routes. The selected-scope validator accepts 27,388/27,388 cells with
+zero failures. The generated ledger records 71,641 planned, 27,388 executed,
+and 44,253 pending cells across 1,204 pending case IDs; ledger comparison
+passes. This is local-model evidence, not vendor interoperability or full
+matrix completion. The PR remains WIP pending exact-head CI.
+
+The pinned artifact commit is
+`12496d646d11d4069b58bcc88fc76cc619211ec6`, SHA-256
+`504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`. Its
+manifest was regenerated with the repository installer in this worktree after
+the inherited manifest's absolute path referred to another checkout.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test \
+  --tests org.kmipkit.validator.ControlledTlsPeerTest.controlledQueryProducesPerRouteEvidenceForBothProtocolVersions \
+  --rerun-tasks
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks
+python3 -m unittest interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+python3 interop/shared/tools/validate_route_evidence.py \
+  --selected-scope --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+git diff --check
+```
+
 ## Java KMIP 2.0/2.1 repeatable Response Header Attestation Type — 2026-11-17
 
 OASIS KMIP 2.0/2.1 §8.5 specifies an optional, repeatable Attestation Type in
@@ -1946,6 +1991,51 @@ cells; the generated ledger contains 71,641 planned, 27,344 executed, and
 44,297 pending cells across 1,209 pending case IDs. The ledger comparer passes.
 This is local-model evidence and does not establish server interoperability or
 complete the Java route matrix; the PR remains WIP.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-temp" \
+  bash bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" \
+  -p interop/java-kmip-validator test \
+  --tests org.kmipkit.validator.ControlledTlsPeerTest.controlledQueryProducesPerRouteEvidenceForBothProtocolVersions
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-temp" \
+  bash bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" \
+  -p interop/java-kmip-validator test --rerun-tasks
+python3 -m unittest interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+python3 interop/shared/tools/validate_route_evidence.py \
+  --selected-scope --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+git diff --check
+```
+
+## Java KMIP 2.0/2.1 Response Header Client Correlation Value — 2026-11-17
+
+OASIS KMIP 2.0/2.1 §8.5 defines the optional Client Correlation Value in the
+Response Header. Red commit `6e85b8b63` requires generic Item create/view/decode
+and typed `ResponseMessage.fromTtlv` evidence under KMIP 2.0 and 2.1. The
+initial run exposed an artifact manifest that pointed to the #217 worktree;
+after reinstalling the pinned artifact locally, the focused test fails because
+the target has zero route events. Green commit `220eeec3f` constructs and
+decodes a Text String with the catalogued tag and parses it through
+`ResponseMessage.fromTtlv`; `ResponseHeaderView.clientCorrelationValue()` must
+return the fixture value. Refactor commit `06d74f08b` shares that fixture value
+between construction and assertion.
+
+The focal test passes after Green and Refactor. The full Java suite passes
+57/57 tests with no failures, errors, or skips; shared route-capability tests
+pass 68/68; the route generator reports 1,507 routes. Selected-scope validation
+accepts 27,352/27,352 cells with zero failures. The generated ledger records
+71,641 planned, 27,352 executed, and 44,289 pending cells across 1,208 pending
+case IDs. The ledger comparer passes. This closes eight local-model cells; it
+does not establish external server interoperability or complete the Java
+matrix, so the Java PR remains WIP.
 
 Verification:
 
