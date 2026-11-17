@@ -180,7 +180,6 @@ def _read_approved_owner(
     owner_requirements = set(re.findall(rf"\b{re.escape(owner_spec_id)}-FR-\d{{3}}\b", text))
     if not owner_requirements:
         local_requirement_ids = re.findall(
-            r"^\s*-\s+\*\*FR-(\d{3})\*\*", text, re.MULTILINE
             r"^\s*-\s+\*\*FR-(\d{3})\*\*(?:\s|:)", text, re.MULTILINE
         )
         owner_requirements = {

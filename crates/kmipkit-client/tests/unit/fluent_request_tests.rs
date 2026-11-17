@@ -1,9 +1,9 @@
 use kmipkit_protocol::attribute::typed;
 use kmipkit_protocol::{
-    AdjustmentType, Attribute, AttributeDefinition, AttributeReference, AttributeSet,
-    CheckRequest, CreateRequest, CurrentAttribute, DiscoverVersionsRequest, GetConstraintsRequest,
+    AdjustmentType, Attribute, AttributeDefinition, AttributeReference, AttributeSet, CheckRequest,
+    CreateRequest, CurrentAttribute, DiscoverVersionsRequest, GetConstraintsRequest,
     GetUsageAllocationRequest, NewAttribute, ObjectType, ObtainLeaseRequest, PingRequest,
-    ProtocolVersion, QueryFunction, QueryRequest, UniqueIdentifier
+    ProtocolVersion, QueryFunction, QueryRequest, UniqueIdentifier,
 };
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::RequestOptions;
@@ -14,8 +14,8 @@ use crate::asynchronous_execution_test_support::client_for;
 use crate::execute::{ClientBatchOutcome, ClientOperation, ClientRequest, encode_message_for_test};
 use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_structure};
 use crate::fluent::{
-    AttributeAdjustmentValue, CreateSymmetricKeyBuilder, CryptographicUsageMask,
-    FluentAttributePosition, FluentBuildError, AddAttributeBuilder, DeleteAttributeBuilder,
+    AddAttributeBuilder, AttributeAdjustmentValue, CreateSymmetricKeyBuilder,
+    CryptographicUsageMask, DeleteAttributeBuilder, FluentAttributePosition, FluentBuildError,
     SetAttributeBuilder,
 };
 
@@ -26,12 +26,6 @@ const CHECK_OPERATION: u32 = 0x0000_0009;
 const GET_CONSTRAINTS_OPERATION: u32 = 0x0000_0038;
 const GET_USAGE_ALLOCATION_OPERATION: u32 = 0x0000_0011;
 const OBTAIN_LEASE_OPERATION: u32 = 0x0000_0010;
-use crate::execute::{ClientBatchOutcome, ClientOperation, ClientRequest, encode_message_for_test};
-use crate::execute_test_support::{test_item, test_structure};
-use crate::fluent::{
-    AddAttributeBuilder, CreateSymmetricKeyBuilder, CryptographicUsageMask, DeleteAttributeBuilder,
-    FluentAttributePosition, FluentBuildError, SetAttributeBuilder,
-};
 
 #[test]
 fn delete_attribute_builder_constructs_the_existing_typed_request() {
@@ -547,6 +541,8 @@ fn attribute_success_response_bytes(operation: u32) -> Vec<u8> {
     ));
     encode_message_for_test(test_structure(message), &CodecLimits::defaults())
         .expect("attribute operation fixture response is valid TTLV")
+}
+
 fn set_attribute_response_bytes() -> Vec<u8> {
     let payload = test_structure([test_item(
         0x0042_0094,
@@ -850,8 +846,6 @@ fn fluent_build_errors_have_stable_user_facing_messages() {
         (
             FluentBuildError::MissingAdjustAttributeType,
             "Adjust Attribute requires an Adjustment Type",
-            FluentBuildError::MissingSetAttributeAttribute,
-            "Set Attribute requires one New Attribute",
         ),
         (
             FluentBuildError::MissingAddAttributeAttribute,
@@ -1623,7 +1617,7 @@ fn fluent_builders_validate_typed_requests_without_sending() {
         client
             .request()
             .add_attribute()
-            .new_attribute(NewAttribute::from_typed(comment()))
+            .attribute(comment())
             .validate(),
         Ok(())
     );
@@ -1631,7 +1625,7 @@ fn fluent_builders_validate_typed_requests_without_sending() {
         client
             .request()
             .set_attribute()
-            .new_attribute(NewAttribute::from_typed(comment()))
+            .attribute(comment())
             .validate(),
         Ok(())
     );
@@ -1648,7 +1642,7 @@ fn fluent_builders_validate_typed_requests_without_sending() {
         client
             .request()
             .delete_attribute()
-            .current_attribute(CurrentAttribute::from_typed(comment()))
+            .current_attribute(comment())
             .validate(),
         Ok(())
     );
@@ -1730,7 +1724,7 @@ fn fluent_attribute_mutation_validation_reports_missing_required_values() {
             .add_attribute()
             .validate()
             .expect_err("Add Attribute requires a New Attribute"),
-        FluentBuildError::MissingAddAttributeValue
+        FluentBuildError::MissingAddAttributeAttribute
     );
     assert_eq!(
         client
@@ -1746,7 +1740,7 @@ fn fluent_attribute_mutation_validation_reports_missing_required_values() {
             .set_attribute()
             .validate()
             .expect_err("Set Attribute requires a New Attribute"),
-        FluentBuildError::MissingSetAttributeValue
+        FluentBuildError::MissingSetAttributeAttribute
     );
     assert_eq!(
         client
@@ -2059,10 +2053,10 @@ fn attribute_value_mutation_builders_preserve_typed_selectors_and_existing_reque
         .request()
         .add_attribute()
         .unique_identifier("key-42")
-        .new_attribute(NewAttribute::from_typed(
+        .attribute(
             Attribute::<typed::Comment>::new("new-comment".to_owned())
                 .expect("Comment is a catalogued Text String"),
-        ))
+        )
         .build_request()
         .expect("Add Attribute has its required New Attribute");
     assert_eq!(add.unique_identifier(), Some("key-42"));
@@ -2071,10 +2065,10 @@ fn attribute_value_mutation_builders_preserve_typed_selectors_and_existing_reque
         client
             .request()
             .add_attribute()
-            .new_attribute(NewAttribute::from_typed(
+            .attribute(
                 Attribute::<typed::Comment>::new("batch-comment".to_owned())
                     .expect("Comment is a catalogued Text String"),
-            ))
+            )
             .to_batch_item()
             .expect("Add Attribute converts to the existing batch item")
             .operation(),
@@ -2127,10 +2121,10 @@ fn attribute_value_mutation_builders_preserve_typed_selectors_and_existing_reque
         .request()
         .set_attribute()
         .unique_identifier("key-42")
-        .new_attribute(NewAttribute::from_typed(
+        .attribute(
             Attribute::<typed::Comment>::new("replacement-comment".to_owned())
                 .expect("Comment is a catalogued Text String"),
-        ))
+        )
         .build_request()
         .expect("Set Attribute has its required New Attribute");
     assert_eq!(set.unique_identifier(), Some("key-42"));
@@ -2139,10 +2133,10 @@ fn attribute_value_mutation_builders_preserve_typed_selectors_and_existing_reque
         client
             .request()
             .set_attribute()
-            .new_attribute(NewAttribute::from_typed(
+            .attribute(
                 Attribute::<typed::Comment>::new("batch-replacement".to_owned())
                     .expect("Comment is a catalogued Text String"),
-            ))
+            )
             .to_batch_item()
             .expect("Set Attribute converts to the existing batch item")
             .operation(),
@@ -2157,10 +2151,10 @@ fn attribute_selector_mutation_builders_preserve_explicit_values_and_requests() 
         .request()
         .delete_attribute()
         .unique_identifier("key-42")
-        .current_attribute(CurrentAttribute::from_typed(
+        .current_attribute(
             Attribute::<typed::Comment>::new("old-comment".to_owned())
                 .expect("Comment is a catalogued Text String"),
-        ))
+        )
         .build_request()
         .expect("Delete Attribute selectors form a valid typed request");
     assert_eq!(delete.unique_identifier(), Some("key-42"));
@@ -2221,10 +2215,10 @@ fn invalid_attribute_mutation_is_rejected_without_sending() {
     let error = client
         .request()
         .add_attribute()
-        .new_attribute(NewAttribute::new(item(
+        .attribute_item(item(
             typed::CryptographicLength::TAG,
             Value::text_string("wrong-ttlv-type".to_owned()),
-        )))
+        ))
         .execute(&CodecLimits::defaults())
         .expect_err("a catalogued attribute with the wrong TTLV type is rejected locally");
 
@@ -2271,10 +2265,10 @@ fn attribute_mutation_builders_execute_the_matching_typed_route_once() {
         .request()
         .add_attribute()
         .unique_identifier("key-42")
-        .new_attribute(NewAttribute::from_typed(
+        .attribute(
             Attribute::<typed::Comment>::new("added".to_owned())
                 .expect("Comment is a catalogued Text String"),
-        ))
+        )
         .execute(&CodecLimits::defaults())
         .expect("Add Attribute uses its existing typed client route");
     assert_eq!(
@@ -2317,10 +2311,10 @@ fn attribute_mutation_builders_execute_the_matching_typed_route_once() {
         .request()
         .set_attribute()
         .unique_identifier("key-42")
-        .new_attribute(NewAttribute::from_typed(
+        .attribute(
             Attribute::<typed::Comment>::new("set".to_owned())
                 .expect("Comment is a catalogued Text String"),
-        ))
+        )
         .execute(&CodecLimits::defaults())
         .expect("Set Attribute uses its existing typed client route");
     assert_eq!(

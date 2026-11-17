@@ -2852,7 +2852,6 @@ fn generic_create_masks_exception_accepts_only_its_exact_typed_setter() {
 }
 
 #[test]
-fn fluent_builder_signature_exceptions_are_exact_and_method_scoped() {
 fn fluent_builder_catalogued_attribute_signatures_are_exact() {
     let catalogued = syn::parse_str::<syn::Signature>(
         "fn attribute<D: AttributeDefinition>(self, attribute: Attribute<D>) -> Self",

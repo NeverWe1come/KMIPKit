@@ -795,159 +795,6 @@ class ObliterateBuilder(_Kmip30OperationBuilder):
         super().__init__(client, handle)
 
 
-class CreateKeyPairBuilder:
-    """Build a typed Create Key Pair request from semantic key parameters."""
-
-    def __init__(self, *, client: Client | None = None) -> None:
-        self._client = client
-        self._algorithm: int | None = None
-        self._length: int | None = None
-        self._private_usage_mask: int | None = None
-        self._public_usage_mask: int | None = None
-        self._common_attributes: list[TypedAttribute] = []
-        self._options: RequestOptions | None = None
-        self._asynchronous_indicator: int | None = None
-
-    def algorithm(self, value: int) -> Self:
-        self._algorithm = _unsigned(value, 32)
-        return self
-
-    def length(self, value: int) -> Self:
-        if not isinstance(value, int) or isinstance(value, bool) or not 1 <= value <= 0x7FFF_FFFF:
-            errors.raise_for_status(4)
-        self._length = value
-        return self
-
-    def private_usage_mask(self, value: int) -> Self:
-        if not isinstance(value, int) or isinstance(value, bool) or not 0 <= value <= 0x7FFF_FFFF:
-            errors.raise_for_status(4)
-        self._private_usage_mask = value
-        return self
-
-    def public_usage_mask(self, value: int) -> Self:
-        if not isinstance(value, int) or isinstance(value, bool) or not 0 <= value <= 0x7FFF_FFFF:
-            errors.raise_for_status(4)
-        self._public_usage_mask = value
-        return self
-
-    def with_options(self, options: RequestOptions) -> Self:
-        if not isinstance(options, RequestOptions):
-            errors.raise_for_status(4)
-        self._options = options
-        return self
-
-    def common_attribute(self, value: TypedAttribute) -> Self:
-        """Add a typed common attribute borrowed until build or execute completes."""
-        if not isinstance(value, TypedAttribute):
-            errors.raise_for_status(4)
-        self._common_attributes.append(value)
-        return self
-
-    def asynchronous_indicator(self, value: int) -> Self:
-        self._asynchronous_indicator = _unsigned(value, 32)
-        return self
-
-    @staticmethod
-    def _attribute_structure(
-        attributes: list[tuple[StandardAttribute, int, bool]],
-        limits: ttlv.CodecLimits,
-    ) -> ttlv.Structure:
-        structure = ttlv.ttlv_structure_create()
-        try:
-            for attribute, raw_value, enumeration in attributes:
-                value = (
-                    ttlv.ttlv_value_enumeration(raw_value)
-                    if enumeration
-                    else ttlv.ttlv_value_integer(raw_value)
-                )
-                typed: TypedAttribute | None = None
-                item: ttlv.TtlvItem | None = None
-                try:
-                    typed = TypedAttribute.create(attribute, value)
-                    item = typed.as_item()
-                    value.close()
-                    value = None
-                    typed.close()
-                    typed = None
-                    structure = ttlv.ttlv_structure_with_item(structure, item, limits)
-                    item = None
-                finally:
-                    if value is not None:
-                        value.close()
-                    if typed is not None:
-                        typed.close()
-                    if item is not None:
-                        item.close()
-            return structure
-        except Exception:
-            structure.close()
-            raise
-
-    def _common_attribute_structure(self, limits: ttlv.CodecLimits) -> ttlv.Structure:
-        structure = self._attribute_structure(
-            [
-                (StandardAttribute.CRYPTOGRAPHIC_ALGORITHM, self._algorithm, True),
-                (StandardAttribute.CRYPTOGRAPHIC_LENGTH, self._length, False),
-            ],
-            limits,
-        )
-        try:
-            for attribute in self._common_attributes:
-                with attribute.as_item() as item:
-                    structure = ttlv.ttlv_structure_with_item(structure, item, limits)
-            return structure
-        except Exception:
-            structure.close()
-            raise
-
-    def build(self) -> extensions.ClientBatchItem:
-        """Create a local typed request; sending still requires explicit execute."""
-        if self._algorithm is None or self._length is None:
-            errors.raise_for_status(4)
-        with (
-            ttlv.codec_limits_defaults() as limits,
-            self._common_attribute_structure(limits) as common,
-            self._attribute_structure(
-                [(StandardAttribute.CRYPTOGRAPHIC_USAGE_MASK, self._private_usage_mask, False)]
-                if self._private_usage_mask is not None
-                else [],
-                limits,
-            ) as private,
-            self._attribute_structure(
-                [(StandardAttribute.CRYPTOGRAPHIC_USAGE_MASK, self._public_usage_mask, False)]
-                if self._public_usage_mask is not None
-                else [],
-                limits,
-            ) as public,
-        ):
-            return extensions.client_batch_item_create_key_pair(common, private, public)
-
-    to_batch_item = build
-
-    def validate(self) -> None:
-        item = self.build()
-        item.close()
-
-    def execute(
-        self,
-        limits: ttlv.CodecLimits,
-        client: Client | None = None,
-    ) -> BatchResult:
-        target = client or self._client
-        if not isinstance(target, Client) or not isinstance(limits, ttlv.CodecLimits):
-            errors.raise_for_status(4)
-        batch = Batch.create()
-        try:
-            batch.add_item(self.build())
-            if self._asynchronous_indicator is not None:
-                batch.set_asynchronous_indicator(self._asynchronous_indicator)
-            if self._options is None:
-                return target.execute(batch, limits)
-            return target.execute_with_options(batch, limits, self._options)
-        finally:
-            batch.close()
-
-
 class LocateBuilder:
     """Typed KMIP 2.1 Locate request with an explicit validated Attributes filter."""
 
@@ -2002,6 +1849,13 @@ class CreateKeyPairBuilder:
         return self._add_item(
             lib.kmipkit_create_key_pair_builder_add_common_attribute_item, item
         )
+
+    def common_attribute(self, value: TypedAttribute) -> CreateKeyPairBuilder:
+        """Copy a typed attribute into the Common Attributes group."""
+        if not isinstance(value, TypedAttribute):
+            errors.raise_for_status(4)
+        with value.as_item() as item:
+            return self.add_common_attribute_item(item)
 
     def add_private_attribute_item(self, item: ttlv.TtlvItem) -> CreateKeyPairBuilder:
         return self._add_item(

@@ -8,18 +8,19 @@ use kmipkit_protocol::attribute::typed;
 use kmipkit_protocol::{
     ActivateRequest, AddAttributeRequest, AdjustAttributeRequest, AdjustmentType, ArchiveRequest,
     Attribute, AttributeDefinition, AttributeReference, AttributeSet, AttributeSetError,
-    CheckRequest, CreateCredentialObject, CreateCredentialRequest, CreateGroupRequest, CreateKeyPairRequest,
-    CreateRequest, CreateSplitKeyRequest, CreateUserRequest, CryptographicAlgorithm, CryptographicParameters,
-    CurrentAttribute, DeactivateRequest, DecapsulateRequest, DecryptRequest, DeleteAttributeRequest,
-    DestroyRequest, DiscoverVersionsRequest, EncapsulateRequest, EncryptRequest, GetAttributeListRequest,
-    GetAttributesRequest, GetConstraintsRequest, GetRequest, GetUsageAllocationRequest, HashRequest,
-    LocateRequest, MacRequest, MacVerifyRequest, ManagedObject, ModifyAttributeRequest,
-    NewAttribute, ObjectGroupMember, ObjectType, ObliterateRequest, ObtainLeaseRequest,
-    OpaqueObjectContext, OperationData, PingRequest, ProtocolVersion, QueryFunction,
-    QueryRequest, RecertifyRequest, RecoverRequest, RegisterRequest, RekeyKeyPairRequest,
-    RekeyRequest, RevocationReason, RevokeRequest, SecretBytes, SetAttributeRequest,
-    SignRequest, SignatureVerifyRequest, SplitKeyMethod, StorageStatusMask, UniqueIdentifier,
-    ValidateKmipRequest
+    CheckRequest, CreateCredentialObject, CreateCredentialRequest, CreateGroupRequest,
+    CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest, CreateUserRequest,
+    CryptographicAlgorithm, CryptographicParameters, CurrentAttribute, DeactivateRequest,
+    DecapsulateRequest, DecryptRequest, DeleteAttributeRequest, DestroyRequest,
+    DiscoverVersionsRequest, EncapsulateRequest, EncryptRequest, GetAttributeListRequest,
+    GetAttributesRequest, GetConstraintsRequest, GetRequest, GetUsageAllocationRequest,
+    HashRequest, LocateRequest, MacRequest, MacVerifyRequest, ManagedObject,
+    ModifyAttributeRequest, NewAttribute, ObjectGroupMember, ObjectType, ObliterateRequest,
+    ObtainLeaseRequest, OpaqueObjectContext, OperationData, PingRequest, ProtocolVersion,
+    QueryFunction, QueryRequest, RecertifyRequest, RecoverRequest, RegisterRequest,
+    RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest, SecretBytes,
+    SetAttributeRequest, SignRequest, SignatureVerifyRequest, SplitKeyMethod, StorageStatusMask,
+    UniqueIdentifier, ValidateKmipRequest,
 };
 use kmipkit_transport::{RequestDeliveryState, RequestOptions};
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
@@ -417,28 +418,10 @@ impl<'a> RequestBuilder<'a> {
         RegisterBuilder::new(self.client)
     }
 
-    /// Begins constructing a typed Add Attribute request.
-    #[must_use]
-    pub fn add_attribute(self) -> AddAttributeBuilder<'a> {
-        AddAttributeBuilder::new(self.client)
-    }
-
     /// Begins constructing a typed Modify Attribute request.
     #[must_use]
     pub fn modify_attribute(self) -> ModifyAttributeBuilder<'a> {
         ModifyAttributeBuilder::new(self.client)
-    }
-
-    /// Begins constructing a typed Set Attribute request.
-    #[must_use]
-    pub fn set_attribute(self) -> SetAttributeBuilder<'a> {
-        SetAttributeBuilder::new(self.client)
-    }
-
-    /// Begins constructing a typed Delete Attribute request.
-    #[must_use]
-    pub fn delete_attribute(self) -> DeleteAttributeBuilder<'a> {
-        DeleteAttributeBuilder::new(self.client)
     }
 
     /// Begins constructing a typed Adjust Attribute request.
@@ -4734,16 +4717,6 @@ fn copy_new_attribute(attribute: &NewAttribute) -> Result<NewAttribute, FluentBu
         .map_err(|_| FluentBuildError::InvalidTtlvValue)
 }
 
-fn copy_current_attribute(
-    attribute: &CurrentAttribute,
-) -> Result<CurrentAttribute, FluentBuildError> {
-    attribute
-        .item()
-        .try_clone()
-        .map(CurrentAttribute::new)
-        .map_err(|_| FluentBuildError::InvalidTtlvValue)
-}
-
 fn copy_adjustment_value(
     value: &AttributeAdjustmentValue,
 ) -> Result<AttributeAdjustmentValue, FluentBuildError> {
@@ -4859,228 +4832,6 @@ impl<'a> CreateBuilder<'a> {
             ClientRequest::Create(request),
             self.asynchronous_indicator,
             self.options,
-            limits,
-        )
-    }
-}
-
-/// A fluent builder for the existing typed Add Attribute request.
-pub struct AddAttributeBuilder<'a> {
-    client: &'a mut Client,
-    unique_identifier: Option<String>,
-    new_attribute: Option<NewAttribute>,
-    options: Option<RequestOptions>,
-    asynchronous_indicator: Option<u32>,
-}
-
-impl<'a> AddAttributeBuilder<'a> {
-    fn new(client: &'a mut Client) -> Self {
-        Self {
-            client,
-            unique_identifier: None,
-            new_attribute: None,
-            options: None,
-            asynchronous_indicator: None,
-        }
-    }
-
-    /// Sets the optional KMIP Unique Identifier as caller-supplied text.
-    #[must_use]
-    pub fn unique_identifier(mut self, value: &str) -> Self {
-        self.unique_identifier = Some(value.to_owned());
-        self
-    }
-
-    /// Sets the required typed New Attribute.
-    #[must_use]
-    pub fn new_attribute(mut self, value: NewAttribute) -> Self {
-        self.new_attribute = Some(value);
-        self
-    }
-
-    fluent_option_field_setters!("Sets exchange-local options without changing client policy."; options; asynchronous_indicator; const);
-
-    /// Validates completeness and protocol constraints without sending.
-    ///
-    /// # Errors
-    ///
-    /// Returns a sanitized construction error for an absent New Attribute,
-    /// an invalid typed request, or a value that cannot be copied safely.
-    pub fn validate(&self) -> Result<(), FluentBuildError> {
-        let new_attribute = self
-            .new_attribute
-            .as_ref()
-            .ok_or(FluentBuildError::MissingAddAttributeValue)?;
-        let request = AddAttributeRequest::new(
-            self.unique_identifier.clone(),
-            copy_new_attribute(new_attribute)?,
-        );
-        validate_fluent_request(&request)
-    }
-
-    /// Builds the existing typed KMIP request without sending it.
-    ///
-    /// # Errors
-    ///
-    /// Returns a sanitized construction error for an absent New Attribute or
-    /// a request rejected by the existing protocol validator.
-    pub fn build_request(self) -> Result<AddAttributeRequest, FluentBuildError> {
-        let new_attribute = self
-            .new_attribute
-            .ok_or(FluentBuildError::MissingAddAttributeValue)?;
-        let request = AddAttributeRequest::new(self.unique_identifier, new_attribute);
-        validate_fluent_request(&request)?;
-        Ok(request)
-    }
-
-    /// Converts this request to the existing typed client batch item.
-    ///
-    /// # Errors
-    ///
-    /// Returns a sanitized construction error when the request is invalid.
-    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
-        self.build_request()
-            .map(|request| ClientBatchItem::new(ClientRequest::AddAttribute(request)))
-    }
-
-    /// Executes one typed exchange and returns the existing operation result.
-    ///
-    /// # Errors
-    ///
-    /// Returns a not-sent validation error before transport when the request
-    /// is invalid, or the existing client error for exchange and decoding failures.
-    pub fn execute(
-        self,
-        limits: &kmipkit_ttlv::codec::CodecLimits,
-    ) -> Result<ClientBatchItemResponse, ClientError> {
-        let Self {
-            client,
-            unique_identifier,
-            new_attribute,
-            options,
-            asynchronous_indicator,
-        } = self;
-        let new_attribute = new_attribute
-            .ok_or(FluentBuildError::MissingAddAttributeValue)
-            .map_err(fluent_client_validation_error)?;
-        let request = AddAttributeRequest::new(unique_identifier, new_attribute);
-        validate_fluent_request(&request).map_err(fluent_client_validation_error)?;
-        execute_fluent_request(
-            client,
-            ClientRequest::AddAttribute(request),
-            asynchronous_indicator,
-            options,
-            limits,
-        )
-    }
-}
-
-/// A fluent builder for the existing typed Set Attribute request.
-pub struct SetAttributeBuilder<'a> {
-    client: &'a mut Client,
-    unique_identifier: Option<String>,
-    new_attribute: Option<NewAttribute>,
-    options: Option<RequestOptions>,
-    asynchronous_indicator: Option<u32>,
-}
-
-impl<'a> SetAttributeBuilder<'a> {
-    fn new(client: &'a mut Client) -> Self {
-        Self {
-            client,
-            unique_identifier: None,
-            new_attribute: None,
-            options: None,
-            asynchronous_indicator: None,
-        }
-    }
-
-    /// Sets the optional KMIP Unique Identifier as caller-supplied text.
-    #[must_use]
-    pub fn unique_identifier(mut self, value: &str) -> Self {
-        self.unique_identifier = Some(value.to_owned());
-        self
-    }
-
-    /// Sets the required typed New Attribute.
-    #[must_use]
-    pub fn new_attribute(mut self, value: NewAttribute) -> Self {
-        self.new_attribute = Some(value);
-        self
-    }
-
-    fluent_option_field_setters!("Sets exchange-local options without changing client policy."; options; asynchronous_indicator; const);
-
-    /// Validates completeness and protocol constraints without sending.
-    ///
-    /// # Errors
-    ///
-    /// Returns a sanitized construction error for an absent New Attribute,
-    /// an invalid typed request, or a value that cannot be copied safely.
-    pub fn validate(&self) -> Result<(), FluentBuildError> {
-        let new_attribute = self
-            .new_attribute
-            .as_ref()
-            .ok_or(FluentBuildError::MissingSetAttributeValue)?;
-        let request = SetAttributeRequest::new(
-            self.unique_identifier.clone(),
-            copy_new_attribute(new_attribute)?,
-        );
-        validate_fluent_request(&request)
-    }
-
-    /// Builds the existing typed KMIP request without sending it.
-    ///
-    /// # Errors
-    ///
-    /// Returns a sanitized construction error for an absent New Attribute or
-    /// a request rejected by the existing protocol validator.
-    pub fn build_request(self) -> Result<SetAttributeRequest, FluentBuildError> {
-        let new_attribute = self
-            .new_attribute
-            .ok_or(FluentBuildError::MissingSetAttributeValue)?;
-        let request = SetAttributeRequest::new(self.unique_identifier, new_attribute);
-        validate_fluent_request(&request)?;
-        Ok(request)
-    }
-
-    /// Converts this request to the existing typed client batch item.
-    ///
-    /// # Errors
-    ///
-    /// Returns a sanitized construction error when the request is invalid.
-    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
-        self.build_request()
-            .map(|request| ClientBatchItem::new(ClientRequest::SetAttribute(request)))
-    }
-
-    /// Executes one typed exchange and returns the existing operation result.
-    ///
-    /// # Errors
-    ///
-    /// Returns a not-sent validation error before transport when the request
-    /// is invalid, or the existing client error for exchange and decoding failures.
-    pub fn execute(
-        self,
-        limits: &kmipkit_ttlv::codec::CodecLimits,
-    ) -> Result<ClientBatchItemResponse, ClientError> {
-        let Self {
-            client,
-            unique_identifier,
-            new_attribute,
-            options,
-            asynchronous_indicator,
-        } = self;
-        let new_attribute = new_attribute
-            .ok_or(FluentBuildError::MissingSetAttributeValue)
-            .map_err(fluent_client_validation_error)?;
-        let request = SetAttributeRequest::new(unique_identifier, new_attribute);
-        validate_fluent_request(&request).map_err(fluent_client_validation_error)?;
-        execute_fluent_request(
-            client,
-            ClientRequest::SetAttribute(request),
-            asynchronous_indicator,
-            options,
             limits,
         )
     }
@@ -5217,128 +4968,6 @@ impl<'a> ModifyAttributeBuilder<'a> {
         execute_fluent_request(
             client,
             ClientRequest::ModifyAttribute(request),
-            asynchronous_indicator,
-            options,
-            limits,
-        )
-    }
-}
-
-/// A fluent builder for the existing typed Delete Attribute request.
-pub struct DeleteAttributeBuilder<'a> {
-    client: &'a mut Client,
-    unique_identifier: Option<String>,
-    current_attribute: Option<CurrentAttribute>,
-    attribute_reference: Option<AttributeReference>,
-    options: Option<RequestOptions>,
-    asynchronous_indicator: Option<u32>,
-}
-
-impl<'a> DeleteAttributeBuilder<'a> {
-    fn new(client: &'a mut Client) -> Self {
-        Self {
-            client,
-            unique_identifier: None,
-            current_attribute: None,
-            attribute_reference: None,
-            options: None,
-            asynchronous_indicator: None,
-        }
-    }
-
-    /// Sets the optional KMIP Unique Identifier as caller-supplied text.
-    #[must_use]
-    pub fn unique_identifier(mut self, value: &str) -> Self {
-        self.unique_identifier = Some(value.to_owned());
-        self
-    }
-
-    /// Sets the optional typed Current Attribute selector.
-    #[must_use]
-    pub fn current_attribute(mut self, value: CurrentAttribute) -> Self {
-        self.current_attribute = Some(value);
-        self
-    }
-
-    /// Sets the optional explicit Attribute Reference selector.
-    #[must_use]
-    pub fn attribute_reference(mut self, value: AttributeReference) -> Self {
-        self.attribute_reference = Some(value);
-        self
-    }
-
-    fluent_option_field_setters!("Sets exchange-local options without changing client policy."; options; asynchronous_indicator; const);
-
-    /// Validates the selectors and typed request without sending.
-    ///
-    /// # Errors
-    ///
-    /// Returns a sanitized construction error if the request violates the
-    /// existing protocol validator or a selector cannot be copied safely.
-    pub fn validate(&self) -> Result<(), FluentBuildError> {
-        let current_attribute = self
-            .current_attribute
-            .as_ref()
-            .map(copy_current_attribute)
-            .transpose()?;
-        let request = DeleteAttributeRequest::new(
-            self.unique_identifier.clone(),
-            current_attribute,
-            self.attribute_reference.clone(),
-        );
-        validate_fluent_request(&request)
-    }
-
-    /// Builds the existing typed KMIP request without sending it.
-    ///
-    /// # Errors
-    ///
-    /// Returns a sanitized construction error if the request is rejected by
-    /// the existing protocol validator.
-    pub fn build_request(self) -> Result<DeleteAttributeRequest, FluentBuildError> {
-        let request = DeleteAttributeRequest::new(
-            self.unique_identifier,
-            self.current_attribute,
-            self.attribute_reference,
-        );
-        validate_fluent_request(&request)?;
-        Ok(request)
-    }
-
-    /// Converts this request to the existing typed client batch item.
-    ///
-    /// # Errors
-    ///
-    /// Returns a sanitized construction error when the request is invalid.
-    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
-        self.build_request()
-            .map(|request| ClientBatchItem::new(ClientRequest::DeleteAttribute(request)))
-    }
-
-    /// Executes one typed exchange and returns the existing operation result.
-    ///
-    /// # Errors
-    ///
-    /// Returns a not-sent validation error before transport when the request
-    /// is invalid, or the existing client error for exchange and decoding failures.
-    pub fn execute(
-        self,
-        limits: &kmipkit_ttlv::codec::CodecLimits,
-    ) -> Result<ClientBatchItemResponse, ClientError> {
-        let Self {
-            client,
-            unique_identifier,
-            current_attribute,
-            attribute_reference,
-            options,
-            asynchronous_indicator,
-        } = self;
-        let request =
-            DeleteAttributeRequest::new(unique_identifier, current_attribute, attribute_reference);
-        validate_fluent_request(&request).map_err(fluent_client_validation_error)?;
-        execute_fluent_request(
-            client,
-            ClientRequest::DeleteAttribute(request),
             asynchronous_indicator,
             options,
             limits,

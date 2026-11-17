@@ -358,6 +358,13 @@ def _lifecycle_response(operation: int, identifier: bytes) -> bytes:
         ]
     elif operation == 20:
         payload_fields = [_item(0x420094, 7, identifier)]
+    elif operation in (0x12, 0x15, 0x16, 0x13):
+        payload_fields = [_item(0x420094, 7, identifier)]
+    elif operation == 0x08:
+        payload_fields = [
+            _item(0x4200D5, 2, struct.pack(">i", 1)),
+            _item(0x420094, 7, identifier),
+        ]
     elif operation == 11:
         payload_fields = [
             _item(0x420094, 7, identifier),
@@ -389,6 +396,7 @@ def _start_lifecycle_peer(
     *,
     expected_asynchronous_indicator: int | None = None,
     expected_indicators_by_operation: dict[int, int] | None = None,
+    response_identifier: bytes | None = None,
 ) -> tuple[int, list[tuple[int, bytes | None, bytes]], queue.Queue[BaseException], threading.Thread]:
     listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     listener.bind(("127.0.0.1", 0))
@@ -411,6 +419,10 @@ def _start_lifecycle_peer(
                 with raw, context.wrap_socket(raw, server_side=True) as stream:
                     require_tls13_mtls_peer(stream)
                     request = read_ttlv_frame(stream)
+                    if response_identifier is not None:
+                        stream.sendall(
+                            _lifecycle_response(expected_operation, response_identifier)
+                        )
                     expected_indicator = (expected_indicators_by_operation or {}).get(
                         expected_operation, expected_asynchronous_indicator
                     )
@@ -425,8 +437,12 @@ def _start_lifecycle_peer(
                     if operation != expected_operation:
                         raise AssertionError(f"expected operation {expected_operation}, got {operation}")
                     observations.append((operation, request_identifier, request))
-                    response_identifier = request_identifier or b"fluent-created-id"
-                    stream.sendall(_lifecycle_response(operation, response_identifier))
+                    if response_identifier is None:
+                        stream.sendall(
+                            _lifecycle_response(
+                                operation, request_identifier or b"fluent-created-id"
+                            )
+                        )
         except BaseException as error:  # noqa: BLE001 - make peer failures visible in the test.
             failures.put(error)
         finally:
@@ -1335,37 +1351,21 @@ def test_key_pair_builder_requires_explicit_algorithm_and_length() -> None:
 
 @pytest.mark.parametrize("method,value", [
     ("algorithm", -1), ("algorithm", 1 << 32),
-    ("length", 0), ("length", True),
-    ("private_usage_mask", -1), ("public_usage_mask", 1 << 31),
-    ("with_options", None), ("asynchronous_indicator", -1),
-    ("common_attribute", None),
+    ("length", True), ("private_usage_mask", True),
+    ("public_usage_mask", 1 << 32), ("with_options", None),
+    ("asynchronous_indicator", -1), ("common_attribute", None),
 ])
 def test_key_pair_builder_rejects_invalid_semantic_fields(method: str, value: object) -> None:
-    with pytest.raises(errors.KmipKitError):
-        getattr(fluent.CreateKeyPairBuilder(), method)(value)
+    with fluent.CreateKeyPairBuilder() as builder, pytest.raises(errors.KmipKitError):
+        getattr(builder, method)(value)
 
-@pytest.mark.parametrize("fail_on", [2, 3])
-def test_key_pair_builder_releases_earlier_groups_when_later_allocation_fails(
-    monkeypatch: pytest.MonkeyPatch, fail_on: int
-) -> None:
-    original = fluent.CreateKeyPairBuilder._attribute_structure
-    allocated: list[ttlv.Structure] = []
-
-    def allocate(attributes, limits):
-        if len(allocated) + 1 == fail_on:
-            raise MemoryError("injected allocation failure")
-        structure = original(attributes, limits)
-        allocated.append(structure)
-        return structure
-
-    monkeypatch.setattr(fluent.CreateKeyPairBuilder, "_attribute_structure", staticmethod(allocate))
-    try:
-        with pytest.raises(MemoryError, match="injected allocation failure"):
-            fluent.CreateKeyPairBuilder().algorithm(6).length(256).build()
-        assert all(structure.closed for structure in allocated)
-    finally:
-        for structure in allocated:
-            structure.close()
+def test_key_pair_builder_copies_typed_common_attributes() -> None:
+    with ttlv.codec_limits_defaults() as limits:
+        with fluent.CreateKeyPairBuilder() as builder:
+            with ttlv.ttlv_value_text_string(b"key pair description", limits) as value:
+                with TypedAttribute.create(StandardAttribute.DESCRIPTION, value) as attribute:
+                    builder.algorithm(6).length(256).common_attribute(attribute)
+            builder.validate()
 
 def test_key_pair_builder_covers_common_attributes_and_execution_options() -> None:
     with socket.socket() as reservation:

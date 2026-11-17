@@ -38,8 +38,6 @@ fn capability_query_matches_manifest_ready_capabilities() {
         kmipkit::capability_is_available("fluent_locate_revoke_parity"),
         Ok(true)
     );
-        Ok(true)
-    );
     assert_eq!(
         kmipkit::capability_is_available("generic_ttlv_model"),
         Ok(true)

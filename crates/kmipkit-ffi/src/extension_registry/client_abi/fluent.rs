@@ -2648,15 +2648,17 @@ pub extern "C" fn kmipkit_symmetric_key_builder_add_catalogued_attribute(
     value: *mut kmipkit_ttlv_value_t,
 ) -> i32 {
     ffi_entrypoint(|| {
-        let item = try_ffi!(super::super::typed_attributes::catalogued_item_from_value(
-            tag,
-            value,
-            model_status,
-        ));
-        try_ffi!(update_symmetric_builder(builder, |builder| {
-            builder.attribute_item(item)
-        }));
-        SUCCESS
+        symmetric_builder_validation_status(|| {
+            let item = try_ffi!(super::super::typed_attributes::catalogued_item_from_value(
+                tag,
+                value,
+                model_status,
+            ));
+            try_ffi!(update_symmetric_builder(builder, |builder| {
+                builder.attribute_item(item)
+            }));
+            SUCCESS
+        })
     })
 }
 

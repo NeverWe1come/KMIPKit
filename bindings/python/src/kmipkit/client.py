@@ -3372,7 +3372,9 @@ class Client(_ClientHandle):
         options: RequestOptions | None = None,
     ) -> BatchResult:
         """Revoke one object with an explicit typed reason and optional date."""
-        builder = self.request().revoke(unique_identifier, reason)
+        builder = self.request().revoke(
+            reason.raw_code, reason.message
+        ).unique_identifier(unique_identifier)
         if compromise_occurrence_date is not None:
             builder.compromise_occurrence_date(compromise_occurrence_date)
         if options is not None:
