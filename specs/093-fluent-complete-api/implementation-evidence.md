@@ -1110,3 +1110,8 @@
 - **Refactor**: kept the owner evidence synchronized with the canonical public
   API manifest. Exact-head hosted CI remains required before M005 is complete
   and this PR can leave WIP.
+- **Post-merge inventory sync**: mirrored the five Delete Attribute builder
+  evidence paths into the canonical public API operation's `parityEvidenceIds`
+  and regenerated the public API projections. This keeps the owner catalog's
+  exact-evidence check aligned with the operation inventory after the builder
+  tests landed. The API and fluent inventory generators both pass `--check`.

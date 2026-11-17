@@ -2114,6 +2114,13 @@ class BatchItemResult(_BatchItemResultNativeState):
     archive_response: ArchiveResponse | None = field(default=None, repr=False)
     destroy_response: DestroyResponse | None = field(default=None, repr=False)
     recover_response: RecoverResponse | None = field(default=None, repr=False)
+    create_group_response: CreateGroupResponse | None = field(default=None, repr=False)
+    create_user_response: CreateUserResponse | None = field(default=None, repr=False)
+    create_credential_response: CreateCredentialResponse | None = field(default=None, repr=False)
+    obliterate_response: bool | None = None
+    deactivate_response: DeactivateResponse | None = field(default=None, repr=False)
+    encapsulate_response: EncapsulateResponse | None = field(default=None, repr=False)
+    decapsulate_response: DecapsulateResponse | None = field(default=None, repr=False)
     delete_attribute_response: DeleteAttributeResponse | None = field(default=None, repr=False)
     modify_attribute_response: ModifyAttributeResponse | None = field(default=None, repr=False)
     set_attribute_response: SetAttributeResponse | None = field(
@@ -2583,6 +2590,67 @@ class RecoverResponse:
 
     def __repr__(self) -> str:
         return "RecoverResponse(unique_identifier=redacted)"
+
+
+@dataclass(frozen=True, slots=True, repr=False)
+class CreateGroupResponse:
+    """Successful KMIP 3.0 §6.1.10 response identifier."""
+
+    unique_identifier: extensions.UniqueIdentifier = field(repr=False)
+
+    def __repr__(self) -> str:
+        return "CreateGroupResponse(unique_identifier=redacted)"
+
+
+@dataclass(frozen=True, slots=True, repr=False)
+class CreateUserResponse:
+    """Successful KMIP 3.0 §6.1.13 response identifier."""
+
+    unique_identifier: extensions.UniqueIdentifier = field(repr=False)
+
+    def __repr__(self) -> str:
+        return "CreateUserResponse(unique_identifier=redacted)"
+
+
+@dataclass(frozen=True, slots=True, repr=False)
+class CreateCredentialResponse:
+    """Successful KMIP 3.0 §6.1.8 response identifier."""
+
+    unique_identifier: extensions.UniqueIdentifier = field(repr=False)
+
+    def __repr__(self) -> str:
+        return "CreateCredentialResponse(unique_identifier=redacted)"
+
+
+@dataclass(frozen=True, slots=True, repr=False)
+class DeactivateResponse:
+    """Successful KMIP 3.0 §6.1.14 response identifier."""
+
+    unique_identifier: extensions.UniqueIdentifier = field(repr=False)
+
+    def __repr__(self) -> str:
+        return "DeactivateResponse(unique_identifier=redacted)"
+
+
+@dataclass(frozen=True, slots=True, repr=False)
+class DecapsulateResponse:
+    """Successful KMIP 3.0 §6.1.16 response identifier."""
+
+    unique_identifier: extensions.UniqueIdentifier = field(repr=False)
+
+    def __repr__(self) -> str:
+        return "DecapsulateResponse(unique_identifier=redacted)"
+
+
+@dataclass(frozen=True, slots=True, repr=False)
+class EncapsulateResponse:
+    """Successful KMIP 3.0 §6.1.20 response payload."""
+
+    unique_identifier: extensions.UniqueIdentifier = field(repr=False)
+    data: bytes | None = field(default=None, repr=False)
+
+    def __repr__(self) -> str:
+        return f"EncapsulateResponse(unique_identifier=redacted, data={'present' if self.data is not None else 'absent'})"
 
 
 @dataclass(frozen=True, slots=True, repr=False)
@@ -4187,6 +4255,55 @@ def _batch_result(
                     and int(metadata.operation) == 0x16
                 ):
                     recover_response = _lifecycle_response(item, "recover", RecoverResponse)
+                create_group_response = None
+                if (
+                    outcome == BatchOutcome.COMPLETED
+                    and int(metadata.result_status) == 0
+                    and int(metadata.operation) == 0x3C
+                ):
+                    create_group_response = _lifecycle_response(item, "create_group", CreateGroupResponse)
+                obliterate_response = None
+                if (
+                    outcome == BatchOutcome.COMPLETED
+                    and int(metadata.result_status) == 0
+                    and int(metadata.operation) == 0x3D
+                ):
+                    obliterate_response = _obliterate_response(item)
+                create_user_response = None
+                if (
+                    outcome == BatchOutcome.COMPLETED
+                    and int(metadata.result_status) == 0
+                    and int(metadata.operation) == 0x3E
+                ):
+                    create_user_response = _lifecycle_response(item, "create_user", CreateUserResponse)
+                create_credential_response = None
+                if (
+                    outcome == BatchOutcome.COMPLETED
+                    and int(metadata.result_status) == 0
+                    and int(metadata.operation) == 0x3F
+                ):
+                    create_credential_response = _lifecycle_response(item, "create_credential", CreateCredentialResponse)
+                deactivate_response = None
+                if (
+                    outcome == BatchOutcome.COMPLETED
+                    and int(metadata.result_status) == 0
+                    and int(metadata.operation) == 0x40
+                ):
+                    deactivate_response = _lifecycle_response(item, "deactivate", DeactivateResponse)
+                encapsulate_response = None
+                if (
+                    outcome == BatchOutcome.COMPLETED
+                    and int(metadata.result_status) == 0
+                    and int(metadata.operation) == 0x41
+                ):
+                    encapsulate_response = _encapsulate_response(item)
+                decapsulate_response = None
+                if (
+                    outcome == BatchOutcome.COMPLETED
+                    and int(metadata.result_status) == 0
+                    and int(metadata.operation) == 0x42
+                ):
+                    decapsulate_response = _lifecycle_response(item, "decapsulate", DecapsulateResponse)
                 rng_retrieve_response = None
                 if (
                     (
@@ -4432,6 +4549,13 @@ def _batch_result(
                     archive_response=archive_response,
                     destroy_response=destroy_response,
                     recover_response=recover_response,
+                    create_group_response=create_group_response,
+                    create_user_response=create_user_response,
+                    create_credential_response=create_credential_response,
+                    obliterate_response=obliterate_response,
+                    deactivate_response=deactivate_response,
+                    encapsulate_response=encapsulate_response,
+                    decapsulate_response=decapsulate_response,
                     delete_attribute_response=delete_attribute_response,
                     modify_attribute_response=modify_attribute_response,
                 )
@@ -4969,11 +5093,8 @@ def _revoke_response(item: _ClientBatchItemResponse) -> RevokeResponse | None:
 def _lifecycle_response(
     item: _ClientBatchItemResponse,
     operation: str,
-    response_type: type[ActivateResponse]
-    | type[ArchiveResponse]
-    | type[DestroyResponse]
-    | type[RecoverResponse],
-) -> ActivateResponse | ArchiveResponse | DestroyResponse | RecoverResponse | None:
+    response_type: Any,
+) -> Any:
     present = ffi.new("uint8_t *")
     identifier = _initialize_unique_identifier_output()
     _raise_abi_status(
@@ -4992,6 +5113,45 @@ def _lifecycle_response(
     if unique_identifier is None:
         errors.raise_for_status(4)
     return response_type(unique_identifier)
+
+
+def _obliterate_response(item: _ClientBatchItemResponse) -> bool | None:
+    present = ffi.new("uint8_t *")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_obliterate(item._pointer(), present)
+    )
+    if present[0] == 0:
+        return None
+    if present[0] != 1:
+        errors.raise_for_status(4)
+    return True
+
+
+def _encapsulate_response(item: _ClientBatchItemResponse) -> EncapsulateResponse | None:
+    present = ffi.new("uint8_t *")
+    identifier = _initialize_unique_identifier_output()
+    data_present = ffi.new("uint8_t *")
+    data = ffi.new("kmipkit_byte_span_v1_t *")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_encapsulate(
+            item._pointer(), present, identifier, data_present, data
+        )
+    )
+    if present[0] == 0:
+        if identifier.kind != 0 or data_present[0] != 0:
+            errors.raise_for_status(4)
+        return None
+    if present[0] != 1 or data_present[0] not in (0, 1):
+        errors.raise_for_status(4)
+    unique_identifier = _optional_output_identifier(identifier)
+    if unique_identifier is None:
+        errors.raise_for_status(4)
+    data_bytes = (
+        bytes(ffi.buffer(data.data, data.length))
+        if data_present[0] == 1 and data.data != ffi.NULL
+        else None
+    )
+    return EncapsulateResponse(unique_identifier, data_bytes)
 
 
 def _rekey_response(item: _ClientBatchItemResponse) -> RekeyResponse | None:
@@ -7001,7 +7161,13 @@ __all__ = [
     "BatchResult",
     "CertifyResponse",
     "CheckResponse",
+    "CreateCredentialResponse",
+    "CreateGroupResponse",
+    "CreateUserResponse",
+    "DeactivateResponse",
+    "DecapsulateResponse",
     "DelegatedLoginResponse",
+    "EncapsulateResponse",
     "LoginResponse",
     "DeriveKeyResponse",
     "DestroyResponse",

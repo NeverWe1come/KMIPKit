@@ -8,4 +8,9 @@
 - [x] T006: (Red/Green/Refactor) Correct hex tags and operation names in `VersionGate::validate_attribute_mutation`, `kmip20_tests.rs`, and `specs/070-kmip-2-0-interoperability/spec.md`.
 - [x] T007: (Red/Green/Refactor) Implement typed batch response readers for the 7 KMIP 3.0 operations across Rust, C, Java, and Python; update `docs/architecture/public-api.md` and `public-api.json`.
 - [x] T008: (Red/Green/Refactor) Update `interop/java-kmip-validator/library-pin.json` and unblock KMIP 2.0 live routes in `Main.java` and tests.
-- [x] T009: Run full workspace checks (format, clippy, unit tests, bindings tests, interop validator, catalog validation).
+- [x] T009: (Red/Green/Refactor) Audit Rev 3: Implement batch response readers for 7 KMIP 3.0 operations in C ABI, JNI/Java, Python, and update `public-api.md`.
+- [x] T010: (Red/Green/Refactor) Audit Rev 3: Update `generate_wire_names.py` to traverse `v3_0_promoted_attributes` and validate `bitmask_family` for Integer encoding.
+- [x] T011: (Red/Green/Refactor) Audit Rev 3: Add `Password` (7) and `Certificate` (8) to `CredentialType` across Rust, C, Java, and Python.
+- [x] T012: (Red/Green/Refactor) Audit Rev 3: Fix boolean condition and normative `source_always_required` in `generate_attribute_policy.py` and `kmip-versioned-tags.json`; expose versions in typed attributes.
+- [x] T013: (Red/Green/Refactor) Audit Rev 3: Reclassify async operations in `JavaRouteInventory` and fix spec 070 §2 operation names.
+- [x] T014: Run full workspace checks (format, clippy, unit tests, bindings tests, interop validator, catalog validation).
