@@ -151,3 +151,7 @@ key with explicit Encrypt usage, sends an AES/ECB/No Padding request, checks
 the typed Encrypt response, then revokes and destroys the key. Its fixed AES
 test vector validates request and response handling only; it does not run
 cryptography locally or establish compatibility with an external KMS.
+The `test-op-decrypt` route uses the matching AES-128 Decrypt usage and
+explicit AES/ECB/No Padding parameters, checks the fixed ciphertext input and
+typed plaintext response, then performs the same revoke/destroy cleanup. The
+controlled vector is test evidence, not external KMS interoperability evidence.

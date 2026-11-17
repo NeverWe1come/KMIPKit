@@ -131,3 +131,15 @@ passed all 12 peer exchanges. CTest passed 7/7, including 164 route-matrix
 contract tests and both controlled TLS peers. This adds one complete positive
 operation slice; it does not satisfy the remaining pending routes or the full
 FR-003/FR-005 matrix.
+
+## C isolated Decrypt route
+
+`test-op-decrypt` now uses the installed C ABI for a typed
+Create/Activate/Decrypt/Revoke/Destroy batch. The controlled peer checks the
+Decrypt usage mask, ID Placeholder target, AES/ECB/No Padding parameters,
+known ciphertext input, plaintext response, response IDs, and final object
+deletion. OASIS references are KMIP v2.0/v2.1 §6.1.11, §6.1.1, §6.1.40/§6.1.44,
+§6.1.15, §6.1, and §§8.2–8.4, 8.6. Encrypt and Decrypt focused tests passed
+12/12 checks each. CTest passed 7/7 with 165 route-matrix contract tests and
+both controlled TLS peers. Remaining C and cross-language matrix routes stay
+pending under FR-003/FR-005.

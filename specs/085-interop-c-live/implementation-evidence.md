@@ -1124,3 +1124,27 @@ material is written to reports or diagnostics.
   TLS peers. `git diff --check` passed. The full installed C matrix and exact
   head CI remain pending; this slice does not close the route-completeness gate
   or establish vendor interoperability. PR #170 remains WIP.
+
+## C Decrypt request and response route
+
+OASIS KMIP v2.0 and v2.1 §6.1.11 defines Decrypt; the lifecycle setup and
+cleanup use §6.1.1 (Activate), §6.1.40/§6.1.44 (Revoke), and §6.1.15
+(Destroy), with ordered batch and ID Placeholder rules from §6.1 and
+§§8.2–8.4, 8.6. The installed C consumer creates an AES-128 key with explicit
+Decrypt usage, activates it, decrypts the fixed AES test-vector ciphertext
+with explicitly supplied AES/ECB/No Padding parameters, then revokes and
+destroys it. It checks each typed result and response ID, the created key
+identifier, plaintext response, Revoke TTLV, and teardown. Reports and
+diagnostics contain no cryptographic input or output.
+
+- Red commit `2d8fe55eb`: the focused route test failed because `test-op-decrypt`
+  had no controlled-peer recipe.
+- Green commit `3f02d5151`: added the typed Decrypt request/response path by
+  sharing the isolated crypto lifecycle builder with Encrypt; the peer checks
+  Decrypt usage, ciphertext input, plaintext response, IDs, and cleanup.
+- Refactor/documentation commit records the lifecycle, scope, and evidence in
+  this file, the 0092 traceability record, and the validator README.
+- Verification: Encrypt and Decrypt focused tests each passed all 12
+  version/encoding/transport combinations. CTest passed 7/7 in 90.92 seconds,
+  including 165 route-matrix contract tests and both controlled TLS peers;
+  `git diff --check` passed. The full C matrix and exact-head CI remain open.

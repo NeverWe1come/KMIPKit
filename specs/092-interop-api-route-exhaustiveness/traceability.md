@@ -63,3 +63,15 @@ focused test passed all 12 version/encoding/transport combinations, and CTest
 passed 7/7 with 164 C route-matrix contract tests. No request data is included
 in evidence. Other network rows remain `validator_recipe_pending`; this route
 does not close the full matrix or the cross-language FR-003/FR-005 gates.
+
+### C Decrypt route follow-up
+
+For KMIPKIT-0092-FR-003, FR-005, FR-008, and FR-009, the C `test-op-decrypt`
+route checks OASIS KMIP v2.0/v2.1 §6.1.11 and its ordered key lifecycle:
+Activate (§6.1.1), Revoke (§6.1.40/§6.1.44), Destroy (§6.1.15), and batch/ID
+Placeholder processing (§6.1, §§8.2–8.4, 8.6). The installed client sends an
+AES-128 Decrypt-only key request with explicit AES/ECB/No Padding parameters;
+the peer validates ciphertext input, plaintext response, IDs, and deletion.
+Both Encrypt and Decrypt passed all 12 version/encoding/transport exchanges;
+CTest passed 7/7 with 165 C route-matrix contract tests. Other route cells
+remain pending, so this does not close the full FR-003/FR-005 gates.
