@@ -5064,6 +5064,10 @@ class ControlledTlsPeerTest {
 
     private static void assertNewlyCataloguedLocalRoutesAreInvoked(ArrayNode events,
             String protocolVersion) {
+        if ("2.1".equals(protocolVersion)) {
+            assertRouteEventRecorded(events, "test-op-ping", "KMIPKIT-ELEM-OP-C2S-PING",
+                    "java.typed-protocol.function.client_batch_item_response_ping", "decode", protocolVersion);
+        }
         for (ScalarOperationStructureFixture fixture : SCALAR_OPERATION_STRUCTURE_FIXTURES) {
             assertScalarOperationStructureRouteEvents(events, fixture, protocolVersion);
         }
