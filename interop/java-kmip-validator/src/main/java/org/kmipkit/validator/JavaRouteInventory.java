@@ -61,7 +61,7 @@ public final class JavaRouteInventory {
         typed(routes, "Add Attribute", "addAttribute");
         typed(routes, "Adjust Attribute", "adjustAttribute");
         typed(routes, "Archive", "archive");
-        payloadOnly(routes, "Cancel", "CancelRequest");
+        typed(routes, "Cancel", "cancel");
         typed(routes, "Certify", "certify");
         typed(routes, "Check", "check");
         typed(routes, "Create Key Pair", "createKeyPair");
@@ -89,10 +89,10 @@ public final class JavaRouteInventory {
         noPublicRoute(routes, "Notify", "Notify is a server-initiated operation outside the client request API.");
         typed(routes, "Obtain Lease", "obtainLease");
         typed(routes, "PKCS#11", "pkcs11");
-        payloadOnly(routes, "Poll", "PollRequest");
-        payloadOnly(routes, "Process", "ProcessRequest");
+        typed(routes, "Poll", "poll");
+        typed(routes, "Process", "process");
         noPublicRoute(routes, "Put", "The pinned Java package exposes no public Put request constructor.");
-        payloadOnly(routes, "Query Asynchronous Requests", "QueryAsyncRequestsRequest");
+        typed(routes, "Query Asynchronous Requests", "queryAsyncRequests");
         typed(routes, "Re-Provision", "reprovision");
         typed(routes, "Re-certify", "recertify");
         typed(routes, "Re-key", "rekey");
