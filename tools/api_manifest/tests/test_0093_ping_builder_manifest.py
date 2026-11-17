@@ -31,6 +31,7 @@ EXPECTED_EXPORTS = {
         "org.kmipkit.fluent.PingBuilder.asynchronousIndicator",
         "org.kmipkit.fluent.PingBuilder.build",
         "org.kmipkit.fluent.PingBuilder.execute",
+        "org.kmipkit.fluent.PingBuilder.executeWithOptions",
         "org.kmipkit.fluent.PingBuilder.toBatchItem",
         "org.kmipkit.fluent.PingBuilder.validate",
         "org.kmipkit.fluent.PingBuilder.withOptions",
@@ -41,6 +42,7 @@ EXPECTED_EXPORTS = {
         "kmipkit.fluent.PingBuilder.asynchronous_indicator",
         "kmipkit.fluent.PingBuilder.build",
         "kmipkit.fluent.PingBuilder.execute",
+        "kmipkit.fluent.PingBuilder.__init__",
         "kmipkit.fluent.PingBuilder.to_batch_item",
         "kmipkit.fluent.PingBuilder.validate",
         "kmipkit.fluent.PingBuilder.with_options",
@@ -84,6 +86,34 @@ class PingBuilderManifestTests(unittest.TestCase):
                         {"rust", "c", "java", "python"},
                         declaration["languageMappings"].keys(),
                     )
+
+    def test_ping_builder_java_execute_overloads_are_explicit(self) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row["packageId"] == "java-kmipkit"
+        }
+        self.assertEqual(
+            [
+                "public org.kmipkit.extensions.ClientBatchResponse execute(org.kmipkit.ttlv.CodecLimits) throws org.kmipkit.ClientOperationException",
+                "public org.kmipkit.extensions.ClientBatchResponse execute(org.kmipkit.ttlv.CodecLimits, org.kmipkit.extensions.RequestOptions) throws org.kmipkit.ClientOperationException",
+            ],
+            declarations[
+                "org.kmipkit.fluent.PingBuilder.execute"
+            ]["javaSignatures"],
+        )
+
+    def test_ping_builder_binding_classes_are_catalogued_as_types(self) -> None:
+        declarations = {
+            (row["packageId"], row["exportName"]): row
+            for row in self.manifest["publicDeclarations"]
+        }
+        for package, export in (
+            ("java-kmipkit", "org.kmipkit.fluent.PingBuilder"),
+            ("python-kmipkit", "kmipkit.fluent.PingBuilder"),
+        ):
+            with self.subTest(package=package):
+                self.assertEqual("type", declarations[(package, export)]["kind"])
 
     def test_ping_builder_c_abi_functions_are_in_the_catalog(self) -> None:
         symbols = {row["c"]["symbol"] for row in self.manifest["functions"]}
