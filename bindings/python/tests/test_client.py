@@ -1533,6 +1533,13 @@ _BATCH_RESULT_MAPPER_CASES = [
     pytest.param(0x15, "_lifecycle_response", "archive_response", False, id="archive"),
     pytest.param(0x14, "_lifecycle_response", "destroy_response", False, id="destroy"),
     pytest.param(0x16, "_lifecycle_response", "recover_response", False, id="recover"),
+    pytest.param(0x3C, "_lifecycle_response", "create_group_response", False, id="create-group"),
+    pytest.param(0x3D, "_obliterate_response", "obliterate_response", False, id="obliterate"),
+    pytest.param(0x3E, "_lifecycle_response", "create_user_response", False, id="create-user"),
+    pytest.param(0x3F, "_lifecycle_response", "create_credential_response", False, id="create-credential"),
+    pytest.param(0x40, "_lifecycle_response", "deactivate_response", False, id="deactivate"),
+    pytest.param(0x41, "_encapsulate_response", "encapsulate_response", False, id="encapsulate"),
+    pytest.param(0x42, "_lifecycle_response", "decapsulate_response", False, id="decapsulate"),
     pytest.param(0x25, "_rng_retrieve_response", "rng_retrieve_response", True, id="rng-retrieve"),
     pytest.param(0x26, "_rng_seed_response", "rng_seed_response", True, id="rng-seed"),
 ]

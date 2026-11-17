@@ -20,6 +20,8 @@ class CredentialTypeTests(unittest.TestCase):
         self.assertEqual(4, credential_type.ONE_TIME_PASSWORD)
         self.assertEqual(5, credential_type.HASHED_PASSWORD)
         self.assertEqual(6, credential_type.TICKET)
+        self.assertEqual(7, credential_type.PASSWORD)
+        self.assertEqual(8, credential_type.CERTIFICATE)
 
         cases = (
             (1, "UsernameAndPassword"),
@@ -28,8 +30,10 @@ class CredentialTypeTests(unittest.TestCase):
             (4, "OneTimePassword"),
             (5, "HashedPassword"),
             (6, "Ticket"),
+            (7, "Password"),
+            (8, "Certificate"),
             (0x8000_0009, "Extensions"),
-            (7, "Unknown"),
+            (9, "Unknown"),
             (0xFFFF_FFFF, "Unknown"),
         )
         for raw, expected_kind in cases:

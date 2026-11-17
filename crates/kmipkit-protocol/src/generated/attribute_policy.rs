@@ -243,7 +243,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         source_initially_set_by: "Server",
         source_modifiable_by_client: "No",
         source_deletable_by_client: "No",
-        source_always_required: "No",
+        source_always_required: "Yes",
         source_operation_restrictions: &[
         ],
         source_conditional_rules: &[
@@ -536,7 +536,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         source_initially_set_by: "Client",
         source_modifiable_by_client: "No",
         source_deletable_by_client: "No",
-        source_always_required: "No",
+        source_always_required: "Yes",
         source_operation_restrictions: &[
         ],
         source_conditional_rules: &[
@@ -845,7 +845,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         source_initially_set_by: "Client",
         source_modifiable_by_client: "No",
         source_deletable_by_client: "No",
-        source_always_required: "No",
+        source_always_required: "Yes",
         source_operation_restrictions: &[
         ],
         source_conditional_rules: &[
@@ -864,7 +864,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         source_initially_set_by: "Client",
         source_modifiable_by_client: "No",
         source_deletable_by_client: "No",
-        source_always_required: "No",
+        source_always_required: "Yes",
         source_operation_restrictions: &[
         ],
         source_conditional_rules: &[
@@ -883,7 +883,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         source_initially_set_by: "Client",
         source_modifiable_by_client: "No",
         source_deletable_by_client: "No",
-        source_always_required: "No",
+        source_always_required: "Yes",
         source_operation_restrictions: &[
         ],
         source_conditional_rules: &[
@@ -1796,7 +1796,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         source_initially_set_by: "Client or Server",
         source_modifiable_by_client: "Yes",
         source_deletable_by_client: "Yes",
-        source_always_required: "No",
+        source_always_required: "Yes",
         source_operation_restrictions: &[
         ],
         source_conditional_rules: &[
@@ -2062,7 +2062,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         source_initially_set_by: "Client or Server",
         source_modifiable_by_client: "No",
         source_deletable_by_client: "No",
-        source_always_required: "No",
+        source_always_required: "Yes",
         source_operation_restrictions: &[
         ],
         source_conditional_rules: &[
@@ -2195,7 +2195,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         source_initially_set_by: "Client",
         source_modifiable_by_client: "No",
         source_deletable_by_client: "No",
-        source_always_required: "No",
+        source_always_required: "Yes",
         source_operation_restrictions: &[
         ],
         source_conditional_rules: &[
@@ -2290,7 +2290,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         source_initially_set_by: "Server",
         source_modifiable_by_client: "No",
         source_deletable_by_client: "No",
-        source_always_required: "No",
+        source_always_required: "Yes",
         source_operation_restrictions: &[
         ],
         source_conditional_rules: &[
@@ -2309,7 +2309,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         source_initially_set_by: "Server",
         source_modifiable_by_client: "No",
         source_deletable_by_client: "No",
-        source_always_required: "No",
+        source_always_required: "Yes",
         source_operation_restrictions: &[
         ],
         source_conditional_rules: &[
@@ -2328,7 +2328,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         source_initially_set_by: "Server",
         source_modifiable_by_client: "No",
         source_deletable_by_client: "No",
-        source_always_required: "No",
+        source_always_required: "Yes",
         source_operation_restrictions: &[
         ],
         source_conditional_rules: &[
@@ -2347,7 +2347,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         source_initially_set_by: "Server",
         source_modifiable_by_client: "No",
         source_deletable_by_client: "No",
-        source_always_required: "No",
+        source_always_required: "Yes",
         source_operation_restrictions: &[
         ],
         source_conditional_rules: &[
@@ -2366,7 +2366,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
         source_initially_set_by: "Server",
         source_modifiable_by_client: "No",
         source_deletable_by_client: "No",
-        source_always_required: "No",
+        source_always_required: "Yes",
         source_operation_restrictions: &[
         ],
         source_conditional_rules: &[

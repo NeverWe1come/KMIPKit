@@ -2,6 +2,7 @@ package org.kmipkit.extensions;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
@@ -93,5 +94,31 @@ final class Kmip30SemanticBatchItemTest {
                 InvalidInputException.class, () -> ClientBatchItem.decapsulateFromFields(
                         UniqueIdentifier.textString("kem-key"), null, null, null))
                 .getMessage());
+    }
+
+    @Test
+    void parsesSemanticBatchItemResponses() {
+        Object[] emptyIdResult = new Object[] {new long[] {0}, null};
+        assertTrue(ClientBatchItemResult.parseCreateGroupResponse(emptyIdResult).isEmpty());
+        assertTrue(ClientBatchItemResult.parseCreateUserResponse(emptyIdResult).isEmpty());
+        assertTrue(ClientBatchItemResult.parseCreateCredentialResponse(emptyIdResult).isEmpty());
+        assertTrue(ClientBatchItemResult.parseObliterateResponse(new long[] {0}).isEmpty());
+        assertTrue(ClientBatchItemResult.parseDeactivateResponse(emptyIdResult).isEmpty());
+        assertTrue(ClientBatchItemResult.parseEncapsulateResponse(new Object[] {new long[] {0, 0}, null, null}).isEmpty());
+        assertTrue(ClientBatchItemResult.parseDecapsulateResponse(emptyIdResult).isEmpty());
+
+        Object[] sampleIdRecord = new Object[] {
+                new long[] {1, 1, 0, 0},
+                "system-id".getBytes(StandardCharsets.UTF_8)
+        };
+        Object[] presentIdResult = new Object[] {new long[] {1}, sampleIdRecord};
+        assertTrue(ClientBatchItemResult.parseCreateGroupResponse(presentIdResult).isPresent());
+        assertTrue(ClientBatchItemResult.parseCreateUserResponse(presentIdResult).isPresent());
+        assertTrue(ClientBatchItemResult.parseCreateCredentialResponse(presentIdResult).isPresent());
+        assertTrue(ClientBatchItemResult.parseObliterateResponse(new long[] {1}).isPresent());
+        assertTrue(ClientBatchItemResult.parseDeactivateResponse(presentIdResult).isPresent());
+        assertTrue(ClientBatchItemResult.parseEncapsulateResponse(
+                new Object[] {new long[] {1, 1}, sampleIdRecord, new byte[] {0x42}}).isPresent());
+        assertTrue(ClientBatchItemResult.parseDecapsulateResponse(presentIdResult).isPresent());
     }
 }

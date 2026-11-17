@@ -11315,6 +11315,129 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
     });
 }
 
+extern "C" {
+int32_t kmipkit_client_batch_item_response_create_group(
+        kmipkit_client_batch_item_response_t* item,
+        uint8_t* out_present,
+        kmipkit_unique_identifier_v1_t* out_unique_identifier);
+int32_t kmipkit_client_batch_item_response_create_user(
+        kmipkit_client_batch_item_response_t* item,
+        uint8_t* out_present,
+        kmipkit_unique_identifier_v1_t* out_unique_identifier);
+int32_t kmipkit_client_batch_item_response_create_credential(
+        kmipkit_client_batch_item_response_t* item,
+        uint8_t* out_present,
+        kmipkit_unique_identifier_v1_t* out_unique_identifier);
+int32_t kmipkit_client_batch_item_response_obliterate(
+        kmipkit_client_batch_item_response_t* item,
+        uint8_t* out_present);
+int32_t kmipkit_client_batch_item_response_deactivate(
+        kmipkit_client_batch_item_response_t* item,
+        uint8_t* out_present,
+        kmipkit_unique_identifier_v1_t* out_unique_identifier);
+int32_t kmipkit_client_batch_item_response_encapsulate(
+        kmipkit_client_batch_item_response_t* item,
+        uint8_t* out_present,
+        kmipkit_unique_identifier_v1_t* out_unique_identifier,
+        uint8_t* out_data_present,
+        kmipkit_byte_span_v1_t* out_data);
+int32_t kmipkit_client_batch_item_response_decapsulate(
+        kmipkit_client_batch_item_response_t* item,
+        uint8_t* out_present,
+        kmipkit_unique_identifier_v1_t* out_unique_identifier);
+}
+
+JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseCreateGroup(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return lifecycle_response_identifier(
+            env, raw_item, kmipkit_client_batch_item_response_create_group, "Create Group");
+}
+
+JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseCreateUser(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return lifecycle_response_identifier(
+            env, raw_item, kmipkit_client_batch_item_response_create_user, "Create User");
+}
+
+JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseCreateCredential(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return lifecycle_response_identifier(
+            env, raw_item, kmipkit_client_batch_item_response_create_credential, "Create Credential");
+}
+
+JNIEXPORT jlongArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseObliterate(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return guarded<jlongArray>(env, nullptr, [&] {
+        uint8_t present = 0;
+        const int32_t status = kmipkit_client_batch_item_response_obliterate(
+                from_java_handle<kmipkit_client_batch_item_response_t>(raw_item),
+                &present);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jlongArray>(nullptr);
+        }
+        if (present > 1) {
+            throw_invalid_input(env);
+            return static_cast<jlongArray>(nullptr);
+        }
+        return make_long_array(env, {static_cast<jlong>(present)});
+    });
+}
+
+JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseDeactivate(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return lifecycle_response_identifier(
+            env, raw_item, kmipkit_client_batch_item_response_deactivate, "Deactivate");
+}
+
+JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseEncapsulate(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return guarded<jobjectArray>(env, nullptr, [&] {
+        uint8_t present = 0;
+        uint8_t data_present = 0;
+        kmipkit_unique_identifier_v1_t identifier{};
+        identifier.struct_size = static_cast<uint32_t>(sizeof(identifier));
+        identifier.abi_version = 1;
+        kmipkit_byte_span_v1_t data{};
+        const int32_t status = kmipkit_client_batch_item_response_encapsulate(
+                from_java_handle<kmipkit_client_batch_item_response_t>(raw_item),
+                &present, &identifier, &data_present, &data);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        if (present > 1 || data_present > 1) {
+            throw_invalid_input(env);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jlongArray fields = make_long_array(env, {
+                static_cast<jlong>(present),
+                static_cast<jlong>(data_present)});
+        if (fields == nullptr) {
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jobject identifier_record = present == 1
+                ? identifier_to_java(env, identifier, 1) : nullptr;
+        jbyteArray data_bytes = span_to_java_bytes(env, data_present, data);
+        if (env->ExceptionCheck()) {
+            env->DeleteLocalRef(fields);
+            if (identifier_record != nullptr) env->DeleteLocalRef(identifier_record);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jobjectArray result = make_object_array(env, {fields, identifier_record, data_bytes});
+        env->DeleteLocalRef(fields);
+        if (identifier_record != nullptr) env->DeleteLocalRef(identifier_record);
+        if (data_bytes != nullptr) env->DeleteLocalRef(data_bytes);
+        return result;
+    });
+}
+
+JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseDecapsulate(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return lifecycle_response_identifier(
+            env, raw_item, kmipkit_client_batch_item_response_decapsulate, "Decapsulate");
+}
+
 JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseHash(
         JNIEnv* env, jclass, jlong raw_item) {
     return guarded<jobjectArray>(env, nullptr, [&] {
