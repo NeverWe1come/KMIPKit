@@ -227,9 +227,11 @@ All 19 Block Cipher Mode values now complete their five applicable generic and
 Cryptographic Parameters builder routes in both KMIP 2.0 and 2.1 (§§4.16,
 11.6); other enum families remain pending where the ledger says so. The three
 Rotate Name Type values complete their four applicable generic TTLV routes in
-KMIP 2.1 (§11.51). The separate §4.53 structure-member case also completes its
-four generic field routes and three typed routes through the enclosing
-`Rotate Name` Attribute, using both required members from Table 135. NIST Key
+KMIP 2.1 (§11.51). The §4.53 structure-member cases separately cover
+`Rotate Name Value` (Text String) and `Rotate Name Type` (Enumeration); each
+completes four generic field routes and three typed routes through the enclosing
+`Rotate Name` Attribute, and each fixture includes both required members from
+Table 135. NIST Key
 Type completes four generic and three typed routes for all 20 values in KMIP
 2.0/2.1 (§§4.34, 11.32 in both; tag allocation
 §11.54 in 2.0 and §11.56 in 2.1). Key Role Type completes four generic routes

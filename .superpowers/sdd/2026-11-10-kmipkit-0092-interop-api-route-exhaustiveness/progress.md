@@ -299,3 +299,34 @@ branches, and the common CI therefore reports a planned matrix only.
 - This is local-model evidence for the installed pinned artifact. It does not
   complete the Java matrix or establish interoperability with a vendor KMS;
   the Java PR remains WIP.
+
+## 2026-11-17 Java KMIP 2.1 Rotate Name Value structure-member routes
+
+- The separate case
+  `test-norm-structure-member-structure-member-4-53-rotate-name-value` now
+  completes four generic TTLV routes for the `Text String` member and three
+  typed Attribute routes through `Rotate Name`. OASIS KMIP 2.1 §4.53 Table 135
+  requires both Rotate Name Value and Rotate Name Type; the fixture includes
+  both members and uses URI value `0x00000002` from §11.51 Table 482.
+- Red: `b0576cd07` added exact event assertions for all seven cells. The
+  controlled-peer test failed as intended (`expected 1 route event, got 0`).
+- Green: `de16f5d1c` constructs the Text String member and enclosing typed
+  Attribute through the installed Java package, checks both members, and emits
+  all seven per-cell events. The focused controlled-peer test passed.
+- Refactor: `52d7c14d4` shares the enclosing Rotate Name TTLV fixture between
+  the Value and Type member cases; the focused test still passes.
+- The complete Java suite passes 57/57 tests, with no failures or skips, under
+  `--rerun-tasks`. Selected-scope validation passes 27,254/27,254 cells with
+  zero failures. The regenerated ledger comparison passes; the global matrix
+  has 44,387 pending cells across 1,220 case IDs. Results use pinned artifact
+  commit `12496d646d11d4069b58bcc88fc76cc619211ec6` with SHA-256
+  `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+- Verification commands: `bash ../../bindings/java/gradlew --no-daemon
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks`;
+  `python3 ../shared/tools/validate_route_evidence.py --selected-scope --report
+  build/route-execution-evidence.json --artifact-sha256
+  504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545
+  --write-ledger`; `python3 tools/compare_route_ledger.py --refresh-reference`;
+  `python3 tools/compare_route_ledger.py`.
+- This adds local-model evidence and does not establish interoperability with
+  a vendor KMS; the Java PR remains WIP.
