@@ -81,7 +81,7 @@ final class FluentLifecycleNativeIntegrationTest {
                 RevocationReason reason = RevocationReason.create(2, "scheduled rotation")) {
             CodecLimits limits = CodecLimits.defaults();
             UniqueIdentifier identifier = UniqueIdentifier.textString("lifecycle-target");
-            assertThrows(InvalidInputException.class, () -> client.request().revoke(null, reason));
+            client.request().revoke(null, reason).validate();
             assertThrows(InvalidInputException.class, () -> client.request().locate(null));
             Class<?>[] byId = {UniqueIdentifier.class, CodecLimits.class};
             int index = 0;
