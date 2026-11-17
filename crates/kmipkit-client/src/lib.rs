@@ -466,8 +466,8 @@ pub use fluent::{
     FluentBuildError, GetAttributeListBuilder, GetAttributesBuilder, GetBuilder,
     GetConstraintsBuilder, GetUsageAllocationBuilder, HashBuilder, LocateBuilder, MacBuilder,
     MacVerifyBuilder, RecertifyBuilder, RecoverBuilder, RegisterBuilder, RekeyBuilder,
-    RekeyKeyPairBuilder, RequestBuilder, RevokeBuilder, RngRetrieveBuilder, SetAttributeBuilder,
-    SignBuilder, SignatureVerifyBuilder,
+    RekeyKeyPairBuilder, RequestBuilder, RevokeBuilder, RngRetrieveBuilder, RngSeedBuilder,
+    SetAttributeBuilder, SignBuilder, SignatureVerifyBuilder,
 };
 pub use kmipkit_protocol::{
     ProfileObjectState, ProfileTransport, ProfileValidationContext, ProfileValidationError,
