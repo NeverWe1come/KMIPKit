@@ -402,6 +402,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & $python -B -m unittest tools.api_manifest.tests.test_binding_exports -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & $python -B -m unittest tools.api_manifest.tests.test_0095_response_view_bindings -v
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & $python -B -m unittest tools.api_manifest.tests.test_operation_readiness -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & $python -B -m unittest tools.api_manifest.tests.test_0053_operation_binding_matrix tools.api_manifest.tests.test_0053_validation_routes tools.api_manifest.tests.test_0053_kmip30_draft_api_catalog tools.api_manifest.tests.test_t102_macro_lot_partition -v
@@ -839,6 +841,8 @@ jobs:
           mkdir -p target/sanitizers
           cc -std=c11 -Wall -Wextra -Werror -fsanitize=address -fno-omit-frame-pointer -Ibindings/c/include -Itests/fixtures/api/generated bindings/c/tests/extension_registry.c -Ltarget/debug -Wl,-rpath,"$GITHUB_WORKSPACE/target/debug" -lkmipkit_ffi -o target/sanitizers/extension_registry_consumer
           target/sanitizers/extension_registry_consumer
+          cc -std=c11 -Wall -Wextra -Werror -fsanitize=address -fno-omit-frame-pointer -Ibindings/c/include -Itests/fixtures/api/generated bindings/c/examples/vendor_extension.c -Ltarget/debug -Wl,-rpath,"$GITHUB_WORKSPACE/target/debug" -lkmipkit_ffi -o target/sanitizers/vendor_extension_consumer
+          target/sanitizers/vendor_extension_consumer
 
       - name: Diagnose job result
         id: ci-diagnostics
@@ -898,8 +902,14 @@ jobs:
         id: run-native-sanitizers
         run: |
           mkdir -p target/sanitizers
-          c++ -std=c++17 -Wall -Wextra -Werror -fsanitize=address,undefined -fno-omit-frame-pointer bindings/java/native/tests/zeroizing_bytes_test.cpp -o target/sanitizers/zeroizing_bytes_test
-          target/sanitizers/zeroizing_bytes_test
+          for test_file in bindings/java/native/tests/*.cpp; do
+            test_name=$(basename "$test_file" .cpp)
+            c++ -std=c++17 -Wall -Wextra -Werror -fsanitize=address,undefined -fno-omit-frame-pointer \
+              -Ibindings/c/include -Itests/fixtures/api/generated -Ibindings/java/native \
+              "$test_file" \
+              -o "target/sanitizers/$test_name"
+            "target/sanitizers/$test_name"
+          done
 
       - name: Diagnose job result
         id: ci-diagnostics
@@ -955,7 +965,12 @@ jobs:
 
       - name: Fuzz the bounded extension schema target
         id: fuzz-the-bounded-extension-schema-target
-        run: cargo +nightly fuzz run extension_schema -- -runs=1000 -max_len=4096 -timeout=5
+        run: |
+          cargo +nightly fuzz run extension_schema -- -runs=1000 -max_len=4096 -timeout=5
+          cargo +nightly fuzz run ttlv_decode -- -runs=1000 -max_len=4096 -timeout=5
+          cargo +nightly fuzz run json_codec -- -runs=1000 -max_len=4096 -timeout=5
+          cargo +nightly fuzz run wire_and_xml_preflight -- -runs=1000 -max_len=4096 -timeout=5
+          cargo +nightly fuzz run s2c_and_multi_version -- -runs=1000 -max_len=4096 -timeout=5
 
       - name: Diagnose job result
         id: ci-diagnostics
@@ -1055,6 +1070,12 @@ jobs:
       - name: Verify generated named protocol values
         id: verify-generated-named-protocol-values
         run: python3 -B tools/normative_catalog/generate_named_values.py --repo-root . --check
+
+      - name: Verify fluent operation inventory
+        id: verify-fluent-operation-inventory
+        run: |
+          python3 -B tools/normative_catalog/generate_fluent_operation_inventory.py --repo-root . --check
+          python3 -B -m unittest tools.normative_catalog.tests.test_fluent_operation_inventory -v
 
       - name: Set up Python 3.12 for normative generator coverage
         id: set-up-python-3-12-for-normative-generator-coverage

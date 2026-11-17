@@ -9,6 +9,7 @@ pub(super) const ATTRIBUTE_TYPES: &[(u32, &[ItemType])] = &[
     (0x42_00_20, &[ItemType::DateTime]),
     (0x42_00_21, &[ItemType::DateTime]),
     (0x42_00_22, &[ItemType::TextString]),
+    (0x42_00_24, &[ItemType::Enumeration]),
     (0x42_00_28, &[ItemType::Enumeration]),
     (0x42_00_29, &[ItemType::Structure]),
     (0x42_00_2A, &[ItemType::Integer]),
@@ -19,6 +20,7 @@ pub(super) const ATTRIBUTE_TYPES: &[(u32, &[ItemType])] = &[
     (0x42_00_34, &[ItemType::Structure]),
     (0x42_00_39, &[ItemType::DateTime]),
     (0x42_00_42, &[ItemType::Enumeration]),
+    (0x42_00_44, &[ItemType::Integer]),
     (0x42_00_48, &[ItemType::DateTime]),
     (0x42_00_49, &[ItemType::Interval]),
     (0x42_00_4A, &[ItemType::Structure]),
@@ -29,6 +31,9 @@ pub(super) const ATTRIBUTE_TYPES: &[(u32, &[ItemType])] = &[
     (0x42_00_67, &[ItemType::DateTime]),
     (0x42_00_68, &[ItemType::DateTime]),
     (0x42_00_81, &[ItemType::Structure]),
+    (0x42_00_8A, &[ItemType::Enumeration]),
+    (0x42_00_8B, &[ItemType::Integer]),
+    (0x42_00_8C, &[ItemType::Integer]),
     (0x42_00_8D, &[ItemType::Enumeration]),
     (
         0x42_00_94,
@@ -70,6 +75,178 @@ pub(super) const ATTRIBUTE_TYPES: &[(u32, &[ItemType])] = &[
     (0x42_01_6E, &[ItemType::Integer]),
     (0x42_01_6F, &[ItemType::Structure]),
     (0x42_01_72, &[ItemType::Boolean]),
+    (
+        0x42_01_90,
+        &[
+            ItemType::TextString,
+            ItemType::Enumeration,
+            ItemType::Integer,
+        ],
+    ),
+    (
+        0x42_01_91,
+        &[
+            ItemType::TextString,
+            ItemType::Enumeration,
+            ItemType::Integer,
+        ],
+    ),
+    (
+        0x42_01_92,
+        &[
+            ItemType::TextString,
+            ItemType::Enumeration,
+            ItemType::Integer,
+        ],
+    ),
+    (
+        0x42_01_93,
+        &[
+            ItemType::TextString,
+            ItemType::Enumeration,
+            ItemType::Integer,
+        ],
+    ),
+    (
+        0x42_01_94,
+        &[
+            ItemType::TextString,
+            ItemType::Enumeration,
+            ItemType::Integer,
+        ],
+    ),
+    (
+        0x42_01_95,
+        &[
+            ItemType::TextString,
+            ItemType::Enumeration,
+            ItemType::Integer,
+        ],
+    ),
+    (
+        0x42_01_96,
+        &[
+            ItemType::TextString,
+            ItemType::Enumeration,
+            ItemType::Integer,
+        ],
+    ),
+    (
+        0x42_01_97,
+        &[
+            ItemType::TextString,
+            ItemType::Enumeration,
+            ItemType::Integer,
+        ],
+    ),
+    (
+        0x42_01_98,
+        &[
+            ItemType::TextString,
+            ItemType::Enumeration,
+            ItemType::Integer,
+        ],
+    ),
+    (
+        0x42_01_99,
+        &[
+            ItemType::TextString,
+            ItemType::Enumeration,
+            ItemType::Integer,
+        ],
+    ),
+    (
+        0x42_01_9A,
+        &[
+            ItemType::TextString,
+            ItemType::Enumeration,
+            ItemType::Integer,
+        ],
+    ),
+    (
+        0x42_01_9B,
+        &[
+            ItemType::TextString,
+            ItemType::Enumeration,
+            ItemType::Integer,
+        ],
+    ),
+    (
+        0x42_01_9C,
+        &[
+            ItemType::TextString,
+            ItemType::Enumeration,
+            ItemType::Integer,
+        ],
+    ),
+    (
+        0x42_01_9D,
+        &[
+            ItemType::TextString,
+            ItemType::Enumeration,
+            ItemType::Integer,
+        ],
+    ),
+    (0x42_01_9E, &[ItemType::Enumeration]),
+    (
+        0x42_01_A0,
+        &[
+            ItemType::TextString,
+            ItemType::Enumeration,
+            ItemType::Integer,
+        ],
+    ),
+    (
+        0x42_01_A5,
+        &[
+            ItemType::TextString,
+            ItemType::Enumeration,
+            ItemType::Integer,
+        ],
+    ),
+    (0x42_01_AE, &[ItemType::ByteString]),
+    (
+        0x42_01_B3,
+        &[
+            ItemType::TextString,
+            ItemType::Enumeration,
+            ItemType::Integer,
+        ],
+    ),
+    (
+        0x42_01_B4,
+        &[
+            ItemType::TextString,
+            ItemType::Enumeration,
+            ItemType::Integer,
+        ],
+    ),
+    (
+        0x42_01_B5,
+        &[
+            ItemType::TextString,
+            ItemType::Enumeration,
+            ItemType::Integer,
+        ],
+    ),
+    (0x42_01_B6, &[ItemType::Enumeration]),
+    (0x42_01_B8, &[ItemType::Structure]),
+    (0x42_01_BA, &[ItemType::TextString]),
+    (0x42_01_BB, &[ItemType::TextString]),
+    (
+        0x42_01_BC,
+        &[
+            ItemType::TextString,
+            ItemType::Enumeration,
+            ItemType::Integer,
+        ],
+    ),
+    (0x42_01_BD, &[ItemType::LongInteger]),
+    (0x42_01_BE, &[ItemType::LongInteger]),
+    (0x42_01_BF, &[ItemType::LongInteger]),
+    (0x42_01_C0, &[ItemType::LongInteger]),
+    (0x42_01_C1, &[ItemType::LongInteger]),
+    (0x42_01_C2, &[ItemType::Integer]),
 ];
 
 pub(super) fn expected_types(raw_tag: u32) -> Option<&'static [ItemType]> {

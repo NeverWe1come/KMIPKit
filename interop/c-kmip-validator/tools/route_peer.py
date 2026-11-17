@@ -49,6 +49,9 @@ BATCH_CRYPTO_KEY = bytes(range(16))
 BATCH_CRYPTO_PLAINTEXT = bytes.fromhex('00112233445566778899aabbccddeeff')
 BATCH_CRYPTO_CIPHERTEXT = bytes.fromhex('69c4e0d86a7b0430d8cdb78070b4c55a')
 CANCEL_CORRELATION_VALUE = b'fixture-cancel-correlation'
+ASYNC_QUERY_CORRELATION_CREATE_COMPLETED = b'fixture-query-create-completed'
+ASYNC_QUERY_CORRELATION_CREATE_PENDING = b'fixture-query-create-pending'
+ASYNC_QUERY_CORRELATION_GET_PENDING = b'fixture-query-get-pending'
 CANCEL_RESULT_CANCELED = 1
 
 CERTIFICATE_ATTRIBUTE_FIELDS = (
@@ -226,6 +229,11 @@ def numbers(node, tag):
             if item[1] != 1 and isinstance(item[2], bytes)]
 
 
+def direct_numbers(node, tag):
+    return [int.from_bytes(item[2], 'big') for item in node[2]
+            if item[0] == tag and item[1] != 1 and isinstance(item[2], bytes)]
+
+
 def text_values(node, tag):
     return [item[2].decode('utf-8') for item in descendants(node, tag) if item[1] == 7]
 
@@ -277,6 +285,18 @@ def request_payload_field_present(target, batch_item, targets, codec):
 
 def response_payload_field_present(target, batch_item, targets, codec):
     """Check a response payload field under its exact operation's batch item."""
+    if target.get('name') == 'Any Object (Section 2)':
+        operation = targets.get(target.get('operation_id'))
+        object_tag = codec.tags.get(normalize('Symmetric Key'))
+        payloads = [child for child in batch_item[2]
+                    if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1]
+        operation_value = (codec.values.get((codec.tag('Operation'), normalize(operation['name'])))
+                          if operation is not None else None)
+        return (target.get('role') == 'response' and operation is not None and
+                operation.get('kind') == 'operation' and object_tag is not None and
+                operation_value is not None and numbers(batch_item, codec.tag('Operation')) == [operation_value] and
+                len(payloads) == 1 and
+                any(child[0] == object_tag and child[1] == 1 for child in payloads[0][2]))
     return payload_field_present(target, batch_item, targets, codec,
                                  role='response', payload_tag=RESPONSE_PAYLOAD_TAG)
 
@@ -302,6 +322,13 @@ RECIPES = {
     'test-async-indicator-omitted-default': ((1,), 'async_create_sync_default'),
     'test-async-indicator-optional-completes-or-pends': ((1,), 'async_create_optional_complete'),
     'test-async-indicator-prohibited-synchronous': ((1,), 'async_create_prohibited_sync'),
+    'test-async-lifecycle-poll': ((1, 57, 26, 20), 'async_create_poll_lifecycle'),
+    'test-async-no-recursive-async-poll-cancel': ((26, 25), 'async_poll_cancel_no_recursion'),
+    'test-async-poll-final-operation-failure': ((1, 26), 'async_poll_final_failure'),
+    'test-async-poll-repeated-pending-to-success': ((1, 26), 'async_poll_repeated_pending_to_success'),
+    'test-async-process-then-poll-state': ((1, 58, 26), 'async_process_then_poll_state'),
+    'test-async-query-outstanding-filter': ((1, 57), 'async_query_outstanding_filter'),
+    'test-async-unknown-correlation-rejected': ((26,), 'async_unknown_correlation_rejected'),
     'test-op-cancel': ((25,), 'cancel_async'),
     'test-async-cancel-result-canceled': ((25,), 'cancel_async'),
     'test-async-cancel-result-unable-to-cancel': ((25,), 'cancel_async'),
@@ -318,6 +345,25 @@ RECIPES = {
     'test-v20-reject-get-constraints': ((56,), 'get_constraints'),
     'test-v20-reject-ping': ((59,), 'ping'),
     'test-op-create': ((1, 20), 'create'),
+    'test-op-export': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-request-20-001': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-request-20-002': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-request-20-003': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-request-20-004': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-request-20-005': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-request-21-001': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-request-21-002': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-request-21-003': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-request-21-004': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-request-21-005': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-response-20-001': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-response-20-002': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-response-20-003': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-response-20-004': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-response-21-001': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-response-21-002': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-response-21-003': ((1, 43, 19, 20), 'export'),
+    'test-norm-payload-client-export-response-21-004': ((1, 43, 19, 20), 'export'),
     'test-op-register': ((3, 20), 'register'),
     'test-op-add-attribute': ((1, 13, 19, 20), 'add_attribute'),
     'test-op-adjust-attribute': ((1, 48, 19, 20), 'adjust_attribute'),
@@ -331,6 +377,7 @@ RECIPES = {
     'test-norm-payload-client-modify-attribute-request-21-003': ((1, 13, 14, 19, 20), 'modify_attribute'),
     'test-norm-payload-client-modify-attribute-response-21-001': ((1, 13, 14, 19, 20), 'modify_attribute'),
     'test-op-set-attribute': ((1, 49, 19, 20), 'set_attribute'),
+    'test-op-adjust-attribute': ((1, 48, 19, 20), 'adjust_attribute'),
     'test-op-set-constraints': ((55,), 'set_constraints'),
     'test-op-set-defaults': ((54,), 'set_defaults'),
     'test-op-delete-attribute': ((1, 13, 15, 19, 20), 'delete_attribute'),
@@ -415,6 +462,24 @@ CONTROLLED_PEER_LOCAL_MODEL_CASES = frozenset({
     'test-norm-payload-client-create-request-21-003',
     'test-norm-payload-client-get-usage-allocation-request-20-001',
     'test-norm-payload-client-get-usage-allocation-request-21-001',
+    'test-norm-payload-client-export-request-20-001',
+    'test-norm-payload-client-export-request-20-002',
+    'test-norm-payload-client-export-request-20-003',
+    'test-norm-payload-client-export-request-20-004',
+    'test-norm-payload-client-export-request-20-005',
+    'test-norm-payload-client-export-request-21-001',
+    'test-norm-payload-client-export-request-21-002',
+    'test-norm-payload-client-export-request-21-003',
+    'test-norm-payload-client-export-request-21-004',
+    'test-norm-payload-client-export-request-21-005',
+    'test-norm-payload-client-export-response-20-001',
+    'test-norm-payload-client-export-response-20-002',
+    'test-norm-payload-client-export-response-20-003',
+    'test-norm-payload-client-export-response-20-004',
+    'test-norm-payload-client-export-response-21-001',
+    'test-norm-payload-client-export-response-21-002',
+    'test-norm-payload-client-export-response-21-003',
+    'test-norm-payload-client-export-response-21-004',
 })
 
 
@@ -593,8 +658,32 @@ def request_modify_attribute_fields(batch_item):
             modify_attribute_value(new[0]))
 
 
+def request_adjust_attribute_fields(batch_item):
+    payloads = [child for child in batch_item[2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+    if len(payloads) != 1:
+        raise ValueError('fixture_adjust_attribute_payload_missing')
+    references = [child for child in payloads[0][2]
+                  if child[0] == 0x42013B and child[1] == 1]
+    vendors = [child for child in references[0][2]
+               if child[0] == 0x42009D and child[1] == 7] if len(references) == 1 else []
+    names = [child for child in references[0][2]
+             if child[0] == 0x42000A and child[1] == 7] if len(references) == 1 else []
+    types = [child for child in payloads[0][2]
+             if child[0] == 0x420158 and child[1] == 5]
+    values = [child for child in payloads[0][2]
+              if child[0] == 0x420162 and child[1] == 2]
+    if len(vendors) > 1 or len(names) != 1 or len(types) != 1 or len(values) > 1:
+        raise ValueError('fixture_adjust_attribute_field_cardinality_mismatch')
+    adjustment_value = (int.from_bytes(values[0][2], 'big', signed=True)
+                        if values else 1)
+    vendor = vendors[0][2].decode('utf-8') if vendors else ''
+    return (vendor, names[0][2].decode('utf-8'),
+            int.from_bytes(types[0][2], 'big'), adjustment_value)
+
+
 def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
-                  constructor_variant=None):
+                  constructor_variant=None, export_field=None):
     selected_recipe = recipe or RECIPES[case_id]
     expected, _ = selected_recipe
     observed_operations = tuple(numbers(node, 0x42005C))
@@ -623,6 +712,65 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
                 new[1] != b'KMIPKit modified interoperability comment' or
                 (current_expected and current != ('Comment', b'KMIPKit interoperability comment'))):
             raise ValueError('fixture_modify_attribute_request_fields_mismatch')
+    if selected_recipe[1] == 'adjust_attribute':
+        adjust_item = next((item for item in node[2]
+                            if item[0] == BATCH_ITEM_TAG and item[1] == 1 and
+                            numbers(item, 0x42005C) == [48]), None)
+        numeric_reference = adjust_item is not None and \
+            numbers(adjust_item, 0x42013B) == [0x420097]
+        numeric_adjustment = numeric_reference and \
+            numbers(adjust_item, 0x420158) == [1] and \
+            not list(descendants(adjust_item, 0x420162))
+        adjustment_fields = None
+        if adjust_item is not None and not numeric_adjustment:
+            adjustment_fields = request_adjust_attribute_fields(adjust_item)
+        vendor_adjustment = adjustment_fields == ('KMIPKit', 'Counter', 1, 5)
+        standard_attribute_adjustment = adjustment_fields == ('', 'Usage Limits Total', 1, 1) and \
+            not list(descendants(adjust_item, 0x420162))
+        if (adjust_item is None or
+                text_values(adjust_item, UNIQUE_IDENTIFIER_TAG) != ['fixture-key-1'] or
+                not (numeric_adjustment or vendor_adjustment or standard_attribute_adjustment)):
+            raise ValueError('fixture_adjust_attribute_request_fields_mismatch')
+    if selected_recipe[1] == 'export':
+        export_item = next((item for item in node[2]
+                            if item[0] == BATCH_ITEM_TAG and item[1] == 1 and
+                            numbers(item, 0x42005C) == [43]), None)
+        payloads = [child for child in export_item[2]
+                    if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1] if export_item else []
+        fields = payloads[0][2] if len(payloads) == 1 else []
+        identifiers = [child for child in fields if child[0] == UNIQUE_IDENTIFIER_TAG]
+        expected_field_tag = {
+            'Key Format Type': 0x420042,
+            'Key Wrap Type': 0x4200F8,
+            'Key Compression Type': 0x420041,
+            'Key Wrapping Specification': 0x420047,
+        }.get(export_field)
+        field_is_present = constructor_variant == 'present'
+        expected_tags = ([] if export_field == 'Unique Identifier' and not field_is_present else
+                         [UNIQUE_IDENTIFIER_TAG])
+        if expected_field_tag is not None and field_is_present:
+            expected_tags.append(expected_field_tag)
+        if (len(payloads) != 1 or [field[0] for field in fields] != expected_tags or
+                (identifiers and not is_id_placeholder_identifier(identifiers[0])) or
+                (expected_tags and expected_tags[0] == UNIQUE_IDENTIFIER_TAG and len(identifiers) != 1)):
+            raise ValueError('fixture_export_request_fields_mismatch')
+        if expected_field_tag is not None and field_is_present:
+            selected = next(field for field in fields if field[0] == expected_field_tag)
+            if export_field == 'Key Format Type' and (selected[1] != 5 or selected[2] != (1).to_bytes(4, 'big')):
+                raise ValueError('fixture_export_key_format_type_mismatch')
+            if export_field == 'Key Wrap Type' and (selected[1] != 5 or selected[2] != (1).to_bytes(4, 'big')):
+                raise ValueError('fixture_export_key_wrap_type_mismatch')
+            if export_field == 'Key Compression Type' and (selected[1] != 5 or selected[2] != (1).to_bytes(4, 'big')):
+                raise ValueError('fixture_export_key_compression_type_mismatch')
+            if export_field == 'Key Wrapping Specification':
+                spec_fields = selected[2] if selected[1] == 1 else []
+                method = [field for field in spec_fields if field[0] == 0x42009E and field[1] == 5]
+                key_info = [field for field in spec_fields if field[0] == 0x420036 and field[1] == 1]
+                identifiers = [field for field in key_info[0][2] if field[0] == UNIQUE_IDENTIFIER_TAG] if len(key_info) == 1 else []
+                if (len(spec_fields) != 2 or len(method) != 1 or method[0][2] != (1).to_bytes(4, 'big') or
+                        len(key_info) != 1 or len(identifiers) != 1 or
+                        identifiers[0][2] != b'fixture-wrapping-key'):
+                    raise ValueError('fixture_export_key_wrapping_specification_mismatch')
     if selected_recipe[1] == 'delegated_login':
         payloads = list(descendants(node, REQUEST_PAYLOAD_TAG))
         if (len(payloads) != 1 or payloads[0][1] != 1 or
@@ -645,6 +793,9 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
             'test-attr-cryptographic-length', 'test-op-get-constraints',
             'test-norm-payload-client-get-usage-allocation-request-20-001',
             'test-norm-payload-client-get-usage-allocation-request-21-001') or attribute_fixture is not None
+        implicit_target = implicit_target or (
+            selected_recipe[1] == 'export' and export_field == 'Unique Identifier' and
+            constructor_variant == 'omitted')
         minimum_unique_identifiers = 0 if case_id == 'test-batch-placeholder-chain-resolves' else (
             len(expected) - 1 - int(implicit_target))
         if len(numbers(node, 0x420094)) < minimum_unique_identifiers:
@@ -972,6 +1123,29 @@ def cancel_response(correlation: bytes, cancellation_result: int, protocol_minor
     return tlv(0x42007B, 1, header + item)
 
 
+def terminal_poll_response_without_correlation(protocol_minor: int) -> bytes:
+    """Build a terminal Poll response without recursively returning a correlation value."""
+    # A terminal Poll Success must carry the original operation's Response Payload.
+    return completed_poll_create_response(protocol_minor)
+
+
+def terminal_cancel_response_with_correlation(protocol_minor: int) -> bytes:
+    """Build a terminal Cancel response with the request correlation and Cancellation Result."""
+    version = tlv(0x420069, 1,
+                  tlv(0x42006A, 2, (2).to_bytes(4, 'big')) +
+                  tlv(0x42006B, 2, protocol_minor.to_bytes(4, 'big')))
+    timestamp = int(dt.datetime.now(dt.timezone.utc).timestamp()).to_bytes(8, 'big', signed=True)
+    header = tlv(0x42007A, 1, version + tlv(0x420092, 9, timestamp) +
+                 tlv(0x42000D, 2, (1).to_bytes(4, 'big')))
+    payload = tlv(0x42007C, 1,
+                  tlv(0x420006, 8, CANCEL_CORRELATION_VALUE) +
+                  tlv(0x420012, 5, (1).to_bytes(4, 'big')))
+    item = tlv(0x42000F, 1,
+               tlv(0x42005C, 5, (25).to_bytes(4, 'big')) +
+               tlv(0x42007F, 5, (0).to_bytes(4, 'big')) + payload)
+    return tlv(0x42007B, 1, header + item)
+
+
 def pending_create_response(correlation: bytes, protocol_minor: int) -> bytes:
     """Build a Pending Create response with its required empty payload and correlation value."""
     version = tlv(0x420069, 1,
@@ -1002,6 +1176,102 @@ def pending_poll_response(correlation: bytes, protocol_minor: int) -> bytes:
     return tlv(0x42007B, 1, header + item)
 
 
+def failed_poll_response(protocol_minor: int, message: str = 'controlled Create failure') -> bytes:
+    """Build a terminal Poll carrying the failed original operation result."""
+    version = tlv(0x420069, 1,
+                  tlv(0x42006A, 2, (2).to_bytes(4, 'big')) +
+                  tlv(0x42006B, 2, protocol_minor.to_bytes(4, 'big')))
+    timestamp = int(dt.datetime.now(dt.timezone.utc).timestamp()).to_bytes(
+        8, 'big', signed=True)
+    header = tlv(0x42007A, 1, version + tlv(0x420092, 9, timestamp) +
+                 tlv(0x42000D, 2, (1).to_bytes(4, 'big')))
+    item = tlv(0x42000F, 1,
+               tlv(0x42005C, 5, (26).to_bytes(4, 'big')) +
+               tlv(0x42007F, 5, (1).to_bytes(4, 'big')) +
+               tlv(0x42007E, 5, (256).to_bytes(4, 'big')) +
+               tlv(0x42007D, 7, message.encode('ascii')))
+    return tlv(0x42007B, 1, header + item)
+
+
+def invalid_async_correlation_poll_response(protocol_minor: int) -> bytes:
+    """Build Operation Failed for an unissued asynchronous correlation value."""
+    version = tlv(0x420069, 1,
+                  tlv(0x42006A, 2, (2).to_bytes(4, 'big')) +
+                  tlv(0x42006B, 2, protocol_minor.to_bytes(4, 'big')))
+    timestamp = int(dt.datetime.now(dt.timezone.utc).timestamp()).to_bytes(
+        8, 'big', signed=True)
+    header = tlv(0x42007A, 1, version + tlv(0x420092, 9, timestamp) +
+                 tlv(0x42000D, 2, (1).to_bytes(4, 'big')))
+    item = tlv(0x42000F, 1,
+               tlv(0x42005C, 5, (26).to_bytes(4, 'big')) +
+               tlv(0x42007F, 5, (1).to_bytes(4, 'big')) +
+               tlv(0x42007E, 5, (43).to_bytes(4, 'big')))
+    return tlv(0x42007B, 1, header + item)
+
+
+def query_async_requests_response(correlation: bytes, protocol_minor: int) -> bytes:
+    """Build one successful Query Async Requests response with its correlation filter result."""
+    version = tlv(0x420069, 1,
+                  tlv(0x42006A, 2, (2).to_bytes(4, 'big')) +
+                  tlv(0x42006B, 2, protocol_minor.to_bytes(4, 'big')))
+    timestamp = int(dt.datetime.now(dt.timezone.utc).timestamp()).to_bytes(8, 'big', signed=True)
+    header = tlv(0x42007A, 1, version + tlv(0x420092, 9, timestamp) +
+                 tlv(0x42000D, 2, (1).to_bytes(4, 'big')))
+    payload = tlv(0x42007C, 1,
+                  tlv(0x420176, 1, tlv(0x420006, 8, correlation)))
+    item = tlv(0x42000F, 1,
+               tlv(0x42005C, 5, (57).to_bytes(4, 'big')) +
+               tlv(0x42007F, 5, (0).to_bytes(4, 'big')) + payload)
+    return tlv(0x42007B, 1, header + item)
+
+
+def completed_poll_create_response(protocol_minor: int) -> bytes:
+    """Build one successful Poll response carrying the original Create result."""
+    version = tlv(0x420069, 1,
+                  tlv(0x42006A, 2, (2).to_bytes(4, 'big')) +
+                  tlv(0x42006B, 2, protocol_minor.to_bytes(4, 'big')))
+    timestamp = int(dt.datetime.now(dt.timezone.utc).timestamp()).to_bytes(8, 'big', signed=True)
+    header = tlv(0x42007A, 1, version + tlv(0x420092, 9, timestamp) +
+                 tlv(0x42000D, 2, (1).to_bytes(4, 'big')))
+    payload = tlv(0x42007C, 1,
+                  tlv(0x420057, 5, (2).to_bytes(4, 'big')) +
+                  tlv(0x420094, 7, b'fixture-key-1'))
+    item = tlv(0x42000F, 1,
+               tlv(0x42005C, 5, (26).to_bytes(4, 'big')) +
+               tlv(0x42007F, 5, (0).to_bytes(4, 'big')) + payload)
+    return tlv(0x42007B, 1, header + item)
+
+
+def async_query_outstanding_response(protocol_minor: int) -> bytes:
+    """Build the one outstanding Create selected by both Query filters."""
+    version = tlv(0x420069, 1,
+                  tlv(0x42006A, 2, (2).to_bytes(4, 'big')) +
+                  tlv(0x42006B, 2, protocol_minor.to_bytes(4, 'big')))
+    timestamp = int(dt.datetime.now(dt.timezone.utc).timestamp()).to_bytes(8, 'big', signed=True)
+    header = tlv(0x42007A, 1, version + tlv(0x420092, 9, timestamp) +
+                 tlv(0x42000D, 2, (1).to_bytes(4, 'big')))
+    submission_date = int(dt.datetime.now(dt.timezone.utc).timestamp() * 1_000_000)
+    asynchronous_request = tlv(
+        0x420173, 1,
+        tlv(0x420006, 8, ASYNC_QUERY_CORRELATION_CREATE_PENDING) +
+        tlv(0x42005C, 5, (1).to_bytes(4, 'big')) +
+        tlv(0x420174, 11, submission_date.to_bytes(8, 'big', signed=True)) +
+        tlv(0x420175, 5, (2).to_bytes(4, 'big')))
+    payload = tlv(0x42007C, 1, asynchronous_request)
+    item = tlv(0x42000F, 1,
+               tlv(0x42005C, 5, (57).to_bytes(4, 'big')) +
+               tlv(0x42007F, 5, (0).to_bytes(4, 'big')) + payload)
+    return tlv(0x42007B, 1, header + item)
+
+
+def completed_poll_create_response_for_identifier(protocol_minor: int, identifier: str) -> bytes:
+    """Build a successful Poll response for a Create with its issued identifier."""
+    wire = completed_poll_create_response(protocol_minor)
+    old = tlv(0x420094, 7, b'fixture-key-1')
+    new = tlv(0x420094, 7, identifier.encode('ascii'))
+    return wire.replace(old, new)
+
+
 def assert_poll_request(node, version):
     """Require one KMIP 2.1 Poll request carrying the pending operation correlation."""
     items = [item for item in node[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
@@ -1015,6 +1285,227 @@ def assert_poll_request(node, version):
             len(payloads[0][2]) != 1 or len(correlations) != 1 or
             correlations[0][2] != CANCEL_CORRELATION_VALUE):
         raise ValueError('fixture_poll_correlation_mismatch')
+
+
+def assert_async_failure_poll_request(node, version):
+    """Require Poll with the exact pending Create correlation under KMIP 2.0 or 2.1."""
+    items = [item for item in node[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+    correlations = [child for child in payloads[0][2]
+                    if child[0] == 0x420006 and child[1] == 8] if len(payloads) == 1 else []
+    if (numbers(node, 0x42006A) != [2] or numbers(node, 0x42006B) != [int(version[-1])] or
+            numbers(node, 0x42000D) != [1] or len(items) != 1 or
+            numbers(items[0], 0x42005C) != [26] or len(payloads) != 1 or
+            len(payloads[0][2]) != 1 or len(correlations) != 1 or
+            correlations[0][2] != CANCEL_CORRELATION_VALUE):
+        raise ValueError('fixture_async_failure_poll_correlation_mismatch')
+
+
+def assert_async_unknown_correlation_poll_request(node, version):
+    """Require the catalog's literal, unissued correlation on a standalone Poll."""
+    header = next(descendants(node, 0x420077), node)
+    items = [item for item in node[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    if (numbers(header, 0x42006A) != [2] or
+            numbers(header, 0x42006B) != [int(version[-1])] or
+            numbers(node, 0x42000D) != [1] or len(items) != 1 or
+            numbers(items[0], 0x42005C) != [26] or
+            byte_string_values(items[0], 0x420006) != [b'unknown-unissued-value'] or
+            numbers(header, 0x420007)):
+        raise ValueError('fixture_async_unknown_correlation_poll_mismatch')
+
+
+def verify_invalid_async_correlation_poll_response(response_tree):
+    """Require the normative terminal error without a correlation or payload."""
+    items = [item for item in response_tree[2]
+             if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    if (len(items) != 1 or numbers(items[0], 0x42005C) != [26] or
+            numbers(items[0], 0x42007F) != [1] or
+            numbers(items[0], 0x42007E) != [43] or
+            byte_string_values(items[0], 0x420006) or
+            any(child[0] == RESPONSE_PAYLOAD_TAG for child in items[0][2])):
+        raise ValueError('fixture_async_unknown_correlation_response_mismatch')
+
+
+def async_unknown_correlation_peer_check(observation):
+    """Report the exact unissued request and unchanged state without exposing its value."""
+    request, response_tree, state = observation[0]
+    return {
+        'peer_async_unknown_correlation_request':
+            numbers(request, 0x42005C) == [26] and
+            byte_string_values(request, 0x420006) == [b'unknown-unissued-value'],
+        'peer_async_unknown_correlation_failure':
+            numbers(response_tree, 0x42007F) == [1] and
+            numbers(response_tree, 0x42007E) == [43],
+        'peer_async_unknown_correlation_not_remapped':
+            not byte_string_values(response_tree, 0x420006) and
+            not any(child[0] == RESPONSE_PAYLOAD_TAG
+                    for item in response_tree[2] if item[0] == BATCH_ITEM_TAG
+                    for child in item[2]),
+        'peer_final_state_matches_setup':
+            state['peer_observed_state_before_sha256'] ==
+            state['peer_observed_state_after_sha256'],
+    }
+
+
+def assert_async_process_request(node, version):
+    """Require Process with the exact pending correlation and a synchronous indicator."""
+    items = [item for item in node[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+    correlations = [child for child in payloads[0][2]
+                    if child[0] == 0x420006 and child[1] == 8] if len(payloads) == 1 else []
+    header = next(descendants(node, 0x420077), node)
+    if (version != '2.1' or numbers(node, 0x42006A) != [2] or
+            numbers(node, 0x42006B) != [1] or numbers(node, 0x42000D) != [1] or
+            numbers(header, 0x420007) != [3] or len(items) != 1 or
+            numbers(items[0], 0x42005C) != [58] or len(payloads) != 1 or
+            len(payloads[0][2]) != 1 or len(correlations) != 1 or
+            correlations[0][2] != CANCEL_CORRELATION_VALUE):
+        raise ValueError('fixture_async_process_request_mismatch')
+
+
+def verify_process_success_response(response_tree):
+    """Require synchronous Process Success and the defined empty response payload."""
+    items = [item for item in response_tree[2]
+             if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+    if (len(items) != 1 or numbers(items[0], 0x42005C) != [58] or
+            numbers(items[0], 0x42007F) != [0] or
+            byte_string_values(items[0], 0x420006) or len(payloads) != 1 or
+            payloads[0][2]):
+        raise ValueError('fixture_async_process_response_mismatch')
+
+
+def verify_failed_poll_response(response_tree, message='controlled Create failure'):
+    """Require the terminal Poll to preserve the original failed Create result."""
+    items = [item for item in response_tree[2]
+             if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    if (len(items) != 1 or numbers(items[0], 0x42005C) != [26] or
+            numbers(items[0], 0x42007F) != [1] or
+            numbers(items[0], 0x42007E) != [256] or
+            text_values(items[0], 0x42007D) != [message] or
+            byte_string_values(items[0], 0x420006) or
+            any(child[0] == RESPONSE_PAYLOAD_TAG for child in items[0][2])):
+        raise ValueError('fixture_async_final_operation_failure_mismatch')
+
+
+def async_failure_poll_peer_check(observation):
+    """Report complete request correlation, terminal failure, and unchanged key state."""
+    return {
+        **async_interleaving_peer_evidence(observation),
+        'peer_async_create_indicator_mandatory':
+            numbers(next(descendants(observation[0][0], 0x420077), observation[0][0]),
+                    0x420007) == [1],
+        'peer_async_poll_correlations_match': all(
+            byte_string_values(request, 0x420006) == [CANCEL_CORRELATION_VALUE]
+            for request, _, _ in observation[1:]),
+        'peer_async_final_failure_shape':
+            numbers(observation[2][1], 0x42007E) == [256] and
+            text_values(observation[2][1], 0x42007D) == ['controlled Create failure'] and
+            not byte_string_values(observation[2][1], 0x420006) and
+            not any(child[0] == RESPONSE_PAYLOAD_TAG
+                    for item in observation[2][1][2] if item[0] == BATCH_ITEM_TAG
+                    for child in item[2]),
+        'peer_final_state_matches_setup':
+            observation[0][2]['peer_observed_state_before_sha256'] ==
+            observation[-1][2]['peer_observed_state_after_sha256'],
+    }
+
+
+def async_repeated_pending_poll_peer_check(observation):
+    """Report stable correlation, terminal Create result, and completed cleanup."""
+    return {
+        **async_interleaving_peer_evidence(observation),
+        'peer_async_create_indicator_mandatory':
+            numbers(next(descendants(observation[0][0], 0x420077), observation[0][0]),
+                    0x420007) == [1],
+        'peer_async_poll_correlations_match': all(
+            byte_string_values(request, 0x420006) == [CANCEL_CORRELATION_VALUE]
+            for request, _, _ in observation[1:4]),
+        'peer_async_final_poll_create_shape':
+            numbers(observation[3][1], 0x42005C) == [26] and
+            numbers(observation[3][1], 0x42007F) == [0] and
+            not byte_string_values(observation[3][1], 0x420006) and
+            len([child for item in observation[3][1][2]
+                 if item[0] == BATCH_ITEM_TAG and item[1] == 1
+                 for child in item[2] if child[0] == RESPONSE_PAYLOAD_TAG]) == 1,
+        'peer_final_state_matches_setup':
+            observation[0][2]['peer_observed_state_before_sha256'] ==
+            observation[-1][2]['peer_observed_state_after_sha256'],
+    }
+
+
+def async_process_then_poll_peer_check(observation):
+    """Report shared Process/Poll correlation, synchronous Process, and cleanup."""
+    return {
+        **async_interleaving_peer_evidence(observation),
+        'peer_async_process_correlation_match':
+            byte_string_values(observation[1][0], 0x420006) == [CANCEL_CORRELATION_VALUE],
+        'peer_async_poll_correlation_match':
+            byte_string_values(observation[2][0], 0x420006) == [CANCEL_CORRELATION_VALUE],
+        'peer_async_process_is_synchronous':
+            numbers(observation[1][1], 0x42007F) == [0] and
+            not byte_string_values(observation[1][1], 0x420006) and
+            response_has_single_empty_payload(observation[1][1]),
+        'peer_async_final_poll_create_shape':
+            numbers(observation[2][1], 0x42005C) == [26] and
+            numbers(observation[2][1], 0x42007F) == [0] and
+            not byte_string_values(observation[2][1], 0x420006) and
+            any(child[0] == RESPONSE_PAYLOAD_TAG
+                for item in observation[2][1][2] if item[0] == BATCH_ITEM_TAG
+                for child in item[2]),
+        'peer_final_state_matches_setup':
+            observation[0][2]['peer_observed_state_before_sha256'] ==
+            observation[-1][2]['peer_observed_state_after_sha256'],
+    }
+
+
+def async_query_outstanding_peer_check(observation):
+    """Report filter intersection, completed exclusion, and unrelated-operation exclusion."""
+    query_request, query_response, _ = observation[4]
+    returned = [child for item in query_response[2]
+                if item[0] == BATCH_ITEM_TAG and item[1] == 1
+                for payload in item[2]
+                if payload[0] == RESPONSE_PAYLOAD_TAG and payload[1] == 1
+                for child in payload[2]
+                if child[0] == 0x420173 and child[1] == 1]
+    request_payload = next(child for item in query_request[2]
+                           if item[0] == BATCH_ITEM_TAG and item[1] == 1
+                           for child in item[2]
+                           if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1)
+    correlation_container = next(child for child in request_payload[2]
+                                  if child[0] == 0x420176 and child[1] == 1)
+    correlation_values = [child[2] for child in correlation_container[2]
+                          if child[0] == 0x420006 and child[1] == 8]
+    operation_container = next((child for child in request_payload[2]
+                                if child[0] == 0x42014F and child[1] == 1), None)
+    operations = [int.from_bytes(child[2], 'big') for child in operation_container[2]
+                  if child[0] == 0x42005C and child[1] == 5] if operation_container else []
+    returned_correlation = byte_string_values(returned[0], 0x420006) if len(returned) == 1 else []
+    return {
+        **async_interleaving_peer_evidence(observation),
+        'peer_async_query_operation_filter': operations == [1],
+        'peer_async_query_correlation_filter': correlation_values == [
+            ASYNC_QUERY_CORRELATION_CREATE_COMPLETED,
+            ASYNC_QUERY_CORRELATION_CREATE_PENDING,
+            ASYNC_QUERY_CORRELATION_GET_PENDING],
+        'peer_async_query_filters_intersect': len(returned) == 1 and
+            returned_correlation == [ASYNC_QUERY_CORRELATION_CREATE_PENDING] and
+            numbers(returned[0], 0x42005C) == [1],
+        'peer_async_query_excludes_completed':
+            ASYNC_QUERY_CORRELATION_CREATE_COMPLETED not in returned_correlation,
+        'peer_async_query_excludes_other_operation':
+            ASYNC_QUERY_CORRELATION_GET_PENDING not in returned_correlation,
+        'peer_async_query_result_is_exact': len(returned) == 1 and
+            numbers(returned[0], 0x420175) == [2] and
+            len([child for returned_item in returned for child in returned_item[2]
+                 if child[0] == 0x420174 and child[1] == 11]) == 1,
+        'peer_final_state_matches_setup':
+            observation[0][2]['peer_observed_state_before_sha256'] ==
+            observation[-1][2]['peer_observed_state_after_sha256'],
+    }
 
 
 def assert_cancel_request(node):
@@ -1040,6 +1531,56 @@ def verify_cancel_response(response_tree, correlation, cancellation_result):
         raise ValueError('fixture_cancel_response_mismatch')
 
 
+def verify_terminal_poll_response_without_correlation(response_tree):
+    """Require a terminal Poll Success without an async correlation value."""
+    items = [item for item in response_tree[2]
+             if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    if (len(items) != 1 or numbers(items[0], 0x42005C) != [26] or
+            numbers(items[0], 0x42007F) != [0] or
+            byte_string_values(response_tree, 0x420006)):
+        raise ValueError('fixture_nonrecursive_poll_response_mismatch')
+
+
+def verify_terminal_cancel_response_with_correlation(response_tree):
+    """Require a terminal Cancel response that echoes the requested correlation."""
+    items = [item for item in response_tree[2]
+             if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+    if (len(items) != 1 or numbers(items[0], 0x42005C) != [25] or
+            numbers(items[0], 0x42007F) != [0] or len(payloads) != 1 or
+            numbers(payloads[0], 0x420012) != [1] or
+            byte_string_values(payloads[0], 0x420006) != [CANCEL_CORRELATION_VALUE]):
+        raise ValueError('fixture_nonrecursive_cancel_response_mismatch')
+
+
+def async_interleaving_peer_evidence(observation):
+    """Return the shared operation order and response-status evidence."""
+    return {
+        'peer_async_interleaving_operations': [
+            numbers(request[0], 0x42005C)[0] for request in observation],
+        'peer_async_response_statuses': [
+            numbers(item, 0x42007F)[0]
+            for _, response_tree, _ in observation
+            for item in response_tree[2]
+            if item[0] == BATCH_ITEM_TAG],
+    }
+
+
+def nonrecursive_poll_cancel_peer_check(observation):
+    """Summarize the terminal Poll and Cancel exchanges and correlation handling."""
+    return {
+        **async_interleaving_peer_evidence(observation),
+        'peer_async_poll_no_correlation':
+            not byte_string_values(observation[0][1], 0x420006),
+        'peer_async_cancel_echo_matches':
+            byte_string_values(observation[1][1], 0x420006) == [CANCEL_CORRELATION_VALUE],
+        'peer_async_indicator_absent': all(
+            not numbers(next(descendants(request[0], 0x420077), request[0]), 0x420007)
+            for request in observation),
+    }
+
+
 def verify_pending_poll_response(response_tree, correlation):
     """Require one Pending Poll result, the exact correlation, and no response payload."""
     items = [item for item in response_tree[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
@@ -1048,6 +1589,248 @@ def verify_pending_poll_response(response_tree, correlation):
             byte_string_values(items[0], 0x420006) != [correlation] or
             any(child[0] == RESPONSE_PAYLOAD_TAG for child in items[0][2])):
         raise ValueError('fixture_poll_pending_response_mismatch')
+
+
+def verify_pending_create_response(response_tree):
+    """Require one Pending Create result with a correlation and empty payload."""
+    items = [item for item in response_tree[2]
+             if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    if (len(items) != 1 or numbers(items[0], 0x42005C) != [1] or
+            numbers(items[0], 0x42007F) != [2] or
+            byte_string_values(items[0], 0x420006) != [CANCEL_CORRELATION_VALUE] or
+            not has_single_empty_response_payload(items[0])):
+        raise ValueError('fixture_pending_create_response_mismatch')
+
+
+def verify_pending_async_response(response_tree, operation, correlation):
+    """Require a Pending response with the requested operation and opaque correlation."""
+    items = [item for item in response_tree[2]
+             if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    if (len(items) != 1 or numbers(items[0], 0x42005C) != [operation] or
+            numbers(items[0], 0x42007F) != [2] or
+            byte_string_values(items[0], 0x420006) != [correlation] or
+            not has_single_empty_response_payload(items[0])):
+        raise ValueError('fixture_async_query_pending_response_mismatch')
+
+
+def verify_completed_async_query_create(response_tree, identifier):
+    """Require a successful Poll carrying the exact completed Create result."""
+    items = [item for item in response_tree[2]
+             if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+    if (len(items) != 1 or numbers(items[0], 0x42005C) != [26] or
+            numbers(items[0], 0x42007F) != [0] or byte_string_values(items[0], 0x420006) or
+            len(payloads) != 1 or numbers(payloads[0], 0x420057) != [2] or
+            text_values(payloads[0], UNIQUE_IDENTIFIER_TAG) != [identifier]):
+        raise ValueError('fixture_async_query_poll_create_result_mismatch')
+
+
+def assert_query_async_requests_request(node, version):
+    """Require a KMIP 2.1 Query Async Requests filtered by the Create correlation."""
+    items = [item for item in node[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+    filters = [child for child in payloads[0][2]
+               if child[0] == 0x420176 and child[1] == 1] if len(payloads) == 1 else []
+    values = [child for child in filters[0][2]
+              if child[0] == 0x420006 and child[1] == 8] if len(filters) == 1 else []
+    header = next(descendants(node, 0x420077), node)
+    if (version != '2.1' or numbers(node, 0x42006A) != [2] or
+            numbers(node, 0x42006B) != [1] or numbers(node, 0x42000D) != [1] or
+            len(items) != 1 or numbers(items[0], 0x42005C) != [57] or
+            numbers(header, 0x420007) or len(payloads) != 1 or len(filters) != 1 or
+            len(values) != 1 or values[0][2] != CANCEL_CORRELATION_VALUE or
+            list(descendants(node, 0x42014F))):
+        raise ValueError('fixture_async_query_request_mismatch')
+
+
+def verify_query_async_requests_response(response_tree):
+    items = [item for item in response_tree[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+    filters = [child for child in payloads[0][2]
+               if child[0] == 0x420176 and child[1] == 1] if len(payloads) == 1 else []
+    values = [child for child in filters[0][2]
+              if child[0] == 0x420006 and child[1] == 8] if len(filters) == 1 else []
+    if (len(items) != 1 or numbers(items[0], 0x42005C) != [57] or
+            numbers(items[0], 0x42007F) != [0] or len(payloads) != 1 or
+            len(filters) != 1 or len(values) != 1 or
+            values[0][2] != CANCEL_CORRELATION_VALUE):
+        raise ValueError('fixture_async_query_response_mismatch')
+
+
+def assert_async_query_outstanding_request(node, version):
+    """Require Query to carry both specified filters with exact correlation bytes."""
+    items = [item for item in node[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+    payload_fields = payloads[0][2] if len(payloads) == 1 else []
+    operations = [child for child in payload_fields
+                  if child[0] == 0x42014F and child[1] == 1]
+    operation_values = [child for child in operations[0][2]
+                        if child[0] == 0x42005C and child[1] == 5] if len(operations) == 1 else []
+    request_operations = [int.from_bytes(child[2], 'big') for child in items[0][2]
+                          if child[0] == 0x42005C and child[1] == 5] if len(items) == 1 else []
+    correlation_sets = [child for child in payload_fields
+                        if child[0] == 0x420176 and child[1] == 1]
+    correlations = [child[2] for child in correlation_sets[0][2]
+                    if child[0] == 0x420006 and child[1] == 8] if len(correlation_sets) == 1 else []
+    header = next(descendants(node, 0x420077), node)
+    expected_correlations = [ASYNC_QUERY_CORRELATION_CREATE_COMPLETED,
+                             ASYNC_QUERY_CORRELATION_CREATE_PENDING,
+                             ASYNC_QUERY_CORRELATION_GET_PENDING]
+    if (version != '2.1' or numbers(node, 0x42006A) != [2] or
+            numbers(node, 0x42006B) != [1] or numbers(node, 0x42000D) != [1] or
+            len(items) != 1 or request_operations != [57] or
+            numbers(header, 0x420007) or len(payloads) != 1 or
+            len(payload_fields) != 2 or len(operations) != 1 or
+            len(operations[0][2]) != 1 or len(operation_values) != 1 or
+            int.from_bytes(operation_values[0][2], 'big') != 1 or
+            len(correlation_sets) != 1 or correlations != expected_correlations):
+        safe_shape = {
+            'version': version,
+            'major': numbers(node, 0x42006A),
+            'minor': numbers(node, 0x42006B),
+            'batch_count': numbers(node, 0x42000D),
+            'item_count': len(items),
+            'item_operation': request_operations,
+            'async_indicator': numbers(header, 0x420007),
+            'payload_count': len(payloads),
+            'payload_fields': [(field[0], field[1]) for field in payload_fields],
+            'operation_fields': len(operations),
+            'operation_member_count': len(operations[0][2]) if operations else 0,
+            'operation_values': [int.from_bytes(field[2], 'big') for field in operation_values],
+            'correlation_containers': len(correlation_sets),
+            'correlation_count': len(correlations),
+            'correlation_filter_matches': correlations == expected_correlations,
+        }
+        raise ValueError(f'fixture_async_query_outstanding_filters_mismatch:{safe_shape}')
+
+
+def assert_async_query_get_seed_request(node, version):
+    """Require an asynchronous Get for the pre-existing controlled object."""
+    items = [item for item in node[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+    header = next(descendants(node, 0x420077), node)
+    if (version != '2.1' or numbers(node, 0x42006A) != [2] or
+            numbers(node, 0x42006B) != [1] or numbers(node, 0x42000D) != [1] or
+            numbers(header, 0x420007) != [1] or len(items) != 1 or
+            numbers(items[0], 0x42005C) != [10] or len(payloads) != 1 or
+            text_values(payloads[0], UNIQUE_IDENTIFIER_TAG) != ['fixture-key-1']):
+        raise ValueError('fixture_async_query_get_seed_mismatch')
+
+
+def assert_async_query_poll_request(node, correlation):
+    """Require one Poll carrying the selected request's exact correlation."""
+    items = [item for item in node[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+    values = [child for child in payloads[0][2]
+              if child[0] == 0x420006 and child[1] == 8] if len(payloads) == 1 else []
+    if (numbers(node, 0x42006A) != [2] or numbers(node, 0x42006B) != [1] or
+            numbers(node, 0x42000D) != [1] or len(items) != 1 or
+            numbers(items[0], 0x42005C) != [26] or len(payloads) != 1 or
+            len(values) != 1 or values[0][2] != correlation):
+        raise ValueError('fixture_async_query_poll_correlation_mismatch')
+
+
+def assert_async_query_cleanup_request(node, identifier):
+    """Require one Destroy for the exact asynchronous Create result."""
+    items = [item for item in node[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+    if (len(items) != 1 or numbers(items[0], 0x42005C) != [20] or
+            len(payloads) != 1 or text_values(payloads[0], UNIQUE_IDENTIFIER_TAG) != [identifier]):
+        raise ValueError('fixture_async_query_cleanup_identifier_mismatch')
+
+
+def verify_async_query_outstanding_response(response_tree):
+    """Require exactly the pending Create selected by the filter intersection."""
+    items = [item for item in response_tree[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+    requests = [child for child in payloads[0][2]
+                if child[0] == 0x420173 and child[1] == 1] if len(payloads) == 1 else []
+    response_operations = [int.from_bytes(child[2], 'big') for child in items[0][2]
+                           if child[0] == 0x42005C and child[1] == 5] if len(items) == 1 else []
+    request = requests[0] if len(requests) == 1 else None
+    if (len(items) != 1 or response_operations != [57] or
+            numbers(items[0], 0x42007F) != [0] or len(payloads) != 1 or
+            len(payloads[0][2]) != 1 or len(requests) != 1 or
+            byte_string_values(request, 0x420006) != [ASYNC_QUERY_CORRELATION_CREATE_PENDING] or
+            numbers(request, 0x42005C) != [1] or numbers(request, 0x420175) != [2] or
+            len([child for child in request[2] if child[0] == 0x420174 and child[1] == 11]) != 1):
+        safe_shape = {
+            'item_count': len(items),
+            'item_operations': [
+                [int.from_bytes(child[2], 'big') for child in item[2]
+                 if child[0] == 0x42005C and child[1] == 5] for item in items],
+            'item_statuses': [numbers(item, 0x42007F) for item in items],
+            'payload_count': len(payloads),
+            'payload_members': [(child[0], child[1]) for child in payloads[0][2]] if payloads else [],
+            'request_count': len(requests),
+            'request_members': [(child[0], child[1]) for child in request[2]] if request else [],
+            'correlation_matches': bool(request) and
+                byte_string_values(request, 0x420006) == [ASYNC_QUERY_CORRELATION_CREATE_PENDING],
+            'operation_values': numbers(request, 0x42005C) if request else [],
+            'processing_stage_values': numbers(request, 0x420175) if request else [],
+        }
+        raise ValueError(f'fixture_async_query_outstanding_response_mismatch:{safe_shape}')
+
+
+def verify_completed_poll_create_response(response_tree):
+    items = [item for item in response_tree[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+    if (len(items) != 1 or numbers(items[0], 0x42005C) != [26] or
+            numbers(items[0], 0x42007F) != [0] or byte_string_values(items[0], 0x420006) or
+            len(payloads) != 1 or numbers(payloads[0], 0x420057) != [2] or
+            text_values(payloads[0], UNIQUE_IDENTIFIER_TAG) != ['fixture-key-1']):
+        raise ValueError('fixture_async_poll_completed_response_mismatch')
+
+
+def assert_async_create_cleanup_request(node, version):
+    items = [item for item in node[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+    if (version not in ('2.0', '2.1') or len(items) != 1 or numbers(items[0], 0x42005C) != [20] or
+            len(payloads) != 1 or text_values(payloads[0], UNIQUE_IDENTIFIER_TAG) != ['fixture-key-1']):
+        raise ValueError('fixture_async_create_cleanup_mismatch')
+
+
+def assert_async_lifecycle_exchange(node, version, exchange_index):
+    """Validate one ordered request and describe the matching peer response."""
+    if exchange_index == 0:
+        assert_async_create_seed_request(node, version)
+        return (1,), None
+    if exchange_index == 1:
+        assert_query_async_requests_request(node, version)
+        return (57,), None
+    if exchange_index == 2:
+        assert_poll_request(node, version)
+        return (26,), None
+    if exchange_index == 3:
+        assert_async_create_cleanup_request(node, version)
+        return (20,), (None,)
+    raise ValueError('fixture_async_lifecycle_exchange_unexpected')
+
+
+def async_lifecycle_peer_check(observation):
+    """Summarize the controlled Create, Query, Poll, and cleanup sequence."""
+    return {
+        **async_interleaving_peer_evidence(observation),
+        'peer_async_query_correlation_match':
+            byte_string_values(next(descendants(observation[1][1], 0x420176)),
+                               0x420006) == [CANCEL_CORRELATION_VALUE],
+        'peer_async_poll_correlation_match':
+            byte_string_values(observation[2][0], 0x420006) == [CANCEL_CORRELATION_VALUE],
+        'peer_async_poll_completed':
+            numbers(observation[2][1], 0x42007F) == [0] and
+            text_values(observation[2][1], UNIQUE_IDENTIFIER_TAG) == ['fixture-key-1'],
+        **peer_cleanup_evidence(observation),
+    }
 
 
 def assert_async_create_seed_request(node, version):
@@ -1178,6 +1961,18 @@ def target_operation_exchange_index(recipe):
     """Select the request/response that belongs to the catalog operation under test."""
     if recipe is not None and recipe[1] == 'cancel_poll_race':
         return 2
+    if recipe is not None and recipe[1] == 'async_poll_cancel_no_recursion':
+        return 1
+    if recipe is not None and recipe[1] == 'async_create_poll_lifecycle':
+        return 0
+    if recipe is not None and recipe[1] == 'async_query_outstanding_filter':
+        return 4
+    if recipe is not None and recipe[1] == 'async_poll_final_failure':
+        return 2
+    if recipe is not None and recipe[1] == 'async_poll_repeated_pending_to_success':
+        return 3
+    if recipe is not None and recipe[1] == 'async_process_then_poll_state':
+        return 0
     return 1 if recipe is not None and recipe[1] in ('login_logout', 'cancel_async') else 0
 
 
@@ -1189,6 +1984,22 @@ def observation_for_cell(observations, cell, recipe, fallback_index):
         index = workflow_step_index
     elif recipe[1] == 'cancel_poll_race':
         index = {'Create': 0, 'Poll': 1, 'Cancel': 2}.get(
+            cell.get('workflow_operation'), fallback_index)
+    elif recipe[1] == 'async_create_poll_lifecycle':
+        index = {'Create': 0, 'Query Asynchronous Requests': 1, 'Poll': 2}.get(
+            cell.get('workflow_operation'), fallback_index)
+    elif recipe[1] == 'async_query_outstanding_filter':
+        index = {'Create': 0, 'Get': 2, 'Poll': 3,
+                 'Query Asynchronous Requests': 4, 'Destroy': 7}.get(
+                     cell.get('workflow_operation'), fallback_index)
+    elif recipe[1] == 'async_poll_cancel_no_recursion':
+        index = {'Poll': 0, 'Cancel': 1}.get(cell.get('workflow_operation'), fallback_index)
+    elif recipe[1] == 'async_poll_final_failure':
+        index = {'Create': 0, 'Poll': 2}.get(cell.get('workflow_operation'), fallback_index)
+    elif recipe[1] == 'async_poll_repeated_pending_to_success':
+        index = {'Create': 0, 'Poll': 3}.get(cell.get('workflow_operation'), fallback_index)
+    elif recipe[1] == 'async_process_then_poll_state':
+        index = {'Create': 0, 'Process': 1, 'Poll': 2}.get(
             cell.get('workflow_operation'), fallback_index)
     if index < 0 or index >= len(observations):
         return None
@@ -1228,6 +2039,7 @@ class PeerState:
         self.attributes = {'fixture-key-1': set()} if existing_object else {}
         self.attribute_values = {'fixture-key-1': {}} if existing_object else {}
         self.numeric_attribute_values = {'fixture-key-1': {}} if existing_object else {}
+        self.adjustable_attribute_values = {'fixture-key-1': {}} if existing_object else {}
         self.usage_allocation_ready = usage_allocation_ready
         self.usage_allocation_totals = {'fixture-key-1': 1000} if usage_allocation_ready else {}
         self.usage_allocation_counts = {'fixture-key-1': 0} if usage_allocation_ready else {}
@@ -1249,6 +2061,10 @@ class PeerState:
                 key: {f'{tag:06X}': value for tag, value in sorted(values.items())}
                 for key, values in self.numeric_attribute_values.items() if values
             }
+        if any(self.adjustable_attribute_values.values()):
+            state_value['adjustable_attribute_values'] = {
+                key: values for key, values in self.adjustable_attribute_values.items() if values
+            }
         if self.usage_allocation_counts:
             state_value['usage_allocation_counts'] = self.usage_allocation_counts
         if self.interop_sessions:
@@ -1266,13 +2082,21 @@ class PeerState:
         labels = {9: 'checked', 10: 'object_retrieved', 11: 'attributes_retrieved',
                   12: 'attribute_list_retrieved', 13: 'attribute_added',
                   15: 'attribute_deleted',
+                  48: 'attribute_adjusted',
                   49: 'attribute_set',
+                  43: 'exported',
                   17: 'usage_allocation_returned',
-                  56: 'constraints_retrieved'}
+                  26: 'async_operation_polled',
+                  56: 'constraints_retrieved',
+                  57: 'async_requests_queried'}
         items = [item for item in request_tree[2] if item[0] == BATCH_ITEM_TAG]
         for index, item in enumerate(items):
             operation = numbers(item, 0x42005C)[0]
-            identifiers = text_values(item, UNIQUE_IDENTIFIER_TAG)
+            request_payloads = [child for child in item[2]
+                                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+            identifiers = [child[2].decode('utf-8') for child in request_payloads[0][2]
+                           if child[0] == UNIQUE_IDENTIFIER_TAG and child[1] == 7] \
+                if len(request_payloads) == 1 else []
             identifier = identifiers[0] if identifiers else placeholder
             status, reason = 0, 0
             if operation == rejected_operation:
@@ -1308,6 +2132,7 @@ class PeerState:
                 self.attributes[identifier] = set()
                 self.attribute_values[identifier] = {}
                 self.numeric_attribute_values[identifier] = {}
+                self.adjustable_attribute_values[identifier] = {}
                 placeholder = identifier
                 effect = 'created'
             elif operation == 8:
@@ -1317,7 +2142,7 @@ class PeerState:
                 identifier = matching_identifiers[0]
                 placeholder = identifier
                 effect = 'located'
-            elif operation in (9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 20, 31, 32, 48, 49, 56):
+            elif operation in (9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 20, 31, 32, 43, 48, 49, 56):
                 state = self.objects.get(identifier)
                 if state is None:
                     status, reason, effect = 1, 55, 'object_not_found'
@@ -1357,6 +2182,7 @@ class PeerState:
                         self.attributes.pop(identifier, None)
                         self.attribute_values.pop(identifier, None)
                         self.numeric_attribute_values.pop(identifier, None)
+                        self.adjustable_attribute_values.pop(identifier, None)
                         effect = 'destroyed'
                 elif operation in (13, 49):
                     new_attribute = next((child for child in item[2]
@@ -1388,21 +2214,45 @@ class PeerState:
                     effect = 'attribute_modified'
                 elif operation == 48:
                     references = numbers(item, 0x42013B)
-                    adjustment_types = numbers(item, 0x420158)
-                    adjustment_values = list(descendants(item, 0x420162))
-                    if references != [0x420097] or adjustment_types != [1] or adjustment_values:
-                        raise ValueError('fixture_adjust_attribute_fields_mismatch')
-                    values = self.numeric_attribute_values.setdefault(identifier, {})
-                    previous = values.get(0x420097, 0)
-                    updated = previous + 1
-                    values[0x420097] = updated
-                    attribute_adjustments.append({
-                        'tag': 0x420097,
-                        'adjustment_type': 1,
-                        'adjustment_value_omitted': True,
-                        'before': previous,
-                        'after': updated,
-                    })
+                    if references == [0x420097]:
+                        adjustment_types = numbers(item, 0x420158)
+                        adjustment_values = list(descendants(item, 0x420162))
+                        if adjustment_types != [1] or adjustment_values:
+                            raise ValueError('fixture_adjust_attribute_fields_mismatch')
+                        values = self.numeric_attribute_values.setdefault(identifier, {})
+                        previous = values.get(0x420097, 0)
+                        updated = previous + 1
+                        values[0x420097] = updated
+                        attribute_adjustments.append({
+                            'tag': 0x420097,
+                            'adjustment_type': 1,
+                            'adjustment_value_omitted': True,
+                            'before': previous,
+                            'after': updated,
+                        })
+                    else:
+                        vendor, name, adjustment_type, adjustment_value = \
+                            request_adjust_attribute_fields(item)
+                        values = self.adjustable_attribute_values.setdefault(identifier, {})
+                        key = f'{vendor}:{name}'
+                        previous = values.get(key, 0)
+                        if adjustment_type == 1:
+                            adjusted = previous + adjustment_value
+                        elif adjustment_type == 2:
+                            adjusted = previous - adjustment_value
+                        elif adjustment_type == 3:
+                            adjusted = -previous
+                        else:
+                            raise ValueError('fixture_adjustment_type_unknown')
+                        values[key] = adjusted
+                        attribute_tag = {'Usage Limits Total': 0x420097}.get(name, 0)
+                        attribute_adjustments.append({
+                            'tag': attribute_tag,
+                            'adjustment_type': adjustment_type,
+                            'adjustment_value_omitted': not list(descendants(item, 0x420162)),
+                            'before': previous,
+                            'after': adjusted,
+                        })
                     effect = 'attribute_adjusted'
                 elif operation == 15:
                     references = numbers(item, 0x42013B)
@@ -1441,6 +2291,8 @@ def verify_lifecycle(operations, response_tree):
     effects, expected_statuses, expected_reasons = [], [], []
     labels = {9: 'checked', 10: 'object_retrieved', 11: 'attributes_retrieved',
               12: 'attribute_list_retrieved', 13: 'attribute_added',
+              48: 'attribute_adjusted',
+              43: 'exported',
               17: 'usage_allocation_returned',
               56: 'constraints_retrieved'}
     for operation in operations:
@@ -1490,6 +2342,74 @@ def verify_lifecycle(operations, response_tree):
     if [(numbers(item, 0x42007E) or [0])[0] for item in items] != expected_reasons:
         raise ValueError('fixture_state_result_reason_mismatch')
     return effects
+
+
+def verify_export_response(response_tree):
+    """Check the required KMIP v2.0/v2.1 §6.1.18 Export payload fields."""
+    items = [child for child in response_tree[2]
+             if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    export_items = [item for item in items if numbers(item, 0x42005C) == [43]]
+    payloads = [child for child in export_items[0][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1] if len(export_items) == 1 else []
+    fields = payloads[0][2] if len(payloads) == 1 else []
+    required_tags = [0x420057, UNIQUE_IDENTIFIER_TAG, 0x420125, 0x42008F]
+    if ([field[0] for field in fields] != required_tags or
+            fields[0][1] != 5 or int.from_bytes(fields[0][2], 'big') != 2 or
+            fields[1][1] != 7 or fields[1][2] != b'fixture-key-1' or
+            fields[2][1] != 1 or fields[3][1] != 1):
+        raise ValueError('fixture_export_response_fields_mismatch')
+    attribute_fields = fields[2][2]
+    if ([field[0] for field in attribute_fields] != [0x420028, 0x42002A] or
+            int.from_bytes(attribute_fields[0][2], 'big') != 3 or
+            int.from_bytes(attribute_fields[1][2], 'big', signed=True) != 128):
+        raise ValueError('fixture_export_response_attributes_mismatch')
+    if not any(child[0] == 0x420040 for child in fields[3][2]):
+        raise ValueError('fixture_export_response_any_object_mismatch')
+
+
+
+def export_response_field_tag(field_name):
+    """Resolve the fixture's exact tag for one Export response field."""
+    tags = {'Object Type': 0x420057, 'Unique Identifier': UNIQUE_IDENTIFIER_TAG,
+            'Attributes': 0x420125, 'Any Object (Section 2)': 0x42008F}
+    tag = tags.get(field_name)
+    if tag is None:
+        raise ValueError('fixture_export_response_field_unmapped')
+    return tag
+
+
+def omit_export_response_field(response_wire, field_name):
+    """Build a response fixture with one required Export field removed."""
+    response_tree = parse(response_wire)
+    export_items = [item for item in response_tree[2]
+                    if item[0] == BATCH_ITEM_TAG and item[1] == 1 and
+                    numbers(item, 0x42005C) == [43]]
+    payloads = [child for child in export_items[0][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1] if len(export_items) == 1 else []
+    if len(payloads) != 1:
+        raise ValueError('fixture_export_response_payload_missing')
+    fields = payloads[0][2]
+    tag = export_response_field_tag(field_name)
+    matching = [field for field in fields if field[0] == tag]
+    if len(matching) != 1:
+        raise ValueError('fixture_export_response_field_cardinality_mismatch')
+    fields.remove(matching[0])
+    return fixture_wire(response_tree)
+
+
+def verify_export_response_missing_field(response_tree, field_name):
+    """Confirm one required successful Export field is absent in the negative fixture."""
+    export_items = [item for item in response_tree[2]
+                    if item[0] == BATCH_ITEM_TAG and item[1] == 1 and
+                    numbers(item, 0x42005C) == [43]]
+    payloads = [child for child in export_items[0][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1] if len(export_items) == 1 else []
+    if len(payloads) != 1:
+        raise ValueError('fixture_export_response_payload_missing')
+    expected_tags = [0x420057, UNIQUE_IDENTIFIER_TAG, 0x420125, 0x42008F]
+    expected_tags.remove(export_response_field_tag(field_name))
+    if [field[0] for field in payloads[0][2]] != expected_tags:
+        raise ValueError('fixture_export_response_missing_field_mismatch')
 
 
 def verify_usage_allocation_identifier_variants(response_tree):
@@ -1612,7 +2532,12 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
          if case['case_id'] in {
              'test-norm-payload-client-get-usage-allocation-request-20-001',
              'test-norm-payload-client-get-usage-allocation-request-21-001'} else
+         ('present', 'missing_rejected') if case['case_id'].startswith(
+             'test-norm-payload-client-export-response-') else
+         ('present', 'omitted') if case['case_id'].startswith(
+             'test-norm-payload-client-export-request-') else
          ('direct', 'standalone') if case['case_id'] in {'test-op-get-attributes', 'test-op-get-attribute-list',
+                                                         'test-batch-continue-after-failure',
                                                          'test-norm-payload-client-get-attribute-list-request-20-001',
                                                          'test-norm-payload-client-get-attribute-list-request-21-001',
                                                          'test-norm-payload-client-add-attribute-request-20-002',
@@ -1626,7 +2551,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                          'test-norm-payload-client-modify-attribute-request-21-003',
                                                          'test-norm-payload-client-modify-attribute-response-21-001',
                                                          'test-op-modify-attribute', 'test-op-set-attribute',
-                                                         'test-op-delete-attribute'}
+                                                         'test-op-delete-attribute', 'test-op-adjust-attribute'}
          or case['case_id'] in attribute_case_ids else ('direct',))]
     cells_by_case = {}
     for cell in all_cells:
@@ -1685,8 +2610,16 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                             continue
                         observation, errors = [], []
                         peer_state = PeerState(
-                            existing_object=(recipe[1] not in ('cancel_async', 'cancel_poll_race') and
-                                            recipe[0][0] not in (1, 3)),
+                            existing_object=(recipe[1] == 'async_query_outstanding_filter' or
+                                            (recipe[1] not in (
+                                                'cancel_async', 'cancel_poll_race',
+                                                'async_poll_cancel_no_recursion',
+                                                'async_poll_final_failure',
+                                                'async_poll_repeated_pending_to_success',
+                                                'async_process_then_poll_state',
+                                                'async_query_outstanding_filter',
+                                                'async_unknown_correlation_rejected') and
+                                            recipe[0][0] not in (1, 3))),
                             usage_allocation_ready=recipe[1] == 'get_usage_allocation_uid_variants')
                         boundary = case_id in (
                             'test-v20-reject-get-constraints', 'test-v20-reject-ping')
@@ -1698,9 +2631,14 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                             def serve():
                                 stream = None
                                 try:
-                                    exchange_count = 4 if seeded_attribute_recipe else 3 if attribute_mutation_recipe else (
+                                    exchange_count = 9 if recipe[1] == 'async_query_outstanding_filter' else 4 if seeded_attribute_recipe or recipe[1] == 'async_create_poll_lifecycle' else 3 if attribute_mutation_recipe else (
                                         3 if recipe[1] == 'cancel_poll_race' else
-                                        2 if placeholder_chain_recipe or recipe[1] in ('login_logout', 'cancel_async') else 1)
+                                        3 if recipe[1] == 'async_poll_final_failure' else
+                                        5 if recipe[1] == 'async_poll_repeated_pending_to_success' else
+                                        4 if recipe[1] == 'async_process_then_poll_state' else
+                                        2 if placeholder_chain_recipe or recipe[1] in (
+                                            'login_logout', 'cancel_async',
+                                            'async_poll_cancel_no_recursion') else 1)
                                     seed_rejected = False
                                     accepted, _ = server.accept()
                                     stream = context.wrap_socket(accepted, server_side=True)
@@ -1737,6 +2675,85 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         if logout_recipe:
                                             assert_login_logout_exchange(request_tree, version, exchange_index)
                                             response_operations = ((45,) if exchange_index == 0 else (46,))
+                                        elif recipe[1] == 'async_create_poll_lifecycle':
+                                            response_operations, response_item_ids = \
+                                                assert_async_lifecycle_exchange(
+                                                    request_tree, version, exchange_index)
+                                        elif recipe[1] == 'async_query_outstanding_filter':
+                                            if exchange_index < 2:
+                                                assert_async_create_seed_request(request_tree, version)
+                                                response_operations = (1,)
+                                            elif exchange_index == 2:
+                                                assert_async_query_get_seed_request(request_tree, version)
+                                                response_operations = (10,)
+                                            elif exchange_index in (3, 5, 6):
+                                                correlation = (
+                                                    ASYNC_QUERY_CORRELATION_CREATE_COMPLETED
+                                                    if exchange_index == 3 else
+                                                    ASYNC_QUERY_CORRELATION_CREATE_PENDING
+                                                    if exchange_index == 5 else
+                                                    ASYNC_QUERY_CORRELATION_GET_PENDING)
+                                                assert_async_query_poll_request(request_tree, correlation)
+                                                response_operations = (26,)
+                                            elif exchange_index == 4:
+                                                assert_async_query_outstanding_request(request_tree, version)
+                                                response_operations = (57,)
+                                            else:
+                                                identifier = 'fixture-key-2' if exchange_index == 7 else 'fixture-key-3'
+                                                assert_async_query_cleanup_request(request_tree, identifier)
+                                                response_operations = (20,)
+                                                response_item_ids = (None,)
+                                        elif recipe[1] == 'async_poll_cancel_no_recursion':
+                                            if exchange_index == 0:
+                                                assert_poll_request(request_tree, version)
+                                                response_operations = (26,)
+                                            else:
+                                                assert_cancel_request(request_tree)
+                                                header = next(descendants(request_tree, 0x420077), request_tree)
+                                                items = [item for item in request_tree[2]
+                                                         if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+                                                if (version != '2.1' or numbers(header, 0x42006A) != [2] or
+                                                        numbers(header, 0x42006B) != [1] or
+                                                        numbers(request_tree, 0x42000D) != [1] or
+                                                        len(items) != 1 or numbers(items[0], 0x42005C) != [25]):
+                                                    raise ValueError('fixture_nonrecursive_cancel_request_mismatch')
+                                                response_operations = (25,)
+                                            header = next(descendants(request_tree, 0x420077), request_tree)
+                                            if numbers(header, 0x420007):
+                                                raise ValueError('fixture_nonrecursive_async_indicator_present')
+                                        elif recipe[1] == 'async_poll_final_failure':
+                                            if exchange_index == 0:
+                                                assert_async_create_seed_request(request_tree, version)
+                                                response_operations = (1,)
+                                            else:
+                                                assert_async_failure_poll_request(request_tree, version)
+                                                response_operations = (26,)
+                                        elif recipe[1] == 'async_unknown_correlation_rejected':
+                                            assert_async_unknown_correlation_poll_request(request_tree, version)
+                                            response_operations = (26,)
+                                        elif recipe[1] == 'async_poll_repeated_pending_to_success':
+                                            if exchange_index == 0:
+                                                assert_async_create_seed_request(request_tree, version)
+                                                response_operations = (1,)
+                                            elif exchange_index < 4:
+                                                assert_async_failure_poll_request(request_tree, version)
+                                                response_operations = (26,)
+                                            else:
+                                                assert_async_create_cleanup_request(request_tree, version)
+                                                response_operations = (20,)
+                                        elif recipe[1] == 'async_process_then_poll_state':
+                                            if exchange_index == 0:
+                                                assert_async_create_seed_request(request_tree, version)
+                                                response_operations = (1,)
+                                            elif exchange_index == 1:
+                                                assert_async_process_request(request_tree, version)
+                                                response_operations = (58,)
+                                            elif exchange_index == 2:
+                                                assert_async_failure_poll_request(request_tree, version)
+                                                response_operations = (26,)
+                                            else:
+                                                assert_async_create_cleanup_request(request_tree, version)
+                                                response_operations = (20,)
                                         elif recipe[1] == 'async_create_pending' and exchange_index == 0:
                                             assert_async_create_seed_request(request_tree, version)
                                             response_operations = (1,)
@@ -1784,11 +2801,19 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             response_operations = (attribute_mutation_operation,)
                                         elif recipe[1] in ('set_constraints', 'set_defaults'):
                                             assert_recipe(request_tree, case_id, version, recipe,
-                                                          attribute_fixture, variant)
+                                                          attribute_fixture, variant,
+                                                          case.get('requires', {}).get('field_name')
+                                                          if case_id.startswith(
+                                                              'test-norm-payload-client-export-request-')
+                                                          else None)
                                             response_operations = recipe[0]
                                         else:
                                             assert_recipe(request_tree, case_id, version, recipe,
-                                                          attribute_fixture, variant)
+                                                          attribute_fixture, variant,
+                                                          case.get('requires', {}).get('field_name')
+                                                          if case_id.startswith(
+                                                              'test-norm-payload-client-export-request-')
+                                                          else None)
                                             response_operations = recipe[0]
                                         selected_tag = {'test-attr-cryptographic-algorithm': 0x420028,
                                                         'test-attr-cryptographic-length': 0x42002A}.get(
@@ -1810,6 +2835,10 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 (b'placeholder-revoke-cleanup', b'placeholder-destroy-cleanup')
                                                 if cleanup_exchange else
                                                 (b'placeholder-create', b'placeholder-activate', b'placeholder-get'))
+                                        elif recipe[1] == 'export':
+                                            response_item_ids = (
+                                                b'interop-create', b'interop-export',
+                                                b'interop-revoke', b'interop-destroy')
                                         elif attribute_mutation_recipe:
                                             response_item_ids = (
                                                 (b'interop-create',)
@@ -1839,22 +2868,164 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         elif recipe[1] == 'batch_stop_on_first_failure':
                                             response_operations = (10,)
                                             response_item_ids = (b'item-a',)
-                                        state_evidence = peer_state.execute(
-                                            request_tree,
-                                            continued_batch=recipe[1] == 'batch_continue_after_failure',
-                                            stop_after_failure=recipe[1] == 'batch_stop_on_first_failure',
-                                            rejected_operation=peer_rejection.get('operation')
-                                            if reject_this_exchange else None,
-                                            rejection_status=peer_rejection.get('result_status', 1)
-                                            if reject_this_exchange else 1,
-                                            rejection_reason=peer_rejection.get('result_reason', 5)
-                                            if reject_this_exchange else 5)
+                                        if recipe[1] == 'async_query_outstanding_filter' and exchange_index < 9:
+                                            state_digest = peer_state.digest()
+                                            if exchange_index == 3:
+                                                peer_state.objects['fixture-key-2'] = 'pre_active'
+                                                peer_state.attributes['fixture-key-2'] = set()
+                                                peer_state.attribute_values['fixture-key-2'] = {}
+                                            elif exchange_index == 5:
+                                                peer_state.objects['fixture-key-3'] = 'pre_active'
+                                                peer_state.attributes['fixture-key-3'] = set()
+                                                peer_state.attribute_values['fixture-key-3'] = {}
+                                            elif exchange_index in (7, 8):
+                                                identifier = 'fixture-key-2' if exchange_index == 7 else 'fixture-key-3'
+                                                if identifier not in peer_state.objects:
+                                                    raise ValueError('fixture_async_query_cleanup_object_missing')
+                                                peer_state.objects.pop(identifier)
+                                                peer_state.attributes.pop(identifier, None)
+                                                peer_state.attribute_values.pop(identifier, None)
+                                            state_evidence = {
+                                                'effects': [],
+                                                'statuses': [1] if exchange_index == 6 else
+                                                [2] if exchange_index < 3 else [0],
+                                                'reasons': [256] if exchange_index == 6 else [0],
+                                                'peer_observed_state_before_sha256': state_digest,
+                                                'peer_observed_state_after_sha256': peer_state.digest(),
+                                            }
+                                        elif recipe[1] in ('async_poll_final_failure',
+                                                         'async_poll_repeated_pending_to_success') and exchange_index < 3:
+                                            state_digest = peer_state.digest()
+                                            state_evidence = {
+                                                'effects': [],
+                                                'statuses': [2],
+                                                'reasons': [0],
+                                                'peer_observed_state_before_sha256': state_digest,
+                                                'peer_observed_state_after_sha256': state_digest,
+                                            }
+                                        elif recipe[1] == 'async_unknown_correlation_rejected':
+                                            state_digest = peer_state.digest()
+                                            state_evidence = {
+                                                'effects': [],
+                                                'statuses': [1],
+                                                'reasons': [43],
+                                                'peer_observed_state_before_sha256': state_digest,
+                                                'peer_observed_state_after_sha256': state_digest,
+                                            }
+                                        else:
+                                            if (recipe[1] == 'async_process_then_poll_state' and
+                                                    exchange_index == 1):
+                                                peer_state.objects['fixture-key-1'] = 'pre_active'
+                                                peer_state.attributes['fixture-key-1'] = set()
+                                                peer_state.attribute_values['fixture-key-1'] = {}
+                                            if (recipe[1] == 'async_poll_repeated_pending_to_success' and
+                                                    exchange_index == 3):
+                                                peer_state.objects['fixture-key-1'] = 'pre_active'
+                                                peer_state.attributes['fixture-key-1'] = set()
+                                                peer_state.attribute_values['fixture-key-1'] = {}
+                                            state_evidence = peer_state.execute(
+                                                request_tree,
+                                                continued_batch=recipe[1] == 'batch_continue_after_failure',
+                                                stop_after_failure=recipe[1] == 'batch_stop_on_first_failure',
+                                                rejected_operation=peer_rejection.get('operation')
+                                                if reject_this_exchange else None,
+                                                rejection_status=peer_rejection.get('result_status', 1)
+                                                if reject_this_exchange else 1,
+                                                rejection_reason=peer_rejection.get('result_reason', 5)
+                                                if reject_this_exchange else 5)
                                         response_statuses = tuple(state_evidence['statuses'])
                                         response_reasons = tuple(reason or None for reason in state_evidence['reasons'])
                                         if response_operations != recipe[0] and not cleanup_exchange:
                                             response_statuses = tuple(reversed(response_statuses))
                                             response_reasons = tuple(reversed(response_reasons))
-                                        if recipe[1] in ('async_create_pending', 'cancel_async',
+                                        if (recipe[1] == 'async_poll_cancel_no_recursion'):
+                                            response_wire = (
+                                                terminal_poll_response_without_correlation(int(version[-1]))
+                                                if exchange_index == 0 else
+                                                terminal_cancel_response_with_correlation(int(version[-1])))
+                                        elif recipe[1] == 'async_query_outstanding_filter' and exchange_index < 7:
+                                            response_wire = (
+                                                pending_create_response(
+                                                    ASYNC_QUERY_CORRELATION_CREATE_COMPLETED, int(version[-1]))
+                                                if exchange_index == 0 else
+                                                pending_create_response(
+                                                    ASYNC_QUERY_CORRELATION_CREATE_PENDING, int(version[-1]))
+                                                if exchange_index == 1 else
+                                                pending_create_response(
+                                                    ASYNC_QUERY_CORRELATION_GET_PENDING, int(version[-1])).replace(
+                                                        tlv(0x42005C, 5, (1).to_bytes(4, 'big')),
+                                                        tlv(0x42005C, 5, (10).to_bytes(4, 'big')), 1)
+                                                if exchange_index == 2 else
+                                                completed_poll_create_response_for_identifier(
+                                                    int(version[-1]), 'fixture-key-2')
+                                                if exchange_index == 3 else
+                                                async_query_outstanding_response(int(version[-1]))
+                                                if exchange_index == 4 else
+                                                completed_poll_create_response_for_identifier(
+                                                    int(version[-1]), 'fixture-key-3')
+                                                if exchange_index == 5 else
+                                                failed_poll_response(
+                                                    int(version[-1]), 'controlled Get failure'))
+                                        elif recipe[1] == 'async_query_outstanding_filter':
+                                            identifier = 'fixture-key-2' if exchange_index == 7 else 'fixture-key-3'
+                                            response_wire = response(
+                                                response_operations, int(version[-1]), selected_tag, object_type,
+                                                attribute_fixture['attribute_response_wire'] if attribute_fixture else None,
+                                                response_item_ids, response_statuses, response_reasons).replace(
+                                                    tlv(UNIQUE_IDENTIFIER_TAG, 7, b'fixture-key-1'),
+                                                    tlv(UNIQUE_IDENTIFIER_TAG, 7, identifier.encode('ascii')), 1)
+                                        elif recipe[1] == 'async_poll_final_failure':
+                                            response_wire = (
+                                                pending_create_response(CANCEL_CORRELATION_VALUE,
+                                                                        int(version[-1]))
+                                                if exchange_index == 0 else
+                                                pending_poll_response(CANCEL_CORRELATION_VALUE,
+                                                                      int(version[-1]))
+                                                if exchange_index == 1 else
+                                                failed_poll_response(int(version[-1])))
+                                        elif recipe[1] == 'async_unknown_correlation_rejected':
+                                            response_wire = invalid_async_correlation_poll_response(
+                                                int(version[-1]))
+                                        elif recipe[1] == 'async_poll_repeated_pending_to_success':
+                                            if exchange_index == 4:
+                                                response_item_ids = (None,)
+                                            response_wire = (
+                                                pending_create_response(CANCEL_CORRELATION_VALUE,
+                                                                        int(version[-1]))
+                                                if exchange_index == 0 else
+                                                pending_poll_response(CANCEL_CORRELATION_VALUE,
+                                                                      int(version[-1]))
+                                                if exchange_index < 3 else
+                                                completed_poll_create_response(int(version[-1]))
+                                                if exchange_index == 3 else
+                                                response((20,), int(version[-1]),
+                                                         created_object_type=2,
+                                                         unique_batch_item_ids=response_item_ids))
+                                        elif recipe[1] == 'async_process_then_poll_state':
+                                            if exchange_index == 3:
+                                                response_item_ids = (None,)
+                                            response_wire = (
+                                                pending_create_response(CANCEL_CORRELATION_VALUE,
+                                                                        int(version[-1]))
+                                                if exchange_index == 0 else
+                                                response((58,), int(version[-1]))
+                                                if exchange_index == 1 else
+                                                completed_poll_create_response(int(version[-1]))
+                                                if exchange_index == 2 else
+                                                response((20,), int(version[-1]),
+                                                         created_object_type=2,
+                                                         unique_batch_item_ids=response_item_ids))
+                                        elif (recipe[1] == 'async_create_poll_lifecycle' and
+                                                exchange_index < 3):
+                                            response_wire = (
+                                                pending_create_response(CANCEL_CORRELATION_VALUE,
+                                                                        int(version[-1]))
+                                                if exchange_index == 0 else
+                                                query_async_requests_response(CANCEL_CORRELATION_VALUE,
+                                                                              int(version[-1]))
+                                                if exchange_index == 1 else
+                                                completed_poll_create_response(int(version[-1])))
+                                        elif recipe[1] in ('async_create_pending', 'cancel_async',
                                                          'cancel_poll_race') and exchange_index == 0:
                                             response_wire = pending_create_response(
                                                 CANCEL_CORRELATION_VALUE, int(version[-1]))
@@ -1875,9 +3046,80 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 if recipe[1] == 'rng_retrieve' else
                                                 len(byte_string_values(request_tree, 0x4200C2)[0])
                                                 if recipe[1] == 'rng_seed' else 16)
+                                        export_response_negative = (
+                                            case_id.startswith('test-norm-payload-client-export-response-') and
+                                            variant == 'missing_rejected' and
+                                            exchange_index == target_operation_exchange_index(recipe))
+                                        if export_response_negative:
+                                            response_wire = omit_export_response_field(
+                                                response_wire, case['requires']['field_name'])
                                         response_tree = parse(response_wire)
                                         if logout_recipe:
                                             verify_login_logout_response(response_tree, exchange_index)
+                                        elif recipe[1] == 'async_poll_cancel_no_recursion':
+                                            if exchange_index == 0:
+                                                verify_terminal_poll_response_without_correlation(response_tree)
+                                            else:
+                                                verify_terminal_cancel_response_with_correlation(response_tree)
+                                        elif recipe[1] == 'async_poll_final_failure':
+                                            if exchange_index == 0:
+                                                verify_pending_create_response(response_tree)
+                                            elif exchange_index == 1:
+                                                verify_pending_poll_response(
+                                                    response_tree, CANCEL_CORRELATION_VALUE)
+                                            else:
+                                                verify_failed_poll_response(response_tree)
+                                        elif recipe[1] == 'async_unknown_correlation_rejected':
+                                            verify_invalid_async_correlation_poll_response(response_tree)
+                                        elif recipe[1] == 'async_poll_repeated_pending_to_success':
+                                            if exchange_index == 0:
+                                                verify_pending_create_response(response_tree)
+                                            elif exchange_index < 3:
+                                                verify_pending_poll_response(
+                                                    response_tree, CANCEL_CORRELATION_VALUE)
+                                            elif exchange_index == 3:
+                                                verify_completed_poll_create_response(response_tree)
+                                            else:
+                                                verify_lifecycle((20,), response_tree)
+                                        elif recipe[1] == 'async_process_then_poll_state':
+                                            if exchange_index == 0:
+                                                verify_pending_create_response(response_tree)
+                                            elif exchange_index == 1:
+                                                verify_process_success_response(response_tree)
+                                            elif exchange_index == 2:
+                                                verify_completed_poll_create_response(response_tree)
+                                            else:
+                                                verify_lifecycle((20,), response_tree)
+                                        elif recipe[1] == 'async_create_poll_lifecycle' and exchange_index == 1:
+                                            verify_query_async_requests_response(response_tree)
+                                        elif recipe[1] == 'async_create_poll_lifecycle' and exchange_index == 2:
+                                            verify_completed_poll_create_response(response_tree)
+                                        elif recipe[1] == 'async_query_outstanding_filter':
+                                            if exchange_index == 0:
+                                                verify_pending_async_response(
+                                                    response_tree, 1,
+                                                    ASYNC_QUERY_CORRELATION_CREATE_COMPLETED)
+                                            elif exchange_index == 1:
+                                                verify_pending_async_response(
+                                                    response_tree, 1,
+                                                    ASYNC_QUERY_CORRELATION_CREATE_PENDING)
+                                            elif exchange_index == 2:
+                                                verify_pending_async_response(
+                                                    response_tree, 10,
+                                                    ASYNC_QUERY_CORRELATION_GET_PENDING)
+                                            elif exchange_index == 3:
+                                                verify_completed_async_query_create(
+                                                    response_tree, 'fixture-key-2')
+                                            elif exchange_index == 4:
+                                                verify_async_query_outstanding_response(response_tree)
+                                            elif exchange_index == 5:
+                                                verify_completed_async_query_create(
+                                                    response_tree, 'fixture-key-3')
+                                            elif exchange_index == 6:
+                                                verify_failed_poll_response(
+                                                    response_tree, 'controlled Get failure')
+                                            else:
+                                                verify_lifecycle((20,), response_tree)
                                         elif recipe[1] == 'interop':
                                             verify_interop_response(response_tree)
                                         elif recipe[1] == 'async_create_sync_default' and exchange_index == 0:
@@ -1887,15 +3129,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             verify_sync_create_response(response_tree)
                                         elif recipe[1] in ('async_create_pending', 'cancel_async',
                                                            'cancel_poll_race') and exchange_index == 0:
-                                            pending_items = [item for item in response_tree[2]
-                                                             if item[0] == BATCH_ITEM_TAG and item[1] == 1]
-                                            if (len(pending_items) != 1 or
-                                                    numbers(pending_items[0], 0x42005C) != [1] or
-                                                    numbers(pending_items[0], 0x42007F) != [2] or
-                                                    byte_string_values(pending_items[0], 0x420006) !=
-                                                    [CANCEL_CORRELATION_VALUE] or
-                                                    not has_single_empty_response_payload(pending_items[0])):
-                                                raise ValueError('fixture_cancel_seed_response_mismatch')
+                                            verify_pending_create_response(response_tree)
                                         elif recipe[1] == 'cancel_poll_race' and exchange_index == 1:
                                             verify_pending_poll_response(response_tree, CANCEL_CORRELATION_VALUE)
                                         elif recipe[1] in ('cancel_async', 'cancel_poll_race'):
@@ -1912,6 +3146,13 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 raise ValueError('fixture_stop_partial_response_mismatch')
                                         elif placeholder_chain_recipe:
                                             verify_placeholder_chain_response(response_tree, response_operations)
+                                        elif recipe[1] == 'export':
+                                            if export_response_negative:
+                                                verify_export_response_missing_field(
+                                                    response_tree, case['requires']['field_name'])
+                                            else:
+                                                verify_export_response(response_tree)
+                                            verify_lifecycle(recipe[0], response_tree)
                                         elif recipe[1] == 'get_usage_allocation_uid_variants':
                                             verify_usage_allocation_identifier_variants(response_tree)
                                         elif reject_this_exchange:
@@ -1939,7 +3180,12 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                     [[recipe[0][0]]] or
                                                     [numbers(item, 0x42007F) for item in response_items] != [[0]]):
                                                 raise ValueError('fixture_global_operation_response_mismatch')
-                                        elif not logout_recipe:
+                                        elif not logout_recipe and recipe[1] not in (
+                                                'async_create_poll_lifecycle',
+                                                'async_poll_cancel_no_recursion',
+                                                'async_poll_final_failure',
+                                                'async_poll_repeated_pending_to_success',
+                                                'async_process_then_poll_state'):
                                             verify_lifecycle(recipe[0], response_tree)
                                         encoded_response = codec.encode(response_wire, encoding)
                                         if transport == 'https':
@@ -1999,6 +3245,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                              'get_usage_allocation_uid_variants'):
                                 run_environment['KMIPKIT_C_USAGE_ALLOCATION_IDENTIFIER_FORM'] = (
                                     'explicit' if variant == 'usage-allocation-explicit' else 'omitted')
+                            elif case_id.startswith('test-norm-payload-client-export-request-'):
+                                run_environment['KMIPKIT_C_EXPORT_REQUEST_FIELD'] = case['requires']['field_name']
+                                run_environment['KMIPKIT_C_EXPORT_REQUEST_VARIANT'] = variant
                             else:
                                 run_environment['KMIPKIT_C_ATTRIBUTE_REQUEST_ROUTE'] = variant
                             if case_id in {
@@ -2023,8 +3272,15 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                 'policy_restricted'
                                 if peer_rejection and peer_rejection.get('result_reason') in (12, 57) else None)
                             expected_rejection_observed = reject_case and result_case.get('status') == expected_rejection_status
+                            response_rejection_observed = (
+                                case_id.startswith('test-norm-payload-client-export-response-') and
+                                variant == 'missing_rejected' and result_case.get('status') == 'failed' and
+                                'category=2 cause=2 delivery=3' in result_case.get('diagnostic', '') and
+                                result_case.get('library_correctness') == 'not_checked' and
+                                result_case.get('server_compatibility') == 'unknown')
                             case_passed = bool(result_case and (
-                                result_case.get('status') == 'passed' or expected_rejection_observed))
+                                result_case.get('status') == 'passed' or expected_rejection_observed or
+                                response_rejection_observed))
                             trace = [line.split('\t') for line in trace_path.read_text().splitlines()] if trace_path.exists() else []
                             called_symbols = {symbol for symbol, status in trace if status == '0'}
                             invoked_symbols = {symbol for symbol, _ in trace}
@@ -2071,7 +3327,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                     attribute_check['request_certificate_attribute_tags'] = [
                                         f'{item[0]:06X}' for item in register_attributes[2]]
                             checks.append({'case_id': case_id, 'constructor_variant': variant, 'protocol_version': version, 'encoding': encoding,
-                                           'transport': transport, 'status': 'passed' if observation and not code and run.returncode == 0 else 'failed',
+                                           'transport': transport, 'status': 'passed' if observation and not code and (run.returncode == 0 or response_rejection_observed) else 'failed',
                                            'consumer_case_status': (result.get('cases') or [{}])[0].get('status', 'missing'),
                                            'consumer_server_compatibility': (result.get('cases') or [{}])[0].get('server_compatibility', 'missing'),
                                            'consumer_library_correctness': (result.get('cases') or [{}])[0].get('library_correctness', 'missing'),
@@ -2120,6 +3376,27 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                    if item[0] == BATCH_ITEM_TAG
                                                    for status in numbers(item, 0x42007F))}
                                               if recipe[1] == 'cancel_poll_race' else {}),
+                                           **(async_lifecycle_peer_check(observation)
+                                              if recipe[1] == 'async_create_poll_lifecycle' and
+                                              len(observation) == 4 else {}),
+                                           **(nonrecursive_poll_cancel_peer_check(observation)
+                                              if recipe[1] == 'async_poll_cancel_no_recursion' and
+                                              len(observation) == 2 else {}),
+                                           **(async_failure_poll_peer_check(observation)
+                                              if recipe[1] == 'async_poll_final_failure' and
+                                              len(observation) == 3 else {}),
+                                           **(async_repeated_pending_poll_peer_check(observation)
+                                              if recipe[1] == 'async_poll_repeated_pending_to_success' and
+                                              len(observation) == 5 else {}),
+                                           **(async_process_then_poll_peer_check(observation)
+                                              if recipe[1] == 'async_process_then_poll_state' and
+                                              len(observation) == 4 else {}),
+                                           **(async_query_outstanding_peer_check(observation)
+                                              if recipe[1] == 'async_query_outstanding_filter' and
+                                              len(observation) == 9 else {}),
+                                           **(async_unknown_correlation_peer_check(observation)
+                                              if recipe[1] == 'async_unknown_correlation_rejected' and
+                                              len(observation) == 1 else {}),
                                            **({'peer_final_state_matches_setup':
                                                    observation[0][2]['peer_observed_state_before_sha256'] ==
                                                    observation[0][2]['peer_observed_state_after_sha256']}
@@ -2286,27 +3563,56 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         cell['public_api_symbol'] ==
                                         'kmipkit_client_batch_add_error_continuation_value')
                                     async_request_constructor = (
-                                        recipe[1] == 'cancel_poll_race' and
+                                        recipe[1] in (
+                                            'cancel_poll_race',
+                                            'async_poll_cancel_no_recursion',
+                                                'async_poll_final_failure',
+                                                'async_poll_repeated_pending_to_success',
+                                            'async_process_then_poll_state',
+                                            'async_unknown_correlation_rejected') and
                                         cell['action'] == 'construct' and
                                         cell['public_api_symbol'] in {
                                             'kmipkit_poll_request_create',
                                             'kmipkit_cancel_request_create'})
+                                    async_process_constructor = (
+                                        recipe[1] == 'async_process_then_poll_state' and
+                                        cell['action'] == 'construct' and
+                                        cell['public_api_symbol'] ==
+                                        'kmipkit_process_request_create')
+                                    async_lifecycle_constructor = (
+                                        recipe[1] in ('async_create_poll_lifecycle',
+                                                      'async_query_outstanding_filter') and
+                                        cell['action'] == 'construct' and
+                                        cell['public_api_symbol'] in {
+                                            'kmipkit_poll_request_create',
+                                            'kmipkit_query_async_requests_request_create',
+                                            'kmipkit_query_async_requests_request_with_correlation_values',
+                                            'kmipkit_query_async_requests_request_with_operations'})
                                     if ((encoding, transport) != ('TTLV', 'raw_tls') or
                                             (cell['action'] not in ('decode', 'encode') and
                                              not stop_continuation_constructor and
-                                             not async_request_constructor)):
+                                             not async_request_constructor and
+                                             not async_process_constructor and
+                                             not async_lifecycle_constructor)):
                                         continue
                                     if (cell['action'] == 'decode' and
                                             not cell['public_api_symbol'].startswith('kmipkit_client_batch_') and
                                             cell['public_api_symbol'] !=
                                             'kmipkit_client_async_operation_outcome_cancel_response_v1' and
                                             cell['public_api_symbol'] !=
-                                            'kmipkit_client_async_operation_outcome_poll_response_v1'):
+                                            'kmipkit_client_async_operation_outcome_poll_response_v1' and
+                                            cell['public_api_symbol'] !=
+                                            'kmipkit_client_async_operation_outcome_process_response_v1' and
+                                            cell['public_api_symbol'] !=
+                                            'kmipkit_client_async_operation_outcome_query_async_requests_response_v1'):
                                         continue
                                     if cell['action'] == 'encode' and cell['public_api_symbol'] not in {
                                             'kmipkit_cancel_request_to_ttlv_payload',
                                             'kmipkit_poll_request_to_ttlv_payload',
+                                            'kmipkit_process_request_to_ttlv_payload',
+                                            'kmipkit_query_async_requests_request_to_ttlv_payload',
                                             'kmipkit_add_attribute_request_to_ttlv_payload',
+                                            'kmipkit_adjust_attribute_request_to_ttlv_payload',
                                             'kmipkit_set_attribute_request_to_ttlv_payload',
                                             'kmipkit_delete_attribute_request_to_ttlv_payload',
                                             'kmipkit_get_attributes_request_to_ttlv_payload',
@@ -2319,7 +3625,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                     cell['public_api_symbol'] ==
                                     'kmipkit_client_async_operation_outcome_cancel_response_v1' or
                                     cell['public_api_symbol'] ==
-                                    'kmipkit_client_async_operation_outcome_poll_response_v1')
+                                    'kmipkit_client_async_operation_outcome_poll_response_v1' or
+                                    cell['public_api_symbol'] ==
+                                    'kmipkit_client_async_operation_outcome_process_response_v1')
                                 if response_accessor_route:
                                     source_sections = {reference.get('section')
                                                       for reference in target.get('source_refs', [])}
@@ -2384,7 +3692,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         (codec.tag('Operation'), normalize(target['name'])))
                                     target_item = next(item for item in request_tree[2]
                                                        if item[0] == 0x42000F and
-                                                       numbers(item, 0x42005C) == [target_operation])
+                                                       direct_numbers(item, 0x42005C) == [target_operation])
                                     payload = next((child for child in target_item[2]
                                                     if child[0] == 0x420079 and child[1] == 1), None)
                                     digest_tree = payload or target_item

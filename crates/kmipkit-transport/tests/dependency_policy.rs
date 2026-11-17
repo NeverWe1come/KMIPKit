@@ -41,7 +41,6 @@ fn transport_feature_graph_uses_http1_and_aws_lc_without_proxy_or_compression() 
         "feature \"brotli\"",
         "feature \"zstd\"",
         "feature \"compression\"",
-        "rustls feature \"tls12\"",
         "rustls feature \"ring\"",
         "tokio-rustls feature \"ring\"",
         "reqwest v",

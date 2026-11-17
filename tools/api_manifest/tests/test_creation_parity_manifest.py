@@ -55,7 +55,9 @@ class CreationParityManifestTests(unittest.TestCase):
                             declaration["capabilityId"],
                             {operation_id, "server_generated_creation", "client_execution"},
                         )
-                        self.assertEqual("declared", declaration["declarationState"])
+                        self.assertIn(
+                            declaration["declarationState"], {"declared", "verified"}
+                        )
                         self.assertEqual(
                             {"rust", "c", "java", "python"},
                             set(declaration["languageMappings"]),

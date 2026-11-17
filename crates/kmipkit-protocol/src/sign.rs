@@ -19,6 +19,10 @@ pub struct SignRequest {
     parameters: Option<Structure>,
     data: Option<OperationData>,
     digested_data: Option<SecretBytes>,
+    deterministic: Option<bool>,
+    context_string: Option<Vec<u8>>,
+    external_mu: Option<bool>,
+    random: Option<SecretBytes>,
     correlation: Option<SecretBytes>,
     init: Option<bool>,
     final_part: Option<bool>,
@@ -33,6 +37,10 @@ impl SignRequest {
             parameters: None,
             data: None,
             digested_data: None,
+            deterministic: None,
+            context_string: None,
+            external_mu: None,
+            random: None,
             correlation: None,
             init: None,
             final_part: None,
@@ -107,6 +115,34 @@ impl SignRequest {
         self
     }
 
+    /// Supplies the KMIP 3.0 Deterministic flag for PQC signing.
+    #[must_use]
+    pub const fn with_deterministic(mut self, value: bool) -> Self {
+        self.deterministic = Some(value);
+        self
+    }
+
+    /// Supplies the KMIP 3.0 Context String for PQC signing.
+    #[must_use]
+    pub fn with_context_string(mut self, value: Vec<u8>) -> Self {
+        self.context_string = Some(value);
+        self
+    }
+
+    /// Supplies the KMIP 3.0 External Mu flag for PQC signing.
+    #[must_use]
+    pub const fn with_external_mu(mut self, value: bool) -> Self {
+        self.external_mu = Some(value);
+        self
+    }
+
+    /// Supplies the KMIP 3.0 Random bytes for PQC signing.
+    #[must_use]
+    pub fn with_random(mut self, value: Vec<u8>) -> Self {
+        self.random = Some(SecretBytes::new(value));
+        self
+    }
+
     /// Validates the locally knowable single-part or multipart shape.
     ///
     /// # Errors
@@ -174,6 +210,30 @@ impl SignRequest {
                 common::secret_value(data),
             )?;
         }
+        if let Some(deterministic) = self.deterministic {
+            common::push(
+                &mut payload,
+                common::DETERMINISTIC,
+                Value::boolean(deterministic),
+            )?;
+        }
+        if let Some(context_string) = self.context_string {
+            common::push(
+                &mut payload,
+                common::CONTEXT_STRING,
+                Value::byte_string(context_string),
+            )?;
+        }
+        if let Some(external_mu) = self.external_mu {
+            common::push(
+                &mut payload,
+                common::EXTERNAL_MU,
+                Value::boolean(external_mu),
+            )?;
+        }
+        if let Some(random) = self.random {
+            common::push(&mut payload, common::RANDOM, common::secret_value(random))?;
+        }
         append_framing(&mut payload, self.correlation, self.init, self.final_part)?;
         Ok(payload)
     }
@@ -193,6 +253,10 @@ impl fmt::Debug for SignRequest {
             .field("has_cryptographic_parameters", &self.parameters.is_some())
             .field("has_data", &self.data.is_some())
             .field("has_digested_data", &self.digested_data.is_some())
+            .field("deterministic", &self.deterministic)
+            .field("has_context_string", &self.context_string.is_some())
+            .field("external_mu", &self.external_mu)
+            .field("has_random", &self.random.is_some())
             .field("has_correlation_value", &self.correlation.is_some())
             .field("init_indicator", &self.init)
             .field("final_indicator", &self.final_part)

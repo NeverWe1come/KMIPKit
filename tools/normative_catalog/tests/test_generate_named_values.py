@@ -22,37 +22,39 @@ class NamedValueGeneratorTests(unittest.TestCase):
             (group.version, group.name): [(value.name, value.value) for value in group.values]
             for group in versioned.groups
         }
-        self.assertEqual(
-            {
-                ("v2_1", "Operation"): [
-                    ("Set Defaults", 0x36),
-                    ("Set Constraints", 0x37),
-                    ("Get Constraints", 0x38),
-                    ("Query Asynchronous Requests", 0x39),
-                    ("Process", 0x3A),
-                    ("Ping", 0x3B),
-                ],
-                ("v3_0", "Operation"): [
-                    ("Create Group", 0x3C),
-                    ("Obliterate", 0x3D),
-                    ("Create User", 0x3E),
-                    ("Create Credential", 0x3F),
-                    ("Deactivate", 0x40),
-                    ("Encapsulate", 0x41),
-                    ("Decapsulate", 0x42),
-                ],
-                ("v3_0", "Object Class"): [("User", 1), ("System", 2)],
-                ("v3_0", "Object Type"): [
-                    ("User", 0x0B),
-                    ("Group", 0x0C),
-                    ("Password Credential", 0x0D),
-                    ("Device Credential", 0x0E),
-                    ("One Time Password Credential", 0x0F),
-                    ("Hashed Password Credential", 0x10),
-                ],
-            },
-            actual,
-        )
+        expected_core = {
+            ("v2_1", "Operation"): [
+                ("Set Defaults", 0x36),
+                ("Set Constraints", 0x37),
+                ("Get Constraints", 0x38),
+                ("Query Asynchronous Requests", 0x39),
+                ("Process", 0x3A),
+                ("Ping", 0x3B),
+            ],
+            ("v3_0", "Operation"): [
+                ("Create Group", 0x3C),
+                ("Obliterate", 0x3D),
+                ("Create User", 0x3E),
+                ("Create Credential", 0x3F),
+                ("Deactivate", 0x40),
+                ("Encapsulate", 0x41),
+                ("Decapsulate", 0x42),
+            ],
+            ("v3_0", "Object Class"): [("User", 1), ("System", 2)],
+            ("v3_0", "Object Type"): [
+                ("User", 0x0B),
+                ("Group", 0x0C),
+                ("Password Credential", 0x0D),
+                ("Device Credential", 0x0E),
+                ("One Time Password Credential", 0x0F),
+                ("Hashed Password Credential", 0x10),
+            ],
+        }
+        for key, expected_values in expected_core.items():
+            self.assertEqual(expected_values, actual.get(key))
+        self.assertIn(("v2_0", "Result Reason"), actual)
+        self.assertIn(("v3_0", "KEM Algorithm"), actual)
+        self.assertIn(("v3_0", "Object Class Mask"), actual)
 
         self.assertIn("CREATE_GROUP", rendered["rust"])
         self.assertIn("OBLITERATE", rendered["rust"])

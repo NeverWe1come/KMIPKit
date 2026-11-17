@@ -1487,6 +1487,12 @@ mod unrelated {
             (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
         )
         profile_id = "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        discrepancy = next(
+            row
+            for row in catalog["discrepancies"]
+            if row["discrepancy_id"] == "KMIPKIT-DISC-042"
+        )
+        discrepancy["state"] = "open"
         readiness = evaluate_profile_readiness(
             catalog,
             profile_id,
@@ -1514,6 +1520,7 @@ mod unrelated {
             for row in catalog["discrepancies"]
             if row["discrepancy_id"] == "KMIPKIT-DISC-042"
         )
+        discrepancy["state"] = "open"
         discrepancy["affected_requirement_ids"] = []
         discrepancy["affected_profile_ids"] = [profile_id]
 
@@ -2943,7 +2950,7 @@ mod unrelated {
             line for line in profile_state_section.splitlines()
             if line.startswith("| KMIPKIT-PROFILE-BASELINE-CLIENT |")
         )
-        self.assertIn("| selected | true | evidence\\_incomplete |", baseline_row)
+        self.assertIn("| selected | true | evidence\\_complete |", baseline_row)
         self.assertIn("No typed rule mapping", report)
         self.assertIn("No category-appropriate rule test", report)
         self.assertIn("KMIPKIT-REQ-SPEC-6.1.16-001-001", report)

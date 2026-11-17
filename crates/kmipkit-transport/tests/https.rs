@@ -1403,7 +1403,7 @@ fn https_never_attributes_a_surplus_response_to_a_later_exchange() {
     let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
     let listener = LoopbackTcpListener::bind().expect("the HTTPS peer binds loopback");
     let address = listener.local_addr();
-    let (peer, surplus_release, surplus_sent) =
+    let (peer, surplus_release, surplus_sent, surplus_connection_closed) =
         spawn_surplus_response_peer(listener.into_inner(), server_config(&pki));
     let config = client_config(
         &pki,
@@ -1424,11 +1424,12 @@ fn https_never_attributes_a_surplus_response_to_a_later_exchange() {
         surplus_sent.recv_timeout(PEER_TIMEOUT).is_ok(),
         "the peer queued the unsolicited response after two completed exchanges"
     );
+    let surplus_connection_closed_while_idle =
+        surplus_connection_closed.recv_timeout(PEER_TIMEOUT).is_ok();
     let third = adapter.exchange(fixtures::REQUEST_SENTINEL, 64);
-    let third_avoids_surplus = match &third {
-        Ok(response) => response.as_bytes() != b"unsolicited",
-        Err(_) => true,
-    };
+    let third_has_its_own_response = third
+        .as_ref()
+        .is_ok_and(|response| response.as_bytes() == b"third");
     drop(adapter);
     let peer = peer.join().expect("the bounded reuse peer completes");
 
@@ -1448,8 +1449,18 @@ fn https_never_attributes_a_surplus_response_to_a_later_exchange() {
     if !peer.surplus_write_succeeded {
         failures.push("the unsolicited response could not be queued on the reused TLS connection");
     }
-    if !third_avoids_surplus {
-        failures.push("the third exchange was given the unsolicited response");
+    if !surplus_connection_closed_while_idle {
+        failures
+            .push("the peer did not observe the surplus connection close before the next exchange");
+    }
+    if peer.request_connection_ids.len() < 3 {
+        failures.push("the peer did not observe the third HTTPS request");
+    }
+    if peer.request_connection_ids.first() == peer.request_connection_ids.get(2) {
+        failures.push("the third exchange reused the connection that received surplus input");
+    }
+    if !third_has_its_own_response {
+        failures.push("the third exchange did not receive its own response");
     }
     assert!(
         failures.is_empty(),
@@ -2087,11 +2098,13 @@ fn spawn_surplus_response_peer(
     JoinHandle<SurplusPeerObservation>,
     mpsc::SyncSender<()>,
     mpsc::Receiver<()>,
+    mpsc::Receiver<()>,
 ) {
     let observation = Arc::new(std::sync::Mutex::new(SurplusPeerObservation::default()));
     let (surplus_release, surplus_release_rx) = mpsc::sync_channel(1);
     let surplus_release_rx = Arc::new(std::sync::Mutex::new(surplus_release_rx));
     let (surplus_sent, surplus_sent_rx) = mpsc::sync_channel(1);
+    let (surplus_connection_closed, surplus_connection_closed_rx) = mpsc::sync_channel(1);
     let peer_observation = Arc::clone(&observation);
     let peer = thread::spawn(move || {
         let _ = listener.set_nonblocking(true);
@@ -2107,6 +2120,7 @@ fn spawn_surplus_response_peer(
                     let observation = Arc::clone(&peer_observation);
                     let surplus_release = Arc::clone(&surplus_release_rx);
                     let surplus_sent = surplus_sent.clone();
+                    let surplus_connection_closed = surplus_connection_closed.clone();
                     handlers.push(thread::spawn(move || {
                         run_surplus_connection(
                             stream,
@@ -2115,6 +2129,7 @@ fn spawn_surplus_response_peer(
                             &observation,
                             &surplus_release,
                             &surplus_sent,
+                            &surplus_connection_closed,
                         );
                     }));
                 }
@@ -2134,7 +2149,12 @@ fn spawn_surplus_response_peer(
             .into_inner()
             .unwrap_or_else(std::sync::PoisonError::into_inner)
     });
-    (peer, surplus_release, surplus_sent_rx)
+    (
+        peer,
+        surplus_release,
+        surplus_sent_rx,
+        surplus_connection_closed_rx,
+    )
 }
 
 fn run_surplus_connection(
@@ -2144,6 +2164,7 @@ fn run_surplus_connection(
     observation: &Arc<std::sync::Mutex<SurplusPeerObservation>>,
     surplus_release: &Arc<std::sync::Mutex<mpsc::Receiver<()>>>,
     surplus_sent: &mpsc::SyncSender<()>,
+    surplus_connection_closed: &mpsc::SyncSender<()>,
 ) {
     if stream.set_nonblocking(false).is_err()
         || stream.set_read_timeout(Some(PEER_TIMEOUT)).is_err()
@@ -2162,7 +2183,14 @@ fn run_surplus_connection(
         }
     }
 
-    while read_request(&mut tls).is_some() {
+    let mut surplus_was_written = false;
+    loop {
+        if read_request(&mut tls).is_none() {
+            if surplus_was_written {
+                let _ = surplus_connection_closed.send(());
+            }
+            return;
+        }
         let request_index = {
             let Ok(mut observation) = observation.lock() else {
                 return;
@@ -2186,6 +2214,7 @@ fn run_surplus_connection(
                 return;
             }
             let wrote_surplus = write_response_body(&mut tls, b"unsolicited").is_ok();
+            surplus_was_written = wrote_surplus;
             if let Ok(mut observation) = observation.lock() {
                 observation.surplus_write_succeeded = wrote_surplus;
             }

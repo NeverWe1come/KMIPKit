@@ -23,6 +23,11 @@ fn response_fixture_request() -> ClientRequest {
 #[link(name = "kmipkit_client_abi_c_consumer", kind = "static")]
 unsafe extern "C" {
     fn kmipkit_client_abi_c_consumer_build_get_attributes_request() -> i32;
+    fn kmipkit_client_abi_c_consumer_checks_fluent_attribute_read_entrypoints() -> i32;
+    fn kmipkit_client_abi_c_consumer_executes_fluent_attribute_reads(
+        client: *mut kmipkit_client_t,
+        limits: *mut kmipkit_codec_limits_t,
+    ) -> i32;
     fn kmipkit_client_abi_c_consumer_validate_get_attributes_response(
         item: *mut kmipkit_client_batch_item_response_t,
         expected_present: u8,
@@ -33,6 +38,75 @@ unsafe extern "C" {
     fn kmipkit_client_abi_c_consumer_validate_get_attributes_empty_response(
         item: *mut kmipkit_client_batch_item_response_t,
     ) -> i32;
+}
+
+#[test]
+fn c_consumer_calls_task_oriented_attribute_read_entrypoints() {
+    assert_eq!(
+        unsafe { kmipkit_client_abi_c_consumer_checks_fluent_attribute_read_entrypoints() },
+        1,
+        "the C consumer can call the semantic Get Attributes and Get Attribute List APIs"
+    );
+}
+
+#[test]
+fn c_consumer_executes_both_attribute_read_entrypoints_over_mtls() {
+    let (client, peer, exchange_count) = client_with_responses(vec![
+        attribute_read_success_response(11),
+        attribute_read_success_response(11),
+        attribute_read_success_response(12),
+        attribute_read_success_response(12),
+    ]);
+    let client = make_handle(
+        Kind::Client,
+        HandleValue::Client(Box::new(std::sync::Mutex::new(client))),
+    );
+    let limits = default_codec_limits_handle();
+    let status =
+        unsafe { kmipkit_client_abi_c_consumer_executes_fluent_attribute_reads(client, limits) };
+    peer.join()
+        .expect("the controlled TLS peer completes all four exchanges");
+    assert_eq!(
+        status, 1,
+        "the compiled C consumer completed both direct APIs with and without options"
+    );
+    assert_eq!(exchange_count.load(Ordering::Relaxed), 4);
+    kmipkit_codec_limits_release(limits);
+    kmipkit_client_release(client);
+}
+
+fn attribute_read_success_response(operation: u32) -> Vec<u8> {
+    let version = ttlv_structure(
+        0x0042_0069,
+        [ttlv_integer(0x0042_006a, 2), ttlv_integer(0x0042_006b, 1)],
+    );
+    let header = ttlv_structure(
+        0x0042_007a,
+        [
+            version,
+            ttlv_datetime(0x0042_0092, 1),
+            ttlv_integer(0x0042_000d, 1),
+        ],
+    );
+    let identifier = ttlv_item(0x0042_0094, 0x07, b"attribute-read-key");
+    let payload = if operation == 11 {
+        let attributes = ttlv_structure(0x0042_0125, [ttlv_integer(0x0042_002a, 256)]);
+        ttlv_structure(0x0042_007c, [identifier, attributes])
+    } else {
+        ttlv_structure(
+            0x0042_007c,
+            [identifier, ttlv_enumeration(0x0042_013b, 0x0042_002a)],
+        )
+    };
+    let response_item = ttlv_structure(
+        0x0042_000f,
+        [
+            ttlv_enumeration(0x0042_005c, operation),
+            ttlv_enumeration(0x0042_007f, 0),
+            payload,
+        ],
+    );
+    ttlv_structure(0x0042_007b, [header, response_item])
 }
 
 #[test]

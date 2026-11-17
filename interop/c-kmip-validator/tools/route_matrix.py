@@ -669,6 +669,17 @@ def generic_tree_fixtures(target: dict, catalog: dict, tags: dict[str, int],
     field_name = target.get('field_name', target['name'])
     normalized_tags = {_name(name): value for name, value in tags.items()}
     tag = normalized_tags.get(_name(field_name))
+    if (target_kind == 'operation_payload_field' and field_name == 'Key Wrap Type'
+            and tag is not None):
+        return [_fixture_value(target, tag, 5, catalog, protocol_version)]
+    if (target_kind == 'operation_payload_field' and field_name == 'Any Object (Section 2)'
+            and target.get('role') == 'response'):
+        object_target = next((candidate for candidate in catalog['normative_targets']
+                              if candidate.get('target_id') ==
+                              'KMIPKIT-ELEM-OBJECT-STRUCTURE-SYMMETRIC-KEY'), None)
+        if object_target is None:
+            return None
+        return generic_tree_fixtures(object_target, catalog, tags, protocol_version)
     if target_kind == 'credential':
         tag = normalized_tags.get('credential')
         if target['name'] in {'Device', 'Attestation', 'Username and Password'}:

@@ -10,7 +10,9 @@ license = "Apache-2.0"
 cargo-fuzz = true
 
 [dependencies]
+kmipkit-client = { path = "../crates/kmipkit-client", version = "1.0.0", features = ["test-support"] }
 kmipkit-protocol = { path = "../crates/kmipkit-protocol", version = "1.0.0" }
+kmipkit-transport = { path = "../crates/kmipkit-transport", version = "1.0.0", features = ["test-support"] }
 kmipkit-ttlv = { path = "../crates/kmipkit-ttlv", version = "1.0.0" }
 libfuzzer-sys = "=0.4.12"
 
@@ -24,6 +26,27 @@ bench = false
 [[bin]]
 name = "extension_schema"
 path = "fuzz_targets/extension_schema.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "json_codec"
+path = "fuzz_targets/json_codec.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "wire_and_xml_preflight"
+path = "fuzz_targets/wire_and_xml_preflight.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "s2c_and_multi_version"
+path = "fuzz_targets/s2c_and_multi_version.rs"
 test = false
 doc = false
 bench = false

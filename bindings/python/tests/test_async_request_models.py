@@ -6,13 +6,14 @@ from types import SimpleNamespace
 
 import pytest
 
-from kmipkit import async_operations, errors, ttlv
+from kmipkit import async_operations, errors, extensions, ttlv
 from kmipkit.async_operations import (
     CancelRequest,
     PollRequest,
     ProcessRequest,
     QueryAsyncRequestsRequest,
 )
+from kmipkit.protocol_values import Operation
 
 
 CORRELATION_VALUE_TAG = 0x00420006
@@ -80,6 +81,29 @@ def test_cancel_poll_and_process_build_payloads_without_executing_operations() -
                 with ttlv.ttlv_structure_view(payload) as view:
                     assert _tags(view) == (CORRELATION_VALUE_TAG,)
                     assert _bytes_at(view, 0) == correlation
+
+
+def test_async_request_models_convert_to_matching_batch_items() -> None:
+    correlation = b"\x00\xff\x41"
+    conversions = (
+        (CancelRequest, extensions.client_batch_item_cancel_from_request, Operation.CANCEL),
+        (PollRequest, extensions.client_batch_item_poll_from_request, Operation.POLL),
+        (ProcessRequest, extensions.client_batch_item_process_from_request, Operation.PROCESS),
+        (
+            QueryAsyncRequestsRequest,
+            extensions.client_batch_item_query_async_requests_from_request,
+            Operation.QUERY_ASYNCHRONOUS_REQUESTS,
+        ),
+    )
+    for request_type, to_batch_item, expected_operation in conversions:
+        request = (
+            request_type.create()
+            if request_type is QueryAsyncRequestsRequest
+            else request_type.create(correlation)
+        )
+        with request:
+            with to_batch_item(request) as item:
+                assert item.operation == expected_operation
 
 
 def test_query_request_preserves_absent_and_present_ordered_filters() -> None:

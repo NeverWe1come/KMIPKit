@@ -56,6 +56,8 @@ def _value_for(attribute: StandardAttribute, limits: ttlv.CodecLimits) -> ttlv.V
         return ttlv.ttlv_value_enumeration(0xFFFF_FFFF)
     if kind == "Integer":
         return ttlv.ttlv_value_integer(7)
+    if kind == "LongInteger":
+        return ttlv.ttlv_value_long_integer(7)
     if kind == "Interval":
         return ttlv.ttlv_value_interval(7)
     if kind in ("TextString", "UniqueIdentifier"):
@@ -101,6 +103,7 @@ def _expected_item_type(kind: str) -> ttlv.ItemType:
         "Enumeration": ttlv.ItemType.Enumeration,
         "Integer": ttlv.ItemType.Integer,
         "Interval": ttlv.ItemType.Interval,
+        "LongInteger": ttlv.ItemType.LongInteger,
         "Structure": ttlv.ItemType.Structure,
         "TextString": ttlv.ItemType.TextString,
         "UniqueIdentifier": ttlv.ItemType.TextString,
@@ -116,6 +119,8 @@ def _assert_catalog_value(attribute: StandardAttribute, actual: ttlv.TtlvValueVi
         assert _view_bytes(actual) == b"\x01"
     elif kind == "Integer":
         assert ttlv.ttlv_value_view_integer(actual) == 7
+    elif kind == "LongInteger":
+        assert ttlv.ttlv_value_view_long_integer(actual) == 7
     elif kind == "Boolean":
         assert ttlv.ttlv_value_view_boolean(actual) is True
     elif kind in ("ByteString", "TextString"):
@@ -167,8 +172,8 @@ def _view_bytes(value: ttlv.TtlvValueView) -> bytes:
 
 
 def test_catalog_exposes_all_sixty_two_direct_attributes_with_unique_tags():
-    assert len(StandardAttribute) == 62
-    assert len({attribute.tag for attribute in StandardAttribute}) == 62
+    assert len(StandardAttribute) == 99
+    assert len({attribute.tag for attribute in StandardAttribute}) == 99
     assert StandardAttribute.ACTIVATION_DATE.tag == 0x0042_0001
     assert StandardAttribute.VENDOR_ATTRIBUTE.tag == 0x0042_0008
 
