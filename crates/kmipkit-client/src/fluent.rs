@@ -693,6 +693,10 @@ impl<'a> DeriveKeyBuilder<'a> {
     ///
     /// The typed request validation also runs in [`Self::build`],
     /// [`Self::to_batch_item`], and [`Self::execute`].
+    ///
+    /// # Errors
+    /// Returns the specific missing-field error for the first absent required
+    /// field.
     pub fn validate(&self) -> Result<(), FluentBuildError> {
         self.validate_required_fields()
     }
@@ -711,6 +715,10 @@ impl<'a> DeriveKeyBuilder<'a> {
     ///
     /// Exchange options and the asynchronous indicator belong to the batch
     /// header and are not retained in an individual batch item.
+    ///
+    /// # Errors
+    /// Returns a payload-free error when a required field is absent or the
+    /// typed request validation rejects the selected values.
     pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
         self.into_request_and_execution()
             .map(|(request, _execution)| ClientBatchItem::new(ClientRequest::DeriveKey(request)))

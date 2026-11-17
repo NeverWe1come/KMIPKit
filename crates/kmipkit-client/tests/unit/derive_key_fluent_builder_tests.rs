@@ -10,10 +10,10 @@ use kmipkit_test_support::ExchangeScript;
 use kmipkit_ttlv::Value;
 use kmipkit_ttlv::codec::CodecLimits;
 
-use crate::asynchronous_execution_test_support::{client_for, request_contains};
-use crate::execute::{
-    ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientOperation, ClientRequest,
+use crate::asynchronous_execution_test_support::{
+    client_for, client_for_with_options_observer, request_contains,
 };
+use crate::execute::{ClientBatchOutcome, ClientOperation};
 use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_structure};
 use crate::{DeriveKeyBuilder, FluentBuildError};
 
@@ -39,7 +39,7 @@ fn derivation_parameters() -> DerivationParameters {
         .with_iteration_count(120_000)
 }
 
-fn configured_builder<'a>(client: &'a mut crate::Client) -> DeriveKeyBuilder<'a> {
+fn configured_builder(client: &mut crate::Client) -> DeriveKeyBuilder<'_> {
     client
         .request()
         .derive_key()
@@ -122,6 +122,50 @@ fn fluent_derive_key_builds_typed_request_and_batch_without_sending() {
 }
 
 #[test]
+fn fluent_derive_key_rejects_invalid_typed_request_without_sending() {
+    let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
+
+    let error = configured_builder(&mut client)
+        .derivation_parameters(DerivationParameters::new())
+        .build()
+        .expect_err("PBKDF2 parameters require an explicit Salt and Iteration Count");
+
+    assert_eq!(error, FluentBuildError::InvalidRequest);
+    assert_eq!(transport.borrow().exchange_count(), 0);
+}
+
+#[test]
+fn fluent_derive_key_forwards_exchange_options() {
+    let response = asynchronous_response_bytes(
+        DERIVE_KEY,
+        0,
+        None,
+        None,
+        Some(test_structure([test_item(
+            UNIQUE_IDENTIFIER,
+            Value::text_string("derived-key".to_owned()),
+        )])),
+    );
+    let observed_options = std::rc::Rc::new(std::cell::RefCell::new(Vec::new()));
+    let (mut client, transport, _) = client_for_with_options_observer(
+        ExchangeScript::Success {
+            response,
+            request_write_chunks: Vec::new(),
+        },
+        std::rc::Rc::clone(&observed_options),
+    );
+    let options = crate::RequestOptions::default().with_wire_encoding(crate::WireEncoding::Ttlv);
+
+    configured_builder(&mut client)
+        .with_options(options)
+        .execute(&CodecLimits::defaults())
+        .expect("the typed Derive Key route accepts exchange-local options");
+
+    assert_eq!(&*observed_options.borrow(), &[options]);
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
 fn fluent_derive_key_executes_once_and_preserves_server_result_and_secrets() {
     let response = asynchronous_response_bytes(
         DERIVE_KEY,
@@ -145,9 +189,25 @@ fn fluent_derive_key_executes_once_and_preserves_server_result_and_secrets() {
 
     assert_eq!(result.outcome().operation(), ClientOperation::DeriveKey);
     assert_eq!(result.outcome().result().status().raw(), 0);
+    assert_eq!(
+        result
+            .outcome()
+            .derive_key_response()
+            .and_then(|response| response.unique_identifier()),
+        Some(&UniqueIdentifier::from("derived-key"))
+    );
     assert!(request_contains(&captured, DERIVATION_INPUT));
-    assert!(request_contains(&captured, b"source-secret"));
-    assert!(request_contains(&captured, b"second-source"));
+    let captured_bytes = captured.borrow();
+    let request = captured_bytes.as_deref().expect("the request was captured");
+    let first_identifier = request
+        .windows(b"source-secret".len())
+        .position(|window| window == b"source-secret")
+        .expect("the first source identifier was encoded");
+    let second_identifier = request
+        .windows(b"second-source".len())
+        .position(|window| window == b"second-source")
+        .expect("the second source identifier was encoded");
+    assert!(first_identifier < second_identifier);
     assert_eq!(transport.borrow().exchange_count(), 1);
 }
 
@@ -164,15 +224,11 @@ fn fluent_derive_key_pending_keeps_correlation_without_follow_up() {
         response,
         request_write_chunks: Vec::new(),
     });
-    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::DeriveKey(
-        valid_request(&mut client),
-    )))
-    .with_asynchronous_indicator(1);
-
-    let response = client
-        .execute(batch, &CodecLimits::defaults())
+    let response = configured_builder(&mut client)
+        .with_asynchronous_indicator(1)
+        .execute(&CodecLimits::defaults())
         .expect("the caller explicitly permits Pending");
-    let outcome = response.get(0).expect("one result is associated").outcome();
+    let outcome = response.outcome();
     let ClientBatchOutcome::Pending(pending) = outcome else {
         panic!("Pending remains explicit and resumable by the caller");
     };
