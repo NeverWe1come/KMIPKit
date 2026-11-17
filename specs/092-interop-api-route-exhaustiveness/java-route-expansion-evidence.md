@@ -2567,3 +2567,40 @@ python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-refe
 python3 interop/java-kmip-validator/tools/compare_route_ledger.py
 git diff --check
 ```
+
+## Java server Notify scalar payload route — 2026-11-17
+
+Red commit `fff7fcf83` adds a focused check for the server-initiated Notify
+`Unique Identifier` payload field from OASIS KMIP 2.0/2.1 §6.2.2. It failed at
+test compilation because the shared server-payload executor did not exist.
+Green commit `b0fb13c32` extends the generic TTLV fixture executor to support
+that catalogued text field, constructs it with the published `Unique
+Identifier` tag, and checks the value through Item construction, Item view,
+and decoding. The validator emits the three generic routes for both the
+Notify field target and its operation target; this records local TTLV route
+evidence and does not claim an inbound server listener or vendor exchange.
+
+The two version-specific Notify cases add 12 complete cells. The selected
+scope validates 27,716/27,716 cells with zero failures. Of the 71,641 Java
+matrix cells, 27,716 are executed and 43,925 remain pending across 1,158 case
+IDs. The full Java validator suite passes 61 tests with no skips, failures,
+or errors; the 68 route-capability tests pass and the generated route check
+confirms 1,507 routes. The refreshed evidence ledger compares with the
+checked-in reference.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-tmp" \
+  bash bindings/java/gradlew -p interop/java-kmip-validator \
+  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" test
+python3 -m unittest interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+git diff --check
+```

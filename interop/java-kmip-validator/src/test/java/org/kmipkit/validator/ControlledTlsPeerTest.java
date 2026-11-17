@@ -1119,7 +1119,7 @@ class ControlledTlsPeerTest {
         int additionalCaseIdCount = writeRouteExecutionReport(reportPath, mapper, events,
                 scalarStructureMemberCaseIds, serverPayloadCaseIds);
         assertTrue(Files.isRegularFile(reportPath),
-                "Installed Query calls against the controlled peer must emit route execution evidence.");
+                "Installed client calls against the controlled TLS peer must emit route execution evidence.");
         JsonNode report = new ObjectMapper().readTree(reportPath.toFile());
         assertEquals("java", report.path("language").asText());
         assertGenericOnlyTagInventoryEvidence(report.path("events"));

@@ -267,7 +267,7 @@ final class LocalCatalogRouteChecks {
                 throw new IllegalArgumentException("Selected case is not a supported server payload field: " + caseId);
             }
             String fieldName = requires.path("field_name").asText();
-            QueryPayloadValue fixture = serverPayloadValue(catalog, operationId, fieldName);
+            ServerPayloadValue fixture = serverPayloadValue(catalog, operationId, fieldName);
             int tagCode = tagCodeNamed(catalog, fieldName, version);
             TtlvItemType itemType = scalarMessageFieldType(fixture.encoding());
             byte[] wire = scalarWire(tagCode, itemType.code(), fixture.bytes());
@@ -306,9 +306,9 @@ final class LocalCatalogRouteChecks {
         }
     }
 
-    private static QueryPayloadValue serverPayloadValue(JsonNode catalog, String operationId, String fieldName) {
+    private static ServerPayloadValue serverPayloadValue(JsonNode catalog, String operationId, String fieldName) {
         if ("KMIPKIT-ELEM-OP-S2C-NOTIFY".equals(operationId) && "Unique Identifier".equals(fieldName)) {
-            return new QueryPayloadValue("Text String", 0,
+            return new ServerPayloadValue("Text String", 0,
                     "kmipkit-notify-validator".getBytes(StandardCharsets.US_ASCII));
         }
         if (!"KMIPKIT-ELEM-OP-S2C-QUERY".equals(operationId)) {
@@ -321,17 +321,17 @@ final class LocalCatalogRouteChecks {
             case "Attestation Type" -> queryEnumeration(catalog, "ATTESTATION-TYPE", "TPM Quote");
             case "Client Registration Method" -> queryEnumeration(catalog,
                     "CLIENT-REGISTRATION-METHOD", "Client Generated");
-            case "Vendor Identification" -> new QueryPayloadValue("Text String", 0,
+            case "Vendor Identification" -> new ServerPayloadValue("Text String", 0,
                     "KMIPKit Java validator".getBytes(StandardCharsets.US_ASCII));
             default -> throw new IllegalArgumentException("No source-backed scalar Query payload fixture: "
                     + fieldName);
         };
     }
 
-    private static QueryPayloadValue queryEnumeration(JsonNode catalog, String enumType, String valueName) {
+    private static ServerPayloadValue queryEnumeration(JsonNode catalog, String enumType, String valueName) {
         long number = enumValue(catalog, enumType, valueName);
         byte[] bytes = ByteBuffer.allocate(Integer.BYTES).putInt(Math.toIntExact(number)).array();
-        return new QueryPayloadValue("Enumeration", number, bytes);
+        return new ServerPayloadValue("Enumeration", number, bytes);
     }
 
     private static long enumValue(JsonNode catalog, String enumType, String valueName) {
@@ -355,7 +355,7 @@ final class LocalCatalogRouteChecks {
         return Long.parseUnsignedLong(match.path("wire_value").asText().replaceFirst("^0[xX]", ""), 16);
     }
 
-    private record QueryPayloadValue(String encoding, long number, byte[] bytes) { }
+    private record ServerPayloadValue(String encoding, long number, byte[] bytes) { }
 
     /**
      * Executes the repeatable Any object-attribute member with a Name attribute.
