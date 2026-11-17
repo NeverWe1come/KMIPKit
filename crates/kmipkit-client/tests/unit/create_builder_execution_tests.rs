@@ -1,13 +1,18 @@
 //! Fake-transport fluent Create tests derived from OASIS KMIP v2.1 §6.1.8,
 //! Tables 186–188; these do not claim full official test-case conformance.
 
+use std::cell::RefCell;
+use std::rc::Rc;
+
+use kmipkit_protocol::ProtocolVersion;
 use kmipkit_protocol::{AttributeSet, CreateRequest, ObjectType, UniqueIdentifier};
 use kmipkit_test_support::ExchangeScript;
-use kmipkit_transport::RequestDeliveryState;
+use kmipkit_transport::{RequestDeliveryState, RequestOptions};
 use kmipkit_ttlv::ValueView;
 use kmipkit_ttlv::codec::{CodecLimits, decode_with_limits};
 
-use crate::asynchronous_execution_test_support::client_for;
+use crate::WireEncoding;
+use crate::asynchronous_execution_test_support::{client_for, client_for_with_options_observer};
 use crate::execute::{ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientOperation};
 use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_structure};
 use crate::{ClientError, FluentBuildError};
@@ -19,8 +24,6 @@ const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const BATCH_ITEM: u32 = 0x0042_000f;
 const OPERATION: u32 = 0x0042_005c;
 const REQUEST_PAYLOAD: u32 = 0x0042_0079;
-const RESPONSE_PAYLOAD: u32 = 0x0042_007c;
-const ASYNCHRONOUS_CORRELATION_VALUE: u32 = 0x0042_0006;
 const PROTECTION_STORAGE_MASKS: u32 = 0x0042_015f;
 
 fn success_payload() -> kmipkit_ttlv::Structure {
@@ -154,9 +157,37 @@ fn fluent_create_executes_once_and_preserves_typed_response_and_optional_masks()
 }
 
 #[test]
+fn fluent_create_passes_exchange_options_to_the_existing_typed_executor() {
+    let response = asynchronous_response_bytes(CREATE, 0, None, None, Some(success_payload()));
+    let observed_options = Rc::new(RefCell::new(Vec::new()));
+    let (mut client, transport, _) = client_for_with_options_observer(
+        ExchangeScript::Success {
+            response,
+            request_write_chunks: Vec::new(),
+        },
+        Rc::clone(&observed_options),
+    );
+    let options = RequestOptions::default()
+        .with_protocol_version(ProtocolVersion::V2_1)
+        .with_wire_encoding(WireEncoding::Ttlv);
+
+    client
+        .request()
+        .create()
+        .object_type(ObjectType::from_raw(7))
+        .with_options(options)
+        .execute(&CodecLimits::defaults())
+        .expect("the typed Create executor accepts the selected options");
+
+    assert_eq!(&*observed_options.borrow(), &[options]);
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
 fn fluent_create_preserves_pending_correlation_without_follow_up() {
     const CORRELATION: &[u8] = b"CREATE_PENDING_CORRELATION_EXACT";
-    let response = asynchronous_response_bytes(CREATE, 2, None, Some(CORRELATION), None);
+    let response =
+        asynchronous_response_bytes(CREATE, 2, None, Some(CORRELATION), Some(test_structure([])));
     let (mut client, transport, _) = client_for(ExchangeScript::Success {
         response,
         request_write_chunks: Vec::new(),
