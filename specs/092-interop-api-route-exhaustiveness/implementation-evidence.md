@@ -241,3 +241,10 @@ tests passed, the normative inventory passed 27/27, catalog `--check` passed,
 and CTest passed 7/7 in 97.46 seconds. This is protocol-shape and lifecycle
 evidence; the fixture does not validate certificate or signature cryptography.
 Other C routes and cross-language FR-003/FR-005 coverage remain pending.
+
+The follow-up integration with the direct C routes also checks the Certify
+response through `kmipkit_client_batch_item_response_certify_ttlv` and confirms
+that its Unique Identifier matches the typed response. After aligning the
+controlled peer with the single-batch lifecycle, the focused C route matrix
+passed 193/193 tests, both KMIP-version TLS peers passed, CTest passed 7/7, the
+normative inventory passed 27/27, and catalog generation `--check` passed.

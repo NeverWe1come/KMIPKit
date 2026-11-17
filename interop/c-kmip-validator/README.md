@@ -195,7 +195,9 @@ The direct `test-op-certify` route creates an RSA-2048 pair with explicit
 Certificate Sign usage on the Private Key and Verify usage on the Public Key,
 activates the signer, and certifies the paired Public Key with the X.509
 Certificate Type. It checks the typed certificate identifier and destroys the
-certificate by ID Placeholder before revoking and destroying both keys. The
+certificate by ID Placeholder before revoking and destroying both keys. It
+also checks that the operation's generic response TTLV contains the same
+certificate identifier. The
 controlled peer verifies the request tree, signer lifecycle, placeholder
 mapping, typed results, and final state. This validates KMIP request/response
 shape and lifecycle only; the fixture does not validate a real certificate or

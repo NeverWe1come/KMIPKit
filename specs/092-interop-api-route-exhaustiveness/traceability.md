@@ -384,7 +384,9 @@ the Certificate Sign usage assignment follows §12.1 Table 495. It creates an
 RSA-2048 pair with explicit Certificate Sign usage on the Private Key, activates
 that key, certifies the paired Public Key with the X.509 Certificate Type in
 Attributes, destroys the certificate through ID Placeholder, then revokes and
-destroys both keys. This covers the C client execution and typed lifecycle
+destroys both keys. The client checks the typed certificate identifier and
+the generic response TTLV identifier through the public Certify TTLV accessor.
+This covers the C client execution and typed lifecycle
 checks traced by FR-003/FR-005, with the route catalog and controlled TLS peer
 as executable evidence. Red `109ff223e` and `b86d6d708` preceded Green
 `eabd01402`. The focused matrix passed 12/12; both controlled TLS peer tests
