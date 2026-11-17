@@ -2800,16 +2800,6 @@ class PeerState:
                 self.adjustable_attribute_values[identifier] = {}
                 placeholder = identifier
                 effect = 'created'
-            elif operation == 2:
-                identifiers = ('fixture-private-key-1', 'fixture-public-key-1')
-                if any(identifier in self.objects for identifier in identifiers):
-                    raise ValueError('fixture_duplicate_create_key_pair')
-                for identifier in identifiers:
-                    self.objects[identifier] = 'pre_active'
-                    self.attributes[identifier] = set()
-                    self.attribute_values[identifier] = {}
-                    self.adjustable_attribute_values[identifier] = {}
-                effect = 'created_key_pair'
             elif operation == 5:
                 if identifier not in self.objects or self.objects[identifier] != 'active':
                     raise ValueError('fixture_derive_key_source_not_active')
@@ -2833,19 +2823,6 @@ class PeerState:
                     self.attribute_values[split_identifier] = {}
                     self.adjustable_attribute_values[split_identifier] = {}
                 effect = 'created_split_key_parts'
-            elif operation == 6:
-                if identifier not in self.objects:
-                    status, reason, effect = 1, 55, 'public_key_not_found'
-                else:
-                    certificate_identifier = 'fixture-certificate-1'
-                    if certificate_identifier in self.objects:
-                        raise ValueError('fixture_duplicate_certify')
-                    self.objects[certificate_identifier] = 'pre_active'
-                    self.attributes[certificate_identifier] = set()
-                    self.attribute_values[certificate_identifier] = {}
-                    self.adjustable_attribute_values[certificate_identifier] = {}
-                    placeholder = certificate_identifier
-                    effect = 'certified'
             elif operation == 8:
                 matching_identifiers = list(self.objects)
                 if len(matching_identifiers) != 1:
@@ -4441,20 +4418,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             else:
                                                 verify_export_response(response_tree)
                                             verify_lifecycle(recipe[0], response_tree)
-                                        elif recipe[1] in ('sign_pair', 'signature_verify_pair'):
-                                            verify_signature_response(
-                                                response_tree, recipe[1] == 'signature_verify_pair')
                                         elif recipe[1] in ('sign', 'signature_verify'):
                                             verify_legacy_signature_response(
                                                 response_tree, recipe[1] == 'signature_verify')
-                                        elif recipe[1] == 'create_key_pair_direct':
-                                            verify_create_key_pair_batch_response(response_tree)
-                                        elif recipe[1] == 'certify_public_key':
-                                            verify_certify_batch_response(response_tree)
-                                        elif recipe[1] == 'create_key_pair':
-                                            verify_create_key_pair_response(response_tree)
-                                        elif recipe[1] == 'certify':
-                                            verify_certify_response(response_tree)
                                         elif recipe[1] == 'get_usage_allocation_uid_variants':
                                             verify_usage_allocation_identifier_variants(response_tree)
                                         elif reject_this_exchange:
