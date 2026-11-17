@@ -369,3 +369,65 @@ branches, and the common CI therefore reports a planned matrix only.
 - The ledger is regenerated from the validated report. Java matrix coverage is
   incomplete and the controlled fixture does not establish vendor KMS
   interoperability; #213 remains WIP.
+- This adds local-model evidence and does not complete the Java matrix or
+  establish vendor interoperability; the Java PR remains WIP.
+
+## 2026-11-17 Java KMIP 2.0/2.1 Attestation Capable Indicator routes
+
+- `test-norm-message-field-message-field-8-2-attestation-capable-indicator`
+  now completes three generic TTLV routes and the typed
+  `RequestMessage.fromTtlv` route in both protocol versions. OASIS KMIP 2.0
+  §8.2 and §9.3 Table 364 and KMIP 2.1 §8.2 and §9.3 Table 402 define the
+  request-header Boolean; the existing controlled request fixture carries
+  `true` and the typed parser asserts that value.
+- Red: `c40efe3d8` requires all eight exact route/version cells. The focused
+  test failed as intended (`expected 2 route events, got 0`). Its first run
+  exposed a stale installed-artifact manifest pointing to the #217 worktree;
+  reinstalling via `tools/install_artifact.py` restored the pinned artifact
+  before the conclusive Red result.
+- Green: `3271bd8f1` emits the generic Item create, Item view, and decoder
+  events for each version and includes this catalog target in typed request
+  parsing. The focused controlled-peer test passes for both versions.
+- Refactor: `60f4eb8e1` shares the Boolean message-field fixture between this
+  case and Batch Order Option; the focused test passes after the refactor.
+- The full Java suite passes 57/57 tests, with no failures, errors, or skips.
+  Selected-scope validation passes 27,270/27,270 cells with zero failed cells.
+  The regenerated ledger comparison passes; 44,371 cells remain pending across
+  1,218 case IDs in the 71,641-cell matrix. Evidence uses pinned artifact
+  commit `12496d646d11d4069b58bcc88fc76cc619211ec6` with SHA-256
+  `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+- Verification commands:
+
+  ```sh
+  JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+    bash ../../bindings/java/gradlew --no-daemon \
+    -PkmipkitMavenRepo="$PWD/build/maven-repository" test \
+    --tests org.kmipkit.validator.ControlledTlsPeerTest.controlledQueryProducesPerRouteEvidenceForBothProtocolVersions --rerun-tasks
+  JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+    bash ../../bindings/java/gradlew --no-daemon \
+    -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks
+  python3 ../shared/tools/validate_route_evidence.py \
+    --selected-scope --report build/route-execution-evidence.json \
+    --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+    --write-ledger
+  python3 tools/compare_route_ledger.py --refresh-reference
+  python3 tools/compare_route_ledger.py
+  ```
+- This adds local-model evidence; it does not complete the Java matrix or
+  establish interoperability with a vendor KMS. The Java PR remains WIP.
+
+## 2026-11-17 #213 stack sync with Attestation Capable Indicator
+
+- Merged #187 head `912b90a08711fe486c747776e99bd12f5562428c` into the KMIP 3.0
+  Java/Python branch. KMIP 3.0 builder work remains in place alongside the
+  Attestation, Batch Order Option, and earlier Java route evidence.
+- The Java validator suite passes 57/57 tests with no failures, errors, or
+  skips. Selected-scope validation passes 27,270/27,270 cells; the generated
+  Java ledger records 44,371 pending of 71,641 cells across 1,218 case IDs.
+  Route-capability tests pass 68/68, the generator reports 1,507 routes, and
+  the ledger comparison passes after regeneration.
+- The artifact was installed from pinned commit
+  `12496d646d11d4069b58bcc88fc76cc619211ec6` with SHA-256
+  `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+  This is local fixture evidence; it does not establish vendor interoperability
+  or complete the route matrix. #213 remains WIP.
