@@ -2,7 +2,8 @@
 //! Tables 271–272. These tests are not official fixture passes.
 
 use kmipkit_test_support::ExchangeScript;
-use kmipkit_transport::RequestDeliveryState;
+use kmipkit_protocol::ProtocolVersion;
+use kmipkit_transport::{RequestDeliveryState, RequestOptions};
 use kmipkit_ttlv::ValueView;
 use kmipkit_ttlv::codec::{CodecLimits, decode_with_limits};
 
@@ -148,4 +149,93 @@ fn malformed_ping_response_is_rejected_after_one_exchange() {
 
     assert!(error.delivery_state().is_some());
     assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn fluent_ping_builder_builds_the_existing_typed_request_and_batch_item() {
+    let (mut client, transport, _) =
+        client_for(ExchangeScript::FailBeforeWrite);
+
+    let builder = client.request().ping();
+    builder
+        .validate()
+        .expect("Ping has an empty, structurally valid request payload");
+    assert_eq!(builder.build(), kmipkit_protocol::PingRequest::new());
+
+    let item = client.request().ping().to_batch_item();
+    assert_eq!(item.operation(), PING);
+    assert_eq!(transport.borrow().exchange_count(), 0);
+}
+
+#[test]
+fn fluent_ping_builder_executes_one_exchange_and_preserves_typed_success() {
+    let response = asynchronous_response_bytes(PING, 0, None, None, Some(test_structure([])));
+    let (mut client, transport, captured) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+
+    let result = client
+        .request()
+        .ping()
+        .execute(&CodecLimits::defaults())
+        .expect("the existing client returns a typed Ping response");
+    let ClientBatchOutcome::Ping(ping) = result.outcome() else {
+        panic!("the fluent result preserves the typed Ping response");
+    };
+
+    assert_eq!(ping.result().status().raw(), 0);
+    assert_eq!(
+        request_shape(captured.borrow().as_deref().expect("request was captured")),
+        Some((PING, 0))
+    );
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn fluent_ping_builder_preserves_pending_without_follow_up() {
+    const CORRELATION: &[u8] = b"fluent-ping-pending-correlation";
+    let response =
+        asynchronous_response_bytes(PING, 2, None, Some(CORRELATION), Some(test_structure([])));
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+
+    let result = client
+        .request()
+        .ping()
+        .with_asynchronous_indicator(1)
+        .execute(&CodecLimits::defaults())
+        .expect("Pending remains a typed result of the single exchange");
+    let ClientBatchOutcome::Pending(pending) = result.outcome() else {
+        panic!("the fluent result preserves Pending explicitly");
+    };
+
+    assert_eq!(pending.operation(), ClientOperation::Ping);
+    assert_eq!(pending.asynchronous_correlation_value(), CORRELATION);
+    assert_eq!(
+        pending
+            .response()
+            .ping()
+            .map(|ping| ping.result().status().raw()),
+        Some(2)
+    );
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn fluent_ping_builder_rejects_kmip_2_0_before_exchange() {
+    let (mut client, transport, _) =
+        client_for(ExchangeScript::FailBeforeWrite);
+
+    let error = client
+        .request()
+        .ping()
+        .with_options(RequestOptions::default().with_protocol_version(ProtocolVersion::V2_0))
+        .execute(&CodecLimits::defaults())
+        .expect_err("Ping is assigned starting in KMIP 2.1 §6.1.36");
+
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(transport.borrow().exchange_count(), 0);
 }
