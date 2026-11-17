@@ -493,11 +493,11 @@ def main() -> int:
     )
     expected_operations, expected_cases = include_delegated_login(
         expected_operations, expected_cases)
-    expected_operations += (1, 43, 19, 20)
-    expected_cases += ("test-op-export",)
     if protocol_version == "2.0":
         expected_operations += (30,)
         expected_cases += ("test-op-discover-versions",)
+    expected_operations += (1, 43, 19, 20)
+    expected_cases += ("test-op-export",)
     expected_operations += (37, 38, 39)
     expected_operations += (39, 37, 38)
     expected_operations += (1, 13, 19, 20)

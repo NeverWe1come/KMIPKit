@@ -1128,59 +1128,6 @@ preserving their server-issued correlations.
   `test-async-unknown-correlation-rejected` as the next missing recipe; PR
   #170 remains WIP.
 
-### C Export request and response routes
-
-OASIS KMIP v2.0 §6.1.18 Tables 202–203 and v2.1 §6.1.18 Tables 217–218
-define the Export payloads. The installed C consumer sends Create → Export →
-Revoke → Destroy with ID Placeholder identifiers, checks the typed Object
-Type, Unique Identifier, and AES-128 Attributes, and verifies the complete
-response TTLV and the Symmetric Key object shape. The controlled peer checks
-the exact Export request and all four required response fields; key bytes are
-not included in evidence or diagnostics.
-
-- Red commit `76f402452`: the focused test failed because Export had no
-  controlled-peer route recipe.
-- Green commit `f4aa1a690`: implemented the C request/response path and peer
-  recipe across both versions and all six encoding/transport combinations.
-- Verification: the focused test covers all 44 C cells for `test-op-export`,
-  including four generic TTLV cells, 36 constructor/send/decode cells, and four
-  typed/generic response-accessor cells. All 12 controlled-peer checks pass.
-  The C target builds, CTest `test_c_validator` passes, and
-  `PYTHONPATH=interop/c-kmip-validator/tests:interop/c-kmip-validator/tools
-  python3 -B -m unittest test_route_matrix -v` passes 159/159 on the final
-  source. The complete C matrix and exact-head CI remain open, so PR #170
-  remains WIP.
-
-### Discover Versions offer and installed C route matrix
-
-The controlled peer now checks the public C Discover Versions request's
-advertised Protocol Version list against the constructor's fixed KMIP 2.1
-offer. The route test executes the pinned installed consumer through TTLV,
-JSON, and XML over raw TLS and HTTPS, and requires both the Discover Versions
-builder and typed supported-versions response accessor in the invocation
-evidence. In this historical snapshot, the shared route generator limits the C
-request builder and its network route to KMIP 2.1 and records the KMIP 2.0
-request Protocol Version field as a version-scoped source-backed limitation.
-The subsequent KMIPKIT-0085 follow-up exercises the route under both message
-headers with the builder's valid 2.1 offer, superseding that limitation. The C response accessor
-remains available for both versions because it reads the server's Supported
-Versions list, which may include KMIP 2.0. These checks follow OASIS KMIP 2.0
-§6.1.16, Table 196; KMIP 2.1 §6.1.16, Tables 211–212; and KMIPKIT-0092-FR-001,
-FR-005, FR-006, and FR-009.
-
-- Red commit `24dfd7437` proved the peer accepted an incorrect KMIP 2.0 offer
-  under the Discover Versions case.
-- Green commit `d4564903d` rejects the incorrect offer and checks the fixed
-  KMIP 2.1 structure.
-- The installed route test passed all six encoding/transport combinations.
-  The focused checks passed 2/2, and the C route-matrix unit suite passed
-  141/141. The broader completeness matrix remains open; PR #170 remains WIP.
-- Red tests then exposed that route limitations were not version scoped. The
-  shared generator and matrix tests pass as part of the 93/93 route capability
-  and coverage-matrix suite. `route_capabilities.py --check` passes with the
-  regenerated manifest. The broader installed C route matrix still has
-  pending recipes, so the stacked PR remains WIP.
-
 ## Evidence: C typed batches derive Batch Count from their items
 
 `test-batch-count-mismatch-rejected` now runs as a read-only controlled-peer
@@ -1203,6 +1150,29 @@ runs for KMIP 2.0 and 2.1 with TTLV, JSON, and XML over raw TLS and HTTPS.
   scenario test, catalog generation check, and route-capability audit passed.
   Exact-head PR CI remains open and PR #212 stays WIP while the broader C route
   matrix has pending recipes.
+
+### C Export request and response routes
+
+OASIS KMIP v2.0 §6.1.18 Tables 202–203 and v2.1 §6.1.18 Tables 217–218
+define the Export payloads. The installed C consumer sends Create → Export →
+Revoke → Destroy with ID Placeholder identifiers, checks the typed Object
+Type, Unique Identifier, and AES-128 Attributes, and verifies the complete
+response TTLV and the Symmetric Key object shape. The controlled peer checks
+the exact Export request and all four required response fields; key bytes are
+not included in evidence or diagnostics.
+
+- Red commit `76f402452`: the focused test failed because Export had no
+  controlled-peer route recipe.
+- Green commit `f4aa1a690`: implemented the C request/response path and peer
+  recipe across both versions and all six encoding/transport combinations.
+- Verification: the focused test covers all 44 C cells for `test-op-export`,
+  including four generic TTLV cells, 36 constructor/send/decode cells, and four
+  typed/generic response-accessor cells. All 12 controlled-peer checks pass.
+  The C target builds, CTest `test_c_validator` passes, and
+  `PYTHONPATH=interop/c-kmip-validator/tests:interop/c-kmip-validator/tools
+  python3 -B -m unittest test_route_matrix -v` passes 159/159 on the final
+  source. The complete C matrix and exact-head CI remain open, so PR #170
+  remains WIP.
 
 ## C Encrypt request and response route
 
