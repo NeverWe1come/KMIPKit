@@ -774,6 +774,9 @@ class ControlledTlsPeerTest {
             appendServerInformationRouteEvents(events, protocolVersion);
             appendUsageLimitsRouteEvents(events, protocolVersion);
             appendBatchContinuationTagIdentityRouteEvents(events, protocolVersion);
+            if ("2.0".equals(protocolVersion)) {
+                appendEndpointRolePayloadGenericRouteEventsKmip20(events);
+            }
             if ("2.1".equals(protocolVersion)) {
                 appendEndpointRolePayloadGenericRouteEvents(events, protocolVersion);
             }
@@ -1355,7 +1358,7 @@ class ControlledTlsPeerTest {
                         + genericTagEventCount + typedTagIdentityEventCount
                         + booleanFieldRouteEventCount + scalarMessageFieldRouteEventCount + itemTypeRouteEventCount
                         + scalarTypedParserEventCount
-                        + 17 // BEC, batch IDs, async payload, Ping, and Endpoint Role route cells.
+                        + 29 // BEC, batch IDs, async payload, Ping, and KMIP 2.0/2.1 Endpoint Role cells.
                         + tagAggregateEventCount
                         + referencedEnumEventCount + referencedEnumAggregateEventCount,
                 report.path("events").size());
@@ -1397,7 +1400,7 @@ class ControlledTlsPeerTest {
                         + 11 + itemTypeValueCaseIds.size() + STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size()
                         + STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.size()
                         + STRUCTURE_MEMBER_VALUE_FIXTURES.size() + PROFILE_INFORMATION_CASE_IDS.size()
-                        + SERVER_INFORMATION_CASE_IDS.size() + USAGE_LIMITS_CASE_IDS.size() + 3
+                        + SERVER_INFORMATION_CASE_IDS.size() + USAGE_LIMITS_CASE_IDS.size() + 5
                         + booleanFieldCaseIds.size()
                         // Four scalar header cases are already included by the baseline report groups.
                         + scalarMessageFieldCaseIds(report.path("events")).size() - 4,
@@ -3737,6 +3740,8 @@ class ControlledTlsPeerTest {
         caseIds.add("test-enum-tag");
         caseIds.add("test-norm-tag-tag-42000e");
         caseIds.add("test-op-ping");
+        caseIds.add("test-norm-payload-client-set-endpoint-role-request-20-001");
+        caseIds.add("test-norm-payload-client-set-endpoint-role-response-20-001");
         caseIds.add("test-norm-payload-client-set-endpoint-role-request-21-001");
         caseIds.add("test-enum-item-type");
         CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().forEach(caseIds::add);
@@ -4702,6 +4707,27 @@ class ControlledTlsPeerTest {
                 0x42005c, 0x32, protocolVersion);
     }
 
+    // OASIS KMIP 2.0 §6.1.48 Tables 299–300 requires Endpoint Role in both
+    // request and response payloads; §11.19 defines Client as Enumeration value 1.
+    private static void appendEndpointRolePayloadGenericRouteEventsKmip20(ArrayNode events) throws Exception {
+        appendGenericEnumerationRouteEvents(events,
+                "test-norm-payload-client-set-endpoint-role-request-20-001",
+                "KMIPKIT-PAYLOAD-CLIENT-SET-ENDPOINT-ROLE-REQUEST-20-001",
+                0x420151, 1, "2.0");
+        appendGenericEnumerationRouteEvents(events,
+                "test-norm-payload-client-set-endpoint-role-request-20-001",
+                "KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE",
+                0x42005c, 0x32, "2.0");
+        appendGenericEnumerationRouteEvents(events,
+                "test-norm-payload-client-set-endpoint-role-response-20-001",
+                "KMIPKIT-PAYLOAD-CLIENT-SET-ENDPOINT-ROLE-RESPONSE-20-001",
+                0x420151, 1, "2.0");
+        appendGenericEnumerationRouteEvents(events,
+                "test-norm-payload-client-set-endpoint-role-response-20-001",
+                "KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE",
+                0x42005c, 0x32, "2.0");
+    }
+
     private static void appendGenericEnumerationRouteEvents(ArrayNode events, String caseId, String targetId,
             int rawTag, long value, String protocolVersion) throws Exception {
         CodecLimits limits = CodecLimits.defaults();
@@ -5237,6 +5263,23 @@ class ControlledTlsPeerTest {
 
     private static void assertNewlyCataloguedLocalRoutesAreInvoked(ArrayNode events,
             String protocolVersion) {
+        if ("2.0".equals(protocolVersion)) {
+            for (String caseId : List.of(
+                    "test-norm-payload-client-set-endpoint-role-request-20-001",
+                    "test-norm-payload-client-set-endpoint-role-response-20-001")) {
+                String fieldTarget = caseId.endsWith("request-20-001")
+                        ? "KMIPKIT-PAYLOAD-CLIENT-SET-ENDPOINT-ROLE-REQUEST-20-001"
+                        : "KMIPKIT-PAYLOAD-CLIENT-SET-ENDPOINT-ROLE-RESPONSE-20-001";
+                for (String targetId : List.of(fieldTarget, "KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE")) {
+                    for (String route : List.of("java.generic-ttlv.ttlv_item.create",
+                            "java.generic-ttlv.function.ttlv_item_view_from_item",
+                            "java.generic-ttlv.ttlv_codec.decode")) {
+                        String action = route.endsWith("ttlv_item.create") ? "construct" : "decode";
+                        assertRouteEventRecorded(events, caseId, targetId, route, action, protocolVersion);
+                    }
+                }
+            }
+        }
         if ("2.1".equals(protocolVersion)) {
             assertRouteEventRecorded(events, "test-op-ping", "KMIPKIT-ELEM-OP-C2S-PING",
                     "java.typed-protocol.function.client_batch_item_response_ping", "decode", protocolVersion);

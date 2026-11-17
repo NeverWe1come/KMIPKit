@@ -2217,3 +2217,41 @@ python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-refe
 python3 interop/java-kmip-validator/tools/compare_route_ledger.py
 git diff --check
 ```
+
+## Java KMIP 2.0 Set Endpoint Role routes in the Usage Limits stack — 2026-11-17
+
+Red, commit `9c01f2e22`, adds per-case assertions for the required Endpoint
+Role Enumeration and Set Endpoint Role Operation cells in the KMIP 2.0 request
+and response cases. The focused controlled-peer test fails at the missing
+`TtlvItem.create` event for the request field. Green, commit `6132e4fbb`,
+constructs, views, and decodes each field and Operation Enumeration through the
+installed generic TTLV API. It uses the Client value (1) as the request and
+response fixture value for the role the server is asked to apply, as defined by
+OASIS KMIP 2.0 §6.1.48 Tables 299–300 and §11.19; Operation value `0x32` is
+defined by §11.36. The merged Usage Limits branch retains its existing routes;
+this increment adds 12 selected cells across two cases.
+
+The full Java suite passes 57/57 tests without failures, errors, or skips. All
+68 shared route-capability tests pass, the generator check passes for 1,507
+routes, and selected-scope validation accepts 27,208/27,208 cells with zero
+failures. The generated ledger records 71,641 planned, 27,208 executed, and
+44,433 pending cells across 1,227 pending case IDs. The ledger comparer passes
+after regeneration. Full-matrix coverage remains incomplete and the PR stays
+WIP.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$KMIPKIT_MAVEN_REPO" test --rerun-tasks
+python3 -m unittest interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+python3 interop/shared/tools/validate_route_evidence.py \
+  --selected-scope --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+git diff --check
+```
