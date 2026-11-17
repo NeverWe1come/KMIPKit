@@ -141,6 +141,14 @@ class ControlledTlsPeerTest {
     private static final String DERIVATION_SALT_CASE_ID =
             "test-norm-structure-member-structure-member-7-12-salt";
     private static final String DERIVATION_SALT_TARGET_ID = "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-12-SALT";
+    private static final String EXTENSION_NAME_CASE_ID =
+            "test-norm-structure-member-structure-member-7-13-extension-name";
+    private static final String EXTENSION_NAME_TARGET_ID =
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-13-EXTENSION-NAME";
+    private static final String EXTENSION_DESCRIPTION_CASE_ID =
+            "test-norm-structure-member-structure-member-7-13-extension-description";
+    private static final String EXTENSION_DESCRIPTION_TARGET_ID =
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-13-EXTENSION-DESCRIPTION";
     private static final String CONSTRAINT_CASE_ID =
             "test-norm-operation-structure-operation-structure-7-6-constraint";
     private static final String CONSTRAINT_TARGET_ID =
@@ -934,6 +942,7 @@ class ControlledTlsPeerTest {
             assertObjectDefaultsObjectTypeRouteEvents(events, protocolVersion);
             appendDerivationSaltRouteEvents(events, protocolVersion);
             assertDerivationSaltRouteEvents(events, protocolVersion);
+            assertExtensionInformationMemberRouteEvents(events, protocolVersion);
             assertNewlyCataloguedLocalRoutesAreInvoked(events, protocolVersion);
         }
 
@@ -3686,6 +3695,8 @@ class ControlledTlsPeerTest {
         caseIds.add("test-norm-message-field-message-field-8-3-ephemeral");
         caseIds.add("test-norm-structure-member-structure-member-7-23-object-group");
         caseIds.add(DERIVATION_SALT_CASE_ID);
+        caseIds.add(EXTENSION_NAME_CASE_ID);
+        caseIds.add(EXTENSION_DESCRIPTION_CASE_ID);
         caseIds.add(OBJECT_DEFAULTS_OBJECT_TYPE_CASE_ID);
         caseIds.add("test-norm-operation-structure-operation-structure-7-2-asynchronous-request");
         caseIds.add("test-norm-operation-structure-operation-structure-7-13-extension-information");
@@ -6416,6 +6427,22 @@ class ControlledTlsPeerTest {
                     ? "construct" : "decode";
             assertRouteEventRecorded(events, DERIVATION_SALT_CASE_ID, DERIVATION_SALT_TARGET_ID,
                     route, action, protocolVersion);
+        }
+    }
+
+    private static void assertExtensionInformationMemberRouteEvents(ArrayNode events, String protocolVersion) {
+        for (var fixture : List.of(
+                new String[] {EXTENSION_NAME_CASE_ID, EXTENSION_NAME_TARGET_ID},
+                new String[] {EXTENSION_DESCRIPTION_CASE_ID, EXTENSION_DESCRIPTION_TARGET_ID})) {
+            for (String route : List.of(
+                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring",
+                    "java.generic-ttlv.ttlv_item.create",
+                    "java.generic-ttlv.function.ttlv_item_view_from_item",
+                    "java.generic-ttlv.ttlv_codec.decode")) {
+                String action = route.endsWith("textstring") || route.endsWith("ttlv_item.create")
+                        ? "construct" : "decode";
+                assertRouteEventRecorded(events, fixture[0], fixture[1], route, action, protocolVersion);
+            }
         }
     }
 
