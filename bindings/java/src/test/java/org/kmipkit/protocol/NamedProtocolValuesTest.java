@@ -31,7 +31,7 @@ final class NamedProtocolValuesTest {
         assertEquals(List.of("Encrypt"), KmipValues.CryptographicUsageMask.names(raw));
     }
 
-    // KMIP 2.1 §11.36 Table 470; KMIP 3.0 §§11.34–11.37 Tables 581–583.
+    // KMIP 2.1 §§11.36 and 11.56 Tables 470 and 487; KMIP 3.0 §§11.37 and 11.58 Tables 584 and 605.
     @Test
     void versionedNamedValuesMatchExactEditionTables() {
         assertEquals(0x36L, KmipValues.V2_1_OPERATION_SET_DEFAULTS);
@@ -43,10 +43,13 @@ final class NamedProtocolValuesTest {
         assertNull(KmipValues.v3_0ObjectClassName(3));
         assertEquals("Password Credential", KmipValues.v3_0ObjectTypeName(0x0D));
         assertNull(KmipValues.v3_0ObjectTypeName(6));
+        assertEquals(0x00420190L, KmipValues.V3_0_TAG_CERTIFICATE_LINK);
+        assertEquals("Certificate Link", KmipValues.v3_0TagName(0x00420190L));
+        assertNull(KmipValues.v3_0TagName(0x0042018F));
         assertNull(KmipValues.v3_0OperationName(0x43));
     }
 
-    // OASIS KMIP Specification v2.1 §§11–12; KMIPKIT-0047-FR-001–004.
+    // OASIS KMIP Specification v2.1 §§11–12; KMIPKIT-0047-FR-001–004 and KMIPKIT-0093-FR-001–002.
     @Test
     void everyGeneratedEnumerationValueHasANameAndPreservesUnknownValues() throws Exception {
         int enumerationCount = 0;
@@ -87,9 +90,12 @@ final class NamedProtocolValuesTest {
         }
 
         assertEquals(64, enumerationCount);
-        assertEquals(644, valueCount);
+        assertEquals(998, valueCount);
         assertEquals(
-                Set.of("OpaqueDataType", "Pkcs11Function", "Pkcs11ReturnCode", "Tag"),
+                Set.of("OpaqueDataType", "Pkcs11Function", "Pkcs11ReturnCode"),
                 emptyEnumerations);
+        assertEquals(0x00420001L, KmipValues.Tag.ACTIVATION_DATE);
+        assertEquals("Activation Date", KmipValues.Tag.name(0x00420001L));
+        assertNull(KmipValues.Tag.name(0x0042018F));
     }
 }

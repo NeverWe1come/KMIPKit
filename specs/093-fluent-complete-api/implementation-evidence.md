@@ -397,72 +397,6 @@
   https_never_attributes_a_surplus_response_to_a_later_exchange -- --exact`
   passed 12 consecutive runs after the synchronization change.
 
-## KMIPKIT-0093 operation owner matrix validation follow-up
-
-### Red
-
-- Commit `6fd0618c2` adds a regression test that assigns Create the wire value
-  already used by another KMIP 2.1 operation. Before the fix,
-  the focused command failed because the generator did not raise the expected
-  `ValueError`:
-
-  ```text
-  python3 -B -m unittest tools.normative_catalog.tests.test_fluent_operation_inventory.FluentOperationInventoryTests.test_generator_rejects_one_wire_value_assigned_to_different_operations -v
-  ```
-
-### Green
-
-- Commit `fcef6948a` makes KMIP 2.1 operation assignments unique by operation
-  name while preserving legitimate repeated routes for the same operation in
-  opposite directions. KMIP 3.0 assignments remain unique across versions.
-- The complete matrix suite passes:
-  `python3 -B -m unittest tools.normative_catalog.tests.test_fluent_operation_inventory -v`
-  (9 tests). The deterministic matrix generation check passes:
-  `python3 -B tools/normative_catalog/generate_fluent_operation_inventory.py --check`.
-
-### Refactor
-
-- Renamed the assignment lookup to `operation_names_by_wire_value` so the
-  map's invariant is explicit at both the KMIP 2.1 and cross-version checks.
-  This changes no behavior. The same 9 tests and generation check pass after
-  the rename; `py_compile` and `git diff --check` also pass.
-- The full CI for the updated WIP PR head is still required; task M005 remains
-  open until every required check on that exact head completes successfully.
-
-## Operation owner matrix macOS Rust 1.94 CI repair
-
-### Red
-
-- PR #228 run `43785623352` failed only in Core / macOS / Rust 1.94 at
-  `successful_flush_progress_restarts_the_write_deadline`. The test used two
-  real 200 ms sleeps under 500 ms inactivity deadlines; macOS scheduling
-  delayed the first flush past its deadline.
-
-### Green
-
-- Changed the test to use Tokio's paused clock. Its release task and the
-  production timeout sleep now advance in deterministic 200 ms steps, so the
-  test continues to verify that a successful flush resets the write deadline
-  without depending on wall-clock scheduling.
-- `cargo test -p kmipkit-transport --locked --test timeout_delivery successful_flush_progress_restarts_the_write_deadline -- --exact --nocapture`
-  passes with the paused clock.
-
-### Refactor
-
-- The change is confined to the timing mode of the existing regression test;
-  production timeout behavior and the asserted deadline contract are
-  unchanged. PR #228 remains WIP until exact-head CI is green.
-
-## Rebase after Create Key Pair merged
-
-- PR #227 has merged into `release/1.0.0`; this branch was rebased from that
-  parent onto the release branch. On the resulting pre-follow-up head
-  `9eb7c61b3`, the operation inventory suite passes all 9 tests and
-  `generate_fluent_operation_inventory.py --check` passes.
-- The exact-head check list on `9eb7c61b3` contained only SonarCloud success;
-  the repository CI workflows had not produced runs for that SHA. PR #228
-  remains `[WIP]` until full CI reports every required result on its updated
-  head.
 ## KMIPKIT-0093 Rust Set Attribute fluent builder
 
 ### Red
@@ -927,6 +861,241 @@
   and T102 regression modules pass (44 tests). Three additional manifest-v2
   execution/result mapping tests pass. Exact-head hosted CI for the rebased
   PR remains required before it can leave WIP.
+
+## Catalog and code generation
+
+### Red
+
+- Added `tools/normative_catalog/tests/test_fluent_api_catalog_consistency.py`
+  for the exact 59 distinct KMIP 2.1 operation codes across 62 direction
+  routes, the seven assigned KMIP 3.0 codes, their client-to-server direction,
+  the 60 exact KMIP 3.0 tag assignments, and cross-source tag name/value
+  consistency.
+- `python3 -B -m unittest
+  tools.normative_catalog.tests.test_fluent_api_catalog_consistency -v` fails
+  on 16 of 17 entries in `kmip-versioned-tags.json` `v2_1_tags`: the names at
+  `0x420166`–`0x420171` and `0x420173`–`0x420176` disagree with the pinned
+  KMIP Specification v2.1 §11.56, Table 487. The base normative catalog and
+  pinned source agree; the derived supplement contains the mismatches. The
+  other two checks pass, including the seven KMIP 3.0 operation values and 60
+  assigned tag values.
+- The reviewed sources are the pinned KMIP Specification v2.1 §11.36/Table
+  470 and §11.56/Table 487, and the pinned KMIP 3.0 draft §11.37/Table 584
+  and §11.58/Table 605. The pinned OASIS source files remain unchanged.
+- Added a focused generation and manifest test for all 354 assigned KMIP 2.1
+  tags and 60 KMIP 3.0 tags across Rust, C, Java, and Python. The first run
+  exposed a test setup error (`StopIteration`) while locating the missing v3
+  Tag group; after correcting the assertion to report the missing group, the
+  focused test fails as expected: the existing KMIP 2.1 Tag enumeration has
+  zero generated values instead of 354. Reproduced with:
+  `python3 -B -m unittest tools.normative_catalog.tests.test_generate_named_values.NamedValueGeneratorTests.test_tag_enumeration_is_generated_for_all_supported_versions_and_languages -v`
+- Reconciliation adds the generated tag declarations to the reviewed API
+  manifest. A follow-up generation attempt exposed the existing 56 MiB manifest
+  input bound: the reconciled file is 59,718,087 bytes. The manifest-size test
+  now requires a bounded 72 MiB limit to accommodate this approved catalog
+  growth and the remaining planned declarations; the unchanged generator fails
+  that expectation. The precise validator check is in
+  `tools/api_manifest/tests/test_t102_manifest_size_limit.py`.
+- The first reconciled declaration inventory exposed six duplicate Rust module
+  paths because the v3 Tag capability re-declared parent modules already owned
+  by the versioned-value capability. The focused no-duplicate export assertion
+  fails at `6,672 != 6,666`, and the manifest validator independently rejects
+  the duplicate public export path. This test is included in
+  `test_tag_enumeration_is_generated_for_all_supported_versions_and_languages`.
+- The fresh Rust export audit also found eight previously unmapped KMIP 3.0
+  `Object Class Mask` paths: the generated values are under `versions::v3_0::bitmask`,
+  while the manifest generator recorded `versions::v3_0::enumeration`. The new
+  regression test `test_versioned_bitmask_public_values_use_the_bitmask_namespace`
+  fails on the expected `::bitmask::object_class_mask::USER` path. The audit
+  reported these eight declarations as not observed at the manifest path.
+- The generated KMIP 2.1 Tag name lookup exceeded Clippy's function-size gate:
+  `cargo clippy --locked -p kmipkit-protocol --all-targets --all-features -- -D warnings`
+  failed with `clippy::too_many_lines` at 357 lines. The new regression test
+  `test_large_tag_lookup_is_split_into_clippy_sized_rust_functions` also fails
+  because generated Rust has no chunked tag lookup helpers.
+- Adding the assigned tag declarations made the existing full-manifest snapshot
+  stale. `python3 -B -m unittest
+  tools.api_manifest.tests.test_t102_pkcs11_request_trait_exclusions.T102Pkcs11RequestTraitExclusionTests.test_t102_slice_and_manifest_snapshots_remain_consistent -v`
+  fails at the declaration total (`18895 != 16816`). The manifest now contains
+  2,077 KMIPKIT-0093 tag declarations; the approved exclusion total is unchanged.
+
+### Green
+
+- Generation now adds the 354 assigned KMIP 2.1 tags from the canonical
+  catalog and the 60 assigned KMIP 3.0 tags from the checksum-validated
+  §11.58/Table 605 catalog. The corrected 17-entry KMIP 2.1 supplement matches
+  §11.56/Table 487; pinned upstream files are unchanged.
+- The reconciled manifest adds 2,077 declared Rust, C, Java, and Python tag
+  values and helper exports under `KMIPKIT-0093-FR-001` and `FR-002`. The public
+  manifest input bound is 72 MiB, and its pinned snapshot now records 18,895
+  declarations before the release rebase; it records 19,357 after merging the
+  current release manifest. KMIP 3.0 tag names remain explicitly versioned.
+- Rust lookups split the 354-value match into small private functions; the
+  generated source passes Clippy with warnings denied. New C, Java, Python, and
+  Rust consumer tests check exact 2.1/3.0 tag names and unknown-value behavior.
+- The bilingual package guides document the new names and version boundary.
+- Before the release rebase, local verification passed: 23 catalog tests; 114 API-manifest generator
+  tests; 1,453 Rust protocol tests plus the tag integration test; C consumer
+  tests 4/4; Java tests 714 with one pre-existing skip; Python tests 1,356;
+  all four generated-output checks; and the C/Java/Python export audit. The
+  pre-rebase Rust audit mapped every new tag path, but reported 193 other
+  existing Rust paths missing from the manifest; none of those paths are tag exports.
+  The full Rust export audit therefore remains incomplete outside this slice.
+- Exact-head CI has not run yet. G004 remains open until the WIP PR's required
+  checks pass and any failures are fixed.
+
+
+### Refactor
+
+- Consolidated the four language renderers' choice between the canonical
+  Enumeration values and the separately sourced Tag assignments in one helper.
+  `python3 -B -m unittest tools.normative_catalog.tests.test_generate_named_values
+  tools.normative_catalog.tests.test_fluent_api_catalog_consistency -v` passes
+  all 23 tests, and both the named-value and manifest reconciliation checks
+  confirm generated outputs are unchanged.
+
+## KMIPKIT-0093 named-tag capability runtime reporting
+
+### Red
+
+- CI run `43831588866`, Ubuntu coverage job `133178419627`, failed the FFI
+  capability test: the generated C capability list included
+  `fluent_named_tag_values`, but the Rust runtime query returned `Ok(false)`.
+- After extending the expected C capability list, the focused Rust runtime
+  metadata test reproduced the missing implementation at
+  `crates/kmipkit/tests/runtime_metadata.rs`.
+
+### Green
+
+- Added the named-tag capability to the Rust runtime query and asserted it in
+  both Rust and FFI capability tests. The focused Rust runtime and C capability
+  tests now pass.
+- `cargo fmt --all --check` and `git diff --check` pass.
+
+### Refactor
+
+- Kept the capability query's existing boundary and generated manifest output;
+  only the runtime mapping and its parity tests changed. Re-ran both focused
+  tests after the mapping change, with one test passing in each package.
+
+## KMIPKIT-0093 release rebase contract follow-up
+
+### Red
+
+- After rebasing the catalog branch onto `release/1.0.0` at `e1b12188b`,
+  `test_registry_parity_fixture_preserves_the_v1_registry_slice` failed because
+  the current manifest ordered the preserved v1 `types` and `functions`
+  differently from the historical fixture. Comparing records by ID showed the
+  same record sets and contents; only array order differed.
+
+### Green
+
+- The fixture assertion now canonicalizes the identity-keyed `types` and
+  `functions` arrays by ID before comparing them, while still comparing every
+  field and rejecting missing or changed records.
+- The manifest reconciliation, named-value generation, and API manifest
+  generation checks pass on the merged source. The C, Java, and Python export
+  audit also matches all declarations with no missing, stale, kind, or
+  signature issues: C 2,580; Java 2,985; Python 3,236.
+- `python3 -B -m unittest
+  tools.api_manifest.tests.test_generate.ManifestGeneratorCliTests.test_registry_parity_fixture_preserves_the_v1_registry_slice -v`
+  passes.
+
+### Refactor
+
+- This update changes only the test comparison; generated API output and runtime
+  behavior are unchanged.
+
+### Tag export allowlist CI repair
+
+- **Red — `3cdc52712`**: added a regression that compares generated KMIP tag
+  declarations with the canonical API manifest. It failed because all 415
+  generated C tag declarations were missing from the manifest; the C ABI
+  export audit reported the same 415 missing entries.
+- **Red — `abf0795f8`**: added a regression for reconciling blocked observations
+  after a named declaration is generated. It failed because two blocked Rust
+  module observations retained the same export paths as the new versioned
+  named-value declarations, which made API generation reject the duplicate
+  paths.
+- **Green — `209d6c919`**: the reconciler now removes blocked observations only
+  when an approved generated declaration owns that exact package and export
+  path. The canonical manifest was reconciled with
+  `reconcile_named_value_manifest.py --write`, then all 12 API outputs were
+  regenerated through `api_manifest/generate.py --write`.
+- The 22 named-value generator tests pass. Reconciliation, named-value
+  generation, and API-manifest checks pass. The Rust 1.94 C ABI build and export
+  audit now match 2,643/2,643 declarations with zero missing, stale, or kind
+  mismatches; the compiled C consumer suite passes 4/4 tests.
+- Full exact-head CI remains required; G004 stays open and this PR stays WIP
+  until the final head's applicable checks pass.
+
+### Windows capability inventory regression
+
+#### Red
+
+- CI run `43974169961` failed on Windows Rust stable (job `133676924176`) and
+  Rust 1.94 (job `133676924236`). The workspace test
+  `capability_query_only_reports_c_mapped_nonblocked_capabilities` found that
+  generated `C_AVAILABLE_CAPABILITIES` included the newly generated
+  `fluent_named_tag_values` capability, while the test's explicit expected
+  capability set omitted it. Both jobs passed formatting and Clippy; each ran
+  476 FFI tests with this one failure.
+- The focused Red is reproducible locally with
+  `cargo +1.94 test --locked -p kmipkit-ffi --lib --features
+  coverage-c-consumer
+  extension_registry::metadata_tests::capability_query_only_reports_c_mapped_nonblocked_capabilities
+  -- --exact --nocapture`.
+- After adding that expected C capability locally, the same FFI test reaches its
+  Rust parity check and fails because `kmipkit::capability_is_available` returns
+  `Ok(false)`. A new assertion in
+  `capability_query_matches_manifest_ready_capabilities` reproduces that missing
+  runtime mapping with
+  `cargo +1.94 test --locked -p kmipkit --test runtime_metadata
+  capability_query_matches_manifest_ready_capabilities -- --exact --nocapture`.
+
+#### Green
+
+- Added `fluent_named_tag_values` to the Rust runtime capability query and to
+  the FFI test's exact expected C capability set. The Rust runtime parity test
+  and the C capability parity test now pass with Rust 1.94:
+  `cargo +1.94 test --locked -p kmipkit --test runtime_metadata
+  capability_query_matches_manifest_ready_capabilities -- --exact` and
+  `cargo +1.94 test --locked -p kmipkit-ffi --lib --features
+  coverage-c-consumer
+  extension_registry::metadata_tests::capability_query_only_reports_c_mapped_nonblocked_capabilities
+  -- --exact`.
+- The full local workspace test reached doctests but could not link four
+  `kmipkit-client` doctests: `rust-lld` terminated with signal 7 (Bus error).
+  The focused runtime and FFI parity tests pass; exact-head hosted CI remains
+  required before G004 can close or the PR can leave WIP.
+
+#### Refactor
+
+- Kept the existing match-based Rust capability query and generated C list.
+  This fix only aligns their named-tag capability inventory and its parity
+  assertions. `rustfmt +1.94 --edition 2024 --check` on the three changed Rust
+  files and `git diff --check` pass.
+
+### Current-head Script Contracts repair
+
+- **Red — CI run `43978049870`, job `133693896521`**: the T102 contract suite
+  could not import `T102_HISTORICAL_RUST_AUDIT_EXCLUDED` because the historical
+  November 1 Rust audit totals were not exposed separately from the current
+  November 16 totals. Restoring distinct historical constants keeps the old
+  snapshot immutable while allowing current audit totals to advance.
+- The full local API-manifest suite then identified stale binding-export
+  counts for C, Java, and Python. Regenerated
+  `binding-export-report-2026-11-16-kmipkit-0093-tag-values.json` through
+  `audit_binding_exports.run` using the built Rust 1.94 C ABI, then refreshed
+  the report table in `binding-export-audit.md`. The report now matches all
+  declarations: C 2,643/2,643, Java 3,055/3,055, and Python 3,319/3,319, with
+  no missing, stale, or kind-mismatched entries.
+- **Green — local verification**: the 25 focused tests across
+  `test_c_api_docs`, `test_t102_certify_request_builder_mapping`,
+  `test_t102_pkcs11_request_trait_exclusions`, and
+  `test_t102_usage_allocation_context_trait_exclusions` pass; `git diff
+  --check` passes. Exact-head CI must still pass before this PR is ready for
+  human review.
 
 ### Owner matrix evidence refresh
 

@@ -124,12 +124,16 @@ supplement does not change the scope or content of the comprehensive KMIP 2.1
 inventory above, and does not claim full KMIP 3.0 protocol support.
 
 [`kmip-versioned-tags.json`](kmip-versioned-tags.json) records all 60 exact
-KMIP 3.0 tag assignments from §11.58, Table 605. The 20 link assignments also
-retain their §4.35 definition references. The `generate_ttlv_tags.py` tool
-verifies the pinned source checksum and merges these explicit assignments into
-the supported-version tag-allocation union. The union allows construction and
-decoding of assigned tags; it does not establish that a tag is valid for the
-effective protocol version or that the feature is otherwise supported.
+KMIP 3.0 tag assignments from §11.58, Table 605. Its 36-entry `v2_1_tags` set
+cross-checks all KMIP 2.1 tag names and introduction versions against the
+canonical KMIP 2.1 catalog, §11.56, Table 487. The 20 link assignments also retain their
+§4.35 definition references. The named-value generator exposes assigned
+KMIP 2.1 and 3.0 tags in Rust, C, Java, and Python; it emits no reserved or
+unassigned values. The `generate_ttlv_tags.py` tool verifies the pinned source
+checksum and merges the explicit KMIP 3.0 assignments into the supported-version
+tag-allocation union. The union allows construction and decoding of assigned
+tags; it does not establish that a tag is valid for the effective protocol
+version or that the feature is otherwise supported.
 
 ## Fluent operation matrix
 

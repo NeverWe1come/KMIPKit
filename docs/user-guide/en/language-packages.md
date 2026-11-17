@@ -160,6 +160,26 @@ values and unassigned Bit Mask bits remain available; lookup helpers report
 known names without changing the caller's raw value. A named value does not
 claim that a server supports it or that an algorithm choice is appropriate.
 
+Assigned KMIP tags use the same generated namespaces. KMIP 2.1 tags are
+available through `Tag`; KMIP 3.0 additions have an explicit version namespace:
+
+```rust
+use kmipkit::protocol::named_values_generated::values::{
+    enumeration::tag,
+    versions::v3_0::enumeration::tag as v3_tag,
+};
+
+assert_eq!(tag::name(tag::OBJECT_GROUPS), Some("Object Groups"));
+let certificate_link = v3_tag::CERTIFICATE_LINK;
+```
+
+C uses `KMIPKIT_ENUMERATION_TAG_OBJECT_GROUPS` and
+`KMIPKIT_V3_0_TAG_CERTIFICATE_LINK`. Java uses
+`KmipValues.Tag.OBJECT_GROUPS` and `KmipValues.V3_0_TAG_CERTIFICATE_LINK`;
+Python uses the matching names on `protocol_values.Tag` and
+`protocol_values.V3_0_TAG_CERTIFICATE_LINK`. Only exact assignments from the
+reviewed version catalogs are emitted.
+
 ## Current manifest capability scope
 
 The status labels below are copied from the current manifest. `declared` means

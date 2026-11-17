@@ -25,7 +25,7 @@ int main(void) {
     assert(KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_names(raw, 0, 0) == 1);
     assert(KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_names(raw, 0, 1) == 0);
 
-    /* KMIP 2.1 §11.36 Table 470 and KMIP 3.0 §§11.34–11.37 Tables 581–583. */
+    /* KMIP 2.1 §§11.36 and 11.56 Tables 470 and 487; KMIP 3.0 §§11.37 and 11.58 Tables 584 and 605. */
     assert(KMIPKIT_V2_1_OPERATION_SET_DEFAULTS == UINT32_C(0x36));
     assert(strcmp(KMIPKIT_V2_1_OPERATION_name(KMIPKIT_V2_1_OPERATION_PING), "Ping") == 0);
     assert(KMIPKIT_V3_0_OPERATION_OBLITERATE == UINT32_C(0x3D));
@@ -35,5 +35,15 @@ int main(void) {
     assert(KMIPKIT_V3_0_OBJECT_CLASS_name(UINT32_C(3)) == 0);
     assert(strcmp(KMIPKIT_V3_0_OBJECT_TYPE_name(UINT32_C(0x0D)), "Password Credential") == 0);
     assert(KMIPKIT_V3_0_OBJECT_TYPE_name(UINT32_C(6)) == 0);
+
+    /* KMIPKIT-0093-FR-001–002: assigned tag names remain version scoped. */
+    assert(KMIPKIT_ENUMERATION_TAG_OBJECT_GROUPS == UINT32_C(0x420166));
+    assert(strcmp(KMIPKIT_ENUMERATION_TAG_name(KMIPKIT_ENUMERATION_TAG_OBJECT_GROUPS),
+                  "Object Groups") == 0);
+    assert(KMIPKIT_ENUMERATION_TAG_name(UINT32_C(0x4201FF)) == 0);
+    assert(KMIPKIT_V3_0_TAG_CERTIFICATE_LINK == UINT32_C(0x420190));
+    assert(strcmp(KMIPKIT_V3_0_TAG_name(KMIPKIT_V3_0_TAG_CERTIFICATE_LINK),
+                  "Certificate Link") == 0);
+    assert(KMIPKIT_V3_0_TAG_name(UINT32_C(0x42018F)) == 0);
     return 0;
 }

@@ -18,12 +18,12 @@ Dependent work branches from the unmerged parent head while review is pending.
 
 ## Catalog and code generation PR
 
-- [ ] G001 Add a failing catalog test for all assigned operation and tag
+- [x] G001 Add a failing catalog test for all assigned operation and tag
   values, seven KMIP 3.0 codes, direction, version, and no invented codes.
-- [ ] G002 Record the failed command and commit the Red evidence.
-- [ ] G003 Add declarative source input and deterministic Rust/C/Java/Python
+- [x] G002 Record the failed command and commit the Red evidence.
+- [x] G003 Add declarative source input and deterministic Rust/C/Java/Python
   generation, preserving current symbols and updating the manifest.
-- [ ] G004 Run the focused test, generation check, export audit, and full CI;
+- [x] G004 Run the focused test, generation check, export audit, and full CI;
   commit Green and Refactor separately.
 
 ## FR-003 operation-matrix completion follow-up
@@ -35,7 +35,7 @@ Dependent work branches from the unmerged parent head while review is pending.
 - [x] M003 Add the reviewed per-route owner and test-evidence catalog; derive
   and validate earliest supported versions against the versioned assignments.
 - [x] M004 Regenerate the matrix and pass focused matrix and API parity tests.
-- [ ] M005 Run the complete required CI on the WIP PR head before requesting
+- [x] M005 Run the complete required CI on the WIP PR head before requesting
   human review.
 
 ## Response and expert request PRs
@@ -80,7 +80,7 @@ Dependent work branches from the unmerged parent head while review is pending.
   existing typed Rust request path; verify ownership and local validation.
 - [x] KPB003 Declare exact Rust/C/Java/Python exports, regenerate API outputs,
   and update English and Spanish user guides and traceability evidence.
-- [ ] KPB004 Push the completed implementation and resolve every required CI
+- [x] KPB004 Push the completed implementation and resolve every required CI
   failure on the exact PR head before marking it ready for human review.
 
 ### Add Attribute parity slice
@@ -93,7 +93,7 @@ Dependent work branches from the unmerged parent head while review is pending.
 - [x] AAB003 Add Java/JNI and Python/CFFI builders, update the generated public
   API inventory, and document the KMIP v2.1 §6.1.2 request in English and
   Spanish.
-- [ ] AAB004 Run full binding, coverage, traceability, generation, and exact
+- [x] AAB004 Run full binding, coverage, traceability, generation, and exact
   head CI checks; resolve failures before review.
 
 ### Delete Attribute parity slice
@@ -104,7 +104,7 @@ Dependent work branches from the unmerged parent head while review is pending.
   catalogued values, explicit TTLV Items, vendor attributes, and references.
 - [x] DAB003 Declare and generate exact public exports; update the English and
   Spanish guides and traceability for KMIP v2.1 §6.1.13.
-- [ ] DAB004 Run the complete required checks and resolve exact-head CI before
+- [x] DAB004 Run the complete required checks and resolve exact-head CI before
   marking the PR ready for human review.
 
 ### Locate and Revoke parity slice
@@ -116,7 +116,7 @@ Dependent work branches from the unmerged parent head while review is pending.
 - [x] LRB003 Add Java and Python facades, declare and generate exact public
   exports, and update English/Spanish guides and traceability for KMIP v2.1
   §§6.1.28 and 6.1.44.
-- [ ] LRB004 Run binding, coverage, traceability, generation, and exact-head CI
+- [x] LRB004 Run binding, coverage, traceability, generation, and exact-head CI
   checks; resolve failures before requesting human review.
 
 ## End-to-end and closeout PR
