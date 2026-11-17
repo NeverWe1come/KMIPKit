@@ -1979,3 +1979,22 @@ failures. The generated ledger records 71,649 planned, 26,671 executed, and
 have pending route cells. `tools/compare_route_ledger.py` passes after refreshing
 the checked-in reference from the validated generated ledger. The full matrix
 remains incomplete, so the stack stays WIP.
+
+## Merge of current matrix base into Usage Limits branch (2026-11-17)
+
+The Usage Limits branch now includes the current Java matrix parent, including
+its Server Information fixtures and complete generic Tag aggregate coverage.
+The controlled TLS route test passes against the pinned installed package:
+
+```text
+bash ../../bindings/java/gradlew \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" \
+  test --tests org.kmipkit.validator.ControlledTlsPeerTest.controlledQueryProducesPerRouteEvidenceForBothProtocolVersions
+```
+
+The selected-scope validator accepts 26,663/26,663 invoked cells with zero
+failures. The ledger records 71,649 planned, 26,663 executed, and 44,986
+pending cells; 1,274 case IDs still have pending route cells. Refreshing the
+checked-in reference with `tools/compare_route_ledger.py --refresh-reference`
+then comparing it succeeds. The full matrix remains incomplete and the branch
+stays WIP.
