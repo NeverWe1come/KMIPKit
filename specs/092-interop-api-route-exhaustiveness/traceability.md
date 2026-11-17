@@ -19,6 +19,18 @@ full matrix. FR-003, FR-005, and the runtime portion of FR-006 remain open until
 the four independent language branches emit evidence from actual public API
 calls and controlled-peer exchanges.
 
+### C Batch Order and ID Placeholder cases
+
+For KMIPKIT-0092-FR-003, FR-005, and FR-009, the C installed consumer now
+executes the catalogued Create → Activate cases with explicit Batch Order
+Option true and with the option omitted. The controlled TLS peer checks
+request/response order, Unique Batch Item ID correlation, ID Placeholder
+resolution, and cleanup. OASIS KMIP 2.0/2.1 §§8.1–8.6, 9.5–9.8, 9.21, 6.1.1,
+and 6.1.8 are the catalogued references; §9.8 defines the omitted option's
+effective value as true. Both scenarios pass all 24 version/encoding/transport
+cells. This is one route slice only: the full C matrix and the cross-language
+FR-003/FR-005 gates remain open.
+
 ### C batch route follow-up
 
 For KMIPKIT-0092-FR-003 and FR-009, the C `test-batch-continue-after-failure`
