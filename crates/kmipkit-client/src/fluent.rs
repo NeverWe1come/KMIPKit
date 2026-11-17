@@ -506,7 +506,7 @@ impl<'a> GetConstraintsBuilder<'a> {
     /// header and are not retained in an individual batch item.
     #[must_use]
     pub fn to_batch_item(self) -> ClientBatchItem {
-        ClientBatchItem::new(ClientRequest::get_constraints())
+        ClientBatchItem::new(ClientRequest::GetConstraints(self.build()))
     }
 
     /// Executes at most one exchange through the existing typed client path.
