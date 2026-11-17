@@ -2307,10 +2307,36 @@ incomplete, so the PR stays WIP.
 
 ## Right Usage Limits stack refreshed with Batch Error Continuation Tag route — 2026-11-17
 
-The Right Usage Limits branch now contains updated #216 head `e047cb6f9`,
+The Right Usage Limits branch now contains updated #216 head `0c5510e55`,
 including both the Usage Limits routes and the Tag `0x42000E` route. Its
 regenerated ledger validates 27,191/27,191 selected cells with zero failures
 and records 71,641 planned, 27,191 executed, and 44,450 pending cells across
 1,229 pending case IDs. The Java validator suite passes 57/57 tests and the
 shared route-capability suite passes 68/68 tests. Full-matrix coverage remains
 incomplete; the PR stays WIP.
+
+The branch now also carries the Java KMIP 2.1 Ping route. Red commit
+`812c615f6` required the missing `pingResponse()` evidence; Green commit
+`4f2e96761` adds an actual Ping request/response over the controlled TLS 1.3
+mTLS peer, verifies the peer-observed Operation and successful typed response,
+and constructs, views, and decodes the Operation Enumeration via generic
+TTLV. The seven selected Ping cells are now all represented under OASIS KMIP
+2.1 §6.1.36. The full Java suite passes 57/57 tests, and the selected report
+validates 27,198/27,198 cells with zero failures. The regenerated ledger
+records 71,641 planned, 27,198 executed, and 44,443 pending cells across 1,229
+pending case IDs. Full-matrix coverage remains incomplete; the PR stays WIP.
+
+The combined Java verification commands are:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$KMIPKIT_MAVEN_REPO" test --rerun-tasks
+python3 interop/shared/tools/validate_route_evidence.py \
+  --selected-scope --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+git diff --check
+```

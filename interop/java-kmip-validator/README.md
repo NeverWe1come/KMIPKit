@@ -292,3 +292,13 @@ both versions (§§4.16, 11.16), adding 320 cells.
 The recorded [development evidence](../../specs/092-interop-api-route-exhaustiveness/java-route-expansion-evidence.md)
 keeps the Red/Green/Refactor commands and the distinction between this completed
 local scope and the pending complete matrix.
+
+The KMIP 2.1 Ping case now records all seven selected Java route cells. The
+controlled mTLS fixture sends a real `ClientBatchItem.ping()` request, checks
+the peer-observed Operation, and reads the successful response through
+`ClientBatchItemResult.pingResponse()`. The same case round-trips the Operation
+Enumeration through the installed generic TTLV item constructor, view, and
+decoder, as required by KMIP 2.1 §6.1.36. After integrating the Usage Limits
+routes, the selected Java report validates 27,198/27,198 cells; 44,443 of the
+full 71,641-cell Java matrix remain pending, so this does not complete the
+Java matrix.
