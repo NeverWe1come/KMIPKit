@@ -4724,21 +4724,23 @@ class ControlledTlsPeerTest {
     // §11.19 defines the Endpoint Role Enumeration used by its value.
     private static void appendEndpointRolePayloadGenericRouteEvents(ArrayNode events, String protocolVersion)
             throws Exception {
-        appendGenericEnumerationRouteEvents(events,
+        appendEndpointRolePayloadFieldRouteEvents(events,
                 "test-norm-payload-client-set-endpoint-role-request-21-001",
                 "KMIPKIT-PAYLOAD-CLIENT-SET-ENDPOINT-ROLE-REQUEST-21-001",
-                0x420151, 1, protocolVersion);
-        appendGenericEnumerationRouteEvents(events,
-                "test-norm-payload-client-set-endpoint-role-request-21-001",
-                "KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE",
-                0x42005c, 0x32, protocolVersion);
+                1, protocolVersion);
         // KMIP 2.1 §6.1.54 Table 332 returns the role accepted by the server; §11.19 assigns Client value 1.
-        appendGenericEnumerationRouteEvents(events,
+        appendEndpointRolePayloadFieldRouteEvents(events,
                 "test-norm-payload-client-set-endpoint-role-response-21-001",
                 "KMIPKIT-PAYLOAD-CLIENT-SET-ENDPOINT-ROLE-RESPONSE-21-001",
-                0x420151, 1, protocolVersion);
+                1, protocolVersion);
+    }
+
+    private static void appendEndpointRolePayloadFieldRouteEvents(ArrayNode events, String caseId,
+            String fieldTargetId, long role, String protocolVersion) throws Exception {
+        appendGenericEnumerationRouteEvents(events, caseId, fieldTargetId,
+                0x420151, role, protocolVersion);
         appendGenericEnumerationRouteEvents(events,
-                "test-norm-payload-client-set-endpoint-role-response-21-001",
+                caseId,
                 "KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE",
                 0x42005c, 0x32, protocolVersion);
     }
