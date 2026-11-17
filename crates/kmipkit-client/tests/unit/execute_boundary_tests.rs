@@ -2439,7 +2439,10 @@ fn is_exact_fluent_builder_explicit_value(
         (
             Some("CreateSplitKeyBuilder"),
             "prime_field_size" | "protection_storage_masks"
-        ) | (Some("RegisterBuilder"), "protection_storage_masks")
+        ) | (
+            Some("CreateBuilder" | "RegisterBuilder"),
+            "protection_storage_masks"
+        )
     );
     if !fluent_root_scope
         || !supported_method
@@ -2481,8 +2484,10 @@ fn is_exact_fluent_builder_explicit_value(
                                 Some(syn::GenericArgument::Type(ty))
                                     if is_plain_type_path(ty, "u8")))),
         "protection_storage_masks" => {
-            matches!(impl_type, Some("CreateSplitKeyBuilder" | "RegisterBuilder"))
-                && is_plain_type_path(&argument.ty, "Structure")
+            matches!(
+                impl_type,
+                Some("CreateBuilder" | "CreateSplitKeyBuilder" | "RegisterBuilder")
+            ) && is_plain_type_path(&argument.ty, "Structure")
         }
         _ => false,
     }
@@ -2774,6 +2779,25 @@ fn fluent_builder_explicit_value_signatures_are_exact_and_method_scoped() {
         true,
         Some("RegisterBuilder"),
         &register_prime_field
+    ));
+
+    // KMIP 2.1 §6.1.8 Table 186 and §7.33 Table 385 define the optional
+    // Protection Storage Masks input as a Structure. Keep this exception
+    // limited to the semantic Create builder method and its exact type.
+    let create_masks = syn::parse_str::<syn::Signature>(
+        "fn protection_storage_masks(self, masks: Structure) -> Self",
+    )
+    .unwrap();
+    assert!(is_exact_fluent_builder_explicit_value(
+        true,
+        Some("CreateBuilder"),
+        &create_masks
+    ));
+    assert!(!is_exact_fluent_builder_explicit_value(
+        true,
+        Some("CreateBuilder"),
+        &syn::parse_str::<syn::Signature>("fn protection_storage_masks(self, masks: Item) -> Self")
+            .unwrap()
     ));
 
     for signature in [

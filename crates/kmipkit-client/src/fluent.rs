@@ -96,6 +96,8 @@ pub enum FluentBuildError {
     MissingCreateKeyPairLength,
     /// Create Split Key is missing Object Type.
     MissingCreateSplitKeyObjectType,
+    /// Create is missing Object Type.
+    MissingCreateObjectType,
     /// Create Split Key is missing Split Key Method.
     MissingCreateSplitKeyMethod,
     /// Create Split Key is missing Split Key Parts.
@@ -152,6 +154,7 @@ impl fmt::Display for FluentBuildError {
             }
             Self::MissingCreateKeyPairLength => "Create Key Pair requires Cryptographic Length",
             Self::MissingCreateSplitKeyObjectType => "Create Split Key requires Object Type",
+            Self::MissingCreateObjectType => "Create requires Object Type",
             Self::MissingCreateSplitKeyMethod => "Create Split Key requires Split Key Method",
             Self::MissingCreateSplitKeyParts => "Create Split Key requires Split Key Parts",
             Self::MissingCreateSplitKeyThreshold => "Create Split Key requires Split Key Threshold",
@@ -221,6 +224,12 @@ impl<'a> RequestBuilder<'a> {
     #[must_use]
     pub fn create_split_key(self) -> CreateSplitKeyBuilder<'a> {
         CreateSplitKeyBuilder::new(self.client)
+    }
+
+    /// Begins a generic Create request with Object Type unset.
+    #[must_use]
+    pub fn create(self) -> CreateBuilder<'a> {
+        CreateBuilder::new(self.client)
     }
 
     /// Begins constructing a typed Register request.
@@ -413,6 +422,143 @@ impl<'a> RequestBuilder<'a> {
             execution: FluentBuilderExecution::new(self.client),
         }
     }
+}
+
+/// A fluent generic Create builder for OASIS KMIP v2.1 §6.1.8, Tables 186–188.
+/// It preserves the existing typed `CreateRequest` and does not choose object
+/// attributes or storage policy for the caller.
+pub struct CreateBuilder<'a> {
+    execution: FluentBuilderExecution<'a>,
+    object_type: Option<ObjectType>,
+    attributes: AttributeSet,
+    protection_storage_masks: Option<Structure>,
+}
+
+impl<'a> CreateBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            execution: FluentBuilderExecution::new(client),
+            object_type: None,
+            attributes: AttributeSet::new(),
+            protection_storage_masks: None,
+        }
+    }
+
+    /// Selects the caller's explicit KMIP Object Type.
+    #[must_use]
+    pub const fn object_type(mut self, object_type: ObjectType) -> Self {
+        self.object_type = Some(object_type);
+        self
+    }
+
+    /// Replaces the direct ordered Attributes to include in the request.
+    ///
+    /// An empty set is permitted by §5.1, Table 157; the required outer
+    /// Attributes Structure is still emitted.
+    #[must_use]
+    pub fn attributes(mut self, attributes: AttributeSet) -> Self {
+        self.attributes = attributes;
+        self
+    }
+
+    /// Sets the optional generic Protection Storage Masks Structure.
+    #[must_use]
+    pub fn protection_storage_masks(mut self, masks: Structure) -> Self {
+        self.protection_storage_masks = Some(masks);
+        self
+    }
+
+    /// Sets exchange-local options without changing client policy.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.execution = self.execution.with_options(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.execution = self.execution.with_asynchronous_indicator(value);
+        self
+    }
+
+    fn into_request_and_execution(
+        self,
+    ) -> Result<(CreateRequest, FluentBuilderExecution<'a>), FluentBuildError> {
+        let request = create_typed_request(
+            self.object_type
+                .ok_or(FluentBuildError::MissingCreateObjectType)?,
+            self.attributes,
+            self.protection_storage_masks,
+        )?;
+        Ok((request, self.execution))
+    }
+
+    /// Checks that the required Object Type has been selected.
+    ///
+    /// # Errors
+    /// Returns [`FluentBuildError::MissingCreateObjectType`] when Object Type
+    /// is absent. [`Self::build`] also applies the typed request validation.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        self.object_type
+            .map(|_| ())
+            .ok_or(FluentBuildError::MissingCreateObjectType)
+    }
+
+    /// Builds the existing typed Create request without sending it.
+    ///
+    /// # Errors
+    /// Returns [`FluentBuildError::MissingCreateObjectType`] when Object Type
+    /// is absent, or [`FluentBuildError::InvalidRequest`] when typed validation
+    /// fails.
+    pub fn build(self) -> Result<CreateRequest, FluentBuildError> {
+        self.into_request_and_execution()
+            .map(|(request, _execution)| request)
+    }
+
+    /// Converts this request to the existing typed batch item without sending it.
+    ///
+    /// Exchange options and the asynchronous indicator belong to the batch
+    /// header and are not retained in an individual batch item.
+    ///
+    /// # Errors
+    /// Returns a local builder error if a required field is absent or typed
+    /// request validation fails.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        self.into_request_and_execution()
+            .map(|(request, _execution)| ClientBatchItem::new(ClientRequest::Create(request)))
+    }
+
+    /// Executes at most one exchange through the existing typed client path.
+    ///
+    /// Pending preserves the originating Create operation and correlation
+    /// value without a follow-up or retry.
+    ///
+    /// # Errors
+    /// Returns the existing sanitized validation, protocol, or transport error
+    /// with its request-delivery evidence.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let (request, execution) = self
+            .into_request_and_execution()
+            .map_err(fluent_client_validation_error)?;
+        execution.run(ClientRequest::Create(request), limits)
+    }
+}
+
+fn create_typed_request(
+    object_type: ObjectType,
+    attributes: AttributeSet,
+    protection_storage_masks: Option<Structure>,
+) -> Result<CreateRequest, FluentBuildError> {
+    let mut request = CreateRequest::new(object_type, attributes);
+    if let Some(masks) = protection_storage_masks {
+        request = request.with_protection_storage_masks(masks);
+    }
+    validate_fluent_request(&request)?;
+    Ok(request)
 }
 
 /// A fluent builder for the empty Ping payload in OASIS KMIP v2.1 §6.1.36,

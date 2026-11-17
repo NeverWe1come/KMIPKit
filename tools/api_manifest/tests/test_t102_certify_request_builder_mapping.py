@@ -178,7 +178,9 @@ KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS = {
 # KMIPKIT-0093 adds 2,077 catalog-backed fluent tag declarations and corrects
 # the generated KMIP 3.0 Object Class Mask paths from enumeration to bitmask.
 # KMIPKIT-0093 also adds the blocked Ping builder declaration inventory.
-DECLARATIONS_SHA256 = "c0145cde4ed721e145580383a9357e9ab4eb6ecad4820a84b50fb8b7f075ebd2"
+# The Rust-only generic Create slice adds 24 blocked declarations and 18 exact
+# standard-trait exclusions while four-language fluent parity is pending.
+DECLARATIONS_SHA256 = "cca1ceddb4a2cc0991ef4779fc1158ff77ee5ebe1435e3adb28598787f6a87ef"
 OPERATIONS_SHA256 = "11a39efdadf8e9c7791a8479e3d8b3ae05f82b8dee94e8d21ed2ff2192a147ac"
 
 

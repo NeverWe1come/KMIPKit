@@ -1388,3 +1388,58 @@
   generator check, format, and workspace Clippy also pass.
   Exact-head hosted CI remains pending. This remains WIP and does not close
   FR-011 or operation-wide O001/O002.
+
+## Rust generic Create fluent builder slice
+
+### Red
+
+- Commit `2dbfb1ac4` added fake-transport tests for explicit Object Type,
+  required empty Attributes Structure, optional Protection Storage Masks,
+  typed batch conversion, one-exchange Success, Pending correlation, and
+  missing-field NotSent behavior. It also added the blocked-export manifest
+  contract and its script-contract invocation.
+- The focused Rust tests failed before implementation because
+  `RequestBuilder::create` and `FluentBuildError::MissingCreateObjectType`
+  were absent. The manifest contract failed because the corresponding builder
+  exports were not yet present.
+- Commit `e485136c7` added the exchange-options forwarding case as a separate
+  Red test change.
+
+### Green
+
+- Commit `cbf8b8847` added `CreateBuilder` over the existing `CreateRequest`,
+  `ClientRequest::Create`, and one-exchange typed client route. Object Type is
+  caller-selected; Attributes defaults to an empty set but always emits the
+  required Structure; optional Protection Storage Masks remains a generic
+  ordered Structure.
+- The builder supports typed construction, batch conversion, request options,
+  the asynchronous indicator, and a single execution. It preserves the
+  existing Success and Pending mapping and does not infer object or storage
+  policy.
+
+### Refactor
+
+- Commit `0b8cfd1ab` changed the private Create request helper to accept an
+  already-validated Object Type, keeping the missing-field check at the
+  builder boundary and removing the duplicate optional check from the helper.
+- The focused Create builder and compiled guide tests pass after the refactor.
+
+### Documentation and generated inventory
+
+- Added matching English and Spanish Create examples for KMIP v2.1 §6.1.8,
+  Tables 186–188. Both check the typed Create response and state that callers
+  choose attributes and storage policy explicitly. The unit test compiles the
+  example function and checks the normative reference in both guides.
+- Reconciled Rust compiler exports with the pinned API manifest tools. The
+  audit added 24 blocked Create declarations and 18 exact standard-trait
+  exclusions. The final report has 11,327 manifest declarations, 21,748
+  approved exclusions, and 33,075 observed paths, with zero missing,
+  unobserved, kind, conditional, or other issue records. Regeneration verifies
+  all 12 generated public API outputs.
+- Updated the three affected non-target T102 fingerprints and full-manifest
+  totals. The focused Create/T102 manifest set passes all 20 tests. The focused
+  Rust fluent Create selector passes 39 tests; the bilingual guide test passes
+  2 tests. `cargo fmt --all --check` and `git diff --check` pass.
+- The slice remains WIP; exact-head CI and workspace-level verification are
+  still required. It does not close
+  KMIPKIT-0093-FR-011 or operation-wide O001/O002.

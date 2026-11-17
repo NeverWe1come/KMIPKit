@@ -129,6 +129,21 @@ Dependent work branches from the unmerged parent head while review is pending.
   exact-head CI failure. Keep the slice WIP until C, Java, and Python fluent
   parity is complete.
 
+### Rust generic Create builder slice
+
+- [x] CRB001 Commit and reproduce Red fake-transport tests for the required
+  Object Type, required empty Attributes Structure, optional Protection Storage
+  Masks, typed batch conversion, and one-exchange Success/Pending behavior.
+- [x] CRB002 Implement `CreateBuilder` over the existing typed Create request
+  and one-exchange route in a distinct Green commit.
+- [x] CRB003 Refactor required-field construction without changing behavior;
+  retain separate Red, Green, and Refactor commits.
+- [x] CRB004 Update bilingual Create guide examples, traceability and generated
+  API inventory; pass focused Rust, T102, and manifest-contract tests.
+- [ ] CRB005 Push a WIP draft PR targeting the RNG Seed slice and fix every
+  exact-head CI failure. Keep this slice WIP until C, Java, and Python fluent
+  parity and remaining operation work are complete.
+
 - [ ] B001 Add failing C consumer tests for opaque handle ownership,
   operation construction, typed results, direct tasks and ABI stability.
 - [ ] B002 Generate and implement the C ABI on the Rust owner; run sanitizer,
