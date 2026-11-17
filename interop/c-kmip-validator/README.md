@@ -138,6 +138,10 @@ The `*.gaps.json` sidecar identifies every unexecuted matrix obligation rather
 than misclassifying it as an unavailable library route. Other sidecars retain
 installed-artifact availability checks and sanitized controlled-peer outcomes.
 The evidence JSON passes the shared schema independently of completeness.
+The latest local matrix run after aligning Archive with its catalog recipe has
+66,736 expected cells, 42,063 invoked, zero failed, and 24,673 pending; the
+Archive slice contributes 38 invoked cells and does not close the exhaustive
+gate.
 
 A generic TTLV wire encoder, generic-TTLV request dispatcher, and high-level
 C client are absent from the exact installed public artifact. The harness's
@@ -202,6 +206,14 @@ controlled peer verifies the request tree, signer lifecycle, placeholder
 mapping, typed results, and final state. This validates KMIP request/response
 shape and lifecycle only; the fixture does not validate a real certificate or
 signature.
+
+The `test-op-archive` route creates an isolated AES-128 key, requests Archive
+using the ID Placeholder while the key remains Pre-Active, then revokes and
+destroys the key. KMIP 2.0/2.1 §6.1.4 does not require Activate before Archive.
+The controlled peer checks the Archive request, required response Unique
+Identifier, ordered item IDs, and teardown. KMIP 2.0/2.1 §6.1.4 defines Archive
+as a client indication; the peer records receipt without claiming that the
+object was archived or that an external KMS changed object state.
 
 The two-item Get/Get Attribute List batch fixture also checks Batch Error
 Continuation Option Continue. It correlates both results by Unique Batch Item

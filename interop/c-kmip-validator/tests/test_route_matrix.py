@@ -1,5 +1,6 @@
 """Matrix coverage must be backed by actual installed ABI calls (0092 FR-002/009)."""
 from pathlib import Path
+import collections
 import importlib.util
 import hashlib
 import json
@@ -2185,6 +2186,40 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual({event['action'] for event in fields}, {'construct', 'send'})
         self.assertTrue(all(event['public_api_symbol'] == 'kmipkit_client_batch_item_create'
                             for event in fields))
+
+    def test_archive_executes_isolated_key_lifecycle_and_reads_typed_response(self):
+        """Exercise KMIP 2.0/2.1 §6.1.4 Archive request and response fields."""
+        from artifact_support import ROOT
+        from route_peer import RECIPES, execute_network_cells
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        self.assertEqual(RECIPES['test-op-archive'][0], (1, 21, 19, 20),
+                         'Archive fixture must match its catalogued create/archive/cleanup lifecycle')
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                                if case['case_id'] == 'test-op-archive']}
+        network_combinations = tuple((encoding, transport)
+                                     for encoding in ('TTLV', 'JSON', 'XML')
+                                     for transport in ('raw_tls', 'https'))
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest,
+            network_combinations=network_combinations)
+        self.assertEqual(len(checks), 12)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        required_symbols = {
+            'kmipkit_client_batch_item_archive',
+            'kmipkit_client_batch_item_response_archive',
+        }
+        self.assertTrue(all(required_symbols <= set(check['public_api_trace_symbols'])
+                            for check in checks), checks)
+        archive_events = [event for event in events
+                          if event['target_id'] == 'KMIPKIT-ELEM-OP-C2S-ARCHIVE']
+        self.assertEqual(collections.Counter(
+            (event['action'], event['public_api_symbol']) for event in archive_events), {
+                ('construct', 'kmipkit_client_batch_item_archive'): 12,
+                ('send', 'kmipkit_client_batch_item_archive'): 12,
+                ('decode', 'kmipkit_client_batch_item_archive'): 12,
+                ('decode', 'kmipkit_client_batch_item_response_archive'): 2,
+            })
 
     def test_lifecycle_peer_requires_cleanup_and_checks_illegal_destroy(self):
         import route_peer

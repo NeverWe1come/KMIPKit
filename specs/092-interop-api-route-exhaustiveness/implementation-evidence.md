@@ -272,3 +272,25 @@ local C evidence run contains 66,736 expected cells, 42,025 invoked, zero
 failed, and 24,711 pending; this slice adds 38 invoked cells. Four local
 Continue-option constructor cells remain pending, along with the broader C
 matrix, so no exhaustive-coverage claim is made.
+
+## C Archive lifecycle route
+
+The installed C consumer runs the catalogued `test-op-archive` lifecycle as
+Create, Archive, Revoke, and Destroy with unique Batch Item IDs. It does not
+insert Activate: OASIS KMIP 2.0/2.1 §6.1.4 Tables 158/173 make the Unique
+Identifier optional and specify no Active-state precondition. The controlled
+peer checks the ID Placeholder, required response Unique Identifier, response
+ordering, and cleanup for KMIP 2.0/2.1 over TTLV, JSON, and XML on raw TLS and
+HTTPS. Archive is only the client's indication that the KMS may archive the
+object; the fixture records the request without asserting archival completion
+or external KMS behavior.
+
+The original implementation was corrected after comparing it with the
+catalogued route and §6.1.4. Red `b2e3ced75` asserts the four-operation recipe
+and fails against the old extra Activate. Green `5707246cb` updates the C
+consumer, response indexing, route peer, and standalone TLS expected sequence;
+Refactor `de029189b` clarifies the Active-state distinction. The focused Archive
+route passed 12/12; CTest passed 7/7 in 97.26 seconds, including both standalone
+TLS peers. The current full local C matrix has 66,736 expected, 42,063 invoked,
+zero failed, and 24,673 pending cells; this route contributes 38 invoked cells
+and leaves FR-003/FR-005 incomplete.

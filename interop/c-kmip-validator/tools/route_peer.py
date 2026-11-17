@@ -1250,7 +1250,8 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
     expected, _ = selected_recipe
     observed_operations = tuple(numbers(node, 0x42005C))
     if observed_operations != expected:
-        raise ValueError('fixture_operation_order_mismatch')
+        raise ValueError(
+            f'fixture_operation_order_mismatch:expected={expected}:observed={observed_operations}')
     assert_placeholder_usage(node, case_id)
     header = next(descendants(node, 0x420077), node)
     if numbers(header, 0x42006A) != [2] or numbers(header, 0x42006B) != [int(version[-1])]:
@@ -1694,7 +1695,7 @@ def assert_placeholder_usage(node, case_id):
                        'test-batch-placeholder-chain-resolves', 'test-op-encrypt',
                        'test-op-decrypt', 'test-op-mac', 'test-op-mac-verify',
                        'test-batch-order-required-placeholder-resolution',
-                       'test-batch-order-omitted-defaults-true'):
+                       'test-batch-order-omitted-defaults-true', 'test-op-archive'):
         return
     batch_items = [child for child in node[2]
                    if child[0] == BATCH_ITEM_TAG and child[1] == 1]
@@ -2671,6 +2672,7 @@ class PeerState:
         self.usage_allocation_counts = {'fixture-key-1': 0} if usage_allocation_ready else {}
         self.interop_sessions = {}
         self.key_pair_identifiers = {}
+        self.archive_requests = []
 
     def digest(self):
         state_value = {'objects': self.objects}
@@ -2691,6 +2693,8 @@ class PeerState:
             state_value['usage_allocation_counts'] = self.usage_allocation_counts
         if self.interop_sessions:
             state_value['interop_sessions'] = self.interop_sessions
+        if self.archive_requests:
+            state_value['archive_requests'] = self.archive_requests
         state = json.dumps(state_value, sort_keys=True, separators=(',', ':'))
         return hashlib.sha256(state.encode()).hexdigest()
 
@@ -2830,10 +2834,15 @@ class PeerState:
                 identifier = matching_identifiers[0]
                 placeholder = identifier
                 effect = 'located'
-            elif operation in (9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 20, 31, 32, 33, 34, 35, 36, 43, 48, 49, 56):
+            elif operation in (9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 20, 21, 31, 32, 33, 34, 35, 36, 43, 48, 49, 56):
                 state = self.objects.get(identifier)
                 if state is None:
                     status, reason, effect = 1, 55, 'object_not_found'
+                elif operation == 21:
+                    # KMIP §6.1.4 defines Archive as a client's indication;
+                    # the KMS policy decides whether and when archival occurs.
+                    self.archive_requests.append(identifier)
+                    effect = 'archive_requested'
                 elif operation == 17 and self.usage_allocation_ready:
                     payloads = [child for child in item[2]
                                 if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
@@ -2982,6 +2991,9 @@ def verify_lifecycle(operations, response_tree):
                 raise ValueError('fixture_activate_state_mismatch')
             state = 'active'
             effects.append('activated')
+        elif operation == 21:
+            # KMIP §6.1.4 leaves whether and when archival occurs to KMS policy.
+            effects.append('archive_requested')
         elif operation in (31, 32, 35, 36):
             if state != 'active':
                 raise ValueError('fixture_registered_crypto_key_not_active')
@@ -3301,6 +3313,20 @@ def verify_export_response(response_tree):
         raise ValueError('fixture_export_response_attributes_mismatch')
     if not any(child[0] == 0x420040 for child in fields[3][2]):
         raise ValueError('fixture_export_response_any_object_mismatch')
+
+
+def verify_archive_response(response_tree):
+    """Check the required KMIP v2.0/v2.1 §6.1.4 Archive response identifier."""
+    items = [child for child in response_tree[2]
+             if child[0] == BATCH_ITEM_TAG and child[1] == 1 and
+             numbers(child, 0x42005C) == [21]]
+    payloads = [child for child in items[0][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+    identifiers = [child for child in payloads[0][2]
+                   if child[0] == UNIQUE_IDENTIFIER_TAG] if len(payloads) == 1 else []
+    if (len(identifiers) != 1 or identifiers[0][1] != 7 or
+            identifiers[0][2] != b'fixture-key-1'):
+        raise ValueError('fixture_archive_response_identifier_mismatch')
 
 
 
@@ -3884,6 +3910,13 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             response_item_ids = LEGACY_SIGNATURE_VERIFY_ITEM_IDS
                                         elif recipe[1] == 'create_key_pair':
                                             response_item_ids = CREATE_KEY_PAIR_ITEM_IDS
+                                        elif recipe[1] == 'archive':
+                                            response_item_ids = (
+                                                (b'archive-create', b'archive-target',
+                                                 b'archive-revoke', b'archive-destroy')
+                                                if case_id == 'test-op-archive' else
+                                                (b'interop-create', b'interop-archive',
+                                                 b'interop-revoke', b'interop-destroy'))
                                         elif recipe[1] == 'certify':
                                             response_item_ids = CERTIFY_ITEM_IDS
                                         elif placeholder_chain_recipe:
@@ -4417,6 +4450,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                     response_tree, case['requires']['field_name'])
                                             else:
                                                 verify_export_response(response_tree)
+                                            verify_lifecycle(recipe[0], response_tree)
+                                        elif recipe[1] == 'archive':
+                                            verify_archive_response(response_tree)
                                             verify_lifecycle(recipe[0], response_tree)
                                         elif recipe[1] in ('sign', 'signature_verify'):
                                             verify_legacy_signature_response(
