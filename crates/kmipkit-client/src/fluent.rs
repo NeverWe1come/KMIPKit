@@ -766,7 +766,7 @@ impl<'a> RngSeedBuilder<'a> {
         }
     }
 
-    /// Moves caller-supplied seed bytes into KMIPKit's zeroizing secret owner.
+    /// Moves caller-supplied seed bytes into `KMIPKit`'s zeroizing secret owner.
     #[must_use]
     pub fn data(mut self, value: SecretBytes) -> Self {
         self.data = Some(value);
@@ -798,14 +798,20 @@ impl<'a> RngSeedBuilder<'a> {
             .ok_or(FluentBuildError::MissingRngSeedData)
     }
 
+    fn into_request_and_execution(
+        self,
+    ) -> Result<(RngSeedRequest, FluentBuilderExecution<'a>), FluentBuildError> {
+        let data = self.data.ok_or(FluentBuildError::MissingRngSeedData)?;
+        Ok((RngSeedRequest::new(data), self.execution))
+    }
+
     /// Builds the existing typed RNG Seed request.
     ///
     /// # Errors
     /// Returns [`FluentBuildError::MissingRngSeedData`] when Data is absent.
     pub fn build(self) -> Result<RngSeedRequest, FluentBuildError> {
-        Ok(RngSeedRequest::new(
-            self.data.ok_or(FluentBuildError::MissingRngSeedData)?,
-        ))
+        self.into_request_and_execution()
+            .map(|(request, _execution)| request)
     }
 
     /// Converts the request to a typed batch item without sending it.
@@ -827,11 +833,9 @@ impl<'a> RngSeedBuilder<'a> {
         self,
         limits: &kmipkit_ttlv::codec::CodecLimits,
     ) -> Result<ClientBatchItemResponse, ClientError> {
-        let Self { execution, data } = self;
-        let request =
-            RngSeedRequest::new(data.ok_or_else(|| {
-                fluent_client_validation_error(FluentBuildError::MissingRngSeedData)
-            })?);
+        let (request, execution) = self
+            .into_request_and_execution()
+            .map_err(fluent_client_validation_error)?;
         execution.run(ClientRequest::rng_seed(request), limits)
     }
 }

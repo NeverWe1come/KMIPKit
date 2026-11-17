@@ -347,6 +347,10 @@ mod rng_retrieve_execution_tests;
 mod rng_seed_execution_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/rng_seed_guide_examples.rs"]
+mod rng_seed_guide_examples;
+
+#[cfg(test)]
 #[path = "../tests/unit/query_execution_tests.rs"]
 mod query_execution_tests;
 

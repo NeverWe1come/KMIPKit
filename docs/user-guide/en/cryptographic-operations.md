@@ -350,3 +350,45 @@ The response keeps Data in the existing zeroizing `SecretBytes` owner. Use
 `with_bytes` only for the callback's lifetime; avoid formatting or copying the
 output into ordinary strings. Operation Pending remains explicit when the
 caller opts into asynchronous results; the builder never polls or retries.
+
+## Seed a KMIP server RNG
+
+OASIS KMIP v2.1 §6.1.50 Table 319 requires Data and Table 320 reports the
+Data Length used by the server. The input is secret. Supply it through
+`SecretBytes` so KMIPKit owns and zeroizes its copy. A successful Data Length
+of zero is valid and means the server did not use the supplied seed. The Rust
+fluent builder uses the existing typed request and one-exchange path:
+
+```rust,kmipkit-test
+use kmipkit_client::{Client, ClientBatchItemResponse, ClientError};
+use kmipkit_protocol::SecretBytes;
+use kmipkit_ttlv::codec::CodecLimits;
+
+#[allow(dead_code)]
+fn seed_server_rng(
+    client: &mut Client,
+    seed: Vec<u8>,
+    limits: &CodecLimits,
+) -> Result<ClientBatchItemResponse, ClientError> {
+    client
+        .request()
+        .rng_seed()
+        .data(SecretBytes::new(seed))
+        .execute(limits)
+}
+
+#[allow(dead_code)]
+fn server_reported_seed_length(response: &ClientBatchItemResponse) -> Option<i32> {
+    response
+        .outcome()
+        .response()
+        .rng_seed()
+        .and_then(|value| value.data_length())
+}
+
+fn main() {}
+```
+
+The seed remains in KMIPKit's zeroizing secret owner through request encoding.
+Pending responses remain explicit when the caller opts into asynchronous
+results; the builder never polls or retries.

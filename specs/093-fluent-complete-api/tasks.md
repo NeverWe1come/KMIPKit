@@ -115,6 +115,20 @@ Dependent work branches from the unmerged parent head while review is pending.
   every exact-head CI failure. Keep this slice WIP while language parity and
   remaining operation work are incomplete.
 
+### Rust RNG Seed builder slice
+
+- [x] RSG001 Add failing fake-transport tests for required secret Data,
+  typed batch conversion, zero Data Length success, Pending correlation, and
+  missing-data NotSent behavior, based on KMIP v2.1 §6.1.50, Tables 319–321.
+- [x] RSG002 Implement `RngSeedBuilder` over the existing typed request and
+  one-exchange client path, accepting the explicit `SecretBytes` owner.
+- [x] RSG003 Add the blocked Rust export contract, regenerate the manifest,
+  update bilingual guide examples and traceability, and retain Red/Green/
+  Refactor evidence in separate commits.
+- [ ] RSG004 Push a WIP draft PR targeting the RNG Retrieve slice and fix every
+  exact-head CI failure. Keep the slice WIP until C, Java, and Python fluent
+  parity is complete.
+
 - [ ] B001 Add failing C consumer tests for opaque handle ownership,
   operation construction, typed results, direct tasks and ABI stability.
 - [ ] B002 Generate and implement the C ABI on the Rust owner; run sanitizer,
