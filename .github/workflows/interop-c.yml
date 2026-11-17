@@ -27,6 +27,7 @@ jobs:
         with:
           ref: ${{ github.sha }}
           fetch-depth: 0
+          persist-credentials: false
       - id: diff
         shell: bash
         env:
