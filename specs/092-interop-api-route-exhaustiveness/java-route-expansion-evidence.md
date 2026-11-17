@@ -2062,6 +2062,45 @@ python3 interop/java-kmip-validator/tools/compare_route_ledger.py
 git diff --check
 ```
 
+## Java KMIP 2.1 Set Endpoint Role response routes — 2026-11-17
+
+Red, commit `c0d99e17a`, adds the response case ID and per-route assertions; the
+focused controlled-peer test fails because the response's `TtlvItem.create`
+route has no event. Green, commit `9eecdae9e`, round-trips the required
+Endpoint Role response field and Set Endpoint Role Operation Enumeration via
+the installed generic TTLV constructor, Item view, and decoder. The fixture
+uses Client value 1 as the role accepted by the server (OASIS KMIP 2.1
+§6.1.54 Table 332; §11.19); Operation is `0x32` (§11.36). This adds six
+selected cells. The full Java suite passes 57/57 tests with `--rerun-tasks`.
+Refactor, commit `4382e0ea0`, extracts a shared helper for request and response
+Endpoint Role fields; the focused and full tests pass on the refactored code.
+All 68 route-capability tests pass, the generator check reports 1,507 routes,
+and selected-scope validation accepts 27,240/27,240 cells with zero failures.
+The ledger records 71,641 planned, 27,240 executed, and 44,401 pending cells
+across 1,222 pending case IDs. The ledger comparer passes after refresh. The
+global matrix remains incomplete and the PR stays WIP.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test \
+  --tests org.kmipkit.validator.ControlledTlsPeerTest.controlledQueryProducesPerRouteEvidenceForBothProtocolVersions
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks
+python3 -m unittest interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+python3 interop/shared/tools/validate_route_evidence.py \
+  --selected-scope --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+git diff --check
+```
+
 ## Java Extension Tag Item routes — 2026-11-17
 
 Red, commit `db63682e0`, adds per-version assertions for Extension Tag's
