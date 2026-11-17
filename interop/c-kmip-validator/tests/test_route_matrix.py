@@ -2586,6 +2586,38 @@ class RouteMatrixTests(unittest.TestCase):
                                                if case['case_id'] == 'test-op-delegated-login']}
         return ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest
 
+    def test_delegated_login_peer_accepts_optional_request_payload_fields(self):
+        """OASIS KMIP 2.0/2.1 §6.1.12: optional fields coexist with required Rights."""
+        import route_peer
+
+        def integer(tag, value, *, item_type=2, width=4):
+            return (tag, item_type, value.to_bytes(width, 'big', signed=item_type == 2))
+
+        for version, minor in (('20', 0), ('21', 1)):
+            variants = (
+                ('001', [(0x420049, 10, (60).to_bytes(4, 'big'))]),
+                ('002', [integer(0x42014C, 2)]),
+                ('003', [(0x420095, 1, [
+                    integer(0x420097, 10, item_type=3, width=8),
+                    integer(0x420096, 10, item_type=3, width=8),
+                    (0x420098, 5, (1).to_bytes(4, 'big')),
+                ])]),
+            )
+            for suffix, optional_fields in variants:
+                case_id = f'test-norm-payload-client-delegated-login-request-{version}-{suffix}'
+                with self.subTest(case_id=case_id):
+                    header = (0x420077, 1, [
+                        (0x420069, 1, [integer(0x42006A, 2), integer(0x42006B, minor)]),
+                        integer(0x42000D, 1),
+                    ])
+                    item = (0x42000F, 1, [
+                        (0x42005C, 5, (47).to_bytes(4, 'big')),
+                        (0x420079, 1, [*optional_fields, (0x42014D, 1, [])]),
+                    ])
+                    request = (0x420078, 1, [header, item])
+                    route_peer.assert_recipe(request, case_id, f'2.{minor}',
+                                             ((47,), 'delegated_login'))
+
     def test_delegated_login_response_accessors_read_the_ticket_for_both_versions(self):
         """OASIS KMIP v2.0 §6.1.12 Table 185 and v2.1 §6.1.12 Table 200."""
         from route_peer import execute_network_cells
