@@ -264,6 +264,11 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
     if not seen_combinations <= supported_combinations:
         raise ValueError("route evidence selects an encoding/transport pair absent from the public API")
 
+    if scope_cells is None:
+        scope_cells = report.get("scope_cells")
+    elif report.get("scope_cells") is not None and report["scope_cells"] != scope_cells:
+        raise ValueError("report route scope differs from the supplied route scope")
+
     expected = _expected_cells(report, catalog, manifest)
     if not expected:
         raise ValueError("route evidence selection has no applicable route cells")
