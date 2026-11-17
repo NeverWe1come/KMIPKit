@@ -118,9 +118,16 @@ rechaza KMIP 2.0 antes del envío. `.with_options(...)` configura opciones del
 intercambio; `.with_asynchronous_indicator(1)` permite Pending explícitamente y
 conserva su correlación tipada sin ejecutar Poll. La conversión al elemento de
 lote conserva solo la petición; configura las opciones y el comportamiento
-asíncrono en el lote. `Client::ping` sigue disponible. Los builders fluidos de
-Ping para C, Java y Python están pendientes; sus rutas tipadas existentes siguen
-disponibles.
+asíncrono en el lote. `Client::ping` sigue disponible. El binding C ofrece la
+función directa `kmipkit_client_ping_v1` y un builder opaco de Ping para fijar
+el indicador asíncrono, validar, convertir a elemento de lote y ejecutar con las
+opciones predeterminadas o unas opciones explícitas para el intercambio. En
+Java se usa `client.request().ping().asynchronousIndicator(1).execute(limits)`;
+en Python, `client.request().ping().asynchronous_indicator(1).execute(limits)`.
+Ambos también ofrecen `withOptions`/`with_options`, `validate`, `build`,
+`toBatchItem`/`to_batch_item` y ejecución de un único intercambio. Las cuatro
+rutas usan el cliente tipado existente y devuelven la vista de respuesta de lote
+propia del lenguaje. Ninguna ejecuta Poll ni reintenta automáticamente.
 
 ## Resultados, errores y reintentos
 

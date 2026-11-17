@@ -4023,7 +4023,8 @@ final class ClientFacadeTlsIntegrationTest {
                 fluentClientResponseMessage(1), fluentClientResponseMessage(1),
                 fluentClientResponseMessage(10), fluentClientResponseMessage(10),
                 fluentClientResponseMessage(20), fluentClientResponseMessage(20),
-                discoverVersionsResponseMessage(1), discoverVersionsResponseMessage(1)));
+                discoverVersionsResponseMessage(1), discoverVersionsResponseMessage(1),
+                fluentClientResponseMessage(0x3b), fluentClientResponseMessage(0x3b)));
         Thread peerThread = new Thread(peer, "kmipkit-java-fluent-client-fixture");
         peerThread.setDaemon(true);
         peerThread.start();
@@ -4076,10 +4077,21 @@ final class ClientFacadeTlsIntegrationTest {
                     assertEquals(1, response.itemCount());
                 }
             }
+            try (ClientBatchResponse response = client.request().ping().execute(limits);
+                    ClientBatchItemResult result = response.itemAt(0)) {
+                assertEquals(0x3b, result.operation());
+                assertEquals(Boolean.TRUE, result.pingResponse().orElseThrow());
+            }
+            try (ClientBatchResponse response = client.request().ping().executeWithOptions(
+                            limits, RequestOptions.defaults());
+                    ClientBatchItemResult result = response.itemAt(0)) {
+                assertEquals(0x3b, result.operation());
+                assertEquals(Boolean.TRUE, result.pingResponse().orElseThrow());
+            }
         } finally {
             listener.close();
         }
-        assertEquals(8, peer.get(15, TimeUnit.SECONDS).size());
+        assertEquals(10, peer.get(15, TimeUnit.SECONDS).size());
     }
 
     // OASIS KMIP Specification v2.1 §6.1.52, Tables 325–327.
@@ -6783,6 +6795,7 @@ final class ClientFacadeTlsIntegrationTest {
                     structure(0x42008f, structure(0x420040,
                             item(0x420045, 8, "fluent-key-material".getBytes(StandardCharsets.US_ASCII)))));
             case 20 -> structure(0x42007c, identifier);
+            case 0x3b -> structure(0x42007c);
             default -> throw new IllegalArgumentException("unsupported fluent operation: " + operation);
         };
         byte[] responseItem = structure(0x42000f, enumeration(0x42005c, operation),

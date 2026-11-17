@@ -109,6 +109,14 @@ fn capability_query_matches_manifest_ready_capabilities() {
 }
 
 #[test]
+fn ping_builder_capability_is_available() {
+    assert_eq!(
+        kmipkit::capability_is_available("fluent_ping_builder"),
+        Ok(true)
+    );
+}
+
+#[test]
 fn capability_query_reports_the_opt_in_kmip30_draft_routes() {
     assert_eq!(
         kmipkit::capability_is_available("kmip30_draft_routes"),

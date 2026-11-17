@@ -7828,6 +7828,35 @@ failure:
     return 0;
 }
 
+int kmipkit_client_abi_c_consumer_ping_builder_builds_typed_item(void) {
+    kmipkit_ping_builder_t *builder = NULL;
+    kmipkit_client_batch_item_t *item = NULL;
+    uint32_t operation = UINT32_C(0);
+    if (kmipkit_client_ping_v1(NULL, NULL, NULL) != KMIPKIT_ERROR_INVALID_INPUT) {
+        return 0;
+    }
+    int32_t status = kmipkit_ping_builder_create(&builder);
+    if (status == INT32_C(0)) {
+        status = kmipkit_ping_builder_set_asynchronous_indicator(
+            builder, KMIPKIT_ENUMERATION_ASYNCHRONOUS_INDICATOR_OPTIONAL);
+    }
+    if (status == INT32_C(0)) {
+        status = kmipkit_ping_builder_validate(builder);
+    }
+    if (status == INT32_C(0)) {
+        status = kmipkit_ping_builder_build_batch_item(builder, &item);
+    }
+    if (status == INT32_C(0)) {
+        status = kmipkit_client_batch_item_operation(item, &operation);
+    }
+    if (status == INT32_C(0) && operation != KMIPKIT_ENUMERATION_OPERATION_PING) {
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    }
+    kmipkit_client_batch_item_release(item);
+    kmipkit_ping_builder_release(builder);
+    return status == INT32_C(0);
+}
+
 int main(int argc, char **argv) {
     if (KMIPKIT_PROFILE_TRANSPORT_RAW_TTLV_TLS != UINT32_C(1) ||
         KMIPKIT_PROFILE_TRANSPORT_HTTPS != UINT32_C(2)) {
@@ -7859,6 +7888,7 @@ int main(int argc, char **argv) {
         !rekey_constructor_is_callable_from_c() ||
         !reprovision_constructor_is_callable_from_c() ||
         !rng_request_builders_are_callable_from_c() ||
+        !kmipkit_client_abi_c_consumer_ping_builder_builds_typed_item() ||
         !rekey_key_pair_constructor_is_callable_from_c() ||
         !rekey_key_pair_response_rejects_invalid_output_records_from_c() ||
         !rekey_key_pair_response_accessors_clear_outputs_from_c() ||

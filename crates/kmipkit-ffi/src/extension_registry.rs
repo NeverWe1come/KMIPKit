@@ -71,25 +71,26 @@ use crate::{
     kmipkit_hashed_password_credential_t, kmipkit_hashed_password_timestamp_sequence_t,
     kmipkit_locate_builder_t, kmipkit_message_extension_view_t, kmipkit_message_validation_error_t,
     kmipkit_modify_attribute_request_t, kmipkit_mtls_client_config_v1_t, kmipkit_nonce_t,
-    kmipkit_poll_request_t, kmipkit_process_request_t, kmipkit_profile_object_state_v1_t,
-    kmipkit_profile_readiness_t, kmipkit_profile_validation_context_v1_t,
-    kmipkit_profile_validation_error_t, kmipkit_profile_validation_error_view_v1_t,
-    kmipkit_profile_validation_result_t, kmipkit_profile_validation_selection_v1_t,
-    kmipkit_query_async_requests_request_t, kmipkit_raw_tag_t, kmipkit_register_request_t,
-    kmipkit_registered_extension_value_t, kmipkit_request_batch_item_view_t,
-    kmipkit_request_header_view_t, kmipkit_request_message_t, kmipkit_request_options_v1_t,
-    kmipkit_response_batch_item_view_t, kmipkit_response_header_view_t, kmipkit_response_message_t,
-    kmipkit_revocation_reason_t, kmipkit_revoke_builder_t, kmipkit_revoke_request_t,
-    kmipkit_secret_bytes_t, kmipkit_secret_text_t, kmipkit_set_attribute_builder_t,
-    kmipkit_set_attribute_request_t, kmipkit_split_key_reference_t,
-    kmipkit_symmetric_key_builder_t, kmipkit_symmetric_key_request_v1_t, kmipkit_tag_t,
-    kmipkit_timeout_limit_v1_t, kmipkit_transport_config_t, kmipkit_transport_config_v1_t,
-    kmipkit_transport_input_v1_t, kmipkit_ttlv_decode_error_v1_t, kmipkit_ttlv_item_t,
-    kmipkit_ttlv_item_view_t, kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t,
-    kmipkit_ttlv_structure_view_t, kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t,
-    kmipkit_unique_identifier_v1_t, kmipkit_usage_allocation_context_t,
-    kmipkit_username_and_password_credential_t, kmipkit_validated_extension_value_t,
-    kmipkit_validation_issue_view_v1_t, kmipkit_validation_report_t,
+    kmipkit_ping_builder_t, kmipkit_poll_request_t, kmipkit_process_request_t,
+    kmipkit_profile_object_state_v1_t, kmipkit_profile_readiness_t,
+    kmipkit_profile_validation_context_v1_t, kmipkit_profile_validation_error_t,
+    kmipkit_profile_validation_error_view_v1_t, kmipkit_profile_validation_result_t,
+    kmipkit_profile_validation_selection_v1_t, kmipkit_query_async_requests_request_t,
+    kmipkit_raw_tag_t, kmipkit_register_request_t, kmipkit_registered_extension_value_t,
+    kmipkit_request_batch_item_view_t, kmipkit_request_header_view_t, kmipkit_request_message_t,
+    kmipkit_request_options_v1_t, kmipkit_response_batch_item_view_t,
+    kmipkit_response_header_view_t, kmipkit_response_message_t, kmipkit_revocation_reason_t,
+    kmipkit_revoke_builder_t, kmipkit_revoke_request_t, kmipkit_secret_bytes_t,
+    kmipkit_secret_text_t, kmipkit_set_attribute_builder_t, kmipkit_set_attribute_request_t,
+    kmipkit_split_key_reference_t, kmipkit_symmetric_key_builder_t,
+    kmipkit_symmetric_key_request_v1_t, kmipkit_tag_t, kmipkit_timeout_limit_v1_t,
+    kmipkit_transport_config_t, kmipkit_transport_config_v1_t, kmipkit_transport_input_v1_t,
+    kmipkit_ttlv_decode_error_v1_t, kmipkit_ttlv_item_t, kmipkit_ttlv_item_view_t,
+    kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t, kmipkit_ttlv_structure_view_t,
+    kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t, kmipkit_unique_identifier_v1_t,
+    kmipkit_usage_allocation_context_t, kmipkit_username_and_password_credential_t,
+    kmipkit_validated_extension_value_t, kmipkit_validation_issue_view_v1_t,
+    kmipkit_validation_report_t,
 };
 use kmipkit_client::UsageAllocationContext;
 use kmipkit_client::extension_registry as client_extension;
@@ -577,6 +578,7 @@ enum Kind {
     AddAttributeBuilder,
     DeleteAttributeBuilder,
     LocateBuilder,
+    PingBuilder,
     RevokeBuilder,
     CryptoOperationBuilder,
 }
@@ -652,6 +654,11 @@ struct RevokeBuilderState {
     asynchronous_indicator: Option<u32>,
 }
 
+#[derive(Default)]
+struct PingBuilderState {
+    asynchronous_indicator: Option<u32>,
+}
+
 impl CryptoOperationBuilder {
     fn new(operation: CryptoOperationKind) -> Self {
         Self {
@@ -700,6 +707,7 @@ enum HandleValue {
     AddAttributeBuilder(Mutex<Option<AddAttributeBuilderState>>),
     DeleteAttributeBuilder(Mutex<Option<DeleteAttributeBuilderState>>),
     LocateBuilder(Mutex<LocateBuilderState>),
+    PingBuilder(Mutex<PingBuilderState>),
     RevokeBuilder(Mutex<RevokeBuilderState>),
     CryptoOperationBuilder(Mutex<CryptoOperationBuilder>),
     BatchItemReadback(ClientBatchItemReadback),

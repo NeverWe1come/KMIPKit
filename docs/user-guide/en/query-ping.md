@@ -114,8 +114,16 @@ KMIP 2.0 before sending. `.with_options(...)` sets exchange-local options;
 `.with_asynchronous_indicator(1)` explicitly permits Pending and retains the
 typed correlation value without polling. Batch conversion retains only the
 request; configure exchange options and asynchronous behavior on the batch.
-`Client::ping` remains available. Fluent Ping builders for C, Java, and Python
-are pending; their existing typed Ping execution routes remain available.
+`Client::ping` remains available. The C binding offers the direct
+`kmipkit_client_ping_v1` function and an opaque Ping builder for setting the
+asynchronous indicator, validation, batch conversion, and execution with
+default or explicit exchange options. Java uses
+`client.request().ping().asynchronousIndicator(1).execute(limits)`; Python uses
+`client.request().ping().asynchronous_indicator(1).execute(limits)`. Both also
+provide `withOptions`/`with_options`, `validate`, `build`, `toBatchItem`/
+`to_batch_item`, and one-exchange execution. All four paths use the existing
+typed client and return the language's existing batch response view. None
+polls or retries automatically.
 
 ## Results, errors, and retries
 

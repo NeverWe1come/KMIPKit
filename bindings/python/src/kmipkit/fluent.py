@@ -276,6 +276,9 @@ class Request:
     def delete_attribute(self) -> DeleteAttributeBuilder:
         return DeleteAttributeBuilder(client=self._client)
 
+    def ping(self) -> PingBuilder:
+        return PingBuilder(self._client)
+
     def locate(
         self,
         attributes: attribute_operations.AttributeSet,
@@ -1087,6 +1090,52 @@ class GetAttributeListBuilder(_AttributeReadBuilder):
         )
 
 
+class PingBuilder:
+    """Build and execute the empty client-initiated KMIP 2.1 Ping request."""
+
+    def __init__(self, client: Client) -> None:
+        self._client = client
+        self._options: RequestOptions | None = None
+        self._asynchronous_indicator: int | None = None
+
+    def with_options(self, options: RequestOptions) -> PingBuilder:
+        if not isinstance(options, RequestOptions):
+            errors.raise_for_status(4)
+        self._options = options
+        return self
+
+    def asynchronous_indicator(self, value: int) -> PingBuilder:
+        self._asynchronous_indicator = _unsigned(value, 32)
+        return self
+
+    def validate(self) -> None:
+        with self.build():
+            pass
+
+    def build(self) -> extensions.ClientBatchItem:
+        return extensions.client_batch_item_ping()
+
+    def to_batch_item(self) -> extensions.ClientBatchItem:
+        return self.build()
+
+    def execute(
+        self,
+        limits: ttlv.CodecLimits,
+        *,
+        client: Client | None = None,
+        options: RequestOptions | None = None,
+    ) -> BatchResult:
+        target = client or self._client
+        return _execute_single_item(
+            target,
+            self.build,
+            limits,
+            self._options,
+            self._asynchronous_indicator,
+            options,
+        )
+
+
 class Operation:
     def __init__(self, client: Client, operation: str,
                  unique_identifier: extensions.UniqueIdentifier) -> None:
@@ -1821,6 +1870,7 @@ __all__ = [
     "MacBuilder",
     "MacVerifyBuilder",
     "Operation",
+    "PingBuilder",
     "Request",
     "RevokeBuilder",
     "SetAttributeBuilder",

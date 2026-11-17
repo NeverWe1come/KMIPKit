@@ -6749,6 +6749,7 @@ fn ffi_usage_allocation_ttlv_getter_fails_closed_for_invalid_and_unrelated_items
 
 #[link(name = "kmipkit_client_abi_c_consumer", kind = "static")]
 unsafe extern "C" {
+    fn kmipkit_client_abi_c_consumer_ping_builder_builds_typed_item() -> i32;
     fn kmipkit_client_abi_c_consumer_response_views(
         item: *mut kmipkit_client_batch_item_response_t,
     ) -> i32;
@@ -6853,6 +6854,14 @@ unsafe extern "C" {
     fn kmipkit_client_abi_c_consumer_validate_join_split_key_response_ttlv(
         item: *mut kmipkit_client_batch_item_response_t,
     ) -> i32;
+}
+
+#[test]
+fn c_consumer_builds_and_checks_a_typed_ping_batch_item() {
+    // SAFETY: the C consumer creates and releases its own Ping builder and item handles.
+    let result = unsafe { kmipkit_client_abi_c_consumer_ping_builder_builds_typed_item() };
+
+    assert_eq!(result, 1);
 }
 
 #[test]

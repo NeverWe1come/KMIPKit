@@ -37,6 +37,8 @@ public final class FluentRequest {
     public GetAttributeListBuilder getAttributeList(UniqueIdentifier id) {
         return new GetAttributeListBuilder(client, id);
     }
+    /** Begins an empty, typed KMIP 2.1 Ping request. */
+    public PingBuilder ping() { return new PingBuilder(client); }
     public EncryptBuilder encrypt() { return new EncryptBuilder(client); }
     public DecryptBuilder decrypt() { return new DecryptBuilder(client); }
     public SignBuilder sign() { return new SignBuilder(client); }

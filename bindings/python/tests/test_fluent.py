@@ -26,6 +26,16 @@ def test_fluent_request_exposes_a_delete_attribute_builder():
     assert "DeleteAttributeBuilder" in fluent.__all__
 
 
+def test_fluent_request_exposes_a_ping_builder():
+    assert callable(getattr(fluent.Request, "ping", None))
+    assert hasattr(fluent, "PingBuilder")
+    assert "PingBuilder" in fluent.__all__
+    builder = fluent.Request(None).ping()
+    builder.validate()
+    with builder.to_batch_item() as item:
+        assert item.operation == protocol_values.V2_1_OPERATION_PING
+
+
 def test_fluent_request_exposes_locate_and_revoke_builders():
     assert callable(getattr(fluent.Request, "locate", None))
     assert callable(getattr(fluent.Request, "revoke", None))
@@ -373,14 +383,16 @@ def _lifecycle_response(operation: int, identifier: bytes) -> bytes:
                 _item(0x42000A, 7, b"Comment"),
             ),
         ]
+    elif operation == protocol_values.V2_1_OPERATION_PING:
+        payload_fields = []
     else:
         raise AssertionError(f"unexpected fluent operation {operation}")
-    response_item = _structure(
-        0x42000F,
+    response_fields = [
         _item(0x42005C, 5, struct.pack(">I", operation)),
         _item(0x42007F, 5, struct.pack(">I", 0)),
-        _structure(0x42007C, *payload_fields),
-    )
+    ]
+    response_fields.append(_structure(0x42007C, *payload_fields))
+    response_item = _structure(0x42000F, *response_fields)
     return _structure(0x42007B, header, response_item)
 
 
@@ -493,6 +505,39 @@ def test_fluent_operation_and_symmetric_builder_execute_with_and_without_options
         assert [operation for operation, _, _ in observations] == [10, 20, 1, 1]
     finally:
         for result in results:
+            result.close()
+        peer.join(timeout=12)
+        if not peer_failures.empty():
+            raise peer_failures.get()
+
+
+def test_fluent_ping_builder_executes_one_tls_exchange() -> None:
+    assert callable(getattr(fluent.Request, "ping", None))
+    port, observations, peer_failures, peer = _start_lifecycle_peer(
+        (protocol_values.V2_1_OPERATION_PING,), expected_asynchronous_indicator=2
+    )
+    registry = extensions.create_client_extension_registry(
+        (), extensions.default_extension_registry_limits()
+    )
+    configuration = extensions.create_client_configuration(registry)
+    result: client.BatchResult | None = None
+    try:
+        with configuration, client.Client.create(
+            configuration, mtls_transport_config(port, _FIXTURES)
+        ) as kmip_client:
+            with ttlv.codec_limits_defaults() as limits:
+                result = kmip_client.request().ping().asynchronous_indicator(2).execute(limits)
+        peer.join(timeout=12)
+        assert not peer.is_alive()
+        assert peer_failures.empty()
+        assert [item.operation for item in result.items] == [
+            protocol_values.V2_1_OPERATION_PING
+        ]
+        assert [operation for operation, _, _ in observations] == [
+            protocol_values.V2_1_OPERATION_PING
+        ]
+    finally:
+        if result is not None:
             result.close()
         peer.join(timeout=12)
         if not peer_failures.empty():

@@ -72,6 +72,13 @@ Dependent work branches from the unmerged parent head while review is pending.
   update bilingual guides and traceability, and pass focused/local checks.
 - [ ] PING004 Push a WIP draft PR and fix every exact-head CI failure. Keep
   the slice WIP until required C, Java, and Python fluent parity is complete.
+- [x] PING-B001 Add failing C ABI consumer, Java facade, Python fluent, and
+  manifest tests for typed Ping construction and one-exchange execution.
+- [x] PING-B002 Implement the C direct helper and opaque builder plus Java and
+  Python Ping facades over the existing typed Ping route; update generated API
+  declarations and bilingual user guidance.
+- [ ] PING-B003 Push the binding slice as a WIP child of the Rust Ping PR and
+  fix every exact-head CI failure before marking the stack ready for review.
 
 - [ ] B001 Add failing C consumer tests for opaque handle ownership,
   operation construction, typed results, direct tasks and ABI stability.
