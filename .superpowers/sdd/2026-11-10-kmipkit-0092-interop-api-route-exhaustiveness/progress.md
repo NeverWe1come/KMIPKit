@@ -463,19 +463,44 @@ branches, and the common CI therefore reports a planned matrix only.
 - Verification commands are recorded in
   `specs/092-interop-api-route-exhaustiveness/java-route-expansion-evidence.md`.
 
-## 2026-11-17 KMIP 3.0 Java/Python branch synchronized with Attestation Type
+## 2026-11-17 KMIP 3.0 Java/Python branch synchronized with Response Attestation Type
 
 - Updated the KMIP 3.0 Java/Python branch from #187 head
-  `7647874fb44e9ef0d11ffd65b58cfdd9db43037a`. Its existing builder work is
+  `a543b6cd20b78ecc3b8d9bfd6c31cb5fd2ea2ca4`. Its existing builder work is
   preserved; the Java test suite passes 57/57 tests with no skips or failures.
-- The combined selected-scope report validates 27,336/27,336 cells with zero
-  failed cells. The ledger records 71,641 planned, 27,336 executed, and 44,305
-  pending across 1,210 pending case IDs; the ledger comparer passes. Shared
+- The combined selected-scope report validates 27,344/27,344 cells with zero
+  failed cells. The ledger records 71,641 planned, 27,344 executed, and 44,297
+  pending across 1,209 pending case IDs; the ledger comparer passes. Shared
   route-capability tests pass 68/68 and the generator check reports 1,507
   routes. Artifact commit `12496d646d11d4069b58bcc88fc76cc619211ec6`,
   SHA-256 `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
 - This is local-model evidence and does not complete the Java matrix or claim
   vendor interoperability. PR #213 remains WIP during exact-head CI.
+## 2026-11-17 Java KMIP 2.0/2.1 repeatable Response Header Attestation Type
+
+- OASIS KMIP 2.0/2.1 §8.5 identifies Response Header Attestation Type as
+  optional and repeatable. The Java route fixture now completes generic Item
+  create/view/decode and typed `ResponseMessage.fromTtlv` routes under both
+  versions; the typed response view preserves two Enumeration values in wire
+  order.
+- Red: `855778c41` added exact route assertions and failed because the
+  controlled report had zero events for the target. Green: `d0471de8c` emits
+  the generic routes and parses a response header containing two Attestation
+  Type values. Refactor: `31f5fb590` shares the enumeration values between the
+  request and response fixtures. The selected-scope validator then exposed
+  that the report's explicit case list omitted this target. `4e1a6866a` adds
+  the case to that selection and updates its count assertion.
+- Verification: the focal route test passes; the full Java suite passes
+  57/57 tests with no failures, errors, or skips. All 68 shared route-capability
+  tests pass, and the generated route check confirms 1,507 routes. Selected
+  scope validation accepts 27,344/27,344 cells with zero failures. The
+  generated ledger records 71,641 planned, 27,344 executed, and 44,297 pending
+  cells across 1,209 pending case IDs; ledger comparison passes. Evidence uses
+  artifact commit `12496d646d11d4069b58bcc88fc76cc619211ec6`, SHA-256
+  `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+- This completes eight local-model route cells. It does not establish vendor
+  interoperability or complete the Java matrix; the PR remains WIP.
+
 
 ## 2026-11-17 Java KMIP 2.0/2.1 repeatable Request Header Attestation Type
 
