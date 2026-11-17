@@ -209,5 +209,3 @@ def test_kmip30_response_readers_logic(monkeypatch: pytest.MonkeyPatch) -> None:
         assert resp is not None
         assert isinstance(resp, resp_cls)
         assert resp.unique_identifier.text == "encaps-uid"
-
-
