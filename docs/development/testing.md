@@ -37,6 +37,10 @@ cancels its remaining operating-system jobs after a failure. These preflights
 shorten the failure signal without changing the checks required for a passing
 full-CI run.
 
+Every `actions/checkout` step in the `interop-*.yml` workflows sets
+`persist-credentials: false`. Interoperability jobs only read source and test
+artifacts, so they do not need a repository token persisted in the checkout.
+
 ## Static analysis services
 
 The separate CodeQL workflow scans Rust, C/C++, Java, and Python on pushes to
