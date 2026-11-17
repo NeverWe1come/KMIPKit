@@ -23,7 +23,7 @@ support.
 
 The 1.0 target includes idiomatic operation builders, but KMIPKIT-0007 does
 not implement the general builder surface. This high-level section describes
-the initial Rust operation subset of the complete 52-variant typed request set,
+the initial Rust operation subset of the complete 56-variant typed request set,
 shown for batch execution and lifecycle conveniences. The complete set appears
 in the Typed protocol section below, and this subset does not establish
 four-language 1.0 availability by itself. The current typed client exposes
