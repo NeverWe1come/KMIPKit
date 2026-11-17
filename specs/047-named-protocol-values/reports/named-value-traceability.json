@@ -688,6 +688,4566 @@
           "wireValue": "0x00000015"
         }
       ]
+    },
+    {
+      "version": "v3_0",
+      "kind": "enumeration",
+      "name": "Tag",
+      "sourceId": "kmip-3.0",
+      "section": "11.58",
+      "table": "605",
+      "assignedValues": [
+        {
+          "name": "Certificate Link",
+          "identifier": "CERTIFICATE_LINK",
+          "wireValue": "0x00420190"
+        },
+        {
+          "name": "Child Link",
+          "identifier": "CHILD_LINK",
+          "wireValue": "0x00420191"
+        },
+        {
+          "name": "Derivation Base Object Link",
+          "identifier": "DERIVATION_BASE_OBJECT_LINK",
+          "wireValue": "0x00420192"
+        },
+        {
+          "name": "Derived Object Link",
+          "identifier": "DERIVED_OBJECT_LINK",
+          "wireValue": "0x00420193"
+        },
+        {
+          "name": "Next Link",
+          "identifier": "NEXT_LINK",
+          "wireValue": "0x00420194"
+        },
+        {
+          "name": "Parent Link",
+          "identifier": "PARENT_LINK",
+          "wireValue": "0x00420195"
+        },
+        {
+          "name": "PKCS#12 Certificate Link",
+          "identifier": "PKCS_12_CERTIFICATE_LINK",
+          "wireValue": "0x00420196"
+        },
+        {
+          "name": "PKCS#12 Password Link",
+          "identifier": "PKCS_12_PASSWORD_LINK",
+          "wireValue": "0x00420197"
+        },
+        {
+          "name": "Previous Link",
+          "identifier": "PREVIOUS_LINK",
+          "wireValue": "0x00420198"
+        },
+        {
+          "name": "Private Key Link",
+          "identifier": "PRIVATE_KEY_LINK",
+          "wireValue": "0x00420199"
+        },
+        {
+          "name": "Public Key Link",
+          "identifier": "PUBLIC_KEY_LINK",
+          "wireValue": "0x0042019A"
+        },
+        {
+          "name": "Replaced Object Link",
+          "identifier": "REPLACED_OBJECT_LINK",
+          "wireValue": "0x0042019B"
+        },
+        {
+          "name": "Replacement Object Link",
+          "identifier": "REPLACEMENT_OBJECT_LINK",
+          "wireValue": "0x0042019C"
+        },
+        {
+          "name": "Wrapping Key Link",
+          "identifier": "WRAPPING_KEY_LINK",
+          "wireValue": "0x0042019D"
+        },
+        {
+          "name": "Object Class",
+          "identifier": "OBJECT_CLASS",
+          "wireValue": "0x0042019E"
+        },
+        {
+          "name": "Object Class Mask",
+          "identifier": "OBJECT_CLASS_MASK",
+          "wireValue": "0x0042019F"
+        },
+        {
+          "name": "Credential Link",
+          "identifier": "CREDENTIAL_LINK",
+          "wireValue": "0x004201A0"
+        },
+        {
+          "name": "Password Credential",
+          "identifier": "PASSWORD_CREDENTIAL",
+          "wireValue": "0x004201A1"
+        },
+        {
+          "name": "Password Salt",
+          "identifier": "PASSWORD_SALT",
+          "wireValue": "0x004201A2"
+        },
+        {
+          "name": "Password Salt Algorithm",
+          "identifier": "PASSWORD_SALT_ALGORITHM",
+          "wireValue": "0x004201A3"
+        },
+        {
+          "name": "Salted Password",
+          "identifier": "SALTED_PASSWORD",
+          "wireValue": "0x004201A4"
+        },
+        {
+          "name": "Password Link",
+          "identifier": "PASSWORD_LINK",
+          "wireValue": "0x004201A5"
+        },
+        {
+          "name": "Device Credential",
+          "identifier": "DEVICE_CREDENTIAL",
+          "wireValue": "0x004201A6"
+        },
+        {
+          "name": "OTP Credential",
+          "identifier": "OTP_CREDENTIAL",
+          "wireValue": "0x004201A7"
+        },
+        {
+          "name": "OTP Algorithm",
+          "identifier": "OTP_ALGORITHM",
+          "wireValue": "0x004201A8"
+        },
+        {
+          "name": "OTP Digest",
+          "identifier": "OTP_DIGEST",
+          "wireValue": "0x004201A9"
+        },
+        {
+          "name": "OTP Serial",
+          "identifier": "OTP_SERIAL",
+          "wireValue": "0x004201AA"
+        },
+        {
+          "name": "OTP Seed",
+          "identifier": "OTP_SEED",
+          "wireValue": "0x004201AB"
+        },
+        {
+          "name": "OTP Interval",
+          "identifier": "OTP_INTERVAL",
+          "wireValue": "0x004201AC"
+        },
+        {
+          "name": "OTP Digits",
+          "identifier": "OTP_DIGITS",
+          "wireValue": "0x004201AD"
+        },
+        {
+          "name": "OTP Counter",
+          "identifier": "OTP_COUNTER",
+          "wireValue": "0x004201AE"
+        },
+        {
+          "name": "Hashed Password Credential",
+          "identifier": "HASHED_PASSWORD_CREDENTIAL",
+          "wireValue": "0x004201AF"
+        },
+        {
+          "name": "Hashed Username Password",
+          "identifier": "HASHED_USERNAME_PASSWORD",
+          "wireValue": "0x004201B0"
+        },
+        {
+          "name": "Hashed Password Username",
+          "identifier": "HASHED_PASSWORD_USERNAME",
+          "wireValue": "0x004201B1"
+        },
+        {
+          "name": "Credential Information",
+          "identifier": "CREDENTIAL_INFORMATION",
+          "wireValue": "0x004201B2"
+        },
+        {
+          "name": "Group Link",
+          "identifier": "GROUP_LINK",
+          "wireValue": "0x004201B3"
+        },
+        {
+          "name": "Split Key Base Link",
+          "identifier": "SPLIT_KEY_BASE_LINK",
+          "wireValue": "0x004201B4"
+        },
+        {
+          "name": "Joined Split Key Parts Link",
+          "identifier": "JOINED_SPLIT_KEY_PARTS_LINK",
+          "wireValue": "0x004201B5"
+        },
+        {
+          "name": "Split Key Polynomial",
+          "identifier": "SPLIT_KEY_POLYNOMIAL",
+          "wireValue": "0x004201B6"
+        },
+        {
+          "name": "Deactivation Message",
+          "identifier": "DEACTIVATION_MESSAGE",
+          "wireValue": "0x004201B7"
+        },
+        {
+          "name": "Deactivation Reason",
+          "identifier": "DEACTIVATION_REASON",
+          "wireValue": "0x004201B8"
+        },
+        {
+          "name": "Deactivation Reason Code",
+          "identifier": "DEACTIVATION_REASON_CODE",
+          "wireValue": "0x004201B9"
+        },
+        {
+          "name": "Certificate Subject DN",
+          "identifier": "CERTIFICATE_SUBJECT_DN",
+          "wireValue": "0x004201BA"
+        },
+        {
+          "name": "Certificate Issuer DN",
+          "identifier": "CERTIFICATE_ISSUER_DN",
+          "wireValue": "0x004201BB"
+        },
+        {
+          "name": "Certificate Request Link",
+          "identifier": "CERTIFICATE_REQUEST_LINK",
+          "wireValue": "0x004201BC"
+        },
+        {
+          "name": "Certify Counter",
+          "identifier": "CERTIFY_COUNTER",
+          "wireValue": "0x004201BD"
+        },
+        {
+          "name": "Decrypt Counter",
+          "identifier": "DECRYPT_COUNTER",
+          "wireValue": "0x004201BE"
+        },
+        {
+          "name": "Encrypt Counter",
+          "identifier": "ENCRYPT_COUNTER",
+          "wireValue": "0x004201BF"
+        },
+        {
+          "name": "Sign Counter",
+          "identifier": "SIGN_COUNTER",
+          "wireValue": "0x004201C0"
+        },
+        {
+          "name": "Signature Verify Counter",
+          "identifier": "SIGNATURE_VERIFY_COUNTER",
+          "wireValue": "0x004201C1"
+        },
+        {
+          "name": "NIST Security Category",
+          "identifier": "NIST_SECURITY_CATEGORY",
+          "wireValue": "0x004201C2"
+        },
+        {
+          "name": "KEM Algorithm",
+          "identifier": "KEM_ALGORITHM",
+          "wireValue": "0x004201C3"
+        },
+        {
+          "name": "Deterministic",
+          "identifier": "DETERMINISTIC",
+          "wireValue": "0x004201C4"
+        },
+        {
+          "name": "Context String",
+          "identifier": "CONTEXT_STRING",
+          "wireValue": "0x004201C5"
+        },
+        {
+          "name": "Seed",
+          "identifier": "SEED",
+          "wireValue": "0x004201C6"
+        },
+        {
+          "name": "Input Key Material",
+          "identifier": "INPUT_KEY_MATERIAL",
+          "wireValue": "0x004201C7"
+        },
+        {
+          "name": "Internal",
+          "identifier": "INTERNAL",
+          "wireValue": "0x004201C8"
+        },
+        {
+          "name": "External Mu",
+          "identifier": "EXTERNAL_MU",
+          "wireValue": "0x004201C9"
+        },
+        {
+          "name": "Random",
+          "identifier": "RANDOM",
+          "wireValue": "0x004201CA"
+        },
+        {
+          "name": "Performs CRL Checks",
+          "identifier": "PERFORMS_CRL_CHECKS",
+          "wireValue": "0x004201CB"
+        }
+      ]
+    }
+  ],
+  "assignedTags": [
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420001",
+      "name": "Activation Date",
+      "identifier": "ACTIVATION_DATE",
+      "wireValue": "0x420001",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420002",
+      "name": "Application Data",
+      "identifier": "APPLICATION_DATA",
+      "wireValue": "0x420002",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420003",
+      "name": "Application Namespace",
+      "identifier": "APPLICATION_NAMESPACE",
+      "wireValue": "0x420003",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420004",
+      "name": "Application Specific Information",
+      "identifier": "APPLICATION_SPECIFIC_INFORMATION",
+      "wireValue": "0x420004",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420005",
+      "name": "Archive Date",
+      "identifier": "ARCHIVE_DATE",
+      "wireValue": "0x420005",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420006",
+      "name": "Asynchronous Correlation Value",
+      "identifier": "ASYNCHRONOUS_CORRELATION_VALUE",
+      "wireValue": "0x420006",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420007",
+      "name": "Asynchronous Indicator",
+      "identifier": "ASYNCHRONOUS_INDICATOR",
+      "wireValue": "0x420007",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420008",
+      "name": "Attribute",
+      "identifier": "ATTRIBUTE",
+      "wireValue": "0x420008",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42000A",
+      "name": "Attribute Name",
+      "identifier": "ATTRIBUTE_NAME",
+      "wireValue": "0x42000A",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42000B",
+      "name": "Attribute Value",
+      "identifier": "ATTRIBUTE_VALUE",
+      "wireValue": "0x42000B",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42000C",
+      "name": "Authentication",
+      "identifier": "AUTHENTICATION",
+      "wireValue": "0x42000C",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42000D",
+      "name": "Batch Count",
+      "identifier": "BATCH_COUNT",
+      "wireValue": "0x42000D",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42000E",
+      "name": "Batch Error Continuation Option",
+      "identifier": "BATCH_ERROR_CONTINUATION_OPTION",
+      "wireValue": "0x42000E",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42000F",
+      "name": "Batch Item",
+      "identifier": "BATCH_ITEM",
+      "wireValue": "0x42000F",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420010",
+      "name": "Batch Order Option",
+      "identifier": "BATCH_ORDER_OPTION",
+      "wireValue": "0x420010",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420011",
+      "name": "Block Cipher Mode",
+      "identifier": "BLOCK_CIPHER_MODE",
+      "wireValue": "0x420011",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420012",
+      "name": "Cancellation Result",
+      "identifier": "CANCELLATION_RESULT",
+      "wireValue": "0x420012",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420013",
+      "name": "Certificate",
+      "identifier": "CERTIFICATE",
+      "wireValue": "0x420013",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420018",
+      "name": "Certificate Request",
+      "identifier": "CERTIFICATE_REQUEST",
+      "wireValue": "0x420018",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420019",
+      "name": "Certificate Request Type",
+      "identifier": "CERTIFICATE_REQUEST_TYPE",
+      "wireValue": "0x420019",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42001D",
+      "name": "Certificate Type",
+      "identifier": "CERTIFICATE_TYPE",
+      "wireValue": "0x42001D",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42001E",
+      "name": "Certificate Value",
+      "identifier": "CERTIFICATE_VALUE",
+      "wireValue": "0x42001E",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420020",
+      "name": "Compromise Date",
+      "identifier": "COMPROMISE_DATE",
+      "wireValue": "0x420020",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420021",
+      "name": "Compromise Occurrence Date",
+      "identifier": "COMPROMISE_OCCURRENCE_DATE",
+      "wireValue": "0x420021",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420022",
+      "name": "Contact Information",
+      "identifier": "CONTACT_INFORMATION",
+      "wireValue": "0x420022",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420023",
+      "name": "Credential",
+      "identifier": "CREDENTIAL",
+      "wireValue": "0x420023",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420024",
+      "name": "Credential Type",
+      "identifier": "CREDENTIAL_TYPE",
+      "wireValue": "0x420024",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420025",
+      "name": "Credential Value",
+      "identifier": "CREDENTIAL_VALUE",
+      "wireValue": "0x420025",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420026",
+      "name": "Criticality Indicator",
+      "identifier": "CRITICALITY_INDICATOR",
+      "wireValue": "0x420026",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420027",
+      "name": "CRT Coefficient",
+      "identifier": "CRT_COEFFICIENT",
+      "wireValue": "0x420027",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420028",
+      "name": "Cryptographic Algorithm",
+      "identifier": "CRYPTOGRAPHIC_ALGORITHM",
+      "wireValue": "0x420028",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420029",
+      "name": "Cryptographic Domain Parameters",
+      "identifier": "CRYPTOGRAPHIC_DOMAIN_PARAMETERS",
+      "wireValue": "0x420029",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42002A",
+      "name": "Cryptographic Length",
+      "identifier": "CRYPTOGRAPHIC_LENGTH",
+      "wireValue": "0x42002A",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42002B",
+      "name": "Cryptographic Parameters",
+      "identifier": "CRYPTOGRAPHIC_PARAMETERS",
+      "wireValue": "0x42002B",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42002C",
+      "name": "Cryptographic Usage Mask",
+      "identifier": "CRYPTOGRAPHIC_USAGE_MASK",
+      "wireValue": "0x42002C",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42002E",
+      "name": "D",
+      "identifier": "D",
+      "wireValue": "0x42002E",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42002F",
+      "name": "Deactivation Date",
+      "identifier": "DEACTIVATION_DATE",
+      "wireValue": "0x42002F",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420030",
+      "name": "Derivation Data",
+      "identifier": "DERIVATION_DATA",
+      "wireValue": "0x420030",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420031",
+      "name": "Derivation Method",
+      "identifier": "DERIVATION_METHOD",
+      "wireValue": "0x420031",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420032",
+      "name": "Derivation Parameters",
+      "identifier": "DERIVATION_PARAMETERS",
+      "wireValue": "0x420032",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420033",
+      "name": "Destroy Date",
+      "identifier": "DESTROY_DATE",
+      "wireValue": "0x420033",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420034",
+      "name": "Digest",
+      "identifier": "DIGEST",
+      "wireValue": "0x420034",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420035",
+      "name": "Digest Value",
+      "identifier": "DIGEST_VALUE",
+      "wireValue": "0x420035",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420036",
+      "name": "Encryption Key Information",
+      "identifier": "ENCRYPTION_KEY_INFORMATION",
+      "wireValue": "0x420036",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420037",
+      "name": "G",
+      "identifier": "G",
+      "wireValue": "0x420037",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420038",
+      "name": "Hashing Algorithm",
+      "identifier": "HASHING_ALGORITHM",
+      "wireValue": "0x420038",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420039",
+      "name": "Initial Date",
+      "identifier": "INITIAL_DATE",
+      "wireValue": "0x420039",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42003A",
+      "name": "Initialization Vector",
+      "identifier": "INITIALIZATION_VECTOR",
+      "wireValue": "0x42003A",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42003C",
+      "name": "Iteration Count",
+      "identifier": "ITERATION_COUNT",
+      "wireValue": "0x42003C",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42003D",
+      "name": "IV/Counter/Nonce",
+      "identifier": "IV_COUNTER_NONCE",
+      "wireValue": "0x42003D",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42003E",
+      "name": "J",
+      "identifier": "J",
+      "wireValue": "0x42003E",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42003F",
+      "name": "Key",
+      "identifier": "KEY",
+      "wireValue": "0x42003F",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420040",
+      "name": "Key Block",
+      "identifier": "KEY_BLOCK",
+      "wireValue": "0x420040",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420041",
+      "name": "Key Compression Type",
+      "identifier": "KEY_COMPRESSION_TYPE",
+      "wireValue": "0x420041",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420042",
+      "name": "Key Format Type",
+      "identifier": "KEY_FORMAT_TYPE",
+      "wireValue": "0x420042",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420043",
+      "name": "Key Material",
+      "identifier": "KEY_MATERIAL",
+      "wireValue": "0x420043",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420044",
+      "name": "Key Part Identifier",
+      "identifier": "KEY_PART_IDENTIFIER",
+      "wireValue": "0x420044",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420045",
+      "name": "Key Value",
+      "identifier": "KEY_VALUE",
+      "wireValue": "0x420045",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420046",
+      "name": "Key Wrapping Data",
+      "identifier": "KEY_WRAPPING_DATA",
+      "wireValue": "0x420046",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420047",
+      "name": "Key Wrapping Specification",
+      "identifier": "KEY_WRAPPING_SPECIFICATION",
+      "wireValue": "0x420047",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420048",
+      "name": "Last Change Date",
+      "identifier": "LAST_CHANGE_DATE",
+      "wireValue": "0x420048",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420049",
+      "name": "Lease Time",
+      "identifier": "LEASE_TIME",
+      "wireValue": "0x420049",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42004A",
+      "name": "Link",
+      "identifier": "LINK",
+      "wireValue": "0x42004A",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42004B",
+      "name": "Link Type",
+      "identifier": "LINK_TYPE",
+      "wireValue": "0x42004B",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42004C",
+      "name": "Linked Object Identifier",
+      "identifier": "LINKED_OBJECT_IDENTIFIER",
+      "wireValue": "0x42004C",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42004D",
+      "name": "MAC/Signature",
+      "identifier": "MAC_SIGNATURE",
+      "wireValue": "0x42004D",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42004E",
+      "name": "MAC/Signature Key Information",
+      "identifier": "MAC_SIGNATURE_KEY_INFORMATION",
+      "wireValue": "0x42004E",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42004F",
+      "name": "Maximum Items",
+      "identifier": "MAXIMUM_ITEMS",
+      "wireValue": "0x42004F",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420050",
+      "name": "Maximum Response Size",
+      "identifier": "MAXIMUM_RESPONSE_SIZE",
+      "wireValue": "0x420050",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420051",
+      "name": "Message Extension",
+      "identifier": "MESSAGE_EXTENSION",
+      "wireValue": "0x420051",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420052",
+      "name": "Modulus",
+      "identifier": "MODULUS",
+      "wireValue": "0x420052",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420053",
+      "name": "Name",
+      "identifier": "NAME",
+      "wireValue": "0x420053",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420054",
+      "name": "Name Type",
+      "identifier": "NAME_TYPE",
+      "wireValue": "0x420054",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420055",
+      "name": "Name Value",
+      "identifier": "NAME_VALUE",
+      "wireValue": "0x420055",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420056",
+      "name": "Object Group",
+      "identifier": "OBJECT_GROUP",
+      "wireValue": "0x420056",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420057",
+      "name": "Object Type",
+      "identifier": "OBJECT_TYPE",
+      "wireValue": "0x420057",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420058",
+      "name": "Offset",
+      "identifier": "OFFSET",
+      "wireValue": "0x420058",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420059",
+      "name": "Opaque Data Type",
+      "identifier": "OPAQUE_DATA_TYPE",
+      "wireValue": "0x420059",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42005A",
+      "name": "Opaque Data Value",
+      "identifier": "OPAQUE_DATA_VALUE",
+      "wireValue": "0x42005A",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42005B",
+      "name": "Opaque Object",
+      "identifier": "OPAQUE_OBJECT",
+      "wireValue": "0x42005B",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42005C",
+      "name": "Operation",
+      "identifier": "OPERATION",
+      "wireValue": "0x42005C",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42005E",
+      "name": "P",
+      "identifier": "P",
+      "wireValue": "0x42005E",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42005F",
+      "name": "Padding Method",
+      "identifier": "PADDING_METHOD",
+      "wireValue": "0x42005F",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420060",
+      "name": "Prime Exponent P",
+      "identifier": "PRIME_EXPONENT_P",
+      "wireValue": "0x420060",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420061",
+      "name": "Prime Exponent Q",
+      "identifier": "PRIME_EXPONENT_Q",
+      "wireValue": "0x420061",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420062",
+      "name": "Prime Field Size",
+      "identifier": "PRIME_FIELD_SIZE",
+      "wireValue": "0x420062",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420063",
+      "name": "Private Exponent",
+      "identifier": "PRIVATE_EXPONENT",
+      "wireValue": "0x420063",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420064",
+      "name": "Private Key",
+      "identifier": "PRIVATE_KEY",
+      "wireValue": "0x420064",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420066",
+      "name": "Private Key Unique Identifier",
+      "identifier": "PRIVATE_KEY_UNIQUE_IDENTIFIER",
+      "wireValue": "0x420066",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420067",
+      "name": "Process Start Date",
+      "identifier": "PROCESS_START_DATE",
+      "wireValue": "0x420067",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420068",
+      "name": "Protect Stop Date",
+      "identifier": "PROTECT_STOP_DATE",
+      "wireValue": "0x420068",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420069",
+      "name": "Protocol Version",
+      "identifier": "PROTOCOL_VERSION",
+      "wireValue": "0x420069",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42006A",
+      "name": "Protocol Version Major",
+      "identifier": "PROTOCOL_VERSION_MAJOR",
+      "wireValue": "0x42006A",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42006B",
+      "name": "Protocol Version Minor",
+      "identifier": "PROTOCOL_VERSION_MINOR",
+      "wireValue": "0x42006B",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42006C",
+      "name": "Public Exponent",
+      "identifier": "PUBLIC_EXPONENT",
+      "wireValue": "0x42006C",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42006D",
+      "name": "Public Key",
+      "identifier": "PUBLIC_KEY",
+      "wireValue": "0x42006D",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42006F",
+      "name": "Public Key Unique Identifier",
+      "identifier": "PUBLIC_KEY_UNIQUE_IDENTIFIER",
+      "wireValue": "0x42006F",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420070",
+      "name": "Put Function",
+      "identifier": "PUT_FUNCTION",
+      "wireValue": "0x420070",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420071",
+      "name": "Q",
+      "identifier": "Q",
+      "wireValue": "0x420071",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420072",
+      "name": "Q String",
+      "identifier": "Q_STRING",
+      "wireValue": "0x420072",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420073",
+      "name": "Qlength",
+      "identifier": "QLENGTH",
+      "wireValue": "0x420073",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420074",
+      "name": "Query Function",
+      "identifier": "QUERY_FUNCTION",
+      "wireValue": "0x420074",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420075",
+      "name": "Recommended Curve",
+      "identifier": "RECOMMENDED_CURVE",
+      "wireValue": "0x420075",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420076",
+      "name": "Replaced Unique Identifier",
+      "identifier": "REPLACED_UNIQUE_IDENTIFIER",
+      "wireValue": "0x420076",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420077",
+      "name": "Request Header",
+      "identifier": "REQUEST_HEADER",
+      "wireValue": "0x420077",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420078",
+      "name": "Request Message",
+      "identifier": "REQUEST_MESSAGE",
+      "wireValue": "0x420078",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420079",
+      "name": "Request Payload",
+      "identifier": "REQUEST_PAYLOAD",
+      "wireValue": "0x420079",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42007A",
+      "name": "Response Header",
+      "identifier": "RESPONSE_HEADER",
+      "wireValue": "0x42007A",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42007B",
+      "name": "Response Message",
+      "identifier": "RESPONSE_MESSAGE",
+      "wireValue": "0x42007B",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42007C",
+      "name": "Response Payload",
+      "identifier": "RESPONSE_PAYLOAD",
+      "wireValue": "0x42007C",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42007D",
+      "name": "Result Message",
+      "identifier": "RESULT_MESSAGE",
+      "wireValue": "0x42007D",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42007E",
+      "name": "Result Reason",
+      "identifier": "RESULT_REASON",
+      "wireValue": "0x42007E",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42007F",
+      "name": "Result Status",
+      "identifier": "RESULT_STATUS",
+      "wireValue": "0x42007F",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420080",
+      "name": "Revocation Message",
+      "identifier": "REVOCATION_MESSAGE",
+      "wireValue": "0x420080",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420081",
+      "name": "Revocation Reason",
+      "identifier": "REVOCATION_REASON",
+      "wireValue": "0x420081",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420082",
+      "name": "Revocation Reason Code",
+      "identifier": "REVOCATION_REASON_CODE",
+      "wireValue": "0x420082",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420083",
+      "name": "Key Role Type",
+      "identifier": "KEY_ROLE_TYPE",
+      "wireValue": "0x420083",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420084",
+      "name": "Salt",
+      "identifier": "SALT",
+      "wireValue": "0x420084",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420085",
+      "name": "Secret Data",
+      "identifier": "SECRET_DATA",
+      "wireValue": "0x420085",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420086",
+      "name": "Secret Data Type",
+      "identifier": "SECRET_DATA_TYPE",
+      "wireValue": "0x420086",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420088",
+      "name": "Server Information",
+      "identifier": "SERVER_INFORMATION",
+      "wireValue": "0x420088",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420089",
+      "name": "Split Key",
+      "identifier": "SPLIT_KEY",
+      "wireValue": "0x420089",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42008A",
+      "name": "Split Key Method",
+      "identifier": "SPLIT_KEY_METHOD",
+      "wireValue": "0x42008A",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42008B",
+      "name": "Split Key Parts",
+      "identifier": "SPLIT_KEY_PARTS",
+      "wireValue": "0x42008B",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42008C",
+      "name": "Split Key Threshold",
+      "identifier": "SPLIT_KEY_THRESHOLD",
+      "wireValue": "0x42008C",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42008D",
+      "name": "State",
+      "identifier": "STATE",
+      "wireValue": "0x42008D",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42008E",
+      "name": "Storage Status Mask",
+      "identifier": "STORAGE_STATUS_MASK",
+      "wireValue": "0x42008E",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42008F",
+      "name": "Symmetric Key",
+      "identifier": "SYMMETRIC_KEY",
+      "wireValue": "0x42008F",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420092",
+      "name": "Time Stamp",
+      "identifier": "TIME_STAMP",
+      "wireValue": "0x420092",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420093",
+      "name": "Unique Batch Item ID",
+      "identifier": "UNIQUE_BATCH_ITEM_ID",
+      "wireValue": "0x420093",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420094",
+      "name": "Unique Identifier",
+      "identifier": "UNIQUE_IDENTIFIER",
+      "wireValue": "0x420094",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420095",
+      "name": "Usage Limits",
+      "identifier": "USAGE_LIMITS",
+      "wireValue": "0x420095",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420096",
+      "name": "Usage Limits Count",
+      "identifier": "USAGE_LIMITS_COUNT",
+      "wireValue": "0x420096",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420097",
+      "name": "Usage Limits Total",
+      "identifier": "USAGE_LIMITS_TOTAL",
+      "wireValue": "0x420097",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420098",
+      "name": "Usage Limits Unit",
+      "identifier": "USAGE_LIMITS_UNIT",
+      "wireValue": "0x420098",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420099",
+      "name": "Username",
+      "identifier": "USERNAME",
+      "wireValue": "0x420099",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42009A",
+      "name": "Validity Date",
+      "identifier": "VALIDITY_DATE",
+      "wireValue": "0x42009A",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42009B",
+      "name": "Validity Indicator",
+      "identifier": "VALIDITY_INDICATOR",
+      "wireValue": "0x42009B",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42009C",
+      "name": "Vendor Extension",
+      "identifier": "VENDOR_EXTENSION",
+      "wireValue": "0x42009C",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42009D",
+      "name": "Vendor Identification",
+      "identifier": "VENDOR_IDENTIFICATION",
+      "wireValue": "0x42009D",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42009E",
+      "name": "Wrapping Method",
+      "identifier": "WRAPPING_METHOD",
+      "wireValue": "0x42009E",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42009F",
+      "name": "X",
+      "identifier": "X",
+      "wireValue": "0x42009F",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200A0",
+      "name": "Y",
+      "identifier": "Y",
+      "wireValue": "0x4200A0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200A1",
+      "name": "Password",
+      "identifier": "PASSWORD",
+      "wireValue": "0x4200A1",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200A2",
+      "name": "Device Identifier",
+      "identifier": "DEVICE_IDENTIFIER",
+      "wireValue": "0x4200A2",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200A3",
+      "name": "Encoding Option",
+      "identifier": "ENCODING_OPTION",
+      "wireValue": "0x4200A3",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200A4",
+      "name": "Extension Information",
+      "identifier": "EXTENSION_INFORMATION",
+      "wireValue": "0x4200A4",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200A5",
+      "name": "Extension Name",
+      "identifier": "EXTENSION_NAME",
+      "wireValue": "0x4200A5",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200A6",
+      "name": "Extension Tag",
+      "identifier": "EXTENSION_TAG",
+      "wireValue": "0x4200A6",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200A7",
+      "name": "Extension Type",
+      "identifier": "EXTENSION_TYPE",
+      "wireValue": "0x4200A7",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200A8",
+      "name": "Fresh",
+      "identifier": "FRESH",
+      "wireValue": "0x4200A8",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200A9",
+      "name": "Machine Identifier",
+      "identifier": "MACHINE_IDENTIFIER",
+      "wireValue": "0x4200A9",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200AA",
+      "name": "Media Identifier",
+      "identifier": "MEDIA_IDENTIFIER",
+      "wireValue": "0x4200AA",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200AB",
+      "name": "Network Identifier",
+      "identifier": "NETWORK_IDENTIFIER",
+      "wireValue": "0x4200AB",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200AC",
+      "name": "Object Group Member",
+      "identifier": "OBJECT_GROUP_MEMBER",
+      "wireValue": "0x4200AC",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200AD",
+      "name": "Certificate Length",
+      "identifier": "CERTIFICATE_LENGTH",
+      "wireValue": "0x4200AD",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200AE",
+      "name": "Digital Signature Algorithm",
+      "identifier": "DIGITAL_SIGNATURE_ALGORITHM",
+      "wireValue": "0x4200AE",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200AF",
+      "name": "Certificate Serial Number",
+      "identifier": "CERTIFICATE_SERIAL_NUMBER",
+      "wireValue": "0x4200AF",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200B0",
+      "name": "Device Serial Number",
+      "identifier": "DEVICE_SERIAL_NUMBER",
+      "wireValue": "0x4200B0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200B1",
+      "name": "Issuer Alternative Name",
+      "identifier": "ISSUER_ALTERNATIVE_NAME",
+      "wireValue": "0x4200B1",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200B2",
+      "name": "Issuer Distinguished Name",
+      "identifier": "ISSUER_DISTINGUISHED_NAME",
+      "wireValue": "0x4200B2",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200B3",
+      "name": "Subject Alternative Name",
+      "identifier": "SUBJECT_ALTERNATIVE_NAME",
+      "wireValue": "0x4200B3",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200B4",
+      "name": "Subject Distinguished Name",
+      "identifier": "SUBJECT_DISTINGUISHED_NAME",
+      "wireValue": "0x4200B4",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200B5",
+      "name": "X.509 Certificate Identifier",
+      "identifier": "X_509_CERTIFICATE_IDENTIFIER",
+      "wireValue": "0x4200B5",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200B6",
+      "name": "X.509 Certificate Issuer",
+      "identifier": "X_509_CERTIFICATE_ISSUER",
+      "wireValue": "0x4200B6",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200B7",
+      "name": "X.509 Certificate Subject",
+      "identifier": "X_509_CERTIFICATE_SUBJECT",
+      "wireValue": "0x4200B7",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200B8",
+      "name": "Key Value Location",
+      "identifier": "KEY_VALUE_LOCATION",
+      "wireValue": "0x4200B8",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200B9",
+      "name": "Key Value Location Value",
+      "identifier": "KEY_VALUE_LOCATION_VALUE",
+      "wireValue": "0x4200B9",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200BA",
+      "name": "Key Value Location Type",
+      "identifier": "KEY_VALUE_LOCATION_TYPE",
+      "wireValue": "0x4200BA",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200BB",
+      "name": "Key Value Present",
+      "identifier": "KEY_VALUE_PRESENT",
+      "wireValue": "0x4200BB",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200BC",
+      "name": "Original Creation Date",
+      "identifier": "ORIGINAL_CREATION_DATE",
+      "wireValue": "0x4200BC",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200BD",
+      "name": "PGP Key",
+      "identifier": "PGP_KEY",
+      "wireValue": "0x4200BD",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200BE",
+      "name": "PGP Key Version",
+      "identifier": "PGP_KEY_VERSION",
+      "wireValue": "0x4200BE",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200BF",
+      "name": "Alternative Name",
+      "identifier": "ALTERNATIVE_NAME",
+      "wireValue": "0x4200BF",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200C0",
+      "name": "Alternative Name Value",
+      "identifier": "ALTERNATIVE_NAME_VALUE",
+      "wireValue": "0x4200C0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200C1",
+      "name": "Alternative Name Type",
+      "identifier": "ALTERNATIVE_NAME_TYPE",
+      "wireValue": "0x4200C1",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200C2",
+      "name": "Data",
+      "identifier": "DATA",
+      "wireValue": "0x4200C2",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200C3",
+      "name": "Signature Data",
+      "identifier": "SIGNATURE_DATA",
+      "wireValue": "0x4200C3",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200C4",
+      "name": "Data Length",
+      "identifier": "DATA_LENGTH",
+      "wireValue": "0x4200C4",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200C5",
+      "name": "Random IV",
+      "identifier": "RANDOM_IV",
+      "wireValue": "0x4200C5",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200C6",
+      "name": "MAC Data",
+      "identifier": "MAC_DATA",
+      "wireValue": "0x4200C6",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200C7",
+      "name": "Attestation Type",
+      "identifier": "ATTESTATION_TYPE",
+      "wireValue": "0x4200C7",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200C8",
+      "name": "Nonce",
+      "identifier": "NONCE",
+      "wireValue": "0x4200C8",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200C9",
+      "name": "Nonce ID",
+      "identifier": "NONCE_ID",
+      "wireValue": "0x4200C9",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200CA",
+      "name": "Nonce Value",
+      "identifier": "NONCE_VALUE",
+      "wireValue": "0x4200CA",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200CB",
+      "name": "Attestation Measurement",
+      "identifier": "ATTESTATION_MEASUREMENT",
+      "wireValue": "0x4200CB",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200CC",
+      "name": "Attestation Assertion",
+      "identifier": "ATTESTATION_ASSERTION",
+      "wireValue": "0x4200CC",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200CD",
+      "name": "IV Length",
+      "identifier": "IV_LENGTH",
+      "wireValue": "0x4200CD",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200CE",
+      "name": "Tag Length",
+      "identifier": "TAG_LENGTH",
+      "wireValue": "0x4200CE",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200CF",
+      "name": "Fixed Field Length",
+      "identifier": "FIXED_FIELD_LENGTH",
+      "wireValue": "0x4200CF",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200D0",
+      "name": "Counter Length",
+      "identifier": "COUNTER_LENGTH",
+      "wireValue": "0x4200D0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200D1",
+      "name": "Initial Counter Value",
+      "identifier": "INITIAL_COUNTER_VALUE",
+      "wireValue": "0x4200D1",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200D2",
+      "name": "Invocation Field Length",
+      "identifier": "INVOCATION_FIELD_LENGTH",
+      "wireValue": "0x4200D2",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200D3",
+      "name": "Attestation Capable Indicator",
+      "identifier": "ATTESTATION_CAPABLE_INDICATOR",
+      "wireValue": "0x4200D3",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200D4",
+      "name": "Offset Items",
+      "identifier": "OFFSET_ITEMS",
+      "wireValue": "0x4200D4",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200D5",
+      "name": "Located Items",
+      "identifier": "LOCATED_ITEMS",
+      "wireValue": "0x4200D5",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200D6",
+      "name": "Correlation Value",
+      "identifier": "CORRELATION_VALUE",
+      "wireValue": "0x4200D6",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200D7",
+      "name": "Init Indicator",
+      "identifier": "INIT_INDICATOR",
+      "wireValue": "0x4200D7",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200D8",
+      "name": "Final Indicator",
+      "identifier": "FINAL_INDICATOR",
+      "wireValue": "0x4200D8",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200D9",
+      "name": "RNG Parameters",
+      "identifier": "RNG_PARAMETERS",
+      "wireValue": "0x4200D9",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200DA",
+      "name": "RNG Algorithm",
+      "identifier": "RNG_ALGORITHM",
+      "wireValue": "0x4200DA",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200DB",
+      "name": "DRBG Algorithm",
+      "identifier": "DRBG_ALGORITHM",
+      "wireValue": "0x4200DB",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200DC",
+      "name": "FIPS186 Variation",
+      "identifier": "FIPS186_VARIATION",
+      "wireValue": "0x4200DC",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200DD",
+      "name": "Prediction Resistance",
+      "identifier": "PREDICTION_RESISTANCE",
+      "wireValue": "0x4200DD",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200DE",
+      "name": "Random Number Generator",
+      "identifier": "RANDOM_NUMBER_GENERATOR",
+      "wireValue": "0x4200DE",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200DF",
+      "name": "Validation Information",
+      "identifier": "VALIDATION_INFORMATION",
+      "wireValue": "0x4200DF",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200E0",
+      "name": "Validation Authority Type",
+      "identifier": "VALIDATION_AUTHORITY_TYPE",
+      "wireValue": "0x4200E0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200E1",
+      "name": "Validation Authority Country",
+      "identifier": "VALIDATION_AUTHORITY_COUNTRY",
+      "wireValue": "0x4200E1",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200E2",
+      "name": "Validation Authority URI",
+      "identifier": "VALIDATION_AUTHORITY_URI",
+      "wireValue": "0x4200E2",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200E3",
+      "name": "Validation Version Major",
+      "identifier": "VALIDATION_VERSION_MAJOR",
+      "wireValue": "0x4200E3",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200E4",
+      "name": "Validation Version Minor",
+      "identifier": "VALIDATION_VERSION_MINOR",
+      "wireValue": "0x4200E4",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200E5",
+      "name": "Validation Type",
+      "identifier": "VALIDATION_TYPE",
+      "wireValue": "0x4200E5",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200E6",
+      "name": "Validation Level",
+      "identifier": "VALIDATION_LEVEL",
+      "wireValue": "0x4200E6",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200E7",
+      "name": "Validation Certificate Identifier",
+      "identifier": "VALIDATION_CERTIFICATE_IDENTIFIER",
+      "wireValue": "0x4200E7",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200E8",
+      "name": "Validation Certificate URI",
+      "identifier": "VALIDATION_CERTIFICATE_URI",
+      "wireValue": "0x4200E8",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200E9",
+      "name": "Validation Vendor URI",
+      "identifier": "VALIDATION_VENDOR_URI",
+      "wireValue": "0x4200E9",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200EA",
+      "name": "Validation Profile",
+      "identifier": "VALIDATION_PROFILE",
+      "wireValue": "0x4200EA",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200EB",
+      "name": "Profile Information",
+      "identifier": "PROFILE_INFORMATION",
+      "wireValue": "0x4200EB",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200EC",
+      "name": "Profile Name",
+      "identifier": "PROFILE_NAME",
+      "wireValue": "0x4200EC",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200ED",
+      "name": "Server URI",
+      "identifier": "SERVER_URI",
+      "wireValue": "0x4200ED",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200EE",
+      "name": "Server Port",
+      "identifier": "SERVER_PORT",
+      "wireValue": "0x4200EE",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200EF",
+      "name": "Streaming Capability",
+      "identifier": "STREAMING_CAPABILITY",
+      "wireValue": "0x4200EF",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200F0",
+      "name": "Asynchronous Capability",
+      "identifier": "ASYNCHRONOUS_CAPABILITY",
+      "wireValue": "0x4200F0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200F1",
+      "name": "Attestation Capability",
+      "identifier": "ATTESTATION_CAPABILITY",
+      "wireValue": "0x4200F1",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200F2",
+      "name": "Unwrap Mode",
+      "identifier": "UNWRAP_MODE",
+      "wireValue": "0x4200F2",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200F3",
+      "name": "Destroy Action",
+      "identifier": "DESTROY_ACTION",
+      "wireValue": "0x4200F3",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200F4",
+      "name": "Shredding Algorithm",
+      "identifier": "SHREDDING_ALGORITHM",
+      "wireValue": "0x4200F4",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200F5",
+      "name": "RNG Mode",
+      "identifier": "RNG_MODE",
+      "wireValue": "0x4200F5",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200F6",
+      "name": "Client Registration Method",
+      "identifier": "CLIENT_REGISTRATION_METHOD",
+      "wireValue": "0x4200F6",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200F7",
+      "name": "Capability Information",
+      "identifier": "CAPABILITY_INFORMATION",
+      "wireValue": "0x4200F7",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200F8",
+      "name": "Key Wrap Type",
+      "identifier": "KEY_WRAP_TYPE",
+      "wireValue": "0x4200F8",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200F9",
+      "name": "Batch Undo Capability",
+      "identifier": "BATCH_UNDO_CAPABILITY",
+      "wireValue": "0x4200F9",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200FA",
+      "name": "Batch Continue Capability",
+      "identifier": "BATCH_CONTINUE_CAPABILITY",
+      "wireValue": "0x4200FA",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200FB",
+      "name": "PKCS#12 Friendly Name",
+      "identifier": "PKCS_12_FRIENDLY_NAME",
+      "wireValue": "0x4200FB",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200FC",
+      "name": "Description",
+      "identifier": "DESCRIPTION",
+      "wireValue": "0x4200FC",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200FD",
+      "name": "Comment",
+      "identifier": "COMMENT",
+      "wireValue": "0x4200FD",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200FE",
+      "name": "Authenticated Encryption Additional Data",
+      "identifier": "AUTHENTICATED_ENCRYPTION_ADDITIONAL_DATA",
+      "wireValue": "0x4200FE",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-4200FF",
+      "name": "Authenticated Encryption Tag",
+      "identifier": "AUTHENTICATED_ENCRYPTION_TAG",
+      "wireValue": "0x4200FF",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420100",
+      "name": "Salt Length",
+      "identifier": "SALT_LENGTH",
+      "wireValue": "0x420100",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420101",
+      "name": "Mask Generator",
+      "identifier": "MASK_GENERATOR",
+      "wireValue": "0x420101",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420102",
+      "name": "Mask Generator Hashing Algorithm",
+      "identifier": "MASK_GENERATOR_HASHING_ALGORITHM",
+      "wireValue": "0x420102",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420103",
+      "name": "P Source",
+      "identifier": "P_SOURCE",
+      "wireValue": "0x420103",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420104",
+      "name": "Trailer Field",
+      "identifier": "TRAILER_FIELD",
+      "wireValue": "0x420104",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420105",
+      "name": "Client Correlation Value",
+      "identifier": "CLIENT_CORRELATION_VALUE",
+      "wireValue": "0x420105",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420106",
+      "name": "Server Correlation Value",
+      "identifier": "SERVER_CORRELATION_VALUE",
+      "wireValue": "0x420106",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420107",
+      "name": "Digested Data",
+      "identifier": "DIGESTED_DATA",
+      "wireValue": "0x420107",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420108",
+      "name": "Certificate Subject CN",
+      "identifier": "CERTIFICATE_SUBJECT_CN",
+      "wireValue": "0x420108",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420109",
+      "name": "Certificate Subject O",
+      "identifier": "CERTIFICATE_SUBJECT_O",
+      "wireValue": "0x420109",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42010A",
+      "name": "Certificate Subject OU",
+      "identifier": "CERTIFICATE_SUBJECT_OU",
+      "wireValue": "0x42010A",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42010B",
+      "name": "Certificate Subject Email",
+      "identifier": "CERTIFICATE_SUBJECT_EMAIL",
+      "wireValue": "0x42010B",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42010C",
+      "name": "Certificate Subject C",
+      "identifier": "CERTIFICATE_SUBJECT_C",
+      "wireValue": "0x42010C",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42010D",
+      "name": "Certificate Subject ST",
+      "identifier": "CERTIFICATE_SUBJECT_ST",
+      "wireValue": "0x42010D",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42010E",
+      "name": "Certificate Subject L",
+      "identifier": "CERTIFICATE_SUBJECT_L",
+      "wireValue": "0x42010E",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42010F",
+      "name": "Certificate Subject UID",
+      "identifier": "CERTIFICATE_SUBJECT_UID",
+      "wireValue": "0x42010F",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420110",
+      "name": "Certificate Subject Serial Number",
+      "identifier": "CERTIFICATE_SUBJECT_SERIAL_NUMBER",
+      "wireValue": "0x420110",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420111",
+      "name": "Certificate Subject Title",
+      "identifier": "CERTIFICATE_SUBJECT_TITLE",
+      "wireValue": "0x420111",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420112",
+      "name": "Certificate Subject DC",
+      "identifier": "CERTIFICATE_SUBJECT_DC",
+      "wireValue": "0x420112",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420113",
+      "name": "Certificate Subject DN Qualifier",
+      "identifier": "CERTIFICATE_SUBJECT_DN_QUALIFIER",
+      "wireValue": "0x420113",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420114",
+      "name": "Certificate Issuer CN",
+      "identifier": "CERTIFICATE_ISSUER_CN",
+      "wireValue": "0x420114",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420115",
+      "name": "Certificate Issuer O",
+      "identifier": "CERTIFICATE_ISSUER_O",
+      "wireValue": "0x420115",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420116",
+      "name": "Certificate Issuer OU",
+      "identifier": "CERTIFICATE_ISSUER_OU",
+      "wireValue": "0x420116",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420117",
+      "name": "Certificate Issuer Email",
+      "identifier": "CERTIFICATE_ISSUER_EMAIL",
+      "wireValue": "0x420117",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420118",
+      "name": "Certificate Issuer C",
+      "identifier": "CERTIFICATE_ISSUER_C",
+      "wireValue": "0x420118",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420119",
+      "name": "Certificate Issuer ST",
+      "identifier": "CERTIFICATE_ISSUER_ST",
+      "wireValue": "0x420119",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42011A",
+      "name": "Certificate Issuer L",
+      "identifier": "CERTIFICATE_ISSUER_L",
+      "wireValue": "0x42011A",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42011B",
+      "name": "Certificate Issuer UID",
+      "identifier": "CERTIFICATE_ISSUER_UID",
+      "wireValue": "0x42011B",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42011C",
+      "name": "Certificate Issuer Serial Number",
+      "identifier": "CERTIFICATE_ISSUER_SERIAL_NUMBER",
+      "wireValue": "0x42011C",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42011D",
+      "name": "Certificate Issuer Title",
+      "identifier": "CERTIFICATE_ISSUER_TITLE",
+      "wireValue": "0x42011D",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42011E",
+      "name": "Certificate Issuer DC",
+      "identifier": "CERTIFICATE_ISSUER_DC",
+      "wireValue": "0x42011E",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42011F",
+      "name": "Certificate Issuer DN Qualifier",
+      "identifier": "CERTIFICATE_ISSUER_DN_QUALIFIER",
+      "wireValue": "0x42011F",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420120",
+      "name": "Sensitive",
+      "identifier": "SENSITIVE",
+      "wireValue": "0x420120",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420121",
+      "name": "Always Sensitive",
+      "identifier": "ALWAYS_SENSITIVE",
+      "wireValue": "0x420121",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420122",
+      "name": "Extractable",
+      "identifier": "EXTRACTABLE",
+      "wireValue": "0x420122",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420123",
+      "name": "Never Extractable",
+      "identifier": "NEVER_EXTRACTABLE",
+      "wireValue": "0x420123",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420124",
+      "name": "Replace Existing",
+      "identifier": "REPLACE_EXISTING",
+      "wireValue": "0x420124",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420125",
+      "name": "Attributes",
+      "identifier": "ATTRIBUTES",
+      "wireValue": "0x420125",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420126",
+      "name": "Common Attributes",
+      "identifier": "COMMON_ATTRIBUTES",
+      "wireValue": "0x420126",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420127",
+      "name": "Private Key Attributes",
+      "identifier": "PRIVATE_KEY_ATTRIBUTES",
+      "wireValue": "0x420127",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420128",
+      "name": "Public Key Attributes",
+      "identifier": "PUBLIC_KEY_ATTRIBUTES",
+      "wireValue": "0x420128",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420129",
+      "name": "Extension Enumeration",
+      "identifier": "EXTENSION_ENUMERATION",
+      "wireValue": "0x420129",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42012A",
+      "name": "Extension Attribute",
+      "identifier": "EXTENSION_ATTRIBUTE",
+      "wireValue": "0x42012A",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42012B",
+      "name": "Extension Parent Structure Tag",
+      "identifier": "EXTENSION_PARENT_STRUCTURE_TAG",
+      "wireValue": "0x42012B",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42012C",
+      "name": "Extension Description",
+      "identifier": "EXTENSION_DESCRIPTION",
+      "wireValue": "0x42012C",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42012D",
+      "name": "Server Name",
+      "identifier": "SERVER_NAME",
+      "wireValue": "0x42012D",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42012E",
+      "name": "Server Serial Number",
+      "identifier": "SERVER_SERIAL_NUMBER",
+      "wireValue": "0x42012E",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42012F",
+      "name": "Server Version",
+      "identifier": "SERVER_VERSION",
+      "wireValue": "0x42012F",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420130",
+      "name": "Server Load",
+      "identifier": "SERVER_LOAD",
+      "wireValue": "0x420130",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420131",
+      "name": "Product Name",
+      "identifier": "PRODUCT_NAME",
+      "wireValue": "0x420131",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420132",
+      "name": "Build Level",
+      "identifier": "BUILD_LEVEL",
+      "wireValue": "0x420132",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420133",
+      "name": "Build Date",
+      "identifier": "BUILD_DATE",
+      "wireValue": "0x420133",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420134",
+      "name": "Cluster Info",
+      "identifier": "CLUSTER_INFO",
+      "wireValue": "0x420134",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420135",
+      "name": "Alternate Failover Endpoints",
+      "identifier": "ALTERNATE_FAILOVER_ENDPOINTS",
+      "wireValue": "0x420135",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420136",
+      "name": "Short Unique Identifier",
+      "identifier": "SHORT_UNIQUE_IDENTIFIER",
+      "wireValue": "0x420136",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420138",
+      "name": "Tag",
+      "identifier": "TAG",
+      "wireValue": "0x420138",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420139",
+      "name": "Certificate Request Unique Identifier",
+      "identifier": "CERTIFICATE_REQUEST_UNIQUE_IDENTIFIER",
+      "wireValue": "0x420139",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42013A",
+      "name": "NIST Key Type",
+      "identifier": "NIST_KEY_TYPE",
+      "wireValue": "0x42013A",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42013B",
+      "name": "Attribute Reference",
+      "identifier": "ATTRIBUTE_REFERENCE",
+      "wireValue": "0x42013B",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42013C",
+      "name": "Current Attribute",
+      "identifier": "CURRENT_ATTRIBUTE",
+      "wireValue": "0x42013C",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42013D",
+      "name": "New Attribute",
+      "identifier": "NEW_ATTRIBUTE",
+      "wireValue": "0x42013D",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420140",
+      "name": "Certificate Request Value",
+      "identifier": "CERTIFICATE_REQUEST_VALUE",
+      "wireValue": "0x420140",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420141",
+      "name": "Log Message",
+      "identifier": "LOG_MESSAGE",
+      "wireValue": "0x420141",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420142",
+      "name": "Profile Version",
+      "identifier": "PROFILE_VERSION",
+      "wireValue": "0x420142",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420143",
+      "name": "Profile Version Major",
+      "identifier": "PROFILE_VERSION_MAJOR",
+      "wireValue": "0x420143",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420144",
+      "name": "Profile Version Minor",
+      "identifier": "PROFILE_VERSION_MINOR",
+      "wireValue": "0x420144",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420145",
+      "name": "Protection Level",
+      "identifier": "PROTECTION_LEVEL",
+      "wireValue": "0x420145",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420146",
+      "name": "Protection Period",
+      "identifier": "PROTECTION_PERIOD",
+      "wireValue": "0x420146",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420147",
+      "name": "Quantum Safe",
+      "identifier": "QUANTUM_SAFE",
+      "wireValue": "0x420147",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420148",
+      "name": "Quantum Safe Capability",
+      "identifier": "QUANTUM_SAFE_CAPABILITY",
+      "wireValue": "0x420148",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420149",
+      "name": "Ticket",
+      "identifier": "TICKET",
+      "wireValue": "0x420149",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42014A",
+      "name": "Ticket Type",
+      "identifier": "TICKET_TYPE",
+      "wireValue": "0x42014A",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42014B",
+      "name": "Ticket Value",
+      "identifier": "TICKET_VALUE",
+      "wireValue": "0x42014B",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42014C",
+      "name": "Request Count",
+      "identifier": "REQUEST_COUNT",
+      "wireValue": "0x42014C",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42014D",
+      "name": "Rights",
+      "identifier": "RIGHTS",
+      "wireValue": "0x42014D",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42014E",
+      "name": "Objects",
+      "identifier": "OBJECTS",
+      "wireValue": "0x42014E",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42014F",
+      "name": "Operations",
+      "identifier": "OPERATIONS",
+      "wireValue": "0x42014F",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420150",
+      "name": "Right",
+      "identifier": "RIGHT",
+      "wireValue": "0x420150",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420151",
+      "name": "Endpoint Role",
+      "identifier": "ENDPOINT_ROLE",
+      "wireValue": "0x420151",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420152",
+      "name": "Defaults Information",
+      "identifier": "DEFAULTS_INFORMATION",
+      "wireValue": "0x420152",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420153",
+      "name": "Object Defaults",
+      "identifier": "OBJECT_DEFAULTS",
+      "wireValue": "0x420153",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420154",
+      "name": "Ephemeral",
+      "identifier": "EPHEMERAL",
+      "wireValue": "0x420154",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420155",
+      "name": "Server Hashed Password",
+      "identifier": "SERVER_HASHED_PASSWORD",
+      "wireValue": "0x420155",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420156",
+      "name": "One Time Password",
+      "identifier": "ONE_TIME_PASSWORD",
+      "wireValue": "0x420156",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420157",
+      "name": "Hashed Password",
+      "identifier": "HASHED_PASSWORD",
+      "wireValue": "0x420157",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420158",
+      "name": "Adjustment Type",
+      "identifier": "ADJUSTMENT_TYPE",
+      "wireValue": "0x420158",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420159",
+      "name": "PKCS#11 Interface",
+      "identifier": "PKCS_11_INTERFACE",
+      "wireValue": "0x420159",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42015A",
+      "name": "PKCS#11 Function",
+      "identifier": "PKCS_11_FUNCTION",
+      "wireValue": "0x42015A",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42015B",
+      "name": "PKCS#11 Input Parameters",
+      "identifier": "PKCS_11_INPUT_PARAMETERS",
+      "wireValue": "0x42015B",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42015C",
+      "name": "PKCS#11 Output Parameters",
+      "identifier": "PKCS_11_OUTPUT_PARAMETERS",
+      "wireValue": "0x42015C",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42015D",
+      "name": "PKCS#11 Return Code",
+      "identifier": "PKCS_11_RETURN_CODE",
+      "wireValue": "0x42015D",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42015E",
+      "name": "Protection Storage Mask",
+      "identifier": "PROTECTION_STORAGE_MASK",
+      "wireValue": "0x42015E",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42015F",
+      "name": "Protection Storage Masks",
+      "identifier": "PROTECTION_STORAGE_MASKS",
+      "wireValue": "0x42015F",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420160",
+      "name": "Interop Function",
+      "identifier": "INTEROP_FUNCTION",
+      "wireValue": "0x420160",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420161",
+      "name": "Interop Identifier",
+      "identifier": "INTEROP_IDENTIFIER",
+      "wireValue": "0x420161",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420162",
+      "name": "Adjustment Value",
+      "identifier": "ADJUSTMENT_VALUE",
+      "wireValue": "0x420162",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420163",
+      "name": "Common Protection Storage Masks",
+      "identifier": "COMMON_PROTECTION_STORAGE_MASKS",
+      "wireValue": "0x420163",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420164",
+      "name": "Private Protection Storage Masks",
+      "identifier": "PRIVATE_PROTECTION_STORAGE_MASKS",
+      "wireValue": "0x420164",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420165",
+      "name": "Public Protection Storage Masks",
+      "identifier": "PUBLIC_PROTECTION_STORAGE_MASKS",
+      "wireValue": "0x420165",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420166",
+      "name": "Object Groups",
+      "identifier": "OBJECT_GROUPS",
+      "wireValue": "0x420166",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420167",
+      "name": "Object Types",
+      "identifier": "OBJECT_TYPES",
+      "wireValue": "0x420167",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420168",
+      "name": "Constraints",
+      "identifier": "CONSTRAINTS",
+      "wireValue": "0x420168",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420169",
+      "name": "Constraint",
+      "identifier": "CONSTRAINT",
+      "wireValue": "0x420169",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42016A",
+      "name": "Rotate Interval",
+      "identifier": "ROTATE_INTERVAL",
+      "wireValue": "0x42016A",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42016B",
+      "name": "Rotate Automatic",
+      "identifier": "ROTATE_AUTOMATIC",
+      "wireValue": "0x42016B",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42016C",
+      "name": "Rotate Offset",
+      "identifier": "ROTATE_OFFSET",
+      "wireValue": "0x42016C",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42016D",
+      "name": "Rotate Date",
+      "identifier": "ROTATE_DATE",
+      "wireValue": "0x42016D",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42016E",
+      "name": "Rotate Generation",
+      "identifier": "ROTATE_GENERATION",
+      "wireValue": "0x42016E",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-42016F",
+      "name": "Rotate Name",
+      "identifier": "ROTATE_NAME",
+      "wireValue": "0x42016F",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420170",
+      "name": "Rotate Name Value",
+      "identifier": "ROTATE_NAME_VALUE",
+      "wireValue": "0x420170",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420171",
+      "name": "Rotate Name Type",
+      "identifier": "ROTATE_NAME_TYPE",
+      "wireValue": "0x420171",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420172",
+      "name": "Rotate Latest",
+      "identifier": "ROTATE_LATEST",
+      "wireValue": "0x420172",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420173",
+      "name": "Asynchronous Request",
+      "identifier": "ASYNCHRONOUS_REQUEST",
+      "wireValue": "0x420173",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420174",
+      "name": "Submission Date",
+      "identifier": "SUBMISSION_DATE",
+      "wireValue": "0x420174",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420175",
+      "name": "Processing Stage",
+      "identifier": "PROCESSING_STAGE",
+      "wireValue": "0x420175",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
+    },
+    {
+      "elementId": "KMIPKIT-ELEM-TAG-420176",
+      "name": "Asynchronous Correlation Values",
+      "identifier": "ASYNCHRONOUS_CORRELATION_VALUES",
+      "wireValue": "0x420176",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ]
     }
   ],
   "groups": [
