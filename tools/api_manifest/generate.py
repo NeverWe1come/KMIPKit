@@ -3673,8 +3673,8 @@ def render_public_java_parity(projection: dict[str, Any]) -> str:
         "        StringBuilder json = new StringBuilder();",
         "        for (String[] group : PARITY_JSON_GZIP_BASE64_PARTS) {",
         "            for (String chunk : group) {",
-        "            byte[] compressed = Base64.getDecoder().decode(chunk);",
-        "            try (GZIPInputStream input = new GZIPInputStream(",
+        "                byte[] compressed = Base64.getDecoder().decode(chunk);",
+        "                try (GZIPInputStream input = new GZIPInputStream(",
         "                        new ByteArrayInputStream(compressed))) {",
         "                    json.append(new String(input.readAllBytes(), StandardCharsets.UTF_8));",
         "                } catch (IOException error) {",
@@ -3686,15 +3686,21 @@ def render_public_java_parity(projection: dict[str, Any]) -> str:
         "    }",
     ])
     for index, group in enumerate(compressed_groups):
-        lines.extend([
-            "",
-            f"    private static String[] parityParts{index}() {{",
-            "        return new String[] {",
-        ])
-        lines.extend(f"            {_java_string_literal(chunk)}," for chunk in group)
-        lines.extend(["        };", "    }"])
+        lines.extend(_render_java_parity_chunk_group(index, group))
     lines.extend(["", "    private PublicApiParityFixtures() {}", "}", ""])
     return "\n".join(lines)
+
+
+def _render_java_parity_chunk_group(index: int, group: list[str]) -> list[str]:
+    """Render one bounded Java constant-array method for parity fixture data."""
+    lines = [
+        "",
+        f"    private static String[] parityParts{index}() {{",
+        "        return new String[] {",
+    ]
+    lines.extend(f"            {_java_string_literal(chunk)}," for chunk in group)
+    lines.extend(["        };", "    }"])
+    return lines
 
 
 def _gzip_with_stable_header(data: bytes) -> bytes:

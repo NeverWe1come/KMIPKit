@@ -357,6 +357,21 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         self.assertEqual([len(group) for group in groups], [128, 128, 1])
         self.assertEqual([chunk for group in groups for chunk in group], chunks)
 
+    def test_java_parity_chunk_group_renderer_emits_a_private_array_method(self) -> None:
+        lines = generate._render_java_parity_chunk_group(3, ["fixture-value"])
+
+        self.assertEqual(
+            lines,
+            [
+                "",
+                "    private static String[] parityParts3() {",
+                "        return new String[] {",
+                '            "fixture-value",',
+                "        };",
+                "    }",
+            ],
+        )
+
     def test_generation_fixture_starts_without_generated_outputs(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = _create_repo(Path(directory))

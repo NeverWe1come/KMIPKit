@@ -82,8 +82,8 @@ public final class PublicApiParityFixtures {
         StringBuilder json = new StringBuilder();
         for (String[] group : PARITY_JSON_GZIP_BASE64_PARTS) {
             for (String chunk : group) {
-            byte[] compressed = Base64.getDecoder().decode(chunk);
-            try (GZIPInputStream input = new GZIPInputStream(
+                byte[] compressed = Base64.getDecoder().decode(chunk);
+                try (GZIPInputStream input = new GZIPInputStream(
                         new ByteArrayInputStream(compressed))) {
                     json.append(new String(input.readAllBytes(), StandardCharsets.UTF_8));
                 } catch (IOException error) {
