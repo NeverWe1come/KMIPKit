@@ -1174,5 +1174,7 @@
   --output-path target/ping.lcov ping_execution_tests` passes eight tests.
   The Ping constructor/builder region has 29/29 covered executable lines.
 - A first workspace run hit an infrastructure ENOENT in trybuild while coverage
-  cleanup ran concurrently. The workspace suite is being rerun sequentially
-  after coverage completed; hosted CI must independently verify the PR head.
+  cleanup ran concurrently. Reran `cargo test --locked --workspace
+  --all-features` sequentially after coverage completed: the full workspace
+  suite passes, including compile-fail boundaries and doctests. Hosted CI must
+  independently verify the PR head.
