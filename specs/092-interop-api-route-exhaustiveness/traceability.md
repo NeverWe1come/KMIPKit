@@ -172,3 +172,17 @@ six encoding/transport combinations under OASIS KMIP v2.0/v2.1 §§6.1.19,
 6.1.21, 8.2–8.6, and 9.5–9.7. This closes the response-accessor slice for
 that fixture; four local Continue-option constructor cells and the wider
 matrix remain pending.
+
+### C Archive route follow-up
+
+For FR-003 and FR-005, the installed C consumer sends Archive using the
+ID Placeholder and checks the required response Unique Identifier through the
+typed response accessor. The controlled fixture executes Create → Activate →
+Archive → Revoke → Destroy and checks operation order, unique item IDs, response
+fields, and teardown. Sources: OASIS KMIP 2.0 §6.1.4 Tables 158–159 and KMIP
+2.1 §6.1.4 Tables 173–174. These clauses define Archive as a client indication
+that a KMS may archive the object; the fixture records request receipt without
+asserting that archival occurred. Red `678c224da`, Green `98bfd7447` and
+`ef9dd627b`, and Refactor `58bf72628` implement and verify the slice. The route
+passed 12/12 cells and CTest passed 7/7. The full C matrix still has 24,673
+pending cells, so the FR-003/FR-005 gates remain open.
