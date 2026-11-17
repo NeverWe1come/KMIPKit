@@ -88,11 +88,12 @@ expected after deletion. Each lifecycle probe
 requests a generated AES-128 key, checks the response against the created
 object, and enables batch continuation so cleanup still runs after a failed
 operation. Get also checks the returned key format, algorithm and nonempty key
-material without including the key bytes in reports. The public C
-Discover Versions builder has a fixed KMIP 2.1 offer; because it does not expose
-a way to offer KMIP 2.0, that specific KMIP 2.0 case is reported as a public
-API limitation. The Login builder and typed/TTLV Ticket readers are exercised
-for both protocol versions. The public C API exposes generic TTLV constructors,
+material without including the key bytes in reports. The public C Discover
+Versions builder emits a fixed KMIP 2.1 offer, which the controlled fixture
+exercises under both KMIP 2.0 and 2.1 message headers. With the KMIP 2.0
+header, the fixture returns the empty intersection between that offer and its
+supported versions. Login and the typed/TTLV Ticket readers are exercised for
+both protocol versions. The public C API exposes generic TTLV constructors,
 inspectors, and a decoder.
 It has no generic TTLV encoder and no generic TTLV request dispatch.
 It also exposes no high-level client API. The consumer records those route

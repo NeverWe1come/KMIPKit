@@ -853,6 +853,8 @@ def assert_delegated_login_request_payload(node, case_id):
     expected.append((0x42014D, 1, []))
     if fields != expected:
         raise ValueError('fixture_delegated_login_request_fields_mismatch')
+
+
 def assert_crypto_request(node, decrypt):
     """Check an isolated Create/Activate/crypto/Revoke/Destroy request shape."""
     operation = 32 if decrypt else 31
@@ -4384,8 +4386,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         elif recipe[1] == 'interop':
                                             verify_interop_response(response_tree)
                                         elif recipe[1] == 'archive':
-                                            verify_lifecycle(recipe[0], response_tree)
                                             verify_archive_response(response_tree)
+                                            verify_lifecycle(recipe[0], response_tree)
                                         elif recipe[1] in ('encrypt', 'decrypt'):
                                             verify_crypto_response(response_tree, recipe[1] == 'decrypt')
                                         elif recipe[1] == 'mac':
@@ -4454,9 +4456,6 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                     response_tree, case['requires']['field_name'])
                                             else:
                                                 verify_export_response(response_tree)
-                                            verify_lifecycle(recipe[0], response_tree)
-                                        elif recipe[1] == 'archive':
-                                            verify_archive_response(response_tree)
                                             verify_lifecycle(recipe[0], response_tree)
                                         elif recipe[1] in ('sign', 'signature_verify'):
                                             verify_legacy_signature_response(

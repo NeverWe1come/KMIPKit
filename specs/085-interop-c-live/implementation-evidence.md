@@ -582,11 +582,11 @@ only and is never recorded in diagnostics, fixture reports, or matrix evidence.
 - Verification: CMake build passed and CTest passed 7/7, including controlled
   KMIP 2.0 and 2.1 TLS fixtures. The KMIP 2.0 fixture confirms that the Logout
   path is explicitly not run without a valid Login Ticket.
-- The complete C matrix reports 38,429 of 66,728 cells invoked, zero failed,
-  and 28,299 pending. Logout accounts for 23 passed route cells and 19 pending
-  KMIP 2.0 cells. The installed C Login builder only accepts KMIP 2.1, so a
-  valid KMIP 2.0 server-issued Ticket cannot be acquired; this is an API
-  limitation and no invalid or synthetic Ticket is sent to a server.
+- At this historical snapshot, the complete C matrix reports 38,429 of 66,728
+  cells invoked, zero failed, and 28,299 pending. Logout accounts for 23
+  passed route cells and 19 pending KMIP 2.0 cells. The later section below
+  records the follow-up that removes this Login limitation by exercising the
+  KMIP 2.0 Login constructor and server-issued Ticket handoff.
 
 This recipe verifies KMIPKit against a controlled peer only. External KMS
 compatibility and the remaining C route recipes are still unverified.
@@ -1127,33 +1127,6 @@ preserving their server-issued correlations.
   The matching completeness validator now reports
   `test-async-unknown-correlation-rejected` as the next missing recipe; PR
   #170 remains WIP.
-### Discover Versions offer and installed C route matrix
-
-The controlled peer now checks the public C Discover Versions request's
-advertised Protocol Version list against the constructor's fixed KMIP 2.1
-offer. The route test executes the pinned installed consumer through TTLV,
-JSON, and XML over raw TLS and HTTPS, and requires both the Discover Versions
-builder and typed supported-versions response accessor in the invocation
-evidence. The shared route generator now limits the C request builder and its
-network route to KMIP 2.1 and records the KMIP 2.0 request Protocol Version
-field as a version-scoped source-backed limitation. The C response accessor
-remains available for both versions because it reads the server's Supported
-Versions list, which may include KMIP 2.0. These checks follow OASIS KMIP 2.0
-§6.1.16, Table 196; KMIP 2.1 §6.1.16, Tables 211–212; and KMIPKIT-0092-FR-001,
-FR-005, FR-006, and FR-009.
-
-- Red commit `24dfd7437` proved the peer accepted an incorrect KMIP 2.0 offer
-  under the Discover Versions case.
-- Green commit `d4564903d` rejects the incorrect offer and checks the fixed
-  KMIP 2.1 structure.
-- The installed route test passed all six encoding/transport combinations.
-  The focused checks passed 2/2, and the C route-matrix unit suite passed
-  141/141. The broader completeness matrix remains open; PR #170 remains WIP.
-- Red tests then exposed that route limitations were not version scoped. The
-  shared generator and matrix tests pass as part of the 93/93 route capability
-  and coverage-matrix suite. `route_capabilities.py --check` passes with the
-  regenerated manifest. The broader installed C route matrix still has
-  pending recipes, so the stacked PR remains WIP.
 
 ## Evidence: C typed batches derive Batch Count from their items
 

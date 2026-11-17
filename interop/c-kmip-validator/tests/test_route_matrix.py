@@ -2791,6 +2791,7 @@ class RouteMatrixTests(unittest.TestCase):
             self.assertTrue(any(event['public_api_symbol'] == symbol and event['action'] == 'send' for event in events), symbol)
 
     def test_operation_response_ttlv_accessors_are_executed(self):
+        """OASIS KMIP 2.0 §§6.1.31, 6.1.49 and 2.1 §§6.1.32, 6.1.55."""
         from artifact_support import ROOT
         from route_peer import execute_network_cells
         catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
@@ -2799,7 +2800,9 @@ class RouteMatrixTests(unittest.TestCase):
             'test-op-check': 'kmipkit_client_batch_item_response_check_ttlv',
             'test-op-get-attribute-list': 'kmipkit_client_batch_item_response_get_attribute_list_payload_ttlv',
             'test-op-log': 'kmipkit_client_batch_item_response_log_ttlv',
+            'test-op-mac': 'kmipkit_client_batch_item_response_mac_ttlv',
             'test-op-revoke': 'kmipkit_client_batch_item_response_revoke_ttlv',
+            'test-op-sign': 'kmipkit_client_batch_item_response_sign_ttlv',
         }
         selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
                                                if case['case_id'] in expected]}

@@ -305,3 +305,30 @@ Refactor `eb701e0a8` names the mapping constants. The focused Archive operation,
 payload, and response-ID tests pass after Refactor. The integrated matrix
 snapshot above predates these equivalent helper/refactor commits and is not
 presented as a rerun at their later SHA.
+
+## C MAC and Sign response TTLV accessors
+
+The installed consumer now invokes the successful MAC and Sign generic
+response-TTLV accessors after checking their typed result fields. OASIS KMIP
+v2.0 §§6.1.31 and 6.1.49 and v2.1 §§6.1.32 and 6.1.55 define the operation
+payloads. The consumer checks the returned complete response item has the
+expected four outer fields; it does not read, compare, or record the MAC Data
+or Signature Data bytes. This verifies API route use and response shape, not
+cryptographic correctness.
+
+Red `29a3e1867` made the route test fail for the four missing decode cells.
+Green `3bbfc5180` added both accessors and their response-shape checks. Refactor
+`01b12cbb7` named the response field-count contract and added normative
+references to the test. The focused route test passed for both operations and
+both protocol versions; CTest passed 7/7 in 139.15 seconds. The full matrix at
+`01b12cbb7` has 66,736 expected, 42,067 invoked, zero failed, and 24,669
+pending cells. The exhaustive FR-003/FR-005 gates remain open.
+
+### C Archive response dispatch consolidation
+
+SonarCloud flagged a second `archive` branch in the same response-decoder
+`if`/`elif` chain as unreachable. The route peer now has one Archive response
+branch that runs both the Archive response-shape check and lifecycle check;
+this removes the dead duplicate while preserving the effective validations.
+The Archive lifecycle, response-item-ID, and payload fixtures pass 3/3, and
+CTest passes 7/7, including both controlled TLS peers.
