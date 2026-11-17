@@ -4684,6 +4684,26 @@ static bool batch_crypto_response_matches(kmipkit_client_batch_item_response_t *
         !iv_present && !correlation_present && !tag_present;
 }
 
+static bool created_key_crypto_response_matches(kmipkit_client_batch_item_response_t *item,
+                                                const kmipkit_unique_identifier_v1_t *identifier,
+                                                bool encrypt, int32_t *out_status) {
+    uint8_t present = 0, data_present = 0, iv_present = 0, correlation_present = 0, tag_present = 0;
+    kmipkit_unique_identifier_v1_t result_identifier = {
+        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1
+    };
+    kmipkit_byte_span_v1_t data = {0}, iv = {0}, correlation = {0}, tag = {0};
+    int32_t status = encrypt ? kmipkit_client_batch_item_response_encrypt(
+        item, &present, &result_identifier, &data_present, &data,
+        &iv_present, &iv, &correlation_present, &correlation, &tag_present, &tag) :
+        kmipkit_client_batch_item_response_decrypt(
+            item, &present, &result_identifier, &data_present, &data,
+            &correlation_present, &correlation);
+    *out_status = status;
+    return status == 0 && present && same_text_identifier(identifier, &result_identifier) &&
+        data_present && data.length == sizeof(BATCH_CRYPTO_PLAINTEXT) && data.data &&
+        !iv_present && !correlation_present && !tag_present;
+}
+
 static kmip_execution_outcome_t execute_registered_crypto_batch(kmip_live_client_t *client) {
     static const uint32_t operations[] = {
         KMIPKIT_ENUMERATION_OPERATION_REGISTER, KMIPKIT_ENUMERATION_OPERATION_ACTIVATE,
@@ -4983,7 +5003,7 @@ static kmip_execution_outcome_t execute_created_key_crypto(kmip_live_client_t *c
         identifier.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING &&
         identifier.text_data && identifier.text_length &&
         activate_response_matches_created_key(responses[1], &identifier, &status) &&
-        batch_crypto_response_matches(responses[2], &identifier, !decrypt, &status) &&
+        created_key_crypto_response_matches(responses[2], &identifier, !decrypt, &status) &&
         revoke_response_matches_created_key(responses[3], &identifier, &status) &&
         response_ttlv_matches_identifier(responses[3], kmipkit_client_batch_item_response_revoke_ttlv,
                                          &identifier, &status) &&
