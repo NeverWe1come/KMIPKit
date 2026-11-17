@@ -1977,3 +1977,57 @@ The focused TLS test and full Java suite pass (57/57 tests, no failures,
 errors, or skips); all 68 shared route-capability tests pass. Route validation
 reports 27,147/27,147 selected cells invoked with zero failures. The full Java
 matrix remains incomplete and the PR stays WIP.
+
+## Java Ping route — 2026-11-17
+
+The catalogued KMIP 2.1 Ping case (`test-op-ping`, OASIS KMIP 2.1 §6.1.36)
+now invokes the Java installed-package factory and response reader through a
+controlled TLS 1.3 mutual-TLS exchange. The fixture confirms the peer received
+Operation Ping and that the returned `ClientBatchItemResult.pingResponse()` is
+present and true. Its Operation Enumeration is separately constructed, viewed,
+and decoded with the installed generic TTLV APIs. This completes all seven
+Java cells selected for this case: three local TTLV routes, typed request
+construction/send/response decode over TTLV raw TLS, and the typed Ping
+response reader.
+
+Red, commit `812c615f6`:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test \
+  --tests org.kmipkit.validator.ControlledTlsPeerTest.controlledQueryProducesPerRouteEvidenceForBothProtocolVersions
+```
+
+The test failed because `test-op-ping` had no observed
+`client_batch_item_response_ping` route event. Green, commit `4f2e96761`, adds
+the controlled Ping exchange and its generic TTLV events. The focused test and
+the complete Java Gradle suite pass; the latter completed all 57 tests with no
+failures, errors, or skips. All 68 shared route-capability tests pass, the
+route capability generator check passes, and the evidence validator accepts
+27,154/27,154 selected cells with zero failures. Its generated ledger contains
+71,641 planned, 27,154 executed, and 44,487 pending cells. The checked-in
+reference was refreshed with `compare_route_ledger.py --refresh-reference`
+from the validated build ledger and then matched by the comparer. The full
+matrix remains incomplete, so the PR stays WIP.
+
+Verification commands:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test \
+  --tests org.kmipkit.validator.ControlledTlsPeerTest.controlledQueryProducesPerRouteEvidenceForBothProtocolVersions
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks
+python3 -m unittest interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+python3 interop/shared/tools/validate_route_evidence.py \
+  --selected-scope --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+git diff --check
+```
