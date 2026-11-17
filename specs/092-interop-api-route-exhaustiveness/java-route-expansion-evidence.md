@@ -2049,6 +2049,77 @@ Selected-scope validation accepts 27,284/27,284 cells with zero failures. The
 generated ledger records 71,641 planned, 27,284 executed, and 44,357 pending
 cells across 1,217 pending case IDs. The ledger comparer passes after refresh.
 The full matrix remains incomplete and #217 stays WIP.
+## Java KMIP 2.0/2.1 repeatable Response Header Attestation Type — 2026-11-17
+
+OASIS KMIP 2.0/2.1 §8.5 specifies an optional, repeatable Attestation Type in
+the Response Header. Red commit `855778c41` adds exact per-version assertions
+for generic Item create/view/decode and typed `ResponseMessage.fromTtlv`; the
+controlled-peer test fails because the target has no events. Green commit
+`d0471de8c` creates and decodes the generic Enumeration and parses a response
+with two Attestation Type values. The typed `ResponseHeaderView` returns both
+values in wire order. Refactor commit `31f5fb590` shares the values used by the
+request and response fixtures. The first selected-scope validation found that
+the evidence report's explicit `case_ids` omitted this target; commit
+`4e1a6866a` includes it and adjusts the report-size assertion.
+
+The focal route test passes. The complete Java consumer suite passes 57/57
+tests with no failures, errors, or skips. The shared route-capability suite
+passes 68/68 tests, and `route_capabilities.py --check` reports 1,507 routes.
+The selected-scope validator accepts 27,344/27,344 cells with zero failed
+cells; the generated ledger contains 71,641 planned, 27,344 executed, and
+44,297 pending cells across 1,209 pending case IDs. The ledger comparer passes.
+This is local-model evidence and does not establish server interoperability or
+complete the Java route matrix; the PR remains WIP.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-temp" \
+  bash bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" \
+  -p interop/java-kmip-validator test \
+  --tests org.kmipkit.validator.ControlledTlsPeerTest.controlledQueryProducesPerRouteEvidenceForBothProtocolVersions
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-temp" \
+  bash bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" \
+  -p interop/java-kmip-validator test --rerun-tasks
+python3 -m unittest interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+python3 interop/shared/tools/validate_route_evidence.py \
+  --selected-scope --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+git diff --check
+```
+
+## Java stack sync through Right Usage Limits — 2026-11-17
+
+The Right Usage Limits stack now includes the newest #187 response Attestation
+Type routes, while retaining the Usage Limits and Endpoint Role slices from
+#216 and #217. The full Java consumer suite passes 57/57 tests with no failures,
+errors, or skips; shared route-capability tests pass 68/68; and the generated
+route check reports 1,507 routes. Selected-scope validation accepts
+27,388/27,388 cells with zero failures. The generated ledger records 71,641
+planned, 27,388 executed, and 44,253 pending cells; comparison passes. The
+overall Java matrix remains incomplete, so the stack remains WIP.
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-temp" \
+  bash bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" \
+  -p interop/java-kmip-validator test --rerun-tasks
+python3 -m unittest interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+python3 interop/shared/tools/validate_route_evidence.py \
+  --selected-scope --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+git diff --check
+```
 
 ## Java KMIP 2.0/2.1 repeatable Request Header Attestation Type — 2026-11-17
 

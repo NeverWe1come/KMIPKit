@@ -846,6 +846,7 @@
     "test-norm-data-type-data-type-structure",
     "test-norm-data-type-data-type-text-string",
     "test-norm-message-field-message-field-8-4-batch-item",
+    "test-norm-message-field-message-field-8-5-attestation-type",
     "test-norm-message-field-message-field-8-5-batch-count",
     "test-norm-message-field-message-field-9-5-batch-count",
     "test-norm-message-field-message-field-8-6-batch-item",
@@ -1499,7 +1500,7 @@
     "test-norm-credential-credential-hashed-password",
     "test-norm-credential-credential-username-and-password"
   ],
-  "executed_cells": 27380,
+  "executed_cells": 27388,
   "language": "java",
   "library_commit": "12496d646d11d4069b58bcc88fc76cc619211ec6",
   "pending_case_ids": [
@@ -1641,7 +1642,6 @@
     "test-norm-message-field-message-field-8-3-unique-batch-item-id",
     "test-norm-message-field-message-field-8-4-response-header",
     "test-norm-message-field-message-field-8-4-response-message",
-    "test-norm-message-field-message-field-8-5-attestation-type",
     "test-norm-message-field-message-field-8-5-client-correlation-value",
     "test-norm-message-field-message-field-8-5-nonce",
     "test-norm-message-field-message-field-8-5-protocol-version",
@@ -3261,10 +3261,6 @@
     {
       "case_id": "test-norm-message-field-message-field-8-4-response-message",
       "pending_cells": 10
-    },
-    {
-      "case_id": "test-norm-message-field-message-field-8-5-attestation-type",
-      "pending_cells": 8
     },
     {
       "case_id": "test-norm-message-field-message-field-8-5-client-correlation-value",
@@ -7531,7 +7527,7 @@
       "pending_cells": 15
     }
   ],
-  "pending_cells": 44261,
+  "pending_cells": 44253,
   "pending_reason": "No validated per-cell route execution evidence is recorded for this cell.",
   "pending_reason_code": "route_evidence_not_emitted",
   "planned_cells": 71641,
@@ -7539,8 +7535,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 2713,
-      "pending_cells": 1371,
+      "executed_cells": 2714,
+      "pending_cells": 1370,
       "protocol_version": "2.0",
       "required_cells": 4084,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item",
@@ -7549,8 +7545,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 2755,
-      "pending_cells": 1424,
+      "executed_cells": 2756,
+      "pending_cells": 1423,
       "protocol_version": "2.1",
       "required_cells": 4179,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item",
@@ -7859,8 +7855,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 2761,
-      "pending_cells": 1370,
+      "executed_cells": 2762,
+      "pending_cells": 1369,
       "protocol_version": "2.0",
       "required_cells": 4131,
       "route_id": "java.generic-ttlv.ttlv_codec.decode",
@@ -7869,8 +7865,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 2803,
-      "pending_cells": 1423,
+      "executed_cells": 2804,
+      "pending_cells": 1422,
       "protocol_version": "2.1",
       "required_cells": 4226,
       "route_id": "java.generic-ttlv.ttlv_codec.decode",
@@ -7879,8 +7875,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 2713,
-      "pending_cells": 1370,
+      "executed_cells": 2714,
+      "pending_cells": 1369,
       "protocol_version": "2.0",
       "required_cells": 4083,
       "route_id": "java.generic-ttlv.ttlv_item.create",
@@ -7889,8 +7885,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 2755,
-      "pending_cells": 1423,
+      "executed_cells": 2756,
+      "pending_cells": 1422,
       "protocol_version": "2.1",
       "required_cells": 4178,
       "route_id": "java.generic-ttlv.ttlv_item.create",
@@ -32469,8 +32465,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 22,
-      "pending_cells": 21,
+      "executed_cells": 23,
+      "pending_cells": 20,
       "protocol_version": "2.0",
       "required_cells": 43,
       "route_id": "java.typed-protocol.model.org.kmipkit.message.responsemessage.fromttlv",
@@ -32479,8 +32475,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 22,
-      "pending_cells": 21,
+      "executed_cells": 23,
+      "pending_cells": 20,
       "protocol_version": "2.1",
       "required_cells": 43,
       "route_id": "java.typed-protocol.model.org.kmipkit.message.responsemessage.fromttlv",
@@ -34110,8 +34106,8 @@
   "route_manifest_sha256": "8e26f2efe33c63d3fc4dcd0cb11e465b15bbe9135ab56809c354f032a7aeac59",
   "route_summary": [
     {
-      "executed_cells": 5468,
-      "pending_cells": 2795,
+      "executed_cells": 5470,
+      "pending_cells": 2793,
       "required_cells": 8263,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item"
     },
@@ -34206,14 +34202,14 @@
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring"
     },
     {
-      "executed_cells": 5564,
-      "pending_cells": 2793,
+      "executed_cells": 5566,
+      "pending_cells": 2791,
       "required_cells": 8357,
       "route_id": "java.generic-ttlv.ttlv_codec.decode"
     },
     {
-      "executed_cells": 5468,
-      "pending_cells": 2793,
+      "executed_cells": 5470,
+      "pending_cells": 2791,
       "required_cells": 8261,
       "route_id": "java.generic-ttlv.ttlv_item.create"
     },
@@ -35292,8 +35288,8 @@
       "route_id": "java.typed-protocol.model.org.kmipkit.message.requestmessage.fromttlv"
     },
     {
-      "executed_cells": 44,
-      "pending_cells": 42,
+      "executed_cells": 46,
+      "pending_cells": 40,
       "required_cells": 86,
       "route_id": "java.typed-protocol.model.org.kmipkit.message.responsemessage.fromttlv"
     },
@@ -35581,7 +35577,7 @@
     }
   ],
   "schema_version": "1.0",
-  "selected_scope_cells": 27380,
+  "selected_scope_cells": 27388,
   "selected_scope_complete": true,
   "vendor_interoperability_claim": false
 }
