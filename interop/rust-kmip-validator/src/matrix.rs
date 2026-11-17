@@ -2154,13 +2154,18 @@ fn invoke_attribute_reference_route(symbol: &str, sample: &Item) -> Option<Resul
     })())
 }
 
-fn invoke_client_batch_route(symbol: &str, sample: &Item) -> Option<Result<Item>> {
+fn invoke_client_batch_route(
+    symbol: &str,
+    sample: &Item,
+    protocol_version: &str,
+) -> Option<Result<Item>> {
     const CLIENT_BATCH_ROUTES: &[&str] = &[
         "kmipkit_client::ClientBatch::with_asynchronous_indicator",
         "kmipkit_client::ClientBatch::with_authentication",
         "kmipkit_client::ClientBatch::with_batch_error_continuation_option",
         "kmipkit_client::ClientBatch::with_batch_order_option",
         "kmipkit_client::ClientBatch::with_client_correlation_value",
+        "kmipkit_client::ClientBatch::with_protocol_version",
         "kmipkit_client::ClientBatch::with_request_time_stamp",
         "kmipkit_client::ClientBatchItem::with_unique_batch_item_id",
     ];
@@ -2219,6 +2224,17 @@ fn invoke_client_batch_route(symbol: &str, sample: &Item) -> Option<Result<Item>
                     _ => Err("Client Correlation Value fixture is not a Text String"),
                 })?;
                 let _batch = kmipkit::ClientBatch::empty().with_client_correlation_value(value);
+            }
+            "kmipkit_client::ClientBatch::with_protocol_version" => {
+                let version = match protocol_version {
+                    "2.0" => kmipkit::protocol::ProtocolVersion::from_raw(2, 0),
+                    "2.1" => kmipkit::protocol::ProtocolVersion::from_raw(2, 1),
+                    _ => return Err("Client Batch fixture has an unsupported protocol version"),
+                };
+                let batch = kmipkit::ClientBatch::empty().with_protocol_version(version);
+                if batch.protocol_version() != Some(version) {
+                    return Err("Client Batch did not retain the protocol version");
+                }
             }
             "kmipkit_client::ClientBatch::with_request_time_stamp" => {
                 let value = sample.with_value(|value| match value {
@@ -2825,6 +2841,150 @@ fn invoke_simple_protocol_route(symbol: &str, sample: &Item) -> Option<Result<It
     }
 
     None
+}
+
+fn invoke_remaining_typed_routes(
+    symbol: &str,
+    sample: &Item,
+    target: &Json,
+    elements: &[Json],
+) -> Option<Result<Item>> {
+    if [
+        "kmipkit_protocol::LinkType::from_v2_enumeration",
+        "kmipkit_protocol::LinkType::from_v3_tag",
+    ]
+    .contains(&symbol)
+    {
+        return Some((|| {
+            if symbol == "kmipkit_protocol::LinkType::from_v2_enumeration" {
+                let raw = sample.with_value(|value| match value {
+                    ValueView::Enumeration(value) => Ok(*value),
+                    _ => Err("Link Type fixture is not an Enumeration"),
+                })?;
+                if let Some(link) = kmipkit::protocol::LinkType::from_v2_enumeration(raw)
+                    && link.v2_enumeration() != raw
+                {
+                    return Err("Link Type enumeration conversion changed its value");
+                }
+            } else {
+                // The KMIP 3.0 tag converter is independent of the 2.1 Link Type field sample.
+                // Exercise every assigned mapping because some surrounding route targets only
+                // describe the KMIP 2.1 field that shares this API's traceability row.
+                let mappings = [
+                    (0x0042_0190, kmipkit::protocol::LinkType::Certificate),
+                    (0x0042_0191, kmipkit::protocol::LinkType::Child),
+                    (0x0042_0192, kmipkit::protocol::LinkType::DerivationBaseObject),
+                    (0x0042_0193, kmipkit::protocol::LinkType::DerivedKey),
+                    (0x0042_0194, kmipkit::protocol::LinkType::Next),
+                    (0x0042_0195, kmipkit::protocol::LinkType::Parent),
+                    (0x0042_0196, kmipkit::protocol::LinkType::Pkcs12Certificate),
+                    (0x0042_0197, kmipkit::protocol::LinkType::Pkcs12Password),
+                    (0x0042_0198, kmipkit::protocol::LinkType::Previous),
+                    (0x0042_0199, kmipkit::protocol::LinkType::PrivateKey),
+                    (0x0042_019a, kmipkit::protocol::LinkType::PublicKey),
+                    (0x0042_019b, kmipkit::protocol::LinkType::ReplacedObject),
+                    (0x0042_019c, kmipkit::protocol::LinkType::ReplacementObject),
+                    (0x0042_019d, kmipkit::protocol::LinkType::WrappingKey),
+                    (0x0042_01a0, kmipkit::protocol::LinkType::Credential),
+                    (0x0042_01a5, kmipkit::protocol::LinkType::Password),
+                    (0x0042_01b3, kmipkit::protocol::LinkType::Group),
+                    (0x0042_01b4, kmipkit::protocol::LinkType::SplitKeyBase),
+                    (0x0042_01b5, kmipkit::protocol::LinkType::JoinedSplitKeyParts),
+                    (0x0042_01bc, kmipkit::protocol::LinkType::CertificateRequest),
+                ];
+                for (tag, expected) in mappings {
+                    if kmipkit::protocol::LinkType::from_v3_tag(tag) != Some(expected) {
+                        return Err("Link Type KMIP 3.0 tag mapping did not resolve");
+                    }
+                }
+                if kmipkit::protocol::LinkType::from_v3_tag(0x0042_01ff).is_some() {
+                    return Err("unassigned KMIP 3.0 Link Type tag was accepted");
+                }
+            }
+            sample.try_clone().map_err(|_| "Link Type fixture copy failed")
+        })());
+    }
+
+    if symbol == "kmipkit_protocol::EndpointRole::from_wire_name" {
+        return Some((|| {
+            let raw = sample.with_value(|value| match value {
+                ValueView::Enumeration(value) => Ok(*value),
+                _ => Err("Endpoint Role fixture is not an Enumeration"),
+            })?;
+            let role = kmipkit::protocol::EndpointRole::from_raw(raw);
+            let wire_name = if role.is_known() {
+                role.wire_name()
+            } else {
+                target["name"]
+                    .as_str()
+                    .ok_or("Endpoint Role fixture name is missing")?
+            };
+            let parsed = kmipkit::protocol::EndpointRole::from_wire_name(wire_name);
+            if role.is_known() && parsed != Some(role) {
+                return Err("Endpoint Role wire name did not resolve to its source value");
+            }
+            if !role.is_known() && parsed.is_some() {
+                return Err("unknown Endpoint Role wire name was accepted");
+            }
+            sample
+                .try_clone()
+                .map_err(|_| "Endpoint Role fixture copy failed")
+        })());
+    }
+
+    match symbol {
+        "kmipkit_protocol::DeactivateRequest::with_deactivation_date" => {
+            Some((|| {
+                let date = sample.with_value(|value| match value {
+                    ValueView::DateTime(value) => Ok(*value),
+                    _ => Err("Deactivation Date fixture is not a Date-Time"),
+                })?;
+                let payload = kmipkit::protocol::DeactivateRequest::new(
+                    kmipkit::protocol::UniqueIdentifier::from("route-matrix-key"),
+                )
+                .with_deactivation_date(date)
+                .into_ttlv_payload()
+                .map_err(|_| "Deactivate request fixture rejected")?;
+                metadata_expected_target(&request_payload_item(payload)?, target, elements)
+            })())
+        }
+        "kmipkit_protocol::ServerResponseBuilder::with_maximum_response_size" => {
+            Some((|| {
+                let max_size = sample.with_value(|value| match value {
+                    ValueView::Integer(value) => usize::try_from(*value)
+                        .map_err(|_| "Maximum Response Size fixture is negative"),
+                    _ => Err("Maximum Response Size fixture is not an Integer"),
+                })?;
+                let _builder = kmipkit::protocol::ServerResponseBuilder::new()
+                    .with_maximum_response_size(Some(max_size));
+                sample
+                    .try_clone()
+                    .map_err(|_| "Maximum Response Size fixture copy failed")
+            })())
+        }
+        "kmipkit_protocol::SetEndpointRoleRequest::with_vendor_identification" => {
+            Some((|| {
+                let vendor_id = sample.with_value(|value| match value {
+                    ValueView::TextString(value) => Ok(value.to_owned()),
+                    _ => Err("Vendor Identification fixture is not a Text String"),
+                })?;
+                let request = kmipkit::protocol::SetEndpointRoleRequest::new(
+                    kmipkit::protocol::EndpointRole::CLIENT,
+                )
+                .with_vendor_identification(vendor_id.clone());
+                if request.vendor_identification() != Some(vendor_id.as_str()) {
+                    return Err("Set Endpoint Role request did not retain Vendor Identification");
+                }
+                request
+                    .to_ttlv_payload()
+                    .map_err(|_| "Set Endpoint Role request fixture rejected")?;
+                sample
+                    .try_clone()
+                    .map_err(|_| "Vendor Identification fixture copy failed")
+            })())
+        }
+        _ => None,
+    }
 }
 
 // Keep a bounded set of simple request routes with their emitted payloads.
@@ -4222,6 +4382,9 @@ fn invoke(
     if let Some(result) = invoke_simple_protocol_route(symbol, sample) {
         return Some(result);
     }
+    if let Some(result) = invoke_remaining_typed_routes(symbol, sample, target, elements) {
+        return Some(result);
+    }
     if let Some(result) = invoke_attribute_reference_route(symbol, sample) {
         return Some(result);
     }
@@ -4239,7 +4402,7 @@ fn invoke(
     {
         return Some(result);
     }
-    if let Some(result) = invoke_client_batch_route(symbol, sample) {
+    if let Some(result) = invoke_client_batch_route(symbol, sample, protocol_version) {
         return Some(result);
     }
     if let Some(result) = invoke_login_usage_limits_route(symbol, target, elements) {
