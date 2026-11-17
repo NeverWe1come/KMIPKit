@@ -115,6 +115,15 @@ class PingBuilderManifestTests(unittest.TestCase):
             with self.subTest(package=package):
                 self.assertEqual("type", declarations[(package, export)]["kind"])
 
+    def test_ping_builder_python_constructor_uses_export_kind(self) -> None:
+        declaration = next(
+            row
+            for row in self.manifest["publicDeclarations"]
+            if row["packageId"] == "python-kmipkit"
+            and row["exportName"] == "kmipkit.fluent.PingBuilder.__init__"
+        )
+        self.assertEqual("python-export", declaration["kind"])
+
     def test_ping_builder_capability_mapping_covers_python_and_java_additions(self) -> None:
         capability = next(
             row
