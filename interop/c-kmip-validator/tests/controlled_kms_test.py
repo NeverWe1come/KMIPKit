@@ -515,8 +515,7 @@ def main() -> int:
     expected_operations += (52, 52, 52)
     expected_operations += (26,)
     expected_cases += ("test-async-unknown-correlation-rejected",)
-    expected_operations += (10, 12, 10, 12, 10, 12, 10, 12)
-    expected_operations += (10, 12)
+    expected_operations += (10, 12, 10, 12, 10, 12, 10, 12, 10, 12)
     expected_operations += registered_key_batch
     if protocol_version == "2.0":
         expected_operations += (45, 45, 46)
@@ -832,7 +831,10 @@ def main() -> int:
                             if two_read_batch:
                                 continue_after_failure = tlv(0x420094, 7, b"missing-key") in request
                                 expected_fixture_identifiers = 1 if continue_after_failure else 2
-                                if (request.count(tlv(0x420094, 7, b"fixture-key-1")) !=
+                                if (request.count(bytes((0x42, 0x00, 0x0D))) != 1 or
+                                        request.count(integer(0x42000D, 2)) != 1 or
+                                        len(operations) != 2 or
+                                        request.count(tlv(0x420094, 7, b"fixture-key-1")) !=
                                         expected_fixture_identifiers or
                                         (continue_after_failure and
                                          request.count(tlv(0x420094, 7, b"missing-key")) != 1) or
