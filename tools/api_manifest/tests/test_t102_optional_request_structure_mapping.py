@@ -202,7 +202,7 @@ PKCS11_REQUEST_SETTER_IDS = {
 # Attribute adds 77 ready declarations and two blocked Rust candidates. Its
 # operation row also gains the approved four-language fixture evidence.
 # Locate and Revoke add their 26 exact Rust root re-exports and Java signatures.
-OTHER_DECLARATIONS_SHA256 = "14b93221d43a9f7bbfca814505c9fd1d46c100f51e63170efb190c3fbdebbd94"
+OTHER_DECLARATIONS_SHA256 = "cf9e86c09e30de79c309bd62cc7ff4f0f8efdb5543199873e1a4a205546b8417"
 OTHER_OPERATIONS_SHA256 = "2ea94003f2877d0e6d84271d67d9add6f48a5c5b7a837c48b22fe40f41022d39"
 def canonical_sha256(value: object) -> str:
     encoded = json.dumps(

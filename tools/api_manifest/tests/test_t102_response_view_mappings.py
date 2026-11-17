@@ -179,7 +179,7 @@ EXPECTED = (
 # KMIPKIT-0093 adds all audited Rust declaration candidates, exact trait
 # exclusions, and the 28 execution-wrapper requirement links.
 # Locate and Revoke add their 26 exact Rust root re-exports and Java signatures.
-UNCHANGED_DECLARATIONS_SHA256 = "a4199a00a4d5b6c2d580d0d6307a08805798868ddfd34f3427809133b65eda21"
+UNCHANGED_DECLARATIONS_SHA256 = "9a0b926941273b7de008c7cced6fe6ac656cae17fd0327d41c83534ae1a429cf"
 # Delete Attribute records four-language fixture evidence on its operation row.
 UNCHANGED_OPERATIONS_SHA256 = "9f04e672ec202fb4acdb911879d5519b7c57238d77aa67574b8e5471cc6fea57"
 # T098's maintainer-approved reconciliation updates lifecycle approval evidence
@@ -194,7 +194,7 @@ UNCHANGED_OPERATIONS_SHA256 = "9f04e672ec202fb4acdb911879d5519b7c57238d77aa67574
 # reconciliation adds 419 blocked candidates, 666 exact trait exclusions, and
 # the FR-005/FR-008 wrapper links. Delete Attribute adds 77 ready declarations,
 # two blocked Rust candidates, and 18 exact trait exclusions.
-OTHER_MANIFEST_SHA256 = "094ff8b1b6e6cfe41b156cfc12857e43d839f98106cb85c9905f5018a4e2586d"
+OTHER_MANIFEST_SHA256 = "2c247038e47342108cf2d77bca7d9b3730837cc14788361e9eca32689afacc36"
 EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = T102_BLOCKED_CANDIDATES
 LOCATE_REQUEST_BUILDER_IDS = {
     "rust-observed-e07fce825be9d33278e1",
