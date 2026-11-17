@@ -1449,6 +1449,7 @@ class ControlledTlsPeerTest {
                         + STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.size()
                         + STRUCTURE_MEMBER_VALUE_FIXTURES.size() + PROFILE_INFORMATION_CASE_IDS.size()
                         + SERVER_INFORMATION_CASE_IDS.size() + 7 + booleanFieldCaseIds.size()
+                        + 1 // KMIP 2.1 §4.53 Rotate Name Type member case.
                         // Four scalar header cases are already included by the baseline report groups.
                         + scalarMessageFieldCaseIds(report.path("events")).size() - 4,
                 report.path("case_ids").size());
@@ -3767,6 +3768,7 @@ class ControlledTlsPeerTest {
         OPERATION_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         SCALAR_OPERATION_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         STRUCTURE_MEMBER_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
+        caseIds.add(LocalCatalogRouteChecks.ROTATE_NAME_TYPE_CASE_ID);
         STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         STRUCTURE_MEMBER_VALUE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         caseIds.add("test-norm-payload-client-add-attribute-request-20-002");
