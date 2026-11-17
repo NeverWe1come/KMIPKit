@@ -202,3 +202,12 @@ controlled peer verifies the request tree, signer lifecycle, placeholder
 mapping, typed results, and final state. This validates KMIP request/response
 shape and lifecycle only; the fixture does not validate a real certificate or
 signature.
+
+The two-item Get/Get Attribute List batch fixture also checks Batch Error
+Continuation Option Continue. It correlates both results by Unique Batch Item
+ID, verifies the failed Get result through the typed accessor with no Response
+Payload, and checks the successful Get Attribute List through both its typed
+fields and generic TTLV payload. The controlled response includes the fixture
+key identifier and the Cryptographic Algorithm and Cryptographic Length
+references; this validates response shape and accessors, not external KMS
+behavior.

@@ -394,3 +394,14 @@ passed; the normative inventory passed 27/27; catalog `--check` passed; and
 CTest passed 7/7. The peer validates protocol shape and lifecycle, not
 certificate or signature cryptography. Other C and cross-language route cells
 remain pending.
+
+### C Continue response accessors
+
+For FR-003 and FR-005, the C Continue fixture invokes the typed Get result
+accessor for its failed Get, verifies that the Response Payload is omitted,
+and reads the successful Get Attribute List through typed and TTLV accessors.
+The controlled response and result are checked for both protocol versions and
+six encoding/transport combinations under OASIS KMIP v2.0/v2.1 §§6.1.19,
+6.1.21, 8.2–8.6, and 9.5–9.7. This closes the response-accessor slice for
+that fixture; four local Continue-option constructor cells and the wider
+matrix remain pending.

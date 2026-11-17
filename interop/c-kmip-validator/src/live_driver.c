@@ -904,9 +904,9 @@ static bool get_response_matches_created_key(
 
 static bool failed_get_response_accessors_match(
     kmipkit_client_batch_item_response_t *response_item, int32_t *out_status) {
-    /* OASIS KMIP v2.0/v2.1 §§8.4–8.6, 9.5–9.7, and 11.5: a failed Get
-     * response omits its Response Payload under CONTINUE and STOP; STOP also
-     * prevents processing later items. */
+    /* OASIS KMIP v2.0/v2.1 §§6.1.19, 8.2–8.6, 9.5–9.7, and 11.5: a failed
+     * Get omits its Response Payload; Continue may process later items, while
+     * STOP ends the batch. */
     kmipkit_client_batch_item_metadata_v1_t metadata = {
         .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v1_t),
         .abi_version = 1
@@ -8134,13 +8134,24 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                 *response_slot, &metadata);
             if (status == 0) status = kmipkit_client_batch_item_response_unique_batch_item_id(
                 *response_slot, &id_present, &id);
-            if (status == 0 && (continue_after_failure_workflow ||
-                                stop_on_first_failure_workflow) && index == 0) {
-                bool response_accessors_valid = failed_get_response_accessors_match(
-                    *response_slot, &status);
-                if (!response_accessors_valid && status == 0) {
-                    status = KMIPKIT_ERROR_INVALID_INPUT;
+            if (status == 0 && !get_usage_allocation_identifier_variants_workflow &&
+                metadata.operation == KMIPKIT_ENUMERATION_OPERATION_GET) {
+                bool response_valid = false;
+                if (metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_OPERATION_FAILED &&
+                    (continue_after_failure_workflow || stop_on_first_failure_workflow)) {
+                    response_valid = failed_get_response_accessors_match(*response_slot, &status);
+                } else if (metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
+                    response_valid = get_response_matches_created_key(
+                        *response_slot, &expected_allocation_identifier, &status);
                 }
+                if (!response_valid && status == 0) status = KMIPKIT_ERROR_INVALID_INPUT;
+            }
+            if (status == 0 && !get_usage_allocation_identifier_variants_workflow &&
+                metadata.operation == KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTE_LIST &&
+                metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
+                bool response_valid = get_attribute_list_response_matches_key(
+                    *response_slot, &expected_allocation_identifier, &status);
+                if (!response_valid && status == 0) status = KMIPKIT_ERROR_INVALID_INPUT;
             }
             if (status != 0 || !id_present || !id.data) break;
             if (get_usage_allocation_identifier_variants_workflow) {
