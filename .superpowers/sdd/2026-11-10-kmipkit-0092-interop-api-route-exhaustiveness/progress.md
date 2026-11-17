@@ -586,6 +586,28 @@ branches, and the common CI therefore reports a planned matrix only.
   CI runs.
 - Detailed commands for the previous synchronization are recorded in the
   Java route expansion evidence file.
+
+## 2026-11-17 Right Usage Limits stack synchronized with Client Correlation Value
+
+- Synchronized #217 with #216 head `2070532faa2917c261d079bfe37b027e15fe5477`,
+  while retaining the six commits already present on the remote #217 branch for
+  Usage Limits and Right Usage Limits. The route-matrix parent is #187 head
+  `8bf6631e3b4a4da3bd9f4974e10fa81e0a083673`.
+- The first combined test run found the case-count assertion omitted the single
+  Right Usage Limits case (1,494 expected, 1,495 reported). Adding its explicit
+  count made the focused controlled-peer test pass. The full Java suite passes
+  57/57 tests with no failures, errors, or skips; all 68 shared route-capability
+  tests and 33 traceability tests pass; `route_capabilities.py --check` reports
+  1,507 routes.
+- Selected-scope validation accepts 27,396/27,396 cells with zero failed cells.
+  The generated ledger records 71,641 planned, 27,396 executed, and 44,245
+  pending cells across 1,203 pending case IDs; comparison passes. Artifact
+  commit `12496d646d11d4069b58bcc88fc76cc619211ec6`, SHA-256
+  `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+- This is selected local-model evidence. The Java matrix is incomplete and the
+  PR remains WIP pending exact-head CI.
+- Verification commands are recorded in
+  `specs/092-interop-api-route-exhaustiveness/java-route-expansion-evidence.md`.
 ## 2026-11-17 Java KMIP 2.0/2.1 Response Header Client Correlation Value
 
 - OASIS KMIP 2.0/2.1 §8.5 defines Client Correlation Value as an optional

@@ -2865,3 +2865,51 @@ The run uses pinned artifact commit
 `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`, and
 the parent worktree Maven repository with its matching generated provenance
 manifest.
+
+## Right Usage Limits stack synchronized with Client Correlation Value — 2026-11-17
+
+PR #217 was updated with #216 head
+`2070532faa2917c261d079bfe37b027e15fe5477`, while retaining the six commits
+already present on its remote branch for Usage Limits and Right Usage Limits.
+The route-matrix parent is #187 head
+`8bf6631e3b4a4da3bd9f4974e10fa81e0a083673`. The combined controlled-peer
+fixture covers the Client Correlation Value response-header routes and retains
+the Usage Limits, Right Usage Limits, Endpoint Role, and inherited message
+route evidence.
+
+The focused controlled-peer test passes (1/1). The full Java suite passes
+57/57 tests without failures, errors, or skips. All 68 shared route-capability
+tests and all 33 traceability tests pass, and the route generator check reports
+1,507 routes. Selected-scope validation accepts 27,396/27,396 cells with zero
+failures. The generated ledger records 71,641 planned, 27,396 executed, and
+44,245 pending cells across 1,203 pending case IDs; ledger comparison passes.
+This is local-model evidence, not vendor interoperability or full matrix
+completion. PR #217 remains WIP pending exact-head CI.
+
+The pinned artifact commit is
+`12496d646d11d4069b58bcc88fc76cc619211ec6`, SHA-256
+`504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test \
+  --tests org.kmipkit.validator.ControlledTlsPeerTest.controlledQueryProducesPerRouteEvidenceForBothProtocolVersions \
+  --rerun-tasks
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks
+python3 -m unittest interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+python3 -m unittest tools.normative_catalog.tests.test_feature_traceability \
+  scripts.tests.test_requirement_traceability
+python3 interop/shared/tools/validate_route_evidence.py \
+  --selected-scope --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+git diff --check
+```

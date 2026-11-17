@@ -1678,6 +1678,7 @@ class ControlledTlsPeerTest {
                         + STRUCTURE_MEMBER_VALUE_FIXTURES.size() + PROFILE_INFORMATION_CASE_IDS.size()
                         + SERVER_INFORMATION_CASE_IDS.size() + USAGE_LIMITS_CASE_IDS.size() + 9
                         + booleanFieldCaseIds.size()
+                        + 1 // KMIP 2.0/2.1 §7.28/7.34 Right Usage Limits member case.
                         + 1 // KMIP 2.1 §4.53 Rotate Name Type member case.
                         + 1 // KMIP 2.1 §4.53 Rotate Name Value member case.
                         + 1 // KMIP 2.0/2.1 §8.2 Batch Order Option message-field case.
