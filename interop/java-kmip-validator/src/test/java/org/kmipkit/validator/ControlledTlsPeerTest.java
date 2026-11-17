@@ -1617,7 +1617,7 @@ class ControlledTlsPeerTest {
                         + 11 + itemTypeValueCaseIds.size() + STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size()
                         + STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.size()
                         + STRUCTURE_MEMBER_VALUE_FIXTURES.size() + PROFILE_INFORMATION_CASE_IDS.size()
-                        + SERVER_INFORMATION_CASE_IDS.size() + 7 + booleanFieldCaseIds.size()
+                        + SERVER_INFORMATION_CASE_IDS.size() + 8 + booleanFieldCaseIds.size()
                         + 1 // KMIP 2.1 §4.53 Rotate Name Type member case.
                         + 1 // KMIP 2.1 §4.53 Rotate Name Value member case.
                         + 1 // KMIP 2.0/2.1 §8.2 Batch Order Option message-field case.
@@ -3926,6 +3926,7 @@ class ControlledTlsPeerTest {
         genericBitmaskFixtures().stream().map(BitmaskFixture::caseId).distinct().forEach(caseIds::add);
         genericDataTypeFixtures().forEach(fixture -> caseIds.add(fixture.caseId()));
         caseIds.add(RESPONSE_BATCH_ITEM_CASE_ID);
+        caseIds.add(RESPONSE_HEADER_ATTESTATION_TYPE.caseId());
         caseIds.add("test-norm-message-field-message-field-8-5-batch-count");
         caseIds.add("test-norm-message-field-message-field-9-5-batch-count");
         caseIds.add("test-norm-message-field-message-field-8-6-batch-item");
