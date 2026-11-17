@@ -273,10 +273,12 @@ impl ProxyConfig {
 
 #[derive(Parser, Debug)]
 #[command(name = "kmipkit-proxy")]
-#[command(
-    about = "Zero-DB Stateless KMIP Proxy Bridge for AWS, Azure, Google Cloud, and Oracle OCI"
-)]
+#[command(about = "Zero-DB Stateless KMIP Proxy Bridge for cloud key management providers")]
 pub struct CliArgs {
+    /// Print the cloud providers compiled into this binary and exit.
+    #[arg(long)]
+    pub list_providers: bool,
+
     /// Path to TOML configuration file
     #[arg(short, long)]
     pub config: Option<PathBuf>,
@@ -285,7 +287,7 @@ pub struct CliArgs {
     #[arg(short, long)]
     pub listen: Option<SocketAddr>,
 
-    /// Backend cloud provider (aws, azure, gcp, oci, mock)
+    /// Backend cloud provider (select --list-providers to list compiled providers)
     #[arg(short, long)]
     pub provider: Option<String>,
 

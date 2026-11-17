@@ -5,11 +5,17 @@ import org.gradle.api.tasks.bundling.Jar
 
 plugins {
     `java-library`
+    `maven-publish`
 }
 
 group = "org.kmipkit"
 version = "1.0.0"
 description = "KMIPKit Java 17 bindings, version 1.0.0 (unreleased)"
+
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
 
 repositories {
     mavenCentral()

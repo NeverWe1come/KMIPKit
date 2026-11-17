@@ -21,6 +21,48 @@ pub mod otc;
 pub mod scaleway;
 pub mod vault;
 
+/// Returns the cloud providers compiled into this proxy binary in stable order.
+#[must_use]
+pub fn compiled_provider_names() -> Vec<&'static str> {
+    // Feature-gated pushes leave this mutable only in provider-free builds.
+    #[allow(unused_mut)]
+    let mut providers = Vec::new();
+    #[cfg(feature = "alibaba")]
+    providers.push("alibaba");
+    #[cfg(feature = "aws")]
+    providers.push("aws");
+    #[cfg(feature = "azure")]
+    providers.push("azure");
+    #[cfg(feature = "gcp")]
+    providers.push("gcp");
+    #[cfg(feature = "ibm")]
+    providers.push("ibm");
+    #[cfg(feature = "infisical")]
+    providers.push("infisical");
+    #[cfg(feature = "oci")]
+    providers.push("oci");
+    #[cfg(feature = "otc")]
+    providers.push("otc");
+    #[cfg(feature = "scaleway")]
+    providers.push("scaleway");
+    #[cfg(feature = "vault")]
+    providers.push("vault");
+    providers
+}
+
+/// Returns whether a provider name can be selected by this build.
+#[must_use]
+pub fn is_provider_compiled(provider_name: &str) -> bool {
+    if provider_name.eq_ignore_ascii_case("mock") {
+        return true;
+    }
+    let compiled = compiled_provider_names();
+    compiled
+        .iter()
+        .any(|name| provider_name.eq_ignore_ascii_case(name))
+        || (provider_name.eq_ignore_ascii_case("openbao") && compiled.contains(&"vault"))
+}
+
 /// Normalized map of cloud tags/labels.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct CloudTagMap(pub BTreeMap<String, String>);
@@ -485,7 +527,14 @@ impl CloudKmsProvider for InMemoryMockProvider {
 
 /// Factory function to create the active CloudKmsProvider based on configuration.
 pub fn create_provider(config: &BackendConfig) -> Result<Arc<dyn CloudKmsProvider>, ProxyError> {
-    match config.provider.to_ascii_lowercase().as_str() {
+    let provider_name = config.provider.to_ascii_lowercase();
+    if !is_provider_compiled(&provider_name) {
+        return Err(ProxyError::ConfigError(format!(
+            "provider '{}' is not compiled into this binary",
+            config.provider
+        )));
+    }
+    match provider_name.as_str() {
         "mock" => {
             let kek = if let Some(ref hex) = config.master_kek_hex {
                 let bytes = hex::decode(hex)
@@ -520,6 +569,25 @@ pub fn create_provider(config: &BackendConfig) -> Result<Arc<dyn CloudKmsProvide
         other => Err(ProxyError::ConfigError(format!(
             "unknown provider: {other}"
         ))),
+    }
+}
+
+#[cfg(test)]
+mod provider_selection_tests {
+    use super::{compiled_provider_names, is_provider_compiled};
+
+    #[test]
+    fn provider_selection_is_case_insensitive_and_respects_features() {
+        assert!(is_provider_compiled("MOCK"));
+        assert!(!is_provider_compiled("unknown"));
+        assert_eq!(
+            is_provider_compiled("aws"),
+            compiled_provider_names().contains(&"aws")
+        );
+        assert_eq!(
+            is_provider_compiled("openbao"),
+            compiled_provider_names().contains(&"vault")
+        );
     }
 }
 
