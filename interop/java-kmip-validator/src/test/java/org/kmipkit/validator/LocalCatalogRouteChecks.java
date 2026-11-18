@@ -628,7 +628,7 @@ final class LocalCatalogRouteChecks {
             JsonNode requires = testCase.path("requires");
             String fieldName = requires.path("field_name").asText();
             if (!"operation_payload_field".equals(requires.path("target_kind").asText())
-                    || !Set.of("Unique Identifier", "Correlation Value").contains(fieldName)
+                    || !Set.of("Unique Identifier", "Correlation Value", "Object Type").contains(fieldName)
                     || !requires.path("operation_id").asText().startsWith("KMIPKIT-ELEM-OP-C2S-")
                     || !"local_model".equals(testCase.path("execution").path("mode").asText())
                     || !applies(testCase, version)) continue;
@@ -664,7 +664,7 @@ final class LocalCatalogRouteChecks {
             String fieldName = requires.path("field_name").asText();
             String operationId = requires.path("operation_id").asText();
             if (!"operation_payload_field".equals(requires.path("target_kind").asText())
-                    || !Set.of("Unique Identifier", "Correlation Value").contains(fieldName)
+                    || !Set.of("Unique Identifier", "Correlation Value", "Object Type").contains(fieldName)
                     || !operationId.startsWith("KMIPKIT-ELEM-OP-C2S-")) {
                 throw new IllegalArgumentException("Selected case is not a supported client scalar payload: "
                         + caseId);
@@ -674,18 +674,25 @@ final class LocalCatalogRouteChecks {
             TtlvItemType itemType = switch (fieldName) {
                 case "Unique Identifier" -> TtlvItemType.TextString;
                 case "Correlation Value" -> TtlvItemType.ByteString;
+                case "Object Type" -> TtlvItemType.Enumeration;
                 default -> throw new IllegalArgumentException("Unsupported client scalar payload field: "
                         + fieldName);
             };
-            byte[] fieldValue = switch (fieldName) {
-                case "Unique Identifier" -> "kmipkit-route-identifier".getBytes(StandardCharsets.US_ASCII);
-                case "Correlation Value" -> "kmipkit-route-correlation".getBytes(StandardCharsets.US_ASCII);
-                default -> throw new IllegalArgumentException("Unsupported client scalar payload field: "
-                        + fieldName);
+            long numericValue = "Object Type".equals(fieldName)
+                    ? enumValue(catalog, "OBJECT-TYPE", "Symmetric Key") : 0;
+            byte[] fieldValue = switch (itemType) {
+                case TextString -> "kmipkit-route-identifier".getBytes(StandardCharsets.US_ASCII);
+                case ByteString -> "kmipkit-route-correlation".getBytes(StandardCharsets.US_ASCII);
+                case Enumeration -> ByteBuffer.allocate(Integer.BYTES).putInt(Math.toIntExact(numericValue)).array();
+                default -> throw new IllegalArgumentException("Unsupported client scalar payload type: " + itemType);
             };
             byte[] wire = scalarWire(tagCode, itemType.code(), fieldValue);
-            TtlvValue value = itemType == TtlvItemType.TextString
-                    ? TtlvValue.TextString(fieldValue, limits) : TtlvValue.ByteString(fieldValue, limits);
+            TtlvValue value = switch (itemType) {
+                case TextString -> TtlvValue.TextString(fieldValue, limits);
+                case ByteString -> TtlvValue.ByteString(fieldValue, limits);
+                case Enumeration -> TtlvValue.Enumeration(numericValue);
+                default -> throw new IllegalArgumentException("Unsupported client scalar payload type: " + itemType);
+            };
             try (value;
                     RawTag raw = RawTag.fromRaw(tagCode);
                     Tag tag = raw.checked();
@@ -694,14 +701,14 @@ final class LocalCatalogRouteChecks {
                     var viewedTag = view.tag();
                     var viewedValue = view.value()) {
                 assertEquals(tagCode, viewedTag.raw());
-                assertScalarMessageFieldValue(viewedValue, itemType, fieldValue, 0);
+                assertScalarMessageFieldValue(viewedValue, itemType, fieldValue, numericValue);
             }
             try (TtlvItem decoded = TtlvCodec.decode(wire);
                     var view = decoded.view();
                     var decodedTag = view.tag();
                     var decodedValue = view.value()) {
                 assertEquals(tagCode, decodedTag.raw());
-                assertScalarMessageFieldValue(decodedValue, itemType, fieldValue, 0);
+                assertScalarMessageFieldValue(decodedValue, itemType, fieldValue, numericValue);
             }
             for (String evidenceTargetId : List.of(targetId, operationId)) {
                 emitMissingGenericRoute(recordedRoutes, sink, caseId, evidenceTargetId, version,
