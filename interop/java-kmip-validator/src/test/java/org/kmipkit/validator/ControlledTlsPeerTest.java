@@ -2343,7 +2343,21 @@ class ControlledTlsPeerTest {
                 {"test-norm-payload-client-re-key-request-20-002",
                         "KMIPKIT-PAYLOAD-CLIENT-RE-KEY-REQUEST-20-002", "KMIPKIT-ELEM-OP-C2S-RE-KEY"},
                 {"test-norm-payload-client-login-request-20-002",
-                        "KMIPKIT-PAYLOAD-CLIENT-LOGIN-REQUEST-20-002", "KMIPKIT-ELEM-OP-C2S-LOGIN"}
+                        "KMIPKIT-PAYLOAD-CLIENT-LOGIN-REQUEST-20-002", "KMIPKIT-ELEM-OP-C2S-LOGIN"},
+                {"test-norm-payload-client-certify-request-20-002",
+                        "KMIPKIT-PAYLOAD-CLIENT-CERTIFY-REQUEST-20-002", "KMIPKIT-ELEM-OP-C2S-CERTIFY"},
+                {"test-norm-payload-client-certify-request-20-003",
+                        "KMIPKIT-PAYLOAD-CLIENT-CERTIFY-REQUEST-20-003", "KMIPKIT-ELEM-OP-C2S-CERTIFY"},
+                {"test-norm-payload-client-export-request-20-003",
+                        "KMIPKIT-PAYLOAD-CLIENT-EXPORT-REQUEST-20-003", "KMIPKIT-ELEM-OP-C2S-EXPORT"},
+                {"test-norm-payload-client-query-request-20-001",
+                        "KMIPKIT-PAYLOAD-CLIENT-QUERY-REQUEST-20-001", "KMIPKIT-ELEM-OP-C2S-QUERY"},
+                {"test-norm-payload-client-decrypt-request-20-008",
+                        "KMIPKIT-PAYLOAD-CLIENT-DECRYPT-REQUEST-20-008", "KMIPKIT-ELEM-OP-C2S-DECRYPT"},
+                {"test-norm-payload-client-decrypt-request-20-009",
+                        "KMIPKIT-PAYLOAD-CLIENT-DECRYPT-REQUEST-20-009", "KMIPKIT-ELEM-OP-C2S-DECRYPT"},
+                {"test-norm-payload-client-sign-request-20-004",
+                        "KMIPKIT-PAYLOAD-CLIENT-SIGN-REQUEST-20-004", "KMIPKIT-ELEM-OP-C2S-SIGN"}
         };
         for (String[] payload : additionalClientPayloadCases) {
             int routeEventCount = 0;
