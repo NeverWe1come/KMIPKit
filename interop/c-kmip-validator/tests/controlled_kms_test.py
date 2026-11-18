@@ -562,7 +562,8 @@ def main() -> int:
               1, 11, 20, 1, 20, 1, 20, 1, 20, 1, 18, 20, 19, 20)
     )
     expected_cases = (
-        ("test-op-locate", "test-op-query", "test-op-log", "test-op-login", "test-op-interop")
+        ("test-op-locate", "test-op-query", "test-op-log", "test-op-login", "test-op-logout",
+         "test-op-interop")
         if protocol_version == "2.0"
         else ("test-op-discover-versions", "test-op-ping", "test-op-query", "test-op-log",
               "test-op-locate", "test-op-login", "test-op-logout", "test-op-interop", "test-op-get", "test-op-get-attributes",
@@ -580,8 +581,8 @@ def main() -> int:
     expected_operations += (1, 13, 19, 20)
     expected_operations += (1, 49, 19, 20)
     expected_operations += (1, 17, 19, 20)
+    expected_operations += (45, 46)
     if protocol_version == "2.1":
-        expected_operations += (45, 46)
         expected_operations += (55, 54)
     expected_operations += (1, 13, 15, 19, 20)
     expected_operations += (1, 13, 14, 19, 20)
@@ -1575,8 +1576,8 @@ def main() -> int:
             if login["status"] != "passed":
                 raise AssertionError("KMIP 2.0 Login must execute its typed response route")
             logout = next(case for case in result["cases"] if case["case_id"] == "test-op-logout")
-            if logout["status"] != "not_run" or "cannot obtain a server-issued Ticket" not in logout.get("diagnostic", ""):
-                raise AssertionError("KMIP 2.0 Logout must report the missing Login Ticket prerequisite")
+            if logout["status"] != "passed":
+                raise AssertionError("KMIP 2.0 Logout must use its server-issued Ticket")
         if run.returncode != 0:
             failed_cases = [
                 (case["case_id"], case["status"])
