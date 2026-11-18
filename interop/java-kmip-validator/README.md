@@ -384,3 +384,11 @@ generic fixture checks the assigned 24-bit tag and an Integer value; it does
 not claim the value is semantically valid for the tag. The selected report now
 validates 30,580/30,580 cells; 41,061 of 71,641 remain pending across 1,114
 case IDs.
+
+Sixty catalogued operation-target cases now exercise the `Operation` Enumeration
+as a generic TTLV Item through `TtlvItem.create`, `TtlvItem.view`, and
+`TtlvCodec.decode` for each applicable KMIP version (345 version-specific
+cells; §§8.2 and 11.36). This proves local generic TTLV behavior only; it does
+not prove operation payload validity or server behavior. The selected report
+validates 30,925/30,925 cells; 40,716 of 71,641 remain pending across 1,108
+case IDs.
