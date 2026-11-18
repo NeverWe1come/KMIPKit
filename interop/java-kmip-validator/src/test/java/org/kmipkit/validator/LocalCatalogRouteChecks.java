@@ -793,9 +793,7 @@ final class LocalCatalogRouteChecks {
                 default -> 0;
             };
             byte[] fieldValue = switch (itemType) {
-                // The Mersenne prime 2^127 - 1 exceeds 2^64 for a 64-bit split value (§2.8).
-                case BigInteger -> new byte[] {0x7f, -1, -1, -1, -1, -1, -1, -1,
-                        -1, -1, -1, -1, -1, -1, -1, -1};
+                case BigInteger -> splitKeyPrimeFieldFixture();
                 case TextString -> ("Private Key Unique Identifier".equals(fieldName)
                         ? "kmipkit-route-private-key-id" : "kmipkit-route-identifier")
                         .getBytes(StandardCharsets.US_ASCII);
@@ -2386,7 +2384,7 @@ final class LocalCatalogRouteChecks {
         int splitKeyMethodTag = tagCodeNamed(catalog, "Split Key Method", version);
         int primeFieldSizeTag = tagCodeNamed(catalog, "Prime Field Size", version);
         byte[] keyBlockWire = rawKeyBlockWire(catalog, version);
-        byte[] primeFieldSize = new byte[] {1, 1};
+        byte[] primeFieldSize = splitKeyPrimeFieldFixture();
         long xorMethod = enumValue(catalog, "SPLIT-KEY-METHOD", "XOR");
         long primeFieldMethod = enumValue(catalog, "SPLIT-KEY-METHOD", "Polynomial Sharing Prime Field");
 
@@ -2451,6 +2449,12 @@ final class LocalCatalogRouteChecks {
         if (!emitted.equals(selectedCaseIds)) {
             throw new IllegalArgumentException("Selected Split Key member targets were not executed for " + version);
         }
+    }
+
+    private static byte[] splitKeyPrimeFieldFixture() {
+        // 2^127 - 1 exceeds 2^L for both 32-bit and 64-bit synthetic values (§2.8).
+        return new byte[] {0x7f, -1, -1, -1, -1, -1, -1, -1,
+                -1, -1, -1, -1, -1, -1, -1, -1};
     }
 
     private static void assertSplitKeyMemberObject(ManagedObject object, int objectType, long method,
