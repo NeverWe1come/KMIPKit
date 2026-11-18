@@ -226,6 +226,43 @@ class LocalCatalogRouteChecksTest {
     }
 
     @Test
+    void executesDateTimeAttributesThroughGenericTtlvRoutes() throws Exception {
+        JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
+        Set<String> caseIds = Set.of(
+                "test-attr-activation-date",
+                "test-attr-archive-date",
+                "test-attr-compromise-date",
+                "test-attr-compromise-occurrence-date",
+                "test-attr-deactivation-date",
+                "test-attr-destroy-date",
+                "test-attr-initial-date",
+                "test-attr-last-change-date",
+                "test-attr-original-creation-date",
+                "test-attr-process-start-date",
+                "test-attr-protect-stop-date",
+                "test-attr-rotate-date");
+        List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
+
+        for (String version : List.of("2.0", "2.1")) {
+            LocalCatalogRouteChecks.executeDateTimeAttributeValues(catalog, version, caseIds, invocations::add);
+        }
+
+        assertEquals(caseIds, invocations.stream().map(LocalCatalogRouteChecks.Invocation::caseId)
+                .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(Set.of(
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.datetime",
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode"),
+                invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId)
+                        .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(Set.of("construct", "decode"), invocations.stream()
+                .map(LocalCatalogRouteChecks.Invocation::action)
+                .collect(java.util.stream.Collectors.toSet()));
+        assertTrue(invocations.stream().allMatch(invocation -> invocation.wire().length == 16));
+    }
+
+    @Test
     void executesRandomIvThroughTheTypedCryptographicParametersBuilder() throws Exception {
         JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
         String caseId = "test-norm-structure-member-structure-member-4-16-random-iv";
