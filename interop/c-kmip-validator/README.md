@@ -139,8 +139,8 @@ The `*.gaps.json` sidecar identifies every unexecuted matrix obligation rather
 than misclassifying it as an unavailable library route. Other sidecars retain
 installed-artifact availability checks and sanitized controlled-peer outcomes.
 The evidence JSON passes the shared schema independently of completeness.
-The latest full local C matrix run (`c-route-065f8993-d406-4f81-a038-294093802680`)
-has 66,736 expected cells, 43,009 invoked, zero failed, and 23,727 pending.
+The latest full local C matrix run (`c-route-b0bf73df-13f0-4820-b1b5-e418b204e711`)
+has 66,736 expected cells, 43,016 invoked, zero failed, and 23,720 pending.
 The MAC and Sign response TTLV accessors and the Continue batch-option
 constructor contribute four local cells each across KMIP 2.0/2.1. The
 Query Async Requests correlation builder contributes two KMIP 2.1 model cells.
@@ -335,10 +335,18 @@ constructor/encoding cells across the operation, normative payload, and
 KMIP 2.0 version-boundary cases. The operation's live request/response route
 and response accessor remain pending.
 
-For the full run above, the prior 43,004-event Import report was compared by
-matrix cell identity: all prior cells remain, and the report adds exactly five
-empty Query Asynchronous Requests constructor/encoding cells. The unchanged
-catalog, route-manifest, installed-artifact, and library-commit fingerprints
-match the baseline. CTest passes 7/7, including 189 route-matrix contract tests
-and both controlled TLS peers. The global route-completeness gate remains open
-for the other 23,727 pending cells.
+The C `QueryAsyncRequestsRequest::with_operations` model route also constructs
+and encodes two Operation filter entries (Create and Get), checking the exact
+repeated Enumeration tree under KMIP 2.1 §§6.1.41 and 7.25. It covers the
+Operations structure, its Operation member, the Operations tag, and the
+catalogued KMIP 2.1 request field, adding seven applicable local cells.
+
+For the full run above, the prior 43,009-event report was compared by matrix
+cell identity: all prior cells remain and the report adds exactly seven
+Operations-filter constructor cells. Across the empty-payload and Operations
+filter additions, all 43,004 cells from the Import baseline remain and 12
+local cells were added. The unchanged catalog, route-manifest,
+installed-artifact, and library-commit fingerprints match the baseline. CTest
+passes 7/7, including 190 route-matrix contract tests and both controlled TLS
+peers. The global route-completeness gate remains open for the other 23,720
+pending cells.
