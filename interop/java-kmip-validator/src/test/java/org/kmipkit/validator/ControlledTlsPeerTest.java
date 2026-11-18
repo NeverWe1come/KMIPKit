@@ -1224,8 +1224,8 @@ class ControlledTlsPeerTest {
             }
             typedKeyMaterialRouteEventCount += typedKeyMaterialInvocations.size();
             List<LocalCatalogRouteChecks.Invocation> certificateFactoryInvocations = new ArrayList<>();
-            LocalCatalogRouteChecks.executeCertificateFactoryTargets(readRouteEvidenceCatalog(), protocolVersion,
-                    LocalCatalogRouteChecks.CERTIFICATE_MANAGED_OBJECT_CASE_IDS,
+            LocalCatalogRouteChecks.executeManagedObjectFactoryTargets(readRouteEvidenceCatalog(), protocolVersion,
+                    LocalCatalogRouteChecks.TYPED_MANAGED_OBJECT_FACTORY_CASE_IDS,
                     certificateFactoryInvocations::add);
             for (LocalCatalogRouteChecks.Invocation invocation : certificateFactoryInvocations) {
                 appendLocalCatalogInvocation(events, protocolVersion, invocation);
@@ -1953,7 +1953,7 @@ class ControlledTlsPeerTest {
                         + 1 // KMIP 2.0/2.1 §8.2 Attestation Capable Indicator message-field case.
                         + 1 // KMIP 2.0/2.1 §5.1 Attributes generic Structure routes.
                         + LocalCatalogRouteChecks.TRANSPARENT_KEY_MATERIAL_CASE_IDS.size()
-                        + LocalCatalogRouteChecks.CERTIFICATE_MANAGED_OBJECT_CASE_IDS.stream()
+                        + LocalCatalogRouteChecks.TYPED_MANAGED_OBJECT_FACTORY_CASE_IDS.stream()
                                 .filter(caseId -> !genericTagCaseIds.contains(caseId)).count()
                         // Transparent Key Material members exercise both typed model constructors.
                         // Four scalar header cases are already included by the baseline report groups.
@@ -4313,7 +4313,7 @@ class ControlledTlsPeerTest {
         caseIds.add("test-norm-operation-structure-operation-structure-7-2-asynchronous-request");
         caseIds.add("test-norm-operation-structure-operation-structure-7-13-extension-information");
         LocalCatalogRouteChecks.TRANSPARENT_KEY_MATERIAL_CASE_IDS.forEach(caseIds::add);
-        LocalCatalogRouteChecks.CERTIFICATE_MANAGED_OBJECT_CASE_IDS.stream()
+        LocalCatalogRouteChecks.TYPED_MANAGED_OBJECT_FACTORY_CASE_IDS.stream()
                 .filter(caseId -> !genericTagCaseIds.contains(caseId)).forEach(caseIds::add);
         caseIds.add(OBJECT_TYPE_MEMBER_CASE_ID);
         caseIds.add(CONSTRAINT_CASE_ID);
