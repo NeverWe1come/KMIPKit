@@ -2745,7 +2745,7 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertIn('kmipkit_ttlv_value_enumeration', result['invoked_symbols'])
 
     def test_credential_type_case_executes_the_credential_type_constructor(self):
-        """OASIS KMIP 2.0/2.1 §11.11: preserve Credential Type values through the typed C constructor."""
+        """OASIS KMIP 2.0/2.1 §§9.11 and 11.11: preserve Credential Type through the typed C model."""
         from artifact_support import ROOT
         catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
         case = next(item for item in catalog['test_cases']
@@ -2755,6 +2755,9 @@ class RouteMatrixTests(unittest.TestCase):
 
         self.assertIn('kmipkit_credential_type_from_raw', result['invoked_symbols'])
         self.assertEqual(result['credential_type_values_checked'], 7)
+        self.assertIn('kmipkit_credential_from_ttlv', result['invoked_symbols'])
+        self.assertIn('kmipkit_credential_into_ttlv', result['invoked_symbols'])
+        self.assertEqual(result['credential_model_roundtrips'], 7)
         self.assertTrue(result['unknown_value_preserved'])
 
     def test_bitmask_case_executes_every_flag_combination(self):
