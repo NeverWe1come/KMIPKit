@@ -341,3 +341,20 @@ artifact. This is part of the FR-006 artifact provenance check.
 - The selected report validates 40,101/40,101 cells with zero failures. The
   ledger records 71,641 planned, 40,101 executed, and 31,540 pending cells.
   Full matrix closure remains open under FR-002/FR-003/FR-009.
+
+### Java asynchronous Cancellation Result generic TTLV routes — 2026-11-18
+
+- **FR-003/FR-009:** The five asynchronous Cancel result scenarios now use
+  their catalogued Cancellation Result enum target and value with the
+  Cancellation Result tag, then execute generic Item construction, view, and
+  decode for KMIP 2.0 and 2.1. This is local generic TTLV evidence, not
+  asynchronous network-lifecycle evidence. References: OASIS KMIP 2.0 §6.1.5
+  Table 162, §11.7, §11.56; KMIP 2.1 §6.1.5 Table 177, §11.7, §11.56.
+- Red `af7765d94` requires every result scenario/version to provide the three
+  generic TTLV route events and fails on the missing `TtlvItem.create` event.
+  Green `bb7b4d7b2` builds and round-trips each source-catalogued value.
+- The selected report validates 40,227/40,227 cells with zero failures. The
+  full ledger records 71,641 planned, 40,227 executed, and 31,414 pending
+  cells. Java tests pass 92/92, shared tests 196/196, ledger comparison passes,
+  and the capability audit accepts 1,507 routes. Full matrix closure remains
+  open under FR-002/FR-003/FR-009.

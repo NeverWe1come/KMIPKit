@@ -3873,3 +3873,22 @@ with zero failures; the ledger records 71,641 planned, 40,197 executed, and
 31,444 pending. Java tests pass 92/92, shared tests 196/196, ledger comparison
 passes, and the route capability audit accepts 1,507 routes. The complete Java
 matrix and exact-head CI remain open; the dependent stack stays WIP.
+
+## Java asynchronous Cancellation Result generic TTLV routes — 2026-11-18
+
+The five catalogued asynchronous Cancel result scenarios now resolve the
+Cancellation Result enum target and numeric value from the shared normative
+catalog and construct a generic Enumeration Item using the assigned
+Cancellation Result tag. The installed Java API performs Item creation, Item
+view, and TTLV decode for each value in KMIP 2.0 and 2.1. This proves generic
+local representation only. Normative sources: OASIS KMIP 2.0 §6.1.5 Table 162,
+§11.7, §11.56; KMIP 2.1 §6.1.5 Table 177, §11.7, §11.56.
+
+Red `af7765d94` fails while any scenario/version lacks one of the three local
+TTLV routes. Green `bb7b4d7b2` executes the catalog-driven fixtures and checks
+the exact tag, TTLV type, and value. This adds 30 cells: the selected report
+validates 40,227/40,227 with zero failures, and the ledger records 71,641
+planned, 40,227 executed, and 31,414 pending. The Java suite passes 92/92, the
+shared suite 196/196, ledger comparison passes, and the route capability audit
+accepts 1,507 routes. The full matrix and exact-head CI remain open; the stack
+stays WIP.

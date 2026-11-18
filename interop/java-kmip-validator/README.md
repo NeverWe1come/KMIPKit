@@ -581,3 +581,18 @@ The Java suite passes 92/92, the complete shared suite passes 196/196, the
 ledger matches its reference, and the route capability audit accepts 1,507
 routes. The remaining Java matrix and exact-head CI keep #187 and its
 dependent stack WIP.
+
+### Asynchronous cancellation result TTLV routes — 2026-11-18
+
+The five catalogued Cancel outcome scenarios now build their exact
+Cancellation Result enumeration value using the OASIS Cancellation Result tag,
+then exercise `TtlvItem.create`, `TtlvItem.view`, and `TtlvCodec.decode` in both
+KMIP 2.0 and 2.1. Values and target IDs are read from the normative catalog;
+the fixtures establish generic local representation only, not the asynchronous
+network lifecycle.
+
+This adds 30 selected cells. The report validates 40,227/40,227 selected cells
+with zero failures, while the full Java ledger records 71,641 planned, 40,227
+executed, and 31,414 pending cells. Java tests pass 92/92; the shared suite
+passes 196/196; ledger comparison and the 1,507-route capability audit pass.
+The remaining matrix and exact-head CI keep #187 and its dependent stack WIP.

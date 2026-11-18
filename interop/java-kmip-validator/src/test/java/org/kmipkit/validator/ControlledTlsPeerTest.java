@@ -7119,7 +7119,7 @@ class ControlledTlsPeerTest {
                 null, null, treeHash);
     }
 
-    // OASIS KMIP 2.0/2.1 §6.1.5 and §11.7 define Cancellation Result as an Enumeration member.
+    // OASIS KMIP 2.0 §6.1.5 Table 162, §11.7, §11.56; KMIP 2.1 §6.1.5 Table 177, §11.7, §11.56.
     private static void appendAsyncCancellationEnumerationTtlvRoutes(ArrayNode events, String protocolVersion)
             throws Exception {
         JsonNode catalog = readRouteEvidenceCatalog();
