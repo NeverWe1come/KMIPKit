@@ -139,8 +139,8 @@ The `*.gaps.json` sidecar identifies every unexecuted matrix obligation rather
 than misclassifying it as an unavailable library route. Other sidecars retain
 installed-artifact availability checks and sanitized controlled-peer outcomes.
 The evidence JSON passes the shared schema independently of completeness.
-The latest full local C matrix run (`c-route-72c8514f-60b4-4977-ba17-7e529165dbf9`)
-has 66,736 expected cells, 43,004 invoked, zero failed, and 23,732 pending.
+The latest full local C matrix run (`c-route-065f8993-d406-4f81-a038-294093802680`)
+has 66,736 expected cells, 43,009 invoked, zero failed, and 23,727 pending.
 The MAC and Sign response TTLV accessors and the Continue batch-option
 constructor contribute four local cells each across KMIP 2.0/2.1. The
 Query Async Requests correlation builder contributes two KMIP 2.1 model cells.
@@ -328,9 +328,17 @@ imported object. The route passes all 12 KMIP 2.0/2.1 encoding and transport
 combinations. Neither the object value nor the request body is retained in
 route events or peer checks.
 
-For the full run above, the prior 42,964-event report was compared by matrix
-cell identity: all prior cells remain, and the report adds exactly 40 Import
-route cells. The unchanged catalog, route-manifest, installed-artifact, and
-library-commit fingerprints match the baseline. CTest passes 7/7, including
-187 route-matrix contract tests and both controlled TLS peers. The global
-route-completeness gate remains open for the other 23,732 pending cells.
+The `test-op-query-asynchronous-requests` local model route constructs and
+encodes the valid empty Query Asynchronous Requests payload. KMIP 2.1 §6.1.41
+Table 285 makes both request filters optional. This adds five applicable
+constructor/encoding cells across the operation, normative payload, and
+KMIP 2.0 version-boundary cases. The operation's live request/response route
+and response accessor remain pending.
+
+For the full run above, the prior 43,004-event Import report was compared by
+matrix cell identity: all prior cells remain, and the report adds exactly five
+empty Query Asynchronous Requests constructor/encoding cells. The unchanged
+catalog, route-manifest, installed-artifact, and library-commit fingerprints
+match the baseline. CTest passes 7/7, including 189 route-matrix contract tests
+and both controlled TLS peers. The global route-completeness gate remains open
+for the other 23,727 pending cells.
