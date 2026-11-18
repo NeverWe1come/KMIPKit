@@ -3737,3 +3737,23 @@ On #187, the full Java suite passes 90/90, shared route suites pass 109/109,
 the selected report validates 34,816/34,816 cells with zero failures, the
 ledger matches its reference, and the capability audit accepts 1,507 routes.
 The full ledger has 36,825 pending of 71,641; matrix closure remains open.
+
+## #187 generic Operation routes for KMIP 2.0 version boundaries — 2026-11-18
+
+The six version-boundary cases cover Get Constraints, Ping, Process, Query
+Asynchronous Requests, Set Constraints, and Set Defaults. Each operation is
+introduced in KMIP 2.1 but has a KMIP 2.0 rejection case. The route fixture
+uses the assigned 2.1 Operation enumeration value for local generic TTLV Item
+construction, Item view, and decode in a 2.0 protocol context. It verifies the
+Operation field representation; it does not send an unsupported request or
+claim that the operation is valid in KMIP 2.0 (KMIP 2.0 §6.1; KMIP 2.1
+§§6.1.22, 6.1.36, 6.1.39, 6.1.41, 6.1.52–6.1.53; §§8.2, 11.36).
+
+Red `7288a8643` requires all six cases and fails because the unsupported
+operations had no generic TTLV evidence under KMIP 2.0. Green `2843cdfe3`
+resolves their 2.1 catalog targets for this local fixture. The full Java suite
+passes 91/91; the selected report validates 34,834/34,834 cells with zero
+failures; the generated ledger matches its reference and the capability audit
+accepts all 1,507 routes. The full ledger records 71,641 planned, 34,834
+executed, and 36,807 pending cells. Full closure and exact-head CI remain open;
+#187 stays WIP.

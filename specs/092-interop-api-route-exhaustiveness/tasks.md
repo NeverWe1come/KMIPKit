@@ -369,3 +369,15 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
   34,816/34,816 with zero failures; ledger comparison and the 1,507-route
   capability audit pass. The matrix remains incomplete with 36,825 pending of
   71,641 cells; the stack remains WIP.
+
+## Java generic Operation routes for KMIP 2.0 version boundaries
+
+- Red `7288a8643` adds assertions for the six 2.1-only operations rejected in
+  KMIP 2.0; the focused test fails because no catalogued operation target is
+  selected for the 2.0 cases.
+- Green `2843cdfe3` selects the source-defined 2.1 Operation value for local
+  generic TTLV construction, Item view, and decode while keeping protocol
+  context 2.0. This path does not send unsupported requests.
+- Verification: Java suite 91/91; selected report 34,834/34,834 with zero
+  failures; ledger comparison and the 1,507-route capability audit pass. The
+  full Java matrix has 36,807 pending cells of 71,641; #187 remains WIP.

@@ -2663,9 +2663,15 @@
     "test-s2c-put",
     "test-s2c-query",
     "test-s2c-set-endpoint-role",
-    "test-sign-missing-managed-object-cryptographic-parameters"
+    "test-sign-missing-managed-object-cryptographic-parameters",
+    "test-v20-reject-get-constraints",
+    "test-v20-reject-ping",
+    "test-v20-reject-process",
+    "test-v20-reject-query-asynchronous-requests",
+    "test-v20-reject-set-constraints",
+    "test-v20-reject-set-defaults"
   ],
-  "executed_cells": 34816,
+  "executed_cells": 34834,
   "language": "java",
   "library_commit": "12496d646d11d4069b58bcc88fc76cc619211ec6",
   "pending_case_ids": [
@@ -8049,30 +8055,30 @@
     },
     {
       "case_id": "test-v20-reject-get-constraints",
-      "pending_cells": 15
+      "pending_cells": 12
     },
     {
       "case_id": "test-v20-reject-ping",
-      "pending_cells": 15
+      "pending_cells": 12
     },
     {
       "case_id": "test-v20-reject-process",
-      "pending_cells": 17
+      "pending_cells": 14
     },
     {
       "case_id": "test-v20-reject-query-asynchronous-requests",
-      "pending_cells": 17
+      "pending_cells": 14
     },
     {
       "case_id": "test-v20-reject-set-constraints",
-      "pending_cells": 15
+      "pending_cells": 12
     },
     {
       "case_id": "test-v20-reject-set-defaults",
-      "pending_cells": 15
+      "pending_cells": 12
     }
   ],
-  "pending_cells": 36825,
+  "pending_cells": 36807,
   "pending_reason": "No validated per-cell route execution evidence is recorded for this cell.",
   "pending_reason_code": "route_evidence_not_emitted",
   "planned_cells": 71641,
@@ -8080,8 +8086,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 3616,
-      "pending_cells": 468,
+      "executed_cells": 3622,
+      "pending_cells": 462,
       "protocol_version": "2.0",
       "required_cells": 4084,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item",
@@ -8400,8 +8406,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 3664,
-      "pending_cells": 467,
+      "executed_cells": 3670,
+      "pending_cells": 461,
       "protocol_version": "2.0",
       "required_cells": 4131,
       "route_id": "java.generic-ttlv.ttlv_codec.decode",
@@ -8420,8 +8426,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 3616,
-      "pending_cells": 467,
+      "executed_cells": 3622,
+      "pending_cells": 461,
       "protocol_version": "2.0",
       "required_cells": 4083,
       "route_id": "java.generic-ttlv.ttlv_item.create",
@@ -34651,8 +34657,8 @@
   "route_manifest_sha256": "8e26f2efe33c63d3fc4dcd0cb11e465b15bbe9135ab56809c354f032a7aeac59",
   "route_summary": [
     {
-      "executed_cells": 7316,
-      "pending_cells": 947,
+      "executed_cells": 7322,
+      "pending_cells": 941,
       "required_cells": 8263,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item"
     },
@@ -34747,14 +34753,14 @@
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring"
     },
     {
-      "executed_cells": 7412,
-      "pending_cells": 945,
+      "executed_cells": 7418,
+      "pending_cells": 939,
       "required_cells": 8357,
       "route_id": "java.generic-ttlv.ttlv_codec.decode"
     },
     {
-      "executed_cells": 7316,
-      "pending_cells": 945,
+      "executed_cells": 7322,
+      "pending_cells": 939,
       "required_cells": 8261,
       "route_id": "java.generic-ttlv.ttlv_item.create"
     },
@@ -36122,7 +36128,7 @@
     }
   ],
   "schema_version": "1.0",
-  "selected_scope_cells": 34816,
+  "selected_scope_cells": 34834,
   "selected_scope_complete": true,
   "vendor_interoperability_claim": false
 }

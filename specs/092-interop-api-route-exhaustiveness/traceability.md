@@ -253,3 +253,14 @@ artifact. This is part of the FR-006 artifact provenance check.
 - Selected evidence validates 34,816/34,816 cells with zero failures; 36,825
   of 71,641 remain pending. Full matrix closure remains open under
   FR-002/FR-003/FR-009.
+
+## Java generic Operation routes for KMIP 2.0 version boundaries — 2026-11-18
+
+- **FR-003/FR-009:** The six KMIP 2.0 rejection cases for operations introduced
+  in 2.1 execute generic Operation Item construction, view, and decode using
+  the source-defined 2.1 enumeration value in a local 2.0-context fixture.
+  This exercises TTLV representation only and does not send an unsupported
+  request.
+- Selected evidence validates 34,834/34,834 cells with zero failures; 36,807
+  of 71,641 remain pending. Full matrix closure remains open under
+  FR-002/FR-003/FR-009.

@@ -568,3 +568,14 @@ branches, and the common CI therefore reports a planned matrix only.
   ledger has 71,641 planned, 34,816 executed, and 36,825 pending cells.
 - The full route matrix and exact-head CI remain open, so #187, #216, and #217
   stay WIP.
+
+## 2026-11-18 Java generic Operation routes for KMIP 2.0 version boundaries
+
+- Red `7288a8643` requires all six version-boundary cases to execute the
+  generic Operation Item construction, view, and decode routes. Green
+  `2843cdfe3` resolves the 2.1 operation target for the local TTLV fixture
+  while retaining the case's 2.0 context; the unsupported requests are not sent.
+- The Java suite passes 91/91; selected evidence validates 34,834/34,834 cells
+  with zero failures; ledger comparison and the 1,507-route capability audit
+  pass. The full ledger has 71,641 planned, 34,834 executed, and 36,807 pending.
+- Full matrix closure and exact-head CI remain open; #187 stays WIP.

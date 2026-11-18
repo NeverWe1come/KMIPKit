@@ -500,3 +500,9 @@ has a `TtlvValue.structure` obligation. This evidence is local generic TTLV
 execution, not field-level conformance or server interoperability. The selected
 report validates 34,816/34,816 cells with zero failures; 36,825 of 71,641 full
 Java cells remain pending.
+
+The six KMIP 2.0 version-boundary cases for Get Constraints, Ping, Process,
+Query Asynchronous Requests, Set Constraints, and Set Defaults now execute the
+assigned KMIP 2.1 Operation values through local generic Item construction,
+view, and decode. No unsupported 2.0 request is sent. The selected report
+validates 34,834/34,834 cells; 36,807 of 71,641 Java cells remain pending.
