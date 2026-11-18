@@ -1167,3 +1167,23 @@ capability tests pass 109/109; route audit accepts 1,507 routes; the selected
 report validates 42,804/42,804 cells with zero failures. The ledger records
 71,641 planned, 42,804 executed, and 28,837 pending cells; its comparison
 passes. Full matrix closure remains open, so the stack stays WIP.
+
+### Create Protection Storage Masks request routes — 2026-11-18
+
+The installed Java consumer now exercises the optional `Protection Storage
+Masks` field on typed Create requests for the KMIP 2.0 and 2.1 catalog cases,
+across TTLV, JSON, and XML over raw TLS and HTTPS. Assertions verify that the
+Structure field is preserved in each encoded request. The field is optional
+under KMIP 2.0 §6.1.8 Table 171 and KMIP 2.1 §6.1.8 Table 186; this controlled
+peer test covers field presence and transport encoding, not mask-selection
+semantics or external KMS acceptance.
+
+Red `bd0a23d71` adds the missing-field assertion and fails at the captured
+request. Green `dd593c98e` passes the optional Structure to the installed
+`ClientBatchItem.create` API, and Refactor `972331c6b` records the fixture
+property explicitly. The focused controlled-TLS test and full Gradle suite
+pass; shared evidence/schema/capability tests pass 109/109, and the capability
+audit accepts 1,507 routes. The selected report validates 42,864/42,864 cells
+with zero failures. The ledger records 71,641 planned, 42,864 executed, and
+28,777 pending cells; its comparison passes. The full Java matrix remains
+incomplete, so the PR stack stays WIP.
