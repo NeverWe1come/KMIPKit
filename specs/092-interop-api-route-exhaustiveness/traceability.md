@@ -160,3 +160,14 @@ artifact. This is part of the FR-006 artifact provenance check.
 - The selected report validates 34,550/34,550 cells with zero failures and
   leaves 37,091 of 71,641 pending. Full Java matrix closure remains open under
   FR-002/FR-003/FR-009.
+
+## Java typed ManagedObject key factories — #217 stack sync — 2026-11-18
+
+- **FR-003:** The #217 consumer includes the latest #216 typed
+  `ManagedObject.symmetricKey`, `ManagedObject.privateKey`, and
+  `ManagedObject.publicKey` factory routes for the catalogued transparent Key
+  Material structures and fields (§§2.5–2.9, 3.1–3.12). All eight Right Usage
+  Limits cells remain covered; fixture values are synthetic.
+- The selected report validates 34,634/34,634 cells with zero failures and
+  leaves 37,007 of 71,641 pending. Full Java matrix closure remains open under
+  FR-002/FR-003/FR-009.

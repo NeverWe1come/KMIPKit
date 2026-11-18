@@ -634,7 +634,7 @@ class LocalCatalogRouteChecksTest {
                     catalog, version, caseIds, invocations::add);
         }
 
-        assertEquals(caseIds.size() * 2 * 8, invocations.size());
+        assertEquals(caseIds.size() * 2 * 9, invocations.size());
         assertEquals(Set.of(
                 "java.typed-protocol.model.org.kmipkit.ttlv.keymaterial.fromfields",
                 "java.typed-protocol.model.org.kmipkit.ttlv.keymaterial.fromitem",
@@ -642,6 +642,7 @@ class LocalCatalogRouteChecksTest {
                 "java.typed-protocol.model.org.kmipkit.ttlv.keyvalue.fromitem",
                 "java.typed-protocol.model.org.kmipkit.ttlv.keyblock.fromfields",
                 "java.typed-protocol.model.org.kmipkit.ttlv.keyblock.fromitem",
+                "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.publickey",
                 "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromfields",
                 "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromitem"),
                 invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId)
@@ -654,7 +655,7 @@ class LocalCatalogRouteChecksTest {
     }
 
     @Test
-    // KMIP 2.0/2.1 §§3.4–3.12 define these transparent Key Material structures and field types.
+    // KMIP 2.0/2.1 §§2.5–2.9 and 3.1–3.12 define these object and Key Material structures.
     void executesEveryTransparentKeyMaterialFormatThroughTypedKeyModels() throws Exception {
         JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
         Set<String> caseIds = LocalCatalogRouteChecks.TRANSPARENT_KEY_MATERIAL_CASE_IDS;
@@ -665,7 +666,7 @@ class LocalCatalogRouteChecksTest {
                     catalog, version, caseIds, invocations::add);
         }
 
-        assertEquals(caseIds.size() * 2 * 8, invocations.size());
+        assertEquals(caseIds.size() * 2 * 9, invocations.size());
         assertEquals(Set.of(
                 "java.typed-protocol.model.org.kmipkit.ttlv.keymaterial.fromfields",
                 "java.typed-protocol.model.org.kmipkit.ttlv.keymaterial.fromitem",
@@ -673,6 +674,9 @@ class LocalCatalogRouteChecksTest {
                 "java.typed-protocol.model.org.kmipkit.ttlv.keyvalue.fromitem",
                 "java.typed-protocol.model.org.kmipkit.ttlv.keyblock.fromfields",
                 "java.typed-protocol.model.org.kmipkit.ttlv.keyblock.fromitem",
+                "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.symmetrickey",
+                "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.privatekey",
+                "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.publickey",
                 "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromfields",
                 "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromitem"),
                 invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId)

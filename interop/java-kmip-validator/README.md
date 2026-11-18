@@ -456,3 +456,9 @@ cells for transparent Key Material fields and structures. Each format is
 wrapped by its matching Symmetric Key, Private Key, or Public Key structure
 (§§2.5, 2.6, 2.9, 3.4–3.12). The selected report validates 34,550/34,550 cells
 with zero failures and leaves 37,091 of 71,641 planned cells pending.
+
+After syncing the latest #216 head, #217 still covers all eight Right Usage
+Limits cells and includes 84 calls to the typed Symmetric Key, Private Key,
+and Public Key `ManagedObject` factories. The selected report validates
+34,634/34,634 cells with zero failures and leaves 37,007 of 71,641 pending.
+The Java matrix remains open.
