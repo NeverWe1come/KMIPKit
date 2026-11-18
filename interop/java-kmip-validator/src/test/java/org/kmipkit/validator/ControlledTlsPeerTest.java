@@ -942,6 +942,7 @@ class ControlledTlsPeerTest {
             }
             managedObjectTypeRouteEventCount += managedObjectTypeInvocations.size();
             appendGenericEnumerationRouteEvents(events, enumerationFixtures, protocolVersion);
+            appendAsyncIndicatorEnumerationTtlvRoutes(events, protocolVersion);
             if ("2.1".equals(protocolVersion)) {
                 List<LocalCatalogRouteChecks.Invocation> rotateNameTypeInvocations = new ArrayList<>();
                 LocalCatalogRouteChecks.executeRotateNameType(readRouteEvidenceCatalog(), protocolVersion,
@@ -1963,11 +1964,19 @@ class ControlledTlsPeerTest {
         int referencedEnumAggregateEventCount = 0;
         int referencedEnumCaseCount = 0;
         int asyncCancellationEnumerationRouteEventCount = 0;
+        int asyncIndicatorEnumerationRouteEventCount = 0;
         for (JsonNode testCase : readRouteEvidenceCatalog().path("test_cases")) {
             JsonNode scenario = testCase.path("requires").path("protocol_scenario");
             if ("asynchronous_workflows".equals(testCase.path("category").asText())
                     && scenario.path("parameters").has("cancel_result")) {
                 asyncCancellationEnumerationRouteEventCount += 3
+                        * testCase.path("execution").path("protocol_versions").size();
+            }
+            if ("asynchronous_workflows".equals(testCase.path("category").asText())
+                    && scenario.path("parameters").has("asynchronous_indicator")
+                    && scenarioHasTargetPrefix(scenario,
+                            "KMIPKIT-ELEM-ENUM-VALUE-ASYNCHRONOUS-INDICATOR-")) {
+                asyncIndicatorEnumerationRouteEventCount += 3
                         * testCase.path("execution").path("protocol_versions").size();
             }
             if ("referenced_enum_value".equals(testCase.path("requires").path("target_kind").asText())) {
@@ -2031,6 +2040,7 @@ class ControlledTlsPeerTest {
                         + typedSplitKeyManagedObjectRouteEventCount
                         + typedSplitKeyManagedObjectMemberRouteEventCount
                         + asyncCancellationEnumerationRouteEventCount
+                        + asyncIndicatorEnumerationRouteEventCount
                         + 97 // BEC, batch IDs, async payload, Ping, Endpoint Role, Object Defaults, derivation, and Extension Information member cells.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Type generic and typed Attribute routes.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Value generic and typed Attribute routes.
@@ -6595,6 +6605,13 @@ class ControlledTlsPeerTest {
         return false;
     }
 
+    private static boolean scenarioHasTargetPrefix(JsonNode scenario, String prefix) {
+        for (JsonNode targetId : scenario.path("target_ids")) {
+            if (targetId.asText().startsWith(prefix)) return true;
+        }
+        return false;
+    }
+
     private static boolean hasRouteEvent(JsonNode events, String caseId, String routeId,
             String version, String targetId) {
         for (JsonNode event : events) {
@@ -6746,7 +6763,9 @@ class ControlledTlsPeerTest {
         for (JsonNode testCase : readRouteEvidenceCatalog().path("test_cases")) {
             JsonNode scenario = testCase.path("requires").path("protocol_scenario");
             if (!"asynchronous_workflows".equals(testCase.path("category").asText())
-                    || !scenario.path("parameters").has("asynchronous_indicator")) continue;
+                    || !scenario.path("parameters").has("asynchronous_indicator")
+                    || !scenarioHasTargetPrefix(scenario,
+                            "KMIPKIT-ELEM-ENUM-VALUE-ASYNCHRONOUS-INDICATOR-")) continue;
             String caseId = testCase.path("case_id").asText();
             String targetId = "";
             for (JsonNode target : scenario.path("target_ids")) {
@@ -7189,6 +7208,53 @@ class ControlledTlsPeerTest {
                     enumTarget.path("wire_value").asText().replaceFirst("^0[xX]", ""), 16);
             appendGenericEnumerationRouteEvents(events, caseId, enumTarget.path("target_id").asText(),
                     cancellationResultTag, enumValue, protocolVersion);
+        }
+    }
+
+    // OASIS KMIP 2.0/2.1 §8.2 defines the Request Header field; §§11.3 and 11.56 define its value and tag.
+    private static void appendAsyncIndicatorEnumerationTtlvRoutes(ArrayNode events, String protocolVersion)
+            throws Exception {
+        JsonNode catalog = readRouteEvidenceCatalog();
+        int asynchronousIndicatorTag = -1;
+        for (JsonNode target : catalog.path("normative_targets")) {
+            if ("tag".equals(target.path("kind").asText())
+                    && "Asynchronous Indicator".equals(target.path("name").asText())) {
+                asynchronousIndicatorTag = parseWireTag(target.path("wire_value").asText());
+                break;
+            }
+        }
+        assertTrue(asynchronousIndicatorTag >= 0, "The catalog must define the Asynchronous Indicator tag.");
+
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            JsonNode scenario = testCase.path("requires").path("protocol_scenario");
+            if (!"asynchronous_workflows".equals(testCase.path("category").asText())
+                    || !scenario.path("parameters").has("asynchronous_indicator")
+                    || !scenarioHasTargetPrefix(scenario,
+                            "KMIPKIT-ELEM-ENUM-VALUE-ASYNCHRONOUS-INDICATOR-")
+                    || !appliesToVersion(testCase, protocolVersion)) continue;
+            String caseId = testCase.path("case_id").asText();
+            JsonNode enumTarget = null;
+            for (JsonNode targetId : scenario.path("target_ids")) {
+                String value = targetId.asText();
+                if (!value.startsWith("KMIPKIT-ELEM-ENUM-VALUE-ASYNCHRONOUS-INDICATOR-")) continue;
+                for (JsonNode candidate : catalog.path("normative_targets")) {
+                    if (value.equals(candidate.path("target_id").asText())) {
+                        enumTarget = candidate;
+                        break;
+                    }
+                }
+                break;
+            }
+            assertTrue(enumTarget != null, "Asynchronous scenario must identify its normative enum value: "
+                    + caseId);
+            String parameter = scenario.path("parameters").path("asynchronous_indicator").asText();
+            String expectedName = "omitted".equals(parameter) ? "Prohibited" : parameter;
+            assertEquals(expectedName, enumTarget.path("name").asText(),
+                    "Scenario parameter and normative Asynchronous Indicator target must agree: " + caseId);
+            long enumValue = Long.parseUnsignedLong(
+                    enumTarget.path("wire_value").asText().replaceFirst("^0[xX]", ""), 16);
+            appendGenericEnumerationRouteEvents(events, caseId, enumTarget.path("target_id").asText(),
+                    asynchronousIndicatorTag, enumValue, protocolVersion);
         }
     }
 
