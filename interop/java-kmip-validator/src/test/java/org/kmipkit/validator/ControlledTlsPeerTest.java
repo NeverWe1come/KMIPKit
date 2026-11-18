@@ -1183,6 +1183,7 @@ class ControlledTlsPeerTest {
                 appendPingResponseRouteEvidence(events, serverCertificatePem, serverPrivateKeyPem,
                         clientCertificatePem, clientPrivateKeyPem);
                 assertPingNetworkRouteCoverage(events);
+                assertPingVersionBoundaryRouteCoverage(events);
             }
             if ("2.1".equals(protocolVersion)) appendObjectGroupLocalRouteEvents(events);
             if ("2.1".equals(protocolVersion)) appendStructureMemberStructureRouteEvents(events);
@@ -7219,6 +7220,35 @@ class ControlledTlsPeerTest {
                     }
                     assertTrue(present, "Missing typed Ping route evidence for 2.1 / " + encoding
                             + " / " + transport + " / " + action);
+                }
+            }
+        }
+    }
+
+    private static void assertPingVersionBoundaryRouteCoverage(ArrayNode events) {
+        for (String encoding : List.of("TTLV", "JSON", "XML")) {
+            for (String transport : List.of("raw_tls", "https")) {
+                for (String action : List.of("construct", "send")) {
+                    JsonNode found = null;
+                    for (JsonNode event : events) {
+                        if ("test-v20-reject-ping".equals(event.path("case_id").asText())
+                                && "java.typed-protocol.client_batch_item.ping"
+                                        .equals(event.path("route_id").asText())
+                                && "KMIPKIT-ELEM-OP-C2S-PING".equals(event.path("target_id").asText())
+                                && "2.0".equals(event.path("protocol_version").asText())
+                                && encoding.equals(event.path("encoding").asText())
+                                && transport.equals(event.path("transport").asText())
+                                && action.equals(event.path("action").asText())) {
+                            found = event;
+                            break;
+                        }
+                    }
+                    assertTrue(found != null, "Missing KMIP 2.0 Ping boundary evidence for 2.0 / " + encoding
+                            + " / " + transport + " / " + action);
+                    if ("send".equals(action)) {
+                        assertEquals("not_sent", found.path("request_delivery_state").asText());
+                        assertEquals(0, found.path("transport_invocation_count").asInt());
+                    }
                 }
             }
         }
