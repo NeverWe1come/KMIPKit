@@ -137,12 +137,13 @@ The `*.gaps.json` sidecar identifies every unexecuted matrix obligation rather
 than misclassifying it as an unavailable library route. Other sidecars retain
 installed-artifact availability checks and sanitized controlled-peer outcomes.
 The evidence JSON passes the shared schema independently of completeness.
-The latest full local C matrix run (`c-route-085b1262-0d2e-487f-bd8c-2690f9818231`)
-has 66,736 expected cells, 42,479 invoked, zero failed, and 24,257 pending.
+The latest full local C matrix run (`c-route-06c5b31a-62a6-406d-9079-bd1c0240877b`)
+has 66,736 expected cells, 42,481 invoked, zero failed, and 24,255 pending.
 The MAC and Sign response TTLV accessors and the Continue batch-option
 constructor contribute four local cells each across KMIP 2.0/2.1. The
-evidence report passes schema validation, but the completeness gate remains
-open because validator recipes are still pending.
+Query Async Requests correlation builder contributes two KMIP 2.1 model cells.
+The evidence report passes schema validation, but the completeness gate
+remains open because validator recipes are still pending.
 
 A generic TTLV wire encoder, generic-TTLV request dispatcher, and high-level
 C client are absent from the exact installed public artifact. The harness's

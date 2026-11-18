@@ -354,3 +354,24 @@ enum scenarios as library limitations.
   failed, and 24,257 pending cells. The completeness validator still exits
   nonzero on missing routes, as required while these recipes remain pending.
   FR-003/FR-005 and the global completeness gate remain open.
+
+## C Query Async Requests correlation model
+
+The installed C `kmipkit_query_async_requests_request_with_correlation_values`
+constructor now backs both KMIP 2.1 §7.1 model cells for Asynchronous
+Correlation Values and Asynchronous Correlation Value. The model creates a
+Query Async Requests request with two correlation values, serializes its
+payload through the typed C API, and compares the normalized structure and
+values. This adds evidence for the installed constructor; it does not expand
+the API or use a synthetic-only vector.
+
+- Red `98775ccfd` required both normative target routes and failed because
+  the C model harness had no recipe for the constructor.
+- Green `2d1f1b956` calls the installed request builder and payload conversion
+  and checks the two values in the resulting structure.
+- Refactor extracts the exact §7.1 target IDs into a shared local set.
+- Verification: the focused model test passed; `test_route_matrix.py` passed
+  177 tests. Full local matrix run
+  `c-route-06c5b31a-62a6-406d-9079-bd1c0240877b` records 42,481/66,736 cells
+  invoked, zero failed, and 24,255 pending; these two targets have no pending
+  cells. FR-003/FR-005 remain incomplete globally.

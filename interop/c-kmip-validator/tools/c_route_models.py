@@ -28,6 +28,10 @@ _CANCEL_REQUEST_SYMBOLS = {
     'kmipkit_cancel_request_create',
     'kmipkit_cancel_request_to_ttlv_payload',
 }
+_QUERY_ASYNC_CORRELATION_TARGETS = {
+    'KMIPKIT-ELEM-OPERATION-STRUCTURE-7-1-ASYNCHRONOUS-CORRELATION-VALUES',
+    'KMIPKIT-ELEM-STRUCTURE-MEMBER-7-1-ASYNCHRONOUS-CORRELATION-VALUE',
+}
 _TRANSPARENT_KEY_MATERIAL_FORMATS = {
     4: ('Transparent Symmetric Key', [('Key', 8, b'\xa1')]),
     5: ('Transparent DSA Private Key', [('P', 4, b'\x01'), ('Q', 4, b'\x01'),
@@ -240,9 +244,8 @@ class ModelCases:
     def _execute_query_async_correlation_values(self, target: dict,
                                                 public_api_symbol: str) -> dict | None:
         symbol = 'kmipkit_query_async_requests_request_with_correlation_values'
-        if (public_api_symbol != symbol or target.get('target_id') not in {
-                'KMIPKIT-ELEM-OPERATION-STRUCTURE-7-1-ASYNCHRONOUS-CORRELATION-VALUES',
-                'KMIPKIT-ELEM-STRUCTURE-MEMBER-7-1-ASYNCHRONOUS-CORRELATION-VALUE'}):
+        if (public_api_symbol != symbol or
+                target.get('target_id') not in _QUERY_ASYNC_CORRELATION_TARGETS):
             return None
 
         correlations = (b'fixture-correlation-alpha', b'fixture-correlation-beta')
