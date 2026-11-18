@@ -3637,3 +3637,16 @@ suites pass 108 tests; and the capability audit reports 1,507 routes. The
 selected report validates 34,274/34,274 cells with zero failures and leaves
 37,367 of 71,641 planned Java cells pending. The generated ledger matches its
 checked-in reference; `git diff --check` passes. The PR stack remains WIP.
+
+## #216 stack-tip verification after typed Key Material structure routes — 2026-11-18
+
+The #216 branch includes Red commit `9a018c7de` and Green commit `6c12af9c2`
+from #187. The increment exercises the six typed constructors for each of the
+nine transparent Key Material structures in §§3.4–3.12. Synthetic fixtures
+use the source-defined structure members and are not cryptographic key tests.
+
+The full Java suite passes 84 tests; shared evidence/schema/capability suites
+pass 108 tests; and the capability audit reports 1,507 routes. The selected
+report validates 34,382/34,382 cells with zero failures and leaves 37,259 of
+71,641 planned Java cells pending. The generated ledger matches its checked-in
+reference; `git diff --check` passes. The PR stack remains WIP.
