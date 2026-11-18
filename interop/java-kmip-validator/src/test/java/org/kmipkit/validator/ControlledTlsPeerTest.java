@@ -770,6 +770,33 @@ class ControlledTlsPeerTest {
     }
 
     @Test
+    void batchWorkflowBatchItemsHaveGenericTtlvRouteEvidenceForBothVersions() throws Exception {
+        JsonNode catalog = readRouteEvidenceCatalog();
+        Set<String> expectedPairs = batchWorkflowBatchItemTargetPairs(catalog);
+        assertTrue(!expectedPairs.isEmpty(), "The catalog must define batch workflow Batch Item targets.");
+
+        ArrayNode events = new ObjectMapper().createArrayNode();
+        for (String protocolVersion : KMIP_2_0_AND_2_1) {
+            appendBatchItemGenericRouteEvents(events, protocolVersion);
+        }
+
+        Set<String> observed = new java.util.HashSet<>();
+        for (JsonNode event : events) {
+            String routeId = event.path("route_id").asText();
+            String targetId = event.path("target_id").asText();
+            if (routeId.startsWith("java.generic-ttlv.")
+                    && ("KMIPKIT-ELEM-MESSAGE-FIELD-8-3-BATCH-ITEM".equals(targetId)
+                            || "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM".equals(targetId))) {
+                observed.add(event.path("case_id").asText() + "|" + targetId + "|"
+                        + event.path("protocol_version").asText() + "|" + routeId);
+            }
+        }
+
+        assertEquals(expectedPairs.size() * KMIP_2_0_AND_2_1.size() * 3, observed.size(),
+                "Every catalogued request/response Batch Item target must use create, view, and decode routes.");
+    }
+
+    @Test
     void controlledQueryProducesPerRouteEvidenceForBothProtocolVersions() throws Exception {
         Path reportPath = Path.of(System.getProperty("kmipkit.routeEvidenceOutput",
                 "build/route-execution-evidence.json"));
@@ -5997,6 +6024,22 @@ class ControlledTlsPeerTest {
         appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID, "java.generic-ttlv.ttlv_codec.decode",
                 RESPONSE_BATCH_ITEM_TARGET_ID, "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
                 "decode", protocolVersion, null, null, treeHash);
+    }
+
+    private static Set<String> batchWorkflowBatchItemTargetPairs(JsonNode catalog) {
+        Set<String> pairs = new java.util.LinkedHashSet<>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            if (!"batch_workflows".equals(testCase.path("category").asText())) continue;
+            JsonNode targets = testCase.path("requires").path("protocol_scenario").path("target_ids");
+            for (String targetId : List.of(
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-BATCH-ITEM",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM")) {
+                if (containsText(targets, targetId)) {
+                    pairs.add(testCase.path("case_id").asText() + "|" + targetId);
+                }
+            }
+        }
+        return pairs;
     }
 
     private static void appendNormativeMessageFieldGenericRouteEvents(ArrayNode events,
