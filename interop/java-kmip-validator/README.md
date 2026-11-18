@@ -1145,3 +1145,22 @@ and the selected report validates 42,612/42,612 cells with zero failures.
 The ledger records 71,641 planned, 42,612 executed, and 29,029 pending cells;
 its comparison passes. Full matrix closure remains open, so the stack stays
 WIP.
+
+### Typed Create network routes — 2026-11-18
+
+The installed Java consumer now constructs, sends, and decodes typed Create
+requests for `test-op-create` and `test-obj-symmetric-key` across KMIP 2.0 and
+2.1, TTLV/JSON/XML, and raw TLS/HTTPS. This adds 72 selected route cells and
+checks the Create operation, Symmetric Key object type, protocol version,
+batch item identity, and returned typed object identifier. The source
+operations are OASIS KMIP 2.0/2.1 §6.1.1. Controlled peer evidence confirms
+the client route and fixture response only; it does not claim acceptance by an
+external KMS.
+
+Red `4fc22dbca` requires the route cells; Green `ad069d2d7` executes the
+controlled network exchanges; Refactor `f1465cf88` shares the matrix
+dimensions between execution, coverage assertions, and event totals. The
+Gradle suite passes 95/95 tests, and the selected report validates
+42,684/42,684 cells with zero failures. The ledger records 71,641 planned,
+42,684 executed, and 28,957 pending cells; its comparison passes. The full
+matrix remains open, so the stack stays WIP.
