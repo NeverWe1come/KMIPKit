@@ -2647,6 +2647,29 @@ class RouteMatrixTests(unittest.TestCase):
                                   if event['case_id'] == case_id and
                                   event['public_api_symbol'] == symbol}, {'2.0', '2.1'})
 
+    def test_import_response_ttlv_accessor_is_executed(self):
+        """OASIS KMIP 2.0 §6.1.24 and 2.1 §6.1.25 define the Import response payload."""
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == 'test-op-import']}
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest,
+            protocol_versions=('2.0', '2.1'), network_combinations=(('TTLV', 'raw_tls'),))
+
+        self.assertTrue(checks and all(check['status'] == 'passed' for check in checks), checks)
+        for version in ('2.0', '2.1'):
+            with self.subTest(version=version):
+                self.assertTrue(any(event['case_id'] == 'test-op-import' and
+                                    event['protocol_version'] == version and
+                                    event['public_api_symbol'] == 'kmipkit_client_batch_item_response_import_ttlv' and
+                                    event['action'] == 'decode' and event['status'] == 'passed'
+                                    for event in events))
+        self.assertNotIn('synthetic-import-material', json.dumps(events + checks))
+
     def test_login_response_ttlv_accessor_is_executed_for_supported_version(self):
         """OASIS KMIP 2.1 §6.1.30 defines the Login response Ticket payload."""
         from artifact_support import ROOT
