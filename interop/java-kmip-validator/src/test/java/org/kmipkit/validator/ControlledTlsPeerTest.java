@@ -1176,6 +1176,7 @@ class ControlledTlsPeerTest {
             appendControlledAsyncCancelNetworkRouteEvents(events, protocolVersion, serverCertificatePem,
                     serverPrivateKeyPem, clientCertificatePem, clientPrivateKeyPem);
             assertAsyncCancelNetworkRouteCoverage(events, protocolVersion);
+            assertEveryApplicableCancelNetworkRouteCoverage(events, protocolVersion);
             appendNewAttributeMutationEvents(events, protocolVersion, serverCertificatePem,
                     serverPrivateKeyPem, clientCertificatePem, clientPrivateKeyPem);
             if ("2.1".equals(protocolVersion)) {
@@ -8799,6 +8800,76 @@ class ControlledTlsPeerTest {
                 }
             }
         }
+    }
+
+    private static void assertEveryApplicableCancelNetworkRouteCoverage(
+            ArrayNode events, String protocolVersion) throws Exception {
+        String routeId = "java.typed-protocol.client.execute_cancel";
+        Set<String> routeTargets = Set.of(
+                "KMIPKIT-ELEM-OP-C2S-CANCEL",
+                "KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-20-001",
+                "KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-21-001");
+        for (JsonNode testCase : readRouteEvidenceCatalog().path("test_cases")) {
+            if (!appliesToVersion(testCase, protocolVersion)) continue;
+            JsonNode requires = testCase.path("requires");
+            JsonNode scenario = requires.path("protocol_scenario");
+            Set<String> targets = new java.util.LinkedHashSet<>();
+            if (requires.path("normative_target_id").isTextual()) {
+                targets.add(requires.path("normative_target_id").asText());
+            }
+            for (JsonNode target : requires.path("normative_target_ids")) targets.add(target.asText());
+            for (JsonNode target : scenario.path("target_ids")) targets.add(target.asText());
+            boolean cancelOperation = "Cancel".equals(testCase.path("operation").asText())
+                    || containsText(scenario.path("operations"), "Cancel")
+                    || containsText(requires.path("operation_sequence"), "Cancel");
+            if (cancelOperation) targets.add("KMIPKIT-ELEM-OP-C2S-CANCEL");
+            targets.retainAll(routeTargets);
+            if (targets.isEmpty()) continue;
+
+            int workflowStepIndex = -1;
+            JsonNode orderedOperations = scenario.path("operations");
+            if (!orderedOperations.isArray()) orderedOperations = requires.path("operation_sequence");
+            if (orderedOperations.isArray()) {
+                for (int index = 0; index < orderedOperations.size(); index++) {
+                    if ("Cancel".equals(orderedOperations.get(index).asText())) {
+                        workflowStepIndex = index;
+                        break;
+                    }
+                }
+            }
+            String caseId = testCase.path("case_id").asText();
+            for (String encoding : List.of("TTLV", "JSON", "XML")) {
+                for (String transport : List.of("raw_tls", "https")) {
+                    for (String targetId : targets) {
+                        List<String> actions = "KMIPKIT-ELEM-OP-C2S-CANCEL".equals(targetId)
+                                ? List.of("construct", "send", "decode")
+                                : List.of("construct", "send");
+                        for (String action : actions) {
+                            JsonNode event = findAsyncCancelRouteEvent(events, caseId, routeId, targetId,
+                                    action, protocolVersion, encoding, transport);
+                            if ("KMIPKIT-ELEM-OP-C2S-CANCEL".equals(targetId) && workflowStepIndex >= 0) {
+                                assertEquals(workflowStepIndex, event.path("workflow_step_index").asInt(-1),
+                                        "The Cancel route must retain its ordered workflow step.");
+                                assertEquals("Cancel", event.path("workflow_operation").asText());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static JsonNode findAsyncCancelRouteEvent(ArrayNode events, String caseId,
+            String routeId, String targetId, String action, String protocolVersion,
+            String encoding, String transport) {
+        for (JsonNode event : events) {
+            if (routeEventMatches(event, caseId, routeId, protocolVersion, targetId)
+                    && action.equals(event.path("action").asText())
+                    && encoding.equals(event.path("encoding").asText())
+                    && transport.equals(event.path("transport").asText())) return event;
+        }
+        throw new AssertionError("Missing catalog-applicable Cancel route event: " + caseId + " / " + targetId
+                + " / " + action + " / " + protocolVersion + " / " + encoding + " / " + transport);
     }
 
     private static void assertAsyncCancelNetworkRouteEvent(ArrayNode events, String caseId,
