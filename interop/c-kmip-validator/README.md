@@ -208,7 +208,10 @@ certificate by ID Placeholder before revoking and destroying both keys. The
 controlled peer verifies the request tree, signer lifecycle, placeholder
 mapping, typed results, and final state. This validates KMIP request/response
 shape and lifecycle only; the fixture does not validate a real certificate or
-signature.
+signature. The route also reads
+`kmipkit_client_batch_item_response_certify_ttlv` and checks the complete
+successful response-item structure for both KMIP 2.0 and 2.1. The accessor's
+returned structure is released immediately.
 
 The `test-op-archive` route creates an isolated AES-128 key, requests Archive
 using the ID Placeholder while the key remains Pre-Active, then revokes and

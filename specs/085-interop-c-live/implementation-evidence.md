@@ -1457,3 +1457,36 @@ material or server compatibility.
   invoked, zero failed, and 24,103 pending. PGP Key emitted 86 passed events
   and no pending cells for its covered targets. The global completeness gate
   remains open for other recipes.
+
+## Certify response TTLV accessor
+
+OASIS KMIP 2.0/2.1 §6.1.6 defines the Certify operation and its successful
+response payload. The existing C route constructs Certify for a Create Key
+Pair Public Key and checks its typed Certificate Unique Identifier. It now
+also calls `kmipkit_client_batch_item_response_certify_ttlv` and checks that
+the successful response item contains the complete four-field TTLV shape. The
+accessor's returned structure is released by the shared validator helper.
+
+- Red commit `405ca705a` adds the Certify accessor to the installed-route
+  contract; the focused response-TTLV test fails because no event is recorded.
+- Green commit `744c749de` exercises the installed accessor and validates the
+  complete response shape.
+- Normative scope: OASIS KMIP 2.0/2.1 §6.1.6 and the KMIP message structure in
+  §8.3.
+- Verification: the focused installed-route test passed, CTest passed 7/7, and
+  the exhaustive matrix at `c-route-a1fd49ef-0772-4263-a7e6-6786589a3739`
+  recorded 42,635/66,736 cells invoked, zero failed, and 24,101 pending. Both
+  `test-op-certify` response TTLV cells passed; `test-op-poll` retains all 42
+  catalog-specific pending cells described below. The overall C matrix gate
+  remains open.
+
+## Poll recipe pending
+
+The shared catalog's `test-op-poll` isolation recipe requires creating a
+Symmetric Key, executing Poll, then revoking and destroying the key (OASIS
+KMIP 2.0 §6.1.36; KMIP 2.1 §6.1.38). Existing C Poll evidence belongs to
+distinct asynchronous lifecycle recipes, which issue their own setup and
+cleanup sequences. They do not satisfy this catalog case's exact isolation
+recipe. The `test-op-poll` cells therefore remain pending until the shared
+approved recipe and installed C route agree; no new scenario is inferred in
+this PR.

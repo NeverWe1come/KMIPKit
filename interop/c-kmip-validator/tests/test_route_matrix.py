@@ -2609,7 +2609,7 @@ class RouteMatrixTests(unittest.TestCase):
             self.assertTrue(any(event['public_api_symbol'] == symbol and event['action'] == 'send' for event in events), symbol)
 
     def test_operation_response_ttlv_accessors_are_executed(self):
-        """OASIS KMIP 2.0 §§6.1.31, 6.1.49 and 2.1 §§6.1.32, 6.1.55."""
+        """OASIS KMIP 2.0/2.1 §§6.1.6, 6.1.31, 6.1.49 and the corresponding v2.1 operation tables."""
         from artifact_support import ROOT
         from route_peer import execute_network_cells
         catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
