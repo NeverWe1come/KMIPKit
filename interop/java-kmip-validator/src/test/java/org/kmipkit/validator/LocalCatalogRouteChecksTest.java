@@ -137,7 +137,8 @@ class LocalCatalogRouteChecksTest {
         List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
 
         LocalCatalogRouteChecks.executeGenericStructureTargets(
-                catalog, "2.1", Set.of(caseId), Set.of(targetId), invocations::add);
+                catalog, "2.1", Set.of(caseId), Set.of(targetId), new ObjectMapper().createArrayNode(),
+                invocations::add);
 
         assertEquals(List.of(
                 "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.create",
@@ -195,6 +196,13 @@ class LocalCatalogRouteChecksTest {
                 catalog, events, "2.1", Set.of(targetId));
 
         assertTrue(missing.contains(caseId));
+        List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
+        LocalCatalogRouteChecks.executeGenericStructureTargets(
+                catalog, "2.1", Set.of(caseId), Set.of(targetId), events, invocations::add);
+        assertEquals(List.of(
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.create",
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.withitem"),
+                invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId).toList());
     }
 
     @Test

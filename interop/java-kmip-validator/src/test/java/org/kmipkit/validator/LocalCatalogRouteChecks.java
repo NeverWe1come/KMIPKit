@@ -170,6 +170,8 @@ final class LocalCatalogRouteChecks {
 
     private record StructureAttributeMember(String name, String textValue) { }
 
+    private record RouteEvidenceKey(String caseId, String targetId, String routeId, String version) { }
+
     /** Executes generic TTLV routes for Boolean fields using their catalogued tag identities. */
     static void executeBooleanFields(JsonNode catalog, String version, Set<String> selectedCaseIds,
             EvidenceSink sink) throws Exception {
@@ -1528,6 +1530,173 @@ final class LocalCatalogRouteChecks {
                     "Enumeration field route evidence must be complete before reuse for " + caseId);
         }
         return missing;
+    }
+
+    /** Selects source-catalogued Structure targets missing their generic TTLV construction evidence. */
+    static Set<String> missingGenericStructureTargetCaseIds(JsonNode catalog, JsonNode events, String version,
+            Set<String> structureBuilderTargetIds) {
+        Set<RouteEvidenceKey> recordedRoutes = routeEvidenceKeys(events);
+        Set<String> missing = new java.util.LinkedHashSet<>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            if (!applies(testCase, version)) continue;
+            String caseId = testCase.path("case_id").asText();
+            JsonNode requires = testCase.path("requires");
+            if (!requires.hasNonNull("normative_target_id")
+                    || requires.path("normative_target_id").asText().isBlank()) continue;
+            String targetId = requires.path("normative_target_id").asText();
+            JsonNode target = findTarget(catalog, targetId);
+            boolean valueTarget = isStructureValueTarget(target);
+            boolean builderTarget = structureBuilderTargetIds.contains(targetId);
+            if (!valueTarget && !builderTarget) continue;
+            List<String> requiredRoutes = genericStructureRouteIds(valueTarget, builderTarget);
+            int present = 0;
+            for (String route : requiredRoutes) {
+                if (recordedRoutes.contains(new RouteEvidenceKey(caseId, targetId, route, version))) present++;
+            }
+            if (present < requiredRoutes.size()) missing.add(caseId);
+        }
+        return missing;
+    }
+
+    /** Executes generic Structure constructors and item decoding without claiming field-level semantics. */
+    static void executeGenericStructureTargets(JsonNode catalog, String version, Set<String> selectedCaseIds,
+            Set<String> structureBuilderTargetIds, JsonNode events, EvidenceSink sink) throws Exception {
+        CodecLimits limits = CodecLimits.defaults();
+        Set<RouteEvidenceKey> recordedRoutes = routeEvidenceKeys(events);
+        Set<String> emitted = new java.util.LinkedHashSet<>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String caseId = testCase.path("case_id").asText();
+            if (!selectedCaseIds.contains(caseId) || !applies(testCase, version)) continue;
+            String targetId = testCase.path("requires").path("normative_target_id").asText();
+            JsonNode target = findTarget(catalog, targetId);
+            boolean valueTarget = isStructureValueTarget(target);
+            boolean builderTarget = structureBuilderTargetIds.contains(targetId);
+            if (!valueTarget && !builderTarget) {
+                throw new IllegalArgumentException("Selected case has no catalogued generic Structure route: "
+                        + caseId);
+            }
+            int outerTag = structureTargetTagCode(catalog, target, version);
+            byte[] childText = "route-matrix-fixture".getBytes(StandardCharsets.UTF_8);
+            byte[] wire = structureWire(outerTag, itemWire(0x540000,
+                    TtlvItemType.TextString.code(), childText));
+            try (TtlvValue childValue = TtlvValue.TextString(childText, limits);
+                    RawTag childRawTag = RawTag.fromRaw(0x540000); Tag childTag = childRawTag.checked();
+                    TtlvItem childItem = TtlvItem.create(childTag, childValue, limits);
+                    TtlvStructure empty = TtlvStructure.create()) {
+                TtlvStructure populated = TtlvStructure.withItem(empty, childItem, limits);
+                try (populated; TtlvValue value = TtlvValue.structure(populated, limits);
+                        RawTag rawTag = RawTag.fromRaw(outerTag); Tag tag = rawTag.checked();
+                        TtlvItem item = TtlvItem.create(tag, value, limits);
+                        TtlvItemView view = item.view(); Tag viewTag = view.tag();
+                        TtlvValueView itemValue = view.value();
+                        TtlvStructureView structure = itemValue.structure()) {
+                    assertEquals(outerTag, viewTag.raw());
+                    assertEquals(TtlvItemType.Structure, view.itemType());
+                    assertEquals(1, structure.itemCount());
+                }
+            }
+            try (TtlvItem decoded = TtlvCodec.decode(wire); TtlvItemView view = decoded.view();
+                    Tag viewTag = view.tag();
+                    TtlvValueView value = view.value(); TtlvStructureView structure = value.structure()) {
+                assertEquals(outerTag, viewTag.raw());
+                assertEquals(TtlvItemType.Structure, view.itemType());
+                assertEquals(1, structure.itemCount());
+            }
+
+            if (builderTarget) {
+                emitMissingGenericStructureRoute(recordedRoutes, sink, caseId, targetId, version,
+                        "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.create",
+                        "org.kmipkit.ttlv.TtlvStructure.create", "construct", wire);
+                emitMissingGenericStructureRoute(recordedRoutes, sink, caseId, targetId, version,
+                        "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.withitem",
+                        "org.kmipkit.ttlv.TtlvStructure.withItem", "construct", wire);
+            }
+            if (valueTarget) {
+                emitMissingGenericStructureRoute(recordedRoutes, sink, caseId, targetId, version,
+                        "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
+                        "org.kmipkit.ttlv.TtlvValue.structure", "construct", wire);
+            }
+            emitMissingGenericStructureRoute(recordedRoutes, sink, caseId, targetId, version,
+                    "java.generic-ttlv.ttlv_item.create", "org.kmipkit.ttlv.TtlvItem.create",
+                    "construct", wire);
+            emitMissingGenericStructureRoute(recordedRoutes, sink, caseId, targetId, version,
+                    "java.generic-ttlv.function.ttlv_item_view_from_item", "org.kmipkit.ttlv.TtlvItem.view",
+                    "decode", wire);
+            emitMissingGenericStructureRoute(recordedRoutes, sink, caseId, targetId, version,
+                    "java.generic-ttlv.ttlv_codec.decode", "org.kmipkit.ttlv.TtlvCodec.decode", "decode", wire);
+            emitted.add(caseId);
+        }
+        if (!emitted.equals(selectedCaseIds)) {
+            throw new IllegalArgumentException("Selected generic Structure targets were not executed for "
+                    + version);
+        }
+    }
+
+    private static void emitMissingGenericStructureRoute(Set<RouteEvidenceKey> recordedRoutes, EvidenceSink sink,
+            String caseId,
+            String targetId, String version, String routeId, String symbol, String action, byte[] wire)
+            throws Exception {
+        if (!recordedRoutes.add(new RouteEvidenceKey(caseId, targetId, routeId, version))) return;
+        emitRoute(sink, caseId, targetId, routeId, symbol, action, wire);
+    }
+
+    private static Set<RouteEvidenceKey> routeEvidenceKeys(JsonNode events) {
+        Set<RouteEvidenceKey> keys = new java.util.HashSet<>();
+        for (JsonNode event : events) {
+            if (!"TTLV".equals(event.path("encoding").asText()) || !event.path("transport").isNull()) continue;
+            keys.add(new RouteEvidenceKey(event.path("case_id").asText(), event.path("target_id").asText(),
+                    event.path("route_id").asText(), event.path("protocol_version").asText()));
+        }
+        return keys;
+    }
+
+    private static boolean isStructureValueTarget(JsonNode target) {
+        String encoding = target.path("source_encoding").asText();
+        return encoding.startsWith("Structure")
+                || ("data_type".equals(target.path("kind").asText())
+                        && "Structure".equals(target.path("name").asText()));
+    }
+
+    private static List<String> genericStructureRouteIds(boolean valueTarget, boolean builderTarget) {
+        List<String> routes = new ArrayList<>();
+        if (builderTarget) {
+            routes.add("java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.create");
+            routes.add("java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.withitem");
+        }
+        if (valueTarget) routes.add("java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure");
+        routes.add("java.generic-ttlv.ttlv_item.create");
+        routes.add("java.generic-ttlv.function.ttlv_item_view_from_item");
+        routes.add("java.generic-ttlv.ttlv_codec.decode");
+        return routes;
+    }
+
+    private static int structureTargetTagCode(JsonNode catalog, JsonNode target, String version) {
+        String name = target.path("name").asText();
+        if (name.contains(",")) name = name.substring(0, name.indexOf(',')).trim();
+        try {
+            return tagCodeNamed(catalog, name, version);
+        } catch (IllegalArgumentException missingTargetTag) {
+            for (JsonNode parentId : target.path("parent_element_ids")) {
+                JsonNode parent = null;
+                for (JsonNode candidate : catalog.path("normative_targets")) {
+                    if (parentId.asText().equals(candidate.path("target_id").asText())) {
+                        parent = candidate;
+                        break;
+                    }
+                }
+                if (parent == null) continue;
+                try {
+                    return tagCodeNamed(catalog, parent.path("name").asText(), version);
+                } catch (IllegalArgumentException missingParentTag) {
+                    // Continue to the next catalogued parent before using a generic Attribute wrapper.
+                }
+            }
+            if ("attribute".equals(target.path("kind").asText())
+                    || "data_type".equals(target.path("kind").asText())) {
+                return tagCodeNamed(catalog, "Attribute", version);
+            }
+            return 0x54F001;
+        }
     }
 
     private static int integerAttributeFixture(String attributeName) {
