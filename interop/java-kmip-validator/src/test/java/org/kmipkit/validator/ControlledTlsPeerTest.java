@@ -2319,6 +2319,25 @@ class ControlledTlsPeerTest {
         assertEquals(6, createObjectTypeRouteEventCount,
                 "A client operation payload Object Type needs generic TTLV construction, view, and decode "
                         + "evidence for both its payload target and operation target.");
+        String[][] additionalClientPayloadCases = {
+                {"test-norm-payload-client-cancel-request-20-001",
+                        "KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-20-001", "KMIPKIT-ELEM-OP-C2S-CANCEL"},
+                {"test-norm-payload-client-decrypt-request-20-003",
+                        "KMIPKIT-PAYLOAD-CLIENT-DECRYPT-REQUEST-20-003", "KMIPKIT-ELEM-OP-C2S-DECRYPT"},
+                {"test-norm-payload-client-encrypt-request-20-004",
+                        "KMIPKIT-PAYLOAD-CLIENT-ENCRYPT-REQUEST-20-004", "KMIPKIT-ELEM-OP-C2S-ENCRYPT"},
+                {"test-norm-payload-client-check-request-20-004",
+                        "KMIPKIT-PAYLOAD-CLIENT-CHECK-REQUEST-20-004", "KMIPKIT-ELEM-OP-C2S-CHECK"}
+        };
+        for (String[] payload : additionalClientPayloadCases) {
+            int routeEventCount = 0;
+            for (String route : activateIdentifierRoutes) {
+                routeEventCount += routeEventCount(events, payload[0], route, "2.0", payload[1]);
+                routeEventCount += routeEventCount(events, payload[0], route, "2.0", payload[2]);
+            }
+            assertEquals(6, routeEventCount,
+                    "Generic client payload TTLV routes must cover field and operation targets: " + payload[0]);
+        }
         for (String protocolVersion : KMIP_2_0_AND_2_1) {
             assertTrue(LocalCatalogRouteChecks.missingGenericOperationTargetCaseIds(
                     readRouteEvidenceCatalog(), events, protocolVersion).isEmpty(),
