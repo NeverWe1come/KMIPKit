@@ -1054,6 +1054,34 @@ class RouteMatrixTests(unittest.TestCase):
             ((10, 10), 'batch_stop_on_first_failure'),
         )
 
+    def test_normative_get_response_payload_executes_typed_response_accessor(self):
+        """OASIS KMIP 2.0 §6.1.19 Table 206: decode a real Get response through C."""
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        case_id = 'test-norm-payload-client-get-response-20-001'
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest,
+            protocol_versions=('2.0',), network_combinations=(('TTLV', 'raw_tls'),))
+
+        self.assertEqual(len(checks), 1)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertIn('kmipkit_client_batch_item_response_get',
+                      checks[0]['public_api_success_symbols'])
+        local_get_decode = [event for event in events
+                            if event['route_id'] ==
+                            'c.typed-protocol.function.client_batch_item_response_get'
+                            and event['action'] == 'decode']
+        self.assertEqual({event['target_id'] for event in local_get_decode}, {
+            'KMIPKIT-PAYLOAD-CLIENT-GET-RESPONSE-20-001',
+            'KMIPKIT-ELEM-OP-C2S-GET',
+        })
+
     def test_stop_batch_peer_does_not_execute_items_after_first_failure(self):
         from route_peer import PeerState
 
