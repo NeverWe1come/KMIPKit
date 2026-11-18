@@ -2653,7 +2653,6 @@ python3 -m unittest interop.shared.tests.test_route_execution_evidence \
 python3 interop/shared/tools/route_capabilities.py --check
 git diff --check
 ```
-
 ## Client asynchronous correlation payload TTLV routes — 2026-11-18
 
 Red commit `b99d1b3a1` requires generic TTLV item creation, item view, and
@@ -3512,6 +3511,41 @@ pending cells of 71,641 across 1,147 pending case IDs. All 62 planned Java
 BigInteger route cells are now covered. Shared route-evidence, schema, and
 capability suites pass 108 tests; the route audit confirms 1,507 routes. The
 complete Java matrix and stack remain WIP.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-tmp" \
+  bash bindings/java/gradlew -p interop/java-kmip-validator \
+  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" \
+  test --rerun-tasks
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+python3 -m unittest interop.shared.tests.test_route_execution_evidence \
+  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+git diff --check
+```
+
+
+## #217 synchronization with remaining Enumeration fields — 2026-11-18
+
+The `#216` update adds the final three source-catalogued Enumeration fields:
+Interop Function, Attribute Reference encoded as its assigned Tag value, and
+Extension Type encoded as an Item Type. The existing Right Usage Limits fixture
+and its eight route cells remain intact. Their local generic TTLV evidence
+covers value construction, item creation, view, and decode in KMIP 2.0 and 2.1.
+
+The full Java Gradle suite passes. The selected report validates 29,224/29,224
+cells with zero failures; the regenerated ledger records 29,224 executed and
+42,417 pending cells of 71,641 across 1,145 pending case IDs. All 3,767 planned
+Java `TtlvValue.Enumeration` cells are covered. The shared route-evidence,
+schema, and capability tests pass 108 tests, and the route audit confirms 1,507
+routes. The complete matrix and stack remain WIP.
 
 Verification:
 
