@@ -3665,3 +3665,18 @@ report validates 34,550/34,550 cells with zero failures and leaves 37,091 of
 71,641 planned Java cells pending. The generated ledger matches its checked-in
 reference; `git diff --check` passes. Usage Limits remains covered and the PR
 stack remains WIP.
+
+## #216 stack-tip verification after typed ManagedObject key factories — 2026-11-18
+
+The #216 branch includes #187 Red `5f8345b72`, Green `26c0b4ce4`, and Refactor
+`4c3bab90c`. It executes the matching `ManagedObject.symmetricKey`,
+`ManagedObject.privateKey`, or `ManagedObject.publicKey` factory for every
+transparent Key Material fixture and reads back the nested Key Block. The
+Usage Limits routes remain included. Fixtures are deterministic and synthetic
+(KMIP 2.0/2.1 §§2.5–2.9, 3.1–3.12).
+
+The full Java suite passes 84 tests; shared evidence/schema/capability suites
+pass 108 tests; and the capability audit reports 1,507 routes. The selected
+report validates 34,634/34,634 cells with zero failures and leaves 37,007 of
+71,641 planned Java cells pending. The ledger matches its checked-in reference;
+`git diff --check` passes. Full matrix closure remains outstanding.

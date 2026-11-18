@@ -461,3 +461,9 @@ Private Key, or Public Key object type (§§2.5, 2.6, 2.9, 3.4–3.12). Combined
 with the Usage Limits slice, the selected report validates 34,550/34,550 cells
 with zero failures and leaves 37,091 of 71,641 pending. Synthetic fixtures
 verify nested typed values and do not claim cryptographic validity.
+
+The updated #187 head also executes the matching typed `ManagedObject` key
+factory (`symmetricKey`, `privateKey`, or `publicKey`) for every transparent
+Key Material fixture. The #216 branch retains all Usage Limits coverage; its
+combined selected report validates 34,634/34,634 cells with zero failures and
+leaves 37,007 of 71,641 pending. Full matrix closure remains outstanding.

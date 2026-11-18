@@ -868,6 +868,15 @@
     "test-norm-structure-member-structure-member-7-22-object-type-objecttypes",
     "test-norm-operation-structure-operation-structure-7-2-asynchronous-request",
     "test-norm-operation-structure-operation-structure-7-13-extension-information",
+    "test-norm-object-structure-object-structure-3-11-key-material",
+    "test-norm-structure-member-structure-member-3-7-key-material-private-exponent",
+    "test-norm-structure-member-structure-member-3-7-key-material-modulus",
+    "test-norm-object-structure-object-structure-3-10-key-material",
+    "test-norm-structure-member-structure-member-3-6-key-material-y",
+    "test-norm-structure-member-structure-member-3-7-key-material-p",
+    "test-norm-structure-member-structure-member-3-7-key-material-q",
+    "test-norm-structure-member-structure-member-3-8-key-material-modulus",
+    "test-norm-structure-member-structure-member-3-11-key-material-recommended-curve",
     "test-norm-object-structure-object-structure-3-9-key-material",
     "test-norm-structure-member-structure-member-3-4-key-material-key",
     "test-norm-object-structure-object-structure-3-8-key-material",
@@ -901,15 +910,6 @@
     "test-norm-object-structure-object-structure-3-12-key-material",
     "test-norm-structure-member-structure-member-3-6-key-material-p",
     "test-norm-structure-member-structure-member-3-6-key-material-q",
-    "test-norm-object-structure-object-structure-3-11-key-material",
-    "test-norm-structure-member-structure-member-3-7-key-material-private-exponent",
-    "test-norm-structure-member-structure-member-3-7-key-material-modulus",
-    "test-norm-object-structure-object-structure-3-10-key-material",
-    "test-norm-structure-member-structure-member-3-6-key-material-y",
-    "test-norm-structure-member-structure-member-3-7-key-material-p",
-    "test-norm-structure-member-structure-member-3-7-key-material-q",
-    "test-norm-structure-member-structure-member-3-8-key-material-modulus",
-    "test-norm-structure-member-structure-member-3-11-key-material-recommended-curve",
     "test-norm-structure-member-structure-member-7-24-object-type",
     "test-norm-operation-structure-operation-structure-7-6-constraint",
     "test-norm-operation-structure-operation-structure-7-7-constraints",
@@ -2639,9 +2639,9 @@
     "test-norm-enumeration-value-enum-value-item-type-long-integer-00000003",
     "test-norm-enumeration-value-enum-value-item-type-structure-00000001",
     "test-norm-enumeration-value-enum-value-item-type-text-string-00000007",
+    "test-enum-tag",
     "test-enum-pkcs#11-return-code",
     "test-enum-pkcs#11-function",
-    "test-enum-tag",
     "test-norm-tag-tag-42000e",
     "test-norm-attribute-structure-attribute-structure-5-1-attributes",
     "test-op-ping",
@@ -2661,7 +2661,7 @@
     "test-norm-credential-credential-hashed-password",
     "test-norm-credential-credential-username-and-password"
   ],
-  "executed_cells": 34550,
+  "executed_cells": 34634,
   "language": "java",
   "library_commit": "12496d646d11d4069b58bcc88fc76cc619211ec6",
   "pending_case_ids": [
@@ -4367,39 +4367,39 @@
     },
     {
       "case_id": "test-norm-object-structure-object-structure-3-10-key-material",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-object-structure-object-structure-3-11-key-material",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-object-structure-object-structure-3-12-key-material",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-object-structure-object-structure-3-4-key-material",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-object-structure-object-structure-3-5-key-material",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-object-structure-object-structure-3-6-key-material",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-object-structure-object-structure-3-7-key-material",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-object-structure-object-structure-3-8-key-material",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-object-structure-object-structure-3-9-key-material",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-object-structure-object-structure-certificate",
@@ -7263,39 +7263,39 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-10-key-material-g",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-10-key-material-j",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-10-key-material-p",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-10-key-material-q",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-10-key-material-y",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-11-key-material-d",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-11-key-material-recommended-curve",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-12-key-material-q-string",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-12-key-material-recommended-curve",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-2-key-value-attributes",
@@ -7347,99 +7347,99 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-4-key-material-key",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-5-key-material-g",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-5-key-material-p",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-5-key-material-q",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-5-key-material-x",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-6-key-material-g",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-6-key-material-p",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-6-key-material-q",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-6-key-material-y",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-7-key-material-crt-coefficient",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-7-key-material-modulus",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-7-key-material-p",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-7-key-material-prime-exponent-p",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-7-key-material-prime-exponent-q",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-7-key-material-private-exponent",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-7-key-material-public-exponent",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-7-key-material-q",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-8-key-material-modulus",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-8-key-material-public-exponent",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-9-key-material-g",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-9-key-material-j",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-9-key-material-p",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-9-key-material-q",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-9-key-material-x",
-      "pending_cells": 12
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-14-qlength",
@@ -8198,7 +8198,7 @@
       "pending_cells": 15
     }
   ],
-  "pending_cells": 37091,
+  "pending_cells": 37007,
   "pending_reason": "No validated per-cell route execution evidence is recorded for this cell.",
   "pending_reason_code": "route_evidence_not_emitted",
   "planned_cells": 71641,
@@ -33856,8 +33856,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 68,
+      "executed_cells": 23,
+      "pending_cells": 45,
       "protocol_version": "2.0",
       "required_cells": 68,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.privatekey",
@@ -33866,8 +33866,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 68,
+      "executed_cells": 23,
+      "pending_cells": 45,
       "protocol_version": "2.1",
       "required_cells": 68,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.privatekey",
@@ -33876,8 +33876,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 68,
+      "executed_cells": 17,
+      "pending_cells": 51,
       "protocol_version": "2.0",
       "required_cells": 68,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.publickey",
@@ -33886,8 +33886,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 68,
+      "executed_cells": 17,
+      "pending_cells": 51,
       "protocol_version": "2.1",
       "required_cells": 68,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.publickey",
@@ -33936,8 +33936,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 68,
+      "executed_cells": 2,
+      "pending_cells": 66,
       "protocol_version": "2.0",
       "required_cells": 68,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.symmetrickey",
@@ -33946,8 +33946,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 68,
+      "executed_cells": 2,
+      "pending_cells": 66,
       "protocol_version": "2.1",
       "required_cells": 68,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.symmetrickey",
@@ -36175,14 +36175,14 @@
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.pgpkey"
     },
     {
-      "executed_cells": 0,
-      "pending_cells": 136,
+      "executed_cells": 46,
+      "pending_cells": 90,
       "required_cells": 136,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.privatekey"
     },
     {
-      "executed_cells": 0,
-      "pending_cells": 136,
+      "executed_cells": 34,
+      "pending_cells": 102,
       "required_cells": 136,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.publickey"
     },
@@ -36199,8 +36199,8 @@
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.splitkey"
     },
     {
-      "executed_cells": 0,
-      "pending_cells": 136,
+      "executed_cells": 4,
+      "pending_cells": 132,
       "required_cells": 136,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.symmetrickey"
     },
@@ -36248,7 +36248,7 @@
     }
   ],
   "schema_version": "1.0",
-  "selected_scope_cells": 34550,
+  "selected_scope_cells": 34634,
   "selected_scope_complete": true,
   "vendor_interoperability_claim": false
 }
