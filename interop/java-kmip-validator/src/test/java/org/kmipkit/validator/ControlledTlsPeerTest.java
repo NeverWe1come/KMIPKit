@@ -111,7 +111,23 @@ class ControlledTlsPeerTest {
             int operationValue) { }
 
     private record AttributeReadNetworkRequest(String caseId, String routeId,
-            String publicApiSymbol, String uniqueBatchItemId) { }
+            String publicApiSymbol, String uniqueBatchItemId, String targetId,
+            boolean includeIdentifier, List<Long> attributeReferenceTags) {
+        private AttributeReadNetworkRequest(String caseId, String routeId,
+                String publicApiSymbol, String uniqueBatchItemId) {
+            this(caseId, routeId, publicApiSymbol, uniqueBatchItemId,
+                    "java.typed-protocol.client_batch_item.get_attribute_list".equals(routeId)
+                            || "java.typed-protocol.function.attribute_request_get_attribute_list_to_batch_item"
+                                    .equals(routeId)
+                            ? "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST"
+                            : "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES",
+                    true, List.of(0x420001L));
+        }
+
+        private AttributeReadNetworkRequest {
+            attributeReferenceTags = List.copyOf(attributeReferenceTags);
+        }
+    }
 
     private static final List<NewAttributeMutationFixture> NEW_ATTRIBUTE_MUTATION_FIXTURES = List.of(
             new NewAttributeMutationFixture("addAttribute", "Add Attribute", "002", 0x0d),
@@ -4406,10 +4422,18 @@ class ControlledTlsPeerTest {
 
     private static int getAttributesNetworkRouteEventCount(JsonNode catalog) {
         int caseVersionCount = 0;
+        int payloadCaseVersionCount = 0;
         for (String protocolVersion : KMIP_2_0_AND_2_1) {
             caseVersionCount += getAttributesNetworkRouteCaseIds(catalog, protocolVersion).size();
         }
-        return caseVersionCount * 37;
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String targetId = testCase.path("requires").path("normative_target_id").asText();
+            if ("Get Attributes".equals(testCase.path("operation").asText())
+                    && targetId.startsWith("KMIPKIT-PAYLOAD-CLIENT-GET-ATTRIBUTES-REQUEST-")) {
+                payloadCaseVersionCount += testCase.path("execution").path("protocol_versions").size();
+            }
+        }
+        return caseVersionCount * 37 + payloadCaseVersionCount * 24;
     }
 
     private static int getAttributeListNetworkRouteEventCount(JsonNode catalog) {
@@ -4444,6 +4468,47 @@ class ControlledTlsPeerTest {
         return caseIds;
     }
 
+    private static void appendGetAttributesPayloadNetworkInvocations(
+            List<AttributeReadNetworkRequest> invocations, JsonNode catalog, String protocolVersion) {
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String targetId = testCase.path("requires").path("normative_target_id").asText();
+            if (!"Get Attributes".equals(testCase.path("operation").asText())
+                    || !targetId.startsWith("KMIPKIT-PAYLOAD-CLIENT-GET-ATTRIBUTES-REQUEST-")
+                    || !containsText(testCase.path("execution").path("protocol_versions"), protocolVersion)) {
+                continue;
+            }
+            String caseId = testCase.path("case_id").asText();
+            String fieldName = testCase.path("requires").path("field_name").asText();
+            for (String[] route : List.of(
+                    new String[] {"java.typed-protocol.client_batch_item.get_attributes",
+                            "org.kmipkit.extensions.ClientBatchItem.getAttributes"},
+                    new String[] {"java.typed-protocol.function.attribute_request_get_attributes_to_batch_item",
+                            "org.kmipkit.extensions.GetAttributesRequest.toBatchItem"})) {
+                String routeSuffix = route[0].contains("client_batch_item") ? "direct" : "request";
+                if ("Unique Identifier".equals(fieldName)) {
+                    invocations.add(new AttributeReadNetworkRequest(caseId, route[0], route[1],
+                            "getattr-payload-" + caseId + "-" + routeSuffix + "-present", targetId, true,
+                            List.of(0x420001L)));
+                    invocations.add(new AttributeReadNetworkRequest(caseId, route[0], route[1],
+                            "getattr-payload-" + caseId + "-" + routeSuffix + "-omitted", targetId, false,
+                            List.of(0x420001L)));
+                } else if ("Attribute Reference".equals(fieldName)) {
+                    invocations.add(new AttributeReadNetworkRequest(caseId, route[0], route[1],
+                            "getattr-payload-" + caseId + "-" + routeSuffix + "-omitted", targetId, true,
+                            List.of()));
+                    invocations.add(new AttributeReadNetworkRequest(caseId, route[0], route[1],
+                            "getattr-payload-" + caseId + "-" + routeSuffix + "-present", targetId, true,
+                            List.of(0x420001L)));
+                    invocations.add(new AttributeReadNetworkRequest(caseId, route[0], route[1],
+                            "getattr-payload-" + caseId + "-" + routeSuffix + "-repeated", targetId, true,
+                            List.of(0x420001L, 0x420002L)));
+                } else {
+                    throw new IllegalStateException("Unexpected Get Attributes payload field: " + fieldName);
+                }
+            }
+        }
+    }
+
     private void appendControlledGetAttributesNetworkRouteEvents(ArrayNode events, String protocolVersion)
             throws Exception {
         JsonNode catalog = readRouteEvidenceCatalog();
@@ -4467,10 +4532,16 @@ class ControlledTlsPeerTest {
                             "java.typed-protocol.function.attribute_request_get_attributes_to_batch_item",
                             "org.kmipkit.extensions.GetAttributesRequest.toBatchItem", itemId + "-request"));
                 }
+                appendGetAttributesPayloadNetworkInvocations(invocations, readRouteEvidenceCatalog(),
+                        protocolVersion);
                 List<String> uniqueBatchItemIds = invocations.stream()
                         .map(AttributeReadNetworkRequest::uniqueBatchItemId).toList();
-                byte[] responseTtlv = getAttributesBatchResponse(minor, uniqueBatchItemIds);
-                byte[] responseBytes = getAttributesBatchResponse(minor, uniqueBatchItemIds, encoding);
+                boolean needsPlaceholderProducer = invocations.stream()
+                        .anyMatch(invocation -> !invocation.includeIdentifier());
+                byte[] responseTtlv = getAttributesBatchResponse(
+                        minor, uniqueBatchItemIds, "TTLV", needsPlaceholderProducer);
+                byte[] responseBytes = getAttributesBatchResponse(
+                        minor, uniqueBatchItemIds, encoding, needsPlaceholderProducer);
                 Path connectionFile = temporaryDirectory.resolve(
                         "get-attributes-routes-" + protocolVersion + "-" + encoding + "-" + transport + ".json");
                 byte[] observedRequest;
@@ -4529,13 +4600,24 @@ class ControlledTlsPeerTest {
                     }
                     observedRequest = peer.get(15, TimeUnit.SECONDS);
                 }
-                assertAttributeReadNetworkRequest(observedRequest, encoding, protocolVersion, uniqueBatchItemIds);
+                assertAttributeReadNetworkRequest(observedRequest, encoding, protocolVersion,
+                        uniqueBatchItemIds, invocations);
                 if (baselineRequestHash == null) baselineRequestHash = normalizedTreeSha256(observedRequest);
                 String responseHash = normalizedTreeSha256(responseTtlv);
+                Set<String> emittedRouteCells = new java.util.HashSet<>();
                 for (AttributeReadNetworkRequest invocation : invocations) {
-                    appendTypedNetworkRouteEvents(events, invocation.caseId(), invocation.routeId(),
-                            "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES", invocation.publicApiSymbol(),
-                            protocolVersion, baselineRequestHash, responseHash, encoding, transport);
+                    String eventKey = invocation.caseId() + "\n" + invocation.routeId() + "\n"
+                            + invocation.targetId();
+                    if (!emittedRouteCells.add(eventKey)) continue;
+                    if (invocation.targetId().startsWith("KMIPKIT-PAYLOAD-CLIENT-GET-ATTRIBUTES-REQUEST-")) {
+                        appendTypedNetworkConstructionAndSendEvents(events, invocation.caseId(),
+                                invocation.routeId(), invocation.targetId(), invocation.publicApiSymbol(),
+                                protocolVersion, baselineRequestHash, encoding, transport);
+                    } else {
+                        appendTypedNetworkRouteEvents(events, invocation.caseId(), invocation.routeId(),
+                                invocation.targetId(), invocation.publicApiSymbol(),
+                                protocolVersion, baselineRequestHash, responseHash, encoding, transport);
+                    }
                 }
                 if ("TTLV".equals(encoding) && "raw_tls".equals(transport)) {
                     for (String caseId : caseIds) {
@@ -4731,13 +4813,30 @@ class ControlledTlsPeerTest {
         try {
             try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile));
                     ClientBatch batch = ClientBatch.create()) {
+                boolean needsPlaceholderProducer = invocations.stream()
+                        .anyMatch(invocation -> !invocation.includeIdentifier());
+                if (needsPlaceholderProducer) {
+                    try (ClientBatchItem producer = TypedRequestFactory.create("Create")) {
+                        batch.add(producer.withUniqueBatchItemId(
+                                "getattr-payload-producer".getBytes(StandardCharsets.US_ASCII)));
+                    }
+                }
                 for (AttributeReadNetworkRequest invocation : invocations) {
                     addAttributeReadNetworkRequest(batch, invocation);
                 }
                 try (ClientBatchResponse response = driver.executeBatchForEvidence(batch)) {
-                    assertEquals(invocations.size(), response.itemCount());
+                    int responseOffset = needsPlaceholderProducer ? 1 : 0;
+                    assertEquals(invocations.size() + responseOffset, response.itemCount());
+                    if (needsPlaceholderProducer) {
+                        try (ClientBatchItemResult result = response.itemAt(0)) {
+                            assertEquals(1L, result.operation());
+                            assertEquals(0L, result.resultStatus());
+                            assertEquals("object-7", result.createResponse().orElseThrow()
+                                    .uniqueIdentifier().text());
+                        }
+                    }
                     for (int index = 0; index < invocations.size(); index++) {
-                        try (ClientBatchItemResult result = response.itemAt(index)) {
+                        try (ClientBatchItemResult result = response.itemAt(index + responseOffset)) {
                             assertAttributeReadRouteResponse(result);
                         }
                     }
@@ -4755,27 +4854,69 @@ class ControlledTlsPeerTest {
             AttributeReadNetworkRequest invocation) {
         byte[] uniqueBatchItemId = invocation.uniqueBatchItemId().getBytes(StandardCharsets.US_ASCII);
         if ("java.typed-protocol.client_batch_item.get_attribute_list".equals(invocation.routeId())) {
-            batch.add(ClientBatchItem.getAttributeList(UniqueIdentifier.textString("object-7"))
-                    .withUniqueBatchItemId(uniqueBatchItemId));
+            try (ClientBatchItem request = ClientBatchItem.getAttributeList(
+                    invocation.includeIdentifier() ? UniqueIdentifier.textString("object-7") : null);
+                    ClientBatchItem identified = request.withUniqueBatchItemId(uniqueBatchItemId)) {
+                batch.add(identified);
+            }
             return;
         }
         if ("java.typed-protocol.function.attribute_request_get_attribute_list_to_batch_item"
                 .equals(invocation.routeId())) {
             try (GetAttributeListRequest request = GetAttributeListRequest.create(
-                    UniqueIdentifier.textString("object-7"))) {
-                batch.add(request.toBatchItem().withUniqueBatchItemId(uniqueBatchItemId));
+                    invocation.includeIdentifier() ? UniqueIdentifier.textString("object-7") : null);
+                    ClientBatchItem item = request.toBatchItem();
+                    ClientBatchItem identified = item.withUniqueBatchItemId(uniqueBatchItemId)) {
+                batch.add(identified);
             }
             return;
         }
+        UniqueIdentifier identifier = invocation.includeIdentifier()
+                ? UniqueIdentifier.textString("object-7") : null;
+        List<AttributeReference> references = invocation.attributeReferenceTags().stream()
+                .map(AttributeReference::tag).toList();
         if ("java.typed-protocol.client_batch_item.get_attributes".equals(invocation.routeId())) {
-            batch.add(ClientBatchItem.getAttributes(UniqueIdentifier.textString("object-7"),
-                    List.of(AttributeReference.tag(0x420001))).withUniqueBatchItemId(uniqueBatchItemId));
+            try (ClientBatchItem request = ClientBatchItem.getAttributes(identifier, references)) {
+                ClientBatchItem identified = request.withUniqueBatchItemId(uniqueBatchItemId);
+                batch.add(identified);
+            }
             return;
         }
-        try (GetAttributesRequest request = GetAttributesRequest.create(
-                UniqueIdentifier.textString("object-7"), List.of(AttributeReference.tag(0x420001)))) {
-            batch.add(request.toBatchItem().withUniqueBatchItemId(uniqueBatchItemId));
+        try (GetAttributesRequest request = GetAttributesRequest.create(identifier, references);
+                TtlvStructure payload = request.toTtlvPayload();
+                ClientBatchItem item = request.toBatchItem()) {
+            assertGetAttributesPayloadShape(payload, invocation);
+            ClientBatchItem identified = item.withUniqueBatchItemId(uniqueBatchItemId);
+            batch.add(identified);
         }
+    }
+
+    private static void assertGetAttributesPayloadShape(TtlvStructure payload,
+            AttributeReadNetworkRequest invocation) {
+        int identifierCount = 0;
+        List<Long> observedReferences = new ArrayList<>();
+        try (var fields = payload.view()) {
+            for (long index = 0; index < fields.itemCount(); index++) {
+                try (var field = fields.itemAt(index);
+                        var tag = field.tag();
+                        var value = field.value()) {
+                    if (tag.raw() == 0x420094) {
+                        identifierCount++;
+                        assertEquals(TtlvItemType.TextString, field.itemType());
+                        assertEquals("object-7", new String(value.bytes(), StandardCharsets.UTF_8));
+                    } else if (tag.raw() == 0x42013b) {
+                        assertEquals(TtlvItemType.Enumeration, field.itemType());
+                        observedReferences.add(value.enumeration());
+                    } else {
+                        throw new AssertionError("Unexpected Get Attributes request field tag.");
+                    }
+                }
+            }
+        }
+        assertEquals(invocation.includeIdentifier() ? 1 : 0, identifierCount,
+                "Get Attributes must preserve the catalogued Unique Identifier branch.");
+        assertEquals(invocation.attributeReferenceTags(), observedReferences,
+                "Get Attributes must preserve the catalogued Attribute Reference cardinality and values.");
     }
 
     private static void assertAttributeReadRouteResponse(ClientBatchItemResult result) throws Exception {
@@ -4921,6 +5062,107 @@ class ControlledTlsPeerTest {
         return response.getBytes(StandardCharsets.UTF_8);
     }
 
+    private static byte[] getAttributesBatchResponse(int protocolMinorVersion,
+            List<String> uniqueBatchItemIds, String encoding, boolean includePlaceholderProducer)
+            throws Exception {
+        if (!includePlaceholderProducer) {
+            return getAttributesBatchResponse(protocolMinorVersion, uniqueBatchItemIds, encoding);
+        }
+        if ("TTLV".equals(encoding)) {
+            byte[] version = structure(0x420069,
+                    item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(protocolMinorVersion)));
+            byte[] header = structure(0x42007a, version,
+                    item(0x420092, 9, longBytes(1_700_000_000L)),
+                    item(0x42000d, 2, intBytes(uniqueBatchItemIds.size() + 1)));
+            byte[] producerPayload = structure(0x42007c,
+                    item(0x420057, 5, intBytes(2)),
+                    item(0x420094, 7, "object-7".getBytes(StandardCharsets.UTF_8)));
+            byte[] producerResponse = structure(0x42000f,
+                    item(0x42005c, 5, intBytes(1)),
+                    item(0x420093, 8, "getattr-payload-producer".getBytes(StandardCharsets.US_ASCII)),
+                    item(0x42007f, 5, intBytes(0)), producerPayload);
+            byte[] attributesPayload = structure(0x42007c,
+                    item(0x420094, 7, "object-7".getBytes(StandardCharsets.UTF_8)),
+                    structure(0x420125, item(0x420001, 9, longBytes(1))));
+            byte[][] responseItems = new byte[uniqueBatchItemIds.size() + 2][];
+            responseItems[0] = header;
+            responseItems[1] = producerResponse;
+            for (int index = 0; index < uniqueBatchItemIds.size(); index++) {
+                responseItems[index + 2] = structure(0x42000f,
+                        item(0x42005c, 5, intBytes(0x0b)),
+                        item(0x420093, 8, uniqueBatchItemIds.get(index).getBytes(StandardCharsets.US_ASCII)),
+                        item(0x42007f, 5, intBytes(0)), attributesPayload);
+            }
+            return structure(0x42007b, responseItems);
+        }
+        String response = "JSON".equals(encoding)
+                ? jsonGetAttributesBatchResponseWithProducer(protocolMinorVersion, uniqueBatchItemIds)
+                : xmlGetAttributesBatchResponseWithProducer(protocolMinorVersion, uniqueBatchItemIds);
+        return response.getBytes(StandardCharsets.UTF_8);
+    }
+
+    private static String jsonGetAttributesBatchResponseWithProducer(int protocolMinorVersion,
+            List<String> uniqueBatchItemIds) {
+        StringBuilder response = new StringBuilder("{\"tag\":\"ResponseMessage\",\"value\":[")
+                .append("{\"tag\":\"ResponseHeader\",\"value\":[")
+                .append("{\"tag\":\"ProtocolVersion\",\"value\":[")
+                .append("{\"tag\":\"ProtocolVersionMajor\",\"type\":\"Integer\",\"value\":2},")
+                .append("{\"tag\":\"ProtocolVersionMinor\",\"type\":\"Integer\",\"value\":")
+                .append(protocolMinorVersion).append("}]},")
+                .append("{\"tag\":\"TimeStamp\",\"type\":\"DateTime\",\"value\":\"0x0000000000000001\"},")
+                .append("{\"tag\":\"BatchCount\",\"type\":\"Integer\",\"value\":")
+                .append(uniqueBatchItemIds.size() + 1).append("}]}")
+                .append(", {\"tag\":\"BatchItem\",\"value\":[")
+                .append("{\"tag\":\"Operation\",\"type\":\"Enumeration\",\"value\":\"Create\"},")
+                .append("{\"tag\":\"UniqueBatchItemID\",\"type\":\"ByteString\",\"value\":\"")
+                .append(HexFormat.of().formatHex("getattr-payload-producer".getBytes(StandardCharsets.US_ASCII)))
+                .append("\"},{\"tag\":\"ResultStatus\",\"type\":\"Enumeration\",\"value\":\"Success\"},")
+                .append("{\"tag\":\"ResponsePayload\",\"value\":[")
+                .append("{\"tag\":\"ObjectType\",\"type\":\"Enumeration\",\"value\":\"SymmetricKey\"},")
+                .append("{\"tag\":\"UniqueIdentifier\",\"type\":\"TextString\",\"value\":\"object-7\"}]}]}");
+        for (String uniqueBatchItemId : uniqueBatchItemIds) {
+            response.append(", {\"tag\":\"BatchItem\",\"value\":[")
+                    .append("{\"tag\":\"Operation\",\"type\":\"Enumeration\",\"value\":\"GetAttributes\"},")
+                    .append("{\"tag\":\"UniqueBatchItemID\",\"type\":\"ByteString\",\"value\":\"")
+                    .append(HexFormat.of().formatHex(uniqueBatchItemId.getBytes(StandardCharsets.US_ASCII)))
+                    .append("\"},{\"tag\":\"ResultStatus\",\"type\":\"Enumeration\",\"value\":\"Success\"},")
+                    .append("{\"tag\":\"ResponsePayload\",\"value\":[")
+                    .append("{\"tag\":\"UniqueIdentifier\",\"type\":\"TextString\",\"value\":\"object-7\"},")
+                    .append("{\"tag\":\"Attributes\",\"value\":[")
+                    .append("{\"tag\":\"ActivationDate\",\"type\":\"DateTime\",\"value\":\"1970-01-01T00:00:01Z\"}]}]}]}");
+        }
+        return response.append("]}").toString();
+    }
+
+    private static String xmlGetAttributesBatchResponseWithProducer(int protocolMinorVersion,
+            List<String> uniqueBatchItemIds) {
+        StringBuilder response = new StringBuilder("<ResponseMessage><ResponseHeader>")
+                .append("<ProtocolVersion><ProtocolVersionMajor type=\"Integer\" value=\"2\"/>")
+                .append("<ProtocolVersionMinor type=\"Integer\" value=\"")
+                .append(protocolMinorVersion).append("\"/></ProtocolVersion>")
+                .append("<TimeStamp type=\"DateTime\" value=\"1970-01-01T00:00:01Z\"/>")
+                .append("<BatchCount type=\"Integer\" value=\"")
+                .append(uniqueBatchItemIds.size() + 1).append("\"/></ResponseHeader>")
+                .append("<BatchItem><Operation type=\"Enumeration\" value=\"Create\"/>")
+                .append("<UniqueBatchItemID type=\"ByteString\" value=\"")
+                .append(HexFormat.of().withUpperCase()
+                        .formatHex("getattr-payload-producer".getBytes(StandardCharsets.US_ASCII)))
+                .append("\"/><ResultStatus type=\"Enumeration\" value=\"Success\"/>")
+                .append("<ResponsePayload><ObjectType type=\"Enumeration\" value=\"SymmetricKey\"/>")
+                .append("<UniqueIdentifier type=\"TextString\" value=\"object-7\"/></ResponsePayload></BatchItem>");
+        for (String uniqueBatchItemId : uniqueBatchItemIds) {
+            response.append("<BatchItem><Operation type=\"Enumeration\" value=\"GetAttributes\"/>")
+                    .append("<UniqueBatchItemID type=\"ByteString\" value=\"")
+                    .append(HexFormat.of().withUpperCase()
+                            .formatHex(uniqueBatchItemId.getBytes(StandardCharsets.US_ASCII)))
+                    .append("\"/><ResultStatus type=\"Enumeration\" value=\"Success\"/>")
+                    .append("<ResponsePayload><UniqueIdentifier type=\"TextString\" value=\"object-7\"/>")
+                    .append("<Attributes><ActivationDate type=\"DateTime\" value=\"1970-01-01T00:00:01Z\"/>")
+                    .append("</Attributes></ResponsePayload></BatchItem>");
+        }
+        return response.append("</ResponseMessage>").toString();
+    }
+
     private static String jsonGetAttributesBatchResponse(int protocolMinorVersion,
             List<String> uniqueBatchItemIds) {
         StringBuilder response = new StringBuilder("{\"tag\":\"ResponseMessage\",\"value\":[")
@@ -5029,14 +5271,38 @@ class ControlledTlsPeerTest {
     }
 
     private static void assertAttributeReadNetworkRequest(byte[] request, String encoding,
-            String protocolVersion, List<String> uniqueBatchItemIds) throws Exception {
+            String protocolVersion, List<String> uniqueBatchItemIds,
+            List<AttributeReadNetworkRequest> invocations) throws Exception {
         int minor = "2.0".equals(protocolVersion) ? 0 : 1;
+        int expectedIdentifierCount = Math.toIntExact(invocations.stream()
+                .filter(AttributeReadNetworkRequest::includeIdentifier).count());
+        Map<Long, Integer> expectedReferenceCounts = new java.util.LinkedHashMap<>();
+        for (AttributeReadNetworkRequest invocation : invocations) {
+            invocation.attributeReferenceTags().forEach(tag ->
+                    expectedReferenceCounts.merge(tag, 1, Integer::sum));
+        }
+        int expectedReferenceCount = expectedReferenceCounts.values().stream().mapToInt(Integer::intValue).sum();
+        boolean hasPlaceholderProducer = invocations.stream()
+                .anyMatch(invocation -> !invocation.includeIdentifier());
+        List<String> expectedBatchIds = new ArrayList<>();
+        if (hasPlaceholderProducer) expectedBatchIds.add("getattr-payload-producer");
+        expectedBatchIds.addAll(uniqueBatchItemIds);
         if ("TTLV".equals(encoding)) {
-            assertEquals(0x0bL, requestOperation(request));
+            assertEquals(hasPlaceholderProducer ? 1L : 0x0bL, requestOperation(request));
             assertEquals(minor, requestProtocolMinorVersion(request));
-            assertTrue(contains(request, item(0x42013b, 5, intBytes(0x420001))),
-                    "The controlled peer must observe the requested Activation Date reference.");
-            for (String uniqueBatchItemId : uniqueBatchItemIds) {
+            assertEquals(hasPlaceholderProducer ? 1 : 0, occurrences(request, item(0x42005c, 5, intBytes(1))));
+            assertEquals(uniqueBatchItemIds.size(), occurrences(request, item(0x42005c, 5, intBytes(0x0b))));
+            assertEquals(expectedIdentifierCount,
+                    occurrences(request, item(0x420094, 7, "object-7".getBytes(StandardCharsets.UTF_8))),
+                    "The controlled peer must observe only the catalogued Unique Identifier variants.");
+            assertEquals(expectedReferenceCount, countTag(request, 0x42013b),
+                    "The controlled peer must observe the catalogued Attribute Reference cardinality.");
+            for (Map.Entry<Long, Integer> entry : expectedReferenceCounts.entrySet()) {
+                assertEquals(entry.getValue(), occurrences(request, item(0x42013b, 5,
+                        intBytes(Math.toIntExact(entry.getKey())))),
+                        "The controlled peer must observe each catalogued Attribute Reference value.");
+            }
+            for (String uniqueBatchItemId : expectedBatchIds) {
                 assertTrue(contains(request, item(0x420093, 8,
                         uniqueBatchItemId.getBytes(StandardCharsets.US_ASCII))),
                         "The controlled peer must observe each catalogued unique batch item ID.");
@@ -5047,18 +5313,26 @@ class ControlledTlsPeerTest {
             JsonNode root = new ObjectMapper().readTree(request);
             assertEquals("RequestMessage", root.path("tag").asText());
             List<JsonNode> operations = jsonValuesForTag(root, "Operation");
-            assertEquals(uniqueBatchItemIds.size(), operations.size());
-            assertTrue(operations.stream().allMatch(value -> "GetAttributes".equals(value.asText())));
+            assertEquals(expectedBatchIds.size(), operations.size());
+            assertEquals(hasPlaceholderProducer ? 1L : 0L, operations.stream()
+                    .filter(value -> "Create".equals(value.asText())).count());
+            assertEquals((long) uniqueBatchItemIds.size(), operations.stream()
+                    .filter(value -> "GetAttributes".equals(value.asText())).count());
             List<JsonNode> minors = jsonValuesForTag(root, "ProtocolVersionMinor");
             assertEquals(1, minors.size());
             assertEquals(minor, minors.get(0).asInt());
             List<JsonNode> references = jsonValuesForTag(root, "AttributeReference");
-            assertEquals(uniqueBatchItemIds.size(), references.size());
-            assertTrue(references.stream().allMatch(value -> "0x00420001".equals(value.asText())),
-                    "The JSON request must carry the catalogued Activation Date tag: " + references);
+            assertEquals(expectedReferenceCount, references.size());
+            for (Map.Entry<Long, Integer> entry : expectedReferenceCounts.entrySet()) {
+                String expectedTag = String.format("0x%08X", entry.getKey());
+                assertEquals(entry.getValue().longValue(), references.stream()
+                        .filter(value -> expectedTag.equals(value.asText())).count(),
+                        "The JSON request must carry each catalogued Attribute Reference value.");
+            }
+            assertEquals(expectedIdentifierCount, jsonValuesForTag(root, "UniqueIdentifier").size());
             List<String> observedIds = jsonValuesForTag(root, "UniqueBatchItemID").stream()
                     .map(JsonNode::asText).toList();
-            List<String> expectedIds = uniqueBatchItemIds.stream()
+            List<String> expectedIds = expectedBatchIds.stream()
                     .map(value -> HexFormat.of().formatHex(value.getBytes(StandardCharsets.US_ASCII))).toList();
             assertEquals(expectedIds, observedIds);
             return;
@@ -5067,10 +5341,17 @@ class ControlledTlsPeerTest {
         assertTrue(xml.startsWith("<RequestMessage>"));
         assertEquals(uniqueBatchItemIds.size(), occurrences(xml,
                 "<Operation type=\"Enumeration\" value=\"GetAttributes\"/>"));
+        assertEquals(hasPlaceholderProducer ? 1 : 0, occurrences(xml,
+                "<Operation type=\"Enumeration\" value=\"Create\"/>"));
         assertTrue(xml.contains("<ProtocolVersionMinor type=\"Integer\" value=\"" + minor + "\"/>"));
-        assertEquals(uniqueBatchItemIds.size(), occurrences(xml,
-                "<AttributeReference type=\"Enumeration\" value=\"0x00420001\"/>"));
-        for (String uniqueBatchItemId : uniqueBatchItemIds) {
+        assertEquals(expectedReferenceCount, occurrences(xml, "<AttributeReference type=\"Enumeration\""));
+        assertEquals(expectedIdentifierCount, occurrences(xml, "<UniqueIdentifier type=\"TextString\""));
+        for (Map.Entry<Long, Integer> entry : expectedReferenceCounts.entrySet()) {
+            String expectedTag = String.format("0x%08X", entry.getKey());
+            assertEquals(entry.getValue(), occurrences(xml,
+                    "<AttributeReference type=\"Enumeration\" value=\"" + expectedTag + "\"/>"));
+        }
+        for (String uniqueBatchItemId : expectedBatchIds) {
             String encodedId = HexFormat.of().withUpperCase()
                     .formatHex(uniqueBatchItemId.getBytes(StandardCharsets.US_ASCII));
             assertTrue(xml.contains("<UniqueBatchItemID type=\"ByteString\" value=\"" + encodedId + "\"/>"));
@@ -5096,6 +5377,31 @@ class ControlledTlsPeerTest {
             from += value.length();
         }
         return count;
+    }
+
+    private static int occurrences(byte[] bytes, byte[] value) {
+        int count = 0;
+        for (int offset = 0; offset <= bytes.length - value.length; offset++) {
+            boolean matches = true;
+            for (int index = 0; index < value.length; index++) {
+                if (bytes[offset + index] != value[index]) {
+                    matches = false;
+                    break;
+                }
+            }
+            if (matches) {
+                count++;
+                offset += value.length - 1;
+            }
+        }
+        return count;
+    }
+
+    private static int countTag(byte[] bytes, long rawTag) {
+        byte[] tagAndType = {
+            (byte) (rawTag >>> 16), (byte) (rawTag >>> 8), (byte) rawTag, 5
+        };
+        return occurrences(bytes, tagAndType);
     }
 
     private void appendControlledKeyFormatRawResponseRouteEvents(ArrayNode events, String protocolVersion)
