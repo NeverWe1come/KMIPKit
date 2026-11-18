@@ -89,6 +89,9 @@ DERIVE_KEY_DATA = b'synthetic-derivation-data'
 DERIVE_KEY_SALT = b'synthetic-derivation-salt'
 SECRET_DATA_MATERIAL = b'synthetic-secret-material'
 SECRET_DATA_ITEM_IDS = (b'interop-register', b'interop-destroy')
+IMPORT_ITEM_IDS = (b'import-object', b'import-destroy')
+IMPORT_IDENTIFIER = b'fixture-imported-secret-data'
+IMPORT_OBJECT_DATA = b'controlled-import-object'
 CERTIFY_ITEM_IDS = (b'certify-create-pair', b'certify-activate-private', b'certify-public-key',
                     b'certify-revoke-private', b'certify-destroy-certificate',
                     b'certify-destroy-private', b'certify-destroy-public')
@@ -412,6 +415,7 @@ RECIPES = {
     'test-norm-payload-client-export-response-21-003': ((1, 43, 19, 20), 'export'),
     'test-norm-payload-client-export-response-21-004': ((1, 43, 19, 20), 'export'),
     'test-op-register': ((3, 20), 'register'),
+    'test-op-import': ((42, 20), 'import_secret_data'),
     'test-op-encrypt': ((1, 18, 31, 19, 20), 'encrypt'),
     'test-op-decrypt': ((1, 18, 32, 19, 20), 'decrypt'),
     'test-op-mac': ((1, 18, 35, 19, 20), 'mac'),
@@ -1321,6 +1325,18 @@ def verify_secret_data_response(response_tree):
         raise ValueError('fixture_register_secret_data_response_mismatch')
 
 
+def verify_import_response(response_tree):
+    """Check the typed Import identifier and the exact-ID Destroy cleanup."""
+    items = [child for child in response_tree[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if ([numbers(item, 0x42005C) for item in items] != [[42], [20]] or
+            [byte_string_values(item, 0x420093) for item in items] !=
+            [[item_id] for item_id in IMPORT_ITEM_IDS] or
+            [numbers(item, 0x42007F) for item in items] != [[0], [0]] or
+            [text_values(item, UNIQUE_IDENTIFIER_TAG) for item in items] !=
+            [[IMPORT_IDENTIFIER.decode()], [IMPORT_IDENTIFIER.decode()]]):
+        raise ValueError('fixture_import_response_mismatch')
+
+
 def assert_certify_request(node):
     """Check Certify of the Public Key and Certificate Sign capability."""
     items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
@@ -1695,6 +1711,26 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
                 any(len(count) != 1 or count[0][1] != 3 or len(count[0][2]) != 8 or
                     int.from_bytes(count[0][2], 'big', signed=True) != 1 for count in counts)):
             raise ValueError('fixture_usage_allocation_identifier_variants_mismatch')
+    if selected_recipe[1] == 'import_secret_data':
+        items = [item for item in node[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+        payloads = [child for child in items[0][2]
+                    if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1] if items else []
+        payload = payloads[0] if len(payloads) == 1 else None
+        opaque_object = next((child for child in payload[2]
+                              if child[0] == 0x42005B and child[1] == 1), None) if payload else None
+        attributes = next((child for child in payload[2]
+                           if child[0] == 0x420125 and child[1] == 1), None) if payload else None
+        if ([numbers(item, 0x42005C) for item in items] != [[42], [20]] or
+                [byte_string_values(item, 0x420093) for item in items] !=
+                [[item_id] for item_id in IMPORT_ITEM_IDS] or
+                payload is None or
+                text_values(payload, UNIQUE_IDENTIFIER_TAG) != [IMPORT_IDENTIFIER.decode()] or
+                numbers(payload, 0x420057) != [8] or
+                [child[0] for child in payload[2]] != [0x420094, 0x420057, 0x420125, 0x42005B] or
+                attributes is None or attributes[2] or
+                opaque_object is None or numbers(opaque_object, 0x420059) != [0x80000001] or
+                byte_string_values(opaque_object, 0x42005A) != [IMPORT_OBJECT_DATA]):
+            raise ValueError('fixture_import_opaque_object_shape_mismatch')
     if expected[0] == 3:
         register_item = next(item for item in node[2]
                              if item[0] == 0x42000F and numbers(item, 0x42005C) == [3])
@@ -3154,6 +3190,15 @@ class PeerState:
                 self.adjustable_attribute_values[certificate_identifier] = {}
                 placeholder = certificate_identifier
                 effect = 'certified'
+            elif operation == 42:
+                if not identifier or identifier in self.objects:
+                    raise ValueError('fixture_duplicate_import')
+                self.objects[identifier] = 'pre_active'
+                self.attributes[identifier] = set()
+                self.attribute_values[identifier] = {}
+                self.adjustable_attribute_values[identifier] = {}
+                placeholder = identifier
+                effect = 'imported'
             elif operation in (1, 3):
                 identifier = 'fixture-key-1'
                 if identifier in self.objects:
@@ -3964,6 +4009,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 if exchange_index == 0 else JOIN_SPLIT_KEY_ITEM_IDS[1:])
                                         elif recipe[1] == 'register_secret_data':
                                             response_item_ids = SECRET_DATA_ITEM_IDS
+                                        elif recipe[1] == 'import_secret_data':
+                                            response_item_ids = IMPORT_ITEM_IDS
+                                            returned_unique_identifier = IMPORT_IDENTIFIER
                                         elif placeholder_chain_recipe:
                                             response_item_ids = (
                                                 (b'placeholder-revoke-cleanup', b'placeholder-destroy-cleanup')
@@ -4328,6 +4376,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 verify_derive_key_response(response_tree)
                                         elif recipe[1] == 'register_secret_data':
                                             verify_secret_data_response(response_tree)
+                                        elif recipe[1] == 'import_secret_data':
+                                            verify_import_response(response_tree)
                                         elif recipe[1] == 'certify':
                                             verify_certify_response(response_tree)
                                         elif recipe[1] == 'pkcs11':

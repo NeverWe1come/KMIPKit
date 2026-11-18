@@ -2657,10 +2657,10 @@ class RouteMatrixTests(unittest.TestCase):
         selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
                                                if case['case_id'] == 'test-op-import']}
         events, _, checks = execute_network_cells(
-            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest,
-            protocol_versions=('2.0', '2.1'), network_combinations=(('TTLV', 'raw_tls'),))
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
 
-        self.assertTrue(checks and all(check['status'] == 'passed' for check in checks), checks)
+        self.assertEqual(len(checks), 12)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
         for version in ('2.0', '2.1'):
             with self.subTest(version=version):
                 self.assertTrue(any(event['case_id'] == 'test-op-import' and
@@ -2668,7 +2668,7 @@ class RouteMatrixTests(unittest.TestCase):
                                     event['public_api_symbol'] == 'kmipkit_client_batch_item_response_import_ttlv' and
                                     event['action'] == 'decode' and event['status'] == 'passed'
                                     for event in events))
-        self.assertNotIn('synthetic-import-material', json.dumps(events + checks))
+        self.assertNotIn('controlled-import-object', json.dumps(events + checks))
 
     def test_login_response_ttlv_accessor_is_executed_for_supported_version(self):
         """OASIS KMIP 2.1 §6.1.30 defines the Login response Ticket payload."""

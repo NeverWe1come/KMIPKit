@@ -5835,6 +5835,129 @@ static kmip_execution_outcome_t execute_create_split_key(kmip_live_client_t *cli
     return outcome;
 }
 
+static kmip_execution_outcome_t execute_import_opaque_object(kmip_live_client_t *client) {
+    /* OASIS KMIP 2.0 §6.1.24 and KMIP 2.1 §6.1.25 define Import's required
+     * Object Type, Attributes, and Any Object. The fixture imports a nonsecret
+     * Opaque Object, verifies the typed/full response, then destroys it. */
+    static const uint8_t identifier_bytes[] = "fixture-imported-secret-data";
+    static const char *const item_ids[] = {"import-object", "import-destroy"};
+    static const uint32_t operations[] = {
+        KMIPKIT_ENUMERATION_OPERATION_IMPORT,
+        KMIPKIT_ENUMERATION_OPERATION_DESTROY
+    };
+    kmip_execution_outcome_t outcome = {.executed = true};
+    kmipkit_client_batch_t *batch = NULL;
+    kmipkit_client_batch_response_t *batch_response = NULL;
+    kmipkit_client_batch_item_t *items[2] = {NULL, NULL};
+    kmipkit_client_batch_item_response_t *responses[2] = {NULL, NULL};
+    kmipkit_ttlv_structure_t *attributes = NULL;
+    kmipkit_ttlv_structure_t *any_object = NULL;
+    kmipkit_ttlv_structure_t *opaque_object = NULL;
+    kmipkit_ttlv_value_t *value = NULL;
+    kmipkit_authentication_t *authentication = NULL;
+    const kmipkit_unique_identifier_v1_t identifier = {
+        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
+        .abi_version = 1,
+        .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
+        .text_data = identifier_bytes,
+        .text_length = sizeof(identifier_bytes) - 1
+    };
+    int32_t status = kmipkit_ttlv_structure_create(&attributes);
+    if (status == 0) status = kmipkit_ttlv_structure_create(&opaque_object);
+    if (status == 0) status = kmipkit_ttlv_value_enumeration(UINT32_C(0x80000001), &value);
+    if (status == 0 && !append_ttlv_value(client, &opaque_object, UINT32_C(0x420059), &value))
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    static const uint8_t opaque_data[] = "controlled-import-object";
+    if (status == 0) status = kmipkit_ttlv_value_byte_string(
+        client->limits, opaque_data, sizeof(opaque_data) - 1, &value);
+    if (status == 0 && !append_ttlv_value(client, &opaque_object, UINT32_C(0x42005A), &value))
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    if (status == 0 && !structure_into_value(client, &opaque_object, &value))
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    if (status == 0) status = kmipkit_ttlv_structure_create(&any_object);
+    if (status == 0 && !append_ttlv_value(client, &any_object, UINT32_C(0x42005B), &value))
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    if (status == 0) status = kmipkit_client_batch_item_import(
+        &identifier, KMIPKIT_ENUMERATION_OBJECT_TYPE_OPAQUE_OBJECT, 0, 0, 0, 0,
+        attributes, any_object, &items[0]);
+    if (status == 0) status = kmipkit_client_batch_item_destroy(&identifier, &items[1]);
+    char diagnostic[256] = {0};
+    for (size_t index = 0; status == 0 && index < 2; ++index) {
+        status = set_batch_item_id(&items[index], item_ids[index]);
+        if (status == 0 && !request_item_is_valid(items[index], diagnostic, sizeof(diagnostic)))
+            status = KMIPKIT_ERROR_INVALID_INPUT;
+    }
+    if (status == 0) status = kmipkit_client_batch_create(&batch);
+    if (status == 0) status = kmipkit_client_batch_set_order_option(batch, 1);
+    if (status == 0) status = kmipkit_client_batch_add_error_continuation_value(
+        batch, KMIPKIT_ENUMERATION_BATCH_ERROR_CONTINUATION_OPTION_CONTINUE);
+    for (size_t index = 0; status == 0 && index < 2; ++index)
+        status = kmipkit_client_batch_add_item(batch, &items[index]);
+    if (status == 0 && client->username_env[0] != '\0') {
+        if (!create_authentication(client, &authentication)) status = KMIPKIT_ERROR_INVALID_INPUT;
+        else {
+            status = kmipkit_client_batch_set_authentication(batch, authentication);
+            if (status != 0) kmipkit_authentication_release(authentication);
+            else authentication = NULL;
+        }
+    }
+    if (status == 0) status = kmipkit_client_execute(
+        client->client, &batch, client->limits, &batch_response);
+    uint64_t response_count = 0;
+    if (status == 0) status = kmipkit_client_batch_response_item_count(batch_response, &response_count);
+    if (status == 0 && response_count != 2) status = KMIPKIT_ERROR_INVALID_INPUT;
+    for (size_t index = 0; status == 0 && index < 2; ++index) {
+        status = kmipkit_client_batch_response_item_at(batch_response, index, &responses[index]);
+        kmipkit_client_batch_item_metadata_v2_t metadata = {
+            .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t), .abi_version = 2
+        };
+        if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
+            responses[index], &metadata);
+        if (status == 0 && (metadata.operation != operations[index] ||
+                metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS)) {
+            record_kmip_result(&outcome, &metadata);
+            status = KMIPKIT_ERROR_INVALID_INPUT;
+        }
+    }
+    uint8_t identifier_present = 0;
+    kmipkit_unique_identifier_v1_t imported_identifier = {
+        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1
+    };
+    if (status == 0) status = kmipkit_client_batch_item_response_import(
+        responses[0], &identifier_present, &imported_identifier);
+    if (status == 0 && (!identifier_present || !same_text_identifier(&identifier, &imported_identifier)))
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    if (status == 0 && !response_ttlv_matches_identifier(
+            responses[0], kmipkit_client_batch_item_response_import_ttlv, &identifier, &status))
+        status = status == 0 ? KMIPKIT_ERROR_INVALID_INPUT : status;
+    if (status == 0 && !destroy_response_matches_key(responses[1], &identifier, &status))
+        status = status == 0 ? KMIPKIT_ERROR_INVALID_INPUT : status;
+    if (status == 0) {
+        outcome.success = true;
+        outcome.library_validated = true;
+        outcome.has_result_status_code = true;
+        outcome.result_status_code = KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS;
+    } else {
+        outcome.library_failed = true;
+        if (!outcome.result_reason[0])
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit Import response or isolated cleanup did not match the requested object (status %d)",
+                     status);
+    }
+    if (authentication) kmipkit_authentication_release(authentication);
+    for (size_t index = 0; index < 2; ++index) {
+        if (responses[index]) kmipkit_client_batch_item_response_release(responses[index]);
+        if (items[index]) kmipkit_client_batch_item_release(items[index]);
+    }
+    if (batch_response) kmipkit_client_batch_response_release(batch_response);
+    if (batch) kmipkit_client_batch_release(batch);
+    if (attributes) kmipkit_ttlv_structure_release(attributes);
+    if (any_object) kmipkit_ttlv_structure_release(any_object);
+    if (opaque_object) kmipkit_ttlv_structure_release(opaque_object);
+    if (value) kmipkit_ttlv_value_release(value);
+    return outcome;
+}
+
 static kmip_execution_outcome_t execute_join_split_key(kmip_live_client_t *client) {
     /* OASIS KMIP 2.0 §6.1.26 and 2.1 §6.1.27 join the two returned parts. */
     static const uint32_t operations[] = {
@@ -7632,6 +7755,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         return execute_join_split_key(client);
     if (strcmp(test_case->case_id, "test-op-re-key") == 0)
         return execute_rekey(client);
+    if (strcmp(test_case->case_id, "test-op-import") == 0)
+        return execute_import_opaque_object(client);
     if (strcmp(test_case->case_id, "test-op-derive-key") == 0)
         return execute_derive_key(client);
     if (strcmp(test_case->case_id, "test-op-certify") == 0)

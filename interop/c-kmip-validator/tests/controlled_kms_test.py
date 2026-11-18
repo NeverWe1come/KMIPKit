@@ -235,8 +235,9 @@ def response(operations: tuple[int, ...], protocol_minor: int,
         elif operation == 1:
             payload_value = enumeration(0x420057, created_object_type) + \
                 tlv(0x420094, 7, b"fixture-key-1")
-        elif operation == 3:
-            payload_value = tlv(0x420094, 7, b"fixture-key-1")
+        elif operation in (3, 42):
+            identifier = returned_unique_identifier or b"fixture-key-1"
+            payload_value = tlv(0x420094, 7, identifier)
         elif operation == 4:
             identifier = (returned_unique_identifiers[item_index]
                           if returned_unique_identifiers is not None else
@@ -292,6 +293,7 @@ def response(operations: tuple[int, ...], protocol_minor: int,
         unique_batch_item_id = (unique_batch_item_ids[item_index]
                                 if unique_batch_item_ids is not None else {
                                     3: b"interop-register",
+                                    42: b"import-object",
                                     13: b"interop-attributes",
                                     14: b"interop-attributes",
                                     15: b"interop-delete-attribute",
@@ -564,6 +566,8 @@ def main() -> int:
     expected_operations += (3, 20)
     expected_operations += (3, 20)
     expected_operations += (3, 20)
+    expected_operations += (42, 20)
+    expected_cases += ("test-op-import",)
     expected_cases += ("test-obj-opaque-object",)
     expected_cases += ("test-obj-pgp-key",)
     expected_cases += ("test-obj-secret-data",)
@@ -800,6 +804,18 @@ def main() -> int:
                                         any(tlv(0x420093, 8, item_id) not in request for item_id in item_ids) or
                                         tlv(0x420010, 6, b"\x00\x00\x00\x00\x00\x00\x00\x01") not in request):
                                     raise AssertionError("Re-key must target the source, resolve ID Placeholder to the replacement, and clean both keys")
+                            if operations == (42, 20):
+                                imported_object = tlv(
+                                    0x42005B, 1,
+                                    enumeration(0x420059, 0x80000001) +
+                                    tlv(0x42005A, 8, b"controlled-import-object"))
+                                if (enumeration(0x420057, 8) not in request or
+                                        tlv(0x420094, 7, b"fixture-imported-secret-data") not in request or
+                                        tlv(0x420125, 1, b"") not in request or
+                                        imported_object not in request or
+                                        any(tlv(0x420093, 8, item_id) not in request for item_id in (
+                                            b"import-object", b"import-destroy"))):
+                                    raise AssertionError("Import request did not match the controlled nonsecret Opaque Object fixture")
                             if (operations == (3, 20) and
                                     bytes.fromhex("42008501") in request):
                                 secret_data = (
@@ -1311,6 +1327,8 @@ def main() -> int:
                                 elif (operations == (3, 20) and
                                       bytes.fromhex("42008501") in request):
                                     response_item_ids = (b"interop-register", b"interop-destroy")
+                                elif operations == (42, 20):
+                                    response_item_ids = (b"import-object", b"import-destroy")
                                 elif operations == (20,):
                                     split_cleanup_id = next((identifier for identifier in split_identifiers
                                         if tlv(0x420094, 7, identifier) in request), None)
@@ -1328,6 +1346,7 @@ def main() -> int:
                                     tlv(0x4200C2, 8, bytes(range(32))) in request else 16,
                                     cancellation_result=cancellation_result,
                                     returned_unique_identifier=(
+                                        b"fixture-imported-secret-data" if operations == (42, 20) else
                                         b"fixture-derived-key" if operations == (5, 19, 20, 20) else
                                         next((identifier for identifier in split_identifiers
                                             if operations == (20,) and tlv(0x420094, 7, identifier) in request), None)),
