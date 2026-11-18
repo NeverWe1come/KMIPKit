@@ -88,7 +88,9 @@ operation. Get also checks the returned key format, algorithm and nonempty key
 material without including the key bytes in reports. The public C
 Discover Versions builder has a fixed KMIP 2.1 offer; because it does not expose
 a way to offer KMIP 2.0, that specific KMIP 2.0 case is reported as a public
-API limitation. The public C Login builder only supports KMIP 2.1, so the
+API limitation. Its installed route manifest therefore limits C request
+construction to KMIP 2.1 while retaining response decoding coverage for both
+KMIP 2.0 and 2.1. The public C Login builder only supports KMIP 2.1, so the
 KMIP 2.0 Login case is reported as a public API limitation. The KMIP 2.0 Logout
 case is not run because the C validator cannot obtain the server-issued Login
 Ticket required by Logout. For KMIP 2.1 Login, the consumer checks the complete
