@@ -3633,6 +3633,31 @@ class RouteMatrixTests(unittest.TestCase):
                             event['peer_observed_result_status_codes'] == [0, 0, 1, 0, 0, 0] and
                             event['peer_observed_result_reason_codes'] == [0, 0, 36, 0, 0, 0]
                             for event in send_events))
+        parameter_targets = {
+            'KMIPKIT-PAYLOAD-CLIENT-SIGN-REQUEST-20-002',
+            'KMIPKIT-PAYLOAD-CLIENT-SIGN-REQUEST-21-002',
+        }
+        parameter_events = [event for event in events
+                            if event['target_id'] in parameter_targets and
+                            event['action'] in {'construct', 'send'}]
+        self.assertEqual(48, len(parameter_events),
+                         'every Sign request cell must record the omitted parameters field')
+        self.assertEqual({event['action'] for event in parameter_events}, {'construct', 'send'})
+        self.assertTrue(all(check.get('peer_sign_cryptographic_parameters_present') is False
+                            for check in checks), checks)
+
+    def test_sign_cryptographic_parameters_field_has_an_isolated_encoder_fixture(self):
+        from artifact_support import INSTALL, ROOT
+        from c_route_models import ModelCases
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        target = next(item for item in catalog['normative_targets']
+                      if item['target_id'] == 'KMIPKIT-PAYLOAD-CLIENT-SIGN-REQUEST-20-002')
+        result = ModelCases(INSTALL / 'lib/libkmipkit_ffi.so', catalog).execute(
+            target, '2.0', 'kmipkit_cryptographic_parameters_into_ttlv')
+
+        self.assertIsNotNone(result, 'Sign Cryptographic Parameters encoder fixture is missing')
+        self.assertIn('kmipkit_cryptographic_parameters_into_ttlv', result['invoked_symbols'])
 
     def test_batch_undo_reverses_prior_create_when_later_get_fails(self):
         """OASIS KMIP 2.1 §11.5 Table 434 requires Undo of prior items on failure."""
