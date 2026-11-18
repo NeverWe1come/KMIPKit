@@ -63,6 +63,16 @@ final class LocalCatalogRouteChecks {
             "test-attr-description",
             "test-attr-object-group",
             "test-attr-pkcs#12-friendly-name");
+    static final Set<String> BOOLEAN_ATTRIBUTE_VALUE_CASE_IDS = Set.of(
+            "test-attr-always-sensitive",
+            "test-attr-extractable",
+            "test-attr-fresh",
+            "test-attr-key-value-present",
+            "test-attr-never-extractable",
+            "test-attr-quantum-safe",
+            "test-attr-rotate-automatic",
+            "test-attr-rotate-latest",
+            "test-attr-sensitive");
 
     private LocalCatalogRouteChecks() { }
 
@@ -691,6 +701,81 @@ final class LocalCatalogRouteChecks {
         return missing;
     }
 
+    /** Exercises generic TTLV construction and decoding for catalogued Boolean Attributes. */
+    static void executeBooleanAttributeValues(JsonNode catalog, String version, Set<String> selectedCaseIds,
+            EvidenceSink sink) throws Exception {
+        Set<String> applicable = new java.util.LinkedHashSet<>();
+        Set<String> emitted = new java.util.LinkedHashSet<>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String caseId = testCase.path("case_id").asText();
+            if (!selectedCaseIds.contains(caseId) || !applies(testCase, version)) continue;
+            applicable.add(caseId);
+            JsonNode requires = testCase.path("requires");
+            if (!"Boolean".equals(requires.path("attribute_policy").path("value_type").asText())) {
+                throw new IllegalArgumentException("Selected attribute case is not Boolean-valued: " + caseId);
+            }
+            String targetId = requires.path("normative_target_id").asText();
+            String attributeName = requires.path("attribute").asText();
+            int attributeTag = tagCodeNamed(catalog, attributeName, version);
+            byte[] wire = booleanWire(attributeTag, true);
+            try (TtlvValue value = TtlvValue.Boolean(true);
+                    RawTag raw = RawTag.fromRaw(attributeTag); Tag tag = raw.checked();
+                    TtlvItem item = TtlvItem.create(tag, value, CodecLimits.defaults())) {
+                assertBooleanAttributeItem(item, attributeTag);
+            }
+            try (TtlvItem decoded = TtlvCodec.decode(wire)) {
+                assertBooleanAttributeItem(decoded, attributeTag);
+            }
+            emitRoute(sink, caseId, targetId,
+                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.boolean",
+                    "org.kmipkit.ttlv.TtlvValue.Boolean", "construct", wire);
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_item.create",
+                    "org.kmipkit.ttlv.TtlvItem.create", "construct", wire);
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.function.ttlv_item_view_from_item",
+                    "org.kmipkit.ttlv.TtlvItem.view", "decode", wire);
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_codec.decode",
+                    "org.kmipkit.ttlv.TtlvCodec.decode", "decode", wire);
+            emitted.add(caseId);
+        }
+        if (!emitted.equals(applicable)) {
+            throw new IllegalArgumentException("Selected Boolean Attribute cases were not executed for " + version);
+        }
+    }
+
+    static Set<String> missingBooleanAttributeCaseIds(JsonNode catalog, JsonNode events, String version) {
+        List<String> requiredRoutes = List.of(
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.boolean",
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode");
+        Set<String> missing = new java.util.LinkedHashSet<>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String caseId = testCase.path("case_id").asText();
+            if (!BOOLEAN_ATTRIBUTE_VALUE_CASE_IDS.contains(caseId) || !applies(testCase, version)) continue;
+            String targetId = testCase.path("requires").path("normative_target_id").asText();
+            int present = 0;
+            for (String route : requiredRoutes) {
+                boolean found = false;
+                for (JsonNode event : events) {
+                    if (caseId.equals(event.path("case_id").asText())
+                            && targetId.equals(event.path("target_id").asText())
+                            && route.equals(event.path("route_id").asText())
+                            && version.equals(event.path("protocol_version").asText())
+                            && "TTLV".equals(event.path("encoding").asText())
+                            && event.path("transport").isNull()) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (found) present++;
+            }
+            if (present == 0) missing.add(caseId);
+            else assertEquals(requiredRoutes.size(), present,
+                    "Boolean Attribute route evidence must be complete before reuse for " + caseId);
+        }
+        return missing;
+    }
+
     private static String textAttributeFixture(String attributeName) {
         return switch (attributeName) {
             case "Comment" -> "KMIPKit generic TTLV fixture";
@@ -778,6 +863,14 @@ final class LocalCatalogRouteChecks {
             assertEquals(attributeTag, tag.raw());
             assertEquals(TtlvItemType.TextString, view.itemType());
             assertArrayEquals(expectedText, value.bytes());
+        }
+    }
+
+    private static void assertBooleanAttributeItem(TtlvItem item, int attributeTag) {
+        try (TtlvItemView view = item.view(); Tag tag = view.tag(); TtlvValueView value = view.value()) {
+            assertEquals(attributeTag, tag.raw());
+            assertEquals(TtlvItemType.Boolean, view.itemType());
+            assertEquals(true, value.booleanValue());
         }
     }
 
