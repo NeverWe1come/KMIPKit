@@ -636,6 +636,23 @@ passes 92/92 and the shared suite 196/196; ledger comparison and the
 1,507-route capability audit pass. The matrix remains open and the stack stays
 WIP.
 
+### Text String Attribute typed construction routes — 2026-11-18
+
+The Java validator now runs five catalogued Text String Attributes through
+`TypedAttribute.create`, `TypedAttribute.fromItem`, and `AttributeSet.tryNew`,
+alongside generic TTLV construction and decoding. The fixtures use
+catalog-derived names and verify the decoded bytes and one-item Attribute Set.
+The five cases apply to both KMIP 2.0 and 2.1 and close 30 pending route cells.
+Sources: OASIS KMIP 2.0/2.1 §§4.9, 4.12, 4.19, 4.35, 4.39, and 11.56. These
+are local construction checks, not server acceptance.
+
+Red `67062a60e` requires the typed routes; Green `3d29e04e8` executes them;
+Refactor `798985852` shares Attribute Set evidence assertions across typed
+Attribute tests. Gradle passes 95/95 tests and selected evidence validates
+42,528/42,528 cells with zero failures. The ledger records 71,641 planned,
+42,528 executed, and 29,113 pending cells, and matches its checked-in
+reference. The Java matrix remains incomplete, so the PR stack stays WIP.
+
 ### Date-Time Attribute typed construction routes — 2026-11-18
 
 The local Java runner now exercises all 12 selected Date-Time Attribute cases
