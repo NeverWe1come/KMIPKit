@@ -13,6 +13,9 @@ import org.kmipkit.extensions.ClientBatch;
 import org.kmipkit.extensions.ClientBatchItem;
 import org.kmipkit.extensions.ClientBatchItemResult;
 import org.kmipkit.extensions.ClientBatchResponse;
+import org.kmipkit.extensions.AsyncCancelResponse;
+import org.kmipkit.extensions.CancelRequest;
+import org.kmipkit.extensions.PollRequest;
 import org.kmipkit.extensions.AddAttributeRequest;
 import org.kmipkit.extensions.AttributeReference;
 import org.kmipkit.extensions.AttributeSet;
@@ -136,7 +139,14 @@ class ControlledTlsPeerTest {
     @Test
     void asyncCancelLocalRoutesCoverEveryNormativeTtlvTarget() throws Exception {
         ArrayNode events = new ObjectMapper().createArrayNode();
-        assertAsyncCancelLocalRouteCoverage(events, "2.0");
+        JsonNode catalog = readRouteEvidenceCatalog();
+        for (AsyncCancelRouteScenario scenario : asyncCancelRouteScenarios(catalog, "2.0")) {
+            byte[] correlation = asyncCancelCorrelation(scenario, "2.0");
+            appendAsyncCancelLocalRequestRouteEvents(events, catalog, scenario, "2.0", correlation);
+            appendAsyncCancelLocalGenericTtlvRouteEvents(events, catalog, scenario, "2.0", correlation);
+            appendAsyncCancelLocalOperationGenericRoutes(events, catalog, scenario, "2.0", correlation);
+        }
+        assertAsyncCancelLocalRequestAndGenericRouteCoverage(events, "2.0");
     }
     private static final List<String> CREATE_SCENARIO_ROUTE_CASE_IDS = List.of(
             "test-batch-create-activate-destroy",
@@ -974,6 +984,19 @@ class ControlledTlsPeerTest {
     }
 
     @Test
+    void createScenarioPayloadTargetsMatchTheirProtocolVersion() {
+        CreateOperationRouteFixture version20 = createScenarioRouteFixture(
+                "test-async-indicator-omitted-default", "2.0");
+        CreateOperationRouteFixture version21 = createScenarioRouteFixture(
+                "test-async-indicator-omitted-default", "2.1");
+
+        assertEquals(List.of("KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-20-001"),
+                version20.requestPayloadTargetIds());
+        assertEquals(List.of("KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-21-001"),
+                version21.requestPayloadTargetIds());
+    }
+
+    @Test
     void batchWorkflowBatchItemsHaveGenericTtlvRouteEvidenceForBothVersions() throws Exception {
         JsonNode catalog = readRouteEvidenceCatalog();
         Set<String> expectedPairs = batchWorkflowBatchItemTargetPairs(catalog);
@@ -1089,7 +1112,7 @@ class ControlledTlsPeerTest {
         Set<String> anyObjectAttributeCaseIds = new java.util.HashSet<>();
         Set<String> scalarStructureMemberCaseIds = new java.util.LinkedHashSet<>();
         Set<String> serverPayloadCaseIds = new java.util.LinkedHashSet<>();
-        Set<String> correlationPayloadCaseIds = new java.util.LinkedHashSet<>();
+        Set<String> cancelPayloadCaseIds = new java.util.LinkedHashSet<>();
         Set<String> clientPayloadScalarCaseIds = new java.util.LinkedHashSet<>();
         Set<String> structureAttributeValueCaseIds = new java.util.LinkedHashSet<>();
         Set<String> textAttributeValueCaseIds = new java.util.LinkedHashSet<>();
@@ -1158,12 +1181,15 @@ class ControlledTlsPeerTest {
                 appendConstraintStructureRouteEvents(events);
             }
             appendAsyncCancellationEnumerationTtlvRoutes(events, protocolVersion);
+            appendAsyncCancelNormativePayloadTtlvEvents(events, protocolVersion);
             for (ScalarOperationStructureFixture fixture : SCALAR_OPERATION_STRUCTURE_FIXTURES) {
                 appendScalarOperationStructureRouteEvents(events, fixture, protocolVersion);
             }
             appendExtensionInformationRouteEvents(events, protocolVersion);
             appendProfileInformationRouteEvents(events, protocolVersion);
             appendServerInformationRouteEvents(events, protocolVersion);
+            appendUsageLimitsRouteEvents(events, protocolVersion);
+            appendRightUsageLimitsRouteEvents(events, protocolVersion);
             appendBatchContinuationTagIdentityRouteEvents(events, protocolVersion);
             if ("2.0".equals(protocolVersion)) {
                 appendEndpointRolePayloadGenericRouteEventsKmip20(events);
@@ -1616,7 +1642,8 @@ class ControlledTlsPeerTest {
             }
             serverPayloadRouteEventCount += serverPayloadInvocations.size();
             Set<String> missingCorrelationCases = missingCorrelationPayloadCaseIds(events, protocolVersion);
-            correlationPayloadCaseIds.addAll(missingCorrelationCases);
+            cancelPayloadCaseIds.addAll(missingCorrelationCases);
+            cancelPayloadCaseIds.addAll(localCancelPayloadEventCaseIds(events));
             List<LocalCatalogRouteChecks.Invocation> correlationInvocations = new ArrayList<>();
             LocalCatalogRouteChecks.executeCorrelationPayloadScalarFields(readRouteEvidenceCatalog(), protocolVersion,
                     missingCorrelationCases, correlationInvocations::add);
@@ -1654,7 +1681,7 @@ class ControlledTlsPeerTest {
         assertEquals(expectedTagAggregateEventCount(), tagAggregateEventCount,
                 "The Tag aggregate must represent every catalogued tag and tag-allocation range cell.");
         int additionalCaseIdCount = writeRouteExecutionReport(reportPath, mapper, events,
-                scalarStructureMemberCaseIds, serverPayloadCaseIds, correlationPayloadCaseIds,
+                scalarStructureMemberCaseIds, serverPayloadCaseIds, cancelPayloadCaseIds,
                 clientPayloadScalarCaseIds,
                 structureAttributeValueCaseIds, textAttributeValueCaseIds, booleanAttributeValueCaseIds,
                 dateTimeAttributeValueCaseIds, enumerationAttributeValueCaseIds, scalarAttributeValueCaseIds,
@@ -2173,6 +2200,9 @@ class ControlledTlsPeerTest {
         int serverInformationRouteEventCount = KMIP_2_0_AND_2_1.size()
                 * (GENERIC_STRUCTURE_ROUTE_IDS.size() + SERVER_INFORMATION_MEMBER_FIXTURES.stream()
                         .mapToInt(fixture -> fixture.anyEncoding() ? 3 : 4).sum());
+        int usageLimitsRouteEventCount = KMIP_2_0_AND_2_1.size()
+                * (GENERIC_STRUCTURE_ROUTE_IDS.size() + 4 * USAGE_LIMITS_MEMBER_FIXTURES.size());
+        int rightUsageLimitsRouteEventCount = KMIP_2_0_AND_2_1.size() * 4;
         int objectTypeMemberRouteEventCount = 4;
         int constraintStructureRouteEventCount = 2 * GENERIC_STRUCTURE_ROUTE_IDS.size();
         int pendingCorrelationAccessorEventCount = KMIP_2_0_AND_2_1.size();
@@ -2241,6 +2271,8 @@ class ControlledTlsPeerTest {
                         + extensionInformationRouteEventCount
                         + profileInformationRouteEventCount
                         + serverInformationRouteEventCount
+                        + usageLimitsRouteEventCount
+                        + rightUsageLimitsRouteEventCount
                         + objectTypeMemberRouteEventCount
                         + constraintStructureRouteEventCount
                         + pendingCorrelationAccessorEventCount
@@ -2278,6 +2310,13 @@ class ControlledTlsPeerTest {
                         + typedSplitKeyManagedObjectMemberRouteEventCount
                         + asyncCancellationEnumerationRouteEventCount
                         + asyncCancelNetworkRouteEventCount
+                        + expectedAsyncCancelLocalRouteEventCount(readRouteEvidenceCatalog())
+                        + CREATE_OPERATION_ROUTE_FIXTURES.stream()
+                                .filter(CreateOperationRouteFixture::pendingResponse)
+                                .filter(fixture -> !"test-batch-placeholder-forward-reference-rejected"
+                                        .equals(fixture.caseId()))
+                                .count()
+                        - 2 // Two pending Create accessors are already included in the local typed response total.
                         + asyncIndicatorEnumerationRouteEventCount
                         + 12 // KMIP 2.0 Ping construction and NotSent execution over six encoding/transport pairs.
                         + 36 // Get/Set Constraints and Set Defaults construction and NotSent execution routes.
@@ -2297,6 +2336,11 @@ class ControlledTlsPeerTest {
                                         .anyMatch(payloadTargetId -> payloadTargetId.endsWith("-REQUEST-"
                                                 + fixture.protocolVersion().replace(".", "") + "-001")))
                                 .count()
+                        + CREATE_OPERATION_ROUTE_FIXTURES.stream()
+                                .filter(fixture -> CREATE_ASYNC_INDICATOR_PAYLOAD_CASE_IDS
+                                        .contains(fixture.caseId()))
+                                .mapToInt(fixture -> fixture.requestPayloadTargetIds().size() * 3)
+                                .sum()
                         // Async Indicator fixtures exercise the typed Create response accessor once per version.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Type generic and typed Attribute routes.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Value generic and typed Attribute routes.
@@ -2375,6 +2419,8 @@ class ControlledTlsPeerTest {
         assertEquals("test-attr-activation-date", report.path("case_ids").get(6).asText());
         List<String> reportedCaseIds = new ArrayList<>();
         report.path("case_ids").forEach(caseId -> reportedCaseIds.add(caseId.asText()));
+        assertTrue(reportedCaseIds.containsAll(localCancelPayloadEventCaseIds(report.path("events"))),
+                "Every locally executed Cancel payload field case must be selected in the evidence report.");
         assertTrue(reportedCaseIds.contains("test-norm-tag-tag-42000c"),
                 "Typed non-attribute Tags still need their generic TTLV case in the selected report.");
         for (String caseId : LocalCatalogRouteChecks.KEY_BEARING_MANAGED_OBJECT_ROOT_CASE_IDS) {
@@ -2693,7 +2739,7 @@ class ControlledTlsPeerTest {
                     "Every selected Operation target must exercise the generic TTLV Item routes.");
         }
         writeRouteExecutionReport(reportPath, mapper, events,
-                scalarStructureMemberCaseIds, serverPayloadCaseIds, correlationPayloadCaseIds,
+                scalarStructureMemberCaseIds, serverPayloadCaseIds, cancelPayloadCaseIds,
                 clientPayloadScalarCaseIds,
                 structureAttributeValueCaseIds, textAttributeValueCaseIds, booleanAttributeValueCaseIds,
                 dateTimeAttributeValueCaseIds, enumerationAttributeValueCaseIds, scalarAttributeValueCaseIds,
@@ -6254,7 +6300,10 @@ class ControlledTlsPeerTest {
 
     private static void appendWorkflowIdentity(ObjectNode event, CreateWorkflowIdentity identity) {
         if (identity == null) return;
-        if (identity.stepIndex() != null) event.put("workflow_step_index", identity.stepIndex());
+        if (identity.stepIndex() != null) {
+            if (identity.stepIndex() < 0) return;
+            event.put("workflow_step_index", identity.stepIndex());
+        }
         if (identity.operation() != null) event.put("workflow_operation", identity.operation());
         if (identity.itemIndex() != null) event.put("workflow_item_index", identity.itemIndex());
     }
@@ -6284,7 +6333,7 @@ class ControlledTlsPeerTest {
 
     private static int writeRouteExecutionReport(Path reportPath, ObjectMapper mapper,
             ArrayNode events, Set<String> scalarStructureMemberCaseIds, Set<String> serverPayloadCaseIds,
-            Set<String> correlationPayloadCaseIds, Set<String> clientPayloadScalarCaseIds,
+            Set<String> cancelPayloadCaseIds, Set<String> clientPayloadScalarCaseIds,
             Set<String> structureAttributeValueCaseIds,
             Set<String> textAttributeValueCaseIds, Set<String> booleanAttributeValueCaseIds,
             Set<String> dateTimeAttributeValueCaseIds, Set<String> enumerationAttributeValueCaseIds,
@@ -6389,7 +6438,7 @@ class ControlledTlsPeerTest {
                 scalarStructureMemberCaseIds);
         additionalCaseIdCount += appendCaseIds(caseIds, managedObjectTypeCaseIds);
         additionalCaseIdCount += appendCaseIds(caseIds, serverPayloadCaseIds);
-        additionalCaseIdCount += appendCaseIds(caseIds, correlationPayloadCaseIds);
+        additionalCaseIdCount += appendCaseIds(caseIds, cancelPayloadCaseIds);
         additionalCaseIdCount += appendCaseIds(caseIds, clientPayloadScalarCaseIds);
         additionalCaseIdCount += appendCaseIds(caseIds, structureAttributeValueCaseIds);
         additionalCaseIdCount += appendCaseIds(caseIds, textAttributeValueCaseIds);
@@ -6420,6 +6469,7 @@ class ControlledTlsPeerTest {
         appendCaseIds(caseIds, Set.of("test-enum-item-type"));
         appendAnyObjectAttributeCaseIds(caseIds, events);
         additionalCaseIdCount += appendCaseIds(caseIds, managedObjectTypeCaseIds);
+        additionalCaseIdCount += appendCaseIds(caseIds, usageLimitsRouteEventCaseIds(events));
         CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().forEach(caseIds::add);
         report.putArray("protocol_versions").add("2.0").add("2.1");
         appendNetworkCombinations(report, events);
@@ -6472,6 +6522,28 @@ class ControlledTlsPeerTest {
         for (String caseId : booleanFieldCases) {
             if (existing.add(caseId)) caseIds.add(caseId);
         }
+    }
+
+    private static Set<String> localCancelPayloadEventCaseIds(JsonNode events) {
+        Set<String> caseIds = new java.util.LinkedHashSet<>();
+        for (JsonNode event : events) {
+            if ("java.generic-ttlv.ttlv_item.create".equals(event.path("route_id").asText())
+                    && event.path("target_id").asText().startsWith("KMIPKIT-PAYLOAD-CLIENT-CANCEL-")
+                    && event.path("transport").isNull()) {
+                caseIds.add(event.path("case_id").asText());
+            }
+        }
+        return caseIds;
+    }
+
+    private static Set<String> usageLimitsRouteEventCaseIds(JsonNode events) {
+        Set<String> caseIds = new java.util.LinkedHashSet<>();
+        for (JsonNode event : events) {
+            if (event.path("target_id").asText().contains("USAGE-LIMITS")) {
+                caseIds.add(event.path("case_id").asText());
+            }
+        }
+        return caseIds;
     }
 
     private static void appendScalarMessageFieldCaseIds(ArrayNode caseIds, JsonNode events) {
@@ -7033,7 +7105,9 @@ class ControlledTlsPeerTest {
         for (JsonNode testCase : catalog.path("test_cases")) {
             JsonNode requires = testCase.path("requires");
             if (!"operation_payload_field".equals(requires.path("target_kind").asText())
-                    || !"Asynchronous Correlation Value".equals(requires.path("field_name").asText())
+                    || !"KMIPKIT-ELEM-OP-C2S-CANCEL".equals(requires.path("operation_id").asText())
+                    || !Set.of("Asynchronous Correlation Value", "Cancellation Result")
+                            .contains(requires.path("field_name").asText())
                     || !"local_model".equals(testCase.path("execution").path("mode").asText())
                     || !appliesToVersion(testCase, version)) continue;
             String caseId = testCase.path("case_id").asText();
@@ -7048,8 +7122,8 @@ class ControlledTlsPeerTest {
             if (present == 0) {
                 missing.add(caseId);
             } else {
-                assertEquals(routes.size() * 2, present,
-                        "Client correlation payload route evidence must be complete before reuse for " + caseId);
+                assertEquals(routes.size(), present,
+                        "Cancel payload route evidence must be complete before reuse for " + caseId);
             }
         }
         return missing;
@@ -8354,19 +8428,79 @@ class ControlledTlsPeerTest {
                                 requestPayloadTargetId, publicApi, protocolVersion,
                                 requestHash, encoding, transport, batchObservation);
                     }
-                    if ("TTLV".equals(encoding) && "raw_tls".equals(transport)
-                            && fixture.requestPayloadTargetIds().stream().anyMatch(payloadTargetId ->
-                                    payloadTargetId.endsWith("-REQUEST-"
-                                            + protocolVersion.replace(".", "") + "-001"))) {
-                        appendLocalTypedResponseAccessorRouteEvent(events, caseId,
-                                "java.typed-protocol.function.client_batch_item_response_create",
-                                targetId,
-                                "org.kmipkit.extensions.ClientBatchItemResult.createResponse",
-                                protocolVersion, responseHash, workflowIdentity);
+                    if ("TTLV".equals(encoding) && "raw_tls".equals(transport)) {
+                        if (fixture.pendingResponse()) {
+                            appendLocalTypedResponseAccessorRouteEvent(events, caseId,
+                                    "java.typed-protocol.function.client_batch_item_response_create",
+                                    targetId,
+                                    "org.kmipkit.extensions.ClientBatchItemResult.createResponse",
+                                    protocolVersion, responseHash, workflowIdentity);
+                        } else if (fixture.requestPayloadTargetIds().stream().anyMatch(payloadTargetId ->
+                                payloadTargetId.endsWith("-REQUEST-"
+                                        + protocolVersion.replace(".", "") + "-001"))) {
+                            appendLocalTypedResponseAccessorRouteEvent(events, caseId,
+                                    "java.typed-protocol.function.client_batch_item_response_create",
+                                    targetId,
+                                    "org.kmipkit.extensions.ClientBatchItemResult.createResponse",
+                                    protocolVersion, responseHash, workflowIdentity);
+                        }
                     }
                 }
             }
+            if (CREATE_ASYNC_INDICATOR_PAYLOAD_CASE_IDS.contains(caseId)) {
+                for (String requestPayloadTargetId : fixture.requestPayloadTargetIds()) {
+                    appendAsyncCreatePayloadGenericTtlvRouteEvents(events, caseId,
+                            requestPayloadTargetId, protocolVersion);
+                }
+            }
         }
+    }
+
+    private static void appendAsyncCreatePayloadGenericTtlvRouteEvents(ArrayNode events, String caseId,
+            String targetId, String protocolVersion) throws Exception {
+        int payloadTag = 0x42007c;
+        int objectTypeTag = 0x420057;
+        byte[] wire = structure(payloadTag,
+                item(objectTypeTag, TtlvItemType.Enumeration.code(),
+                        intBytes(Math.toIntExact(KmipValues.ObjectType.SYMMETRIC_KEY))));
+        String treeHash = normalizedTreeSha256(wire);
+        CodecLimits limits = CodecLimits.defaults();
+        try (TtlvStructure empty = TtlvStructure.create();
+                TtlvStructure payload = appendTtlvItem(empty, objectTypeTag,
+                        TtlvValue.Enumeration(KmipValues.ObjectType.SYMMETRIC_KEY), limits);
+                TtlvValue payloadValue = TtlvValue.structure(payload, limits);
+                RawTag raw = RawTag.fromRaw(payloadTag);
+                Tag tag = raw.checked();
+                TtlvItem created = TtlvItem.create(tag, payloadValue, limits);
+                var view = created.view();
+                var viewedValue = view.value();
+                var fields = viewedValue.structure()) {
+            assertEquals(payloadTag, view.tag().raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertEquals(1, fields.itemCount());
+        }
+        try (TtlvItem decoded = TtlvCodec.decode(wire);
+                var view = decoded.view();
+                var viewedValue = view.value();
+                var fields = viewedValue.structure();
+                var objectTypeView = fields.itemAt(0);
+                Tag objectTypeViewedTag = objectTypeView.tag();
+                var objectTypeValue = objectTypeView.value()) {
+            assertEquals(payloadTag, view.tag().raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertEquals(1, fields.itemCount());
+            assertEquals(objectTypeTag, objectTypeViewedTag.raw());
+            assertEquals(KmipValues.ObjectType.SYMMETRIC_KEY, objectTypeValue.enumeration());
+        }
+        appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_item.create", targetId,
+                "org.kmipkit.ttlv.TtlvItem.create", null, null,
+                "construct", protocolVersion, null, treeHash, null);
+        appendRouteEvent(events, caseId, "java.generic-ttlv.function.ttlv_item_view_from_item", targetId,
+                "org.kmipkit.ttlv.TtlvItem.view", null, null,
+                "decode", protocolVersion, null, null, treeHash);
+        appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_codec.decode", targetId,
+                "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
+                "decode", protocolVersion, null, null, treeHash);
     }
 
     private void appendLoginLeaseTimeDateTimeRouteEvidence(ArrayNode events, byte[] serverCertificatePem,
@@ -8813,8 +8947,9 @@ class ControlledTlsPeerTest {
         Long batchErrorContinuationOption = "test-batch-undo-rolls-back-prior-success".equals(caseId)
                 ? org.kmipkit.protocol.KmipValues.BatchErrorContinuationOption.UNDO : null;
         List<String> requestPayloadTargetIds = CREATE_ASYNC_INDICATOR_PAYLOAD_CASE_IDS.contains(caseId)
-                ? List.of("KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-20-001",
-                        "KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-21-001")
+                ? List.of("2.0".equals(protocolVersion)
+                        ? "KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-20-001"
+                        : "KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-21-001")
                 : List.of();
         return new CreateOperationRouteFixture(caseId, protocolVersion, requestPayloadTargetIds, false,
                 asynchronousIndicator, batchOrderOption, batchErrorContinuationOption,
@@ -9857,1582 +9992,298 @@ class ControlledTlsPeerTest {
         }
     }
 
-    // OASIS KMIP 2.0/2.1 §8.2 defines the Request Header field; §§11.3 and 11.56 define its value and tag.
-    private static void appendAsyncIndicatorEnumerationTtlvRoutes(ArrayNode events, String protocolVersion)
-            throws Exception {
+    private static void appendAsyncCancelNormativePayloadTtlvEvents(
+            ArrayNode events, String protocolVersion) throws Exception {
         JsonNode catalog = readRouteEvidenceCatalog();
-        int asynchronousIndicatorTag = -1;
-        for (JsonNode target : catalog.path("normative_targets")) {
-            if ("tag".equals(target.path("kind").asText())
-                    && "Asynchronous Indicator".equals(target.path("name").asText())) {
-                asynchronousIndicatorTag = parseWireTag(target.path("wire_value").asText());
-                break;
-            }
-        }
-        assertTrue(asynchronousIndicatorTag >= 0, "The catalog must define the Asynchronous Indicator tag.");
-
+        CodecLimits limits = CodecLimits.defaults();
         for (JsonNode testCase : catalog.path("test_cases")) {
-            JsonNode scenario = testCase.path("requires").path("protocol_scenario");
-            if (!"asynchronous_workflows".equals(testCase.path("category").asText())
-                    || !scenario.path("parameters").has("asynchronous_indicator")
-                    || !scenarioHasTargetPrefix(scenario,
-                            "KMIPKIT-ELEM-ENUM-VALUE-ASYNCHRONOUS-INDICATOR-")
+            JsonNode requires = testCase.path("requires");
+            if (!"operation_payload_field".equals(requires.path("target_kind").asText())
+                    || !"KMIPKIT-ELEM-OP-C2S-CANCEL".equals(requires.path("operation_id").asText())
+                    || !Set.of("Asynchronous Correlation Value", "Cancellation Result")
+                            .contains(requires.path("field_name").asText())
+                    || !"local_model".equals(testCase.path("execution").path("mode").asText())
                     || !appliesToVersion(testCase, protocolVersion)) continue;
             String caseId = testCase.path("case_id").asText();
-            JsonNode enumTarget = null;
-            for (JsonNode targetId : scenario.path("target_ids")) {
-                String value = targetId.asText();
-                if (!value.startsWith("KMIPKIT-ELEM-ENUM-VALUE-ASYNCHRONOUS-INDICATOR-")) continue;
-                for (JsonNode candidate : catalog.path("normative_targets")) {
-                    if (value.equals(candidate.path("target_id").asText())) {
-                        enumTarget = candidate;
-                        break;
-                    }
-                }
-                break;
-            }
-            assertTrue(enumTarget != null, "Asynchronous scenario must identify its normative enum value: "
-                    + caseId);
-            String parameter = scenario.path("parameters").path("asynchronous_indicator").asText();
-            String expectedName = "omitted".equals(parameter) ? "Prohibited" : parameter;
-            assertEquals(expectedName, enumTarget.path("name").asText(),
-                    "Scenario parameter and normative Asynchronous Indicator target must agree: " + caseId);
-            long enumValue = Long.parseUnsignedLong(
-                    enumTarget.path("wire_value").asText().replaceFirst("^0[xX]", ""), 16);
-            appendGenericEnumerationRouteEvents(events, caseId, enumTarget.path("target_id").asText(),
-                    asynchronousIndicatorTag, enumValue, protocolVersion);
-        }
-    }
-
-    private static byte[] queryResponseBatchItem() throws Exception {
-        return structure(0x42000f,
-                item(0x42005c, 5, intBytes(0x18)),
-                item(0x420093, 8, "item-0".getBytes(StandardCharsets.US_ASCII)),
-                item(0x42007f, 5, intBytes(0)),
-                structure(0x42007c,
-                        item(0x42005c, 5, intBytes(0x3b)),
-                        profileInformationWire(),
-                        serverInformationWire(),
-                        structure(0x42015f)),
-                messageExtensionWire());
-    }
-
-    private static byte[] requestBatchItemWire() throws Exception {
-        return structure(0x42000f,
-                item(0x42005c, 5, intBytes(0x18)),
-                item(0x420093, 8, "item-0".getBytes(StandardCharsets.US_ASCII)),
-                structure(0x420079, item(0x420074, 5, intBytes(1))),
-                messageExtensionWire());
-    }
-
-    private static byte[] profileInformationWire() throws Exception {
-        return structure(0x4200eb,
-                item(0x4200ec, TtlvItemType.Enumeration.code(), intBytes(0x12a)),
-                profileVersionWire(),
-                textItem(0x4200ed, "https://kms.example.invalid"),
-                item(0x4200ee, TtlvItemType.Integer.code(), intBytes(5696)));
-    }
-
-    private static byte[] serverInformationWire() throws Exception {
-        return structure(0x420088,
-                textItem(0x42012d, "kmipkit-test-server"),
-                textItem(0x42012e, "SN-12345"),
-                textItem(0x42012f, "1.2.3"),
-                textItem(0x420130, "10%"),
-                textItem(0x420131, "KMIPKit Test"),
-                textItem(0x420132, "42"),
-                textItem(0x420133, "2026-11-14"),
-                textItem(0x420134, "cluster-a"),
-                textItem(0x420135, "kms-backup-1.example.invalid:5696"),
-                textItem(0x420135, "kms-backup-2.example.invalid:5696"),
-                textItem(0x540001, "vendor-info"),
-                item(0x540002, TtlvItemType.Integer.code(), intBytes(7)));
-    }
-
-    private static byte[] profileVersionWire() throws Exception {
-        return structure(0x4200ef,
-                item(0x4200f0, TtlvItemType.Integer.code(), intBytes(1)),
-                item(0x4200f1, TtlvItemType.Integer.code(), intBytes(0)));
-    }
-
-    private static byte[] messageExtensionWire() throws Exception {
-        return structure(0x420051,
-                textItem(0x42009d, "KMIPKit.fixture"),
-                item(0x420026, 6, new byte[8]),
-                structure(0x42009c, textItem(0x540001, "fixture-extension")));
-    }
-
-    private void appendPendingQueryCorrelationEvidence(ArrayNode events, String protocolVersion,
-            byte[] serverCertificatePem, byte[] serverPrivateKeyPem,
-            byte[] clientCertificatePem, byte[] clientPrivateKeyPem) throws Exception {
-        byte[] correlation = {0x50, 0x45, 0x4e, 0x44, (byte) protocolVersion.charAt(2)};
-        int protocolMinorVersion = "2.0".equals(protocolVersion) ? 0 : 1;
-        SSLServerSocket listener = listener(certificate(serverCertificatePem),
-                privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
-        byte[] responseBytes = asynchronousBatchResponse(correlation, protocolMinorVersion);
-        FutureTask<byte[]> peer = new FutureTask<>(() -> serveOneResponse(listener, responseBytes));
-        Thread peerThread = new Thread(peer, "java-validator-pending-query-peer-" + protocolVersion);
-        peerThread.setDaemon(true);
-        peerThread.start();
-        Path connectionFile = temporaryDirectory.resolve("pending-query-evidence-" + protocolVersion + ".json");
-        Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
-                clientCertificatePem, clientPrivateKeyPem, true, protocolVersion));
-        try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile));
-                ClientBatch batch = ClientBatch.create()) {
-            batch.asynchronousIndicator(1);
-            assertTrue(batch.addErrorContinuationValue(1) == batch,
-                    "Batch Error Continuation Option must remain configured on the active batch.");
-            batch.add(ClientBatchItem.query(new int[] {1}, null)
-                    .withUniqueBatchItemId("item-0".getBytes(StandardCharsets.US_ASCII)));
-            batch.add(ClientBatchItem.query(new int[] {1}, null)
-                    .withUniqueBatchItemId("item-1".getBytes(StandardCharsets.US_ASCII)));
-            try (ClientBatchResponse response = driver.executeBatchForEvidence(batch);
-                    ClientBatchItemResult result = response.itemAt(0);
-                    ClientBatchItemResult secondResult = response.itemAt(1)) {
-                assertEquals(2, response.itemCount());
-                assertEquals(2L, result.resultStatus());
-                assertArrayEquals(correlation, result.pendingCorrelationValue().orElseThrow());
-                assertEquals(0L, secondResult.resultStatus());
-                appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID,
-                        "java.typed-protocol.function.client_batch_item_response_pending_correlation_value",
-                        RESPONSE_BATCH_ITEM_TARGET_ID,
-                        "org.kmipkit.extensions.ClientBatchItemResult.pendingCorrelationValue",
-                        null, null, "decode", protocolVersion, null, null,
-                        normalizedTreeSha256(responseBytes));
-                assertArrayEquals(correlation, result.pendingCorrelationValue().orElseThrow());
-                appendRouteEvent(events,
-                        "test-norm-operation-structure-operation-structure-7-8-correlation-value",
-                        "java.typed-protocol.function.client_batch_item_response_pending_correlation_value",
-                        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-8-CORRELATION-VALUE",
-                        "org.kmipkit.extensions.ClientBatchItemResult.pendingCorrelationValue",
-                        null, null, "decode", protocolVersion, null, null,
-                        normalizedTreeSha256(responseBytes));
-                appendBatchItemFieldRouteEvents(events,
-                        "java.typed-protocol.function.client_batch_item_response_pending_correlation_value",
-                        "org.kmipkit.extensions.ClientBatchItemResult.pendingCorrelationValue",
-                        protocolVersion, normalizedTreeSha256(responseBytes));
-            }
-        } finally {
-            listener.close();
-        }
-        byte[] requestBytes = peer.get(15, TimeUnit.SECONDS);
-        assertEquals(0x18L, requestOperation(requestBytes));
-        assertEquals(protocolMinorVersion, requestProtocolMinorVersion(requestBytes));
-        assertTrue(contains(requestBytes, item(0x42000e, 5, intBytes(1))),
-                "The typed ClientBatch option must reach the controlled KMIP request header.");
-        appendRouteEvent(events,
-                "test-norm-message-field-message-field-9-6-batch-error-continuation-option",
-                "java.typed-protocol.function.client_batch_add_error_continuation_value",
-                "KMIPKIT-ELEM-MESSAGE-FIELD-9-6-BATCH-ERROR-CONTINUATION-OPTION",
-                "org.kmipkit.extensions.ClientBatch.addErrorContinuationValue",
-                null, null, "construct", protocolVersion, null, normalizedTreeSha256(requestBytes), null);
-        appendRouteEvent(events, "test-norm-tag-tag-42000e",
-                "java.typed-protocol.function.client_batch_add_error_continuation_value",
-                "KMIPKIT-ELEM-TAG-42000E", "org.kmipkit.extensions.ClientBatch.addErrorContinuationValue",
-                null, null, "construct", protocolVersion, null, normalizedTreeSha256(requestBytes), null);
-    }
-
-    private static void appendBatchContinuationTagIdentityRouteEvents(ArrayNode events, String protocolVersion)
-            throws Exception {
-        LocalCatalogRouteChecks.executeTags(readRouteEvidenceCatalog(), protocolVersion,
-                Set.of("test-norm-tag-tag-42000e"),
-                invocation -> appendLocalCatalogInvocation(events, protocolVersion, invocation));
-    }
-
-    private static void appendBatchItemGenericRouteEvents(ArrayNode events, String protocolVersion)
-            throws Exception {
-        String treeHash = normalizedTreeSha256(queryResponseBatchItem());
-        CodecLimits limits = CodecLimits.defaults();
-        try (TtlvStructure structure = batchItemStructure();
-                TtlvValue value = TtlvValue.structure(structure, limits);
-                RawTag rawTag = RawTag.fromRaw(0x42000f);
-                Tag tag = rawTag.checked();
-                TtlvItem item = TtlvItem.create(tag, value, limits);
-                var view = item.view();
-                var itemValue = view.value();
-                var structureView = itemValue.structure()) {
-            assertEquals(0x42000f, view.tag().raw());
-            assertEquals(TtlvItemType.Structure, view.itemType());
-            assertEquals(5, structureView.itemCount());
-        }
-        appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID,
-                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
-                RESPONSE_BATCH_ITEM_TARGET_ID, "org.kmipkit.ttlv.TtlvValue.structure", null, null,
-                "construct", protocolVersion, null, treeHash, null);
-        appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID, "java.generic-ttlv.ttlv_item.create",
-                RESPONSE_BATCH_ITEM_TARGET_ID, "org.kmipkit.ttlv.TtlvItem.create", null, null,
-                "construct", protocolVersion, null, treeHash, null);
-        appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID,
-                "java.generic-ttlv.function.ttlv_item_view_from_item", RESPONSE_BATCH_ITEM_TARGET_ID,
-                "org.kmipkit.ttlv.TtlvItem.view", null, null, "decode", protocolVersion,
-                null, null, treeHash);
-        try (TtlvItem decoded = TtlvCodec.decode(queryResponseBatchItem());
-                var view = decoded.view();
-                var value = view.value();
-                var structureView = value.structure()) {
-            assertEquals(0x42000f, view.tag().raw());
-            assertEquals(TtlvItemType.Structure, view.itemType());
-            assertEquals(5, structureView.itemCount());
-        }
-        appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID, "java.generic-ttlv.ttlv_codec.decode",
-                RESPONSE_BATCH_ITEM_TARGET_ID, "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
-                "decode", protocolVersion, null, null, treeHash);
-        appendBatchWorkflowBatchItemGenericRouteEvents(events, protocolVersion);
-    }
-
-    private static Set<String> batchWorkflowBatchItemTargetPairs(JsonNode catalog) {
-        Set<String> pairs = new java.util.LinkedHashSet<>();
-        for (JsonNode testCase : catalog.path("test_cases")) {
-            if (!"batch_workflows".equals(testCase.path("category").asText())) continue;
-            JsonNode targets = testCase.path("requires").path("protocol_scenario").path("target_ids");
-            for (String targetId : List.of(
-                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-BATCH-ITEM",
-                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM")) {
-                if (containsText(targets, targetId)) {
-                    pairs.add(testCase.path("case_id").asText() + "|" + targetId);
-                }
-            }
-        }
-        return pairs;
-    }
-
-    private static Set<String> batchWorkflowBatchItemCaseIds(JsonNode catalog) {
-        Set<String> caseIds = new java.util.LinkedHashSet<>();
-        for (String pair : batchWorkflowBatchItemTargetPairs(catalog)) {
-            caseIds.add(pair.substring(0, pair.indexOf('|')));
-        }
-        return caseIds;
-    }
-
-    private static Set<String> batchWorkflowGenericRouteEvidenceKeys(Set<String> targetPairs) {
-        Set<String> expected = new java.util.HashSet<>();
-        List<String> routes = List.of(
-                "java.generic-ttlv.ttlv_item.create",
-                "java.generic-ttlv.function.ttlv_item_view_from_item",
-                "java.generic-ttlv.ttlv_codec.decode");
-        for (String pair : targetPairs) {
-            for (String protocolVersion : KMIP_2_0_AND_2_1) {
-                for (String routeId : routes) {
-                    expected.add(pair + "|" + protocolVersion + "|" + routeId);
-                }
-            }
-        }
-        return expected;
-    }
-
-    private static void appendBatchWorkflowBatchItemGenericRouteEvents(ArrayNode events, String protocolVersion)
-            throws Exception {
-        CodecLimits limits = CodecLimits.defaults();
-        for (String pair : batchWorkflowBatchItemTargetPairs(readRouteEvidenceCatalog())) {
-            int separator = pair.indexOf('|');
-            String caseId = pair.substring(0, separator);
-            String targetId = pair.substring(separator + 1);
-            boolean requestItem = "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-BATCH-ITEM".equals(targetId);
-            byte[] wire = requestItem ? requestBatchItemWire() : queryResponseBatchItem();
+            String targetId = requires.path("normative_target_id").asText();
+            String payloadRole = requires.path("payload_role").asText();
+            boolean response = "response".equals(payloadRole);
+            assertTrue(response || "request".equals(payloadRole),
+                    "Cancel payload field cases must declare request or response role: " + caseId);
+            byte[] correlation = ("kmipkit-" + caseId + "-" + protocolVersion)
+                    .getBytes(StandardCharsets.US_ASCII);
+            AsyncCancelRouteScenario scenario = new AsyncCancelRouteScenario(
+                    caseId, "Canceled", 1, List.of(targetId), -1);
+            int tagCode = asyncCancelTargetTag(catalog, targetId);
+            byte[] wire = asyncCancelTtlvWire(catalog, targetId, scenario, protocolVersion, correlation);
             String treeHash = normalizedTreeSha256(wire);
-            try (TtlvStructure structure = requestItem ? requestBatchItem(limits, "item-0")
-                    : batchItemStructure();
-                    TtlvValue value = TtlvValue.structure(structure, limits);
-                    RawTag rawTag = RawTag.fromRaw(0x42000f);
-                    Tag tag = rawTag.checked();
-                    TtlvItem item = TtlvItem.create(tag, value, limits);
-                    var view = item.view();
-                    var itemValue = view.value();
-                    var structureView = itemValue.structure()) {
-                assertEquals(0x42000f, view.tag().raw());
-                assertEquals(TtlvItemType.Structure, view.itemType());
-                assertEquals(requestItem ? 4 : 5, structureView.itemCount());
+            try (TtlvValue value = asyncCancelTargetValue(catalog, targetId, scenario,
+                            protocolVersion, correlation, limits);
+                    RawTag raw = RawTag.fromRaw(tagCode);
+                    Tag tag = raw.checked();
+                    TtlvItem created = TtlvItem.create(tag, value, limits);
+                    TtlvItemView createdView = created.view();
+                    Tag createdTag = createdView.tag();
+                    var createdValue = createdView.value()) {
+                assertEquals(tagCode, createdTag.raw());
+                assertEquals(TtlvItemType.Structure, createdView.itemType());
+                assertAsyncCancelTargetValue(createdValue, targetId, correlation, scenario.cancellationResultValue());
+            }
+            try (TtlvItem decoded = TtlvCodec.decode(wire);
+                    TtlvItemView decodedView = decoded.view();
+                    Tag decodedTag = decodedView.tag();
+                    var decodedValue = decodedView.value()) {
+                assertEquals(tagCode, decodedTag.raw());
+                assertEquals(TtlvItemType.Structure, decodedView.itemType());
+                assertAsyncCancelTargetValue(decodedValue, targetId, correlation, scenario.cancellationResultValue());
             }
             appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_item.create", targetId,
                     "org.kmipkit.ttlv.TtlvItem.create", null, null, "construct", protocolVersion,
                     null, treeHash, null);
-            appendRouteEvent(events, caseId, "java.generic-ttlv.function.ttlv_item_view_from_item", targetId,
+            appendRouteEvent(events, caseId,
+                    "java.generic-ttlv.function.ttlv_item_view_from_item", targetId,
                     "org.kmipkit.ttlv.TtlvItem.view", null, null, "decode", protocolVersion,
                     null, null, treeHash);
-            try (TtlvItem decoded = TtlvCodec.decode(wire);
-                    var view = decoded.view();
-                    var value = view.value();
-                    var structureView = value.structure()) {
-                assertEquals(0x42000f, view.tag().raw());
-                assertEquals(TtlvItemType.Structure, view.itemType());
-                assertEquals(requestItem ? 4 : 5, structureView.itemCount());
-            }
             appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_codec.decode", targetId,
                     "org.kmipkit.ttlv.TtlvCodec.decode", null, null, "decode", protocolVersion,
                     null, null, treeHash);
         }
     }
 
-    private static void appendNormativeMessageFieldGenericRouteEvents(ArrayNode events,
-            String protocolVersion) throws Exception {
-        // OASIS KMIP 2.0/2.1 §8.3 defines the optional Boolean Ephemeral field in a Request Batch Item.
-        appendMessageFieldBooleanRoutes(events, "test-norm-message-field-message-field-8-3-ephemeral",
-                "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-EPHEMERAL", 0x420154, protocolVersion);
-        // OASIS KMIP 2.0/2.1 §8.2 defines Attestation Type as a repeatable Enumeration in Request Header.
-        appendGenericEnumerationRouteEvents(events, REQUEST_HEADER_ATTESTATION_TYPE.caseId(),
-                REQUEST_HEADER_ATTESTATION_TYPE.targetId(), 0x4200c7,
-                ATTESTATION_TYPE_VALUES.get(0), protocolVersion);
-        // OASIS KMIP 2.0/2.1 §8.5 defines Attestation Type as an optional, repeatable Response Header field.
-        appendGenericEnumerationRouteEvents(events, RESPONSE_HEADER_ATTESTATION_TYPE.caseId(),
-                RESPONSE_HEADER_ATTESTATION_TYPE.targetId(), 0x4200c7,
-                ATTESTATION_TYPE_VALUES.get(0), protocolVersion);
-        // OASIS KMIP 2.0/2.1 §8.5 defines Client Correlation Value as an optional Response Header Text String.
-        appendMessageFieldTextStringRoutes(events, RESPONSE_HEADER_CLIENT_CORRELATION_VALUE.caseId(),
-                RESPONSE_HEADER_CLIENT_CORRELATION_VALUE.targetId(), 0x420105,
-                RESPONSE_HEADER_CLIENT_CORRELATION_VALUE_TEXT, protocolVersion);
-        // OASIS KMIP 2.0/2.1 §8.5 defines Server Correlation Value as an optional Response Header Text String.
-        appendMessageFieldTextStringRoutes(events, RESPONSE_HEADER_SERVER_CORRELATION_VALUE.caseId(),
-                RESPONSE_HEADER_SERVER_CORRELATION_VALUE.targetId(), 0x420106,
-                RESPONSE_HEADER_SERVER_CORRELATION_VALUE_TEXT, protocolVersion);
-        appendMessageFieldIntegerRoutes(events, "test-norm-message-field-message-field-8-5-batch-count",
-                "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-BATCH-COUNT", protocolVersion, false);
-        appendMessageFieldIntegerRoutes(events, "test-norm-message-field-message-field-9-5-batch-count",
-                "KMIPKIT-ELEM-MESSAGE-FIELD-9-5-BATCH-COUNT", protocolVersion, true);
-
-        appendMessageFieldStructureRoutes(events, "test-norm-message-field-message-field-8-6-batch-item",
-                "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM", 0x42000f,
-                queryResponseBatchItem(), batchItemStructure(), protocolVersion, true, false);
-        appendMessageFieldStructureRoutes(events, "test-norm-message-field-message-field-9-7-batch-item",
-                "KMIPKIT-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM", 0x42000f,
-                queryResponseBatchItem(), batchItemStructure(), protocolVersion, true, false);
-        appendMessageFieldStructureRoutes(events, "test-norm-message-field-message-field-8-6-message-extension",
-                "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION", 0x420051,
-                messageExtensionWire(), messageExtensionStructure(), protocolVersion, false, false);
-        appendMessageFieldStructureRoutes(events, "test-norm-message-field-message-field-9-13-message-extension",
-                "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION", 0x420051,
-                messageExtensionWire(), messageExtensionStructure(), protocolVersion, true, false);
-        appendMessageFieldStructureRoutes(events, "test-norm-tag-tag-420051",
-                "KMIPKIT-ELEM-TAG-420051", 0x420051,
-                messageExtensionWire(), messageExtensionStructure(), protocolVersion, false, true);
-    }
-
-    private static void appendMessageFieldBooleanRoutes(ArrayNode events, String caseId, String targetId,
-            int rawTag, String protocolVersion) throws Exception {
-        byte[] wire = item(rawTag, TtlvItemType.Boolean.code(), longBytes(1));
-        String treeHash = normalizedTreeSha256(wire);
-        try (TtlvValue value = TtlvValue.Boolean(true);
-                RawTag raw = RawTag.fromRaw(rawTag);
-                Tag tag = raw.checked();
-                TtlvItem created = TtlvItem.create(tag, value, CodecLimits.defaults());
-                var view = created.view();
-                var viewValue = view.value()) {
-            assertEquals(rawTag, view.tag().raw());
-            assertEquals(TtlvItemType.Boolean, view.itemType());
-            assertTrue(viewValue.booleanValue());
-        }
-        appendRouteEvent(events, caseId, "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.boolean",
-                targetId, "org.kmipkit.ttlv.TtlvValue.Boolean", null, null,
-                "construct", protocolVersion, null, treeHash, null);
-        appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_item.create", targetId,
-                "org.kmipkit.ttlv.TtlvItem.create", null, null,
-                "construct", protocolVersion, null, treeHash, null);
-        appendRouteEvent(events, caseId, "java.generic-ttlv.function.ttlv_item_view_from_item", targetId,
-                "org.kmipkit.ttlv.TtlvItem.view", null, null,
-                "decode", protocolVersion, null, null, treeHash);
-        try (TtlvItem decoded = TtlvCodec.decode(wire);
-                var decodedView = decoded.view();
-                var decodedValue = decodedView.value()) {
-            assertEquals(rawTag, decodedView.tag().raw());
-            assertEquals(TtlvItemType.Boolean, decodedView.itemType());
-            assertTrue(decodedValue.booleanValue());
-        }
-        appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_codec.decode", targetId,
-                "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
-                "decode", protocolVersion, null, null, treeHash);
-    }
-
-    // OASIS KMIP 2.0/2.1 §5.7 Tables 148/163 define New Attribute as a Structure containing one
-    // direct attribute Item. The operation fixtures follow §6.1.2 Tables 152/167, §6.1.33 Table 247 /
-    // §6.1.34 Table 265, and §6.1.47 Table 296 / §6.1.51 Table 322, respectively.
-    private void appendNewAttributeMutationEvents(ArrayNode events, String protocolVersion,
-            byte[] serverCertificatePem, byte[] serverPrivateKeyPem,
-            byte[] clientCertificatePem, byte[] clientPrivateKeyPem) throws Exception {
-        int minor = "2.0".equals(protocolVersion) ? 0 : 1;
-        for (NewAttributeMutationFixture fixture : NEW_ATTRIBUTE_MUTATION_FIXTURES) {
-            String operation = fixture.methodName();
-            String title = fixture.title();
-            String suffix = title.toLowerCase(Locale.ROOT).replace(' ', '-') + "-request";
-            String versionCode = "2.0".equals(protocolVersion) ? "20" : "21";
-            String ordinal = fixture.ordinal();
-            String routeOperation = title.toLowerCase(Locale.ROOT).replace(' ', '_');
-            String caseId = "test-norm-payload-client-" + suffix + "-" + versionCode + "-" + ordinal;
-            String payloadTarget = "KMIPKIT-PAYLOAD-CLIENT-" + suffix.toUpperCase(Locale.ROOT)
-                    + "-" + versionCode + "-" + ordinal;
-            String operationTarget = "KMIPKIT-ELEM-OP-C2S-" + title.toUpperCase(Locale.ROOT)
-                    .replace(' ', '-');
-            String clientItemRoute = "java.typed-protocol.client_batch_item." + routeOperation;
-            String clientItemSymbol = "org.kmipkit.extensions.ClientBatchItem." + operation;
-            String toBatchItemRoute = "java.typed-protocol.function.attribute_request_" + routeOperation
-                    + "_to_batch_item";
-            String requestClass = title.replace(" ", "") + "Request";
-            String toBatchItemSymbol = "org.kmipkit.extensions." + requestClass + ".toBatchItem";
-            String toPayloadRoute = "java.typed-protocol.function.attribute_request_" + routeOperation
-                    + "_to_ttlv_payload";
-            String toPayloadSymbol = "org.kmipkit.extensions." + requestClass + ".toTtlvPayload";
-            String responseRoute = "java.typed-protocol.function.client_batch_item_response_" + routeOperation;
-            String responseSymbol = "org.kmipkit.extensions.ClientBatchItemResult." + operation + "Response";
-            int operationValue = fixture.operationValue();
-
-            byte[] newAttributeWire = newAttributeStructureWire();
-            String newAttributeHash = normalizedTreeSha256(newAttributeWire);
-            appendNewAttributeGenericRouteEvents(events, caseId, payloadTarget, operationTarget,
-                    protocolVersion, newAttributeWire, newAttributeHash);
-
-            SSLServerSocket listener = listener(certificate(serverCertificatePem),
-                    privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
-            byte[] responseBytes = attributeMutationResponse(minor, operationValue);
-            FutureTask<byte[]> peer = new FutureTask<>(() -> serveOneResponse(listener, responseBytes));
-            Thread peerThread = new Thread(peer,
-                    "java-validator-" + operation + "-new-attribute-peer-" + protocolVersion);
-            peerThread.setDaemon(true);
-            peerThread.start();
-
-            Path connectionFile = temporaryDirectory.resolve(operation + "-new-attribute-"
-                    + protocolVersion + ".json");
-            Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
-                    clientCertificatePem, clientPrivateKeyPem, false, protocolVersion));
-            try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile));
-                    TtlvItem newAttributeItem = TtlvCodec.decode(newAttributeNameItemWire());
-                    TtlvStructure genericPayload = attributeRequestPayload(operation, newAttributeItem);
-                    ClientBatchItem directRequest = directAttributeMutationItem(operation, newAttributeItem)
-                            .withUniqueBatchItemId("item-0".getBytes(StandardCharsets.US_ASCII));
-                    ClientBatchItem typedRequest = attributeRequestBatchItem(operation, newAttributeItem)
-                            .withUniqueBatchItemId("item-1".getBytes(StandardCharsets.US_ASCII));
-                    ClientBatch batch = ClientBatch.create()) {
-                try (var payloadView = genericPayload.view();
-                        var newAttributeField = payloadView.itemAt(1);
-                        var fieldTag = newAttributeField.tag();
-                        var fieldValue = newAttributeField.value();
-                        var fieldContents = fieldValue.structure()) {
-                    assertEquals(2, payloadView.itemCount());
-                    assertEquals(0x42013d, fieldTag.raw());
-                    assertEquals(TtlvItemType.Structure, newAttributeField.itemType());
-                    assertEquals(1, fieldContents.itemCount(),
-                            "The typed payload must preserve its direct Name attribute Item.");
-                }
-                batch.add(directRequest);
-                batch.add(typedRequest);
-                String responseHash = normalizedTreeSha256(responseBytes);
-                try (ClientBatchResponse response = driver.executeBatchForEvidence(batch)) {
-                    assertEquals(2, response.itemCount());
-                    for (int index = 0; index < response.itemCount(); index++) {
-                        try (ClientBatchItemResult result = response.itemAt(index)) {
-                            assertEquals((long) operationValue, result.operation());
-                            assertEquals(0L, result.resultStatus());
-                            String uniqueIdentifier = switch (operation) {
-                                case "addAttribute" -> result.addAttributeResponse().orElseThrow()
-                                        .uniqueIdentifier();
-                                case "modifyAttribute" -> result.modifyAttributeResponse().orElseThrow()
-                                        .uniqueIdentifier();
-                                case "setAttribute" -> result.setAttributeResponse().orElseThrow()
-                                        .uniqueIdentifier();
-                                default -> throw new AssertionError("Unknown attribute mutation fixture.");
-                            };
-                            assertEquals("object-7", uniqueIdentifier);
-                        }
-                    }
-                }
-                byte[] requestBytes = peer.get(15, TimeUnit.SECONDS);
-                assertEquals(operationValue, requestOperation(requestBytes));
-                assertEquals(minor, requestProtocolMinorVersion(requestBytes));
-                assertTrue(contains(requestBytes, newAttributeWire),
-                        "The controlled peer must receive the exact New Attribute Structure.");
-                String requestHash = normalizedTreeSha256(requestBytes);
-                appendNewAttributeTypedMutationRouteEvents(events, caseId, payloadTarget, operationTarget,
-                        clientItemRoute, clientItemSymbol, toBatchItemRoute, toBatchItemSymbol,
-                        protocolVersion, requestHash, responseHash);
-                appendRouteEvent(events, caseId, toPayloadRoute, payloadTarget, toPayloadSymbol,
-                        null, null, "encode", protocolVersion, null, requestHash, null);
-                appendRouteEvent(events, caseId, toPayloadRoute, operationTarget, toPayloadSymbol,
-                        null, null, "encode", protocolVersion, null, requestHash, null);
-                appendRouteEvent(events, caseId, responseRoute, operationTarget, responseSymbol,
-                        null, null, "decode", protocolVersion, null, null, responseHash);
-            } finally {
-                listener.close();
-            }
-        }
-    }
-
-    private static void appendNewAttributeGenericRouteEvents(ArrayNode events, String caseId,
-            String payloadTarget, String operationTarget, String protocolVersion,
-            byte[] newAttributeWire, String treeHash) throws Exception {
+    private static void appendAsyncCancelLocalGenericTtlvRouteEvents(ArrayNode events, JsonNode catalog,
+            AsyncCancelRouteScenario scenario, String protocolVersion, byte[] correlation) throws Exception {
         CodecLimits limits = CodecLimits.defaults();
-        try (TtlvStructure empty = TtlvStructure.create();
-                TtlvItem directAttribute = TtlvCodec.decode(newAttributeNameItemWire());
-                TtlvStructure content = TtlvStructure.withItem(empty, directAttribute, limits);
-                TtlvValue structureValue = TtlvValue.structure(content, limits);
-                RawTag raw = RawTag.fromRaw(0x42013d);
-                Tag tag = raw.checked();
-                TtlvItem item = TtlvItem.create(tag, structureValue, limits);
-                var view = item.view();
-                var value = view.value();
-                var fields = value.structure()) {
-            assertEquals(0x42013d, view.tag().raw());
-            assertEquals(TtlvItemType.Structure, view.itemType());
-            assertEquals(1, fields.itemCount(),
-                    "New Attribute is a Structure containing exactly one direct attribute Item.");
-        }
-        appendRouteEvent(events, caseId,
-                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure", payloadTarget,
-                "org.kmipkit.ttlv.TtlvValue.structure", null, null,
-                "construct", protocolVersion, null, treeHash, null);
-        for (String target : List.of(payloadTarget, operationTarget)) {
-            appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_item.create", target,
-                    "org.kmipkit.ttlv.TtlvItem.create", null, null,
-                    "construct", protocolVersion, null, treeHash, null);
-            appendRouteEvent(events, caseId, "java.generic-ttlv.function.ttlv_item_view_from_item", target,
-                    "org.kmipkit.ttlv.TtlvItem.view", null, null,
-                    "decode", protocolVersion, null, null, treeHash);
-            try (TtlvItem decoded = TtlvCodec.decode(newAttributeWire);
-                    var decodedView = decoded.view();
-                    var decodedValue = decodedView.value();
-                    var decodedFields = decodedValue.structure()) {
-                assertEquals(0x42013d, decodedView.tag().raw());
-                assertEquals(TtlvItemType.Structure, decodedView.itemType());
-                assertEquals(1, decodedFields.itemCount());
-            }
-            appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_codec.decode", target,
-                    "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
-                    "decode", protocolVersion, null, null, treeHash);
-        }
-    }
-
-    private static void appendNewAttributeTypedMutationRouteEvents(ArrayNode events, String caseId,
-            String payloadTarget, String operationTarget, String clientItemRoute, String clientItemSymbol,
-            String toBatchItemRoute, String toBatchItemSymbol, String protocolVersion,
-            String requestHash, String responseHash) {
-        for (String target : List.of(payloadTarget, operationTarget)) {
-            appendRouteEvent(events, caseId, clientItemRoute, target, clientItemSymbol,
-                    "java.execute.typed-batch", "org.kmipkit.extensions.Client.execute",
-                    "construct", protocolVersion, "raw_tls", requestHash, null);
-            ObjectNode clientSent = appendRouteEvent(events, caseId, clientItemRoute, target, clientItemSymbol,
-                    "java.execute.typed-batch", "org.kmipkit.extensions.Client.execute",
-                    "send", protocolVersion, "raw_tls", requestHash, null);
-            clientSent.put("request_delivery_state", "response_received");
-            clientSent.put("transport_invocation_count", 1);
-            appendRouteEvent(events, caseId, toBatchItemRoute, target, toBatchItemSymbol,
-                    "java.execute.typed-batch", "org.kmipkit.extensions.Client.execute",
-                    "construct", protocolVersion, "raw_tls", requestHash, null);
-            ObjectNode convertedSent = appendRouteEvent(events, caseId, toBatchItemRoute, target,
-                    toBatchItemSymbol, "java.execute.typed-batch", "org.kmipkit.extensions.Client.execute",
-                    "send", protocolVersion, "raw_tls", requestHash, null);
-            convertedSent.put("request_delivery_state", "response_received");
-            convertedSent.put("transport_invocation_count", 1);
-        }
-        appendRouteEvent(events, caseId, clientItemRoute, operationTarget, clientItemSymbol,
-                "java.execute.typed-batch", "org.kmipkit.extensions.Client.execute",
-                "decode", protocolVersion, "raw_tls", null, responseHash);
-        appendRouteEvent(events, caseId, toBatchItemRoute, operationTarget, toBatchItemSymbol,
-                "java.execute.typed-batch", "org.kmipkit.extensions.Client.execute",
-                "decode", protocolVersion, "raw_tls", null, responseHash);
-    }
-
-    private static ClientBatchItem directAttributeMutationItem(String operation, TtlvItem newAttribute) {
-        UniqueIdentifier identifier = UniqueIdentifier.textString("object-7");
-        return switch (operation) {
-            case "addAttribute" -> ClientBatchItem.addAttribute(identifier, newAttribute);
-            case "modifyAttribute" -> ClientBatchItem.modifyAttribute(identifier, null, newAttribute);
-            case "setAttribute" -> ClientBatchItem.setAttribute(identifier, newAttribute);
-            default -> throw new AssertionError("Unknown attribute mutation fixture.");
-        };
-    }
-
-    private static TtlvStructure attributeRequestPayload(String operation, TtlvItem newAttribute) {
-        UniqueIdentifier identifier = UniqueIdentifier.textString("object-7");
-        return switch (operation) {
-            case "addAttribute" -> {
-                try (AddAttributeRequest request = AddAttributeRequest.create(identifier, newAttribute)) {
-                    yield request.toTtlvPayload();
-                }
-            }
-            case "modifyAttribute" -> {
-                try (ModifyAttributeRequest request =
-                        ModifyAttributeRequest.create(identifier, null, newAttribute)) {
-                    yield request.toTtlvPayload();
-                }
-            }
-            case "setAttribute" -> {
-                try (SetAttributeRequest request = SetAttributeRequest.create(identifier, newAttribute)) {
-                    yield request.toTtlvPayload();
-                }
-            }
-            default -> throw new AssertionError("Unknown attribute mutation fixture.");
-        };
-    }
-
-    private static ClientBatchItem attributeRequestBatchItem(String operation, TtlvItem newAttribute) {
-        UniqueIdentifier identifier = UniqueIdentifier.textString("object-7");
-        return switch (operation) {
-            case "addAttribute" -> {
-                try (AddAttributeRequest request = AddAttributeRequest.create(identifier, newAttribute)) {
-                    yield request.toBatchItem();
-                }
-            }
-            case "modifyAttribute" -> {
-                try (ModifyAttributeRequest request =
-                        ModifyAttributeRequest.create(identifier, null, newAttribute)) {
-                    yield request.toBatchItem();
-                }
-            }
-            case "setAttribute" -> {
-                try (SetAttributeRequest request = SetAttributeRequest.create(identifier, newAttribute)) {
-                    yield request.toBatchItem();
-                }
-            }
-            default -> throw new AssertionError("Unknown attribute mutation fixture.");
-        };
-    }
-
-    private static byte[] newAttributeNameItemWire() throws Exception {
-        return structure(0x42000a,
-                textItem(0x4200a5, "new name"), item(0x4200a6, 5, intBytes(1)));
-    }
-
-    private static byte[] newAttributeStructureWire() throws Exception {
-        return structure(0x42013d, newAttributeNameItemWire());
-    }
-
-    private static byte[] attributeMutationResponse(int protocolMinorVersion, int operation)
-            throws Exception {
-        byte[] protocolVersion = structure(0x420069,
-                item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(protocolMinorVersion)));
-        byte[] header = structure(0x42007a, protocolVersion,
-                item(0x420092, 9, longBytes(1)), item(0x42000d, 2, intBytes(2)));
-        byte[] firstPayload = structure(0x42007c, textItem(0x420094, "object-7"));
-        byte[] secondPayload = structure(0x42007c, textItem(0x420094, "object-7"));
-        byte[] firstItem = structure(0x42000f,
-                item(0x42005c, 5, intBytes(operation)),
-                item(0x420093, 8, "item-0".getBytes(StandardCharsets.US_ASCII)),
-                item(0x42007f, 5, intBytes(0)), firstPayload);
-        byte[] secondItem = structure(0x42000f,
-                item(0x42005c, 5, intBytes(operation)),
-                item(0x420093, 8, "item-1".getBytes(StandardCharsets.US_ASCII)),
-                item(0x42007f, 5, intBytes(0)), secondPayload);
-        return structure(0x42007b, header, firstItem, secondItem);
-    }
-
-    private static void assertNewlyCataloguedLocalRoutesAreInvoked(ArrayNode events,
-            String protocolVersion) {
-        if ("2.0".equals(protocolVersion)) {
-            for (String caseId : List.of(
-                    "test-norm-payload-client-set-endpoint-role-request-20-001",
-                    "test-norm-payload-client-set-endpoint-role-response-20-001")) {
-                String fieldTarget = caseId.endsWith("request-20-001")
-                        ? "KMIPKIT-PAYLOAD-CLIENT-SET-ENDPOINT-ROLE-REQUEST-20-001"
-                        : "KMIPKIT-PAYLOAD-CLIENT-SET-ENDPOINT-ROLE-RESPONSE-20-001";
-                for (String targetId : List.of(fieldTarget, "KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE")) {
-                    for (String route : List.of("java.generic-ttlv.ttlv_item.create",
-                            "java.generic-ttlv.function.ttlv_item_view_from_item",
-                            "java.generic-ttlv.ttlv_codec.decode")) {
-                        String action = route.endsWith("ttlv_item.create") ? "construct" : "decode";
-                        assertRouteEventRecorded(events, caseId, targetId, route, action, protocolVersion);
-                    }
-                }
-            }
-        }
-        if ("2.1".equals(protocolVersion)) {
-            assertRouteEventRecorded(events, "test-op-ping", "KMIPKIT-ELEM-OP-C2S-PING",
-                    "java.typed-protocol.function.client_batch_item_response_ping", "decode", protocolVersion);
-            for (String targetId : List.of(
-                    "KMIPKIT-PAYLOAD-CLIENT-SET-ENDPOINT-ROLE-REQUEST-21-001",
-                    "KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE")) {
-                for (String route : List.of("java.generic-ttlv.ttlv_item.create",
-                        "java.generic-ttlv.function.ttlv_item_view_from_item",
-                        "java.generic-ttlv.ttlv_codec.decode")) {
-                    String action = route.endsWith("ttlv_item.create") ? "construct" : "decode";
-                    assertRouteEventRecorded(events,
-                            "test-norm-payload-client-set-endpoint-role-request-21-001",
-                            targetId, route, action, protocolVersion);
-                }
-            }
-            for (String targetId : List.of(
-                    "KMIPKIT-PAYLOAD-CLIENT-SET-ENDPOINT-ROLE-RESPONSE-21-001",
-                    "KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE")) {
-                for (String route : List.of("java.generic-ttlv.ttlv_item.create",
-                        "java.generic-ttlv.function.ttlv_item_view_from_item",
-                        "java.generic-ttlv.ttlv_codec.decode")) {
-                    String action = route.endsWith("ttlv_item.create") ? "construct" : "decode";
-                    assertRouteEventRecorded(events,
-                            "test-norm-payload-client-set-endpoint-role-response-21-001",
-                            targetId, route, action, protocolVersion);
-                }
-            }
-        }
-        for (ScalarOperationStructureFixture fixture : SCALAR_OPERATION_STRUCTURE_FIXTURES) {
-            assertScalarOperationStructureRouteEvents(events, fixture, protocolVersion);
-        }
-        // OASIS KMIP 2.0 §7.32 and KMIP 2.1 §7.38: Signature Data is a Byte String.
-        assertScalarOperationStructureRouteEvents(events, SIGNATURE_DATA_FIXTURE, protocolVersion);
-        // OASIS KMIP 2.0 §7.9 / §11.54 and KMIP 2.1 §7.13 / §11.56.
-        assertGenericStructureRouteEvents(events,
-                "test-norm-operation-structure-operation-structure-7-13-extension-information",
-                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-13-EXTENSION-INFORMATION", protocolVersion);
-        assertRouteEventRecorded(events,
-                "test-norm-operation-structure-operation-structure-7-13-extension-information",
-                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-13-EXTENSION-INFORMATION",
-                "java.typed-protocol.function.extension_information_to_ttlv", "encode", protocolVersion);
-        assertRouteEventRecorded(events,
-                "test-norm-operation-structure-operation-structure-7-8-correlation-value",
-                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-8-CORRELATION-VALUE",
-                "java.typed-protocol.function.client_batch_item_response_pending_correlation_value",
-                "decode", protocolVersion);
-        // OASIS KMIP 2.0 §§7.25–7.26, Tables 345–346; KMIP 2.1 §§7.31–7.32, Tables 383–384.
-        assertGenericStructureRouteEvents(events, PROFILE_INFORMATION_CASE_ID,
-                PROFILE_INFORMATION_TARGET_ID, protocolVersion);
-        assertGenericStructureRouteEvents(events, PROFILE_VERSION_CASE_ID,
-                PROFILE_VERSION_TARGET_ID, protocolVersion);
-        for (ProfileInformationMemberFixture fixture : PROFILE_INFORMATION_MEMBER_FIXTURES) {
-            String valueRoute = fixture.structure()
-                    ? "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure"
-                    : switch (fixture.itemType()) {
-                        case Integer -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.integer";
-                        case TextString -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring";
-                        default -> throw new IllegalArgumentException("Unsupported Profile Information member type");
-                    };
-            for (String route : List.of(valueRoute, "java.generic-ttlv.ttlv_item.create",
-                    "java.generic-ttlv.function.ttlv_item_view_from_item", "java.generic-ttlv.ttlv_codec.decode")) {
-                String action = route.endsWith("ttlv_item.create") || route.equals(valueRoute)
-                        ? "construct" : "decode";
-                assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(), route,
-                        action, protocolVersion);
-            }
-        }
-        // OASIS KMIP 2.0 §7.31 and KMIP 2.1 §7.37: Server Information has optional
-        // Text String members and repeatable Alternative Failover Endpoints and Vendor-Specific values.
-        assertGenericStructureRouteEvents(events, SERVER_INFORMATION_CASE_ID,
-                SERVER_INFORMATION_TARGET_ID, protocolVersion);
-        for (ServerInformationMemberFixture fixture : SERVER_INFORMATION_MEMBER_FIXTURES) {
-            List<String> routes = fixture.anyEncoding()
-                    ? List.of("java.generic-ttlv.ttlv_item.create",
-                            "java.generic-ttlv.function.ttlv_item_view_from_item",
-                            "java.generic-ttlv.ttlv_codec.decode")
-                    : List.of("java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring",
-                            "java.generic-ttlv.ttlv_item.create",
-                            "java.generic-ttlv.function.ttlv_item_view_from_item",
-                            "java.generic-ttlv.ttlv_codec.decode");
-            for (String route : routes) {
-                String action = route.endsWith("ttlv_item.create") || route.endsWith("textstring")
-                        ? "construct" : "decode";
-                assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(), route,
-                        action, protocolVersion);
-            }
-        }
-        if ("2.1".equals(protocolVersion)) {
-            assertGenericStructureRouteEvents(events,
-                    "test-norm-operation-structure-operation-structure-7-2-asynchronous-request",
-                    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-2-ASYNCHRONOUS-REQUEST", protocolVersion);
-            for (OperationStructureFixture fixture : OPERATION_STRUCTURE_FIXTURES) {
-                assertGenericStructureRouteEvents(events, fixture.caseId(), fixture.targetId(), protocolVersion);
-            }
-            // OASIS KMIP 2.1 §§7.6–7.7, Tables 357–358.
-            assertGenericStructureRouteEvents(events, CONSTRAINT_CASE_ID,
-                    CONSTRAINT_TARGET_ID, protocolVersion);
-            assertGenericStructureRouteEvents(events, CONSTRAINTS_CASE_ID,
-                    CONSTRAINTS_TARGET_ID, protocolVersion);
-            // OASIS KMIP 2.1 §7.24 Table 376; Object Type is optional and repeatable.
-            for (String route : List.of(
-                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
-                    "java.generic-ttlv.ttlv_item.create",
-                    "java.generic-ttlv.function.ttlv_item_view_from_item",
-                    "java.generic-ttlv.ttlv_codec.decode")) {
-                String action = route.endsWith("ttlv_codec.decode")
-                        || route.endsWith("ttlv_item_view_from_item") ? "decode" : "construct";
-                assertRouteEventRecorded(events, OBJECT_TYPE_MEMBER_CASE_ID, OBJECT_TYPE_MEMBER_TARGET_ID,
-                        route, action, protocolVersion);
-            }
-            String objectGroupCase = "test-norm-structure-member-structure-member-7-23-object-group";
-            String objectGroupTarget = "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-23-OBJECT-GROUP";
-            assertRouteEventRecorded(events, objectGroupCase, objectGroupTarget,
-                    "java.generic-ttlv.ttlv_item.create", "construct", protocolVersion);
-            assertRouteEventRecorded(events, objectGroupCase, objectGroupTarget,
-                    "java.generic-ttlv.function.ttlv_item_view_from_item", "decode", protocolVersion);
-            assertRouteEventRecorded(events, objectGroupCase, objectGroupTarget,
-                    "java.generic-ttlv.ttlv_codec.decode", "decode", protocolVersion);
-
-            for (StructureMemberStructureFixture fixture : STRUCTURE_MEMBER_STRUCTURE_FIXTURES) {
-                assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(),
-                        "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
-                        "construct", protocolVersion);
-                assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(),
-                        "java.generic-ttlv.ttlv_item.create", "construct", protocolVersion);
-                assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(),
-                        "java.generic-ttlv.function.ttlv_item_view_from_item", "decode", protocolVersion);
-                assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(),
-                        "java.generic-ttlv.ttlv_codec.decode", "decode", protocolVersion);
-            }
-            for (StructureMemberByteStringFixture fixture : STRUCTURE_MEMBER_BYTE_STRING_FIXTURES) {
-                for (String route : List.of(
-                        "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.bytestring",
-                        "java.generic-ttlv.ttlv_item.create",
-                        "java.generic-ttlv.function.ttlv_item_view_from_item",
-                        "java.generic-ttlv.ttlv_codec.decode")) {
-                    String action = route.endsWith("ttlv_item.create") || route.endsWith("ttlvvalue.bytestring")
-                            ? "construct" : "decode";
-                    assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(), route,
-                            action, protocolVersion);
-                }
-                if (fixture.typedQueryFilter()) {
-                    assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(),
-                            "java.typed-protocol.model.org.kmipkit.extensions.queryasyncrequestsrequest"
-                                    + ".withcorrelationvalues", "construct", protocolVersion);
-                }
-            }
-            for (StructureMemberValueFixture fixture : STRUCTURE_MEMBER_VALUE_FIXTURES) {
-                String constructorRoute = fixture.itemType() == TtlvItemType.DateTimeExtended
-                        ? "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.datetimeextended"
-                        : "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration";
-                assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(),
-                        constructorRoute, "construct", protocolVersion);
-                assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(),
-                        "java.generic-ttlv.ttlv_item.create", "construct", protocolVersion);
-                assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(),
-                        "java.generic-ttlv.function.ttlv_item_view_from_item", "decode", protocolVersion);
-                assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(),
-                        "java.generic-ttlv.ttlv_codec.decode", "decode", protocolVersion);
-            }
-        }
-
-        String ephemeralCase = "test-norm-message-field-message-field-8-3-ephemeral";
-        String ephemeralTarget = "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-EPHEMERAL";
-        assertRouteEventRecorded(events, ephemeralCase, ephemeralTarget,
-                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.boolean", "construct", protocolVersion);
-        assertRouteEventRecorded(events, ephemeralCase, ephemeralTarget,
-                "java.generic-ttlv.ttlv_item.create", "construct", protocolVersion);
-        assertRouteEventRecorded(events, ephemeralCase, ephemeralTarget,
-                "java.generic-ttlv.function.ttlv_item_view_from_item", "decode", protocolVersion);
-        assertRouteEventRecorded(events, ephemeralCase, ephemeralTarget,
-                "java.generic-ttlv.ttlv_codec.decode", "decode", protocolVersion);
-        assertRouteEventRecorded(events, ephemeralCase, ephemeralTarget,
-                "java.typed-protocol.model.org.kmipkit.message.requestmessage.fromttlv",
-                "construct", protocolVersion);
-
-        String versionCode = "2.0".equals(protocolVersion) ? "20" : "21";
-        for (NewAttributeMutationFixture fixture : NEW_ATTRIBUTE_MUTATION_FIXTURES) {
-            String operation = fixture.methodName();
-            String title = fixture.title();
-            String suffix = title.toLowerCase(Locale.ROOT).replace(' ', '-') + "-request";
-            String ordinal = fixture.ordinal();
-            String routeOperation = title.toLowerCase(Locale.ROOT).replace(' ', '_');
-            String caseId = "test-norm-payload-client-" + suffix + "-" + versionCode + "-" + ordinal;
-            String payloadTarget = "KMIPKIT-PAYLOAD-CLIENT-" + suffix.toUpperCase(Locale.ROOT)
-                    + "-" + versionCode + "-" + ordinal;
-            String operationTarget = "KMIPKIT-ELEM-OP-C2S-" + title.toUpperCase(Locale.ROOT)
-                    .replace(' ', '-');
-            String clientRoute = "java.typed-protocol.client_batch_item." + routeOperation;
-            String batchRoute = "java.typed-protocol.function.attribute_request_" + routeOperation
-                    + "_to_batch_item";
-            String payloadRoute = "java.typed-protocol.function.attribute_request_" + routeOperation
-                    + "_to_ttlv_payload";
-            String responseRoute = "java.typed-protocol.function.client_batch_item_response_" + routeOperation;
-            assertRouteEventRecorded(events, caseId, payloadTarget,
-                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure", "construct", protocolVersion);
-            for (String target : List.of(payloadTarget, operationTarget)) {
-                assertRouteEventRecorded(events, caseId, target,
-                        "java.generic-ttlv.ttlv_item.create", "construct", protocolVersion);
-                assertRouteEventRecorded(events, caseId, target,
-                        "java.generic-ttlv.function.ttlv_item_view_from_item", "decode", protocolVersion);
-                assertRouteEventRecorded(events, caseId, target,
-                        "java.generic-ttlv.ttlv_codec.decode", "decode", protocolVersion);
-                assertRouteEventRecorded(events, caseId, target, clientRoute, "construct", protocolVersion);
-                assertRouteEventRecorded(events, caseId, target, clientRoute, "send", protocolVersion);
-                assertRouteEventRecorded(events, caseId, target, batchRoute, "construct", protocolVersion);
-                assertRouteEventRecorded(events, caseId, target, batchRoute, "send", protocolVersion);
-                assertRouteEventRecorded(events, caseId, target, payloadRoute, "encode", protocolVersion);
-            }
-            for (String route : List.of(clientRoute, batchRoute, responseRoute)) {
-                assertRouteEventRecorded(events, caseId, operationTarget, route, "decode", protocolVersion);
-            }
-        }
-    }
-
-    // OASIS KMIP 2.1 §7.23 Table 375: Object Group is an optional, repeatable Attribute.
-    private static void appendObjectGroupLocalRouteEvents(ArrayNode events) throws Exception {
-        String caseId = "test-norm-structure-member-structure-member-7-23-object-group";
-        String targetId = "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-23-OBJECT-GROUP";
-        int rawTag = 0x420056;
-        String fixture = "kmipkit-object-group";
-        byte[] fixtureBytes = fixture.getBytes(StandardCharsets.UTF_8);
-        byte[] wire = textItem(rawTag, fixture);
-        String treeHash = normalizedTreeSha256(wire);
-        CodecLimits limits = CodecLimits.defaults();
-        assertObjectGroupsOptionalAndRepeatable(rawTag, fixture);
-        try (RawTag raw = RawTag.fromRaw(rawTag);
-                Tag tag = raw.checked();
-                TtlvValue value = TtlvValue.TextString(fixtureBytes, limits);
-                TtlvItem created = TtlvItem.create(tag, value, limits)) {
-            assertObjectGroupItem(created, rawTag, fixtureBytes);
-        }
-        appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_item.create", targetId,
-                "org.kmipkit.ttlv.TtlvItem.create", null, null, "construct", "2.1",
-                null, treeHash, null);
-        appendRouteEvent(events, caseId, "java.generic-ttlv.function.ttlv_item_view_from_item", targetId,
-                "org.kmipkit.ttlv.TtlvItem.view", null, null, "decode", "2.1",
-                null, null, treeHash);
-        try (TtlvItem decoded = TtlvCodec.decode(wire)) {
-            assertObjectGroupItem(decoded, rawTag, fixtureBytes);
-        }
-        appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_codec.decode", targetId,
-                "org.kmipkit.ttlv.TtlvCodec.decode", null, null, "decode", "2.1",
-                null, null, treeHash);
-    }
-
-    private static void assertObjectGroupsOptionalAndRepeatable(int objectGroupTag,
-            String firstGroupText) throws Exception {
-        byte[] firstGroupValue = firstGroupText.getBytes(StandardCharsets.UTF_8);
-        byte[] secondGroupValue = "kmipkit-object-group-2".getBytes(StandardCharsets.UTF_8);
-        byte[] firstGroup = textItem(objectGroupTag, firstGroupText);
-        byte[] secondGroup = textItem(objectGroupTag, "kmipkit-object-group-2");
-        try (TtlvItem absentGroups = TtlvCodec.decode(structure(0x420166));
-                var absentView = absentGroups.view();
-                var absentValue = absentView.value();
-                var absentMembers = absentValue.structure();
-                TtlvItem repeatedGroups = TtlvCodec.decode(structure(0x420166, firstGroup, secondGroup));
-                var repeatedView = repeatedGroups.view();
-                var repeatedValue = repeatedView.value();
-                var repeatedMembers = repeatedValue.structure()) {
-            try (Tag tag = absentView.tag()) {
-                assertEquals(0x420166, tag.raw());
-            }
-            assertEquals(0, absentMembers.itemCount(), "Object Group is optional in Object Groups.");
-            assertEquals(2, repeatedMembers.itemCount(), "Object Group may be repeated.");
-            try (var first = repeatedMembers.itemAt(0); var second = repeatedMembers.itemAt(1)) {
-                assertObjectGroupMember(first, objectGroupTag, firstGroupValue);
-                assertObjectGroupMember(second, objectGroupTag, secondGroupValue);
-            }
-        }
-    }
-
-    private static void assertObjectGroupItem(TtlvItem item, int rawTag, byte[] expectedValue) {
-        try (var view = item.view(); Tag tag = view.tag(); var value = view.value()) {
-            assertEquals(rawTag, tag.raw());
-            assertEquals(TtlvItemType.TextString, view.itemType());
-            assertArrayEquals(expectedValue, value.bytes());
-        }
-    }
-
-    private static void assertObjectGroupMember(TtlvItemView member, int rawTag, byte[] expectedValue) {
-        try (Tag tag = member.tag(); var value = member.value()) {
-            assertEquals(rawTag, tag.raw());
-            assertEquals(TtlvItemType.TextString, member.itemType());
-            assertArrayEquals(expectedValue, value.bytes());
-        }
-    }
-
-    // OASIS KMIP 2.1 §§7.6–7.7 Tables 357–358: optional Structure members and a repeatable Constraint.
-    private static void appendStructureMemberStructureRouteEvents(ArrayNode events) throws Exception {
-        CodecLimits limits = CodecLimits.defaults();
-        for (StructureMemberStructureFixture fixture : STRUCTURE_MEMBER_STRUCTURE_FIXTURES) {
-            byte[] wire = structure(fixture.rawTag());
+        for (String targetId : scenario.targetIds()) {
+            if ("KMIPKIT-ELEM-OP-C2S-CANCEL".equals(targetId)) continue;
+            int rawTag = asyncCancelTargetTag(catalog, targetId);
+            byte[] wire = asyncCancelTtlvWire(catalog, targetId, scenario, protocolVersion, correlation);
             String treeHash = normalizedTreeSha256(wire);
-            assertOptionalStructureMemberShape(fixture, wire);
-            try (TtlvStructure content = TtlvStructure.create();
-                    TtlvValue value = TtlvValue.structure(content, limits);
-                    RawTag raw = RawTag.fromRaw(fixture.rawTag());
+            try (TtlvValue value = asyncCancelTargetValue(catalog, targetId, scenario, protocolVersion,
+                            correlation, limits);
+                    RawTag raw = RawTag.fromRaw(rawTag);
                     Tag tag = raw.checked();
                     TtlvItem created = TtlvItem.create(tag, value, limits);
-                    var view = created.view();
-                    Tag viewedTag = view.tag();
-                    var viewedValue = view.value();
-                    var structureView = viewedValue.structure()) {
-                assertEquals(fixture.rawTag(), viewedTag.raw());
-                assertEquals(TtlvItemType.Structure, view.itemType());
-                assertEquals(0, structureView.itemCount());
+                    TtlvItemView createdView = created.view();
+                    Tag createdTag = createdView.tag();
+                    var createdValue = createdView.value()) {
+                assertEquals(rawTag, createdTag.raw());
+                assertAsyncCancelTargetValue(createdValue, targetId, correlation,
+                        scenario.cancellationResultValue());
             }
-            appendRouteEvent(events, fixture.caseId(),
-                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure", fixture.targetId(),
-                    "org.kmipkit.ttlv.TtlvValue.structure", null, null, "construct", "2.1",
-                    null, treeHash, null);
-            appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_item.create", fixture.targetId(),
-                    "org.kmipkit.ttlv.TtlvItem.create", null, null, "construct", "2.1",
-                    null, treeHash, null);
-            appendRouteEvent(events, fixture.caseId(),
-                    "java.generic-ttlv.function.ttlv_item_view_from_item", fixture.targetId(),
-                    "org.kmipkit.ttlv.TtlvItem.view", null, null, "decode", "2.1",
-                    null, null, treeHash);
             try (TtlvItem decoded = TtlvCodec.decode(wire);
-                    var view = decoded.view();
-                    Tag tag = view.tag();
-                    var value = view.value();
-                    var structureView = value.structure()) {
-                assertEquals(fixture.rawTag(), tag.raw());
-                assertEquals(TtlvItemType.Structure, view.itemType());
-                assertEquals(0, structureView.itemCount());
+                    TtlvItemView decodedView = decoded.view();
+                    Tag decodedTag = decodedView.tag();
+                    var decodedValue = decodedView.value()) {
+                assertEquals(rawTag, decodedTag.raw());
+                assertAsyncCancelTargetValue(decodedValue, targetId, correlation,
+                        scenario.cancellationResultValue());
             }
-            appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_codec.decode", fixture.targetId(),
-                    "org.kmipkit.ttlv.TtlvCodec.decode", null, null, "decode", "2.1",
+            appendRouteEvent(events, scenario.caseId(), "java.generic-ttlv.ttlv_item.create", targetId,
+                    "org.kmipkit.ttlv.TtlvItem.create", null, null, "construct", protocolVersion,
+                    null, treeHash, null);
+            appendRouteEvent(events, scenario.caseId(),
+                    "java.generic-ttlv.function.ttlv_item_view_from_item", targetId,
+                    "org.kmipkit.ttlv.TtlvItem.view", null, null, "decode", protocolVersion,
+                    null, null, treeHash);
+            appendRouteEvent(events, scenario.caseId(), "java.generic-ttlv.ttlv_codec.decode", targetId,
+                    "org.kmipkit.ttlv.TtlvCodec.decode", null, null, "decode", protocolVersion,
                     null, null, treeHash);
         }
     }
 
-    // OASIS KMIP 2.1 §§7.1–7.2, Tables 352–353: correlation values are Byte Strings;
-    // §7.1 is optional within its list and §7.2 requires the value. §11.56 Table 487 assigns their tags.
-    private static void appendStructureMemberByteStringRouteEvents(ArrayNode events) throws Exception {
-        int rawTag = 0x420006;
-        int correlationValuesTag = 0x420176;
-        byte[] firstValue = new byte[] {0x12, 0x34, (byte) 0xfe};
-        byte[] secondValue = new byte[] {0x56, 0x00, (byte) 0x81};
-        byte[] memberWire = item(rawTag, 8, firstValue);
-        String treeHash = normalizedTreeSha256(memberWire);
+    private static void appendAsyncCancelLocalOperationGenericRoutes(ArrayNode events, JsonNode catalog,
+            AsyncCancelRouteScenario scenario, String protocolVersion, byte[] correlation) throws Exception {
+        if (!scenario.targetIds().contains("KMIPKIT-ELEM-OP-C2S-CANCEL")) return;
+        String requestTargetId = "2.0".equals(protocolVersion)
+                ? "KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-20-001"
+                : "KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-21-001";
+        String treeHash = normalizedTreeSha256(asyncCancelTtlvWire(
+                catalog, requestTargetId, scenario, protocolVersion, correlation));
+        for (String routeId : List.of(
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode")) {
+            String apiSymbol = switch (routeId) {
+                case "java.generic-ttlv.ttlv_item.create" -> "org.kmipkit.ttlv.TtlvItem.create";
+                case "java.generic-ttlv.function.ttlv_item_view_from_item" -> "org.kmipkit.ttlv.TtlvItem.view";
+                default -> "org.kmipkit.ttlv.TtlvCodec.decode";
+            };
+            boolean construct = "java.generic-ttlv.ttlv_item.create".equals(routeId);
+            ObjectNode event = appendRouteEvent(events, scenario.caseId(), routeId,
+                    "KMIPKIT-ELEM-OP-C2S-CANCEL", apiSymbol, null, null,
+                    construct ? "construct" : "decode", protocolVersion,
+                    null, construct ? treeHash : null, construct ? null : treeHash);
+            appendWorkflowIdentity(event, new CreateWorkflowIdentity(
+                    scenario.workflowStepIndex(), "Cancel", null));
+        }
+    }
+
+    private static void appendAsyncCancelLocalRequestRouteEvents(ArrayNode events, JsonNode catalog,
+            AsyncCancelRouteScenario scenario, String protocolVersion, byte[] correlation) throws Exception {
         CodecLimits limits = CodecLimits.defaults();
-
-        for (StructureMemberByteStringFixture fixture : STRUCTURE_MEMBER_BYTE_STRING_FIXTURES) {
-            try (RawTag raw = RawTag.fromRaw(rawTag);
-                    Tag tag = raw.checked();
-                    TtlvValue value = TtlvValue.ByteString(firstValue, limits);
-                    TtlvItem created = TtlvItem.create(tag, value, limits)) {
-                assertTrue(created != null, "The installed Item constructor must return an owned Item.");
-            }
-            appendRouteEvent(events, fixture.caseId(),
-                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.bytestring", fixture.targetId(),
-                    "org.kmipkit.ttlv.TtlvValue.ByteString", null, null, "construct", "2.1",
-                    null, treeHash, null);
-            appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_item.create", fixture.targetId(),
-                    "org.kmipkit.ttlv.TtlvItem.create", null, null, "construct", "2.1",
-                    null, treeHash, null);
-
-            try (TtlvItem decoded = TtlvCodec.decode(memberWire);
-                    TtlvItemView view = decoded.view()) {
-                assertByteStringItemView(view, rawTag, firstValue);
-            }
-            appendRouteEvent(events, fixture.caseId(),
-                    "java.generic-ttlv.function.ttlv_item_view_from_item", fixture.targetId(),
-                    "org.kmipkit.ttlv.TtlvItem.view", null, null, "decode", "2.1",
-                    null, null, treeHash);
-            appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_codec.decode", fixture.targetId(),
-                    "org.kmipkit.ttlv.TtlvCodec.decode", null, null, "decode", "2.1",
-                    null, null, treeHash);
-        }
-
-        byte[] typedPayloadWire = structure(0x42007c,
-                structure(correlationValuesTag, item(rawTag, 8, firstValue), item(rawTag, 8, secondValue)));
-        String typedPayloadHash = normalizedTreeSha256(typedPayloadWire);
-        try (QueryAsyncRequestsRequest unfiltered = QueryAsyncRequestsRequest.create();
-                TtlvStructure unfilteredPayload = unfiltered.toTtlvPayload();
-                TtlvStructureView unfilteredView = unfilteredPayload.view()) {
-            assertEquals(0, unfilteredView.itemCount(),
-                    "KMIP 2.1 §7.1 permits the optional asynchronous correlation filter to be absent.");
-        }
-        try (QueryAsyncRequestsRequest unfiltered = QueryAsyncRequestsRequest.create();
-                QueryAsyncRequestsRequest filtered = unfiltered.withCorrelationValues(
-                        List.of(firstValue, secondValue));
-                TtlvStructure payload = filtered.toTtlvPayload();
+        String requestTargetId = "2.0".equals(protocolVersion)
+                ? "KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-20-001"
+                : "KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-21-001";
+        String requestHash = normalizedTreeSha256(asyncCancelTtlvWire(catalog,
+                requestTargetId, scenario, protocolVersion, correlation));
+        try (CancelRequest request = CancelRequest.create(correlation.clone());
+                TtlvStructure payload = request.toTtlvPayload();
                 TtlvStructureView payloadView = payload.view();
-                TtlvItemView valuesItem = payloadView.itemAt(0);
-                Tag valuesTag = valuesItem.tag();
-                var values = valuesItem.value();
-                var valuesStructure = values.structure()) {
+                TtlvItemView field = payloadView.itemAt(0);
+                Tag fieldTag = field.tag();
+                var fieldValue = field.value()) {
             assertEquals(1, payloadView.itemCount());
-            assertEquals(correlationValuesTag, valuesTag.raw());
-            assertEquals(TtlvItemType.Structure, valuesItem.itemType());
-            assertEquals(2, valuesStructure.itemCount(),
-                    "The §7.1 correlation list must preserve both supplied values in order.");
-            try (TtlvItemView first = valuesStructure.itemAt(0);
-                    TtlvItemView second = valuesStructure.itemAt(1)) {
-                assertByteStringItemView(first, rawTag, firstValue);
-                assertByteStringItemView(second, rawTag, secondValue);
-            }
-        }
-        StructureMemberByteStringFixture queryFilterFixture = STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.stream()
-                .filter(StructureMemberByteStringFixture::typedQueryFilter).findFirst().orElseThrow();
-        appendQueryAsyncCorrelationValuesRouteEvent(events, queryFilterFixture.caseId(),
-                queryFilterFixture.targetId(), typedPayloadHash);
-        appendQueryAsyncCorrelationValuesRouteEvent(events,
-                "test-norm-operation-structure-operation-structure-7-1-asynchronous-correlation-values",
-                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-1-ASYNCHRONOUS-CORRELATION-VALUES", typedPayloadHash);
-        assertRouteEventRecorded(events,
-                "test-norm-operation-structure-operation-structure-7-1-asynchronous-correlation-values",
-                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-1-ASYNCHRONOUS-CORRELATION-VALUES",
-                "java.typed-protocol.model.org.kmipkit.extensions.queryasyncrequestsrequest"
-                        + ".withcorrelationvalues",
-                "construct", "2.1");
-    }
-
-    private static void appendQueryAsyncCorrelationValuesRouteEvent(ArrayNode events, String caseId,
-            String targetId, String payloadHash) {
-        appendRouteEvent(events, caseId,
-                "java.typed-protocol.model.org.kmipkit.extensions.queryasyncrequestsrequest"
-                        + ".withcorrelationvalues",
-                targetId, "org.kmipkit.extensions.QueryAsyncRequestsRequest.withCorrelationValues",
-                null, null, "construct", "2.1", null, payloadHash, null);
-    }
-
-    // OASIS KMIP 2.1 §7.2 Table 353: these required Asynchronous Request fields use their §11.56 tags.
-    private void appendStructureMemberValueRouteEvents(ArrayNode events, byte[] serverCertificatePem,
-            byte[] serverPrivateKeyPem, byte[] clientCertificatePem, byte[] clientPrivateKeyPem)
-            throws Exception {
-        for (StructureMemberValueFixture fixture : STRUCTURE_MEMBER_VALUE_FIXTURES) {
-            byte[] memberWire = structureMemberValueWire(fixture);
-            String treeHash = normalizedTreeSha256(memberWire);
-            try (TtlvValue value = structureMemberValue(fixture);
-                    RawTag rawTag = RawTag.fromRaw(fixture.rawTag());
-                    Tag tag = rawTag.checked();
-                    TtlvItem created = TtlvItem.create(tag, value, CodecLimits.defaults());
-                    TtlvItemView view = created.view()) {
-                assertStructureMemberValue(view, fixture);
-            }
-            String valueType = fixture.itemType() == TtlvItemType.DateTimeExtended
-                    ? "datetimeextended" : "enumeration";
-            String constructor = fixture.itemType() == TtlvItemType.DateTimeExtended
-                    ? "DateTimeExtended" : "Enumeration";
-            appendRouteEvent(events, fixture.caseId(),
-                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue." + valueType,
-                    fixture.targetId(), "org.kmipkit.ttlv.TtlvValue." + constructor,
-                    null, null, "construct", "2.1", null, treeHash, null);
-            appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_item.create",
-                    fixture.targetId(), "org.kmipkit.ttlv.TtlvItem.create", null, null,
-                    "construct", "2.1", null, treeHash, null);
-            appendRouteEvent(events, fixture.caseId(),
-                    "java.generic-ttlv.function.ttlv_item_view_from_item", fixture.targetId(),
-                    "org.kmipkit.ttlv.TtlvItem.view", null, null,
-                    "decode", "2.1", null, null, treeHash);
-            try (TtlvItem decoded = TtlvCodec.decode(memberWire);
-                    TtlvItemView decodedView = decoded.view()) {
-                assertStructureMemberValue(decodedView, fixture);
-            }
-            appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_codec.decode",
-                    fixture.targetId(), "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
-                    "decode", "2.1", null, null, treeHash);
-        }
-
-        StructureMemberValueFixture operationFixture = structureMemberValueFixture(0x42005c);
-        byte[] correlation = new byte[] {0x41, 0x53, 0x59, 0x4e, 0x43};
-        SSLServerSocket listener = listener(certificate(serverCertificatePem),
-                privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
-        byte[] responseBytes = queryAsyncRequestsResponse(correlation, 0x18, 1_800_000_000L, 2);
-        FutureTask<byte[]> peer = new FutureTask<>(() -> serveOneResponse(listener, responseBytes));
-        Thread peerThread = new Thread(peer, "java-validator-query-async-response-payload-peer");
-        peerThread.setDaemon(true);
-        peerThread.start();
-        Path connectionFile = temporaryDirectory.resolve("query-async-response-payload-2.1.json");
-        Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
-                clientCertificatePem, clientPrivateKeyPem, true, "2.1"));
-        try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile));
-                var outcome = driver.executeQueryAsyncRequestsForResponsePayloadEvidence(correlation);
-                var payload = outcome.responsePayloadTtlv().orElseThrow();
-                TtlvStructureView payloadView = payload.view()) {
-            assertEquals(0x39L, outcome.metadataV1().operation());
-            assertEquals(0L, outcome.metadataV1().resultStatus());
-            assertEquals(1, payloadView.itemCount());
-            try (TtlvItemView asynchronousRequest = payloadView.itemAt(0);
-                    Tag asynchronousRequestTag = asynchronousRequest.tag();
-                    var requestValue = asynchronousRequest.value();
-                    TtlvStructureView requestFields = requestValue.structure()) {
-                assertEquals(0x420173, asynchronousRequestTag.raw());
-                assertEquals(TtlvItemType.Structure, asynchronousRequest.itemType());
-                assertEquals(4, requestFields.itemCount());
-                try (TtlvItemView correlationField = requestFields.itemAt(0);
-                        Tag correlationTag = correlationField.tag();
-                        var correlationValue = correlationField.value()) {
-                    assertEquals(0x420006, correlationTag.raw());
-                    assertEquals(TtlvItemType.ByteString, correlationField.itemType());
-                    assertArrayEquals(correlation, correlationValue.bytes());
+            assertEquals(asyncCancelTagCode(catalog, "Asynchronous Correlation Value"), fieldTag.raw());
+            assertArrayEquals(correlation, fieldValue.bytes());
+            for (String targetId : scenario.targetIds()) {
+                if (!"KMIPKIT-ELEM-OP-C2S-CANCEL".equals(targetId)
+                        && !targetId.startsWith("KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-")) continue;
+                ObjectNode created = appendRouteEvent(events, scenario.caseId(),
+                        "java.typed-protocol.cancel_request.create", targetId,
+                        "org.kmipkit.extensions.CancelRequest.create", null, null,
+                        "construct", protocolVersion, null, requestHash, null);
+                ObjectNode encoded = appendRouteEvent(events, scenario.caseId(),
+                        "java.typed-protocol.function.async_cancel_request_to_ttlv_payload", targetId,
+                        "org.kmipkit.extensions.CancelRequest.toTtlvPayload", null, null,
+                        "encode", protocolVersion, null, requestHash, null);
+                if ("KMIPKIT-ELEM-OP-C2S-CANCEL".equals(targetId)) {
+                    CreateWorkflowIdentity identity = new CreateWorkflowIdentity(
+                            scenario.workflowStepIndex(), "Cancel", null);
+                    appendWorkflowIdentity(created, identity);
+                    appendWorkflowIdentity(encoded, identity);
                 }
-                assertStructureMemberValue(requestFields, 1, operationFixture);
-                assertStructureMemberValue(requestFields, 2, structureMemberValueFixture(0x420175));
-                assertStructureMemberValue(requestFields, 3, structureMemberValueFixture(0x420174));
             }
-            appendRouteEvent(events,
-                    "test-norm-operation-structure-operation-structure-7-2-asynchronous-request",
-                    "java.typed-protocol.function.client_async_operation_outcome_response_payload_ttlv",
-                    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-2-ASYNCHRONOUS-REQUEST",
-                    "org.kmipkit.extensions.AsyncOperationOutcome.responsePayloadTtlv",
-                    null, null, "decode", "2.1", null, null, normalizedTreeSha256(responseBytes));
-        } finally {
-            listener.close();
         }
-        byte[] requestBytes = peer.get(15, TimeUnit.SECONDS);
-        assertEquals(0x39L, requestOperation(requestBytes));
-        assertEquals(1, requestProtocolMinorVersion(requestBytes));
-        assertTrue(contains(requestBytes, item(0x42005c, 5, intBytes(0x18))),
-                "The typed Query Asynchronous Requests filter must reach the controlled KMIP 2.1 peer.");
     }
 
-    private void appendCancelResponsePayloadEvidence(ArrayNode events, String protocolVersion,
-            byte[] serverCertificatePem, byte[] serverPrivateKeyPem,
-            byte[] clientCertificatePem, byte[] clientPrivateKeyPem) throws Exception {
-        byte[] correlation = {0x43, 0x41, 0x4e, (byte) protocolVersion.charAt(2)};
-        int protocolMinorVersion = "2.0".equals(protocolVersion) ? 0 : 1;
-        SSLServerSocket listener = listener(certificate(serverCertificatePem),
-                privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
-        byte[] responseBytes = asynchronousResponse(0x19, correlation, protocolMinorVersion);
-        FutureTask<byte[]> peer = new FutureTask<>(() -> serveOneResponse(listener, responseBytes));
-        Thread peerThread = new Thread(peer, "java-validator-cancel-response-payload-peer-" + protocolVersion);
-        peerThread.setDaemon(true);
-        peerThread.start();
-        Path connectionFile = temporaryDirectory.resolve("cancel-response-payload-" + protocolVersion + ".json");
-        Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
-                clientCertificatePem, clientPrivateKeyPem, true, protocolVersion));
-        try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile));
-                var outcome = driver.executeCancelForResponsePayloadEvidence(correlation);
-                var payload = outcome.responsePayloadTtlv().orElseThrow();
-                TtlvStructureView payloadView = payload.view()) {
-            assertEquals(0x19L, outcome.metadataV1().operation());
-            assertEquals(0L, outcome.metadataV1().resultStatus());
-            assertEquals(2, payloadView.itemCount());
-            try (TtlvItemView correlationField = payloadView.itemAt(0);
-                    Tag correlationTag = correlationField.tag();
-                    var correlationValue = correlationField.value()) {
+    private static void appendAsyncCancelLocalResponseRouteEvents(ArrayNode events,
+            AsyncCancelRouteScenario scenario, String protocolVersion, String responseHash) {
+        for (String targetId : scenario.targetIds()) {
+            if (!"KMIPKIT-ELEM-OP-C2S-CANCEL".equals(targetId)
+                    && !targetId.startsWith("KMIPKIT-PAYLOAD-CLIENT-CANCEL-RESPONSE-")) continue;
+            ObjectNode event = appendRouteEvent(events, scenario.caseId(),
+                    "java.typed-protocol.function.kmipkit_client_async_operation_outcome_cancel_response_v1",
+                    targetId, "org.kmipkit.extensions.AsyncOperationOutcome.cancelResponse",
+                    null, null, "decode", protocolVersion, null, null, responseHash);
+            if ("KMIPKIT-ELEM-OP-C2S-CANCEL".equals(targetId)) {
+                appendWorkflowIdentity(event, new CreateWorkflowIdentity(
+                        scenario.workflowStepIndex(), "Cancel", null));
+            }
+        }
+    }
+
+    private static int asyncCancelTargetTag(JsonNode catalog, String targetId) {
+        String name = switch (targetId) {
+            case "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ASYNCHRONOUS-INDICATOR" -> "Asynchronous Indicator";
+            case "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-ASYNCHRONOUS-CORRELATION-VALUE" ->
+                    "Asynchronous Correlation Value";
+            case "KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-20-001",
+                    "KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-21-001" -> "Request Payload";
+            case "KMIPKIT-PAYLOAD-CLIENT-CANCEL-RESPONSE-20-001",
+                    "KMIPKIT-PAYLOAD-CLIENT-CANCEL-RESPONSE-20-002",
+                    "KMIPKIT-PAYLOAD-CLIENT-CANCEL-RESPONSE-21-001",
+                    "KMIPKIT-PAYLOAD-CLIENT-CANCEL-RESPONSE-21-002" -> "Response Payload";
+            default -> throw new IllegalArgumentException("Unsupported Cancel TTLV target.");
+        };
+        return asyncCancelTagCode(catalog, name);
+    }
+
+    private static int asyncCancelTagCode(JsonNode catalog, String name) {
+        int tag = -1;
+        for (JsonNode target : catalog.path("normative_targets")) {
+            if (!"tag".equals(target.path("kind").asText())
+                    || !name.equals(target.path("name").asText())
+                    || !"assigned".equals(target.path("allocation").asText())) continue;
+            int candidate = parseWireTag(target.path("wire_value").asText());
+            if (tag >= 0 && tag != candidate) {
+                throw new IllegalArgumentException("Catalog has conflicting assigned tags for " + name);
+            }
+            tag = candidate;
+        }
+        if (tag < 0) throw new IllegalArgumentException("Catalog has no assigned Tag for " + name);
+        return tag;
+    }
+
+    private static TtlvValue asyncCancelTargetValue(JsonNode catalog, String targetId,
+            AsyncCancelRouteScenario scenario, String protocolVersion, byte[] correlation,
+            CodecLimits limits) {
+        return switch (targetId) {
+            case "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ASYNCHRONOUS-INDICATOR" -> TtlvValue.Boolean(true);
+            case "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-ASYNCHRONOUS-CORRELATION-VALUE" ->
+                    TtlvValue.ByteString(correlation, limits);
+            case "KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-20-001",
+                    "KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-21-001" ->
+                    TtlvValue.structure(asyncCancelPayloadStructure(catalog, false, scenario,
+                            protocolVersion, correlation, limits), limits);
+            case "KMIPKIT-PAYLOAD-CLIENT-CANCEL-RESPONSE-20-001",
+                    "KMIPKIT-PAYLOAD-CLIENT-CANCEL-RESPONSE-20-002",
+                    "KMIPKIT-PAYLOAD-CLIENT-CANCEL-RESPONSE-21-001",
+                    "KMIPKIT-PAYLOAD-CLIENT-CANCEL-RESPONSE-21-002" ->
+                    TtlvValue.structure(asyncCancelPayloadStructure(catalog, true, scenario,
+                            protocolVersion, correlation, limits), limits);
+            default -> throw new IllegalArgumentException("Unsupported Cancel TTLV target.");
+        };
+    }
+
+    private static TtlvStructure asyncCancelPayloadStructure(JsonNode catalog, boolean response,
+            AsyncCancelRouteScenario scenario, String protocolVersion, byte[] correlation, CodecLimits limits) {
+        int correlationTag = asyncCancelTagCode(catalog, "Asynchronous Correlation Value");
+        TtlvStructure fields = TtlvStructure.create();
+        fields = appendTtlvItem(fields, correlationTag, TtlvValue.ByteString(correlation, limits), limits);
+        if (response) {
+            fields = appendTtlvItem(fields, asyncCancelTagCode(catalog, "Cancellation Result"),
+                    TtlvValue.Enumeration(scenario.cancellationResultValue()), limits);
+        }
+        return fields;
+    }
+
+    private static byte[] asyncCancelTtlvWire(JsonNode catalog, String targetId,
+            AsyncCancelRouteScenario scenario, String protocolVersion, byte[] correlation) throws Exception {
+        int targetTag = asyncCancelTargetTag(catalog, targetId);
+        if ("KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ASYNCHRONOUS-INDICATOR".equals(targetId)) {
+            return item(targetTag, TtlvItemType.Boolean.code(), longBytes(1));
+        }
+        if ("KMIPKIT-ELEM-MESSAGE-FIELD-8-6-ASYNCHRONOUS-CORRELATION-VALUE".equals(targetId)) {
+            return item(targetTag, TtlvItemType.ByteString.code(), correlation);
+        }
+        if (targetId.contains("CANCEL-REQUEST")) {
+            return structure(targetTag, item(asyncCancelTagCode(catalog, "Asynchronous Correlation Value"),
+                    TtlvItemType.ByteString.code(), correlation));
+        }
+        return structure(targetTag,
+                item(asyncCancelTagCode(catalog, "Asynchronous Correlation Value"),
+                        TtlvItemType.ByteString.code(), correlation),
+                item(asyncCancelTagCode(catalog, "Cancellation Result"),
+                        TtlvItemType.Enumeration.code(), intBytes(scenario.cancellationResultValue())));
+    }
+
+    private static void assertAsyncCancelTargetValue(org.kmipkit.ttlv.TtlvValueView value,
+            String targetId, byte[] correlation, int cancellationResult) {
+        if ("KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ASYNCHRONOUS-INDICATOR".equals(targetId)) {
+            assertEquals(TtlvItemType.Boolean, value.itemType());
+            assertTrue(value.booleanValue());
+            return;
+        }
+        if ("KMIPKIT-ELEM-MESSAGE-FIELD-8-6-ASYNCHRONOUS-CORRELATION-VALUE".equals(targetId)) {
+            assertEquals(TtlvItemType.ByteString, value.itemType());
+            assertArrayEquals(correlation, value.bytes());
+            return;
+        }
+        assertEquals(TtlvItemType.Structure, value.itemType());
+        try (TtlvStructureView fields = value.structure()) {
+            boolean response = targetId.contains("CANCEL-RESPONSE");
+            assertEquals(response ? 2 : 1, fields.itemCount());
+            try (TtlvItemView correlationItem = fields.itemAt(0);
+                    Tag correlationTag = correlationItem.tag();
+                    var correlationValue = correlationItem.value()) {
                 assertEquals(0x420006, correlationTag.raw());
                 assertArrayEquals(correlation, correlationValue.bytes());
             }
-            try (TtlvItemView cancellationResult = payloadView.itemAt(1);
-                    Tag cancellationResultTag = cancellationResult.tag();
-                    var cancellationResultValue = cancellationResult.value()) {
-                assertEquals(0x420012, cancellationResultTag.raw());
-                assertEquals(1L, cancellationResultValue.enumeration());
-            }
-        } finally {
-            listener.close();
-        }
-        byte[] requestBytes = peer.get(15, TimeUnit.SECONDS);
-        assertEquals(0x19L, requestOperation(requestBytes));
-        assertEquals(protocolMinorVersion, requestProtocolMinorVersion(requestBytes));
-    }
-
-    // OASIS KMIP 2.0/2.1 §6.1.5 and §§8.2, 8.3, 8.6: Cancel carries the exact
-    // asynchronous correlation value and returns a Cancellation Result.
-    private void appendControlledAsyncCancelNetworkRouteEvents(ArrayNode events, String protocolVersion,
-            byte[] serverCertificatePem, byte[] serverPrivateKeyPem,
-            byte[] clientCertificatePem, byte[] clientPrivateKeyPem) throws Exception {
-        List<AsyncCancelRouteScenario> scenarios = asyncCancelRouteScenarios(
-                readRouteEvidenceCatalog(), protocolVersion);
-        Map<String, String> canonicalRequestHashes = new HashMap<>();
-        int minor = "2.0".equals(protocolVersion) ? 0 : 1;
-
-        for (String encoding : List.of("TTLV", "JSON", "XML")) {
-            for (String transport : List.of("raw_tls", "https")) {
-                List<byte[]> observedRequests = executeAsyncCancelCombination(
-                        scenarios, protocolVersion, encoding, transport,
-                        serverCertificatePem, serverPrivateKeyPem, clientCertificatePem, clientPrivateKeyPem);
-                if ("TTLV".equals(encoding) && "raw_tls".equals(transport)) {
-                    for (int index = 0; index < scenarios.size(); index++) {
-                        canonicalRequestHashes.put(scenarios.get(index).caseId(),
-                                normalizedTreeSha256(observedRequests.get(index)));
-                    }
+            if (response) {
+                try (TtlvItemView resultItem = fields.itemAt(1);
+                        var resultValue = resultItem.value()) {
+                    assertEquals(cancellationResult, resultValue.enumeration());
                 }
-                for (AsyncCancelRouteScenario scenario : scenarios) {
-                    String requestHash = canonicalRequestHashes.get(scenario.caseId());
-                    assertTrue(requestHash != null, "The TTLV/raw-TLS peer must establish request tree hashes.");
-                    byte[] correlation = asyncCancelCorrelation(scenario, protocolVersion);
-                    byte[] responseWire = asynchronousResponse(0x19, correlation, minor,
-                            scenario.cancellationResultValue());
-                    String responseHash = normalizedTreeSha256(responseWire);
-                    appendAsyncCancelRouteEvents(events, scenario, protocolVersion, encoding, transport,
-                            requestHash, responseHash);
-                }
-            }
-        }
-    }
-
-    private List<byte[]> executeAsyncCancelCombination(List<AsyncCancelRouteScenario> scenarios,
-            String protocolVersion, String encoding, String transport,
-            byte[] serverCertificatePem, byte[] serverPrivateKeyPem,
-            byte[] clientCertificatePem, byte[] clientPrivateKeyPem) throws Exception {
-        Path connectionFile = temporaryDirectory.resolve(
-                "async-cancel-routes-" + protocolVersion + "-" + encoding + "-" + transport + ".json");
-        if ("raw_tls".equals(transport)) {
-            SSLServerSocket listener = listener(certificate(serverCertificatePem),
-                    privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
-            FutureTask<List<byte[]>> peer = new FutureTask<>(() -> serveAsyncCancelRequests(
-                    listener, scenarios, protocolVersion, encoding));
-            Thread peerThread = new Thread(peer,
-                    "java-validator-async-cancel-peer-" + protocolVersion + "-" + encoding);
-            peerThread.setDaemon(true);
-            peerThread.start();
-            Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
-                    clientCertificatePem, clientPrivateKeyPem, true, protocolVersion, encoding, transport));
-            try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile))) {
-                executeAsyncCancelRequests(driver, scenarios, protocolVersion);
-            } finally {
-                listener.close();
-            }
-            return peer.get(30, TimeUnit.SECONDS);
-        }
-
-        List<byte[]> observedRequests = Collections.synchronizedList(new ArrayList<>());
-        AtomicInteger requestIndex = new AtomicInteger();
-        CompletableFuture<List<byte[]>> peer = new CompletableFuture<>();
-        HttpsServer listener = httpsListener(certificate(serverCertificatePem),
-                privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
-        listener.createContext("/kmip", exchange -> {
-            try {
-                if (!"POST".equals(exchange.getRequestMethod())) {
-                    throw new IllegalStateException("The controlled HTTP peer requires POST.");
-                }
-                int index = requestIndex.getAndIncrement();
-                if (index < 0 || index >= scenarios.size()) {
-                    throw new IllegalStateException("The controlled peer received an unexpected Cancel request.");
-                }
-                byte[] request = exchange.getRequestBody().readAllBytes();
-                AsyncCancelRouteScenario scenario = scenarios.get(index);
-                byte[] correlation = asyncCancelCorrelation(scenario, protocolVersion);
-                assertAsyncCancelWireRequest(request, encoding, protocolVersion, correlation);
-                observedRequests.add(request);
-                byte[] response = asynchronousCancelResponseBytes(
-                        encoding, scenario, correlation, "2.0".equals(protocolVersion) ? 0 : 1);
-                exchange.getResponseHeaders().set("Content-Type", contentTypeForEncoding(encoding));
-                exchange.sendResponseHeaders(200, response.length);
-                try (OutputStream output = exchange.getResponseBody()) {
-                    output.write(response);
-                }
-                if (index + 1 == scenarios.size()) peer.complete(List.copyOf(observedRequests));
-            } catch (Exception exception) {
-                peer.completeExceptionally(exception);
-                try {
-                    exchange.sendResponseHeaders(500, -1);
-                } catch (Exception ignored) {
-                    // The peer future carries the controlled-fixture failure to the test thread.
-                }
-            } finally {
-                exchange.close();
-            }
-        });
-        listener.start();
-        Files.writeString(connectionFile, connectionJson(listener.getAddress().getPort(),
-                serverCertificatePem, clientCertificatePem, clientPrivateKeyPem, true,
-                protocolVersion, encoding, transport));
-        try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile))) {
-            executeAsyncCancelRequests(driver, scenarios, protocolVersion);
-        } finally {
-            listener.stop(0);
-        }
-        return peer.get(30, TimeUnit.SECONDS);
-    }
-
-    private static List<byte[]> serveAsyncCancelRequests(SSLServerSocket listener,
-            List<AsyncCancelRouteScenario> scenarios, String protocolVersion, String encoding) throws Exception {
-        List<byte[]> requests = new ArrayList<>();
-        int minor = "2.0".equals(protocolVersion) ? 0 : 1;
-        for (AsyncCancelRouteScenario scenario : scenarios) {
-            try (SSLSocket socket = (SSLSocket) listener.accept()) {
-                socket.setEnabledProtocols(new String[] {"TLSv1.3"});
-                socket.setSoTimeout(10_000);
-                socket.startHandshake();
-                byte[] request = switch (encoding) {
-                    case "TTLV" -> readTtlv(socket.getInputStream());
-                    case "JSON" -> readJsonDocument(socket.getInputStream());
-                    case "XML" -> readXmlDocument(socket.getInputStream());
-                    default -> throw new IllegalArgumentException("Unsupported fixture encoding.");
-                };
-                byte[] correlation = asyncCancelCorrelation(scenario, protocolVersion);
-                assertAsyncCancelWireRequest(request, encoding, protocolVersion, correlation);
-                requests.add(request);
-                byte[] response = asynchronousCancelResponseBytes(encoding, scenario, correlation, minor);
-                socket.getOutputStream().write(response);
-                socket.getOutputStream().flush();
-            }
-        }
-        return List.copyOf(requests);
-    }
-
-    private static void executeAsyncCancelRequests(JavaKmipDriver driver,
-            List<AsyncCancelRouteScenario> scenarios, String protocolVersion) throws Exception {
-        for (AsyncCancelRouteScenario scenario : scenarios) {
-            byte[] correlation = asyncCancelCorrelation(scenario, protocolVersion);
-            try (var outcome = driver.executeCancelForResponsePayloadEvidence(correlation);
-                    var payload = outcome.responsePayloadTtlv().orElseThrow();
-                    TtlvStructureView payloadView = payload.view()) {
-                assertEquals(0x19L, outcome.metadataV1().operation());
-                assertEquals(0L, outcome.metadataV1().resultStatus());
-                assertEquals(2, payloadView.itemCount());
-                try (TtlvItemView correlationField = payloadView.itemAt(0);
-                        Tag correlationTag = correlationField.tag();
-                        var correlationValue = correlationField.value()) {
-                    assertEquals(0x420006, correlationTag.raw());
-                    assertArrayEquals(correlation, correlationValue.bytes());
-                }
-                try (TtlvItemView resultField = payloadView.itemAt(1);
-                        Tag resultTag = resultField.tag();
-                        var resultValue = resultField.value()) {
-                    assertEquals(0x420012, resultTag.raw());
-                    assertEquals(scenario.cancellationResultValue(), resultValue.enumeration());
-                }
-            }
-        }
-    }
-
-    private static List<AsyncCancelRouteScenario> asyncCancelRouteScenarios(
-            JsonNode catalog, String protocolVersion) {
-        List<AsyncCancelRouteScenario> scenarios = new ArrayList<>();
-        Set<String> routeTargets = Set.of(
-                "KMIPKIT-ELEM-OP-C2S-CANCEL",
-                "KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-20-001",
-                "KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-21-001");
-        for (JsonNode testCase : catalog.path("test_cases")) {
-            if (!appliesToVersion(testCase, protocolVersion)) continue;
-            JsonNode requires = testCase.path("requires");
-            JsonNode scenario = testCase.path("requires").path("protocol_scenario");
-            Set<String> targetIds = new java.util.LinkedHashSet<>();
-            if (requires.path("normative_target_id").isTextual()) {
-                targetIds.add(requires.path("normative_target_id").asText());
-            }
-            for (JsonNode target : requires.path("normative_target_ids")) targetIds.add(target.asText());
-            for (JsonNode target : scenario.path("target_ids")) targetIds.add(target.asText());
-            boolean cancelOperation = "Cancel".equals(testCase.path("operation").asText())
-                    || containsText(scenario.path("operations"), "Cancel")
-                    || containsText(requires.path("operation_sequence"), "Cancel");
-            if (cancelOperation) targetIds.add("KMIPKIT-ELEM-OP-C2S-CANCEL");
-            targetIds.retainAll(routeTargets);
-            if (targetIds.isEmpty()) continue;
-
-            String resultName = "Canceled";
-            if (scenario.path("parameters").path("cancel_result").isTextual()) {
-                resultName = scenario.path("parameters").path("cancel_result").asText();
-            }
-            String targetIdPrefix = "KMIPKIT-ELEM-ENUM-VALUE-CANCELLATION-RESULT-";
-            JsonNode target = null;
-            for (JsonNode targetId : scenario.path("target_ids")) {
-                String candidateId = targetId.asText();
-                if (!candidateId.startsWith(targetIdPrefix)) continue;
-                for (JsonNode candidate : catalog.path("normative_targets")) {
-                    if (candidateId.equals(candidate.path("target_id").asText())) {
-                        target = candidate;
-                        break;
-                    }
-                }
-                break;
-            }
-            int resultValue = 1;
-            if (target != null) {
-                assertEquals(resultName, target.path("name").asText());
-                resultValue = Integer.parseInt(
-                        target.path("wire_value").asText().replaceFirst("^0[xX]", ""), 16);
-            }
-            int workflowStepIndex = -1;
-            JsonNode orderedOperations = scenario.path("operations");
-            if (!orderedOperations.isArray()) orderedOperations = requires.path("operation_sequence");
-            if (orderedOperations.isArray()) {
-                for (int index = 0; index < orderedOperations.size(); index++) {
-                    if ("Cancel".equals(orderedOperations.get(index).asText())) {
-                        workflowStepIndex = index;
-                        break;
-                    }
-                }
-            }
-            scenarios.add(new AsyncCancelRouteScenario(
-                    testCase.path("case_id").asText(), resultName, resultValue,
-                    List.copyOf(targetIds), workflowStepIndex));
-        }
-        return List.copyOf(scenarios);
-    }
-
-    private static int expectedAsyncCancelNetworkRouteEventCount(JsonNode catalog) {
-        int eventCount = 0;
-        for (String protocolVersion : KMIP_2_0_AND_2_1) {
-            for (AsyncCancelRouteScenario scenario : asyncCancelRouteScenarios(catalog, protocolVersion)) {
-                for (String targetId : scenario.targetIds()) {
-                    int actions = "KMIPKIT-ELEM-OP-C2S-CANCEL".equals(targetId) ? 3 : 2;
-                    eventCount += actions * 3 * 2;
-                }
-            }
-        }
-        return eventCount;
-    }
-
-    private static byte[] asyncCancelCorrelation(AsyncCancelRouteScenario scenario, String protocolVersion) {
-        return ("kmipkit-" + scenario.caseId() + "-" + protocolVersion).getBytes(StandardCharsets.US_ASCII);
-    }
-
-    private static byte[] asynchronousCancelResponseBytes(String encoding, AsyncCancelRouteScenario scenario,
-            byte[] correlation, int protocolMinorVersion) throws Exception {
-        if ("TTLV".equals(encoding)) {
-            return asynchronousResponse(0x19, correlation, protocolMinorVersion,
-                    scenario.cancellationResultValue());
-        }
-        String correlationHex = "JSON".equals(encoding)
-                ? HexFormat.of().formatHex(correlation)
-                : HexFormat.of().withUpperCase().formatHex(correlation);
-        String resultName = jsonCancellationResultName(scenario.cancellationResultName());
-        if ("JSON".equals(encoding)) {
-            String response = "{\"tag\":\"ResponseMessage\",\"value\":["
-                    + "{\"tag\":\"ResponseHeader\",\"value\":["
-                    + "{\"tag\":\"ProtocolVersion\",\"value\":["
-                    + "{\"tag\":\"ProtocolVersionMajor\",\"type\":\"Integer\",\"value\":2},"
-                    + "{\"tag\":\"ProtocolVersionMinor\",\"type\":\"Integer\",\"value\":"
-                    + protocolMinorVersion + "}]},"
-                    + "{\"tag\":\"TimeStamp\",\"type\":\"DateTime\",\"value\":\"0x0000000000000001\"},"
-                    + "{\"tag\":\"BatchCount\",\"type\":\"Integer\",\"value\":1}]},"
-                    + "{\"tag\":\"BatchItem\",\"value\":["
-                    + "{\"tag\":\"Operation\",\"type\":\"Enumeration\",\"value\":\"Cancel\"},"
-                    + "{\"tag\":\"ResultStatus\",\"type\":\"Enumeration\",\"value\":\"Success\"},"
-                    + "{\"tag\":\"ResponsePayload\",\"value\":["
-                    + "{\"tag\":\"AsynchronousCorrelationValue\",\"type\":\"ByteString\",\"value\":\""
-                    + correlationHex + "\"},"
-                    + "{\"tag\":\"CancellationResult\",\"type\":\"Enumeration\",\"value\":\""
-                    + resultName + "\"}]}]}]}";
-            return response.getBytes(StandardCharsets.UTF_8);
-        }
-        String response = "<ResponseMessage><ResponseHeader><ProtocolVersion>"
-                + "<ProtocolVersionMajor type=\"Integer\" value=\"2\"/>"
-                + "<ProtocolVersionMinor type=\"Integer\" value=\"" + protocolMinorVersion
-                + "\"/></ProtocolVersion><TimeStamp type=\"DateTime\" value=\"1970-01-01T00:00:01Z\"/>"
-                + "<BatchCount type=\"Integer\" value=\"1\"/></ResponseHeader><BatchItem>"
-                + "<Operation type=\"Enumeration\" value=\"Cancel\"/>"
-                + "<ResultStatus type=\"Enumeration\" value=\"Success\"/><ResponsePayload>"
-                + "<AsynchronousCorrelationValue type=\"ByteString\" value=\"" + correlationHex + "\"/>"
-                + "<CancellationResult type=\"Enumeration\" value=\"" + resultName
-                + "\"/></ResponsePayload></BatchItem></ResponseMessage>";
-        return response.getBytes(StandardCharsets.UTF_8);
-    }
-
-    private static String jsonCancellationResultName(String name) {
-        return switch (name) {
-            case "Unable to Cancel" -> "UnableToCancel";
-            case "Canceled", "Completed", "Failed", "Unavailable" -> name;
-            default -> throw new IllegalArgumentException("Unsupported catalog Cancellation Result.");
-        };
-    }
-
-    private static void assertAsyncCancelWireRequest(byte[] request, String encoding,
-            String protocolVersion, byte[] expectedCorrelation) throws Exception {
-        int minor = "2.0".equals(protocolVersion) ? 0 : 1;
-        if ("TTLV".equals(encoding)) {
-            assertEquals(0x19L, requestOperation(request));
-            assertEquals(minor, requestProtocolMinorVersion(request));
-            assertArrayEquals(expectedCorrelation, requestCorrelation(request));
-            return;
-        }
-        String correlationHex = "JSON".equals(encoding)
-                ? HexFormat.of().formatHex(expectedCorrelation)
-                : HexFormat.of().withUpperCase().formatHex(expectedCorrelation);
-        if ("JSON".equals(encoding)) {
-            JsonNode root = new ObjectMapper().readTree(request);
-            List<JsonNode> operations = jsonValuesForTag(root, "Operation");
-            assertEquals(1, operations.size());
-            assertEquals("Cancel", operations.get(0).asText());
-            List<JsonNode> minors = jsonValuesForTag(root, "ProtocolVersionMinor");
-            assertEquals(1, minors.size());
-            assertEquals(minor, minors.get(0).asInt());
-            List<JsonNode> correlations = jsonValuesForTag(root, "AsynchronousCorrelationValue");
-            assertEquals(1, correlations.size());
-            assertEquals(correlationHex, correlations.get(0).asText());
-            return;
-        }
-        String xml = new String(request, StandardCharsets.UTF_8);
-        assertTrue(xml.startsWith("<RequestMessage>"));
-        assertTrue(xml.contains("<Operation type=\"Enumeration\" value=\"Cancel\"/>"));
-        assertTrue(xml.contains("<ProtocolVersionMinor type=\"Integer\" value=\"" + minor + "\"/>"));
-        assertTrue(xml.contains("<AsynchronousCorrelationValue type=\"ByteString\" value=\""
-                + correlationHex + "\"/>"));
-    }
-
-    private static void appendAsyncCancelRouteEvents(ArrayNode events, AsyncCancelRouteScenario scenario,
-            String protocolVersion, String encoding, String transport,
-            String requestHash, String responseHash) {
-        String routeId = "java.typed-protocol.client.execute_cancel";
-        String apiSymbol = "org.kmipkit.extensions.Client.executeCancel";
-        String executionRouteId = "java.execute.cancel";
-        String executionApiSymbol = apiSymbol;
-        for (String targetId : scenario.targetIds()) {
-            boolean operationTarget = "KMIPKIT-ELEM-OP-C2S-CANCEL".equals(targetId);
-            List<String> actions = operationTarget
-                    ? List.of("construct", "send", "decode")
-                    : List.of("construct", "send");
-            for (String action : actions) {
-                appendAsyncCancelRouteEvent(events, scenario.caseId(), routeId, targetId, apiSymbol,
-                        executionRouteId, executionApiSymbol, action, protocolVersion, encoding, transport,
-                        requestHash, responseHash,
-                        operationTarget ? scenario.workflowStepIndex() : -1);
             }
         }
     }
@@ -11456,31 +10307,25 @@ class ControlledTlsPeerTest {
         }
     }
 
-    private static void assertAsyncCancelNetworkRouteCoverage(ArrayNode events, String protocolVersion) {
+    private static void assertAsyncCancelNetworkRouteCoverage(ArrayNode events, String protocolVersion)
+            throws Exception {
         String routeId = "java.typed-protocol.client.execute_cancel";
-        List<String> caseIds = List.of(
-                "test-async-cancel-result-canceled",
-                "test-async-cancel-result-completed",
-                "test-async-cancel-result-failed",
-                "test-async-cancel-result-unable-to-cancel",
-                "test-async-cancel-result-unavailable");
         List<String> encodings = List.of("TTLV", "JSON", "XML");
         List<String> transports = List.of("raw_tls", "https");
-        List<String> requestTargets = List.of(
-                "KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-20-001",
-                "KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-21-001");
-        String operationTarget = "KMIPKIT-ELEM-OP-C2S-CANCEL";
-        for (String caseId : caseIds) {
+        for (AsyncCancelRouteScenario scenario : asyncCancelRouteScenarios(
+                readRouteEvidenceCatalog(), protocolVersion)) {
             for (String encoding : encodings) {
                 for (String transport : transports) {
-                    for (String action : List.of("construct", "send", "decode")) {
-                        assertAsyncCancelNetworkRouteEvent(events, caseId, routeId, operationTarget,
-                                action, protocolVersion, encoding, transport, true);
-                    }
-                    for (String requestTarget : requestTargets) {
-                        for (String action : List.of("construct", "send")) {
-                            assertAsyncCancelNetworkRouteEvent(events, caseId, routeId, requestTarget,
-                                    action, protocolVersion, encoding, transport, false);
+                    for (String targetId : scenario.targetIds()) {
+                        if (!"KMIPKIT-ELEM-OP-C2S-CANCEL".equals(targetId)
+                                && !targetId.startsWith("KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-")) continue;
+                        boolean operationTarget = "KMIPKIT-ELEM-OP-C2S-CANCEL".equals(targetId);
+                        List<String> actions = operationTarget
+                                ? List.of("construct", "send", "decode") : List.of("construct", "send");
+                        for (String action : actions) {
+                            assertAsyncCancelNetworkRouteEvent(events, scenario.caseId(), routeId, targetId,
+                                    action, protocolVersion, encoding, transport,
+                                    operationTarget ? scenario.workflowStepIndex() : -1);
                         }
                     }
                 }
@@ -11488,63 +10333,60 @@ class ControlledTlsPeerTest {
         }
     }
 
-    private static void assertAsyncCancelLocalRouteCoverage(ArrayNode events, String protocolVersion) {
-        List<String> caseIds = List.of(
-                "test-async-cancel-result-canceled",
-                "test-async-cancel-result-completed",
-                "test-async-cancel-result-failed",
-                "test-async-cancel-result-unable-to-cancel",
-                "test-async-cancel-result-unavailable");
-        List<String> genericTargets = List.of(
-                "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ASYNCHRONOUS-INDICATOR",
-                "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-ASYNCHRONOUS-CORRELATION-VALUE",
-                "KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-20-001",
-                "KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-21-001",
-                "KMIPKIT-PAYLOAD-CLIENT-CANCEL-RESPONSE-20-002",
-                "KMIPKIT-PAYLOAD-CLIENT-CANCEL-RESPONSE-21-002");
-        List<String> requestTargets = List.of(
-                "KMIPKIT-ELEM-OP-C2S-CANCEL",
-                "KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-20-001",
-                "KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-21-001");
-        List<String> responseTargets = List.of(
-                "KMIPKIT-ELEM-OP-C2S-CANCEL",
-                "KMIPKIT-PAYLOAD-CLIENT-CANCEL-RESPONSE-20-002",
-                "KMIPKIT-PAYLOAD-CLIENT-CANCEL-RESPONSE-21-002");
-        for (String caseId : caseIds) {
-            for (String targetId : genericTargets) {
-                assertRouteEventRecorded(events, caseId, targetId,
+    private static void assertAsyncCancelLocalRequestAndGenericRouteCoverage(
+            ArrayNode events, String protocolVersion) throws Exception {
+        for (AsyncCancelRouteScenario scenario : asyncCancelRouteScenarios(
+                readRouteEvidenceCatalog(), protocolVersion)) {
+            for (String targetId : scenario.targetIds()) {
+                assertRouteEventRecorded(events, scenario.caseId(), targetId,
                         "java.generic-ttlv.ttlv_item.create", "construct", protocolVersion);
-                assertRouteEventRecorded(events, caseId, targetId,
+                assertRouteEventRecorded(events, scenario.caseId(), targetId,
                         "java.generic-ttlv.function.ttlv_item_view_from_item", "decode", protocolVersion);
-                assertRouteEventRecorded(events, caseId, targetId,
+                assertRouteEventRecorded(events, scenario.caseId(), targetId,
                         "java.generic-ttlv.ttlv_codec.decode", "decode", protocolVersion);
             }
-            for (String targetId : requestTargets) {
-                assertRouteEventRecorded(events, caseId, targetId,
+            for (String targetId : scenario.targetIds()) {
+                if (!"KMIPKIT-ELEM-OP-C2S-CANCEL".equals(targetId)
+                        && !targetId.startsWith("KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-")) continue;
+                assertRouteEventRecorded(events, scenario.caseId(), targetId,
                         "java.typed-protocol.cancel_request.create", "construct", protocolVersion);
-                assertRouteEventRecorded(events, caseId, targetId,
+                assertRouteEventRecorded(events, scenario.caseId(), targetId,
                         "java.typed-protocol.function.async_cancel_request_to_ttlv_payload",
                         "encode", protocolVersion);
             }
-            for (String targetId : responseTargets) {
-                assertRouteEventRecorded(events, caseId, targetId,
+        }
+    }
+
+    private static void assertAsyncCancelLocalRouteCoverage(ArrayNode events, String protocolVersion)
+            throws Exception {
+        assertAsyncCancelLocalRequestAndGenericRouteCoverage(events, protocolVersion);
+        for (AsyncCancelRouteScenario scenario : asyncCancelRouteScenarios(
+                readRouteEvidenceCatalog(), protocolVersion)) {
+            for (String targetId : scenario.targetIds()) {
+                if (!"KMIPKIT-ELEM-OP-C2S-CANCEL".equals(targetId)
+                        && !targetId.startsWith("KMIPKIT-PAYLOAD-CLIENT-CANCEL-RESPONSE-")) continue;
+                assertRouteEventRecorded(events, scenario.caseId(), targetId,
                         "java.typed-protocol.function.kmipkit_client_async_operation_outcome_cancel_response_v1",
                         "decode", protocolVersion);
             }
-            assertRouteEventRecorded(events, caseId, "KMIPKIT-ELEM-OP-C2S-CREATE",
-                    "java.typed-protocol.function.client_batch_item_response_create", "decode", protocolVersion);
+            if (scenario.caseId().startsWith("test-async-cancel-result-")) {
+                assertRouteEventRecorded(events, scenario.caseId(), "KMIPKIT-ELEM-OP-C2S-CREATE",
+                        "java.typed-protocol.function.client_batch_item_response_create", "decode", protocolVersion);
+            }
         }
     }
 
     private static void assertEveryApplicableCancelNetworkRouteCoverage(
             ArrayNode events, String protocolVersion) throws Exception {
         String routeId = "java.typed-protocol.client.execute_cancel";
+        JsonNode catalog = readRouteEvidenceCatalog();
         Set<String> routeTargets = Set.of(
                 "KMIPKIT-ELEM-OP-C2S-CANCEL",
                 "KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-20-001",
                 "KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-21-001");
-        for (JsonNode testCase : readRouteEvidenceCatalog().path("test_cases")) {
-            if (!appliesToVersion(testCase, protocolVersion)) continue;
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            if (!appliesToVersion(testCase, protocolVersion)
+                    || "local_model".equals(testCase.path("execution").path("mode").asText())) continue;
             JsonNode requires = testCase.path("requires");
             JsonNode scenario = requires.path("protocol_scenario");
             Set<String> targets = new java.util.LinkedHashSet<>();
@@ -11558,6 +10400,8 @@ class ControlledTlsPeerTest {
                     || containsText(requires.path("operation_sequence"), "Cancel");
             if (cancelOperation) targets.add("KMIPKIT-ELEM-OP-C2S-CANCEL");
             targets.retainAll(routeTargets);
+            targets.removeIf(targetId -> !asyncCancelTargetAppliesToVersion(
+                    catalog, targetId, protocolVersion));
             if (targets.isEmpty()) continue;
 
             int workflowStepIndex = -1;
@@ -11608,14 +10452,14 @@ class ControlledTlsPeerTest {
 
     private static void assertAsyncCancelNetworkRouteEvent(ArrayNode events, String caseId,
             String routeId, String targetId, String action, String protocolVersion,
-            String encoding, String transport, boolean asynchronousWorkflow) {
+            String encoding, String transport, int workflowStepIndex) {
         for (JsonNode event : events) {
             if (!routeEventMatches(event, caseId, routeId, protocolVersion, targetId)
                     || !action.equals(event.path("action").asText())
                     || !encoding.equals(event.path("encoding").asText())
                     || !transport.equals(event.path("transport").asText())) continue;
-            if (asynchronousWorkflow) {
-                assertEquals(1, event.path("workflow_step_index").asInt(-1));
+            if (workflowStepIndex >= 0) {
+                assertEquals(workflowStepIndex, event.path("workflow_step_index").asInt(-1));
                 assertEquals("Cancel", event.path("workflow_operation").asText());
             }
             return;
@@ -14012,4 +12856,2226 @@ class ControlledTlsPeerTest {
             int typeCode, List<String> protocolVersions) {}
 
     private record MatrixPlan(List<Long> expectedOperations, List<byte[]> responses) {}
+
+    private static final String USAGE_LIMITS_CASE_ID =
+            "test-norm-operation-structure-operation-structure-7-40-usage-limits";
+    private static final String USAGE_LIMITS_TARGET_ID =
+            "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-40-USAGE-LIMITS";
+    private static final List<UsageLimitsMemberFixture> USAGE_LIMITS_MEMBER_FIXTURES = List.of(
+            new UsageLimitsMemberFixture(
+                    "test-norm-structure-member-structure-member-7-40-usage-limits-total",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-40-USAGE-LIMITS-TOTAL", 0x420097,
+                    TtlvItemType.LongInteger, 100),
+            new UsageLimitsMemberFixture(
+                    "test-norm-structure-member-structure-member-7-40-usage-limits-count",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-40-USAGE-LIMITS-COUNT", 0x420096,
+                    TtlvItemType.LongInteger, 73),
+            new UsageLimitsMemberFixture(
+                    "test-norm-structure-member-structure-member-7-40-usage-limits-unit",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-40-USAGE-LIMITS-UNIT", 0x420098,
+                    TtlvItemType.Enumeration, KmipValues.UsageLimitsUnit.OBJECT));
+    private static final List<String> USAGE_LIMITS_CASE_IDS = List.of(
+            USAGE_LIMITS_CASE_ID,
+            USAGE_LIMITS_MEMBER_FIXTURES.get(0).caseId(),
+            USAGE_LIMITS_MEMBER_FIXTURES.get(1).caseId(),
+            USAGE_LIMITS_MEMBER_FIXTURES.get(2).caseId());
+    private static final String RIGHT_USAGE_LIMITS_CASE_ID =
+            "test-norm-structure-member-structure-member-7-34-usage-limits";
+    private static final String RIGHT_USAGE_LIMITS_TARGET_ID =
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-34-USAGE-LIMITS";
+
+
+    private static void appendAsyncIndicatorEnumerationTtlvRoutes(ArrayNode events, String protocolVersion)
+            throws Exception {
+        JsonNode catalog = readRouteEvidenceCatalog();
+        int asynchronousIndicatorTag = -1;
+        for (JsonNode target : catalog.path("normative_targets")) {
+            if ("tag".equals(target.path("kind").asText())
+                    && "Asynchronous Indicator".equals(target.path("name").asText())) {
+                asynchronousIndicatorTag = parseWireTag(target.path("wire_value").asText());
+                break;
+            }
+        }
+        assertTrue(asynchronousIndicatorTag >= 0, "The catalog must define the Asynchronous Indicator tag.");
+
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            JsonNode scenario = testCase.path("requires").path("protocol_scenario");
+            if (!"asynchronous_workflows".equals(testCase.path("category").asText())
+                    || !scenario.path("parameters").has("asynchronous_indicator")
+                    || !scenarioHasTargetPrefix(scenario,
+                            "KMIPKIT-ELEM-ENUM-VALUE-ASYNCHRONOUS-INDICATOR-")
+                    || !appliesToVersion(testCase, protocolVersion)) continue;
+            String caseId = testCase.path("case_id").asText();
+            JsonNode enumTarget = null;
+            for (JsonNode targetId : scenario.path("target_ids")) {
+                String value = targetId.asText();
+                if (!value.startsWith("KMIPKIT-ELEM-ENUM-VALUE-ASYNCHRONOUS-INDICATOR-")) continue;
+                for (JsonNode candidate : catalog.path("normative_targets")) {
+                    if (value.equals(candidate.path("target_id").asText())) {
+                        enumTarget = candidate;
+                        break;
+                    }
+                }
+                break;
+            }
+            assertTrue(enumTarget != null, "Asynchronous scenario must identify its normative enum value: "
+                    + caseId);
+            String parameter = scenario.path("parameters").path("asynchronous_indicator").asText();
+            String expectedName = "omitted".equals(parameter) ? "Prohibited" : parameter;
+            assertEquals(expectedName, enumTarget.path("name").asText(),
+                    "Scenario parameter and normative Asynchronous Indicator target must agree: " + caseId);
+            long enumValue = Long.parseUnsignedLong(
+                    enumTarget.path("wire_value").asText().replaceFirst("^0[xX]", ""), 16);
+            appendGenericEnumerationRouteEvents(events, caseId, enumTarget.path("target_id").asText(),
+                    asynchronousIndicatorTag, enumValue, protocolVersion);
+        }
+    }
+
+
+    private static byte[] queryResponseBatchItem() throws Exception {
+        return structure(0x42000f,
+                item(0x42005c, 5, intBytes(0x18)),
+                item(0x420093, 8, "item-0".getBytes(StandardCharsets.US_ASCII)),
+                item(0x42007f, 5, intBytes(0)),
+                structure(0x42007c,
+                        item(0x42005c, 5, intBytes(0x3b)),
+                        profileInformationWire(),
+                        serverInformationWire(),
+                        structure(0x42015f)),
+                messageExtensionWire());
+    }
+
+
+    private static byte[] requestBatchItemWire() throws Exception {
+        return structure(0x42000f,
+                item(0x42005c, 5, intBytes(0x18)),
+                item(0x420093, 8, "item-0".getBytes(StandardCharsets.US_ASCII)),
+                structure(0x420079, item(0x420074, 5, intBytes(1))),
+                messageExtensionWire());
+    }
+
+
+    private static byte[] profileInformationWire() throws Exception {
+        return structure(0x4200eb,
+                item(0x4200ec, TtlvItemType.Enumeration.code(), intBytes(0x12a)),
+                profileVersionWire(),
+                textItem(0x4200ed, "https://kms.example.invalid"),
+                item(0x4200ee, TtlvItemType.Integer.code(), intBytes(5696)));
+    }
+
+
+    private static byte[] serverInformationWire() throws Exception {
+        return structure(0x420088,
+                textItem(0x42012d, "kmipkit-test-server"),
+                textItem(0x42012e, "SN-12345"),
+                textItem(0x42012f, "1.2.3"),
+                textItem(0x420130, "10%"),
+                textItem(0x420131, "KMIPKit Test"),
+                textItem(0x420132, "42"),
+                textItem(0x420133, "2026-11-14"),
+                textItem(0x420134, "cluster-a"),
+                textItem(0x420135, "kms-backup-1.example.invalid:5696"),
+                textItem(0x420135, "kms-backup-2.example.invalid:5696"),
+                textItem(0x540001, "vendor-info"),
+                item(0x540002, TtlvItemType.Integer.code(), intBytes(7)));
+    }
+
+
+    private static byte[] profileVersionWire() throws Exception {
+        return structure(0x4200ef,
+                item(0x4200f0, TtlvItemType.Integer.code(), intBytes(1)),
+                item(0x4200f1, TtlvItemType.Integer.code(), intBytes(0)));
+    }
+
+
+    private static byte[] messageExtensionWire() throws Exception {
+        return structure(0x420051,
+                textItem(0x42009d, "KMIPKit.fixture"),
+                item(0x420026, 6, new byte[8]),
+                structure(0x42009c, textItem(0x540001, "fixture-extension")));
+    }
+
+
+    private void appendPendingQueryCorrelationEvidence(ArrayNode events, String protocolVersion,
+            byte[] serverCertificatePem, byte[] serverPrivateKeyPem,
+            byte[] clientCertificatePem, byte[] clientPrivateKeyPem) throws Exception {
+        byte[] correlation = {0x50, 0x45, 0x4e, 0x44, (byte) protocolVersion.charAt(2)};
+        int protocolMinorVersion = "2.0".equals(protocolVersion) ? 0 : 1;
+        SSLServerSocket listener = listener(certificate(serverCertificatePem),
+                privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+        byte[] responseBytes = asynchronousBatchResponse(correlation, protocolMinorVersion);
+        FutureTask<byte[]> peer = new FutureTask<>(() -> serveOneResponse(listener, responseBytes));
+        Thread peerThread = new Thread(peer, "java-validator-pending-query-peer-" + protocolVersion);
+        peerThread.setDaemon(true);
+        peerThread.start();
+        Path connectionFile = temporaryDirectory.resolve("pending-query-evidence-" + protocolVersion + ".json");
+        Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
+                clientCertificatePem, clientPrivateKeyPem, true, protocolVersion));
+        try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile));
+                ClientBatch batch = ClientBatch.create()) {
+            batch.asynchronousIndicator(1);
+            assertTrue(batch.addErrorContinuationValue(1) == batch,
+                    "Batch Error Continuation Option must remain configured on the active batch.");
+            batch.add(ClientBatchItem.query(new int[] {1}, null)
+                    .withUniqueBatchItemId("item-0".getBytes(StandardCharsets.US_ASCII)));
+            batch.add(ClientBatchItem.query(new int[] {1}, null)
+                    .withUniqueBatchItemId("item-1".getBytes(StandardCharsets.US_ASCII)));
+            try (ClientBatchResponse response = driver.executeBatchForEvidence(batch);
+                    ClientBatchItemResult result = response.itemAt(0);
+                    ClientBatchItemResult secondResult = response.itemAt(1)) {
+                assertEquals(2, response.itemCount());
+                assertEquals(2L, result.resultStatus());
+                assertArrayEquals(correlation, result.pendingCorrelationValue().orElseThrow());
+                assertEquals(0L, secondResult.resultStatus());
+                appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID,
+                        "java.typed-protocol.function.client_batch_item_response_pending_correlation_value",
+                        RESPONSE_BATCH_ITEM_TARGET_ID,
+                        "org.kmipkit.extensions.ClientBatchItemResult.pendingCorrelationValue",
+                        null, null, "decode", protocolVersion, null, null,
+                        normalizedTreeSha256(responseBytes));
+                assertArrayEquals(correlation, result.pendingCorrelationValue().orElseThrow());
+                appendRouteEvent(events,
+                        "test-norm-operation-structure-operation-structure-7-8-correlation-value",
+                        "java.typed-protocol.function.client_batch_item_response_pending_correlation_value",
+                        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-8-CORRELATION-VALUE",
+                        "org.kmipkit.extensions.ClientBatchItemResult.pendingCorrelationValue",
+                        null, null, "decode", protocolVersion, null, null,
+                        normalizedTreeSha256(responseBytes));
+                appendBatchItemFieldRouteEvents(events,
+                        "java.typed-protocol.function.client_batch_item_response_pending_correlation_value",
+                        "org.kmipkit.extensions.ClientBatchItemResult.pendingCorrelationValue",
+                        protocolVersion, normalizedTreeSha256(responseBytes));
+            }
+        } finally {
+            listener.close();
+        }
+        byte[] requestBytes = peer.get(15, TimeUnit.SECONDS);
+        assertEquals(0x18L, requestOperation(requestBytes));
+        assertEquals(protocolMinorVersion, requestProtocolMinorVersion(requestBytes));
+        assertTrue(contains(requestBytes, item(0x42000e, 5, intBytes(1))),
+                "The typed ClientBatch option must reach the controlled KMIP request header.");
+        appendRouteEvent(events,
+                "test-norm-message-field-message-field-9-6-batch-error-continuation-option",
+                "java.typed-protocol.function.client_batch_add_error_continuation_value",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-9-6-BATCH-ERROR-CONTINUATION-OPTION",
+                "org.kmipkit.extensions.ClientBatch.addErrorContinuationValue",
+                null, null, "construct", protocolVersion, null, normalizedTreeSha256(requestBytes), null);
+        appendRouteEvent(events, "test-norm-tag-tag-42000e",
+                "java.typed-protocol.function.client_batch_add_error_continuation_value",
+                "KMIPKIT-ELEM-TAG-42000E", "org.kmipkit.extensions.ClientBatch.addErrorContinuationValue",
+                null, null, "construct", protocolVersion, null, normalizedTreeSha256(requestBytes), null);
+    }
+
+
+    private static void appendBatchContinuationTagIdentityRouteEvents(ArrayNode events, String protocolVersion)
+            throws Exception {
+        LocalCatalogRouteChecks.executeTags(readRouteEvidenceCatalog(), protocolVersion,
+                Set.of("test-norm-tag-tag-42000e"),
+                invocation -> appendLocalCatalogInvocation(events, protocolVersion, invocation));
+    }
+
+
+    private static void appendBatchItemGenericRouteEvents(ArrayNode events, String protocolVersion)
+            throws Exception {
+        String treeHash = normalizedTreeSha256(queryResponseBatchItem());
+        CodecLimits limits = CodecLimits.defaults();
+        try (TtlvStructure structure = batchItemStructure();
+                TtlvValue value = TtlvValue.structure(structure, limits);
+                RawTag rawTag = RawTag.fromRaw(0x42000f);
+                Tag tag = rawTag.checked();
+                TtlvItem item = TtlvItem.create(tag, value, limits);
+                var view = item.view();
+                var itemValue = view.value();
+                var structureView = itemValue.structure()) {
+            assertEquals(0x42000f, view.tag().raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertEquals(5, structureView.itemCount());
+        }
+        appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID,
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
+                RESPONSE_BATCH_ITEM_TARGET_ID, "org.kmipkit.ttlv.TtlvValue.structure", null, null,
+                "construct", protocolVersion, null, treeHash, null);
+        appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID, "java.generic-ttlv.ttlv_item.create",
+                RESPONSE_BATCH_ITEM_TARGET_ID, "org.kmipkit.ttlv.TtlvItem.create", null, null,
+                "construct", protocolVersion, null, treeHash, null);
+        appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID,
+                "java.generic-ttlv.function.ttlv_item_view_from_item", RESPONSE_BATCH_ITEM_TARGET_ID,
+                "org.kmipkit.ttlv.TtlvItem.view", null, null, "decode", protocolVersion,
+                null, null, treeHash);
+        try (TtlvItem decoded = TtlvCodec.decode(queryResponseBatchItem());
+                var view = decoded.view();
+                var value = view.value();
+                var structureView = value.structure()) {
+            assertEquals(0x42000f, view.tag().raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertEquals(5, structureView.itemCount());
+        }
+        appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID, "java.generic-ttlv.ttlv_codec.decode",
+                RESPONSE_BATCH_ITEM_TARGET_ID, "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
+                "decode", protocolVersion, null, null, treeHash);
+        appendBatchWorkflowBatchItemGenericRouteEvents(events, protocolVersion);
+    }
+
+
+    private static Set<String> batchWorkflowBatchItemTargetPairs(JsonNode catalog) {
+        Set<String> pairs = new java.util.LinkedHashSet<>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            if (!"batch_workflows".equals(testCase.path("category").asText())) continue;
+            JsonNode targets = testCase.path("requires").path("protocol_scenario").path("target_ids");
+            for (String targetId : List.of(
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-BATCH-ITEM",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM")) {
+                if (containsText(targets, targetId)) {
+                    pairs.add(testCase.path("case_id").asText() + "|" + targetId);
+                }
+            }
+        }
+        return pairs;
+    }
+
+
+    private static Set<String> batchWorkflowBatchItemCaseIds(JsonNode catalog) {
+        Set<String> caseIds = new java.util.LinkedHashSet<>();
+        for (String pair : batchWorkflowBatchItemTargetPairs(catalog)) {
+            caseIds.add(pair.substring(0, pair.indexOf('|')));
+        }
+        return caseIds;
+    }
+
+
+    private static Set<String> batchWorkflowGenericRouteEvidenceKeys(Set<String> targetPairs) {
+        Set<String> expected = new java.util.HashSet<>();
+        List<String> routes = List.of(
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode");
+        for (String pair : targetPairs) {
+            for (String protocolVersion : KMIP_2_0_AND_2_1) {
+                for (String routeId : routes) {
+                    expected.add(pair + "|" + protocolVersion + "|" + routeId);
+                }
+            }
+        }
+        return expected;
+    }
+
+
+    private static void appendBatchWorkflowBatchItemGenericRouteEvents(ArrayNode events, String protocolVersion)
+            throws Exception {
+        CodecLimits limits = CodecLimits.defaults();
+        for (String pair : batchWorkflowBatchItemTargetPairs(readRouteEvidenceCatalog())) {
+            int separator = pair.indexOf('|');
+            String caseId = pair.substring(0, separator);
+            String targetId = pair.substring(separator + 1);
+            boolean requestItem = "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-BATCH-ITEM".equals(targetId);
+            byte[] wire = requestItem ? requestBatchItemWire() : queryResponseBatchItem();
+            String treeHash = normalizedTreeSha256(wire);
+            try (TtlvStructure structure = requestItem ? requestBatchItem(limits, "item-0")
+                    : batchItemStructure();
+                    TtlvValue value = TtlvValue.structure(structure, limits);
+                    RawTag rawTag = RawTag.fromRaw(0x42000f);
+                    Tag tag = rawTag.checked();
+                    TtlvItem item = TtlvItem.create(tag, value, limits);
+                    var view = item.view();
+                    var itemValue = view.value();
+                    var structureView = itemValue.structure()) {
+                assertEquals(0x42000f, view.tag().raw());
+                assertEquals(TtlvItemType.Structure, view.itemType());
+                assertEquals(requestItem ? 4 : 5, structureView.itemCount());
+            }
+            appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_item.create", targetId,
+                    "org.kmipkit.ttlv.TtlvItem.create", null, null, "construct", protocolVersion,
+                    null, treeHash, null);
+            appendRouteEvent(events, caseId, "java.generic-ttlv.function.ttlv_item_view_from_item", targetId,
+                    "org.kmipkit.ttlv.TtlvItem.view", null, null, "decode", protocolVersion,
+                    null, null, treeHash);
+            try (TtlvItem decoded = TtlvCodec.decode(wire);
+                    var view = decoded.view();
+                    var value = view.value();
+                    var structureView = value.structure()) {
+                assertEquals(0x42000f, view.tag().raw());
+                assertEquals(TtlvItemType.Structure, view.itemType());
+                assertEquals(requestItem ? 4 : 5, structureView.itemCount());
+            }
+            appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_codec.decode", targetId,
+                    "org.kmipkit.ttlv.TtlvCodec.decode", null, null, "decode", protocolVersion,
+                    null, null, treeHash);
+        }
+    }
+
+
+    private static void appendNormativeMessageFieldGenericRouteEvents(ArrayNode events,
+            String protocolVersion) throws Exception {
+        // OASIS KMIP 2.0/2.1 §8.3 defines the optional Boolean Ephemeral field in a Request Batch Item.
+        appendMessageFieldBooleanRoutes(events, "test-norm-message-field-message-field-8-3-ephemeral",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-EPHEMERAL", 0x420154, protocolVersion);
+        // OASIS KMIP 2.0/2.1 §8.2 defines Attestation Type as a repeatable Enumeration in Request Header.
+        appendGenericEnumerationRouteEvents(events, REQUEST_HEADER_ATTESTATION_TYPE.caseId(),
+                REQUEST_HEADER_ATTESTATION_TYPE.targetId(), 0x4200c7,
+                ATTESTATION_TYPE_VALUES.get(0), protocolVersion);
+        // OASIS KMIP 2.0/2.1 §8.5 defines Attestation Type as an optional, repeatable Response Header field.
+        appendGenericEnumerationRouteEvents(events, RESPONSE_HEADER_ATTESTATION_TYPE.caseId(),
+                RESPONSE_HEADER_ATTESTATION_TYPE.targetId(), 0x4200c7,
+                ATTESTATION_TYPE_VALUES.get(0), protocolVersion);
+        // OASIS KMIP 2.0/2.1 §8.5 defines Client Correlation Value as an optional Response Header Text String.
+        appendMessageFieldTextStringRoutes(events, RESPONSE_HEADER_CLIENT_CORRELATION_VALUE.caseId(),
+                RESPONSE_HEADER_CLIENT_CORRELATION_VALUE.targetId(), 0x420105,
+                RESPONSE_HEADER_CLIENT_CORRELATION_VALUE_TEXT, protocolVersion);
+        // OASIS KMIP 2.0/2.1 §8.5 defines Server Correlation Value as an optional Response Header Text String.
+        appendMessageFieldTextStringRoutes(events, RESPONSE_HEADER_SERVER_CORRELATION_VALUE.caseId(),
+                RESPONSE_HEADER_SERVER_CORRELATION_VALUE.targetId(), 0x420106,
+                RESPONSE_HEADER_SERVER_CORRELATION_VALUE_TEXT, protocolVersion);
+        appendMessageFieldIntegerRoutes(events, "test-norm-message-field-message-field-8-5-batch-count",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-BATCH-COUNT", protocolVersion, false);
+        appendMessageFieldIntegerRoutes(events, "test-norm-message-field-message-field-9-5-batch-count",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-9-5-BATCH-COUNT", protocolVersion, true);
+
+        appendMessageFieldStructureRoutes(events, "test-norm-message-field-message-field-8-6-batch-item",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM", 0x42000f,
+                queryResponseBatchItem(), batchItemStructure(), protocolVersion, true, false);
+        appendMessageFieldStructureRoutes(events, "test-norm-message-field-message-field-9-7-batch-item",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM", 0x42000f,
+                queryResponseBatchItem(), batchItemStructure(), protocolVersion, true, false);
+        appendMessageFieldStructureRoutes(events, "test-norm-message-field-message-field-8-6-message-extension",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION", 0x420051,
+                messageExtensionWire(), messageExtensionStructure(), protocolVersion, false, false);
+        appendMessageFieldStructureRoutes(events, "test-norm-message-field-message-field-9-13-message-extension",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION", 0x420051,
+                messageExtensionWire(), messageExtensionStructure(), protocolVersion, true, false);
+        appendMessageFieldStructureRoutes(events, "test-norm-tag-tag-420051",
+                "KMIPKIT-ELEM-TAG-420051", 0x420051,
+                messageExtensionWire(), messageExtensionStructure(), protocolVersion, false, true);
+    }
+
+
+    private static void appendMessageFieldBooleanRoutes(ArrayNode events, String caseId, String targetId,
+            int rawTag, String protocolVersion) throws Exception {
+        byte[] wire = item(rawTag, TtlvItemType.Boolean.code(), longBytes(1));
+        String treeHash = normalizedTreeSha256(wire);
+        try (TtlvValue value = TtlvValue.Boolean(true);
+                RawTag raw = RawTag.fromRaw(rawTag);
+                Tag tag = raw.checked();
+                TtlvItem created = TtlvItem.create(tag, value, CodecLimits.defaults());
+                var view = created.view();
+                var viewValue = view.value()) {
+            assertEquals(rawTag, view.tag().raw());
+            assertEquals(TtlvItemType.Boolean, view.itemType());
+            assertTrue(viewValue.booleanValue());
+        }
+        appendRouteEvent(events, caseId, "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.boolean",
+                targetId, "org.kmipkit.ttlv.TtlvValue.Boolean", null, null,
+                "construct", protocolVersion, null, treeHash, null);
+        appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_item.create", targetId,
+                "org.kmipkit.ttlv.TtlvItem.create", null, null,
+                "construct", protocolVersion, null, treeHash, null);
+        appendRouteEvent(events, caseId, "java.generic-ttlv.function.ttlv_item_view_from_item", targetId,
+                "org.kmipkit.ttlv.TtlvItem.view", null, null,
+                "decode", protocolVersion, null, null, treeHash);
+        try (TtlvItem decoded = TtlvCodec.decode(wire);
+                var decodedView = decoded.view();
+                var decodedValue = decodedView.value()) {
+            assertEquals(rawTag, decodedView.tag().raw());
+            assertEquals(TtlvItemType.Boolean, decodedView.itemType());
+            assertTrue(decodedValue.booleanValue());
+        }
+        appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_codec.decode", targetId,
+                "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
+                "decode", protocolVersion, null, null, treeHash);
+    }
+
+    private void appendNewAttributeMutationEvents(ArrayNode events, String protocolVersion,
+            byte[] serverCertificatePem, byte[] serverPrivateKeyPem,
+            byte[] clientCertificatePem, byte[] clientPrivateKeyPem) throws Exception {
+        int minor = "2.0".equals(protocolVersion) ? 0 : 1;
+        for (NewAttributeMutationFixture fixture : NEW_ATTRIBUTE_MUTATION_FIXTURES) {
+            String operation = fixture.methodName();
+            String title = fixture.title();
+            String suffix = title.toLowerCase(Locale.ROOT).replace(' ', '-') + "-request";
+            String versionCode = "2.0".equals(protocolVersion) ? "20" : "21";
+            String ordinal = fixture.ordinal();
+            String routeOperation = title.toLowerCase(Locale.ROOT).replace(' ', '_');
+            String caseId = "test-norm-payload-client-" + suffix + "-" + versionCode + "-" + ordinal;
+            String payloadTarget = "KMIPKIT-PAYLOAD-CLIENT-" + suffix.toUpperCase(Locale.ROOT)
+                    + "-" + versionCode + "-" + ordinal;
+            String operationTarget = "KMIPKIT-ELEM-OP-C2S-" + title.toUpperCase(Locale.ROOT)
+                    .replace(' ', '-');
+            String clientItemRoute = "java.typed-protocol.client_batch_item." + routeOperation;
+            String clientItemSymbol = "org.kmipkit.extensions.ClientBatchItem." + operation;
+            String toBatchItemRoute = "java.typed-protocol.function.attribute_request_" + routeOperation
+                    + "_to_batch_item";
+            String requestClass = title.replace(" ", "") + "Request";
+            String toBatchItemSymbol = "org.kmipkit.extensions." + requestClass + ".toBatchItem";
+            String toPayloadRoute = "java.typed-protocol.function.attribute_request_" + routeOperation
+                    + "_to_ttlv_payload";
+            String toPayloadSymbol = "org.kmipkit.extensions." + requestClass + ".toTtlvPayload";
+            String responseRoute = "java.typed-protocol.function.client_batch_item_response_" + routeOperation;
+            String responseSymbol = "org.kmipkit.extensions.ClientBatchItemResult." + operation + "Response";
+            int operationValue = fixture.operationValue();
+
+            byte[] newAttributeWire = newAttributeStructureWire();
+            String newAttributeHash = normalizedTreeSha256(newAttributeWire);
+            appendNewAttributeGenericRouteEvents(events, caseId, payloadTarget, operationTarget,
+                    protocolVersion, newAttributeWire, newAttributeHash);
+
+            SSLServerSocket listener = listener(certificate(serverCertificatePem),
+                    privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+            byte[] responseBytes = attributeMutationResponse(minor, operationValue);
+            FutureTask<byte[]> peer = new FutureTask<>(() -> serveOneResponse(listener, responseBytes));
+            Thread peerThread = new Thread(peer,
+                    "java-validator-" + operation + "-new-attribute-peer-" + protocolVersion);
+            peerThread.setDaemon(true);
+            peerThread.start();
+
+            Path connectionFile = temporaryDirectory.resolve(operation + "-new-attribute-"
+                    + protocolVersion + ".json");
+            Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
+                    clientCertificatePem, clientPrivateKeyPem, false, protocolVersion));
+            try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile));
+                    TtlvItem newAttributeItem = TtlvCodec.decode(newAttributeNameItemWire());
+                    TtlvStructure genericPayload = attributeRequestPayload(operation, newAttributeItem);
+                    ClientBatchItem directRequest = directAttributeMutationItem(operation, newAttributeItem)
+                            .withUniqueBatchItemId("item-0".getBytes(StandardCharsets.US_ASCII));
+                    ClientBatchItem typedRequest = attributeRequestBatchItem(operation, newAttributeItem)
+                            .withUniqueBatchItemId("item-1".getBytes(StandardCharsets.US_ASCII));
+                    ClientBatch batch = ClientBatch.create()) {
+                try (var payloadView = genericPayload.view();
+                        var newAttributeField = payloadView.itemAt(1);
+                        var fieldTag = newAttributeField.tag();
+                        var fieldValue = newAttributeField.value();
+                        var fieldContents = fieldValue.structure()) {
+                    assertEquals(2, payloadView.itemCount());
+                    assertEquals(0x42013d, fieldTag.raw());
+                    assertEquals(TtlvItemType.Structure, newAttributeField.itemType());
+                    assertEquals(1, fieldContents.itemCount(),
+                            "The typed payload must preserve its direct Name attribute Item.");
+                }
+                batch.add(directRequest);
+                batch.add(typedRequest);
+                String responseHash = normalizedTreeSha256(responseBytes);
+                try (ClientBatchResponse response = driver.executeBatchForEvidence(batch)) {
+                    assertEquals(2, response.itemCount());
+                    for (int index = 0; index < response.itemCount(); index++) {
+                        try (ClientBatchItemResult result = response.itemAt(index)) {
+                            assertEquals((long) operationValue, result.operation());
+                            assertEquals(0L, result.resultStatus());
+                            String uniqueIdentifier = switch (operation) {
+                                case "addAttribute" -> result.addAttributeResponse().orElseThrow()
+                                        .uniqueIdentifier();
+                                case "modifyAttribute" -> result.modifyAttributeResponse().orElseThrow()
+                                        .uniqueIdentifier();
+                                case "setAttribute" -> result.setAttributeResponse().orElseThrow()
+                                        .uniqueIdentifier();
+                                default -> throw new AssertionError("Unknown attribute mutation fixture.");
+                            };
+                            assertEquals("object-7", uniqueIdentifier);
+                        }
+                    }
+                }
+                byte[] requestBytes = peer.get(15, TimeUnit.SECONDS);
+                assertEquals(operationValue, requestOperation(requestBytes));
+                assertEquals(minor, requestProtocolMinorVersion(requestBytes));
+                assertTrue(contains(requestBytes, newAttributeWire),
+                        "The controlled peer must receive the exact New Attribute Structure.");
+                String requestHash = normalizedTreeSha256(requestBytes);
+                appendNewAttributeTypedMutationRouteEvents(events, caseId, payloadTarget, operationTarget,
+                        clientItemRoute, clientItemSymbol, toBatchItemRoute, toBatchItemSymbol,
+                        protocolVersion, requestHash, responseHash);
+                appendRouteEvent(events, caseId, toPayloadRoute, payloadTarget, toPayloadSymbol,
+                        null, null, "encode", protocolVersion, null, requestHash, null);
+                appendRouteEvent(events, caseId, toPayloadRoute, operationTarget, toPayloadSymbol,
+                        null, null, "encode", protocolVersion, null, requestHash, null);
+                appendRouteEvent(events, caseId, responseRoute, operationTarget, responseSymbol,
+                        null, null, "decode", protocolVersion, null, null, responseHash);
+            } finally {
+                listener.close();
+            }
+        }
+    }
+
+
+    private static void appendNewAttributeGenericRouteEvents(ArrayNode events, String caseId,
+            String payloadTarget, String operationTarget, String protocolVersion,
+            byte[] newAttributeWire, String treeHash) throws Exception {
+        CodecLimits limits = CodecLimits.defaults();
+        try (TtlvStructure empty = TtlvStructure.create();
+                TtlvItem directAttribute = TtlvCodec.decode(newAttributeNameItemWire());
+                TtlvStructure content = TtlvStructure.withItem(empty, directAttribute, limits);
+                TtlvValue structureValue = TtlvValue.structure(content, limits);
+                RawTag raw = RawTag.fromRaw(0x42013d);
+                Tag tag = raw.checked();
+                TtlvItem item = TtlvItem.create(tag, structureValue, limits);
+                var view = item.view();
+                var value = view.value();
+                var fields = value.structure()) {
+            assertEquals(0x42013d, view.tag().raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertEquals(1, fields.itemCount(),
+                    "New Attribute is a Structure containing exactly one direct attribute Item.");
+        }
+        appendRouteEvent(events, caseId,
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure", payloadTarget,
+                "org.kmipkit.ttlv.TtlvValue.structure", null, null,
+                "construct", protocolVersion, null, treeHash, null);
+        for (String target : List.of(payloadTarget, operationTarget)) {
+            appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_item.create", target,
+                    "org.kmipkit.ttlv.TtlvItem.create", null, null,
+                    "construct", protocolVersion, null, treeHash, null);
+            appendRouteEvent(events, caseId, "java.generic-ttlv.function.ttlv_item_view_from_item", target,
+                    "org.kmipkit.ttlv.TtlvItem.view", null, null,
+                    "decode", protocolVersion, null, null, treeHash);
+            try (TtlvItem decoded = TtlvCodec.decode(newAttributeWire);
+                    var decodedView = decoded.view();
+                    var decodedValue = decodedView.value();
+                    var decodedFields = decodedValue.structure()) {
+                assertEquals(0x42013d, decodedView.tag().raw());
+                assertEquals(TtlvItemType.Structure, decodedView.itemType());
+                assertEquals(1, decodedFields.itemCount());
+            }
+            appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_codec.decode", target,
+                    "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
+                    "decode", protocolVersion, null, null, treeHash);
+        }
+    }
+
+
+    private static void appendNewAttributeTypedMutationRouteEvents(ArrayNode events, String caseId,
+            String payloadTarget, String operationTarget, String clientItemRoute, String clientItemSymbol,
+            String toBatchItemRoute, String toBatchItemSymbol, String protocolVersion,
+            String requestHash, String responseHash) {
+        for (String target : List.of(payloadTarget, operationTarget)) {
+            appendRouteEvent(events, caseId, clientItemRoute, target, clientItemSymbol,
+                    "java.execute.typed-batch", "org.kmipkit.extensions.Client.execute",
+                    "construct", protocolVersion, "raw_tls", requestHash, null);
+            ObjectNode clientSent = appendRouteEvent(events, caseId, clientItemRoute, target, clientItemSymbol,
+                    "java.execute.typed-batch", "org.kmipkit.extensions.Client.execute",
+                    "send", protocolVersion, "raw_tls", requestHash, null);
+            clientSent.put("request_delivery_state", "response_received");
+            clientSent.put("transport_invocation_count", 1);
+            appendRouteEvent(events, caseId, toBatchItemRoute, target, toBatchItemSymbol,
+                    "java.execute.typed-batch", "org.kmipkit.extensions.Client.execute",
+                    "construct", protocolVersion, "raw_tls", requestHash, null);
+            ObjectNode convertedSent = appendRouteEvent(events, caseId, toBatchItemRoute, target,
+                    toBatchItemSymbol, "java.execute.typed-batch", "org.kmipkit.extensions.Client.execute",
+                    "send", protocolVersion, "raw_tls", requestHash, null);
+            convertedSent.put("request_delivery_state", "response_received");
+            convertedSent.put("transport_invocation_count", 1);
+        }
+        appendRouteEvent(events, caseId, clientItemRoute, operationTarget, clientItemSymbol,
+                "java.execute.typed-batch", "org.kmipkit.extensions.Client.execute",
+                "decode", protocolVersion, "raw_tls", null, responseHash);
+        appendRouteEvent(events, caseId, toBatchItemRoute, operationTarget, toBatchItemSymbol,
+                "java.execute.typed-batch", "org.kmipkit.extensions.Client.execute",
+                "decode", protocolVersion, "raw_tls", null, responseHash);
+    }
+
+
+    private static ClientBatchItem directAttributeMutationItem(String operation, TtlvItem newAttribute) {
+        UniqueIdentifier identifier = UniqueIdentifier.textString("object-7");
+        return switch (operation) {
+            case "addAttribute" -> ClientBatchItem.addAttribute(identifier, newAttribute);
+            case "modifyAttribute" -> ClientBatchItem.modifyAttribute(identifier, null, newAttribute);
+            case "setAttribute" -> ClientBatchItem.setAttribute(identifier, newAttribute);
+            default -> throw new AssertionError("Unknown attribute mutation fixture.");
+        };
+    }
+
+
+    private static TtlvStructure attributeRequestPayload(String operation, TtlvItem newAttribute) {
+        UniqueIdentifier identifier = UniqueIdentifier.textString("object-7");
+        return switch (operation) {
+            case "addAttribute" -> {
+                try (AddAttributeRequest request = AddAttributeRequest.create(identifier, newAttribute)) {
+                    yield request.toTtlvPayload();
+                }
+            }
+            case "modifyAttribute" -> {
+                try (ModifyAttributeRequest request =
+                        ModifyAttributeRequest.create(identifier, null, newAttribute)) {
+                    yield request.toTtlvPayload();
+                }
+            }
+            case "setAttribute" -> {
+                try (SetAttributeRequest request = SetAttributeRequest.create(identifier, newAttribute)) {
+                    yield request.toTtlvPayload();
+                }
+            }
+            default -> throw new AssertionError("Unknown attribute mutation fixture.");
+        };
+    }
+
+
+    private static ClientBatchItem attributeRequestBatchItem(String operation, TtlvItem newAttribute) {
+        UniqueIdentifier identifier = UniqueIdentifier.textString("object-7");
+        return switch (operation) {
+            case "addAttribute" -> {
+                try (AddAttributeRequest request = AddAttributeRequest.create(identifier, newAttribute)) {
+                    yield request.toBatchItem();
+                }
+            }
+            case "modifyAttribute" -> {
+                try (ModifyAttributeRequest request =
+                        ModifyAttributeRequest.create(identifier, null, newAttribute)) {
+                    yield request.toBatchItem();
+                }
+            }
+            case "setAttribute" -> {
+                try (SetAttributeRequest request = SetAttributeRequest.create(identifier, newAttribute)) {
+                    yield request.toBatchItem();
+                }
+            }
+            default -> throw new AssertionError("Unknown attribute mutation fixture.");
+        };
+    }
+
+
+    private static byte[] newAttributeNameItemWire() throws Exception {
+        return structure(0x42000a,
+                textItem(0x4200a5, "new name"), item(0x4200a6, 5, intBytes(1)));
+    }
+
+
+    private static byte[] newAttributeStructureWire() throws Exception {
+        return structure(0x42013d, newAttributeNameItemWire());
+    }
+
+
+    private static byte[] attributeMutationResponse(int protocolMinorVersion, int operation)
+            throws Exception {
+        byte[] protocolVersion = structure(0x420069,
+                item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(protocolMinorVersion)));
+        byte[] header = structure(0x42007a, protocolVersion,
+                item(0x420092, 9, longBytes(1)), item(0x42000d, 2, intBytes(2)));
+        byte[] firstPayload = structure(0x42007c, textItem(0x420094, "object-7"));
+        byte[] secondPayload = structure(0x42007c, textItem(0x420094, "object-7"));
+        byte[] firstItem = structure(0x42000f,
+                item(0x42005c, 5, intBytes(operation)),
+                item(0x420093, 8, "item-0".getBytes(StandardCharsets.US_ASCII)),
+                item(0x42007f, 5, intBytes(0)), firstPayload);
+        byte[] secondItem = structure(0x42000f,
+                item(0x42005c, 5, intBytes(operation)),
+                item(0x420093, 8, "item-1".getBytes(StandardCharsets.US_ASCII)),
+                item(0x42007f, 5, intBytes(0)), secondPayload);
+        return structure(0x42007b, header, firstItem, secondItem);
+    }
+
+
+    private static void assertNewlyCataloguedLocalRoutesAreInvoked(ArrayNode events,
+            String protocolVersion) {
+        if ("2.0".equals(protocolVersion)) {
+            for (String caseId : List.of(
+                    "test-norm-payload-client-set-endpoint-role-request-20-001",
+                    "test-norm-payload-client-set-endpoint-role-response-20-001")) {
+                String fieldTarget = caseId.endsWith("request-20-001")
+                        ? "KMIPKIT-PAYLOAD-CLIENT-SET-ENDPOINT-ROLE-REQUEST-20-001"
+                        : "KMIPKIT-PAYLOAD-CLIENT-SET-ENDPOINT-ROLE-RESPONSE-20-001";
+                for (String targetId : List.of(fieldTarget, "KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE")) {
+                    for (String route : List.of("java.generic-ttlv.ttlv_item.create",
+                            "java.generic-ttlv.function.ttlv_item_view_from_item",
+                            "java.generic-ttlv.ttlv_codec.decode")) {
+                        String action = route.endsWith("ttlv_item.create") ? "construct" : "decode";
+                        assertRouteEventRecorded(events, caseId, targetId, route, action, protocolVersion);
+                    }
+                }
+            }
+        }
+        if ("2.1".equals(protocolVersion)) {
+            assertRouteEventRecorded(events, "test-op-ping", "KMIPKIT-ELEM-OP-C2S-PING",
+                    "java.typed-protocol.function.client_batch_item_response_ping", "decode", protocolVersion);
+            for (String targetId : List.of(
+                    "KMIPKIT-PAYLOAD-CLIENT-SET-ENDPOINT-ROLE-REQUEST-21-001",
+                    "KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE")) {
+                for (String route : List.of("java.generic-ttlv.ttlv_item.create",
+                        "java.generic-ttlv.function.ttlv_item_view_from_item",
+                        "java.generic-ttlv.ttlv_codec.decode")) {
+                    String action = route.endsWith("ttlv_item.create") ? "construct" : "decode";
+                    assertRouteEventRecorded(events,
+                            "test-norm-payload-client-set-endpoint-role-request-21-001",
+                            targetId, route, action, protocolVersion);
+                }
+            }
+            for (String targetId : List.of(
+                    "KMIPKIT-PAYLOAD-CLIENT-SET-ENDPOINT-ROLE-RESPONSE-21-001",
+                    "KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE")) {
+                for (String route : List.of("java.generic-ttlv.ttlv_item.create",
+                        "java.generic-ttlv.function.ttlv_item_view_from_item",
+                        "java.generic-ttlv.ttlv_codec.decode")) {
+                    String action = route.endsWith("ttlv_item.create") ? "construct" : "decode";
+                    assertRouteEventRecorded(events,
+                            "test-norm-payload-client-set-endpoint-role-response-21-001",
+                            targetId, route, action, protocolVersion);
+                }
+            }
+        }
+        for (ScalarOperationStructureFixture fixture : SCALAR_OPERATION_STRUCTURE_FIXTURES) {
+            assertScalarOperationStructureRouteEvents(events, fixture, protocolVersion);
+        }
+        // OASIS KMIP 2.0 §7.32 and KMIP 2.1 §7.38: Signature Data is a Byte String.
+        assertScalarOperationStructureRouteEvents(events, SIGNATURE_DATA_FIXTURE, protocolVersion);
+        // OASIS KMIP 2.0 §7.9 / §11.54 and KMIP 2.1 §7.13 / §11.56.
+        assertGenericStructureRouteEvents(events,
+                "test-norm-operation-structure-operation-structure-7-13-extension-information",
+                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-13-EXTENSION-INFORMATION", protocolVersion);
+        assertRouteEventRecorded(events,
+                "test-norm-operation-structure-operation-structure-7-13-extension-information",
+                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-13-EXTENSION-INFORMATION",
+                "java.typed-protocol.function.extension_information_to_ttlv", "encode", protocolVersion);
+        assertRouteEventRecorded(events,
+                "test-norm-operation-structure-operation-structure-7-8-correlation-value",
+                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-8-CORRELATION-VALUE",
+                "java.typed-protocol.function.client_batch_item_response_pending_correlation_value",
+                "decode", protocolVersion);
+        // OASIS KMIP 2.0 §§7.25–7.26, Tables 345–346; KMIP 2.1 §§7.31–7.32, Tables 383–384.
+        assertGenericStructureRouteEvents(events, PROFILE_INFORMATION_CASE_ID,
+                PROFILE_INFORMATION_TARGET_ID, protocolVersion);
+        assertGenericStructureRouteEvents(events, PROFILE_VERSION_CASE_ID,
+                PROFILE_VERSION_TARGET_ID, protocolVersion);
+        for (ProfileInformationMemberFixture fixture : PROFILE_INFORMATION_MEMBER_FIXTURES) {
+            String valueRoute = fixture.structure()
+                    ? "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure"
+                    : switch (fixture.itemType()) {
+                        case Integer -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.integer";
+                        case TextString -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring";
+                        default -> throw new IllegalArgumentException("Unsupported Profile Information member type");
+                    };
+            for (String route : List.of(valueRoute, "java.generic-ttlv.ttlv_item.create",
+                    "java.generic-ttlv.function.ttlv_item_view_from_item", "java.generic-ttlv.ttlv_codec.decode")) {
+                String action = route.endsWith("ttlv_item.create") || route.equals(valueRoute)
+                        ? "construct" : "decode";
+                assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(), route,
+                        action, protocolVersion);
+            }
+        }
+        // OASIS KMIP 2.0 §7.31 and KMIP 2.1 §7.37: Server Information has optional
+        // Text String members and repeatable Alternative Failover Endpoints and Vendor-Specific values.
+        assertGenericStructureRouteEvents(events, SERVER_INFORMATION_CASE_ID,
+                SERVER_INFORMATION_TARGET_ID, protocolVersion);
+        for (ServerInformationMemberFixture fixture : SERVER_INFORMATION_MEMBER_FIXTURES) {
+            List<String> routes = fixture.anyEncoding()
+                    ? List.of("java.generic-ttlv.ttlv_item.create",
+                            "java.generic-ttlv.function.ttlv_item_view_from_item",
+                            "java.generic-ttlv.ttlv_codec.decode")
+                    : List.of("java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring",
+                            "java.generic-ttlv.ttlv_item.create",
+                            "java.generic-ttlv.function.ttlv_item_view_from_item",
+                            "java.generic-ttlv.ttlv_codec.decode");
+            for (String route : routes) {
+                String action = route.endsWith("ttlv_item.create") || route.endsWith("textstring")
+                        ? "construct" : "decode";
+                assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(), route,
+                        action, protocolVersion);
+            }
+        }
+        // OASIS KMIP 2.0 §7.34 Table 354 and KMIP 2.1 §7.40 Table 392 require
+        // Usage Limits Total, Count, and Unit in the enclosing Structure.
+        assertGenericStructureRouteEvents(events, USAGE_LIMITS_CASE_ID,
+                USAGE_LIMITS_TARGET_ID, protocolVersion);
+        for (UsageLimitsMemberFixture fixture : USAGE_LIMITS_MEMBER_FIXTURES) {
+            for (String route : List.of(
+                    fixture.itemType() == TtlvItemType.LongInteger
+                            ? "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.longinteger"
+                            : "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
+                    "java.generic-ttlv.ttlv_item.create",
+                    "java.generic-ttlv.function.ttlv_item_view_from_item",
+                    "java.generic-ttlv.ttlv_codec.decode")) {
+                String action = route.endsWith("ttlv_item.create") || route.contains("ttlvvalue.")
+                        ? "construct" : "decode";
+                assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(), route,
+                        action, protocolVersion);
+            }
+        }
+        // OASIS KMIP 2.0 §7.28 Table 348 and KMIP 2.1 §7.34 Table 386 make
+        // Usage Limits an optional Structure member of Right.
+        for (String route : List.of(
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode")) {
+            String action = route.endsWith("ttlv_item.create") || route.endsWith("ttlvvalue.structure")
+                    ? "construct" : "decode";
+            assertRouteEventRecorded(events, RIGHT_USAGE_LIMITS_CASE_ID, RIGHT_USAGE_LIMITS_TARGET_ID,
+                    route, action, protocolVersion);
+        }
+        if ("2.1".equals(protocolVersion)) {
+            assertGenericStructureRouteEvents(events,
+                    "test-norm-operation-structure-operation-structure-7-2-asynchronous-request",
+                    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-2-ASYNCHRONOUS-REQUEST", protocolVersion);
+            for (OperationStructureFixture fixture : OPERATION_STRUCTURE_FIXTURES) {
+                assertGenericStructureRouteEvents(events, fixture.caseId(), fixture.targetId(), protocolVersion);
+            }
+            // OASIS KMIP 2.1 §§7.6–7.7, Tables 357–358.
+            assertGenericStructureRouteEvents(events, CONSTRAINT_CASE_ID,
+                    CONSTRAINT_TARGET_ID, protocolVersion);
+            assertGenericStructureRouteEvents(events, CONSTRAINTS_CASE_ID,
+                    CONSTRAINTS_TARGET_ID, protocolVersion);
+            // OASIS KMIP 2.1 §7.24 Table 376; Object Type is optional and repeatable.
+            for (String route : List.of(
+                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
+                    "java.generic-ttlv.ttlv_item.create",
+                    "java.generic-ttlv.function.ttlv_item_view_from_item",
+                    "java.generic-ttlv.ttlv_codec.decode")) {
+                String action = route.endsWith("ttlv_codec.decode")
+                        || route.endsWith("ttlv_item_view_from_item") ? "decode" : "construct";
+                assertRouteEventRecorded(events, OBJECT_TYPE_MEMBER_CASE_ID, OBJECT_TYPE_MEMBER_TARGET_ID,
+                        route, action, protocolVersion);
+            }
+            String objectGroupCase = "test-norm-structure-member-structure-member-7-23-object-group";
+            String objectGroupTarget = "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-23-OBJECT-GROUP";
+            assertRouteEventRecorded(events, objectGroupCase, objectGroupTarget,
+                    "java.generic-ttlv.ttlv_item.create", "construct", protocolVersion);
+            assertRouteEventRecorded(events, objectGroupCase, objectGroupTarget,
+                    "java.generic-ttlv.function.ttlv_item_view_from_item", "decode", protocolVersion);
+            assertRouteEventRecorded(events, objectGroupCase, objectGroupTarget,
+                    "java.generic-ttlv.ttlv_codec.decode", "decode", protocolVersion);
+
+            for (StructureMemberStructureFixture fixture : STRUCTURE_MEMBER_STRUCTURE_FIXTURES) {
+                assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(),
+                        "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
+                        "construct", protocolVersion);
+                assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(),
+                        "java.generic-ttlv.ttlv_item.create", "construct", protocolVersion);
+                assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(),
+                        "java.generic-ttlv.function.ttlv_item_view_from_item", "decode", protocolVersion);
+                assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(),
+                        "java.generic-ttlv.ttlv_codec.decode", "decode", protocolVersion);
+            }
+            for (StructureMemberByteStringFixture fixture : STRUCTURE_MEMBER_BYTE_STRING_FIXTURES) {
+                for (String route : List.of(
+                        "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.bytestring",
+                        "java.generic-ttlv.ttlv_item.create",
+                        "java.generic-ttlv.function.ttlv_item_view_from_item",
+                        "java.generic-ttlv.ttlv_codec.decode")) {
+                    String action = route.endsWith("ttlv_item.create") || route.endsWith("ttlvvalue.bytestring")
+                            ? "construct" : "decode";
+                    assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(), route,
+                            action, protocolVersion);
+                }
+                if (fixture.typedQueryFilter()) {
+                    assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(),
+                            "java.typed-protocol.model.org.kmipkit.extensions.queryasyncrequestsrequest"
+                                    + ".withcorrelationvalues", "construct", protocolVersion);
+                }
+            }
+            for (StructureMemberValueFixture fixture : STRUCTURE_MEMBER_VALUE_FIXTURES) {
+                String constructorRoute = fixture.itemType() == TtlvItemType.DateTimeExtended
+                        ? "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.datetimeextended"
+                        : "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration";
+                assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(),
+                        constructorRoute, "construct", protocolVersion);
+                assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(),
+                        "java.generic-ttlv.ttlv_item.create", "construct", protocolVersion);
+                assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(),
+                        "java.generic-ttlv.function.ttlv_item_view_from_item", "decode", protocolVersion);
+                assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(),
+                        "java.generic-ttlv.ttlv_codec.decode", "decode", protocolVersion);
+            }
+        }
+
+        String ephemeralCase = "test-norm-message-field-message-field-8-3-ephemeral";
+        String ephemeralTarget = "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-EPHEMERAL";
+        assertRouteEventRecorded(events, ephemeralCase, ephemeralTarget,
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.boolean", "construct", protocolVersion);
+        assertRouteEventRecorded(events, ephemeralCase, ephemeralTarget,
+                "java.generic-ttlv.ttlv_item.create", "construct", protocolVersion);
+        assertRouteEventRecorded(events, ephemeralCase, ephemeralTarget,
+                "java.generic-ttlv.function.ttlv_item_view_from_item", "decode", protocolVersion);
+        assertRouteEventRecorded(events, ephemeralCase, ephemeralTarget,
+                "java.generic-ttlv.ttlv_codec.decode", "decode", protocolVersion);
+        assertRouteEventRecorded(events, ephemeralCase, ephemeralTarget,
+                "java.typed-protocol.model.org.kmipkit.message.requestmessage.fromttlv",
+                "construct", protocolVersion);
+
+        String versionCode = "2.0".equals(protocolVersion) ? "20" : "21";
+        for (NewAttributeMutationFixture fixture : NEW_ATTRIBUTE_MUTATION_FIXTURES) {
+            String operation = fixture.methodName();
+            String title = fixture.title();
+            String suffix = title.toLowerCase(Locale.ROOT).replace(' ', '-') + "-request";
+            String ordinal = fixture.ordinal();
+            String routeOperation = title.toLowerCase(Locale.ROOT).replace(' ', '_');
+            String caseId = "test-norm-payload-client-" + suffix + "-" + versionCode + "-" + ordinal;
+            String payloadTarget = "KMIPKIT-PAYLOAD-CLIENT-" + suffix.toUpperCase(Locale.ROOT)
+                    + "-" + versionCode + "-" + ordinal;
+            String operationTarget = "KMIPKIT-ELEM-OP-C2S-" + title.toUpperCase(Locale.ROOT)
+                    .replace(' ', '-');
+            String clientRoute = "java.typed-protocol.client_batch_item." + routeOperation;
+            String batchRoute = "java.typed-protocol.function.attribute_request_" + routeOperation
+                    + "_to_batch_item";
+            String payloadRoute = "java.typed-protocol.function.attribute_request_" + routeOperation
+                    + "_to_ttlv_payload";
+            String responseRoute = "java.typed-protocol.function.client_batch_item_response_" + routeOperation;
+            assertRouteEventRecorded(events, caseId, payloadTarget,
+                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure", "construct", protocolVersion);
+            for (String target : List.of(payloadTarget, operationTarget)) {
+                assertRouteEventRecorded(events, caseId, target,
+                        "java.generic-ttlv.ttlv_item.create", "construct", protocolVersion);
+                assertRouteEventRecorded(events, caseId, target,
+                        "java.generic-ttlv.function.ttlv_item_view_from_item", "decode", protocolVersion);
+                assertRouteEventRecorded(events, caseId, target,
+                        "java.generic-ttlv.ttlv_codec.decode", "decode", protocolVersion);
+                assertRouteEventRecorded(events, caseId, target, clientRoute, "construct", protocolVersion);
+                assertRouteEventRecorded(events, caseId, target, clientRoute, "send", protocolVersion);
+                assertRouteEventRecorded(events, caseId, target, batchRoute, "construct", protocolVersion);
+                assertRouteEventRecorded(events, caseId, target, batchRoute, "send", protocolVersion);
+                assertRouteEventRecorded(events, caseId, target, payloadRoute, "encode", protocolVersion);
+            }
+            for (String route : List.of(clientRoute, batchRoute, responseRoute)) {
+                assertRouteEventRecorded(events, caseId, operationTarget, route, "decode", protocolVersion);
+            }
+        }
+    }
+
+    private static void appendObjectGroupLocalRouteEvents(ArrayNode events) throws Exception {
+        String caseId = "test-norm-structure-member-structure-member-7-23-object-group";
+        String targetId = "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-23-OBJECT-GROUP";
+        int rawTag = 0x420056;
+        String fixture = "kmipkit-object-group";
+        byte[] fixtureBytes = fixture.getBytes(StandardCharsets.UTF_8);
+        byte[] wire = textItem(rawTag, fixture);
+        String treeHash = normalizedTreeSha256(wire);
+        CodecLimits limits = CodecLimits.defaults();
+        assertObjectGroupsOptionalAndRepeatable(rawTag, fixture);
+        try (RawTag raw = RawTag.fromRaw(rawTag);
+                Tag tag = raw.checked();
+                TtlvValue value = TtlvValue.TextString(fixtureBytes, limits);
+                TtlvItem created = TtlvItem.create(tag, value, limits)) {
+            assertObjectGroupItem(created, rawTag, fixtureBytes);
+        }
+        appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_item.create", targetId,
+                "org.kmipkit.ttlv.TtlvItem.create", null, null, "construct", "2.1",
+                null, treeHash, null);
+        appendRouteEvent(events, caseId, "java.generic-ttlv.function.ttlv_item_view_from_item", targetId,
+                "org.kmipkit.ttlv.TtlvItem.view", null, null, "decode", "2.1",
+                null, null, treeHash);
+        try (TtlvItem decoded = TtlvCodec.decode(wire)) {
+            assertObjectGroupItem(decoded, rawTag, fixtureBytes);
+        }
+        appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_codec.decode", targetId,
+                "org.kmipkit.ttlv.TtlvCodec.decode", null, null, "decode", "2.1",
+                null, null, treeHash);
+    }
+
+
+    private static void assertObjectGroupsOptionalAndRepeatable(int objectGroupTag,
+            String firstGroupText) throws Exception {
+        byte[] firstGroupValue = firstGroupText.getBytes(StandardCharsets.UTF_8);
+        byte[] secondGroupValue = "kmipkit-object-group-2".getBytes(StandardCharsets.UTF_8);
+        byte[] firstGroup = textItem(objectGroupTag, firstGroupText);
+        byte[] secondGroup = textItem(objectGroupTag, "kmipkit-object-group-2");
+        try (TtlvItem absentGroups = TtlvCodec.decode(structure(0x420166));
+                var absentView = absentGroups.view();
+                var absentValue = absentView.value();
+                var absentMembers = absentValue.structure();
+                TtlvItem repeatedGroups = TtlvCodec.decode(structure(0x420166, firstGroup, secondGroup));
+                var repeatedView = repeatedGroups.view();
+                var repeatedValue = repeatedView.value();
+                var repeatedMembers = repeatedValue.structure()) {
+            try (Tag tag = absentView.tag()) {
+                assertEquals(0x420166, tag.raw());
+            }
+            assertEquals(0, absentMembers.itemCount(), "Object Group is optional in Object Groups.");
+            assertEquals(2, repeatedMembers.itemCount(), "Object Group may be repeated.");
+            try (var first = repeatedMembers.itemAt(0); var second = repeatedMembers.itemAt(1)) {
+                assertObjectGroupMember(first, objectGroupTag, firstGroupValue);
+                assertObjectGroupMember(second, objectGroupTag, secondGroupValue);
+            }
+        }
+    }
+
+
+    private static void assertObjectGroupItem(TtlvItem item, int rawTag, byte[] expectedValue) {
+        try (var view = item.view(); Tag tag = view.tag(); var value = view.value()) {
+            assertEquals(rawTag, tag.raw());
+            assertEquals(TtlvItemType.TextString, view.itemType());
+            assertArrayEquals(expectedValue, value.bytes());
+        }
+    }
+
+
+    private static void assertObjectGroupMember(TtlvItemView member, int rawTag, byte[] expectedValue) {
+        try (Tag tag = member.tag(); var value = member.value()) {
+            assertEquals(rawTag, tag.raw());
+            assertEquals(TtlvItemType.TextString, member.itemType());
+            assertArrayEquals(expectedValue, value.bytes());
+        }
+    }
+
+    private static void appendStructureMemberStructureRouteEvents(ArrayNode events) throws Exception {
+        CodecLimits limits = CodecLimits.defaults();
+        for (StructureMemberStructureFixture fixture : STRUCTURE_MEMBER_STRUCTURE_FIXTURES) {
+            byte[] wire = structure(fixture.rawTag());
+            String treeHash = normalizedTreeSha256(wire);
+            assertOptionalStructureMemberShape(fixture, wire);
+            try (TtlvStructure content = TtlvStructure.create();
+                    TtlvValue value = TtlvValue.structure(content, limits);
+                    RawTag raw = RawTag.fromRaw(fixture.rawTag());
+                    Tag tag = raw.checked();
+                    TtlvItem created = TtlvItem.create(tag, value, limits);
+                    var view = created.view();
+                    Tag viewedTag = view.tag();
+                    var viewedValue = view.value();
+                    var structureView = viewedValue.structure()) {
+                assertEquals(fixture.rawTag(), viewedTag.raw());
+                assertEquals(TtlvItemType.Structure, view.itemType());
+                assertEquals(0, structureView.itemCount());
+            }
+            appendRouteEvent(events, fixture.caseId(),
+                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure", fixture.targetId(),
+                    "org.kmipkit.ttlv.TtlvValue.structure", null, null, "construct", "2.1",
+                    null, treeHash, null);
+            appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_item.create", fixture.targetId(),
+                    "org.kmipkit.ttlv.TtlvItem.create", null, null, "construct", "2.1",
+                    null, treeHash, null);
+            appendRouteEvent(events, fixture.caseId(),
+                    "java.generic-ttlv.function.ttlv_item_view_from_item", fixture.targetId(),
+                    "org.kmipkit.ttlv.TtlvItem.view", null, null, "decode", "2.1",
+                    null, null, treeHash);
+            try (TtlvItem decoded = TtlvCodec.decode(wire);
+                    var view = decoded.view();
+                    Tag tag = view.tag();
+                    var value = view.value();
+                    var structureView = value.structure()) {
+                assertEquals(fixture.rawTag(), tag.raw());
+                assertEquals(TtlvItemType.Structure, view.itemType());
+                assertEquals(0, structureView.itemCount());
+            }
+            appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_codec.decode", fixture.targetId(),
+                    "org.kmipkit.ttlv.TtlvCodec.decode", null, null, "decode", "2.1",
+                    null, null, treeHash);
+        }
+    }
+
+    private static void appendStructureMemberByteStringRouteEvents(ArrayNode events) throws Exception {
+        int rawTag = 0x420006;
+        int correlationValuesTag = 0x420176;
+        byte[] firstValue = new byte[] {0x12, 0x34, (byte) 0xfe};
+        byte[] secondValue = new byte[] {0x56, 0x00, (byte) 0x81};
+        byte[] memberWire = item(rawTag, 8, firstValue);
+        String treeHash = normalizedTreeSha256(memberWire);
+        CodecLimits limits = CodecLimits.defaults();
+
+        for (StructureMemberByteStringFixture fixture : STRUCTURE_MEMBER_BYTE_STRING_FIXTURES) {
+            try (RawTag raw = RawTag.fromRaw(rawTag);
+                    Tag tag = raw.checked();
+                    TtlvValue value = TtlvValue.ByteString(firstValue, limits);
+                    TtlvItem created = TtlvItem.create(tag, value, limits)) {
+                assertTrue(created != null, "The installed Item constructor must return an owned Item.");
+            }
+            appendRouteEvent(events, fixture.caseId(),
+                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.bytestring", fixture.targetId(),
+                    "org.kmipkit.ttlv.TtlvValue.ByteString", null, null, "construct", "2.1",
+                    null, treeHash, null);
+            appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_item.create", fixture.targetId(),
+                    "org.kmipkit.ttlv.TtlvItem.create", null, null, "construct", "2.1",
+                    null, treeHash, null);
+
+            try (TtlvItem decoded = TtlvCodec.decode(memberWire);
+                    TtlvItemView view = decoded.view()) {
+                assertByteStringItemView(view, rawTag, firstValue);
+            }
+            appendRouteEvent(events, fixture.caseId(),
+                    "java.generic-ttlv.function.ttlv_item_view_from_item", fixture.targetId(),
+                    "org.kmipkit.ttlv.TtlvItem.view", null, null, "decode", "2.1",
+                    null, null, treeHash);
+            appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_codec.decode", fixture.targetId(),
+                    "org.kmipkit.ttlv.TtlvCodec.decode", null, null, "decode", "2.1",
+                    null, null, treeHash);
+        }
+
+        byte[] typedPayloadWire = structure(0x42007c,
+                structure(correlationValuesTag, item(rawTag, 8, firstValue), item(rawTag, 8, secondValue)));
+        String typedPayloadHash = normalizedTreeSha256(typedPayloadWire);
+        try (QueryAsyncRequestsRequest unfiltered = QueryAsyncRequestsRequest.create();
+                TtlvStructure unfilteredPayload = unfiltered.toTtlvPayload();
+                TtlvStructureView unfilteredView = unfilteredPayload.view()) {
+            assertEquals(0, unfilteredView.itemCount(),
+                    "KMIP 2.1 §7.1 permits the optional asynchronous correlation filter to be absent.");
+        }
+        try (QueryAsyncRequestsRequest unfiltered = QueryAsyncRequestsRequest.create();
+                QueryAsyncRequestsRequest filtered = unfiltered.withCorrelationValues(
+                        List.of(firstValue, secondValue));
+                TtlvStructure payload = filtered.toTtlvPayload();
+                TtlvStructureView payloadView = payload.view();
+                TtlvItemView valuesItem = payloadView.itemAt(0);
+                Tag valuesTag = valuesItem.tag();
+                var values = valuesItem.value();
+                var valuesStructure = values.structure()) {
+            assertEquals(1, payloadView.itemCount());
+            assertEquals(correlationValuesTag, valuesTag.raw());
+            assertEquals(TtlvItemType.Structure, valuesItem.itemType());
+            assertEquals(2, valuesStructure.itemCount(),
+                    "The §7.1 correlation list must preserve both supplied values in order.");
+            try (TtlvItemView first = valuesStructure.itemAt(0);
+                    TtlvItemView second = valuesStructure.itemAt(1)) {
+                assertByteStringItemView(first, rawTag, firstValue);
+                assertByteStringItemView(second, rawTag, secondValue);
+            }
+        }
+        StructureMemberByteStringFixture queryFilterFixture = STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.stream()
+                .filter(StructureMemberByteStringFixture::typedQueryFilter).findFirst().orElseThrow();
+        appendQueryAsyncCorrelationValuesRouteEvent(events, queryFilterFixture.caseId(),
+                queryFilterFixture.targetId(), typedPayloadHash);
+        appendQueryAsyncCorrelationValuesRouteEvent(events,
+                "test-norm-operation-structure-operation-structure-7-1-asynchronous-correlation-values",
+                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-1-ASYNCHRONOUS-CORRELATION-VALUES", typedPayloadHash);
+        assertRouteEventRecorded(events,
+                "test-norm-operation-structure-operation-structure-7-1-asynchronous-correlation-values",
+                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-1-ASYNCHRONOUS-CORRELATION-VALUES",
+                "java.typed-protocol.model.org.kmipkit.extensions.queryasyncrequestsrequest"
+                        + ".withcorrelationvalues",
+                "construct", "2.1");
+    }
+
+
+    private static void appendQueryAsyncCorrelationValuesRouteEvent(ArrayNode events, String caseId,
+            String targetId, String payloadHash) {
+        appendRouteEvent(events, caseId,
+                "java.typed-protocol.model.org.kmipkit.extensions.queryasyncrequestsrequest"
+                        + ".withcorrelationvalues",
+                targetId, "org.kmipkit.extensions.QueryAsyncRequestsRequest.withCorrelationValues",
+                null, null, "construct", "2.1", null, payloadHash, null);
+    }
+
+    private void appendStructureMemberValueRouteEvents(ArrayNode events, byte[] serverCertificatePem,
+            byte[] serverPrivateKeyPem, byte[] clientCertificatePem, byte[] clientPrivateKeyPem)
+            throws Exception {
+        for (StructureMemberValueFixture fixture : STRUCTURE_MEMBER_VALUE_FIXTURES) {
+            byte[] memberWire = structureMemberValueWire(fixture);
+            String treeHash = normalizedTreeSha256(memberWire);
+            try (TtlvValue value = structureMemberValue(fixture);
+                    RawTag rawTag = RawTag.fromRaw(fixture.rawTag());
+                    Tag tag = rawTag.checked();
+                    TtlvItem created = TtlvItem.create(tag, value, CodecLimits.defaults());
+                    TtlvItemView view = created.view()) {
+                assertStructureMemberValue(view, fixture);
+            }
+            String valueType = fixture.itemType() == TtlvItemType.DateTimeExtended
+                    ? "datetimeextended" : "enumeration";
+            String constructor = fixture.itemType() == TtlvItemType.DateTimeExtended
+                    ? "DateTimeExtended" : "Enumeration";
+            appendRouteEvent(events, fixture.caseId(),
+                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue." + valueType,
+                    fixture.targetId(), "org.kmipkit.ttlv.TtlvValue." + constructor,
+                    null, null, "construct", "2.1", null, treeHash, null);
+            appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_item.create",
+                    fixture.targetId(), "org.kmipkit.ttlv.TtlvItem.create", null, null,
+                    "construct", "2.1", null, treeHash, null);
+            appendRouteEvent(events, fixture.caseId(),
+                    "java.generic-ttlv.function.ttlv_item_view_from_item", fixture.targetId(),
+                    "org.kmipkit.ttlv.TtlvItem.view", null, null,
+                    "decode", "2.1", null, null, treeHash);
+            try (TtlvItem decoded = TtlvCodec.decode(memberWire);
+                    TtlvItemView decodedView = decoded.view()) {
+                assertStructureMemberValue(decodedView, fixture);
+            }
+            appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_codec.decode",
+                    fixture.targetId(), "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
+                    "decode", "2.1", null, null, treeHash);
+        }
+
+        StructureMemberValueFixture operationFixture = structureMemberValueFixture(0x42005c);
+        byte[] correlation = new byte[] {0x41, 0x53, 0x59, 0x4e, 0x43};
+        SSLServerSocket listener = listener(certificate(serverCertificatePem),
+                privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+        byte[] responseBytes = queryAsyncRequestsResponse(correlation, 0x18, 1_800_000_000L, 2);
+        FutureTask<byte[]> peer = new FutureTask<>(() -> serveOneResponse(listener, responseBytes));
+        Thread peerThread = new Thread(peer, "java-validator-query-async-response-payload-peer");
+        peerThread.setDaemon(true);
+        peerThread.start();
+        Path connectionFile = temporaryDirectory.resolve("query-async-response-payload-2.1.json");
+        Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
+                clientCertificatePem, clientPrivateKeyPem, true, "2.1"));
+        try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile));
+                var outcome = driver.executeQueryAsyncRequestsForResponsePayloadEvidence(correlation);
+                var payload = outcome.responsePayloadTtlv().orElseThrow();
+                TtlvStructureView payloadView = payload.view()) {
+            assertEquals(0x39L, outcome.metadataV1().operation());
+            assertEquals(0L, outcome.metadataV1().resultStatus());
+            assertEquals(1, payloadView.itemCount());
+            try (TtlvItemView asynchronousRequest = payloadView.itemAt(0);
+                    Tag asynchronousRequestTag = asynchronousRequest.tag();
+                    var requestValue = asynchronousRequest.value();
+                    TtlvStructureView requestFields = requestValue.structure()) {
+                assertEquals(0x420173, asynchronousRequestTag.raw());
+                assertEquals(TtlvItemType.Structure, asynchronousRequest.itemType());
+                assertEquals(4, requestFields.itemCount());
+                try (TtlvItemView correlationField = requestFields.itemAt(0);
+                        Tag correlationTag = correlationField.tag();
+                        var correlationValue = correlationField.value()) {
+                    assertEquals(0x420006, correlationTag.raw());
+                    assertEquals(TtlvItemType.ByteString, correlationField.itemType());
+                    assertArrayEquals(correlation, correlationValue.bytes());
+                }
+                assertStructureMemberValue(requestFields, 1, operationFixture);
+                assertStructureMemberValue(requestFields, 2, structureMemberValueFixture(0x420175));
+                assertStructureMemberValue(requestFields, 3, structureMemberValueFixture(0x420174));
+            }
+            appendRouteEvent(events,
+                    "test-norm-operation-structure-operation-structure-7-2-asynchronous-request",
+                    "java.typed-protocol.function.client_async_operation_outcome_response_payload_ttlv",
+                    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-2-ASYNCHRONOUS-REQUEST",
+                    "org.kmipkit.extensions.AsyncOperationOutcome.responsePayloadTtlv",
+                    null, null, "decode", "2.1", null, null, normalizedTreeSha256(responseBytes));
+        } finally {
+            listener.close();
+        }
+        byte[] requestBytes = peer.get(15, TimeUnit.SECONDS);
+        assertEquals(0x39L, requestOperation(requestBytes));
+        assertEquals(1, requestProtocolMinorVersion(requestBytes));
+        assertTrue(contains(requestBytes, item(0x42005c, 5, intBytes(0x18))),
+                "The typed Query Asynchronous Requests filter must reach the controlled KMIP 2.1 peer.");
+    }
+
+
+    private void appendCancelResponsePayloadEvidence(ArrayNode events, String protocolVersion,
+            byte[] serverCertificatePem, byte[] serverPrivateKeyPem,
+            byte[] clientCertificatePem, byte[] clientPrivateKeyPem) throws Exception {
+        byte[] correlation = {0x43, 0x41, 0x4e, (byte) protocolVersion.charAt(2)};
+        int protocolMinorVersion = "2.0".equals(protocolVersion) ? 0 : 1;
+        SSLServerSocket listener = listener(certificate(serverCertificatePem),
+                privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+        byte[] responseBytes = asynchronousResponse(0x19, correlation, protocolMinorVersion);
+        FutureTask<byte[]> peer = new FutureTask<>(() -> serveOneResponse(listener, responseBytes));
+        Thread peerThread = new Thread(peer, "java-validator-cancel-response-payload-peer-" + protocolVersion);
+        peerThread.setDaemon(true);
+        peerThread.start();
+        Path connectionFile = temporaryDirectory.resolve("cancel-response-payload-" + protocolVersion + ".json");
+        Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
+                clientCertificatePem, clientPrivateKeyPem, true, protocolVersion));
+        try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile));
+                var outcome = driver.executeCancelForResponsePayloadEvidence(correlation);
+                var payload = outcome.responsePayloadTtlv().orElseThrow();
+                TtlvStructureView payloadView = payload.view()) {
+            assertEquals(0x19L, outcome.metadataV1().operation());
+            assertEquals(0L, outcome.metadataV1().resultStatus());
+            assertEquals(2, payloadView.itemCount());
+            try (TtlvItemView correlationField = payloadView.itemAt(0);
+                    Tag correlationTag = correlationField.tag();
+                    var correlationValue = correlationField.value()) {
+                assertEquals(0x420006, correlationTag.raw());
+                assertArrayEquals(correlation, correlationValue.bytes());
+            }
+            try (TtlvItemView cancellationResult = payloadView.itemAt(1);
+                    Tag cancellationResultTag = cancellationResult.tag();
+                    var cancellationResultValue = cancellationResult.value()) {
+                assertEquals(0x420012, cancellationResultTag.raw());
+                assertEquals(1L, cancellationResultValue.enumeration());
+            }
+        } finally {
+            listener.close();
+        }
+        byte[] requestBytes = peer.get(15, TimeUnit.SECONDS);
+        assertEquals(0x19L, requestOperation(requestBytes));
+        assertEquals(protocolMinorVersion, requestProtocolMinorVersion(requestBytes));
+    }
+
+    private void appendControlledAsyncCancelNetworkRouteEvents(ArrayNode events, String protocolVersion,
+            byte[] serverCertificatePem, byte[] serverPrivateKeyPem,
+            byte[] clientCertificatePem, byte[] clientPrivateKeyPem) throws Exception {
+        List<AsyncCancelRouteScenario> scenarios = asyncCancelRouteScenarios(
+                readRouteEvidenceCatalog(), protocolVersion);
+        Map<String, String> canonicalRequestHashes = new HashMap<>();
+        Map<String, String> canonicalPollRequestHashes = new HashMap<>();
+        int minor = "2.0".equals(protocolVersion) ? 0 : 1;
+
+        for (String encoding : List.of("TTLV", "JSON", "XML")) {
+            for (String transport : List.of("raw_tls", "https")) {
+                AsyncCancelRouteScenario pollRace = scenarios.stream()
+                        .filter(scenario -> "test-async-cancel-vs-poll-race".equals(scenario.caseId()))
+                        .findFirst().orElse(null);
+                byte[] pollRequest = pollRace == null ? null : executeAsyncPollCombination(
+                        pollRace, protocolVersion, encoding, transport, serverCertificatePem,
+                        serverPrivateKeyPem, clientCertificatePem, clientPrivateKeyPem);
+                if (pollRace != null && "TTLV".equals(encoding) && "raw_tls".equals(transport)) {
+                    canonicalPollRequestHashes.put(pollRace.caseId(), normalizedTreeSha256(pollRequest));
+                }
+                List<byte[]> observedRequests = executeAsyncCancelCombination(
+                        scenarios, protocolVersion, encoding, transport,
+                        serverCertificatePem, serverPrivateKeyPem, clientCertificatePem, clientPrivateKeyPem);
+                if ("TTLV".equals(encoding) && "raw_tls".equals(transport)) {
+                    for (int index = 0; index < scenarios.size(); index++) {
+                        canonicalRequestHashes.put(scenarios.get(index).caseId(),
+                                normalizedTreeSha256(observedRequests.get(index)));
+                    }
+                }
+                for (AsyncCancelRouteScenario scenario : scenarios) {
+                    String requestHash = canonicalRequestHashes.get(scenario.caseId());
+                    assertTrue(requestHash != null, "The TTLV/raw-TLS peer must establish request tree hashes.");
+                    byte[] correlation = asyncCancelCorrelation(scenario, protocolVersion);
+                    byte[] responseWire = asynchronousResponse(0x19, correlation, minor,
+                            scenario.cancellationResultValue());
+                    String responseHash = normalizedTreeSha256(responseWire);
+                    appendAsyncCancelRouteEvents(events, scenario, protocolVersion, encoding, transport,
+                            requestHash, responseHash);
+                }
+                if (pollRace != null) {
+                    String pollRequestHash = canonicalPollRequestHashes.get(pollRace.caseId());
+                    assertTrue(pollRequestHash != null,
+                            "The TTLV/raw-TLS poll peer must establish a request tree hash.");
+                    byte[] correlation = asyncCancelCorrelation(pollRace, protocolVersion);
+                    byte[] responseWire = asynchronousResponse(0x1a, correlation, minor);
+                    String responseHash = normalizedTreeSha256(responseWire);
+                    appendAsyncPollRouteEvents(events, pollRace, protocolVersion, encoding, transport,
+                            pollRequestHash, responseHash);
+                    if ("TTLV".equals(encoding) && "raw_tls".equals(transport)) {
+                        appendAsyncPollLocalRouteEvents(events, pollRace, protocolVersion, correlation,
+                                pollRequestHash, responseHash);
+                    }
+                }
+            }
+        }
+        assertAsyncPollRaceRouteCoverage(events, protocolVersion);
+    }
+
+
+    private List<byte[]> executeAsyncCancelCombination(List<AsyncCancelRouteScenario> scenarios,
+            String protocolVersion, String encoding, String transport,
+            byte[] serverCertificatePem, byte[] serverPrivateKeyPem,
+            byte[] clientCertificatePem, byte[] clientPrivateKeyPem) throws Exception {
+        Path connectionFile = temporaryDirectory.resolve(
+                "async-cancel-routes-" + protocolVersion + "-" + encoding + "-" + transport + ".json");
+        if ("raw_tls".equals(transport)) {
+            SSLServerSocket listener = listener(certificate(serverCertificatePem),
+                    privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+            FutureTask<List<byte[]>> peer = new FutureTask<>(() -> serveAsyncCancelRequests(
+                    listener, scenarios, protocolVersion, encoding));
+            Thread peerThread = new Thread(peer,
+                    "java-validator-async-cancel-peer-" + protocolVersion + "-" + encoding);
+            peerThread.setDaemon(true);
+            peerThread.start();
+            Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
+                    clientCertificatePem, clientPrivateKeyPem, true, protocolVersion, encoding, transport));
+            try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile))) {
+                executeAsyncCancelRequests(driver, scenarios, protocolVersion);
+            } finally {
+                listener.close();
+            }
+            return peer.get(30, TimeUnit.SECONDS);
+        }
+
+        List<byte[]> observedRequests = Collections.synchronizedList(new ArrayList<>());
+        AtomicInteger requestIndex = new AtomicInteger();
+        CompletableFuture<List<byte[]>> peer = new CompletableFuture<>();
+        HttpsServer listener = httpsListener(certificate(serverCertificatePem),
+                privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+        listener.createContext("/kmip", exchange -> {
+            try {
+                if (!"POST".equals(exchange.getRequestMethod())) {
+                    throw new IllegalStateException("The controlled HTTP peer requires POST.");
+                }
+                int index = requestIndex.getAndIncrement();
+                if (index < 0 || index >= scenarios.size()) {
+                    throw new IllegalStateException("The controlled peer received an unexpected Cancel request.");
+                }
+                byte[] request = exchange.getRequestBody().readAllBytes();
+                AsyncCancelRouteScenario scenario = scenarios.get(index);
+                byte[] correlation = asyncCancelCorrelation(scenario, protocolVersion);
+                assertAsyncCancelWireRequest(request, encoding, protocolVersion, correlation);
+                observedRequests.add(request);
+                byte[] response = asynchronousCancelResponseBytes(
+                        encoding, scenario, correlation, "2.0".equals(protocolVersion) ? 0 : 1);
+                exchange.getResponseHeaders().set("Content-Type", contentTypeForEncoding(encoding));
+                exchange.sendResponseHeaders(200, response.length);
+                try (OutputStream output = exchange.getResponseBody()) {
+                    output.write(response);
+                }
+                if (index + 1 == scenarios.size()) peer.complete(List.copyOf(observedRequests));
+            } catch (Exception exception) {
+                peer.completeExceptionally(exception);
+                try {
+                    exchange.sendResponseHeaders(500, -1);
+                } catch (Exception ignored) {
+                    // The peer future carries the controlled-fixture failure to the test thread.
+                }
+            } finally {
+                exchange.close();
+            }
+        });
+        listener.start();
+        Files.writeString(connectionFile, connectionJson(listener.getAddress().getPort(),
+                serverCertificatePem, clientCertificatePem, clientPrivateKeyPem, true,
+                protocolVersion, encoding, transport));
+        try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile))) {
+            executeAsyncCancelRequests(driver, scenarios, protocolVersion);
+        } finally {
+            listener.stop(0);
+        }
+        return peer.get(30, TimeUnit.SECONDS);
+    }
+
+    private byte[] executeAsyncPollCombination(AsyncCancelRouteScenario scenario,
+            String protocolVersion, String encoding, String transport,
+            byte[] serverCertificatePem, byte[] serverPrivateKeyPem,
+            byte[] clientCertificatePem, byte[] clientPrivateKeyPem) throws Exception {
+        byte[] correlation = asyncCancelCorrelation(scenario, protocolVersion);
+        int minor = "2.0".equals(protocolVersion) ? 0 : 1;
+        var pollCase = casesById(CatalogLoader.load(
+                Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json")), "test-op-poll").get(0);
+        Path connectionFile = temporaryDirectory.resolve(
+                "async-poll-race-" + protocolVersion + "-" + encoding + "-" + transport + ".json");
+        if ("raw_tls".equals(transport)) {
+            SSLServerSocket listener = listener(certificate(serverCertificatePem),
+                    privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+            FutureTask<byte[]> peer = new FutureTask<>(() -> serveAsyncPollRequest(
+                    listener, correlation, protocolVersion, encoding));
+            Thread peerThread = new Thread(peer,
+                    "java-validator-async-poll-race-peer-" + protocolVersion + "-" + encoding);
+            peerThread.setDaemon(true);
+            peerThread.start();
+            Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
+                    clientCertificatePem, clientPrivateKeyPem, true, protocolVersion, encoding, transport));
+            try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile))) {
+                var outcome = driver.executeAsynchronousRequest(pollCase, correlation.clone());
+                assertEquals("passed", outcome.status(), "The controlled Poll step must remain pending: " + outcome);
+            } finally {
+                listener.close();
+            }
+            return peer.get(30, TimeUnit.SECONDS);
+        }
+
+        CompletableFuture<byte[]> peer = new CompletableFuture<>();
+        HttpsServer listener = httpsListener(certificate(serverCertificatePem),
+                privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+        listener.createContext("/kmip", exchange -> {
+            try {
+                if (!"POST".equals(exchange.getRequestMethod())) {
+                    throw new IllegalStateException("The controlled HTTP peer requires POST.");
+                }
+                byte[] request = exchange.getRequestBody().readAllBytes();
+                assertAsyncPollWireRequest(request, encoding, protocolVersion, correlation);
+                byte[] response = asynchronousPollResponseBytes(encoding, correlation, minor);
+                exchange.getResponseHeaders().set("Content-Type", contentTypeForEncoding(encoding));
+                exchange.sendResponseHeaders(200, response.length);
+                try (OutputStream output = exchange.getResponseBody()) {
+                    output.write(response);
+                }
+                peer.complete(request);
+            } catch (Exception exception) {
+                peer.completeExceptionally(exception);
+                try {
+                    exchange.sendResponseHeaders(500, -1);
+                } catch (Exception ignored) {
+                    // The peer future carries the controlled-fixture failure to the test thread.
+                }
+            } finally {
+                exchange.close();
+            }
+        });
+        listener.start();
+        Files.writeString(connectionFile, connectionJson(listener.getAddress().getPort(),
+                serverCertificatePem, clientCertificatePem, clientPrivateKeyPem, true,
+                protocolVersion, encoding, transport));
+        try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile))) {
+            var outcome = driver.executeAsynchronousRequest(pollCase, correlation.clone());
+            assertEquals("passed", outcome.status(), "The controlled Poll step must remain pending: " + outcome);
+        } finally {
+            listener.stop(0);
+        }
+        return peer.get(30, TimeUnit.SECONDS);
+    }
+
+    private static byte[] serveAsyncPollRequest(SSLServerSocket listener, byte[] correlation,
+            String protocolVersion, String encoding) throws Exception {
+        try (SSLSocket socket = (SSLSocket) listener.accept()) {
+            socket.setEnabledProtocols(new String[] {"TLSv1.3"});
+            socket.setSoTimeout(10_000);
+            socket.startHandshake();
+            byte[] request = switch (encoding) {
+                case "TTLV" -> readTtlv(socket.getInputStream());
+                case "JSON" -> readJsonDocument(socket.getInputStream());
+                case "XML" -> readXmlDocument(socket.getInputStream());
+                default -> throw new IllegalArgumentException("Unsupported fixture encoding.");
+            };
+            assertAsyncPollWireRequest(request, encoding, protocolVersion, correlation);
+            socket.getOutputStream().write(asynchronousPollResponseBytes(encoding, correlation,
+                    "2.0".equals(protocolVersion) ? 0 : 1));
+            socket.getOutputStream().flush();
+            return request;
+        }
+    }
+
+    private static byte[] asynchronousPollResponseBytes(String encoding, byte[] correlation, int minor)
+            throws Exception {
+        if ("TTLV".equals(encoding)) return asynchronousResponse(0x1a, correlation, minor);
+        String correlationHex = "JSON".equals(encoding)
+                ? HexFormat.of().formatHex(correlation)
+                : HexFormat.of().withUpperCase().formatHex(correlation);
+        if ("JSON".equals(encoding)) {
+            return ("{\"tag\":\"ResponseMessage\",\"value\":["
+                    + "{\"tag\":\"ResponseHeader\",\"value\":["
+                    + "{\"tag\":\"ProtocolVersion\",\"value\":["
+                    + "{\"tag\":\"ProtocolVersionMajor\",\"type\":\"Integer\",\"value\":2},"
+                    + "{\"tag\":\"ProtocolVersionMinor\",\"type\":\"Integer\",\"value\":" + minor + "}]},"
+                    + "{\"tag\":\"TimeStamp\",\"type\":\"DateTime\",\"value\":\"0x0000000000000001\"},"
+                    + "{\"tag\":\"BatchCount\",\"type\":\"Integer\",\"value\":1}]},"
+                    + "{\"tag\":\"BatchItem\",\"value\":["
+                    + "{\"tag\":\"Operation\",\"type\":\"Enumeration\",\"value\":\"Poll\"},"
+                    + "{\"tag\":\"ResultStatus\",\"type\":\"Enumeration\",\"value\":\"OperationPending\"},"
+                    + "{\"tag\":\"AsynchronousCorrelationValue\",\"type\":\"ByteString\",\"value\":\""
+                    + correlationHex + "\"}]}]}").getBytes(StandardCharsets.UTF_8);
+        }
+        return ("<ResponseMessage><ResponseHeader><ProtocolVersion>"
+                + "<ProtocolVersionMajor type=\"Integer\" value=\"2\"/>"
+                + "<ProtocolVersionMinor type=\"Integer\" value=\"" + minor + "\"/>"
+                + "</ProtocolVersion><TimeStamp type=\"DateTime\" value=\"1970-01-01T00:00:01Z\"/>"
+                + "<BatchCount type=\"Integer\" value=\"1\"/></ResponseHeader><BatchItem>"
+                + "<Operation type=\"Enumeration\" value=\"Poll\"/>"
+                + "<ResultStatus type=\"Enumeration\" value=\"OperationPending\"/>"
+                + "<AsynchronousCorrelationValue type=\"ByteString\" value=\"" + correlationHex
+                + "\"/></BatchItem></ResponseMessage>").getBytes(StandardCharsets.UTF_8);
+    }
+
+    private static void assertAsyncPollWireRequest(byte[] request, String encoding,
+            String protocolVersion, byte[] expectedCorrelation) throws Exception {
+        int minor = "2.0".equals(protocolVersion) ? 0 : 1;
+        if ("TTLV".equals(encoding)) {
+            assertEquals(0x1aL, requestOperation(request));
+            assertEquals(minor, requestProtocolMinorVersion(request));
+            assertArrayEquals(expectedCorrelation, requestCorrelation(request));
+            return;
+        }
+        String correlationHex = "JSON".equals(encoding)
+                ? HexFormat.of().formatHex(expectedCorrelation)
+                : HexFormat.of().withUpperCase().formatHex(expectedCorrelation);
+        if ("JSON".equals(encoding)) {
+            JsonNode root = new ObjectMapper().readTree(request);
+            List<JsonNode> operations = jsonValuesForTag(root, "Operation");
+            assertEquals(1, operations.size());
+            assertEquals("Poll", operations.get(0).asText());
+            assertEquals(minor, jsonValuesForTag(root, "ProtocolVersionMinor").get(0).asInt());
+            assertEquals(correlationHex, jsonValuesForTag(root, "AsynchronousCorrelationValue").get(0).asText());
+            return;
+        }
+        String xml = new String(request, StandardCharsets.UTF_8);
+        assertTrue(xml.startsWith("<RequestMessage>"));
+        assertTrue(xml.contains("<Operation type=\"Enumeration\" value=\"Poll\"/>"));
+        assertTrue(xml.contains("<ProtocolVersionMinor type=\"Integer\" value=\"" + minor + "\"/>"));
+        assertTrue(xml.contains("<AsynchronousCorrelationValue type=\"ByteString\" value=\""
+                + correlationHex + "\"/>"));
+    }
+
+
+    private static List<byte[]> serveAsyncCancelRequests(SSLServerSocket listener,
+            List<AsyncCancelRouteScenario> scenarios, String protocolVersion, String encoding) throws Exception {
+        List<byte[]> requests = new ArrayList<>();
+        int minor = "2.0".equals(protocolVersion) ? 0 : 1;
+        for (AsyncCancelRouteScenario scenario : scenarios) {
+            try (SSLSocket socket = (SSLSocket) listener.accept()) {
+                socket.setEnabledProtocols(new String[] {"TLSv1.3"});
+                socket.setSoTimeout(10_000);
+                socket.startHandshake();
+                byte[] request = switch (encoding) {
+                    case "TTLV" -> readTtlv(socket.getInputStream());
+                    case "JSON" -> readJsonDocument(socket.getInputStream());
+                    case "XML" -> readXmlDocument(socket.getInputStream());
+                    default -> throw new IllegalArgumentException("Unsupported fixture encoding.");
+                };
+                byte[] correlation = asyncCancelCorrelation(scenario, protocolVersion);
+                assertAsyncCancelWireRequest(request, encoding, protocolVersion, correlation);
+                requests.add(request);
+                byte[] response = asynchronousCancelResponseBytes(encoding, scenario, correlation, minor);
+                socket.getOutputStream().write(response);
+                socket.getOutputStream().flush();
+            }
+        }
+        return List.copyOf(requests);
+    }
+
+
+    private static void executeAsyncCancelRequests(JavaKmipDriver driver,
+            List<AsyncCancelRouteScenario> scenarios, String protocolVersion) throws Exception {
+        for (AsyncCancelRouteScenario scenario : scenarios) {
+            byte[] correlation = asyncCancelCorrelation(scenario, protocolVersion);
+            try (var outcome = driver.executeCancelForResponsePayloadEvidence(correlation);
+                    var payload = outcome.responsePayloadTtlv().orElseThrow();
+                    TtlvStructureView payloadView = payload.view()) {
+                assertEquals(0x19L, outcome.metadataV1().operation());
+                assertEquals(0L, outcome.metadataV1().resultStatus());
+                assertEquals(2, payloadView.itemCount());
+                try (TtlvItemView correlationField = payloadView.itemAt(0);
+                        Tag correlationTag = correlationField.tag();
+                        var correlationValue = correlationField.value()) {
+                    assertEquals(0x420006, correlationTag.raw());
+                    assertArrayEquals(correlation, correlationValue.bytes());
+                }
+                try (TtlvItemView resultField = payloadView.itemAt(1);
+                        Tag resultTag = resultField.tag();
+                        var resultValue = resultField.value()) {
+                    assertEquals(0x420012, resultTag.raw());
+                    assertEquals(scenario.cancellationResultValue(), resultValue.enumeration());
+                }
+            }
+        }
+    }
+
+
+    private static List<AsyncCancelRouteScenario> asyncCancelRouteScenarios(
+            JsonNode catalog, String protocolVersion) {
+        List<AsyncCancelRouteScenario> scenarios = new ArrayList<>();
+        Set<String> routeTargets = Set.of(
+                "KMIPKIT-ELEM-OP-C2S-CANCEL",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ASYNCHRONOUS-INDICATOR",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-ASYNCHRONOUS-CORRELATION-VALUE",
+                "KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-20-001",
+                "KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-21-001",
+                "KMIPKIT-PAYLOAD-CLIENT-CANCEL-RESPONSE-20-002",
+                "KMIPKIT-PAYLOAD-CLIENT-CANCEL-RESPONSE-21-002");
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            if (!appliesToVersion(testCase, protocolVersion)
+                    || "local_model".equals(testCase.path("execution").path("mode").asText())) continue;
+            JsonNode requires = testCase.path("requires");
+            JsonNode scenario = testCase.path("requires").path("protocol_scenario");
+            Set<String> targetIds = new java.util.LinkedHashSet<>();
+            if (requires.path("normative_target_id").isTextual()) {
+                targetIds.add(requires.path("normative_target_id").asText());
+            }
+            for (JsonNode target : requires.path("normative_target_ids")) targetIds.add(target.asText());
+            for (JsonNode target : scenario.path("target_ids")) targetIds.add(target.asText());
+            boolean cancelOperation = "Cancel".equals(testCase.path("operation").asText())
+                    || containsText(scenario.path("operations"), "Cancel")
+                    || containsText(requires.path("operation_sequence"), "Cancel");
+            if (cancelOperation) targetIds.add("KMIPKIT-ELEM-OP-C2S-CANCEL");
+            targetIds.retainAll(routeTargets);
+            targetIds.removeIf(targetId -> !asyncCancelTargetAppliesToVersion(
+                    catalog, targetId, protocolVersion));
+            targetIds.removeIf(targetId -> !asyncCancelTargetAppliesToVersion(
+                    catalog, targetId, protocolVersion));
+            if (targetIds.isEmpty()) continue;
+
+            String resultName = "Canceled";
+            if (scenario.path("parameters").path("cancel_result").isTextual()) {
+                resultName = scenario.path("parameters").path("cancel_result").asText();
+            }
+            String targetIdPrefix = "KMIPKIT-ELEM-ENUM-VALUE-CANCELLATION-RESULT-";
+            JsonNode target = null;
+            for (JsonNode targetId : scenario.path("target_ids")) {
+                String candidateId = targetId.asText();
+                if (!candidateId.startsWith(targetIdPrefix)) continue;
+                for (JsonNode candidate : catalog.path("normative_targets")) {
+                    if (candidateId.equals(candidate.path("target_id").asText())) {
+                        target = candidate;
+                        break;
+                    }
+                }
+                break;
+            }
+            int resultValue = 1;
+            if (target != null) {
+                assertEquals(resultName, target.path("name").asText());
+                resultValue = Integer.parseInt(
+                        target.path("wire_value").asText().replaceFirst("^0[xX]", ""), 16);
+            }
+            int workflowStepIndex = -1;
+            JsonNode orderedOperations = scenario.path("operations");
+            if (!orderedOperations.isArray()) orderedOperations = requires.path("operation_sequence");
+            if (orderedOperations.isArray()) {
+                for (int index = 0; index < orderedOperations.size(); index++) {
+                    if ("Cancel".equals(orderedOperations.get(index).asText())) {
+                        workflowStepIndex = index;
+                        break;
+                    }
+                }
+            }
+            scenarios.add(new AsyncCancelRouteScenario(
+                    testCase.path("case_id").asText(), resultName, resultValue,
+                    List.copyOf(targetIds), workflowStepIndex));
+        }
+        return List.copyOf(scenarios);
+    }
+
+
+    private static int expectedAsyncCancelLocalRouteEventCount(JsonNode catalog) {
+        int eventCount = 0;
+        for (String protocolVersion : KMIP_2_0_AND_2_1) {
+            for (AsyncCancelRouteScenario scenario : asyncCancelRouteScenarios(catalog, protocolVersion)) {
+                long requestTargets = scenario.targetIds().stream()
+                        .filter(targetId -> "KMIPKIT-ELEM-OP-C2S-CANCEL".equals(targetId)
+                                || targetId.startsWith("KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-"))
+                        .count();
+                long genericTargets = scenario.targetIds().stream()
+                        .filter(targetId -> !"KMIPKIT-ELEM-OP-C2S-CANCEL".equals(targetId))
+                        .count();
+                long responseTargets = scenario.targetIds().stream()
+                        .filter(targetId -> "KMIPKIT-ELEM-OP-C2S-CANCEL".equals(targetId)
+                                || targetId.startsWith("KMIPKIT-PAYLOAD-CLIENT-CANCEL-RESPONSE-"))
+                        .count();
+                long operationTargets = scenario.targetIds().stream()
+                        .filter("KMIPKIT-ELEM-OP-C2S-CANCEL"::equals)
+                        .count();
+                eventCount += Math.toIntExact(requestTargets * 2 + genericTargets * 3
+                        + operationTargets * 3 + responseTargets);
+                if ("test-async-cancel-vs-poll-race".equals(scenario.caseId())) eventCount += 3;
+            }
+            for (JsonNode testCase : catalog.path("test_cases")) {
+                JsonNode requires = testCase.path("requires");
+                if ("operation_payload_field".equals(requires.path("target_kind").asText())
+                        && "KMIPKIT-ELEM-OP-C2S-CANCEL".equals(requires.path("operation_id").asText())
+                        && Set.of("Asynchronous Correlation Value", "Cancellation Result")
+                                .contains(requires.path("field_name").asText())
+                        && "local_model".equals(testCase.path("execution").path("mode").asText())
+                        && appliesToVersion(testCase, protocolVersion)) {
+                    eventCount += 3;
+                }
+            }
+        }
+        return eventCount;
+    }
+
+    private static int expectedAsyncCancelNetworkRouteEventCount(JsonNode catalog) {
+        int eventCount = 0;
+        for (String protocolVersion : KMIP_2_0_AND_2_1) {
+            for (AsyncCancelRouteScenario scenario : asyncCancelRouteScenarios(catalog, protocolVersion)) {
+                for (String targetId : scenario.targetIds()) {
+                    if (!"KMIPKIT-ELEM-OP-C2S-CANCEL".equals(targetId)
+                            && !targetId.startsWith("KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-")) continue;
+                    int actions = "KMIPKIT-ELEM-OP-C2S-CANCEL".equals(targetId) ? 3 : 2;
+                    eventCount += actions * 3 * 2;
+                }
+                if ("test-async-cancel-vs-poll-race".equals(scenario.caseId())) {
+                    eventCount += 3 * 3 * 2;
+                }
+            }
+        }
+        return eventCount;
+    }
+
+    private static boolean asyncCancelTargetAppliesToVersion(JsonNode catalog, String targetId,
+            String protocolVersion) {
+        for (JsonNode target : catalog.path("normative_targets")) {
+            if (!targetId.equals(target.path("target_id").asText())) continue;
+            JsonNode versions = target.path("protocol_versions");
+            return !versions.isArray() || containsText(versions, protocolVersion);
+        }
+        return false;
+    }
+
+
+    private static byte[] asyncCancelCorrelation(AsyncCancelRouteScenario scenario, String protocolVersion) {
+        return ("kmipkit-" + scenario.caseId() + "-" + protocolVersion).getBytes(StandardCharsets.US_ASCII);
+    }
+
+
+    private static byte[] asynchronousCancelResponseBytes(String encoding, AsyncCancelRouteScenario scenario,
+            byte[] correlation, int protocolMinorVersion) throws Exception {
+        if ("TTLV".equals(encoding)) {
+            return asynchronousResponse(0x19, correlation, protocolMinorVersion,
+                    scenario.cancellationResultValue());
+        }
+        String correlationHex = "JSON".equals(encoding)
+                ? HexFormat.of().formatHex(correlation)
+                : HexFormat.of().withUpperCase().formatHex(correlation);
+        String resultName = jsonCancellationResultName(scenario.cancellationResultName());
+        if ("JSON".equals(encoding)) {
+            String response = "{\"tag\":\"ResponseMessage\",\"value\":["
+                    + "{\"tag\":\"ResponseHeader\",\"value\":["
+                    + "{\"tag\":\"ProtocolVersion\",\"value\":["
+                    + "{\"tag\":\"ProtocolVersionMajor\",\"type\":\"Integer\",\"value\":2},"
+                    + "{\"tag\":\"ProtocolVersionMinor\",\"type\":\"Integer\",\"value\":"
+                    + protocolMinorVersion + "}]},"
+                    + "{\"tag\":\"TimeStamp\",\"type\":\"DateTime\",\"value\":\"0x0000000000000001\"},"
+                    + "{\"tag\":\"BatchCount\",\"type\":\"Integer\",\"value\":1}]},"
+                    + "{\"tag\":\"BatchItem\",\"value\":["
+                    + "{\"tag\":\"Operation\",\"type\":\"Enumeration\",\"value\":\"Cancel\"},"
+                    + "{\"tag\":\"ResultStatus\",\"type\":\"Enumeration\",\"value\":\"Success\"},"
+                    + "{\"tag\":\"ResponsePayload\",\"value\":["
+                    + "{\"tag\":\"AsynchronousCorrelationValue\",\"type\":\"ByteString\",\"value\":\""
+                    + correlationHex + "\"},"
+                    + "{\"tag\":\"CancellationResult\",\"type\":\"Enumeration\",\"value\":\""
+                    + resultName + "\"}]}]}]}";
+            return response.getBytes(StandardCharsets.UTF_8);
+        }
+        String response = "<ResponseMessage><ResponseHeader><ProtocolVersion>"
+                + "<ProtocolVersionMajor type=\"Integer\" value=\"2\"/>"
+                + "<ProtocolVersionMinor type=\"Integer\" value=\"" + protocolMinorVersion
+                + "\"/></ProtocolVersion><TimeStamp type=\"DateTime\" value=\"1970-01-01T00:00:01Z\"/>"
+                + "<BatchCount type=\"Integer\" value=\"1\"/></ResponseHeader><BatchItem>"
+                + "<Operation type=\"Enumeration\" value=\"Cancel\"/>"
+                + "<ResultStatus type=\"Enumeration\" value=\"Success\"/><ResponsePayload>"
+                + "<AsynchronousCorrelationValue type=\"ByteString\" value=\"" + correlationHex + "\"/>"
+                + "<CancellationResult type=\"Enumeration\" value=\"" + resultName
+                + "\"/></ResponsePayload></BatchItem></ResponseMessage>";
+        return response.getBytes(StandardCharsets.UTF_8);
+    }
+
+
+    private static String jsonCancellationResultName(String name) {
+        return switch (name) {
+            case "Unable to Cancel" -> "UnableToCancel";
+            case "Canceled", "Completed", "Failed", "Unavailable" -> name;
+            default -> throw new IllegalArgumentException("Unsupported catalog Cancellation Result.");
+        };
+    }
+
+
+    private static void assertAsyncCancelWireRequest(byte[] request, String encoding,
+            String protocolVersion, byte[] expectedCorrelation) throws Exception {
+        int minor = "2.0".equals(protocolVersion) ? 0 : 1;
+        if ("TTLV".equals(encoding)) {
+            assertEquals(0x19L, requestOperation(request));
+            assertEquals(minor, requestProtocolMinorVersion(request));
+            assertArrayEquals(expectedCorrelation, requestCorrelation(request));
+            return;
+        }
+        String correlationHex = "JSON".equals(encoding)
+                ? HexFormat.of().formatHex(expectedCorrelation)
+                : HexFormat.of().withUpperCase().formatHex(expectedCorrelation);
+        if ("JSON".equals(encoding)) {
+            JsonNode root = new ObjectMapper().readTree(request);
+            List<JsonNode> operations = jsonValuesForTag(root, "Operation");
+            assertEquals(1, operations.size());
+            assertEquals("Cancel", operations.get(0).asText());
+            List<JsonNode> minors = jsonValuesForTag(root, "ProtocolVersionMinor");
+            assertEquals(1, minors.size());
+            assertEquals(minor, minors.get(0).asInt());
+            List<JsonNode> correlations = jsonValuesForTag(root, "AsynchronousCorrelationValue");
+            assertEquals(1, correlations.size());
+            assertEquals(correlationHex, correlations.get(0).asText());
+            return;
+        }
+        String xml = new String(request, StandardCharsets.UTF_8);
+        assertTrue(xml.startsWith("<RequestMessage>"));
+        assertTrue(xml.contains("<Operation type=\"Enumeration\" value=\"Cancel\"/>"));
+        assertTrue(xml.contains("<ProtocolVersionMinor type=\"Integer\" value=\"" + minor + "\"/>"));
+        assertTrue(xml.contains("<AsynchronousCorrelationValue type=\"ByteString\" value=\""
+                + correlationHex + "\"/>"));
+    }
+
+
+    private static void appendAsyncCancelRouteEvents(ArrayNode events, AsyncCancelRouteScenario scenario,
+            String protocolVersion, String encoding, String transport,
+            String requestHash, String responseHash) throws Exception {
+        String routeId = "java.typed-protocol.client.execute_cancel";
+        String apiSymbol = "org.kmipkit.extensions.Client.executeCancel";
+        String executionRouteId = "java.execute.cancel";
+        String executionApiSymbol = apiSymbol;
+        for (String targetId : scenario.targetIds()) {
+            if (!"KMIPKIT-ELEM-OP-C2S-CANCEL".equals(targetId)
+                    && !targetId.startsWith("KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-")) continue;
+            boolean operationTarget = "KMIPKIT-ELEM-OP-C2S-CANCEL".equals(targetId);
+            List<String> actions = operationTarget
+                    ? List.of("construct", "send", "decode")
+                    : List.of("construct", "send");
+            for (String action : actions) {
+                appendAsyncCancelRouteEvent(events, scenario.caseId(), routeId, targetId, apiSymbol,
+                        executionRouteId, executionApiSymbol, action, protocolVersion, encoding, transport,
+                        requestHash, responseHash,
+                        operationTarget ? scenario.workflowStepIndex() : -1);
+            }
+        }
+        if ("TTLV".equals(encoding) && "raw_tls".equals(transport)) {
+            JsonNode catalog = readRouteEvidenceCatalog();
+            byte[] correlation = asyncCancelCorrelation(scenario, protocolVersion);
+            appendAsyncCancelLocalRequestRouteEvents(events, catalog, scenario, protocolVersion, correlation);
+            appendAsyncCancelLocalGenericTtlvRouteEvents(events, catalog, scenario, protocolVersion, correlation);
+            appendAsyncCancelLocalOperationGenericRoutes(events, catalog, scenario, protocolVersion, correlation);
+            appendAsyncCancelLocalResponseRouteEvents(events, scenario, protocolVersion, responseHash);
+        }
+    }
+
+    private static void appendAsyncPollRouteEvents(ArrayNode events, AsyncCancelRouteScenario scenario,
+            String protocolVersion, String encoding, String transport, String requestHash, String responseHash)
+            throws Exception {
+        String routeId = "java.typed-protocol.client.execute_poll";
+        String targetId = "KMIPKIT-ELEM-OP-C2S-POLL";
+        String apiSymbol = "org.kmipkit.extensions.Client.executePoll";
+        String executionRouteId = "java.execute.poll";
+        int workflowStepIndex = asyncWorkflowStepIndex(readRouteEvidenceCatalog(), scenario.caseId(), "Poll");
+        for (String action : List.of("construct", "send", "decode")) {
+            ObjectNode event = appendRouteEvent(events, scenario.caseId(), routeId, targetId,
+                    apiSymbol, executionRouteId, apiSymbol, action, protocolVersion, transport,
+                    "decode".equals(action) ? null : requestHash,
+                    "decode".equals(action) ? responseHash : null);
+            event.put("encoding", encoding);
+            appendWorkflowIdentity(event, new CreateWorkflowIdentity(workflowStepIndex, "Poll", null));
+            if ("send".equals(action)) {
+                event.put("request_delivery_state", "response_received");
+                event.put("transport_invocation_count", 1);
+            }
+        }
+    }
+
+    private static void appendAsyncPollLocalRouteEvents(ArrayNode events, AsyncCancelRouteScenario scenario,
+            String protocolVersion, byte[] correlation, String requestHash, String responseHash) throws Exception {
+        String targetId = "KMIPKIT-ELEM-OP-C2S-POLL";
+        int workflowStepIndex = asyncWorkflowStepIndex(readRouteEvidenceCatalog(), scenario.caseId(), "Poll");
+        try (PollRequest request = PollRequest.create(correlation.clone());
+                TtlvStructure payload = request.toTtlvPayload();
+                var fields = payload.view()) {
+            assertEquals(1, fields.itemCount());
+            try (TtlvItemView correlationField = fields.itemAt(0);
+                    Tag tag = correlationField.tag();
+                    var value = correlationField.value()) {
+                assertEquals(0x420006, tag.raw());
+                assertArrayEquals(correlation, value.bytes());
+            }
+        }
+        ObjectNode created = appendRouteEvent(events, scenario.caseId(),
+                "java.typed-protocol.poll_request.create", targetId,
+                "org.kmipkit.extensions.PollRequest.create", null, null,
+                "construct", protocolVersion, null, requestHash, null);
+        ObjectNode encoded = appendRouteEvent(events, scenario.caseId(),
+                "java.typed-protocol.function.async_poll_request_to_ttlv_payload", targetId,
+                "org.kmipkit.extensions.PollRequest.toTtlvPayload", null, null,
+                "encode", protocolVersion, null, requestHash, null);
+        ObjectNode decoded = appendRouteEvent(events, scenario.caseId(),
+                "java.typed-protocol.function.kmipkit_client_async_operation_outcome_poll_response_v1", targetId,
+                "org.kmipkit.extensions.AsyncOperationOutcome.pollResponse", null, null,
+                "decode", protocolVersion, null, null, responseHash);
+        CreateWorkflowIdentity identity = new CreateWorkflowIdentity(workflowStepIndex, "Poll", null);
+        appendWorkflowIdentity(created, identity);
+        appendWorkflowIdentity(encoded, identity);
+        appendWorkflowIdentity(decoded, identity);
+    }
+
+    private static void assertAsyncPollRaceRouteCoverage(ArrayNode events, String protocolVersion)
+            throws Exception {
+        if (!"2.1".equals(protocolVersion)) return;
+        String caseId = "test-async-cancel-vs-poll-race";
+        String targetId = "KMIPKIT-ELEM-OP-C2S-POLL";
+        String routeId = "java.typed-protocol.client.execute_poll";
+        int workflowStepIndex = asyncWorkflowStepIndex(readRouteEvidenceCatalog(), caseId, "Poll");
+        for (String encoding : List.of("TTLV", "JSON", "XML")) {
+            for (String transport : List.of("raw_tls", "https")) {
+                for (String action : List.of("construct", "send", "decode")) {
+                    int matches = 0;
+                    for (JsonNode event : events) {
+                        if (!routeEventMatches(event, caseId, routeId, protocolVersion, targetId)
+                                || !action.equals(event.path("action").asText())
+                                || !encoding.equals(event.path("encoding").asText())
+                                || !transport.equals(event.path("transport").asText())) continue;
+                        assertEquals(workflowStepIndex, event.path("workflow_step_index").asInt(-1));
+                        assertEquals("Poll", event.path("workflow_operation").asText());
+                        matches++;
+                    }
+                    assertEquals(1, matches, "The Poll race route must execute once for each wire combination.");
+                }
+            }
+        }
+        assertRouteEventRecorded(events, caseId, targetId,
+                "java.typed-protocol.poll_request.create", "construct", protocolVersion);
+        assertRouteEventRecorded(events, caseId, targetId,
+                "java.typed-protocol.function.async_poll_request_to_ttlv_payload", "encode", protocolVersion);
+        assertRouteEventRecorded(events, caseId, targetId,
+                "java.typed-protocol.function.kmipkit_client_async_operation_outcome_poll_response_v1",
+                "decode", protocolVersion);
+    }
+
+    private static int asyncWorkflowStepIndex(JsonNode catalog, String caseId, String operation) {
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            if (!caseId.equals(testCase.path("case_id").asText())) continue;
+            JsonNode operations = testCase.path("requires").path("protocol_scenario").path("operations");
+            for (int index = 0; index < operations.size(); index++) {
+                if (operation.equals(operations.get(index).asText())) return index;
+            }
+        }
+        throw new AssertionError("Asynchronous catalog scenario must declare operation " + operation + ".");
+    }
+
+
+    private static void assertExtensionTagRouteEvents(ArrayNode events, String protocolVersion) {
+        for (String route : List.of(
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.integer",
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode")) {
+            String action = route.endsWith("integer") || route.endsWith("ttlv_item.create")
+                    ? "construct" : "decode";
+            assertRouteEventRecorded(events, EXTENSION_TAG_FIXTURE.caseId(),
+                    EXTENSION_TAG_FIXTURE.targetId(), route, action, protocolVersion);
+        }
+    }
+
+    private static void appendUsageLimitsRouteEvents(ArrayNode events, String protocolVersion)
+            throws Exception {
+        CodecLimits limits = CodecLimits.defaults();
+        byte[] wire = usageLimitsWire();
+        String treeHash = normalizedTreeSha256(wire);
+        try (TtlvStructure fields = usageLimitsFields(limits);
+                TtlvValue value = TtlvValue.structure(fields, limits);
+                RawTag rawTag = RawTag.fromRaw(0x420095);
+                Tag tag = rawTag.checked();
+                TtlvItem item = TtlvItem.create(tag, value, limits);
+                var view = item.view();
+                Tag viewedTag = view.tag();
+                var viewedValue = view.value();
+                var viewedFields = viewedValue.structure()) {
+            assertEquals(0x420095, viewedTag.raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertUsageLimitsFields(viewedFields);
+        }
+        try (TtlvItem decoded = TtlvCodec.decode(wire);
+                var view = decoded.view();
+                Tag viewedTag = view.tag();
+                var viewedValue = view.value();
+                var viewedFields = viewedValue.structure()) {
+            assertEquals(0x420095, viewedTag.raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertUsageLimitsFields(viewedFields);
+        }
+        for (UsageLimitsMemberFixture fixture : USAGE_LIMITS_MEMBER_FIXTURES) {
+            appendUsageLimitsMemberRouteEvents(events, fixture, protocolVersion, limits);
+        }
+        appendGenericStructureRouteEvents(events, USAGE_LIMITS_CASE_ID,
+                USAGE_LIMITS_TARGET_ID, protocolVersion, treeHash);
+    }
+
+    private static void appendRightUsageLimitsRouteEvents(ArrayNode events, String protocolVersion)
+            throws Exception {
+        CodecLimits limits = CodecLimits.defaults();
+        byte[] wire = usageLimitsWire();
+        String treeHash = normalizedTreeSha256(wire);
+        try (TtlvStructure absentRight = TtlvStructure.create();
+                TtlvStructureView absentFields = absentRight.view()) {
+            assertEquals(0, absentFields.itemCount(),
+                    "The Right Usage Limits member is optional in KMIP 2.0 and 2.1.");
+        }
+        try (TtlvStructure fields = usageLimitsFields(limits);
+                TtlvValue value = TtlvValue.structure(fields, limits);
+                RawTag rawTag = RawTag.fromRaw(0x420095);
+                Tag tag = rawTag.checked();
+                TtlvItem created = TtlvItem.create(tag, value, limits);
+                var view = created.view();
+                Tag viewedTag = view.tag();
+                var viewedValue = view.value();
+                var nestedFields = viewedValue.structure()) {
+            assertEquals(0x420095, viewedTag.raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertUsageLimitsFields(nestedFields);
+        }
+        try (TtlvStructure emptyRight = TtlvStructure.create();
+                TtlvStructure right = appendTtlvItem(emptyRight, 0x420095,
+                        TtlvValue.structure(usageLimitsFields(limits), limits), limits);
+                TtlvStructureView rightFields = right.view();
+                TtlvItemView member = rightFields.itemAt(0);
+                Tag memberTag = member.tag();
+                var memberValue = member.value();
+                var nestedFields = memberValue.structure()) {
+            assertEquals(1, rightFields.itemCount());
+            assertEquals(0x420095, memberTag.raw());
+            assertEquals(TtlvItemType.Structure, member.itemType());
+            assertUsageLimitsFields(nestedFields);
+        }
+        try (TtlvItem decoded = TtlvCodec.decode(wire);
+                var view = decoded.view();
+                Tag tag = view.tag();
+                var value = view.value();
+                var nestedFields = value.structure()) {
+            assertEquals(0x420095, tag.raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertUsageLimitsFields(nestedFields);
+        }
+        appendRouteEvent(events, RIGHT_USAGE_LIMITS_CASE_ID,
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
+                RIGHT_USAGE_LIMITS_TARGET_ID, "org.kmipkit.ttlv.TtlvValue.structure", null, null,
+                "construct", protocolVersion, null, treeHash, null);
+        appendRouteEvent(events, RIGHT_USAGE_LIMITS_CASE_ID, "java.generic-ttlv.ttlv_item.create",
+                RIGHT_USAGE_LIMITS_TARGET_ID, "org.kmipkit.ttlv.TtlvItem.create", null, null,
+                "construct", protocolVersion, null, treeHash, null);
+        appendRouteEvent(events, RIGHT_USAGE_LIMITS_CASE_ID,
+                "java.generic-ttlv.function.ttlv_item_view_from_item", RIGHT_USAGE_LIMITS_TARGET_ID,
+                "org.kmipkit.ttlv.TtlvItem.view", null, null, "decode", protocolVersion,
+                null, null, treeHash);
+        appendRouteEvent(events, RIGHT_USAGE_LIMITS_CASE_ID, "java.generic-ttlv.ttlv_codec.decode",
+                RIGHT_USAGE_LIMITS_TARGET_ID, "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
+                "decode", protocolVersion, null, null, treeHash);
+    }
+
+
+    private static TtlvStructure usageLimitsFields(CodecLimits limits) {
+        TtlvStructure fields = TtlvStructure.create();
+        for (UsageLimitsMemberFixture fixture : USAGE_LIMITS_MEMBER_FIXTURES) {
+            TtlvValue value = fixture.itemType() == TtlvItemType.LongInteger
+                    ? TtlvValue.LongInteger(fixture.value())
+                    : TtlvValue.Enumeration(fixture.value());
+            fields = appendTtlvItem(fields, fixture.rawTag(), value, limits);
+        }
+        return fields;
+    }
+
+
+    private static byte[] usageLimitsWire() throws Exception {
+        return structure(0x420095,
+                item(0x420097, TtlvItemType.LongInteger.code(), longBytes(100)),
+                item(0x420096, TtlvItemType.LongInteger.code(), longBytes(73)),
+                item(0x420098, TtlvItemType.Enumeration.code(), intBytes(2)));
+    }
+
+
+    private static void assertUsageLimitsFields(TtlvStructureView fields) throws Exception {
+        assertEquals(3, fields.itemCount(),
+                "KMIP 2.0/2.1 Usage Limits contains its three required members.");
+        for (int index = 0; index < USAGE_LIMITS_MEMBER_FIXTURES.size(); index++) {
+            UsageLimitsMemberFixture fixture = USAGE_LIMITS_MEMBER_FIXTURES.get(index);
+            try (var member = fields.itemAt(index);
+                    Tag tag = member.tag();
+                    var value = member.value()) {
+                assertEquals(fixture.rawTag(), tag.raw());
+                assertEquals(fixture.itemType(), member.itemType());
+                if (fixture.itemType() == TtlvItemType.LongInteger) {
+                    assertEquals(fixture.value(), value.longInteger());
+                } else {
+                    assertEquals(fixture.value(), value.enumeration());
+                }
+            }
+        }
+    }
+
+
+    private static void appendUsageLimitsMemberRouteEvents(ArrayNode events,
+            UsageLimitsMemberFixture fixture, String protocolVersion, CodecLimits limits) throws Exception {
+        byte[] value = fixture.itemType() == TtlvItemType.LongInteger
+                ? longBytes(fixture.value()) : intBytes(Math.toIntExact(fixture.value()));
+        byte[] wire = item(fixture.rawTag(), fixture.itemType().code(), value);
+        String treeHash = normalizedTreeSha256(wire);
+        TtlvValue memberValue = fixture.itemType() == TtlvItemType.LongInteger
+                ? TtlvValue.LongInteger(fixture.value()) : TtlvValue.Enumeration(fixture.value());
+        try (memberValue;
+                RawTag rawTag = RawTag.fromRaw(fixture.rawTag());
+                Tag tag = rawTag.checked();
+                TtlvItem created = TtlvItem.create(tag, memberValue, limits);
+                var view = created.view();
+                Tag viewedTag = view.tag();
+                var viewedValue = view.value()) {
+            assertEquals(fixture.rawTag(), viewedTag.raw());
+            assertEquals(fixture.itemType(), view.itemType());
+            assertUsageLimitsMemberValue(viewedValue, fixture);
+        }
+        try (TtlvItem decoded = TtlvCodec.decode(wire);
+                var view = decoded.view();
+                Tag viewedTag = view.tag();
+                var viewedValue = view.value()) {
+            assertEquals(fixture.rawTag(), viewedTag.raw());
+            assertEquals(fixture.itemType(), view.itemType());
+            assertUsageLimitsMemberValue(viewedValue, fixture);
+        }
+        String valueRoute = fixture.itemType() == TtlvItemType.LongInteger
+                ? "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.longinteger"
+                : "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration";
+        appendRouteEvent(events, fixture.caseId(), valueRoute, fixture.targetId(),
+                fixture.itemType() == TtlvItemType.LongInteger
+                        ? "org.kmipkit.ttlv.TtlvValue.LongInteger" : "org.kmipkit.ttlv.TtlvValue.Enumeration",
+                null, null, "construct", protocolVersion, null, treeHash, null);
+        appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_item.create", fixture.targetId(),
+                "org.kmipkit.ttlv.TtlvItem.create", null, null, "construct", protocolVersion,
+                null, treeHash, null);
+        appendRouteEvent(events, fixture.caseId(),
+                "java.generic-ttlv.function.ttlv_item_view_from_item", fixture.targetId(),
+                "org.kmipkit.ttlv.TtlvItem.view", null, null, "decode", protocolVersion,
+                null, null, treeHash);
+        appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_codec.decode", fixture.targetId(),
+                "org.kmipkit.ttlv.TtlvCodec.decode", null, null, "decode", protocolVersion,
+                null, null, treeHash);
+    }
+
+
+    private static void assertUsageLimitsMemberValue(org.kmipkit.ttlv.TtlvValueView value,
+            UsageLimitsMemberFixture fixture) throws Exception {
+        if (fixture.itemType() == TtlvItemType.LongInteger) {
+            assertEquals(fixture.value(), value.longInteger());
+        } else {
+            assertEquals(fixture.value(), value.enumeration());
+        }
+    }
+
+    private record UsageLimitsMemberFixture(String caseId, String targetId, int rawTag,
+            TtlvItemType itemType, long value) { }
+
 }
