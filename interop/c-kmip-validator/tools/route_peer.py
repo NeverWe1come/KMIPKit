@@ -3846,6 +3846,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
          ('present', 'omitted') if case['case_id'].startswith(
              'test-norm-payload-client-export-request-') else
          ('direct', 'standalone') if case['case_id'] in {'test-op-get-attributes', 'test-op-get-attribute-list',
+                                                         'test-batch-create-activate-destroy',
                                                          'test-batch-continue-after-failure',
                                                          'test-batch-count-matches-items',
                                                          'test-batch-count-mismatch-rejected',
