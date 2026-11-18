@@ -231,6 +231,15 @@ class LocalCatalogRouteChecksTest {
             int length = java.nio.ByteBuffer.wrap(wire, offset + 4, 4).getInt();
             if (type == TtlvItemType.BigInteger.code()) {
                 assertEquals(0, length % 8, "Big Integer Length must include sign-extension bytes");
+                int tag = (Byte.toUnsignedInt(wire[offset]) << 16)
+                        | (Byte.toUnsignedInt(wire[offset + 1]) << 8) | Byte.toUnsignedInt(wire[offset + 2]);
+                if (tag == 0x420062) {
+                    java.math.BigInteger prime = new java.math.BigInteger(
+                            java.util.Arrays.copyOfRange(wire, offset + 8, offset + 8 + length));
+                    assertTrue(prime.isProbablePrime(100));
+                    assertTrue(prime.compareTo(java.math.BigInteger.ONE.shiftLeft(32)) > 0,
+                            "Prime field must exceed 2^L for the 32-bit synthetic key");
+                }
                 found++;
             } else if (type == TtlvItemType.Structure.code()) {
                 found += assertAlignedBigIntegers(wire, offset + 8, offset + 8 + length);
