@@ -1374,6 +1374,11 @@ class ControlledTlsPeerTest {
                 assertPingVersionBoundaryRouteCoverage(events);
                 appendCreateOperationRouteEvidence(events, serverCertificatePem, serverPrivateKeyPem,
                         clientCertificatePem, clientPrivateKeyPem);
+                assertAsyncCreatePayloadGenericRouteCoverage(events, "2.0");
+                assertAsyncCreatePayloadGenericRouteCoverage(events, "2.1");
+                for (String asyncVersion : KMIP_2_0_AND_2_1) {
+                    assertAsyncCancelLocalRouteCoverage(events, asyncVersion);
+                }
                 assertRouteEventRecorded(events, "test-norm-payload-client-create-request-20-001",
                         "KMIPKIT-ELEM-OP-C2S-CREATE",
                         "java.typed-protocol.function.client_batch_item_response_create",
@@ -9517,6 +9522,19 @@ class ControlledTlsPeerTest {
                     }
                 }
             }
+        }
+    }
+
+    private static void assertAsyncCreatePayloadGenericRouteCoverage(ArrayNode events, String protocolVersion) {
+        String versionCode = "2.0".equals(protocolVersion) ? "20" : "21";
+        String targetId = "KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-" + versionCode + "-001";
+        for (String caseId : CREATE_ASYNC_INDICATOR_PAYLOAD_CASE_IDS) {
+            assertRouteEventRecorded(events, caseId, targetId,
+                    "java.generic-ttlv.ttlv_item.create", "construct", protocolVersion);
+            assertRouteEventRecorded(events, caseId, targetId,
+                    "java.generic-ttlv.function.ttlv_item_view_from_item", "decode", protocolVersion);
+            assertRouteEventRecorded(events, caseId, targetId,
+                    "java.generic-ttlv.ttlv_codec.decode", "decode", protocolVersion);
         }
     }
 
