@@ -137,14 +137,14 @@ The `*.gaps.json` sidecar identifies every unexecuted matrix obligation rather
 than misclassifying it as an unavailable library route. Other sidecars retain
 installed-artifact availability checks and sanitized controlled-peer outcomes.
 The evidence JSON passes the shared schema independently of completeness.
-The latest full local C matrix run (`c-route-7da3e96c-3723-4be3-bac6-a3a10f9b9899`)
-has 66,736 expected cells, 42,557 invoked, zero failed, and 24,179 pending.
+The latest full local C matrix run (`c-route-87ed3605-290b-4298-971d-ef04ed1be9a7`)
+has 66,736 expected cells, 42,633 invoked, zero failed, and 24,103 pending.
 The MAC and Sign response TTLV accessors and the Continue batch-option
 constructor contribute four local cells each across KMIP 2.0/2.1. The
 Query Async Requests correlation builder contributes two KMIP 2.1 model cells.
-The Opaque Object Register recipe invokes the installed C consumer across all
-12 KMIP 2.0/2.1 encoding and transport combinations and verifies typed
-response access plus independent Destroy cleanup.
+The Opaque Object and PGP Key Register recipes each invoke the installed C
+consumer across all 12 KMIP 2.0/2.1 encoding and transport combinations and
+verify typed response access plus independent Destroy cleanup.
 The evidence report passes schema validation, but the completeness gate
 remains open because validator recipes are still pending.
 

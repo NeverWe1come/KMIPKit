@@ -512,7 +512,9 @@ def main() -> int:
     expected_operations += (10, 12, 10, 12, 10, 12, 10, 12, 10, 12)
     expected_operations += registered_key_batch
     expected_operations += (3, 20)
+    expected_operations += (3, 20)
     expected_cases += ("test-obj-opaque-object",)
+    expected_cases += ("test-obj-pgp-key",)
     expected_operations += (1, 18, 31, 19, 20)
     expected_operations += (1, 18, 32, 19, 20)
     expected_operations += (1, 18, 35, 19, 20)

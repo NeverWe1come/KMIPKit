@@ -3995,6 +3995,7 @@ static int32_t build_pgp_key_register_item(
     kmipkit_ttlv_value_t *pgp_key_version_value = NULL;
     kmipkit_ttlv_value_t *key_format_value = NULL;
     kmipkit_ttlv_value_t *key_material_value = NULL;
+    kmipkit_ttlv_value_t *usage_mask_value = NULL;
     kmipkit_raw_tag_t *pgp_key_version_raw_tag = NULL;
     kmipkit_raw_tag_t *key_format_raw_tag = NULL;
     kmipkit_raw_tag_t *key_material_raw_tag = NULL;
@@ -4061,10 +4062,10 @@ static int32_t build_pgp_key_register_item(
     }
     if (status == 0) {
         status = kmipkit_ttlv_value_integer(
-            (int32_t)KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_SIGN, &key_material_value);
+            (int32_t)KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_SIGN, &usage_mask_value);
     }
     if (status == 0 && !append_ttlv_value(
-            client, &attributes, UINT32_C(0x42002C), &key_material_value)) {
+            client, &attributes, UINT32_C(0x42002C), &usage_mask_value)) {
         status = KMIPKIT_ERROR_INVALID_INPUT;
     }
     if (status == 0) {
@@ -4094,6 +4095,7 @@ static int32_t build_pgp_key_register_item(
     if (key_format_raw_tag) kmipkit_raw_tag_release(key_format_raw_tag);
     if (pgp_key_version_raw_tag) kmipkit_raw_tag_release(pgp_key_version_raw_tag);
     if (key_material_value) kmipkit_ttlv_value_release(key_material_value);
+    if (usage_mask_value) kmipkit_ttlv_value_release(usage_mask_value);
     if (key_format_value) kmipkit_ttlv_value_release(key_format_value);
     if (pgp_key_version_value) kmipkit_ttlv_value_release(pgp_key_version_value);
     memset(key_material_bytes, 0, sizeof(key_material_bytes));

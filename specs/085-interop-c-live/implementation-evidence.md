@@ -1428,3 +1428,32 @@ written to route evidence.
   for the Opaque Object case and no pending cells for its covered targets.
   The shared completeness validator correctly remains unsuccessful while
   other recipes are pending; this work does not complete the C matrix.
+
+## PGP Key Register route
+
+The installed C consumer builds a version 4 PGP Key with the typed Key Value,
+Key Block, and PGP Key constructors, then registers it through the typed
+Register request and batch-item APIs. It supplies the required Cryptographic
+Usage Mask and matching RSA Algorithm/Length attributes, checks the typed
+response and response-TTLV Unique Identifier, and destroys the returned object
+in a separate request. The Key Material byte is a synthetic fixture value;
+the controlled peer validates structure and attributes, not cryptographic
+material or server compatibility.
+
+- Red commit `f3923e181` adds a requirement for all installed C Register and
+  response routes; it fails because the PGP Key case has no controlled recipe.
+- Green commit `3bd49d035` adds the typed object construction and controlled
+  peer checks. The initial Register attempt was rejected until the fixture
+  included the required usage, algorithm, and length attributes.
+- Normative scope: OASIS KMIP 2.0 §2.4/Table 5 and §6.1.39/Tables 265 and 267;
+  KMIP 2.1 §2.4/Table 5 and §6.1.43/Tables 291 and 293; §6.1.15 defines
+  Destroy cleanup. KMIP §2.4 permits PGP Key versions 3 and 4; the fixture
+  selects version 4.
+- Verification: the focused PGP Register test passed all 12 controlled
+  exchanges, and the PGP, Opaque Object, Certificate, and general Register
+  regressions passed. Full CTest passed 7/7, including the route-matrix
+  contracts and both controlled TLS peers. The exhaustive matrix
+  (`c-route-87ed3605-290b-4298-971d-ef04ed1be9a7`) records 42,633/66,736 cells
+  invoked, zero failed, and 24,103 pending. PGP Key emitted 86 passed events
+  and no pending cells for its covered targets. The global completeness gate
+  remains open for other recipes.
