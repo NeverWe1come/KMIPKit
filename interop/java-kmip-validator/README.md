@@ -101,8 +101,8 @@ baseline, regenerate the checked-in ledger with
 rejects generated ledgers that do not record successful invocations.
 The generated ledger retains the artifact
 SHA-256 for each build; that build-specific digest is not used as a coverage
-baseline. These recipes execute 34,258 of 71,641 planned Java route cells, with
-no failed cells; the ledger records the other 37,383 as pending and does not imply
+baseline. These recipes execute 34,366 of 71,641 planned Java route cells, with
+no failed cells; the ledger records the other 37,275 as pending and does not imply
 vendor interoperability or full-matrix completion. Local TTLV recipes exercise 51
 enumeration families, all six bitmask aggregate cases, and all 44 individual
 bitmask value cases through the applicable
@@ -443,3 +443,8 @@ The Transparent Symmetric Key `Key` Byte String also exercises all six typed
 `KeyMaterial`, `KeyValue`, and `KeyBlock` constructors in KMIP 2.0/2.1 (§3.4).
 The fixture bytes are deterministic synthetic test data. The selected report
 now validates 34,258/34,258 cells with zero failures and leaves 37,383 pending.
+
+The complete `Key Material` Structures for all nine transparent key formats
+also pass all six typed `KeyMaterial`, `KeyValue`, and `KeyBlock` constructors
+in both KMIP versions. The selected report now validates 34,366/34,366 cells
+with zero failures and leaves 37,275 pending.

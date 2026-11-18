@@ -3460,3 +3460,38 @@ pass 108 tests and the capability audit reports 1,507 routes. The selected
 report validates 34,258/34,258 cells with zero failures and leaves 37,383 of
 71,641 planned Java cells pending. The generated ledger matches its checked-in
 reference. Full Java matrix closure remains outstanding.
+
+## Java typed Key Material structure routes — 2026-11-18
+
+Red commit `9a018c7de` adds the nine Key Material Structure cases from §§3.4–3.12
+to the existing typed-model assertions; the test fails because the executor
+accepts only structure-member targets. Green commit `6c12af9c2` maps each
+versioned structure to its transparent key format, builds its required
+source-defined fields, and verifies every field through the six installed
+`KeyMaterial`, `KeyValue`, and `KeyBlock` constructors. Fixture values are
+deterministic synthetic data, not cryptographic key material.
+
+Verification on the #187 source branch:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-tmp" \
+  bash bindings/java/gradlew -p interop/java-kmip-validator \
+  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" \
+  test --rerun-tasks
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+python3 -m unittest interop.shared.tests.test_route_execution_evidence \
+  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+git diff --check
+```
+
+All 84 Java validator tests pass; the shared evidence/schema/capability suites
+pass 108 tests and the capability audit reports 1,507 routes. The selected
+report validates 34,366/34,366 cells with zero failures and leaves 37,275 of
+71,641 planned Java cells pending. The generated ledger matches its checked-in
+reference. Full Java matrix closure remains outstanding.
