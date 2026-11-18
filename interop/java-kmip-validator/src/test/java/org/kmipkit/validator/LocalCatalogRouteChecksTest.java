@@ -1096,6 +1096,35 @@ class LocalCatalogRouteChecksTest {
     }
 
     @Test
+    void executesLongIntegerUsageLimitMembersThroughGenericTtlvRoutes() throws Exception {
+        JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
+        Set<String> caseIds = Set.of(
+                "test-norm-structure-member-structure-member-7-40-usage-limits-count",
+                "test-norm-structure-member-structure-member-7-40-usage-limits-total");
+        List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
+
+        LocalCatalogRouteChecks.executeScalarStructureMembers(catalog, "2.1", caseIds, invocations::add);
+
+        assertEquals(caseIds.size() * 4, invocations.size());
+        assertEquals(Set.of(
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.longinteger",
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode"),
+                invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId)
+                        .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(caseIds, invocations.stream().map(LocalCatalogRouteChecks.Invocation::caseId)
+                .collect(java.util.stream.Collectors.toSet()));
+        for (LocalCatalogRouteChecks.Invocation invocation : invocations) {
+            try (var decoded = TtlvCodec.decode(invocation.wire()); var view = decoded.view();
+                    var value = view.value()) {
+                assertEquals(TtlvItemType.LongInteger, view.itemType());
+                assertTrue(value.longInteger() > Integer.MAX_VALUE);
+            }
+        }
+    }
+
+    @Test
     void executesCertificateTypeStructureMemberWithAssignedEnumerationValue() throws Exception {
         JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
         String caseId = "test-norm-structure-member-structure-member-2-1-certificate-certificate-type";

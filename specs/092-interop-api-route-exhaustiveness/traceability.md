@@ -80,22 +80,22 @@ artifact. This is part of the FR-006 artifact provenance check.
 ## Java selected-scope update — 2026-11-18
 
 - **FR-003:** The Java fixture now covers every Operation obligation in the selected catalog cases through generic Item creation, view, and decoding. It preserves workflow step, operation, and item identity for batch targets, and reuses Operation evidence emitted by other local recipes. Local enum and bitmask fixture operations remain descriptive context unless they are separately catalogued as Operation targets.
-- The selected Java report validates 33,878/33,878 cells with zero failures. The generated ledger records 71,641 planned, 33,878 executed, and 37,763 pending cells. The Usage Limits structure and member routes remain included in the #216 branch. The selected scope is complete, but the Java full matrix is not; other languages and the full controlled-peer matrix remain open under FR-002, FR-003, FR-005, and FR-006.
+- The selected Java report validates 33,808/33,808 cells with zero failures. The generated ledger records 71,641 planned, 33,808 executed, and 37,833 pending cells. The selected scope is complete, but the Java full matrix is not; other languages and the full controlled-peer matrix remain open under FR-002, FR-003, FR-005, and FR-006.
 
 ## Java managed-object Object Type routes — 2026-11-18
 
-- **FR-003:** For all nine catalogued managed-object cases, the Java controlled consumer invokes the installed `TtlvItem.create`, `TtlvItem.view`, and `TtlvCodec.decode` routes for the Object Type Enumeration in KMIP 2.0 and 2.1 (§11.34). Each fixture checks the catalogued wire value and `Object Type` tag. This closes 54 local cells and makes no Register/Create transport claim.
-- The selected Java report validates 33,994/33,994 cells with zero failures; the generated ledger records 71,641 planned, 33,994 executed, and 37,647 pending cells. Full Java matrix closure remains required under FR-002/FR-003/FR-009.
+- **FR-003:** For all nine catalogued managed-object cases, the Java controlled consumer now invokes the installed `TtlvItem.create`, `TtlvItem.view`, and `TtlvCodec.decode` routes for the Object Type Enumeration in KMIP 2.0 and 2.1 (§11.34). Each fixture checks the catalogued wire value and `Object Type` tag. This closes 54 local cells and makes no Register/Create transport claim.
+- The selected Java report validates 33,978/33,978 cells with zero failures; the generated ledger records 71,641 planned, 33,978 executed, and 37,663 pending cells. Full Java matrix closure remains required under FR-002/FR-003/FR-009.
 
 ## Java RSA public Key Material model routes — 2026-11-18
 
 - **FR-003:** The installed Java consumer now builds and reads the RSA public Key Material structure with both typed constructors, `KeyMaterial.fromFields` and `KeyMaterial.fromItem`, for the catalogued Modulus and Public Exponent fields in KMIP 2.0 and 2.1 (§3.8). A deterministic synthetic fixture is checked through the typed readers; it is not production key material and does not claim cryptographic validity.
-- On the #187 branch, the initial RSA public-key slice adds eight cells to 33,862, and the transparent-format expansion adds 108 more, producing 33,978 selected cells. After syncing through #216, the report validates 33,994/33,994 cells and records 37,647 pending of 71,641, including Usage Limits coverage. Full Java matrix closure remains required under FR-002/FR-003/FR-009.
+- The selected report validates 33,978/33,978 cells with zero failures; the generated ledger records 71,641 planned, 33,978 executed, and 37,663 pending cells. The full Java matrix and the other language matrices remain open under FR-002/FR-003/FR-005/FR-006.
 
 ## Java transparent Key Material model routes — 2026-11-18
 
-- **FR-003:** The installed Java consumer exercises `KeyMaterial.fromFields` and `KeyMaterial.fromItem` for all 29 catalogued Big Integer members in transparent DSA, RSA, and DH private/public plus EC private formats (KMIP 2.0/2.1 §§3.5–3.11). Each fixture includes the format's required fields and applicable optional fields and verifies the target member through both typed readers. Values are synthetic and not tested as cryptographic keys.
-- The selected report validates 33,994/33,994 cells with zero failures and records 37,647 pending of 71,641. FR-002/FR-003/FR-009 remain open for full Java matrix closure and the remaining languages.
+- **FR-003:** The installed Java consumer now exercises `KeyMaterial.fromFields` and `KeyMaterial.fromItem` for all 29 catalogued Big Integer members in transparent DSA, RSA, and DH private/public plus EC private formats (KMIP 2.0/2.1 §§3.5–3.11). Each fixture includes the format's required fields and applicable optional fields and verifies the target member through both typed readers. Values are deterministic, synthetic, and not tested as cryptographic keys.
+- This adds 108 cells to the previous Java selected scope. The report validates 33,978/33,978 cells with zero failures and leaves 37,663 of 71,641 pending. FR-002/FR-003/FR-009 remain open for full Java matrix closure and the remaining languages.
 
 ## Java typed Key Value and Key Block routes — 2026-11-18
 
@@ -105,106 +105,91 @@ artifact. This is part of the FR-006 artifact provenance check.
   Key Material formats, for KMIP 2.0 and 2.1 (§§3.5–3.11). Each typed result is
   read back through nested typed accessors and checked against the target
   synthetic field.
-- This adds 232 cells to the #187 Java selected scope. The combined #216 report
-  validates 34,226/34,226 cells with zero failures and leaves 37,415 of 71,641
-  pending. Full Java matrix closure remains open under FR-002/FR-003/FR-009.
-
-## Java EC public Key Material model routes — #216 stack sync — 2026-11-18
-
-- **FR-003:** The #216 installed Java consumer now constructs EC public Key
-  Material with the catalogued `Recommended Curve` and `Q String` fields and
-  exercises `KeyMaterial`, `KeyValue`, and `KeyBlock` through both `fromFields`
-  and `fromItem` in KMIP 2.0 and 2.1 (§§3.11–3.12). The deterministic point
-  bytes are synthetic fixture data, not cryptographic key material.
-- This adds 36 cells to the prior #216 selected scope. The combined report
-  validates 34,262/34,262 cells with zero failures and leaves 37,379 of 71,641
-  pending. The full Java matrix remains open under FR-002/FR-003/FR-009.
-
-## Java Transparent Symmetric Key model routes — #216 stack sync — 2026-11-18
-
-- **FR-003:** The #216 consumer includes the catalogued §3.4 `Key` Byte String
-  through `KeyMaterial`, `KeyValue`, and `KeyBlock` `fromFields`/`fromItem`
-  constructors in KMIP 2.0 and 2.1 (§§3.4, 11.25). Its four bytes are
-  deterministic synthetic fixture data.
-- This adds 12 cells to the prior #216 selected scope. The combined report
-  validates 34,274/34,274 cells with zero failures and leaves 37,367 of 71,641
-  pending. Full Java matrix closure remains open under FR-002/FR-003/FR-009.
-
-## Java typed Key Material structure routes — #216 stack sync — 2026-11-18
-
-- **FR-003:** The #216 consumer creates and reads all nine catalogued
-  transparent Key Material Structures through the six typed `KeyMaterial`,
-  `KeyValue`, and `KeyBlock` `fromFields`/`fromItem` routes in KMIP 2.0 and 2.1
-  (§§3.4–3.12). Fixture values are deterministic and synthetic.
-- This adds 108 cells to the prior #216 selected scope. The report validates
-  34,382/34,382 cells with zero failures and leaves 37,259 of 71,641 pending.
-  Full Java matrix closure remains open under FR-002/FR-003/FR-009.
-
-## Java ManagedObject Key Material routes — #216 stack sync — 2026-11-18
-
-- **FR-003:** The #216 consumer includes the latest #187 `ManagedObject.fromFields`
-  and `ManagedObject.fromItem` routes for all transparent Key Material fields
-  and structures. Each format is wrapped in the matching Symmetric Key, Private
-  Key, or Public Key structure, then read back through the nested Key Block
-  (KMIP 2.0/2.1 §§2.5, 2.6, 2.9, 3.4–3.12). Synthetic fixture data is not a
-  cryptographic validity test.
-- Combined with the Usage Limits cells, the selected report validates
-  34,550/34,550 cells with zero failures and leaves 37,091 of 71,641 pending.
-  Full Java matrix closure remains open under FR-002/FR-003/FR-009.
-
-## Java typed ManagedObject key factories — #216 stack sync — 2026-11-18
-
-- **FR-003:** The #216 consumer includes the #187 typed
-  `ManagedObject.symmetricKey`, `privateKey`, and `publicKey` factories for the
-  catalogued transparent Key Material fields and structures, in KMIP 2.0/2.1
-  (§§2.5–2.9, 3.1–3.12). Each result is checked through its nested Key Block;
-  fixture values are synthetic.
-- Combined with Usage Limits coverage, the selected report validates
-  34,634/34,634 cells with zero failures and leaves 37,007 of 71,641 pending.
-  Full Java matrix closure remains open under FR-002/FR-003/FR-009.
-
-## Java Certificate managed-object routes — #216 stack sync — 2026-11-18
-
-- **FR-003:** The #216 installed consumer adds the Certificate factory route
-  for the object structure, Certificate Type, Certificate Value, and tag cases
-  in KMIP 2.0 and 2.1. Generic `ManagedObject.fromFields` and `fromItem` are
-  exercised for the three structure/member cases where the capability matrix
-  declares them applicable (KMIP 2.0/2.1 §2.1).
-- This adds 20 cells to the #216 report, which validates 34,654/34,654 cells
-  with zero failures and leaves 36,987 of 71,641 pending. Full Java matrix
-  closure remains open under FR-002/FR-003/FR-009.
-
-## Java Certificate Request and Opaque Object routes — #216 stack sync — 2026-11-18
-
-- **FR-003:** The #216 consumer now exercises `ManagedObject.certificateRequest`
-  and `ManagedObject.opaqueObject` for their object structure, type, value, and
-  tag cases in KMIP 2.0 and 2.1. `fromFields` and `fromItem` run on the
-  structure/member targets where applicable (KMIP 2.0/2.1 §§2.2–2.3).
-- This adds 40 cells. The selected report validates 34,694/34,694 cells with
-  zero failures and leaves 36,947 of 71,641 pending. Full Java matrix closure
+- This adds 232 cells. The selected report validates 34,210/34,210 cells with
+  zero failures; 37,431 of 71,641 remain pending. Full Java matrix closure
   remains open under FR-002/FR-003/FR-009.
 
-## Java Split Key managed-object member routes on #217 — 2026-11-18
+## Java EC public Key Material model routes — 2026-11-18
 
-- **FR-003:** The #217 tip inherits from #187 via #216 the named Java factory
-  routes for all six Split Key Table 9 members and the tag, with `fromFields`
-  and `fromItem` for each applicable member. The conditional Prime Field Size
-  field uses Polynomial Sharing Prime Field and Big Integer 257 (KMIP §§2.8,
-  3.1, 11.34); Right Usage Limits evidence remains in the same stack tip.
-- Combined selected evidence validates 34,756/34,756 cells with zero failures;
-  36,885 of 71,641 remain pending. Full matrix closure remains open under
-  FR-002/FR-003/FR-009.
+- **FR-003:** The installed Java consumer now constructs EC public Key Material
+  with the catalogued `Recommended Curve` and `Q String` fields and exercises
+  `KeyMaterial`, `KeyValue`, and `KeyBlock` through both `fromFields` and
+  `fromItem` in KMIP 2.0 and 2.1 (§§3.11–3.12). The deterministic point bytes
+  are synthetic fixture data and do not claim cryptographic key validity.
+- This adds 36 cells. The selected report validates 34,246/34,246 cells with
+  zero failures; 37,395 of 71,641 remain pending. Full Java matrix closure
+  remains open under FR-002/FR-003/FR-009.
 
-## Java Split Key managed-object member routes on #216 — 2026-11-18
+## Java Transparent Symmetric Key model routes — 2026-11-18
 
-- **FR-003:** #216 retains its Usage Limits routes and adds the six Split Key
-  Table 9 member cases and tag through the named Java factory; `fromFields` and
-  `fromItem` cover each applicable member in KMIP 2.0/2.1. The Prime Field Size
-  fixture uses the required Polynomial Sharing Prime Field method and Big
-  Integer 257 (§§2.8, 3.1, 11.34).
-- Combined selected evidence validates 34,756/34,756 cells with zero failures;
-  36,885 of 71,641 remain pending. Full matrix closure remains open under
-  FR-002/FR-003/FR-009.
+- **FR-003:** The installed Java consumer now constructs the §3.4 `Key` Byte
+  String through `KeyMaterial.fromFields` and `KeyMaterial.fromItem`, and also
+  exercises `KeyValue` and `KeyBlock` through both typed constructors for KMIP
+  2.0 and 2.1 (§§3.4, 11.25). The four key bytes are deterministic synthetic
+  fixture data, not production key material.
+- This adds 12 cells. The selected report validates 34,258/34,258 cells with
+  zero failures; 37,383 of 71,641 remain pending. Full Java matrix closure
+  remains open under FR-002/FR-003/FR-009.
+
+## Java typed Key Material structure routes — 2026-11-18
+
+- **FR-003:** The installed Java consumer now creates and reads all nine
+  catalogued transparent Key Material Structures through `KeyMaterial`,
+  `KeyValue`, and `KeyBlock` using both `fromFields` and `fromItem`, for KMIP
+  2.0 and 2.1 (§§3.4–3.12). Fixtures use the format's source-defined fields;
+  their deterministic synthetic values are not cryptographic key tests.
+- This adds 108 cells. The selected report validates 34,366/34,366 cells with
+  zero failures; 37,275 of 71,641 remain pending. Full Java matrix closure
+  remains open under FR-002/FR-003/FR-009.
+
+## Java ManagedObject Key Material routes — 2026-11-18
+
+- **FR-003:** The installed Java consumer now invokes `ManagedObject.fromFields`
+  and `ManagedObject.fromItem` for each catalogued transparent Key Material
+  field and structure. The test wraps each format in the matching Symmetric
+  Key, Private Key, or Public Key object structure, then reads the nested Key
+  Block and verifies its format and target field (KMIP 2.0/2.1 §§2.5, 2.6, 2.9,
+  3.4–3.12). Values are deterministic synthetic fixtures and do not claim
+  cryptographic validity.
+- This adds 168 cells. The selected report validates 34,534/34,534 cells with
+  zero failures and leaves 37,107 of 71,641 pending. Full Java matrix closure
+  remains open under FR-002/FR-003/FR-009.
+
+## Java typed ManagedObject key factories — 2026-11-18
+
+- **FR-003:** The installed Java consumer now constructs every transparent Key
+  Material fixture through the matching `ManagedObject.symmetricKey`,
+  `ManagedObject.privateKey`, or `ManagedObject.publicKey` factory, then reads
+  back and verifies its nested Key Block. The fixture covers KMIP 2.0/2.1
+  object structures and Key Material formats (§§2.5–2.9, 3.1–3.12); fixture
+  values are synthetic and do not claim cryptographic validity.
+- This adds 84 cells. The selected report validates 34,618/34,618 cells with
+  zero failures and leaves 37,023 of 71,641 pending. Full Java matrix closure
+  remains open under FR-002/FR-003/FR-009.
+
+## Java Certificate managed-object routes — 2026-11-18
+
+- **FR-003:** The installed Java consumer exercises
+  `ManagedObject.certificate` for the Certificate Object Structure, Certificate
+  Type, Certificate Value, and Certificate tag cases in KMIP 2.0 and 2.1.
+  `ManagedObject.fromFields` and `ManagedObject.fromItem` run for the three
+  structure/member cases where the generated matrix declares them applicable
+  (KMIP 2.0/2.1 §2.1).
+- This adds 20 cells. The selected report validates 34,638/34,638 cells with
+  zero failures and leaves 37,003 of 71,641 pending. Full Java matrix closure
+  remains open under FR-002/FR-003/FR-009.
+
+## Java Certificate Request and Opaque Object routes — 2026-11-18
+
+- **FR-003:** The installed Java consumer exercises
+  `ManagedObject.certificateRequest` and `ManagedObject.opaqueObject`, as well
+  as `fromFields` and `fromItem` for each catalogued structure/member target
+  where the capability matrix declares those routes applicable. The tests
+  verify the object type and typed enum/value fields for KMIP 2.0 and 2.1
+  (§§2.1–2.3).
+- This adds 40 cells. The selected report validates 34,678/34,678 cells with
+  zero failures and leaves 36,963 of 71,641 pending. Full Java matrix closure
+  remains open under FR-002/FR-003/FR-009.
 
 ## Java key-bearing managed-object root routes — 2026-11-18
 
@@ -221,53 +206,68 @@ artifact. This is part of the FR-006 artifact provenance check.
   regenerated reference and comparison now pass with the 34,696-cell Java
   report.
 
-## #216 Usage Limits stack-tip verification — 2026-11-18
+## Java Split Key managed-object root routes — 2026-11-18
 
-- **FR-003/FR-007:** #216 retains its Usage Limits routes with the new Java
-  key-object root evidence and deterministic ledger output. The selected report
-  validates 34,718/34,718 cells; the canonical ledger records 71,641 planned,
-  34,718 executed, and 36,923 pending cells. The full Java matrix remains
-  open.
-
-## #217 Right Usage Limits stack-tip verification — 2026-11-18
-
-- **FR-003:** The controlled Java consumer emits all eight generic route/action
-  cells for the Right Usage Limits member across KMIP 2.0 and 2.1 using the
-  exact catalog target (KMIP §7.34). This consists of Structure construction,
-  Item creation, Item view, and TTLV decode in each version.
-- The selected report validates 34,718/34,718 cells with zero failures. The
-  full ledger records 71,641 planned, 34,718 executed, and 36,923 pending
-  cells; full Java matrix closure remains open under FR-002/FR-003/FR-009.
-
-## Java Split Key managed-object root routes on #217 — 2026-11-18
-
-- **FR-003:** The #217 tip inherits the Split Key root routes from #187 via
-  #216 and retains the Right Usage Limits route. The installed Java package
-  executes `ManagedObject.splitKey`, `fromFields`, and `fromItem` in KMIP 2.0
-  and 2.1 with the §2.8 Table 9 field order.
-- The combined selected report validates 34,718/34,718 cells with zero
-  failures; 36,923 of 71,641 planned cells remain pending. Full matrix closure
-  remains open under FR-002/FR-003/FR-009.
-
-## Java PGP Key and Secret Data routes on synchronized #217 — 2026-11-18
-
-- **FR-003:** The #217 tip inherits PGP Key and Secret Data named managed-object
-  factories and applicable `fromFields` / `fromItem` routes from #187 via #216.
-  The KMIP 2.0/2.1 fixtures include the required PGP Key Version or Secret Data
-  Type and a Raw Key Block (KMIP §§2.4, 2.7). They establish local model route
-  execution, not key-material validity or server interoperability.
-- The selected report validates 34,796/34,796 cells with zero failures; 36,845
-  of 71,641 remain pending. Full matrix closure remains open under
+- **FR-003:** The installed Java consumer now exercises the Split Key root
+  through `ManagedObject.splitKey`, `ManagedObject.fromFields`, and
+  `ManagedObject.fromItem` in KMIP 2.0 and 2.1. The fixture uses Table 9 field
+  order, the assigned XOR method, valid part/threshold counts, and a Raw Key
+  Block, then checks the typed accessors and object type (KMIP §§2.8, 3.1, 11.34).
+- This adds six local model cells. The selected report validates 34,702/34,702
+  cells with zero failures; the Java ledger records 71,641 planned, 34,702
+  executed, and 36,939 pending cells. Full matrix closure remains open under
   FR-002/FR-003/FR-009.
 
-## Java Key Block generic TTLV routes on synchronized #217 — 2026-11-18
+## Java Split Key managed-object member routes — 2026-11-18
 
-- **FR-003:** #217 inherits generic Item construction, view, and decode
-  evidence for the catalogued Key Block member targets from #187 via #216
-  (KMIP §§2.4–2.8, 3.1). `TtlvValue.structure` events remain restricted to
-  targets declared for that route by the shared manifest; Right Usage Limits
-  evidence is retained.
-- Selected evidence validates 34,832/34,832 cells with zero failures; 36,809
+- **FR-003:** The installed Java consumer executes the named Split Key factory
+  for all six §2.8 Table 9 members and the Split Key tag; `fromFields` and
+  `fromItem` execute for each applicable structure member in KMIP 2.0/2.1.
+  Fixtures preserve Table 9 order and include Prime Field Size only with
+  Polynomial Sharing Prime Field (KMIP §§2.8, 3.1, 11.34).
+- The 38 new route events cover six member cases through three factories and
+  the tag through its named factory in each protocol version. The selected
+  report validates 34,740/34,740 cells with zero failures; the full Java
+  ledger records 71,641 planned, 34,740 executed, and 36,901 pending cells.
+  Full matrix closure remains open under FR-002/FR-003/FR-009.
+
+### Java Get Attributes request payload-field route evidence — 2026-11-18
+
+- **FR-001/FR-003/FR-005/FR-009:** `ClientBatchItem.getAttributes` and
+  `AttributeRequest.getAttributesToBatchItem` now execute the catalogued
+  Unique Identifier present/omitted and Attribute Reference absent/single/
+  repeated branches over every approved encoding/transport pair. Omitted IDs
+  resolve through an earlier Create batch item. Controlled mutual-TLS peers
+  inspect the request, and the client validates the typed response (OASIS KMIP
+  2.0/2.1 §6.1.20, §11.58, §§8.3, 8.6).
+- Red `daf05f7df` requires evidence for every payload branch and network pair;
+  Green `3c41ea623` exercises the public routes and controlled exchanges.
+- The selected report validates 40,197/40,197 cells with zero failures. The
+  ledger records 71,641 planned, 40,197 executed, and 31,444 pending cells.
+  The Java suite passes 92/92, the shared suite passes 196/196, ledger
+  comparison passes, and the capability audit accepts 1,507 routes. Full
+  matrix closure remains open under FR-002/FR-003/FR-009.
+
+## Java PGP Key and Secret Data managed-object routes — 2026-11-18
+
+- **FR-003:** The installed Java consumer exercises the PGP Key and Secret
+  Data root structures, required members, and assigned object tags through the
+  matching named factories; `fromFields` and `fromItem` run where applicable.
+  The deterministic fixtures include PGP Key Version or Secret Data Type plus
+  a Raw Key Block (KMIP §§2.4, 2.7).
+- This adds 40 local route cells. The selected report validates 34,780/34,780
+  cells with zero failures; the full Java ledger records 71,641 planned,
+  34,780 executed, and 36,861 pending cells. Full matrix closure remains open
+  under FR-002/FR-003/FR-009.
+
+## Java generic Key Block member routes — 2026-11-18
+
+- **FR-003:** Catalogued `Object Data Structure` Key Block members for PGP,
+  Private, Public, Secret Data, and Split Key now execute generic Item creation,
+  view, and decode through the installed Java package under KMIP 2.0/2.1
+  (KMIP §§2.4–2.8, 3.1). `TtlvValue.structure` is recorded only for targets
+  declared by the route manifest.
+- Selected evidence validates 34,816/34,816 cells with zero failures; 36,825
   of 71,641 remain pending. Full matrix closure remains open under
   FR-002/FR-003/FR-009.
 
@@ -282,45 +282,141 @@ artifact. This is part of the FR-006 artifact provenance check.
   of 71,641 remain pending. Full matrix closure remains open under
   FR-002/FR-003/FR-009.
 
-## Java generic Operation version-boundary routes on #216 — 2026-11-18
+## Java generic Batch Item routes for batch workflows — 2026-11-18
 
-- **FR-003/FR-009:** #216 retains Usage Limits evidence and inherits all six
-  local Operation Item construction, view, and decode cases from #187 for
-  KMIP 2.1-only operations rejected in a KMIP 2.0 context. These local TTLV
-  fixtures do not send unsupported requests.
-- Selected evidence validates 34,850/34,850 cells with zero failures; 36,791
-  of 71,641 remain pending. Full closure remains open under FR-002/FR-003/FR-009.
-
-## Java generic Operation version-boundary routes on #217 — 2026-11-18
-
-- **FR-003/FR-009:** #217 inherits the six local Operation Item construction,
-  view, and decode cases from #187 through #216 while retaining its Right Usage
-  Limits evidence. The fixtures use 2.1-only values in a 2.0 context and do not
-  send unsupported requests.
-- Selected evidence validates 34,850/34,850 cells with zero failures; 36,791
-  of 71,641 remain pending. Full closure remains open under FR-002/FR-003/FR-009.
-
-## Java inherited generic Batch Item workflow routes on #217 — 2026-11-18
-
-- **FR-003/FR-009:** #217 inherits generic Item construction, view, and decode
-  for catalogued batch-workflow Request Batch Item and Response Batch Item
-  targets through #216, for KMIP 2.0 and 2.1 (OASIS §§8.3, 8.6). This is
-  generic representation evidence only.
-- The Java suite passes 92/92 and shared route suites pass 109/109. Selected
-  evidence validates 35,000/35,000 cells with zero failures; the full ledger
-  records 71,641 planned, 35,000 executed, and 36,641 pending cells. Full
+- **FR-003/FR-009:** Generic Item construction, view, and decode now execute
+  for all catalogued batch-workflow Request Batch Item and Response Batch Item
+  targets in KMIP 2.0 and 2.1 (OASIS §§8.3, 8.6). The fixture validates the
+  generic TTLV representation; it does not claim that it executes workflow
+  behavior.
+- Red `fb43d7432` failed on missing case/target/version/route cells; Green
+  `be6a84fd4` adds the fixture calls and report events; Refactor `e39b24fc1`
+  asserts the exact evidence-key set.
+- The full Java suite passes 92/92; shared evidence suites pass 109/109. The
+  selected report validates 34,984/34,984 cells with zero failures. The ledger
+  records 71,641 planned, 34,984 executed, and 36,657 pending cells. Full
   matrix closure remains open under FR-002/FR-003/FR-009.
 
+## Java Get Attributes typed request routes — 2026-11-18
 
-## Java Get Attributes routes inherited by #217 — 2026-11-18
+- **FR-003/FR-009:** Both installed typed Get Attributes builder routes now
+  execute for all catalogued Get Attributes cases in KMIP 2.0/2.1 controlled
+  TTLV exchanges. The fixture checks the corresponding typed response under
+  OASIS KMIP 2.0/2.1 §6.1.17 and §§8.3, 8.6. It covers operation-level route
+  execution, not each attribute's independent semantic policy.
+- Red `51dd2f2a9` failed on missing route evidence; Green `8b5d8a7f6` added the
+  controlled requests and response checks; Refactor `23e349af8` extracted the
+  common assertions.
+- Selected evidence validates 35,873/35,873 cells with zero failures. The
+  full Java suite passes 92/92 and shared route tests pass 109/109. The ledger
+  matches its reference and the capability audit accepts 1,507 public routes.
+  It records 71,641 planned, 35,873 executed, and 35,768 pending cells. Full
+  matrix closure remains open under FR-002/FR-003/FR-009.
 
-- **FR-003/FR-009:** The #217 Right Usage Limits branch retains its own cases
-  and inherits both typed Get Attributes builder routes from #216. Controlled
-  mutual-TLS TTLV exchanges check the typed operation response (OASIS
-  §§6.1.17, 8.3, 8.6); they do not assert each attribute's independent
-  semantic policy.
-- The Java suite passes 92/92; shared route tests pass 109/109; selected
-  evidence validates 35,889/35,889 cells with zero failures; ledger comparison
-  and the 1,507-route capability audit pass. The full ledger has 71,641 planned,
-  35,889 executed, and 35,752 pending cells. Full closure remains open under
-  FR-002/FR-003/FR-009.
+## Java Get Attributes encoding and transport routes — 2026-11-18
+
+- **FR-001/FR-003/FR-005:** Both typed Get Attributes construction routes
+  execute each catalogued case/version over TTLV, JSON, and XML using raw TLS
+  and HTTPS. Controlled mTLS peers inspect requests and return matching
+  encoded responses; assertions cover protocol version, Attribute References,
+  batch identifiers, and the typed result (OASIS KMIP 2.0/2.1 §6.1.20 and
+  §§8.3, 8.6).
+- Red `eca46473a` catches route combinations missing from report metadata;
+  Green `d6486c936` records exactly the combinations present in route events.
+- The selected report validates 39,743/39,743 cells with zero failures. The
+  ledger records 71,641 planned, 39,743 executed, and 31,898 pending cells.
+  Full matrix closure remains open under FR-002/FR-003/FR-009.
+
+## Java Get Attribute List encoding and transport routes — 2026-11-18
+
+- **FR-001/FR-003/FR-005:** Both installed typed Get Attribute List builders
+  execute every catalogued case/version over TTLV, JSON, and XML on raw TLS
+  and HTTPS. Controlled mTLS peers inspect requests and return checked
+  responses; the test validates the Unique Identifier and ordered Attribute
+  References (OASIS KMIP 2.0/2.1 §6.1.21 and §§8.3, 8.6). Local evidence also
+  invokes the typed request payload encoder and typed response reader for the
+  catalogued operation and fields.
+- Red `5631cd0fb` detects missing per-case route evidence; Green `b8992a5c2`
+  exercises both public constructors and all six network combinations.
+- The selected report validates 40,101/40,101 cells with zero failures. The
+  ledger records 71,641 planned, 40,101 executed, and 31,540 pending cells.
+  Full matrix closure remains open under FR-002/FR-003/FR-009.
+
+### Java asynchronous Cancellation Result generic TTLV routes — 2026-11-18
+
+- **FR-003/FR-009:** The five asynchronous Cancel result scenarios now use
+  their catalogued Cancellation Result enum target and value with the
+  Cancellation Result tag, then execute generic Item construction, view, and
+  decode for KMIP 2.0 and 2.1. This is local generic TTLV evidence, not
+  asynchronous network-lifecycle evidence. References: OASIS KMIP 2.0 §6.1.5
+  Table 162, §11.7, §11.56; KMIP 2.1 §6.1.5 Table 177, §11.7, §11.56.
+- Red `af7765d94` requires every result scenario/version to provide the three
+  generic TTLV route events and fails on the missing `TtlvItem.create` event.
+  Green `bb7b4d7b2` builds and round-trips each source-catalogued value.
+- The selected report validates 40,227/40,227 cells with zero failures. The
+  full ledger records 71,641 planned, 40,227 executed, and 31,414 pending
+  cells. Java tests pass 92/92, shared tests 196/196, ledger comparison passes,
+  and the capability audit accepts 1,507 routes. Full matrix closure remains
+  open under FR-002/FR-003/FR-009.
+
+### Java Asynchronous Indicator generic TTLV routes — 2026-11-18
+
+- **FR-003/FR-009:** The four catalogued asynchronous-indicator scenarios
+  resolve their enum target/value and exercise generic Item create, view, and
+  decode in KMIP 2.0 and 2.1. The omitted parameter is checked as Prohibited;
+  explicit Prohibited, Optional, and Mandatory are also covered. This does not
+  claim asynchronous network-lifecycle coverage. References: OASIS KMIP
+  2.0/2.1 §8.2, §§11.3 and 11.56.
+- Red `a484aa932` requires all three local routes per case/version; Green
+  `4f78ac602` performs catalog-driven construction and round trips.
+- The selected report validates 40,251/40,251 cells with zero failures. The
+  ledger records 71,641 planned, 40,251 executed, and 31,390 pending cells.
+  Java tests pass 92/92, shared tests 196/196, ledger comparison passes, and
+  the capability audit accepts 1,507 routes. The complete matrix remains open.
+
+### Java Asynchronous Cancel request and response routes — 2026-11-18
+
+- **FR-001/FR-003/FR-005/FR-009:** The five catalogued Cancellation Result
+  cases execute Java `Client.executeCancel` for both protocol versions, all
+  three encodings, and raw TLS/HTTPS against controlled mutual-TLS peers. The
+  peer validates operation, version, and correlation; Java validates the
+  decoded operation, success status, echo, and result. This covers the Cancel
+  exchange, not a subsequent Poll lifecycle. References: OASIS KMIP 2.0/2.1
+  §6.1.5 Tables 161, 162, 176, and 177, §§8.2, 8.3, 8.6, 11.7, and 11.56.
+- Red `c5ec2ae4d` requires all per-case/version/encoding/transport targets and
+  actions; Green `edb09424d` runs the 60 controlled exchanges and records their
+  event evidence.
+- The selected report validates 40,671/40,671 cells with zero failures. The
+  ledger records 71,641 planned, 40,671 executed, and 30,970 pending cells.
+  Java tests pass 92/92 and shared tests 196/196; ledger comparison passes and
+  the capability audit accepts 1,507 routes. Full matrix closure remains open.
+
+### Java asynchronous Cancel remaining route cells — 2026-11-18
+
+- **FR-001/FR-003/FR-005/FR-009:** `Client.executeCancel` now has controlled
+  request/response evidence for every catalog-applicable Cancel case, payload
+  field, and asynchronous workflow case in KMIP 2.0/2.1 over TTLV, JSON, and
+  XML on raw TLS and HTTPS. Assertions cover operation, version, correlation,
+  result, and response shape (OASIS KMIP 2.0 §6.1.5 Tables 161/162 and KMIP
+  2.1 §6.1.5 Tables 176/177; §§8.2, 8.3, 8.6, 11.7, 11.56). Race and
+  recursion cases cover the Cancel exchange only, not a full Poll lifecycle.
+- Red `58d8e2b90` requires the remaining route cells and fails on the missing
+  ordinary `test-op-cancel` exchange; Green `d00cf8272` executes 120 controlled
+  exchanges and adds 228 route cells.
+- The Java suite passes 92/92; selected evidence validates 40,899/40,899
+  cells with zero failures. The full ledger records 71,641 planned, 40,899
+  executed, and 30,742 pending cells; ledger comparison and the 1,507-route
+  capability audit pass. The Java matrix remains incomplete under FR-002,
+  FR-003, and FR-009.
+
+Java FR-003 also includes explicit local TTLV assertions for Usage Limits
+Total, Count, and Unit in KMIP 2.0 and 2.1, including required field order,
+tags, Long Integer/Enumeration types, and values (KMIP 2.0 §7.34 Table 354;
+KMIP 2.1 §7.40 Table 392). This is local route evidence and does not claim
+vendor KMS interoperability.
+
+Java FR-003 also includes the #217 Right Usage Limits structure-member routes:
+eight local generic route/action cells across KMIP 2.0 and 2.1, with absent and
+present optional-member checks and nested field validation (OASIS KMIP 2.0
+§7.28 Table 348; KMIP 2.1 §7.34 Table 386). This evidence does not claim vendor
+interoperability.

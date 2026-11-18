@@ -675,17 +675,16 @@ public final class JavaKmipDriver implements AutoCloseable {
                 builder.rawTls(connection.host(), connection.port());
             } else {
                 builder.https(connection.httpsUri().toString());
+                builder.targetUri(httpsTargetUri(connection));
             }
             builder.clientIdentityFiles(List.of(Path.of(tls.clientCertificatePath())),
                     Path.of(tls.clientKeyPath()), TransportConfiguration.Encoding.PEM);
             builder.trustCertificateFiles(List.of(Path.of(tls.caCertificatePath())),
                     TransportConfiguration.Encoding.PEM);
             String serverName = tls.serverNameOverride();
-            if (serverName.isBlank()) {
-                serverName = "raw_tls".equals(connection.transport())
-                        ? connection.host() : connection.httpsUri().getHost();
+            if (!serverName.isBlank()) {
+                builder.tlsServerName(serverName);
             }
-            builder.tlsServerName(serverName);
             Duration connect = Duration.ofSeconds(tls.connectTimeoutSeconds());
             Duration read = Duration.ofSeconds(tls.readTimeoutSeconds());
             builder.timeouts(TransportConfiguration.Timeout.bounded(connect),
@@ -694,6 +693,13 @@ public final class JavaKmipDriver implements AutoCloseable {
                     TransportConfiguration.Timeout.bounded(read));
             return builder.build();
         }
+    }
+
+    private static String httpsTargetUri(ConnectionConfig connection) {
+        String path = connection.httpsUri().getRawPath();
+        if (path == null || path.isBlank()) path = "/";
+        String query = connection.httpsUri().getRawQuery();
+        return query == null ? path : path + "?" + query;
     }
 
     private static Authentication usernamePasswordAuthentication(ConnectionConfig.UsernamePassword names) {

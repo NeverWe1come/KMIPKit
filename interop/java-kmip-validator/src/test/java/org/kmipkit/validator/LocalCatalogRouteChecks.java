@@ -618,6 +618,252 @@ final class LocalCatalogRouteChecks {
         }
     }
 
+    /** Returns supported client scalar payload cases that lack generic local TTLV route evidence. */
+    static Set<String> missingClientPayloadScalarCaseIds(JsonNode catalog, JsonNode events, String version) {
+        List<String> routes = List.of("java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item", "java.generic-ttlv.ttlv_codec.decode");
+        Set<RouteEvidenceKey> recordedRoutes = routeEvidenceKeys(events);
+        Set<String> missing = new java.util.LinkedHashSet<>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            JsonNode requires = testCase.path("requires");
+            String fieldName = requires.path("field_name").asText();
+            if (!"operation_payload_field".equals(requires.path("target_kind").asText())
+                    || !Set.of("Unique Identifier", "Correlation Value", "Asynchronous Correlation Value",
+                            "Object Type", "Data", "IV/Counter/Nonce", "Lease Time", "Usage Limits Count",
+                            "Init Indicator", "Final Indicator", "Data Length", "Maximum Items", "Offset Items",
+                            "Offset", "Request Count", "Certificate Request Value",
+                            "Authenticated Encryption Additional Data", "Authenticated Encryption Tag",
+                            "Digested Data", "Certificate Request Type", "Key Wrap Type", "Query Function",
+                            "Adjustment Type", "Adjustment Value", "Cryptographic Usage Mask",
+                            "Replace Existing", "Interop Identifier", "Storage Status Mask", "Log Message",
+                            "Compromise Occurrence Date", "Validity Date", "Key Format Type",
+                            "Key Compression Type", "Secret Data Type", "Split Key Method", "Prime Field Size",
+                            "Split Key Parts", "Split Key Threshold", "Attribute Reference",
+                            "Private Key Unique Identifier", "Certificate", "Application Namespace",
+                            "Attestation Type", "Cancellation Result", "Client Registration Method",
+                            "Last Change Date", "Object Group Member", "Operation",
+                            "Certificate Request Unique Identifier", "Public Key Unique Identifier",
+                            "Validity Indicator", "Located Items", "Signature Data", "Vendor Identification",
+                            "MAC Data")
+                            .contains(fieldName)
+                    || !requires.path("operation_id").asText().startsWith("KMIPKIT-ELEM-OP-C2S-")
+                    || !"local_model".equals(testCase.path("execution").path("mode").asText())
+                    || !applies(testCase, version)) continue;
+            String caseId = testCase.path("case_id").asText();
+            String targetId = requires.path("normative_target_id").asText();
+            String operationId = requires.path("operation_id").asText();
+            int fieldRoutes = (int) routes.stream().filter(route -> recordedRoutes.contains(
+                    new RouteEvidenceKey(caseId, targetId, route, version))).count();
+            int operationRoutes = (int) routes.stream().filter(route -> recordedRoutes.contains(
+                    new RouteEvidenceKey(caseId, operationId, route, version))).count();
+            if (fieldRoutes == 0) {
+                missing.add(caseId);
+            } else {
+                assertEquals(routes.size(), fieldRoutes,
+                        "Client payload Unique Identifier routes must be complete before reuse: " + caseId);
+            }
+            assertEquals(true, operationRoutes == 0 || operationRoutes == routes.size(),
+                    "Operation-target TTLV evidence must be a complete route set: " + caseId);
+        }
+        return Set.copyOf(missing);
+    }
+
+    /** Exercises generic Item construction, view, and decode for supported client scalar payload fields. */
+    static void executeClientPayloadScalarFields(JsonNode catalog, String version, Set<String> selectedCaseIds,
+            JsonNode events, EvidenceSink sink) throws Exception {
+        Set<RouteEvidenceKey> recordedRoutes = routeEvidenceKeys(events);
+        Set<String> emitted = new java.util.LinkedHashSet<>();
+        CodecLimits limits = CodecLimits.defaults();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String caseId = testCase.path("case_id").asText();
+            if (!selectedCaseIds.contains(caseId) || !applies(testCase, version)) continue;
+            JsonNode requires = testCase.path("requires");
+            String fieldName = requires.path("field_name").asText();
+            String operationId = requires.path("operation_id").asText();
+            if (!"operation_payload_field".equals(requires.path("target_kind").asText())
+                    || !Set.of("Unique Identifier", "Correlation Value", "Asynchronous Correlation Value",
+                            "Object Type", "Data", "IV/Counter/Nonce", "Lease Time", "Usage Limits Count",
+                            "Init Indicator", "Final Indicator", "Data Length", "Maximum Items", "Offset Items",
+                            "Offset", "Request Count", "Certificate Request Value",
+                            "Authenticated Encryption Additional Data", "Authenticated Encryption Tag",
+                            "Digested Data", "Certificate Request Type", "Key Wrap Type", "Query Function",
+                            "Adjustment Type", "Adjustment Value", "Cryptographic Usage Mask",
+                            "Replace Existing", "Interop Identifier", "Storage Status Mask", "Log Message",
+                            "Compromise Occurrence Date", "Validity Date", "Key Format Type",
+                            "Key Compression Type", "Secret Data Type", "Split Key Method", "Prime Field Size",
+                            "Split Key Parts", "Split Key Threshold", "Attribute Reference",
+                            "Private Key Unique Identifier", "Certificate", "Application Namespace",
+                            "Attestation Type", "Cancellation Result", "Client Registration Method",
+                            "Last Change Date", "Object Group Member", "Operation",
+                            "Certificate Request Unique Identifier", "Public Key Unique Identifier",
+                            "Validity Indicator", "Located Items", "Signature Data", "Vendor Identification",
+                            "MAC Data")
+                            .contains(fieldName)
+                    || !operationId.startsWith("KMIPKIT-ELEM-OP-C2S-")) {
+                throw new IllegalArgumentException("Selected case is not a supported client scalar payload: "
+                        + caseId);
+            }
+            String targetId = requires.path("normative_target_id").asText();
+            int tagCode = tagCodeNamed(catalog, fieldName, version);
+            if ("Certificate".equals(fieldName)) {
+                int certificateTypeTag = tagCodeNamed(catalog, "Certificate Type", version);
+                int certificateValueTag = tagCodeNamed(catalog, "Certificate Value", version);
+                long certificateType = enumValue(catalog, "CERTIFICATE-TYPE", "X.509");
+                byte[] certificateBytes = {0x30, 0x00};
+                byte[] certificateTypeBytes = ByteBuffer.allocate(Integer.BYTES)
+                        .putInt(Math.toIntExact(certificateType)).array();
+                byte[] wire = structureWire(tagCode, concat(
+                        itemWire(certificateTypeTag, TtlvItemType.Enumeration.code(), certificateTypeBytes),
+                        itemWire(certificateValueTag, TtlvItemType.ByteString.code(), certificateBytes)));
+                try (TtlvItem type = createEnumerationItem(certificateTypeTag, certificateType, limits);
+                        TtlvItem value = createByteStringItem(certificateValueTag, certificateBytes, limits);
+                        TtlvItem certificate = createStructureItem(tagCode, List.of(type, value), limits)) {
+                    assertCertificatePayloadItem(certificate, tagCode, certificateTypeTag, certificateValueTag,
+                            certificateType, certificateBytes);
+                    try (TtlvItem decoded = TtlvCodec.decode(wire)) {
+                        assertCertificatePayloadItem(decoded, tagCode, certificateTypeTag, certificateValueTag,
+                                certificateType, certificateBytes);
+                    }
+                }
+                for (String evidenceTargetId : List.of(targetId, operationId)) {
+                    emitMissingGenericRoute(recordedRoutes, sink, caseId, evidenceTargetId, version,
+                            "java.generic-ttlv.ttlv_item.create", "org.kmipkit.ttlv.TtlvItem.create",
+                            "construct", wire);
+                    emitMissingGenericRoute(recordedRoutes, sink, caseId, evidenceTargetId, version,
+                            "java.generic-ttlv.function.ttlv_item_view_from_item", "org.kmipkit.ttlv.TtlvItem.view",
+                            "decode", wire);
+                    emitMissingGenericRoute(recordedRoutes, sink, caseId, evidenceTargetId, version,
+                            "java.generic-ttlv.ttlv_codec.decode", "org.kmipkit.ttlv.TtlvCodec.decode",
+                            "decode", wire);
+                }
+                emitted.add(caseId);
+                continue;
+            }
+            TtlvItemType itemType = switch (fieldName) {
+                case "Unique Identifier", "Private Key Unique Identifier", "Public Key Unique Identifier",
+                        "Certificate Request Unique Identifier", "Application Namespace", "Object Group Member",
+                        "Vendor Identification" ->
+                    TtlvItemType.TextString;
+                case "Correlation Value", "Asynchronous Correlation Value", "Data", "IV/Counter/Nonce",
+                        "Certificate Request Value", "Authenticated Encryption Additional Data",
+                        "Authenticated Encryption Tag", "Digested Data", "Signature Data", "MAC Data" ->
+                    TtlvItemType.ByteString;
+                case "Object Type", "Certificate Request Type", "Key Wrap Type", "Query Function",
+                        "Attribute Reference" ->
+                    TtlvItemType.Enumeration;
+                case "Attestation Type", "Cancellation Result", "Client Registration Method", "Operation",
+                        "Validity Indicator" -> TtlvItemType.Enumeration;
+                case "Key Format Type", "Key Compression Type", "Secret Data Type", "Split Key Method" ->
+                    TtlvItemType.Enumeration;
+                case "Lease Time" -> TtlvItemType.Integer;
+                case "Usage Limits Count" -> TtlvItemType.LongInteger;
+                case "Init Indicator", "Final Indicator" -> TtlvItemType.Boolean;
+                case "Adjustment Type" -> TtlvItemType.Enumeration;
+                case "Interop Identifier", "Log Message" -> TtlvItemType.TextString;
+                case "Compromise Occurrence Date", "Validity Date", "Last Change Date" ->
+                    TtlvItemType.DateTime;
+                case "Adjustment Value", "Cryptographic Usage Mask", "Storage Status Mask",
+                        "Data Length", "Maximum Items", "Offset Items", "Offset", "Request Count",
+                        "Located Items",
+                        "Prime Field Size", "Split Key Parts", "Split Key Threshold" ->
+                    TtlvItemType.Integer;
+                case "Replace Existing" -> TtlvItemType.Boolean;
+                default -> throw new IllegalArgumentException("Unsupported client scalar payload field: "
+                        + fieldName);
+            };
+            long numericValue = switch (fieldName) {
+                case "Object Type" -> enumValue(catalog, "OBJECT-TYPE", "Symmetric Key");
+                case "Certificate Request Type" -> enumValue(catalog, "CERTIFICATE-REQUEST-TYPE", "PKCS#10");
+                case "Key Wrap Type" -> enumValue(catalog, "KEY-WRAP-TYPE", "As Registered");
+                case "Query Function" -> enumValue(catalog, "QUERY-FUNCTION", "Query Operations");
+                case "Attribute Reference" -> tagCodeNamed(catalog, "Unique Identifier", version);
+                case "Attestation Type" -> enumValue(catalog, "ATTESTATION-TYPE", "TPM Quote");
+                case "Cancellation Result" -> enumValue(catalog, "CANCELLATION-RESULT", "Canceled");
+                case "Client Registration Method" ->
+                    enumValue(catalog, "CLIENT-REGISTRATION-METHOD", "Unspecified");
+                case "Operation" -> enumValue(catalog, "OPERATION", "Query");
+                case "Validity Indicator" -> enumValue(catalog, "VALIDITY-INDICATOR", "Valid");
+                case "Adjustment Type" -> enumValue(catalog, "ADJUSTMENT-TYPE", "Increment");
+                case "Key Format Type" -> enumValue(catalog, "KEY-FORMAT-TYPE", "Raw");
+                case "Key Compression Type" -> enumValue(catalog, "KEY-COMPRESSION-TYPE",
+                        "EC Public Key Type Uncompressed");
+                case "Secret Data Type" -> enumValue(catalog, "SECRET-DATA-TYPE", "Password");
+                case "Split Key Method" -> enumValue(catalog, "SPLIT-KEY-METHOD", "XOR");
+                case "Lease Time" -> 60;
+                case "Usage Limits Count" -> 10;
+                case "Init Indicator", "Final Indicator", "Data Length", "Maximum Items", "Request Count",
+                        "Located Items" -> 1;
+                case "Adjustment Value", "Cryptographic Usage Mask", "Storage Status Mask",
+                        "Replace Existing" -> 1;
+                case "Prime Field Size" -> 8;
+                case "Split Key Parts", "Split Key Threshold" -> 2;
+                case "Compromise Occurrence Date", "Validity Date", "Last Change Date" -> 1_700_000_000;
+                case "Offset Items", "Offset" -> 0;
+                default -> 0;
+            };
+            byte[] fieldValue = switch (itemType) {
+                case TextString -> ("Private Key Unique Identifier".equals(fieldName)
+                        ? "kmipkit-route-private-key-id" : "kmipkit-route-identifier")
+                        .getBytes(StandardCharsets.US_ASCII);
+                case ByteString -> switch (fieldName) {
+                    case "Signature Data" -> "kmipkit-route-signature".getBytes(StandardCharsets.US_ASCII);
+                    case "MAC Data" -> "kmipkit-route-mac".getBytes(StandardCharsets.US_ASCII);
+                    default -> "kmipkit-route-correlation".getBytes(StandardCharsets.US_ASCII);
+                };
+                case Boolean -> ByteBuffer.allocate(Long.BYTES).putLong(numericValue).array();
+                case DateTime -> ByteBuffer.allocate(Long.BYTES).putLong(numericValue).array();
+                case Integer -> ByteBuffer.allocate(Integer.BYTES).putInt(Math.toIntExact(numericValue)).array();
+                case LongInteger -> ByteBuffer.allocate(Long.BYTES).putLong(numericValue).array();
+                case Enumeration -> ByteBuffer.allocate(Integer.BYTES).putInt(Math.toIntExact(numericValue)).array();
+                default -> throw new IllegalArgumentException("Unsupported client scalar payload type: " + itemType);
+            };
+            byte[] wire = scalarWire(tagCode, itemType.code(), fieldValue);
+            TtlvValue value = switch (itemType) {
+                case TextString -> TtlvValue.TextString(fieldValue, limits);
+                case ByteString -> TtlvValue.ByteString(fieldValue, limits);
+                case Boolean -> TtlvValue.Boolean(numericValue != 0);
+                case DateTime -> TtlvValue.DateTime(numericValue);
+                case Integer -> TtlvValue.Integer(Math.toIntExact(numericValue));
+                case LongInteger -> TtlvValue.LongInteger(numericValue);
+                case Enumeration -> TtlvValue.Enumeration(numericValue);
+                default -> throw new IllegalArgumentException("Unsupported client scalar payload type: " + itemType);
+            };
+            try (value;
+                    RawTag raw = RawTag.fromRaw(tagCode);
+                    Tag tag = raw.checked();
+                    TtlvItem item = TtlvItem.create(tag, value, limits);
+                    var view = item.view();
+                    var viewedTag = view.tag();
+                    var viewedValue = view.value()) {
+                assertEquals(tagCode, viewedTag.raw());
+                assertScalarMessageFieldValue(viewedValue, itemType, fieldValue, numericValue);
+            }
+            try (TtlvItem decoded = TtlvCodec.decode(wire);
+                    var view = decoded.view();
+                    var decodedTag = view.tag();
+                    var decodedValue = view.value()) {
+                assertEquals(tagCode, decodedTag.raw());
+                assertScalarMessageFieldValue(decodedValue, itemType, fieldValue, numericValue);
+            }
+            for (String evidenceTargetId : List.of(targetId, operationId)) {
+                emitMissingGenericRoute(recordedRoutes, sink, caseId, evidenceTargetId, version,
+                        "java.generic-ttlv.ttlv_item.create", "org.kmipkit.ttlv.TtlvItem.create",
+                        "construct", wire);
+                emitMissingGenericRoute(recordedRoutes, sink, caseId, evidenceTargetId, version,
+                        "java.generic-ttlv.function.ttlv_item_view_from_item", "org.kmipkit.ttlv.TtlvItem.view",
+                        "decode", wire);
+                emitMissingGenericRoute(recordedRoutes, sink, caseId, evidenceTargetId, version,
+                        "java.generic-ttlv.ttlv_codec.decode", "org.kmipkit.ttlv.TtlvCodec.decode",
+                        "decode", wire);
+            }
+            emitted.add(caseId);
+        }
+        if (!emitted.equals(selectedCaseIds)) {
+            throw new IllegalArgumentException("Selected client scalar payloads were not executed for "
+                    + version);
+        }
+    }
+
     /** Exercises the generic structure-builder routes with the source-defined KMIP 5.1 Attributes shape. */
     static void executeAttributeStructures(JsonNode catalog, String version, Set<String> selectedCaseIds,
             EvidenceSink sink) throws Exception {
@@ -2364,6 +2610,13 @@ final class LocalCatalogRouteChecks {
         }
     }
 
+    private static TtlvItem createByteStringItem(int tagCode, byte[] value, CodecLimits limits) {
+        try (TtlvValue ttlvValue = TtlvValue.ByteString(value, limits);
+                RawTag raw = RawTag.fromRaw(tagCode); Tag tag = raw.checked()) {
+            return TtlvItem.create(tag, ttlvValue, limits);
+        }
+    }
+
     private static TtlvItem createIntegerItem(int tagCode, int value, CodecLimits limits) {
         try (TtlvValue ttlvValue = TtlvValue.Integer(value);
                 RawTag raw = RawTag.fromRaw(tagCode); Tag tag = raw.checked()) {
@@ -2493,6 +2746,30 @@ final class LocalCatalogRouteChecks {
         try (TtlvValue value = TtlvValue.structure(structure, limits);
                 RawTag raw = RawTag.fromRaw(tagCode); Tag tag = raw.checked()) {
             return TtlvItem.create(tag, value, limits);
+        }
+    }
+
+    private static void assertCertificatePayloadItem(TtlvItem item, int tagCode, int certificateTypeTag,
+            int certificateValueTag, long certificateType, byte[] certificateBytes) {
+        try (var view = item.view();
+                var tag = view.tag();
+                var value = view.value();
+                var structure = value.structure();
+                var typeItem = structure.itemAt(0);
+                var typeTag = typeItem.tag();
+                var typeValue = typeItem.value();
+                var certificateItem = structure.itemAt(1);
+                var certificateTag = certificateItem.tag();
+                var certificateValue = certificateItem.value()) {
+            assertEquals(tagCode, tag.raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertEquals(2L, structure.itemCount());
+            assertEquals(certificateTypeTag, typeTag.raw());
+            assertEquals(TtlvItemType.Enumeration, typeItem.itemType());
+            assertEquals(certificateType, typeValue.enumeration());
+            assertEquals(certificateValueTag, certificateTag.raw());
+            assertEquals(TtlvItemType.ByteString, certificateItem.itemType());
+            assertArrayEquals(certificateBytes, certificateValue.bytes());
         }
     }
 
@@ -3455,6 +3732,7 @@ final class LocalCatalogRouteChecks {
             case "Date-Time" -> TtlvItemType.DateTime;
             case "Enumeration" -> TtlvItemType.Enumeration;
             case "Integer" -> TtlvItemType.Integer;
+            case "Long Integer" -> TtlvItemType.LongInteger;
             case "Text String",
                     "Text String (with usage limited to alphanumeric, underscore and period – i.e. [A-Za-z0-9_.])"
                     -> TtlvItemType.TextString;
@@ -3471,6 +3749,8 @@ final class LocalCatalogRouteChecks {
                     .putInt(Math.toIntExact(scalarMessageFieldNumber(caseId, encoding))).array();
             case "Integer" -> ByteBuffer.allocate(Integer.BYTES)
                     .putInt(Math.toIntExact(scalarMessageFieldNumber(caseId, encoding))).array();
+            case "Long Integer" -> ByteBuffer.allocate(Long.BYTES)
+                    .putLong(scalarMessageFieldNumber(caseId, encoding)).array();
             case "Text String",
                     "Text String (with usage limited to alphanumeric, underscore and period – i.e. [A-Za-z0-9_.])"
                     -> "kmipkit_route".getBytes(StandardCharsets.US_ASCII);
@@ -3480,6 +3760,9 @@ final class LocalCatalogRouteChecks {
 
     private static long scalarMessageFieldNumber(String caseId, String encoding) {
         if ("Date-Time".equals(encoding)) return 1_700_000_000L;
+        if ("Long Integer".equals(encoding)) {
+            return caseId.endsWith("usage-limits-count") ? 4_294_967_296L : 8_589_934_592L;
+        }
         if ("Integer".equals(encoding)) {
             if (caseId.endsWith("protocol-version-major")) return 2;
             if (caseId.endsWith("protocol-version-minor")) return 1;
@@ -3505,6 +3788,7 @@ final class LocalCatalogRouteChecks {
             case "Date-Time" -> TtlvValue.DateTime(number);
             case "Enumeration" -> TtlvValue.Enumeration(number);
             case "Integer" -> TtlvValue.Integer(Math.toIntExact(number));
+            case "Long Integer" -> TtlvValue.LongInteger(number);
             case "Text String",
                     "Text String (with usage limited to alphanumeric, underscore and period – i.e. [A-Za-z0-9_.])"
                     -> TtlvValue.TextString(bytes, limits);
@@ -3519,6 +3803,7 @@ final class LocalCatalogRouteChecks {
             case "Date-Time" -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.datetime";
             case "Enumeration" -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration";
             case "Integer" -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.integer";
+            case "Long Integer" -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.longinteger";
             case "Text String",
                     "Text String (with usage limited to alphanumeric, underscore and period – i.e. [A-Za-z0-9_.])"
                     -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring";
@@ -3533,6 +3818,7 @@ final class LocalCatalogRouteChecks {
             case "Date-Time" -> "org.kmipkit.ttlv.TtlvValue.DateTime";
             case "Enumeration" -> "org.kmipkit.ttlv.TtlvValue.Enumeration";
             case "Integer" -> "org.kmipkit.ttlv.TtlvValue.Integer";
+            case "Long Integer" -> "org.kmipkit.ttlv.TtlvValue.LongInteger";
             case "Text String",
                     "Text String (with usage limited to alphanumeric, underscore and period – i.e. [A-Za-z0-9_.])"
                     -> "org.kmipkit.ttlv.TtlvValue.TextString";
@@ -3553,6 +3839,8 @@ final class LocalCatalogRouteChecks {
             assertEquals(number, value.enumeration());
         } else if (type == TtlvItemType.Integer) {
             assertEquals(Math.toIntExact(number), value.integer());
+        } else if (type == TtlvItemType.LongInteger) {
+            assertEquals(number, value.longInteger());
         } else {
             throw new IllegalArgumentException("Unsupported scalar message field type: " + type);
         }
