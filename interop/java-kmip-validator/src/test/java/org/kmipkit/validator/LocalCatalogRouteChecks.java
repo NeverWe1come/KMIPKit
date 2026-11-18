@@ -629,7 +629,9 @@ final class LocalCatalogRouteChecks {
             String fieldName = requires.path("field_name").asText();
             if (!"operation_payload_field".equals(requires.path("target_kind").asText())
                     || !Set.of("Unique Identifier", "Correlation Value", "Asynchronous Correlation Value",
-                            "Object Type", "Data", "IV/Counter/Nonce", "Lease Time", "Usage Limits Count")
+                            "Object Type", "Data", "IV/Counter/Nonce", "Lease Time", "Usage Limits Count",
+                            "Init Indicator", "Final Indicator", "Data Length", "Maximum Items", "Offset Items",
+                            "Offset", "Request Count")
                             .contains(fieldName)
                     || !requires.path("operation_id").asText().startsWith("KMIPKIT-ELEM-OP-C2S-")
                     || !"local_model".equals(testCase.path("execution").path("mode").asText())
@@ -667,7 +669,9 @@ final class LocalCatalogRouteChecks {
             String operationId = requires.path("operation_id").asText();
             if (!"operation_payload_field".equals(requires.path("target_kind").asText())
                     || !Set.of("Unique Identifier", "Correlation Value", "Asynchronous Correlation Value",
-                            "Object Type", "Data", "IV/Counter/Nonce", "Lease Time", "Usage Limits Count")
+                            "Object Type", "Data", "IV/Counter/Nonce", "Lease Time", "Usage Limits Count",
+                            "Init Indicator", "Final Indicator", "Data Length", "Maximum Items", "Offset Items",
+                            "Offset", "Request Count")
                             .contains(fieldName)
                     || !operationId.startsWith("KMIPKIT-ELEM-OP-C2S-")) {
                 throw new IllegalArgumentException("Selected case is not a supported client scalar payload: "
@@ -682,6 +686,9 @@ final class LocalCatalogRouteChecks {
                 case "Object Type" -> TtlvItemType.Enumeration;
                 case "Lease Time" -> TtlvItemType.Integer;
                 case "Usage Limits Count" -> TtlvItemType.LongInteger;
+                case "Init Indicator", "Final Indicator" -> TtlvItemType.Boolean;
+                case "Data Length", "Maximum Items", "Offset Items", "Offset", "Request Count" ->
+                    TtlvItemType.Integer;
                 default -> throw new IllegalArgumentException("Unsupported client scalar payload field: "
                         + fieldName);
             };
@@ -689,11 +696,14 @@ final class LocalCatalogRouteChecks {
                 case "Object Type" -> enumValue(catalog, "OBJECT-TYPE", "Symmetric Key");
                 case "Lease Time" -> 60;
                 case "Usage Limits Count" -> 10;
+                case "Init Indicator", "Final Indicator", "Data Length", "Maximum Items", "Request Count" -> 1;
+                case "Offset Items", "Offset" -> 0;
                 default -> 0;
             };
             byte[] fieldValue = switch (itemType) {
                 case TextString -> "kmipkit-route-identifier".getBytes(StandardCharsets.US_ASCII);
                 case ByteString -> "kmipkit-route-correlation".getBytes(StandardCharsets.US_ASCII);
+                case Boolean -> ByteBuffer.allocate(Long.BYTES).putLong(numericValue).array();
                 case Integer -> ByteBuffer.allocate(Integer.BYTES).putInt(Math.toIntExact(numericValue)).array();
                 case LongInteger -> ByteBuffer.allocate(Long.BYTES).putLong(numericValue).array();
                 case Enumeration -> ByteBuffer.allocate(Integer.BYTES).putInt(Math.toIntExact(numericValue)).array();
@@ -703,6 +713,7 @@ final class LocalCatalogRouteChecks {
             TtlvValue value = switch (itemType) {
                 case TextString -> TtlvValue.TextString(fieldValue, limits);
                 case ByteString -> TtlvValue.ByteString(fieldValue, limits);
+                case Boolean -> TtlvValue.Boolean(numericValue != 0);
                 case Integer -> TtlvValue.Integer(Math.toIntExact(numericValue));
                 case LongInteger -> TtlvValue.LongInteger(numericValue);
                 case Enumeration -> TtlvValue.Enumeration(numericValue);
