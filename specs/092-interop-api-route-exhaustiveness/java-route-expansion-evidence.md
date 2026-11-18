@@ -2756,3 +2756,37 @@ python3 -m unittest interop.shared.tests.test_route_execution_evidence \
 python3 interop/shared/tools/route_capabilities.py --check
 git diff --check
 ```
+
+## #216 Usage Limits stack sync with Attributes structure routes — 2026-11-18
+
+The #216 branch now includes parent #187 head `04d8ca9b8` and its KMIP 2.0/2.1
+§5.1 `Attributes` generic TTLV routes, while retaining the Usage Limits
+Structure and member routes. The inherited `controlledQueryProducesPerRouteEvidenceForBothProtocolVersions`
+fixture records five local routes for each protocol version. The fixture is not
+reported as a network exchange for those local model cells.
+
+The complete Java suite passes 65 tests with no failures, errors, or skips.
+The selected report validates 28,468/28,468 cells; the ledger records 28,468
+executed and 43,173 pending of 71,641 cells across 1,154 pending case IDs.
+Shared route evidence, schema, and capability tests pass 108 tests, and the
+route audit confirms 1,507 routes. The full matrix remains incomplete; #216
+remains WIP.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-tmp" \
+  bash bindings/java/gradlew -p interop/java-kmip-validator \
+  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" \
+  test --rerun-tasks --refresh-dependencies
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+python3 -m unittest interop.shared.tests.test_route_execution_evidence \
+  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+git diff --check
+```

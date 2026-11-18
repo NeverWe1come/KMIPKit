@@ -857,6 +857,7 @@ class ControlledTlsPeerTest {
         int scalarTypedParserEventCount = 0;
         int correlationPayloadRouteEventCount = 0;
         int itemTypeRouteEventCount = 0;
+        int attributeStructureRouteEventCount = 0;
         Set<String> booleanFieldCaseIds = new java.util.HashSet<>();
         Set<String> anyObjectAttributeCaseIds = new java.util.HashSet<>();
         Set<String> scalarStructureMemberCaseIds = new java.util.LinkedHashSet<>();
@@ -1111,6 +1112,14 @@ class ControlledTlsPeerTest {
             appendExtensionTagRouteEvents(events, protocolVersion, CodecLimits.defaults());
             assertExtensionTagRouteEvents(events, protocolVersion);
             assertNewlyCataloguedLocalRoutesAreInvoked(events, protocolVersion);
+            List<LocalCatalogRouteChecks.Invocation> attributeStructureInvocations = new ArrayList<>();
+            LocalCatalogRouteChecks.executeAttributeStructures(readRouteEvidenceCatalog(), protocolVersion,
+                    Set.of("test-norm-attribute-structure-attribute-structure-5-1-attributes"),
+                    attributeStructureInvocations::add);
+            for (LocalCatalogRouteChecks.Invocation invocation : attributeStructureInvocations) {
+                appendLocalCatalogInvocation(events, protocolVersion, invocation);
+            }
+            attributeStructureRouteEventCount += attributeStructureInvocations.size();
             Set<String> missingAnyObjectAttributeCases = missingAnyObjectAttributeCaseIds(
                     readRouteEvidenceCatalog(), events, protocolVersion);
             anyObjectAttributeCaseIds.addAll(missingAnyObjectAttributeCases);
@@ -1701,6 +1710,7 @@ class ControlledTlsPeerTest {
                         + correlationPayloadRouteEventCount
                         + anyObjectAttributeRouteEventCount
                         + scalarTypedParserEventCount
+                        + attributeStructureRouteEventCount
                         + 97 // BEC, batch IDs, async payload, Ping, Endpoint Role, Object Defaults, derivation, and Extension Information member cells.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Type generic and typed Attribute routes.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Value generic and typed Attribute routes.
@@ -1752,6 +1762,7 @@ class ControlledTlsPeerTest {
                         + 1 // KMIP 2.1 §4.53 Rotate Name Value member case.
                         + 1 // KMIP 2.0/2.1 §8.2 Batch Order Option message-field case.
                         + 1 // KMIP 2.0/2.1 §8.2 Attestation Capable Indicator message-field case.
+                        + 1 // KMIP 2.0/2.1 §5.1 Attributes generic Structure routes.
                         // Four scalar header cases are already included by the baseline report groups.
                         + scalarMessageFieldCaseIds(report.path("events")).size() - 4
                         + additionalCaseIdCount,
@@ -4120,6 +4131,7 @@ class ControlledTlsPeerTest {
         caseIds.add("test-enum-pkcs#11-return-code");
         caseIds.add("test-enum-tag");
         caseIds.add("test-norm-tag-tag-42000e");
+        caseIds.add("test-norm-attribute-structure-attribute-structure-5-1-attributes");
         caseIds.add("test-op-ping");
         caseIds.add("test-norm-payload-client-set-endpoint-role-request-20-001");
         caseIds.add("test-norm-payload-client-set-endpoint-role-response-20-001");

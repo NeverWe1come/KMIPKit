@@ -408,6 +408,87 @@ final class LocalCatalogRouteChecks {
         }
     }
 
+    /** Exercises the generic structure-builder routes with the source-defined KMIP 5.1 Attributes shape. */
+    static void executeAttributeStructures(JsonNode catalog, String version, Set<String> selectedCaseIds,
+            EvidenceSink sink) throws Exception {
+        CodecLimits limits = CodecLimits.defaults();
+        Set<String> emitted = new java.util.HashSet<>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String caseId = testCase.path("case_id").asText();
+            if (!selectedCaseIds.contains(caseId) || !applies(testCase, version)) continue;
+            JsonNode requires = testCase.path("requires");
+            if (!"attribute_structure".equals(requires.path("target_kind").asText())
+                    || !"KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-1-ATTRIBUTES"
+                            .equals(requires.path("normative_target_id").asText())) {
+                throw new IllegalArgumentException("Selected case is not the KMIP 5.1 Attributes structure: "
+                        + caseId);
+            }
+            String targetId = requires.path("normative_target_id").asText();
+            int outerTag = tagCodeNamed(catalog, "Attributes", version);
+            byte[] name = "Comment".getBytes(StandardCharsets.UTF_8);
+            byte[] value = "route-matrix-fixture".getBytes(StandardCharsets.UTF_8);
+            byte[] wire = structureWire(outerTag,
+                    structureWire(0x420008, concat(itemWire(0x42000a, 7, name), itemWire(0x42000b, 7, value))));
+
+            TtlvStructure attribute = appendText(TtlvStructure.create(), 0x42000a, name, limits);
+            attribute = appendText(attribute, 0x42000b, value, limits);
+            TtlvValue attributeValue = TtlvValue.structure(attribute, limits);
+            TtlvItem attributeItem;
+            try (RawTag raw = RawTag.fromRaw(0x420008); Tag tag = raw.checked()) {
+                attributeItem = TtlvItem.create(tag, attributeValue, limits);
+            }
+            TtlvStructure attributes = TtlvStructure.withItem(TtlvStructure.create(), attributeItem, limits);
+            TtlvValue attributesValue = TtlvValue.structure(attributes, limits);
+            TtlvItem item;
+            try (RawTag raw = RawTag.fromRaw(outerTag); Tag tag = raw.checked()) {
+                item = TtlvItem.create(tag, attributesValue, limits);
+            }
+            try (item;
+                    var view = item.view(); var tag = view.tag(); var itemValue = view.value();
+                    TtlvItem decoded = TtlvCodec.decode(wire);
+                    var decodedView = decoded.view(); var decodedTag = decodedView.tag();
+                    var decodedValue = decodedView.value()) {
+                assertEquals(outerTag, tag.raw());
+                assertEquals(TtlvItemType.Structure, view.itemType());
+                try (TtlvStructureView structure = itemValue.structure()) {
+                    assertEquals(1, structure.itemCount());
+                }
+                assertEquals(outerTag, decodedTag.raw());
+                assertEquals(TtlvItemType.Structure, decodedView.itemType());
+                try (TtlvStructureView structure = decodedValue.structure()) {
+                    assertEquals(1, structure.itemCount());
+                }
+            }
+            emitRoute(sink, caseId, targetId,
+                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.create",
+                    "org.kmipkit.ttlv.TtlvStructure.create", "construct", wire);
+            emitRoute(sink, caseId, targetId,
+                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.withitem",
+                    "org.kmipkit.ttlv.TtlvStructure.withItem", "construct", wire);
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_item.create",
+                    "org.kmipkit.ttlv.TtlvItem.create", "construct", wire);
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.function.ttlv_item_view_from_item",
+                    "org.kmipkit.ttlv.TtlvItem.view", "decode", wire);
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_codec.decode",
+                    "org.kmipkit.ttlv.TtlvCodec.decode", "decode", wire);
+            emitted.add(caseId);
+        }
+        if (!emitted.equals(selectedCaseIds)) {
+            throw new IllegalArgumentException("Selected Attributes structure cases were not executed for "
+                    + version);
+        }
+    }
+
+    private static TtlvStructure appendText(TtlvStructure structure, int tagCode, byte[] value,
+            CodecLimits limits) {
+        TtlvItem item;
+        try (TtlvValue text = TtlvValue.TextString(value, limits);
+                RawTag raw = RawTag.fromRaw(tagCode); Tag tag = raw.checked()) {
+            item = TtlvItem.create(tag, text, limits);
+        }
+        return TtlvStructure.withItem(structure, item, limits);
+    }
+
     private static ServerPayloadValue serverPayloadValue(JsonNode catalog, String operationId, String fieldName) {
         if ("KMIPKIT-ELEM-OP-S2C-NOTIFY".equals(operationId) && "Unique Identifier".equals(fieldName)) {
             return new ServerPayloadValue("Text String", 0,
