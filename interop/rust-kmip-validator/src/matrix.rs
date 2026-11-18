@@ -2999,6 +2999,47 @@ fn invoke_remaining_typed_routes(
 
 // Keep a bounded set of simple request routes with their emitted payloads.
 #[allow(clippy::too_many_lines)]
+enum LoginLeaseTime {
+    Interval(u32),
+    DateTime(i64),
+}
+
+fn login_lease_time_payload(
+    symbol: &str,
+    lease_time: LoginLeaseTime,
+) -> Result<kmipkit::ttlv::Structure> {
+    let delegated = match symbol {
+        "kmipkit_protocol::LoginRequest::with_lease_time_interval"
+        | "kmipkit_protocol::LoginRequest::with_lease_time_date_time" => false,
+        "kmipkit_protocol::DelegatedLoginRequest::with_lease_time_interval"
+        | "kmipkit_protocol::DelegatedLoginRequest::with_lease_time_date_time" => true,
+        _ => return Err("unsupported Login Lease Time builder route"),
+    };
+
+    match (delegated, lease_time) {
+        (false, LoginLeaseTime::Interval(seconds)) => kmipkit::protocol::LoginRequest::new()
+            .with_lease_time_interval(seconds)
+            .into_ttlv_payload()
+            .map_err(|_| "Login request fixture rejected"),
+        (true, LoginLeaseTime::Interval(seconds)) => {
+            kmipkit::protocol::DelegatedLoginRequest::new(kmipkit::ttlv::Structure::new())
+                .with_lease_time_interval(seconds)
+                .into_ttlv_payload()
+                .map_err(|_| "Delegated Login request fixture rejected")
+        }
+        (false, LoginLeaseTime::DateTime(unix_seconds)) => kmipkit::protocol::LoginRequest::new()
+            .with_lease_time_date_time(unix_seconds)
+            .into_ttlv_payload()
+            .map_err(|_| "Login request fixture rejected"),
+        (true, LoginLeaseTime::DateTime(unix_seconds)) => {
+            kmipkit::protocol::DelegatedLoginRequest::new(kmipkit::ttlv::Structure::new())
+                .with_lease_time_date_time(unix_seconds)
+                .into_ttlv_payload()
+                .map_err(|_| "Delegated Login request fixture rejected")
+        }
+    }
+}
+
 fn invoke_simple_request_builder_route(
     symbol: &str,
     sample: &Item,
@@ -3012,7 +3053,11 @@ fn invoke_simple_request_builder_route(
         "kmipkit_protocol::LocateRequest::with_offset_items",
         "kmipkit_protocol::RevokeRequest::with_revocation_message",
         "kmipkit_protocol::LoginRequest::with_request_count",
+        "kmipkit_protocol::LoginRequest::with_lease_time_interval",
+        "kmipkit_protocol::LoginRequest::with_lease_time_date_time",
         "kmipkit_protocol::DelegatedLoginRequest::with_request_count",
+        "kmipkit_protocol::DelegatedLoginRequest::with_lease_time_interval",
+        "kmipkit_protocol::DelegatedLoginRequest::with_lease_time_date_time",
         "kmipkit_protocol::ValidateRequest::with_validity_date",
         "kmipkit_protocol::RekeyRequest::with_offset",
         "kmipkit_protocol::RekeyKeyPairRequest::with_offset",
@@ -3102,6 +3147,24 @@ fn invoke_simple_request_builder_route(
                     .with_request_count(count)
                     .into_ttlv_payload()
                     .map_err(|_| "Login request fixture rejected")?
+            }
+            "kmipkit_protocol::LoginRequest::with_lease_time_interval"
+            | "kmipkit_protocol::DelegatedLoginRequest::with_lease_time_interval" => {
+                let seconds = sample.with_value(|value| match value {
+                    ValueView::Interval(value) => {
+                        u32::try_from(*value).map_err(|_| "Lease Time Interval is negative")
+                    }
+                    _ => Err("Lease Time fixture is not an Interval"),
+                })?;
+                login_lease_time_payload(symbol, LoginLeaseTime::Interval(seconds))?
+            }
+            "kmipkit_protocol::LoginRequest::with_lease_time_date_time"
+            | "kmipkit_protocol::DelegatedLoginRequest::with_lease_time_date_time" => {
+                let unix_seconds = sample.with_value(|value| match value {
+                    ValueView::DateTime(value) => Ok(*value),
+                    _ => Err("Lease Time fixture is not a Date-Time"),
+                })?;
+                login_lease_time_payload(symbol, LoginLeaseTime::DateTime(unix_seconds))?
             }
             "kmipkit_protocol::DelegatedLoginRequest::with_request_count" => {
                 let count = if target["kind"] == "tag" {
@@ -8885,7 +8948,11 @@ mod tests {
             "kmipkit_protocol::LocateRequest::with_offset_items",
             "kmipkit_protocol::RevokeRequest::with_revocation_message",
             "kmipkit_protocol::LoginRequest::with_request_count",
+            "kmipkit_protocol::LoginRequest::with_lease_time_interval",
+            "kmipkit_protocol::LoginRequest::with_lease_time_date_time",
             "kmipkit_protocol::DelegatedLoginRequest::with_request_count",
+            "kmipkit_protocol::DelegatedLoginRequest::with_lease_time_interval",
+            "kmipkit_protocol::DelegatedLoginRequest::with_lease_time_date_time",
             "kmipkit_protocol::ValidateRequest::with_validity_date",
             "kmipkit_protocol::RekeyRequest::with_offset",
             "kmipkit_protocol::RekeyKeyPairRequest::with_offset",

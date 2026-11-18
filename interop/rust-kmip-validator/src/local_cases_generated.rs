@@ -7193,7 +7193,13 @@ pub(crate) fn verify(name: &str) -> bool {
             super::value_types_roundtrip(&[ItemType::Structure, ItemType::ByteString])
         }
         "test-norm-payload-client-delegated-login-request-20-001" => {
+            super::value_types_roundtrip(&[ItemType::DateTime, ItemType::Interval])
+        }
+        "test-norm-payload-client-delegated-login-request-20-001-type-interval" => {
             super::value_types_roundtrip(&[ItemType::Interval])
+        }
+        "test-norm-payload-client-delegated-login-request-20-001-type-date-time" => {
+            super::value_types_roundtrip(&[ItemType::DateTime])
         }
         "test-norm-payload-client-delegated-login-request-20-002" => {
             super::value_types_roundtrip(&[ItemType::Integer])
@@ -7208,7 +7214,13 @@ pub(crate) fn verify(name: &str) -> bool {
             super::value_types_roundtrip(&[ItemType::Structure])
         }
         "test-norm-payload-client-delegated-login-request-21-001" => {
+            super::value_types_roundtrip(&[ItemType::DateTime, ItemType::Interval])
+        }
+        "test-norm-payload-client-delegated-login-request-21-001-type-interval" => {
             super::value_types_roundtrip(&[ItemType::Interval])
+        }
+        "test-norm-payload-client-delegated-login-request-21-001-type-date-time" => {
+            super::value_types_roundtrip(&[ItemType::DateTime])
         }
         "test-norm-payload-client-delegated-login-request-21-002" => {
             super::value_types_roundtrip(&[ItemType::Integer])
@@ -7946,7 +7958,13 @@ pub(crate) fn verify(name: &str) -> bool {
             super::value_types_roundtrip(&[ItemType::Structure, ItemType::TextString])
         }
         "test-norm-payload-client-login-request-20-001" => {
+            super::value_types_roundtrip(&[ItemType::DateTime, ItemType::Interval])
+        }
+        "test-norm-payload-client-login-request-20-001-type-interval" => {
             super::value_types_roundtrip(&[ItemType::Interval])
+        }
+        "test-norm-payload-client-login-request-20-001-type-date-time" => {
+            super::value_types_roundtrip(&[ItemType::DateTime])
         }
         "test-norm-payload-client-login-request-20-002" => {
             super::value_types_roundtrip(&[ItemType::Integer])
@@ -7958,7 +7976,13 @@ pub(crate) fn verify(name: &str) -> bool {
             super::value_types_roundtrip(&[ItemType::Structure])
         }
         "test-norm-payload-client-login-request-21-001" => {
+            super::value_types_roundtrip(&[ItemType::DateTime, ItemType::Interval])
+        }
+        "test-norm-payload-client-login-request-21-001-type-interval" => {
             super::value_types_roundtrip(&[ItemType::Interval])
+        }
+        "test-norm-payload-client-login-request-21-001-type-date-time" => {
+            super::value_types_roundtrip(&[ItemType::DateTime])
         }
         "test-norm-payload-client-login-request-21-002" => {
             super::value_types_roundtrip(&[ItemType::Integer])
