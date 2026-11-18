@@ -198,6 +198,10 @@ final class LocalCatalogRouteChecks {
             OPAQUE_OBJECT_MANAGED_OBJECT_CASE_IDS)
             .flatMap(Set::stream)
             .collect(java.util.stream.Collectors.toUnmodifiableSet());
+    static final Set<String> KEY_BEARING_MANAGED_OBJECT_ROOT_CASE_IDS = Set.of(
+            "test-norm-object-structure-object-structure-symmetric-key",
+            "test-norm-object-structure-object-structure-private-key",
+            "test-norm-object-structure-object-structure-public-key");
     static final Set<String> REMAINING_ENUMERATION_FIELD_CASE_IDS = Set.of(
             "test-norm-operation-structure-operation-structure-7-15-interop-function",
             "test-norm-structure-member-structure-member-5-5-attribute-reference",
@@ -1660,6 +1664,111 @@ final class LocalCatalogRouteChecks {
         if (!emitted.equals(selectedCaseIds)) {
             throw new IllegalArgumentException("Selected managed-object factory targets were not executed for "
                     + version);
+        }
+    }
+
+    /** Executes root key-object targets through their named and generic public factories. */
+    static void executeKeyBearingManagedObjectRootTargets(JsonNode catalog, String version,
+            Set<String> selectedCaseIds, EvidenceSink sink) throws Exception {
+        if (!KEY_BEARING_MANAGED_OBJECT_ROOT_CASE_IDS.containsAll(selectedCaseIds)) {
+            throw new IllegalArgumentException("Selected case is not a key-bearing managed-object root target.");
+        }
+        Set<String> emitted = new java.util.LinkedHashSet<>();
+        CodecLimits limits = CodecLimits.defaults();
+
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String caseId = testCase.path("case_id").asText();
+            if (!selectedCaseIds.contains(caseId) || !applies(testCase, version)) continue;
+            String targetId = testCase.path("requires").path("normative_target_id").asText();
+            ManagedObjectRootFixture fixture = managedObjectRootFixture(targetId);
+            long objectType = enumValue(catalog, "OBJECT-TYPE", fixture.objectName());
+            int objectTag = tagCodeNamed(catalog, fixture.objectName(), version);
+            byte[] keyBlockWire = rawKeyBlockWire(catalog, version);
+            byte[] wire = structureWire(objectTag, keyBlockWire);
+
+            try (TtlvItem fieldsKeyBlock = rawKeyBlockItem(catalog, version, limits);
+                    ManagedObject fromFields = ManagedObject.fromFields(objectType, List.of(fieldsKeyBlock));
+                    TtlvItem itemKeyBlock = rawKeyBlockItem(catalog, version, limits);
+                    TtlvItem managedObjectItem = createStructureItem(objectTag, List.of(itemKeyBlock), limits);
+                    ManagedObject fromItem = ManagedObject.fromItem(objectType, managedObjectItem);
+                    ManagedObject typedFactory = createKeyBearingManagedObjectFactory(fixture.factoryName(),
+                            List.of(fieldsKeyBlock))) {
+                assertKeyBearingManagedObject(fromFields, fixture, objectType);
+                assertKeyBearingManagedObject(fromItem, fixture, objectType);
+                assertKeyBearingManagedObject(typedFactory, fixture, objectType);
+            }
+
+            emitRoute(sink, caseId, targetId,
+                    "java.typed-protocol.model.org.kmipkit.ttlv.managedobject." + fixture.factoryName().toLowerCase(Locale.ROOT),
+                    "org.kmipkit.ttlv.ManagedObject." + fixture.factoryName(), "construct", wire);
+            emitRoute(sink, caseId, targetId,
+                    "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromfields",
+                    "org.kmipkit.ttlv.ManagedObject.fromFields", "construct", wire);
+            emitRoute(sink, caseId, targetId,
+                    "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromitem",
+                    "org.kmipkit.ttlv.ManagedObject.fromItem", "construct", wire);
+            emitted.add(caseId);
+        }
+        if (!emitted.equals(selectedCaseIds)) {
+            throw new IllegalArgumentException("Selected key-bearing managed-object roots were not executed for "
+                    + version);
+        }
+    }
+
+    private record ManagedObjectRootFixture(String objectName, String factoryName, String targetId) { }
+
+    private static ManagedObjectRootFixture managedObjectRootFixture(String targetId) {
+        return switch (targetId) {
+            case "KMIPKIT-ELEM-OBJECT-STRUCTURE-SYMMETRIC-KEY" ->
+                    new ManagedObjectRootFixture("Symmetric Key", "symmetricKey", targetId);
+            case "KMIPKIT-ELEM-OBJECT-STRUCTURE-PRIVATE-KEY" ->
+                    new ManagedObjectRootFixture("Private Key", "privateKey", targetId);
+            case "KMIPKIT-ELEM-OBJECT-STRUCTURE-PUBLIC-KEY" ->
+                    new ManagedObjectRootFixture("Public Key", "publicKey", targetId);
+            default -> throw new IllegalArgumentException("Target is not a key-bearing object structure: " + targetId);
+        };
+    }
+
+    private static ManagedObject createKeyBearingManagedObjectFactory(String factoryName, List<TtlvItem> fields) {
+        return switch (factoryName) {
+            case "symmetricKey" -> ManagedObject.symmetricKey(fields);
+            case "privateKey" -> ManagedObject.privateKey(fields);
+            case "publicKey" -> ManagedObject.publicKey(fields);
+            default -> throw new IllegalArgumentException("Unsupported key-bearing object factory.");
+        };
+    }
+
+    private static void assertKeyBearingManagedObject(ManagedObject object, ManagedObjectRootFixture fixture,
+            long objectType) {
+        assertEquals(objectType, object.objectType());
+        assertEquals(true, object.hasKeyBlock(), fixture.objectName() + " retains its required Key Block");
+    }
+
+    private static byte[] rawKeyBlockWire(JsonNode catalog, String version) {
+        int formatTag = tagCodeNamed(catalog, "Key Format Type", version);
+        int keyValueTag = tagCodeNamed(catalog, "Key Value", version);
+        int keyMaterialTag = tagCodeNamed(catalog, "Key Material", version);
+        int keyBlockTag = tagCodeNamed(catalog, "Key Block", version);
+        long rawFormat = enumValue(catalog, "KEY-FORMAT-TYPE", "Raw");
+        byte[] keyMaterial = itemWire(keyMaterialTag, TtlvItemType.ByteString.code(), new byte[] {1, 2, 3, 4});
+        byte[] keyValue = structureWire(keyValueTag, keyMaterial);
+        byte[] format = itemWire(formatTag, TtlvItemType.Enumeration.code(),
+                ByteBuffer.allocate(Integer.BYTES).putInt(Math.toIntExact(rawFormat)).array());
+        return structureWire(keyBlockTag, concat(format, keyValue));
+    }
+
+    private static TtlvItem rawKeyBlockItem(JsonNode catalog, String version, CodecLimits limits) {
+        int formatTag = tagCodeNamed(catalog, "Key Format Type", version);
+        int keyValueTag = tagCodeNamed(catalog, "Key Value", version);
+        int keyMaterialTag = tagCodeNamed(catalog, "Key Material", version);
+        int keyBlockTag = tagCodeNamed(catalog, "Key Block", version);
+        long rawFormat = enumValue(catalog, "KEY-FORMAT-TYPE", "Raw");
+        try (TtlvValue materialValue = TtlvValue.ByteString(new byte[] {1, 2, 3, 4}, limits);
+                RawTag rawMaterial = RawTag.fromRaw(keyMaterialTag); Tag materialTag = rawMaterial.checked();
+                TtlvItem keyMaterial = TtlvItem.create(materialTag, materialValue, limits);
+                TtlvItem keyValue = createStructureItem(keyValueTag, List.of(keyMaterial), limits);
+                TtlvItem format = createEnumerationItem(formatTag, rawFormat, limits)) {
+            return createStructureItem(keyBlockTag, List.of(format, keyValue), limits);
         }
     }
 
