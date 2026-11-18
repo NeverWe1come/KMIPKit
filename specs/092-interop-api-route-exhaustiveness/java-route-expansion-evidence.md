@@ -3267,3 +3267,38 @@ python3 -m unittest interop.shared.tests.test_route_execution_evidence \
 python3 interop/shared/tools/route_capabilities.py --check
 git diff --check
 ```
+
+## Remaining Enumeration fields generic TTLV routes — 2026-11-18
+
+Red commit `98882d8d6` adds focused checks for the three remaining catalogued
+Enumeration fields. Green commit `6dfa877e4` selects source-compatible values
+for Interop Function, Attribute Reference (the assigned Unique Identifier Tag),
+and Extension Type (the Structure Item Type), then constructs, views, and
+decodes each value through the installed Java TTLV API in KMIP 2.0 and 2.1.
+The selected report records each field/version through the four generic routes.
+
+The full Gradle suite passes. The selected report validates 29,216/29,216
+cells with zero failures; the ledger records 29,216 executed and 42,425
+pending cells of 71,641 across 1,146 pending case IDs. All 3,767 planned Java
+`TtlvValue.Enumeration` cells are now covered. Shared route-evidence, schema,
+and capability suites pass 108 tests; the route audit confirms 1,507 routes.
+The full Java matrix and stack remain WIP.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-tmp" \
+  bash bindings/java/gradlew -p interop/java-kmip-validator \
+  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" \
+  test --rerun-tasks
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+python3 -m unittest interop.shared.tests.test_route_execution_evidence \
+  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+git diff --check
+```
