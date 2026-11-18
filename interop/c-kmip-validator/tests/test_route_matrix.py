@@ -3480,6 +3480,38 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(recipe_for_case(case, None),
                          ((18, 1), 'batch_forward_placeholder_reference'))
 
+    def test_forward_placeholder_batch_is_rejected_before_transport(self):
+        """OASIS KMIP 2.0/2.1 §§8.3, 9.7, 6.1.1, 6.1.8 require prior-item placeholder scope."""
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_id = 'test-batch-placeholder-forward-reference-rejected'
+        case = next(item for item in catalog['test_cases'] if item['case_id'] == case_id)
+        selected = {**catalog, 'test_cases': [case]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest,
+            protocol_versions=('2.1',), network_combinations=(('TTLV', 'raw_tls'),))
+
+        self.assertEqual(1, len(checks))
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertTrue(all(check.get('local_placeholder_forward_reference_rejected') is True and
+                            check.get('local_placeholder_forward_batch_count_is_two') is True and
+                            check.get('local_placeholder_activation_precedes_producer') is True and
+                            check.get('local_placeholder_transport_was_not_invoked') is True
+                            for check in checks), checks)
+        send_events = [event for event in events if event['action'] == 'send']
+        self.assertEqual(2, len(send_events))
+        self.assertTrue(all(event.get('request_delivery_state') == 'not_sent' and
+                            event.get('transport_invocation_count') == 0 and
+                            event.get('batch_operation_sequence') == ['Activate', 'Create'] and
+                            event.get('batch_item_count') == 2 and
+                            event.get('local_rejection_code') ==
+                            'batch_placeholder_forward_reference'
+                            for event in send_events), send_events)
+
     def test_register_operation_maps_to_an_isolated_certificate_recipe(self):
         from route_peer import recipe_for_case
 
