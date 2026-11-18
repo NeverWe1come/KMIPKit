@@ -85,9 +85,36 @@ artifact. This is part of the FR-006 artifact provenance check.
 ## Java managed-object Object Type routes — 2026-11-18
 
 - **FR-003:** For all nine catalogued managed-object cases, the Java controlled consumer invokes the installed `TtlvItem.create`, `TtlvItem.view`, and `TtlvCodec.decode` routes for the Object Type Enumeration in KMIP 2.0 and 2.1 (§11.34). Each fixture checks the catalogued wire value and `Object Type` tag. This closes 54 local cells and makes no Register/Create transport claim.
-- The selected Java report validates 33,886/33,886 cells with zero failures; the generated ledger records 71,641 planned, 33,886 executed, and 37,755 pending cells. Full Java matrix closure remains required under FR-002/FR-003/FR-009.
+- The selected Java report validates 33,994/33,994 cells with zero failures; the generated ledger records 71,641 planned, 33,994 executed, and 37,647 pending cells. Full Java matrix closure remains required under FR-002/FR-003/FR-009.
 
 ## Java RSA public Key Material model routes — 2026-11-18
 
 - **FR-003:** The installed Java consumer now builds and reads the RSA public Key Material structure with both typed constructors, `KeyMaterial.fromFields` and `KeyMaterial.fromItem`, for the catalogued Modulus and Public Exponent fields in KMIP 2.0 and 2.1 (§3.8). A deterministic synthetic fixture is checked through the typed readers; it is not production key material and does not claim cryptographic validity.
-- On the #187 branch, these routes add eight cells to 33,862. After syncing through #216, the selected Java report validates 33,886/33,886 cells with zero failures and records 37,755 pending cells of 71,641, including the Usage Limits coverage already in this stack. Full Java matrix closure remains required under FR-002/FR-003/FR-009.
+- On the #187 branch, the initial RSA public-key slice adds eight cells to 33,862, and the transparent-format expansion adds 108 more, producing 33,978 selected cells. After syncing through #216, the report validates 33,994/33,994 cells and records 37,647 pending of 71,641, including Usage Limits coverage. Full Java matrix closure remains required under FR-002/FR-003/FR-009.
+
+## Java transparent Key Material model routes — 2026-11-18
+
+- **FR-003:** The installed Java consumer exercises `KeyMaterial.fromFields` and `KeyMaterial.fromItem` for all 29 catalogued Big Integer members in transparent DSA, RSA, and DH private/public plus EC private formats (KMIP 2.0/2.1 §§3.5–3.11). Each fixture includes the format's required fields and applicable optional fields and verifies the target member through both typed readers. Values are synthetic and not tested as cryptographic keys.
+- The selected report validates 33,994/33,994 cells with zero failures and records 37,647 pending of 71,641. FR-002/FR-003/FR-009 remain open for full Java matrix closure and the remaining languages.
+
+## Java typed Key Value and Key Block routes — 2026-11-18
+
+- **FR-003:** The Java controlled consumer now invokes `KeyValue.fromFields`,
+  `KeyValue.fromItem`, `KeyBlock.fromFields`, and `KeyBlock.fromItem` for all
+  29 catalogued Big Integer members in the transparent DSA, RSA, DH, and EC
+  Key Material formats, for KMIP 2.0 and 2.1 (§§3.5–3.11). Each typed result is
+  read back through nested typed accessors and checked against the target
+  synthetic field.
+- This adds 232 cells to the #187 Java selected scope. The combined #216 report
+  validates 34,226/34,226 cells with zero failures and leaves 37,415 of 71,641
+  pending. Full Java matrix closure remains open under FR-002/FR-003/FR-009.
+
+## Java Right Usage Limits stack verification — 2026-11-18
+
+- **FR-003:** The #217 controlled consumer retains all eight generic Structure,
+  Item creation, Item view, and decode cells for the optional Right Usage
+  Limits member in KMIP 2.0 and 2.1 (§7.28 and §7.34). The evidence uses the
+  exact catalog target and confirms all four routes in both versions.
+- The full Java suite passes 84 tests. The #217 selected report validates
+  34,226/34,226 cells with zero failures and leaves 37,415 of 71,641 pending;
+  full Java matrix closure remains open under FR-002/FR-003/FR-009.

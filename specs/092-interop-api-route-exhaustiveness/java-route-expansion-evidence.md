@@ -1853,6 +1853,19 @@ python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-refe
 python3 interop/java-kmip-validator/tools/compare_route_ledger.py
 git diff --check
 ```
+
+## #217 stack-tip verification after typed Key Value and Key Block sync — 2026-11-18
+
+The #217 tip contains the 232 typed Key Value and Key Block cells introduced
+by #187 through #216 and retains all eight Right Usage Limits Structure/Item
+cells. The full installed Java consumer suite passes 84/84 tests with zero
+failures, errors, or skips. The shared evidence, schema, and capability suites
+pass 108 tests; the route-capability audit reports 1,507 routes. The selected
+report validates 34,226/34,226 cells with zero failures and leaves 37,415 of
+71,641 planned Java cells pending. The Right Usage Limits cells also appear in
+the #216 report, so this child adds validation of the case without increasing
+the selected cell count. Ledger comparison and `git diff --check` pass. The
+full Java matrix and stack remain WIP.
 ## Java repeatable Any object-attribute members — 2026-11-17
 
 Red commit `d9285a466` requires the generic Item creation, Item view, and
@@ -3455,27 +3468,6 @@ python3 interop/java-kmip-validator/tools/compare_route_ledger.py
 git diff --check
 ```
 
-
-## #217 Right Usage Limits branch synchronized with Operation route expansion — 2026-11-18
-
-The #217 branch now contains the #216 Operation and managed-object route expansions and keeps its Right Usage Limits member fixture. The selected report includes all eight local Right Usage Limits route cells for KMIP 2.0/2.1. The full installed-consumer Gradle suite passes 82 tests with zero failures, errors, or skips. The shared validator accepts 33,878 selected cells with zero failures; 37,763 of 71,641 Java cells remain pending, so the complete Java matrix and this PR stack remain WIP. Ledger comparison and `git diff --check` pass.
-
-The suite used a worktree-local Java temporary directory because `/tmp` was full:
-
-```sh
-JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-tmp" \
-  bash bindings/java/gradlew -p interop/java-kmip-validator \
-  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" \
-  test --rerun-tasks
-python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
-  --report interop/java-kmip-validator/build/route-execution-evidence.json \
-  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
-  --write-ledger
-python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
-python3 interop/java-kmip-validator/tools/compare_route_ledger.py
-git diff --check
-```
-
 ## Managed-object Object Type generic routes — 2026-11-18
 
 Red commit `b37cd0597` adds an assertion for each catalogued managed-object
@@ -3546,13 +3538,108 @@ The selected report validates 33,870/33,870 cells with zero failures, and the
 generated ledger records 37,771 pending cells of 71,641. The selected scope is
 complete, but the full Java matrix and stack remain incomplete and WIP.
 
-## #217 stack-tip verification after typed Key Material sync — 2026-11-18
+## Transparent Key Material format model routes — 2026-11-18
 
-The #217 tip contains the eight RSA public Key Material typed-model cells from
-#187, the Usage Limits and Right Usage Limits cases, and all prior route
-evidence. The full installed-consumer Gradle suite passes 83/83 tests with no
-failures, errors, or skips. The shared evidence, schema, and capability suites
-pass 108 tests, the route-capability audit reports 1,507 routes, and the ledger
-comparison passes. The selected report validates 33,886/33,886 cells with
-zero failures and records 37,755 pending of 71,641. The complete Java matrix is
-still open, so the stack remains WIP.
+Red commit `f2797df71` requires typed Key Material route events for every
+catalogued Big Integer member in the transparent DSA, RSA, DH, and EC formats;
+the focused test fails because the executor only accepts RSA public fields.
+Green commit `67b113225` derives the transparent Key Format Type from the
+catalogued parent structure, constructs format-specific required fields and
+applicable optional fields, and invokes the installed `KeyMaterial.fromFields`
+and `KeyMaterial.fromItem` methods. The test checks the target Big Integer
+through both typed readers and records both routes in KMIP 2.0 and 2.1. This
+closes 108 additional cells across 29 fields under KMIP 2.0/2.1 §§3.5–3.11;
+fixtures are synthetic and make no cryptographic-key validity claim.
+
+Verification on the #187 source branch:
+
+```sh
+# Run from interop/java-kmip-validator.
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-tmp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks
+# Run from the repository root.
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+python3 -m unittest interop.shared.tests.test_route_execution_evidence \
+  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+git diff --check
+```
+
+The complete Java validator suite passes 84/84 tests with zero failures,
+errors, or skips; the shared evidence, schema, and capability suites pass 108
+tests. The selected report validates 33,978/33,978 cells with zero failures;
+37,663 of 71,641 cells remain pending. The full Java matrix and stack remain
+incomplete and WIP.
+
+## Transparent Key Value and Key Block typed routes — 2026-11-18
+
+Red commit `af1d926d7` extends the transparent Key Material route contract to
+require `KeyValue.fromFields`, `KeyValue.fromItem`, `KeyBlock.fromFields`, and
+`KeyBlock.fromItem` for every catalogued Big Integer member. The focused test
+fails because the executor emits only the two Key Material constructor routes.
+Green commit `bd6694038` builds nested, format-correct Key Material, Key Value,
+and Key Block fixtures from the catalog. It invokes all six installed typed
+factory methods for 29 fields in both KMIP 2.0 and 2.1 and reads each target field
+back through the nested typed views. Fixture bytes are deterministic test data,
+not cryptographic keys.
+
+Verification on the #187 source branch:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-tmp" \
+  bash bindings/java/gradlew -p interop/java-kmip-validator \
+  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" \
+  test --rerun-tasks
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+python3 -m unittest interop.shared.tests.test_route_execution_evidence \
+  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+git diff --check
+```
+
+All 84 Java validator tests pass with no failures, errors, or skips; the three
+shared evidence/schema/capability suites pass 108 tests. The selected report
+validates 34,210/34,210 cells with zero failures and leaves 37,431 of 71,641
+planned Java cells pending. The generated route ledger matches its checked-in
+reference. Full Java matrix closure remains outstanding.
+
+## #216 stack-tip verification after typed Key Value and Key Block sync — 2026-11-18
+
+The #216 branch contains the 232 typed Key Value and Key Block cells from
+#187 and retains its Usage Limits routes. Its installed Java consumer suite
+passes 84/84 tests with zero failures, errors, or skips. The shared evidence,
+schema, and capability suites pass 108 tests; the capability audit reports
+1,507 routes. The selected report validates 34,226/34,226 cells with zero
+failures and leaves 37,415 of 71,641 planned cells pending. Ledger comparison
+and `git diff --check` pass. The full Java matrix and stack remain WIP.
+
+## #217 Right Usage Limits branch synchronized with Operation route expansion — 2026-11-18
+
+The #217 branch now contains the #216 Operation and managed-object route expansions and keeps its Right Usage Limits member fixture. The selected report includes all eight local Right Usage Limits route cells for KMIP 2.0/2.1. The full installed-consumer Gradle suite passes 82 tests with zero failures, errors, or skips. The shared validator accepts 33,878 selected cells with zero failures; 37,763 of 71,641 Java cells remain pending, so the complete Java matrix and this PR stack remain WIP. Ledger comparison and `git diff --check` pass.
+
+The suite used a worktree-local Java temporary directory because `/tmp` was full:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-tmp" \
+  bash bindings/java/gradlew -p interop/java-kmip-validator \
+  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" \
+  test --rerun-tasks
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+git diff --check
+```

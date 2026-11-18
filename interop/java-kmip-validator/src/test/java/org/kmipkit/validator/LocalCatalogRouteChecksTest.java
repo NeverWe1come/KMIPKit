@@ -622,7 +622,7 @@ class LocalCatalogRouteChecksTest {
     }
 
     @Test
-    void executesRsaPublicKeyMaterialThroughTypedModelRoutes() throws Exception {
+    void executesRsaPublicKeyMaterialThroughTypedKeyModels() throws Exception {
         JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
         Set<String> caseIds = Set.of(
                 "test-norm-structure-member-structure-member-3-8-key-material-modulus",
@@ -634,10 +634,43 @@ class LocalCatalogRouteChecksTest {
                     catalog, version, caseIds, invocations::add);
         }
 
-        assertEquals(caseIds.size() * 2 * 2, invocations.size());
+        assertEquals(caseIds.size() * 2 * 6, invocations.size());
         assertEquals(Set.of(
                 "java.typed-protocol.model.org.kmipkit.ttlv.keymaterial.fromfields",
-                "java.typed-protocol.model.org.kmipkit.ttlv.keymaterial.fromitem"),
+                "java.typed-protocol.model.org.kmipkit.ttlv.keymaterial.fromitem",
+                "java.typed-protocol.model.org.kmipkit.ttlv.keyvalue.fromfields",
+                "java.typed-protocol.model.org.kmipkit.ttlv.keyvalue.fromitem",
+                "java.typed-protocol.model.org.kmipkit.ttlv.keyblock.fromfields",
+                "java.typed-protocol.model.org.kmipkit.ttlv.keyblock.fromitem"),
+                invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId)
+                        .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(caseIds, invocations.stream().map(LocalCatalogRouteChecks.Invocation::caseId)
+                .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(Set.of("construct"), invocations.stream()
+                .map(LocalCatalogRouteChecks.Invocation::action)
+                .collect(java.util.stream.Collectors.toSet()));
+    }
+
+    @Test
+    // KMIP 2.0/2.1 §§3.5–3.11 define these transparent Key Material structures and field types.
+    void executesEveryTransparentKeyMaterialFormatThroughTypedKeyModels() throws Exception {
+        JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
+        Set<String> caseIds = LocalCatalogRouteChecks.TRANSPARENT_KEY_MATERIAL_CASE_IDS;
+        List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
+
+        for (String version : List.of("2.0", "2.1")) {
+            LocalCatalogRouteChecks.executeTransparentKeyMaterialTargets(
+                    catalog, version, caseIds, invocations::add);
+        }
+
+        assertEquals(caseIds.size() * 2 * 6, invocations.size());
+        assertEquals(Set.of(
+                "java.typed-protocol.model.org.kmipkit.ttlv.keymaterial.fromfields",
+                "java.typed-protocol.model.org.kmipkit.ttlv.keymaterial.fromitem",
+                "java.typed-protocol.model.org.kmipkit.ttlv.keyvalue.fromfields",
+                "java.typed-protocol.model.org.kmipkit.ttlv.keyvalue.fromitem",
+                "java.typed-protocol.model.org.kmipkit.ttlv.keyblock.fromfields",
+                "java.typed-protocol.model.org.kmipkit.ttlv.keyblock.fromitem"),
                 invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId)
                         .collect(java.util.stream.Collectors.toSet()));
         assertEquals(caseIds, invocations.stream().map(LocalCatalogRouteChecks.Invocation::caseId)
