@@ -73,6 +73,42 @@ def _omitted_batch_option_targets(case: dict) -> set[str]:
     return omitted
 
 
+def _not_applicable_reason(case: dict, obligation: dict, action: str) -> str | None:
+    """Classify the unreturned item in the approved Stop partial-response case."""
+    if (case.get("case_id") != "test-batch-stop-on-first-failure"
+            or case.get("category") != "batch_workflows"
+            or action != "decode"
+            or obligation.get("workflow_item_index") is None):
+        return None
+    scenario = case.get("requires", {}).get("protocol_scenario", {})
+    if not isinstance(scenario, dict):
+        return None
+    parameters = scenario.get("parameters", {})
+    expected = scenario.get("expected", {})
+    if not isinstance(parameters, dict) or not isinstance(expected, dict):
+        return None
+    items = parameters.get("items", [])
+    response_count = expected.get("response_count")
+    if (parameters.get("batch_error_continuation_option") != "Stop"
+            or expected.get("first") != "OperationFailed"
+            or not isinstance(items, list)
+            or not isinstance(response_count, int)
+            or isinstance(response_count, bool)
+            or response_count <= 0
+            or response_count >= len(items)
+            or obligation["workflow_item_index"] < response_count
+            or obligation["workflow_item_index"] >= len(items)):
+        return None
+    return "stop_unprocessed_response_omitted"
+
+
+def _with_applicability(cell: dict, case: dict) -> dict:
+    reason = _not_applicable_reason(case, cell, cell["action"])
+    if reason is None:
+        return cell
+    return {**cell, "execution_status": "not_applicable", "not_applicable_reason": reason}
+
+
 def _route_excludes_target(case: dict, route: dict, target: dict | None) -> bool:
     requires = case.get("requires", {})
     target_kind = requires.get("target_kind", (target or {}).get("kind"))
@@ -350,8 +386,10 @@ def iter_cells(catalog: dict, manifest: dict, *, languages: tuple[str, ...] = LA
                             }
                             if route["mode"] == "local":
                                 for action in route["actions"]:
-                                    yield {**base, "action": action, "execution_route_id": None,
-                                           "execution_api_symbol": None}
+                                    yield _with_applicability({
+                                        **base, "action": action, "execution_route_id": None,
+                                        "execution_api_symbol": None,
+                                    }, case)
                                 continue
 
                             execution_route_id = route.get("execution_route_id")
@@ -363,11 +401,16 @@ def iter_cells(catalog: dict, manifest: dict, *, languages: tuple[str, ...] = LA
                             for action in route["actions"]:
                                 if action != "construct":
                                     raise ValueError(f"network construction route has an invalid action: {action}")
-                                yield {**base, "action": "construct", "execution_route_id": execution_route_id,
-                                       "execution_api_symbol": execution["public_api_symbol"]}
+                                yield _with_applicability({
+                                    **base, "action": "construct",
+                                    "execution_route_id": execution_route_id,
+                                    "execution_api_symbol": execution["public_api_symbol"],
+                                }, case)
                             for action in _network_response_actions(case, obligation["target_id"], normative_targets):
-                                yield {**base, "action": action, "execution_route_id": execution_route_id,
-                                       "execution_api_symbol": execution["public_api_symbol"]}
+                                yield _with_applicability({
+                                    **base, "action": action, "execution_route_id": execution_route_id,
+                                    "execution_api_symbol": execution["public_api_symbol"],
+                                }, case)
 
 
 def build_matrix(catalog: dict, manifest: dict) -> dict:
@@ -375,10 +418,13 @@ def build_matrix(catalog: dict, manifest: dict) -> dict:
     cell_count = 0
     seen = set()
     case_language_coverage = set()
+    not_applicable_count = 0
     construction_route_cell_counts: dict[str, int] = {}
     execution_route_cell_counts: dict[str, int] = {}
     digest = hashlib.sha256()
     for cell in iter_cells(catalog, manifest):
+        if cell["execution_status"] == "not_applicable":
+            not_applicable_count += 1
         key = (cell["case_id"], cell["language"], cell["route_id"], cell.get("target_id"),
                cell.get("workflow_step_index"), cell.get("workflow_item_index"),
                cell["execution_route_id"], cell["action"], cell["protocol_version"],
@@ -418,6 +464,7 @@ def build_matrix(catalog: dict, manifest: dict) -> dict:
         "public_api_route_count": len(manifest["routes"]),
         "execution_route_count": len(manifest.get("execution_routes", [])),
         "cell_count": cell_count,
+        "not_applicable_cell_count": not_applicable_count,
         "case_language_count": len(case_language_coverage),
         "coverage_by_language": {
             language: sum(1 for case_id, case_language in case_language_coverage if case_language == language)

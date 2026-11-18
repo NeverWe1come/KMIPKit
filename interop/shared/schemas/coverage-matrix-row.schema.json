@@ -23,13 +23,22 @@
     "mode": { "enum": ["local", "network"] },
     "public_api_symbol": { "type": "string", "minLength": 1 },
     "artifact_commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
-    "execution_status": { "const": "required" },
+    "execution_status": { "enum": ["required", "not_applicable"] },
+    "not_applicable_reason": { "enum": ["stop_unprocessed_response_omitted"] },
     "evidence_collected": { "const": false },
     "action": { "enum": ["construct", "encode", "send", "decode"] },
     "execution_route_id": { "oneOf": [{ "type": "null" }, { "type": "string", "minLength": 1 }] },
     "execution_api_symbol": { "oneOf": [{ "type": "null" }, { "type": "string", "minLength": 1 }] }
   },
   "allOf": [
+    {
+      "if": { "properties": { "execution_status": { "const": "not_applicable" } } },
+      "then": { "required": ["not_applicable_reason"] }
+    },
+    {
+      "if": { "properties": { "execution_status": { "const": "required" } } },
+      "then": { "not": { "required": ["not_applicable_reason"] } }
+    },
     {
       "if": { "properties": { "mode": { "const": "local" } } },
       "then": {
