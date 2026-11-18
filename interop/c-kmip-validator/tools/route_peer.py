@@ -74,6 +74,9 @@ PKCS11_OUTPUT = b'controlled-pkcs11-output'
 CREATE_KEY_PAIR_ITEM_IDS = (b'create-pair', b'destroy-private', b'destroy-public')
 CREATE_SPLIT_KEY_ITEM_IDS = (b'split-create', b'split-destroy-part-1', b'split-destroy-part-2')
 CREATE_SPLIT_KEY_IDENTIFIERS = (b'fixture-split-part-1', b'fixture-split-part-2')
+JOIN_SPLIT_KEY_ITEM_IDS = (b'join-split-create', b'join-split-target',
+                           b'join-split-destroy-joined', b'join-split-destroy-part-1',
+                           b'join-split-destroy-part-2')
 CERTIFY_ITEM_IDS = (b'certify-create-pair', b'certify-activate-private', b'certify-public-key',
                     b'certify-revoke-private', b'certify-destroy-certificate',
                     b'certify-destroy-private', b'certify-destroy-public')
@@ -405,6 +408,7 @@ RECIPES = {
     'test-op-signature-verify': ((2, 18, 34, 19, 20, 20), 'signature_verify'),
     'test-op-create-key-pair': ((2, 20, 20), 'create_key_pair'),
     'test-op-create-split-key': ((40, 20, 20), 'create_split_key'),
+    'test-op-join-split-key': ((40, 41, 20, 20, 20), 'join_split_key'),
     'test-op-certify': ((2, 18, 6, 19, 20, 20, 20), 'certify'),
     'test-op-pkcs#11': ((1, 18, 51, 19, 20), 'pkcs11'),
     'test-op-obtain-lease': ((1, 16, 19, 20), 'obtain_lease'),
@@ -1022,11 +1026,11 @@ def verify_create_key_pair_response(response_tree):
         raise ValueError('fixture_create_key_pair_cleanup_mapping_mismatch')
 
 
-def assert_create_split_key_request(node):
+def assert_create_split_key_request(node, item_id=CREATE_SPLIT_KEY_ITEM_IDS[0]):
     """Check a 2-of-2 AES Create Split Key request and its item identity."""
     items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
     if (len(items) != 1 or numbers(items[0], 0x42005C) != [40] or
-            byte_string_values(items[0], 0x420093) != [CREATE_SPLIT_KEY_ITEM_IDS[0]]):
+            byte_string_values(items[0], 0x420093) != [item_id]):
         raise ValueError('fixture_create_split_key_batch_mismatch')
     payloads = [child for child in items[0][2]
                 if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
@@ -1055,11 +1059,11 @@ def assert_create_split_key_request(node):
         raise ValueError('fixture_create_split_key_attributes_mismatch')
 
 
-def verify_create_split_key_response(response_tree):
+def verify_create_split_key_response(response_tree, item_id=CREATE_SPLIT_KEY_ITEM_IDS[0]):
     """Check both repeated split-part IDs and the successful operation result."""
     items = [child for child in response_tree[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
     if (len(items) != 1 or numbers(items[0], 0x42005C) != [40] or
-            byte_string_values(items[0], 0x420093) != [CREATE_SPLIT_KEY_ITEM_IDS[0]] or
+            byte_string_values(items[0], 0x420093) != [item_id] or
             numbers(items[0], 0x42007F) != [0]):
         raise ValueError('fixture_create_split_key_response_lifecycle_mismatch')
     payloads = [child for child in items[0][2]
@@ -1089,6 +1093,48 @@ def verify_split_key_destroy_response(response_tree, exchange_index):
             numbers(items[0], 0x42007F) != [0] or
             text_values(items[0], UNIQUE_IDENTIFIER_TAG) != [expected_identifier.decode('ascii')]):
         raise ValueError('fixture_create_split_key_cleanup_response_mismatch')
+
+
+def assert_join_split_key_request(node):
+    """Check Join Split Key references both created parts and cleans all three objects."""
+    items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    operations = [[41], [20], [20], [20]]
+    if ([numbers(item, 0x42005C) for item in items] != operations or
+            [byte_string_values(item, 0x420093) for item in items] !=
+            [[item_id] for item_id in JOIN_SPLIT_KEY_ITEM_IDS[1:]]):
+        raise ValueError('fixture_join_split_key_batch_mismatch')
+    join_payloads = [child for child in items[0][2]
+                     if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+    if len(join_payloads) != 1:
+        raise ValueError('fixture_join_split_key_payload_missing')
+    fields = join_payloads[0][2]
+    identifiers = [field[2] for field in fields if field[0] == UNIQUE_IDENTIFIER_TAG and field[1] == 7]
+    if (identifiers != list(CREATE_SPLIT_KEY_IDENTIFIERS) or
+            numbers(items[0], 0x420057) != [2] or
+            numbers(items[1], UNIQUE_IDENTIFIER_TAG) != [ID_PLACEHOLDER_ENUMERATION] or
+            [text_values(item, UNIQUE_IDENTIFIER_TAG) for item in items[2:]] !=
+            [[identifier.decode('ascii')] for identifier in CREATE_SPLIT_KEY_IDENTIFIERS]):
+        raise ValueError('fixture_join_split_key_identifiers_mismatch')
+
+
+def verify_join_split_key_response(response_tree):
+    """Check the joined identifier and exact joined/source object cleanup responses."""
+    items = [child for child in response_tree[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if ([numbers(item, 0x42005C) for item in items] != [[41], [20], [20], [20]] or
+            [byte_string_values(item, 0x420093) for item in items] !=
+            [[item_id] for item_id in JOIN_SPLIT_KEY_ITEM_IDS[1:]] or
+            [numbers(item, 0x42007F) for item in items] != [[0], [0], [0], [0]]):
+        raise ValueError('fixture_join_split_key_response_lifecycle_mismatch')
+    payloads = [child for child in items[0][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1]
+    joined_ids = [field[2] for field in payloads[0][2]
+                  if field[0] == UNIQUE_IDENTIFIER_TAG and field[1] == 7] if len(payloads) == 1 else []
+    if joined_ids != [b'fixture-joined-key']:
+        raise ValueError('fixture_join_split_key_result_identifier_mismatch')
+    expected_cleanup = (b'fixture-joined-key', *CREATE_SPLIT_KEY_IDENTIFIERS)
+    if [text_values(item, UNIQUE_IDENTIFIER_TAG) for item in items[1:]] != [
+            [identifier.decode('ascii')] for identifier in expected_cleanup]:
+        raise ValueError('fixture_join_split_key_cleanup_identifiers_mismatch')
 
 
 def assert_certify_request(node):
@@ -2651,6 +2697,8 @@ def target_operation_exchange_index(recipe):
         return 3
     if recipe is not None and recipe[1] == 'async_process_then_poll_state':
         return 0
+    if recipe is not None and recipe[1] == 'join_split_key':
+        return 1
     return 1 if recipe is not None and recipe[1] in ('login_logout', 'cancel_async') else 0
 
 
@@ -2839,7 +2887,23 @@ class PeerState:
                     self.attributes[split_identifier] = set()
                     self.attribute_values[split_identifier] = {}
                     self.adjustable_attribute_values[split_identifier] = {}
+                placeholder = split_identifiers[0]
                 effect = 'split_key_created'
+            elif operation == 41:
+                split_identifiers = ('fixture-split-part-1', 'fixture-split-part-2')
+                joined_identifier = 'fixture-joined-key'
+                references = text_identifiers
+                if (references != list(split_identifiers) or
+                        any(self.objects.get(split_identifier) != 'pre_active'
+                            for split_identifier in split_identifiers) or
+                        joined_identifier in self.objects):
+                    raise ValueError('fixture_join_split_key_parts_mismatch')
+                self.objects[joined_identifier] = 'pre_active'
+                self.attributes[joined_identifier] = set()
+                self.attribute_values[joined_identifier] = {}
+                self.adjustable_attribute_values[joined_identifier] = {}
+                placeholder = joined_identifier
+                effect = 'split_key_joined'
             elif operation == 6:
                 private_identifier = self.key_pair_identifiers.get(5)
                 public_identifier = self.key_pair_identifiers.get(6)
@@ -3364,7 +3428,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 'async_process_then_poll_state',
                                                 'async_query_outstanding_filter',
                                                 'async_unknown_correlation_rejected',
-                                                'create_split_key') and
+                                                'create_split_key', 'join_split_key') and
                                             recipe[0][0] not in (1, 2, 3))),
                             usage_allocation_ready=recipe[1] == 'get_usage_allocation_uid_variants')
                         boundary = case_id in (
@@ -3384,6 +3448,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         3 if attribute_mutation_recipe or
                                         recipe[1] in ('cancel_poll_race', 'async_poll_final_failure') else
                                         3 if recipe[1] == 'create_split_key' else
+                                        2 if recipe[1] == 'join_split_key' else
                                         5 if recipe[1] == 'async_poll_repeated_pending_to_success' else
                                         4 if recipe[1] == 'async_process_then_poll_state' else
                                         2 if placeholder_chain_recipe or batch_order_placeholder_recipe or
@@ -3423,6 +3488,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                               exchange_index == attribute_cleanup_exchange_index - 1)))
                                         response_item_ids = None
                                         returned_unique_identifier = None
+                                        returned_unique_identifiers = None
                                         logout_recipe = recipe[1] == 'login_logout'
                                         if logout_recipe:
                                             assert_login_logout_exchange(request_tree, version, exchange_index)
@@ -3539,6 +3605,17 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 response_operations = (20,)
                                                 returned_unique_identifier = \
                                                     CREATE_SPLIT_KEY_IDENTIFIERS[exchange_index - 1]
+                                        elif recipe[1] == 'join_split_key':
+                                            if exchange_index == 0:
+                                                assert_create_split_key_request(
+                                                    request_tree, JOIN_SPLIT_KEY_ITEM_IDS[0])
+                                                response_operations = (40,)
+                                            else:
+                                                assert_join_split_key_request(request_tree)
+                                                response_operations = (41, 20, 20, 20)
+                                                returned_unique_identifiers = (
+                                                    b'fixture-joined-key', b'fixture-joined-key',
+                                                    *CREATE_SPLIT_KEY_IDENTIFIERS)
                                         elif cleanup_exchange:
                                             if placeholder_chain_recipe or batch_order_placeholder_recipe:
                                                 assert_placeholder_cleanup_request(request_tree, version)
@@ -3617,6 +3694,10 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             response_item_ids = OBTAIN_LEASE_ITEM_IDS
                                         elif recipe[1] == 'create_split_key':
                                             response_item_ids = (CREATE_SPLIT_KEY_ITEM_IDS[exchange_index],)
+                                        elif recipe[1] == 'join_split_key':
+                                            response_item_ids = (
+                                                (JOIN_SPLIT_KEY_ITEM_IDS[0],)
+                                                if exchange_index == 0 else JOIN_SPLIT_KEY_ITEM_IDS[1:])
                                         elif placeholder_chain_recipe:
                                             response_item_ids = (
                                                 (b'placeholder-revoke-cleanup', b'placeholder-destroy-cleanup')
@@ -3833,7 +3914,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 if recipe[1] == 'rng_retrieve' else
                                                 len(byte_string_values(request_tree, 0x4200C2)[0])
                                                 if recipe[1] == 'rng_seed' else 16,
-                                                returned_unique_identifier=returned_unique_identifier)
+                                                returned_unique_identifier=returned_unique_identifier,
+                                                returned_unique_identifiers=returned_unique_identifiers)
                                         export_response_negative = (
                                             case_id.startswith('test-norm-payload-client-export-response-') and
                                             variant == 'missing_rejected' and
@@ -3964,6 +4046,11 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             verify_create_split_key_response(response_tree)
                                         elif recipe[1] == 'create_split_key':
                                             verify_split_key_destroy_response(response_tree, exchange_index)
+                                        elif recipe[1] == 'join_split_key' and exchange_index == 0:
+                                            verify_create_split_key_response(
+                                                response_tree, JOIN_SPLIT_KEY_ITEM_IDS[0])
+                                        elif recipe[1] == 'join_split_key':
+                                            verify_join_split_key_response(response_tree)
                                         elif recipe[1] == 'certify':
                                             verify_certify_response(response_tree)
                                         elif recipe[1] == 'pkcs11':
@@ -4093,6 +4180,18 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                     for reason in evidence['reasons']]
                                 observation[0][2]['peer_observed_state_after_sha256'] = \
                                     observation[-1][2]['peer_observed_state_after_sha256']
+                            if recipe[1] == 'join_split_key' and len(observation) == 2:
+                                observation[1][2]['effects'] = [
+                                    effect for _, _, evidence in observation
+                                    for effect in evidence['effects']]
+                                observation[1][2]['statuses'] = [
+                                    status for _, _, evidence in observation
+                                    for status in evidence['statuses']]
+                                observation[1][2]['reasons'] = [
+                                    reason for _, _, evidence in observation
+                                    for reason in evidence['reasons']]
+                                observation[1][2]['peer_observed_state_before_sha256'] = \
+                                    observation[0][2]['peer_observed_state_before_sha256']
                             result = json.loads(result_path.read_text()) if result_path.exists() else {}
                             verify_consumer_provenance(result, artifact_sha256, catalog_sha256)
                             result_case = (result.get('cases') or [{}])[0]

@@ -86,7 +86,8 @@ def response(operations: tuple[int, ...], protocol_minor: int,
              result_reasons: tuple[int | None, ...] | None = None,
              rng_length: int = 16,
              cancellation_result: int = 1,
-             returned_unique_identifier: bytes | None = None) -> bytes:
+             returned_unique_identifier: bytes | None = None,
+             returned_unique_identifiers: tuple[bytes, ...] | None = None) -> bytes:
     version = tlv(0x420069, 1,
                   integer(0x42006A, 2) + integer(0x42006B, protocol_minor))
     header = tlv(
@@ -193,6 +194,8 @@ def response(operations: tuple[int, ...], protocol_minor: int,
         elif operation == 40:
             payload_value = (tlv(0x420094, 7, b"fixture-split-part-1") +
                              tlv(0x420094, 7, b"fixture-split-part-2"))
+        elif operation == 41:
+            payload_value = tlv(0x420094, 7, b"fixture-joined-key")
         elif operation == 37:
             payload_value = tlv(0x4200C2, 8, bytes(range(rng_length)))
         elif operation == 38:
@@ -265,8 +268,10 @@ def response(operations: tuple[int, ...], protocol_minor: int,
         elif operation in (9, 18, 21):
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
         elif operation == 20:
-            payload_value = tlv(0x420094, 7,
-                                returned_unique_identifier or b"fixture-key-1")
+            identifier = (returned_unique_identifiers[item_index]
+                          if returned_unique_identifiers is not None else
+                          returned_unique_identifier or b"fixture-key-1")
+            payload_value = tlv(0x420094, 7, identifier)
         elif operation == 17:
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
         elif operation == 19 and result_status == 0:
@@ -315,6 +320,11 @@ def response(operations: tuple[int, ...], protocol_minor: int,
         if operations == (1, 16, 19, 20):
             unique_batch_item_id = (
                 b"lease-create", b"lease-target", b"lease-revoke", b"lease-destroy"
+            )[item_index]
+        if operations == (41, 20, 20, 20):
+            unique_batch_item_id = (
+                b"join-split-target", b"join-split-destroy-joined",
+                b"join-split-destroy-part-1", b"join-split-destroy-part-2"
             )[item_index]
         item_fields = integer(0x42005C, operation, 5)
         if unique_batch_item_id is not None:
@@ -552,6 +562,7 @@ def main() -> int:
     expected_operations += (2, 18, 34, 19, 20, 20)
     expected_operations += (2, 20, 20)
     expected_operations += (40, 20, 20)
+    expected_operations += (40, 41, 20, 20, 20)
     expected_operations += (2, 18, 6, 19, 20, 20, 20)
     expected_operations += (1, 18, 51, 19, 20)
     expected_cases += ("test-op-pkcs#11",)
@@ -601,6 +612,7 @@ def main() -> int:
     expected_cases += ("test-op-sign", "test-op-signature-verify")
     expected_cases += ("test-op-create-key-pair",)
     expected_cases += ("test-op-create-split-key",)
+    expected_cases += ("test-op-join-split-key",)
     expected_cases += ("test-op-certify",)
     expected_cases += ("test-batch-stop-on-first-failure",)
     expected_cases += ("test-neg-destroy-active-without-revoke",)
@@ -714,6 +726,9 @@ def main() -> int:
                                 raise AssertionError("Check fixture must revoke the created key before destroying it")
                             split_identifiers = (b"fixture-split-part-1", b"fixture-split-part-2")
                             if operations == (40,):
+                                if split_key_created and split_key_destroyed == set(split_identifiers):
+                                    split_key_created = False
+                                    split_key_destroyed.clear()
                                 if (split_key_created or integer(0x42008B, 2) not in request or
                                         integer(0x42008C, 2) not in request or
                                         enumeration(0x42008A, 1) not in request or
@@ -729,6 +744,16 @@ def main() -> int:
                                 if not split_key_created or identifier in split_key_destroyed:
                                     raise AssertionError("Create Split Key cleanup identifier was reused or premature")
                                 split_key_destroyed.add(identifier)
+                            if operations == (41, 20, 20, 20):
+                                if (not split_key_created or
+                                        request.count(tlv(0x420094, 7, split_identifiers[0])) != 2 or
+                                        request.count(tlv(0x420094, 7, split_identifiers[1])) != 2 or
+                                        request.count(enumeration(0x420094, 1)) != 1 or
+                                        any(tlv(0x420093, 8, item_id) not in request for item_id in (
+                                            b"join-split-target", b"join-split-destroy-joined",
+                                            b"join-split-destroy-part-1", b"join-split-destroy-part-2"))):
+                                    raise AssertionError("Join Split Key must consume both parts and clean all three objects")
+                                split_key_destroyed.update(split_identifiers)
                             if any(operation not in expected_operations for operation in operations):
                                 raise AssertionError(f"unexpected operation batch {operations!r} for {protocol_version}")
                             if operations == (25,) and request.count(
@@ -1195,7 +1220,11 @@ def main() -> int:
                                         tlv(0x420006, 8, b"fixture-cancel-correlation")) != 1:
                                     raise AssertionError("Cancel request omitted its exact pending correlation value")
                                 if operations == (40,):
-                                    response_item_ids = (b"split-create",)
+                                    response_item_ids = (b"join-split-create" if
+                                        tlv(0x420093, 8, b"join-split-create") in request else b"split-create",)
+                                elif operations == (41, 20, 20, 20):
+                                    response_item_ids = (b"join-split-target", b"join-split-destroy-joined",
+                                        b"join-split-destroy-part-1", b"join-split-destroy-part-2")
                                 elif operations == (20,):
                                     split_cleanup_id = next((identifier for identifier in split_identifiers
                                         if tlv(0x420094, 7, identifier) in request), None)
@@ -1213,7 +1242,10 @@ def main() -> int:
                                     tlv(0x4200C2, 8, bytes(range(32))) in request else 16,
                                     cancellation_result=cancellation_result,
                                     returned_unique_identifier=next((identifier for identifier in split_identifiers
-                                        if operations == (20,) and tlv(0x420094, 7, identifier) in request), None)))
+                                        if operations == (20,) and tlv(0x420094, 7, identifier) in request), None),
+                                    returned_unique_identifiers=(
+                                        b"fixture-joined-key", b"fixture-joined-key",
+                                        *split_identifiers) if operations == (41, 20, 20, 20) else None))
                                 if operations == (25,):
                                     async_request_pending = False
                                     async_poll_mode = "none"
