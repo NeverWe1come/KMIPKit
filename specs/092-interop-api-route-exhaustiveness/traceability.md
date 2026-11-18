@@ -231,6 +231,23 @@ artifact. This is part of the FR-006 artifact provenance check.
   ledger records 71,641 planned, 34,740 executed, and 36,901 pending cells.
   Full matrix closure remains open under FR-002/FR-003/FR-009.
 
+### Java Get Attributes request payload-field route evidence — 2026-11-18
+
+- **FR-001/FR-003/FR-005/FR-009:** `ClientBatchItem.getAttributes` and
+  `AttributeRequest.getAttributesToBatchItem` now execute the catalogued
+  Unique Identifier present/omitted and Attribute Reference absent/single/
+  repeated branches over every approved encoding/transport pair. Omitted IDs
+  resolve through an earlier Create batch item. Controlled mutual-TLS peers
+  inspect the request, and the client validates the typed response (OASIS KMIP
+  2.0/2.1 §6.1.20, §11.58, §§8.3, 8.6).
+- Red `daf05f7df` requires evidence for every payload branch and network pair;
+  Green `3c41ea623` exercises the public routes and controlled exchanges.
+- The selected report validates 40,197/40,197 cells with zero failures. The
+  ledger records 71,641 planned, 40,197 executed, and 31,444 pending cells.
+  The Java suite passes 92/92, the shared suite passes 196/196, ledger
+  comparison passes, and the capability audit accepts 1,507 routes. Full
+  matrix closure remains open under FR-002/FR-003/FR-009.
+
 ## Java PGP Key and Secret Data managed-object routes — 2026-11-18
 
 - **FR-003:** The installed Java consumer exercises the PGP Key and Secret

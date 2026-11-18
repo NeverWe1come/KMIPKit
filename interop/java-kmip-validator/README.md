@@ -563,3 +563,21 @@ This closes 358 more selected route cells. The report validates
 passes 92/92 tests, the full shared suite passes 196/196, and the ledger
 comparison and 1,507-route capability audit pass. The full Java matrix remains
 open under KMIPKIT-0092-FR-002/FR-003/FR-009, so the stack remains WIP.
+
+### Get Attributes request payload branches — 2026-11-18
+
+Both typed Get Attributes request routes now execute with the catalogued
+Unique Identifier present or omitted and Attribute Reference absent, present
+once, or repeated. The omitted-identifier variant uses a preceding Create
+producer in the batch so the ID Placeholder resolves to an actual object. Each
+variant is sent through a controlled mutual-TLS peer using TTLV, JSON, and XML
+over raw TLS and HTTPS; the peer checks the observed request fields and the
+client checks the typed response. References: OASIS KMIP 2.0/2.1 §6.1.20,
+§11.58, §§8.3, 8.6.
+
+The selected report validates 40,197/40,197 cells with zero failures. The full
+Java ledger records 71,641 planned, 40,197 executed, and 31,444 pending cells.
+The Java suite passes 92/92, the complete shared suite passes 196/196, the
+ledger matches its reference, and the route capability audit accepts 1,507
+routes. The remaining Java matrix and exact-head CI keep #187 and its
+dependent stack WIP.

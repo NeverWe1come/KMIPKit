@@ -3852,3 +3852,24 @@ the ledger records 71,641 planned, 40,101 executed, and 31,540 pending cells.
 The ledger comparison and 1,507-route capability audit pass. Full Java matrix
 closure remains required under KMIPKIT-0092-FR-002/FR-003/FR-009; #187 stays
 WIP.
+
+## Java Get Attributes payload-field routes — 2026-11-18
+
+Both public typed Get Attributes request routes now cover the catalogued
+Unique Identifier presence/omission and Attribute Reference cardinalities of
+zero, one, and two. For the omitted-ID path, the controlled batch first creates
+an object and then uses ID Placeholder, so the tested request refers to a real
+batch-produced identifier. The requests run over TTLV, JSON, and XML on raw TLS
+and HTTPS; controlled mutual-TLS peers inspect the wire fields and the Java
+client validates the typed response. References: OASIS KMIP 2.0/2.1 §6.1.20,
+§11.58, §§8.3, 8.6.
+
+Red `daf05f7df` fails when either builder route lacks one of the catalogued
+payload-field network cells. Green `3c41ea623` executes the direct
+`ClientBatchItem.getAttributes` and
+`AttributeRequest.getAttributesToBatchItem` APIs, including the Create/ID
+Placeholder batch variant. The selected report validates 40,197/40,197 cells
+with zero failures; the ledger records 71,641 planned, 40,197 executed, and
+31,444 pending. Java tests pass 92/92, shared tests 196/196, ledger comparison
+passes, and the route capability audit accepts 1,507 routes. The complete Java
+matrix and exact-head CI remain open; the dependent stack stays WIP.
