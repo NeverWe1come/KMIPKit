@@ -2801,3 +2801,39 @@ python3 -m unittest interop.shared.tests.test_route_execution_evidence \
 python3 interop/shared/tools/route_capabilities.py --check
 git diff --check
 ```
+
+## Text String Attribute generic TTLV routes — 2026-11-18
+
+Red commit `660c9deb9` adds a focused test requiring the installed generic TTLV
+routes for all five catalogued Text String Attributes: Comment, Contact
+Information, Description, Object Group, and PKCS#12 Friendly Name. Green commit
+`3a8a315e5` constructs source-shaped text values using each catalogued tag,
+checks the item view and decoded bytes, and records TextString construction,
+item creation, view, and decode for KMIP 2.0 and 2.1. These are local TTLV
+model cells and are not network exchanges.
+
+The full Gradle suite passes 67 tests with zero failures, errors, or skips. The
+selected report validates 28,532/28,532 cells with zero failures; the generated
+ledger records 28,532 executed and 43,109 pending of 71,641 cells across 1,157
+pending case IDs. Shared route-evidence, schema, and capability suites pass 108
+tests; the route audit confirms 1,507 routes. Full Java matrix completion is
+still pending and the stack remains WIP.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-tmp" \
+  bash bindings/java/gradlew -p interop/java-kmip-validator \
+  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" \
+  test --rerun-tasks
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+python3 -m unittest interop.shared.tests.test_route_execution_evidence \
+  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+git diff --check
+```
