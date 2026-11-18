@@ -1399,3 +1399,32 @@ the C client and fixture request shape, not external KMS behavior.
   Green commit recorded 42,475/66,736 cells invoked, zero failed, and 24,261
   pending; this case has zero pending cells, a reduction of 126. The global
   matrix gate remains open.
+
+## Opaque Object Register route
+
+The installed C consumer now registers an Opaque Object using
+`kmipkit_opaque_object_from_fields`, the typed Register request and batch-item
+constructors, and the explicit generic Opaque Object context. It checks the
+typed Register response and matching response TTLV Unique Identifier, then
+destroys the returned object independently. The controlled peer checks the
+Opaque Data Type Enumeration and Opaque Data Value Byte String fields and
+rejects malformed object structure. No object data or KMIP message body is
+written to route evidence.
+
+- Red commit `41eefe6f4` adds the installed-consumer test and initially fails
+  because `test-obj-opaque-object` has no controlled peer recipe.
+- Green commit `db873e217` connects the typed C Register workflow and validates
+  all 12 KMIP 2.0/2.1 encoding and transport combinations.
+- Refactor updates the independent controlled TLS fixture's operation
+  inventory and records the matrix results below.
+- Normative scope: OASIS KMIP 2.0/2.1 §2.3, Table 4 (Opaque Object fields);
+  KMIP 2.0 §6.1.39 and KMIP 2.1 §6.1.43 (Register); and §6.1.15 (Destroy).
+- Verification: the focused opaque-register route passed 12/12 exchanges,
+  including response-TTLV correlation and cleanup. The full route-matrix
+  contract suite passed 178/178. The targeted controlled TLS tests passed for
+  both KMIP versions. The latest exhaustive matrix
+  (`c-route-7da3e96c-3723-4be3-bac6-a3a10f9b9899`) recorded 42,557/66,736
+  cells invoked, zero failed, and 24,179 pending. It emitted 86 passed events
+  for the Opaque Object case and no pending cells for its covered targets.
+  The shared completeness validator correctly remains unsuccessful while
+  other recipes are pending; this work does not complete the C matrix.
