@@ -2760,6 +2760,7 @@ final class LocalCatalogRouteChecks {
     private static boolean isStructureValueTarget(JsonNode target) {
         String encoding = target.path("source_encoding").asText();
         return encoding.startsWith("Structure")
+                || encoding.equals("Object Data Structure")
                 || ("data_type".equals(target.path("kind").asText())
                         && "Structure".equals(target.path("name").asText()));
     }
