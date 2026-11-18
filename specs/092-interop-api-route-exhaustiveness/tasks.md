@@ -310,10 +310,10 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
 
 - The #216 branch merges the Java key-object root routes and deterministic
   ledger fix from #187 while retaining the branch's Usage Limits evidence.
-- Verification: the Java suite passes 86/86 tests; the shared route suites
+- Verification: the Java suite passes 87/87 tests; the shared route suites
   pass 109/109; the 1,507-route capability audit passes; and the combined
-  report validates 34,712/34,712 selected cells with zero failures. The
-  regenerated ledger matches its reference and reports 36,929 pending cells
+  report validates 34,718/34,718 selected cells with zero failures. The
+  regenerated ledger matches its reference and reports 36,923 pending cells
   out of 71,641. T006, T007, T009, and full Java matrix closure remain open.
 
 ## Development evidence: #217 Right Usage Limits stack tip
@@ -322,7 +322,18 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
   Structure construction, Item creation, Item view, and TTLV decode in KMIP
   2.0 and 2.1. All eight versioned route/action cells appear in the selected
   report under the exact catalog target.
-- Verification: the Java suite passes 86/86 tests; the selected report
-  validates 34,712/34,712 cells with zero failures; ledger comparison passes;
-  36,929 of 71,641 full Java cells remain pending. T006, T007, T009 and full
+- Verification: the Java suite passes 87/87 tests; the selected report
+  validates 34,718/34,718 cells with zero failures; ledger comparison passes;
+  36,923 of 71,641 full Java cells remain pending. T006, T007, T009 and full
   Java matrix closure remain open.
+
+## Java Split Key managed-object root routes on #217
+
+- #217 inherits the #187 Split Key route implementation through #216 while
+  retaining its Right Usage Limits recipe. The route evidence records
+  `ManagedObject.splitKey`, `fromFields`, and `fromItem` in both KMIP versions
+  with §2.8 Table 9 field order.
+- Verification on #217: Java suite 87/87, shared route suites 109/109,
+  selected evidence 34,718/34,718 with zero failures, generated ledger
+  comparison, and the 1,507-route capability audit all pass. Full matrix
+  closure remains open at 36,923 pending cells of 71,641; keep #217 WIP.

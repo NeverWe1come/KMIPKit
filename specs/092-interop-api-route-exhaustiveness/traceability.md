@@ -203,8 +203,8 @@ artifact. This is part of the FR-006 artifact provenance check.
 
 - **FR-003/FR-007:** #216 retains its Usage Limits routes with the new Java
   key-object root evidence and deterministic ledger output. The selected report
-  validates 34,712/34,712 cells; the canonical ledger records 71,641 planned,
-  34,712 executed, and 36,929 pending cells. The full Java matrix remains
+  validates 34,718/34,718 cells; the canonical ledger records 71,641 planned,
+  34,718 executed, and 36,923 pending cells. The full Java matrix remains
   open.
 
 ## #217 Right Usage Limits stack-tip verification — 2026-11-18
@@ -213,6 +213,16 @@ artifact. This is part of the FR-006 artifact provenance check.
   cells for the Right Usage Limits member across KMIP 2.0 and 2.1 using the
   exact catalog target (KMIP §7.34). This consists of Structure construction,
   Item creation, Item view, and TTLV decode in each version.
-- The selected report validates 34,712/34,712 cells with zero failures. The
-  full ledger records 71,641 planned, 34,712 executed, and 36,929 pending
+- The selected report validates 34,718/34,718 cells with zero failures. The
+  full ledger records 71,641 planned, 34,718 executed, and 36,923 pending
   cells; full Java matrix closure remains open under FR-002/FR-003/FR-009.
+
+## Java Split Key managed-object root routes on #217 — 2026-11-18
+
+- **FR-003:** The #217 tip inherits the Split Key root routes from #187 via
+  #216 and retains the Right Usage Limits route. The installed Java package
+  executes `ManagedObject.splitKey`, `fromFields`, and `fromItem` in KMIP 2.0
+  and 2.1 with the §2.8 Table 9 field order.
+- The combined selected report validates 34,718/34,718 cells with zero
+  failures; 36,923 of 71,641 planned cells remain pending. Full matrix closure
+  remains open under FR-002/FR-003/FR-009.

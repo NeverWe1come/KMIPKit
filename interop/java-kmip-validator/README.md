@@ -101,8 +101,8 @@ baseline, regenerate the checked-in ledger with
 rejects generated ledgers that do not record successful invocations.
 The generated ledger retains the artifact
 SHA-256 for each build; that build-specific digest is not used as a coverage
-baseline. These recipes execute 33,994 of 71,641 planned Java route cells, with
-no failed cells; the ledger records the other 37,647 as pending and does not imply
+baseline. These recipes execute 34,718 of 71,641 planned Java route cells, with
+no failed cells; the ledger records the other 36,923 as pending and does not imply
 vendor interoperability or full-matrix completion. Local TTLV recipes exercise 51
 enumeration families, all six bitmask aggregate cases, and all 44 individual
 bitmask value cases through the applicable
@@ -462,3 +462,10 @@ Limits cells and includes 84 calls to the typed Symmetric Key, Private Key,
 and Public Key `ManagedObject` factories. The selected report validates
 34,634/34,634 cells with zero failures and leaves 37,007 of 71,641 pending.
 The Java matrix remains open.
+
+The current #217 tip also includes the Split Key root factory routes from #187:
+`ManagedObject.splitKey`, `fromFields`, and `fromItem` execute in KMIP 2.0 and
+2.1 with the source-defined §2.8 Table 9 member order. The eight Right Usage
+Limits route/action cells remain present in the report. The combined selected
+report validates 34,718/34,718 cells with zero failures and leaves 36,923 of
+71,641 pending; the Java matrix remains WIP.

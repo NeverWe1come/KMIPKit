@@ -875,6 +875,7 @@ class ControlledTlsPeerTest {
         int typedKeyMaterialRouteEventCount = 0;
         int typedCertificateRouteEventCount = 0;
         int typedKeyBearingManagedObjectRouteEventCount = 0;
+        int typedSplitKeyManagedObjectRouteEventCount = 0;
         int remainingEnumerationFieldRouteEventCount = 0;
         int genericStructureTargetRouteEventCount = 0;
         int managedObjectTypeRouteEventCount = 0;
@@ -1273,6 +1274,14 @@ class ControlledTlsPeerTest {
                 appendLocalCatalogInvocation(events, protocolVersion, invocation);
             }
             typedKeyBearingManagedObjectRouteEventCount += keyBearingManagedObjectInvocations.size();
+            List<LocalCatalogRouteChecks.Invocation> splitKeyManagedObjectInvocations = new ArrayList<>();
+            LocalCatalogRouteChecks.executeSplitKeyManagedObjectRootTargets(readRouteEvidenceCatalog(),
+                    protocolVersion, LocalCatalogRouteChecks.SPLIT_KEY_MANAGED_OBJECT_ROOT_CASE_IDS,
+                    splitKeyManagedObjectInvocations::add);
+            for (LocalCatalogRouteChecks.Invocation invocation : splitKeyManagedObjectInvocations) {
+                appendLocalCatalogInvocation(events, protocolVersion, invocation);
+            }
+            typedSplitKeyManagedObjectRouteEventCount += splitKeyManagedObjectInvocations.size();
             Set<String> missingRemainingEnumerationFields = LocalCatalogRouteChecks
                     .missingRemainingEnumerationFieldCaseIds(readRouteEvidenceCatalog(), events, protocolVersion);
             remainingEnumerationFieldCaseIds.addAll(missingRemainingEnumerationFields);
@@ -1948,6 +1957,7 @@ class ControlledTlsPeerTest {
                         + typedKeyMaterialRouteEventCount
                         + typedCertificateRouteEventCount
                         + typedKeyBearingManagedObjectRouteEventCount
+                        + typedSplitKeyManagedObjectRouteEventCount
                         + 97 // BEC, batch IDs, async payload, Ping, Endpoint Role, Object Defaults, derivation, and Extension Information member cells.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Type generic and typed Attribute routes.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Value generic and typed Attribute routes.
@@ -1983,7 +1993,7 @@ class ControlledTlsPeerTest {
         }
         assertEquals(11, itemTypeValueCaseIds.size(),
                 "Every catalogued Item Type enumeration value needs its own case evidence.");
-        assertEquals(16 + OPERATION_STRUCTURE_FIXTURES.size() + SCALAR_OPERATION_STRUCTURE_FIXTURES.size()
+        assertEquals(17 + OPERATION_STRUCTURE_FIXTURES.size() + SCALAR_OPERATION_STRUCTURE_FIXTURES.size()
                         + enumerationFixtures.size() + localEnumerationCaseCount + bitmaskCaseCount
                         + dataTypeCaseCount
                         + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + genericTagCaseIds.size()
@@ -2042,6 +2052,24 @@ class ControlledTlsPeerTest {
             for (String version : KMIP_2_0_AND_2_1) {
                 JsonNode factoryEvent = findRouteEvent(report.path("events"), caseId,
                         "java.typed-protocol.model.org.kmipkit.ttlv.managedobject." + factory,
+                        version, targetId);
+                assertEquals("passed", factoryEvent.path("status").asText());
+                for (String genericRoute : List.of(
+                        "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromfields",
+                        "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromitem")) {
+                    JsonNode genericEvent = findRouteEvent(report.path("events"), caseId,
+                            genericRoute, version, targetId);
+                    assertEquals("passed", genericEvent.path("status").asText());
+                }
+            }
+        }
+        for (String caseId : LocalCatalogRouteChecks.SPLIT_KEY_MANAGED_OBJECT_ROOT_CASE_IDS) {
+            assertTrue(reportedCaseIds.contains(caseId),
+                    "Split Key managed-object factories need their root case in the selected report.");
+            String targetId = "KMIPKIT-ELEM-OBJECT-STRUCTURE-SPLIT-KEY";
+            for (String version : KMIP_2_0_AND_2_1) {
+                JsonNode factoryEvent = findRouteEvent(report.path("events"), caseId,
+                        "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.splitkey",
                         version, targetId);
                 assertEquals("passed", factoryEvent.path("status").asText());
                 for (String genericRoute : List.of(
@@ -4388,6 +4416,7 @@ class ControlledTlsPeerTest {
         caseIds.add("test-norm-operation-structure-operation-structure-7-2-asynchronous-request");
         caseIds.add("test-norm-operation-structure-operation-structure-7-13-extension-information");
         LocalCatalogRouteChecks.TRANSPARENT_KEY_MATERIAL_CASE_IDS.forEach(caseIds::add);
+        LocalCatalogRouteChecks.SPLIT_KEY_MANAGED_OBJECT_ROOT_CASE_IDS.forEach(caseIds::add);
         LocalCatalogRouteChecks.TYPED_MANAGED_OBJECT_FACTORY_CASE_IDS.stream()
                 .filter(caseId -> !genericTagCaseIds.contains(caseId)).forEach(caseIds::add);
         caseIds.add(OBJECT_TYPE_MEMBER_CASE_ID);
