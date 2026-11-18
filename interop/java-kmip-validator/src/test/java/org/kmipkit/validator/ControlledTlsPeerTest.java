@@ -2357,7 +2357,27 @@ class ControlledTlsPeerTest {
                 {"test-norm-payload-client-decrypt-request-20-009",
                         "KMIPKIT-PAYLOAD-CLIENT-DECRYPT-REQUEST-20-009", "KMIPKIT-ELEM-OP-C2S-DECRYPT"},
                 {"test-norm-payload-client-sign-request-20-004",
-                        "KMIPKIT-PAYLOAD-CLIENT-SIGN-REQUEST-20-004", "KMIPKIT-ELEM-OP-C2S-SIGN"}
+                        "KMIPKIT-PAYLOAD-CLIENT-SIGN-REQUEST-20-004", "KMIPKIT-ELEM-OP-C2S-SIGN"},
+                {"test-norm-payload-client-adjust-attribute-request-20-003",
+                        "KMIPKIT-PAYLOAD-CLIENT-ADJUST-ATTRIBUTE-REQUEST-20-003",
+                        "KMIPKIT-ELEM-OP-C2S-ADJUST-ATTRIBUTE"},
+                {"test-norm-payload-client-adjust-attribute-request-20-004",
+                        "KMIPKIT-PAYLOAD-CLIENT-ADJUST-ATTRIBUTE-REQUEST-20-004",
+                        "KMIPKIT-ELEM-OP-C2S-ADJUST-ATTRIBUTE"},
+                {"test-norm-payload-client-check-request-20-003",
+                        "KMIPKIT-PAYLOAD-CLIENT-CHECK-REQUEST-20-003", "KMIPKIT-ELEM-OP-C2S-CHECK"},
+                {"test-norm-payload-client-import-request-20-003",
+                        "KMIPKIT-PAYLOAD-CLIENT-IMPORT-REQUEST-20-003", "KMIPKIT-ELEM-OP-C2S-IMPORT"},
+                {"test-norm-payload-client-interop-request-20-002",
+                        "KMIPKIT-PAYLOAD-CLIENT-INTEROP-REQUEST-20-002", "KMIPKIT-ELEM-OP-C2S-INTEROP"},
+                {"test-norm-payload-client-locate-request-20-003",
+                        "KMIPKIT-PAYLOAD-CLIENT-LOCATE-REQUEST-20-003", "KMIPKIT-ELEM-OP-C2S-LOCATE"},
+                {"test-norm-payload-client-log-request-20-001",
+                        "KMIPKIT-PAYLOAD-CLIENT-LOG-REQUEST-20-001", "KMIPKIT-ELEM-OP-C2S-LOG"},
+                {"test-norm-payload-client-revoke-request-20-003",
+                        "KMIPKIT-PAYLOAD-CLIENT-REVOKE-REQUEST-20-003", "KMIPKIT-ELEM-OP-C2S-REVOKE"},
+                {"test-norm-payload-client-validate-request-20-003",
+                        "KMIPKIT-PAYLOAD-CLIENT-VALIDATE-REQUEST-20-003", "KMIPKIT-ELEM-OP-C2S-VALIDATE"}
         };
         for (String[] payload : additionalClientPayloadCases) {
             int routeEventCount = 0;
