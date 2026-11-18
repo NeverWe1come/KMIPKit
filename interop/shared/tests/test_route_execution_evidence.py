@@ -13,7 +13,7 @@ ROOT = SHARED.parents[1]
 sys.path.insert(0, str(SHARED / "tools"))
 from validate_route_evidence import (
     _expected_batch_operations,
-    _expected_tag_decode_rejection_code,
+    _expected_decode_rejection_code,
     _validate_batch_event,
     validate_collection,
     validate_parity_collection,
@@ -757,13 +757,13 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
             'public_api_symbol': 'kmipkit_ttlv::codec::decode',
         }
         self.assertEqual(
-            _expected_tag_decode_rejection_code(
+            _expected_decode_rejection_code(
                 cell, case, {'kind': 'tag', 'allocation': 'reserved'}
             ),
             'tag_reserved',
         )
         self.assertEqual(
-            _expected_tag_decode_rejection_code(
+            _expected_decode_rejection_code(
                 cell, case, {'kind': 'tag_range', 'allocation': 'unused'}
             ),
             'tag_not_allocated',
@@ -790,7 +790,7 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         }
 
         self.assertEqual(
-            _expected_tag_decode_rejection_code(
+            _expected_decode_rejection_code(
                 cell, case, {'kind': 'operation', 'target_id': 'KMIPKIT-ELEM-OP-C2S-GET'}
             ),
             'invalid_batch_count',

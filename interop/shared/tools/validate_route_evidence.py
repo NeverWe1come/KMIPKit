@@ -45,7 +45,7 @@ def _event_outcome(record: dict) -> dict:
     return {field: value for field, value in record.items() if field != "invocation_id"}
 
 
-def _expected_tag_decode_rejection_code(
+def _expected_decode_rejection_code(
     cell: dict,
     case: dict,
     target: dict | None = None,
@@ -468,7 +468,7 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
         if status == "passed":
             case = case_by_id[event["case_id"]]
             if event["action"] == "decode":
-                expected_rejection_code = _expected_tag_decode_rejection_code(
+                expected_rejection_code = _expected_decode_rejection_code(
                     planned,
                     case,
                     target_by_id.get(planned["target_id"]),
