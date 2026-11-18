@@ -102,6 +102,9 @@ class ControlledTlsPeerTest {
     private record NewAttributeMutationFixture(String methodName, String title, String ordinal,
             int operationValue) { }
 
+    private record GetAttributesNetworkRequest(String caseId, String routeId,
+            String publicApiSymbol, String uniqueBatchItemId) { }
+
     private static final List<NewAttributeMutationFixture> NEW_ATTRIBUTE_MUTATION_FIXTURES = List.of(
             new NewAttributeMutationFixture("addAttribute", "Add Attribute", "002", 0x0d),
             new NewAttributeMutationFixture("modifyAttribute", "Modify Attribute", "003", 0x0e),
@@ -1157,6 +1160,8 @@ class ControlledTlsPeerTest {
             String requestHash = normalizedTreeSha256(request);
             appendNetworkQueryRouteEvents(events, protocolVersion, requestHash, responseHash);
             appendControlledActivationDateNetworkEvents(events, protocolVersion);
+            appendControlledGetAttributesNetworkRouteEvents(events, protocolVersion);
+            assertGetAttributesNetworkRouteCoverage(events, readRouteEvidenceCatalog(), protocolVersion);
             appendControlledKeyFormatRawResponseRouteEvents(events, protocolVersion);
             appendPendingQueryCorrelationEvidence(events, protocolVersion, serverCertificatePem,
                     serverPrivateKeyPem, clientCertificatePem, clientPrivateKeyPem);
@@ -1904,6 +1909,8 @@ class ControlledTlsPeerTest {
                 readRouteEvidenceCatalog()).size() * KMIP_2_0_AND_2_1.size() * 3;
         int batchItemGenericRouteEventCount = KMIP_2_0_AND_2_1.size() * 4
                 + batchWorkflowBatchItemGenericRouteEventCount;
+        int getAttributesNetworkRouteEventCount = getAttributesNetworkRouteEventCount(
+                readRouteEvidenceCatalog());
         int batchItemAdditionalResponseRouteEventCount = KMIP_2_0_AND_2_1.size() * 12;
         int batchItemRenderedResponseViewEventCount = KMIP_2_0_AND_2_1.size() * 3 * 3;
         int normativeMessageFieldGenericRouteEventCount = KMIP_2_0_AND_2_1.size() * 40;
@@ -1960,6 +1967,7 @@ class ControlledTlsPeerTest {
         assertEquals(68 + enumerationEventCount + localEnumerationEventCount + bitmaskEventCount + 94
                         + batchItemAccessorEventCount
                         + batchItemExtensionCountEventCount + batchItemGenericRouteEventCount
+                        + getAttributesNetworkRouteEventCount
                         + batchItemAdditionalResponseRouteEventCount + batchItemRenderedResponseViewEventCount
                         + credentialGenericRouteEventCount
                         + normativeMessageFieldGenericRouteEventCount + normativeMessageFieldParserRouteEventCount
@@ -4244,6 +4252,186 @@ class ControlledTlsPeerTest {
                 normalizedTreeSha256(activationDateResponse(minor)));
     }
 
+    private static Set<String> getAttributesNetworkRouteCaseIds(JsonNode catalog, String protocolVersion) {
+        Set<String> caseIds = new java.util.LinkedHashSet<>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            if (!"Get Attributes".equals(testCase.path("operation").asText())) continue;
+            if (containsText(testCase.path("execution").path("protocol_versions"), protocolVersion)) {
+                caseIds.add(testCase.path("case_id").asText());
+            }
+        }
+        return caseIds;
+    }
+
+    private static void assertGetAttributesNetworkRouteCoverage(ArrayNode events, JsonNode catalog,
+            String protocolVersion) {
+        Set<String> expected = getAttributesNetworkRouteCaseIds(catalog, protocolVersion);
+        Set<String> observed = new java.util.HashSet<>();
+        for (JsonNode event : events) {
+            String routeId = event.path("route_id").asText();
+            if (protocolVersion.equals(event.path("protocol_version").asText())
+                    && "construct".equals(event.path("action").asText())
+                    && ("java.typed-protocol.client_batch_item.get_attributes".equals(routeId)
+                            || "java.typed-protocol.function.attribute_request_get_attributes_to_batch_item"
+                                    .equals(routeId))) {
+                observed.add(event.path("case_id").asText());
+            }
+        }
+        assertEquals(expected, observed,
+                "Every catalogued Get Attributes case must construct through both installed Java routes.");
+    }
+
+    private static int getAttributesNetworkRouteEventCount(JsonNode catalog) {
+        int caseVersionCount = 0;
+        for (String protocolVersion : KMIP_2_0_AND_2_1) {
+            Set<String> caseIds = getAttributesNetworkRouteCaseIds(catalog, protocolVersion);
+            caseIds.remove("test-attr-activation-date");
+            caseVersionCount += caseIds.size();
+        }
+        return caseVersionCount * 7;
+    }
+
+    private static Set<String> getAttributesNetworkRouteEventCaseIds(JsonNode events) {
+        Set<String> caseIds = new java.util.LinkedHashSet<>();
+        for (JsonNode event : events) {
+            String routeId = event.path("route_id").asText();
+            if ("java.typed-protocol.client_batch_item.get_attributes".equals(routeId)
+                    || "java.typed-protocol.function.attribute_request_get_attributes_to_batch_item"
+                            .equals(routeId)) {
+                caseIds.add(event.path("case_id").asText());
+            }
+        }
+        return caseIds;
+    }
+
+    private void appendControlledGetAttributesNetworkRouteEvents(ArrayNode events, String protocolVersion)
+            throws Exception {
+        JsonNode catalog = readRouteEvidenceCatalog();
+        List<String> caseIds = new ArrayList<>(getAttributesNetworkRouteCaseIds(catalog, protocolVersion));
+        caseIds.remove("test-attr-activation-date");
+        List<GetAttributesNetworkRequest> invocations = new ArrayList<>();
+        for (int index = 0; index < caseIds.size(); index++) {
+            String caseId = caseIds.get(index);
+            String itemId = "getattr-" + index;
+            invocations.add(new GetAttributesNetworkRequest(caseId,
+                    "java.typed-protocol.client_batch_item.get_attributes",
+                    "org.kmipkit.extensions.ClientBatchItem.getAttributes", itemId + "-direct"));
+            invocations.add(new GetAttributesNetworkRequest(caseId,
+                    "java.typed-protocol.function.attribute_request_get_attributes_to_batch_item",
+                    "org.kmipkit.extensions.GetAttributesRequest.toBatchItem", itemId + "-request"));
+        }
+        if (invocations.isEmpty()) return;
+
+        int minor = "2.0".equals(protocolVersion) ? 0 : 1;
+        List<String> uniqueBatchItemIds = invocations.stream()
+                .map(GetAttributesNetworkRequest::uniqueBatchItemId).toList();
+        byte[] responseBytes = getAttributesBatchResponse(minor, uniqueBatchItemIds);
+        byte[] serverCertificatePem = fixture("server-cert.pem");
+        byte[] serverPrivateKeyPem = fixture("server-key.pem");
+        byte[] clientCertificatePem = fixture("client-cert.pem");
+        byte[] clientPrivateKeyPem = fixture("client-key.pem");
+        SSLServerSocket listener = listener(certificate(serverCertificatePem),
+                privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+        FutureTask<byte[]> peer = new FutureTask<>(() -> serveOneResponse(listener, responseBytes));
+        Thread peerThread = new Thread(peer, "java-validator-get-attributes-route-peer-" + protocolVersion);
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        Path connectionFile = temporaryDirectory.resolve("get-attributes-routes-" + protocolVersion + ".json");
+        Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
+                clientCertificatePem, clientPrivateKeyPem, false, protocolVersion));
+        try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile));
+                ClientBatch batch = ClientBatch.create()) {
+            for (GetAttributesNetworkRequest invocation : invocations) {
+                addGetAttributesNetworkRequest(batch, invocation);
+            }
+            try (ClientBatchResponse response = driver.executeBatchForEvidence(batch)) {
+                assertEquals(invocations.size(), response.itemCount());
+                for (int index = 0; index < invocations.size(); index++) {
+                    try (ClientBatchItemResult result = response.itemAt(index)) {
+                        assertGetAttributesRouteResponse(result);
+                    }
+                }
+            }
+        } finally {
+            listener.close();
+        }
+
+        byte[] observedRequest = peer.get(15, TimeUnit.SECONDS);
+        assertEquals(0x0bL, requestOperation(observedRequest));
+        assertEquals(minor, requestProtocolMinorVersion(observedRequest));
+        for (String uniqueBatchItemId : uniqueBatchItemIds) {
+            assertTrue(contains(observedRequest, item(0x420093, 8,
+                    uniqueBatchItemId.getBytes(StandardCharsets.US_ASCII))),
+                    "The controlled peer must observe each catalogued request's unique batch item ID.");
+        }
+        String requestHash = normalizedTreeSha256(observedRequest);
+        String responseHash = normalizedTreeSha256(responseBytes);
+        for (GetAttributesNetworkRequest invocation : invocations) {
+            appendTypedNetworkRouteEvents(events, invocation.caseId(), invocation.routeId(),
+                    "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES", invocation.publicApiSymbol(),
+                    protocolVersion, requestHash, responseHash);
+        }
+        for (String caseId : caseIds) {
+            appendRouteEvent(events, caseId,
+                    "java.typed-protocol.function.client_batch_item_response_get_attributes",
+                    "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES",
+                    "org.kmipkit.extensions.ClientBatchItemResult.getAttributesResponse",
+                    null, null, "decode", protocolVersion, null, null, responseHash);
+        }
+    }
+
+    private static void addGetAttributesNetworkRequest(ClientBatch batch,
+            GetAttributesNetworkRequest invocation) {
+        byte[] uniqueBatchItemId = invocation.uniqueBatchItemId().getBytes(StandardCharsets.US_ASCII);
+        if ("java.typed-protocol.client_batch_item.get_attributes".equals(invocation.routeId())) {
+            batch.add(ClientBatchItem.getAttributes(UniqueIdentifier.textString("object-7"),
+                    List.of(AttributeReference.tag(0x420001))).withUniqueBatchItemId(uniqueBatchItemId));
+            return;
+        }
+        try (GetAttributesRequest request = GetAttributesRequest.create(
+                UniqueIdentifier.textString("object-7"), List.of(AttributeReference.tag(0x420001)))) {
+            batch.add(request.toBatchItem().withUniqueBatchItemId(uniqueBatchItemId));
+        }
+    }
+
+    private static void assertGetAttributesRouteResponse(ClientBatchItemResult result) throws Exception {
+        try (var typed = result.getAttributesResponse().orElseThrow();
+                TtlvStructure attributes = typed.attributes().orElseThrow();
+                var view = attributes.view();
+                var attribute = view.itemAt(0);
+                var value = attribute.value()) {
+            assertEquals(0x0bL, result.operation());
+            assertEquals(0L, result.resultStatus());
+            assertEquals("object-7", typed.uniqueIdentifier());
+            assertEquals(1, view.itemCount());
+            assertEquals(0x420001, attribute.tag().raw());
+            assertEquals(TtlvItemType.DateTime, attribute.itemType());
+            assertEquals(1L, value.dateTime());
+        }
+    }
+
+    private static byte[] getAttributesBatchResponse(int protocolMinorVersion, List<String> uniqueBatchItemIds)
+            throws Exception {
+        byte[] version = structure(0x420069,
+                item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(protocolMinorVersion)));
+        byte[] header = structure(0x42007a, version,
+                item(0x420092, 9, longBytes(1_700_000_000L)),
+                item(0x42000d, 2, intBytes(uniqueBatchItemIds.size())));
+        byte[][] responseItems = new byte[uniqueBatchItemIds.size() + 1][];
+        responseItems[0] = header;
+        for (int index = 0; index < uniqueBatchItemIds.size(); index++) {
+            byte[] payload = structure(0x42007c,
+                    item(0x420094, 7, "object-7".getBytes(StandardCharsets.UTF_8)),
+                    structure(0x420125, item(0x420001, 9, longBytes(1))));
+            responseItems[index + 1] = structure(0x42000f,
+                    item(0x42005c, 5, intBytes(0x0b)),
+                    item(0x420093, 8, uniqueBatchItemIds.get(index).getBytes(StandardCharsets.US_ASCII)),
+                    item(0x42007f, 5, intBytes(0)), payload);
+        }
+        return structure(0x42007b, responseItems);
+    }
+
     private void appendControlledKeyFormatRawResponseRouteEvents(ArrayNode events, String protocolVersion)
             throws Exception {
         byte[] serverCertificatePem = fixture("server-cert.pem");
@@ -4588,6 +4776,7 @@ class ControlledTlsPeerTest {
         additionalCaseIdCount += appendCaseIds(caseIds, remainingEnumerationFieldCaseIds);
         additionalCaseIdCount += appendCaseIds(caseIds, genericStructureTargetCaseIds);
         additionalCaseIdCount += appendCaseIds(caseIds, genericOperationTargetCaseIds);
+        additionalCaseIdCount += appendCaseIds(caseIds, getAttributesNetworkRouteEventCaseIds(events));
         additionalCaseIdCount += appendCaseIds(caseIds,
                 batchWorkflowBatchItemCaseIds(readRouteEvidenceCatalog()));
         appendItemTypeEnumerationCaseIds(caseIds, events);

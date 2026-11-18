@@ -3758,3 +3758,19 @@ selected report validates 35,000/35,000 cells with zero failures; the ledger
 matches its reference and the capability audit accepts 1,507 routes. The full
 ledger has 71,641 planned, 35,000 executed, and 36,641 pending cells. Full
 matrix closure and exact-head CI remain open; #216 stays WIP.
+
+
+## #216 inherited Java Get Attributes routes — 2026-11-18
+
+The #216 branch inherits the #187 controlled mutual-TLS TTLV coverage for both
+typed Get Attributes builders across the catalogued cases in KMIP 2.0/2.1
+contexts. The peer validates the returned typed response (OASIS KMIP 2.0/2.1
+§6.1.17 and §§8.3, 8.6). This is operation-level request/response evidence;
+it does not establish each attribute's independent semantic construction
+policy.
+
+The full Java suite passes 92/92 tests, and the shared route suites pass
+109/109. The selected report validates 35,889/35,889 cells with zero failures;
+the generated ledger matches its reference and the capability audit accepts
+all 1,507 public routes. The ledger has 71,641 planned, 35,889 executed, and
+35,752 pending cells. The Java matrix remains incomplete and #216 stays WIP.

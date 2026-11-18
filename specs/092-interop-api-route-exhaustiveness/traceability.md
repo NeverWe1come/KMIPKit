@@ -280,3 +280,16 @@ artifact. This is part of the FR-006 artifact provenance check.
   selected report validates 35,000/35,000 cells with zero failures. The full
   ledger records 71,641 planned, 35,000 executed, and 36,641 pending cells.
   Full matrix closure remains open under FR-002/FR-003/FR-009.
+
+
+## Java Get Attributes routes inherited by #216 — 2026-11-18
+
+- **FR-003/FR-009:** #216 inherits both typed Get Attributes builder routes
+  for the catalogued cases in controlled TTLV exchanges over mutual TLS. The
+  fixture checks typed responses for the operation (OASIS §§6.1.17, 8.3, 8.6)
+  and does not assert each attribute's independent semantic policy.
+- Selected evidence validates 35,889/35,889 cells with zero failures. The full
+  Java suite passes 92/92, shared route tests pass 109/109, the ledger matches
+  its reference, and the capability audit accepts 1,507 routes. The ledger
+  records 71,641 planned, 35,889 executed, and 35,752 pending cells. Full
+  closure remains open under FR-002/FR-003/FR-009.
