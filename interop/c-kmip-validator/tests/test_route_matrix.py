@@ -3636,6 +3636,35 @@ class RouteMatrixTests(unittest.TestCase):
                             event['peer_observed_result_reason_codes'] == [0, 0, 36, 0, 0, 0]
                             for event in send_events))
 
+    def test_batch_undo_reverses_prior_create_when_later_get_fails(self):
+        """OASIS KMIP 2.1 §11.5 Table 434 requires Undo of prior items on failure."""
+        from artifact_support import ROOT
+        from route_peer import RECIPES, execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_id = 'test-batch-undo-rolls-back-prior-success'
+        self.assertIn(case_id, RECIPES, 'Undo rollback has no controlled-peer recipe')
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest,
+            peer_rejection={'case_id': case_id, 'exchange_index': 0, 'operation': 10,
+                            'result_status': 1, 'result_reason': 55})
+
+        self.assertEqual(12, len(checks), 'Undo must pass both versions and all six wire routes')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        send_events = [event for event in events if event['action'] == 'send']
+        self.assertEqual(12, len(send_events))
+        self.assertTrue(all(
+            event['peer_observed_operation_sequence'] == ['Create', 'Get'] and
+            event['peer_observed_result_status_codes'] == [3, 1] and
+            event['peer_observed_result_reason_codes'] == [0, 55] and
+            event['peer_observed_effects'] == ['undone', 'object_not_found'] and
+            event['peer_observed_state_before_sha256'] == event['peer_observed_state_after_sha256']
+            for event in send_events))
+
     def test_signature_verify_operation_uses_public_key_pair_and_installed_route(self):
         """OASIS KMIP 2.0 §6.1.50 and 2.1 §6.1.56 define Signature Verify."""
         from artifact_support import ROOT
