@@ -491,3 +491,12 @@ version/type field followed by a Raw Key Block. This adds 40 local model route
 cells and does not test cryptographic key validity. The selected report
 validates 34,780/34,780 cells with zero failures; 36,861 of 71,641 planned Java
 cells remain pending, so the full matrix and stack remain WIP.
+
+The Java generic TTLV runner also covers the Key Block structure-member targets
+for PGP Key, Private Key, Public Key, Secret Data, and Split Key. These cases
+are catalogued as `Object Data Structure`; the runner records Item construction,
+view, and decode, and uses the route manifest to decide whether a target also
+has a `TtlvValue.structure` obligation. This evidence is local generic TTLV
+execution, not field-level conformance or server interoperability. The selected
+report validates 34,816/34,816 cells with zero failures; 36,825 of 71,641 full
+Java cells remain pending.

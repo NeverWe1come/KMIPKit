@@ -3714,3 +3714,26 @@ Verification: full Java suite 89/89 with zero failures, errors, or skips;
 selected report 34,780/34,780 with zero failures; shared route suites 109/109;
 generated ledger comparison and 1,507-route capability audit pass. The full
 matrix remains incomplete with 36,861 of 71,641 cells pending.
+
+## Java generic TTLV routes for Key Block structure members — 2026-11-18
+
+The Java local route runner now recognizes `Object Data Structure` as a
+catalogued Structure encoding for the Key Block members of PGP Key, Private
+Key, Public Key, Secret Data, and Split Key (KMIP 2.0/2.1 §§2.4–2.8, 3.1).
+It executes generic Item construction, Item view, and TTLV decoding using each
+member's catalogued tag. `TtlvValue.structure` evidence is emitted only when
+the shared route manifest declares that route for the target; the Key Block
+member cases do not declare it. These fixtures prove generic local TTLV route
+execution, not full field semantics or server interoperability.
+
+Red `738a80069` adds the required Key Block member route test and fails because
+the `Object Data Structure` source encoding is not selected. Green `473f57a70`
+includes that encoding, and Refactor `14210bf1a` clarifies the classification.
+Follow-up Red `13e375785` exposes an unplanned `TtlvValue.structure` event;
+Green `f46295a92` separates source Structure targets from manifest-declared
+value-route targets.
+
+On #187, the full Java suite passes 90/90, shared route suites pass 109/109,
+the selected report validates 34,816/34,816 cells with zero failures, the
+ledger matches its reference, and the capability audit accepts 1,507 routes.
+The full ledger has 36,825 pending of 71,641; matrix closure remains open.

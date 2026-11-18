@@ -242,3 +242,14 @@ artifact. This is part of the FR-006 artifact provenance check.
   cells with zero failures; the full Java ledger records 71,641 planned,
   34,780 executed, and 36,861 pending cells. Full matrix closure remains open
   under FR-002/FR-003/FR-009.
+
+## Java generic Key Block member routes — 2026-11-18
+
+- **FR-003:** Catalogued `Object Data Structure` Key Block members for PGP,
+  Private, Public, Secret Data, and Split Key now execute generic Item creation,
+  view, and decode through the installed Java package under KMIP 2.0/2.1
+  (KMIP §§2.4–2.8, 3.1). `TtlvValue.structure` is recorded only for targets
+  declared by the route manifest.
+- Selected evidence validates 34,816/34,816 cells with zero failures; 36,825
+  of 71,641 remain pending. Full matrix closure remains open under
+  FR-002/FR-003/FR-009.

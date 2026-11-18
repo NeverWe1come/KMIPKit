@@ -357,3 +357,15 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
   comparison and 1,507-route capability audit pass. The full Java ledger has
   36,861 pending of 71,641. Full matrix closure and exact-head CI remain open;
   keep the stack WIP.
+
+## Java generic TTLV routes for Key Block structure members
+
+- Red `738a80069` covers five Object Data Structure member cases; Green
+  `473f57a70` recognizes that catalog encoding; Refactor `14210bf1a` clarifies
+  the selection. Red `13e375785` then proves that evidence must not include
+  undeclared routes; Green `f46295a92` filters `TtlvValue.structure` through
+  the route manifest's exact target list.
+- Verification: Java suite 90/90; shared suites 109/109; selected report
+  34,816/34,816 with zero failures; ledger comparison and the 1,507-route
+  capability audit pass. The matrix remains incomplete with 36,825 pending of
+  71,641 cells; the stack remains WIP.

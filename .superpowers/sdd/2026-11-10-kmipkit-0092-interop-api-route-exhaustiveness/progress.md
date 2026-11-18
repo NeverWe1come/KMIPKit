@@ -552,3 +552,19 @@ branches, and the common CI therefore reports a planned matrix only.
   34,780/34,780 with zero failures, ledger comparison and 1,507-route audit
   pass. The full matrix has 71,641 planned, 34,780 executed, 36,861 pending.
   Exact-head CI and full closure remain open; all stack PRs remain WIP.
+
+## 2026-11-18 Java generic routes for Key Block structure members
+
+- Red `738a80069` requires the catalogued PGP, Private, Public, Secret Data,
+  and Split Key Key Block member cases to use the generic TTLV routes. Green
+  `473f57a70` recognizes the catalog's `Object Data Structure` encoding, and
+  Refactor `14210bf1a` separates source structure classification. Follow-up
+  Red `13e375785` catches route evidence that is not declared for a target;
+  Green `f46295a92` uses the manifest's exact target sets for `TtlvValue.structure`
+  and emits only applicable cells.
+- Verification: full Java suite 90/90 with zero failures, errors, or skips;
+  shared suites 109/109; selected evidence 34,816/34,816 with zero failures;
+  ledger comparison and 1,507-route capability audit pass. The full Java
+  ledger has 71,641 planned, 34,816 executed, and 36,825 pending cells.
+- The full route matrix and exact-head CI remain open, so #187, #216, and #217
+  stay WIP.
