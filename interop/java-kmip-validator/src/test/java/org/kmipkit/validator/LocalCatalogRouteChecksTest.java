@@ -730,6 +730,21 @@ class LocalCatalogRouteChecksTest {
                 .count());
         assertEquals(18, invocations.stream().filter(invocation -> invocation.routeId().endsWith("managedobject.fromitem"))
                 .count());
+        assertEquals(Set.of(
+                "KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE",
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-1-CERTIFICATE-CERTIFICATE-TYPE",
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-1-CERTIFICATE-CERTIFICATE-VALUE",
+                "KMIPKIT-ELEM-TAG-420013",
+                "KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE-REQUEST",
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-2-CERTIFICATE-REQUEST-CERTIFICATE-REQUEST-TYPE",
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-2-CERTIFICATE-REQUEST-CERTIFICATE-REQUEST-VALUE",
+                "KMIPKIT-ELEM-TAG-420018",
+                "KMIPKIT-ELEM-OBJECT-STRUCTURE-OPAQUE-OBJECT",
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-3-OPAQUE-OBJECT-OPAQUE-DATA-TYPE",
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-3-OPAQUE-OBJECT-OPAQUE-DATA-VALUE",
+                "KMIPKIT-ELEM-TAG-42005B"), invocations.stream()
+                        .map(LocalCatalogRouteChecks.Invocation::targetId)
+                        .collect(java.util.stream.Collectors.toSet()));
         assertEquals(Set.of("construct"), invocations.stream()
                 .map(LocalCatalogRouteChecks.Invocation::action)
                 .collect(java.util.stream.Collectors.toSet()));

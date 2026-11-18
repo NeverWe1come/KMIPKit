@@ -1612,6 +1612,10 @@ final class LocalCatalogRouteChecks {
             if (!selectedCaseIds.contains(caseId) || !applies(testCase, version)) continue;
             String targetId = testCase.path("requires").path("normative_target_id").asText();
             ManagedObjectFactoryFixture fixture = managedObjectFactoryFixture(targetId);
+            if (!fixture.supportsTarget(targetId)) {
+                throw new IllegalArgumentException("Target is not a field of " + fixture.objectName() + ": "
+                        + targetId);
+            }
             int typeTag = tagCodeNamed(catalog, fixture.typeFieldName(), version);
             int valueTag = tagCodeNamed(catalog, fixture.valueFieldName(), version);
             int objectTag = tagCodeNamed(catalog, fixture.objectName(), version);
@@ -1661,11 +1665,26 @@ final class LocalCatalogRouteChecks {
 
     private record ManagedObjectFactoryFixture(String objectName, int objectType, String typeFieldName,
             String valueFieldName, String structureTargetId, String typeTargetId, String valueTargetId,
-            String tagTargetId, byte[] valueBytes, String factoryName) { }
+            String tagTargetId, byte[] valueBytes, String factoryName) {
+        private ManagedObjectFactoryFixture {
+            valueBytes = valueBytes.clone();
+        }
+
+        @Override
+        public byte[] valueBytes() {
+            return valueBytes.clone();
+        }
+
+        boolean supportsTarget(String targetId) {
+            return structureTargetId.equals(targetId) || typeTargetId.equals(targetId)
+                    || valueTargetId.equals(targetId) || tagTargetId.equals(targetId);
+        }
+    }
 
     private static ManagedObjectFactoryFixture managedObjectFactoryFixture(String targetId) {
         if (targetId.equals("KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE")
-                || targetId.startsWith("KMIPKIT-ELEM-STRUCTURE-MEMBER-2-1-CERTIFICATE-CERTIFICATE-")
+                || targetId.equals("KMIPKIT-ELEM-STRUCTURE-MEMBER-2-1-CERTIFICATE-CERTIFICATE-TYPE")
+                || targetId.equals("KMIPKIT-ELEM-STRUCTURE-MEMBER-2-1-CERTIFICATE-CERTIFICATE-VALUE")
                 || targetId.equals("KMIPKIT-ELEM-TAG-420013")) {
             return new ManagedObjectFactoryFixture("Certificate", 1, "Certificate Type", "Certificate Value",
                     "KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE",
@@ -1674,7 +1693,8 @@ final class LocalCatalogRouteChecks {
                     "KMIPKIT-ELEM-TAG-420013", new byte[] {0x30, 0x00}, "certificate");
         }
         if (targetId.equals("KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE-REQUEST")
-                || targetId.startsWith("KMIPKIT-ELEM-STRUCTURE-MEMBER-2-2-CERTIFICATE-REQUEST-")
+                || targetId.equals("KMIPKIT-ELEM-STRUCTURE-MEMBER-2-2-CERTIFICATE-REQUEST-CERTIFICATE-REQUEST-TYPE")
+                || targetId.equals("KMIPKIT-ELEM-STRUCTURE-MEMBER-2-2-CERTIFICATE-REQUEST-CERTIFICATE-REQUEST-VALUE")
                 || targetId.equals("KMIPKIT-ELEM-TAG-420018")) {
             return new ManagedObjectFactoryFixture("Certificate Request", 10, "Certificate Request Type",
                     "Certificate Request Value", "KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE-REQUEST",
@@ -1683,7 +1703,8 @@ final class LocalCatalogRouteChecks {
                     "KMIPKIT-ELEM-TAG-420018", new byte[] {0x30, 0x00}, "certificateRequest");
         }
         if (targetId.equals("KMIPKIT-ELEM-OBJECT-STRUCTURE-OPAQUE-OBJECT")
-                || targetId.startsWith("KMIPKIT-ELEM-STRUCTURE-MEMBER-2-3-OPAQUE-OBJECT-")
+                || targetId.equals("KMIPKIT-ELEM-STRUCTURE-MEMBER-2-3-OPAQUE-OBJECT-OPAQUE-DATA-TYPE")
+                || targetId.equals("KMIPKIT-ELEM-STRUCTURE-MEMBER-2-3-OPAQUE-OBJECT-OPAQUE-DATA-VALUE")
                 || targetId.equals("KMIPKIT-ELEM-TAG-42005B")) {
             return new ManagedObjectFactoryFixture("Opaque Object", 8, "Opaque Data Type", "Opaque Data Value",
                     "KMIPKIT-ELEM-OBJECT-STRUCTURE-OPAQUE-OBJECT",
