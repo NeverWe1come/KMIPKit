@@ -3012,7 +3012,11 @@ fn invoke_simple_request_builder_route(
         "kmipkit_protocol::LocateRequest::with_offset_items",
         "kmipkit_protocol::RevokeRequest::with_revocation_message",
         "kmipkit_protocol::LoginRequest::with_request_count",
+        "kmipkit_protocol::LoginRequest::with_lease_time_interval",
+        "kmipkit_protocol::LoginRequest::with_lease_time_date_time",
         "kmipkit_protocol::DelegatedLoginRequest::with_request_count",
+        "kmipkit_protocol::DelegatedLoginRequest::with_lease_time_interval",
+        "kmipkit_protocol::DelegatedLoginRequest::with_lease_time_date_time",
         "kmipkit_protocol::ValidateRequest::with_validity_date",
         "kmipkit_protocol::RekeyRequest::with_offset",
         "kmipkit_protocol::RekeyKeyPairRequest::with_offset",
@@ -3102,6 +3106,48 @@ fn invoke_simple_request_builder_route(
                     .with_request_count(count)
                     .into_ttlv_payload()
                     .map_err(|_| "Login request fixture rejected")?
+            }
+            "kmipkit_protocol::LoginRequest::with_lease_time_interval"
+            | "kmipkit_protocol::DelegatedLoginRequest::with_lease_time_interval" => {
+                let seconds = sample.with_value(|value| match value {
+                    ValueView::Interval(value) => {
+                        u32::try_from(*value).map_err(|_| "Lease Time Interval is negative")
+                    }
+                    _ => Err("Lease Time fixture is not an Interval"),
+                })?;
+                if symbol == "kmipkit_protocol::LoginRequest::with_lease_time_interval" {
+                    kmipkit::protocol::LoginRequest::new()
+                        .with_lease_time_interval(seconds)
+                        .into_ttlv_payload()
+                        .map_err(|_| "Login request fixture rejected")?
+                } else {
+                    kmipkit::protocol::DelegatedLoginRequest::new(
+                        kmipkit::ttlv::Structure::new(),
+                    )
+                    .with_lease_time_interval(seconds)
+                    .into_ttlv_payload()
+                    .map_err(|_| "Delegated Login request fixture rejected")?
+                }
+            }
+            "kmipkit_protocol::LoginRequest::with_lease_time_date_time"
+            | "kmipkit_protocol::DelegatedLoginRequest::with_lease_time_date_time" => {
+                let unix_seconds = sample.with_value(|value| match value {
+                    ValueView::DateTime(value) => Ok(*value),
+                    _ => Err("Lease Time fixture is not a Date-Time"),
+                })?;
+                if symbol == "kmipkit_protocol::LoginRequest::with_lease_time_date_time" {
+                    kmipkit::protocol::LoginRequest::new()
+                        .with_lease_time_date_time(unix_seconds)
+                        .into_ttlv_payload()
+                        .map_err(|_| "Login request fixture rejected")?
+                } else {
+                    kmipkit::protocol::DelegatedLoginRequest::new(
+                        kmipkit::ttlv::Structure::new(),
+                    )
+                    .with_lease_time_date_time(unix_seconds)
+                    .into_ttlv_payload()
+                    .map_err(|_| "Delegated Login request fixture rejected")?
+                }
             }
             "kmipkit_protocol::DelegatedLoginRequest::with_request_count" => {
                 let count = if target["kind"] == "tag" {
