@@ -631,7 +631,9 @@ final class LocalCatalogRouteChecks {
                     || !Set.of("Unique Identifier", "Correlation Value", "Asynchronous Correlation Value",
                             "Object Type", "Data", "IV/Counter/Nonce", "Lease Time", "Usage Limits Count",
                             "Init Indicator", "Final Indicator", "Data Length", "Maximum Items", "Offset Items",
-                            "Offset", "Request Count")
+                            "Offset", "Request Count", "Certificate Request Value",
+                            "Authenticated Encryption Additional Data", "Authenticated Encryption Tag",
+                            "Digested Data", "Certificate Request Type", "Key Wrap Type", "Query Function")
                             .contains(fieldName)
                     || !requires.path("operation_id").asText().startsWith("KMIPKIT-ELEM-OP-C2S-")
                     || !"local_model".equals(testCase.path("execution").path("mode").asText())
@@ -671,7 +673,9 @@ final class LocalCatalogRouteChecks {
                     || !Set.of("Unique Identifier", "Correlation Value", "Asynchronous Correlation Value",
                             "Object Type", "Data", "IV/Counter/Nonce", "Lease Time", "Usage Limits Count",
                             "Init Indicator", "Final Indicator", "Data Length", "Maximum Items", "Offset Items",
-                            "Offset", "Request Count")
+                            "Offset", "Request Count", "Certificate Request Value",
+                            "Authenticated Encryption Additional Data", "Authenticated Encryption Tag",
+                            "Digested Data", "Certificate Request Type", "Key Wrap Type", "Query Function")
                             .contains(fieldName)
                     || !operationId.startsWith("KMIPKIT-ELEM-OP-C2S-")) {
                 throw new IllegalArgumentException("Selected case is not a supported client scalar payload: "
@@ -681,9 +685,12 @@ final class LocalCatalogRouteChecks {
             int tagCode = tagCodeNamed(catalog, fieldName, version);
             TtlvItemType itemType = switch (fieldName) {
                 case "Unique Identifier" -> TtlvItemType.TextString;
-                case "Correlation Value", "Asynchronous Correlation Value", "Data", "IV/Counter/Nonce" ->
+                case "Correlation Value", "Asynchronous Correlation Value", "Data", "IV/Counter/Nonce",
+                        "Certificate Request Value", "Authenticated Encryption Additional Data",
+                        "Authenticated Encryption Tag", "Digested Data" ->
                     TtlvItemType.ByteString;
-                case "Object Type" -> TtlvItemType.Enumeration;
+                case "Object Type", "Certificate Request Type", "Key Wrap Type", "Query Function" ->
+                    TtlvItemType.Enumeration;
                 case "Lease Time" -> TtlvItemType.Integer;
                 case "Usage Limits Count" -> TtlvItemType.LongInteger;
                 case "Init Indicator", "Final Indicator" -> TtlvItemType.Boolean;
@@ -694,6 +701,9 @@ final class LocalCatalogRouteChecks {
             };
             long numericValue = switch (fieldName) {
                 case "Object Type" -> enumValue(catalog, "OBJECT-TYPE", "Symmetric Key");
+                case "Certificate Request Type" -> enumValue(catalog, "CERTIFICATE-REQUEST-TYPE", "PKCS#10");
+                case "Key Wrap Type" -> enumValue(catalog, "KEY-WRAP-TYPE", "As Registered");
+                case "Query Function" -> enumValue(catalog, "QUERY-FUNCTION", "Query Operations");
                 case "Lease Time" -> 60;
                 case "Usage Limits Count" -> 10;
                 case "Init Indicator", "Final Indicator", "Data Length", "Maximum Items", "Request Count" -> 1;
