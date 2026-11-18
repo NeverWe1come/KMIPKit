@@ -66,6 +66,7 @@ SIGNATURE_VERIFY_ITEM_IDS = (b'verify-create-pair', b'verify-activate', b'verify
                              b'verify-revoke', b'verify-destroy-public', b'verify-destroy-private')
 PKCS11_ITEM_IDS = (b'pkcs11-create', b'pkcs11-activate', b'pkcs11-target',
                    b'pkcs11-revoke', b'pkcs11-destroy')
+OBTAIN_LEASE_ITEM_IDS = (b'lease-create', b'lease-target', b'lease-revoke', b'lease-destroy')
 PKCS11_REQUEST_CORRELATION = b'pkcs11-request-correlation'
 PKCS11_RESPONSE_CORRELATION = b'pkcs11-response-correlation'
 PKCS11_INPUT = b'controlled-pkcs11-input'
@@ -403,6 +404,7 @@ RECIPES = {
     'test-op-create-key-pair': ((2, 20, 20), 'create_key_pair'),
     'test-op-certify': ((2, 18, 6, 19, 20, 20, 20), 'certify'),
     'test-op-pkcs#11': ((1, 18, 51, 19, 20), 'pkcs11'),
+    'test-op-obtain-lease': ((1, 16, 19, 20), 'obtain_lease'),
     'test-op-add-attribute': ((1, 13, 19, 20), 'add_attribute'),
     'test-norm-payload-client-add-attribute-request-20-002': ((1, 13, 19, 20), 'add_attribute'),
     'test-norm-payload-client-add-attribute-request-21-002': ((1, 13, 19, 20), 'add_attribute'),
@@ -1160,6 +1162,46 @@ def verify_pkcs11_response(response_tree):
         raise ValueError('fixture_pkcs11_response_fields_mismatch')
 
 
+def assert_obtain_lease_request(node):
+    """Check the catalogued Create/Obtain Lease/Revoke/Destroy batch."""
+    items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if ([numbers(item, 0x42005C) for item in items] != [[1], [16], [19], [20]] or
+            [byte_string_values(item, 0x420093) for item in items] !=
+            [[item_id] for item_id in OBTAIN_LEASE_ITEM_IDS] or
+            numbers(items[0], 0x420057) != [2] or numbers(items[0], 0x420028) != [3] or
+            numbers(items[0], 0x42002A) != [128] or numbers(items[0], 0x42002C) != [4]):
+        raise ValueError('fixture_obtain_lease_batch_mismatch')
+    payloads = [child for child in items[1][2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+    if len(payloads) != 1 or payloads[0][2]:
+        raise ValueError('fixture_obtain_lease_identifier_mismatch')
+
+
+def verify_obtain_lease_response(response_tree):
+    """Check Table 269 response fields, their values, and lifecycle teardown."""
+    verify_lifecycle(RECIPES['test-op-obtain-lease'][0], response_tree)
+    items = [child for child in response_tree[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if [byte_string_values(item, 0x420093) for item in items] != [
+            [item_id] for item_id in OBTAIN_LEASE_ITEM_IDS]:
+        raise ValueError('fixture_obtain_lease_response_item_ids_mismatch')
+    payloads = [child for child in items[1][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1]
+    if len(payloads) != 1:
+        raise ValueError('fixture_obtain_lease_response_payload_missing')
+    fields = payloads[0][2]
+    identifiers = [field for field in fields if field[0] == UNIQUE_IDENTIFIER_TAG and field[1] == 7]
+    lease_times = [field for field in fields if field[0] == 0x420049 and field[1] == 10]
+    last_changes = [field for field in fields if field[0] == 0x420048 and field[1] == 9]
+    extensions = [field for field in fields if field[0] == 0x541234 and field[1] == 2]
+    if ([field[0] for field in fields] != [0x420094, 0x420049, 0x420048, 0x541234] or
+            len(identifiers) != 1 or identifiers[0][2] != b'fixture-key-1' or
+            len(lease_times) != 1 or lease_times[0][2] != (3600).to_bytes(4, 'big', signed=True) or
+            len(last_changes) != 1 or last_changes[0][2] !=
+            (1_700_000_000).to_bytes(8, 'big', signed=True) or
+            len(extensions) != 1 or int.from_bytes(extensions[0][2], 'big', signed=True) != -7):
+        raise ValueError('fixture_obtain_lease_response_fields_mismatch')
+
+
 def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
                   constructor_variant=None, export_field=None):
     selected_recipe = recipe or RECIPES[case_id]
@@ -1202,6 +1244,8 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
         assert_certify_request(node)
     if selected_recipe[1] == 'pkcs11':
         assert_pkcs11_request(node)
+    if selected_recipe[1] == 'obtain_lease':
+        assert_obtain_lease_request(node)
     if (case_id in {
             'test-norm-payload-client-add-attribute-request-20-002',
             'test-norm-payload-client-add-attribute-request-21-002'} and
@@ -1287,7 +1331,7 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
             'test-attr-cryptographic-length', 'test-op-get-constraints',
             'test-norm-payload-client-get-usage-allocation-request-20-001',
             'test-norm-payload-client-get-usage-allocation-request-21-001',
-            'test-op-pkcs#11') or attribute_fixture is not None
+            'test-op-pkcs#11', 'test-op-obtain-lease') or attribute_fixture is not None
         implicit_target = implicit_target or (
             selected_recipe[1] == 'export' and export_field == 'Unique Identifier' and
             constructor_variant == 'omitted')
@@ -1637,7 +1681,7 @@ def assert_placeholder_usage(node, case_id):
                        'test-batch-order-required-placeholder-resolution',
                        'test-batch-order-omitted-defaults-true', 'test-op-encrypt',
                        'test-op-decrypt', 'test-op-mac', 'test-op-mac-verify',
-                       'test-op-archive', 'test-op-pkcs#11'):
+                       'test-op-archive', 'test-op-pkcs#11', 'test-op-obtain-lease'):
         return
     batch_items = [child for child in node[2]
                    if child[0] == BATCH_ITEM_TAG and child[1] == 1]
@@ -2604,6 +2648,7 @@ class PeerState:
         self.usage_allocation_ready = usage_allocation_ready
         self.usage_allocation_totals = {'fixture-key-1': 1000} if usage_allocation_ready else {}
         self.usage_allocation_counts = {'fixture-key-1': 0} if usage_allocation_ready else {}
+        self.leases = {}
         self.interop_sessions = {}
         self.key_pair_identifiers = {}
         self.archive_requests = []
@@ -2625,6 +2670,8 @@ class PeerState:
             }
         if self.usage_allocation_counts:
             state_value['usage_allocation_counts'] = self.usage_allocation_counts
+        if self.leases:
+            state_value['leases'] = self.leases
         if self.interop_sessions:
             state_value['interop_sessions'] = self.interop_sessions
         if self.archive_requests:
@@ -2641,6 +2688,7 @@ class PeerState:
         labels = {9: 'checked', 10: 'object_retrieved', 11: 'attributes_retrieved',
                   12: 'attribute_list_retrieved', 13: 'attribute_added',
                   15: 'attribute_deleted',
+                  16: 'lease_obtained',
                   48: 'attribute_adjusted',
                   49: 'attribute_set',
                   43: 'exported',
@@ -2743,7 +2791,7 @@ class PeerState:
                 identifier = matching_identifiers[0]
                 placeholder = identifier
                 effect = 'located'
-            elif operation in (9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 20, 21, 31, 32, 33, 34, 35, 36, 43, 48, 49, 51, 56):
+            elif operation in (9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 31, 32, 33, 34, 35, 36, 43, 48, 49, 51, 56):
                 state = self.objects.get(identifier)
                 if state is None:
                     status, reason, effect = 1, 55, 'object_not_found'
@@ -2768,6 +2816,9 @@ class PeerState:
                         raise ValueError('fixture_usage_allocation_limit_mismatch')
                     self.usage_allocation_counts[identifier] = allocated + requested
                     effect = 'usage_allocation_returned'
+                elif operation == 16:
+                    self.leases[identifier] = {'lease_time': 3600, 'last_change_date': 1_700_000_000}
+                    effect = 'lease_obtained'
                 elif operation == 18:
                     if state != 'pre_active':
                         raise ValueError('fixture_activate_state_mismatch')
@@ -2791,6 +2842,7 @@ class PeerState:
                         status, reason, effect = 1, 67, 'illegal_destroy_rejected'
                     else:
                         del self.objects[identifier]
+                        self.leases.pop(identifier, None)
                         self.attributes.pop(identifier, None)
                         self.attribute_values.pop(identifier, None)
                         self.adjustable_attribute_values.pop(identifier, None)
@@ -2876,6 +2928,7 @@ def verify_lifecycle(operations, response_tree):
     labels = {9: 'checked', 10: 'object_retrieved', 11: 'attributes_retrieved',
               12: 'attribute_list_retrieved', 13: 'attribute_added',
               48: 'attribute_adjusted',
+              16: 'lease_obtained',
               43: 'exported',
               17: 'usage_allocation_returned',
               51: 'pkcs11_executed',
@@ -3466,6 +3519,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             response_item_ids = CERTIFY_ITEM_IDS
                                         elif recipe[1] == 'pkcs11':
                                             response_item_ids = PKCS11_ITEM_IDS
+                                        elif recipe[1] == 'obtain_lease':
+                                            response_item_ids = OBTAIN_LEASE_ITEM_IDS
                                         elif placeholder_chain_recipe:
                                             response_item_ids = (
                                                 (b'placeholder-revoke-cleanup', b'placeholder-destroy-cleanup')
@@ -3812,6 +3867,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             verify_certify_response(response_tree)
                                         elif recipe[1] == 'pkcs11':
                                             verify_pkcs11_response(response_tree)
+                                        elif recipe[1] == 'obtain_lease':
+                                            verify_obtain_lease_response(response_tree)
                                         elif recipe[1] == 'get_usage_allocation_uid_variants':
                                             verify_usage_allocation_identifier_variants(response_tree)
                                         elif reject_this_exchange:

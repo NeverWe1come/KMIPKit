@@ -6034,6 +6034,130 @@ cleanup:
     return outcome;
 }
 
+static kmip_execution_outcome_t execute_obtain_lease(kmip_live_client_t *client) {
+    /* OASIS KMIP 2.0 §6.1.34 and 2.1 §6.1.35, Tables 266 and 268–270. */
+    static const uint32_t operations[] = {
+        KMIPKIT_ENUMERATION_OPERATION_CREATE, KMIPKIT_ENUMERATION_OPERATION_OBTAIN_LEASE,
+        KMIPKIT_ENUMERATION_OPERATION_REVOKE, KMIPKIT_ENUMERATION_OPERATION_DESTROY
+    };
+    static const char *const item_ids[] = {
+        "lease-create", "lease-target", "lease-revoke", "lease-destroy"
+    };
+    static const uint8_t expected_identifier[] = "fixture-key-1";
+    const kmipkit_unique_identifier_v1_t placeholder = {
+        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1,
+        .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION,
+        .enumeration_value = KMIPKIT_ENUMERATION_UNIQUE_IDENTIFIER_ID_PLACEHOLDER
+    };
+    kmip_execution_outcome_t outcome = {.executed = true};
+    kmipkit_client_batch_t *batch = NULL;
+    kmipkit_client_batch_response_t *response = NULL;
+    kmipkit_client_batch_item_t *items[4] = {NULL};
+    kmipkit_client_batch_item_response_t *responses[4] = {NULL};
+    kmipkit_ttlv_structure_t *attributes = NULL, *response_ttlv = NULL;
+    kmipkit_ttlv_value_t *value = NULL;
+    kmipkit_authentication_t *authentication = NULL;
+    kmipkit_unique_identifier_v1_t identifier = {
+        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1
+    };
+    uint8_t lease_present = 0, ttlv_present = 0;
+    uint32_t lease_time = 0;
+    int64_t last_change_date = 0;
+    int32_t status = create_cryptographic_key_attributes(
+        client, KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES, 128, &attributes) ? 0 : -1;
+    if (status == 0) status = kmipkit_ttlv_value_integer(
+        (int32_t)KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_ENCRYPT, &value);
+    if (status == 0 && !append_ttlv_value(client, &attributes, UINT32_C(0x42002C), &value))
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    if (status == 0) status = kmipkit_client_batch_item_create(
+        KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY, attributes, NULL, &items[0]);
+    if (status == 0) status = kmipkit_client_batch_item_obtain_lease(NULL, &items[1]);
+    if (status == 0) status = create_revocation_item(&placeholder, &items[2]);
+    if (status == 0) status = kmipkit_client_batch_item_destroy(&placeholder, &items[3]);
+    char diagnostic[256] = {0};
+    for (size_t index = 0; status == 0 && index < 4; ++index) {
+        status = set_batch_item_id(&items[index], item_ids[index]);
+        if (status == 0 && !request_item_is_valid(items[index], diagnostic, sizeof(diagnostic)))
+            status = KMIPKIT_ERROR_INVALID_INPUT;
+    }
+    if (status == 0) status = kmipkit_client_batch_create(&batch);
+    if (status == 0) status = kmipkit_client_batch_set_order_option(batch, 1);
+    if (status == 0) status = kmipkit_client_batch_add_error_continuation_value(
+        batch, KMIPKIT_ENUMERATION_BATCH_ERROR_CONTINUATION_OPTION_CONTINUE);
+    for (size_t index = 0; status == 0 && index < 4; ++index)
+        status = kmipkit_client_batch_add_item(batch, &items[index]);
+    if (status == 0 && client->username_env[0] != '\0') {
+        if (!create_authentication(client, &authentication)) status = KMIPKIT_ERROR_INVALID_INPUT;
+        else {
+            status = kmipkit_client_batch_set_authentication(batch, authentication);
+            if (status != 0) kmipkit_authentication_release(authentication);
+            else authentication = NULL;
+        }
+    }
+    if (status == 0) status = kmipkit_client_execute(client->client, &batch, client->limits, &response);
+    if (status != 0) {
+        uint32_t category = 0, cause = 0, delivery = 0;
+        (void)kmipkit_last_error_get(&status, &category, &cause, &delivery);
+        outcome.library_failed = true;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "KMIPKit Obtain Lease request failed (category=%u cause=%u delivery=%u)",
+                 category, cause, delivery);
+        goto cleanup;
+    }
+    uint64_t response_count = 0;
+    status = kmipkit_client_batch_response_item_count(response, &response_count);
+    if (status == 0 && response_count != 4) status = KMIPKIT_ERROR_INVALID_INPUT;
+    for (size_t index = 0; status == 0 && index < 4; ++index) {
+        kmipkit_client_batch_item_metadata_v2_t metadata = {
+            .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t),
+            .abi_version = 2
+        };
+        status = kmipkit_client_batch_response_item_at(response, index, &responses[index]);
+        if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
+            responses[index], &metadata);
+        if (status == 0 && (metadata.operation != operations[index] ||
+            metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS)) {
+            record_kmip_result(&outcome, &metadata);
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "controlled Obtain Lease lifecycle item %zu was rejected", index);
+            goto cleanup;
+        }
+    }
+    if (status == 0) status = kmipkit_client_batch_item_response_obtain_lease(
+        responses[1], &lease_present, &identifier, &lease_time, &last_change_date);
+    if (status == 0) status = kmipkit_client_batch_item_response_obtain_lease_ttlv(
+        responses[1], &ttlv_present, &response_ttlv);
+    bool identifier_matches = identifier.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING &&
+        identifier.text_data && identifier.text_length == sizeof(expected_identifier) - 1 &&
+        memcmp(identifier.text_data, expected_identifier, sizeof(expected_identifier) - 1) == 0;
+    bool ttlv_matches = status == 0 && response_ttlv_matches_field_count(
+        responses[1], kmipkit_client_batch_item_response_obtain_lease_ttlv, 4, &status);
+    bool valid = status == 0 && lease_present && identifier_matches && lease_time == 3600 &&
+        last_change_date == INT64_C(1700000000) && ttlv_present && response_ttlv && ttlv_matches;
+    outcome.success = valid;
+    outcome.library_failed = status != 0;
+    outcome.library_validated = status == 0;
+    outcome.has_result_status_code = status == 0;
+    outcome.result_status_code = KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS;
+    if (!valid) snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+        "KMIPKit Obtain Lease response mismatch (status=%d present=%u identifier=%u lease=%u date=%u ttlv=%u)",
+        status, lease_present, identifier_matches, lease_time == 3600,
+        last_change_date == INT64_C(1700000000), ttlv_present && ttlv_matches);
+
+cleanup:
+    if (authentication) kmipkit_authentication_release(authentication);
+    for (size_t index = 0; index < 4; ++index) {
+        if (responses[index]) kmipkit_client_batch_item_response_release(responses[index]);
+        if (items[index]) kmipkit_client_batch_item_release(items[index]);
+    }
+    if (response) kmipkit_client_batch_response_release(response);
+    if (batch) kmipkit_client_batch_release(batch);
+    if (attributes) kmipkit_ttlv_structure_release(attributes);
+    if (response_ttlv) kmipkit_ttlv_structure_release(response_ttlv);
+    if (value) kmipkit_ttlv_value_release(value);
+    return outcome;
+}
+
 static kmip_execution_outcome_t execute_created_key_signature(kmip_live_client_t *client,
                                                                uint32_t operation) {
     /* OASIS KMIP 2.0 §§6.1.49–6.1.50, 2.1 §§6.1.55–6.1.56, and §12.1. */
@@ -6601,6 +6725,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         return execute_certify_public_key(client);
     if (strcmp(test_case->case_id, "test-op-pkcs#11") == 0)
         return execute_pkcs11_operation(client);
+    if (strcmp(test_case->case_id, "test-op-obtain-lease") == 0)
+        return execute_obtain_lease(client);
     if (strcmp(test_case->case_id, "test-op-sign") == 0)
         return execute_created_key_signature(client, KMIPKIT_ENUMERATION_OPERATION_SIGN);
     if (strcmp(test_case->case_id, "test-op-signature-verify") == 0)

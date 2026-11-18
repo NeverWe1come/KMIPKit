@@ -207,6 +207,13 @@ def response(operations: tuple[int, ...], protocol_minor: int,
                 + tlv(0x42015D, 1, enumeration(0x42015D, 0xFFFF1234))
                 + integer(0x541234, 7)
             )
+        elif operation == 16:
+            payload_value = (
+                tlv(0x420094, 7, b"fixture-key-1")
+                + integer(0x420049, 3600, item_type=10)
+                + tlv(0x420048, 9, struct.pack(">q", 1_700_000_000))
+                + integer(0x541234, -7)
+            )
         elif operation == 47:
             payload_value = tlv(
                 0x420149,
@@ -299,6 +306,10 @@ def response(operations: tuple[int, ...], protocol_minor: int,
             unique_batch_item_id = (
                 b"pkcs11-create", b"pkcs11-activate", b"pkcs11-target",
                 b"pkcs11-revoke", b"pkcs11-destroy"
+            )[item_index]
+        if operations == (1, 16, 19, 20):
+            unique_batch_item_id = (
+                b"lease-create", b"lease-target", b"lease-revoke", b"lease-destroy"
             )[item_index]
         item_fields = integer(0x42005C, operation, 5)
         if unique_batch_item_id is not None:
@@ -538,6 +549,8 @@ def main() -> int:
     expected_operations += (2, 18, 6, 19, 20, 20, 20)
     expected_operations += (1, 18, 51, 19, 20)
     expected_cases += ("test-op-pkcs#11",)
+    expected_operations += (1, 16, 19, 20)
+    expected_cases += ("test-op-obtain-lease",)
     expected_operations += (1, 21, 19, 20)
     expected_cases += ("test-op-archive",)
     expected_operations += stop_on_first_failure_batch
