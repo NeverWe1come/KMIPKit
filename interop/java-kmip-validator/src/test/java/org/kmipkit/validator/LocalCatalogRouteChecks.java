@@ -178,6 +178,11 @@ final class LocalCatalogRouteChecks {
                     NON_INTEGER_TRANSPARENT_KEY_MATERIAL_CASE_IDS.stream()),
             TRANSPARENT_KEY_MATERIAL_STRUCTURE_CASE_IDS.stream())
             .collect(java.util.stream.Collectors.toUnmodifiableSet());
+    static final Set<String> CERTIFICATE_MANAGED_OBJECT_CASE_IDS = Set.of(
+            "test-norm-object-structure-object-structure-certificate",
+            "test-norm-structure-member-structure-member-2-1-certificate-certificate-type",
+            "test-norm-structure-member-structure-member-2-1-certificate-certificate-value",
+            "test-norm-tag-tag-420013");
     static final Set<String> REMAINING_ENUMERATION_FIELD_CASE_IDS = Set.of(
             "test-norm-operation-structure-operation-structure-7-15-interop-function",
             "test-norm-structure-member-structure-member-5-5-attribute-reference",
@@ -1576,6 +1581,78 @@ final class LocalCatalogRouteChecks {
             throw new IllegalArgumentException("Selected transparent Key Material fields were not executed for "
                     + version);
         }
+    }
+
+    /** Executes all typed managed-object construction routes for Certificate catalog targets. */
+    static void executeCertificateFactoryTargets(JsonNode catalog, String version,
+            Set<String> selectedCaseIds, EvidenceSink sink) throws Exception {
+        if (!CERTIFICATE_MANAGED_OBJECT_CASE_IDS.containsAll(selectedCaseIds)) {
+            throw new IllegalArgumentException("Selected case is not a Certificate managed-object target.");
+        }
+        Set<String> emitted = new java.util.LinkedHashSet<>();
+        int certificateTypeTag = tagCodeNamed(catalog, "Certificate Type", version);
+        int certificateValueTag = tagCodeNamed(catalog, "Certificate Value", version);
+        int certificateTag = tagCodeNamed(catalog, "Certificate", version);
+        long certificateType = representativeEnumerationValue(catalog, "Certificate Type", version);
+        byte[] certificateValue = new byte[] {0x30, 0x00};
+        CodecLimits limits = CodecLimits.defaults();
+
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String caseId = testCase.path("case_id").asText();
+            if (!selectedCaseIds.contains(caseId) || !applies(testCase, version)) continue;
+            String targetId = testCase.path("requires").path("normative_target_id").asText();
+            if (!isCertificateManagedObjectTarget(targetId)) {
+                throw new IllegalArgumentException("Selected case is not a Certificate target: " + caseId);
+            }
+            List<TtlvItem> fields = new ArrayList<>();
+            fields.add(createEnumerationItem(certificateTypeTag, certificateType, limits));
+            try (TtlvValue value = TtlvValue.ByteString(certificateValue, limits);
+                    RawTag raw = RawTag.fromRaw(certificateValueTag); Tag tag = raw.checked()) {
+                fields.add(TtlvItem.create(tag, value, limits));
+            }
+            byte[] wire = structureWire(certificateTag, concat(
+                    itemWire(certificateTypeTag, TtlvItemType.Enumeration.code(),
+                            ByteBuffer.allocate(Integer.BYTES).putInt((int) certificateType).array()),
+                    itemWire(certificateValueTag, TtlvItemType.ByteString.code(), certificateValue)));
+            try (ManagedObject fromFields = ManagedObject.fromFields(1, fields);
+                    ManagedObject certificate = ManagedObject.certificate(fields);
+                    TtlvItem certificateItem = createStructureItem(certificateTag, fields, limits);
+                    ManagedObject fromItem = ManagedObject.fromItem(1, certificateItem)) {
+                assertCertificateFields(fromFields, certificateType, certificateValue);
+                assertCertificateFields(certificate, certificateType, certificateValue);
+                assertCertificateFields(fromItem, certificateType, certificateValue);
+            } finally {
+                closeItems(fields);
+            }
+            emitRoute(sink, caseId, targetId,
+                    "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.certificate",
+                    "org.kmipkit.ttlv.ManagedObject.certificate", "construct", wire);
+            if (!targetId.equals("KMIPKIT-ELEM-TAG-420013")) {
+                emitRoute(sink, caseId, targetId,
+                        "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromfields",
+                        "org.kmipkit.ttlv.ManagedObject.fromFields", "construct", wire);
+                emitRoute(sink, caseId, targetId,
+                        "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromitem",
+                        "org.kmipkit.ttlv.ManagedObject.fromItem", "construct", wire);
+            }
+            emitted.add(caseId);
+        }
+        if (!emitted.equals(selectedCaseIds)) {
+            throw new IllegalArgumentException("Selected Certificate targets were not executed for " + version);
+        }
+    }
+
+    private static boolean isCertificateManagedObjectTarget(String targetId) {
+        return targetId.equals("KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE")
+                || targetId.equals("KMIPKIT-ELEM-STRUCTURE-MEMBER-2-1-CERTIFICATE-CERTIFICATE-TYPE")
+                || targetId.equals("KMIPKIT-ELEM-STRUCTURE-MEMBER-2-1-CERTIFICATE-CERTIFICATE-VALUE")
+                || targetId.equals("KMIPKIT-ELEM-TAG-420013");
+    }
+
+    private static void assertCertificateFields(ManagedObject object, long certificateType, byte[] certificateValue) {
+        assertEquals(1, object.objectType());
+        assertEquals(certificateType, object.certificateType());
+        assertArrayEquals(certificateValue, object.certificateValue());
     }
 
     private static void assertKeyMaterialTarget(KeyMaterial keyMaterial, int formatRaw, int targetTag,

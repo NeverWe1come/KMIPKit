@@ -703,10 +703,19 @@ class LocalCatalogRouteChecksTest {
             LocalCatalogRouteChecks.executeCertificateFactoryTargets(catalog, version, caseIds, invocations::add);
         }
 
-        assertEquals(caseIds.size() * 2, invocations.size());
-        assertEquals(Set.of("java.typed-protocol.model.org.kmipkit.ttlv.managedobject.certificate"),
+        assertEquals(20, invocations.size());
+        assertEquals(Set.of(
+                "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.certificate",
+                "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromfields",
+                "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromitem"),
                 invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId)
                         .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(8, invocations.stream().filter(invocation -> invocation.routeId().endsWith("managedobject.certificate"))
+                .count());
+        assertEquals(6, invocations.stream().filter(invocation -> invocation.routeId().endsWith("managedobject.fromfields"))
+                .count());
+        assertEquals(6, invocations.stream().filter(invocation -> invocation.routeId().endsWith("managedobject.fromitem"))
+                .count());
         assertEquals(Set.of("construct"), invocations.stream()
                 .map(LocalCatalogRouteChecks.Invocation::action)
                 .collect(java.util.stream.Collectors.toSet()));
