@@ -1193,6 +1193,7 @@ class ControlledTlsPeerTest {
                 assertSimpleVersionBoundaryRouteCoverage(events);
                 assertPingNetworkRouteCoverage(events);
                 assertPingVersionBoundaryRouteCoverage(events);
+                assertCreateOperationNetworkRouteCoverage(events);
             }
             if ("2.1".equals(protocolVersion)) appendObjectGroupLocalRouteEvents(events);
             if ("2.1".equals(protocolVersion)) appendStructureMemberStructureRouteEvents(events);
@@ -7899,6 +7900,31 @@ class ControlledTlsPeerTest {
                     }
                     assertTrue(present, "Missing typed Ping route evidence for 2.1 / " + encoding
                             + " / " + transport + " / " + action);
+                }
+            }
+        }
+    }
+
+    private static void assertCreateOperationNetworkRouteCoverage(ArrayNode events) {
+        for (String caseId : List.of("test-op-create", "test-obj-symmetric-key")) {
+            for (String version : KMIP_2_0_AND_2_1) {
+                for (String encoding : List.of("TTLV", "JSON", "XML")) {
+                    for (String transport : List.of("raw_tls", "https")) {
+                        for (String action : List.of("construct", "send", "decode")) {
+                            boolean present = events.valueStream().anyMatch(event ->
+                                    caseId.equals(event.path("case_id").asText())
+                                            && "java.typed-protocol.client_batch_item.create"
+                                                    .equals(event.path("route_id").asText())
+                                            && "KMIPKIT-ELEM-OP-C2S-CREATE"
+                                                    .equals(event.path("target_id").asText())
+                                            && version.equals(event.path("protocol_version").asText())
+                                            && encoding.equals(event.path("encoding").asText())
+                                            && transport.equals(event.path("transport").asText())
+                                            && action.equals(event.path("action").asText()));
+                            assertTrue(present, "Missing Create client batch route evidence for " + caseId + " / "
+                                    + version + " / " + encoding + " / " + transport + " / " + action);
+                        }
+                    }
                 }
             }
         }
