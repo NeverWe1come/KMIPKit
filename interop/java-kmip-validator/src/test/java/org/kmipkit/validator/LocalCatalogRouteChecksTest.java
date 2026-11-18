@@ -253,6 +253,45 @@ class LocalCatalogRouteChecksTest {
     }
 
     @Test
+    void executesKeyBlockStructureMembersThroughGenericTtlvRoutes() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode catalog = mapper.readTree(CATALOG.toFile());
+        Set<String> caseIds = Set.of(
+                "test-norm-structure-member-structure-member-2-4-pgp-key-key-block",
+                "test-norm-structure-member-structure-member-2-5-private-key-key-block",
+                "test-norm-structure-member-structure-member-2-6-public-key-key-block",
+                "test-norm-structure-member-structure-member-2-7-secret-data-key-block",
+                "test-norm-structure-member-structure-member-2-8-split-key-key-block");
+        JsonNode events = mapper.createArrayNode();
+
+        Set<String> missing = LocalCatalogRouteChecks.missingGenericStructureTargetCaseIds(
+                catalog, events, "2.1", Set.of());
+        assertTrue(missing.containsAll(caseIds), "Each Key Block member is an object data Structure target.");
+
+        List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
+        LocalCatalogRouteChecks.executeGenericStructureTargets(
+                catalog, "2.1", caseIds, Set.of(), events, invocations::add);
+
+        assertEquals(caseIds.size() * 4, invocations.size());
+        assertEquals(Set.of(
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode"),
+                invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId)
+                        .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(caseIds, invocations.stream().map(LocalCatalogRouteChecks.Invocation::caseId)
+                .collect(java.util.stream.Collectors.toSet()));
+        for (LocalCatalogRouteChecks.Invocation invocation : invocations) {
+            try (var decoded = TtlvCodec.decode(invocation.wire()); var view = decoded.view();
+                    var tag = view.tag(); var value = view.value(); var structure = value.structure()) {
+                assertEquals(TtlvItemType.Structure, view.itemType());
+                assertEquals(1, structure.itemCount());
+            }
+        }
+    }
+
+    @Test
     void structureRouteSelectorIgnoresCatalogCasesWithoutNormativeTargets() throws Exception {
         JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
         JsonNode events = new ObjectMapper().createArrayNode();
