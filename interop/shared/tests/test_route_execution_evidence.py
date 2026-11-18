@@ -323,6 +323,52 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         self.assertTrue(summary["selected_scope_complete"])
         self.assertTrue(summary["all_invocations_passed"])
 
+    def test_explicitly_omitted_stop_response_is_resolved_without_fake_invocation(self):
+        from coverage_matrix import iter_cells
+
+        catalog_path = ROOT / "interop/shared/catalog/kmipkit-1.0-test-catalog.json"
+        manifest_path = ROOT / "interop/shared/coverage/route-capabilities.json"
+        installed_catalog = json.loads(catalog_path.read_text())
+        manifest = json.loads(manifest_path.read_text())
+        stop_case = next(case for case in installed_catalog["test_cases"]
+                         if case["case_id"] == "test-batch-stop-on-first-failure")
+        catalog = {**installed_catalog, "test_cases": [stop_case]}
+        omitted = next(cell for cell in iter_cells(catalog, manifest, languages=("c",))
+                       if cell["action"] == "decode" and cell["mode"] == "network"
+                       and cell.get("workflow_item_index") == 1
+                       and cell["protocol_version"] == "2.0"
+                       and cell["encoding"] == "TTLV" and cell["transport"] == "raw_tls")
+        event = {
+            **{field: omitted[field] for field in (
+                "case_id", "route_id", "target_id", "workflow_operation",
+                "workflow_item_index", "public_api_symbol", "execution_route_id",
+                "execution_api_symbol", "action", "protocol_version", "encoding", "transport",
+            ) if field in omitted},
+            "status": "not_applicable",
+            "invocation_count": 0,
+            "not_applicable_reason": "stop_unprocessed_response_omitted",
+        }
+        report = {
+            **self.report,
+            "protocol_versions": ["2.0", "2.1"],
+            "network_combinations": [{"encoding": "TTLV", "transport": "raw_tls"}],
+            "events": [event],
+            "library_commit": manifest["library_commit"],
+        }
+
+        summary = validate_report(
+            report, catalog, manifest,
+            catalog_sha256="c" * 64,
+            route_manifest_sha256="d" * 64,
+            expected_artifact_sha256="b" * 64,
+            scope_cells=[omitted],
+        )
+
+        self.assertTrue(summary["selected_scope_complete"])
+        self.assertEqual(0, summary["invoked_cells"])
+        self.assertEqual(1, summary["not_applicable_cells"])
+        self.assertTrue(summary["all_invocations_passed"])
+
     def test_missing_action_fails_coverage_even_when_the_route_was_called(self):
         report = copy.deepcopy(self.report)
         report["events"].pop()
