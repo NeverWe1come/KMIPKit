@@ -1843,6 +1843,66 @@
     "test-norm-structure-member-structure-member-9-11-attestation-nonce",
     "test-norm-structure-member-structure-member-9-11-ticket-ticket",
     "test-norm-operation-structure-operation-structure-7-1-asynchronous-correlation-values",
+    "test-op-delegated-login",
+    "test-op-discover-versions",
+    "test-op-interop",
+    "test-op-log",
+    "test-op-login",
+    "test-op-logout",
+    "test-op-activate",
+    "test-op-add-attribute",
+    "test-op-adjust-attribute",
+    "test-op-archive",
+    "test-op-cancel",
+    "test-op-certify",
+    "test-op-check",
+    "test-op-create",
+    "test-op-create-key-pair",
+    "test-op-create-split-key",
+    "test-op-decrypt",
+    "test-op-delete-attribute",
+    "test-op-derive-key",
+    "test-op-destroy",
+    "test-op-encrypt",
+    "test-op-export",
+    "test-op-get",
+    "test-op-get-attribute-list",
+    "test-op-get-attributes",
+    "test-op-get-usage-allocation",
+    "test-op-hash",
+    "test-op-import",
+    "test-op-join-split-key",
+    "test-op-locate",
+    "test-op-mac",
+    "test-op-mac-verify",
+    "test-op-modify-attribute",
+    "test-op-obtain-lease",
+    "test-op-pkcs#11",
+    "test-op-poll",
+    "test-op-rng-retrieve",
+    "test-op-rng-seed",
+    "test-op-re-provision",
+    "test-op-re-certify",
+    "test-op-re-key",
+    "test-op-re-key-key-pair",
+    "test-op-recover",
+    "test-op-register",
+    "test-op-revoke",
+    "test-op-set-attribute",
+    "test-op-set-endpoint-role",
+    "test-op-sign",
+    "test-op-signature-verify",
+    "test-op-validate",
+    "test-s2c-discover-versions",
+    "test-s2c-notify",
+    "test-s2c-put",
+    "test-s2c-query",
+    "test-s2c-set-endpoint-role",
+    "test-op-get-constraints",
+    "test-op-process",
+    "test-op-query-asynchronous-requests",
+    "test-op-set-constraints",
+    "test-op-set-defaults",
     "test-norm-enumeration-value-enum-value-item-type-big-integer-00000004",
     "test-norm-enumeration-value-enum-value-item-type-boolean-00000006",
     "test-norm-enumeration-value-enum-value-item-type-byte-string-00000008",
@@ -1876,7 +1936,7 @@
     "test-norm-credential-credential-hashed-password",
     "test-norm-credential-credential-username-and-password"
   ],
-  "executed_cells": 30596,
+  "executed_cells": 30941,
   "language": "java",
   "library_commit": "12496d646d11d4069b58bcc88fc76cc619211ec6",
   "pending_case_ids": [
@@ -2976,15 +3036,9 @@
     "test-op-set-attribute",
     "test-op-set-constraints",
     "test-op-set-defaults",
-    "test-op-set-endpoint-role",
     "test-op-sign",
     "test-op-signature-verify",
     "test-op-validate",
-    "test-s2c-discover-versions",
-    "test-s2c-notify",
-    "test-s2c-put",
-    "test-s2c-query",
-    "test-s2c-set-endpoint-role",
     "test-sign-missing-managed-object-cryptographic-parameters",
     "test-v20-reject-get-constraints",
     "test-v20-reject-ping",
@@ -7168,143 +7222,143 @@
     },
     {
       "case_id": "test-op-activate",
-      "pending_cells": 44
+      "pending_cells": 38
     },
     {
       "case_id": "test-op-add-attribute",
-      "pending_cells": 82
+      "pending_cells": 76
     },
     {
       "case_id": "test-op-adjust-attribute",
-      "pending_cells": 82
+      "pending_cells": 76
     },
     {
       "case_id": "test-op-archive",
-      "pending_cells": 44
+      "pending_cells": 38
     },
     {
       "case_id": "test-op-cancel",
-      "pending_cells": 48
+      "pending_cells": 42
     },
     {
       "case_id": "test-op-certify",
-      "pending_cells": 44
+      "pending_cells": 38
     },
     {
       "case_id": "test-op-check",
-      "pending_cells": 44
+      "pending_cells": 38
     },
     {
       "case_id": "test-op-create",
-      "pending_cells": 44
+      "pending_cells": 38
     },
     {
       "case_id": "test-op-create-key-pair",
-      "pending_cells": 44
+      "pending_cells": 38
     },
     {
       "case_id": "test-op-create-split-key",
-      "pending_cells": 44
+      "pending_cells": 38
     },
     {
       "case_id": "test-op-decrypt",
-      "pending_cells": 44
+      "pending_cells": 38
     },
     {
       "case_id": "test-op-delegated-login",
-      "pending_cells": 46
+      "pending_cells": 40
     },
     {
       "case_id": "test-op-delete-attribute",
-      "pending_cells": 82
+      "pending_cells": 76
     },
     {
       "case_id": "test-op-derive-key",
-      "pending_cells": 44
+      "pending_cells": 38
     },
     {
       "case_id": "test-op-destroy",
-      "pending_cells": 44
+      "pending_cells": 38
     },
     {
       "case_id": "test-op-discover-versions",
-      "pending_cells": 44
+      "pending_cells": 38
     },
     {
       "case_id": "test-op-encrypt",
-      "pending_cells": 44
+      "pending_cells": 38
     },
     {
       "case_id": "test-op-export",
-      "pending_cells": 44
+      "pending_cells": 38
     },
     {
       "case_id": "test-op-get",
-      "pending_cells": 44
+      "pending_cells": 38
     },
     {
       "case_id": "test-op-get-attribute-list",
-      "pending_cells": 82
+      "pending_cells": 76
     },
     {
       "case_id": "test-op-get-attributes",
-      "pending_cells": 82
+      "pending_cells": 76
     },
     {
       "case_id": "test-op-get-constraints",
-      "pending_cells": 22
+      "pending_cells": 19
     },
     {
       "case_id": "test-op-get-usage-allocation",
-      "pending_cells": 44
+      "pending_cells": 38
     },
     {
       "case_id": "test-op-hash",
-      "pending_cells": 46
+      "pending_cells": 40
     },
     {
       "case_id": "test-op-import",
-      "pending_cells": 44
+      "pending_cells": 38
     },
     {
       "case_id": "test-op-interop",
-      "pending_cells": 44
+      "pending_cells": 38
     },
     {
       "case_id": "test-op-join-split-key",
-      "pending_cells": 44
+      "pending_cells": 38
     },
     {
       "case_id": "test-op-locate",
-      "pending_cells": 44
+      "pending_cells": 38
     },
     {
       "case_id": "test-op-log",
-      "pending_cells": 44
+      "pending_cells": 38
     },
     {
       "case_id": "test-op-login",
-      "pending_cells": 46
+      "pending_cells": 40
     },
     {
       "case_id": "test-op-logout",
-      "pending_cells": 44
+      "pending_cells": 38
     },
     {
       "case_id": "test-op-mac",
-      "pending_cells": 46
+      "pending_cells": 40
     },
     {
       "case_id": "test-op-mac-verify",
-      "pending_cells": 46
+      "pending_cells": 40
     },
     {
       "case_id": "test-op-modify-attribute",
-      "pending_cells": 82
+      "pending_cells": 76
     },
     {
       "case_id": "test-op-obtain-lease",
-      "pending_cells": 46
+      "pending_cells": 40
     },
     {
       "case_id": "test-op-ping",
@@ -7312,15 +7366,15 @@
     },
     {
       "case_id": "test-op-pkcs#11",
-      "pending_cells": 54
-    },
-    {
-      "case_id": "test-op-poll",
       "pending_cells": 48
     },
     {
+      "case_id": "test-op-poll",
+      "pending_cells": 42
+    },
+    {
       "case_id": "test-op-process",
-      "pending_cells": 24
+      "pending_cells": 21
     },
     {
       "case_id": "test-op-query",
@@ -7328,91 +7382,67 @@
     },
     {
       "case_id": "test-op-query-asynchronous-requests",
-      "pending_cells": 24
+      "pending_cells": 21
     },
     {
       "case_id": "test-op-re-certify",
-      "pending_cells": 44
+      "pending_cells": 38
     },
     {
       "case_id": "test-op-re-key",
-      "pending_cells": 44
+      "pending_cells": 38
     },
     {
       "case_id": "test-op-re-key-key-pair",
-      "pending_cells": 44
+      "pending_cells": 38
     },
     {
       "case_id": "test-op-re-provision",
-      "pending_cells": 44
+      "pending_cells": 38
     },
     {
       "case_id": "test-op-recover",
-      "pending_cells": 44
+      "pending_cells": 38
     },
     {
       "case_id": "test-op-register",
-      "pending_cells": 80
+      "pending_cells": 74
     },
     {
       "case_id": "test-op-revoke",
-      "pending_cells": 82
+      "pending_cells": 76
     },
     {
       "case_id": "test-op-rng-retrieve",
-      "pending_cells": 44
+      "pending_cells": 38
     },
     {
       "case_id": "test-op-rng-seed",
-      "pending_cells": 44
+      "pending_cells": 38
     },
     {
       "case_id": "test-op-set-attribute",
-      "pending_cells": 82
+      "pending_cells": 76
     },
     {
       "case_id": "test-op-set-constraints",
-      "pending_cells": 22
+      "pending_cells": 19
     },
     {
       "case_id": "test-op-set-defaults",
-      "pending_cells": 22
-    },
-    {
-      "case_id": "test-op-set-endpoint-role",
-      "pending_cells": 6
+      "pending_cells": 19
     },
     {
       "case_id": "test-op-sign",
-      "pending_cells": 46
+      "pending_cells": 40
     },
     {
       "case_id": "test-op-signature-verify",
-      "pending_cells": 46
+      "pending_cells": 40
     },
     {
       "case_id": "test-op-validate",
-      "pending_cells": 44
-    },
-    {
-      "case_id": "test-s2c-discover-versions",
-      "pending_cells": 6
-    },
-    {
-      "case_id": "test-s2c-notify",
-      "pending_cells": 6
-    },
-    {
-      "case_id": "test-s2c-put",
-      "pending_cells": 6
-    },
-    {
-      "case_id": "test-s2c-query",
-      "pending_cells": 6
-    },
-    {
-      "case_id": "test-s2c-set-endpoint-role",
-      "pending_cells": 6
+      "pending_cells": 38
     },
     {
       "case_id": "test-sign-missing-managed-object-cryptographic-parameters",
@@ -7443,7 +7473,7 @@
       "pending_cells": 15
     }
   ],
-  "pending_cells": 41045,
+  "pending_cells": 40700,
   "pending_reason": "No validated per-cell route execution evidence is recorded for this cell.",
   "pending_reason_code": "route_evidence_not_emitted",
   "planned_cells": 71641,
@@ -7451,8 +7481,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 3081,
-      "pending_cells": 1003,
+      "executed_cells": 3136,
+      "pending_cells": 948,
       "protocol_version": "2.0",
       "required_cells": 4084,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item",
@@ -7461,8 +7491,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 3133,
-      "pending_cells": 1046,
+      "executed_cells": 3193,
+      "pending_cells": 986,
       "protocol_version": "2.1",
       "required_cells": 4179,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item",
@@ -7771,8 +7801,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 3129,
-      "pending_cells": 1002,
+      "executed_cells": 3184,
+      "pending_cells": 947,
       "protocol_version": "2.0",
       "required_cells": 4131,
       "route_id": "java.generic-ttlv.ttlv_codec.decode",
@@ -7781,8 +7811,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 3181,
-      "pending_cells": 1045,
+      "executed_cells": 3241,
+      "pending_cells": 985,
       "protocol_version": "2.1",
       "required_cells": 4226,
       "route_id": "java.generic-ttlv.ttlv_codec.decode",
@@ -7791,8 +7821,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 3081,
-      "pending_cells": 1002,
+      "executed_cells": 3136,
+      "pending_cells": 947,
       "protocol_version": "2.0",
       "required_cells": 4083,
       "route_id": "java.generic-ttlv.ttlv_item.create",
@@ -7801,8 +7831,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 3133,
-      "pending_cells": 1045,
+      "executed_cells": 3193,
+      "pending_cells": 985,
       "protocol_version": "2.1",
       "required_cells": 4178,
       "route_id": "java.generic-ttlv.ttlv_item.create",
@@ -34022,8 +34052,8 @@
   "route_manifest_sha256": "8e26f2efe33c63d3fc4dcd0cb11e465b15bbe9135ab56809c354f032a7aeac59",
   "route_summary": [
     {
-      "executed_cells": 6214,
-      "pending_cells": 2049,
+      "executed_cells": 6329,
+      "pending_cells": 1934,
       "required_cells": 8263,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item"
     },
@@ -34118,14 +34148,14 @@
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring"
     },
     {
-      "executed_cells": 6310,
-      "pending_cells": 2047,
+      "executed_cells": 6425,
+      "pending_cells": 1932,
       "required_cells": 8357,
       "route_id": "java.generic-ttlv.ttlv_codec.decode"
     },
     {
-      "executed_cells": 6214,
-      "pending_cells": 2047,
+      "executed_cells": 6329,
+      "pending_cells": 1932,
       "required_cells": 8261,
       "route_id": "java.generic-ttlv.ttlv_item.create"
     },
@@ -35493,7 +35523,7 @@
     }
   ],
   "schema_version": "1.0",
-  "selected_scope_cells": 30596,
+  "selected_scope_cells": 30941,
   "selected_scope_complete": true,
   "vendor_interoperability_claim": false
 }

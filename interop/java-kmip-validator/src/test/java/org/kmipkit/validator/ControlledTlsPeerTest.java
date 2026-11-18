@@ -869,6 +869,7 @@ class ControlledTlsPeerTest {
         int bigIntegerTargetRouteEventCount = 0;
         int remainingEnumerationFieldRouteEventCount = 0;
         int genericStructureTargetRouteEventCount = 0;
+        int genericOperationTargetRouteEventCount = 0;
         Set<String> booleanFieldCaseIds = new java.util.HashSet<>();
         Set<String> anyObjectAttributeCaseIds = new java.util.HashSet<>();
         Set<String> scalarStructureMemberCaseIds = new java.util.LinkedHashSet<>();
@@ -885,6 +886,7 @@ class ControlledTlsPeerTest {
         Set<String> bigIntegerTargetCaseIds = new java.util.LinkedHashSet<>();
         Set<String> remainingEnumerationFieldCaseIds = new java.util.LinkedHashSet<>();
         Set<String> genericStructureTargetCaseIds = new java.util.LinkedHashSet<>();
+        Set<String> genericOperationTargetCaseIds = new java.util.LinkedHashSet<>();
         Set<String> genericTagCaseIds = new java.util.LinkedHashSet<>(genericOnlyTagCaseIds());
 
         for (String protocolVersion : KMIP_2_0_AND_2_1) {
@@ -1262,6 +1264,20 @@ class ControlledTlsPeerTest {
                 appendLocalCatalogInvocation(events, protocolVersion, invocation);
             }
             genericStructureTargetRouteEventCount += genericStructureTargetInvocations.size();
+            Set<String> missingGenericOperationTargets =
+                    LocalCatalogRouteChecks.missingGenericOperationTargetCaseIds(
+                            readRouteEvidenceCatalog(), events, protocolVersion);
+            genericOperationTargetCaseIds.addAll(missingGenericOperationTargets);
+            List<LocalCatalogRouteChecks.Invocation> genericOperationTargetInvocations = new ArrayList<>();
+            LocalCatalogRouteChecks.executeGenericOperationTargets(readRouteEvidenceCatalog(), protocolVersion,
+                    missingGenericOperationTargets, events, genericOperationTargetInvocations::add);
+            for (LocalCatalogRouteChecks.Invocation invocation : genericOperationTargetInvocations) {
+                appendLocalCatalogInvocation(events, protocolVersion, invocation);
+            }
+            genericOperationTargetRouteEventCount += genericOperationTargetInvocations.size();
+            assertTrue(LocalCatalogRouteChecks.missingGenericOperationTargetCaseIds(
+                    readRouteEvidenceCatalog(), events, protocolVersion).isEmpty(),
+                    "Every selected Operation target must exercise the generic TTLV Item routes.");
             Set<String> missingAnyObjectAttributeCases = missingAnyObjectAttributeCaseIds(
                     readRouteEvidenceCatalog(), events, protocolVersion);
             anyObjectAttributeCaseIds.addAll(missingAnyObjectAttributeCases);
@@ -1311,7 +1327,8 @@ class ControlledTlsPeerTest {
                 structureAttributeValueCaseIds, textAttributeValueCaseIds, booleanAttributeValueCaseIds,
                 dateTimeAttributeValueCaseIds, enumerationAttributeValueCaseIds, scalarAttributeValueCaseIds,
                 textStringTargetCaseIds, fixedScalarTargetCaseIds, bigIntegerTargetCaseIds,
-                remainingEnumerationFieldCaseIds, genericStructureTargetCaseIds, genericTagCaseIds);
+                remainingEnumerationFieldCaseIds, genericStructureTargetCaseIds,
+                genericOperationTargetCaseIds, genericTagCaseIds);
         assertTrue(Files.isRegularFile(reportPath),
                 "Installed client calls against the controlled TLS peer must emit route execution evidence.");
         JsonNode report = new ObjectMapper().readTree(reportPath.toFile());
@@ -1867,6 +1884,7 @@ class ControlledTlsPeerTest {
                         + bigIntegerTargetRouteEventCount
                         + remainingEnumerationFieldRouteEventCount
                         + genericStructureTargetRouteEventCount
+                        + genericOperationTargetRouteEventCount
                         + 97 // BEC, batch IDs, async payload, Ping, Endpoint Role, Object Defaults, derivation, and Extension Information member cells.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Type generic and typed Attribute routes.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Value generic and typed Attribute routes.
@@ -4202,7 +4220,7 @@ class ControlledTlsPeerTest {
             Set<String> scalarAttributeValueCaseIds, Set<String> textStringTargetCaseIds,
             Set<String> fixedScalarTargetCaseIds, Set<String> bigIntegerTargetCaseIds,
             Set<String> remainingEnumerationFieldCaseIds, Set<String> genericStructureTargetCaseIds,
-            Set<String> genericTagCaseIds)
+            Set<String> genericOperationTargetCaseIds, Set<String> genericTagCaseIds)
             throws Exception {
         Path catalogPath = routeEvidenceCatalogPath();
         Path manifestPath = Path.of("../shared/coverage/route-capabilities.json");
@@ -4303,6 +4321,7 @@ class ControlledTlsPeerTest {
         additionalCaseIdCount += appendCaseIds(caseIds, bigIntegerTargetCaseIds);
         additionalCaseIdCount += appendCaseIds(caseIds, remainingEnumerationFieldCaseIds);
         additionalCaseIdCount += appendCaseIds(caseIds, genericStructureTargetCaseIds);
+        additionalCaseIdCount += appendCaseIds(caseIds, genericOperationTargetCaseIds);
         appendItemTypeEnumerationCaseIds(caseIds, events);
         caseIds.add("test-enum-pkcs#11-function");
         caseIds.add("test-enum-pkcs#11-return-code");
