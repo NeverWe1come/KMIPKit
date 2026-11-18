@@ -69,7 +69,7 @@
     },
     "event": {
       "type": "object",
-      "required": ["case_id", "route_id", "target_id", "public_api_symbol", "execution_route_id", "execution_api_symbol", "invocation_id", "action", "protocol_version", "encoding", "transport", "status", "invocation_count"],
+      "required": ["case_id", "route_id", "target_id", "public_api_symbol", "execution_route_id", "execution_api_symbol", "action", "protocol_version", "encoding", "transport", "status", "invocation_count"],
       "properties": {
         "case_id": { "type": "string", "minLength": 1 },
         "route_id": { "type": "string", "minLength": 1 },
@@ -81,12 +81,13 @@
         "execution_route_id": { "oneOf": [{ "type": "null" }, { "type": "string", "minLength": 1 }] },
         "execution_api_symbol": { "oneOf": [{ "type": "null" }, { "type": "string", "minLength": 1 }] },
         "invocation_id": { "type": "string", "minLength": 1 },
+        "not_applicable_reason": { "enum": ["stop_unprocessed_response_omitted"] },
         "action": { "enum": ["construct", "encode", "send", "decode"] },
         "protocol_version": { "enum": ["2.0", "2.1"] },
         "encoding": { "enum": ["TTLV", "JSON", "XML"] },
         "transport": { "oneOf": [{ "type": "null" }, { "enum": ["raw_tls", "https"] }] },
-        "status": { "enum": ["passed", "failed", "not_run"] },
-        "invocation_count": { "const": 1 },
+        "status": { "enum": ["passed", "failed", "not_run", "not_applicable"] },
+        "invocation_count": { "type": "integer", "minimum": 0 },
         "request_tree_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
         "response_tree_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
         "decode_outcome": { "enum": ["decoded", "rejected"] },
@@ -120,6 +121,37 @@
         "failure_code": { "type": "string", "minLength": 1 }
       },
       "allOf": [
+        {
+          "if": { "properties": { "status": { "const": "not_applicable" } }, "required": ["status"] },
+          "then": {
+            "required": ["not_applicable_reason"],
+            "properties": { "invocation_count": { "const": 0 } },
+            "not": {
+              "anyOf": [
+                { "required": ["invocation_id"] },
+                { "required": ["request_tree_sha256"] },
+                { "required": ["response_tree_sha256"] },
+                { "required": ["decode_outcome"] },
+                { "required": ["decode_rejection_code"] },
+                { "required": ["decode_input_sha256"] },
+                { "required": ["wire_bytes_sha256"] },
+                { "required": ["wire_bytes_deterministic"] },
+                { "required": ["request_delivery_state"] },
+                { "required": ["transport_invocation_count"] },
+                { "required": ["failure_code"] },
+                { "required": ["not_run_reason"] }
+              ]
+            }
+          }
+        },
+        {
+          "if": { "properties": { "status": { "enum": ["passed", "failed", "not_run"] } }, "required": ["status"] },
+          "then": {
+            "required": ["invocation_id"],
+            "properties": { "invocation_count": { "const": 1 } },
+            "not": { "required": ["not_applicable_reason"] }
+          }
+        },
         {
           "if": { "properties": { "status": { "const": "not_run" } } },
           "then": { "required": ["not_run_reason"] }
