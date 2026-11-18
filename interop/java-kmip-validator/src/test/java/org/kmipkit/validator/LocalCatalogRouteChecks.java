@@ -1079,7 +1079,7 @@ final class LocalCatalogRouteChecks {
                 TtlvStructureView view = payload.view()) {
             assertEquals(2, view.itemCount());
             assertEquals(attributeTag, request.attributeReferences().get(0).tagValue().orElseThrow());
-            emitRoute(sink, caseId, targetId,
+            emitRoute(sink, caseId, "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES",
                     "java.typed-protocol.function.attribute_request_get_attributes_to_ttlv_payload",
                     "org.kmipkit.extensions.GetAttributesRequest.toTtlvPayload", "encode", requestPayloadWire);
         }
