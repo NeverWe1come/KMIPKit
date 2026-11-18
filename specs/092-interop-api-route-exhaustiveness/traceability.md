@@ -570,3 +570,42 @@ interoperability.
   planned, 42,612 executed, and 29,029 pending cells, and comparison passes.
   Full matrix closure remains open under FR-002/FR-003/FR-009; the stack stays
   WIP.
+
+## Java Create and Get Attributes typed response accessors — 2026-11-18
+
+- **FR-003/FR-005:** Controlled KMIP 2.0/2.1 responses now exercise the
+  installed `ClientBatchItemResult.createResponse` accessor for the normative
+  Create Object Type cases and `getAttributesResponse` for the normative Get
+  Attributes Unique Identifier cases. Assertions validate the returned
+  Create object type/identifier and Get Attributes identifier/Attribute
+  structure before local response-accessor events are recorded. Sources:
+  OASIS KMIP 2.0 §6.1.8 Table 171 and §6.1.20 Table 209; KMIP 2.1 §6.1.8
+  Table 186 and §6.1.20 Table 224.
+- Red `3f693875f`, Green `ac70df877`, and Refactor `72e695c22` establish the
+  missing-route regression, verified accessor invocations, and shared event
+  helper. The Java suite passes 95/95; shared route/schema/capability tests
+  pass 109/109; the capability audit accepts 1,507 routes; selected evidence
+  validates 42,869/42,869 cells with zero failures; ledger comparison passes.
+  The full matrix remains incomplete at 42,869/71,641, with 28,772 pending,
+  so FR-002/FR-003 are not yet complete and the stack remains WIP.
+
+## Java full-matrix CI enforcement — 2026-11-18
+
+- **FR-002/FR-007:** The Java workflow now invokes full collection validation
+  rather than the selected-scope mode. It cannot pass while any applicable
+  Java matrix cell is absent; ledger output is produced only after collection
+  validation succeeds. The route-evidence workflow contract, shared evidence
+  tests, Java install tests, and ledger comparison tests pass (49 tests).
+- Red `91aa2652c`, Green `73e399806`, and Refactor `103ca958a` add the
+  full-matrix gate and unified ledger writer. Running it against the current
+  report correctly detects missing cells.
+- Fixture-integrity TDD cycles use Red `9ef316a30`, Green `0fa84b23c`,
+  Refactor `48ee087f7`, plus Split Key Prime Field Size Red `73e71a69c` and
+  Green `95eef8546`. The full Java suite passes 106/106; fresh selected
+  evidence validates 42,875/42,875 cells with zero failures. The refreshed
+  ledger reports 42,875/71,641 overall and 28,766 pending. It correctly marks
+  `complete_matrix=false`, and the full-matrix gate rejects it. KMIP 2.0
+  §§6.1.12/6.1.29 and KMIP 2.1 §§6.1.12/6.1.30 permit Lease Time as an
+  Interval or Date Time for Delegated Login and Login; only Interval is
+  exercised, leaving the Date Time branch unverified. The PR stack remains
+  WIP.

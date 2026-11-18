@@ -40,6 +40,23 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /** Executes source-backed local catalog obligations through the installed public package. */
 final class LocalCatalogRouteChecks {
+    private static final Set<String> CLIENT_PAYLOAD_SCALAR_FIELDS = Set.of("Unique Identifier", "Correlation Value", "Asynchronous Correlation Value",
+                            "Object Type", "Data", "IV/Counter/Nonce", "Lease Time", "Usage Limits Count",
+                            "Init Indicator", "Final Indicator", "Data Length", "Maximum Items", "Offset Items",
+                            "Offset", "Request Count", "Certificate Request Value",
+                            "Authenticated Encryption Additional Data", "Authenticated Encryption Tag",
+                            "Digested Data", "Certificate Request Type", "Key Wrap Type", "Query Function",
+                            "Adjustment Type", "Adjustment Value", "Cryptographic Usage Mask",
+                            "Replace Existing", "Interop Identifier", "Storage Status Mask", "Log Message",
+                            "Compromise Occurrence Date", "Validity Date", "Key Format Type",
+                            "Key Compression Type", "Secret Data Type", "Split Key Method", "Prime Field Size",
+                            "Split Key Parts", "Split Key Threshold", "Attribute Reference",
+                            "Private Key Unique Identifier", "Certificate", "Application Namespace",
+                            "Attestation Type", "Cancellation Result", "Client Registration Method",
+                            "Last Change Date", "Object Group Member", "Operation",
+                            "Certificate Request Unique Identifier", "Public Key Unique Identifier",
+                            "Validity Indicator", "Located Items", "Signature Data", "Vendor Identification",
+                            "MAC Data", "Derivation Method");
     private static final int TAG_VALUE_SENTINEL = 0x12345678;
     static final String ROTATE_NAME_TYPE_CASE_ID =
             "test-norm-structure-member-structure-member-4-53-rotate-name-type";
@@ -240,10 +257,18 @@ final class LocalCatalogRouteChecks {
 
     record Invocation(String caseId, String targetId, String routeId, String symbol,
                       String action, byte[] wire, String rejectionCode,
-                      Integer workflowStepIndex, String workflowOperation, Integer workflowItemIndex) {
+                      Integer workflowStepIndex, String workflowOperation, Integer workflowItemIndex,
+                      String notApplicableReason) {
         Invocation(String caseId, String targetId, String routeId, String symbol,
                 String action, byte[] wire, String rejectionCode) {
-            this(caseId, targetId, routeId, symbol, action, wire, rejectionCode, null, null, null);
+            this(caseId, targetId, routeId, symbol, action, wire, rejectionCode, null, null, null, null);
+        }
+
+        Invocation(String caseId, String targetId, String routeId, String symbol,
+                String action, byte[] wire, String rejectionCode,
+                Integer workflowStepIndex, String workflowOperation, Integer workflowItemIndex) {
+            this(caseId, targetId, routeId, symbol, action, wire, rejectionCode,
+                    workflowStepIndex, workflowOperation, workflowItemIndex, null);
         }
     }
 
@@ -367,8 +392,11 @@ final class LocalCatalogRouteChecks {
                     scalarMessageFieldEncoding(catalog, targetId, version));
             int tagCode = messageFieldTag(catalog, targetId, version);
             TtlvItemType itemType = scalarMessageFieldType(encoding);
-            byte[] valueBytes = scalarMessageFieldBytes(caseId, encoding);
-            long numericValue = scalarMessageFieldNumber(caseId, encoding);
+            long numericValue = caseId.endsWith("protocol-version-minor")
+                    ? ("2.0".equals(version) ? 0 : 1) : scalarMessageFieldNumber(caseId, encoding);
+            byte[] valueBytes = caseId.endsWith("protocol-version-minor")
+                    ? ByteBuffer.allocate(Integer.BYTES).putInt(Math.toIntExact(numericValue)).array()
+                    : scalarMessageFieldBytes(caseId, encoding);
             byte[] wire = scalarWire(tagCode, itemType.code(), valueBytes);
             CodecLimits limits = CodecLimits.defaults();
             try (TtlvValue value = scalarMessageFieldValue(encoding, valueBytes, numericValue, limits);
@@ -631,24 +659,7 @@ final class LocalCatalogRouteChecks {
             JsonNode requires = testCase.path("requires");
             String fieldName = requires.path("field_name").asText();
             if (!"operation_payload_field".equals(requires.path("target_kind").asText())
-                    || !Set.of("Unique Identifier", "Correlation Value", "Asynchronous Correlation Value",
-                            "Object Type", "Data", "IV/Counter/Nonce", "Lease Time", "Usage Limits Count",
-                            "Init Indicator", "Final Indicator", "Data Length", "Maximum Items", "Offset Items",
-                            "Offset", "Request Count", "Certificate Request Value",
-                            "Authenticated Encryption Additional Data", "Authenticated Encryption Tag",
-                            "Digested Data", "Certificate Request Type", "Key Wrap Type", "Query Function",
-                            "Adjustment Type", "Adjustment Value", "Cryptographic Usage Mask",
-                            "Replace Existing", "Interop Identifier", "Storage Status Mask", "Log Message",
-                            "Compromise Occurrence Date", "Validity Date", "Key Format Type",
-                            "Key Compression Type", "Secret Data Type", "Split Key Method", "Prime Field Size",
-                            "Split Key Parts", "Split Key Threshold", "Attribute Reference",
-                            "Private Key Unique Identifier", "Certificate", "Application Namespace",
-                            "Attestation Type", "Cancellation Result", "Client Registration Method",
-                            "Last Change Date", "Object Group Member", "Operation",
-                            "Certificate Request Unique Identifier", "Public Key Unique Identifier",
-                            "Validity Indicator", "Located Items", "Signature Data", "Vendor Identification",
-                            "MAC Data")
-                            .contains(fieldName)
+                    || !CLIENT_PAYLOAD_SCALAR_FIELDS.contains(fieldName)
                     || !requires.path("operation_id").asText().startsWith("KMIPKIT-ELEM-OP-C2S-")
                     || !"local_model".equals(testCase.path("execution").path("mode").asText())
                     || !applies(testCase, version)) continue;
@@ -684,24 +695,7 @@ final class LocalCatalogRouteChecks {
             String fieldName = requires.path("field_name").asText();
             String operationId = requires.path("operation_id").asText();
             if (!"operation_payload_field".equals(requires.path("target_kind").asText())
-                    || !Set.of("Unique Identifier", "Correlation Value", "Asynchronous Correlation Value",
-                            "Object Type", "Data", "IV/Counter/Nonce", "Lease Time", "Usage Limits Count",
-                            "Init Indicator", "Final Indicator", "Data Length", "Maximum Items", "Offset Items",
-                            "Offset", "Request Count", "Certificate Request Value",
-                            "Authenticated Encryption Additional Data", "Authenticated Encryption Tag",
-                            "Digested Data", "Certificate Request Type", "Key Wrap Type", "Query Function",
-                            "Adjustment Type", "Adjustment Value", "Cryptographic Usage Mask",
-                            "Replace Existing", "Interop Identifier", "Storage Status Mask", "Log Message",
-                            "Compromise Occurrence Date", "Validity Date", "Key Format Type",
-                            "Key Compression Type", "Secret Data Type", "Split Key Method", "Prime Field Size",
-                            "Split Key Parts", "Split Key Threshold", "Attribute Reference",
-                            "Private Key Unique Identifier", "Certificate", "Application Namespace",
-                            "Attestation Type", "Cancellation Result", "Client Registration Method",
-                            "Last Change Date", "Object Group Member", "Operation",
-                            "Certificate Request Unique Identifier", "Public Key Unique Identifier",
-                            "Validity Indicator", "Located Items", "Signature Data", "Vendor Identification",
-                            "MAC Data")
-                            .contains(fieldName)
+                    || !CLIENT_PAYLOAD_SCALAR_FIELDS.contains(fieldName)
                     || !operationId.startsWith("KMIPKIT-ELEM-OP-C2S-")) {
                 throw new IllegalArgumentException("Selected case is not a supported client scalar payload: "
                         + caseId);
@@ -744,7 +738,7 @@ final class LocalCatalogRouteChecks {
             }
             TtlvItemType itemType = switch (fieldName) {
                 case "Unique Identifier", "Private Key Unique Identifier", "Public Key Unique Identifier",
-                        "Certificate Request Unique Identifier", "Application Namespace", "Object Group Member",
+                        "Certificate Request Unique Identifier", "Application Namespace",
                         "Vendor Identification" ->
                     TtlvItemType.TextString;
                 case "Correlation Value", "Asynchronous Correlation Value", "Data", "IV/Counter/Nonce",
@@ -755,20 +749,21 @@ final class LocalCatalogRouteChecks {
                         "Attribute Reference" ->
                     TtlvItemType.Enumeration;
                 case "Attestation Type", "Cancellation Result", "Client Registration Method", "Operation",
-                        "Validity Indicator" -> TtlvItemType.Enumeration;
+                        "Validity Indicator", "Object Group Member", "Derivation Method" -> TtlvItemType.Enumeration;
                 case "Key Format Type", "Key Compression Type", "Secret Data Type", "Split Key Method" ->
                     TtlvItemType.Enumeration;
-                case "Lease Time" -> TtlvItemType.Integer;
+                case "Lease Time", "Offset" -> TtlvItemType.Interval;
                 case "Usage Limits Count" -> TtlvItemType.LongInteger;
+                case "Prime Field Size" -> TtlvItemType.BigInteger;
                 case "Init Indicator", "Final Indicator" -> TtlvItemType.Boolean;
                 case "Adjustment Type" -> TtlvItemType.Enumeration;
                 case "Interop Identifier", "Log Message" -> TtlvItemType.TextString;
                 case "Compromise Occurrence Date", "Validity Date", "Last Change Date" ->
                     TtlvItemType.DateTime;
                 case "Adjustment Value", "Cryptographic Usage Mask", "Storage Status Mask",
-                        "Data Length", "Maximum Items", "Offset Items", "Offset", "Request Count",
+                        "Data Length", "Maximum Items", "Offset Items", "Request Count",
                         "Located Items",
-                        "Prime Field Size", "Split Key Parts", "Split Key Threshold" ->
+                        "Split Key Parts", "Split Key Threshold" ->
                     TtlvItemType.Integer;
                 case "Replace Existing" -> TtlvItemType.Boolean;
                 default -> throw new IllegalArgumentException("Unsupported client scalar payload field: "
@@ -776,6 +771,8 @@ final class LocalCatalogRouteChecks {
             };
             long numericValue = switch (fieldName) {
                 case "Object Type" -> enumValue(catalog, "OBJECT-TYPE", "Symmetric Key");
+                case "Object Group Member" -> enumValue(catalog, "OBJECT-GROUP-MEMBER", "Group Member Fresh");
+                case "Derivation Method" -> enumValue(catalog, "DERIVATION-METHOD", "PBKDF2");
                 case "Certificate Request Type" -> enumValue(catalog, "CERTIFICATE-REQUEST-TYPE", "PKCS#10");
                 case "Key Wrap Type" -> enumValue(catalog, "KEY-WRAP-TYPE", "As Registered");
                 case "Query Function" -> enumValue(catalog, "QUERY-FUNCTION", "Query Operations");
@@ -798,13 +795,13 @@ final class LocalCatalogRouteChecks {
                         "Located Items" -> 1;
                 case "Adjustment Value", "Cryptographic Usage Mask", "Storage Status Mask",
                         "Replace Existing" -> 1;
-                case "Prime Field Size" -> 8;
                 case "Split Key Parts", "Split Key Threshold" -> 2;
                 case "Compromise Occurrence Date", "Validity Date", "Last Change Date" -> 1_700_000_000;
                 case "Offset Items", "Offset" -> 0;
                 default -> 0;
             };
             byte[] fieldValue = switch (itemType) {
+                case BigInteger -> splitKeyPrimeFieldFixture();
                 case TextString -> ("Private Key Unique Identifier".equals(fieldName)
                         ? "kmipkit-route-private-key-id" : "kmipkit-route-identifier")
                         .getBytes(StandardCharsets.US_ASCII);
@@ -815,18 +812,20 @@ final class LocalCatalogRouteChecks {
                 };
                 case Boolean -> ByteBuffer.allocate(Long.BYTES).putLong(numericValue).array();
                 case DateTime -> ByteBuffer.allocate(Long.BYTES).putLong(numericValue).array();
-                case Integer -> ByteBuffer.allocate(Integer.BYTES).putInt(Math.toIntExact(numericValue)).array();
+                case Integer, Interval -> ByteBuffer.allocate(Integer.BYTES).putInt(Math.toIntExact(numericValue)).array();
                 case LongInteger -> ByteBuffer.allocate(Long.BYTES).putLong(numericValue).array();
                 case Enumeration -> ByteBuffer.allocate(Integer.BYTES).putInt(Math.toIntExact(numericValue)).array();
                 default -> throw new IllegalArgumentException("Unsupported client scalar payload type: " + itemType);
             };
             byte[] wire = scalarWire(tagCode, itemType.code(), fieldValue);
             TtlvValue value = switch (itemType) {
+                case BigInteger -> TtlvValue.BigInteger(fieldValue, limits);
                 case TextString -> TtlvValue.TextString(fieldValue, limits);
                 case ByteString -> TtlvValue.ByteString(fieldValue, limits);
                 case Boolean -> TtlvValue.Boolean(numericValue != 0);
                 case DateTime -> TtlvValue.DateTime(numericValue);
                 case Integer -> TtlvValue.Integer(Math.toIntExact(numericValue));
+                case Interval -> TtlvValue.Interval(numericValue);
                 case LongInteger -> TtlvValue.LongInteger(numericValue);
                 case Enumeration -> TtlvValue.Enumeration(numericValue);
                 default -> throw new IllegalArgumentException("Unsupported client scalar payload type: " + itemType);
@@ -2393,7 +2392,7 @@ final class LocalCatalogRouteChecks {
         int splitKeyMethodTag = tagCodeNamed(catalog, "Split Key Method", version);
         int primeFieldSizeTag = tagCodeNamed(catalog, "Prime Field Size", version);
         byte[] keyBlockWire = rawKeyBlockWire(catalog, version);
-        byte[] primeFieldSize = new byte[] {1, 1};
+        byte[] primeFieldSize = splitKeyPrimeFieldFixture();
         long xorMethod = enumValue(catalog, "SPLIT-KEY-METHOD", "XOR");
         long primeFieldMethod = enumValue(catalog, "SPLIT-KEY-METHOD", "Polynomial Sharing Prime Field");
 
@@ -2458,6 +2457,12 @@ final class LocalCatalogRouteChecks {
         if (!emitted.equals(selectedCaseIds)) {
             throw new IllegalArgumentException("Selected Split Key member targets were not executed for " + version);
         }
+    }
+
+    private static byte[] splitKeyPrimeFieldFixture() {
+        // 2^127 - 1 exceeds 2^L for both 32-bit and 64-bit synthetic values (§2.8).
+        return new byte[] {0x7f, -1, -1, -1, -1, -1, -1, -1,
+                -1, -1, -1, -1, -1, -1, -1, -1};
     }
 
     private static void assertSplitKeyMemberObject(ManagedObject object, int objectType, long method,
@@ -3257,6 +3262,23 @@ final class LocalCatalogRouteChecks {
                 target.workflowStepIndex(), target.workflowOperation(), target.workflowItemIndex()));
     }
 
+    private static boolean stopOmitsResponse(String caseId, OperationTarget target) {
+        return "test-batch-stop-on-first-failure".equals(caseId)
+                && "Get".equals(target.workflowOperation())
+                && Integer.valueOf(1).equals(target.workflowItemIndex());
+    }
+
+    private static void emitMissingNotApplicableGenericRoute(Set<RouteEvidenceKey> recordedRoutes,
+            EvidenceSink sink, String caseId, OperationTarget target, String version,
+            GenericOperationRoute route, String reason) throws Exception {
+        RouteEvidenceKey key = operationRouteKey(caseId, target, route.routeId(), version);
+        if (recordedRoutes.add(key)) {
+            sink.record(new Invocation(caseId, target.targetId(), route.routeId(), route.symbol(),
+                    route.action(), null, null, target.workflowStepIndex(), target.workflowOperation(),
+                    target.workflowItemIndex(), reason));
+        }
+    }
+
     private static Set<RouteEvidenceKey> routeEvidenceKeys(JsonNode events) {
         Set<RouteEvidenceKey> keys = new java.util.HashSet<>();
         for (JsonNode event : events) {
@@ -3333,17 +3355,28 @@ final class LocalCatalogRouteChecks {
                 long operationValue = enumValue(catalog, "OPERATION", target.operation());
                 byte[] wire = scalarWire(operationTag, TtlvItemType.Enumeration.code(),
                         Math.toIntExact(operationValue));
+                boolean stopOmitsItemResponse = stopOmitsResponse(caseId, target);
                 try (RawTag rawTag = RawTag.fromRaw(operationTag); Tag tag = rawTag.checked();
                         TtlvValue value = TtlvValue.Enumeration(operationValue);
                         TtlvItem item = TtlvItem.create(tag, value, limits)) {
-                    assertScalarItem(item, operationTag, TtlvItemType.Enumeration, operationValue);
+                    if (!stopOmitsItemResponse) {
+                        assertScalarItem(item, operationTag, TtlvItemType.Enumeration, operationValue);
+                    }
                 }
-                try (TtlvItem decoded = TtlvCodec.decode(wire)) {
-                    assertScalarItem(decoded, operationTag, TtlvItemType.Enumeration, operationValue);
+                if (!stopOmitsItemResponse) {
+                    try (TtlvItem decoded = TtlvCodec.decode(wire)) {
+                        assertScalarItem(decoded, operationTag, TtlvItemType.Enumeration, operationValue);
+                    }
                 }
                 for (GenericOperationRoute route : GENERIC_OPERATION_ROUTES) {
-                    emitMissingGenericRoute(recordedRoutes, sink, caseId, target, version,
-                            route.routeId(), route.symbol(), route.action(), wire);
+                    if (stopOmitsItemResponse
+                            && "decode".equals(route.action())) {
+                        emitMissingNotApplicableGenericRoute(recordedRoutes, sink, caseId, target,
+                                version, route, "stop_unprocessed_response_omitted");
+                    } else {
+                        emitMissingGenericRoute(recordedRoutes, sink, caseId, target, version,
+                                route.routeId(), route.symbol(), route.action(), wire);
+                    }
                 }
             }
             emitted.add(caseId);
@@ -4062,7 +4095,8 @@ final class LocalCatalogRouteChecks {
         assertEquals(type, value.itemType());
         if (type == TtlvItemType.Boolean) {
             assertEquals(number != 0, value.booleanValue());
-        } else if (type == TtlvItemType.ByteString || type == TtlvItemType.TextString) {
+        } else if (type == TtlvItemType.BigInteger || type == TtlvItemType.ByteString
+                || type == TtlvItemType.TextString) {
             assertArrayEquals(bytes, value.bytes());
         } else if (type == TtlvItemType.DateTime) {
             assertEquals(number, value.dateTime());
@@ -4070,6 +4104,8 @@ final class LocalCatalogRouteChecks {
             assertEquals(number, value.enumeration());
         } else if (type == TtlvItemType.Integer) {
             assertEquals(Math.toIntExact(number), value.integer());
+        } else if (type == TtlvItemType.Interval) {
+            assertEquals(number, value.interval());
         } else if (type == TtlvItemType.LongInteger) {
             assertEquals(number, value.longInteger());
         } else {
@@ -4626,9 +4662,19 @@ final class LocalCatalogRouteChecks {
 
     private static byte[] itemWire(int tag, int type, byte[] value) {
         int paddedLength = Math.addExact(value.length, 7) & ~7;
+        if (type == TtlvItemType.BigInteger.code() && value.length != paddedLength) {
+            value = signExtendBigInteger(value, paddedLength);
+        }
         return ByteBuffer.allocate(Math.addExact(8, paddedLength))
                 .put((byte) (tag >>> 16)).put((byte) (tag >>> 8)).put((byte) tag)
                 .put((byte) type).putInt(value.length).put(value).put(new byte[paddedLength - value.length]).array();
+    }
+
+    private static byte[] signExtendBigInteger(byte[] value, int paddedLength) {
+        byte[] extended = new byte[paddedLength];
+        java.util.Arrays.fill(extended, value[0] < 0 ? (byte) 0xff : (byte) 0);
+        System.arraycopy(value, 0, extended, paddedLength - value.length, value.length);
+        return extended;
     }
 
     private static byte[] structureWire(int tag, byte[] child) {

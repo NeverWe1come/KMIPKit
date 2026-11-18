@@ -742,6 +742,46 @@ report validates 40,962/40,962 cells with zero failures. The ledger records
 71,641 planned, 40,962 executed, and 30,679 pending cells. The matrix remains
 incomplete, so the PR stack stays WIP.
 
+### Typed Create and Get Attributes response accessors — 2026-11-18
+
+The controlled TLS fixtures now record the local typed `CreateResponse` and
+`GetAttributesResponse` accessor routes for the catalogued KMIP 2.0 and 2.1
+cases. Assertions inspect the Create object type and identifier, and the Get
+Attributes identifier and returned Attribute structure before emitting the
+local TTLV response-accessor evidence. Sources: OASIS KMIP 2.0/2.1 §6.1.8
+Tables 171/186 and §6.1.20 Tables 209/224. The peers are test fixtures and do
+not establish external KMS interoperability.
+
+Red `3f693875f` requires both response-accessor families and fails when their
+catalogued evidence is absent. Green `ac70df877` emits the events only after
+the installed typed accessors return and their response fields are asserted;
+Refactor `72e695c22` shares the local-accessor evidence helper. The full
+Gradle suite passes 95/95 tests, shared route/schema/capability tests pass
+109/109, ledger validation accepts 42,869 selected cells with zero failures,
+ledger comparison passes, and the route-capability audit accepts 1,507 routes.
+The global Java ledger has 71,641 planned cells, 42,869 executed, and 28,772
+pending. Full matrix closure and exact-head CI remain open; the stack stays
+WIP.
+
+### Query Async Correlation Values operation-structure route — 2026-11-18
+
+The catalogued KMIP 2.1 §7.1 Asynchronous Correlation Values operation
+structure now has explicit evidence for the installed
+`QueryAsyncRequestsRequest.withCorrelationValues` route. The same constructed
+request is also attributed to the existing structure-member target; the test
+asserts that the operation-structure obligation is present in the report.
+This is local typed-construction evidence for OASIS KMIP 2.1 §7.1, not a new
+server exchange or an external KMS claim.
+
+Red `bfb86dd6a` proves the operation-structure route cell was missing; Green
+`985371e43` records the existing typed invocation against that target; Refactor
+`0bb2e3614` shares the evidence emission. The focused controlled-TLS test and
+full Gradle suite pass 95/95; shared evidence/schema/capability tests pass
+109/109; the capability audit accepts 1,507 routes. The selected report
+validates 42,865/42,865 cells with zero failures. The ledger records 71,641
+planned, 42,865 executed, and 28,776 pending cells; comparison passes. The
+full Java matrix remains incomplete, so the PR stack stays WIP.
+
 ### KMIP 2.0 asynchronous operation boundaries — 2026-11-18
 
 Process (§6.1.39) and Query Asynchronous Requests (§6.1.41) now invoke their
@@ -1164,3 +1204,89 @@ and the selected report validates 42,612/42,612 cells with zero failures.
 The ledger records 71,641 planned, 42,612 executed, and 29,029 pending cells;
 its comparison passes. Full matrix closure remains open, so the stack stays
 WIP.
+
+### Typed Create network routes — 2026-11-18
+
+The installed Java consumer constructs, sends, and decodes typed Create
+requests for `test-op-create` and `test-obj-symmetric-key` across KMIP 2.0 and
+2.1, TTLV/JSON/XML, and raw TLS/HTTPS. It also covers four normative Create
+request payload cases for required Object Type and Attributes in KMIP 2.0 and
+2.1. Together these cases add 192 selected route cells and verify the
+Symmetric Key object type, protocol version, batch item identity, and returned
+typed object identifier. Sources: OASIS KMIP 2.0 §6.1.1 Table 171 and KMIP 2.1
+§6.1.1 Table 186. Controlled peer evidence confirms the client route and
+fixture response only; it does not claim acceptance by an external KMS.
+
+Red `4fc22dbca` requires the base Create route cells; Green `ad069d2d7`
+executes the controlled network exchanges; Refactor `f1465cf88` centralizes
+the base matrix dimensions. The payload extension has Red `fe43a4a01`, Green
+`653edda53`, and Refactor `b5ff08039`, which shares the route evidence
+assertions. The Gradle suite passes 95/95 tests; shared evidence/schema/
+capability tests pass 109/109; route audit accepts 1,507 routes; the selected
+report validates 42,804/42,804 cells with zero failures. The ledger records
+71,641 planned, 42,804 executed, and 28,837 pending cells; its comparison
+passes. Full matrix closure remains open, so the stack stays WIP.
+
+### Create Protection Storage Masks request routes — 2026-11-18
+
+The installed Java consumer now exercises the optional `Protection Storage
+Masks` field on typed Create requests for the KMIP 2.0 and 2.1 catalog cases,
+across TTLV, JSON, and XML over raw TLS and HTTPS. Assertions verify that the
+Structure field is preserved in each encoded request. The field is optional
+under KMIP 2.0 §6.1.8 Table 171 and KMIP 2.1 §6.1.8 Table 186; this controlled
+peer test covers field presence and transport encoding, not mask-selection
+semantics or external KMS acceptance.
+
+Red `bd0a23d71` adds the missing-field assertion and fails at the captured
+request. Green `dd593c98e` passes the optional Structure to the installed
+`ClientBatchItem.create` API, and Refactor `972331c6b` records the fixture
+property explicitly. The focused controlled-TLS test and full Gradle suite
+pass; shared evidence/schema/capability tests pass 109/109, and the capability
+audit accepts 1,507 routes. The selected report validates 42,864/42,864 cells
+with zero failures. The ledger records 71,641 planned, 42,864 executed, and
+28,777 pending cells; its comparison passes. The full Java matrix remains
+incomplete, so the PR stack stays WIP.
+
+### Full-matrix Java CI gate — 2026-11-18
+
+Java CI no longer opts into `--selected-scope`. It now calls the shared
+collection validator, which rejects a report missing any applicable case,
+route, version, encoding, or transport cell before writing the coverage
+ledger. Red `91aa2652c` demonstrates the old subset-only workflow; Green
+`73e399806` changes the workflow and full-mode ledger handling; Refactor
+`103ca958a` shares the ledger output path. The workflow contract and shared
+route evidence, install, and ledger tests pass (49 tests). After correcting
+invalid fixture tags, scalar encodings, Protocol Version Minor, and Big
+Integer wire lengths, the full Java suite passes 106/106 tests. Fresh
+evidence validates 42,875/42,875 selected-scope cells with zero failures;
+the global ledger is 42,875/71,641, with 28,766 pending. For Login and
+Delegated Login, KMIP 2.0 §§6.1.12/6.1.29 and KMIP 2.1 §§6.1.12/6.1.30 permit
+Lease Time as an Interval or Date Time; only Interval is exercised here. The
+full-matrix gate correctly rejects the incomplete report, so the stack remains
+WIP.
+
+### Create batch workflows and omitted response evidence — 2026-11-18
+
+The full installed-consumer run now exercises catalogued Create workflows,
+including ordered Create/Activate/Get/Destroy, pending Create, Undo, Stop, and
+Placeholder cases. It records a typed-item construction result for a locally
+rejected forward Placeholder reference, proves the batch was not sent, and
+marks response decoders not applicable only when the matching send event
+proves `not_sent`. The Stop fixture also preserves the explicitly omitted
+second response item as not applicable without fabricating a decode call.
+
+For Login and Delegated Login, the catalog now distinguishes the `Interval`
+and `Date Time` alternatives for Lease Time. The installed consumer sends the
+Date Time variant through both typed request factories and checks the captured
+field type and value across KMIP 2.0/2.1, TTLV/JSON/XML, and raw TLS/HTTPS. The
+four operation/version targets cover 24 controlled exchanges and 48
+construct/send cells. References: OASIS KMIP 2.0 §§6.1.12 Table 184 and 6.1.29
+Table 235; KMIP 2.1 §§6.1.12 Table 199 and 6.1.30 Table 253.
+
+The Java suite passes 109/109 tests. The selected report validates 43,903 of
+71,945 planned cells: 43,887 invocations, 16 not-applicable cells, and zero
+failures. The Create client-batch-item route is 1,200/1,200; Date Time
+Login/Delegated Login variant cells are 48/48; 28,042 cells remain pending
+across the full matrix. The generated ledger comparison passes. These
+controlled TLS fixtures do not establish interoperability with an external
+KMS. The stack remains WIP while applicable matrix cells remain.

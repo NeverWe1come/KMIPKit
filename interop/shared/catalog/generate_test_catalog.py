@@ -187,6 +187,31 @@ def _payload_presence_contract(requiredness: str, description: str) -> tuple[lis
     return list(dict.fromkeys(branches)), presence
 
 
+def _payload_value_type_alternatives(description: str, type_names: tuple[str, ...]) -> list[str]:
+    """Return payload TTLV types stated with articles or in an explicit alternative phrase."""
+    alternatives = []
+    normalized_names = {re.sub(r"[^a-z0-9]", "", name.casefold()): name for name in type_names}
+    for type_name in type_names:
+        type_pattern = re.escape(type_name).replace(r"\ ", r"[\s-]+")
+        if re.search(rf"\b(?:a|an)\s+{type_pattern}\b", description, re.IGNORECASE):
+            alternatives.append(type_name)
+
+    type_patterns = [
+        (re.escape(type_name).replace(r"\ ", r"[\s-]+"), type_name)
+        for type_name in sorted(type_names, key=len, reverse=True)
+    ]
+    type_alternation = "|".join(pattern for pattern, _ in type_patterns)
+    for match in re.finditer(
+            rf"\b({type_alternation})\s+(?:or|and)\s+({type_alternation})\b",
+            description, re.IGNORECASE):
+        for matched_type in match.groups():
+            normalized = re.sub(r"[^a-z0-9]", "", matched_type.casefold())
+            canonical = normalized_names.get(normalized)
+            if canonical is not None:
+                alternatives.append(canonical)
+    return list(dict.fromkeys(alternatives))
+
+
 def add_execution_contract(test_case: dict, elements: list[dict], indexes: dict[str, dict[str, str]]) -> dict:
     """Attach a machine-readable baseline execution recipe to a catalog case."""
     category = test_case["category"]
@@ -474,12 +499,7 @@ def _operation_payload_targets(elements: list[dict], indexes: dict[str, dict[str
                         cases[-1]["requires"]["source_encoding"] = target["source_encoding"]
                     if presence_branches:
                         cases[-1]["requires"]["presence_branches"] = presence_branches
-                    type_variants = []
-                    for type_name in ttlv_type_names:
-                        type_pattern = re.escape(type_name).replace(r"\ ", r"[\s-]+")
-                        if re.search(rf"\b(?:a|an)\s+{type_pattern}\b", description, re.IGNORECASE):
-                            type_variants.append(type_name)
-                    type_variants = list(dict.fromkeys(type_variants))
+                    type_variants = _payload_value_type_alternatives(description, ttlv_type_names)
                     if type_variants:
                         target["value_type_alternatives"] = type_variants
                         target["branch_classes"].append("value_type_alternatives")

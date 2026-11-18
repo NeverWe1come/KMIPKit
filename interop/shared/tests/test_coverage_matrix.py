@@ -31,6 +31,7 @@ class CoverageMatrixTests(unittest.TestCase):
         self.assertEqual(len(self.manifest["execution_routes"]), matrix["execution_route_count"])
         self.assertEqual(4 * len(self.catalog["test_cases"]), matrix["case_language_count"])
         self.assertGreater(matrix["cell_count"], matrix["case_language_count"])
+        self.assertGreater(matrix["not_applicable_cell_count"], 0)
         self.assertRegex(matrix["matrix_sha256"], r"^[0-9a-f]{64}$")
         self.assertEqual([], matrix["public_api_routes_without_cells"])
         self.assertEqual([], matrix["execution_routes_without_cells"])
@@ -95,6 +96,24 @@ class CoverageMatrixTests(unittest.TestCase):
             self.assertEqual({(index, operation, target) for index, (operation, target)
                               in enumerate(zip(case["requires"]["protocol_scenario"]["operations"], target_ids))},
                              steps)
+
+    def test_stop_omitted_response_cells_are_explicitly_not_applicable(self):
+        case_id = 'test-batch-stop-on-first-failure'
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('c',))
+                 if cell['case_id'] == case_id and cell['action'] == 'decode'
+                 and cell.get('workflow_item_index') == 1]
+
+        self.assertTrue(cells)
+        self.assertTrue(all(cell['execution_status'] == 'not_applicable' for cell in cells), cells)
+        self.assertTrue(all(cell['not_applicable_reason'] ==
+                            'stop_unprocessed_response_omitted' for cell in cells), cells)
+        self.assertEqual({'local', 'network'}, {cell['mode'] for cell in cells})
+        first_response = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('c',))
+                          if cell['case_id'] == case_id and cell['action'] == 'decode'
+                          and cell.get('workflow_item_index') == 0]
+        self.assertTrue(first_response)
+        self.assertTrue(all(cell['execution_status'] == 'required'
+                            and 'not_applicable_reason' not in cell for cell in first_response))
 
     def test_explicit_batch_recipe_does_not_inherit_unrelated_primary_operation(self):
         case = next(case for case in self.catalog["test_cases"]
@@ -384,7 +403,8 @@ class CoverageMatrixTests(unittest.TestCase):
         cells = list(iter_cells(self.catalog, self.manifest))
         selected = [next(cell for cell in cells if cell["mode"] == "local"),
                     next(cell for cell in cells if cell["mode"] == "network"),
-                    next(cell for cell in cells if "workflow_step_index" in cell)]
+                    next(cell for cell in cells if "workflow_step_index" in cell),
+                    next(cell for cell in cells if cell["execution_status"] == "not_applicable")]
         for cell in selected:
             with self.subTest(cell=cell):
                 jsonschema.validate(cell, schema)
@@ -392,11 +412,18 @@ class CoverageMatrixTests(unittest.TestCase):
         invalid.pop("workflow_operation")
         with self.assertRaises(jsonschema.ValidationError):
             jsonschema.validate(invalid, schema)
+        invalid = dict(selected[3])
+        invalid.pop("not_applicable_reason")
+        with self.assertRaises(jsonschema.ValidationError):
+            jsonschema.validate(invalid, schema)
 
     def test_cells_preserve_each_supported_version_encoding_and_transport(self):
         cells = list(iter_cells(self.catalog, self.manifest))
-        self.assertTrue(all(cell["execution_status"] == "required" for cell in cells))
+        self.assertTrue(all(cell["execution_status"] in {"required", "not_applicable"}
+                            for cell in cells))
         self.assertTrue(all(cell["evidence_collected"] is False for cell in cells))
+        self.assertEqual(sum(cell["execution_status"] == "not_applicable" for cell in cells),
+                         build_matrix(self.catalog, self.manifest)["not_applicable_cell_count"])
         identities = [(cell["case_id"], cell["language"], cell["route_id"], cell.get("target_id"),
                        cell.get("workflow_step_index"), cell.get("workflow_item_index"),
                        cell["execution_route_id"], cell["action"], cell["protocol_version"],

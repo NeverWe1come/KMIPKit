@@ -26,6 +26,8 @@ import org.kmipkit.extensions.UniqueIdentifier;
 import org.kmipkit.extensions.QueryResponse;
 import org.kmipkit.extensions.QueryResponseField;
 import org.kmipkit.extensions.QueryResponseFieldKind;
+import org.kmipkit.extensions.RevocationReason;
+import org.kmipkit.extensions.RevokeRequest;
 import org.kmipkit.credentials.AttestationCredential;
 import org.kmipkit.credentials.Credential;
 import org.kmipkit.credentials.CredentialType;
@@ -101,6 +103,104 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ControlledTlsPeerTest {
     private static final List<String> KMIP_2_0_AND_2_1 = List.of("2.0", "2.1");
+    private static final List<String> CREATE_ROUTE_CASE_IDS = List.of("test-op-create", "test-obj-symmetric-key");
+    private static final List<LoginLeaseTimeDateTimeRouteFixture> LOGIN_LEASE_TIME_DATE_TIME_ROUTE_FIXTURES = List.of(
+            new LoginLeaseTimeDateTimeRouteFixture("test-norm-payload-client-login-request-20-001-type-date-time",
+                    "KMIPKIT-PAYLOAD-CLIENT-LOGIN-REQUEST-20-001-TYPE-DATE-TIME", "2.0", "login",
+                    "org.kmipkit.extensions.ClientBatchItem.login"),
+            new LoginLeaseTimeDateTimeRouteFixture("test-norm-payload-client-login-request-21-001-type-date-time",
+                    "KMIPKIT-PAYLOAD-CLIENT-LOGIN-REQUEST-21-001-TYPE-DATE-TIME", "2.1", "login",
+                    "org.kmipkit.extensions.ClientBatchItem.login"),
+            new LoginLeaseTimeDateTimeRouteFixture(
+                    "test-norm-payload-client-delegated-login-request-20-001-type-date-time",
+                    "KMIPKIT-PAYLOAD-CLIENT-DELEGATED-LOGIN-REQUEST-20-001-TYPE-DATE-TIME", "2.0",
+                    "delegated_login", "org.kmipkit.extensions.ClientBatchItem.delegatedLogin"),
+            new LoginLeaseTimeDateTimeRouteFixture(
+                    "test-norm-payload-client-delegated-login-request-21-001-type-date-time",
+                    "KMIPKIT-PAYLOAD-CLIENT-DELEGATED-LOGIN-REQUEST-21-001-TYPE-DATE-TIME", "2.1",
+                    "delegated_login", "org.kmipkit.extensions.ClientBatchItem.delegatedLogin"));
+
+    @Test
+    void createBatchWorkflowJsonResponseIsOneValidDocument() throws Exception {
+        String response = jsonCreateBatchWorkflowResponse(0, "test-batch-create-activate-destroy",
+                List.of("Create", "Activate", "Get", "Get Attribute List", "Revoke", "Destroy"));
+        JsonNode decoded = new ObjectMapper().readTree(response);
+        assertEquals("ResponseMessage", decoded.path("tag").asText());
+        assertEquals(7, decoded.path("value").size());
+        JsonNode attributeReference = decoded.path("value").get(4).path("value").get(3)
+                .path("value").get(1);
+        assertEquals("AttributeReference", attributeReference.path("tag").asText());
+        assertEquals("0x00042053", attributeReference.path("value").asText());
+    }
+    private static final List<String> CREATE_SCENARIO_ROUTE_CASE_IDS = List.of(
+            "test-batch-create-activate-destroy",
+            "test-async-lifecycle-poll",
+            "test-norm-payload-client-create-response-20-001",
+            "test-norm-payload-client-create-response-20-002",
+            "test-norm-payload-client-create-response-21-001",
+            "test-norm-payload-client-create-response-21-002",
+            "test-batch-undo-rolls-back-prior-success",
+            "test-batch-order-required-placeholder-resolution",
+            "test-batch-order-omitted-defaults-true",
+            "test-batch-placeholder-forward-reference-rejected",
+            "test-batch-placeholder-chain-resolves",
+            "test-async-indicator-omitted-default",
+            "test-async-indicator-prohibited-synchronous",
+            "test-async-indicator-optional-completes-or-pends",
+            "test-async-indicator-mandatory-pending",
+            "test-async-poll-repeated-pending-to-success",
+            "test-async-poll-final-operation-failure",
+            "test-async-cancel-result-canceled",
+            "test-async-cancel-result-unable-to-cancel",
+            "test-async-cancel-result-completed",
+            "test-async-cancel-result-failed",
+            "test-async-cancel-result-unavailable",
+            "test-async-cancel-vs-poll-race",
+            "test-async-process-then-poll-state",
+            "test-async-query-outstanding-filter");
+    private static final Set<String> CREATE_ROUTE_KMIP_2_1_ONLY_CASE_IDS = Set.of(
+            "test-async-lifecycle-poll",
+            "test-async-cancel-vs-poll-race",
+            "test-async-process-then-poll-state",
+            "test-async-query-outstanding-filter");
+    private static final Set<String> CREATE_ASYNC_INDICATOR_PAYLOAD_CASE_IDS = Set.of(
+            "test-async-indicator-omitted-default",
+            "test-async-indicator-prohibited-synchronous",
+            "test-async-indicator-optional-completes-or-pends",
+            "test-async-indicator-mandatory-pending");
+    private static final Set<String> CREATE_PENDING_RESPONSE_CASE_IDS = Set.of(
+            "test-async-lifecycle-poll",
+            "test-async-indicator-mandatory-pending",
+            "test-async-poll-repeated-pending-to-success",
+            "test-async-poll-final-operation-failure",
+            "test-async-cancel-result-canceled",
+            "test-async-cancel-result-unable-to-cancel",
+            "test-async-cancel-result-completed",
+            "test-async-cancel-result-failed",
+            "test-async-cancel-result-unavailable",
+            "test-async-cancel-vs-poll-race",
+            "test-async-process-then-poll-state",
+            "test-async-query-outstanding-filter");
+    private static final byte[] CREATE_PENDING_CORRELATION_VALUE =
+            "create-pending".getBytes(StandardCharsets.US_ASCII);
+    private static final List<CreateRequestPayloadFixture> CREATE_REQUEST_PAYLOAD_FIXTURES = List.of(
+            new CreateRequestPayloadFixture("test-norm-payload-client-create-request-20-001",
+                    "KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-20-001", "2.0", false),
+            new CreateRequestPayloadFixture("test-norm-payload-client-create-request-20-002",
+                    "KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-20-002", "2.0", false),
+            new CreateRequestPayloadFixture("test-norm-payload-client-create-request-21-001",
+                    "KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-21-001", "2.1", false),
+            new CreateRequestPayloadFixture("test-norm-payload-client-create-request-21-002",
+                    "KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-21-002", "2.1", false),
+            new CreateRequestPayloadFixture("test-norm-payload-client-create-request-20-003",
+                    "KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-20-003", "2.0", true),
+            new CreateRequestPayloadFixture("test-norm-payload-client-create-request-21-003",
+                    "KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-21-003", "2.1", true));
+    private static final List<CreateOperationRouteFixture> CREATE_OPERATION_ROUTE_FIXTURES =
+            createOperationRouteFixtures();
+    private static final List<String> CREATE_ROUTE_ENCODINGS = List.of("TTLV", "JSON", "XML");
+    private static final List<String> CREATE_ROUTE_TRANSPORTS = List.of("raw_tls", "https");
+    private static final List<String> NETWORK_ROUTE_ACTIONS = List.of("construct", "send", "decode");
     private static final List<String> GENERIC_STRUCTURE_ROUTE_IDS = List.of(
             "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.create",
             "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.withitem",
@@ -111,6 +211,37 @@ class ControlledTlsPeerTest {
 
     private record NewAttributeMutationFixture(String methodName, String title, String ordinal,
             int operationValue) { }
+
+    private record CreateRequestPayloadFixture(String caseId, String targetId, String protocolVersion,
+            boolean protectionStorageMasksPresent) { }
+
+    private record LoginLeaseTimeDateTimeRouteFixture(String caseId, String targetId,
+            String protocolVersion, String operation, String publicApiSymbol) { }
+
+    private record CreateOperationRouteFixture(String caseId, String protocolVersion,
+            List<String> requestPayloadTargetIds, boolean protectionStorageMasksPresent,
+            Long asynchronousIndicator, Boolean batchOrderOption,
+            Long batchErrorContinuationOption, boolean pendingResponse) {
+        private CreateOperationRouteFixture(String caseId, String protocolVersion,
+                String requestPayloadTargetId, boolean protectionStorageMasksPresent) {
+            this(caseId, protocolVersion,
+                    requestPayloadTargetId == null ? List.of() : List.of(requestPayloadTargetId),
+                    protectionStorageMasksPresent, null, null, null, false);
+        }
+    }
+
+    private record CreateWorkflowIdentity(Integer stepIndex, String operation, Integer itemIndex) { }
+
+    private record CreateRouteBatchObservation(List<String> requestOperations, int requestItemCount,
+            int responseItemCount, List<String> responseOperations,
+            List<Integer> resultStatusCodes, List<Integer> resultReasonCodes) {
+        private CreateRouteBatchObservation {
+            requestOperations = List.copyOf(requestOperations);
+            responseOperations = List.copyOf(responseOperations);
+            resultStatusCodes = List.copyOf(resultStatusCodes);
+            resultReasonCodes = List.copyOf(resultReasonCodes);
+        }
+    }
 
     private record AsyncCancelRouteScenario(String caseId, String cancellationResultName,
             int cancellationResultValue, List<String> targetIds, int workflowStepIndex) { }
@@ -336,11 +467,11 @@ class ControlledTlsPeerTest {
             new OperationStructureFixture(
                     "test-norm-operation-structure-operation-structure-7-23-object-groups",
                     "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-23-OBJECT-GROUPS",
-                    0x420126, 0x420056, TtlvItemType.TextString, "kmipkit-object-group", 0),
+                    0x420166, 0x420056, TtlvItemType.TextString, "kmipkit-object-group", 0),
             new OperationStructureFixture(
                     "test-norm-operation-structure-operation-structure-7-24-object-types",
                     "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-24-OBJECT-TYPES",
-                    0x420125, 0x420057, TtlvItemType.Enumeration, "", 2));
+                    0x420167, 0x420057, TtlvItemType.Enumeration, "", 2));
 
     private static final ScalarOperationStructureFixture SIGNATURE_DATA_FIXTURE =
             new ScalarOperationStructureFixture(
@@ -660,6 +791,29 @@ class ControlledTlsPeerTest {
     Path temporaryDirectory;
 
     @Test
+    void createTypedRouteFixturesCoverEveryCataloguedCreateCaseVersion() throws Exception {
+        Set<String> expected = new java.util.HashSet<>();
+        for (JsonNode testCase : readRouteEvidenceCatalog().path("test_cases")) {
+            JsonNode operations = testCase.path("requires").path("protocol_scenario").path("operations");
+            if (operations.isArray() && !operations.isEmpty()) {
+                if (java.util.stream.StreamSupport.stream(operations.spliterator(), false)
+                        .noneMatch(operation -> "Create".equals(operation.asText()))) continue;
+            } else if (!"Create".equals(testCase.path("operation").asText())) {
+                continue;
+            }
+            for (JsonNode version : testCase.path("execution").path("protocol_versions")) {
+                expected.add(testCase.path("case_id").asText() + "|" + version.asText());
+            }
+        }
+        Set<String> actual = CREATE_OPERATION_ROUTE_FIXTURES.stream()
+                .map(fixture -> fixture.caseId() + "|" + fixture.protocolVersion())
+                .collect(java.util.stream.Collectors.toSet());
+
+        assertEquals(expected, actual,
+                "Every catalogued Create obligation must execute its typed route for each applicable version.");
+    }
+
+    @Test
     void enumerationFixturesCoverEveryNamedDirectTagFamily() throws Exception {
         JsonNode catalog = readRouteEvidenceCatalog();
         Map<String, JsonNode> targets = new HashMap<>();
@@ -816,6 +970,18 @@ class ControlledTlsPeerTest {
         assertTrue(contains(request, new byte[] {0x42, 0x00, 0x74, 0x05, 0, 0, 0, 4, 0, 0, 0, 1}),
                 "The Query request must include a non-empty Query Function.");
         assertEquals("passed", outcome.status(), outcome.toString());
+    }
+
+    @Test
+    void objectGroupsStructureTagMatchesCatalogAssignment() {
+        // OASIS KMIP 2.1 §§7.23 and 11.56.
+        assertEquals(0x420166, OPERATION_STRUCTURE_FIXTURES.get(0).structureTag());
+    }
+
+    @Test
+    void objectTypesStructureTagMatchesCatalogAssignment() {
+        // OASIS KMIP 2.1 §§7.24 and 11.56.
+        assertEquals(0x420167, OPERATION_STRUCTURE_FIXTURES.get(1).structureTag());
     }
 
     @Test
@@ -1198,6 +1364,13 @@ class ControlledTlsPeerTest {
             String requestHash = normalizedTreeSha256(request);
             appendNetworkQueryRouteEvents(events, protocolVersion, requestHash, responseHash);
             appendControlledGetAttributesNetworkRouteEvents(events, protocolVersion);
+            assertRouteEventRecorded(events,
+                    "test-norm-payload-client-get-attributes-response-"
+                            + protocolVersion.replace(".", "") + "-001",
+                    "KMIPKIT-PAYLOAD-CLIENT-GET-ATTRIBUTES-RESPONSE-"
+                            + protocolVersion.replace(".", "") + "-001",
+                    "java.typed-protocol.function.client_batch_item_response_get_attributes",
+                    "decode", protocolVersion);
             appendControlledGetAttributeListNetworkRouteEvents(events, protocolVersion);
             assertGetAttributeListNetworkRouteCoverage(events, readRouteEvidenceCatalog(), protocolVersion);
             appendControlledKeyFormatRawResponseRouteEvents(events, protocolVersion);
@@ -1224,6 +1397,20 @@ class ControlledTlsPeerTest {
                 assertSimpleVersionBoundaryRouteCoverage(events);
                 assertPingNetworkRouteCoverage(events);
                 assertPingVersionBoundaryRouteCoverage(events);
+                appendCreateOperationRouteEvidence(events, serverCertificatePem, serverPrivateKeyPem,
+                        clientCertificatePem, clientPrivateKeyPem);
+                assertRouteEventRecorded(events, "test-norm-payload-client-create-request-20-001",
+                        "KMIPKIT-ELEM-OP-C2S-CREATE",
+                        "java.typed-protocol.function.client_batch_item_response_create",
+                        "decode", "2.0");
+                assertRouteEventRecorded(events, "test-norm-payload-client-create-request-21-001",
+                        "KMIPKIT-ELEM-OP-C2S-CREATE",
+                        "java.typed-protocol.function.client_batch_item_response_create",
+                        "decode", "2.1");
+                assertCreateOperationNetworkRouteCoverage(events);
+                appendLoginLeaseTimeDateTimeRouteEvidence(events, serverCertificatePem, serverPrivateKeyPem,
+                        clientCertificatePem, clientPrivateKeyPem);
+                assertLoginLeaseTimeDateTimeRouteCoverage(events);
             }
             if ("2.1".equals(protocolVersion)) appendObjectGroupLocalRouteEvents(events);
             if ("2.1".equals(protocolVersion)) appendStructureMemberStructureRouteEvents(events);
@@ -1995,6 +2182,7 @@ class ControlledTlsPeerTest {
         int normativeMessageFieldParserRouteEventCount = KMIP_2_0_AND_2_1.size()
                 * (19 + REQUEST_HEADER_SCALAR_ROUTE_TARGETS.size());
         int normativeBatchItemAccessorRouteEventCount = KMIP_2_0_AND_2_1.size() * 10;
+        int localTypedResponseAccessorEventCount = KMIP_2_0_AND_2_1.size() * 2;
         int newAttributePayloadRouteEventCount = KMIP_2_0_AND_2_1.size() * 3 * 20;
         int objectGroupLocalRouteEventCount = 3;
         int asynchronousRequestOperationStructureRouteEventCount = 6;
@@ -2015,7 +2203,7 @@ class ControlledTlsPeerTest {
         int pendingCorrelationAccessorEventCount = KMIP_2_0_AND_2_1.size();
         int structureMemberStructureRouteEventCount = STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size() * 4;
         int structureMemberByteStringRouteEventCount = STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.stream()
-                .mapToInt(fixture -> 4 + (fixture.typedQueryFilter() ? 1 : 0)).sum();
+                .mapToInt(fixture -> 4 + (fixture.typedQueryFilter() ? 2 : 0)).sum();
         int structureMemberValueRouteEventCount = STRUCTURE_MEMBER_VALUE_FIXTURES.size() * 4 + 1;
         int credentialGenericRouteEventCount = CREDENTIAL_TYPE_MODEL_CASE_IDS.size()
                 * KMIP_2_0_AND_2_1.size() * 4;
@@ -2061,6 +2249,7 @@ class ControlledTlsPeerTest {
             genericTagEventCount += routes * testCase.path("execution").path("protocol_versions").size();
         }
         assertEquals(68 + enumerationEventCount + localEnumerationEventCount + bitmaskEventCount + 80
+                        + LOGIN_LEASE_TIME_DATE_TIME_ROUTE_FIXTURES.size() * 3 * 2 * 2
                         + batchItemAccessorEventCount
                         + batchItemExtensionCountEventCount + batchItemGenericRouteEventCount
                         + getAttributesNetworkRouteEventCount
@@ -2069,6 +2258,7 @@ class ControlledTlsPeerTest {
                         + credentialGenericRouteEventCount
                         + normativeMessageFieldGenericRouteEventCount + normativeMessageFieldParserRouteEventCount
                         + normativeBatchItemAccessorRouteEventCount + newAttributePayloadRouteEventCount
+                        + localTypedResponseAccessorEventCount
                         + credentialEnvelopeEventCount + objectGroupLocalRouteEventCount
                         + asynchronousRequestOperationStructureRouteEventCount
                         + operationStructureRouteEventCount
@@ -2121,6 +2311,20 @@ class ControlledTlsPeerTest {
                         + 24 // Process and Query Asynchronous Requests construction and NotSent execution routes.
                         + 94 // BEC, batch IDs, async payload, Endpoint Role, Object Defaults, derivation, and Extension Information member cells.
                         + 18 // Ping construction, send, and response decode over six encoding/transport pairs.
+                        + CREATE_OPERATION_ROUTE_FIXTURES.size()
+                                * CREATE_ROUTE_ENCODINGS.size() * CREATE_ROUTE_TRANSPORTS.size()
+                                * NETWORK_ROUTE_ACTIONS.size()
+                        + CREATE_OPERATION_ROUTE_FIXTURES.stream()
+                                .mapToInt(fixture -> fixture.requestPayloadTargetIds().size()).sum()
+                                * CREATE_ROUTE_ENCODINGS.size() * CREATE_ROUTE_TRANSPORTS.size() * 2
+                        + CREATE_OPERATION_ROUTE_FIXTURES.stream()
+                                .filter(fixture -> CREATE_ASYNC_INDICATOR_PAYLOAD_CASE_IDS
+                                        .contains(fixture.caseId()))
+                                .filter(fixture -> fixture.requestPayloadTargetIds().stream()
+                                        .anyMatch(payloadTargetId -> payloadTargetId.endsWith("-REQUEST-"
+                                                + fixture.protocolVersion().replace(".", "") + "-001")))
+                                .count()
+                        // Async Indicator fixtures exercise the typed Create response accessor once per version.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Type generic and typed Attribute routes.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Value generic and typed Attribute routes.
                         + tagAggregateEventCount
@@ -4938,6 +5142,13 @@ class ControlledTlsPeerTest {
                                 "org.kmipkit.extensions.ClientBatchItemResult.getAttributesResponse",
                                 null, null, "decode", protocolVersion, null, null, responseHash);
                     }
+                    String responsePayloadSuffix = protocolVersion.replace(".", "") + "-001";
+                    appendLocalTypedResponseAccessorRouteEvent(events,
+                            "test-norm-payload-client-get-attributes-response-" + responsePayloadSuffix,
+                            "java.typed-protocol.function.client_batch_item_response_get_attributes",
+                            "KMIPKIT-PAYLOAD-CLIENT-GET-ATTRIBUTES-RESPONSE-" + responsePayloadSuffix,
+                            "org.kmipkit.extensions.ClientBatchItemResult.getAttributesResponse",
+                            protocolVersion, responseHash);
                     appendLocalGetAttributesPayloadRouteEvents(events, invocations, protocolVersion);
                 }
             }
@@ -5969,22 +6180,78 @@ class ControlledTlsPeerTest {
     private static void appendTypedNetworkRouteEvents(ArrayNode events, String caseId, String routeId,
             String targetId, String publicApiSymbol, String protocolVersion,
             String requestTreeHash, String responseTreeHash, String encoding, String transport) {
+        appendTypedNetworkRouteEvents(events, caseId, routeId, targetId, publicApiSymbol,
+                protocolVersion, requestTreeHash, responseTreeHash, encoding, transport, null, null);
+    }
+
+    private static void appendTypedNetworkRouteEvents(ArrayNode events, String caseId, String routeId,
+            String targetId, String publicApiSymbol, String protocolVersion,
+            String requestTreeHash, String responseTreeHash, String encoding, String transport,
+            CreateWorkflowIdentity workflowIdentity, CreateRouteBatchObservation batchObservation) {
         String executionRoute = "java.execute.typed-batch";
         String executionSymbol = "org.kmipkit.extensions.Client.execute";
         ObjectNode constructed = appendRouteEvent(events, caseId, routeId, targetId, publicApiSymbol,
                 executionRoute, executionSymbol, "construct", protocolVersion, transport,
                 requestTreeHash, null);
+        appendWorkflowIdentity(constructed, workflowIdentity);
+        appendCreateRouteBatchObservation(constructed, batchObservation);
         constructed.put("encoding", encoding);
         ObjectNode sent = appendRouteEvent(events, caseId, routeId, targetId, publicApiSymbol,
                 executionRoute, executionSymbol, "send", protocolVersion, transport,
                 requestTreeHash, null);
+        appendWorkflowIdentity(sent, workflowIdentity);
+        appendCreateRouteBatchObservation(sent, batchObservation);
         sent.put("encoding", encoding);
         sent.put("request_delivery_state", "response_received");
         sent.put("transport_invocation_count", 1);
         ObjectNode decoded = appendRouteEvent(events, caseId, routeId, targetId, publicApiSymbol,
                 executionRoute, executionSymbol, "decode", protocolVersion, transport,
                 null, responseTreeHash);
+        appendWorkflowIdentity(decoded, workflowIdentity);
+        appendCreateRouteBatchObservation(decoded, batchObservation);
         decoded.put("encoding", encoding);
+    }
+
+    private static void appendTypedRequestNetworkRouteEvents(ArrayNode events, String caseId, String routeId,
+            String targetId, String publicApiSymbol, String protocolVersion,
+            String requestTreeHash, String encoding, String transport) {
+        appendTypedRequestNetworkRouteEvents(events, caseId, routeId, targetId, publicApiSymbol,
+                protocolVersion, requestTreeHash, encoding, transport, null);
+    }
+
+    private static void appendTypedRequestNetworkRouteEvents(ArrayNode events, String caseId, String routeId,
+            String targetId, String publicApiSymbol, String protocolVersion,
+            String requestTreeHash, String encoding, String transport,
+            CreateRouteBatchObservation batchObservation) {
+        String executionRoute = "java.execute.typed-batch";
+        String executionSymbol = "org.kmipkit.extensions.Client.execute";
+        ObjectNode constructed = appendRouteEvent(events, caseId, routeId, targetId, publicApiSymbol,
+                executionRoute, executionSymbol, "construct", protocolVersion, transport,
+                requestTreeHash, null);
+        constructed.put("encoding", encoding);
+        appendCreateRouteBatchObservation(constructed, batchObservation);
+        ObjectNode sent = appendRouteEvent(events, caseId, routeId, targetId, publicApiSymbol,
+                executionRoute, executionSymbol, "send", protocolVersion, transport,
+                requestTreeHash, null);
+        sent.put("encoding", encoding);
+        appendCreateRouteBatchObservation(sent, batchObservation);
+        sent.put("request_delivery_state", "response_received");
+        sent.put("transport_invocation_count", 1);
+    }
+
+    private static void appendCreateRouteBatchObservation(
+            ObjectNode event, CreateRouteBatchObservation observation) {
+        if (observation == null) return;
+        ArrayNode requestOperations = event.putArray("batch_operation_sequence");
+        observation.requestOperations().forEach(requestOperations::add);
+        event.put("batch_item_count", observation.requestItemCount());
+        ArrayNode responseOperations = event.putArray("peer_observed_operation_sequence");
+        observation.responseOperations().forEach(responseOperations::add);
+        event.put("peer_observed_response_count", observation.responseItemCount());
+        ArrayNode resultStatuses = event.putArray("peer_observed_result_status_codes");
+        observation.resultStatusCodes().forEach(resultStatuses::add);
+        ArrayNode resultReasons = event.putArray("peer_observed_result_reason_codes");
+        observation.resultReasonCodes().forEach(resultReasons::add);
     }
 
     private static ObjectNode appendRouteEvent(ArrayNode events, String caseId, String routeId,
@@ -5996,6 +6263,28 @@ class ControlledTlsPeerTest {
         if (requestHash != null) event.put("request_tree_sha256", requestHash);
         if (responseHash != null) event.put("response_tree_sha256", responseHash);
         return event;
+    }
+
+    private static void appendLocalTypedResponseAccessorRouteEvent(ArrayNode events, String caseId,
+            String routeId, String targetId, String publicApiSymbol, String protocolVersion,
+            String responseTreeHash) {
+        appendLocalTypedResponseAccessorRouteEvent(events, caseId, routeId, targetId, publicApiSymbol,
+                protocolVersion, responseTreeHash, null);
+    }
+
+    private static void appendLocalTypedResponseAccessorRouteEvent(ArrayNode events, String caseId,
+            String routeId, String targetId, String publicApiSymbol, String protocolVersion,
+            String responseTreeHash, CreateWorkflowIdentity workflowIdentity) {
+        ObjectNode event = appendRouteEvent(events, caseId, routeId, targetId, publicApiSymbol,
+                null, null, "decode", protocolVersion, null, null, responseTreeHash);
+        appendWorkflowIdentity(event, workflowIdentity);
+    }
+
+    private static void appendWorkflowIdentity(ObjectNode event, CreateWorkflowIdentity identity) {
+        if (identity == null) return;
+        if (identity.stepIndex() != null) event.put("workflow_step_index", identity.stepIndex());
+        if (identity.operation() != null) event.put("workflow_operation", identity.operation());
+        if (identity.itemIndex() != null) event.put("workflow_item_index", identity.itemIndex());
     }
 
     private static ObjectNode newRouteEvent(ArrayNode events, String caseId, String routeId,
@@ -6327,6 +6616,16 @@ class ControlledTlsPeerTest {
 
     private static void appendLocalCatalogInvocation(ArrayNode events, String version,
             LocalCatalogRouteChecks.Invocation invocation) throws Exception {
+        if (invocation.notApplicableReason() != null) {
+            ObjectNode event = newRouteEvent(events, invocation.caseId(), invocation.routeId(),
+                    invocation.targetId(), invocation.symbol(), null, null, invocation.action(), version, null);
+            appendWorkflowIdentity(event, invocation);
+            event.put("status", "not_applicable");
+            event.put("invocation_count", 0);
+            event.put("not_applicable_reason", invocation.notApplicableReason());
+            event.remove("invocation_id");
+            return;
+        }
         if (invocation.rejectionCode() != null) {
             ObjectNode event = newRouteEvent(events, invocation.caseId(), invocation.routeId(),
                     invocation.targetId(), invocation.symbol(), null, null, invocation.action(), version, null);
@@ -7945,6 +8244,1373 @@ class ControlledTlsPeerTest {
         }
     }
 
+    private void appendCreateOperationRouteEvidence(ArrayNode events, byte[] serverCertificatePem,
+            byte[] serverPrivateKeyPem, byte[] clientCertificatePem, byte[] clientPrivateKeyPem) throws Exception {
+        String routeId = "java.typed-protocol.client_batch_item.create";
+        String targetId = "KMIPKIT-ELEM-OP-C2S-CREATE";
+        String publicApi = "org.kmipkit.extensions.ClientBatchItem.create";
+        for (CreateOperationRouteFixture fixture : CREATE_OPERATION_ROUTE_FIXTURES) {
+            String caseId = fixture.caseId();
+            String protocolVersion = fixture.protocolVersion();
+            int minor = "2.0".equals(protocolVersion) ? 0 : 1;
+            String batchItemId = "item-0";
+            byte[] batchItemIdBytes = batchItemId.getBytes(StandardCharsets.US_ASCII);
+            boolean undoScenario = isCreateUndoScenario(fixture);
+            List<String> batchOperations = createRouteBatchOperations(caseId);
+            boolean multiItemBatchScenario = batchOperations.size() > 1;
+            CreateWorkflowIdentity workflowIdentity = createWorkflowIdentity(caseId);
+            byte[] responseTtlv = undoScenario ? createUndoCreateResponse(minor)
+                    : multiItemBatchScenario ? createBatchWorkflowResponse(minor, caseId, batchOperations)
+                    : fixture.pendingResponse() ? createPendingCreateResponse(minor) : createResponse(minor);
+            String responseHash = normalizedTreeSha256(responseTtlv);
+            String requestHash = null;
+            for (String encoding : CREATE_ROUTE_ENCODINGS) {
+                byte[] responseBytes = createRouteResponseBytes(
+                        minor, batchItemId, encoding, responseTtlv, fixture.pendingResponse(), undoScenario,
+                        multiItemBatchScenario, caseId, batchOperations);
+                for (String transport : CREATE_ROUTE_TRANSPORTS) {
+                    Path connectionFile = temporaryDirectory.resolve("create-route-" + caseId + "-"
+                            + protocolVersion.replace('.', '-') + "-" + encoding + "-" + transport + ".json");
+                    byte[] observedRequest;
+                    CreateRouteBatchObservation batchObservation = null;
+                    Exception executionFailure = null;
+                    boolean localForwardPlaceholderRejection = false;
+                    if ("raw_tls".equals(transport)) {
+                        SSLServerSocket listener = listener(certificate(serverCertificatePem),
+                                privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+                        FutureTask<byte[]> peer = new FutureTask<>(
+                                () -> serveOneEncodedResponse(listener, responseBytes, encoding));
+                        Thread peerThread = new Thread(peer,
+                                "java-validator-controlled-create-peer-" + encoding + "-" + protocolVersion);
+                        peerThread.setDaemon(true);
+                        peerThread.start();
+                        Files.writeString(connectionFile, connectionJson(listener.getLocalPort(),
+                                serverCertificatePem, clientCertificatePem, clientPrivateKeyPem, true,
+                                protocolVersion, encoding, transport));
+                        try {
+                            batchObservation = executeCreateRouteRequest(connectionFile, fixture);
+                        } catch (Exception failure) {
+                            executionFailure = failure;
+                            localForwardPlaceholderRejection = isExpectedLocalForwardPlaceholderRejection(
+                                    caseId, failure);
+                        } finally {
+                            listener.close();
+                        }
+                        if (localForwardPlaceholderRejection) {
+                            observedRequest = new byte[0];
+                        } else {
+                            try {
+                                observedRequest = peer.get(15, TimeUnit.SECONDS);
+                            } catch (Exception peerFailure) {
+                                if (executionFailure == null) throw peerFailure;
+                                executionFailure.addSuppressed(peerFailure);
+                                observedRequest = new byte[0];
+                            }
+                        }
+                    } else {
+                        CompletableFuture<byte[]> peer = new CompletableFuture<>();
+                        CompletableFuture<Void> responseSent = new CompletableFuture<>();
+                        HttpsServer listener = httpsListener(certificate(serverCertificatePem),
+                                privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+                        listener.createContext("/kmip", exchange -> {
+                            try {
+                                if (!"POST".equals(exchange.getRequestMethod())) {
+                                    throw new IllegalStateException("The controlled HTTP peer requires POST.");
+                                }
+                                byte[] request = exchange.getRequestBody().readAllBytes();
+                                peer.complete(request);
+                                exchange.getResponseHeaders().set("Content-Type", contentTypeForEncoding(encoding));
+                                exchange.sendResponseHeaders(200, responseBytes.length);
+                                exchange.getResponseBody().write(responseBytes);
+                                responseSent.complete(null);
+                            } catch (Exception failure) {
+                                peer.completeExceptionally(failure);
+                                responseSent.completeExceptionally(failure);
+                            } finally {
+                                exchange.close();
+                            }
+                        });
+                        listener.start();
+                        Files.writeString(connectionFile, connectionJson(listener.getAddress().getPort(),
+                                serverCertificatePem, clientCertificatePem, clientPrivateKeyPem, true,
+                                protocolVersion, encoding, transport));
+                        try {
+                            batchObservation = executeCreateRouteRequest(connectionFile, fixture);
+                        } catch (Exception failure) {
+                            executionFailure = failure;
+                            localForwardPlaceholderRejection = isExpectedLocalForwardPlaceholderRejection(
+                                    caseId, failure);
+                        } finally {
+                            listener.stop(0);
+                        }
+                        if (localForwardPlaceholderRejection) {
+                            observedRequest = new byte[0];
+                        } else {
+                            observedRequest = peer.get(15, TimeUnit.SECONDS);
+                        }
+                        if (executionFailure != null && !localForwardPlaceholderRejection) {
+                            try {
+                                responseSent.get(15, TimeUnit.SECONDS);
+                            } catch (Exception peerFailure) {
+                                executionFailure.addSuppressed(peerFailure);
+                            }
+                        }
+                    }
+                    if (localForwardPlaceholderRejection) {
+                        assertEquals(4, ((ClientOperationException) executionFailure).statusCode());
+                        assertEquals(1, ((ClientOperationException) executionFailure).categoryCode());
+                        assertEquals(1, ((ClientOperationException) executionFailure).causeCode());
+                        assertEquals(1, ((ClientOperationException) executionFailure).deliveryStateCode());
+                        appendLocalForwardPlaceholderRejectionRouteEvents(events, fixture, workflowIdentity,
+                                encoding, transport, batchOperations);
+                        continue;
+                    }
+                    if (executionFailure != null) {
+                        String codes = executionFailure instanceof org.kmipkit.ClientOperationException e
+                                ? " status=" + e.statusCode() + " category=" + e.categoryCode()
+                                        + " cause=" + e.causeCode() + " delivery=" + e.deliveryStateCode()
+                                : "";
+                        throw new AssertionError("Create response failure for case_id=" + caseId
+                                + " version=" + protocolVersion + " encoding=" + encoding
+                                + " transport=" + transport + codes, executionFailure);
+                    }
+                    assertCreateRouteRequest(observedRequest, encoding, protocolVersion, batchItemIdBytes, fixture);
+                    if (requestHash == null) requestHash = normalizedTreeSha256(observedRequest);
+                    appendTypedNetworkRouteEvents(events, caseId, routeId, targetId, publicApi,
+                            protocolVersion, requestHash, responseHash, encoding, transport, workflowIdentity,
+                            batchObservation);
+                    for (String requestPayloadTargetId : fixture.requestPayloadTargetIds()) {
+                        appendTypedRequestNetworkRouteEvents(events, caseId, routeId,
+                                requestPayloadTargetId, publicApi, protocolVersion,
+                                requestHash, encoding, transport, batchObservation);
+                    }
+                    if ("TTLV".equals(encoding) && "raw_tls".equals(transport)
+                            && fixture.requestPayloadTargetIds().stream().anyMatch(payloadTargetId ->
+                                    payloadTargetId.endsWith("-REQUEST-"
+                                            + protocolVersion.replace(".", "") + "-001"))) {
+                        appendLocalTypedResponseAccessorRouteEvent(events, caseId,
+                                "java.typed-protocol.function.client_batch_item_response_create",
+                                targetId,
+                                "org.kmipkit.extensions.ClientBatchItemResult.createResponse",
+                                protocolVersion, responseHash, workflowIdentity);
+                    }
+                }
+            }
+        }
+    }
+
+    private void appendLoginLeaseTimeDateTimeRouteEvidence(ArrayNode events, byte[] serverCertificatePem,
+            byte[] serverPrivateKeyPem, byte[] clientCertificatePem, byte[] clientPrivateKeyPem)
+            throws Exception {
+        long leaseTimeDateTime = 1_800_000_000L;
+        byte[] batchItemId = "lease-date-time".getBytes(StandardCharsets.US_ASCII);
+        for (LoginLeaseTimeDateTimeRouteFixture fixture : LOGIN_LEASE_TIME_DATE_TIME_ROUTE_FIXTURES) {
+            int minor = "2.0".equals(fixture.protocolVersion()) ? 0 : 1;
+            long operation = "login".equals(fixture.operation())
+                    ? KmipValues.Operation.LOGIN : KmipValues.Operation.DELEGATED_LOGIN;
+            byte[] responseTtlv = loginLeaseTimeDateTimeFailureResponse(operation, minor, batchItemId);
+            String routeId = "java.typed-protocol.client_batch_item." + fixture.operation();
+            for (String encoding : List.of("TTLV", "JSON", "XML")) {
+                byte[] responseBytes = loginLeaseTimeDateTimeResponseBytes(
+                        operation, minor, batchItemId, encoding, responseTtlv);
+                for (String transport : List.of("raw_tls", "https")) {
+                    Path connectionFile = temporaryDirectory.resolve("login-lease-date-time-"
+                            + fixture.operation() + "-" + fixture.protocolVersion().replace('.', '-')
+                            + "-" + encoding + "-" + transport + ".json");
+                    byte[] observedRequest;
+                    if ("raw_tls".equals(transport)) {
+                        SSLServerSocket listener = listener(certificate(serverCertificatePem),
+                                privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+                        FutureTask<byte[]> peer = new FutureTask<>(
+                                () -> serveOneEncodedResponse(listener, responseBytes, encoding));
+                        Thread peerThread = new Thread(peer, "java-validator-login-lease-date-time-peer-"
+                                + fixture.operation() + "-" + fixture.protocolVersion() + "-" + encoding);
+                        peerThread.setDaemon(true);
+                        peerThread.start();
+                        Files.writeString(connectionFile, connectionJson(listener.getLocalPort(),
+                                serverCertificatePem, clientCertificatePem, clientPrivateKeyPem, true,
+                                fixture.protocolVersion(), encoding, transport));
+                        try {
+                            executeLoginLeaseTimeDateTimeRequest(connectionFile, fixture,
+                                    leaseTimeDateTime, batchItemId);
+                        } finally {
+                            listener.close();
+                        }
+                        observedRequest = peer.get(15, TimeUnit.SECONDS);
+                    } else {
+                        CompletableFuture<byte[]> peer = new CompletableFuture<>();
+                        HttpsServer listener = httpsListener(certificate(serverCertificatePem),
+                                privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+                        listener.createContext("/kmip", exchange -> {
+                            try {
+                                if (!"POST".equals(exchange.getRequestMethod())) {
+                                    throw new IllegalStateException("The controlled HTTP peer requires POST.");
+                                }
+                                byte[] request = exchange.getRequestBody().readAllBytes();
+                                peer.complete(request);
+                                exchange.getResponseHeaders().set("Content-Type", contentTypeForEncoding(encoding));
+                                exchange.sendResponseHeaders(200, responseBytes.length);
+                                try (OutputStream output = exchange.getResponseBody()) {
+                                    output.write(responseBytes);
+                                }
+                            } catch (Exception failure) {
+                                peer.completeExceptionally(failure);
+                                try {
+                                    exchange.sendResponseHeaders(500, -1);
+                                } catch (Exception ignored) {
+                                    // The peer future retains the fixture failure for the test thread.
+                                }
+                            } finally {
+                                exchange.close();
+                            }
+                        });
+                        listener.start();
+                        Files.writeString(connectionFile, connectionJson(listener.getAddress().getPort(),
+                                serverCertificatePem, clientCertificatePem, clientPrivateKeyPem, true,
+                                fixture.protocolVersion(), encoding, transport));
+                        try {
+                            executeLoginLeaseTimeDateTimeRequest(connectionFile, fixture,
+                                    leaseTimeDateTime, batchItemId);
+                        } finally {
+                            listener.stop(0);
+                        }
+                        observedRequest = peer.get(15, TimeUnit.SECONDS);
+                    }
+                    assertLoginLeaseTimeDateTimeRequest(observedRequest, encoding,
+                            fixture.protocolVersion(), operation, leaseTimeDateTime);
+                    String requestHash = "TTLV".equals(encoding)
+                            ? normalizedTreeSha256(observedRequest) : sha256(observedRequest);
+                    appendTypedRequestNetworkRouteEvents(events, fixture.caseId(), routeId,
+                            fixture.targetId(), fixture.publicApiSymbol(), fixture.protocolVersion(),
+                            requestHash, encoding, transport);
+                }
+            }
+        }
+    }
+
+    private static void executeLoginLeaseTimeDateTimeRequest(Path connectionFile,
+            LoginLeaseTimeDateTimeRouteFixture fixture, long leaseTimeDateTime, byte[] batchItemId)
+            throws Exception {
+        try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile));
+                ClientBatch batch = ClientBatch.create();
+                ClientBatchItem request = loginLeaseTimeDateTimeItem(fixture, leaseTimeDateTime, batchItemId)) {
+            batch.add(request);
+            try (ClientBatchResponse response = driver.executeBatchForEvidence(batch)) {
+                assertEquals(1, response.itemCount());
+            }
+        }
+    }
+
+    private static ClientBatchItem loginLeaseTimeDateTimeItem(
+            LoginLeaseTimeDateTimeRouteFixture fixture, long leaseTimeDateTime, byte[] batchItemId) {
+        ClientBatchItem request;
+        if ("login".equals(fixture.operation())) {
+            request = ClientBatchItem.login(null, leaseTimeDateTime, null, null);
+        } else {
+            try (TtlvStructure rights = TtlvStructure.create()) {
+                request = ClientBatchItem.delegatedLogin(rights, null, leaseTimeDateTime, null, null);
+            }
+        }
+        return request.withUniqueBatchItemId(batchItemId);
+    }
+
+    private static void assertLoginLeaseTimeDateTimeRequest(byte[] request, String encoding,
+            String protocolVersion, long operation, long expectedDateTime) throws Exception {
+        int minor = "2.0".equals(protocolVersion) ? 0 : 1;
+        if ("TTLV".equals(encoding)) {
+            assertEquals(operation, requestOperation(request));
+            assertEquals(minor, requestProtocolMinorVersion(request));
+            assertTrue(contains(request, item(0x420049, TtlvItemType.DateTime.code(), longBytes(expectedDateTime))),
+                    "The controlled peer must receive Lease Time with the DateTime TTLV type and value.");
+            return;
+        }
+        String operationName = operation == KmipValues.Operation.LOGIN ? "Login" : "DelegatedLogin";
+        if ("JSON".equals(encoding)) {
+            JsonNode root = new ObjectMapper().readTree(request);
+            assertEquals("RequestMessage", root.path("tag").asText());
+            assertEquals(List.of(operationName), jsonValuesForTag(root, "Operation").stream()
+                    .map(JsonNode::asText).toList());
+            assertEquals(List.of(minor), jsonValuesForTag(root, "ProtocolVersionMinor").stream()
+                    .map(JsonNode::asInt).toList());
+            List<JsonNode> leaseTimeItems = jsonItemsForTag(root, "LeaseTime");
+            assertEquals(1, leaseTimeItems.size());
+            JsonNode leaseTime = leaseTimeItems.get(0);
+            assertEquals("DateTime", leaseTime.path("type").asText());
+            assertEquals(expectedDateTime, parseDateTimeValue(leaseTime.path("value").asText()));
+            return;
+        }
+        String xml = new String(request, StandardCharsets.UTF_8);
+        assertTrue(xml.startsWith("<RequestMessage>"));
+        assertTrue(xml.contains("<Operation type=\"Enumeration\" value=\"" + operationName + "\"/>"));
+        assertTrue(xml.contains("<ProtocolVersionMinor type=\"Integer\" value=\"" + minor + "\"/>"));
+        java.util.regex.Matcher leaseTime = java.util.regex.Pattern.compile(
+                "<LeaseTime type=\"([^\"]+)\" value=\"([^\"]+)\"/>").matcher(xml);
+        assertTrue(leaseTime.find(), "The controlled peer must receive a typed LeaseTime XML element.");
+        assertEquals("DateTime", leaseTime.group(1));
+        assertEquals(expectedDateTime, parseDateTimeValue(leaseTime.group(2)));
+        assertTrue(!leaseTime.find(), "The request must contain exactly one LeaseTime value.");
+    }
+
+    private static long parseDateTimeValue(String value) {
+        if (value.startsWith("0x")) return Long.parseUnsignedLong(value.substring(2), 16);
+        return java.time.Instant.parse(value).getEpochSecond();
+    }
+
+    private static List<JsonNode> jsonItemsForTag(JsonNode node, String tag) {
+        List<JsonNode> items = new ArrayList<>();
+        collectJsonItemsForTag(node, tag, items);
+        return items;
+    }
+
+    private static void collectJsonItemsForTag(JsonNode node, String tag, List<JsonNode> items) {
+        if (node.isObject() && tag.equals(node.path("tag").asText())) items.add(node);
+        if (node.isContainerNode()) {
+            node.elements().forEachRemaining(child -> collectJsonItemsForTag(child, tag, items));
+        }
+    }
+
+    private static byte[] loginLeaseTimeDateTimeFailureResponse(long operation, int minor,
+            byte[] batchItemId) throws Exception {
+        byte[] protocolVersion = structure(0x420069,
+                item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(minor)));
+        byte[] header = structure(0x42007a, protocolVersion,
+                item(0x420092, 9, longBytes(1)), item(0x42000d, 2, intBytes(1)));
+        byte[] batchItem = structure(0x42000f,
+                item(0x42005c, 5, intBytes(Math.toIntExact(operation))),
+                item(0x420093, 8, batchItemId),
+                item(0x42007f, 5, intBytes(1)),
+                item(0x42007e, 5, intBytes(Math.toIntExact(KmipValues.ResultReason.OPERATION_NOT_SUPPORTED))));
+        return structure(0x42007b, header, batchItem);
+    }
+
+    private static byte[] loginLeaseTimeDateTimeResponseBytes(long operation, int minor,
+            byte[] batchItemId, String encoding, byte[] ttlv) {
+        if ("TTLV".equals(encoding)) return ttlv;
+        String operationName = operation == KmipValues.Operation.LOGIN ? "Login" : "DelegatedLogin";
+        String batchItemIdHex = "JSON".equals(encoding)
+                ? HexFormat.of().formatHex(batchItemId)
+                : HexFormat.of().withUpperCase().formatHex(batchItemId);
+        if ("JSON".equals(encoding)) {
+            return ("{\"tag\":\"ResponseMessage\",\"value\":["
+                    + "{\"tag\":\"ResponseHeader\",\"value\":["
+                    + "{\"tag\":\"ProtocolVersion\",\"value\":["
+                    + "{\"tag\":\"ProtocolVersionMajor\",\"type\":\"Integer\",\"value\":2},"
+                    + "{\"tag\":\"ProtocolVersionMinor\",\"type\":\"Integer\",\"value\":" + minor + "}]},"
+                    + "{\"tag\":\"TimeStamp\",\"type\":\"DateTime\",\"value\":\"0x0000000000000001\"},"
+                    + "{\"tag\":\"BatchCount\",\"type\":\"Integer\",\"value\":1}]},"
+                    + "{\"tag\":\"BatchItem\",\"value\":["
+                    + "{\"tag\":\"Operation\",\"type\":\"Enumeration\",\"value\":\""
+                    + operationName + "\"},"
+                    + "{\"tag\":\"UniqueBatchItemID\",\"type\":\"ByteString\",\"value\":\""
+                    + batchItemIdHex + "\"},"
+                    + "{\"tag\":\"ResultStatus\",\"type\":\"Enumeration\",\"value\":\"OperationFailed\"},"
+                    + "{\"tag\":\"ResultReason\",\"type\":\"Enumeration\",\"value\":\"OperationNotSupported\"}]}]}")
+                    .getBytes(StandardCharsets.UTF_8);
+        }
+        String xml = "<ResponseMessage><ResponseHeader><ProtocolVersion>"
+                + "<ProtocolVersionMajor type=\"Integer\" value=\"2\"/>"
+                + "<ProtocolVersionMinor type=\"Integer\" value=\"" + minor + "\"/></ProtocolVersion>"
+                + "<TimeStamp type=\"DateTime\" value=\"1970-01-01T00:00:01Z\"/>"
+                + "<BatchCount type=\"Integer\" value=\"1\"/></ResponseHeader><BatchItem>"
+                + "<Operation type=\"Enumeration\" value=\"" + operationName + "\"/>"
+                + "<UniqueBatchItemID type=\"ByteString\" value=\"" + batchItemIdHex + "\"/>"
+                + "<ResultStatus type=\"Enumeration\" value=\"OperationFailed\"/>"
+                + "<ResultReason type=\"Enumeration\" value=\"OperationNotSupported\"/>"
+                + "</BatchItem></ResponseMessage>";
+        return xml.getBytes(StandardCharsets.UTF_8);
+    }
+
+    private static List<CreateOperationRouteFixture> createOperationRouteFixtures() {
+        var fixtures = new ArrayList<CreateOperationRouteFixture>();
+        for (String caseId : CREATE_ROUTE_CASE_IDS) {
+            for (String protocolVersion : KMIP_2_0_AND_2_1) {
+                fixtures.add(new CreateOperationRouteFixture(caseId, protocolVersion, null, false));
+            }
+        }
+        for (CreateRequestPayloadFixture fixture : CREATE_REQUEST_PAYLOAD_FIXTURES) {
+            fixtures.add(new CreateOperationRouteFixture(
+                    fixture.caseId(), fixture.protocolVersion(), fixture.targetId(),
+                    fixture.protectionStorageMasksPresent()));
+        }
+        for (String caseId : CREATE_SCENARIO_ROUTE_CASE_IDS) {
+            for (String protocolVersion : createScenarioRouteVersions(caseId)) {
+                fixtures.add(createScenarioRouteFixture(caseId, protocolVersion));
+            }
+        }
+        return List.copyOf(fixtures);
+    }
+
+    private static List<String> createScenarioRouteVersions(String caseId) {
+        if (caseId.contains("-20-")) return List.of("2.0");
+        if (caseId.contains("-21-")) return List.of("2.1");
+        return CREATE_ROUTE_KMIP_2_1_ONLY_CASE_IDS.contains(caseId)
+                ? List.of("2.1") : KMIP_2_0_AND_2_1;
+    }
+
+    private static CreateWorkflowIdentity createWorkflowIdentity(String caseId) throws Exception {
+        JsonNode testCase = null;
+        for (JsonNode candidate : readRouteEvidenceCatalog().path("test_cases")) {
+            if (caseId.equals(candidate.path("case_id").asText())) {
+                testCase = candidate;
+                break;
+            }
+        }
+        if (testCase == null) {
+            throw new AssertionError("Create route fixture must exist in the normative catalog: " + caseId);
+        }
+        JsonNode scenario = testCase.path("requires").path("protocol_scenario");
+        JsonNode items = scenario.path("parameters").path("items");
+        if (items.isArray()) {
+            for (int index = 0; index < items.size(); index++) {
+                JsonNode item = items.get(index);
+                String operation = item.isTextual()
+                        ? item.asText().split("\\(", 2)[0].trim()
+                        : item.path("operation").asText();
+                if ("Create".equals(operation)) return new CreateWorkflowIdentity(null, operation, index);
+            }
+        }
+        JsonNode operations = scenario.path("operations");
+        if (!operations.isArray()) operations = testCase.path("requires").path("operation_sequence");
+        if (operations.isArray()) {
+            for (int index = 0; index < operations.size(); index++) {
+                String operation = operations.get(index).asText();
+                if ("Create".equals(operation)) return new CreateWorkflowIdentity(index, operation, null);
+            }
+        }
+        return null;
+    }
+
+    private static boolean isExpectedLocalForwardPlaceholderRejection(String caseId, Exception failure) {
+        if (!"test-batch-placeholder-forward-reference-rejected".equals(caseId)
+                || !(failure instanceof ClientOperationException clientFailure)) {
+            return false;
+        }
+        return clientFailure.statusCode() == 4
+                && clientFailure.categoryCode() == 1
+                && clientFailure.causeCode() == 1
+                && clientFailure.deliveryStateCode() == 1;
+    }
+
+    private static void appendLocalForwardPlaceholderRejectionRouteEvents(ArrayNode events,
+            CreateOperationRouteFixture fixture, CreateWorkflowIdentity workflowIdentity,
+            String encoding, String transport, List<String> batchOperations) {
+        appendLocalForwardPlaceholderRejectionRouteEvent(events, fixture, workflowIdentity,
+                "KMIPKIT-ELEM-OP-C2S-CREATE", "org.kmipkit.extensions.ClientBatchItem.create",
+                encoding, transport, batchOperations);
+        for (String targetId : fixture.requestPayloadTargetIds()) {
+            appendLocalForwardPlaceholderRejectionRouteEvent(events, fixture, null,
+                    targetId, "org.kmipkit.extensions.ClientBatchItem.create", encoding, transport,
+                    batchOperations);
+        }
+    }
+
+    private static void appendLocalForwardPlaceholderRejectionRouteEvent(ArrayNode events,
+            CreateOperationRouteFixture fixture, CreateWorkflowIdentity workflowIdentity,
+            String targetId, String publicApiSymbol, String encoding, String transport,
+            List<String> batchOperations) {
+        ObjectNode constructed = appendRouteEvent(events, fixture.caseId(),
+                "java.typed-protocol.client_batch_item.create", targetId, publicApiSymbol,
+                "java.execute.typed-batch", "org.kmipkit.extensions.Client.execute",
+                "construct", fixture.protocolVersion(), transport, null, null);
+        constructed.put("encoding", encoding);
+        appendWorkflowIdentity(constructed, workflowIdentity);
+        constructed.put("construction_evidence_kind", "typed_item_returned");
+        if (workflowIdentity != null && workflowIdentity.operation() != null) {
+            constructed.put("constructed_operation", workflowIdentity.operation());
+        }
+        constructed.put("batch_item_count", batchOperations.size());
+        ArrayNode constructedOperations = constructed.putArray("batch_operation_sequence");
+        batchOperations.forEach(constructedOperations::add);
+        ObjectNode sent = appendRouteEvent(events, fixture.caseId(),
+                "java.typed-protocol.client_batch_item.create", targetId, publicApiSymbol,
+                "java.execute.typed-batch", "org.kmipkit.extensions.Client.execute",
+                "send", fixture.protocolVersion(), transport, null, null);
+        sent.put("encoding", encoding);
+        appendWorkflowIdentity(sent, workflowIdentity);
+        sent.put("request_delivery_state", "not_sent");
+        sent.put("transport_invocation_count", 0);
+        sent.put("batch_item_count", batchOperations.size());
+        sent.put("local_rejection_code", "batch_placeholder_forward_reference");
+        sent.put("client_error_category", "validation");
+        sent.put("client_error_cause", "invalid_input");
+        ArrayNode operations = sent.putArray("batch_operation_sequence");
+        batchOperations.forEach(operations::add);
+        ObjectNode decoded = appendRouteEvent(events, fixture.caseId(),
+                "java.typed-protocol.client_batch_item.create", targetId, publicApiSymbol,
+                "java.execute.typed-batch", "org.kmipkit.extensions.Client.execute",
+                "decode", fixture.protocolVersion(), transport, null, null);
+        decoded.put("encoding", encoding);
+        appendWorkflowIdentity(decoded, workflowIdentity);
+        decoded.put("status", "not_applicable");
+        decoded.put("invocation_count", 0);
+        decoded.put("not_applicable_reason", "local_rejection_no_response");
+        decoded.remove("invocation_id");
+    }
+
+    private static List<String> createRouteBatchOperations(String caseId) throws Exception {
+        for (JsonNode testCase : readRouteEvidenceCatalog().path("test_cases")) {
+            if (caseId.equals(testCase.path("case_id").asText())
+                    && "batch_workflows".equals(testCase.path("category").asText())) {
+                JsonNode operations = testCase.path("requires").path("protocol_scenario").path("operations");
+                if (operations.isArray()) {
+                    var result = new ArrayList<String>();
+                    operations.forEach(operation -> result.add(operation.asText()));
+                    return List.copyOf(result);
+                }
+            }
+        }
+        return List.of("Create");
+    }
+
+    private static List<ClientBatchItem> createRouteBatchItems(CreateOperationRouteFixture fixture,
+            TtlvStructure attributes, TtlvStructure protectionStorageMasks) throws Exception {
+        List<String> operations = createRouteBatchOperations(fixture.caseId());
+        List<ClientBatchItem> items = new ArrayList<>();
+        try {
+            for (int index = 0; index < operations.size(); index++) {
+                String operation = operations.get(index);
+                ClientBatchItem item = switch (operation) {
+                    case "Create" -> ClientBatchItem.create(2, attributes, protectionStorageMasks);
+                    case "Activate" -> ClientBatchItem.activate(createRouteIdentifier(fixture.caseId(), index));
+                    case "Get" -> ClientBatchItem.get(createRouteIdentifier(fixture.caseId(), index),
+                            null, null, null, null);
+                    case "Get Attribute List" -> ClientBatchItem.getAttributeList(
+                            createRouteIdentifier(fixture.caseId(), index));
+                    case "Revoke" -> createRouteRevokeItem(fixture.caseId(), index);
+                    case "Destroy" -> ClientBatchItem.destroy(createRouteIdentifier(fixture.caseId(), index));
+                    default -> throw new AssertionError("Unsupported catalogued Create batch operation: " + operation);
+                };
+                byte[] uniqueBatchItemId = ("item-" + index).getBytes(StandardCharsets.US_ASCII);
+                try (item) {
+                    ClientBatchItem identified = item.withUniqueBatchItemId(uniqueBatchItemId);
+                    items.add(identified);
+                }
+            }
+            return List.copyOf(items);
+        } catch (Exception failure) {
+            items.forEach(ClientBatchItem::close);
+            throw failure;
+        }
+    }
+
+    private static UniqueIdentifier createRouteIdentifier(String caseId, int itemIndex) {
+        if ("test-batch-undo-rolls-back-prior-success".equals(caseId) && itemIndex == 1) {
+            return UniqueIdentifier.textString("missing-object");
+        }
+        if ("test-batch-create-activate-destroy".equals(caseId)) {
+            return UniqueIdentifier.textString(CREATED_OBJECT_ID);
+        }
+        if ("test-batch-placeholder-forward-reference-rejected".equals(caseId)
+                && itemIndex == 0) {
+            return UniqueIdentifier.enumeration(1);
+        }
+        if (itemIndex > 0) return UniqueIdentifier.enumeration(1);
+        return UniqueIdentifier.textString(CREATED_OBJECT_ID);
+    }
+
+    private static ClientBatchItem createRouteRevokeItem(String caseId, int itemIndex) {
+        try (RevocationReason reason = RevocationReason.create(2, null);
+                RevokeRequest request = RevokeRequest.create(
+                        createRouteIdentifier(caseId, itemIndex), reason, null)) {
+            return ClientBatchItem.revoke(request);
+        }
+    }
+
+    private static boolean isCreateUndoScenario(CreateOperationRouteFixture fixture) {
+        return fixture.batchErrorContinuationOption() != null
+                && fixture.batchErrorContinuationOption()
+                        == org.kmipkit.protocol.KmipValues.BatchErrorContinuationOption.UNDO;
+    }
+
+    private static boolean isCreateOrderedPlaceholderScenario(CreateOperationRouteFixture fixture) {
+        return Boolean.TRUE.equals(fixture.batchOrderOption());
+    }
+
+    private static CreateOperationRouteFixture createScenarioRouteFixture(String caseId, String protocolVersion) {
+        Long asynchronousIndicator = switch (caseId) {
+            case "test-async-indicator-prohibited-synchronous" ->
+                    org.kmipkit.protocol.KmipValues.AsynchronousIndicator.PROHIBITED;
+            case "test-async-indicator-optional-completes-or-pends" ->
+                    org.kmipkit.protocol.KmipValues.AsynchronousIndicator.OPTIONAL;
+            case "test-async-indicator-mandatory-pending" ->
+                    org.kmipkit.protocol.KmipValues.AsynchronousIndicator.MANDATORY;
+            case "test-async-indicator-omitted-default" -> null;
+            default -> caseId.startsWith("test-async-")
+                    ? org.kmipkit.protocol.KmipValues.AsynchronousIndicator.MANDATORY : null;
+        };
+        Boolean batchOrderOption = "test-batch-order-required-placeholder-resolution".equals(caseId)
+                ? Boolean.TRUE : null;
+        Long batchErrorContinuationOption = "test-batch-undo-rolls-back-prior-success".equals(caseId)
+                ? org.kmipkit.protocol.KmipValues.BatchErrorContinuationOption.UNDO : null;
+        List<String> requestPayloadTargetIds = CREATE_ASYNC_INDICATOR_PAYLOAD_CASE_IDS.contains(caseId)
+                ? List.of("KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-20-001",
+                        "KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-21-001")
+                : List.of();
+        return new CreateOperationRouteFixture(caseId, protocolVersion, requestPayloadTargetIds, false,
+                asynchronousIndicator, batchOrderOption, batchErrorContinuationOption,
+                CREATE_PENDING_RESPONSE_CASE_IDS.contains(caseId));
+    }
+
+    private static CreateRouteBatchObservation executeCreateRouteRequest(Path connectionFile,
+            CreateOperationRouteFixture fixture) throws Exception {
+        boolean undoScenario = isCreateUndoScenario(fixture);
+        List<String> operations = createRouteBatchOperations(fixture.caseId());
+        try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile));
+                TtlvStructure attributes = createRouteAttributes();
+                TtlvStructure protectionStorageMasks = fixture.protectionStorageMasksPresent()
+                        ? TtlvStructure.create() : null;
+                ClientBatch batch = ClientBatch.create()) {
+            List<ClientBatchItem> requestItems = createRouteBatchItems(fixture, attributes, protectionStorageMasks);
+            try {
+                if (fixture.asynchronousIndicator() != null) {
+                    batch.asynchronousIndicator(fixture.asynchronousIndicator());
+                }
+                if (fixture.batchOrderOption() != null) batch.ordered(fixture.batchOrderOption());
+                if (fixture.batchErrorContinuationOption() != null) {
+                    batch.addErrorContinuationValue(fixture.batchErrorContinuationOption());
+                }
+                requestItems.forEach(batch::add);
+                try (ClientBatchResponse response = driver.executeBatchForEvidence(batch)) {
+                    if (undoScenario) {
+                        assertEquals(2, response.itemCount());
+                        try (ClientBatchItemResult createResult = response.itemAt(0);
+                                ClientBatchItemResult getResult = response.itemAt(1)) {
+                            assertEquals(1, createResult.operation());
+                            assertEquals(3, createResult.resultStatus());
+                            assertTrue(createResult.createResponse().isEmpty());
+                            assertEquals(0x0aL, getResult.operation());
+                            assertEquals(1, getResult.resultStatus());
+                        }
+                        return observeCreateRouteBatchResponse(response, operations);
+                    }
+                    if (operations.size() > 1) {
+                        assertEquals(operations.size(), response.itemCount());
+                        boolean forwardReferenceScenario =
+                                "test-batch-placeholder-forward-reference-rejected".equals(fixture.caseId());
+                        for (int index = 0; index < operations.size(); index++) {
+                            try (ClientBatchItemResult result = response.itemAt(index)) {
+                                String operation = operations.get(index);
+                                assertEquals(createRouteOperationCode(operation), result.operation());
+                                long expectedStatus = forwardReferenceScenario && "Activate".equals(operation)
+                                        ? 1 : 0;
+                                assertEquals(expectedStatus, result.resultStatus());
+                                if ("Create".equals(operation) && expectedStatus == 0) {
+                                    var payload = result.createResponse().orElseThrow();
+                                    assertEquals(2, payload.objectType());
+                                    assertEquals(CREATED_OBJECT_ID, payload.uniqueIdentifier().text());
+                                }
+                                if (forwardReferenceScenario && "Activate".equals(operation)) {
+                                    assertEquals(0x37L, result.resultReason().orElseThrow());
+                                }
+                            }
+                        }
+                        return observeCreateRouteBatchResponse(response, operations);
+                    }
+                    assertEquals(1, response.itemCount());
+                    try (ClientBatchItemResult item = response.itemAt(0)) {
+                        assertEquals(1, item.operation());
+                        assertEquals(fixture.pendingResponse() ? 2 : 0, item.resultStatus());
+                        if (fixture.pendingResponse()) {
+                            assertArrayEquals(CREATE_PENDING_CORRELATION_VALUE,
+                                    item.pendingCorrelationValue().orElseThrow());
+                            assertTrue(item.createResponse().isEmpty());
+                        } else {
+                            var payload = item.createResponse().orElseThrow();
+                            assertEquals(2, payload.objectType());
+                            assertEquals(CREATED_OBJECT_ID, payload.uniqueIdentifier().text());
+                        }
+                    }
+                    return null;
+                }
+            } finally {
+                requestItems.forEach(ClientBatchItem::close);
+            }
+        }
+    }
+
+    private static CreateRouteBatchObservation observeCreateRouteBatchResponse(
+            ClientBatchResponse response, List<String> requestOperations) throws Exception {
+        var responseOperations = new ArrayList<String>();
+        var resultStatuses = new ArrayList<Integer>();
+        var resultReasons = new ArrayList<Integer>();
+        for (int index = 0; index < response.itemCount(); index++) {
+            try (ClientBatchItemResult item = response.itemAt(index)) {
+                responseOperations.add(createRouteOperationName(item.operation()));
+                resultStatuses.add(Math.toIntExact(item.resultStatus()));
+                if (item.resultReason().isPresent()) {
+                    resultReasons.add(Math.toIntExact(item.resultReason().getAsLong()));
+                }
+            }
+        }
+        return new CreateRouteBatchObservation(requestOperations, requestOperations.size(),
+                Math.toIntExact(response.itemCount()), responseOperations, resultStatuses, resultReasons);
+    }
+
+    private static String createRouteOperationName(long operation) {
+        return switch (Math.toIntExact(operation)) {
+            case 1 -> "Create";
+            case 0x12 -> "Activate";
+            case 0x0c -> "Get Attribute List";
+            case 0x13 -> "Revoke";
+            case 0x14 -> "Destroy";
+            case 0x0a -> "Get";
+            default -> throw new AssertionError("Unexpected typed response operation: " + operation);
+        };
+    }
+
+    private static TtlvStructure createRouteAttributes() {
+        CodecLimits limits = CodecLimits.defaults();
+        TtlvStructure name = TtlvStructure.create();
+        TtlvStructure attributes = null;
+        try {
+            name = appendTtlvItem(name, 0x420055,
+                    TtlvValue.TextString("create-route-key".getBytes(StandardCharsets.UTF_8), limits), limits);
+            name = appendTtlvItem(name, 0x420054, TtlvValue.Enumeration(1), limits);
+            attributes = TtlvStructure.create();
+            attributes = appendTtlvItem(attributes, 0x420053, TtlvValue.structure(name, limits), limits);
+            name.close();
+            name = null;
+            attributes = appendTtlvItem(attributes, 0x420028, TtlvValue.Enumeration(3), limits);
+            attributes = appendTtlvItem(attributes, 0x42002a, TtlvValue.Integer(256), limits);
+            TtlvStructure result = attributes;
+            attributes = null;
+            return result;
+        } finally {
+            if (name != null) name.close();
+            if (attributes != null) attributes.close();
+        }
+    }
+
+    private static byte[] createRouteResponseBytes(int minor, String batchItemId, String encoding,
+            byte[] responseTtlv, boolean pending, boolean undoScenario, boolean multiItemBatchScenario,
+            String caseId, List<String> batchOperations) {
+        return switch (encoding) {
+            case "TTLV" -> responseTtlv;
+            case "JSON" -> (undoScenario ? jsonCreateUndoResponse(minor)
+                    : multiItemBatchScenario ? jsonCreateBatchWorkflowResponse(minor, caseId, batchOperations)
+                    : jsonCreateRouteResponse(minor, batchItemId, pending)).getBytes(StandardCharsets.UTF_8);
+            case "XML" -> (undoScenario ? xmlCreateUndoResponse(minor)
+                    : multiItemBatchScenario ? xmlCreateBatchWorkflowResponse(minor, caseId, batchOperations)
+                    : xmlCreateRouteResponse(minor, batchItemId, pending)).getBytes(StandardCharsets.UTF_8);
+            default -> throw new IllegalArgumentException("Unsupported fixture encoding.");
+        };
+    }
+
+    private static byte[] createBatchWorkflowResponse(int minor, String caseId, List<String> operations)
+            throws Exception {
+        byte[] protocolVersion = structure(0x420069,
+                item(0x42006a, TtlvItemType.Integer.code(), intBytes(2)),
+                item(0x42006b, TtlvItemType.Integer.code(), intBytes(minor)));
+        byte[] header = structure(0x42007a, protocolVersion,
+                item(0x420092, TtlvItemType.DateTime.code(), longBytes(1)),
+                item(0x42000d, TtlvItemType.Integer.code(), intBytes(operations.size())));
+        byte[][] responseItems = new byte[operations.size()][];
+        for (int index = 0; index < operations.size(); index++) {
+            String operation = operations.get(index);
+            boolean forwardReferenceFailure = "test-batch-placeholder-forward-reference-rejected".equals(caseId)
+                    && "Activate".equals(operation);
+            int status = forwardReferenceFailure ? 1 : 0;
+            var fields = new ArrayList<byte[]>();
+            fields.add(item(0x42005c, TtlvItemType.Enumeration.code(),
+                    intBytes(createRouteOperationCode(operation))));
+            fields.add(item(0x420093, TtlvItemType.ByteString.code(),
+                    ("item-" + index).getBytes(StandardCharsets.US_ASCII)));
+            fields.add(item(0x42007f, TtlvItemType.Enumeration.code(), intBytes(status)));
+            if (forwardReferenceFailure) {
+                fields.add(item(0x42007e, TtlvItemType.Enumeration.code(), intBytes(0x37)));
+                fields.add(item(0x42007d, TtlvItemType.TextString.code(),
+                        "forward ID Placeholder did not resolve".getBytes(StandardCharsets.UTF_8)));
+            } else {
+                fields.add(createBatchWorkflowPayload(operation));
+            }
+            responseItems[index] = structure(0x42000f, fields.toArray(byte[][]::new));
+        }
+        byte[][] response = new byte[responseItems.length + 1][];
+        response[0] = header;
+        System.arraycopy(responseItems, 0, response, 1, responseItems.length);
+        return structure(0x42007b, response);
+    }
+
+    private static byte[] createBatchWorkflowPayload(String operation) throws Exception {
+        if ("Get".equals(operation)) return getResponsePayload();
+        List<byte[]> fields = new ArrayList<>();
+        if ("Create".equals(operation)) {
+            fields.add(item(0x420057, TtlvItemType.Enumeration.code(), intBytes(2)));
+        }
+        fields.add(item(0x420094, TtlvItemType.TextString.code(),
+                CREATED_OBJECT_ID.getBytes(StandardCharsets.UTF_8)));
+        if ("Get Attribute List".equals(operation)) {
+            fields.add(item(0x42013b, TtlvItemType.Enumeration.code(), intBytes(0x420053)));
+        }
+        return structure(0x42007c, fields.toArray(byte[][]::new));
+    }
+
+    private static String jsonCreateBatchWorkflowResponse(int minor, String caseId, List<String> operations) {
+        StringBuilder response = new StringBuilder("{\"tag\":\"ResponseMessage\",\"value\":[")
+                .append("{\"tag\":\"ResponseHeader\",\"value\":[")
+                .append("{\"tag\":\"ProtocolVersion\",\"value\":[")
+                .append("{\"tag\":\"ProtocolVersionMajor\",\"type\":\"Integer\",\"value\":2},")
+                .append("{\"tag\":\"ProtocolVersionMinor\",\"type\":\"Integer\",\"value\":")
+                .append(minor).append("}]},")
+                .append("{\"tag\":\"TimeStamp\",\"type\":\"DateTime\",\"value\":\"0x0000000000000001\"},")
+                .append("{\"tag\":\"BatchCount\",\"type\":\"Integer\",\"value\":")
+                .append(operations.size()).append("}]}");
+        for (int index = 0; index < operations.size(); index++) {
+            appendJsonCreateBatchResponseItem(response, operations.get(index), index,
+                    "test-batch-placeholder-forward-reference-rejected".equals(caseId)
+                            && "Activate".equals(operations.get(index)));
+        }
+        return response.append("]}").toString();
+    }
+
+    private static void appendJsonCreateBatchResponseItem(StringBuilder response, String operation,
+            int index, boolean failure) {
+        response.append(",{\"tag\":\"BatchItem\",\"value\":[")
+                .append("{\"tag\":\"Operation\",\"type\":\"Enumeration\",\"value\":\"")
+                .append(createRouteOperationJsonName(operation)).append("\"},")
+                .append("{\"tag\":\"UniqueBatchItemID\",\"type\":\"ByteString\",\"value\":\"")
+                .append(HexFormat.of().formatHex(("item-" + index).getBytes(StandardCharsets.US_ASCII)))
+                .append("\"},{\"tag\":\"ResultStatus\",\"type\":\"Enumeration\",\"value\":\"")
+                .append(failure ? "OperationFailed" : "Success").append("\"");
+        if (failure) {
+            response.append("},{\"tag\":\"ResultReason\",\"type\":\"Enumeration\",\"value\":\"ObjectNotFound\"},")
+                    .append("{\"tag\":\"ResultMessage\",\"type\":\"TextString\",\"value\":\"")
+                    .append("forward ID Placeholder did not resolve\"}");
+        } else {
+            response.append("},{\"tag\":\"ResponsePayload\",\"value\":[")
+                    .append(jsonCreateBatchPayloadFields(operation)).append("]}");
+        }
+        response.append("]}");
+    }
+
+    private static String jsonCreateBatchPayloadFields(String operation) {
+        StringBuilder fields = new StringBuilder();
+        if ("Create".equals(operation) || "Get".equals(operation)) {
+            fields.append("{\"tag\":\"ObjectType\",\"type\":\"Enumeration\",\"value\":\"SymmetricKey\"},");
+        }
+        fields.append("{\"tag\":\"UniqueIdentifier\",\"type\":\"TextString\",\"value\":\"")
+                .append(CREATED_OBJECT_ID).append("\"}");
+        if ("Get Attribute List".equals(operation)) {
+            fields.append(",{\"tag\":\"AttributeReference\",\"type\":\"Enumeration\",\"value\":\"0x00042053\"}");
+        } else if ("Get".equals(operation)) {
+            fields.append(",{\"tag\":\"SymmetricKey\",\"value\":[")
+                    .append("{\"tag\":\"KeyBlock\",\"value\":[")
+                    .append("{\"tag\":\"KeyFormatType\",\"type\":\"Enumeration\",\"value\":\"Raw\"},")
+                    .append("{\"tag\":\"KeyValue\",\"value\":[{\"tag\":\"KeyMaterial\",\"type\":\"ByteString\",\"value\":\"")
+                    .append("5a".repeat(32)).append("\"}]},")
+                    .append("{\"tag\":\"CryptographicAlgorithm\",\"type\":\"Enumeration\",\"value\":\"AES\"},")
+                    .append("{\"tag\":\"CryptographicLength\",\"type\":\"Integer\",\"value\":256}]}]}");
+        }
+        return fields.toString();
+    }
+
+    private static String xmlCreateBatchWorkflowResponse(int minor, String caseId, List<String> operations) {
+        StringBuilder response = new StringBuilder("<ResponseMessage><ResponseHeader><ProtocolVersion>")
+                .append("<ProtocolVersionMajor type=\"Integer\" value=\"2\"/>")
+                .append("<ProtocolVersionMinor type=\"Integer\" value=\"").append(minor).append("\"/>")
+                .append("</ProtocolVersion><TimeStamp type=\"DateTime\" value=\"1970-01-01T00:00:01Z\"/>")
+                .append("<BatchCount type=\"Integer\" value=\"").append(operations.size())
+                .append("\"/></ResponseHeader>");
+        for (int index = 0; index < operations.size(); index++) {
+            String operation = operations.get(index);
+            boolean failure = "test-batch-placeholder-forward-reference-rejected".equals(caseId)
+                    && "Activate".equals(operation);
+            response.append("<BatchItem><Operation type=\"Enumeration\" value=\"")
+                    .append(createRouteOperationXmlName(operation)).append("\"/>")
+                    .append("<UniqueBatchItemID type=\"ByteString\" value=\"")
+                    .append(HexFormat.of().withUpperCase().formatHex(
+                            ("item-" + index).getBytes(StandardCharsets.US_ASCII)))
+                    .append("\"/><ResultStatus type=\"Enumeration\" value=\"")
+                    .append(failure ? "OperationFailed" : "Success").append("\"/>");
+            if (failure) {
+                response.append("<ResultReason type=\"Enumeration\" value=\"ObjectNotFound\"/>")
+                        .append("<ResultMessage type=\"TextString\" value=\"forward ID Placeholder did not resolve\"/>");
+            } else {
+                response.append("<ResponsePayload>").append(xmlCreateBatchPayloadFields(operation))
+                        .append("</ResponsePayload>");
+            }
+            response.append("</BatchItem>");
+        }
+        return response.append("</ResponseMessage>").toString();
+    }
+
+    private static String xmlCreateBatchPayloadFields(String operation) {
+        StringBuilder fields = new StringBuilder();
+        if ("Create".equals(operation) || "Get".equals(operation)) {
+            fields.append("<ObjectType type=\"Enumeration\" value=\"SymmetricKey\"/>");
+        }
+        fields.append("<UniqueIdentifier type=\"TextString\" value=\"")
+                .append(CREATED_OBJECT_ID).append("\"/>");
+        if ("Get Attribute List".equals(operation)) {
+            fields.append("<AttributeReference type=\"Enumeration\" value=\"0x00042053\"/>");
+        } else if ("Get".equals(operation)) {
+            fields.append("<SymmetricKey><KeyBlock><KeyFormatType type=\"Enumeration\" value=\"Raw\"/>")
+                    .append("<KeyValue><KeyMaterial type=\"ByteString\" value=\"")
+                    .append("5A".repeat(32)).append("\"/></KeyValue>")
+                    .append("<CryptographicAlgorithm type=\"Enumeration\" value=\"AES\"/>")
+                    .append("<CryptographicLength type=\"Integer\" value=\"256\"/>")
+                    .append("</KeyBlock></SymmetricKey>");
+        }
+        return fields.toString();
+    }
+
+    private static int createRouteOperationCode(String operation) {
+        return switch (operation) {
+            case "Create" -> 1;
+            case "Activate" -> 0x12;
+            case "Get Attribute List" -> 0x0c;
+            case "Revoke" -> 0x13;
+            case "Destroy" -> 0x14;
+            case "Get" -> 0x0a;
+            default -> throw new AssertionError("Unsupported catalogued batch operation: " + operation);
+        };
+    }
+
+    private static String createRouteOperationJsonName(String operation) {
+        return operation.replace(" ", "");
+    }
+
+    private static String createRouteOperationXmlName(String operation) {
+        return operation.replace(" ", "");
+    }
+
+    private static String jsonCreateUndoResponse(int minor) {
+        return "{\"tag\":\"ResponseMessage\",\"value\":["
+                + "{\"tag\":\"ResponseHeader\",\"value\":["
+                + "{\"tag\":\"ProtocolVersion\",\"value\":["
+                + "{\"tag\":\"ProtocolVersionMajor\",\"type\":\"Integer\",\"value\":2},"
+                + "{\"tag\":\"ProtocolVersionMinor\",\"type\":\"Integer\",\"value\":" + minor + "}]},"
+                + "{\"tag\":\"TimeStamp\",\"type\":\"DateTime\",\"value\":\"0x0000000000000001\"},"
+                + "{\"tag\":\"BatchCount\",\"type\":\"Integer\",\"value\":2}]},"
+                + "{\"tag\":\"BatchItem\",\"value\":["
+                + "{\"tag\":\"Operation\",\"type\":\"Enumeration\",\"value\":\"Create\"},"
+                + "{\"tag\":\"UniqueBatchItemID\",\"type\":\"ByteString\",\"value\":\"6974656d2d30\"},"
+                + "{\"tag\":\"ResultStatus\",\"type\":\"Enumeration\",\"value\":\"OperationUndone\"},"
+                + "{\"tag\":\"ResponsePayload\",\"value\":["
+                + "{\"tag\":\"ObjectType\",\"type\":\"Enumeration\",\"value\":\"SymmetricKey\"},"
+                + "{\"tag\":\"UniqueIdentifier\",\"type\":\"TextString\",\"value\":\""
+                + CREATED_OBJECT_ID + "\"}]}]},"
+                + "{\"tag\":\"BatchItem\",\"value\":["
+                + "{\"tag\":\"Operation\",\"type\":\"Enumeration\",\"value\":\"Get\"},"
+                + "{\"tag\":\"UniqueBatchItemID\",\"type\":\"ByteString\",\"value\":\"6974656d2d31\"},"
+                + "{\"tag\":\"ResultStatus\",\"type\":\"Enumeration\",\"value\":\"OperationFailed\"},"
+                + "{\"tag\":\"ResultReason\",\"type\":\"Enumeration\",\"value\":\"ObjectNotFound\"},"
+                + "{\"tag\":\"ResultMessage\",\"type\":\"TextString\",\"value\":\"missing object\"}]}]}";
+    }
+
+    private static String xmlCreateUndoResponse(int minor) {
+        return "<ResponseMessage><ResponseHeader><ProtocolVersion>"
+                + "<ProtocolVersionMajor type=\"Integer\" value=\"2\"/>"
+                + "<ProtocolVersionMinor type=\"Integer\" value=\"" + minor + "\"/>"
+                + "</ProtocolVersion><TimeStamp type=\"DateTime\" value=\"1970-01-01T00:00:01Z\"/>"
+                + "<BatchCount type=\"Integer\" value=\"2\"/></ResponseHeader>"
+                + "<BatchItem><Operation type=\"Enumeration\" value=\"Create\"/>"
+                + "<UniqueBatchItemID type=\"ByteString\" value=\"6974656D2D30\"/>"
+                + "<ResultStatus type=\"Enumeration\" value=\"OperationUndone\"/><ResponsePayload>"
+                + "<ObjectType type=\"Enumeration\" value=\"SymmetricKey\"/>"
+                + "<UniqueIdentifier type=\"TextString\" value=\"" + CREATED_OBJECT_ID
+                + "\"/></ResponsePayload></BatchItem>"
+                + "<BatchItem><Operation type=\"Enumeration\" value=\"Get\"/>"
+                + "<UniqueBatchItemID type=\"ByteString\" value=\"6974656D2D31\"/>"
+                + "<ResultStatus type=\"Enumeration\" value=\"OperationFailed\"/>"
+                + "<ResultReason type=\"Enumeration\" value=\"ObjectNotFound\"/>"
+                + "<ResultMessage type=\"TextString\" value=\"missing object\"/></BatchItem>"
+                + "</ResponseMessage>";
+    }
+
+    private static String jsonCreateOrderedPlaceholderResponse(int minor) {
+        return "{\"tag\":\"ResponseMessage\",\"value\":["
+                + "{\"tag\":\"ResponseHeader\",\"value\":["
+                + "{\"tag\":\"ProtocolVersion\",\"value\":["
+                + "{\"tag\":\"ProtocolVersionMajor\",\"type\":\"Integer\",\"value\":2},"
+                + "{\"tag\":\"ProtocolVersionMinor\",\"type\":\"Integer\",\"value\":" + minor + "}]},"
+                + "{\"tag\":\"TimeStamp\",\"type\":\"DateTime\",\"value\":\"0x0000000000000001\"},"
+                + "{\"tag\":\"BatchCount\",\"type\":\"Integer\",\"value\":2}]},"
+                + "{\"tag\":\"BatchItem\",\"value\":["
+                + "{\"tag\":\"Operation\",\"type\":\"Enumeration\",\"value\":\"Create\"},"
+                + "{\"tag\":\"UniqueBatchItemID\",\"type\":\"ByteString\",\"value\":\"6974656d2d30\"},"
+                + "{\"tag\":\"ResultStatus\",\"type\":\"Enumeration\",\"value\":\"Success\"},"
+                + "{\"tag\":\"ResponsePayload\",\"value\":["
+                + "{\"tag\":\"ObjectType\",\"type\":\"Enumeration\",\"value\":\"SymmetricKey\"},"
+                + "{\"tag\":\"UniqueIdentifier\",\"type\":\"TextString\",\"value\":\""
+                + CREATED_OBJECT_ID + "\"}]}]},"
+                + "{\"tag\":\"BatchItem\",\"value\":["
+                + "{\"tag\":\"Operation\",\"type\":\"Enumeration\",\"value\":\"Activate\"},"
+                + "{\"tag\":\"UniqueBatchItemID\",\"type\":\"ByteString\",\"value\":\"6974656d2d31\"},"
+                + "{\"tag\":\"ResultStatus\",\"type\":\"Enumeration\",\"value\":\"Success\"},"
+                + "{\"tag\":\"ResponsePayload\",\"value\":["
+                + "{\"tag\":\"UniqueIdentifier\",\"type\":\"TextString\",\"value\":\""
+                + CREATED_OBJECT_ID + "\"}]}]}]}";
+    }
+
+    private static String xmlCreateOrderedPlaceholderResponse(int minor) {
+        return "<ResponseMessage><ResponseHeader><ProtocolVersion>"
+                + "<ProtocolVersionMajor type=\"Integer\" value=\"2\"/>"
+                + "<ProtocolVersionMinor type=\"Integer\" value=\"" + minor + "\"/>"
+                + "</ProtocolVersion><TimeStamp type=\"DateTime\" value=\"1970-01-01T00:00:01Z\"/>"
+                + "<BatchCount type=\"Integer\" value=\"2\"/></ResponseHeader>"
+                + "<BatchItem><Operation type=\"Enumeration\" value=\"Create\"/>"
+                + "<UniqueBatchItemID type=\"ByteString\" value=\"6974656D2D30\"/>"
+                + "<ResultStatus type=\"Enumeration\" value=\"Success\"/><ResponsePayload>"
+                + "<ObjectType type=\"Enumeration\" value=\"SymmetricKey\"/>"
+                + "<UniqueIdentifier type=\"TextString\" value=\"" + CREATED_OBJECT_ID
+                + "\"/></ResponsePayload></BatchItem>"
+                + "<BatchItem><Operation type=\"Enumeration\" value=\"Activate\"/>"
+                + "<UniqueBatchItemID type=\"ByteString\" value=\"6974656D2D31\"/>"
+                + "<ResultStatus type=\"Enumeration\" value=\"Success\"/><ResponsePayload>"
+                + "<UniqueIdentifier type=\"TextString\" value=\"" + CREATED_OBJECT_ID
+                + "\"/></ResponsePayload></BatchItem></ResponseMessage>";
+    }
+
+    private static String jsonCreateRouteResponse(int minor, String batchItemId, boolean pending) {
+        String batchItemIdHex = HexFormat.of().formatHex(batchItemId.getBytes(StandardCharsets.US_ASCII));
+        // OASIS KMIP Profiles v2.1 §§5.5.1.6.7 and 5.5.1.6.11 use CamelCase enums and allow hex DateTime.
+        String resultStatus = pending ? "OperationPending" : "Success";
+        String correlationField = pending
+                ? ",{\"tag\":\"AsynchronousCorrelationValue\",\"type\":\"ByteString\",\"value\":\""
+                        + HexFormat.of().formatHex(CREATE_PENDING_CORRELATION_VALUE) + "\"}"
+                : "";
+        String responsePayload = pending ? "{\"tag\":\"ResponsePayload\",\"value\":[]}"
+                : "{\"tag\":\"ResponsePayload\",\"value\":["
+                + "{\"tag\":\"ObjectType\",\"type\":\"Enumeration\",\"value\":\"SymmetricKey\"},"
+                + "{\"tag\":\"UniqueIdentifier\",\"type\":\"TextString\",\"value\":\""
+                + CREATED_OBJECT_ID + "\"}]}";
+        return "{\"tag\":\"ResponseMessage\",\"value\":["
+                + "{\"tag\":\"ResponseHeader\",\"value\":["
+                + "{\"tag\":\"ProtocolVersion\",\"value\":["
+                + "{\"tag\":\"ProtocolVersionMajor\",\"type\":\"Integer\",\"value\":2},"
+                + "{\"tag\":\"ProtocolVersionMinor\",\"type\":\"Integer\",\"value\":" + minor + "}]},"
+                + "{\"tag\":\"TimeStamp\",\"type\":\"DateTime\",\"value\":\"0x0000000000000001\"},"
+                + "{\"tag\":\"BatchCount\",\"type\":\"Integer\",\"value\":1}]},"
+                + "{\"tag\":\"BatchItem\",\"value\":["
+                + "{\"tag\":\"Operation\",\"type\":\"Enumeration\",\"value\":\"Create\"},"
+                + "{\"tag\":\"UniqueBatchItemID\",\"type\":\"ByteString\",\"value\":\""
+                + batchItemIdHex + "\"},"
+                + "{\"tag\":\"ResultStatus\",\"type\":\"Enumeration\",\"value\":\""
+                + resultStatus + "\"}" + correlationField + ","
+                + responsePayload + "]}]}";
+    }
+
+    private static String xmlCreateRouteResponse(int minor, String batchItemId, boolean pending) {
+        String batchItemIdHex = HexFormat.of().withUpperCase()
+                .formatHex(batchItemId.getBytes(StandardCharsets.US_ASCII));
+        // OASIS KMIP Profiles v2.1 §§5.4.1.1 and 5.4.1.6.7 normalize XML names to CamelCase.
+        String resultStatus = pending ? "OperationPending" : "Success";
+        String correlationField = pending
+                ? "<AsynchronousCorrelationValue type=\"ByteString\" value=\""
+                        + HexFormat.of().withUpperCase().formatHex(CREATE_PENDING_CORRELATION_VALUE)
+                        + "\"/>"
+                : "";
+        String responsePayload = pending ? "<ResponsePayload></ResponsePayload>" : "<ResponsePayload>"
+                + "<ObjectType type=\"Enumeration\" value=\"SymmetricKey\"/>"
+                + "<UniqueIdentifier type=\"TextString\" value=\"" + CREATED_OBJECT_ID
+                + "\"/></ResponsePayload>";
+        return "<ResponseMessage><ResponseHeader><ProtocolVersion>"
+                + "<ProtocolVersionMajor type=\"Integer\" value=\"2\"/>"
+                + "<ProtocolVersionMinor type=\"Integer\" value=\"" + minor + "\"/>"
+                + "</ProtocolVersion><TimeStamp type=\"DateTime\" value=\"1970-01-01T00:00:01Z\"/>"
+                + "<BatchCount type=\"Integer\" value=\"1\"/></ResponseHeader><BatchItem>"
+                + "<Operation type=\"Enumeration\" value=\"Create\"/>"
+                + "<UniqueBatchItemID type=\"ByteString\" value=\"" + batchItemIdHex + "\"/>"
+                + "<ResultStatus type=\"Enumeration\" value=\"" + resultStatus + "\"/>"
+                + correlationField + responsePayload + "</BatchItem></ResponseMessage>";
+    }
+
+    private static void assertCreateRouteRequest(byte[] request, String encoding, String protocolVersion,
+            byte[] batchItemId, CreateOperationRouteFixture fixture) throws Exception {
+        int minor = "2.0".equals(protocolVersion) ? 0 : 1;
+        List<String> operations = createRouteBatchOperations(fixture.caseId());
+        List<String> expectedIdentifiers = createRouteExpectedIdentifiers(fixture.caseId(), operations);
+        List<String> expectedBatchItemIds = new ArrayList<>();
+        for (int index = 0; index < operations.size(); index++) expectedBatchItemIds.add("item-" + index);
+        boolean expectProtectionStorageMasks = fixture.protectionStorageMasksPresent();
+        if ("TTLV".equals(encoding)) {
+            int operationOffset = 0;
+            for (String operation : operations) {
+                byte[] operationItem = item(0x42005c, TtlvItemType.Enumeration.code(),
+                        intBytes(createRouteOperationCode(operation)));
+                int found = indexOfSequence(request, operationItem, operationOffset);
+                assertTrue(found >= operationOffset, "Create batch request operation order must match the catalog.");
+                operationOffset = found + operationItem.length;
+            }
+            assertEquals(minor, requestProtocolMinorVersion(request));
+            assertTrue(contains(request, item(0x42000d, TtlvItemType.Integer.code(),
+                    intBytes(operations.size()))));
+            assertTrue(contains(request, item(0x420057, TtlvItemType.Enumeration.code(), intBytes(2))));
+            assertArrayEquals("item-0".getBytes(StandardCharsets.US_ASCII), batchItemId);
+            for (String id : expectedBatchItemIds) {
+                assertTrue(contains(request, item(0x420093, TtlvItemType.ByteString.code(),
+                        id.getBytes(StandardCharsets.US_ASCII))));
+            }
+            for (String identifier : expectedIdentifiers) {
+                TtlvItemType type = identifier.startsWith("IDPlaceholder")
+                        ? TtlvItemType.Enumeration : TtlvItemType.TextString;
+                byte[] value = type == TtlvItemType.Enumeration ? intBytes(1)
+                        : identifier.getBytes(StandardCharsets.UTF_8);
+                if ("IDPlaceholder(2)".equals(identifier)) value = intBytes(2);
+                assertTrue(contains(request, item(0x420094, type.code(), value)),
+                        "Create route batch must preserve catalogued Unique Identifier " + identifier
+                                + " for case " + fixture.caseId() + ".");
+            }
+            assertEquals(expectProtectionStorageMasks, contains(request, structure(0x42015f)),
+                    "Create must preserve the optional Protection Storage Masks structure.");
+            assertCreateRouteHeaderOptions(request, fixture);
+            assertTrue(contains(request, item(0x420028, TtlvItemType.Enumeration.code(), intBytes(3))),
+                    "Create Attributes must include the selected Cryptographic Algorithm.");
+            assertTrue(contains(request, item(0x42002a, TtlvItemType.Integer.code(), intBytes(256))),
+                    "Create Attributes must include the selected Cryptographic Length.");
+            assertTrue(contains(request, item(0x420055, TtlvItemType.TextString.code(),
+                    "create-route-key".getBytes(StandardCharsets.UTF_8))),
+                    "Create Attributes must include the selected Name value.");
+            return;
+        }
+        String batchItemIdHex = HexFormat.of().formatHex(batchItemId);
+        if ("JSON".equals(encoding)) {
+            JsonNode root = new ObjectMapper().readTree(request);
+            assertEquals("RequestMessage", root.path("tag").asText());
+            assertEquals(operations.stream().map(ControlledTlsPeerTest::createRouteOperationJsonName).toList(),
+                    jsonValuesForTag(root, "Operation").stream()
+                    .map(JsonNode::asText).toList());
+            assertEquals(List.of("SymmetricKey"), jsonValuesForTag(root, "ObjectType").stream()
+                    .map(JsonNode::asText).toList());
+            assertEquals(List.of(minor), jsonValuesForTag(root, "ProtocolVersionMinor").stream()
+                    .map(JsonNode::asInt).toList());
+            assertEquals(expectedBatchItemIds.stream().map(id -> HexFormat.of().formatHex(
+                    id.getBytes(StandardCharsets.US_ASCII))).toList(),
+                    jsonValuesForTag(root, "UniqueBatchItemID").stream()
+                    .map(JsonNode::asText).toList());
+            assertEquals(List.of(operations.size()), jsonValuesForTag(root, "BatchCount").stream()
+                    .map(JsonNode::asInt).toList());
+            assertEquals(expectedIdentifiers.stream().map(identifier -> identifier.startsWith("IDPlaceholder")
+                            ? "IDPlaceholder" : identifier).toList(),
+                    jsonValuesForTag(root, "UniqueIdentifier").stream().map(JsonNode::asText).toList());
+            assertEquals(expectProtectionStorageMasks ? 1 : 0,
+                    jsonValuesForTag(root, "ProtectionStorageMasks").size(),
+                    "Create JSON must preserve the optional Protection Storage Masks structure.");
+            assertCreateRouteHeaderOptions(root, fixture);
+            assertEquals(List.of("AES"), jsonValuesForTag(root, "CryptographicAlgorithm").stream()
+                    .map(JsonNode::asText).toList());
+            assertEquals(List.of(256), jsonValuesForTag(root, "CryptographicLength").stream()
+                    .map(JsonNode::asInt).toList());
+            List<JsonNode> names = jsonValuesForTag(root, "Name");
+            assertEquals(1, names.size());
+            assertEquals(List.of("UninterpretedTextString"), jsonValuesForTag(names.get(0), "NameType").stream()
+                    .map(JsonNode::asText).toList());
+            assertEquals(List.of("create-route-key"), jsonValuesForTag(names.get(0), "NameValue").stream()
+                    .map(JsonNode::asText).toList());
+            return;
+        }
+        String xml = new String(request, StandardCharsets.UTF_8);
+        assertTrue(xml.startsWith("<RequestMessage>"));
+        int operationOffset = 0;
+        for (String operation : operations) {
+            String operationElement = "<Operation type=\"Enumeration\" value=\""
+                    + createRouteOperationXmlName(operation) + "\"/>";
+            int found = xml.indexOf(operationElement, operationOffset);
+            assertTrue(found >= operationOffset, "Create XML batch operation order must match the catalog.");
+            operationOffset = found + operationElement.length();
+        }
+        assertTrue(xml.contains("<ObjectType type=\"Enumeration\" value=\"SymmetricKey\"/>"));
+        assertTrue(xml.contains("<BatchCount type=\"Integer\" value=\"" + operations.size() + "\"/>"));
+        assertTrue(xml.contains("<ProtocolVersionMinor type=\"Integer\" value=\"" + minor + "\"/>"));
+        assertTrue(xml.contains("value=\"" + HexFormat.of().withUpperCase().formatHex(batchItemId) + "\""));
+        for (int index = 1; index < expectedBatchItemIds.size(); index++) {
+            assertTrue(xml.contains("value=\"" + HexFormat.of().withUpperCase().formatHex(
+                    expectedBatchItemIds.get(index).getBytes(StandardCharsets.US_ASCII)) + "\""));
+        }
+        for (String identifier : expectedIdentifiers) {
+            if (identifier.startsWith("IDPlaceholder")) {
+                assertTrue(xml.contains("<UniqueIdentifier type=\"Enumeration\" value=\"IDPlaceholder\"/>"));
+            } else {
+                assertTrue(xml.contains("<UniqueIdentifier type=\"TextString\" value=\"" + identifier + "\"/>"));
+            }
+        }
+        assertEquals(expectProtectionStorageMasks, xml.contains("<ProtectionStorageMasks>"),
+                "Create XML must preserve the optional Protection Storage Masks structure.");
+        assertCreateRouteHeaderOptions(xml, fixture);
+        assertTrue(xml.contains("<CryptographicAlgorithm type=\"Enumeration\" value=\"AES\"/>"));
+        assertTrue(xml.contains("<CryptographicLength type=\"Integer\" value=\"256\"/>"));
+        assertTrue(xml.contains("<Name><NameValue type=\"TextString\" value=\"create-route-key\"/>"
+                + "<NameType type=\"Enumeration\" value=\"UninterpretedTextString\"/></Name>"));
+    }
+
+    private static List<String> createRouteExpectedIdentifiers(String caseId, List<String> operations) {
+        if ("test-batch-undo-rolls-back-prior-success".equals(caseId)) return List.of("missing-object");
+        if ("test-batch-placeholder-forward-reference-rejected".equals(caseId)) {
+            return List.of("IDPlaceholder");
+        }
+        if ("test-batch-create-activate-destroy".equals(caseId)) {
+            return operations.stream().filter(operation -> !"Create".equals(operation))
+                    .map(ignored -> CREATED_OBJECT_ID).toList();
+        }
+        return operations.stream().filter(operation -> !"Create".equals(operation))
+                .map(ignored -> "IDPlaceholder").toList();
+    }
+
+    private static int indexOfSequence(byte[] haystack, byte[] needle, int fromIndex) {
+        for (int index = Math.max(0, fromIndex); index <= haystack.length - needle.length; index++) {
+            boolean matches = true;
+            for (int offset = 0; offset < needle.length; offset++) {
+                if (haystack[index + offset] != needle[offset]) {
+                    matches = false;
+                    break;
+                }
+            }
+            if (matches) return index;
+        }
+        return -1;
+    }
+
+    private static void assertCreateRouteHeaderOptions(byte[] request, CreateOperationRouteFixture fixture)
+            throws Exception {
+        boolean hasAsyncIndicator = false;
+        for (long value = 1; value <= 3; value++) {
+            hasAsyncIndicator |= contains(request, item(0x420007, TtlvItemType.Enumeration.code(),
+                    intBytes(Math.toIntExact(value))));
+        }
+        assertEquals(fixture.asynchronousIndicator() != null, hasAsyncIndicator,
+                "Create fixture must encode exactly its selected Asynchronous Indicator.");
+        boolean hasBatchOrderOption = contains(request,
+                item(0x420010, TtlvItemType.Boolean.code(), longBytes(1)))
+                || contains(request, item(0x420010, TtlvItemType.Boolean.code(), longBytes(0)));
+        assertEquals(fixture.batchOrderOption() != null, hasBatchOrderOption,
+                "Create fixture must encode exactly its selected Batch Order Option.");
+        boolean hasBatchErrorContinuationOption = false;
+        for (long value = 1; value <= 3; value++) {
+            hasBatchErrorContinuationOption |= contains(request,
+                    item(0x42000e, TtlvItemType.Enumeration.code(), intBytes(Math.toIntExact(value))));
+        }
+        assertEquals(fixture.batchErrorContinuationOption() != null, hasBatchErrorContinuationOption,
+                "Create fixture must encode exactly its selected Batch Error Continuation Option.");
+        if (fixture.asynchronousIndicator() != null) {
+            assertTrue(contains(request, item(0x420007, TtlvItemType.Enumeration.code(),
+                    intBytes(Math.toIntExact(fixture.asynchronousIndicator())))));
+        }
+        if (fixture.batchOrderOption() != null) {
+            assertTrue(contains(request, item(0x420010, TtlvItemType.Boolean.code(), longBytes(1))));
+        }
+        if (fixture.batchErrorContinuationOption() != null) {
+            assertTrue(contains(request, item(0x42000e, TtlvItemType.Enumeration.code(),
+                    intBytes(Math.toIntExact(fixture.batchErrorContinuationOption())))));
+        }
+    }
+
+    private static void assertCreateRouteHeaderOptions(JsonNode request, CreateOperationRouteFixture fixture) {
+        assertEquals(fixture.asynchronousIndicator() == null ? List.of()
+                        : List.of(org.kmipkit.protocol.KmipValues.AsynchronousIndicator.name(
+                                fixture.asynchronousIndicator())),
+                jsonValuesForTag(request, "AsynchronousIndicator").stream().map(JsonNode::asText).toList());
+        assertEquals(fixture.batchOrderOption() == null ? List.of() : List.of(fixture.batchOrderOption()),
+                jsonValuesForTag(request, "BatchOrderOption").stream().map(JsonNode::asBoolean).toList());
+        assertEquals(fixture.batchErrorContinuationOption() == null ? List.of() : List.of("Undo"),
+                jsonValuesForTag(request, "BatchErrorContinuationOption").stream().map(JsonNode::asText).toList());
+    }
+
+    private static void assertCreateRouteHeaderOptions(String request, CreateOperationRouteFixture fixture) {
+        assertEquals(fixture.asynchronousIndicator() == null,
+                !request.contains("<AsynchronousIndicator type=\"Enumeration\" value="),
+                "Create fixture must encode exactly its selected Asynchronous Indicator.");
+        if (fixture.asynchronousIndicator() != null) {
+            String value = org.kmipkit.protocol.KmipValues.AsynchronousIndicator.name(
+                    fixture.asynchronousIndicator());
+            assertTrue(request.contains("<AsynchronousIndicator type=\"Enumeration\" value=\"" + value + "\"/>"));
+        }
+        assertEquals(fixture.batchOrderOption() == null,
+                !request.contains("<BatchOrderOption type=\"Boolean\" value="),
+                "Create fixture must encode exactly its selected Batch Order Option.");
+        if (fixture.batchOrderOption() != null) {
+            assertTrue(request.contains("<BatchOrderOption type=\"Boolean\" value=\"true\"/>"));
+        }
+        assertEquals(fixture.batchErrorContinuationOption() == null,
+                !request.contains("<BatchErrorContinuationOption type=\"Enumeration\" value="),
+                "Create fixture must encode exactly its selected Batch Error Continuation Option.");
+        if (fixture.batchErrorContinuationOption() != null) {
+            assertTrue(request.contains("<BatchErrorContinuationOption type=\"Enumeration\" value=\"Undo\"/>"));
+        }
+    }
+
+    private static void assertLoginLeaseTimeDateTimeRouteCoverage(ArrayNode events) {
+        for (LoginLeaseTimeDateTimeRouteFixture fixture : LOGIN_LEASE_TIME_DATE_TIME_ROUTE_FIXTURES) {
+            String routeId = "java.typed-protocol.client_batch_item." + fixture.operation();
+            for (String encoding : List.of("TTLV", "JSON", "XML")) {
+                for (String transport : List.of("raw_tls", "https")) {
+                    for (String action : List.of("construct", "send")) {
+                        long matches = events.findParents("action").stream()
+                                .filter(event -> fixture.caseId().equals(event.path("case_id").asText())
+                                        && fixture.targetId().equals(event.path("target_id").asText())
+                                        && routeId.equals(event.path("route_id").asText())
+                                        && fixture.protocolVersion().equals(
+                                                event.path("protocol_version").asText())
+                                        && encoding.equals(event.path("encoding").asText())
+                                        && transport.equals(event.path("transport").asText())
+                                        && action.equals(event.path("action").asText())
+                                        && fixture.publicApiSymbol().equals(
+                                                event.path("public_api_symbol").asText()))
+                                .count();
+                        assertEquals(1L, matches, "Missing or duplicate Login Lease Time Date Time evidence for "
+                                + fixture.caseId() + " / " + encoding + " / " + transport + " / " + action);
+                    }
+                }
+            }
+        }
+    }
+
+    private static void assertCreateOperationNetworkRouteCoverage(ArrayNode events) throws Exception {
+        for (CreateOperationRouteFixture fixture : CREATE_OPERATION_ROUTE_FIXTURES) {
+            assertNetworkRouteEvidence(events, fixture.caseId(), "KMIPKIT-ELEM-OP-C2S-CREATE",
+                    fixture.protocolVersion(), NETWORK_ROUTE_ACTIONS, "Create client batch",
+                    createWorkflowIdentity(fixture.caseId()));
+            for (String targetId : fixture.requestPayloadTargetIds()) {
+                assertNetworkRouteEvidence(events, fixture.caseId(), targetId,
+                        fixture.protocolVersion(), List.of("construct", "send"), "Create request payload");
+            }
+        }
+        for (CreateRequestPayloadFixture fixture : CREATE_REQUEST_PAYLOAD_FIXTURES) {
+            assertNetworkRouteEvidence(events, fixture.caseId(), fixture.targetId(),
+                    fixture.protocolVersion(), List.of("construct", "send"), "Create request payload");
+        }
+    }
+
+    private static void assertNetworkRouteEvidence(ArrayNode events, String caseId, String targetId,
+            String protocolVersion, List<String> actions, String description) throws Exception {
+        assertNetworkRouteEvidence(events, caseId, targetId, protocolVersion, actions, description, null);
+    }
+
+    private static void assertNetworkRouteEvidence(ArrayNode events, String caseId, String targetId,
+            String protocolVersion, List<String> actions, String description,
+            CreateWorkflowIdentity workflowIdentity) throws Exception {
+        for (String encoding : CREATE_ROUTE_ENCODINGS) {
+            for (String transport : CREATE_ROUTE_TRANSPORTS) {
+                for (String action : actions) {
+                    boolean present = events.valueStream().anyMatch(event ->
+                            caseId.equals(event.path("case_id").asText())
+                                    && "java.typed-protocol.client_batch_item.create"
+                                            .equals(event.path("route_id").asText())
+                                    && targetId.equals(event.path("target_id").asText())
+                                    && protocolVersion.equals(event.path("protocol_version").asText())
+                                    && encoding.equals(event.path("encoding").asText())
+                                    && transport.equals(event.path("transport").asText())
+                                    && action.equals(event.path("action").asText())
+                                    && workflowIdentityMatches(event, workflowIdentity));
+                    assertTrue(present, "Missing " + description + " route evidence for " + caseId + " / "
+                            + protocolVersion + " / " + encoding + " / " + transport + " / " + action);
+                }
+            }
+        }
+    }
+
+    private static boolean workflowIdentityMatches(JsonNode event, CreateWorkflowIdentity identity) {
+        return workflowFieldMatches(event, "workflow_step_index", identity == null ? null : identity.stepIndex())
+                && workflowFieldMatches(event, "workflow_operation", identity == null ? null : identity.operation())
+                && workflowFieldMatches(event, "workflow_item_index", identity == null ? null : identity.itemIndex());
+    }
+
+    private static boolean workflowFieldMatches(JsonNode event, String field, Object expected) {
+        if (expected == null) return !event.has(field);
+        return expected instanceof Integer value ? event.path(field).isInt() && event.path(field).asInt() == value
+                : expected.equals(event.path(field).asText());
+    }
+
     private static void assertPingVersionBoundaryRouteCoverage(ArrayNode events) {
         for (String encoding : List.of("TTLV", "JSON", "XML")) {
             for (String transport : List.of("raw_tls", "https")) {
@@ -9161,16 +10827,16 @@ class ControlledTlsPeerTest {
         byte[] secondGroupValue = "kmipkit-object-group-2".getBytes(StandardCharsets.UTF_8);
         byte[] firstGroup = textItem(objectGroupTag, firstGroupText);
         byte[] secondGroup = textItem(objectGroupTag, "kmipkit-object-group-2");
-        try (TtlvItem absentGroups = TtlvCodec.decode(structure(0x420126));
+        try (TtlvItem absentGroups = TtlvCodec.decode(structure(0x420166));
                 var absentView = absentGroups.view();
                 var absentValue = absentView.value();
                 var absentMembers = absentValue.structure();
-                TtlvItem repeatedGroups = TtlvCodec.decode(structure(0x420126, firstGroup, secondGroup));
+                TtlvItem repeatedGroups = TtlvCodec.decode(structure(0x420166, firstGroup, secondGroup));
                 var repeatedView = repeatedGroups.view();
                 var repeatedValue = repeatedView.value();
                 var repeatedMembers = repeatedValue.structure()) {
             try (Tag tag = absentView.tag()) {
-                assertEquals(0x420126, tag.raw());
+                assertEquals(0x420166, tag.raw());
             }
             assertEquals(0, absentMembers.itemCount(), "Object Group is optional in Object Groups.");
             assertEquals(2, repeatedMembers.itemCount(), "Object Group may be repeated.");
@@ -9313,11 +10979,26 @@ class ControlledTlsPeerTest {
         }
         StructureMemberByteStringFixture queryFilterFixture = STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.stream()
                 .filter(StructureMemberByteStringFixture::typedQueryFilter).findFirst().orElseThrow();
-        appendRouteEvent(events, queryFilterFixture.caseId(),
+        appendQueryAsyncCorrelationValuesRouteEvent(events, queryFilterFixture.caseId(),
+                queryFilterFixture.targetId(), typedPayloadHash);
+        appendQueryAsyncCorrelationValuesRouteEvent(events,
+                "test-norm-operation-structure-operation-structure-7-1-asynchronous-correlation-values",
+                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-1-ASYNCHRONOUS-CORRELATION-VALUES", typedPayloadHash);
+        assertRouteEventRecorded(events,
+                "test-norm-operation-structure-operation-structure-7-1-asynchronous-correlation-values",
+                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-1-ASYNCHRONOUS-CORRELATION-VALUES",
                 "java.typed-protocol.model.org.kmipkit.extensions.queryasyncrequestsrequest"
-                        + ".withcorrelationvalues", queryFilterFixture.targetId(),
-                "org.kmipkit.extensions.QueryAsyncRequestsRequest.withCorrelationValues", null, null,
-                "construct", "2.1", null, typedPayloadHash, null);
+                        + ".withcorrelationvalues",
+                "construct", "2.1");
+    }
+
+    private static void appendQueryAsyncCorrelationValuesRouteEvent(ArrayNode events, String caseId,
+            String targetId, String payloadHash) {
+        appendRouteEvent(events, caseId,
+                "java.typed-protocol.model.org.kmipkit.extensions.queryasyncrequestsrequest"
+                        + ".withcorrelationvalues",
+                targetId, "org.kmipkit.extensions.QueryAsyncRequestsRequest.withCorrelationValues",
+                null, null, "construct", "2.1", null, payloadHash, null);
     }
 
     // OASIS KMIP 2.1 §7.2 Table 353: these required Asynchronous Request fields use their §11.56 tags.
@@ -10113,7 +11794,7 @@ class ControlledTlsPeerTest {
 
     // OASIS KMIP 2.1 §7.24 Table 376: Object Type is optional and may be repeated.
     private static void appendObjectTypeMemberRouteEvents(ArrayNode events) throws Exception {
-        int objectTypesTag = 0x420125;
+        int objectTypesTag = 0x420167;
         int objectTypeTag = 0x420057;
         long firstObjectType = KmipValues.ObjectType.SYMMETRIC_KEY;
         long secondObjectType = KmipValues.ObjectType.PUBLIC_KEY;
@@ -12343,6 +14024,63 @@ class ControlledTlsPeerTest {
 
     private static byte[] createResponse() throws Exception {
         return createResponse(1);
+    }
+
+    private static byte[] createPendingCreateResponse(int protocolMinorVersion) throws Exception {
+        byte[] protocolVersion = structure(0x420069,
+                item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(protocolMinorVersion)));
+        byte[] header = structure(0x42007a, protocolVersion,
+                item(0x420092, 9, longBytes(1)), item(0x42000d, 2, intBytes(1)));
+        byte[] responseItem = structure(0x42000f,
+                item(0x42005c, 5, intBytes(1)),
+                item(0x420093, 8, "item-0".getBytes(StandardCharsets.US_ASCII)),
+                item(0x42007f, 5, intBytes(2)),
+                item(0x420006, 8, CREATE_PENDING_CORRELATION_VALUE), structure(0x42007c));
+        return structure(0x42007b, header, responseItem);
+    }
+
+    // OASIS KMIP 2.0/2.1 §8.6 and KMIP 2.1 §6.1.8 Table 187: OperationUndone Create retains its response fields.
+    private static byte[] createUndoCreateResponse(int protocolMinorVersion) throws Exception {
+        byte[] protocolVersion = structure(0x420069,
+                item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(protocolMinorVersion)));
+        byte[] header = structure(0x42007a, protocolVersion,
+                item(0x420092, 9, longBytes(1)), item(0x42000d, 2, intBytes(2)));
+        byte[] createItem = structure(0x42000f,
+                item(0x42005c, 5, intBytes(1)),
+                item(0x420093, 8, "item-0".getBytes(StandardCharsets.US_ASCII)),
+                item(0x42007f, 5, intBytes(3)),
+                structure(0x42007c,
+                        item(0x420057, 5, intBytes(2)),
+                        item(0x420094, 7, CREATED_OBJECT_ID.getBytes(StandardCharsets.UTF_8))));
+        byte[] getItem = structure(0x42000f,
+                item(0x42005c, 5, intBytes(0x0a)),
+                item(0x420093, 8, "item-1".getBytes(StandardCharsets.US_ASCII)),
+                item(0x42007f, 5, intBytes(1)),
+                item(0x42007e, 5, intBytes(0x37)),
+                item(0x42007d, 7, "missing object".getBytes(StandardCharsets.UTF_8)));
+        return structure(0x42007b, header, createItem, getItem);
+    }
+
+    // OASIS KMIP 2.0/2.1 §§8.1–8.6 and §6.1.1: Activate uses the preceding Create's IDPlaceholder.
+    private static byte[] createOrderedPlaceholderResponse(int protocolMinorVersion) throws Exception {
+        byte[] protocolVersion = structure(0x420069,
+                item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(protocolMinorVersion)));
+        byte[] header = structure(0x42007a, protocolVersion,
+                item(0x420092, 9, longBytes(1)), item(0x42000d, 2, intBytes(2)));
+        byte[] createItem = structure(0x42000f,
+                item(0x42005c, 5, intBytes(1)),
+                item(0x420093, 8, "item-0".getBytes(StandardCharsets.US_ASCII)),
+                item(0x42007f, 5, intBytes(0)),
+                structure(0x42007c,
+                        item(0x420057, 5, intBytes(2)),
+                        item(0x420094, 7, CREATED_OBJECT_ID.getBytes(StandardCharsets.UTF_8))));
+        byte[] activateItem = structure(0x42000f,
+                item(0x42005c, 5, intBytes(0x12)),
+                item(0x420093, 8, "item-1".getBytes(StandardCharsets.US_ASCII)),
+                item(0x42007f, 5, intBytes(0)),
+                structure(0x42007c,
+                        item(0x420094, 7, CREATED_OBJECT_ID.getBytes(StandardCharsets.UTF_8))));
+        return structure(0x42007b, header, createItem, activateItem);
     }
 
     private static byte[] createResponse(int protocolMinorVersion) throws Exception {

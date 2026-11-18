@@ -708,3 +708,99 @@ branches, and the common CI therefore reports a planned matrix only.
   validates 34,850/34,850 cells with zero failures; ledger comparison and the
   1,507-route capability audit pass. The full ledger has 36,791 pending of
   71,641. Full closure and exact-head CI remain open; #217 stays WIP.
+
+- Red `7288a8643` requires all six version-boundary cases to execute the
+  generic Operation Item construction, view, and decode routes. Green
+  `2843cdfe3` resolves the 2.1 operation target for the local TTLV fixture
+  while retaining the case's 2.0 context; the unsupported requests are not sent.
+- The Java suite passes 91/91; selected evidence validates 34,834/34,834 cells
+  with zero failures; ledger comparison and the 1,507-route capability audit
+  pass. The full ledger has 71,641 planned, 34,834 executed, and 36,807 pending.
+- Full matrix closure and exact-head CI remain open; #187 stays WIP.
+
+## 2026-11-18 Java typed response accessor cells
+
+- Added regression assertions for Create `createResponse` and Get Attributes
+  `getAttributesResponse` against the exact catalog case/target/version IDs.
+  The Red test failed because the Get Attributes response payload cell had no
+  event. Existing controlled peers invoked both typed accessors and checked
+  their response fields; Green records their local response-accessor routes
+  only after those assertions.
+- Red `3f693875f`, Green `ac70df877`, Refactor `72e695c22`. Full Java suite:
+  95 passed, 0 failures/errors/skips. Selected scope: 42,869/42,869, 0 failed;
+  ledger comparison passes. Route capability audit: 1,507. Generated ledger:
+  71,641 planned, 42,869 executed, 28,772 pending.
+- The matrix checker and current CI still use selected-scope completeness.
+  This does not meet the active objective's full-matrix requirement. Keep the
+  Java stack WIP and continue implementing pending case recipes; later change
+  the exact-head CI gate to require full-matrix completeness.
+
+## 2026-11-18 Java full-matrix CI gate
+
+- Red `91aa2652c` proves the Java workflow incorrectly invokes the
+  `--selected-scope` mode. Green `73e399806` removes it and permits full-mode
+  ledger output only after `validate_collection` checks every Java matrix
+  cell. Refactor `103ca958a` shares ledger-writing summary construction.
+- 49 targeted Python tests pass across route evidence, Java workflow contracts,
+  and ledger comparison. Running the actual full-mode CLI against the current
+  report fails on missing async, TTLV, and transport route cells as expected;
+  this confirms the new gate exposes the remaining work. Keep the PR WIP and
+  continue until the full report passes, then verify exact-head hosted CI.
+
+## Audit of previously emitted Java local evidence
+
+- Independent audit found potentially invalid executed cells that must be
+  corrected before treating prior counts as trustworthy: KMIP 2.1 Object
+  Groups/Object Types operation-structure fixtures use tags 0x420126/0x420125
+  instead of 0x420166/0x420167; Locate Object Group Member is Text String
+  instead of Enumeration; Offset and Lease Time are Integer instead of
+  Interval; Create Split Key Prime Field Size is Integer 8 instead of a
+  Big Integer prime; Check Lease Time is Integer instead of Interval.
+- The Protocol Version Minor scalar fixture also uses value 1 in a KMIP 2.0
+  context, where the wire value is 0. Structure-valued tag-only fixtures use
+  empty values, which does not invalidate tag identity but does not prove a
+  semantically valid complete Attribute.
+- Manual Big Integer wires for Split Key Prime Field Size and transparent key
+  material use item Length values not divisible by eight, contrary to the
+  pinned TTLV rule.
+
+## 2026-11-18 Java fixture integrity corrections
+
+- Red `9ef316a30`, Green `0fa84b23c`, and Refactor `48ee087f7` corrected the
+  KMIP 2.1 Object Groups/Object Types tags, Protocol Version Minor for KMIP
+  2.0, scalar TTLV types, Big Integer item-length alignment/sign extension,
+  and the Split Key Prime Field Size fixture. Separate Split Key bound cycle:
+  Red `73e71a69c`, Green `95eef8546`, Refactor `48ee087f7`; Prime Field Size is
+  `2^127 - 1`, a prime greater than `2^L` for the 32-bit synthetic secret
+  required by KMIP 2.1 §2.8.
+- The full Java suite passes 106/106 tests. Fresh evidence validates all
+  42,875 selected-scope cells with zero failures; the generated ledger reports
+  42,875/71,641 overall, 28,766 pending, and `complete_matrix=false`. The
+  reference ledger was refreshed through `compare_route_ledger.py` and matches
+  the generated ledger.
+- The regenerated artifact changes 814 existing evidence hashes after the
+  invalid wire fixtures were corrected. This improves the integrity of the
+  recorded events; it does not complete the pending route matrix.
+- For Login and Delegated Login, KMIP 2.0 §6.1.12/§6.1.29 and KMIP 2.1
+  §6.1.12/§6.1.30 describe Lease Time as an Interval or Date Time. Current
+  evidence exercises only the Interval form for those fields; Date Time must
+  not be inferred from the current cell count. The full stack remains WIP.
+
+## 2026-11-18 Java Create and Lease Time Date Time routes
+
+- Create client-batch-item routes now exercise the catalogued Create workflows
+  for 1,200/1,200 cells. Login and Delegated Login Lease Time Date Time
+  alternatives now exercise all four operation/version targets across 24
+  controlled exchanges; the matrix comparison found 48/48 construct/send
+  cells with no missing or extra events.
+- Red `648f7f420`, Green `687132735`, and Refactor `3b1f2ebef` cover the Date
+  Time request fields. The Java suite passes 109/109 tests; selected-scope
+  evidence validates 43,903 cells with zero failures, including 16 explicit
+  not-applicable cells. The ledger records 71,945 planned, 43,903 executed,
+  and 28,042 pending cells; the full matrix remains incomplete.
+- Regenerated `route-capabilities.json` adds four Rust Lease Time model routes
+  discovered when the shared catalog added its Date Time and Interval targets.
+  `route_capabilities.py --check` passes with 1,511 routes, and its focused
+  shared suite passes 68 tests plus 503 subtests. The ledger comparison passes.
+- These controlled TLS runs establish fixture-level route evidence, not
+  external KMS interoperability. Keep #187, #216, and #217 WIP.

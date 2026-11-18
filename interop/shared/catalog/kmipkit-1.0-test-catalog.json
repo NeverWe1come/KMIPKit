@@ -21,8 +21,8 @@
     "batch_scenarios": 17,
     "asynchronous_scenarios": 17,
     "exhaustive_bitmask_families": 3,
-    "normative_targets": 2560,
-    "total_cases": 2689
+    "normative_targets": 2568,
+    "total_cases": 2697
   },
   "normative_targets": [
     {
@@ -36617,8 +36617,55 @@
       "description": "The lease time Interval or Date Time for the ticket.",
       "branch_classes": [
         "present",
-        "omitted"
+        "omitted",
+        "value_type_alternatives"
+      ],
+      "value_type_alternatives": [
+        "Interval",
+        "Date Time"
       ]
+    },
+    {
+      "target_id": "KMIPKIT-PAYLOAD-CLIENT-DELEGATED-LOGIN-REQUEST-20-001-TYPE-INTERVAL",
+      "kind": "operation_payload_value_variant",
+      "name": "Lease Time (Interval)",
+      "protocol_versions": [
+        "2.0"
+      ],
+      "source_refs": [
+        {
+          "section": "6.1.12",
+          "table": "184"
+        }
+      ],
+      "operation_id": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "operation": "Delegated Login",
+      "direction": "client_to_server",
+      "role": "request",
+      "field_name": "Lease Time",
+      "value_type": "Interval",
+      "parent_target_id": "KMIPKIT-PAYLOAD-CLIENT-DELEGATED-LOGIN-REQUEST-20-001"
+    },
+    {
+      "target_id": "KMIPKIT-PAYLOAD-CLIENT-DELEGATED-LOGIN-REQUEST-20-001-TYPE-DATE-TIME",
+      "kind": "operation_payload_value_variant",
+      "name": "Lease Time (Date Time)",
+      "protocol_versions": [
+        "2.0"
+      ],
+      "source_refs": [
+        {
+          "section": "6.1.12",
+          "table": "184"
+        }
+      ],
+      "operation_id": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "operation": "Delegated Login",
+      "direction": "client_to_server",
+      "role": "request",
+      "field_name": "Lease Time",
+      "value_type": "Date Time",
+      "parent_target_id": "KMIPKIT-PAYLOAD-CLIENT-DELEGATED-LOGIN-REQUEST-20-001"
     },
     {
       "target_id": "KMIPKIT-PAYLOAD-CLIENT-DELEGATED-LOGIN-REQUEST-20-002",
@@ -36742,8 +36789,55 @@
       "description": "The lease time Interval or Date Time for the ticket.",
       "branch_classes": [
         "present",
-        "omitted"
+        "omitted",
+        "value_type_alternatives"
+      ],
+      "value_type_alternatives": [
+        "Interval",
+        "Date Time"
       ]
+    },
+    {
+      "target_id": "KMIPKIT-PAYLOAD-CLIENT-DELEGATED-LOGIN-REQUEST-21-001-TYPE-INTERVAL",
+      "kind": "operation_payload_value_variant",
+      "name": "Lease Time (Interval)",
+      "protocol_versions": [
+        "2.1"
+      ],
+      "source_refs": [
+        {
+          "section": "6.1.12",
+          "table": "199"
+        }
+      ],
+      "operation_id": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "operation": "Delegated Login",
+      "direction": "client_to_server",
+      "role": "request",
+      "field_name": "Lease Time",
+      "value_type": "Interval",
+      "parent_target_id": "KMIPKIT-PAYLOAD-CLIENT-DELEGATED-LOGIN-REQUEST-21-001"
+    },
+    {
+      "target_id": "KMIPKIT-PAYLOAD-CLIENT-DELEGATED-LOGIN-REQUEST-21-001-TYPE-DATE-TIME",
+      "kind": "operation_payload_value_variant",
+      "name": "Lease Time (Date Time)",
+      "protocol_versions": [
+        "2.1"
+      ],
+      "source_refs": [
+        {
+          "section": "6.1.12",
+          "table": "199"
+        }
+      ],
+      "operation_id": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "operation": "Delegated Login",
+      "direction": "client_to_server",
+      "role": "request",
+      "field_name": "Lease Time",
+      "value_type": "Date Time",
+      "parent_target_id": "KMIPKIT-PAYLOAD-CLIENT-DELEGATED-LOGIN-REQUEST-21-001"
     },
     {
       "target_id": "KMIPKIT-PAYLOAD-CLIENT-DELEGATED-LOGIN-REQUEST-21-002",
@@ -41702,8 +41796,55 @@
       "description": "The lease time Interval or Date Time for the ticket",
       "branch_classes": [
         "present",
-        "omitted"
+        "omitted",
+        "value_type_alternatives"
+      ],
+      "value_type_alternatives": [
+        "Interval",
+        "Date Time"
       ]
+    },
+    {
+      "target_id": "KMIPKIT-PAYLOAD-CLIENT-LOGIN-REQUEST-20-001-TYPE-INTERVAL",
+      "kind": "operation_payload_value_variant",
+      "name": "Lease Time (Interval)",
+      "protocol_versions": [
+        "2.0"
+      ],
+      "source_refs": [
+        {
+          "section": "6.1.29",
+          "table": "235"
+        }
+      ],
+      "operation_id": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+      "operation": "Login",
+      "direction": "client_to_server",
+      "role": "request",
+      "field_name": "Lease Time",
+      "value_type": "Interval",
+      "parent_target_id": "KMIPKIT-PAYLOAD-CLIENT-LOGIN-REQUEST-20-001"
+    },
+    {
+      "target_id": "KMIPKIT-PAYLOAD-CLIENT-LOGIN-REQUEST-20-001-TYPE-DATE-TIME",
+      "kind": "operation_payload_value_variant",
+      "name": "Lease Time (Date Time)",
+      "protocol_versions": [
+        "2.0"
+      ],
+      "source_refs": [
+        {
+          "section": "6.1.29",
+          "table": "235"
+        }
+      ],
+      "operation_id": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+      "operation": "Login",
+      "direction": "client_to_server",
+      "role": "request",
+      "field_name": "Lease Time",
+      "value_type": "Date Time",
+      "parent_target_id": "KMIPKIT-PAYLOAD-CLIENT-LOGIN-REQUEST-20-001"
     },
     {
       "target_id": "KMIPKIT-PAYLOAD-CLIENT-LOGIN-REQUEST-20-002",
@@ -41802,8 +41943,55 @@
       "description": "The lease time Interval or Date Time for the ticket",
       "branch_classes": [
         "present",
-        "omitted"
+        "omitted",
+        "value_type_alternatives"
+      ],
+      "value_type_alternatives": [
+        "Interval",
+        "Date Time"
       ]
+    },
+    {
+      "target_id": "KMIPKIT-PAYLOAD-CLIENT-LOGIN-REQUEST-21-001-TYPE-INTERVAL",
+      "kind": "operation_payload_value_variant",
+      "name": "Lease Time (Interval)",
+      "protocol_versions": [
+        "2.1"
+      ],
+      "source_refs": [
+        {
+          "section": "6.1.30",
+          "table": "253"
+        }
+      ],
+      "operation_id": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+      "operation": "Login",
+      "direction": "client_to_server",
+      "role": "request",
+      "field_name": "Lease Time",
+      "value_type": "Interval",
+      "parent_target_id": "KMIPKIT-PAYLOAD-CLIENT-LOGIN-REQUEST-21-001"
+    },
+    {
+      "target_id": "KMIPKIT-PAYLOAD-CLIENT-LOGIN-REQUEST-21-001-TYPE-DATE-TIME",
+      "kind": "operation_payload_value_variant",
+      "name": "Lease Time (Date Time)",
+      "protocol_versions": [
+        "2.1"
+      ],
+      "source_refs": [
+        {
+          "section": "6.1.30",
+          "table": "253"
+        }
+      ],
+      "operation_id": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+      "operation": "Login",
+      "direction": "client_to_server",
+      "role": "request",
+      "field_name": "Lease Time",
+      "value_type": "Date Time",
+      "parent_target_id": "KMIPKIT-PAYLOAD-CLIENT-LOGIN-REQUEST-21-001"
     },
     {
       "target_id": "KMIPKIT-PAYLOAD-CLIENT-LOGIN-REQUEST-21-002",
@@ -155703,7 +155891,8 @@
         "requiredness": "No",
         "branch_classes": [
           "present",
-          "omitted"
+          "omitted",
+          "value_type_alternatives"
         ],
         "source_table": "184"
       },
@@ -155733,11 +155922,111 @@
           "construct_each_declared_field_branch",
           "encode_ttlv",
           "decode_ttlv",
-          "reject_prohibited_branch"
+          "reject_prohibited_branch",
+          "exercise_each_declared_value_type_variant"
         ],
         "assertions": [
           "every_branch_class_exercised",
-          "field_shape_matches_normative_source"
+          "field_shape_matches_normative_source",
+          "each_declared_value_type_variant_exercised"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
+      }
+    },
+    {
+      "case_id": "test-norm-payload-client-delegated-login-request-20-001-type-interval",
+      "category": "normative_inventory",
+      "operation": "Delegated Login",
+      "oasis_section": "6.1.12",
+      "description": "Construct Lease Time as a Interval in the Delegated Login request payload for KMIP 2.0.",
+      "requires": {
+        "normative_target_id": "KMIPKIT-PAYLOAD-CLIENT-DELEGATED-LOGIN-REQUEST-20-001-TYPE-INTERVAL",
+        "target_kind": "operation_payload_value_variant",
+        "target_protocol_versions": [
+          "2.0"
+        ],
+        "operation_id": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+        "payload_role": "request",
+        "field_name": "Lease Time",
+        "value_type": "Interval",
+        "parent_target_id": "KMIPKIT-PAYLOAD-CLIENT-DELEGATED-LOGIN-REQUEST-20-001",
+        "source_table": "184"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-payload-delegated-login",
+        "setup_steps": [],
+        "target_step": "Construct and roundtrip Lease Time as Interval",
+        "teardown_steps": []
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.12"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0"
+        ],
+        "steps": [
+          "construct_field_with_exact_declared_ttlv_type",
+          "encode_ttlv",
+          "decode_ttlv"
+        ],
+        "assertions": [
+          "field_ttlv_type_matches_normative_variant",
+          "normalized_tree_preserves_type_and_value"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
+      }
+    },
+    {
+      "case_id": "test-norm-payload-client-delegated-login-request-20-001-type-date-time",
+      "category": "normative_inventory",
+      "operation": "Delegated Login",
+      "oasis_section": "6.1.12",
+      "description": "Construct Lease Time as a Date Time in the Delegated Login request payload for KMIP 2.0.",
+      "requires": {
+        "normative_target_id": "KMIPKIT-PAYLOAD-CLIENT-DELEGATED-LOGIN-REQUEST-20-001-TYPE-DATE-TIME",
+        "target_kind": "operation_payload_value_variant",
+        "target_protocol_versions": [
+          "2.0"
+        ],
+        "operation_id": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+        "payload_role": "request",
+        "field_name": "Lease Time",
+        "value_type": "Date Time",
+        "parent_target_id": "KMIPKIT-PAYLOAD-CLIENT-DELEGATED-LOGIN-REQUEST-20-001",
+        "source_table": "184"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-payload-delegated-login",
+        "setup_steps": [],
+        "target_step": "Construct and roundtrip Lease Time as Date Time",
+        "teardown_steps": []
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.12"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0"
+        ],
+        "steps": [
+          "construct_field_with_exact_declared_ttlv_type",
+          "encode_ttlv",
+          "decode_ttlv"
+        ],
+        "assertions": [
+          "field_ttlv_type_matches_normative_variant",
+          "normalized_tree_preserves_type_and_value"
         ],
         "mutation": "read_only",
         "status": "planned"
@@ -155993,7 +156282,8 @@
         "requiredness": "No",
         "branch_classes": [
           "present",
-          "omitted"
+          "omitted",
+          "value_type_alternatives"
         ],
         "source_table": "199"
       },
@@ -156023,11 +156313,111 @@
           "construct_each_declared_field_branch",
           "encode_ttlv",
           "decode_ttlv",
-          "reject_prohibited_branch"
+          "reject_prohibited_branch",
+          "exercise_each_declared_value_type_variant"
         ],
         "assertions": [
           "every_branch_class_exercised",
-          "field_shape_matches_normative_source"
+          "field_shape_matches_normative_source",
+          "each_declared_value_type_variant_exercised"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
+      }
+    },
+    {
+      "case_id": "test-norm-payload-client-delegated-login-request-21-001-type-interval",
+      "category": "normative_inventory",
+      "operation": "Delegated Login",
+      "oasis_section": "6.1.12",
+      "description": "Construct Lease Time as a Interval in the Delegated Login request payload for KMIP 2.1.",
+      "requires": {
+        "normative_target_id": "KMIPKIT-PAYLOAD-CLIENT-DELEGATED-LOGIN-REQUEST-21-001-TYPE-INTERVAL",
+        "target_kind": "operation_payload_value_variant",
+        "target_protocol_versions": [
+          "2.1"
+        ],
+        "operation_id": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+        "payload_role": "request",
+        "field_name": "Lease Time",
+        "value_type": "Interval",
+        "parent_target_id": "KMIPKIT-PAYLOAD-CLIENT-DELEGATED-LOGIN-REQUEST-21-001",
+        "source_table": "199"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-payload-delegated-login",
+        "setup_steps": [],
+        "target_step": "Construct and roundtrip Lease Time as Interval",
+        "teardown_steps": []
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.12"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.1"
+        ],
+        "steps": [
+          "construct_field_with_exact_declared_ttlv_type",
+          "encode_ttlv",
+          "decode_ttlv"
+        ],
+        "assertions": [
+          "field_ttlv_type_matches_normative_variant",
+          "normalized_tree_preserves_type_and_value"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
+      }
+    },
+    {
+      "case_id": "test-norm-payload-client-delegated-login-request-21-001-type-date-time",
+      "category": "normative_inventory",
+      "operation": "Delegated Login",
+      "oasis_section": "6.1.12",
+      "description": "Construct Lease Time as a Date Time in the Delegated Login request payload for KMIP 2.1.",
+      "requires": {
+        "normative_target_id": "KMIPKIT-PAYLOAD-CLIENT-DELEGATED-LOGIN-REQUEST-21-001-TYPE-DATE-TIME",
+        "target_kind": "operation_payload_value_variant",
+        "target_protocol_versions": [
+          "2.1"
+        ],
+        "operation_id": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+        "payload_role": "request",
+        "field_name": "Lease Time",
+        "value_type": "Date Time",
+        "parent_target_id": "KMIPKIT-PAYLOAD-CLIENT-DELEGATED-LOGIN-REQUEST-21-001",
+        "source_table": "199"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-payload-delegated-login",
+        "setup_steps": [],
+        "target_step": "Construct and roundtrip Lease Time as Date Time",
+        "teardown_steps": []
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.12"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.1"
+        ],
+        "steps": [
+          "construct_field_with_exact_declared_ttlv_type",
+          "encode_ttlv",
+          "decode_ttlv"
+        ],
+        "assertions": [
+          "field_ttlv_type_matches_normative_variant",
+          "normalized_tree_preserves_type_and_value"
         ],
         "mutation": "read_only",
         "status": "planned"
@@ -167235,7 +167625,8 @@
         "requiredness": "No",
         "branch_classes": [
           "present",
-          "omitted"
+          "omitted",
+          "value_type_alternatives"
         ],
         "source_table": "235"
       },
@@ -167265,11 +167656,111 @@
           "construct_each_declared_field_branch",
           "encode_ttlv",
           "decode_ttlv",
-          "reject_prohibited_branch"
+          "reject_prohibited_branch",
+          "exercise_each_declared_value_type_variant"
         ],
         "assertions": [
           "every_branch_class_exercised",
-          "field_shape_matches_normative_source"
+          "field_shape_matches_normative_source",
+          "each_declared_value_type_variant_exercised"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
+      }
+    },
+    {
+      "case_id": "test-norm-payload-client-login-request-20-001-type-interval",
+      "category": "normative_inventory",
+      "operation": "Login",
+      "oasis_section": "6.1.29",
+      "description": "Construct Lease Time as a Interval in the Login request payload for KMIP 2.0.",
+      "requires": {
+        "normative_target_id": "KMIPKIT-PAYLOAD-CLIENT-LOGIN-REQUEST-20-001-TYPE-INTERVAL",
+        "target_kind": "operation_payload_value_variant",
+        "target_protocol_versions": [
+          "2.0"
+        ],
+        "operation_id": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+        "payload_role": "request",
+        "field_name": "Lease Time",
+        "value_type": "Interval",
+        "parent_target_id": "KMIPKIT-PAYLOAD-CLIENT-LOGIN-REQUEST-20-001",
+        "source_table": "235"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-payload-login",
+        "setup_steps": [],
+        "target_step": "Construct and roundtrip Lease Time as Interval",
+        "teardown_steps": []
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.29"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0"
+        ],
+        "steps": [
+          "construct_field_with_exact_declared_ttlv_type",
+          "encode_ttlv",
+          "decode_ttlv"
+        ],
+        "assertions": [
+          "field_ttlv_type_matches_normative_variant",
+          "normalized_tree_preserves_type_and_value"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
+      }
+    },
+    {
+      "case_id": "test-norm-payload-client-login-request-20-001-type-date-time",
+      "category": "normative_inventory",
+      "operation": "Login",
+      "oasis_section": "6.1.29",
+      "description": "Construct Lease Time as a Date Time in the Login request payload for KMIP 2.0.",
+      "requires": {
+        "normative_target_id": "KMIPKIT-PAYLOAD-CLIENT-LOGIN-REQUEST-20-001-TYPE-DATE-TIME",
+        "target_kind": "operation_payload_value_variant",
+        "target_protocol_versions": [
+          "2.0"
+        ],
+        "operation_id": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+        "payload_role": "request",
+        "field_name": "Lease Time",
+        "value_type": "Date Time",
+        "parent_target_id": "KMIPKIT-PAYLOAD-CLIENT-LOGIN-REQUEST-20-001",
+        "source_table": "235"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-payload-login",
+        "setup_steps": [],
+        "target_step": "Construct and roundtrip Lease Time as Date Time",
+        "teardown_steps": []
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.29"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0"
+        ],
+        "steps": [
+          "construct_field_with_exact_declared_ttlv_type",
+          "encode_ttlv",
+          "decode_ttlv"
+        ],
+        "assertions": [
+          "field_ttlv_type_matches_normative_variant",
+          "normalized_tree_preserves_type_and_value"
         ],
         "mutation": "read_only",
         "status": "planned"
@@ -167467,7 +167958,8 @@
         "requiredness": "No",
         "branch_classes": [
           "present",
-          "omitted"
+          "omitted",
+          "value_type_alternatives"
         ],
         "source_table": "253"
       },
@@ -167497,11 +167989,111 @@
           "construct_each_declared_field_branch",
           "encode_ttlv",
           "decode_ttlv",
-          "reject_prohibited_branch"
+          "reject_prohibited_branch",
+          "exercise_each_declared_value_type_variant"
         ],
         "assertions": [
           "every_branch_class_exercised",
-          "field_shape_matches_normative_source"
+          "field_shape_matches_normative_source",
+          "each_declared_value_type_variant_exercised"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
+      }
+    },
+    {
+      "case_id": "test-norm-payload-client-login-request-21-001-type-interval",
+      "category": "normative_inventory",
+      "operation": "Login",
+      "oasis_section": "6.1.30",
+      "description": "Construct Lease Time as a Interval in the Login request payload for KMIP 2.1.",
+      "requires": {
+        "normative_target_id": "KMIPKIT-PAYLOAD-CLIENT-LOGIN-REQUEST-21-001-TYPE-INTERVAL",
+        "target_kind": "operation_payload_value_variant",
+        "target_protocol_versions": [
+          "2.1"
+        ],
+        "operation_id": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+        "payload_role": "request",
+        "field_name": "Lease Time",
+        "value_type": "Interval",
+        "parent_target_id": "KMIPKIT-PAYLOAD-CLIENT-LOGIN-REQUEST-21-001",
+        "source_table": "253"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-payload-login",
+        "setup_steps": [],
+        "target_step": "Construct and roundtrip Lease Time as Interval",
+        "teardown_steps": []
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.30"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.1"
+        ],
+        "steps": [
+          "construct_field_with_exact_declared_ttlv_type",
+          "encode_ttlv",
+          "decode_ttlv"
+        ],
+        "assertions": [
+          "field_ttlv_type_matches_normative_variant",
+          "normalized_tree_preserves_type_and_value"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
+      }
+    },
+    {
+      "case_id": "test-norm-payload-client-login-request-21-001-type-date-time",
+      "category": "normative_inventory",
+      "operation": "Login",
+      "oasis_section": "6.1.30",
+      "description": "Construct Lease Time as a Date Time in the Login request payload for KMIP 2.1.",
+      "requires": {
+        "normative_target_id": "KMIPKIT-PAYLOAD-CLIENT-LOGIN-REQUEST-21-001-TYPE-DATE-TIME",
+        "target_kind": "operation_payload_value_variant",
+        "target_protocol_versions": [
+          "2.1"
+        ],
+        "operation_id": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+        "payload_role": "request",
+        "field_name": "Lease Time",
+        "value_type": "Date Time",
+        "parent_target_id": "KMIPKIT-PAYLOAD-CLIENT-LOGIN-REQUEST-21-001",
+        "source_table": "253"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-payload-login",
+        "setup_steps": [],
+        "target_step": "Construct and roundtrip Lease Time as Date Time",
+        "teardown_steps": []
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.30"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.1"
+        ],
+        "steps": [
+          "construct_field_with_exact_declared_ttlv_type",
+          "encode_ttlv",
+          "decode_ttlv"
+        ],
+        "assertions": [
+          "field_ttlv_type_matches_normative_variant",
+          "normalized_tree_preserves_type_and_value"
         ],
         "mutation": "read_only",
         "status": "planned"
