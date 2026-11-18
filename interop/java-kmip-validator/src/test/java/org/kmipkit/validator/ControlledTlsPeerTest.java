@@ -4279,65 +4279,6 @@ class ControlledTlsPeerTest {
                 null, null, wireHash);
     }
 
-    private void appendControlledActivationDateNetworkEvents(ArrayNode events, String protocolVersion)
-            throws Exception {
-        byte[] serverCertificatePem = fixture("server-cert.pem");
-        byte[] serverPrivateKeyPem = fixture("server-key.pem");
-        byte[] clientCertificatePem = fixture("client-cert.pem");
-        byte[] clientPrivateKeyPem = fixture("client-key.pem");
-        int minor = "2.0".equals(protocolVersion) ? 0 : 1;
-        SSLServerSocket listener = listener(certificate(serverCertificatePem),
-                privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
-        FutureTask<List<byte[]>> peer = new FutureTask<>(() -> serveActivationDateRequests(listener, minor));
-        Thread peerThread = new Thread(peer, "java-validator-activation-date-peer-" + protocolVersion);
-        peerThread.setDaemon(true);
-        peerThread.start();
-
-        Path connectionFile = temporaryDirectory.resolve("activation-date-" + protocolVersion + ".json");
-        Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
-                clientCertificatePem, clientPrivateKeyPem, false, protocolVersion));
-        try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile))) {
-            try (ClientBatchItem request = ClientBatchItem.getAttributes(
-                    UniqueIdentifier.textString("object-7"), List.of(AttributeReference.tag(0x420001)))
-                    .withUniqueBatchItemId("item-0".getBytes(StandardCharsets.US_ASCII))) {
-                executeGetAttributesForEvidence(driver, request, true);
-            }
-            try (GetAttributesRequest request = GetAttributesRequest.create(
-                    UniqueIdentifier.textString("object-7"), List.of(AttributeReference.tag(0x420001)));
-                    ClientBatchItem batchItem = request.toBatchItem()
-                            .withUniqueBatchItemId("item-0".getBytes(StandardCharsets.US_ASCII))) {
-                executeGetAttributesForEvidence(driver, batchItem, false);
-            }
-        } finally {
-            listener.close();
-        }
-
-        List<byte[]> requests = peer.get(15, TimeUnit.SECONDS);
-        assertEquals(2, requests.size());
-        for (int index = 0; index < requests.size(); index++) {
-            byte[] observedRequest = requests.get(index);
-            assertEquals(0x0bL, requestOperation(observedRequest));
-            assertEquals(minor, requestProtocolMinorVersion(observedRequest));
-            assertTrue(contains(observedRequest, item(0x42013b, 5, intBytes(0x420001))),
-                    "The controlled peer must receive the requested Activation Date reference.");
-            String routeId = index == 0 ? "java.typed-protocol.client_batch_item.get_attributes"
-                    : "java.typed-protocol.function.attribute_request_get_attributes_to_batch_item";
-            String symbol = index == 0 ? "org.kmipkit.extensions.ClientBatchItem.getAttributes"
-                    : "org.kmipkit.extensions.GetAttributesRequest.toBatchItem";
-            String requestHash = normalizedTreeSha256(observedRequest);
-            String responseHash = normalizedTreeSha256(activationDateResponse(minor));
-            appendTypedNetworkRouteEvents(events, "test-attr-activation-date", routeId,
-                    "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES", symbol, protocolVersion,
-                    requestHash, responseHash);
-        }
-        appendRouteEvent(events, "test-attr-activation-date",
-                "java.typed-protocol.function.client_batch_item_response_get_attributes",
-                "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES",
-                "org.kmipkit.extensions.ClientBatchItemResult.getAttributesResponse", null, null,
-                "decode", protocolVersion, null, null,
-                normalizedTreeSha256(activationDateResponse(minor)));
-    }
-
     private static Set<String> getAttributesNetworkRouteCaseIds(JsonNode catalog, String protocolVersion) {
         Set<String> caseIds = new java.util.LinkedHashSet<>();
         for (JsonNode testCase : catalog.path("test_cases")) {

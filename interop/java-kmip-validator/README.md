@@ -522,3 +522,25 @@ report validates 35,873/35,873 selected cells with zero failures, while
 35,768 of the full 71,641-cell matrix remain pending. These operation-level
 fixtures do not claim that every attribute has independently completed its
 semantic construction policy.
+
+## Java Get Attributes encoding and transport coverage — 2026-11-18
+
+Both installed typed Get Attributes construction routes now execute each
+catalogued case in KMIP 2.0 and 2.1 over TTLV, JSON, and XML with raw TLS and
+HTTPS. Controlled mutual-TLS peers parse each request and return an encoding-
+matched response; the validator checks the requested attribute references,
+protocol version, batch identifiers, and typed result. The TLS connection
+builder applies a DNS-name override only when configured and retains the HTTPS
+request target path and query. These routes follow OASIS KMIP 2.0/2.1 §6.1.20
+and §§8.3, 8.6, within the approved KMIPKit encoding and transport contracts.
+This establishes route execution for the operation, not semantic coverage of
+every possible attribute value or vendor interoperability.
+
+The evidence generator now declares the exact encoding/transport combinations
+observed in its report, and the shared validator rejects omitted combinations.
+The selected report validates 39,743/39,743 cells with zero failures; the full
+Java ledger records 71,641 planned, 39,743 executed, and 31,898 pending cells.
+The Java suite passes 92/92 tests, the complete shared unit suite passes
+196/196, and the ledger comparison and 1,507-route capability audit pass. The
+full matrix remains open under KMIPKIT-0092-FR-002, FR-003, and FR-009, so #187
+and its dependent stack remain WIP.

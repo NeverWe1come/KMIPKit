@@ -295,3 +295,17 @@ artifact. This is part of the FR-006 artifact provenance check.
   matches its reference and the capability audit accepts 1,507 public routes.
   It records 71,641 planned, 35,873 executed, and 35,768 pending cells. Full
   matrix closure remains open under FR-002/FR-003/FR-009.
+
+## Java Get Attributes encoding and transport routes — 2026-11-18
+
+- **FR-001/FR-003/FR-005:** Both typed Get Attributes construction routes
+  execute each catalogued case/version over TTLV, JSON, and XML using raw TLS
+  and HTTPS. Controlled mTLS peers inspect requests and return matching
+  encoded responses; assertions cover protocol version, Attribute References,
+  batch identifiers, and the typed result (OASIS KMIP 2.0/2.1 §6.1.20 and
+  §§8.3, 8.6).
+- Red `eca46473a` catches route combinations missing from report metadata;
+  Green `d6486c936` records exactly the combinations present in route events.
+- The selected report validates 39,743/39,743 cells with zero failures. The
+  ledger records 71,641 planned, 39,743 executed, and 31,898 pending cells.
+  Full matrix closure remains open under FR-002/FR-003/FR-009.

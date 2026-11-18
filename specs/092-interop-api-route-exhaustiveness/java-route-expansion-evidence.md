@@ -3788,7 +3788,7 @@ for every catalogued Get Attributes case in KMIP 2.0 and 2.1 contexts:
 `ClientBatchItem.getAttributes` and
 `AttributeRequest.getAttributesToBatchItem`. It sends the requests as batch
 items and checks the typed response shape. The fixtures follow the Get
-Attributes operation contract (OASIS KMIP 2.0/2.1 §6.1.17 and §§8.3, 8.6).
+Attributes operation contract (OASIS KMIP 2.0/2.1 §6.1.20 and §§8.3, 8.6).
 This closes operation-level request/response route evidence; it does not
 independently prove every catalogued attribute's semantic policy.
 
@@ -3803,3 +3803,28 @@ the generated ledger matches its checked-in reference and the route capability
 audit accepts all 1,507 public routes. The ledger records 71,641 planned,
 35,873 executed, and 35,768 pending cells. Remaining matrix cells and
 exact-head CI keep #187 WIP.
+
+## Java Get Attributes encoding and transport routes — 2026-11-18
+
+The controlled Java consumer runs both installed Get Attributes builders for
+every catalogued case and supported protocol version over all six approved
+encoding/transport combinations: TTLV, JSON, and XML over raw TLS and HTTPS.
+The controlled mTLS peers decode and inspect requests, then return matching
+encoded responses. The test checks the operation, version, requested Attribute
+References, batch identifiers, and typed response. The HTTPS configuration
+retains the request target and does not set a DNS-name override unless the
+caller explicitly configured one. References: OASIS KMIP 2.0/2.1 §6.1.20 and
+§§8.3, 8.6; the encoding and transport combinations follow the approved
+KMIPKit 1.0 encoding and framing specifications.
+
+Red `eca46473a` asserts that every emitted network combination is declared in
+the report and fails because the report listed only TTLV/raw TLS. Green
+`d6486c936` derives the report's combinations from its emitted route events.
+The earlier Get Attributes route-count assertion was corrected to include 36
+network cells plus the typed response accessor per case/version.
+
+The selected report validates 39,743/39,743 cells with zero failures. The
+generated full ledger records 71,641 planned, 39,743 executed, and 31,898
+pending cells. The complete Java suite, shared evidence/schema/capability
+suites, ledger comparison, and capability audit pass. Full Java matrix closure
+remains required under KMIPKIT-0092-FR-002/FR-003/FR-009; #187 remains WIP.
