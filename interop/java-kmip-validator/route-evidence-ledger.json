@@ -2671,7 +2671,7 @@
     "test-v20-reject-set-constraints",
     "test-v20-reject-set-defaults"
   ],
-  "executed_cells": 41532,
+  "executed_cells": 41658,
   "language": "java",
   "library_commit": "12496d646d11d4069b58bcc88fc76cc619211ec6",
   "pending_case_ids": [
@@ -4596,7 +4596,7 @@
     },
     {
       "case_id": "test-norm-payload-client-check-request-20-004",
-      "pending_cells": 34
+      "pending_cells": 31
     },
     {
       "case_id": "test-norm-payload-client-check-request-21-001",
@@ -4612,7 +4612,7 @@
     },
     {
       "case_id": "test-norm-payload-client-check-request-21-004",
-      "pending_cells": 34
+      "pending_cells": 31
     },
     {
       "case_id": "test-norm-payload-client-check-response-20-001",
@@ -4628,7 +4628,7 @@
     },
     {
       "case_id": "test-norm-payload-client-check-response-20-004",
-      "pending_cells": 23
+      "pending_cells": 20
     },
     {
       "case_id": "test-norm-payload-client-check-response-21-001",
@@ -4644,7 +4644,7 @@
     },
     {
       "case_id": "test-norm-payload-client-check-response-21-004",
-      "pending_cells": 23
+      "pending_cells": 20
     },
     {
       "case_id": "test-norm-payload-client-create-key-pair-request-20-001",
@@ -4832,11 +4832,11 @@
     },
     {
       "case_id": "test-norm-payload-client-decrypt-request-20-003",
-      "pending_cells": 34
+      "pending_cells": 31
     },
     {
       "case_id": "test-norm-payload-client-decrypt-request-20-004",
-      "pending_cells": 34
+      "pending_cells": 31
     },
     {
       "case_id": "test-norm-payload-client-decrypt-request-20-005",
@@ -4868,11 +4868,11 @@
     },
     {
       "case_id": "test-norm-payload-client-decrypt-request-21-003",
-      "pending_cells": 34
+      "pending_cells": 31
     },
     {
       "case_id": "test-norm-payload-client-decrypt-request-21-004",
-      "pending_cells": 34
+      "pending_cells": 31
     },
     {
       "case_id": "test-norm-payload-client-decrypt-request-21-005",
@@ -4900,7 +4900,7 @@
     },
     {
       "case_id": "test-norm-payload-client-decrypt-response-20-002",
-      "pending_cells": 23
+      "pending_cells": 20
     },
     {
       "case_id": "test-norm-payload-client-decrypt-response-20-002-type-byte-string",
@@ -4916,7 +4916,7 @@
     },
     {
       "case_id": "test-norm-payload-client-decrypt-response-21-002",
-      "pending_cells": 23
+      "pending_cells": 20
     },
     {
       "case_id": "test-norm-payload-client-decrypt-response-21-002-type-byte-string",
@@ -4928,7 +4928,7 @@
     },
     {
       "case_id": "test-norm-payload-client-delegated-login-request-20-001",
-      "pending_cells": 35
+      "pending_cells": 32
     },
     {
       "case_id": "test-norm-payload-client-delegated-login-request-20-002",
@@ -4944,7 +4944,7 @@
     },
     {
       "case_id": "test-norm-payload-client-delegated-login-request-21-001",
-      "pending_cells": 35
+      "pending_cells": 32
     },
     {
       "case_id": "test-norm-payload-client-delegated-login-request-21-002",
@@ -5104,11 +5104,11 @@
     },
     {
       "case_id": "test-norm-payload-client-encrypt-request-20-003",
-      "pending_cells": 34
+      "pending_cells": 31
     },
     {
       "case_id": "test-norm-payload-client-encrypt-request-20-004",
-      "pending_cells": 34
+      "pending_cells": 31
     },
     {
       "case_id": "test-norm-payload-client-encrypt-request-20-005",
@@ -5136,11 +5136,11 @@
     },
     {
       "case_id": "test-norm-payload-client-encrypt-request-21-003",
-      "pending_cells": 34
+      "pending_cells": 31
     },
     {
       "case_id": "test-norm-payload-client-encrypt-request-21-004",
-      "pending_cells": 34
+      "pending_cells": 31
     },
     {
       "case_id": "test-norm-payload-client-encrypt-request-21-005",
@@ -5164,7 +5164,7 @@
     },
     {
       "case_id": "test-norm-payload-client-encrypt-response-20-002",
-      "pending_cells": 23
+      "pending_cells": 20
     },
     {
       "case_id": "test-norm-payload-client-encrypt-response-20-002-type-byte-string",
@@ -5172,7 +5172,7 @@
     },
     {
       "case_id": "test-norm-payload-client-encrypt-response-20-003",
-      "pending_cells": 23
+      "pending_cells": 20
     },
     {
       "case_id": "test-norm-payload-client-encrypt-response-20-004",
@@ -5188,7 +5188,7 @@
     },
     {
       "case_id": "test-norm-payload-client-encrypt-response-21-002",
-      "pending_cells": 23
+      "pending_cells": 20
     },
     {
       "case_id": "test-norm-payload-client-encrypt-response-21-002-type-byte-string",
@@ -5196,7 +5196,7 @@
     },
     {
       "case_id": "test-norm-payload-client-encrypt-response-21-003",
-      "pending_cells": 23
+      "pending_cells": 20
     },
     {
       "case_id": "test-norm-payload-client-encrypt-response-21-004",
@@ -5416,7 +5416,7 @@
     },
     {
       "case_id": "test-norm-payload-client-hash-request-20-002",
-      "pending_cells": 35
+      "pending_cells": 32
     },
     {
       "case_id": "test-norm-payload-client-hash-request-20-003",
@@ -5436,7 +5436,7 @@
     },
     {
       "case_id": "test-norm-payload-client-hash-request-21-002",
-      "pending_cells": 35
+      "pending_cells": 32
     },
     {
       "case_id": "test-norm-payload-client-hash-request-21-003",
@@ -5452,7 +5452,7 @@
     },
     {
       "case_id": "test-norm-payload-client-hash-response-20-001",
-      "pending_cells": 25
+      "pending_cells": 22
     },
     {
       "case_id": "test-norm-payload-client-hash-response-20-001-type-byte-string",
@@ -5464,7 +5464,7 @@
     },
     {
       "case_id": "test-norm-payload-client-hash-response-21-001",
-      "pending_cells": 25
+      "pending_cells": 22
     },
     {
       "case_id": "test-norm-payload-client-hash-response-21-001-type-byte-string",
@@ -5708,7 +5708,7 @@
     },
     {
       "case_id": "test-norm-payload-client-login-request-20-001",
-      "pending_cells": 35
+      "pending_cells": 32
     },
     {
       "case_id": "test-norm-payload-client-login-request-20-002",
@@ -5720,7 +5720,7 @@
     },
     {
       "case_id": "test-norm-payload-client-login-request-21-001",
-      "pending_cells": 35
+      "pending_cells": 32
     },
     {
       "case_id": "test-norm-payload-client-login-request-21-002",
@@ -5756,7 +5756,7 @@
     },
     {
       "case_id": "test-norm-payload-client-mac-request-20-003",
-      "pending_cells": 35
+      "pending_cells": 32
     },
     {
       "case_id": "test-norm-payload-client-mac-request-20-004",
@@ -5780,7 +5780,7 @@
     },
     {
       "case_id": "test-norm-payload-client-mac-request-21-003",
-      "pending_cells": 35
+      "pending_cells": 32
     },
     {
       "case_id": "test-norm-payload-client-mac-request-21-004",
@@ -5836,7 +5836,7 @@
     },
     {
       "case_id": "test-norm-payload-client-mac-verify-request-20-003",
-      "pending_cells": 35
+      "pending_cells": 32
     },
     {
       "case_id": "test-norm-payload-client-mac-verify-request-20-004",
@@ -5868,7 +5868,7 @@
     },
     {
       "case_id": "test-norm-payload-client-mac-verify-request-21-003",
-      "pending_cells": 35
+      "pending_cells": 32
     },
     {
       "case_id": "test-norm-payload-client-mac-verify-request-21-004",
@@ -5968,7 +5968,7 @@
     },
     {
       "case_id": "test-norm-payload-client-obtain-lease-response-20-002",
-      "pending_cells": 25
+      "pending_cells": 22
     },
     {
       "case_id": "test-norm-payload-client-obtain-lease-response-20-002-type-interval",
@@ -5984,7 +5984,7 @@
     },
     {
       "case_id": "test-norm-payload-client-obtain-lease-response-21-002",
-      "pending_cells": 25
+      "pending_cells": 22
     },
     {
       "case_id": "test-norm-payload-client-obtain-lease-response-21-002-type-interval",
@@ -6600,19 +6600,19 @@
     },
     {
       "case_id": "test-norm-payload-client-rng-retrieve-response-20-001",
-      "pending_cells": 23
+      "pending_cells": 20
     },
     {
       "case_id": "test-norm-payload-client-rng-retrieve-response-21-001",
-      "pending_cells": 23
+      "pending_cells": 20
     },
     {
       "case_id": "test-norm-payload-client-rng-seed-request-20-001",
-      "pending_cells": 34
+      "pending_cells": 31
     },
     {
       "case_id": "test-norm-payload-client-rng-seed-request-21-001",
-      "pending_cells": 34
+      "pending_cells": 31
     },
     {
       "case_id": "test-norm-payload-client-rng-seed-response-20-001",
@@ -6664,7 +6664,7 @@
     },
     {
       "case_id": "test-norm-payload-client-sign-request-20-003",
-      "pending_cells": 35
+      "pending_cells": 32
     },
     {
       "case_id": "test-norm-payload-client-sign-request-20-004",
@@ -6696,7 +6696,7 @@
     },
     {
       "case_id": "test-norm-payload-client-sign-request-21-003",
-      "pending_cells": 35
+      "pending_cells": 32
     },
     {
       "case_id": "test-norm-payload-client-sign-request-21-004",
@@ -6760,7 +6760,7 @@
     },
     {
       "case_id": "test-norm-payload-client-signature-verify-request-20-003",
-      "pending_cells": 35
+      "pending_cells": 32
     },
     {
       "case_id": "test-norm-payload-client-signature-verify-request-20-004",
@@ -6800,7 +6800,7 @@
     },
     {
       "case_id": "test-norm-payload-client-signature-verify-request-21-003",
-      "pending_cells": 35
+      "pending_cells": 32
     },
     {
       "case_id": "test-norm-payload-client-signature-verify-request-21-004",
@@ -6844,7 +6844,7 @@
     },
     {
       "case_id": "test-norm-payload-client-signature-verify-response-20-003",
-      "pending_cells": 25
+      "pending_cells": 22
     },
     {
       "case_id": "test-norm-payload-client-signature-verify-response-20-003-type-byte-string",
@@ -6868,7 +6868,7 @@
     },
     {
       "case_id": "test-norm-payload-client-signature-verify-response-21-003",
-      "pending_cells": 25
+      "pending_cells": 22
     },
     {
       "case_id": "test-norm-payload-client-signature-verify-response-21-003-type-byte-string",
@@ -8023,7 +8023,7 @@
       "pending_cells": 2
     }
   ],
-  "pending_cells": 30109,
+  "pending_cells": 29983,
   "pending_reason": "No validated per-cell route execution evidence is recorded for this cell.",
   "pending_reason_code": "route_evidence_not_emitted",
   "planned_cells": 71641,
@@ -8031,8 +8031,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 3747,
-      "pending_cells": 337,
+      "executed_cells": 3768,
+      "pending_cells": 316,
       "protocol_version": "2.0",
       "required_cells": 4084,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item",
@@ -8041,8 +8041,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 3825,
-      "pending_cells": 354,
+      "executed_cells": 3846,
+      "pending_cells": 333,
       "protocol_version": "2.1",
       "required_cells": 4179,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item",
@@ -8351,8 +8351,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 3795,
-      "pending_cells": 336,
+      "executed_cells": 3816,
+      "pending_cells": 315,
       "protocol_version": "2.0",
       "required_cells": 4131,
       "route_id": "java.generic-ttlv.ttlv_codec.decode",
@@ -8361,8 +8361,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 3873,
-      "pending_cells": 353,
+      "executed_cells": 3894,
+      "pending_cells": 332,
       "protocol_version": "2.1",
       "required_cells": 4226,
       "route_id": "java.generic-ttlv.ttlv_codec.decode",
@@ -8371,8 +8371,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 3747,
-      "pending_cells": 336,
+      "executed_cells": 3768,
+      "pending_cells": 315,
       "protocol_version": "2.0",
       "required_cells": 4083,
       "route_id": "java.generic-ttlv.ttlv_item.create",
@@ -8381,8 +8381,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 3825,
-      "pending_cells": 353,
+      "executed_cells": 3846,
+      "pending_cells": 332,
       "protocol_version": "2.1",
       "required_cells": 4178,
       "route_id": "java.generic-ttlv.ttlv_item.create",
@@ -34602,8 +34602,8 @@
   "route_manifest_sha256": "8e26f2efe33c63d3fc4dcd0cb11e465b15bbe9135ab56809c354f032a7aeac59",
   "route_summary": [
     {
-      "executed_cells": 7572,
-      "pending_cells": 691,
+      "executed_cells": 7614,
+      "pending_cells": 649,
       "required_cells": 8263,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item"
     },
@@ -34698,14 +34698,14 @@
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring"
     },
     {
-      "executed_cells": 7668,
-      "pending_cells": 689,
+      "executed_cells": 7710,
+      "pending_cells": 647,
       "required_cells": 8357,
       "route_id": "java.generic-ttlv.ttlv_codec.decode"
     },
     {
-      "executed_cells": 7572,
-      "pending_cells": 689,
+      "executed_cells": 7614,
+      "pending_cells": 647,
       "required_cells": 8261,
       "route_id": "java.generic-ttlv.ttlv_item.create"
     },
@@ -36073,7 +36073,7 @@
     }
   ],
   "schema_version": "1.0",
-  "selected_scope_cells": 41532,
+  "selected_scope_cells": 41658,
   "selected_scope_complete": true,
   "vendor_interoperability_claim": false
 }

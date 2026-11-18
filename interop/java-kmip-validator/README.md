@@ -760,3 +760,23 @@ the 1,507-route capability audit pass. The full ledger records 71,641 planned,
 #187 and its dependents stay WIP. On this host the Java test JVM used the
 worktree temporary directory because `/tmp` had only 58 MiB free, less than the
 bundled JNI library's 116 MiB extracted size.
+
+### Common client scalar payload TTLV routes — 2026-11-18
+
+The local-model route runner now covers client payload `Data`,
+`IV/Counter/Nonce`, `Asynchronous Correlation Value`, and `Lease Time` in
+addition to the previously supported scalar fields. It selects all matching
+catalog cases for client-to-server operations and uses Byte String or Integer
+TTLV values as specified. References include OASIS KMIP 2.0 §6.1.5 Tables
+161–162, §6.1.7 Tables 168–169, §6.1.11 Tables 181–182, and §6.1.17 Tables
+199–200. Evidence is local TTLV construction, view, and decode; it does not
+claim server acceptance.
+
+Red `cb9dd1ea6` exposed the missing Decrypt Data payload-field events after
+operation-target routes had already run. Green `f7df231f3` added the catalog
+selected Byte String and Integer value paths, closing 126 cells. The Java
+suite passes 92/92; shared route tests pass 109/109. The selected report
+validates 41,658/41,658 cells with zero failures; ledger comparison and the
+1,507-route capability audit pass. The full ledger records 71,641 planned,
+41,658 executed, and 29,983 pending cells. The matrix remains incomplete, so
+#187 and its dependents stay WIP.
