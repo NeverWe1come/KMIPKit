@@ -154,3 +154,15 @@ artifact. This is part of the FR-006 artifact provenance check.
 - This adds 168 cells. The selected report validates 34,534/34,534 cells with
   zero failures and leaves 37,107 of 71,641 pending. Full Java matrix closure
   remains open under FR-002/FR-003/FR-009.
+
+## Java typed ManagedObject key factories — 2026-11-18
+
+- **FR-003:** The installed Java consumer now constructs every transparent Key
+  Material fixture through the matching `ManagedObject.symmetricKey`,
+  `ManagedObject.privateKey`, or `ManagedObject.publicKey` factory, then reads
+  back and verifies its nested Key Block. The fixture covers KMIP 2.0/2.1
+  object structures and Key Material formats (§§2.5–2.9, 3.1–3.12); fixture
+  values are synthetic and do not claim cryptographic validity.
+- This adds 84 cells. The selected report validates 34,618/34,618 cells with
+  zero failures and leaves 37,023 of 71,641 pending. Full Java matrix closure
+  remains open under FR-002/FR-003/FR-009.

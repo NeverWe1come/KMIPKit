@@ -458,3 +458,9 @@ values are deterministic synthetic data; they do not test cryptographic
 validity. The selected report validates 34,534/34,534 cells with zero failures
 and leaves 37,107 of 71,641 planned Java cells pending, so the matrix and PR
 stack remain WIP.
+
+Each transparent Key Material case now also calls the matching typed object
+factory (`ManagedObject.symmetricKey`, `privateKey`, or `publicKey`) and reads
+the nested Key Block back. This closes 84 factory-route cells across the nine
+formats and KMIP 2.0/2.1. The selected report validates 34,618/34,618 cells
+with zero failures and leaves 37,023 of 71,641 pending; the matrix remains WIP.

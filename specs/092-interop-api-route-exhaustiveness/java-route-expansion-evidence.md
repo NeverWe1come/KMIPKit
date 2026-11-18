@@ -3527,3 +3527,36 @@ All 84 Java validator tests pass; the shared evidence/schema/capability suites
 pass 108 tests and the capability audit reports 1,507 routes. The selected
 report validates 34,534/34,534 cells with zero failures and leaves 37,107 of
 71,641 planned Java cells pending. Full Java matrix closure remains outstanding.
+
+## Java typed ManagedObject key factory routes — 2026-11-18
+
+Red commit `5f8345b72` strengthens the focused RSA public-key test and the
+all-format route test to require one additional typed factory route for each
+case/version. Both tests fail while `ManagedObject.publicKey` and the matching
+Symmetric/Private Key factories have no execution evidence. Green commit
+`26c0b4ce4` invokes the matching public factory for each of the nine
+transparent Key Material formats, validates the managed object's type and
+nested Key Block, and records the named factory route. Refactor commit
+`4c3bab90c` centralizes the factory mapping and uses locale-independent route
+IDs. Fixture values remain synthetic (KMIP 2.0/2.1 §§2.5–2.9, 3.1–3.12).
+
+Verification on the #187 source branch:
+
+```sh
+bash bindings/java/gradlew -p interop/java-kmip-validator test --rerun-tasks
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+python3 -m unittest interop.shared.tests.test_route_execution_evidence \
+  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+git diff --check
+```
+
+The full Java suite passes 84 tests. The selected report validates
+34,618/34,618 cells with zero failures; 37,023 of 71,641 remain pending. The
+ledger comparison and capability audit pass, and the full Java matrix remains
+open.
