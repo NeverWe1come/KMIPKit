@@ -119,3 +119,14 @@ artifact. This is part of the FR-006 artifact provenance check.
 - This adds 36 cells. The selected report validates 34,246/34,246 cells with
   zero failures; 37,395 of 71,641 remain pending. Full Java matrix closure
   remains open under FR-002/FR-003/FR-009.
+
+## Java Transparent Symmetric Key model routes — 2026-11-18
+
+- **FR-003:** The installed Java consumer now constructs the §3.4 `Key` Byte
+  String through `KeyMaterial.fromFields` and `KeyMaterial.fromItem`, and also
+  exercises `KeyValue` and `KeyBlock` through both typed constructors for KMIP
+  2.0 and 2.1 (§§3.4, 11.25). The four key bytes are deterministic synthetic
+  fixture data, not production key material.
+- This adds 12 cells. The selected report validates 34,258/34,258 cells with
+  zero failures; 37,383 of 71,641 remain pending. Full Java matrix closure
+  remains open under FR-002/FR-003/FR-009.
