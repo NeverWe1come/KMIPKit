@@ -473,6 +473,8 @@ RECIPES = {
         ((10,), 'batch_single_item_default_continuation'),
     'test-batch-placeholder-without-producer-rejected':
         ((18,), 'batch_placeholder_without_producer'),
+    'test-batch-placeholder-forward-reference-rejected':
+        ((18, 1), 'batch_forward_placeholder_reference'),
     'test-batch-count-matches-items': ((10, 12), 'batch_count_two_read_items'),
     'test-batch-count-mismatch-rejected': ((10, 12), 'batch_count_two_read_items'),
     'test-batch-unique-item-id-response-correlation': ((10, 12), 'batch_count_two_read_items'),
