@@ -363,8 +363,11 @@ class ModelCases:
     def _execute_query_async_payload_field(self, target: dict,
                                            public_api_symbol: str) -> dict | None:
         """Exercise both optional correlation-filter branches through the C API."""
-        target_id = 'KMIPKIT-PAYLOAD-CLIENT-QUERY-ASYNCHRONOUS-REQUESTS-REQUEST-21-001'
-        if (target.get('target_id') != target_id
+        target_ids = {
+            'KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS',
+            'KMIPKIT-PAYLOAD-CLIENT-QUERY-ASYNCHRONOUS-REQUESTS-REQUEST-21-001',
+        }
+        if (target.get('target_id') not in target_ids
                 or public_api_symbol not in _QUERY_ASYNC_PAYLOAD_FIELD_SYMBOLS):
             return None
 
