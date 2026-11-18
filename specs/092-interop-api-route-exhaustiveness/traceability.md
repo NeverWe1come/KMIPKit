@@ -358,3 +358,18 @@ artifact. This is part of the FR-006 artifact provenance check.
   cells. Java tests pass 92/92, shared tests 196/196, ledger comparison passes,
   and the capability audit accepts 1,507 routes. Full matrix closure remains
   open under FR-002/FR-003/FR-009.
+
+### Java Asynchronous Indicator generic TTLV routes — 2026-11-18
+
+- **FR-003/FR-009:** The four catalogued asynchronous-indicator scenarios
+  resolve their enum target/value and exercise generic Item create, view, and
+  decode in KMIP 2.0 and 2.1. The omitted parameter is checked as Prohibited;
+  explicit Prohibited, Optional, and Mandatory are also covered. This does not
+  claim asynchronous network-lifecycle coverage. References: OASIS KMIP
+  2.0/2.1 §8.2, §§11.3 and 11.56.
+- Red `a484aa932` requires all three local routes per case/version; Green
+  `4f78ac602` performs catalog-driven construction and round trips.
+- The selected report validates 40,251/40,251 cells with zero failures. The
+  ledger records 71,641 planned, 40,251 executed, and 31,390 pending cells.
+  Java tests pass 92/92, shared tests 196/196, ledger comparison passes, and
+  the capability audit accepts 1,507 routes. The complete matrix remains open.

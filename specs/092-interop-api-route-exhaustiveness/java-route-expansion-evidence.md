@@ -3228,6 +3228,25 @@ shared route-evidence, schema, and capability suites pass 108 tests; the route
 audit confirms 1,507 routes. The full matrix remains incomplete and the stack
 stays WIP.
 
+## Java Asynchronous Indicator generic TTLV routes — 2026-11-18
+
+The four catalogued asynchronous-indicator scenarios resolve the enum target,
+tag, and value from the normative catalog. For KMIP 2.0 and 2.1, the installed
+Java generic TTLV API constructs the Enumeration Item, obtains its typed view,
+and decodes its encoding. The omitted indicator is verified as Prohibited;
+explicit Prohibited, Optional, and Mandatory values are exercised. The tests
+cover local generic representation and do not claim an asynchronous network
+lifecycle. References: OASIS KMIP 2.0/2.1 §8.2, §§11.3 and 11.56.
+
+Red `a484aa932` fails if any applicable case/version lacks the three generic
+TTLV route events. Green `4f78ac602` executes each catalog-driven route and
+checks the exact tag, TTLV type, and numeric value. This adds 24 cells: the
+selected report validates 40,251/40,251 with zero failures, and the ledger
+records 71,641 planned, 40,251 executed, and 31,390 pending. The Java suite
+passes 92/92; shared tests pass 196/196; ledger comparison and the 1,507-route
+capability audit pass. Full matrix closure and exact-head CI remain required,
+so the PR stack stays WIP.
+
 Verification:
 
 ```sh
@@ -3892,3 +3911,22 @@ planned, 40,227 executed, and 31,414 pending. The Java suite passes 92/92, the
 shared suite 196/196, ledger comparison passes, and the route capability audit
 accepts 1,507 routes. The full matrix and exact-head CI remain open; the stack
 stays WIP.
+
+## Java Asynchronous Indicator generic TTLV routes — 2026-11-18
+
+The four catalogued asynchronous-indicator scenarios resolve the enum target,
+tag, and value from the normative catalog. For KMIP 2.0 and 2.1, the installed
+Java generic TTLV API constructs the Enumeration Item, obtains its typed view,
+and decodes its encoding. The omitted indicator is verified as Prohibited;
+explicit Prohibited, Optional, and Mandatory values are exercised. The tests
+cover local generic representation and do not claim an asynchronous network
+lifecycle. References: OASIS KMIP 2.0/2.1 §8.2, §§11.3 and 11.56.
+
+Red `a484aa932` fails if any applicable case/version lacks the three generic
+TTLV route events. Green `4f78ac602` executes each catalog-driven route and
+checks the exact tag, TTLV type, and numeric value. This adds 24 cells: the
+selected report validates 40,251/40,251 with zero failures, and the ledger
+records 71,641 planned, 40,251 executed, and 31,390 pending. The Java suite
+passes 92/92; shared tests pass 196/196; ledger comparison and the 1,507-route
+capability audit pass. Full matrix closure and exact-head CI remain required,
+so the PR stack stays WIP.

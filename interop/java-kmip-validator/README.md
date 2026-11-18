@@ -582,6 +582,24 @@ ledger matches its reference, and the route capability audit accepts 1,507
 routes. The remaining Java matrix and exact-head CI keep #187 and its
 dependent stack WIP.
 
+### Asynchronous Indicator generic TTLV routes — 2026-11-18
+
+The four catalogued asynchronous-indicator scenarios now resolve their enum
+target and value from the shared catalog and exercise generic `TtlvItem`
+construction, view, and decode for KMIP 2.0 and 2.1. The omitted field is
+verified as `Prohibited`; the other cases cover explicit Prohibited, Optional,
+and Mandatory. This is local generic TTLV evidence, not asynchronous network
+lifecycle evidence. References: OASIS KMIP 2.0/2.1 §8.2, §§11.3 and 11.56.
+
+Red `a484aa932` requires the three local routes for each applicable
+case/version; Green `4f78ac602` resolves the catalogued tag and values and
+round-trips them through the installed APIs. The selected report validates
+40,251/40,251 cells with zero failures. The ledger records 71,641 planned,
+40,251 executed, and 31,390 pending cells. Java tests pass 92/92, shared tests
+196/196, ledger comparison passes, and the capability audit accepts 1,507
+routes. Full Java matrix closure and exact-head CI remain outstanding; the
+stack stays WIP.
+
 ### Asynchronous cancellation result TTLV routes — 2026-11-18
 
 The five catalogued Cancel outcome scenarios now build their exact
