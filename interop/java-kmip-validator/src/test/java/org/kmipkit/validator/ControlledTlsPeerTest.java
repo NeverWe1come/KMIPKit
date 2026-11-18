@@ -4235,19 +4235,34 @@ class ControlledTlsPeerTest {
     private static void assertGetAttributesNetworkRouteCoverage(ArrayNode events, JsonNode catalog,
             String protocolVersion) {
         Set<String> expected = getAttributesNetworkRouteCaseIds(catalog, protocolVersion);
-        Set<String> observed = new java.util.HashSet<>();
-        for (JsonNode event : events) {
-            String routeId = event.path("route_id").asText();
-            if (protocolVersion.equals(event.path("protocol_version").asText())
-                    && "construct".equals(event.path("action").asText())
-                    && ("java.typed-protocol.client_batch_item.get_attributes".equals(routeId)
-                            || "java.typed-protocol.function.attribute_request_get_attributes_to_batch_item"
-                                    .equals(routeId))) {
-                observed.add(event.path("case_id").asText());
+        List<String> routeIds = List.of(
+                "java.typed-protocol.client_batch_item.get_attributes",
+                "java.typed-protocol.function.attribute_request_get_attributes_to_batch_item");
+        for (String caseId : expected) {
+            for (String routeId : routeIds) {
+                for (String encoding : List.of("TTLV", "JSON", "XML")) {
+                    for (String transport : List.of("raw_tls", "https")) {
+                        for (String action : List.of("construct", "send", "decode")) {
+                            boolean observed = false;
+                            for (JsonNode event : events) {
+                                if (caseId.equals(event.path("case_id").asText())
+                                        && routeId.equals(event.path("route_id").asText())
+                                        && protocolVersion.equals(event.path("protocol_version").asText())
+                                        && encoding.equals(event.path("encoding").asText())
+                                        && transport.equals(event.path("transport").asText())
+                                        && action.equals(event.path("action").asText())) {
+                                    observed = true;
+                                    break;
+                                }
+                            }
+                            assertTrue(observed, "Missing Get Attributes route evidence for " + caseId + " / "
+                                    + routeId + " / " + protocolVersion + " / " + encoding + " / " + transport
+                                    + " / " + action);
+                        }
+                    }
+                }
             }
         }
-        assertEquals(expected, observed,
-                "Every catalogued Get Attributes case must construct through both installed Java routes.");
     }
 
     private static int getAttributesNetworkRouteEventCount(JsonNode catalog) {
