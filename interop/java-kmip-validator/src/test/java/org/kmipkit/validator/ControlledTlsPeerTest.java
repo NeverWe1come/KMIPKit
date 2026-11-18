@@ -4312,34 +4312,13 @@ class ControlledTlsPeerTest {
         try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile));
                 ClientBatch batch = ClientBatch.create()) {
             for (GetAttributesNetworkRequest invocation : invocations) {
-                byte[] uniqueBatchItemId = invocation.uniqueBatchItemId().getBytes(StandardCharsets.US_ASCII);
-                if ("java.typed-protocol.client_batch_item.get_attributes".equals(invocation.routeId())) {
-                    batch.add(ClientBatchItem.getAttributes(UniqueIdentifier.textString("object-7"),
-                            List.of(AttributeReference.tag(0x420001)))
-                            .withUniqueBatchItemId(uniqueBatchItemId));
-                } else {
-                    try (GetAttributesRequest request = GetAttributesRequest.create(
-                            UniqueIdentifier.textString("object-7"), List.of(AttributeReference.tag(0x420001)))) {
-                        batch.add(request.toBatchItem().withUniqueBatchItemId(uniqueBatchItemId));
-                    }
-                }
+                addGetAttributesNetworkRequest(batch, invocation);
             }
             try (ClientBatchResponse response = driver.executeBatchForEvidence(batch)) {
                 assertEquals(invocations.size(), response.itemCount());
                 for (int index = 0; index < invocations.size(); index++) {
-                    try (ClientBatchItemResult result = response.itemAt(index);
-                            var typed = result.getAttributesResponse().orElseThrow();
-                            TtlvStructure attributes = typed.attributes().orElseThrow();
-                            var view = attributes.view();
-                            var attribute = view.itemAt(0);
-                            var value = attribute.value()) {
-                        assertEquals(0x0bL, result.operation());
-                        assertEquals(0L, result.resultStatus());
-                        assertEquals("object-7", typed.uniqueIdentifier());
-                        assertEquals(1, view.itemCount());
-                        assertEquals(0x420001, attribute.tag().raw());
-                        assertEquals(TtlvItemType.DateTime, attribute.itemType());
-                        assertEquals(1L, value.dateTime());
+                    try (ClientBatchItemResult result = response.itemAt(index)) {
+                        assertGetAttributesRouteResponse(result);
                     }
                 }
             }
@@ -4368,6 +4347,36 @@ class ControlledTlsPeerTest {
                     "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES",
                     "org.kmipkit.extensions.ClientBatchItemResult.getAttributesResponse",
                     null, null, "decode", protocolVersion, null, null, responseHash);
+        }
+    }
+
+    private static void addGetAttributesNetworkRequest(ClientBatch batch,
+            GetAttributesNetworkRequest invocation) {
+        byte[] uniqueBatchItemId = invocation.uniqueBatchItemId().getBytes(StandardCharsets.US_ASCII);
+        if ("java.typed-protocol.client_batch_item.get_attributes".equals(invocation.routeId())) {
+            batch.add(ClientBatchItem.getAttributes(UniqueIdentifier.textString("object-7"),
+                    List.of(AttributeReference.tag(0x420001))).withUniqueBatchItemId(uniqueBatchItemId));
+            return;
+        }
+        try (GetAttributesRequest request = GetAttributesRequest.create(
+                UniqueIdentifier.textString("object-7"), List.of(AttributeReference.tag(0x420001)))) {
+            batch.add(request.toBatchItem().withUniqueBatchItemId(uniqueBatchItemId));
+        }
+    }
+
+    private static void assertGetAttributesRouteResponse(ClientBatchItemResult result) throws Exception {
+        try (var typed = result.getAttributesResponse().orElseThrow();
+                TtlvStructure attributes = typed.attributes().orElseThrow();
+                var view = attributes.view();
+                var attribute = view.itemAt(0);
+                var value = attribute.value()) {
+            assertEquals(0x0bL, result.operation());
+            assertEquals(0L, result.resultStatus());
+            assertEquals("object-7", typed.uniqueIdentifier());
+            assertEquals(1, view.itemCount());
+            assertEquals(0x420001, attribute.tag().raw());
+            assertEquals(TtlvItemType.DateTime, attribute.itemType());
+            assertEquals(1L, value.dateTime());
         }
     }
 
