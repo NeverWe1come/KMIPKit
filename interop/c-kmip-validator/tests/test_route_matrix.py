@@ -2912,7 +2912,7 @@ class RouteMatrixTests(unittest.TestCase):
                                     event['action'] == 'decode' and
                                     event['transport'] is None and
                                     event['status'] == 'passed' for event in events), symbol)
-                expected_versions = {'2.1'} if case_id == 'test-op-discover-versions' else {'2.0', '2.1'}
+                expected_versions = {'2.0', '2.1'}
                 self.assertEqual({event['protocol_version'] for event in events
                                   if event['case_id'] == case_id and
                                   event['public_api_symbol'] == symbol}, expected_versions)
