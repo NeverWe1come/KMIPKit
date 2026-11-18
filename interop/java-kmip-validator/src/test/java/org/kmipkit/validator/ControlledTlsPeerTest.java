@@ -845,6 +845,7 @@ class ControlledTlsPeerTest {
         int bigIntegerTargetRouteEventCount = 0;
         int typedKeyMaterialRouteEventCount = 0;
         int typedCertificateRouteEventCount = 0;
+        int typedPgpSecretDataManagedObjectRouteEventCount = 0;
         int typedKeyBearingManagedObjectRouteEventCount = 0;
         int typedSplitKeyManagedObjectRouteEventCount = 0;
         int typedSplitKeyManagedObjectMemberRouteEventCount = 0;
@@ -1234,6 +1235,14 @@ class ControlledTlsPeerTest {
                 appendLocalCatalogInvocation(events, protocolVersion, invocation);
             }
             typedCertificateRouteEventCount += certificateFactoryInvocations.size();
+            List<LocalCatalogRouteChecks.Invocation> pgpSecretDataInvocations = new ArrayList<>();
+            LocalCatalogRouteChecks.executePgpKeyAndSecretDataManagedObjectTargets(readRouteEvidenceCatalog(),
+                    protocolVersion, LocalCatalogRouteChecks.PGP_KEY_AND_SECRET_DATA_CASE_IDS,
+                    pgpSecretDataInvocations::add);
+            for (LocalCatalogRouteChecks.Invocation invocation : pgpSecretDataInvocations) {
+                appendLocalCatalogInvocation(events, protocolVersion, invocation);
+            }
+            typedPgpSecretDataManagedObjectRouteEventCount += pgpSecretDataInvocations.size();
             List<LocalCatalogRouteChecks.Invocation> keyBearingManagedObjectInvocations = new ArrayList<>();
             LocalCatalogRouteChecks.executeKeyBearingManagedObjectRootTargets(readRouteEvidenceCatalog(),
                     protocolVersion, LocalCatalogRouteChecks.KEY_BEARING_MANAGED_OBJECT_ROOT_CASE_IDS,
@@ -1927,6 +1936,7 @@ class ControlledTlsPeerTest {
                         + managedObjectTypeRouteEventCount
                         + typedKeyMaterialRouteEventCount
                         + typedCertificateRouteEventCount
+                        + typedPgpSecretDataManagedObjectRouteEventCount
                         + typedKeyBearingManagedObjectRouteEventCount
                         + typedSplitKeyManagedObjectRouteEventCount
                         + typedSplitKeyManagedObjectMemberRouteEventCount
@@ -1984,6 +1994,7 @@ class ControlledTlsPeerTest {
                         + 1 // KMIP 2.0/2.1 §5.1 Attributes generic Structure routes.
                         + LocalCatalogRouteChecks.TRANSPARENT_KEY_MATERIAL_CASE_IDS.size()
                         + LocalCatalogRouteChecks.SPLIT_KEY_MANAGED_OBJECT_MEMBER_CASE_IDS.size() - 1
+                        + LocalCatalogRouteChecks.PGP_KEY_AND_SECRET_DATA_CASE_IDS.size() - 2
                         + LocalCatalogRouteChecks.TYPED_MANAGED_OBJECT_FACTORY_CASE_IDS.stream()
                                 .filter(caseId -> !genericTagCaseIds.contains(caseId)).count()
                         // Transparent Key Material members exercise both typed model constructors.
@@ -2078,6 +2089,40 @@ class ControlledTlsPeerTest {
                             genericRoute, version, targetId);
                     assertEquals(tagTarget ? 0 : 1, genericEventCount,
                             "Generic factories apply only to structure members, not standalone tag cases.");
+                    if (!tagTarget) {
+                        JsonNode genericEvent = findRouteEvent(report.path("events"), caseId,
+                                genericRoute, version, targetId);
+                        assertEquals("passed", genericEvent.path("status").asText());
+                    }
+                }
+            }
+        }
+        for (String caseId : LocalCatalogRouteChecks.PGP_KEY_AND_SECRET_DATA_CASE_IDS) {
+            assertTrue(reportedCaseIds.contains(caseId),
+                    "PGP Key and Secret Data factories need their catalog case in the selected report.");
+            JsonNode caseNode = null;
+            for (JsonNode candidate : readRouteEvidenceCatalog().path("test_cases")) {
+                if (caseId.equals(candidate.path("case_id").asText())) {
+                    caseNode = candidate;
+                    break;
+                }
+            }
+            assertTrue(caseNode != null, "PGP Key or Secret Data case must exist in the route catalog.");
+            String targetId = caseNode.path("requires").path("normative_target_id").asText();
+            boolean pgpKey = targetId.contains("PGP-KEY") || targetId.equals("KMIPKIT-ELEM-TAG-4200BD");
+            boolean tagTarget = targetId.equals("KMIPKIT-ELEM-TAG-4200BD")
+                    || targetId.equals("KMIPKIT-ELEM-TAG-420085");
+            String factoryRoute = "java.typed-protocol.model.org.kmipkit.ttlv.managedobject."
+                    + (pgpKey ? "pgpkey" : "secretdata");
+            for (String version : KMIP_2_0_AND_2_1) {
+                JsonNode namedEvent = findRouteEvent(report.path("events"), caseId, factoryRoute, version, targetId);
+                assertEquals("passed", namedEvent.path("status").asText());
+                for (String genericRoute : List.of(
+                        "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromfields",
+                        "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromitem")) {
+                    int eventCount = routeEventCount(report.path("events"), caseId, genericRoute, version, targetId);
+                    assertEquals(tagTarget ? 0 : 1, eventCount,
+                            "Generic managed-object factories apply only to structures and members.");
                     if (!tagTarget) {
                         JsonNode genericEvent = findRouteEvent(report.path("events"), caseId,
                                 genericRoute, version, targetId);
@@ -4425,6 +4470,8 @@ class ControlledTlsPeerTest {
         LocalCatalogRouteChecks.SPLIT_KEY_MANAGED_OBJECT_MEMBER_CASE_IDS.stream()
                 .filter(caseId -> !"test-norm-tag-tag-420089".equals(caseId)).forEach(caseIds::add);
         LocalCatalogRouteChecks.TYPED_MANAGED_OBJECT_FACTORY_CASE_IDS.stream()
+                .filter(caseId -> !genericTagCaseIds.contains(caseId)).forEach(caseIds::add);
+        LocalCatalogRouteChecks.PGP_KEY_AND_SECRET_DATA_CASE_IDS.stream()
                 .filter(caseId -> !genericTagCaseIds.contains(caseId)).forEach(caseIds::add);
         caseIds.add(OBJECT_TYPE_MEMBER_CASE_ID);
         caseIds.add(CONSTRAINT_CASE_ID);
