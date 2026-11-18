@@ -1214,7 +1214,7 @@ class ControlledTlsPeerTest {
             structureAttributeValueCaseIds.addAll(missingStructureAttributeValueCases);
             List<LocalCatalogRouteChecks.Invocation> structureAttributeValueInvocations = new ArrayList<>();
             LocalCatalogRouteChecks.executeStructureAttributeValues(readRouteEvidenceCatalog(), protocolVersion,
-                    missingStructureAttributeValueCases, structureAttributeValueInvocations::add);
+                    missingStructureAttributeValueCases, events, structureAttributeValueInvocations::add);
             for (LocalCatalogRouteChecks.Invocation invocation : structureAttributeValueInvocations) {
                 appendLocalCatalogInvocation(events, protocolVersion, invocation);
             }

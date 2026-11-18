@@ -941,6 +941,12 @@ final class LocalCatalogRouteChecks {
     /** Exercises generic TTLV routes for the source-defined scalar children of selected Structure attributes. */
     static void executeStructureAttributeValues(JsonNode catalog, String version, Set<String> selectedCaseIds,
             EvidenceSink sink) throws Exception {
+        executeStructureAttributeValues(catalog, version, selectedCaseIds, null, sink);
+    }
+
+    /** Executes only generic or typed Structure Attribute route groups missing from the evidence report. */
+    static void executeStructureAttributeValues(JsonNode catalog, String version, Set<String> selectedCaseIds,
+            JsonNode existingEvents, EvidenceSink sink) throws Exception {
         CodecLimits limits = CodecLimits.defaults();
         Set<String> applicable = new java.util.LinkedHashSet<>();
         Set<String> emitted = new java.util.LinkedHashSet<>();
@@ -1004,18 +1010,27 @@ final class LocalCatalogRouteChecks {
             try (TtlvItem decoded = TtlvCodec.decode(wire)) {
                 assertStructureAttributeItem(decoded, attributeTag, memberTags, memberTypes, memberValues);
             }
-            emitRoute(sink, caseId, targetId,
-                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
-                    "org.kmipkit.ttlv.TtlvValue.structure", "construct", wire);
-            emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_item.create",
-                    "org.kmipkit.ttlv.TtlvItem.create", "construct", wire);
-            emitRoute(sink, caseId, targetId, "java.generic-ttlv.function.ttlv_item_view_from_item",
-                    "org.kmipkit.ttlv.TtlvItem.view", "decode", wire);
-            emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_codec.decode",
-                    "org.kmipkit.ttlv.TtlvCodec.decode", "decode", wire);
-            if ("test-attr-alternative-name".equals(caseId)) {
-                executeTypedAlternativeNameRoutes(sink, caseId, targetId, attributeTag,
-                        memberTags, memberTypes, memberValues, wire, version, limits);
+            if (routeEvidenceCount(existingEvents, caseId, targetId, version,
+                    structureAttributeGenericRoutes()) == 0) {
+                emitRoute(sink, caseId, targetId,
+                        "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
+                        "org.kmipkit.ttlv.TtlvValue.structure", "construct", wire);
+                emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_item.create",
+                        "org.kmipkit.ttlv.TtlvItem.create", "construct", wire);
+                emitRoute(sink, caseId, targetId, "java.generic-ttlv.function.ttlv_item_view_from_item",
+                        "org.kmipkit.ttlv.TtlvItem.view", "decode", wire);
+                emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_codec.decode", "org.kmipkit.ttlv.TtlvCodec.decode",
+                        "decode", wire);
+            }
+            if (routeEvidenceCount(existingEvents, caseId, targetId, version,
+                    structureAttributeTypedRoutes()) == 0) {
+                if ("test-attr-alternative-name".equals(caseId)) {
+                    executeTypedAlternativeNameRoutes(sink, caseId, targetId, attributeTag,
+                            memberTags, memberTypes, memberValues, wire, version, limits);
+                } else {
+                    executeTypedStructureAttributeRoutes(caseId, targetId, attributeName, attributeTag,
+                            memberTags, memberTypes, memberValues, wire, limits, sink);
+                }
             }
             emitted.add(caseId);
         }
@@ -1028,45 +1043,8 @@ final class LocalCatalogRouteChecks {
     private static void executeTypedAlternativeNameRoutes(EvidenceSink sink, String caseId, String targetId,
             int attributeTag, List<Integer> memberTags, List<TtlvItemType> memberTypes,
             List<byte[]> memberValues, byte[] attributeWire, String version, CodecLimits limits) throws Exception {
-        TtlvStructure typedStructure = TtlvStructure.create();
-        try {
-            for (int index = 0; index < memberTags.size(); index++) {
-                byte[] bytes = memberValues.get(index);
-                TtlvValue value = memberTypes.get(index) == TtlvItemType.Enumeration
-                        ? TtlvValue.Enumeration(Integer.toUnsignedLong(ByteBuffer.wrap(bytes).getInt()))
-                        : TtlvValue.TextString(bytes, limits);
-                typedStructure = append(typedStructure, memberTags.get(index), value);
-            }
-        } catch (RuntimeException failure) {
-            typedStructure.close();
-            throw failure;
-        }
-
-        byte[] attributeSetWire = structureWire(0x420125, attributeWire);
-        try (TtlvValue value = TtlvValue.structure(typedStructure, limits);
-                TypedAttribute typed = TypedAttribute.create(StandardAttribute.ALTERNATIVE_NAME, value);
-                TtlvItem typedItem = typed.asItem();
-                TypedAttribute decoded = TypedAttribute.fromItem(StandardAttribute.ALTERNATIVE_NAME, typedItem);
-                TtlvItem decodedItem = decoded.asItem()) {
-            assertEquals(StandardAttribute.ALTERNATIVE_NAME, decoded.attribute());
-            assertStructureAttributeItem(typedItem, attributeTag, memberTags, memberTypes, memberValues);
-            assertStructureAttributeItem(decodedItem, attributeTag, memberTags, memberTypes, memberValues);
-            emitRoute(sink, caseId, targetId,
-                    "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
-                    "org.kmipkit.ttlv.TypedAttribute.create", "construct", attributeWire);
-            emitRoute(sink, caseId, targetId,
-                    "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
-                    "org.kmipkit.ttlv.TypedAttribute.fromItem", "construct", attributeWire);
-            try (TtlvStructure empty = TtlvStructure.create();
-                    TtlvStructure items = TtlvStructure.withItem(empty, decoded.asItem(), limits);
-                    AttributeSet attributes = AttributeSet.tryNew(items)) {
-                assertEquals(1, attributes.len());
-                emitRoute(sink, caseId, targetId,
-                        "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
-                        "org.kmipkit.extensions.AttributeSet.tryNew", "construct", attributeSetWire);
-            }
-        }
-
+        executeTypedStructureAttributeRoutes(caseId, targetId, "Alternative Name", attributeTag,
+                memberTags, memberTypes, memberValues, attributeWire, limits, sink);
         String identifier = "object-7";
         byte[] identifierBytes = identifier.getBytes(StandardCharsets.UTF_8);
         byte[] requestPayloadWire = structureWire(0x42007c,
@@ -1086,37 +1064,83 @@ final class LocalCatalogRouteChecks {
     }
 
     static Set<String> missingStructureAttributeValueCaseIds(JsonNode catalog, JsonNode events, String version) {
-        List<String> requiredRoutes = List.of(
-                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
-                "java.generic-ttlv.ttlv_item.create",
-                "java.generic-ttlv.function.ttlv_item_view_from_item",
-                "java.generic-ttlv.ttlv_codec.decode");
+        List<String> genericRoutes = structureAttributeGenericRoutes();
+        List<String> typedRoutes = structureAttributeTypedRoutes();
         Set<String> missing = new java.util.LinkedHashSet<>();
         for (JsonNode testCase : catalog.path("test_cases")) {
             String caseId = testCase.path("case_id").asText();
             if (!STRUCTURE_ATTRIBUTE_VALUE_CASE_IDS.contains(caseId) || !applies(testCase, version)) continue;
             String targetId = testCase.path("requires").path("normative_target_id").asText();
-            int present = 0;
-            for (String route : requiredRoutes) {
-                boolean found = false;
-                for (JsonNode event : events) {
-                    if (caseId.equals(event.path("case_id").asText())
-                            && targetId.equals(event.path("target_id").asText())
-                            && route.equals(event.path("route_id").asText())
-                            && version.equals(event.path("protocol_version").asText())
-                            && "TTLV".equals(event.path("encoding").asText())
-                            && event.path("transport").isNull()) {
-                        found = true;
-                        break;
-                    }
-                }
-                if (found) present++;
-            }
-            if (present == 0) missing.add(caseId);
-            else assertEquals(requiredRoutes.size(), present,
-                    "Structure attribute route evidence must be complete before reuse for " + caseId);
+            int genericPresent = routeEvidenceCount(events, caseId, targetId, version, genericRoutes);
+            int typedPresent = routeEvidenceCount(events, caseId, targetId, version, typedRoutes);
+            if (genericPresent > 0) assertEquals(genericRoutes.size(), genericPresent,
+                    "Generic Structure Attribute route evidence must be complete before reuse for " + caseId);
+            if (typedPresent > 0) assertEquals(typedRoutes.size(), typedPresent,
+                    "Typed Structure Attribute route evidence must be complete before reuse for " + caseId);
+            if (genericPresent == 0 || typedPresent == 0) missing.add(caseId);
         }
         return missing;
+    }
+
+    private static List<String> structureAttributeGenericRoutes() {
+        return List.of(
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode");
+    }
+
+    private static List<String> structureAttributeTypedRoutes() {
+        return List.of(
+                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
+                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
+                "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew");
+    }
+
+    private static void executeTypedStructureAttributeRoutes(String caseId, String targetId, String attributeName,
+            int attributeTag, List<Integer> memberTags, List<TtlvItemType> memberTypes,
+            List<byte[]> memberValues, byte[] wire, CodecLimits limits, EvidenceSink sink) throws Exception {
+        StandardAttribute attribute = standardAttributeForTag(attributeTag);
+        if (attribute == null) {
+            throw new IllegalArgumentException("Selected Structure Attribute has no StandardAttribute: "
+                    + attributeName);
+        }
+        TtlvStructure typedStructure = TtlvStructure.create();
+        try {
+            for (int index = 0; index < memberTags.size(); index++) {
+                byte[] bytes = memberValues.get(index);
+                TtlvValue member = memberTypes.get(index) == TtlvItemType.Enumeration
+                        ? TtlvValue.Enumeration(Integer.toUnsignedLong(ByteBuffer.wrap(bytes).getInt()))
+                        : TtlvValue.TextString(bytes, limits);
+                typedStructure = append(typedStructure, memberTags.get(index), member);
+            }
+        } catch (RuntimeException failure) {
+            typedStructure.close();
+            throw failure;
+        }
+        TtlvValue value = TtlvValue.structure(typedStructure, limits);
+        executeTypedAttributeRoutes(caseId, targetId, attributeTag, attribute, value, TtlvItemType.Structure, wire,
+                decoded -> assertStructureAttributeValue(decoded, memberTags, memberTypes, memberValues), sink);
+    }
+
+    private static void assertStructureAttributeValue(TtlvValueView value, List<Integer> memberTags,
+            List<TtlvItemType> memberTypes, List<byte[]> memberValues) {
+        try (TtlvStructureView structure = value.structure()) {
+            assertEquals(memberTags.size(), structure.itemCount());
+            for (int index = 0; index < memberTags.size(); index++) {
+                try (TtlvItemView item = structure.itemAt(index);
+                        Tag tag = item.tag(); TtlvValueView member = item.value()) {
+                    assertEquals(memberTags.get(index), tag.raw());
+                    assertEquals(memberTypes.get(index), item.itemType());
+                    if (memberTypes.get(index) == TtlvItemType.Enumeration) {
+                        assertEquals(Integer.toUnsignedLong(ByteBuffer.wrap(memberValues.get(index)).getInt()),
+                                member.enumeration());
+                    } else {
+                        assertArrayEquals(memberValues.get(index), member.bytes());
+                    }
+                }
+            }
+        }
     }
 
     /** Exercises generic TTLV construction and decoding for catalogued Text String Attributes. */
