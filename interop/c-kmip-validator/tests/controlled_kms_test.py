@@ -85,7 +85,8 @@ def response(operations: tuple[int, ...], protocol_minor: int,
              result_statuses: tuple[int, ...] | None = None,
              result_reasons: tuple[int | None, ...] | None = None,
              rng_length: int = 16,
-             cancellation_result: int = 1) -> bytes:
+             cancellation_result: int = 1,
+             returned_unique_identifier: bytes | None = None) -> bytes:
     version = tlv(0x420069, 1,
                   integer(0x42006A, 2) + integer(0x42006B, protocol_minor))
     header = tlv(
@@ -189,6 +190,9 @@ def response(operations: tuple[int, ...], protocol_minor: int,
             )
         elif operation == 39:
             payload_value = tlv(0x4200C2, 8, hashlib.sha256(b"abc").digest())
+        elif operation == 40:
+            payload_value = (tlv(0x420094, 7, b"fixture-split-part-1") +
+                             tlv(0x420094, 7, b"fixture-split-part-2"))
         elif operation == 37:
             payload_value = tlv(0x4200C2, 8, bytes(range(rng_length)))
         elif operation == 38:
@@ -261,7 +265,8 @@ def response(operations: tuple[int, ...], protocol_minor: int,
         elif operation in (9, 18, 21):
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
         elif operation == 20:
-            payload_value = tlv(0x420094, 7, b"fixture-key-1")
+            payload_value = tlv(0x420094, 7,
+                                returned_unique_identifier or b"fixture-key-1")
         elif operation == 17:
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
         elif operation == 19 and result_status == 0:
@@ -546,6 +551,7 @@ def main() -> int:
     expected_operations += (2, 18, 33, 19, 20, 20)
     expected_operations += (2, 18, 34, 19, 20, 20)
     expected_operations += (2, 20, 20)
+    expected_operations += (40, 20, 20)
     expected_operations += (2, 18, 6, 19, 20, 20, 20)
     expected_operations += (1, 18, 51, 19, 20)
     expected_cases += ("test-op-pkcs#11",)
@@ -594,6 +600,7 @@ def main() -> int:
     expected_cases += ("test-op-mac-verify",)
     expected_cases += ("test-op-sign", "test-op-signature-verify")
     expected_cases += ("test-op-create-key-pair",)
+    expected_cases += ("test-op-create-split-key",)
     expected_cases += ("test-op-certify",)
     expected_cases += ("test-batch-stop-on-first-failure",)
     expected_cases += ("test-neg-destroy-active-without-revoke",)
@@ -671,9 +678,12 @@ def main() -> int:
         handled = 0
         handled_operations: list[int] = []
         handled_batches: list[tuple[int, ...]] = []
+        split_key_created = False
+        split_key_destroyed: set[bytes] = set()
 
         def serve() -> None:
             nonlocal handled
+            nonlocal split_key_created
             cancel_result_index = 0
             async_lifecycle_poll = False
             async_request_pending = False
@@ -702,6 +712,23 @@ def main() -> int:
                                 raise AssertionError("request has no KMIP Operation field")
                             if operations == (1, 9, 20):
                                 raise AssertionError("Check fixture must revoke the created key before destroying it")
+                            split_identifiers = (b"fixture-split-part-1", b"fixture-split-part-2")
+                            if operations == (40,):
+                                if (split_key_created or integer(0x42008B, 2) not in request or
+                                        integer(0x42008C, 2) not in request or
+                                        enumeration(0x42008A, 1) not in request or
+                                        enumeration(0x420028, 3) not in request or
+                                        integer(0x42002A, 128) not in request):
+                                    raise AssertionError("Create Split Key request did not match the 2-of-2 AES fixture")
+                                split_key_created = True
+                            if operations == (20,) and any(
+                                    tlv(0x420094, 7, identifier) in request
+                                    for identifier in split_identifiers):
+                                identifier = next(identifier for identifier in split_identifiers
+                                                  if tlv(0x420094, 7, identifier) in request)
+                                if not split_key_created or identifier in split_key_destroyed:
+                                    raise AssertionError("Create Split Key cleanup identifier was reused or premature")
+                                split_key_destroyed.add(identifier)
                             if any(operation not in expected_operations for operation in operations):
                                 raise AssertionError(f"unexpected operation batch {operations!r} for {protocol_version}")
                             if operations == (25,) and request.count(
@@ -1167,6 +1194,15 @@ def main() -> int:
                                 if operations == (25,) and request.count(
                                         tlv(0x420006, 8, b"fixture-cancel-correlation")) != 1:
                                     raise AssertionError("Cancel request omitted its exact pending correlation value")
+                                if operations == (40,):
+                                    response_item_ids = (b"split-create",)
+                                elif operations == (20,):
+                                    split_cleanup_id = next((identifier for identifier in split_identifiers
+                                        if tlv(0x420094, 7, identifier) in request), None)
+                                    if split_cleanup_id is not None:
+                                        response_item_ids = (b"split-destroy-part-1" if
+                                            split_cleanup_id == split_identifiers[0] else
+                                            b"split-destroy-part-2",)
                                 stream.sendall(response(
                                     response_operations, protocol_minor, selected_attribute_tag,
                                     4 if private_key_create else 3 if public_key_create else 2,
@@ -1175,7 +1211,9 @@ def main() -> int:
                                     result_reasons=response_reasons,
                                     rng_length=32 if integer(0x4200C4, 32) in request or
                                     tlv(0x4200C2, 8, bytes(range(32))) in request else 16,
-                                    cancellation_result=cancellation_result))
+                                    cancellation_result=cancellation_result,
+                                    returned_unique_identifier=next((identifier for identifier in split_identifiers
+                                        if operations == (20,) and tlv(0x420094, 7, identifier) in request), None)))
                                 if operations == (25,):
                                     async_request_pending = False
                                     async_poll_mode = "none"
@@ -1256,7 +1294,8 @@ def main() -> int:
                 or (1, 11, 20) not in handled_batches
                 or (1, 12, 20) not in handled_batches
                 or (1, 10, 20) not in handled_batches
-                or registered_key_batch not in handled_batches):
+                or registered_key_batch not in handled_batches
+                or not split_key_created or split_key_destroyed != {b"fixture-split-part-1", b"fixture-split-part-2"}):
             raise AssertionError(
                 f"controlled peer observed batches {handled_batches!r}, "
                 f"expected {expected_operations!r}"

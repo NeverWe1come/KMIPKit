@@ -72,6 +72,8 @@ PKCS11_RESPONSE_CORRELATION = b'pkcs11-response-correlation'
 PKCS11_INPUT = b'controlled-pkcs11-input'
 PKCS11_OUTPUT = b'controlled-pkcs11-output'
 CREATE_KEY_PAIR_ITEM_IDS = (b'create-pair', b'destroy-private', b'destroy-public')
+CREATE_SPLIT_KEY_ITEM_IDS = (b'split-create', b'split-destroy-part-1', b'split-destroy-part-2')
+CREATE_SPLIT_KEY_IDENTIFIERS = (b'fixture-split-part-1', b'fixture-split-part-2')
 CERTIFY_ITEM_IDS = (b'certify-create-pair', b'certify-activate-private', b'certify-public-key',
                     b'certify-revoke-private', b'certify-destroy-certificate',
                     b'certify-destroy-private', b'certify-destroy-public')
@@ -402,6 +404,7 @@ RECIPES = {
     'test-op-sign': ((2, 18, 33, 19, 20, 20), 'sign'),
     'test-op-signature-verify': ((2, 18, 34, 19, 20, 20), 'signature_verify'),
     'test-op-create-key-pair': ((2, 20, 20), 'create_key_pair'),
+    'test-op-create-split-key': ((40, 20, 20), 'create_split_key'),
     'test-op-certify': ((2, 18, 6, 19, 20, 20, 20), 'certify'),
     'test-op-pkcs#11': ((1, 18, 51, 19, 20), 'pkcs11'),
     'test-op-obtain-lease': ((1, 16, 19, 20), 'obtain_lease'),
@@ -1017,6 +1020,75 @@ def verify_create_key_pair_response(response_tree):
     if [text_values(item, UNIQUE_IDENTIFIER_TAG) for item in items[1:]] != [
             ['fixture-private-key-1'], ['fixture-public-key-1']]:
         raise ValueError('fixture_create_key_pair_cleanup_mapping_mismatch')
+
+
+def assert_create_split_key_request(node):
+    """Check a 2-of-2 AES Create Split Key request and its item identity."""
+    items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if (len(items) != 1 or numbers(items[0], 0x42005C) != [40] or
+            byte_string_values(items[0], 0x420093) != [CREATE_SPLIT_KEY_ITEM_IDS[0]]):
+        raise ValueError('fixture_create_split_key_batch_mismatch')
+    payloads = [child for child in items[0][2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+    if len(payloads) != 1:
+        raise ValueError('fixture_create_split_key_payload_missing')
+    fields = payloads[0][2]
+    object_type = [field for field in fields if field[0] == 0x420057]
+    part_counts = [field for field in fields if field[0] == 0x42008B]
+    thresholds = [field for field in fields if field[0] == 0x42008C]
+    methods = [field for field in fields if field[0] == 0x42008A]
+    attributes = [field for field in fields if field[0] == 0x420125 and field[1] == 1]
+    if (len(object_type) != 1 or object_type[0][1] != 5 or
+            int.from_bytes(object_type[0][2], 'big') != 2 or
+            len(part_counts) != 1 or part_counts[0][1] != 2 or
+            int.from_bytes(part_counts[0][2], 'big', signed=True) != 2 or
+            len(thresholds) != 1 or thresholds[0][1] != 2 or
+            int.from_bytes(thresholds[0][2], 'big', signed=True) != 2 or
+            len(methods) != 1 or methods[0][1] != 5 or int.from_bytes(methods[0][2], 'big') != 1 or
+            len(attributes) != 1):
+        raise ValueError('fixture_create_split_key_parameters_mismatch')
+    attribute_fields = attributes[0][2]
+    if ([field[0] for field in attribute_fields] != [0x420028, 0x42002A, 0x42002C] or
+            int.from_bytes(attribute_fields[0][2], 'big') != 3 or
+            int.from_bytes(attribute_fields[1][2], 'big', signed=True) != 128 or
+            int.from_bytes(attribute_fields[2][2], 'big', signed=True) != 4):
+        raise ValueError('fixture_create_split_key_attributes_mismatch')
+
+
+def verify_create_split_key_response(response_tree):
+    """Check both repeated split-part IDs and the successful operation result."""
+    items = [child for child in response_tree[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if (len(items) != 1 or numbers(items[0], 0x42005C) != [40] or
+            byte_string_values(items[0], 0x420093) != [CREATE_SPLIT_KEY_ITEM_IDS[0]] or
+            numbers(items[0], 0x42007F) != [0]):
+        raise ValueError('fixture_create_split_key_response_lifecycle_mismatch')
+    payloads = [child for child in items[0][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1]
+    identifiers = [child[2] for child in payloads[0][2]
+                   if child[0] == UNIQUE_IDENTIFIER_TAG and child[1] == 7] if len(payloads) == 1 else []
+    if identifiers != list(CREATE_SPLIT_KEY_IDENTIFIERS):
+        raise ValueError('fixture_create_split_key_response_identifiers_mismatch')
+
+
+def assert_split_key_destroy_request(node, exchange_index):
+    expected_identifier = CREATE_SPLIT_KEY_IDENTIFIERS[exchange_index - 1]
+    expected_item_id = CREATE_SPLIT_KEY_ITEM_IDS[exchange_index]
+    items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if (len(items) != 1 or numbers(items[0], 0x42005C) != [20] or
+            byte_string_values(items[0], 0x420093) != [expected_item_id] or
+            text_values(items[0], UNIQUE_IDENTIFIER_TAG) != [expected_identifier.decode('ascii')]):
+        raise ValueError('fixture_create_split_key_cleanup_request_mismatch')
+
+
+def verify_split_key_destroy_response(response_tree, exchange_index):
+    expected_identifier = CREATE_SPLIT_KEY_IDENTIFIERS[exchange_index - 1]
+    items = [child for child in response_tree[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if (len(items) != 1 or numbers(items[0], 0x42005C) != [20] or
+            byte_string_values(items[0], 0x420093) !=
+            [CREATE_SPLIT_KEY_ITEM_IDS[exchange_index]] or
+            numbers(items[0], 0x42007F) != [0] or
+            text_values(items[0], UNIQUE_IDENTIFIER_TAG) != [expected_identifier.decode('ascii')]):
+        raise ValueError('fixture_create_split_key_cleanup_response_mismatch')
 
 
 def assert_certify_request(node):
@@ -2758,6 +2830,16 @@ class PeerState:
                 self.adjustable_attribute_values[public_identifier] = {}
                 self.key_pair_identifiers = {5: private_identifier, 6: public_identifier}
                 effect = 'key_pair_created'
+            elif operation == 40:
+                split_identifiers = ('fixture-split-part-1', 'fixture-split-part-2')
+                if any(split_identifier in self.objects for split_identifier in split_identifiers):
+                    raise ValueError('fixture_duplicate_create_split_key')
+                for split_identifier in split_identifiers:
+                    self.objects[split_identifier] = 'pre_active'
+                    self.attributes[split_identifier] = set()
+                    self.attribute_values[split_identifier] = {}
+                    self.adjustable_attribute_values[split_identifier] = {}
+                effect = 'split_key_created'
             elif operation == 6:
                 private_identifier = self.key_pair_identifiers.get(5)
                 public_identifier = self.key_pair_identifiers.get(6)
@@ -3281,7 +3363,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 'async_poll_repeated_pending_to_success',
                                                 'async_process_then_poll_state',
                                                 'async_query_outstanding_filter',
-                                                'async_unknown_correlation_rejected') and
+                                                'async_unknown_correlation_rejected',
+                                                'create_split_key') and
                                             recipe[0][0] not in (1, 2, 3))),
                             usage_allocation_ready=recipe[1] == 'get_usage_allocation_uid_variants')
                         boundary = case_id in (
@@ -3300,6 +3383,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         recipe[1] == 'async_create_poll_lifecycle' else
                                         3 if attribute_mutation_recipe or
                                         recipe[1] in ('cancel_poll_race', 'async_poll_final_failure') else
+                                        3 if recipe[1] == 'create_split_key' else
                                         5 if recipe[1] == 'async_poll_repeated_pending_to_success' else
                                         4 if recipe[1] == 'async_process_then_poll_state' else
                                         2 if placeholder_chain_recipe or batch_order_placeholder_recipe or
@@ -3338,6 +3422,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                              (delete_attribute_recipe and seed_rejected and
                                               exchange_index == attribute_cleanup_exchange_index - 1)))
                                         response_item_ids = None
+                                        returned_unique_identifier = None
                                         logout_recipe = recipe[1] == 'login_logout'
                                         if logout_recipe:
                                             assert_login_logout_exchange(request_tree, version, exchange_index)
@@ -3445,6 +3530,15 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             response_operations = recipe[0]
                                             response_item_ids = (b'interop-begin', b'interop-end',
                                                                  b'interop-reset')
+                                        elif recipe[1] == 'create_split_key':
+                                            if exchange_index == 0:
+                                                assert_create_split_key_request(request_tree)
+                                                response_operations = (40,)
+                                            else:
+                                                assert_split_key_destroy_request(request_tree, exchange_index)
+                                                response_operations = (20,)
+                                                returned_unique_identifier = \
+                                                    CREATE_SPLIT_KEY_IDENTIFIERS[exchange_index - 1]
                                         elif cleanup_exchange:
                                             if placeholder_chain_recipe or batch_order_placeholder_recipe:
                                                 assert_placeholder_cleanup_request(request_tree, version)
@@ -3521,6 +3615,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             response_item_ids = PKCS11_ITEM_IDS
                                         elif recipe[1] == 'obtain_lease':
                                             response_item_ids = OBTAIN_LEASE_ITEM_IDS
+                                        elif recipe[1] == 'create_split_key':
+                                            response_item_ids = (CREATE_SPLIT_KEY_ITEM_IDS[exchange_index],)
                                         elif placeholder_chain_recipe:
                                             response_item_ids = (
                                                 (b'placeholder-revoke-cleanup', b'placeholder-destroy-cleanup')
@@ -3736,7 +3832,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 rng_length=(numbers(request_tree, 0x4200C4) or [16])[0]
                                                 if recipe[1] == 'rng_retrieve' else
                                                 len(byte_string_values(request_tree, 0x4200C2)[0])
-                                                if recipe[1] == 'rng_seed' else 16)
+                                                if recipe[1] == 'rng_seed' else 16,
+                                                returned_unique_identifier=returned_unique_identifier)
                                         export_response_negative = (
                                             case_id.startswith('test-norm-payload-client-export-response-') and
                                             variant == 'missing_rejected' and
@@ -3863,6 +3960,10 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 response_tree, recipe[1] == 'signature_verify')
                                         elif recipe[1] == 'create_key_pair':
                                             verify_create_key_pair_response(response_tree)
+                                        elif recipe[1] == 'create_split_key' and exchange_index == 0:
+                                            verify_create_split_key_response(response_tree)
+                                        elif recipe[1] == 'create_split_key':
+                                            verify_split_key_destroy_response(response_tree, exchange_index)
                                         elif recipe[1] == 'certify':
                                             verify_certify_response(response_tree)
                                         elif recipe[1] == 'pkcs11':
@@ -3980,6 +4081,18 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                 env=run_environment)
                             if thread is not None:
                                 thread.join(20 if attribute_mutation_recipe else 6)
+                            if recipe[1] == 'create_split_key' and len(observation) == 3:
+                                observation[0][2]['effects'] = [
+                                    effect for _, _, evidence in observation
+                                    for effect in evidence['effects']]
+                                observation[0][2]['statuses'] = [
+                                    status for _, _, evidence in observation
+                                    for status in evidence['statuses']]
+                                observation[0][2]['reasons'] = [
+                                    reason for _, _, evidence in observation
+                                    for reason in evidence['reasons']]
+                                observation[0][2]['peer_observed_state_after_sha256'] = \
+                                    observation[-1][2]['peer_observed_state_after_sha256']
                             result = json.loads(result_path.read_text()) if result_path.exists() else {}
                             verify_consumer_provenance(result, artifact_sha256, catalog_sha256)
                             result_case = (result.get('cases') or [{}])[0]

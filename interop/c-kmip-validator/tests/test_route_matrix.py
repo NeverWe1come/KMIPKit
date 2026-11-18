@@ -3603,16 +3603,21 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual({event['target_id'] for event in events},
                          {'KMIPKIT-ELEM-OP-C2S-CREATE-SPLIT-KEY'})
         send_events = [event for event in events if event['action'] == 'send']
-        self.assertEqual(len(send_events), 36,
-                         'each wire route creates the split key and destroys both returned parts')
+        self.assertEqual(len(send_events), 12,
+                         'Create Split Key must execute across both versions and all six wire routes')
         self.assertTrue(all(event['peer_observed_operation_sequence'] ==
                             ['Create Split Key', 'Destroy', 'Destroy'] and
                             event['peer_observed_effects'] ==
                             ['split_key_created', 'destroyed', 'destroyed']
                             for event in send_events))
+        self.assertTrue(all(event['peer_observed_state_before_sha256'] ==
+                            event['peer_observed_state_after_sha256']
+                            for event in send_events),
+                        'both returned split parts must be destroyed by their exact identifiers')
         required_symbols = {
             'kmipkit_client_batch_item_create_split_key',
-            'kmipkit_client_batch_item_response_create_split_key',
+            'kmipkit_client_batch_item_response_create_split_key_count',
+            'kmipkit_client_batch_item_response_create_split_key_unique_identifier_at',
             'kmipkit_client_batch_item_destroy',
             'kmipkit_client_execute',
         }
