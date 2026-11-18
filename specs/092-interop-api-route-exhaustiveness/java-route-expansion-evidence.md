@@ -3974,3 +3974,22 @@ generated ledger records 71,641 planned, 40,899 executed, and 30,742 pending
 cells. The ledger comparison and 1,507-route capability audit pass. This
 closes the `Client.executeCancel` route, not the Java matrix; FR-002, FR-003,
 FR-009, and exact-head CI remain open, so the stack remains WIP.
+
+## Java Ping encoding and transport routes — 2026-11-18
+
+For `test-op-ping`, Java now sends `ClientBatchItem.ping()` through the
+installed client using TTLV, JSON, and XML over both raw TLS and HTTPS. Each
+controlled mutual-TLS peer validates the encoded Ping request and KMIP 2.1
+version, and returns a matching successful response that the client decodes.
+The test requires construct, send, and decode evidence in each of the six
+combinations. This covers the typed operation in OASIS KMIP 2.1 §6.1.36 and
+KMIPKIT-0092-FR-002/005; it does not assess high-level API usability.
+
+Red `b4a6638a2` failed because the installed Ping route had evidence only for
+TTLV over raw TLS. Green `251a7cff4` adds the six controlled exchanges and
+updates the generated ledger using `validate_route_evidence.py`. The selected
+report validates 40,914/40,914 cells with zero failures; the full ledger has
+71,641 planned, 40,914 executed, and 30,727 pending cells. The Java suite
+passes, ledger comparison passes, and the capability audit accepts 1,507
+routes. FR-002, FR-003, FR-009 and exact-head CI remain open; the stack stays
+WIP.

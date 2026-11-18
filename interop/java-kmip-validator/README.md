@@ -654,3 +654,20 @@ exchanges and emits the 228 remaining route cells. The full Java suite passes
 the full ledger records 71,641 planned, 40,899 executed, and 30,742 pending
 cells. The ledger comparison and 1,507-route capability audit pass. The Java
 matrix is still incomplete, so #187 and its dependents remain WIP.
+
+### KMIP 2.1 Ping across installed encodings and transports — 2026-11-18
+
+The controlled Java client now executes `ClientBatchItem.ping()` over TTLV,
+JSON, and XML, each over raw TLS and HTTPS. The peer checks the encoded request
+operation and version, then returns an encoding-matched successful Ping
+response for the installed client to decode. This closes the 15 pending
+`test-op-ping` route cells for KMIP 2.1. The evidence addresses the typed Ping
+operation in OASIS KMIP 2.1 §6.1.36 and the KMIPKIT-0092 route-coverage
+requirements; the independent generic TTLV Ping routes remain recorded.
+
+Red `b4a6638a2` requires construction, send, and decode evidence for all six
+encoding/transport pairs. Green `251a7cff4` runs those exchanges. The complete
+Java suite passes; the selected report validates 40,914/40,914 cells with zero
+failures, while the ledger records 71,641 planned, 40,914 executed, and 30,727
+pending. Ledger comparison and the 1,507-route capability audit pass. The full
+matrix remains incomplete, so #187 and its dependents remain WIP.
