@@ -3922,7 +3922,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 'create_split_key', 'join_split_key') and
                                             recipe[0][0] not in (1, 2, 3))),
                             usage_allocation_ready=recipe[1] == 'get_usage_allocation_uid_variants')
-                        local_placeholder_rejection = (
+                        local_placeholder_forward_reference = (
+                            case_id == 'test-batch-placeholder-forward-reference-rejected')
+                        local_placeholder_rejection = local_placeholder_forward_reference or (
                             case_id == 'test-batch-placeholder-without-producer-rejected')
                         boundary = local_placeholder_rejection or case_id in (
                             'test-v20-reject-get-constraints', 'test-v20-reject-ping')
@@ -4837,15 +4839,32 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                     (0x42006B, 2, int(version[-1]).to_bytes(4, 'big'))])
                                 request_header = [version_node]
                                 if local_placeholder_rejection:
-                                    request_header.append((0x42000D, 2, (1).to_bytes(4, 'big')))
-                                batch_item_fields = [
-                                    (0x42005C, 5, operation_code.to_bytes(4, 'big')),
-                                    (0x420079, 1, []),
-                                ]
-                                if local_placeholder_rejection:
-                                    batch_item_fields.insert(1, (0x420093, 8, b'orphan-activate'))
+                                    request_header.append((0x42000D, 2,
+                                                           (2 if local_placeholder_forward_reference
+                                                            else 1).to_bytes(4, 'big')))
+                                if local_placeholder_forward_reference:
+                                    activate_item = (0x42000F, 1, [
+                                        (0x42005C, 5, (18).to_bytes(4, 'big')),
+                                        (0x420093, 8, b'forward-activate'),
+                                        (0x420079, 1, [(UNIQUE_IDENTIFIER_TAG, 5,
+                                                       (1).to_bytes(4, 'big'))]),
+                                    ])
+                                    create_item = (0x42000F, 1, [
+                                        (0x42005C, 5, (1).to_bytes(4, 'big')),
+                                        (0x420093, 8, b'forward-create'),
+                                        (0x420079, 1, [(0x420057, 5, (2).to_bytes(4, 'big'))]),
+                                    ])
+                                    batch_items = [activate_item, create_item]
+                                else:
+                                    batch_item_fields = [
+                                        (0x42005C, 5, operation_code.to_bytes(4, 'big')),
+                                        (0x420079, 1, []),
+                                    ]
+                                    if local_placeholder_rejection:
+                                        batch_item_fields.insert(1, (0x420093, 8, b'orphan-activate'))
+                                    batch_items = [(0x42000F, 1, batch_item_fields)]
                                 attempted = (0x420078, 1, [(0x420077, 1, request_header),
-                                    (0x42000F, 1, batch_item_fields)])
+                                    *batch_items])
                                 observation.append((attempted, None, {}))
                             code = errors[0] if errors else 'consumer_check_failed' if not case_passed else 'public_api_trace_missing' if not called_symbols else None
                             mutation_index = mutation_exchange_index if attribute_mutation_recipe else \
@@ -4892,16 +4911,29 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                            'public_api_success_symbols': sorted(called_symbols),
                                            **({'local_placeholder_activate_rejected':
                                                    local_placeholder_rejection_observed and
-                                                   numbers(observation[0][0], 0x42005C) == [18],
+                                                   (numbers(observation[0][0], 0x42005C) or [])[:1] == [18],
                                                'local_placeholder_batch_count_is_one':
+                                                   not local_placeholder_forward_reference and
                                                    numbers(observation[0][0], 0x42000D) == [1],
                                                'local_placeholder_unique_identifier_is_omitted':
+                                                   not local_placeholder_forward_reference and
                                                    not list(descendants(observation[0][0], UNIQUE_IDENTIFIER_TAG)),
                                                'local_placeholder_options_are_omitted':
                                                    not list(descendants(observation[0][0], 0x42000E)) and
                                                    not list(descendants(observation[0][0], 0x420011)),
                                                'local_placeholder_transport_was_not_invoked':
-                                                   boundary and not errors and observation[0][1] is None}
+                                                   boundary and not errors and observation[0][1] is None,
+                                               'local_placeholder_forward_reference_rejected':
+                                                   local_placeholder_forward_reference and
+                                                   local_placeholder_rejection_observed,
+                                               'local_placeholder_forward_batch_count_is_two':
+                                                   local_placeholder_forward_reference and
+                                                   numbers(observation[0][0], 0x42000D) == [2],
+                                               'local_placeholder_activation_precedes_producer':
+                                                   local_placeholder_forward_reference and
+                                                   numbers(observation[0][0], 0x42005C) == [18, 1] and
+                                                   numbers(next(descendants(observation[0][0], 0x420079)),
+                                                          UNIQUE_IDENTIFIER_TAG) == [1]}
                                               if local_placeholder_rejection and observation else {}),
                                            **({'peer_async_response_statuses': [
                                                    numbers(item, 0x42007F)[0]
@@ -5283,9 +5315,12 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                     event.update(request_delivery_state='not_sent',
                                                  transport_invocation_count=0)
                                     if local_placeholder_rejection:
+                                        placeholder_operations = (
+                                            ['Activate', 'Create'] if local_placeholder_forward_reference
+                                            else ['Activate'])
                                         event.update(
-                                            batch_operation_sequence=['Activate'],
-                                            batch_item_count=1,
+                                            batch_operation_sequence=placeholder_operations,
+                                            batch_item_count=len(placeholder_operations),
                                             local_rejection_code='batch_placeholder_forward_reference',
                                             client_error_category='validation',
                                             client_error_cause='invalid_input')

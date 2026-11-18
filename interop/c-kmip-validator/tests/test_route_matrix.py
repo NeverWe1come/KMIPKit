@@ -3527,18 +3527,27 @@ class RouteMatrixTests(unittest.TestCase):
         selected = {**catalog, 'test_cases': [case]}
 
         events, _, checks = execute_network_cells(
-            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest,
-            protocol_versions=('2.1',), network_combinations=(('TTLV', 'raw_tls'),))
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
 
-        self.assertEqual(1, len(checks))
+        self.assertEqual(12, len(checks), 'local rejection must cover both versions and six wire routes')
         self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
         self.assertTrue(all(check.get('local_placeholder_forward_reference_rejected') is True and
                             check.get('local_placeholder_forward_batch_count_is_two') is True and
                             check.get('local_placeholder_activation_precedes_producer') is True and
                             check.get('local_placeholder_transport_was_not_invoked') is True
                             for check in checks), checks)
+        self.assertTrue(all({'kmipkit_client_batch_item_activate',
+                             'kmipkit_client_batch_item_create',
+                             'kmipkit_client_batch_item_with_unique_batch_item_id',
+                             'kmipkit_client_execute'} <= set(check['public_api_trace_symbols'])
+                            for check in checks), checks)
+        construct_events = [event for event in events if event['action'] == 'construct']
+        self.assertEqual(24, len(construct_events),
+                         'both operation constructors need evidence for every version and wire route')
         send_events = [event for event in events if event['action'] == 'send']
-        self.assertEqual(2, len(send_events))
+        self.assertEqual(24, len(send_events), 'both batch items need send-attempt evidence per wire route')
+        self.assertEqual({'KMIPKIT-ELEM-OP-C2S-ACTIVATE', 'KMIPKIT-ELEM-OP-C2S-CREATE'},
+                         {event['target_id'] for event in construct_events + send_events})
         self.assertTrue(all(event.get('request_delivery_state') == 'not_sent' and
                             event.get('transport_invocation_count') == 0 and
                             event.get('batch_operation_sequence') == ['Activate', 'Create'] and

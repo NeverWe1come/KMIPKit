@@ -7828,6 +7828,9 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     bool unsupported_version_boundary_workflow =
         strcmp(test_case->case_id, "test-v20-reject-get-constraints") == 0 ||
         strcmp(test_case->case_id, "test-v20-reject-ping") == 0;
+    bool batch_forward_placeholder_workflow =
+        strcmp(test_case->case_id,
+               "test-batch-placeholder-forward-reference-rejected") == 0;
     bool export_workflow = strcmp(test_case->operation, "Export") == 0;
     const char *export_request_field = getenv("KMIPKIT_C_EXPORT_REQUEST_FIELD");
     const char *export_request_variant = getenv("KMIPKIT_C_EXPORT_REQUEST_VARIANT");
@@ -7854,7 +7857,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         strcmp(test_case->case_id, "test-batch-count-mismatch-rejected") == 0;
     if (strcmp(test_case->mode, "local_model") == 0) {
         if (!unsupported_version_boundary_workflow && !get_usage_allocation_uid_variant &&
-            !export_workflow && !batch_count_mismatch_workflow)
+            !export_workflow && !batch_count_mismatch_workflow &&
+            !batch_forward_placeholder_workflow)
             return execute_local_model_case(test_case);
         if (strcmp(client->api_level, "typed-protocol") != 0) {
             return outcome_not_run(
@@ -7870,7 +7874,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     }
     if (strcmp(test_case->mode, "server_exchange") != 0 &&
         !unsupported_version_boundary_workflow && !get_usage_allocation_uid_variant &&
-        !batch_count_mismatch_workflow) {
+        !batch_count_mismatch_workflow && !batch_forward_placeholder_workflow) {
         return outcome_not_run("catalog mode is not supported by the C validator");
     }
     if (strcmp(test_case->case_id, "test-op-cancel") == 0 ||
@@ -8186,7 +8190,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         batch_create_activate_get_attribute_list_revoke_destroy_workflow;
     bool object_lifecycle_workflow = create_workflow ||
         batch_create_activate_get_attribute_list_revoke_destroy_workflow ||
-        batch_placeholder_chain_workflow || batch_order_placeholder_workflow || revoke_workflow ||
+        batch_placeholder_chain_workflow || batch_order_placeholder_workflow ||
+        batch_forward_placeholder_workflow || revoke_workflow ||
         revoke_cleanup_workflow || export_workflow ||
         (get_workflow && !single_item_default_continuation_workflow) ||
         get_attributes_workflow || get_attribute_list_workflow || get_constraints_workflow ||
@@ -8201,7 +8206,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         return outcome_not_run("Check variations are not yet mapped to isolated C fixtures");
     }
     if (strcmp(test_case->operation, "Activate") == 0 && !activate_workflow &&
-        !placeholder_without_producer_workflow) {
+        !placeholder_without_producer_workflow && !batch_forward_placeholder_workflow) {
         return outcome_not_run("Activate variations are not yet mapped to isolated C fixtures");
     }
     if (strcmp(test_case->operation, "Revoke") == 0 && !revoke_workflow) {
@@ -8530,6 +8535,9 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                         item, request_validation_diagnostic, sizeof(request_validation_diagnostic))) {
                     status = KMIPKIT_ERROR_INVALID_INPUT;
                 }
+            } else if (batch_forward_placeholder_workflow) {
+                /* Preserve the invalid Activate-before-Create order for validation. */
+                status = kmipkit_client_batch_item_activate(&placeholder, &activate_item);
             } else if (active_destroy_negative_workflow) {
                 status = kmipkit_client_batch_item_activate(&placeholder, &activate_item);
                 if (status == 0 && !request_item_is_valid(
@@ -8636,7 +8644,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                         &get_attribute_list_identifier : NULL;
                 status = build_get_attribute_list_item(identifier, &item);
             }
-            if (status == 0 && !batch_order_placeholder_workflow && !request_item_is_valid(
+            if (status == 0 && !batch_order_placeholder_workflow &&
+                !batch_forward_placeholder_workflow && !request_item_is_valid(
                     item, request_validation_diagnostic, sizeof(request_validation_diagnostic))) {
                 status = KMIPKIT_ERROR_INVALID_INPUT;
             }
@@ -8650,7 +8659,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             }
         }
         if (status == 0 && !batch_placeholder_chain_workflow &&
-            !batch_order_placeholder_workflow) {
+            !batch_order_placeholder_workflow && !batch_forward_placeholder_workflow) {
             request_construction_step = "Destroy using ID Placeholder";
             status = kmipkit_client_batch_item_destroy(&placeholder, &cleanup_item);
             if (status == 0 && !request_item_is_valid(
@@ -8666,18 +8675,22 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             } else {
                 status = set_batch_item_id(&setup_item,
                     register_certificate_workflow ? "interop-register" :
+                    batch_forward_placeholder_workflow ? "forward-create" :
                     batch_order_placeholder_workflow ? "ordered-create" :
                     batch_placeholder_chain_workflow ? "placeholder-create" : "interop-create");
                 if (status == 0 && (active_destroy_negative_workflow ||
                                     batch_placeholder_chain_workflow ||
                                     batch_order_placeholder_workflow ||
+                                    batch_forward_placeholder_workflow ||
                                     batch_create_activate_get_attribute_list_revoke_destroy_workflow)) {
                     status = set_batch_item_id(&activate_item,
                         active_destroy_negative_workflow ? "interop-activate-before-destroy" :
+                        batch_forward_placeholder_workflow ? "forward-activate" :
                         batch_order_placeholder_workflow ? "ordered-activate" :
                         batch_placeholder_chain_workflow ? "placeholder-activate" : "interop-activate");
                 }
-                if (status == 0 && !batch_order_placeholder_workflow) status = set_batch_item_id(
+                if (status == 0 && !batch_order_placeholder_workflow &&
+                    !batch_forward_placeholder_workflow) status = set_batch_item_id(
                     &item, batch_placeholder_chain_workflow ? "placeholder-get" :
                            active_destroy_negative_workflow ? "interop-destroy-active-target" :
                            check_workflow ? "interop-check" :
@@ -8697,8 +8710,9 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                             "interop-revoke-cleanup" : "interop-revoke");
                 }
             }
-            if (status == 0 && !batch_placeholder_chain_workflow &&
-                !batch_order_placeholder_workflow) status = set_batch_item_id(&cleanup_item,
+                if (status == 0 && !batch_placeholder_chain_workflow &&
+                    !batch_order_placeholder_workflow && !batch_forward_placeholder_workflow)
+                    status = set_batch_item_id(&cleanup_item,
                 (destroy_workflow || active_destroy_negative_workflow) ?
                     "interop-destroy-cleanup" : "interop-destroy");
         }
@@ -8791,6 +8805,9 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             batch, KMIPKIT_ENUMERATION_BATCH_ERROR_CONTINUATION_OPTION_CONTINUE);
         if (status == 0) status = kmipkit_client_batch_add_item(batch, &item);
         if (status == 0) status = kmipkit_client_batch_add_item(batch, &cleanup_item);
+    } else if (status == 0 && batch_forward_placeholder_workflow) {
+        status = kmipkit_client_batch_add_item(batch, &activate_item);
+        if (status == 0) status = kmipkit_client_batch_add_item(batch, &setup_item);
     } else if (status == 0 && object_lifecycle_workflow) {
         if (!batch_order_placeholder_option_omitted) {
             status = kmipkit_client_batch_set_order_option(batch, 1);
@@ -8860,6 +8877,14 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             outcome.library_validated = true;
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),
                      "KMIPKit rejected the unbound ID Placeholder before transport");
+            goto cleanup;
+        }
+        if (batch_forward_placeholder_workflow && category == 1 && cause == 1 &&
+            delivery == 1) {
+            outcome.success = true;
+            outcome.library_validated = true;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit rejected the forward ID Placeholder before transport");
             goto cleanup;
         }
         snprintf(outcome.result_reason, sizeof(outcome.result_reason),
