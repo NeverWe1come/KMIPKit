@@ -2238,6 +2238,7 @@ class ControlledTlsPeerTest {
         assertEquals(report.path("events").size() + genericOperationEvents.size(),
                 completeReport.path("events").size(),
                 "Operation evidence is appended after the legacy case aggregates are checked.");
+        assertAsyncCancellationEnumerationTtlvRoutes(completeReport.path("events"));
     }
 
     @Test
@@ -6696,6 +6697,35 @@ class ControlledTlsPeerTest {
             }
         }
         return count;
+    }
+
+    private static void assertAsyncCancellationEnumerationTtlvRoutes(JsonNode events) throws Exception {
+        List<String> requiredRoutes = List.of(
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode");
+        for (JsonNode testCase : readRouteEvidenceCatalog().path("test_cases")) {
+            JsonNode scenario = testCase.path("requires").path("protocol_scenario");
+            if (!"asynchronous_workflows".equals(testCase.path("category").asText())
+                    || !scenario.path("parameters").has("cancel_result")) continue;
+            String caseId = testCase.path("case_id").asText();
+            String targetId = "";
+            for (JsonNode target : scenario.path("target_ids")) {
+                if (target.asText().startsWith("KMIPKIT-ELEM-ENUM-VALUE-CANCELLATION-RESULT-")) {
+                    targetId = target.asText();
+                    break;
+                }
+            }
+            assertTrue(!targetId.isBlank(), "Cancellation scenario must name its enumerated result target: "
+                    + caseId);
+            for (String version : KMIP_2_0_AND_2_1) {
+                for (String route : requiredRoutes) {
+                    assertEquals(1, routeEventCount(events, caseId, route, version, targetId),
+                            "Cancellation result must execute its generic TTLV route for " + caseId
+                                    + " / " + version + " / " + route);
+                }
+            }
+        }
     }
 
     private static boolean routeEventMatches(JsonNode event, String caseId, String routeId,
