@@ -4336,6 +4336,39 @@ class ControlledTlsPeerTest {
                 }
             }
         }
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String targetId = testCase.path("requires").path("normative_target_id").asText();
+            if (!"Get Attributes".equals(testCase.path("operation").asText())
+                    || !targetId.startsWith("KMIPKIT-PAYLOAD-CLIENT-GET-ATTRIBUTES-REQUEST-")
+                    || !containsText(testCase.path("execution").path("protocol_versions"), protocolVersion)) {
+                continue;
+            }
+            String caseId = testCase.path("case_id").asText();
+            for (String routeId : routeIds) {
+                for (String encoding : List.of("TTLV", "JSON", "XML")) {
+                    for (String transport : List.of("raw_tls", "https")) {
+                        for (String action : List.of("construct", "send")) {
+                            boolean observed = false;
+                            for (JsonNode event : events) {
+                                if (caseId.equals(event.path("case_id").asText())
+                                        && targetId.equals(event.path("target_id").asText())
+                                        && routeId.equals(event.path("route_id").asText())
+                                        && protocolVersion.equals(event.path("protocol_version").asText())
+                                        && encoding.equals(event.path("encoding").asText())
+                                        && transport.equals(event.path("transport").asText())
+                                        && action.equals(event.path("action").asText())) {
+                                    observed = true;
+                                    break;
+                                }
+                            }
+                            assertTrue(observed, "Missing Get Attributes payload route evidence for " + caseId
+                                    + " / " + targetId + " / " + routeId + " / " + protocolVersion
+                                    + " / " + encoding + " / " + transport + " / " + action);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private static void assertGetAttributeListNetworkRouteCoverage(ArrayNode events, JsonNode catalog,
