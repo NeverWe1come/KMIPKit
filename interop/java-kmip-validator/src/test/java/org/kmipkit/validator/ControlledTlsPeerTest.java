@@ -2248,6 +2248,7 @@ class ControlledTlsPeerTest {
                 completeReport.path("events").size(),
                 "Operation evidence is appended after the legacy case aggregates are checked.");
         assertAsyncCancellationEnumerationTtlvRoutes(completeReport.path("events"));
+        assertAsyncIndicatorEnumerationTtlvRoutes(completeReport.path("events"));
     }
 
     @Test
@@ -6731,6 +6732,34 @@ class ControlledTlsPeerTest {
                 for (String route : requiredRoutes) {
                     assertEquals(1, routeEventCount(events, caseId, route, version, targetId),
                             "Cancellation result must execute its generic TTLV route for " + caseId
+                                    + " / " + version + " / " + route);
+                }
+            }
+        }
+    }
+
+    private static void assertAsyncIndicatorEnumerationTtlvRoutes(JsonNode events) throws Exception {
+        List<String> requiredRoutes = List.of(
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode");
+        for (JsonNode testCase : readRouteEvidenceCatalog().path("test_cases")) {
+            JsonNode scenario = testCase.path("requires").path("protocol_scenario");
+            if (!"asynchronous_workflows".equals(testCase.path("category").asText())
+                    || !scenario.path("parameters").has("asynchronous_indicator")) continue;
+            String caseId = testCase.path("case_id").asText();
+            String targetId = "";
+            for (JsonNode target : scenario.path("target_ids")) {
+                if (target.asText().startsWith("KMIPKIT-ELEM-ENUM-VALUE-ASYNCHRONOUS-INDICATOR-")) {
+                    targetId = target.asText();
+                    break;
+                }
+            }
+            assertTrue(!targetId.isBlank(), "Asynchronous scenario must name its enum target: " + caseId);
+            for (String version : KMIP_2_0_AND_2_1) {
+                for (String route : requiredRoutes) {
+                    assertEquals(1, routeEventCount(events, caseId, route, version, targetId),
+                            "Asynchronous Indicator must execute its generic TTLV route for " + caseId
                                     + " / " + version + " / " + route);
                 }
             }
