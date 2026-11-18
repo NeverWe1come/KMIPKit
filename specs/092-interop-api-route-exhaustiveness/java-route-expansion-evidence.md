@@ -3650,3 +3650,18 @@ pass 108 tests; and the capability audit reports 1,507 routes. The selected
 report validates 34,382/34,382 cells with zero failures and leaves 37,259 of
 71,641 planned Java cells pending. The generated ledger matches its checked-in
 reference; `git diff --check` passes. The PR stack remains WIP.
+
+## #216 stack-tip verification after ManagedObject Key Material routes — 2026-11-18
+
+The #216 branch includes Red commit `cc15e8801` and Green commit `8b02accb6`
+from #187. The increment executes `ManagedObject.fromFields` and
+`ManagedObject.fromItem` for every transparent Key Material target, using
+format-matched Symmetric Key, Private Key, or Public Key object structures.
+Fixture values remain synthetic.
+
+The full Java suite passes 84 tests; shared evidence/schema/capability suites
+pass 108 tests; and the capability audit reports 1,507 routes. The selected
+report validates 34,550/34,550 cells with zero failures and leaves 37,091 of
+71,641 planned Java cells pending. The generated ledger matches its checked-in
+reference; `git diff --check` passes. Usage Limits remains covered and the PR
+stack remains WIP.

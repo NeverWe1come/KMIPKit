@@ -139,3 +139,15 @@ artifact. This is part of the FR-006 artifact provenance check.
 - This adds 108 cells to the prior #216 selected scope. The report validates
   34,382/34,382 cells with zero failures and leaves 37,259 of 71,641 pending.
   Full Java matrix closure remains open under FR-002/FR-003/FR-009.
+
+## Java ManagedObject Key Material routes — #216 stack sync — 2026-11-18
+
+- **FR-003:** The #216 consumer includes the latest #187 `ManagedObject.fromFields`
+  and `ManagedObject.fromItem` routes for all transparent Key Material fields
+  and structures. Each format is wrapped in the matching Symmetric Key, Private
+  Key, or Public Key structure, then read back through the nested Key Block
+  (KMIP 2.0/2.1 §§2.5, 2.6, 2.9, 3.4–3.12). Synthetic fixture data is not a
+  cryptographic validity test.
+- Combined with the Usage Limits cells, the selected report validates
+  34,550/34,550 cells with zero failures and leaves 37,091 of 71,641 pending.
+  Full Java matrix closure remains open under FR-002/FR-003/FR-009.

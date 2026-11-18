@@ -453,3 +453,11 @@ On #216 the selected report validates 34,274/34,274 cells with zero failures;
 The #216 head also includes all six typed constructors for the nine transparent
 Key Material Structures; the selected report validates 34,382/34,382 cells
 with zero failures and leaves 37,259 pending.
+
+The latest #187 ManagedObject increment now also reaches #216, adding
+`ManagedObject.fromFields` and `ManagedObject.fromItem` coverage for transparent
+Key Material fields and structures wrapped in their matching Symmetric Key,
+Private Key, or Public Key object type (§§2.5, 2.6, 2.9, 3.4–3.12). Combined
+with the Usage Limits slice, the selected report validates 34,550/34,550 cells
+with zero failures and leaves 37,091 of 71,641 pending. Synthetic fixtures
+verify nested typed values and do not claim cryptographic validity.

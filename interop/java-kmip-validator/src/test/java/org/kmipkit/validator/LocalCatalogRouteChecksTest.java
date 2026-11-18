@@ -634,14 +634,16 @@ class LocalCatalogRouteChecksTest {
                     catalog, version, caseIds, invocations::add);
         }
 
-        assertEquals(caseIds.size() * 2 * 6, invocations.size());
+        assertEquals(caseIds.size() * 2 * 8, invocations.size());
         assertEquals(Set.of(
                 "java.typed-protocol.model.org.kmipkit.ttlv.keymaterial.fromfields",
                 "java.typed-protocol.model.org.kmipkit.ttlv.keymaterial.fromitem",
                 "java.typed-protocol.model.org.kmipkit.ttlv.keyvalue.fromfields",
                 "java.typed-protocol.model.org.kmipkit.ttlv.keyvalue.fromitem",
                 "java.typed-protocol.model.org.kmipkit.ttlv.keyblock.fromfields",
-                "java.typed-protocol.model.org.kmipkit.ttlv.keyblock.fromitem"),
+                "java.typed-protocol.model.org.kmipkit.ttlv.keyblock.fromitem",
+                "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromfields",
+                "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromitem"),
                 invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId)
                         .collect(java.util.stream.Collectors.toSet()));
         assertEquals(caseIds, invocations.stream().map(LocalCatalogRouteChecks.Invocation::caseId)
@@ -663,14 +665,16 @@ class LocalCatalogRouteChecksTest {
                     catalog, version, caseIds, invocations::add);
         }
 
-        assertEquals(caseIds.size() * 2 * 6, invocations.size());
+        assertEquals(caseIds.size() * 2 * 8, invocations.size());
         assertEquals(Set.of(
                 "java.typed-protocol.model.org.kmipkit.ttlv.keymaterial.fromfields",
                 "java.typed-protocol.model.org.kmipkit.ttlv.keymaterial.fromitem",
                 "java.typed-protocol.model.org.kmipkit.ttlv.keyvalue.fromfields",
                 "java.typed-protocol.model.org.kmipkit.ttlv.keyvalue.fromitem",
                 "java.typed-protocol.model.org.kmipkit.ttlv.keyblock.fromfields",
-                "java.typed-protocol.model.org.kmipkit.ttlv.keyblock.fromitem"),
+                "java.typed-protocol.model.org.kmipkit.ttlv.keyblock.fromitem",
+                "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromfields",
+                "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromitem"),
                 invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId)
                         .collect(java.util.stream.Collectors.toSet()));
         assertEquals(caseIds, invocations.stream().map(LocalCatalogRouteChecks.Invocation::caseId)
