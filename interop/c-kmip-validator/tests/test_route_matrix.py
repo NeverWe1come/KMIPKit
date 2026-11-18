@@ -582,9 +582,23 @@ class RouteMatrixTests(unittest.TestCase):
                         sum(event['public_api_symbol'] == symbol and event['action'] == action
                             for event in case_events),
                         count)
-        self.assertEqual(sum(event['public_api_symbol'] ==
-                             'kmipkit_client_async_operation_outcome_cancel_response_v1'
-                             for event in events), 30)
+        cancel_response_events = [event for event in events
+                                  if event['public_api_symbol'] ==
+                                  'kmipkit_client_async_operation_outcome_cancel_response_v1']
+        expected_cancel_response_cells = {
+            (case['case_id'], target_id, version)
+            for case in selected_cases
+            for version, version_suffix in (('2.0', '20'), ('2.1', '21'))
+            for target_id in (
+                'KMIPKIT-ELEM-OP-C2S-CANCEL',
+                f'KMIPKIT-PAYLOAD-CLIENT-CANCEL-RESPONSE-{version_suffix}-002',
+            )
+        }
+        self.assertEqual({(event['case_id'], event['target_id'], event['protocol_version'])
+                          for event in cancel_response_events}, expected_cancel_response_cells)
+        self.assertEqual(len(cancel_response_events), 20)
+        self.assertTrue(all(event['action'] == 'decode' and event['encoding'] == 'TTLV' and
+                            event['transport'] is None for event in cancel_response_events))
 
     def test_async_cancel_poll_race_interleaves_poll_before_cancel(self):
         """OASIS KMIP 2.1 §§6.1.5, 6.1.38 define the interleaved requests and responses."""
@@ -3855,8 +3869,23 @@ class RouteMatrixTests(unittest.TestCase):
         parameter_events = [event for event in events
                             if event['target_id'] in parameter_targets and
                             event['action'] in {'construct', 'send'}]
-        self.assertEqual(48, len(parameter_events),
-                         'every Sign request cell must record the omitted parameters field')
+        expected_parameter_cells = {
+            (target_id, version, encoding, transport, action)
+            for target_id, version in (
+                ('KMIPKIT-PAYLOAD-CLIENT-SIGN-REQUEST-20-002', '2.0'),
+                ('KMIPKIT-PAYLOAD-CLIENT-SIGN-REQUEST-21-002', '2.1'),
+            )
+            for encoding, transport in (
+                ('TTLV', 'raw_tls'), ('TTLV', 'https'), ('JSON', 'raw_tls'),
+                ('JSON', 'https'), ('XML', 'raw_tls'), ('XML', 'https'),
+            )
+            for action in ('construct', 'send')
+        }
+        self.assertEqual({(event['target_id'], event['protocol_version'], event['encoding'],
+                           event['transport'], event['action']) for event in parameter_events},
+                         expected_parameter_cells,
+                         'each Sign payload branch must be exercised only in its source version')
+        self.assertEqual(24, len(parameter_events))
         self.assertEqual({event['action'] for event in parameter_events}, {'construct', 'send'})
         self.assertTrue(all(check.get('peer_sign_cryptographic_parameters_present') is False
                             for check in checks), checks)
