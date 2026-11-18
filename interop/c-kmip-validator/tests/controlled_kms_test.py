@@ -1597,7 +1597,7 @@ def main() -> int:
         if protocol_version == "2.1" and result["summary"] != expected_summary:
             raise AssertionError(
                 f"controlled run must execute only the mapped recipes and classify all other cases: "
-                f"{result['summary']!r}"
+                f"actual={result['summary']!r}; expected={expected_summary!r}"
             )
         expected_kmip20_summary = {
             "total": len(version_cases),
@@ -1610,7 +1610,7 @@ def main() -> int:
         if protocol_version == "2.0" and result["summary"] != expected_kmip20_summary:
             raise AssertionError(
                 f"controlled KMIP 2.0 run did not preserve complete case classification: "
-                f"{result['summary']!r}"
+                f"actual={result['summary']!r}; expected={expected_kmip20_summary!r}"
             )
         if not markdown_path.is_file() or not html_path.is_file():
             raise AssertionError("requested human-readable reports were not written")
