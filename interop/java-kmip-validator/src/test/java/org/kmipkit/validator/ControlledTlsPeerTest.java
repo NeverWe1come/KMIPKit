@@ -2267,6 +2267,21 @@ class ControlledTlsPeerTest {
                         .path("public_api_symbol").asText());
 
         events.addAll(genericOperationEvents);
+        String activateIdentifierCase = "test-norm-payload-client-activate-request-20-001";
+        Set<String> activateIdentifierRoutes = Set.of(
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode");
+        int activateIdentifierRouteEventCount = 0;
+        for (String route : activateIdentifierRoutes) {
+            activateIdentifierRouteEventCount += routeEventCount(events, activateIdentifierCase, route, "2.0",
+                    "KMIPKIT-PAYLOAD-CLIENT-ACTIVATE-REQUEST-20-001");
+            activateIdentifierRouteEventCount += routeEventCount(events, activateIdentifierCase, route, "2.0",
+                    "KMIPKIT-ELEM-OP-C2S-ACTIVATE");
+        }
+        assertEquals(6, activateIdentifierRouteEventCount,
+                "A client operation payload field needs generic TTLV construction, view, and decode evidence "
+                        + "for both its payload target and operation target.");
         for (String protocolVersion : KMIP_2_0_AND_2_1) {
             assertTrue(LocalCatalogRouteChecks.missingGenericOperationTargetCaseIds(
                     readRouteEvidenceCatalog(), events, protocolVersion).isEmpty(),
