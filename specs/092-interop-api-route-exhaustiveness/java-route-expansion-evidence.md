@@ -2724,3 +2724,42 @@ python3 -m unittest interop.shared.tests.test_route_execution_evidence \
 python3 interop/shared/tools/route_capabilities.py --check
 git diff --check
 ```
+
+## KMIP 2.0/2.1 Attributes generic Structure routes — 2026-11-18
+
+Red commit `48bff5e27` adds a focused Java validator test requiring all five
+catalogued generic TTLV routes for the KMIP 2.0/2.1 §5.1 `Attributes`
+structure; it fails to compile because the route executor does not yet exist.
+Green commit `285e22fd8` builds a source-shaped Attribute containing the
+`Comment` name and text value, invokes the installed `TtlvStructure.create`,
+`TtlvStructure.withItem`, `TtlvItem.create`, item view, and `TtlvCodec.decode`
+APIs, then verifies the outer tag and structure shape. The refactor integration
+adds those per-version route invocations to the canonical report and ledger.
+These are local TTLV model cells; the enclosing test also runs its controlled
+TLS query, but these calls are not recorded as network exchanges.
+
+The full Gradle suite passes 65 tests with zero failures, errors, or skips. The
+selected report validates 28,440/28,440 cells with zero failures. The ledger
+records 28,440 executed and 43,201 pending of 71,641 cells across 1,157 case
+IDs. Shared route evidence, schema, and capability suites pass 108 tests, and
+the route capability audit confirms 1,507 routes. Full Java matrix completion
+is still pending and the PR remains WIP.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-tmp" \
+  bash bindings/java/gradlew -p interop/java-kmip-validator \
+  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" \
+  test --rerun-tasks --refresh-dependencies
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+python3 -m unittest interop.shared.tests.test_route_execution_evidence \
+  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+git diff --check
+```
