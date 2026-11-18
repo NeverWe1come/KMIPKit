@@ -81,6 +81,7 @@ import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Base64;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HexFormat;
 import java.util.HashMap;
 import java.util.List;
@@ -91,6 +92,7 @@ import java.util.UUID;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -109,6 +111,9 @@ class ControlledTlsPeerTest {
 
     private record NewAttributeMutationFixture(String methodName, String title, String ordinal,
             int operationValue) { }
+
+    private record AsyncCancelRouteScenario(String caseId, String cancellationResultName,
+            int cancellationResultValue) { }
 
     private record AttributeReadNetworkRequest(String caseId, String routeId,
             String publicApiSymbol, String uniqueBatchItemId, String targetId,
@@ -1168,6 +1173,8 @@ class ControlledTlsPeerTest {
                     serverPrivateKeyPem, clientCertificatePem, clientPrivateKeyPem);
             appendCancelResponsePayloadEvidence(events, protocolVersion, serverCertificatePem,
                     serverPrivateKeyPem, clientCertificatePem, clientPrivateKeyPem);
+            appendControlledAsyncCancelNetworkRouteEvents(events, protocolVersion, serverCertificatePem,
+                    serverPrivateKeyPem, clientCertificatePem, clientPrivateKeyPem);
             assertAsyncCancelNetworkRouteCoverage(events, protocolVersion);
             appendNewAttributeMutationEvents(events, protocolVersion, serverCertificatePem,
                     serverPrivateKeyPem, clientCertificatePem, clientPrivateKeyPem);
@@ -1965,12 +1972,15 @@ class ControlledTlsPeerTest {
         int referencedEnumAggregateEventCount = 0;
         int referencedEnumCaseCount = 0;
         int asyncCancellationEnumerationRouteEventCount = 0;
+        int asyncCancelNetworkRouteEventCount = 0;
         int asyncIndicatorEnumerationRouteEventCount = 0;
         for (JsonNode testCase : readRouteEvidenceCatalog().path("test_cases")) {
             JsonNode scenario = testCase.path("requires").path("protocol_scenario");
             if ("asynchronous_workflows".equals(testCase.path("category").asText())
                     && scenario.path("parameters").has("cancel_result")) {
                 asyncCancellationEnumerationRouteEventCount += 3
+                        * testCase.path("execution").path("protocol_versions").size();
+                asyncCancelNetworkRouteEventCount += 7 * 3 * 2
                         * testCase.path("execution").path("protocol_versions").size();
             }
             if ("asynchronous_workflows".equals(testCase.path("category").asText())
@@ -2041,6 +2051,7 @@ class ControlledTlsPeerTest {
                         + typedSplitKeyManagedObjectRouteEventCount
                         + typedSplitKeyManagedObjectMemberRouteEventCount
                         + asyncCancellationEnumerationRouteEventCount
+                        + asyncCancelNetworkRouteEventCount
                         + asyncIndicatorEnumerationRouteEventCount
                         + 97 // BEC, batch IDs, async payload, Ping, Endpoint Role, Object Defaults, derivation, and Extension Information member cells.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Type generic and typed Attribute routes.
@@ -6914,6 +6925,11 @@ class ControlledTlsPeerTest {
 
     private static byte[] asynchronousResponse(long operation, byte[] correlation, int protocolMinorVersion)
             throws Exception {
+        return asynchronousResponse(operation, correlation, protocolMinorVersion, 1);
+    }
+
+    private static byte[] asynchronousResponse(long operation, byte[] correlation, int protocolMinorVersion,
+            int cancellationResult) throws Exception {
         byte[] version = structure(0x420069,
                 item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(protocolMinorVersion)));
         byte[] header = structure(0x42007a, version,
@@ -6923,7 +6939,7 @@ class ControlledTlsPeerTest {
         fields.add(item(0x42007f, 5, intBytes(operation == 0x19 ? 0 : 2)));
         if (operation == 0x19) {
             fields.add(structure(0x42007c, item(0x420006, 8, correlation),
-                    item(0x420012, 5, intBytes(1))));
+                    item(0x420012, 5, intBytes(cancellationResult))));
         } else {
             fields.add(item(0x420006, 8, correlation));
             if (operation != 0x1a) fields.add(structure(0x42007c));
@@ -8427,6 +8443,330 @@ class ControlledTlsPeerTest {
         byte[] requestBytes = peer.get(15, TimeUnit.SECONDS);
         assertEquals(0x19L, requestOperation(requestBytes));
         assertEquals(protocolMinorVersion, requestProtocolMinorVersion(requestBytes));
+    }
+
+    // OASIS KMIP 2.0/2.1 §6.1.5 and §§8.2, 8.3, 8.6: Cancel carries the exact
+    // asynchronous correlation value and returns a Cancellation Result.
+    private void appendControlledAsyncCancelNetworkRouteEvents(ArrayNode events, String protocolVersion,
+            byte[] serverCertificatePem, byte[] serverPrivateKeyPem,
+            byte[] clientCertificatePem, byte[] clientPrivateKeyPem) throws Exception {
+        List<AsyncCancelRouteScenario> scenarios = asyncCancelRouteScenarios(
+                readRouteEvidenceCatalog(), protocolVersion);
+        Map<String, String> canonicalRequestHashes = new HashMap<>();
+        int minor = "2.0".equals(protocolVersion) ? 0 : 1;
+
+        for (String encoding : List.of("TTLV", "JSON", "XML")) {
+            for (String transport : List.of("raw_tls", "https")) {
+                List<byte[]> observedRequests = executeAsyncCancelCombination(
+                        scenarios, protocolVersion, encoding, transport,
+                        serverCertificatePem, serverPrivateKeyPem, clientCertificatePem, clientPrivateKeyPem);
+                if ("TTLV".equals(encoding) && "raw_tls".equals(transport)) {
+                    for (int index = 0; index < scenarios.size(); index++) {
+                        canonicalRequestHashes.put(scenarios.get(index).caseId(),
+                                normalizedTreeSha256(observedRequests.get(index)));
+                    }
+                }
+                for (AsyncCancelRouteScenario scenario : scenarios) {
+                    String requestHash = canonicalRequestHashes.get(scenario.caseId());
+                    assertTrue(requestHash != null, "The TTLV/raw-TLS peer must establish request tree hashes.");
+                    byte[] correlation = asyncCancelCorrelation(scenario, protocolVersion);
+                    byte[] responseWire = asynchronousResponse(0x19, correlation, minor,
+                            scenario.cancellationResultValue());
+                    String responseHash = normalizedTreeSha256(responseWire);
+                    appendAsyncCancelRouteEvents(events, scenario, protocolVersion, encoding, transport,
+                            requestHash, responseHash);
+                }
+            }
+        }
+    }
+
+    private List<byte[]> executeAsyncCancelCombination(List<AsyncCancelRouteScenario> scenarios,
+            String protocolVersion, String encoding, String transport,
+            byte[] serverCertificatePem, byte[] serverPrivateKeyPem,
+            byte[] clientCertificatePem, byte[] clientPrivateKeyPem) throws Exception {
+        Path connectionFile = temporaryDirectory.resolve(
+                "async-cancel-routes-" + protocolVersion + "-" + encoding + "-" + transport + ".json");
+        if ("raw_tls".equals(transport)) {
+            SSLServerSocket listener = listener(certificate(serverCertificatePem),
+                    privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+            FutureTask<List<byte[]>> peer = new FutureTask<>(() -> serveAsyncCancelRequests(
+                    listener, scenarios, protocolVersion, encoding));
+            Thread peerThread = new Thread(peer,
+                    "java-validator-async-cancel-peer-" + protocolVersion + "-" + encoding);
+            peerThread.setDaemon(true);
+            peerThread.start();
+            Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
+                    clientCertificatePem, clientPrivateKeyPem, true, protocolVersion, encoding, transport));
+            try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile))) {
+                executeAsyncCancelRequests(driver, scenarios, protocolVersion);
+            } finally {
+                listener.close();
+            }
+            return peer.get(30, TimeUnit.SECONDS);
+        }
+
+        List<byte[]> observedRequests = Collections.synchronizedList(new ArrayList<>());
+        AtomicInteger requestIndex = new AtomicInteger();
+        CompletableFuture<List<byte[]>> peer = new CompletableFuture<>();
+        HttpsServer listener = httpsListener(certificate(serverCertificatePem),
+                privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+        listener.createContext("/kmip", exchange -> {
+            try {
+                if (!"POST".equals(exchange.getRequestMethod())) {
+                    throw new IllegalStateException("The controlled HTTP peer requires POST.");
+                }
+                int index = requestIndex.getAndIncrement();
+                if (index < 0 || index >= scenarios.size()) {
+                    throw new IllegalStateException("The controlled peer received an unexpected Cancel request.");
+                }
+                byte[] request = exchange.getRequestBody().readAllBytes();
+                AsyncCancelRouteScenario scenario = scenarios.get(index);
+                byte[] correlation = asyncCancelCorrelation(scenario, protocolVersion);
+                assertAsyncCancelWireRequest(request, encoding, protocolVersion, correlation);
+                observedRequests.add(request);
+                byte[] response = asynchronousCancelResponseBytes(
+                        encoding, scenario, correlation, "2.0".equals(protocolVersion) ? 0 : 1);
+                exchange.getResponseHeaders().set("Content-Type", contentTypeForEncoding(encoding));
+                exchange.sendResponseHeaders(200, response.length);
+                try (OutputStream output = exchange.getResponseBody()) {
+                    output.write(response);
+                }
+                if (index + 1 == scenarios.size()) peer.complete(List.copyOf(observedRequests));
+            } catch (Exception exception) {
+                peer.completeExceptionally(exception);
+                try {
+                    exchange.sendResponseHeaders(500, -1);
+                } catch (Exception ignored) {
+                    // The peer future carries the controlled-fixture failure to the test thread.
+                }
+            } finally {
+                exchange.close();
+            }
+        });
+        listener.start();
+        Files.writeString(connectionFile, connectionJson(listener.getAddress().getPort(),
+                serverCertificatePem, clientCertificatePem, clientPrivateKeyPem, true,
+                protocolVersion, encoding, transport));
+        try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile))) {
+            executeAsyncCancelRequests(driver, scenarios, protocolVersion);
+        } finally {
+            listener.stop(0);
+        }
+        return peer.get(30, TimeUnit.SECONDS);
+    }
+
+    private static List<byte[]> serveAsyncCancelRequests(SSLServerSocket listener,
+            List<AsyncCancelRouteScenario> scenarios, String protocolVersion, String encoding) throws Exception {
+        List<byte[]> requests = new ArrayList<>();
+        int minor = "2.0".equals(protocolVersion) ? 0 : 1;
+        for (AsyncCancelRouteScenario scenario : scenarios) {
+            try (SSLSocket socket = (SSLSocket) listener.accept()) {
+                socket.setEnabledProtocols(new String[] {"TLSv1.3"});
+                socket.setSoTimeout(10_000);
+                socket.startHandshake();
+                byte[] request = switch (encoding) {
+                    case "TTLV" -> readTtlv(socket.getInputStream());
+                    case "JSON" -> readJsonDocument(socket.getInputStream());
+                    case "XML" -> readXmlDocument(socket.getInputStream());
+                    default -> throw new IllegalArgumentException("Unsupported fixture encoding.");
+                };
+                byte[] correlation = asyncCancelCorrelation(scenario, protocolVersion);
+                assertAsyncCancelWireRequest(request, encoding, protocolVersion, correlation);
+                requests.add(request);
+                byte[] response = asynchronousCancelResponseBytes(encoding, scenario, correlation, minor);
+                socket.getOutputStream().write(response);
+                socket.getOutputStream().flush();
+            }
+        }
+        return List.copyOf(requests);
+    }
+
+    private static void executeAsyncCancelRequests(JavaKmipDriver driver,
+            List<AsyncCancelRouteScenario> scenarios, String protocolVersion) throws Exception {
+        for (AsyncCancelRouteScenario scenario : scenarios) {
+            byte[] correlation = asyncCancelCorrelation(scenario, protocolVersion);
+            try (var outcome = driver.executeCancelForResponsePayloadEvidence(correlation);
+                    var payload = outcome.responsePayloadTtlv().orElseThrow();
+                    TtlvStructureView payloadView = payload.view()) {
+                assertEquals(0x19L, outcome.metadataV1().operation());
+                assertEquals(0L, outcome.metadataV1().resultStatus());
+                assertEquals(2, payloadView.itemCount());
+                try (TtlvItemView correlationField = payloadView.itemAt(0);
+                        Tag correlationTag = correlationField.tag();
+                        var correlationValue = correlationField.value()) {
+                    assertEquals(0x420006, correlationTag.raw());
+                    assertArrayEquals(correlation, correlationValue.bytes());
+                }
+                try (TtlvItemView resultField = payloadView.itemAt(1);
+                        Tag resultTag = resultField.tag();
+                        var resultValue = resultField.value()) {
+                    assertEquals(0x420012, resultTag.raw());
+                    assertEquals(scenario.cancellationResultValue(), resultValue.enumeration());
+                }
+            }
+        }
+    }
+
+    private static List<AsyncCancelRouteScenario> asyncCancelRouteScenarios(
+            JsonNode catalog, String protocolVersion) {
+        List<AsyncCancelRouteScenario> scenarios = new ArrayList<>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            JsonNode scenario = testCase.path("requires").path("protocol_scenario");
+            if (!"asynchronous_workflows".equals(testCase.path("category").asText())
+                    || !scenario.path("parameters").has("cancel_result")
+                    || !appliesToVersion(testCase, protocolVersion)) continue;
+            String resultName = scenario.path("parameters").path("cancel_result").asText();
+            String targetIdPrefix = "KMIPKIT-ELEM-ENUM-VALUE-CANCELLATION-RESULT-";
+            JsonNode target = null;
+            for (JsonNode targetId : scenario.path("target_ids")) {
+                String candidateId = targetId.asText();
+                if (!candidateId.startsWith(targetIdPrefix)) continue;
+                for (JsonNode candidate : catalog.path("normative_targets")) {
+                    if (candidateId.equals(candidate.path("target_id").asText())) {
+                        target = candidate;
+                        break;
+                    }
+                }
+                break;
+            }
+            assertTrue(target != null, "The cancellation result must resolve to a normative enum target.");
+            assertEquals(resultName, target.path("name").asText());
+            int resultValue = Integer.parseInt(target.path("wire_value").asText().replaceFirst("^0[xX]", ""), 16);
+            scenarios.add(new AsyncCancelRouteScenario(
+                    testCase.path("case_id").asText(), resultName, resultValue));
+        }
+        assertEquals(5, scenarios.size(), "The catalog must supply all five Cancellation Result scenarios.");
+        return List.copyOf(scenarios);
+    }
+
+    private static byte[] asyncCancelCorrelation(AsyncCancelRouteScenario scenario, String protocolVersion) {
+        return ("kmipkit-" + scenario.caseId() + "-" + protocolVersion).getBytes(StandardCharsets.US_ASCII);
+    }
+
+    private static byte[] asynchronousCancelResponseBytes(String encoding, AsyncCancelRouteScenario scenario,
+            byte[] correlation, int protocolMinorVersion) throws Exception {
+        if ("TTLV".equals(encoding)) {
+            return asynchronousResponse(0x19, correlation, protocolMinorVersion,
+                    scenario.cancellationResultValue());
+        }
+        String correlationHex = "JSON".equals(encoding)
+                ? HexFormat.of().formatHex(correlation)
+                : HexFormat.of().withUpperCase().formatHex(correlation);
+        String resultName = jsonCancellationResultName(scenario.cancellationResultName());
+        if ("JSON".equals(encoding)) {
+            String response = "{\"tag\":\"ResponseMessage\",\"value\":["
+                    + "{\"tag\":\"ResponseHeader\",\"value\":["
+                    + "{\"tag\":\"ProtocolVersion\",\"value\":["
+                    + "{\"tag\":\"ProtocolVersionMajor\",\"type\":\"Integer\",\"value\":2},"
+                    + "{\"tag\":\"ProtocolVersionMinor\",\"type\":\"Integer\",\"value\":"
+                    + protocolMinorVersion + "}]},"
+                    + "{\"tag\":\"TimeStamp\",\"type\":\"DateTime\",\"value\":\"0x0000000000000001\"},"
+                    + "{\"tag\":\"BatchCount\",\"type\":\"Integer\",\"value\":1}]},"
+                    + "{\"tag\":\"BatchItem\",\"value\":["
+                    + "{\"tag\":\"Operation\",\"type\":\"Enumeration\",\"value\":\"Cancel\"},"
+                    + "{\"tag\":\"ResultStatus\",\"type\":\"Enumeration\",\"value\":\"Success\"},"
+                    + "{\"tag\":\"ResponsePayload\",\"value\":["
+                    + "{\"tag\":\"AsynchronousCorrelationValue\",\"type\":\"ByteString\",\"value\":\""
+                    + correlationHex + "\"},"
+                    + "{\"tag\":\"CancellationResult\",\"type\":\"Enumeration\",\"value\":\""
+                    + resultName + "\"}]}]}]}";
+            return response.getBytes(StandardCharsets.UTF_8);
+        }
+        String response = "<ResponseMessage><ResponseHeader><ProtocolVersion>"
+                + "<ProtocolVersionMajor type=\"Integer\" value=\"2\"/>"
+                + "<ProtocolVersionMinor type=\"Integer\" value=\"" + protocolMinorVersion
+                + "\"/></ProtocolVersion><TimeStamp type=\"DateTime\" value=\"1970-01-01T00:00:01Z\"/>"
+                + "<BatchCount type=\"Integer\" value=\"1\"/></ResponseHeader><BatchItem>"
+                + "<Operation type=\"Enumeration\" value=\"Cancel\"/>"
+                + "<ResultStatus type=\"Enumeration\" value=\"Success\"/><ResponsePayload>"
+                + "<AsynchronousCorrelationValue type=\"ByteString\" value=\"" + correlationHex + "\"/>"
+                + "<CancellationResult type=\"Enumeration\" value=\"" + resultName
+                + "\"/></ResponsePayload></BatchItem></ResponseMessage>";
+        return response.getBytes(StandardCharsets.UTF_8);
+    }
+
+    private static String jsonCancellationResultName(String name) {
+        return switch (name) {
+            case "Unable to Cancel" -> "UnableToCancel";
+            case "Canceled", "Completed", "Failed", "Unavailable" -> name;
+            default -> throw new IllegalArgumentException("Unsupported catalog Cancellation Result.");
+        };
+    }
+
+    private static void assertAsyncCancelWireRequest(byte[] request, String encoding,
+            String protocolVersion, byte[] expectedCorrelation) throws Exception {
+        int minor = "2.0".equals(protocolVersion) ? 0 : 1;
+        if ("TTLV".equals(encoding)) {
+            assertEquals(0x19L, requestOperation(request));
+            assertEquals(minor, requestProtocolMinorVersion(request));
+            assertArrayEquals(expectedCorrelation, requestCorrelation(request));
+            return;
+        }
+        String correlationHex = "JSON".equals(encoding)
+                ? HexFormat.of().formatHex(expectedCorrelation)
+                : HexFormat.of().withUpperCase().formatHex(expectedCorrelation);
+        if ("JSON".equals(encoding)) {
+            JsonNode root = new ObjectMapper().readTree(request);
+            List<JsonNode> operations = jsonValuesForTag(root, "Operation");
+            assertEquals(1, operations.size());
+            assertEquals("Cancel", operations.get(0).asText());
+            List<JsonNode> minors = jsonValuesForTag(root, "ProtocolVersionMinor");
+            assertEquals(1, minors.size());
+            assertEquals(minor, minors.get(0).asInt());
+            List<JsonNode> correlations = jsonValuesForTag(root, "AsynchronousCorrelationValue");
+            assertEquals(1, correlations.size());
+            assertEquals(correlationHex, correlations.get(0).asText());
+            return;
+        }
+        String xml = new String(request, StandardCharsets.UTF_8);
+        assertTrue(xml.startsWith("<RequestMessage>"));
+        assertTrue(xml.contains("<Operation type=\"Enumeration\" value=\"Cancel\"/>"));
+        assertTrue(xml.contains("<ProtocolVersionMinor type=\"Integer\" value=\"" + minor + "\"/>"));
+        assertTrue(xml.contains("<AsynchronousCorrelationValue type=\"ByteString\" value=\""
+                + correlationHex + "\"/>"));
+    }
+
+    private static void appendAsyncCancelRouteEvents(ArrayNode events, AsyncCancelRouteScenario scenario,
+            String protocolVersion, String encoding, String transport,
+            String requestHash, String responseHash) {
+        String routeId = "java.typed-protocol.client.execute_cancel";
+        String apiSymbol = "org.kmipkit.extensions.Client.executeCancel";
+        String executionRouteId = "java.execute.cancel";
+        String executionApiSymbol = apiSymbol;
+        String operationTarget = "KMIPKIT-ELEM-OP-C2S-CANCEL";
+        for (String action : List.of("construct", "send", "decode")) {
+            appendAsyncCancelRouteEvent(events, scenario.caseId(), routeId, operationTarget, apiSymbol,
+                    executionRouteId, executionApiSymbol, action, protocolVersion, encoding, transport,
+                    requestHash, responseHash, true);
+        }
+        for (String requestTarget : List.of(
+                "KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-20-001",
+                "KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-21-001")) {
+            for (String action : List.of("construct", "send")) {
+                appendAsyncCancelRouteEvent(events, scenario.caseId(), routeId, requestTarget, apiSymbol,
+                        executionRouteId, executionApiSymbol, action, protocolVersion, encoding, transport,
+                        requestHash, responseHash, false);
+            }
+        }
+    }
+
+    private static void appendAsyncCancelRouteEvent(ArrayNode events, String caseId,
+            String routeId, String targetId, String apiSymbol, String executionRouteId,
+            String executionApiSymbol, String action, String protocolVersion, String encoding,
+            String transport, String requestHash, String responseHash, boolean asynchronousWorkflow) {
+        ObjectNode event = appendRouteEvent(events, caseId, routeId, targetId, apiSymbol,
+                executionRouteId, executionApiSymbol, action, protocolVersion, transport,
+                "decode".equals(action) ? null : requestHash,
+                "decode".equals(action) ? responseHash : null);
+        event.put("encoding", encoding);
+        if ("send".equals(action)) {
+            event.put("request_delivery_state", "response_received");
+            event.put("transport_invocation_count", 1);
+        }
+        if (asynchronousWorkflow) {
+            event.put("workflow_step_index", 1);
+            event.put("workflow_operation", "Cancel");
+        }
     }
 
     private static void assertAsyncCancelNetworkRouteCoverage(ArrayNode events, String protocolVersion) {
