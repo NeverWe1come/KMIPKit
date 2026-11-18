@@ -132,6 +132,12 @@ class ControlledTlsPeerTest {
         assertEquals("AttributeReference", attributeReference.path("tag").asText());
         assertEquals("0x00042053", attributeReference.path("value").asText());
     }
+
+    @Test
+    void asyncCancelLocalRoutesCoverEveryNormativeTtlvTarget() throws Exception {
+        ArrayNode events = new ObjectMapper().createArrayNode();
+        assertAsyncCancelLocalRouteCoverage(events, "2.0");
+    }
     private static final List<String> CREATE_SCENARIO_ROUTE_CASE_IDS = List.of(
             "test-batch-create-activate-destroy",
             "test-async-lifecycle-poll",
@@ -11461,6 +11467,54 @@ class ControlledTlsPeerTest {
                     }
                 }
             }
+        }
+    }
+
+    private static void assertAsyncCancelLocalRouteCoverage(ArrayNode events, String protocolVersion) {
+        List<String> caseIds = List.of(
+                "test-async-cancel-result-canceled",
+                "test-async-cancel-result-completed",
+                "test-async-cancel-result-failed",
+                "test-async-cancel-result-unable-to-cancel",
+                "test-async-cancel-result-unavailable");
+        List<String> genericTargets = List.of(
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ASYNCHRONOUS-INDICATOR",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-ASYNCHRONOUS-CORRELATION-VALUE",
+                "KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-20-001",
+                "KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-21-001",
+                "KMIPKIT-PAYLOAD-CLIENT-CANCEL-RESPONSE-20-002",
+                "KMIPKIT-PAYLOAD-CLIENT-CANCEL-RESPONSE-21-002");
+        List<String> requestTargets = List.of(
+                "KMIPKIT-ELEM-OP-C2S-CANCEL",
+                "KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-20-001",
+                "KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-21-001");
+        List<String> responseTargets = List.of(
+                "KMIPKIT-ELEM-OP-C2S-CANCEL",
+                "KMIPKIT-PAYLOAD-CLIENT-CANCEL-RESPONSE-20-002",
+                "KMIPKIT-PAYLOAD-CLIENT-CANCEL-RESPONSE-21-002");
+        for (String caseId : caseIds) {
+            for (String targetId : genericTargets) {
+                assertRouteEventRecorded(events, caseId, targetId,
+                        "java.generic-ttlv.ttlv_item.create", "construct", protocolVersion);
+                assertRouteEventRecorded(events, caseId, targetId,
+                        "java.generic-ttlv.function.ttlv_item_view_from_item", "decode", protocolVersion);
+                assertRouteEventRecorded(events, caseId, targetId,
+                        "java.generic-ttlv.ttlv_codec.decode", "decode", protocolVersion);
+            }
+            for (String targetId : requestTargets) {
+                assertRouteEventRecorded(events, caseId, targetId,
+                        "java.typed-protocol.cancel_request.create", "construct", protocolVersion);
+                assertRouteEventRecorded(events, caseId, targetId,
+                        "java.typed-protocol.function.async_cancel_request_to_ttlv_payload",
+                        "encode", protocolVersion);
+            }
+            for (String targetId : responseTargets) {
+                assertRouteEventRecorded(events, caseId, targetId,
+                        "java.typed-protocol.function.kmipkit_client_async_operation_outcome_cancel_response_v1",
+                        "decode", protocolVersion);
+            }
+            assertRouteEventRecorded(events, caseId, "KMIPKIT-ELEM-OP-C2S-CREATE",
+                    "java.typed-protocol.function.client_batch_item_response_create", "decode", protocolVersion);
         }
     }
 
