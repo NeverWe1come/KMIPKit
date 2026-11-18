@@ -1072,3 +1072,22 @@ The focused test and full Gradle suite pass. The selected report validates
 planned, 42,381 executed, and 29,260 pending cells and matches its checked-in
 reference. The overall Java matrix remains incomplete, so the PR stack stays
 WIP.
+
+### Enumeration Attribute typed construction routes — 2026-11-18
+
+The local Java runner now executes nine catalogued Enumeration Attribute
+cases through `TypedAttribute.create`, `TypedAttribute.fromItem`, and
+`AttributeSet.tryNew`, in addition to generic TTLV construction and decoding.
+Fixtures use each catalog-selected representative value and check the typed
+attribute, value, and one-item Attribute Set. This closes 54 previously
+pending local route cells. Sources: OASIS KMIP 2.0/2.1 §§4.7, 4.13, 4.22,
+4.26, 4.34, 4.36, 4.37, 4.42, 4.57, and 11.56. No server acceptance is
+claimed.
+
+Red `4be80061d` requires the typed routes; Green `8cdd1b967` executes them;
+Refactor `44a755f7c` shares the catalog-based applicability count with the
+other typed attribute groups. The Gradle suite passes 95/95, and selected
+evidence validates 42,498/42,498 cells with zero failures. The ledger records
+71,641 planned, 42,498 executed, and 29,143 pending cells and matches its
+checked-in reference. The Java matrix remains incomplete, so the PR stack stays
+WIP.

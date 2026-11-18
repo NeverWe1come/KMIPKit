@@ -1415,6 +1415,11 @@ final class LocalCatalogRouteChecks {
             String targetId = requires.path("normative_target_id").asText();
             String attributeName = requires.path("attribute").asText();
             int attributeTag = tagCodeNamed(catalog, attributeName, version);
+            StandardAttribute attribute = standardAttributeForTag(attributeTag);
+            if (attribute == null) {
+                throw new AssertionError("Catalogued Enumeration Attribute has no Java StandardAttribute: "
+                        + attributeName);
+            }
             long enumeration = representativeEnumerationValue(catalog, attributeName, version);
             byte[] valueBytes = ByteBuffer.allocate(Integer.BYTES).putInt((int) enumeration).array();
             byte[] wire = itemWire(attributeTag, TtlvItemType.Enumeration.code(), valueBytes);
@@ -1435,6 +1440,9 @@ final class LocalCatalogRouteChecks {
                     "org.kmipkit.ttlv.TtlvItem.view", "decode", wire);
             emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_codec.decode",
                     "org.kmipkit.ttlv.TtlvCodec.decode", "decode", wire);
+            executeTypedAttributeRoutes(caseId, targetId, attributeTag, attribute,
+                    TtlvValue.Enumeration(enumeration), TtlvItemType.Enumeration, wire,
+                    value -> assertEquals(enumeration, value.enumeration()), sink);
             emitted.add(caseId);
         }
         if (!emitted.equals(applicable)) {
