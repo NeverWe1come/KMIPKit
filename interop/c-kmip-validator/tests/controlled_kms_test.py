@@ -606,6 +606,7 @@ def main() -> int:
     expected_operations += (1, 18, 35, 19, 20)
     expected_operations += (1, 18, 36, 19, 20)
     expected_operations += (2, 18, 33, 19, 20, 20)
+    expected_operations += (2, 18, 33, 19, 20, 20)
     expected_operations += (2, 18, 34, 19, 20, 20)
     expected_operations += (2, 20, 20)
     expected_operations += (40, 20, 20)
@@ -661,7 +662,8 @@ def main() -> int:
     expected_cases += ("test-op-decrypt",)
     expected_cases += ("test-op-mac",)
     expected_cases += ("test-op-mac-verify",)
-    expected_cases += ("test-op-sign", "test-op-signature-verify")
+    expected_cases += ("test-op-sign", "test-sign-missing-managed-object-cryptographic-parameters",
+                       "test-op-signature-verify")
     expected_cases += ("test-op-create-key-pair",)
     expected_cases += ("test-op-create-split-key",)
     expected_cases += ("test-op-join-split-key",)
@@ -1070,6 +1072,14 @@ def main() -> int:
                             elif operations != stop_on_first_failure_batch:
                                 response_statuses = None
                                 response_reasons = None
+                            if (operations == (2, 18, 33, 19, 20, 20) and
+                                    not ttlv_contains_tag(request, 0x42002B)):
+                                response_item_ids = (
+                                    b"sign-create-pair", b"sign-activate", b"sign-target",
+                                    b"sign-revoke", b"sign-destroy-private", b"sign-destroy-public",
+                                )
+                                response_statuses = (0, 0, 1, 0, 0, 0)
+                                response_reasons = (None, None, 36, None, None, None)
                             if placeholder_chain:
                                 expected_item_ids = (
                                     b"placeholder-create", b"placeholder-activate", b"placeholder-get"
