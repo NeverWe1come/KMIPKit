@@ -4220,3 +4220,25 @@ and the route audit accepts 1,507 routes. Selected evidence validates
 full matrix remains incomplete, so the PR stack stays WIP. Because host `/tmp`
 was full, the successful artifact install and test run used temporary storage
 on the worktree filesystem.
+
+### Typed structure Attribute routes — 2026-11-18
+
+The installed Java consumer now exercises six additional catalogued
+Structure-valued Attribute cases through `TypedAttribute.create`,
+`TypedAttribute.fromItem`, and `AttributeSet.tryNew`, in addition to the
+existing generic TTLV construction and decode routes. Fixtures verify each
+standard attribute and its nested member tags, types, and values. The cases
+have 11 applicable KMIP 2.0/2.1 pairs, closing 33 previously pending local
+route cells. Alternative Name retains its prior typed construction and Get
+Attributes request evidence. Sources: OASIS KMIP 2.0/2.1 §§4.4, 4.27, 4.31,
+4.32, 4.47; KMIP 2.1 §4.53; Attribute definitions §§11.54/11.56. The checks
+prove local construction, not server acceptance.
+
+Red `65146388f` requires both generic and typed route groups. Green
+`b42d98234` executes the six structure cases and updates the generated
+ledger. Refactor `15722f49d` consolidates complete-or-absent route group
+validation across scalar and structure attributes. The Gradle suite passes
+95/95 tests and focused structure tests pass after the refactor. Selected
+evidence validates 42,612/42,612 cells with zero failures. The ledger records
+71,641 planned, 42,612 executed, and 29,029 pending cells; generated ledger
+comparison passes. Full matrix closure remains open, so the stack stays WIP.

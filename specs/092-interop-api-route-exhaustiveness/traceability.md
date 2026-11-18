@@ -545,3 +545,22 @@ vendor KMS interoperability.
   failures; the ledger records 71,641 planned, 42,579 executed, and 29,062
   pending cells, and comparison passes. Full matrix closure remains open under
   FR-002/FR-003/FR-009; the Java stack stays WIP.
+
+## Java typed structure Attribute routes — 2026-11-18
+
+- **FR-003/FR-009:** Six catalogued Structure-valued Attribute cases now use
+  `TypedAttribute.create`, `TypedAttribute.fromItem`, and
+  `AttributeSet.tryNew` alongside generic TTLV construction and decode. The
+  11 applicable KMIP 2.0/2.1 case-version pairs close 33 local route cells.
+  Fixtures check nested member tags, types, and values. Sources: OASIS KMIP
+  2.0/2.1 §§4.4, 4.27, 4.31, 4.32, 4.47; KMIP 2.1 §4.53; Attribute
+  definitions §§11.54/11.56. These checks establish local construction, not
+  server acceptance.
+- Red `65146388f` requires both route groups; Green `b42d98234` executes the
+  structure cases and updates the ledger; Refactor `15722f49d` shares
+  complete-or-absent route validation. The Gradle suite passes 95/95 tests;
+  focused structure tests also pass after Refactor. The selected report
+  validates 42,612/42,612 cells with zero failures. The ledger records 71,641
+  planned, 42,612 executed, and 29,029 pending cells, and comparison passes.
+  Full matrix closure remains open under FR-002/FR-003/FR-009; the stack stays
+  WIP.
