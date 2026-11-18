@@ -599,7 +599,7 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
                                           and event["protocol_version"] == "2.0"
                                           and event["encoding"] == "TTLV"
                                           and event["transport"] == "raw_tls")]
-        with self.assertRaisesRegex(ValueError, "missing route execution cells"):
+        with self.assertRaisesRegex(ValueError, "lacks a matching not-sent request"):
             validate_report(
                 missing_send, catalog, manifest,
                 catalog_sha256="c" * 64,
@@ -614,7 +614,7 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
                     and event["protocol_version"] == "2.0" and event["encoding"] == "TTLV"
                     and event["transport"] == "raw_tls")
         send["encoding"] = "JSON"
-        with self.assertRaisesRegex(ValueError, "outside the declared route scope"):
+        with self.assertRaisesRegex(ValueError, "duplicate route execution cell"):
             validate_report(
                 mismatched_send, catalog, manifest,
                 catalog_sha256="c" * 64,

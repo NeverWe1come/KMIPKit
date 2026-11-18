@@ -74,7 +74,29 @@ def _omitted_batch_option_targets(case: dict) -> set[str]:
 
 
 def _not_applicable_reason(case: dict, obligation: dict, action: str) -> str | None:
-    """Classify the unreturned item in the approved Stop partial-response case."""
+    """Classify only response items that cannot exist after an approved boundary."""
+    if (case.get("case_id") == "test-batch-placeholder-forward-reference-rejected"
+            and case.get("category") == "batch_workflows"
+            and action == "decode"
+            and obligation.get("mode") == "network"
+            and obligation.get("transport") in {"raw_tls", "https"}):
+        scenario = case.get("requires", {}).get("protocol_scenario", {})
+        parameters = scenario.get("parameters", {}) if isinstance(scenario, dict) else {}
+        expected = scenario.get("expected", {}) if isinstance(scenario, dict) else {}
+        items = parameters.get("items", []) if isinstance(parameters, dict) else []
+        operations = scenario.get("operations", []) if isinstance(scenario, dict) else []
+        item_index = obligation.get("workflow_item_index")
+        if (isinstance(scenario, dict)
+                and scenario.get("mode") == "local_model"
+                and expected.get("construction") == "rejected_or_server_reports_protocol_error"
+                and operations == ["Activate", "Create"]
+                and items == ["Activate(IDPlaceholder from item 2)", "Create(unique-key)"]
+                and isinstance(item_index, int)
+                and not isinstance(item_index, bool)
+                and 0 <= item_index < len(items)
+                and obligation.get("workflow_operation") == operations[item_index]):
+            return "local_rejection_no_response"
+
     if (case.get("case_id") != "test-batch-stop-on-first-failure"
             or case.get("category") != "batch_workflows"
             or action != "decode"

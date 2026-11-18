@@ -24,7 +24,7 @@
     "public_api_symbol": { "type": "string", "minLength": 1 },
     "artifact_commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
     "execution_status": { "enum": ["required", "not_applicable"] },
-    "not_applicable_reason": { "enum": ["stop_unprocessed_response_omitted"] },
+    "not_applicable_reason": { "enum": ["stop_unprocessed_response_omitted", "local_rejection_no_response"] },
     "evidence_collected": { "const": false },
     "action": { "enum": ["construct", "encode", "send", "decode"] },
     "execution_route_id": { "oneOf": [{ "type": "null" }, { "type": "string", "minLength": 1 }] },

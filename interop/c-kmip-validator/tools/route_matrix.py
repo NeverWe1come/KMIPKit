@@ -196,7 +196,11 @@ def require_complete(events: list[dict], pending: list[dict]) -> None:
     for event in events:
         if event['status'] == 'not_applicable' and (
                 event.get('invocation_count') != 0
-                or event.get('not_applicable_reason') != 'stop_unprocessed_response_omitted'
+                or event.get('not_applicable_reason') not in {
+                    'stop_unprocessed_response_omitted', 'local_rejection_no_response'}
+                or (event.get('not_applicable_reason') == 'local_rejection_no_response'
+                    and (event.get('action') != 'decode'
+                         or event.get('transport') not in {'raw_tls', 'https'}))
                 or 'invocation_id' in event):
             raise ValueError('not-applicable route cell claims invocation evidence')
 
@@ -947,8 +951,13 @@ def invoked_event(cell: dict, index: int) -> dict:
 def not_applicable_event(cell: dict) -> dict:
     """Record an approved omitted response without claiming an API call."""
     if (cell.get('execution_status') != 'not_applicable'
-            or cell.get('not_applicable_reason') != 'stop_unprocessed_response_omitted'):
+            or cell.get('not_applicable_reason') not in {
+                'stop_unprocessed_response_omitted', 'local_rejection_no_response'}):
         raise ValueError('route cell has no approved non-applicability disposition')
+    if (cell.get('not_applicable_reason') == 'local_rejection_no_response'
+            and (cell.get('action') != 'decode' or cell.get('mode') != 'network'
+                 or cell.get('transport') not in {'raw_tls', 'https'})):
+        raise ValueError('local-rejection non-applicability requires a network response decode')
     event = cell_fields(cell)
     event.update(status='not_applicable', invocation_count=0)
     return event
