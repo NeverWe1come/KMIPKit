@@ -40,6 +40,23 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /** Executes source-backed local catalog obligations through the installed public package. */
 final class LocalCatalogRouteChecks {
+    private static final Set<String> CLIENT_PAYLOAD_SCALAR_FIELDS = Set.of("Unique Identifier", "Correlation Value", "Asynchronous Correlation Value",
+                            "Object Type", "Data", "IV/Counter/Nonce", "Lease Time", "Usage Limits Count",
+                            "Init Indicator", "Final Indicator", "Data Length", "Maximum Items", "Offset Items",
+                            "Offset", "Request Count", "Certificate Request Value",
+                            "Authenticated Encryption Additional Data", "Authenticated Encryption Tag",
+                            "Digested Data", "Certificate Request Type", "Key Wrap Type", "Query Function",
+                            "Adjustment Type", "Adjustment Value", "Cryptographic Usage Mask",
+                            "Replace Existing", "Interop Identifier", "Storage Status Mask", "Log Message",
+                            "Compromise Occurrence Date", "Validity Date", "Key Format Type",
+                            "Key Compression Type", "Secret Data Type", "Split Key Method", "Prime Field Size",
+                            "Split Key Parts", "Split Key Threshold", "Attribute Reference",
+                            "Private Key Unique Identifier", "Certificate", "Application Namespace",
+                            "Attestation Type", "Cancellation Result", "Client Registration Method",
+                            "Last Change Date", "Object Group Member", "Operation",
+                            "Certificate Request Unique Identifier", "Public Key Unique Identifier",
+                            "Validity Indicator", "Located Items", "Signature Data", "Vendor Identification",
+                            "MAC Data", "Derivation Method");
     private static final int TAG_VALUE_SENTINEL = 0x12345678;
     static final String ROTATE_NAME_TYPE_CASE_ID =
             "test-norm-structure-member-structure-member-4-53-rotate-name-type";
@@ -631,24 +648,7 @@ final class LocalCatalogRouteChecks {
             JsonNode requires = testCase.path("requires");
             String fieldName = requires.path("field_name").asText();
             if (!"operation_payload_field".equals(requires.path("target_kind").asText())
-                    || !Set.of("Unique Identifier", "Correlation Value", "Asynchronous Correlation Value",
-                            "Object Type", "Data", "IV/Counter/Nonce", "Lease Time", "Usage Limits Count",
-                            "Init Indicator", "Final Indicator", "Data Length", "Maximum Items", "Offset Items",
-                            "Offset", "Request Count", "Certificate Request Value",
-                            "Authenticated Encryption Additional Data", "Authenticated Encryption Tag",
-                            "Digested Data", "Certificate Request Type", "Key Wrap Type", "Query Function",
-                            "Adjustment Type", "Adjustment Value", "Cryptographic Usage Mask",
-                            "Replace Existing", "Interop Identifier", "Storage Status Mask", "Log Message",
-                            "Compromise Occurrence Date", "Validity Date", "Key Format Type",
-                            "Key Compression Type", "Secret Data Type", "Split Key Method", "Prime Field Size",
-                            "Split Key Parts", "Split Key Threshold", "Attribute Reference",
-                            "Private Key Unique Identifier", "Certificate", "Application Namespace",
-                            "Attestation Type", "Cancellation Result", "Client Registration Method",
-                            "Last Change Date", "Object Group Member", "Operation",
-                            "Certificate Request Unique Identifier", "Public Key Unique Identifier",
-                            "Validity Indicator", "Located Items", "Signature Data", "Vendor Identification",
-                            "MAC Data", "Derivation Method")
-                            .contains(fieldName)
+                    || !CLIENT_PAYLOAD_SCALAR_FIELDS.contains(fieldName)
                     || !requires.path("operation_id").asText().startsWith("KMIPKIT-ELEM-OP-C2S-")
                     || !"local_model".equals(testCase.path("execution").path("mode").asText())
                     || !applies(testCase, version)) continue;
@@ -684,24 +684,7 @@ final class LocalCatalogRouteChecks {
             String fieldName = requires.path("field_name").asText();
             String operationId = requires.path("operation_id").asText();
             if (!"operation_payload_field".equals(requires.path("target_kind").asText())
-                    || !Set.of("Unique Identifier", "Correlation Value", "Asynchronous Correlation Value",
-                            "Object Type", "Data", "IV/Counter/Nonce", "Lease Time", "Usage Limits Count",
-                            "Init Indicator", "Final Indicator", "Data Length", "Maximum Items", "Offset Items",
-                            "Offset", "Request Count", "Certificate Request Value",
-                            "Authenticated Encryption Additional Data", "Authenticated Encryption Tag",
-                            "Digested Data", "Certificate Request Type", "Key Wrap Type", "Query Function",
-                            "Adjustment Type", "Adjustment Value", "Cryptographic Usage Mask",
-                            "Replace Existing", "Interop Identifier", "Storage Status Mask", "Log Message",
-                            "Compromise Occurrence Date", "Validity Date", "Key Format Type",
-                            "Key Compression Type", "Secret Data Type", "Split Key Method", "Prime Field Size",
-                            "Split Key Parts", "Split Key Threshold", "Attribute Reference",
-                            "Private Key Unique Identifier", "Certificate", "Application Namespace",
-                            "Attestation Type", "Cancellation Result", "Client Registration Method",
-                            "Last Change Date", "Object Group Member", "Operation",
-                            "Certificate Request Unique Identifier", "Public Key Unique Identifier",
-                            "Validity Indicator", "Located Items", "Signature Data", "Vendor Identification",
-                            "MAC Data", "Derivation Method")
-                            .contains(fieldName)
+                    || !CLIENT_PAYLOAD_SCALAR_FIELDS.contains(fieldName)
                     || !operationId.startsWith("KMIPKIT-ELEM-OP-C2S-")) {
                 throw new IllegalArgumentException("Selected case is not a supported client scalar payload: "
                         + caseId);

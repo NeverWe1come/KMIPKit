@@ -176,7 +176,7 @@ class LocalCatalogRouteChecksTest {
 
     @Test
     void executesDerivationMethodPayloadUsingItsCataloguedEnumerationType() throws Exception {
-        // OASIS KMIP 2.0/2.1 §6.1.11 and §11.14.
+        // OASIS KMIP 2.0/2.1 §6.1.14 and §11.14.
         ObjectMapper mapper = new ObjectMapper();
         JsonNode catalog = mapper.readTree(CATALOG.toFile());
         for (String version : List.of("2.0", "2.1")) {
@@ -244,7 +244,7 @@ class LocalCatalogRouteChecksTest {
 
     @Test
     void checkLeaseRequestAndResponseUseInterval() throws Exception {
-        // OASIS KMIP 2.0/2.1 §4.30 and §6.1.6.
+        // OASIS KMIP 2.0/2.1 §4.30 and §6.1.7.
         assertPayloadScalarType("check-request", "004", "Interval", "420049", 60);
         assertPayloadScalarType("check-response", "004", "Interval", "420049", 60);
     }
@@ -254,7 +254,7 @@ class LocalCatalogRouteChecksTest {
         assertPayloadScalarType("re-key-request", "002", "Interval", "420058", 0);
     }
 
-    // OASIS KMIP 2.0/2.1 §§6.1.22, 6.1.33, 6.1.43 and §11.34.
+    // OASIS KMIP 2.0/2.1 §§6.1.27, 6.1.34, 6.1.42 and §11.34.
     private static void assertPayloadScalarType(String operationRole, String ordinal,
             String type, String tagHex, long expected) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
