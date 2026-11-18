@@ -3852,6 +3852,14 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                                if item[0] == 0x420125 and item[1] == 1)
                                     attribute_check['request_certificate_attribute_tags'] = [
                                         f'{item[0]:06X}' for item in register_attributes[2]]
+                            batch_continuation_option_check = {}
+                            if observation and case_id in {
+                                    'test-batch-continue-after-failure',
+                                    'test-batch-stop-on-first-failure'}:
+                                batch_continuation_option_check = {
+                                    'peer_batch_error_continuation_option_values': numbers(
+                                        observation[0][0], 0x42000E),
+                                }
                             checks.append({'case_id': case_id, 'constructor_variant': variant, 'protocol_version': version, 'encoding': encoding,
                                            'transport': transport, 'status': 'passed' if observation and not code and (run.returncode == 0 or response_rejection_observed) else 'failed',
                                            'consumer_case_status': (result.get('cases') or [{}])[0].get('status', 'missing'),
@@ -3973,6 +3981,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                for value in byte_string_values(item, 0x420093)]}
                                               if observation and case_id ==
                                               'test-batch-stop-on-first-failure' else {}),
+                                           **batch_continuation_option_check,
                                            **({'peer_observed_effects': observation[0][2]['effects'],
                                                'peer_observed_state_before_sha256': observation[0][2][
                                                    'peer_observed_state_before_sha256'],
@@ -4078,8 +4087,10 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                 else:
                                     # Accessor routes remain local TTLV obligations.
                                     # Emit them once from an actual decoded TLS response.
-                                    stop_continuation_constructor = (
-                                        case_id == 'test-batch-stop-on-first-failure' and
+                                    batch_continuation_constructor = (
+                                        case_id in {
+                                            'test-batch-stop-on-first-failure',
+                                            'test-batch-continue-after-failure'} and
                                         cell['action'] == 'construct' and
                                         cell['public_api_symbol'] ==
                                         'kmipkit_client_batch_add_error_continuation_value')
@@ -4111,7 +4122,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             'kmipkit_query_async_requests_request_with_operations'})
                                     if ((encoding, transport) != ('TTLV', 'raw_tls') or
                                             (cell['action'] not in ('decode', 'encode') and
-                                             not stop_continuation_constructor and
+                                             not batch_continuation_constructor and
                                              not async_request_constructor and
                                              not async_process_constructor and
                                              not async_lifecycle_constructor)):
@@ -4186,7 +4197,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                 elif target['kind'] == 'enumeration_value':
                                     option_tag = codec.tag('Batch Error Continuation Option')
                                     expected_value = int(target['wire_value'], 16)
-                                    if (case_id != 'test-batch-stop-on-first-failure' or
+                                    if (case_id not in {
+                                            'test-batch-stop-on-first-failure',
+                                            'test-batch-continue-after-failure'} or
                                             cell['action'] != 'construct' or
                                             numbers(request_tree, option_tag) != [expected_value]):
                                         continue
