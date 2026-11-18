@@ -355,9 +355,37 @@ successful Get response; the C consumer checks response metadata, correlation,
 header and payload TTLV views, and the typed key response. This adds 62 cells:
 36 live construct/send/response cells and 26 local request/response cells.
 
+The `test-batch-placeholder-without-producer-rejected` case uses the typed C
+Activate builder with an omitted Unique Identifier in a one-item batch. Under
+KMIP 2.0/2.1 §§6.1.1 and 9.7, there is no earlier item to produce the batch's
+ID Placeholder. The installed client rejects the request as Validation / Invalid
+Input with delivery state Not Sent before opening a transport connection. The
+matrix records all 12 version/encoding/transport combinations as local
+rejections; it does not claim a KMS response or response-accessor coverage.
+
 Comparing the full report with the previous 43,035-event run by matrix cell
 identity retained every prior cell and added exactly 62 cells for the single-
 item default-Stop route. Catalog, route-manifest, installed-artifact, and
 library-commit fingerprints match the baseline. CTest passes 7/7, including
 191 route-matrix contract tests and both controlled TLS peers. The global
 route-completeness gate remains open for the other 23,639 pending cells.
+
+For `test-batch-stop-on-first-failure`, the approved KMIPKIT-0007-FR-018
+response policy expects one `Operation Failed` result and omits the later
+unprocessed result. The route matrix marks only the omitted item's decode cells
+as `not_applicable` with reason `stop_unprocessed_response_omitted`; returned
+response items remain required and are decoded through the installed C API.
+The event has zero invocations and no invocation ID or fabricated response
+tree. OASIS KMIP 2.0 §11.5/Table 396 and KMIP 2.1 §11.5/Table 434 describe Stop
+behavior but do not explicitly prescribe that omission. The omission is the
+approved KMIPKit policy aligned with the KMIPKIT-0092 scenario, not an OASIS
+conformance claim.
+
+The subsequent C run `c-route-3df0ddc1-8a8a-4d90-aa50-addbab9194f4` is aligned
+with the updated shared coverage and evidence schemas. It emitted 43,255
+evidence rows: 43,239 actual invocations and 16 explicit N/A dispositions,
+with zero failed invocations. The 66,736 planned C cells comprise those rows
+and 23,481 pending recipe cells. The shared validator accepted the emitted
+43,255-cell scope (`selected_scope_complete=true`,
+`all_invocations_passed=true`, `complete_matrix=false`); the global gate remains
+incomplete until the pending recipes are implemented.

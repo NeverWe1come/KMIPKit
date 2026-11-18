@@ -375,3 +375,27 @@ the API or use a synthetic-only vector.
   `c-route-06c5b31a-62a6-406d-9079-bd1c0240877b` records 42,481/66,736 cells
   invoked, zero failed, and 24,255 pending; these two targets have no pending
   cells. FR-003/FR-005 remain incomplete globally.
+# C route-matrix applicability for an omitted Stop response
+
+- **Red — `741a38e84`** proves the generated matrix incorrectly required a
+  response-decoder call for the later request item omitted by the approved
+  KMIPKIT-0007-FR-018 scenario. **Green — `51041177e`** marks only that item's
+  decode cells `not_applicable` with the stable reason
+  `stop_unprocessed_response_omitted`; 29 coverage-matrix tests pass.
+- **Red — `688b607ff`** requires a report event for that planned cell without
+  inventing a decoder invocation. **Green — `87756a9c8`** accepts the explicit
+  zero-invocation disposition, rejects fabricated evidence, and validates its
+  schema; 31 route-evidence tests pass.
+- **Red — `7a5f2e675`** requires the C route runner to emit an N/A event without
+  an invocation ID. **Green — `f2c37e7ef`** emits and validates that event,
+  skips the absent response cell in the controlled-peer executor, and counts
+  it separately from invocations and failures; the focused C tests pass 3/3.
+- The docs and traceability identify OASIS KMIP 2.0 §11.5/Table 396 and KMIP
+  2.1 §11.5/Table 434 as contextual sources, while accurately recording that
+  response omission is the approved KMIPKit policy in FR-018. C report
+  `c-route-3df0ddc1-8a8a-4d90-aa50-addbab9194f4` emitted 43,255 rows: 43,239
+  actual invocations, 16 explicit N/A cells, and zero failures. The C matrix
+  plans 66,736 cells; 23,481 remain pending recipes. The shared validator
+  accepted the exact emitted scope with `selected_scope_complete=true`,
+  `all_invocations_passed=true`, and `complete_matrix=false`. The global gate
+  remains open.
