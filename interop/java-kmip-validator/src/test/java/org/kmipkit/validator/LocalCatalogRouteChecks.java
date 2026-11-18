@@ -629,7 +629,8 @@ final class LocalCatalogRouteChecks {
             String fieldName = requires.path("field_name").asText();
             if (!"operation_payload_field".equals(requires.path("target_kind").asText())
                     || !Set.of("Unique Identifier", "Correlation Value", "Asynchronous Correlation Value",
-                            "Object Type", "Data", "IV/Counter/Nonce", "Lease Time").contains(fieldName)
+                            "Object Type", "Data", "IV/Counter/Nonce", "Lease Time", "Usage Limits Count")
+                            .contains(fieldName)
                     || !requires.path("operation_id").asText().startsWith("KMIPKIT-ELEM-OP-C2S-")
                     || !"local_model".equals(testCase.path("execution").path("mode").asText())
                     || !applies(testCase, version)) continue;
@@ -666,7 +667,8 @@ final class LocalCatalogRouteChecks {
             String operationId = requires.path("operation_id").asText();
             if (!"operation_payload_field".equals(requires.path("target_kind").asText())
                     || !Set.of("Unique Identifier", "Correlation Value", "Asynchronous Correlation Value",
-                            "Object Type", "Data", "IV/Counter/Nonce", "Lease Time").contains(fieldName)
+                            "Object Type", "Data", "IV/Counter/Nonce", "Lease Time", "Usage Limits Count")
+                            .contains(fieldName)
                     || !operationId.startsWith("KMIPKIT-ELEM-OP-C2S-")) {
                 throw new IllegalArgumentException("Selected case is not a supported client scalar payload: "
                         + caseId);
@@ -679,18 +681,21 @@ final class LocalCatalogRouteChecks {
                     TtlvItemType.ByteString;
                 case "Object Type" -> TtlvItemType.Enumeration;
                 case "Lease Time" -> TtlvItemType.Integer;
+                case "Usage Limits Count" -> TtlvItemType.LongInteger;
                 default -> throw new IllegalArgumentException("Unsupported client scalar payload field: "
                         + fieldName);
             };
             long numericValue = switch (fieldName) {
                 case "Object Type" -> enumValue(catalog, "OBJECT-TYPE", "Symmetric Key");
                 case "Lease Time" -> 60;
+                case "Usage Limits Count" -> 10;
                 default -> 0;
             };
             byte[] fieldValue = switch (itemType) {
                 case TextString -> "kmipkit-route-identifier".getBytes(StandardCharsets.US_ASCII);
                 case ByteString -> "kmipkit-route-correlation".getBytes(StandardCharsets.US_ASCII);
                 case Integer -> ByteBuffer.allocate(Integer.BYTES).putInt(Math.toIntExact(numericValue)).array();
+                case LongInteger -> ByteBuffer.allocate(Long.BYTES).putLong(numericValue).array();
                 case Enumeration -> ByteBuffer.allocate(Integer.BYTES).putInt(Math.toIntExact(numericValue)).array();
                 default -> throw new IllegalArgumentException("Unsupported client scalar payload type: " + itemType);
             };
@@ -699,6 +704,7 @@ final class LocalCatalogRouteChecks {
                 case TextString -> TtlvValue.TextString(fieldValue, limits);
                 case ByteString -> TtlvValue.ByteString(fieldValue, limits);
                 case Integer -> TtlvValue.Integer(Math.toIntExact(numericValue));
+                case LongInteger -> TtlvValue.LongInteger(numericValue);
                 case Enumeration -> TtlvValue.Enumeration(numericValue);
                 default -> throw new IllegalArgumentException("Unsupported client scalar payload type: " + itemType);
             };
@@ -3673,6 +3679,8 @@ final class LocalCatalogRouteChecks {
             assertEquals(number, value.enumeration());
         } else if (type == TtlvItemType.Integer) {
             assertEquals(Math.toIntExact(number), value.integer());
+        } else if (type == TtlvItemType.LongInteger) {
+            assertEquals(number, value.longInteger());
         } else {
             throw new IllegalArgumentException("Unsupported scalar message field type: " + type);
         }
