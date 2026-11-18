@@ -780,3 +780,21 @@ validates 41,658/41,658 cells with zero failures; ledger comparison and the
 1,507-route capability audit pass. The full ledger records 71,641 planned,
 41,658 executed, and 29,983 pending cells. The matrix remains incomplete, so
 #187 and its dependents stay WIP.
+
+### Client Usage Limits Count Long Integer TTLV routes — 2026-11-18
+
+The catalog-driven scalar runner now encodes and validates client `Usage
+Limits Count` payload fields as Long Integer items, including their operation
+target and generic Item construction, view, and decode routes. The source is
+OASIS KMIP 2.0 §6.1.7 Tables 168–169 and KMIP 2.1 §6.1.7 Tables 183–184. This
+is local TTLV model evidence, not server acceptance.
+
+Red `886ca06e3` showed that Check's operation target had evidence while its
+Usage Limits Count field did not. Green `75bda8c11` adds the Long Integer
+route. The Java suite passes 92/92 when Gradle runs serially; the selected
+report validates 41,676/41,676 cells with zero failures, shared route tests
+pass 109/109, and the ledger comparison and 1,507-route audit pass. The full
+ledger records 71,641 planned, 41,676 executed, and 29,965 pending cells. A
+parallel Gradle run hit a missing intermediate binary result during task
+finalization; the serialized full-suite rerun succeeded. The matrix remains
+incomplete, so #187 and its dependents stay WIP.
