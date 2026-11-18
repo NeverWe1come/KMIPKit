@@ -233,6 +233,7 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
                     "operations": ["Activate"],
                     "target_ids": [target_id],
                     "protocol_versions": ["2.0"],
+                    "mode": "local_model",
                     "parameters": {"items": ["Activate(IDPlaceholder)"]},
                     "expected": {"construction": "rejected_or_operation_failed"},
                 }},
