@@ -32,6 +32,11 @@ _QUERY_ASYNC_CORRELATION_TARGETS = {
     'KMIPKIT-ELEM-OPERATION-STRUCTURE-7-1-ASYNCHRONOUS-CORRELATION-VALUES',
     'KMIPKIT-ELEM-STRUCTURE-MEMBER-7-1-ASYNCHRONOUS-CORRELATION-VALUE',
 }
+_QUERY_ASYNC_PAYLOAD_FIELD_SYMBOLS = {
+    'kmipkit_query_async_requests_request_create',
+    'kmipkit_query_async_requests_request_with_correlation_values',
+    'kmipkit_query_async_requests_request_to_ttlv_payload',
+}
 _TRANSPARENT_KEY_MATERIAL_FORMATS = {
     4: ('Transparent Symmetric Key', [('Key', 8, b'\xa1')]),
     5: ('Transparent DSA Private Key', [('P', 4, b'\x01'), ('Q', 4, b'\x01'),
@@ -352,6 +357,61 @@ class ModelCases:
                     'tree_sha256': digest(normalized_tree), 'invoked_symbols': set(self.abi.called)}
         finally:
             self.abi.release('ttlv_structure', payload)
+            if request.value:
+                release(request)
+
+    def _execute_query_async_payload_field(self, target: dict,
+                                           public_api_symbol: str) -> dict | None:
+        """Exercise both optional correlation-filter branches through the C API."""
+        target_id = 'KMIPKIT-PAYLOAD-CLIENT-QUERY-ASYNCHRONOUS-REQUESTS-REQUEST-21-001'
+        if (target.get('target_id') != target_id
+                or public_api_symbol not in _QUERY_ASYNC_PAYLOAD_FIELD_SYMBOLS):
+            return None
+
+        symbol = 'kmipkit_query_async_requests_request_with_correlation_values'
+        correlations = (b'fixture-correlation-alpha', b'fixture-correlation-beta')
+        buffers = [C.create_string_buffer(value) for value in correlations]
+        spans = (_ByteSpanV1 * len(correlations))(*[
+            _ByteSpanV1(C.cast(buffer, C.POINTER(C.c_uint8)), len(value))
+            for buffer, value in zip(buffers, correlations, strict=True)
+        ])
+        self.abi.bind('kmipkit_query_async_requests_request_create', [C.POINTER(C.c_void_p)])
+        self.abi.bind(symbol, [C.c_void_p, C.POINTER(_ByteSpanV1), C.c_uint64,
+                               C.POINTER(C.c_void_p)])
+        self.abi.bind('kmipkit_query_async_requests_request_to_ttlv_payload',
+                      [C.c_void_p, C.POINTER(C.c_void_p)])
+        release = self.abi.library.kmipkit_query_async_requests_request_release
+        release.argtypes, release.restype = [C.c_void_p], None
+
+        self.abi.called.clear()
+        request, filtered = C.c_void_p(), C.c_void_p()
+        omitted_payload, present_payload = C.c_void_p(), C.c_void_p()
+        try:
+            self.abi.call('kmipkit_query_async_requests_request_create', C.byref(request))
+            self.abi.call('kmipkit_query_async_requests_request_to_ttlv_payload',
+                          request, C.byref(omitted_payload))
+            omitted_tree = [normalized(tree) for tree in self.abi.read_structure(omitted_payload)]
+            if omitted_tree:
+                raise ValueError('query_async_omitted_correlation_values_payload_mismatch')
+
+            self.abi.call(symbol, request, spans, len(correlations), C.byref(filtered))
+            self.abi.call('kmipkit_query_async_requests_request_to_ttlv_payload',
+                          filtered, C.byref(present_payload))
+            present_tree = [normalized(tree) for tree in self.abi.read_structure(present_payload)]
+            expected_present = [[self._tag('Asynchronous Correlation Values'), 1, [
+                [self._tag('Asynchronous Correlation Value'), 8, value.hex()]
+                for value in correlations
+            ]]]
+            if present_tree != expected_present:
+                raise ValueError('query_async_present_correlation_values_payload_mismatch')
+            normalized_trees = [omitted_tree, present_tree]
+            return {'sample_count': len(normalized_trees), 'normalized_trees': normalized_trees,
+                    'tree_sha256': digest(normalized_trees), 'invoked_symbols': set(self.abi.called)}
+        finally:
+            self.abi.release('ttlv_structure', present_payload)
+            self.abi.release('ttlv_structure', omitted_payload)
+            if filtered.value:
+                release(filtered)
             if request.value:
                 release(request)
 
@@ -1082,11 +1142,21 @@ class ModelCases:
         if public_api_symbol in _CANCEL_REQUEST_SYMBOLS:
             return self._execute_cancel_request(target, public_api_symbol)
         if public_api_symbol == 'kmipkit_query_async_requests_request_with_correlation_values':
-            return self._execute_query_async_correlation_values(target, public_api_symbol)
+            result = self._execute_query_async_correlation_values(target, public_api_symbol)
+            if result is not None:
+                return result
+            return self._execute_query_async_payload_field(target, public_api_symbol)
         if public_api_symbol == 'kmipkit_query_async_requests_request_with_operations':
             return self._execute_query_async_operations(target, public_api_symbol)
         if public_api_symbol == 'kmipkit_query_async_requests_request_to_ttlv_payload':
-            return self._execute_empty_query_async_request(target, public_api_symbol)
+            result = self._execute_empty_query_async_request(target, public_api_symbol)
+            if result is not None:
+                return result
+            return self._execute_query_async_payload_field(target, public_api_symbol)
+        if public_api_symbol == 'kmipkit_query_async_requests_request_create':
+            result = self._execute_query_async_payload_field(target, public_api_symbol)
+            if result is not None:
+                return result
         if (target.get('kind') == 'object_type'
                 and _NAMED_OBJECT_CONSTRUCTORS.get(target.get('name')) == public_api_symbol):
             root = next((item for item in self.catalog['normative_targets']
