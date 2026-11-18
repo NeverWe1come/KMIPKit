@@ -4052,3 +4052,27 @@ Java suite passes 92/92; the selected report validates 40,986/40,986 cells
 with zero failures. The generated ledger records 71,641 planned, 40,986
 executed, and 30,655 pending cells. Ledger comparison and the 1,507-route
 capability audit pass. Matrix closure and exact-head CI remain outstanding.
+
+## Java typed Alternative Name and Get Attributes payload routes — 2026-11-18
+
+For the catalogued Alternative Name case, the Java local runner builds the
+source-shaped Structure from the KMIP catalog and invokes `TypedAttribute`
+creation, decoding from an Item, and `AttributeSet.tryNew`. It also invokes
+`GetAttributesRequest.toTtlvPayload` with the Alternative Name tag as an
+Attribute Reference and checks the Unique Identifier and payload shape.
+References: OASIS KMIP 2.0 and 2.1 §4.2 (Alternative Name), §6.1.17 (Get
+Attributes), §§8.3 and 8.6 (Attributes and Attribute References). The tests
+cover local typed construction and encoding only; they do not claim server
+policy behavior or network execution.
+
+Red `d1e35d5e8` requires the four typed routes in each version; Green
+`3535eac0a` implements them. Red `322554a5a` requires the payload-encoding
+route to be traced to the Get Attributes operation; Green `3fbfb09f3` fixes
+the target. Red `a5b006191` requires local encode events to carry a request
+tree hash; Green `13bd4226b` records it in the request hash field. The full
+Gradle suite passes 95/95 tests, shared route/schema/capability suites pass
+109/109, and the route capability audit accepts 1,507 routes. The selected
+report validates 42,204/42,204 cells with zero failures. The generated ledger
+records 71,641 planned, 42,204 executed, and 29,437 pending cells, and its
+comparison passes. The full matrix remains incomplete and the stack remains
+WIP.

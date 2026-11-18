@@ -408,3 +408,21 @@ artifact. This is part of the FR-006 artifact provenance check.
   executed, and 30,742 pending cells; ledger comparison and the 1,507-route
   capability audit pass. The Java matrix remains incomplete under FR-002,
   FR-003, and FR-009.
+
+## Java typed Alternative Name routes — 2026-11-18
+
+- **FR-003/FR-009:** The catalogued Alternative Name Structure now exercises
+  `TypedAttribute.create`, `TypedAttribute.fromItem`, `AttributeSet.tryNew`,
+  and `GetAttributesRequest.toTtlvPayload` in KMIP 2.0 and 2.1. The fixture
+  checks source-defined member tags/types/values and the Attribute Reference
+  request payload. References: OASIS KMIP 2.0/2.1 §4.2, §6.1.17, §§8.3, 8.6.
+  This is local typed-model and encoding evidence, not a server exchange or
+  attribute-policy validation.
+- Red `d1e35d5e8`, `322554a5a`, and `a5b006191` establish missing route,
+  target-attribution, and request-hash failures. Green `3535eac0a`,
+  `3fbfb09f3`, and `13bd4226b` implement and correct those paths.
+- The Gradle suite passes 95/95, shared route/schema/capability tests pass
+  109/109, and the capability audit accepts 1,507 routes. The selected report
+  validates 42,204/42,204 cells with zero failures. The ledger records 71,641
+  planned, 42,204 executed, and 29,437 pending cells; ledger comparison passes.
+  Full matrix closure remains open under FR-002/FR-003/FR-009.

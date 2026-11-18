@@ -981,3 +981,27 @@ Long Integer constructor and route checks. The full Java suite passes 93/93;
 the selected report validates 42,196/42,196 cells with zero failures. The
 ledger records 71,641 planned, 42,196 executed, and 29,445 pending cells. The
 matrix remains incomplete, so #187 and its dependents stay WIP.
+
+### Typed Alternative Name routes — 2026-11-18
+
+The local catalog runner now constructs and decodes the source-shaped KMIP
+`Alternative Name` Structure through `TypedAttribute.create`,
+`TypedAttribute.fromItem`, and `AttributeSet.tryNew` for KMIP 2.0 and 2.1.
+It also constructs a typed Get Attributes request with an Attribute Reference
+for the Alternative Name tag and invokes `GetAttributesRequest.toTtlvPayload`.
+The test checks member tags, types and values, the typed round trip, the
+one-item Attribute Set, and the request payload shape (OASIS KMIP 2.0/2.1
+§4.2, §6.1.17, §§8.3, 8.6). These are local construction and encoding routes;
+they do not exercise server-side attribute policy or a network exchange.
+
+Red `d1e35d5e8` requires the four typed routes per protocol version;
+Green `3535eac0a` executes them. Red `322554a5a` requires the payload encoder
+to use the Get Attributes operation target, and Green `3fbfb09f3` corrects
+that attribution. Red `a5b006191` verifies that a local `encode` event carries
+a request-tree hash; Green `13bd4226b` records the hash in the request field.
+The Gradle suite passes 95/95 tests; shared evidence/schema/capability tests
+pass 109/109; the capability audit accepts 1,507 routes. The selected report
+validates 42,204/42,204 cells with zero failures. The generated ledger records
+71,641 planned, 42,204 executed, and 29,437 pending cells, and matches its
+checked-in reference. The Java matrix remains incomplete, so the stack stays
+WIP.
