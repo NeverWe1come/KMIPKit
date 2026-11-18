@@ -2327,7 +2327,9 @@ class ControlledTlsPeerTest {
                 {"test-norm-payload-client-encrypt-request-20-004",
                         "KMIPKIT-PAYLOAD-CLIENT-ENCRYPT-REQUEST-20-004", "KMIPKIT-ELEM-OP-C2S-ENCRYPT"},
                 {"test-norm-payload-client-check-request-20-004",
-                        "KMIPKIT-PAYLOAD-CLIENT-CHECK-REQUEST-20-004", "KMIPKIT-ELEM-OP-C2S-CHECK"}
+                        "KMIPKIT-PAYLOAD-CLIENT-CHECK-REQUEST-20-004", "KMIPKIT-ELEM-OP-C2S-CHECK"},
+                {"test-norm-payload-client-check-request-20-002",
+                        "KMIPKIT-PAYLOAD-CLIENT-CHECK-REQUEST-20-002", "KMIPKIT-ELEM-OP-C2S-CHECK"}
         };
         for (String[] payload : additionalClientPayloadCases) {
             int routeEventCount = 0;
