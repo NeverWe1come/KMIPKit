@@ -8061,7 +8061,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                "test-norm-payload-client-get-usage-allocation-request-21-001") == 0;
     bool get_workflow = strcmp(test_case->case_id, "test-op-get") == 0 ||
         strcmp(test_case->case_id, "test-norm-payload-client-get-request-20-001") == 0 ||
-        strcmp(test_case->case_id, "test-norm-payload-client-get-request-21-001") == 0;
+        strcmp(test_case->case_id, "test-norm-payload-client-get-request-21-001") == 0 ||
+        strcmp(test_case->case_id, "test-batch-single-item-default-continuation") == 0;
     bool stop_on_first_failure_workflow =
         strcmp(test_case->case_id, "test-batch-stop-on-first-failure") == 0;
     bool batch_two_read_items_workflow =
@@ -8075,7 +8076,10 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     bool continue_after_failure_workflow =
         strcmp(test_case->case_id, "test-batch-continue-after-failure") == 0;
     bool single_item_batch_options_workflow =
-        strcmp(test_case->case_id, "test-batch-single-item-options-omitted") == 0;
+        strcmp(test_case->case_id, "test-batch-single-item-options-omitted") == 0 ||
+        strcmp(test_case->case_id, "test-batch-single-item-default-continuation") == 0;
+    bool single_item_default_continuation_workflow =
+        strcmp(test_case->case_id, "test-batch-single-item-default-continuation") == 0;
     bool check_workflow = strcmp(test_case->case_id, "test-op-check") == 0;
     bool private_key_workflow = strcmp(test_case->case_id, "test-obj-private-key") == 0;
     bool public_key_workflow = strcmp(test_case->case_id, "test-obj-public-key") == 0;
@@ -8112,7 +8116,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     bool object_lifecycle_workflow = create_workflow ||
         batch_create_activate_get_attribute_list_revoke_destroy_workflow ||
         batch_placeholder_chain_workflow || batch_order_placeholder_workflow || revoke_workflow ||
-        revoke_cleanup_workflow || export_workflow || get_workflow ||
+        revoke_cleanup_workflow || export_workflow ||
+        (get_workflow && !single_item_default_continuation_workflow) ||
         get_attributes_workflow || get_attribute_list_workflow || get_constraints_workflow ||
         get_usage_allocation_workflow || add_attribute_workflow;
     if (strcmp(test_case->operation, "Create") == 0 && !create_workflow &&
@@ -8648,6 +8653,13 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     };
     uint8_t created_identifier_present = 0;
     kmip_execution_outcome_t outcome = { .executed = true };
+    if (strcmp(test_case->case_id,
+               "test-batch-single-item-default-continuation") == 0) {
+        static const uint8_t fixture_identifier[] = "fixture-key-1";
+        created_identifier.kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING;
+        created_identifier.text_data = fixture_identifier;
+        created_identifier.text_length = sizeof(fixture_identifier) - 1;
+    }
     status = kmipkit_client_batch_create(&batch);
     if (status == 0 && interop_workflow) {
         status = kmipkit_client_batch_set_order_option(batch, 1);
@@ -8764,7 +8776,9 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     if (status != 0 || response_count != expected_response_count) {
         outcome.library_failed = true;
         snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                 "KMIPKit returned an unexpected response item count");
+                 "KMIPKit returned an unexpected response item count (status=%d count=%llu expected=%llu)",
+                 status, (unsigned long long)response_count,
+                 (unsigned long long)expected_response_count);
         goto cleanup;
     }
     if (interop_workflow) {
@@ -9565,11 +9579,37 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             goto cleanup;
         }
     } else if (get_workflow) {
-        if (!get_response_matches_created_key(response_item, &created_identifier, &status)) {
+        if (single_item_default_continuation_workflow) {
+            static const uint8_t expected_batch_item_id[] = "interop-get";
+            uint8_t id_present = 0;
+            kmipkit_byte_span_v1_t id = {0};
+            status = kmipkit_client_batch_item_response_unique_batch_item_id(
+                response_item, &id_present, &id);
+            kmipkit_client_batch_item_metadata_v2_t metadata_v2 = {
+                .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t),
+                .abi_version = 2
+            };
+            if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
+                response_item, &metadata_v2);
+            bool response_fields_valid = status == 0 && id_present != 0 &&
+                id.length == sizeof(expected_batch_item_id) - 1 && id.data &&
+                memcmp(id.data, expected_batch_item_id, sizeof(expected_batch_item_id) - 1) == 0 &&
+                metadata_v2.operation == KMIPKIT_ENUMERATION_OPERATION_GET &&
+                metadata_v2.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS &&
+                metadata_v2.has_result_reason == 0 &&
+                successful_batch_response_common_fields_match(
+                    response_item, KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS, &status) &&
+                get_response_matches_created_key(response_item, &created_identifier, &status);
+            if (!response_fields_valid && status == 0) status = KMIPKIT_ERROR_INVALID_INPUT;
+        } else if (!get_response_matches_created_key(
+                       response_item, &created_identifier, &status)) {
+            status = status == 0 ? KMIPKIT_ERROR_INVALID_INPUT : status;
+        }
+        if (status != 0) {
             outcome.success = false;
-            outcome.library_failed = status != 0;
+            outcome.library_failed = true;
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                     "KMIPKit Get did not return the created AES key object");
+                     "KMIPKit Get did not return the expected isolated key response");
             goto cleanup;
         }
     } else if (get_attributes_workflow) {

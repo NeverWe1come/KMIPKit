@@ -4689,6 +4689,12 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(sum(event['public_api_symbol'] ==
                              'kmipkit_client_batch_item_get' and
                              event['action'] == 'send' for event in events), 12)
+        send_events = [event for event in events if event['action'] == 'send']
+        self.assertTrue(all(event.get('batch_operation_sequence') == ['Get'] and
+                            event.get('batch_item_count') == 1 and
+                            event.get('peer_observed_operation_sequence') == ['Get'] and
+                            event.get('peer_observed_response_count') == 1
+                            for event in send_events), send_events)
 
     def test_hash_and_rng_cases_call_their_public_routes_and_check_responses(self):
         from artifact_support import ROOT

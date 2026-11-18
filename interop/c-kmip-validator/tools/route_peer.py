@@ -459,6 +459,8 @@ RECIPES = {
     'test-batch-order-omitted-defaults-true':
         ((1, 18), 'batch_order_placeholder_two_item'),
     'test-batch-single-item-options-omitted': ((10,), 'batch_single_item_options_omitted'),
+    'test-batch-single-item-default-continuation':
+        ((10,), 'batch_single_item_default_continuation'),
     'test-batch-count-matches-items': ((10, 12), 'batch_count_two_read_items'),
     'test-batch-count-mismatch-rejected': ((10, 12), 'batch_count_two_read_items'),
     'test-batch-unique-item-id-response-correlation': ((10, 12), 'batch_count_two_read_items'),
@@ -1890,7 +1892,8 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
                        not text_values(target_item, 0x42009D))
         if not matches:
             raise ValueError('fixture_attribute_reference_mismatch')
-    if selected_recipe[1] == 'batch_single_item_options_omitted':
+    if selected_recipe[1] in ('batch_single_item_options_omitted',
+                              'batch_single_item_default_continuation'):
         items = [child for child in node[2]
                  if child[0] == 0x42000F and child[1] == 1]
         if (numbers(node, 0x42000D) != [1] or len(items) != 1 or
@@ -2278,6 +2281,32 @@ def query_async_empty_peer_check(observation):
         'peer_final_state_matches_setup':
             observation[0][2]['peer_observed_state_before_sha256'] ==
             observation[-1][2]['peer_observed_state_after_sha256'],
+    }
+
+
+def batch_single_item_default_continuation_peer_check(observation):
+    """Record a successful one-item Get with the default continuation option omitted."""
+    request_tree, response_tree, _ = observation[0]
+    request_items = [item for item in request_tree[2]
+                     if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    response_items = [item for item in response_tree[2]
+                      if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    payloads = [item for item in response_items[0][2]
+                if item[0] == RESPONSE_PAYLOAD_TAG and item[1] == 1] \
+        if len(response_items) == 1 else []
+    return {
+        'peer_single_get': len(request_items) == 1 and
+            numbers(request_items[0], 0x42005C) == [10] and
+            text_values(request_items[0], UNIQUE_IDENTIFIER_TAG) == ['fixture-key-1'],
+        'peer_batch_count_is_one': numbers(request_tree, 0x42000D) == [1],
+        'peer_continuation_option_is_omitted': not any(descendants(request_tree, 0x42000E)),
+        'peer_order_option_is_omitted': not any(descendants(request_tree, 0x420011)),
+        'peer_single_success_response': len(response_items) == 1 and
+            numbers(response_tree, 0x42000D) == [1] and
+            numbers(response_items[0], 0x42005C) == [10] and
+            numbers(response_items[0], 0x42007F) == [0] and
+            byte_string_values(response_items[0], 0x420093) == [b'interop-get'] and
+            len(payloads) == 1 and bool(payloads[0][2]),
     }
 
 
@@ -4387,6 +4416,20 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 verify_lifecycle((20,), response_tree)
                                         elif recipe[1] == 'query_async_empty' and exchange_index == 1:
                                             verify_query_async_empty_response(response_tree)
+                                        elif recipe[1] == 'batch_single_item_default_continuation':
+                                            response_items = [item for item in response_tree[2]
+                                                              if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+                                            payloads = [item for item in response_items[0][2]
+                                                        if item[0] == RESPONSE_PAYLOAD_TAG and item[1] == 1] \
+                                                if len(response_items) == 1 else []
+                                            if (len(response_items) != 1 or
+                                                    numbers(response_tree, 0x42000D) != [1] or
+                                                    numbers(response_items[0], 0x42005C) != [10] or
+                                                    numbers(response_items[0], 0x42007F) != [0] or
+                                                    byte_string_values(response_items[0], 0x420093) !=
+                                                    [b'interop-get'] or len(payloads) != 1 or not payloads[0][2]):
+                                                raise ValueError(
+                                                    'fixture_single_item_default_continuation_response_mismatch')
                                         elif recipe[1] == 'interop':
                                             verify_interop_response(response_tree)
                                         elif recipe[1] in ('encrypt', 'decrypt'):
@@ -4754,6 +4797,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                            **(query_async_empty_peer_check(observation)
                                               if recipe[1] == 'query_async_empty' and
                                               len(observation) == 3 else {}),
+                                           **(batch_single_item_default_continuation_peer_check(observation)
+                                              if recipe[1] == 'batch_single_item_default_continuation' and
+                                              len(observation) == 1 else {}),
                                            **(async_unknown_correlation_peer_check(observation)
                                               if recipe[1] == 'async_unknown_correlation_rejected' and
                                               len(observation) == 1 else {}),
@@ -5057,7 +5103,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                     event.update(request_delivery_state='not_sent', transport_invocation_count=0)
                                 elif cell['action'] == 'send':
                                     event.update(request_delivery_state='response_received', transport_invocation_count=1)
-                                if (cell['action'] == 'send' and len(recipe[0]) > 1 and
+                                if (cell['action'] == 'send' and
+                                        (len(recipe[0]) > 1 or
+                                         recipe[1] == 'batch_single_item_default_continuation') and
                                         not attribute_mutation_recipe):
                                     operations = [next(t['name'] for t in catalog['normative_targets'] if t['kind'] == 'enumeration_value' and t.get('wire_value') == f'{op:08X}' and any(p.endswith('ENUMERATION-OPERATION') for p in t.get('parent_element_ids', []))) for op in recipe[0]]
                                     response_item_count = len([item for item in response_tree[2]

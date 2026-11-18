@@ -78,6 +78,34 @@ def top_level_batch_operations(message: bytes) -> tuple[int, ...]:
     return tuple(operations)
 
 
+def ttlv_contains_tag(message: bytes, target_tag: int) -> bool:
+    """Search a validated TTLV message and nested Structures for a tag."""
+    if len(message) < 8:
+        raise AssertionError("request TTLV is truncated")
+    item_tag = int.from_bytes(message[:3], "big")
+    item_type = message[3]
+    item_length = int.from_bytes(message[4:8], "big")
+    padded_end = 8 + ((item_length + 7) // 8) * 8
+    if padded_end > len(message):
+        raise AssertionError("request TTLV item is truncated")
+    if item_tag == target_tag:
+        return True
+    if item_type != 1:
+        return False
+    offset = 8
+    while offset < 8 + item_length:
+        child_length = int.from_bytes(message[offset + 4:offset + 8], "big")
+        child_end = offset + 8 + ((child_length + 7) // 8) * 8
+        if child_end > 8 + item_length or child_end > len(message):
+            raise AssertionError("request contains a truncated nested TTLV item")
+        if ttlv_contains_tag(message[offset:child_end], target_tag):
+            return True
+        offset = child_end
+    if offset != 8 + item_length:
+        raise AssertionError("request contains trailing nested TTLV bytes")
+    return False
+
+
 def response(operations: tuple[int, ...], protocol_minor: int,
              selected_attribute_tag: int = 0,
              created_object_type: int = 2,
@@ -562,6 +590,8 @@ def main() -> int:
     expected_operations += (26,)
     expected_cases += ("test-async-unknown-correlation-rejected",)
     expected_operations += (10, 12, 10, 12, 10, 12, 10, 12, 10, 12)
+    expected_operations += (10,)
+    expected_cases += ("test-batch-single-item-default-continuation",)
     expected_operations += registered_key_batch
     expected_operations += (3, 20)
     expected_operations += (3, 20)
@@ -859,6 +889,18 @@ def main() -> int:
                                                             b"interop-reset"))):
                                     raise AssertionError("Interop function order or shared identifier mismatch")
                             two_read_batch = operations == (10, 12)
+                            if operations == (10,):
+                                request_has_continuation = ttlv_contains_tag(request, 0x42000E)
+                                request_has_order = ttlv_contains_tag(request, 0x420011)
+                                request_has_id = tlv(0x420093, 8, b"interop-get") in request
+                                if request_has_id and (
+                                        request.count(integer(0x42000D, 1)) != 1 or
+                                        request_has_continuation or request_has_order):
+                                    raise AssertionError(
+                                        "single-item Get option mismatch "
+                                        f"(continuation={request_has_continuation}, "
+                                        f"order={request_has_order}, id={request_has_id})"
+                                    )
                             placeholder_chain = operations == (1, 18, 10)
                             batch_order_placeholder = (operations == (1, 18) and
                                                        tlv(0x420093, 8, b"ordered-create") in request)
