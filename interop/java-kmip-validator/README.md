@@ -448,3 +448,13 @@ The complete `Key Material` Structures for all nine transparent key formats
 also pass all six typed `KeyMaterial`, `KeyValue`, and `KeyBlock` constructors
 in both KMIP versions. The selected report now validates 34,366/34,366 cells
 with zero failures and leaves 37,275 pending.
+
+Each transparent Key Material case now also passes through the installed
+`ManagedObject.fromFields` and `ManagedObject.fromItem` routes, wrapped in the
+matching Symmetric Key, Private Key, or Public Key object structure according
+to its format (§§2.5, 2.6, 2.9, 3.4–3.12). Both conversions read back the
+nested Key Block and verify its format and catalogued material fields. Fixture
+values are deterministic synthetic data; they do not test cryptographic
+validity. The selected report validates 34,534/34,534 cells with zero failures
+and leaves 37,107 of 71,641 planned Java cells pending, so the matrix and PR
+stack remain WIP.

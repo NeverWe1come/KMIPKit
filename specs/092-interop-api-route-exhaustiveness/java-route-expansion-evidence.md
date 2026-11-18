@@ -3495,3 +3495,35 @@ pass 108 tests and the capability audit reports 1,507 routes. The selected
 report validates 34,366/34,366 cells with zero failures and leaves 37,275 of
 71,641 planned Java cells pending. The generated ledger matches its checked-in
 reference. Full Java matrix closure remains outstanding.
+
+## Java ManagedObject Key Material routes — 2026-11-18
+
+Red commit `cc15e8801` raises the focused RSA public material route assertion
+from six to eight typed construction routes and fails because the
+`ManagedObject.fromFields` and `ManagedObject.fromItem` routes have no evidence.
+Green commit `8b02accb6` wraps every transparent format's catalogued material
+fixture in its matching Symmetric Key, Private Key, or Public Key structure,
+constructs the managed object through both public methods, and reads back the
+nested Key Block and target fields. The fixtures are synthetic and do not claim
+cryptographic validity (KMIP 2.0/2.1 §§2.5, 2.6, 2.9, 3.4–3.12).
+
+Verification on the #187 source branch:
+
+```sh
+bash bindings/java/gradlew -p interop/java-kmip-validator test --rerun-tasks
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+python3 -m unittest interop.shared.tests.test_route_execution_evidence \
+  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+git diff --check
+```
+
+All 84 Java validator tests pass; the shared evidence/schema/capability suites
+pass 108 tests and the capability audit reports 1,507 routes. The selected
+report validates 34,534/34,534 cells with zero failures and leaves 37,107 of
+71,641 planned Java cells pending. Full Java matrix closure remains outstanding.
