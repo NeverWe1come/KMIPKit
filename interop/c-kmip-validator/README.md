@@ -144,9 +144,16 @@ The `*.gaps.json` sidecar identifies every unexecuted matrix obligation rather
 than misclassifying it as an unavailable library route. Other sidecars retain
 installed-artifact availability checks and sanitized controlled-peer outcomes.
 The evidence JSON passes the shared schema independently of completeness.
-The latest full local C matrix run (`c-route-3115b3c5-78fc-4a1e-98fc-f8645e434d84`)
-has 66,736 expected cells, 43,625 invoked, 40 explicitly not applicable, zero
-failed, and 23,071 pending.
+The latest full local C matrix report (`c-route-8f6408fd-3733-4858-a8a0-5a58cdfe2992`)
+has 66,288 expected cells, 43,338 invoked, 40 explicitly not applicable, zero
+failed, and 22,910 pending. Its JSON SHA-256 is
+`471bed6b082955d82191884ceb911c35532836c7ef186667566597116bde5e4e`; it uses
+the pinned C artifact SHA-256
+`c93eb8f7daa60d3b6832d297887e99cd2101e4f9baf2d04f55ce4042ba4bb7a2`. The
+shared validator accepts all emitted cells with
+`selected_scope_complete=true` and `all_invocations_passed=true`; the full
+matrix remains incomplete. The first pending cell is the KMIP 2.0 local Login
+response decoder.
 The MAC and Sign response TTLV accessors and the Continue batch-option
 constructor contribute four local cells each across KMIP 2.0/2.1. The
 Query Async Requests correlation builder contributes two KMIP 2.1 model cells.
@@ -417,13 +424,10 @@ An earlier C run (`c-route-3df0ddc1-8a8a-4d90-aa50-addbab9194f4`) emitted 43,255
 evidence rows: 43,239 actual invocations and 16 explicit N/A dispositions,
 with zero failed invocations. It had 23,481 pending recipe cells.
 
-The latest full run (`c-route-3115b3c5-78fc-4a1e-98fc-f8645e434d84`) emitted
+The prior full run (`c-route-3115b3c5-78fc-4a1e-98fc-f8645e434d84`) emitted
 43,665 evidence rows: 43,625 actual invocations and 40 explicit N/A
-dispositions, with zero failed invocations. The shared validator accepts the
-emitted scope (`selected_scope_complete=true`, `all_invocations_passed=true`,
-`complete_matrix=false`); 23,071 cells remain pending, so the global gate is
-still open. Compared with the previous full report, no cell identities were
-removed and 16 were added for the two batch enum setters: eight
+dispositions, with zero failed invocations. Compared with its previous full
+report, no cell identities were removed and 16 were added for the two batch enum setters: eight
 Asynchronous Indicator cells and eight Batch Error Continuation Option cells.
 The Credential Type constructor and Credential envelope routes remain in the
 report. The previously covered Current Attribute mismatch route contributes
@@ -440,4 +444,8 @@ constructed fixtures. Of the cells shared with the previous run, 199 tree
 hashes differ: 192 request hashes contain regenerated public certificate or
 certificate-request bytes and seven Query Async Requests response hashes
 include the fixture's current timestamp. Cell identities are unchanged for
-those rows. The report passes the evidence schema and scoped shared validation.
+those rows. The latest report adds the KMIP 2.0 Discover Versions local decoder
+cell using a 2.0 response header and the fixed 2.1 request offer; it validates
+the returned 2.1 version without claiming 2.0 offer construction. The current
+report passes the evidence schema and scoped shared validation, while 22,910
+matrix cells remain pending.
