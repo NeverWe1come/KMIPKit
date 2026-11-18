@@ -1256,9 +1256,18 @@ marks response decoders not applicable only when the matching send event
 proves `not_sent`. The Stop fixture also preserves the explicitly omitted
 second response item as not applicable without fabricating a decode call.
 
-The Java suite passes 109/109 tests. The selected report validates 43,831 of
-71,641 planned cells: 43,815 invocations, 16 not-applicable cells, and zero
-failures. The Create client-batch-item route is now 1,200/1,200; 27,810 cells
-remain pending across the full matrix. The generated ledger comparison passes.
-These controlled TLS fixtures do not establish interoperability with an
-external KMS. The stack remains WIP while any applicable matrix cells remain.
+For Login and Delegated Login, the catalog now distinguishes the `Interval`
+and `Date Time` alternatives for Lease Time. The installed consumer sends the
+Date Time variant through both typed request factories and checks the captured
+field type and value across KMIP 2.0/2.1, TTLV/JSON/XML, and raw TLS/HTTPS. The
+four operation/version targets cover 24 controlled exchanges and 48
+construct/send cells. References: OASIS KMIP 2.0 §§6.1.12 Table 184 and 6.1.29
+Table 235; KMIP 2.1 §§6.1.12 Table 199 and 6.1.30 Table 253.
+
+The Java suite passes 109/109 tests. The selected report validates 43,903 of
+71,945 planned cells: 43,887 invocations, 16 not-applicable cells, and zero
+failures. The Create client-batch-item route is 1,200/1,200; Date Time
+Login/Delegated Login variant cells are 48/48; 28,042 cells remain pending
+across the full matrix. The generated ledger comparison passes. These
+controlled TLS fixtures do not establish interoperability with an external
+KMS. The stack remains WIP while applicable matrix cells remain.
