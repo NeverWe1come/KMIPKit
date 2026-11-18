@@ -2610,9 +2610,9 @@ class RouteMatrixTests(unittest.TestCase):
 
     def test_operation_response_ttlv_accessors_are_executed(self):
         """OASIS KMIP 2.0 §§6.1.6, 6.1.7, 6.1.21, 6.1.28, 6.1.31, 6.1.32,
-        6.1.40, 6.1.42, 6.1.49, 6.1.50, 12.1; KMIP 2.1 §§6.1.6, 6.1.7,
-        6.1.21, 6.1.29, 6.1.32, 6.1.33, 6.1.44, 6.1.46, 6.1.55, 6.1.56,
-        12.1."""
+        6.1.26, 6.1.40, 6.1.42, 6.1.49, 6.1.50, 12.1; KMIP 2.1 §§6.1.6,
+        6.1.7, 6.1.21, 6.1.27, 6.1.29, 6.1.32, 6.1.33, 6.1.44, 6.1.46,
+        6.1.55, 6.1.56, 12.1."""
         from artifact_support import ROOT
         from route_peer import execute_network_cells
         catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
@@ -2624,6 +2624,7 @@ class RouteMatrixTests(unittest.TestCase):
             'test-op-log': 'kmipkit_client_batch_item_response_log_ttlv',
             'test-op-mac': 'kmipkit_client_batch_item_response_mac_ttlv',
             'test-op-mac-verify': 'kmipkit_client_batch_item_response_mac_verify_ttlv',
+            'test-op-join-split-key': 'kmipkit_client_batch_item_response_join_split_key_ttlv',
             'test-op-re-key': 'kmipkit_client_batch_item_response_rekey_ttlv',
             'test-op-revoke': 'kmipkit_client_batch_item_response_revoke_ttlv',
             'test-op-sign': 'kmipkit_client_batch_item_response_sign_ttlv',
@@ -3701,6 +3702,7 @@ class RouteMatrixTests(unittest.TestCase):
             'kmipkit_split_key_reference_create',
             'kmipkit_client_batch_item_join_split_key',
             'kmipkit_client_batch_item_response_join_split_key',
+            'kmipkit_client_batch_item_response_join_split_key_ttlv',
             'kmipkit_client_batch_item_destroy',
             'kmipkit_client_execute',
         }
