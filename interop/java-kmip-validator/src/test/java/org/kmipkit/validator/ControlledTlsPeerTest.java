@@ -102,6 +102,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ControlledTlsPeerTest {
     private static final List<String> KMIP_2_0_AND_2_1 = List.of("2.0", "2.1");
     private static final List<String> CREATE_ROUTE_CASE_IDS = List.of("test-op-create", "test-obj-symmetric-key");
+    private static final List<CreateRequestPayloadFixture> CREATE_REQUEST_PAYLOAD_FIXTURES = List.of(
+            new CreateRequestPayloadFixture("test-norm-payload-client-create-request-20-001",
+                    "KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-20-001", "2.0"),
+            new CreateRequestPayloadFixture("test-norm-payload-client-create-request-20-002",
+                    "KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-20-002", "2.0"),
+            new CreateRequestPayloadFixture("test-norm-payload-client-create-request-21-001",
+                    "KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-21-001", "2.1"),
+            new CreateRequestPayloadFixture("test-norm-payload-client-create-request-21-002",
+                    "KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-21-002", "2.1"));
     private static final List<String> CREATE_ROUTE_ENCODINGS = List.of("TTLV", "JSON", "XML");
     private static final List<String> CREATE_ROUTE_TRANSPORTS = List.of("raw_tls", "https");
     private static final List<String> NETWORK_ROUTE_ACTIONS = List.of("construct", "send", "decode");
@@ -115,6 +124,8 @@ class ControlledTlsPeerTest {
 
     private record NewAttributeMutationFixture(String methodName, String title, String ordinal,
             int operationValue) { }
+
+    private record CreateRequestPayloadFixture(String caseId, String targetId, String protocolVersion) { }
 
     private record AsyncCancelRouteScenario(String caseId, String cancellationResultName,
             int cancellationResultValue, List<String> targetIds, int workflowStepIndex) { }
@@ -8132,6 +8143,26 @@ class ControlledTlsPeerTest {
                             assertTrue(present, "Missing Create client batch route evidence for " + caseId + " / "
                                     + version + " / " + encoding + " / " + transport + " / " + action);
                         }
+                    }
+                }
+            }
+        }
+        for (CreateRequestPayloadFixture fixture : CREATE_REQUEST_PAYLOAD_FIXTURES) {
+            for (String encoding : CREATE_ROUTE_ENCODINGS) {
+                for (String transport : CREATE_ROUTE_TRANSPORTS) {
+                    for (String action : List.of("construct", "send")) {
+                        boolean present = events.valueStream().anyMatch(event ->
+                                fixture.caseId().equals(event.path("case_id").asText())
+                                        && "java.typed-protocol.client_batch_item.create"
+                                                .equals(event.path("route_id").asText())
+                                        && fixture.targetId().equals(event.path("target_id").asText())
+                                        && fixture.protocolVersion().equals(
+                                                event.path("protocol_version").asText())
+                                        && encoding.equals(event.path("encoding").asText())
+                                        && transport.equals(event.path("transport").asText())
+                                        && action.equals(event.path("action").asText()));
+                        assertTrue(present, "Missing Create request payload route evidence for "
+                                + fixture.caseId() + " / " + encoding + " / " + transport + " / " + action);
                     }
                 }
             }
