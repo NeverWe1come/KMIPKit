@@ -20,6 +20,7 @@ from validate_route_evidence import (
     validate_parity_collection,
     validate_report,
 )  # noqa: E402
+from coverage_matrix import iter_cells  # noqa: E402
 
 
 class RouteExecutionEvidenceTests(unittest.TestCase):
@@ -269,6 +270,109 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         })
         schema = json.loads((SHARED / "schemas/route-execution-evidence.schema.json").read_text())
         jsonschema.validate(report, schema)
+
+    def test_local_placeholder_rejection_is_validated_without_peer_response(self):
+        target_id = "KMIPKIT-ELEM-OP-C2S-ACTIVATE"
+        case_id = "test-batch-placeholder-without-producer-rejected"
+        catalog = {
+            "version": "2.0.0",
+            "target_versions": ["2.0"],
+            "test_cases": [{
+                "case_id": case_id,
+                "category": "batch_workflows",
+                "operation": "Activate",
+                "requires": {"protocol_scenario": {
+                    "operations": ["Activate"],
+                    "target_ids": [target_id],
+                    "protocol_versions": ["2.0"],
+                    "parameters": {"items": ["Activate(IDPlaceholder)"]},
+                    "expected": {"construction": "rejected_or_operation_failed"},
+                }},
+                "execution": {"protocol_versions": ["2.0"]},
+            }],
+            "normative_targets": [{
+                "target_id": target_id,
+                "kind": "operation",
+                "name": "Activate",
+                "role": "request",
+            }],
+        }
+        manifest = {
+            "library_commit": "a" * 40,
+            "routes": [{
+                "route_id": "c.typed-protocol.kmipkit_client_batch_item_activate",
+                "language": "c",
+                "api_level": "typed-protocol",
+                "mode": "network",
+                "public_api_symbol": "kmipkit_client_batch_item_activate",
+                "operation_ids": ["Activate"],
+                "normative_target_ids": ["*"],
+                "case_categories": ["batch_workflows"],
+                "protocol_versions": ["2.0"],
+                "combinations": [{"encoding": "TTLV", "transport": "raw_tls"}],
+                "actions": ["construct"],
+                "execution_route_id": "c.execute.typed-batch",
+                "artifact_commit": "a" * 40,
+            }],
+            "execution_routes": [{
+                "execution_route_id": "c.execute.typed-batch",
+                "language": "c",
+                "public_api_symbol": "kmipkit_client_execute",
+                "source_paths": ["bindings/c/include/kmipkit.h"],
+            }],
+            "unavailable": [],
+        }
+        scope = next(cell for cell in iter_cells(catalog, manifest, languages=("c",))
+                     if cell["action"] == "send")
+        event = {
+            "case_id": case_id,
+            "route_id": scope["route_id"],
+            "target_id": target_id,
+            "workflow_operation": "Activate",
+            "workflow_item_index": 0,
+            "public_api_symbol": "kmipkit_client_batch_item_activate",
+            "execution_route_id": "c.execute.typed-batch",
+            "execution_api_symbol": "kmipkit_client_execute",
+            "action": "send",
+            "protocol_version": "2.0",
+            "encoding": "TTLV",
+            "transport": "raw_tls",
+            "status": "passed",
+            "invocation_count": 1,
+            "invocation_id": "placeholder-local-validation",
+            "request_delivery_state": "not_sent",
+            "transport_invocation_count": 0,
+            "batch_operation_sequence": ["Activate"],
+            "batch_item_count": 1,
+            "local_rejection_code": "batch_placeholder_forward_reference",
+            "client_error_category": "validation",
+            "client_error_cause": "invalid_input",
+        }
+        report = {
+            "schema_version": "1.0",
+            "run_id": "placeholder-local-run",
+            "language": "c",
+            "server": {"id": "test-kms", "product": "controlled-peer", "version": "2.1",
+                       "configuration_fingerprint": "f" * 64},
+            "library_commit": "a" * 40,
+            "artifact_sha256": "b" * 64,
+            "catalog_sha256": "c" * 64,
+            "route_manifest_sha256": "d" * 64,
+            "protocol_versions": ["2.0"],
+            "network_combinations": [{"encoding": "TTLV", "transport": "raw_tls"}],
+            "events": [event],
+        }
+
+        summary = validate_report(
+            report, catalog, manifest,
+            catalog_sha256="c" * 64,
+            route_manifest_sha256="d" * 64,
+            expected_artifact_sha256="b" * 64,
+            scope_cells=[scope],
+        )
+
+        self.assertTrue(summary["selected_scope_complete"])
+        self.assertTrue(summary["all_invocations_passed"])
 
     def test_missing_action_fails_coverage_even_when_the_route_was_called(self):
         report = copy.deepcopy(self.report)
