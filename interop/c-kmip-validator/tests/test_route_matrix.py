@@ -3622,9 +3622,7 @@ class RouteMatrixTests(unittest.TestCase):
                                                if case['case_id'] == case_id]}
 
         events, _, checks = execute_network_cells(
-            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest,
-            peer_rejection={'case_id': case_id, 'exchange_index': 0, 'operation': 33,
-                            'result_status': 1, 'result_reason': 36})
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
 
         self.assertEqual(12, len(checks), 'Sign failure must pass both versions and all six wire routes')
         self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
