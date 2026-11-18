@@ -139,9 +139,9 @@ The `*.gaps.json` sidecar identifies every unexecuted matrix obligation rather
 than misclassifying it as an unavailable library route. Other sidecars retain
 installed-artifact availability checks and sanitized controlled-peer outcomes.
 The evidence JSON passes the shared schema independently of completeness.
-The latest full local C matrix run (`c-route-5f0fb7b5-2b51-40b0-a5fd-631c889120c8`)
-has 66,736 expected cells, 43,497 invoked, 40 explicitly not applicable, zero
-failed, and 23,199 pending.
+The latest full local C matrix run (`c-route-21d28cca-b5bd-45ae-a292-03bea627d8c0`)
+has 66,736 expected cells, 43,571 invoked, 40 explicitly not applicable, zero
+failed, and 23,125 pending.
 The MAC and Sign response TTLV accessors and the Continue batch-option
 constructor contribute four local cells each across KMIP 2.0/2.1. The
 Query Async Requests correlation builder contributes two KMIP 2.1 model cells.
@@ -320,6 +320,14 @@ successful response. This is supplemental C exchange evidence for the
 catalog's local construction case: it proves no inconsistent count reaches
 this controlled peer and does not claim external KMS behavior.
 
+The negative `test-neg-modify-attribute-current-mismatch` route seeds the
+Comment attribute, requests a Current Attribute value that is not present, and
+expects `OperationFailed` with `Attribute Instance Not Found` (32). It exercises
+direct and standalone Modify Attribute request constructors and verifies that
+the peer preserves the original Comment. This follows KMIP 2.0 §6.1.33 and KMIP
+2.1 §6.1.34 and §9.18/Table 267. The route covers all 12 version, encoding,
+and transport combinations; cleanup revokes and destroys the seeded object.
+
 The `test-op-import` route imports a nonsecret Opaque Object with an explicit
 Unique Identifier, empty caller-supplied Attributes, and one Any Object item.
 The controlled peer checks the object type, object fields, request item IDs,
@@ -386,20 +394,24 @@ An earlier C run (`c-route-3df0ddc1-8a8a-4d90-aa50-addbab9194f4`) emitted 43,255
 evidence rows: 43,239 actual invocations and 16 explicit N/A dispositions,
 with zero failed invocations. It had 23,481 pending recipe cells.
 
-The latest full run (`c-route-5f0fb7b5-2b51-40b0-a5fd-631c889120c8`) emitted
-43,537 evidence rows: 43,497 actual invocations and 40 explicit N/A
+The latest full run (`c-route-21d28cca-b5bd-45ae-a292-03bea627d8c0`) emitted
+43,611 evidence rows: 43,571 actual invocations and 40 explicit N/A
 dispositions, with zero failed invocations. The shared validator accepts the
 emitted scope (`selected_scope_complete=true`, `all_invocations_passed=true`,
-`complete_matrix=false`); 23,199 cells remain pending, so the global gate is
-still open. Compared with the previous full report, cell identities are
-preserved and 72 cells were added for the forward-Placeholder route: 24
-construction calls, 24 send attempts, and 24 network response decoders that
-are N/A because the matching request was rejected locally before transport.
-All 24 N/A cells match a `not_sent` event for the same case, route, operation,
-item index, protocol version, encoding, and transport. The 14 independent
-local response accessors remain pending; six local generic TTLV decodes pass
-using constructed fixtures. Of the cells shared with the previous run, 199
-tree hashes differ across runs: 192 request hashes contain regenerated public
+`complete_matrix=false`); 23,125 cells remain pending, so the global gate is
+still open. Compared with the previous full report, no cell identities were
+removed and 74 were added for the Current Attribute mismatch route: 24
+construction calls, 24 send attempts, 24 network response decoders, and two
+local response-TTLV accessors for KMIP 2.0 and 2.1. The peer returns
+`OperationFailed` with `Attribute Instance Not Found` and confirms the original
+attribute remains unchanged. The earlier forward-Placeholder route contributes
+24 N/A response decoders because each matching request was rejected locally
+before transport; all 24 N/A cells match a `not_sent` event for the same case,
+route, operation,
+item index, protocol version, encoding, and transport. The 14 independent local
+response accessors remain pending; six local generic TTLV decodes pass using
+constructed fixtures. Of the cells shared with the previous run, 199 tree
+hashes differ across runs: 192 request hashes contain regenerated public
 certificate or certificate-request bytes, and seven Query Async Requests
 response hashes include the fixture's current timestamp. Cell identities are
 unchanged for those rows. The report passes the evidence schema and scoped
