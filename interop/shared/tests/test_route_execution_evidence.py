@@ -393,6 +393,7 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
                         "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-BATCH-ITEM",
                         target_id,
                         "KMIPKIT-ELEM-OP-C2S-CREATE",
+                        "KMIPKIT-ELEM-OP-S2C-ACTIVATE",
                     ],
                     "protocol_versions": ["2.0"],
                     "mode": "local_model",
@@ -416,6 +417,11 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
                 "kind": "operation",
                 "name": "Create",
                 "role": "request",
+            }, {
+                "target_id": "KMIPKIT-ELEM-OP-S2C-ACTIVATE",
+                "kind": "operation",
+                "name": "Activate",
+                "role": "response",
             }],
         }
         route = copy.deepcopy(self.manifest["routes"][2])
@@ -427,11 +433,15 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         })
         manifest = copy.deepcopy(self.manifest)
         manifest["routes"] = [route]
-        scope = next(cell for cell in iter_cells(catalog, manifest, languages=("c",))
-                     if cell["action"] == "send" and cell["target_id"] == target_id)
-        event = {
+        response_target_id = "KMIPKIT-ELEM-OP-S2C-ACTIVATE"
+        scope = [cell for cell in iter_cells(catalog, manifest, languages=("c",))
+                 if cell["target_id"] in {target_id, response_target_id}
+                 and cell["protocol_version"] == "2.0"
+                 and cell["encoding"] == "TTLV" and cell["transport"] == "raw_tls"]
+        self.assertEqual({"construct", "send", "decode"}, {cell["action"] for cell in scope})
+        common_event = {
             "case_id": case_id,
-            "route_id": scope["route_id"],
+            "route_id": scope[0]["route_id"],
             "target_id": target_id,
             "workflow_operation": "Activate",
             "workflow_item_index": 0,
@@ -442,6 +452,21 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
             "protocol_version": "2.0",
             "encoding": "TTLV",
             "transport": "raw_tls",
+        }
+        construct_event = {
+            **common_event,
+            "action": "construct",
+            "status": "passed",
+            "invocation_count": 1,
+            "invocation_id": "forward-placeholder-construct",
+            "constructed_operation": "Activate",
+            "construction_evidence_kind": "typed_item_returned",
+            "batch_operation_sequence": operations,
+            "batch_item_count": len(operations),
+        }
+        send_event = {
+            **common_event,
+            "action": "send",
             "status": "passed",
             "invocation_count": 1,
             "invocation_id": "forward-placeholder-local-validation",
@@ -453,18 +478,28 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
             "client_error_category": "validation",
             "client_error_cause": "invalid_input",
         }
+        decode_event = {
+            **common_event,
+            "target_id": response_target_id,
+            "action": "decode",
+            "status": "not_applicable",
+            "invocation_count": 0,
+            "not_applicable_reason": "local_rejection_no_response",
+        }
         report = copy.deepcopy(self.report)
-        report["events"] = [event]
+        report["events"] = [construct_event, send_event, decode_event]
 
         summary = validate_report(
             report, catalog, manifest,
             catalog_sha256="c" * 64,
             route_manifest_sha256="d" * 64,
             expected_artifact_sha256="b" * 64,
-            scope_cells=[scope],
+            scope_cells=scope,
         )
 
         self.assertTrue(summary["selected_scope_complete"])
+        self.assertEqual(2, summary["invoked_cells"])
+        self.assertEqual(1, summary["not_applicable_cells"])
         self.assertTrue(summary["all_invocations_passed"])
 
     def test_explicitly_omitted_stop_response_is_resolved_without_fake_invocation(self):
