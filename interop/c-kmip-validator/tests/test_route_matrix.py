@@ -3232,6 +3232,40 @@ class RouteMatrixTests(unittest.TestCase):
                     self.assertEqual(len(standalone), 1)
                     self.assertEqual(direct[0]['request_tree_sha256'], standalone[0]['request_tree_sha256'])
 
+    def test_modify_attribute_current_value_mismatch_is_rejected_without_mutation(self):
+        """KMIP 2.0 §6.1.33/2.1 §§6.1.34, 9.18 require rejection; Table 267 allows reason 32."""
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_id = 'test-neg-modify-attribute-current-mismatch'
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 24,
+                         'direct and standalone Modify Attribute must run for both versions and six wire paths')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertEqual({check['constructor_variant'] for check in checks}, {'direct', 'standalone'})
+        self.assertTrue(all(check['consumer_result_status_code'] == 1 for check in checks), checks)
+        self.assertTrue(all(check['consumer_result_reason_code'] == 32 for check in checks), checks)
+        self.assertTrue(all(check['peer_setup_operations'] == [1] for check in checks))
+        self.assertTrue(all(check['peer_seed_operations'] == [13] for check in checks))
+        self.assertTrue(all(check['peer_request_operations'] == [14] for check in checks))
+        self.assertTrue(all(check['peer_response_result_statuses'] == [1] for check in checks))
+        self.assertTrue(all(check['peer_response_result_reasons'] == [32] for check in checks))
+        self.assertTrue(all(check['peer_attribute_state_changed'] is False for check in checks))
+        self.assertTrue(all(check['peer_cleanup_operations'] == [19, 20] for check in checks))
+        self.assertTrue(all(check['peer_final_state_matches_setup'] for check in checks))
+        self.assertTrue(any(event['public_api_symbol'] == 'kmipkit_client_batch_item_modify_attribute'
+                            and event['action'] == 'send' for event in events))
+        self.assertTrue(any(event['public_api_symbol'] ==
+                            'kmipkit_client_batch_item_response_modify_attribute'
+                            and event['action'] == 'decode' for event in events))
+
     def test_delete_attribute_setup_rejections_are_classified_by_result_reason(self):
         from artifact_support import ROOT
         from route_peer import execute_network_cells
