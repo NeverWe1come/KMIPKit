@@ -175,6 +175,35 @@ class LocalCatalogRouteChecksTest {
     }
 
     @Test
+    void marksUnprocessedStopResponseDecodeAsNotApplicable() throws Exception {
+        JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
+        List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
+        String caseId = "test-batch-stop-on-first-failure";
+
+        LocalCatalogRouteChecks.executeGenericOperationTargets(catalog, "2.0", Set.of(caseId),
+                new ObjectMapper().createArrayNode(), invocations::add);
+
+        List<LocalCatalogRouteChecks.Invocation> omittedResponseDecodes = invocations.stream()
+                .filter(invocation -> "Get".equals(invocation.workflowOperation())
+                        && Integer.valueOf(1).equals(invocation.workflowItemIndex())
+                        && "decode".equals(invocation.action()))
+                .toList();
+        assertEquals(Set.of("java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode"), omittedResponseDecodes.stream()
+                .map(LocalCatalogRouteChecks.Invocation::routeId)
+                .collect(java.util.stream.Collectors.toSet()));
+        assertTrue(omittedResponseDecodes.stream().allMatch(invocation -> invocation.wire() == null
+                && "stop_unprocessed_response_omitted".equals(invocation.notApplicableReason())));
+        LocalCatalogRouteChecks.Invocation processedResponseView = invocations.stream()
+                .filter(invocation -> "Get".equals(invocation.workflowOperation())
+                        && Integer.valueOf(0).equals(invocation.workflowItemIndex())
+                        && "java.generic-ttlv.function.ttlv_item_view_from_item".equals(invocation.routeId()))
+                .findFirst().orElseThrow();
+        assertTrue(processedResponseView.wire() != null);
+        assertTrue(processedResponseView.notApplicableReason() == null);
+    }
+
+    @Test
     void messageProtocolVersionMinorMatchesSelectedVersion() throws Exception {
         // OASIS KMIP 2.0/2.1 §9.16 Protocol Version.
         JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());

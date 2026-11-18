@@ -257,10 +257,18 @@ final class LocalCatalogRouteChecks {
 
     record Invocation(String caseId, String targetId, String routeId, String symbol,
                       String action, byte[] wire, String rejectionCode,
-                      Integer workflowStepIndex, String workflowOperation, Integer workflowItemIndex) {
+                      Integer workflowStepIndex, String workflowOperation, Integer workflowItemIndex,
+                      String notApplicableReason) {
         Invocation(String caseId, String targetId, String routeId, String symbol,
                 String action, byte[] wire, String rejectionCode) {
-            this(caseId, targetId, routeId, symbol, action, wire, rejectionCode, null, null, null);
+            this(caseId, targetId, routeId, symbol, action, wire, rejectionCode, null, null, null, null);
+        }
+
+        Invocation(String caseId, String targetId, String routeId, String symbol,
+                String action, byte[] wire, String rejectionCode,
+                Integer workflowStepIndex, String workflowOperation, Integer workflowItemIndex) {
+            this(caseId, targetId, routeId, symbol, action, wire, rejectionCode,
+                    workflowStepIndex, workflowOperation, workflowItemIndex, null);
         }
     }
 
@@ -3330,17 +3338,36 @@ final class LocalCatalogRouteChecks {
                 long operationValue = enumValue(catalog, "OPERATION", target.operation());
                 byte[] wire = scalarWire(operationTag, TtlvItemType.Enumeration.code(),
                         Math.toIntExact(operationValue));
+                boolean stopOmitsItemResponse = "test-batch-stop-on-first-failure".equals(caseId)
+                        && "Get".equals(target.workflowOperation())
+                        && Integer.valueOf(1).equals(target.workflowItemIndex());
                 try (RawTag rawTag = RawTag.fromRaw(operationTag); Tag tag = rawTag.checked();
                         TtlvValue value = TtlvValue.Enumeration(operationValue);
                         TtlvItem item = TtlvItem.create(tag, value, limits)) {
-                    assertScalarItem(item, operationTag, TtlvItemType.Enumeration, operationValue);
+                    if (!stopOmitsItemResponse) {
+                        assertScalarItem(item, operationTag, TtlvItemType.Enumeration, operationValue);
+                    }
                 }
-                try (TtlvItem decoded = TtlvCodec.decode(wire)) {
-                    assertScalarItem(decoded, operationTag, TtlvItemType.Enumeration, operationValue);
+                if (!stopOmitsItemResponse) {
+                    try (TtlvItem decoded = TtlvCodec.decode(wire)) {
+                        assertScalarItem(decoded, operationTag, TtlvItemType.Enumeration, operationValue);
+                    }
                 }
                 for (GenericOperationRoute route : GENERIC_OPERATION_ROUTES) {
-                    emitMissingGenericRoute(recordedRoutes, sink, caseId, target, version,
-                            route.routeId(), route.symbol(), route.action(), wire);
+                    if (stopOmitsItemResponse
+                            && "decode".equals(route.action())) {
+                        RouteEvidenceKey key = operationRouteKey(caseId, target, route.routeId(), version);
+                        if (!recordedRoutes.contains(key)) {
+                            sink.record(new Invocation(caseId, targetId, route.routeId(), route.symbol(),
+                                    route.action(), null, null, target.workflowStepIndex(),
+                                    target.workflowOperation(), target.workflowItemIndex(),
+                                    "stop_unprocessed_response_omitted"));
+                            recordedRoutes.add(key);
+                        }
+                    } else {
+                        emitMissingGenericRoute(recordedRoutes, sink, caseId, target, version,
+                                route.routeId(), route.symbol(), route.action(), wire);
+                    }
                 }
             }
             emitted.add(caseId);
