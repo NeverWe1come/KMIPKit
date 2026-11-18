@@ -3885,6 +3885,45 @@ class RouteMatrixTests(unittest.TestCase):
             event['peer_observed_effects'] == ['undone', 'object_not_found'] and
             event['peer_observed_state_before_sha256'] == event['peer_observed_state_after_sha256']
             for event in send_events))
+
+    def test_batch_count_zero_case_selects_local_rejection_without_network(self):
+        from artifact_support import ROOT
+        from coverage_matrix import iter_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case = next(item for item in catalog['test_cases']
+                    if item['case_id'] == 'test-batch-count-zero-rejected')
+        cells = [cell for cell in iter_cells(catalog, manifest, languages=('c',))
+                 if cell['case_id'] == case['case_id']]
+
+        self.assertEqual('local_model', case['requires']['protocol_scenario']['mode'])
+        self.assertEqual({'Batch Count', 'Get'}, {
+            item['name'] for item in catalog['normative_targets']
+            if item['target_id'] in case['requires']['protocol_scenario']['target_ids']
+        })
+        self.assertTrue(cells)
+        self.assertTrue(all(cell['mode'] == 'local' and cell['transport'] is None for cell in cells),
+                        cells)
+        self.assertFalse(any(cell['action'] == 'send' for cell in cells), cells)
+        self.assertTrue(any(cell['public_api_symbol'] == 'kmipkit_request_message_from_ttlv'
+                            and cell['target_id'] == 'KMIPKIT-ELEM-OP-C2S-GET'
+                            for cell in cells), cells)
+
+    def test_zero_batch_count_request_parser_reports_expected_local_rejection(self):
+        from artifact_support import INSTALL, ROOT
+        from c_route_models import ModelCases
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        target = next(item for item in catalog['normative_targets']
+                      if item['target_id'] == 'KMIPKIT-ELEM-OP-C2S-GET')
+        result = ModelCases(INSTALL / 'lib/libkmipkit_ffi.so', catalog).execute(
+            target, '2.1', 'kmipkit_request_message_from_ttlv')
+
+        self.assertIsNotNone(result)
+        self.assertEqual('rejected', result['decode_outcome'])
+        self.assertEqual('invalid_batch_count', result['decode_rejection_code'])
+        self.assertEqual(64, len(result['decode_input_sha256']))
         undo_constructor_events = {
             (event['target_id'], event['protocol_version'])
             for event in events
