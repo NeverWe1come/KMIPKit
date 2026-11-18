@@ -4012,3 +4012,22 @@ validates 40,926/40,926 cells with zero failures. The generated ledger records
 71,641 planned, 40,926 executed, and 30,715 pending cells. Ledger comparison
 and the 1,507-route capability audit pass. The Java matrix and exact-head CI
 remain open; the PR stack stays WIP.
+
+## Java KMIP 2.0 Constraints NotSent routes — 2026-11-18
+
+The catalogued Get Constraints (§6.1.22), Set Constraints (§6.1.52), and Set
+Defaults (§6.1.53) cases now invoke their installed `ClientBatchItem` typed
+constructors and `Client.execute` under KMIP 2.0. For each operation, TTLV,
+JSON, and XML are exercised over both raw TLS and HTTPS. The client reports
+`NotSent`; raw TLS fixtures accept no connection and HTTPS fixtures receive no
+request. The 36 network cells have construct/send evidence and no response
+decode obligation. References: OASIS KMIP 2.1 §§6.1.22, 6.1.52, 6.1.53; KMIP
+2.0 §6.1; KMIPKIT-0092-FR-001/002/003.
+
+Red `c83a8e4c8` fails when any required cell is absent. Green `817c3c970`
+executes the three operations across all six encoding/transport combinations,
+checks `NotSent`, and records the expected request-tree hashes. The Java suite
+passes 92/92, and the selected report validates 40,962/40,962 cells with zero
+failures. The generated ledger has 71,641 planned, 40,962 executed, and 30,679
+pending cells. Ledger comparison and the capability audit pass. Full matrix
+closure and exact-head CI remain open, so the stack stays WIP.
