@@ -636,7 +636,9 @@ final class LocalCatalogRouteChecks {
                             "Digested Data", "Certificate Request Type", "Key Wrap Type", "Query Function",
                             "Adjustment Type", "Adjustment Value", "Cryptographic Usage Mask",
                             "Replace Existing", "Interop Identifier", "Storage Status Mask", "Log Message",
-                            "Compromise Occurrence Date", "Validity Date")
+                            "Compromise Occurrence Date", "Validity Date", "Key Format Type",
+                            "Key Compression Type", "Secret Data Type", "Split Key Method", "Prime Field Size",
+                            "Split Key Parts", "Split Key Threshold")
                             .contains(fieldName)
                     || !requires.path("operation_id").asText().startsWith("KMIPKIT-ELEM-OP-C2S-")
                     || !"local_model".equals(testCase.path("execution").path("mode").asText())
@@ -681,7 +683,9 @@ final class LocalCatalogRouteChecks {
                             "Digested Data", "Certificate Request Type", "Key Wrap Type", "Query Function",
                             "Adjustment Type", "Adjustment Value", "Cryptographic Usage Mask",
                             "Replace Existing", "Interop Identifier", "Storage Status Mask", "Log Message",
-                            "Compromise Occurrence Date", "Validity Date")
+                            "Compromise Occurrence Date", "Validity Date", "Key Format Type",
+                            "Key Compression Type", "Secret Data Type", "Split Key Method", "Prime Field Size",
+                            "Split Key Parts", "Split Key Threshold")
                             .contains(fieldName)
                     || !operationId.startsWith("KMIPKIT-ELEM-OP-C2S-")) {
                 throw new IllegalArgumentException("Selected case is not a supported client scalar payload: "
@@ -697,6 +701,8 @@ final class LocalCatalogRouteChecks {
                     TtlvItemType.ByteString;
                 case "Object Type", "Certificate Request Type", "Key Wrap Type", "Query Function" ->
                     TtlvItemType.Enumeration;
+                case "Key Format Type", "Key Compression Type", "Secret Data Type", "Split Key Method" ->
+                    TtlvItemType.Enumeration;
                 case "Lease Time" -> TtlvItemType.Integer;
                 case "Usage Limits Count" -> TtlvItemType.LongInteger;
                 case "Init Indicator", "Final Indicator" -> TtlvItemType.Boolean;
@@ -704,7 +710,8 @@ final class LocalCatalogRouteChecks {
                 case "Interop Identifier", "Log Message" -> TtlvItemType.TextString;
                 case "Compromise Occurrence Date", "Validity Date" -> TtlvItemType.DateTime;
                 case "Adjustment Value", "Cryptographic Usage Mask", "Storage Status Mask",
-                        "Data Length", "Maximum Items", "Offset Items", "Offset", "Request Count" ->
+                        "Data Length", "Maximum Items", "Offset Items", "Offset", "Request Count",
+                        "Prime Field Size", "Split Key Parts", "Split Key Threshold" ->
                     TtlvItemType.Integer;
                 case "Replace Existing" -> TtlvItemType.Boolean;
                 default -> throw new IllegalArgumentException("Unsupported client scalar payload field: "
@@ -716,11 +723,18 @@ final class LocalCatalogRouteChecks {
                 case "Key Wrap Type" -> enumValue(catalog, "KEY-WRAP-TYPE", "As Registered");
                 case "Query Function" -> enumValue(catalog, "QUERY-FUNCTION", "Query Operations");
                 case "Adjustment Type" -> enumValue(catalog, "ADJUSTMENT-TYPE", "Increment");
+                case "Key Format Type" -> enumValue(catalog, "KEY-FORMAT-TYPE", "Raw");
+                case "Key Compression Type" -> enumValue(catalog, "KEY-COMPRESSION-TYPE",
+                        "EC Public Key Type Uncompressed");
+                case "Secret Data Type" -> enumValue(catalog, "SECRET-DATA-TYPE", "Password");
+                case "Split Key Method" -> enumValue(catalog, "SPLIT-KEY-METHOD", "XOR");
                 case "Lease Time" -> 60;
                 case "Usage Limits Count" -> 10;
                 case "Init Indicator", "Final Indicator", "Data Length", "Maximum Items", "Request Count" -> 1;
                 case "Adjustment Value", "Cryptographic Usage Mask", "Storage Status Mask",
                         "Replace Existing" -> 1;
+                case "Prime Field Size" -> 8;
+                case "Split Key Parts", "Split Key Threshold" -> 2;
                 case "Compromise Occurrence Date", "Validity Date" -> 1_700_000_000;
                 case "Offset Items", "Offset" -> 0;
                 default -> 0;
