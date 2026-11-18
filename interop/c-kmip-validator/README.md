@@ -137,8 +137,8 @@ The `*.gaps.json` sidecar identifies every unexecuted matrix obligation rather
 than misclassifying it as an unavailable library route. Other sidecars retain
 installed-artifact availability checks and sanitized controlled-peer outcomes.
 The evidence JSON passes the shared schema independently of completeness.
-The latest full local C matrix run (`c-route-1ad36230-4652-4aa7-a647-75d635467cf4`)
-has 66,736 expected cells, 42,727 invoked, zero failed, and 24,009 pending.
+The latest full local C matrix run (`c-route-75ad40b8-c4d9-4c47-994d-f186c548ce60`)
+has 66,736 expected cells, 42,767 invoked, zero failed, and 23,969 pending.
 The MAC and Sign response TTLV accessors and the Continue batch-option
 constructor contribute four local cells each across KMIP 2.0/2.1. The
 Query Async Requests correlation builder contributes two KMIP 2.1 model cells.
@@ -153,8 +153,16 @@ both protocol versions across all six encoding and transport combinations.
 The Obtain Lease recipe creates an AES-128 key, obtains a lease through its
 batch ID Placeholder, and revokes and destroys the object; it verifies the
 Unique Identifier, Lease Time, Last Change Date, and complete response TTLV.
-Both recipes use synthetic controlled-peer values and do not claim vendor
+The Create Split Key route creates two AES-128 parts with a 2-of-2 XOR policy,
+reads the repeated response identifiers in wire order, and destroys each part
+by its returned identifier. All three operations are checked against the
+controlled peer across KMIP 2.0 and 2.1, TTLV/JSON/XML, and raw TLS/HTTPS. These
+recipes use synthetic controlled-peer values and do not claim vendor
 interoperability.
+
+The `test-op-poll` controlled route remains pending: the approved catalog does
+not yet provide a complete request, response, correlation, and cleanup recipe
+for it. No Poll recipe is inferred from the catalog's operation name alone.
 
 A generic TTLV wire encoder, generic-TTLV request dispatcher, and high-level
 C client are absent from the exact installed public artifact. The harness's
