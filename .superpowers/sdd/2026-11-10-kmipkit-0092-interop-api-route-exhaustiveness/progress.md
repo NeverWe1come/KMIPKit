@@ -682,3 +682,16 @@ branches, and the common CI therefore reports a planned matrix only.
 - Batch Stop semantics follow OASIS KMIP 2.0 §11.5 Table 396 and KMIP 2.1
   §11.5 Table 434. Keep the Java stack WIP until the exact-head CI and full
   matrix contract pass.
+
+## 2026-11-18 Rust Login Lease Time route dispatch
+
+- Red `401ff9d31` added Login and Delegated Login Interval/Date Time setter
+  routes to the Rust validator test and failed because the route dispatch was
+  missing. Green `246f4605c` adds the typed request construction and regenerates
+  `local_cases_generated.rs` from the catalog. Refactor `ec87e0715` shares the
+  fixture construction while retaining the concrete public setter calls.
+- The focused route test passes, as do all 70 Rust validator unit tests and 3
+  CLI tests; `cargo fmt --check` passes. The previously observed CI failure
+  also identified missing Cancel response decoder cells in Java. This change
+  resolves Rust Login Lease Time dispatch locally; exact-head hosted CI and
+  the complete cross-language matrix remain pending.
