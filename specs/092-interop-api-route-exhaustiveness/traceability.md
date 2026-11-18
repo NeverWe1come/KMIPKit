@@ -526,3 +526,22 @@ vendor KMS interoperability.
   cells with zero failures; and the ledger records 71,641 planned, 42,528
   executed, and 29,113 pending cells. Ledger comparison passes. Full matrix
   closure remains open under FR-002/FR-003/FR-009; the stack remains WIP.
+
+## Java typed scalar Attribute routes — 2026-11-18
+
+- **FR-003/FR-009:** Ten catalogued Integer, Interval, and Byte String
+  Attribute cases now use `TypedAttribute.create`, `TypedAttribute.fromItem`,
+  and `AttributeSet.tryNew` alongside generic TTLV routes. Their 17 applicable
+  KMIP 2.0/2.1 pairs close 51 local route cells. Sources: OASIS KMIP 2.0
+  §§4.8, 4.15, 4.17, 4.30, 4.43, 4.44, 4.49, 11.54; KMIP 2.1 §§4.8, 4.15,
+  4.17, 4.30, 4.43, 4.44, 4.49–4.51, 4.54, 11.56. This proves local
+  construction, not server acceptance.
+- Red `67471b84b` requires all seven routes; Green `06db9dcce` adds typed
+  execution and regenerates the ledger; Refactor `6c809e7c2` isolates the
+  typed checks and avoids duplicate generic evidence. The Gradle suite passes
+  95/95, shared evidence/schema/capability tests 109/109, requirement
+  traceability 2/2, feature traceability 31/31, and the route-capability audit
+  1,507 routes. Selected evidence validates 42,579/42,579 cells with zero
+  failures; the ledger records 71,641 planned, 42,579 executed, and 29,062
+  pending cells, and comparison passes. Full matrix closure remains open under
+  FR-002/FR-003/FR-009; the Java stack stays WIP.

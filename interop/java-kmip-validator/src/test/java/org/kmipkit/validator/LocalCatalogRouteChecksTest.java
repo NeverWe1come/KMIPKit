@@ -616,14 +616,17 @@ class LocalCatalogRouteChecksTest {
 
         assertEquals(caseIds, invocations.stream().map(LocalCatalogRouteChecks.Invocation::caseId)
                 .collect(java.util.stream.Collectors.toSet()));
-        assertEquals(68, invocations.size(), "Every applicable Attribute/version pair must use four routes.");
+        assertEquals(119, invocations.size(), "Every applicable Attribute/version pair must use seven routes.");
         assertEquals(Set.of(
                 "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.integer",
                 "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.interval",
                 "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.bytestring",
                 "java.generic-ttlv.ttlv_item.create",
                 "java.generic-ttlv.function.ttlv_item_view_from_item",
-                "java.generic-ttlv.ttlv_codec.decode"),
+                "java.generic-ttlv.ttlv_codec.decode",
+                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
+                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
+                "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew"),
                 invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId)
                         .collect(java.util.stream.Collectors.toSet()));
         assertEquals(Set.of("construct", "decode"), invocations.stream()
