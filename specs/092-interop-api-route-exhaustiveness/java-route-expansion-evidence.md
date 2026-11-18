@@ -4177,3 +4177,28 @@ selected matrix validates 42,498/42,498 cells with zero failures. The ledger
 records 71,641 planned, 42,498 executed, and 29,143 pending cells and matches
 its checked-in reference. Full matrix closure remains open, so the Java stack
 stays WIP.
+
+## Java typed scalar Attribute routes — 2026-11-18
+
+The installed Java validator now exercises the ten catalogued Integer,
+Interval, and Byte String Attribute cases through `TypedAttribute.create`,
+`TypedAttribute.fromItem`, and `AttributeSet.tryNew`, as well as the generic
+TTLV routes. Fixtures verify the assigned standard attribute, decoded value,
+and one-item Attribute Set. Seven attributes apply in KMIP 2.0 and 2.1; the
+three Rotate attributes apply in KMIP 2.1 only, for 17 applicable pairs and
+51 additional local route cells. Sources: OASIS KMIP 2.0 §§4.8, 4.15, 4.17,
+4.30, 4.43, 4.44, 4.49, and 11.54; KMIP 2.1 §§4.8, 4.15, 4.17, 4.30, 4.43,
+4.44, 4.49–4.51, 4.54, and 11.56. These local checks do not claim KMS
+acceptance.
+
+Red `67471b84b` requires all seven generic and typed routes. Green `06db9dcce`
+executes and checks the typed builders and Attribute Set; Refactor `6c809e7c2`
+isolates the typed scalar path and keeps existing generic evidence from being
+duplicated. The Gradle suite passes 95/95 tests; shared route/schema/capability
+tests pass 109/109; requirement and feature traceability pass 2/2 and 31/31;
+and the route audit accepts 1,507 routes. Selected evidence validates
+42,579/42,579 cells with zero failures. The ledger records 71,641 planned,
+42,579 executed, and 29,062 pending cells, and its comparison passes. The
+full matrix remains incomplete, so the PR stack stays WIP. Because host `/tmp`
+was full, the successful artifact install and test run used temporary storage
+on the worktree filesystem.
