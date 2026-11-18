@@ -3624,3 +3624,16 @@ pass 108 tests, and the capability audit reports 1,507 routes. The selected
 report validates 34,262/34,262 cells with zero failures and leaves 37,379 of
 71,641 planned Java cells pending. The generated ledger matches its checked-in
 reference; `git diff --check` passes. The PR stack remains WIP.
+
+## #216 stack-tip verification after Transparent Symmetric Key routes — 2026-11-18
+
+The #216 branch includes Red commit `6fd9f4cf5` and Green commit `fe6cd8f3f`
+from #187. They add the §3.4 `Key` Byte String to the typed-model route matrix
+for `KeyMaterial`, `KeyValue`, and `KeyBlock` in both KMIP versions. Fixture
+bytes are synthetic and do not represent a production key.
+
+The full Java suite passes 84 tests; the shared evidence/schema/capability
+suites pass 108 tests; and the capability audit reports 1,507 routes. The
+selected report validates 34,274/34,274 cells with zero failures and leaves
+37,367 of 71,641 planned Java cells pending. The generated ledger matches its
+checked-in reference; `git diff --check` passes. The PR stack remains WIP.

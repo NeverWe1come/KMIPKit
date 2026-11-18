@@ -652,7 +652,7 @@ class LocalCatalogRouteChecksTest {
     }
 
     @Test
-    // KMIP 2.0/2.1 §§3.5–3.12 define these transparent Key Material structures and field types.
+    // KMIP 2.0/2.1 §§3.4–3.12 define these transparent Key Material structures and field types.
     void executesEveryTransparentKeyMaterialFormatThroughTypedKeyModels() throws Exception {
         JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
         Set<String> caseIds = LocalCatalogRouteChecks.TRANSPARENT_KEY_MATERIAL_CASE_IDS;

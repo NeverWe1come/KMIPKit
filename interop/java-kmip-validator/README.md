@@ -101,8 +101,8 @@ baseline, regenerate the checked-in ledger with
 rejects generated ledgers that do not record successful invocations.
 The generated ledger retains the artifact
 SHA-256 for each build; that build-specific digest is not used as a coverage
-baseline. These recipes execute 34,262 of 71,641 planned Java route cells, with
-no failed cells; the ledger records the other 37,379 as pending and does not imply
+baseline. These recipes execute 34,274 of 71,641 planned Java route cells, with
+no failed cells; the ledger records the other 37,367 as pending and does not imply
 vendor interoperability or full-matrix completion. Local TTLV recipes exercise 51
 enumeration families, all six bitmask aggregate cases, and all 44 individual
 bitmask value cases through the applicable
@@ -444,3 +444,8 @@ cells remain pending, so the Java matrix and stack remain WIP.
 After synchronizing these routes into the #216 Usage Limits branch, the full
 Java suite passes 84 tests and the selected report validates 34,262/34,262
 cells, with 37,379 of 71,641 cells still pending. The PR stack remains WIP.
+
+The #187 increment for the §3.4 Transparent Symmetric Key `Key` Byte String
+also passes through the typed `KeyMaterial`, `KeyValue`, and `KeyBlock` routes.
+On #216 the selected report validates 34,274/34,274 cells with zero failures;
+37,367 remain pending.
