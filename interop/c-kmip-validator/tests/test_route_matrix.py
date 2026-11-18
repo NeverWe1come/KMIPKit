@@ -3704,6 +3704,26 @@ class RouteMatrixTests(unittest.TestCase):
             'KMIPKIT-ELEM-OP-C2S-GET', 'KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST',
         }
         self.assertTrue(expected_operations <= {event['target_id'] for event in events})
+        continuation_events = {
+            (event['target_id'], event['protocol_version'])
+            for event in events
+            if event['case_id'] == 'test-batch-continue-after-failure'
+            and event['route_id'] == 'c.typed-protocol.function.client_batch_add_error_continuation_value'
+            and event['public_api_symbol'] == 'kmipkit_client_batch_add_error_continuation_value'
+            and event['action'] == 'construct'
+            and event['encoding'] == 'TTLV'
+            and event['transport'] is None
+        }
+        self.assertEqual(continuation_events, {
+            (target, version)
+            for target in (
+                'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION',
+                'KMIPKIT-ELEM-ENUM-VALUE-BATCH-ERROR-CONTINUATION-OPTION-CONTINUE-00000001',
+            )
+            for version in ('2.0', '2.1')
+        }, 'the executed Continue builder must cover the field and selected enum value')
+        self.assertTrue(all(check.get('peer_batch_error_continuation_option_values') == [1]
+                            for check in checks if check['case_id'] == 'test-batch-continue-after-failure'))
         for symbol in ('kmipkit_client_batch_item_get', 'kmipkit_client_batch_item_get_attribute_list'):
             self.assertTrue(any(event['public_api_symbol'] == symbol and event['action'] == 'send'
                                 for event in events), symbol)
