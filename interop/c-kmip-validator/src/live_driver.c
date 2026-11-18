@@ -4102,6 +4102,117 @@ static int32_t build_pgp_key_register_item(
     return status;
 }
 
+static int32_t build_secret_data_register_item(
+    kmip_live_client_t *client,
+    kmipkit_client_batch_item_t **out_item) {
+    /* OASIS KMIP 2.0 §2.7/Table 8 and §6.1.39/Table 267; KMIP 2.1 §2.7/Table 8 and
+     * §6.1.43/Table 293 define the Secret Data structure and require the Register Usage Mask.
+     * DERIVE_KEY is selected explicitly as the fixture's Password usage; §6.1.14 requires
+     * this bit when a Managed Object is used as a Derive Key source. No derivation is run. */
+    if (!client || !out_item) return KMIPKIT_ERROR_INVALID_INPUT;
+    uint8_t secret_data_bytes[] = "synthetic-secret-material";
+    kmipkit_ttlv_value_t *secret_data_type_value = NULL;
+    kmipkit_ttlv_value_t *key_format_value = NULL;
+    kmipkit_ttlv_value_t *key_material_value = NULL;
+    kmipkit_ttlv_value_t *usage_mask_value = NULL;
+    kmipkit_raw_tag_t *secret_data_type_raw_tag = NULL;
+    kmipkit_raw_tag_t *key_format_raw_tag = NULL;
+    kmipkit_raw_tag_t *key_material_raw_tag = NULL;
+    kmipkit_tag_t *secret_data_type_tag = NULL;
+    kmipkit_tag_t *key_format_tag = NULL;
+    kmipkit_tag_t *key_material_tag = NULL;
+    kmipkit_ttlv_item_t *secret_data_type_item = NULL;
+    kmipkit_ttlv_item_t *key_format_item = NULL;
+    kmipkit_ttlv_item_t *key_material_item = NULL;
+    kmipkit_ttlv_item_t *key_value_item = NULL;
+    kmipkit_ttlv_item_t *key_block_item = NULL;
+    kmipkit_ttlv_item_t *secret_data_item = NULL;
+    kmipkit_ttlv_item_t *key_value_fields[1] = {NULL};
+    kmipkit_ttlv_item_t *key_block_fields[2] = {NULL, NULL};
+    kmipkit_ttlv_item_t *secret_data_fields[2] = {NULL, NULL};
+    kmipkit_ttlv_structure_t *attributes = NULL;
+    kmipkit_register_request_t *request = NULL;
+    int32_t status = kmipkit_ttlv_value_enumeration(
+        KMIPKIT_ENUMERATION_SECRET_DATA_TYPE_PASSWORD, &secret_data_type_value);
+    if (status == 0) status = kmipkit_ttlv_raw_tag_create(
+        UINT32_C(0x420086), &secret_data_type_raw_tag);
+    if (status == 0) status = kmipkit_ttlv_raw_tag_try_checked(
+        secret_data_type_raw_tag, &secret_data_type_tag);
+    if (status == 0) status = kmipkit_ttlv_item_create(
+        secret_data_type_tag, secret_data_type_value, client->limits, &secret_data_type_item);
+    if (status == 0) secret_data_type_value = NULL;
+    if (status == 0) status = kmipkit_ttlv_value_enumeration(
+        KMIPKIT_ENUMERATION_KEY_FORMAT_TYPE_RAW, &key_format_value);
+    if (status == 0) status = kmipkit_ttlv_raw_tag_create(
+        UINT32_C(0x420042), &key_format_raw_tag);
+    if (status == 0) status = kmipkit_ttlv_raw_tag_try_checked(
+        key_format_raw_tag, &key_format_tag);
+    if (status == 0) status = kmipkit_ttlv_item_create(
+        key_format_tag, key_format_value, client->limits, &key_format_item);
+    if (status == 0) key_format_value = NULL;
+    if (status == 0) status = kmipkit_ttlv_value_byte_string(
+        client->limits, secret_data_bytes, sizeof(secret_data_bytes) - 1, &key_material_value);
+    memset(secret_data_bytes, 0, sizeof(secret_data_bytes));
+    if (status == 0) status = kmipkit_ttlv_raw_tag_create(
+        UINT32_C(0x420043), &key_material_raw_tag);
+    if (status == 0) status = kmipkit_ttlv_raw_tag_try_checked(
+        key_material_raw_tag, &key_material_tag);
+    if (status == 0) status = kmipkit_ttlv_item_create(
+        key_material_tag, key_material_value, client->limits, &key_material_item);
+    if (status == 0) key_material_value = NULL;
+    if (status == 0) {
+        key_value_fields[0] = key_material_item;
+        status = kmipkit_key_value_from_fields(
+            KMIPKIT_ENUMERATION_KEY_FORMAT_TYPE_RAW,
+            key_value_fields, 1, &key_value_item);
+    }
+    if (status == 0) {
+        key_block_fields[0] = key_format_item;
+        key_block_fields[1] = key_value_item;
+        status = kmipkit_key_block_from_fields(key_block_fields, 2, &key_block_item);
+    }
+    if (status == 0) {
+        secret_data_fields[0] = secret_data_type_item;
+        secret_data_fields[1] = key_block_item;
+        status = kmipkit_secret_data_from_fields(secret_data_fields, 2, &secret_data_item);
+    }
+    if (status == 0) status = kmipkit_ttlv_structure_create(&attributes);
+    if (status == 0) status = kmipkit_ttlv_value_integer(
+        (int32_t)KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_DERIVE_KEY, &usage_mask_value);
+    if (status == 0 && !append_ttlv_value(
+            client, &attributes, UINT32_C(0x42002C), &usage_mask_value))
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    if (status == 0) {
+        status = kmipkit_register_request_create(
+            KMIPKIT_ENUMERATION_OBJECT_TYPE_SECRET_DATA, attributes, secret_data_item, &request);
+        attributes = NULL;
+        secret_data_item = NULL;
+    }
+    if (status == 0) {
+        status = kmipkit_client_batch_item_register(request, out_item);
+        request = NULL;
+    }
+    if (request) kmipkit_register_request_release(request);
+    if (attributes) kmipkit_ttlv_structure_release(attributes);
+    if (secret_data_item) kmipkit_ttlv_item_release(secret_data_item);
+    if (key_block_item) kmipkit_ttlv_item_release(key_block_item);
+    if (key_value_item) kmipkit_ttlv_item_release(key_value_item);
+    if (key_material_item) kmipkit_ttlv_item_release(key_material_item);
+    if (key_format_item) kmipkit_ttlv_item_release(key_format_item);
+    if (secret_data_type_item) kmipkit_ttlv_item_release(secret_data_type_item);
+    if (key_material_tag) kmipkit_tag_release(key_material_tag);
+    if (key_format_tag) kmipkit_tag_release(key_format_tag);
+    if (secret_data_type_tag) kmipkit_tag_release(secret_data_type_tag);
+    if (key_material_raw_tag) kmipkit_raw_tag_release(key_material_raw_tag);
+    if (key_format_raw_tag) kmipkit_raw_tag_release(key_format_raw_tag);
+    if (secret_data_type_raw_tag) kmipkit_raw_tag_release(secret_data_type_raw_tag);
+    if (key_material_value) kmipkit_ttlv_value_release(key_material_value);
+    if (key_format_value) kmipkit_ttlv_value_release(key_format_value);
+    if (secret_data_type_value) kmipkit_ttlv_value_release(secret_data_type_value);
+    if (usage_mask_value) kmipkit_ttlv_value_release(usage_mask_value);
+    return status;
+}
+
 static int32_t build_opaque_object_register_item(
     kmip_live_client_t *client,
     kmipkit_client_batch_item_t **out_item) {
@@ -7279,9 +7390,12 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         strcmp(test_case->case_id, "test-obj-opaque-object") == 0;
     bool register_pgp_key_workflow =
         strcmp(test_case->case_id, "test-obj-pgp-key") == 0;
+    bool register_secret_data_workflow =
+        strcmp(test_case->case_id, "test-obj-secret-data") == 0;
     bool register_object_workflow = register_certificate_object_workflow ||
         register_opaque_object_workflow ||
         register_pgp_key_workflow ||
+        register_secret_data_workflow ||
         register_certificate_request_workflow;
     bool register_certificate_workflow = certificate_attributes_workflow ||
         register_certificate_object_workflow;
@@ -7409,6 +7523,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         register_certificate_request_workflow ? KMIPKIT_ENUMERATION_OBJECT_TYPE_CERTIFICATE_REQUEST :
         register_opaque_object_workflow ? KMIPKIT_ENUMERATION_OBJECT_TYPE_OPAQUE_OBJECT :
         register_pgp_key_workflow ? KMIPKIT_ENUMERATION_OBJECT_TYPE_PGP_KEY :
+        register_secret_data_workflow ? KMIPKIT_ENUMERATION_OBJECT_TYPE_SECRET_DATA :
         register_certificate_workflow ? KMIPKIT_ENUMERATION_OBJECT_TYPE_CERTIFICATE :
         KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY;
     bool revoke_workflow = strcmp(test_case->case_id, "test-op-revoke") == 0;
@@ -7655,12 +7770,14 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             .enumeration_value = KMIPKIT_ENUMERATION_UNIQUE_IDENTIFIER_ID_PLACEHOLDER
         };
         request_construction_step = register_pgp_key_workflow ? "Register PGP Key" :
+            register_secret_data_workflow ? "Register Secret Data" :
             register_opaque_object_workflow ? "Register Opaque Object" :
             register_certificate_request_workflow ? "Register Certificate Request" :
             register_certificate_workflow ? "Register Certificate" :
             rsa_key_workflow ? "RSA key Attributes" : "symmetric key Attributes";
         status = (register_certificate_workflow || register_certificate_request_workflow ||
-                  register_opaque_object_workflow || register_pgp_key_workflow) ? 0 : (rsa_key_workflow ?
+                  register_opaque_object_workflow || register_pgp_key_workflow ||
+                  register_secret_data_workflow) ? 0 : (rsa_key_workflow ?
             create_rsa_key_attributes(client, &request_attributes) :
             create_symmetric_key_attributes(client, &request_attributes)) ? 0 : -1;
         if (status == 0 && create_storage_masks_workflow) {
@@ -7668,6 +7785,14 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         }
         if (status == 0 && register_pgp_key_workflow) {
             status = build_pgp_key_register_item(
+                client, create_workflow ? &item : &setup_item);
+            if (status == 0 && !request_item_is_valid(
+                    create_workflow ? item : setup_item,
+                    request_validation_diagnostic, sizeof(request_validation_diagnostic))) {
+                status = KMIPKIT_ERROR_INVALID_INPUT;
+            }
+        } else if (status == 0 && register_secret_data_workflow) {
+            status = build_secret_data_register_item(
                 client, create_workflow ? &item : &setup_item);
             if (status == 0 && !request_item_is_valid(
                     create_workflow ? item : setup_item,
@@ -8449,7 +8574,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         }
         uint32_t response_object_type = 0;
         status = (register_certificate_workflow || register_certificate_request_workflow ||
-                  register_opaque_object_workflow || register_pgp_key_workflow) ?
+                  register_opaque_object_workflow || register_pgp_key_workflow ||
+                  register_secret_data_workflow) ?
             kmipkit_client_batch_item_response_register(
                 setup_response_item, &created_identifier_present, &created_identifier) :
             kmipkit_client_batch_item_response_create(
@@ -8457,7 +8583,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                 &response_object_type, &created_identifier);
         if (status != 0 || !created_identifier_present ||
             (!(register_certificate_workflow || register_certificate_request_workflow ||
-               register_opaque_object_workflow || register_pgp_key_workflow) &&
+               register_opaque_object_workflow || register_pgp_key_workflow ||
+               register_secret_data_workflow) &&
              response_object_type != requested_object_type) ||
             created_identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
             created_identifier.text_length == 0 || !created_identifier.text_data) {
@@ -8467,7 +8594,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             goto cleanup;
         }
         if ((register_certificate_workflow || register_certificate_request_workflow ||
-             register_opaque_object_workflow || register_pgp_key_workflow) &&
+             register_opaque_object_workflow || register_pgp_key_workflow ||
+             register_secret_data_workflow) &&
             !response_ttlv_matches_identifier(
                 setup_response_item, kmipkit_client_batch_item_response_register_ttlv,
                 &created_identifier, &status)) {

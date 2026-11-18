@@ -81,6 +81,8 @@ REKEY_ITEM_IDS = (b'rekey-create', b'rekey-target', b'rekey-revoke-replacement',
                   b'rekey-destroy-replacement', b'rekey-revoke-original', b'rekey-destroy-original')
 REKEY_ORIGINAL_IDENTIFIER = b'fixture-key-1'
 REKEY_REPLACEMENT_IDENTIFIER = b'fixture-rekeyed-key'
+SECRET_DATA_MATERIAL = b'synthetic-secret-material'
+SECRET_DATA_ITEM_IDS = (b'interop-register', b'interop-destroy')
 CERTIFY_ITEM_IDS = (b'certify-create-pair', b'certify-activate-private', b'certify-public-key',
                     b'certify-revoke-private', b'certify-destroy-certificate',
                     b'certify-destroy-private', b'certify-destroy-public')
@@ -434,6 +436,7 @@ RECIPES = {
     'test-op-delete-attribute': ((1, 13, 15, 19, 20), 'delete_attribute'),
     'test-obj-opaque-object': ((3, 20), 'register_opaque_object'),
     'test-obj-pgp-key': ((3, 20), 'register_pgp_key'),
+    'test-obj-secret-data': ((3, 20), 'register_secret_data'),
     'test-obj-certificate': ((3, 20), 'register'),
     'test-obj-certificate-request': ((3, 20), 'register_certificate_request'),
     'test-batch-create-activate-destroy': ((1, 18, 12, 19, 20), 'create_activate_attribute_list_revoke_destroy'),
@@ -1210,6 +1213,18 @@ def verify_rekey_response(response_tree):
         raise ValueError('fixture_rekey_response_identifiers_mismatch')
 
 
+def verify_secret_data_response(response_tree):
+    """Check typed Register response and exact-ID Destroy cleanup without emitting the secret."""
+    items = [child for child in response_tree[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if ([numbers(item, 0x42005C) for item in items] != [[3], [20]] or
+            [byte_string_values(item, 0x420093) for item in items] !=
+            [[item_id] for item_id in SECRET_DATA_ITEM_IDS] or
+            [numbers(item, 0x42007F) for item in items] != [[0], [0]] or
+            [text_values(item, UNIQUE_IDENTIFIER_TAG) for item in items] !=
+            [['fixture-key-1'], ['fixture-key-1']]):
+        raise ValueError('fixture_register_secret_data_response_mismatch')
+
+
 def assert_certify_request(node):
     """Check Certify of the Public Key and Certificate Sign capability."""
     items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
@@ -1631,6 +1646,31 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
                     numbers(attributes, 0x42002A) != [2048] or
                     numbers(attributes, 0x42002C) != [1]):
                 raise ValueError('fixture_register_pgp_key_shape_mismatch')
+        elif selected_recipe[1] == 'register_secret_data':
+            attributes = next(descendants(register_item, 0x420125), None)
+            secret_data = next(descendants(register_item, 0x420085), None)
+            secret_data_type = next(descendants(secret_data, 0x420086), None) \
+                if secret_data is not None else None
+            key_block = next(descendants(secret_data, 0x420040), None) \
+                if secret_data is not None else None
+            key_format = next(descendants(key_block, 0x420042), None) \
+                if key_block is not None else None
+            key_value = next(descendants(key_block, 0x420045), None) \
+                if key_block is not None else None
+            key_material = next(descendants(key_value, 0x420043), None) \
+                if key_value is not None else None
+            if (numbers(node, 0x420057) != [7] or secret_data is None or
+                    attributes is None or attributes[1] != 1 or
+                    numbers(attributes, 0x42002C) != [512] or
+                    secret_data[1] != 1 or
+                    [field[0] for field in secret_data[2]] != [0x420086, 0x420040] or
+                    secret_data_type is None or secret_data_type[1] != 5 or
+                    numbers(secret_data, 0x420086) != [1] or
+                    key_block is None or key_block[1] != 1 or key_format is None or
+                    key_format[1] != 5 or numbers(key_block, 0x420042) != [1] or
+                    key_value is None or key_value[1] != 1 or key_material is None or
+                    key_material[1] != 8 or key_material[2] != SECRET_DATA_MATERIAL):
+                raise ValueError('fixture_register_secret_data_shape_mismatch')
         elif selected_recipe[1] == 'register_certificate_request':
             certificate_request = next(descendants(register_item, 0x420018), None)
             request_value = next(descendants(register_item, 0x420140), None)
@@ -3798,6 +3838,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             response_item_ids = (
                                                 (JOIN_SPLIT_KEY_ITEM_IDS[0],)
                                                 if exchange_index == 0 else JOIN_SPLIT_KEY_ITEM_IDS[1:])
+                                        elif recipe[1] == 'register_secret_data':
+                                            response_item_ids = SECRET_DATA_ITEM_IDS
                                         elif placeholder_chain_recipe:
                                             response_item_ids = (
                                                 (b'placeholder-revoke-cleanup', b'placeholder-destroy-cleanup')
@@ -4155,6 +4197,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             verify_rekey_create_response(response_tree)
                                         elif recipe[1] == 'rekey':
                                             verify_rekey_response(response_tree)
+                                        elif recipe[1] == 'register_secret_data':
+                                            verify_secret_data_response(response_tree)
                                         elif recipe[1] == 'certify':
                                             verify_certify_response(response_tree)
                                         elif recipe[1] == 'pkcs11':

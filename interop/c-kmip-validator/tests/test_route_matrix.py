@@ -3942,7 +3942,7 @@ class RouteMatrixTests(unittest.TestCase):
                             and event['action'] == 'send' for event in events))
 
     def test_secret_data_register_executes_typed_c_routes_and_cleanup(self):
-        """OASIS KMIP 2.0/2.1 §§2 and 11.34 define Secret Data registration."""
+        """OASIS KMIP 2.0 §2.7/Table 8, §6.1.39/Table 267; KMIP 2.1 §2.7/Table 8, §6.1.43/Table 293."""
         from artifact_support import ROOT
         import route_peer
 
@@ -3960,6 +3960,8 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
         required_symbols = {
             'kmipkit_secret_data_from_fields',
+            'kmipkit_ttlv_value_integer',
+            'kmipkit_ttlv_structure_with_item',
             'kmipkit_register_request_create',
             'kmipkit_client_batch_item_register',
             'kmipkit_client_batch_item_response_register',
@@ -3971,7 +3973,7 @@ class RouteMatrixTests(unittest.TestCase):
                             for check in checks))
         self.assertTrue(any(event['target_id'] == 'KMIPKIT-ELEM-OP-C2S-REGISTER'
                             and event['action'] == 'send' for event in events))
-        self.assertNotIn('fixture-secret-data', json.dumps(events))
+        self.assertNotIn('synthetic-secret-material', json.dumps(events + checks))
 
     def test_placeholder_chain_executes_typed_create_activate_get_batch(self):
         from artifact_support import ROOT

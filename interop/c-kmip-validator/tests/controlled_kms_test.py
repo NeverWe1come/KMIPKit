@@ -27,6 +27,7 @@ ASYNC_CANCEL_RESULT_CASES = (
 ASYNC_CANCEL_POLL_RACE_CASE = "test-async-cancel-vs-poll-race"
 ASYNC_NO_RECURSIVE_POLL_CANCEL_CASE = "test-async-no-recursive-async-poll-cancel"
 ASYNC_POLL_FINAL_FAILURE_CASE = "test-async-poll-final-operation-failure"
+SECRET_DATA_MATERIAL = b"synthetic-secret-material"
 
 
 def tlv(tag: int, item_type: int, value: bytes) -> bytes:
@@ -560,8 +561,10 @@ def main() -> int:
     expected_operations += registered_key_batch
     expected_operations += (3, 20)
     expected_operations += (3, 20)
+    expected_operations += (3, 20)
     expected_cases += ("test-obj-opaque-object",)
     expected_cases += ("test-obj-pgp-key",)
+    expected_cases += ("test-obj-secret-data",)
     expected_operations += (1, 18, 31, 19, 20)
     expected_operations += (1, 18, 32, 19, 20)
     expected_operations += (1, 18, 35, 19, 20)
@@ -769,6 +772,20 @@ def main() -> int:
                                         any(tlv(0x420093, 8, item_id) not in request for item_id in item_ids) or
                                         tlv(0x420010, 6, b"\x00\x00\x00\x00\x00\x00\x00\x01") not in request):
                                     raise AssertionError("Re-key must target the source, resolve ID Placeholder to the replacement, and clean both keys")
+                            if (operations == (3, 20) and
+                                    bytes.fromhex("42008501") in request):
+                                secret_data = (
+                                    enumeration(0x420086, 1) +
+                                    tlv(0x420040, 1,
+                                        enumeration(0x420042, 1) +
+                                        tlv(0x420045, 1,
+                                            tlv(0x420043, 8, SECRET_DATA_MATERIAL))))
+                                if (enumeration(0x420057, 7) not in request or
+                                        tlv(0x420085, 1, secret_data) not in request or
+                                        tlv(0x420093, 8, b"interop-register") not in request or
+                                        tlv(0x420093, 8, b"interop-destroy") not in request or
+                                        tlv(0x420094, 5, b"\x00\x00\x00\x01") not in request):
+                                    raise AssertionError("Secret Data Register request did not match the synthetic Password fixture")
                             if operations == (41, 20, 20, 20):
                                 if (not split_key_created or
                                         request.count(tlv(0x420094, 7, split_identifiers[0])) != 2 or
@@ -1256,6 +1273,9 @@ def main() -> int:
                                     response_item_ids = (b"rekey-target", b"rekey-revoke-replacement",
                                         b"rekey-destroy-replacement", b"rekey-revoke-original",
                                         b"rekey-destroy-original")
+                                elif (operations == (3, 20) and
+                                      bytes.fromhex("42008501") in request):
+                                    response_item_ids = (b"interop-register", b"interop-destroy")
                                 elif operations == (20,):
                                     split_cleanup_id = next((identifier for identifier in split_identifiers
                                         if tlv(0x420094, 7, identifier) in request), None)
