@@ -3499,6 +3499,51 @@ class RouteMatrixTests(unittest.TestCase):
                              'destroyed', 'destroyed', 'destroyed']
                             for event in send_events))
 
+    def test_pkcs11_operation_executes_installed_request_and_response_routes(self):
+        """OASIS KMIP 2.0 §6.1.35 and 2.1 §6.1.37 define the PKCS#11 operation."""
+        from artifact_support import ROOT
+        from route_peer import RECIPES, execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_id = 'test-op-pkcs#11'
+        self.assertIn(case_id, RECIPES, 'PKCS#11 has no controlled-peer route recipe')
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12,
+                         'PKCS#11 must pass both versions and all six wire routes')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertEqual({event['target_id'] for event in events},
+                         {'KMIPKIT-ELEM-OP-C2S-PKCS-11'})
+        send_events = [event for event in events if event['action'] == 'send']
+        self.assertEqual(len(send_events), 12)
+        self.assertTrue(all(event['peer_observed_operation_sequence'] ==
+                            ['Create', 'Activate', 'PKCS#11', 'Revoke', 'Destroy'] and
+                            event['peer_observed_effects'] ==
+                            ['created', 'activated', 'pkcs11_executed', 'revoked', 'destroyed']
+                            for event in send_events))
+        required_symbols = {
+            'kmipkit_client_batch_item_create',
+            'kmipkit_client_batch_item_activate',
+            'kmipkit_client_batch_item_pkcs11',
+            'kmipkit_client_batch_item_response_pkcs11',
+            'kmipkit_client_batch_item_response_pkcs11_ttlv',
+            'kmipkit_client_batch_item_response_pkcs11_interface_ttlv',
+            'kmipkit_client_batch_item_response_pkcs11_function_ttlv',
+            'kmipkit_client_batch_item_response_pkcs11_correlation_value',
+            'kmipkit_client_batch_item_response_pkcs11_output_parameters_ttlv',
+            'kmipkit_client_batch_item_response_pkcs11_return_code_ttlv',
+            'kmipkit_client_batch_item_revoke',
+            'kmipkit_client_batch_item_destroy',
+            'kmipkit_client_execute',
+        }
+        self.assertTrue(all(required_symbols <= set(check['public_api_trace_symbols'])
+                            for check in checks), 'PKCS#11 API route trace is incomplete')
+
     def test_export_operation_executes_installed_request_and_response_routes(self):
         """OASIS KMIP 2.0/2.1 §6.1.18 Tables 202–203/217–218 define Export."""
         from artifact_support import INSTALL, ROOT
