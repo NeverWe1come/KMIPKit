@@ -496,3 +496,23 @@ interoperability.
   42,444 executed, and 29,197 pending cells; ledger comparison passes. Full
   matrix closure remains open under FR-002/FR-003/FR-009 and the Java stack
   stays WIP.
+
+## Java typed Enumeration Attribute routes — 2026-11-18
+
+- **FR-003/FR-009:** Nine catalogued Enumeration Attribute cases now exercise
+  `TypedAttribute.create`, `TypedAttribute.fromItem`, and
+  `AttributeSet.tryNew` alongside generic TTLV construction and decoding.
+  Fixtures use catalog-selected representative enum values and verify the
+  standard attribute, value, and one-item Attribute Set. This closes 54
+  previously pending route cells. Sources: OASIS KMIP 2.0/2.1 §§4.7, 4.13,
+  4.22, 4.26, 4.34, 4.36, 4.37, 4.42, 4.57, and 11.56. These are local
+  construction checks, not server acceptance.
+- Red `4be80061d` requires all seven routes; Green `8cdd1b967` emits them;
+  Refactor `44a755f7c` shares applicable case/version counting across typed
+  attribute tests. The Gradle suite passes 95/95; shared route/schema/
+  capability tests pass 109/109; requirement/feature traceability passes 2/2
+  and 31/31; the route capability audit accepts 1,507 routes. Selected
+  evidence validates 42,498/42,498 cells with zero failures. The ledger
+  records 71,641 planned, 42,498 executed, and 29,143 pending cells; ledger
+  comparison passes. Matrix closure remains open under FR-002/FR-003/FR-009;
+  the Java stack stays WIP.

@@ -4176,3 +4176,22 @@ accepts 1,507 routes. The selected matrix validates 42,444/42,444 cells with
 zero failures. The ledger records 71,641 planned, 42,444 executed, and 29,197
 pending cells and matches its checked-in reference. Full matrix closure remains
 open, so the Java stack remains WIP.
+
+## Java typed Enumeration Attribute routes — 2026-11-18
+
+The installed Java validator now executes nine catalogued Enumeration
+Attributes through `TypedAttribute.create`, `TypedAttribute.fromItem`, and
+`AttributeSet.tryNew`, with catalog-selected representative values. The
+fixtures verify the assigned attribute, decoded enumeration, and resulting
+Attribute Set; the new evidence closes 54 local route cells. Sources: OASIS
+KMIP 2.0/2.1 §§4.7, 4.13, 4.22, 4.26, 4.34, 4.36, 4.37, 4.42, 4.57, and
+11.56. This does not claim server acceptance.
+
+Red `4be80061d` requires each typed route; Green `8cdd1b967` adds execution
+and checks; Refactor `44a755f7c` consolidates catalog applicability counting.
+Gradle passes 95/95 tests; the shared suites, requirement/feature traceability,
+and route audit pass 109/109, 2/2, 31/31, and 1,507 routes respectively. The
+selected matrix validates 42,498/42,498 cells with zero failures. The ledger
+records 71,641 planned, 42,498 executed, and 29,143 pending cells and matches
+its checked-in reference. Full matrix closure remains open, so the Java stack
+stays WIP.
