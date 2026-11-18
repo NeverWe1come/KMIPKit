@@ -2876,9 +2876,9 @@ class RouteMatrixTests(unittest.TestCase):
             self.assertTrue(any(event['public_api_symbol'] == symbol and event['action'] == 'send' for event in events), symbol)
 
     def test_operation_response_ttlv_accessors_are_executed(self):
-        """OASIS KMIP 2.0 §§6.1.6, 6.1.7, 6.1.16, 6.1.21, 6.1.28, 6.1.31,
+        """OASIS KMIP 2.0 §§6.1.6, 6.1.7, 6.1.16, 6.1.21, 6.1.28, 6.1.29, 6.1.31,
         6.1.32, 6.1.26, 6.1.40, 6.1.42, 6.1.49, 6.1.50, 12.1; KMIP 2.1
-        §§6.1.6, 6.1.7, 6.1.16, 6.1.21, 6.1.27, 6.1.29, 6.1.32, 6.1.33,
+        §§6.1.6, 6.1.7, 6.1.16, 6.1.21, 6.1.27, 6.1.29, 6.1.30, 6.1.32, 6.1.33,
         6.1.44, 6.1.46, 6.1.55, 6.1.56, 12.1."""
         from artifact_support import ROOT
         from route_peer import execute_network_cells
@@ -2887,6 +2887,7 @@ class RouteMatrixTests(unittest.TestCase):
         expected = {
             'test-op-discover-versions':
                 'kmipkit_client_batch_item_response_discover_versions_supported_versions',
+            'test-op-login': 'kmipkit_client_batch_item_response_login',
             'test-op-check': 'kmipkit_client_batch_item_response_check_ttlv',
             'test-op-certify': 'kmipkit_client_batch_item_response_certify_ttlv',
             'test-op-get-attribute-list': 'kmipkit_client_batch_item_response_get_attribute_list_payload_ttlv',
