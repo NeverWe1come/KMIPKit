@@ -5377,10 +5377,7 @@ class ControlledTlsPeerTest {
         int matches = 0;
         JsonNode found = null;
         for (JsonNode event : events) {
-            if (caseId.equals(event.path("case_id").asText())
-                    && routeId.equals(event.path("route_id").asText())
-                    && protocolVersion.equals(event.path("protocol_version").asText())
-                    && targetId.equals(event.path("target_id").asText())) {
+            if (routeEventMatches(event, caseId, routeId, protocolVersion, targetId)) {
                 matches++;
                 found = event;
             }
@@ -5394,14 +5391,19 @@ class ControlledTlsPeerTest {
             String protocolVersion, String targetId) {
         int count = 0;
         for (JsonNode event : events) {
-            if (caseId.equals(event.path("case_id").asText())
-                    && routeId.equals(event.path("route_id").asText())
-                    && protocolVersion.equals(event.path("protocol_version").asText())
-                    && targetId.equals(event.path("target_id").asText())) {
+            if (routeEventMatches(event, caseId, routeId, protocolVersion, targetId)) {
                 count++;
             }
         }
         return count;
+    }
+
+    private static boolean routeEventMatches(JsonNode event, String caseId, String routeId,
+            String protocolVersion, String targetId) {
+        return caseId.equals(event.path("case_id").asText())
+                && routeId.equals(event.path("route_id").asText())
+                && protocolVersion.equals(event.path("protocol_version").asText())
+                && targetId.equals(event.path("target_id").asText());
     }
 
     private static byte[] queryOperationTtlv() throws Exception {
