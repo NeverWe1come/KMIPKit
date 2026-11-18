@@ -840,3 +840,25 @@ closing 84 cells. The Java suite passes 92/92 serially; shared route tests pass
 ledger comparison and the 1,507-route audit pass. The full ledger records
 71,641 planned, 41,898 executed, and 29,743 pending cells. The matrix remains
 incomplete, so #187 and its dependents stay WIP.
+
+### Adjustment, mask, and metadata client payload routes — 2026-11-18
+
+The local TTLV runner now covers `Adjustment Type` as an Enumeration;
+`Adjustment Value`, `Cryptographic Usage Mask`, and `Storage Status Mask` as
+Integers; `Replace Existing` as a Boolean; `Interop Identifier` and `Log
+Message` as Text Strings; and `Compromise Occurrence Date` and `Validity Date`
+as Date-Time values. Exact table sources are OASIS KMIP 2.0 §6.1.3 Table 155,
+§6.1.7 Table 168, §6.1.24 Table 220, §6.1.25 Table 223, §6.1.27 Table 229,
+§6.1.28 Table 232, §6.1.40 Table 269, and §6.1.51 Table 308; KMIP 2.1 §6.1.3
+Table 170, §6.1.7 Table 183, §6.1.25 Table 238, §6.1.26 Table 241, §6.1.28
+Table 247, §6.1.29 Table 250, §6.1.44 Table 295, and §6.1.57 Table 340. These
+checks cover local TTLV construction, view, and decode, not server acceptance.
+
+Red `3d02a1095` showed that Adjust Attribute had its Operation target covered
+but not its Adjustment Type field. Green `60f514244` adds the catalog-selected
+Enumeration, Integer, Boolean, Text String, and Date-Time fixture paths,
+closing 60 cells. The Java suite passes 92/92 serially; shared route tests pass
+109/109. The selected report validates 41,958/41,958 cells with zero failures;
+ledger comparison and the 1,507-route audit pass. The full ledger records
+71,641 planned, 41,958 executed, and 29,683 pending cells. The matrix remains
+incomplete, so #187 and its dependents stay WIP.
