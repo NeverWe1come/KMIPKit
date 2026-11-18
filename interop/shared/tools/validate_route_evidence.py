@@ -94,6 +94,48 @@ def _expected_batch_operations(case: dict) -> list[str] | None:
     return list(ordered) if len(ordered) > 1 else None
 
 
+def _validate_local_batch_rejection(event: dict, case: dict, key: tuple) -> None:
+    """Validate the approved orphan-Placeholder local rejection boundary."""
+    scenario = case.get("requires", {}).get("protocol_scenario", {})
+    expected = scenario.get("expected", {}) if isinstance(scenario, dict) else {}
+    parameters = scenario.get("parameters", {}) if isinstance(scenario, dict) else {}
+    if (case.get("case_id") != "test-batch-placeholder-without-producer-rejected"
+            or not isinstance(scenario, dict)
+            or scenario.get("mode") != "local_model"
+            or not isinstance(expected, dict)
+            or expected.get("construction") != "rejected_or_operation_failed"
+            or scenario.get("operations") != ["Activate"]
+            or not isinstance(parameters, dict)
+            or parameters.get("items") != ["Activate(IDPlaceholder)"]):
+        raise ValueError(f"local batch rejection is not defined by the catalog: {key}")
+    operations = ["Activate"]
+    if event.get("action") != "send" or event.get("status") != "passed":
+        raise ValueError(f"local batch rejection must be a passed send event: {key}")
+    if event.get("batch_operation_sequence") != operations:
+        raise ValueError(f"local rejection operation order does not match the catalog: {key}")
+    if event.get("batch_item_count") != len(operations):
+        raise ValueError(f"local rejection item count does not match the catalog: {key}")
+    if event.get("local_rejection_code") != "batch_placeholder_forward_reference":
+        raise ValueError(f"local Placeholder rejection code is invalid: {key}")
+    if (event.get("request_delivery_state") != "not_sent"
+            or event.get("transport_invocation_count") != 0):
+        raise ValueError(f"local Placeholder rejection must prove the request was not sent: {key}")
+    if (event.get("client_error_category") != "validation"
+            or event.get("client_error_cause") != "invalid_input"):
+        raise ValueError(f"local Placeholder rejection must report validation invalid_input: {key}")
+    forbidden_evidence = {
+        "request_tree_sha256",
+        "response_tree_sha256",
+        "peer_observed_operation_sequence",
+        "peer_observed_response_count",
+        "peer_observed_result_status_codes",
+        "peer_observed_result_reason_codes",
+        "peer_observed_effects",
+    }
+    if forbidden_evidence.intersection(event):
+        raise ValueError(f"not-sent local rejection cannot claim request or peer evidence: {key}")
+
+
 def _ordinal(index: int) -> str:
     return {1: "first", 2: "second", 3: "third", 4: "fourth", 5: "fifth"}.get(index, f"item_{index}")
 
@@ -142,6 +184,9 @@ def _expected_batch_result_codes(case: dict, catalog: dict, result_field: str) -
 def _validate_batch_event(event: dict, case: dict, catalog: dict, key: tuple) -> None:
     expected_operations = _expected_batch_operations(case)
     if expected_operations is None:
+        return
+    if event.get("request_delivery_state") == "not_sent":
+        _validate_local_batch_rejection(event, case, key)
         return
     if event.get("batch_operation_sequence") != expected_operations:
         raise ValueError(f"batch request operation order does not match the catalog: {key}")
