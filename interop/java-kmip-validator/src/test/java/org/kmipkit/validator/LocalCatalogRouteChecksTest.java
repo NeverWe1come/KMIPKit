@@ -174,6 +174,30 @@ class LocalCatalogRouteChecksTest {
     }
 
     @Test
+    void structureRouteSelectorReusesIndependentGenericItemEvidence() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode catalog = mapper.readTree(CATALOG.toFile());
+        var events = mapper.createArrayNode();
+        String caseId = "test-norm-operation-structure-operation-structure-7-15-interop-function";
+        String targetId = "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-15-INTEROP-FUNCTION";
+        for (String route : List.of("java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item", "java.generic-ttlv.ttlv_codec.decode")) {
+            var event = events.addObject();
+            event.put("case_id", caseId);
+            event.put("target_id", targetId);
+            event.put("route_id", route);
+            event.put("protocol_version", "2.1");
+            event.put("encoding", "TTLV");
+            event.putNull("transport");
+        }
+
+        Set<String> missing = LocalCatalogRouteChecks.missingGenericStructureTargetCaseIds(
+                catalog, events, "2.1", Set.of(targetId));
+
+        assertTrue(missing.contains(caseId));
+    }
+
+    @Test
     void executesSevenStructuredAttributeValuesThroughGenericTtlvRoutes() throws Exception {
         JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
         Set<String> caseIds = Set.of(
