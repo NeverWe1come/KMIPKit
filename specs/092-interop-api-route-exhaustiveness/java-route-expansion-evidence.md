@@ -3730,3 +3730,17 @@ combined #216 head, the full Java suite passes 90/90, shared route suites pass
 the generated ledger matches its reference, and the capability audit accepts
 1,507 routes. The full ledger records 36,809 pending of 71,641; the matrix
 remains incomplete and #216 stays WIP.
+
+## #216 generic Operation routes for KMIP 2.0 version boundaries — 2026-11-18
+
+The #216 tip inherits the version-boundary Operation route evidence from #187
+while keeping its Usage Limits cases. Get Constraints, Ping, Process, Query
+Asynchronous Requests, Set Constraints, and Set Defaults are 2.1 operations;
+the local TTLV fixture represents each assigned Operation value in the 2.0
+rejection case and checks Item construction, view, and decode. No unsupported
+request is sent. Red `7288a8643` and Green `2843cdfe3` are in #187's parent
+history. On #216, the full Java suite passes 91/91, shared suites pass 109/109,
+selected evidence validates 34,850/34,850 cells with zero failures, the ledger
+matches its reference, and the capability audit accepts 1,507 routes. The full
+ledger records 71,641 planned, 34,850 executed, and 36,791 pending cells. Full
+closure and exact-head CI remain open; #216 stays WIP.

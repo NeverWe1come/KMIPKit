@@ -357,3 +357,14 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
   34,832/34,832 with zero failures; ledger comparison and the 1,507-route
   capability audit pass. The full matrix has 36,809 pending of 71,641 cells;
   #216 remains WIP.
+
+## Java generic Operation version-boundary routes on #216
+
+- #216 inherits Red `7288a8643` and Green `2843cdfe3` from #187 while
+  preserving Usage Limits coverage. Generic Operation Item construction, view,
+  and decode cover the six 2.1-only Operation targets in the local 2.0 rejection
+  cases; no unsupported request is sent.
+- Verification: Java suite 91/91; shared suites 109/109; selected report
+  34,850/34,850 with zero failures; ledger comparison and the 1,507-route
+  capability audit pass. The full matrix has 36,791 pending cells of 71,641;
+  #216 stays WIP.

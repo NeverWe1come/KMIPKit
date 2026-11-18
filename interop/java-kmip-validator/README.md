@@ -496,3 +496,8 @@ Public Key, Secret Data, and Split Key. The runner records `TtlvValue.structure`
 only for targets included by the shared route manifest. The selected report
 validates 34,832/34,832 cells with zero failures; 36,809 of 71,641 full Java
 cells remain pending. This is local route evidence, not server interoperability.
+
+The #216 Usage Limits stack tip includes the six KMIP 2.0 version-boundary
+Operation fixtures from #187. They exercise local TTLV Item creation, view, and
+decode for the 2.1-only operation values without sending requests. The combined
+report validates 34,850/34,850 cells; 36,791 of 71,641 Java cells remain pending.
