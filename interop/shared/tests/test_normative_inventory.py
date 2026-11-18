@@ -279,6 +279,35 @@ class NormativeInventoryTests(unittest.TestCase):
         self.assertEqual(expected_variants, actual_variants)
         self.assertEqual(8, sum(variant["operation"] == "PKCS#11" for variant in variants))
 
+    def test_login_lease_time_catalog_covers_interval_and_date_time_variants(self) -> None:
+        for target_id, variant_targets in (
+            ("KMIPKIT-PAYLOAD-CLIENT-DELEGATED-LOGIN-REQUEST-20-001",
+             {"KMIPKIT-PAYLOAD-CLIENT-DELEGATED-LOGIN-REQUEST-20-001-TYPE-INTERVAL",
+              "KMIPKIT-PAYLOAD-CLIENT-DELEGATED-LOGIN-REQUEST-20-001-TYPE-DATE-TIME"}),
+            ("KMIPKIT-PAYLOAD-CLIENT-DELEGATED-LOGIN-REQUEST-21-001",
+             {"KMIPKIT-PAYLOAD-CLIENT-DELEGATED-LOGIN-REQUEST-21-001-TYPE-INTERVAL",
+              "KMIPKIT-PAYLOAD-CLIENT-DELEGATED-LOGIN-REQUEST-21-001-TYPE-DATE-TIME"}),
+            ("KMIPKIT-PAYLOAD-CLIENT-LOGIN-REQUEST-20-001",
+             {"KMIPKIT-PAYLOAD-CLIENT-LOGIN-REQUEST-20-001-TYPE-INTERVAL",
+              "KMIPKIT-PAYLOAD-CLIENT-LOGIN-REQUEST-20-001-TYPE-DATE-TIME"}),
+            ("KMIPKIT-PAYLOAD-CLIENT-LOGIN-REQUEST-21-001",
+             {"KMIPKIT-PAYLOAD-CLIENT-LOGIN-REQUEST-21-001-TYPE-INTERVAL",
+              "KMIPKIT-PAYLOAD-CLIENT-LOGIN-REQUEST-21-001-TYPE-DATE-TIME"}),
+        ):
+            with self.subTest(target_id=target_id):
+                target = next(item for item in self.targets if item["target_id"] == target_id)
+                self.assertEqual(["Interval", "Date Time"], target.get("value_type_alternatives"))
+                actual_variants = {item["target_id"] for item in self.targets
+                                   if item.get("kind") == "operation_payload_value_variant"
+                                   and item.get("parent_target_id") == target_id}
+                self.assertEqual(variant_targets, actual_variants)
+                date_time_case = next(case for case in self.catalog["test_cases"]
+                                      if case["requires"].get("normative_target_id")
+                                      == target_id + "-TYPE-DATE-TIME")
+                self.assertEqual("Date Time", date_time_case["requires"]["value_type"])
+                self.assertEqual("operation_payload_value_variant",
+                                 date_time_case["requires"]["target_kind"])
+
     def test_payload_requiredness_cells_preserve_conditional_presence_semantics(self) -> None:
         targets = [target for target in self.targets if target["kind"] == "operation_payload_field"]
         self.assertEqual(618, len(targets))
