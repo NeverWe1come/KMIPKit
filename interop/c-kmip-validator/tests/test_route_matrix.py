@@ -3975,6 +3975,22 @@ class RouteMatrixTests(unittest.TestCase):
                             and event['action'] == 'send' for event in events))
         self.assertNotIn('synthetic-secret-material', json.dumps(events + checks))
 
+    def test_derive_key_route_uses_catalog_lifecycle_and_typed_response(self):
+        """OASIS KMIP 2.0/2.1 §§6.1.14, 7.12; catalog owns the isolated lifecycle."""
+        from artifact_support import ROOT
+        import route_peer
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        case = next(item for item in catalog['test_cases']
+                    if item['case_id'] == 'test-op-derive-key')
+
+        recipe = route_peer.recipe_for_case(case, None)
+
+        self.assertEqual(recipe, ((1, 18, 11, 19, 20), 'derive_key'))
+        self.assertEqual(case['isolation_recipe']['setup_steps'], ['Create unique SymmetricKey'])
+        self.assertEqual(case['isolation_recipe']['teardown_steps'],
+                         ['Revoke SymmetricKey', 'Destroy SymmetricKey'])
+
     def test_placeholder_chain_executes_typed_create_activate_get_batch(self):
         from artifact_support import ROOT
         from route_peer import execute_network_cells
