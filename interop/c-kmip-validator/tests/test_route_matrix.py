@@ -1948,6 +1948,41 @@ class RouteMatrixTests(unittest.TestCase):
         import jsonschema
         jsonschema.validate(event, schema['$defs']['event'])
 
+    def test_locally_rejected_batch_response_is_emitted_as_non_invocation(self):
+        cell = {
+            'case_id': 'test-batch-placeholder-forward-reference-rejected',
+            'route_id': 'c.network.batch.response',
+            'target_id': 'KMIPKIT-ELEM-OP-C2S-ACTIVATE',
+            'public_api_symbol': 'kmipkit_client_batch_item_activate',
+            'execution_route_id': 'c.execute',
+            'execution_api_symbol': 'kmipkit_client_execute',
+            'action': 'decode',
+            'protocol_version': '2.1',
+            'encoding': 'XML',
+            'transport': 'https',
+            'workflow_operation': 'Activate',
+            'workflow_item_index': 0,
+            'mode': 'network',
+            'execution_status': 'not_applicable',
+            'not_applicable_reason': 'local_rejection_no_response',
+        }
+
+        event = self.runner.not_applicable_event(cell)
+        self.runner.require_complete([event], [])
+
+        self.assertEqual('not_applicable', event['status'])
+        self.assertEqual(0, event['invocation_count'])
+        self.assertEqual('local_rejection_no_response', event['not_applicable_reason'])
+        self.assertNotIn('invocation_id', event)
+        schema_path = Path(__file__).resolve().parents[2] / 'shared/schemas/route-execution-evidence.schema.json'
+        schema = json.loads(schema_path.read_text())
+        import jsonschema
+        jsonschema.validate(event, schema['$defs']['event'])
+
+        invalid_local_cell = dict(cell, mode='local', transport=None)
+        with self.assertRaisesRegex(ValueError, 'network response decode'):
+            self.runner.not_applicable_event(invalid_local_cell)
+
     def test_duplicate_events_rejected(self):
         event = {'case_id': 'case', 'route_id': 'route', 'target_id': 'target',
                  'protocol_version': '2.1', 'encoding': 'TTLV', 'transport': None,
