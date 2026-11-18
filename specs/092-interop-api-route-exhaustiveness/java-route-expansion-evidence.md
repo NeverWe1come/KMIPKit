@@ -3951,3 +3951,26 @@ records 71,641 planned, 40,251 executed, and 31,390 pending. The Java suite
 passes 92/92; shared tests pass 196/196; ledger comparison and the 1,507-route
 capability audit pass. Full matrix closure and exact-head CI remain required,
 so the PR stack stays WIP.
+
+## Java asynchronous Cancel remaining route cells — 2026-11-18
+
+`Client.executeCancel` now has route evidence for every catalog-applicable
+case: ordinary Cancel, normative request and response payload cases, and the
+catalogued asynchronous workflow cases. The fixture runs the applicable
+KMIP 2.0 and 2.1 cases over TTLV, JSON, and XML on raw TLS and HTTPS against
+controlled mutual-TLS peers. The peers check operation, protocol version, and
+correlation; the client checks the response operation, success status,
+correlation, result, and response shape. The race and recursion cases exercise
+the Cancel exchange, not a complete Poll lifecycle. References: OASIS KMIP
+2.0 §6.1.5 Tables 161 and 162, §§8.2, 8.3, 8.6, 11.7, and 11.56; KMIP 2.1
+§6.1.5 Tables 176 and 177, §§8.2, 8.3, 8.6, 11.7, and 11.56.
+
+Red `58d8e2b90` added the exact remaining-cell assertion and failed because
+the ordinary `test-op-cancel` network route had no evidence. Green `d00cf8272`
+generates applicable fixtures from the catalog and executes 120 controlled
+exchanges, adding 228 selected route cells. The Java suite passes 92/92; the
+selected report validates 40,899/40,899 cells with zero failures. The
+generated ledger records 71,641 planned, 40,899 executed, and 30,742 pending
+cells. The ledger comparison and 1,507-route capability audit pass. This
+closes the `Client.executeCancel` route, not the Java matrix; FR-002, FR-003,
+FR-009, and exact-head CI remain open, so the stack remains WIP.

@@ -390,3 +390,21 @@ artifact. This is part of the FR-006 artifact provenance check.
   ledger records 71,641 planned, 40,671 executed, and 30,970 pending cells.
   Java tests pass 92/92 and shared tests 196/196; ledger comparison passes and
   the capability audit accepts 1,507 routes. Full matrix closure remains open.
+
+### Java asynchronous Cancel remaining route cells — 2026-11-18
+
+- **FR-001/FR-003/FR-005/FR-009:** `Client.executeCancel` now has controlled
+  request/response evidence for every catalog-applicable Cancel case, payload
+  field, and asynchronous workflow case in KMIP 2.0/2.1 over TTLV, JSON, and
+  XML on raw TLS and HTTPS. Assertions cover operation, version, correlation,
+  result, and response shape (OASIS KMIP 2.0 §6.1.5 Tables 161/162 and KMIP
+  2.1 §6.1.5 Tables 176/177; §§8.2, 8.3, 8.6, 11.7, 11.56). Race and
+  recursion cases cover the Cancel exchange only, not a full Poll lifecycle.
+- Red `58d8e2b90` requires the remaining route cells and fails on the missing
+  ordinary `test-op-cancel` exchange; Green `d00cf8272` executes 120 controlled
+  exchanges and adds 228 route cells.
+- The Java suite passes 92/92; selected evidence validates 40,899/40,899
+  cells with zero failures. The full ledger records 71,641 planned, 40,899
+  executed, and 30,742 pending cells; ledger comparison and the 1,507-route
+  capability audit pass. The Java matrix remains incomplete under FR-002,
+  FR-003, and FR-009.
