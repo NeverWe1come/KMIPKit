@@ -156,8 +156,13 @@ final class LocalCatalogRouteChecks {
             "test-norm-structure-member-structure-member-3-9-key-material-p",
             "test-norm-structure-member-structure-member-3-9-key-material-q",
             "test-norm-structure-member-structure-member-3-9-key-material-x");
-    static final Set<String> TRANSPARENT_KEY_MATERIAL_CASE_IDS = BIG_INTEGER_TARGET_CASE_IDS.stream()
-            .filter(caseId -> caseId.contains("-key-material-"))
+    private static final Set<String> NON_INTEGER_TRANSPARENT_KEY_MATERIAL_CASE_IDS = Set.of(
+            "test-norm-structure-member-structure-member-3-11-key-material-recommended-curve",
+            "test-norm-structure-member-structure-member-3-12-key-material-q-string",
+            "test-norm-structure-member-structure-member-3-12-key-material-recommended-curve");
+    static final Set<String> TRANSPARENT_KEY_MATERIAL_CASE_IDS = java.util.stream.Stream.concat(
+            BIG_INTEGER_TARGET_CASE_IDS.stream().filter(caseId -> caseId.contains("-key-material-")),
+            NON_INTEGER_TRANSPARENT_KEY_MATERIAL_CASE_IDS.stream())
             .collect(java.util.stream.Collectors.toUnmodifiableSet());
     static final Set<String> REMAINING_ENUMERATION_FIELD_CASE_IDS = Set.of(
             "test-norm-operation-structure-operation-structure-7-15-interop-function",
