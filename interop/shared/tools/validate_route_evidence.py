@@ -50,6 +50,33 @@ def _expected_tag_decode_rejection_code(
     case: dict,
     target: dict | None = None,
 ) -> str | None:
+    if (case.get("case_id") == "test-batch-count-zero-rejected"
+            and case.get("category") == "batch_workflows"
+            and cell.get("action") == "decode"
+            and cell.get("mode") == "local"):
+        scenario = case.get("requires", {}).get("protocol_scenario", {})
+        parameters = scenario.get("parameters", {}) if isinstance(scenario, dict) else {}
+        expected = scenario.get("expected", {}) if isinstance(scenario, dict) else {}
+        parser_symbols = {
+            "c": "kmipkit_request_message_from_ttlv",
+            "java": "org.kmipkit.message.RequestMessage.fromTtlv",
+            "python": "kmipkit.messages.RequestMessage.from_ttlv",
+            "rust": "kmipkit_protocol::RequestMessage::try_from_ttlv",
+        }
+        if (isinstance(scenario, dict)
+                and scenario.get("mode") == "local_model"
+                and parameters.get("batch_count") == 0
+                and parameters.get("request_item_count") == 0
+                and expected.get("construction") == "rejected_before_transport"
+                and expected.get("parser_error") == "invalid_batch_count"
+                and expected.get("transport_call_count") == 0
+                and cell.get("public_api_symbol") == parser_symbols.get(cell.get("language"))
+                and cell.get("target_id") in {
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-COUNT",
+                    "KMIPKIT-ELEM-OP-C2S-GET",
+                }):
+            return "invalid_batch_count"
+
     requires = case.get("requires", {})
     if (cell.get("action") != "decode" or cell.get("mode") != "local"
             or ".generic-ttlv." not in f".{cell.get('route_id', '')}."):

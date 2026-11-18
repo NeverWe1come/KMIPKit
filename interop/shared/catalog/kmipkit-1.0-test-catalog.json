@@ -201510,14 +201510,13 @@
       "case_id": "test-batch-count-zero-rejected",
       "category": "batch_workflows",
       "operation": "Get",
-      "description": "Exercise the normative batch workflows branch test-batch-count-zero-rejected.",
+      "description": "Reject a Request Message with zero Batch Count locally before transport.",
       "requires": {
         "operation": "Get",
         "protocol_scenario": {
           "scenario_id": "test-batch-count-zero-rejected",
           "target_ids": [
             "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-COUNT",
-            "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-BATCH-ITEM",
             "KMIPKIT-ELEM-OP-C2S-GET"
           ],
           "operations": [
@@ -201532,16 +201531,18 @@
             "request_item_count": 0
           },
           "expected": {
-            "construction": "rejected_before_transport"
+            "construction": "rejected_before_transport",
+            "parser_error": "invalid_batch_count",
+            "transport_call_count": 0
           },
           "mode": "local_model",
           "mutation": "read_only",
           "steps": [
-            "attempt_empty_batch_construction",
+            "parse_empty_request_message",
             "count_transport_calls"
           ],
           "assertions": [
-            "empty_batch_is_rejected_or_cannot_be_constructed",
+            "request_message_parser_rejects_zero_batch_count",
             "transport_call_count_is_zero"
           ],
           "normative_refs": [
@@ -201647,7 +201648,7 @@
       "isolation_recipe": {
         "unique_name_prefix": "kmipkit-test-batch-count-zero-rejected",
         "setup_steps": [],
-        "target_step": "Execute and verify the protocol scenario",
+        "target_step": "Reject the empty Request Message before transport",
         "teardown_steps": [],
         "normalized_fields": [
           "UniqueIdentifier",

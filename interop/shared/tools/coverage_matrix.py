@@ -137,9 +137,12 @@ def _route_excludes_target(case: dict, route: dict, target: dict | None) -> bool
     allocation = requires.get("allocation", (target or {}).get("allocation"))
     target_id = (target or {}).get("target_id")
     return any(
-        target_id in exclusion.get("target_ids", [])
-        or target_kind in exclusion.get("target_kinds", [])
-        and allocation in exclusion.get("allocations", [])
+        (not exclusion.get("case_ids") or case.get("case_id") in exclusion["case_ids"])
+        and (
+            target_id in exclusion.get("target_ids", [])
+            or target_kind in exclusion.get("target_kinds", [])
+            and allocation in exclusion.get("allocations", [])
+        )
         for exclusion in route.get("case_exclusions", [])
     )
 
@@ -323,7 +326,12 @@ def applicable_routes(
     local_tag_case = _is_generic_tag_inventory_case(case)
     candidates = []
     for route in manifest["routes"]:
-        if route["language"] != language or case["category"] not in route["case_categories"]:
+        case_included = any(
+            case["case_id"] in inclusion.get("case_ids", [])
+            for inclusion in route.get("case_inclusions", [])
+        )
+        if (route["language"] != language
+                or (case["category"] not in route["case_categories"] and not case_included)):
             continue
         # Tag values are generic TTLV identifiers. Typed protocol constructors
         # that happen to emit one fixed Tag must be covered by that tag's own

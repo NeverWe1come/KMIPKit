@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import ctypes as C
+import hashlib
 from pathlib import Path
 
 from route_ttlv import TreeAbi, digest, encode, normalized
@@ -417,6 +418,68 @@ class ModelCases:
                 release(filtered)
             if request.value:
                 release(request)
+
+    def _execute_zero_batch_count_message(self, target: dict, protocol_version: str,
+                                          public_api_symbol: str, case: dict) -> dict | None:
+        target_ids = {
+            'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-COUNT',
+            'KMIPKIT-ELEM-OP-C2S-GET',
+        }
+        if (case.get('case_id') != 'test-batch-count-zero-rejected'
+                or target.get('target_id') not in target_ids
+                or public_api_symbol != 'kmipkit_request_message_from_ttlv'):
+            return None
+
+        from route_ttlv import encode
+
+        version_major, version_minor = (int(part) for part in protocol_version.split('.'))
+        tags = {name: self._tag(name) for name in (
+            'Request Message', 'Request Header', 'Protocol Version',
+            'Protocol Version Major', 'Protocol Version Minor', 'Batch Count',
+        )}
+        request_tree = (tags['Request Message'], 1, [
+            (tags['Request Header'], 1, [
+                (tags['Protocol Version'], 1, [
+                    (tags['Protocol Version Major'], 2, version_major.to_bytes(4, 'big')),
+                    (tags['Protocol Version Minor'], 2, version_minor.to_bytes(4, 'big')),
+                ]),
+                (tags['Batch Count'], 2, (0).to_bytes(4, 'big')),
+            ]),
+        ])
+        wire = encode(request_tree)
+        self.abi.bind('kmipkit_codec_limits_defaults', [C.POINTER(C.c_void_p)])
+        self.abi.bind('kmipkit_request_message_from_ttlv', [
+            C.c_void_p, C.POINTER(C.c_void_p), C.POINTER(C.c_void_p)])
+        self.abi.bind('kmipkit_message_validation_error_kind', [
+            C.c_void_p, C.POINTER(C.c_uint32)])
+        self.abi.called.clear()
+        limits, structure, message, validation_error = (C.c_void_p() for _ in range(4))
+        try:
+            self.abi.call('kmipkit_codec_limits_defaults', C.byref(limits))
+            structure = self.abi.construct_structure(request_tree[2], limits)
+            status = self.abi.library.kmipkit_request_message_from_ttlv(
+                structure, C.byref(message), C.byref(validation_error))
+            self.abi.called.add('kmipkit_request_message_from_ttlv')
+            structure = C.c_void_p()
+            if status == 0 or message.value or not validation_error.value:
+                raise ValueError('zero_batch_count_request_message_was_not_rejected')
+            error_kind = C.c_uint32()
+            self.abi.call('kmipkit_message_validation_error_kind',
+                          validation_error, C.byref(error_kind))
+            if error_kind.value != 5:
+                raise ValueError('zero_batch_count_request_message_wrong_rejection')
+            return {
+                'sample_count': 1,
+                'decode_outcome': 'rejected',
+                'decode_rejection_code': 'invalid_batch_count',
+                'decode_input_sha256': hashlib.sha256(wire).hexdigest(),
+                'invoked_symbols': set(self.abi.called),
+            }
+        finally:
+            self.abi.release('request_message', message)
+            self.abi.release('message_validation_error', validation_error)
+            self.abi.release('ttlv_structure', structure)
+            self.abi.release('codec_limits', limits)
 
     def _execute_secret_ttlv_value(self, target: dict, symbol: str) -> dict | None:
         route = _SECRET_TTLV_ROUTE_FIXTURES.get(symbol)
@@ -1139,7 +1202,12 @@ class ModelCases:
         return contains_tag(result['normalized_tree'])
 
     def execute(self, target: dict, protocol_version: str,
-                public_api_symbol: str | None = None) -> dict | None:
+                public_api_symbol: str | None = None, *, case: dict | None = None) -> dict | None:
+        if case is not None:
+            result = self._execute_zero_batch_count_message(
+                target, protocol_version, public_api_symbol, case)
+            if result is not None:
+                return result
         if public_api_symbol == 'kmipkit_modify_attribute_request_to_ttlv_payload':
             return self._execute_modify_attribute_payload(target)
         if public_api_symbol in _CANCEL_REQUEST_SYMBOLS:

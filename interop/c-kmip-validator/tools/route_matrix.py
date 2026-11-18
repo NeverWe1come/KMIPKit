@@ -1063,14 +1063,24 @@ def run(output: Path, binary: Path | None = None) -> int:
                                         'negative_checks': result['negative_checks'], 'tree_sha256': result['tree_sha256']})
                 continue
         if cell['transport'] is None and not tag_target_case:
-            result = model_cases.execute(target, cell['protocol_version'], cell['public_api_symbol'])
+            result = model_cases.execute(target, cell['protocol_version'],
+                                         cell['public_api_symbol'], case=case)
             if result is not None and cell['public_api_symbol'] in result['invoked_symbols']:
                 event = cell_fields(cell)
                 event.update(status='passed', invocation_count=1, invocation_id=f'c-model-{index}')
-                event['response_tree_sha256' if cell['action'] == 'decode' else 'request_tree_sha256'] = result['tree_sha256']
+                if result.get('decode_outcome') == 'rejected':
+                    event.update(decode_outcome='rejected',
+                                 decode_rejection_code=result['decode_rejection_code'],
+                                 decode_input_sha256=result['decode_input_sha256'])
+                else:
+                    event['response_tree_sha256' if cell['action'] == 'decode' else 'request_tree_sha256'] = result['tree_sha256']
                 events.append(event)
-                branch_evidence.append({**cell_fields(cell), 'sample_count': result['sample_count'],
-                                        'tree_sha256': result['tree_sha256']})
+                evidence = {**cell_fields(cell), 'sample_count': result['sample_count']}
+                for field in ('tree_sha256', 'decode_outcome', 'decode_rejection_code',
+                              'decode_input_sha256'):
+                    if field in result:
+                        evidence[field] = result[field]
+                branch_evidence.append(evidence)
                 continue
         if (cell['transport'] is None and target['kind'] == 'tag_range'
                 and cell['action'] == 'decode' and cell['public_api_symbol'] == 'kmipkit_ttlv_decode'):
