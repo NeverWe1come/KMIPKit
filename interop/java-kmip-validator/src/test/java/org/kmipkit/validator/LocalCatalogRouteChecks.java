@@ -1471,6 +1471,12 @@ final class LocalCatalogRouteChecks {
             JsonNode requires = testCase.path("requires");
             String targetId = requires.path("normative_target_id").asText();
             JsonNode target = findTarget(catalog, targetId);
+            if ("object_structure".equals(requires.path("target_kind").asText())
+                    && TRANSPARENT_KEY_MATERIAL_STRUCTURE_CASE_IDS.contains(caseId)) {
+                executeTransparentKeyMaterialStructureTarget(catalog, version, caseId, target, sink, limits);
+                emitted.add(caseId);
+                continue;
+            }
             String sourceEncoding = target.path("source_encoding").asText();
             if (!"structure_member".equals(requires.path("target_kind").asText())
                     || !("Big Integer".equals(sourceEncoding) || "Byte String".equals(sourceEncoding)
@@ -1604,6 +1610,113 @@ final class LocalCatalogRouteChecks {
         }
     }
 
+    private static void executeTransparentKeyMaterialStructureTarget(JsonNode catalog, String version,
+            String caseId, JsonNode target, EvidenceSink sink, CodecLimits limits) throws Exception {
+        int formatRaw = transparentKeyFormat(target);
+        int keyMaterialTag = tagCodeNamed(catalog, "Key Material", version);
+        int keyValueTag = tagCodeNamed(catalog, "Key Value", version);
+        int keyBlockTag = tagCodeNamed(catalog, "Key Block", version);
+        int keyFormatTypeTag = tagCodeNamed(catalog, "Key Format Type", version);
+        List<KeyFieldFixture> fixture = transparentKeyMaterialFixture(formatRaw);
+        byte[] keyMaterialWire = keyMaterialWire(catalog, version, keyMaterialTag, fixture);
+        byte[] keyValueWire = structureWire(keyValueTag, keyMaterialWire);
+        byte[] keyFormatTypeWire = itemWire(keyFormatTypeTag, TtlvItemType.Enumeration.code(),
+                ByteBuffer.allocate(Integer.BYTES).putInt(formatRaw).array());
+        byte[] keyBlockWire = structureWire(keyBlockTag, concat(keyFormatTypeWire, keyValueWire));
+
+        List<TtlvItem> fields = createKeyMaterialFieldItems(catalog, version, fixture, limits);
+        try {
+            try (KeyMaterial fromFields = KeyMaterial.fromFields(formatRaw, fields)) {
+                assertKeyMaterialFields(fromFields, formatRaw, catalog, version, fixture);
+            }
+        } finally {
+            closeItems(fields);
+        }
+        emitRoute(sink, caseId, target.path("target_id").asText(),
+                "java.typed-protocol.model.org.kmipkit.ttlv.keymaterial.fromfields",
+                "org.kmipkit.ttlv.KeyMaterial.fromFields", "construct", keyMaterialWire);
+
+        TtlvItem keyMaterialItem = createStructureItem(keyMaterialTag,
+                createKeyMaterialFieldItems(catalog, version, fixture, limits), limits);
+        try (keyMaterialItem; KeyMaterial fromItem = KeyMaterial.fromItem(formatRaw, keyMaterialItem)) {
+            assertKeyMaterialFields(fromItem, formatRaw, catalog, version, fixture);
+        }
+        emitRoute(sink, caseId, target.path("target_id").asText(),
+                "java.typed-protocol.model.org.kmipkit.ttlv.keymaterial.fromitem",
+                "org.kmipkit.ttlv.KeyMaterial.fromItem", "construct", keyMaterialWire);
+
+        TtlvItem keyMaterialForFields = createStructureItem(keyMaterialTag,
+                createKeyMaterialFieldItems(catalog, version, fixture, limits), limits);
+        try (keyMaterialForFields;
+                KeyValue fromFields = KeyValue.fromFields(formatRaw, List.of(keyMaterialForFields))) {
+            assertKeyValueFields(fromFields, formatRaw, catalog, version, fixture);
+        }
+        emitRoute(sink, caseId, target.path("target_id").asText(),
+                "java.typed-protocol.model.org.kmipkit.ttlv.keyvalue.fromfields",
+                "org.kmipkit.ttlv.KeyValue.fromFields", "construct", keyValueWire);
+
+        TtlvItem keyMaterialForItem = createStructureItem(keyMaterialTag,
+                createKeyMaterialFieldItems(catalog, version, fixture, limits), limits);
+        TtlvItem keyValueForItem = createStructureItem(keyValueTag, List.of(keyMaterialForItem), limits);
+        try (keyValueForItem; KeyValue fromItem = KeyValue.fromItem(formatRaw, keyValueForItem)) {
+            assertKeyValueFields(fromItem, formatRaw, catalog, version, fixture);
+        }
+        emitRoute(sink, caseId, target.path("target_id").asText(),
+                "java.typed-protocol.model.org.kmipkit.ttlv.keyvalue.fromitem",
+                "org.kmipkit.ttlv.KeyValue.fromItem", "construct", keyValueWire);
+
+        TtlvItem blockKeyMaterial = createStructureItem(keyMaterialTag,
+                createKeyMaterialFieldItems(catalog, version, fixture, limits), limits);
+        TtlvItem blockKeyValue = createStructureItem(keyValueTag, List.of(blockKeyMaterial), limits);
+        TtlvItem blockFormat = createEnumerationItem(keyFormatTypeTag, formatRaw, limits);
+        List<TtlvItem> blockFields = List.of(blockFormat, blockKeyValue);
+        TtlvItem itemKeyMaterial = createStructureItem(keyMaterialTag,
+                createKeyMaterialFieldItems(catalog, version, fixture, limits), limits);
+        TtlvItem itemKeyValue = createStructureItem(keyValueTag, List.of(itemKeyMaterial), limits);
+        TtlvItem itemFormat = createEnumerationItem(keyFormatTypeTag, formatRaw, limits);
+        TtlvItem keyBlockItem = createStructureItem(keyBlockTag, List.of(itemFormat, itemKeyValue), limits);
+        try (keyBlockItem; KeyBlock fromFields = KeyBlock.fromFields(blockFields);
+                KeyBlock fromItem = KeyBlock.fromItem(keyBlockItem)) {
+            assertKeyBlockFields(fromFields, formatRaw, catalog, version, fixture);
+            assertKeyBlockFields(fromItem, formatRaw, catalog, version, fixture);
+        } finally {
+            closeItems(blockFields);
+        }
+        emitRoute(sink, caseId, target.path("target_id").asText(),
+                "java.typed-protocol.model.org.kmipkit.ttlv.keyblock.fromfields",
+                "org.kmipkit.ttlv.KeyBlock.fromFields", "construct", keyBlockWire);
+        emitRoute(sink, caseId, target.path("target_id").asText(),
+                "java.typed-protocol.model.org.kmipkit.ttlv.keyblock.fromitem",
+                "org.kmipkit.ttlv.KeyBlock.fromItem", "construct", keyBlockWire);
+    }
+
+    private static void assertKeyMaterialFields(KeyMaterial material, int formatRaw, JsonNode catalog,
+            String version, List<KeyFieldFixture> fixture) {
+        assertEquals(formatRaw, material.formatRaw());
+        for (KeyFieldFixture field : fixture) {
+            assertKeyMaterialTarget(material, formatRaw, tagCodeNamed(catalog, field.name(), version), field);
+        }
+    }
+
+    private static void assertKeyValueFields(KeyValue value, int formatRaw, JsonNode catalog,
+            String version, List<KeyFieldFixture> fixture) {
+        assertEquals(formatRaw, value.formatRaw());
+        assertEquals(TtlvItemType.Structure, value.keyMaterialType());
+        try (TtlvItem materialItem = value.keyMaterialItem();
+                KeyMaterial material = KeyMaterial.fromItem(formatRaw, materialItem)) {
+            assertKeyMaterialFields(material, formatRaw, catalog, version, fixture);
+        }
+    }
+
+    private static void assertKeyBlockFields(KeyBlock block, int formatRaw, JsonNode catalog,
+            String version, List<KeyFieldFixture> fixture) {
+        assertEquals(formatRaw, block.keyFormatType());
+        assertEquals(TtlvItemType.Structure, block.keyValueType());
+        try (TtlvItem valueItem = block.keyValueItem(); KeyValue value = KeyValue.fromItem(formatRaw, valueItem)) {
+            assertKeyValueFields(value, formatRaw, catalog, version, fixture);
+        }
+    }
+
     private static TtlvItem createEnumerationItem(int tagCode, long value, CodecLimits limits) {
         try (TtlvValue ttlvValue = TtlvValue.Enumeration(value);
                 RawTag raw = RawTag.fromRaw(tagCode); Tag tag = raw.checked()) {
@@ -1612,27 +1725,36 @@ final class LocalCatalogRouteChecks {
     }
 
     private static int transparentKeyFormat(JsonNode target) {
+        String targetId = target.path("target_id").asText();
+        if (targetId.startsWith("KMIPKIT-ELEM-OBJECT-STRUCTURE-3-")
+                && targetId.endsWith("-KEY-MATERIAL")) {
+            return transparentKeyFormatFromParent(targetId);
+        }
         for (JsonNode parent : target.path("parent_element_ids")) {
             String parentId = parent.asText();
             if (!parentId.startsWith("KMIPKIT-ELEM-OBJECT-STRUCTURE-3-")
                     || !parentId.endsWith("-KEY-MATERIAL")) continue;
-            String section = parentId.substring("KMIPKIT-ELEM-OBJECT-STRUCTURE-3-".length(),
-                    parentId.length() - "-KEY-MATERIAL".length());
-            return switch (section) {
-                case "4" -> 7;   // Transparent Symmetric Key.
-                case "5" -> 8;   // Transparent DSA Private Key.
-                case "6" -> 9;   // Transparent DSA Public Key.
-                case "7" -> 10;  // Transparent RSA Private Key.
-                case "8" -> 11;  // Transparent RSA Public Key.
-                case "9" -> 12;  // Transparent DH Private Key.
-                case "10" -> 13; // Transparent DH Public Key.
-                case "11" -> 0x14; // Transparent EC Private Key.
-                case "12" -> 0x15; // Transparent EC Public Key.
-                default -> throw new IllegalArgumentException("No transparent key format for " + parentId);
-            };
+            return transparentKeyFormatFromParent(parentId);
         }
         throw new IllegalArgumentException("Key Material target has no supported transparent structure: "
-                + target.path("target_id").asText());
+                + targetId);
+    }
+
+    private static int transparentKeyFormatFromParent(String parentId) {
+        String section = parentId.substring("KMIPKIT-ELEM-OBJECT-STRUCTURE-3-".length(),
+                parentId.length() - "-KEY-MATERIAL".length());
+        return switch (section) {
+            case "4" -> 7;   // Transparent Symmetric Key.
+            case "5" -> 8;   // Transparent DSA Private Key.
+            case "6" -> 9;   // Transparent DSA Public Key.
+            case "7" -> 10;  // Transparent RSA Private Key.
+            case "8" -> 11;  // Transparent RSA Public Key.
+            case "9" -> 12;  // Transparent DH Private Key.
+            case "10" -> 13; // Transparent DH Public Key.
+            case "11" -> 0x14; // Transparent EC Private Key.
+            case "12" -> 0x15; // Transparent EC Public Key.
+            default -> throw new IllegalArgumentException("No transparent key format for " + parentId);
+        };
     }
 
     private static List<KeyFieldFixture> transparentKeyMaterialFixture(int formatRaw) {
