@@ -101,6 +101,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ControlledTlsPeerTest {
     private static final List<String> KMIP_2_0_AND_2_1 = List.of("2.0", "2.1");
+    private static final List<String> CREATE_ROUTE_CASE_IDS = List.of("test-op-create", "test-obj-symmetric-key");
+    private static final List<String> CREATE_ROUTE_ENCODINGS = List.of("TTLV", "JSON", "XML");
+    private static final List<String> CREATE_ROUTE_TRANSPORTS = List.of("raw_tls", "https");
+    private static final List<String> NETWORK_ROUTE_ACTIONS = List.of("construct", "send", "decode");
     private static final List<String> GENERIC_STRUCTURE_ROUTE_IDS = List.of(
             "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.create",
             "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.withitem",
@@ -2086,7 +2090,9 @@ class ControlledTlsPeerTest {
                         + 24 // Process and Query Asynchronous Requests construction and NotSent execution routes.
                         + 94 // BEC, batch IDs, async payload, Endpoint Role, Object Defaults, derivation, and Extension Information member cells.
                         + 18 // Ping construction, send, and response decode over six encoding/transport pairs.
-                        + 72 // Create construction, send, and response decode across two cases and versions.
+                        + CREATE_ROUTE_CASE_IDS.size() * KMIP_2_0_AND_2_1.size()
+                                * CREATE_ROUTE_ENCODINGS.size() * CREATE_ROUTE_TRANSPORTS.size()
+                                * NETWORK_ROUTE_ACTIONS.size()
                         + 7 // KMIP 2.1 §4.53 Rotate Name Type generic and typed Attribute routes.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Value generic and typed Attribute routes.
                         + tagAggregateEventCount
@@ -7913,7 +7919,7 @@ class ControlledTlsPeerTest {
         String routeId = "java.typed-protocol.client_batch_item.create";
         String targetId = "KMIPKIT-ELEM-OP-C2S-CREATE";
         String publicApi = "org.kmipkit.extensions.ClientBatchItem.create";
-        for (String caseId : List.of("test-op-create", "test-obj-symmetric-key")) {
+        for (String caseId : CREATE_ROUTE_CASE_IDS) {
             for (String protocolVersion : KMIP_2_0_AND_2_1) {
                 int minor = "2.0".equals(protocolVersion) ? 0 : 1;
                 String batchItemId = "item-0";
@@ -7921,9 +7927,9 @@ class ControlledTlsPeerTest {
                 byte[] responseTtlv = createResponse(minor);
                 String responseHash = normalizedTreeSha256(responseTtlv);
                 String requestHash = null;
-                for (String encoding : List.of("TTLV", "JSON", "XML")) {
+                for (String encoding : CREATE_ROUTE_ENCODINGS) {
                     byte[] responseBytes = createRouteResponseBytes(minor, batchItemId, encoding, responseTtlv);
-                    for (String transport : List.of("raw_tls", "https")) {
+                    for (String transport : CREATE_ROUTE_TRANSPORTS) {
                         Path connectionFile = temporaryDirectory.resolve("create-route-" + caseId + "-"
                                 + protocolVersion.replace('.', '-') + "-" + encoding + "-" + transport + ".json");
                         byte[] observedRequest;
@@ -8108,11 +8114,11 @@ class ControlledTlsPeerTest {
     }
 
     private static void assertCreateOperationNetworkRouteCoverage(ArrayNode events) {
-        for (String caseId : List.of("test-op-create", "test-obj-symmetric-key")) {
+        for (String caseId : CREATE_ROUTE_CASE_IDS) {
             for (String version : KMIP_2_0_AND_2_1) {
-                for (String encoding : List.of("TTLV", "JSON", "XML")) {
-                    for (String transport : List.of("raw_tls", "https")) {
-                        for (String action : List.of("construct", "send", "decode")) {
+                for (String encoding : CREATE_ROUTE_ENCODINGS) {
+                    for (String transport : CREATE_ROUTE_TRANSPORTS) {
+                        for (String action : NETWORK_ROUTE_ACTIONS) {
                             boolean present = events.valueStream().anyMatch(event ->
                                     caseId.equals(event.path("case_id").asText())
                                             && "java.typed-protocol.client_batch_item.create"
