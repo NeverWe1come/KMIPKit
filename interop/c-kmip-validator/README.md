@@ -139,8 +139,9 @@ The `*.gaps.json` sidecar identifies every unexecuted matrix obligation rather
 than misclassifying it as an unavailable library route. Other sidecars retain
 installed-artifact availability checks and sanitized controlled-peer outcomes.
 The evidence JSON passes the shared schema independently of completeness.
-The latest full local C matrix run (`c-route-5b7720d1-936c-42fa-bf3d-e32cf252bb18`)
-has 66,736 expected cells, 43,097 invoked, zero failed, and 23,639 pending.
+The latest full local C matrix run (`c-route-5f0fb7b5-2b51-40b0-a5fd-631c889120c8`)
+has 66,736 expected cells, 43,497 invoked, 40 explicitly not applicable, zero
+failed, and 23,199 pending.
 The MAC and Sign response TTLV accessors and the Continue batch-option
 constructor contribute four local cells each across KMIP 2.0/2.1. The
 Query Async Requests correlation builder contributes two KMIP 2.1 model cells.
@@ -366,9 +367,9 @@ rejections; it does not claim a KMS response or response-accessor coverage.
 Comparing the full report with the previous 43,035-event run by matrix cell
 identity retained every prior cell and added exactly 62 cells for the single-
 item default-Stop route. Catalog, route-manifest, installed-artifact, and
-library-commit fingerprints match the baseline. CTest passes 7/7, including
-191 route-matrix contract tests and both controlled TLS peers. The global
-route-completeness gate remains open for the other 23,639 pending cells.
+library-commit fingerprints match the baseline. That run's CTest passed 7/7,
+including 191 route-matrix contract tests and both controlled TLS peers. The
+global route-completeness gate remains open for the pending recipes.
 
 For `test-batch-stop-on-first-failure`, the approved KMIPKIT-0007-FR-018
 response policy expects one `Operation Failed` result and omits the later
@@ -381,11 +382,25 @@ behavior but do not explicitly prescribe that omission. The omission is the
 approved KMIPKit policy aligned with the KMIPKIT-0092 scenario, not an OASIS
 conformance claim.
 
-The subsequent C run `c-route-3df0ddc1-8a8a-4d90-aa50-addbab9194f4` is aligned
-with the updated shared coverage and evidence schemas. It emitted 43,255
+An earlier C run (`c-route-3df0ddc1-8a8a-4d90-aa50-addbab9194f4`) emitted 43,255
 evidence rows: 43,239 actual invocations and 16 explicit N/A dispositions,
-with zero failed invocations. The 66,736 planned C cells comprise those rows
-and 23,481 pending recipe cells. The shared validator accepted the emitted
-43,255-cell scope (`selected_scope_complete=true`,
-`all_invocations_passed=true`, `complete_matrix=false`); the global gate remains
-incomplete until the pending recipes are implemented.
+with zero failed invocations. It had 23,481 pending recipe cells.
+
+The latest full run (`c-route-5f0fb7b5-2b51-40b0-a5fd-631c889120c8`) emitted
+43,537 evidence rows: 43,497 actual invocations and 40 explicit N/A
+dispositions, with zero failed invocations. The shared validator accepts the
+emitted scope (`selected_scope_complete=true`, `all_invocations_passed=true`,
+`complete_matrix=false`); 23,199 cells remain pending, so the global gate is
+still open. Compared with the previous full report, cell identities are
+preserved and 72 cells were added for the forward-Placeholder route: 24
+construction calls, 24 send attempts, and 24 network response decoders that
+are N/A because the matching request was rejected locally before transport.
+All 24 N/A cells match a `not_sent` event for the same case, route, operation,
+item index, protocol version, encoding, and transport. The 14 independent
+local response accessors remain pending; six local generic TTLV decodes pass
+using constructed fixtures. Of the cells shared with the previous run, 199
+tree hashes differ across runs: 192 request hashes contain regenerated public
+certificate or certificate-request bytes, and seven Query Async Requests
+response hashes include the fixture's current timestamp. Cell identities are
+unchanged for those rows. The report passes the evidence schema and scoped
+shared validation.
