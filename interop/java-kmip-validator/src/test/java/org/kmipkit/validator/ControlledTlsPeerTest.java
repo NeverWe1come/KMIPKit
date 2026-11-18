@@ -1194,9 +1194,9 @@ class ControlledTlsPeerTest {
             appendControlledGetAttributesNetworkRouteEvents(events, protocolVersion);
             assertRouteEventRecorded(events,
                     "test-norm-payload-client-get-attributes-response-"
-                            + protocolVersion.replace('.', '-') + "-001",
+                            + protocolVersion.replace(".", "") + "-001",
                     "KMIPKIT-PAYLOAD-CLIENT-GET-ATTRIBUTES-RESPONSE-"
-                            + protocolVersion.replace('.', '-') + "-001",
+                            + protocolVersion.replace(".", "") + "-001",
                     "java.typed-protocol.function.client_batch_item_response_get_attributes",
                     "decode", protocolVersion);
             appendControlledGetAttributeListNetworkRouteEvents(events, protocolVersion);
@@ -2005,6 +2005,7 @@ class ControlledTlsPeerTest {
         int normativeMessageFieldParserRouteEventCount = KMIP_2_0_AND_2_1.size()
                 * (19 + REQUEST_HEADER_SCALAR_ROUTE_TARGETS.size());
         int normativeBatchItemAccessorRouteEventCount = KMIP_2_0_AND_2_1.size() * 10;
+        int typedResponsePayloadRouteEventCount = KMIP_2_0_AND_2_1.size() * 2;
         int newAttributePayloadRouteEventCount = KMIP_2_0_AND_2_1.size() * 3 * 20;
         int objectGroupLocalRouteEventCount = 3;
         int asynchronousRequestOperationStructureRouteEventCount = 6;
@@ -2076,6 +2077,7 @@ class ControlledTlsPeerTest {
                         + credentialGenericRouteEventCount
                         + normativeMessageFieldGenericRouteEventCount + normativeMessageFieldParserRouteEventCount
                         + normativeBatchItemAccessorRouteEventCount + newAttributePayloadRouteEventCount
+                        + typedResponsePayloadRouteEventCount
                         + credentialEnvelopeEventCount + objectGroupLocalRouteEventCount
                         + asynchronousRequestOperationStructureRouteEventCount
                         + operationStructureRouteEventCount
@@ -4947,6 +4949,13 @@ class ControlledTlsPeerTest {
                                 "org.kmipkit.extensions.ClientBatchItemResult.getAttributesResponse",
                                 null, null, "decode", protocolVersion, null, null, responseHash);
                     }
+                    String responsePayloadSuffix = protocolVersion.replace(".", "") + "-001";
+                    appendRouteEvent(events,
+                            "test-norm-payload-client-get-attributes-response-" + responsePayloadSuffix,
+                            "java.typed-protocol.function.client_batch_item_response_get_attributes",
+                            "KMIPKIT-PAYLOAD-CLIENT-GET-ATTRIBUTES-RESPONSE-" + responsePayloadSuffix,
+                            "org.kmipkit.extensions.ClientBatchItemResult.getAttributesResponse",
+                            null, null, "decode", protocolVersion, null, null, responseHash);
                     appendLocalGetAttributesPayloadRouteEvents(events, invocations, protocolVersion);
                 }
             }
@@ -8049,6 +8058,16 @@ class ControlledTlsPeerTest {
                         appendTypedRequestNetworkRouteEvents(events, caseId, routeId,
                                 fixture.requestPayloadTargetId(), publicApi, protocolVersion,
                                 requestHash, encoding, transport);
+                    }
+                    if ("TTLV".equals(encoding) && "raw_tls".equals(transport)
+                            && fixture.requestPayloadTargetId() != null
+                            && fixture.requestPayloadTargetId().endsWith("-REQUEST-"
+                                    + protocolVersion.replace(".", "") + "-001")) {
+                        appendRouteEvent(events, caseId,
+                                "java.typed-protocol.function.client_batch_item_response_create",
+                                targetId,
+                                "org.kmipkit.extensions.ClientBatchItemResult.createResponse",
+                                null, null, "decode", protocolVersion, null, null, responseHash);
                     }
                 }
             }
