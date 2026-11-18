@@ -64,6 +64,12 @@ SIGN_ITEM_IDS = (b'sign-create-pair', b'sign-activate', b'sign-target', b'sign-r
                  b'sign-destroy-private', b'sign-destroy-public')
 SIGNATURE_VERIFY_ITEM_IDS = (b'verify-create-pair', b'verify-activate', b'verify-target',
                              b'verify-revoke', b'verify-destroy-public', b'verify-destroy-private')
+PKCS11_ITEM_IDS = (b'pkcs11-create', b'pkcs11-activate', b'pkcs11-target',
+                   b'pkcs11-revoke', b'pkcs11-destroy')
+PKCS11_REQUEST_CORRELATION = b'pkcs11-request-correlation'
+PKCS11_RESPONSE_CORRELATION = b'pkcs11-response-correlation'
+PKCS11_INPUT = b'controlled-pkcs11-input'
+PKCS11_OUTPUT = b'controlled-pkcs11-output'
 CREATE_KEY_PAIR_ITEM_IDS = (b'create-pair', b'destroy-private', b'destroy-public')
 CERTIFY_ITEM_IDS = (b'certify-create-pair', b'certify-activate-private', b'certify-public-key',
                     b'certify-revoke-private', b'certify-destroy-certificate',
@@ -325,7 +331,8 @@ def response_payload_field_present(target, batch_item, targets, codec):
 def tree_digest(node):
     # Redact nondeterministic and sensitive fields before hashing. Preserve
     # numeric result codes, tag/type distinctions, and ordered batch structure.
-    sensitive = {0x420094, 0x420092, 0x420099, 0x4200A1, 0x420043, 0x42014B}
+    sensitive = {0x420094, 0x420092, 0x420099, 0x4200A1, 0x420043, 0x42014B,
+                 0x4200D6, 0x42015B, 0x42015C}
     def clean(item):
         tag, kind, value = item
         if tag in sensitive:
@@ -395,6 +402,7 @@ RECIPES = {
     'test-op-signature-verify': ((2, 18, 34, 19, 20, 20), 'signature_verify'),
     'test-op-create-key-pair': ((2, 20, 20), 'create_key_pair'),
     'test-op-certify': ((2, 18, 6, 19, 20, 20, 20), 'certify'),
+    'test-op-pkcs#11': ((1, 18, 51, 19, 20), 'pkcs11'),
     'test-op-add-attribute': ((1, 13, 19, 20), 'add_attribute'),
     'test-norm-payload-client-add-attribute-request-20-002': ((1, 13, 19, 20), 'add_attribute'),
     'test-norm-payload-client-add-attribute-request-21-002': ((1, 13, 19, 20), 'add_attribute'),
@@ -1088,6 +1096,70 @@ def verify_certify_response(response_tree):
         raise ValueError('fixture_certify_response_cleanup_identifiers_mismatch')
 
 
+def assert_pkcs11_request(node):
+    """Check the isolated Create/Activate/PKCS#11/Revoke/Destroy request."""
+    items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if ([numbers(item, 0x42005C) for item in items] != [[1], [18], [51], [19], [20]] or
+            [byte_string_values(item, 0x420093) for item in items] !=
+            [[item_id] for item_id in PKCS11_ITEM_IDS] or
+            numbers(items[0], 0x420057) != [2] or numbers(items[0], 0x420028) != [3] or
+            numbers(items[0], 0x42002A) != [128] or numbers(items[0], 0x42002C) != [4] or
+            any(not is_id_placeholder_identifier(identifier)
+                for item in items[1:]
+                for identifier in descendants(item, UNIQUE_IDENTIFIER_TAG))):
+        raise ValueError('fixture_pkcs11_batch_lifecycle_mismatch')
+    payloads = [child for child in items[2][2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+    if len(payloads) != 1:
+        raise ValueError('fixture_pkcs11_request_payload_missing')
+    fields = payloads[0][2]
+    functions = [field for field in fields if field[0] == 0x42015A and field[1] == 1]
+    interfaces = [field for field in fields if field[0] == 0x420159 and field[1] == 1]
+    correlations = [field for field in fields if field[0] == 0x4200D6 and field[1] == 8]
+    inputs = [field for field in fields if field[0] == 0x42015B and field[1] == 1]
+    expected_function = [(0x42015A, 2, (-12345).to_bytes(4, 'big', signed=True))]
+    expected_interface = [(0x420159, 7, b'test-interface')]
+    expected_input = [(0x42015B, 8, PKCS11_INPUT)]
+    if ([field[0] for field in fields] != [0x420159, 0x42015A, 0x4200D6, 0x42015B] or
+            len(functions) != 1 or functions[0][2] != expected_function or
+            len(interfaces) != 1 or interfaces[0][2] != expected_interface or
+            [(field[1], field[2]) for field in correlations] !=
+            [(8, PKCS11_REQUEST_CORRELATION)] or
+            len(inputs) != 1 or inputs[0][2] != expected_input):
+        raise ValueError('fixture_pkcs11_request_fields_mismatch')
+
+
+def verify_pkcs11_response(response_tree):
+    """Check opaque typed fields and unknown values from the controlled response."""
+    verify_lifecycle(RECIPES['test-op-pkcs#11'][0], response_tree)
+    items = [child for child in response_tree[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if [byte_string_values(item, 0x420093) for item in items] != [
+            [item_id] for item_id in PKCS11_ITEM_IDS]:
+        raise ValueError('fixture_pkcs11_response_item_ids_mismatch')
+    payloads = [child for child in items[2][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1]
+    if len(payloads) != 1:
+        raise ValueError('fixture_pkcs11_response_payload_missing')
+    fields = payloads[0][2]
+    functions = [field for field in fields if field[0] == 0x42015A and field[1] == 1]
+    correlations = [field for field in fields if field[0] == 0x4200D6 and field[1] == 8]
+    outputs = [field for field in fields if field[0] == 0x42015C and field[1] == 1]
+    returns = [field for field in fields if field[0] == 0x42015D and field[1] == 1]
+    extensions = [field for field in fields if field[0] == 0x541234 and field[1] == 2]
+    expected_function = [(0x42015A, 2, (-12345).to_bytes(4, 'big', signed=True))]
+    expected_output = [(0x42015C, 8, PKCS11_OUTPUT)]
+    expected_return = [(0x42015D, 5, (0xFFFF1234).to_bytes(4, 'big'))]
+    if ([field[0] for field in fields] != [0x42015A, 0x4200D6, 0x42015C, 0x42015D, 0x541234] or
+            len(functions) != 1 or functions[0][2] != expected_function or
+            [(field[1], field[2]) for field in correlations] !=
+            [(8, PKCS11_RESPONSE_CORRELATION)] or
+            len(outputs) != 1 or outputs[0][2] != expected_output or
+            len(returns) != 1 or returns[0][2] != expected_return or
+            [(field[1], int.from_bytes(field[2], 'big', signed=True)) for field in extensions] !=
+            [(2, 7)]):
+        raise ValueError('fixture_pkcs11_response_fields_mismatch')
+
+
 def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
                   constructor_variant=None, export_field=None):
     selected_recipe = recipe or RECIPES[case_id]
@@ -1128,6 +1200,8 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
         assert_create_key_pair_request(node)
     if selected_recipe[1] == 'certify':
         assert_certify_request(node)
+    if selected_recipe[1] == 'pkcs11':
+        assert_pkcs11_request(node)
     if (case_id in {
             'test-norm-payload-client-add-attribute-request-20-002',
             'test-norm-payload-client-add-attribute-request-21-002'} and
@@ -1212,7 +1286,8 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
             'test-batch-create-activate-destroy', 'test-attr-cryptographic-algorithm',
             'test-attr-cryptographic-length', 'test-op-get-constraints',
             'test-norm-payload-client-get-usage-allocation-request-20-001',
-            'test-norm-payload-client-get-usage-allocation-request-21-001') or attribute_fixture is not None
+            'test-norm-payload-client-get-usage-allocation-request-21-001',
+            'test-op-pkcs#11') or attribute_fixture is not None
         implicit_target = implicit_target or (
             selected_recipe[1] == 'export' and export_field == 'Unique Identifier' and
             constructor_variant == 'omitted')
@@ -1562,7 +1637,7 @@ def assert_placeholder_usage(node, case_id):
                        'test-batch-order-required-placeholder-resolution',
                        'test-batch-order-omitted-defaults-true', 'test-op-encrypt',
                        'test-op-decrypt', 'test-op-mac', 'test-op-mac-verify',
-                       'test-op-archive'):
+                       'test-op-archive', 'test-op-pkcs#11'):
         return
     batch_items = [child for child in node[2]
                    if child[0] == BATCH_ITEM_TAG and child[1] == 1]
@@ -2571,6 +2646,7 @@ class PeerState:
                   43: 'exported',
                   17: 'usage_allocation_returned',
                   26: 'async_operation_polled',
+                  51: 'pkcs11_executed',
                   56: 'constraints_retrieved',
                   57: 'async_requests_queried'}
         items = [item for item in request_tree[2] if item[0] == BATCH_ITEM_TAG]
@@ -2667,7 +2743,7 @@ class PeerState:
                 identifier = matching_identifiers[0]
                 placeholder = identifier
                 effect = 'located'
-            elif operation in (9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 20, 21, 31, 32, 33, 34, 35, 36, 43, 48, 49, 56):
+            elif operation in (9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 20, 21, 31, 32, 33, 34, 35, 36, 43, 48, 49, 51, 56):
                 state = self.objects.get(identifier)
                 if state is None:
                     status, reason, effect = 1, 55, 'object_not_found'
@@ -2703,6 +2779,10 @@ class PeerState:
                     effect = {31: 'encrypted', 32: 'decrypted', 33: 'signed',
                               34: 'signature_verified', 35: 'mac_generated',
                               36: 'mac_verified'}[operation]
+                elif operation == 51:
+                    if state != 'active':
+                        raise ValueError('fixture_pkcs11_key_not_active')
+                    effect = 'pkcs11_executed'
                 elif operation == 19:
                     self.objects[identifier] = 'revoked'
                     effect = 'revoked'
@@ -2798,6 +2878,7 @@ def verify_lifecycle(operations, response_tree):
               48: 'attribute_adjusted',
               43: 'exported',
               17: 'usage_allocation_returned',
+              51: 'pkcs11_executed',
               56: 'constraints_retrieved'}
     for operation in operations:
         status, reason = 0, 0
@@ -2822,6 +2903,10 @@ def verify_lifecycle(operations, response_tree):
                 raise ValueError('fixture_registered_crypto_key_not_active')
             effects.append({31: 'encrypted', 32: 'decrypted', 35: 'mac_generated',
                              36: 'mac_verified'}[operation])
+        elif operation == 51:
+            if state != 'active':
+                raise ValueError('fixture_pkcs11_key_not_active')
+            effects.append('pkcs11_executed')
         elif operation == 19:
             state = 'revoked'
             effects.append('revoked')
@@ -3379,6 +3464,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 b'archive-revoke', b'archive-destroy')
                                         elif recipe[1] == 'certify':
                                             response_item_ids = CERTIFY_ITEM_IDS
+                                        elif recipe[1] == 'pkcs11':
+                                            response_item_ids = PKCS11_ITEM_IDS
                                         elif placeholder_chain_recipe:
                                             response_item_ids = (
                                                 (b'placeholder-revoke-cleanup', b'placeholder-destroy-cleanup')
@@ -3723,6 +3810,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             verify_create_key_pair_response(response_tree)
                                         elif recipe[1] == 'certify':
                                             verify_certify_response(response_tree)
+                                        elif recipe[1] == 'pkcs11':
+                                            verify_pkcs11_response(response_tree)
                                         elif recipe[1] == 'get_usage_allocation_uid_variants':
                                             verify_usage_allocation_identifier_variants(response_tree)
                                         elif reject_this_exchange:

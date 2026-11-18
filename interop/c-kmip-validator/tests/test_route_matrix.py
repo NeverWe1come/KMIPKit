@@ -3530,7 +3530,6 @@ class RouteMatrixTests(unittest.TestCase):
             'kmipkit_client_batch_item_create',
             'kmipkit_client_batch_item_activate',
             'kmipkit_client_batch_item_pkcs11',
-            'kmipkit_client_batch_item_response_pkcs11',
             'kmipkit_client_batch_item_response_pkcs11_ttlv',
             'kmipkit_client_batch_item_response_pkcs11_interface_ttlv',
             'kmipkit_client_batch_item_response_pkcs11_function_ttlv',

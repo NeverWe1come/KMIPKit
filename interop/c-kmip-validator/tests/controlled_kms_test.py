@@ -199,6 +199,14 @@ def response(operations: tuple[int, ...], protocol_minor: int,
                 1,
                 enumeration(0x42014A, 1) + tlv(0x42014B, 8, b"controlled-login-ticket"),
             )
+        elif operation == 51:
+            payload_value = (
+                tlv(0x42015A, 1, integer(0x42015A, -12345))
+                + tlv(0x4200D6, 8, b"pkcs11-response-correlation")
+                + tlv(0x42015C, 1, tlv(0x42015C, 8, b"controlled-pkcs11-output"))
+                + tlv(0x42015D, 1, enumeration(0x42015D, 0xFFFF1234))
+                + integer(0x541234, 7)
+            )
         elif operation == 47:
             payload_value = tlv(
                 0x420149,
@@ -286,6 +294,11 @@ def response(operations: tuple[int, ...], protocol_minor: int,
                 b"interop-create", b"interop-activate-before-destroy",
                 b"interop-destroy-active-target", b"interop-revoke-cleanup",
                 b"interop-destroy-cleanup"
+            )[item_index]
+        if operations == (1, 18, 51, 19, 20):
+            unique_batch_item_id = (
+                b"pkcs11-create", b"pkcs11-activate", b"pkcs11-target",
+                b"pkcs11-revoke", b"pkcs11-destroy"
             )[item_index]
         item_fields = integer(0x42005C, operation, 5)
         if unique_batch_item_id is not None:
@@ -523,6 +536,8 @@ def main() -> int:
     expected_operations += (2, 18, 34, 19, 20, 20)
     expected_operations += (2, 20, 20)
     expected_operations += (2, 18, 6, 19, 20, 20, 20)
+    expected_operations += (1, 18, 51, 19, 20)
+    expected_cases += ("test-op-pkcs#11",)
     expected_operations += (1, 21, 19, 20)
     expected_cases += ("test-op-archive",)
     expected_operations += stop_on_first_failure_batch
