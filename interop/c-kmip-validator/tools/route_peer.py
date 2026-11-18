@@ -77,6 +77,10 @@ CREATE_SPLIT_KEY_IDENTIFIERS = (b'fixture-split-part-1', b'fixture-split-part-2'
 JOIN_SPLIT_KEY_ITEM_IDS = (b'join-split-create', b'join-split-target',
                            b'join-split-destroy-joined', b'join-split-destroy-part-1',
                            b'join-split-destroy-part-2')
+REKEY_ITEM_IDS = (b'rekey-create', b'rekey-target', b'rekey-revoke-replacement',
+                  b'rekey-destroy-replacement', b'rekey-revoke-original', b'rekey-destroy-original')
+REKEY_ORIGINAL_IDENTIFIER = b'fixture-key-1'
+REKEY_REPLACEMENT_IDENTIFIER = b'fixture-rekeyed-key'
 CERTIFY_ITEM_IDS = (b'certify-create-pair', b'certify-activate-private', b'certify-public-key',
                     b'certify-revoke-private', b'certify-destroy-certificate',
                     b'certify-destroy-private', b'certify-destroy-public')
@@ -409,6 +413,7 @@ RECIPES = {
     'test-op-create-key-pair': ((2, 20, 20), 'create_key_pair'),
     'test-op-create-split-key': ((40, 20, 20), 'create_split_key'),
     'test-op-join-split-key': ((40, 41, 20, 20, 20), 'join_split_key'),
+    'test-op-re-key': ((1, 4, 19, 20, 19, 20), 'rekey'),
     'test-op-certify': ((2, 18, 6, 19, 20, 20, 20), 'certify'),
     'test-op-pkcs#11': ((1, 18, 51, 19, 20), 'pkcs11'),
     'test-op-obtain-lease': ((1, 16, 19, 20), 'obtain_lease'),
@@ -1135,6 +1140,74 @@ def verify_join_split_key_response(response_tree):
     if [text_values(item, UNIQUE_IDENTIFIER_TAG) for item in items[1:]] != [
             [identifier.decode('ascii')] for identifier in expected_cleanup]:
         raise ValueError('fixture_join_split_key_cleanup_identifiers_mismatch')
+
+
+def assert_rekey_create_request(node):
+    """Check the isolated AES key setup used by the Re-key fixture."""
+    items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if (len(items) != 1 or numbers(node, 0x42000D) != [1] or
+            numbers(items[0], 0x42005C) != [1] or
+            byte_string_values(items[0], 0x420093) != [REKEY_ITEM_IDS[0]] or
+            numbers(items[0], 0x420057) != [2] or numbers(items[0], 0x420028) != [3] or
+            numbers(items[0], 0x42002A) != [128] or numbers(items[0], 0x42002C) != [4]):
+        raise ValueError('fixture_rekey_create_request_mismatch')
+
+
+def assert_rekey_request(node):
+    """Check Re-key targets the created key and both results are torn down."""
+    items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if ([numbers(item, 0x42005C) for item in items] != [[4], [19], [20], [19], [20]] or
+            [byte_string_values(item, 0x420093) for item in items] !=
+            [[item_id] for item_id in REKEY_ITEM_IDS[1:]] or
+            numbers(node, 0x42000D) != [5] or
+            [(field[1], int.from_bytes(field[2], 'big')) for field in descendants(node, 0x420010)] !=
+            [(6, 1)]):
+        raise ValueError('fixture_rekey_batch_mismatch')
+    rekey_payloads = [child for child in items[0][2]
+                      if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+    if (len(rekey_payloads) != 1 or
+            [(field[0], field[1], field[2]) for field in rekey_payloads[0][2]] !=
+            [(UNIQUE_IDENTIFIER_TAG, 7, REKEY_ORIGINAL_IDENTIFIER)] or
+            [numbers(item, UNIQUE_IDENTIFIER_TAG) for item in items[1:3]] != [[1], [1]] or
+            [text_values(item, UNIQUE_IDENTIFIER_TAG) for item in items[3:]] !=
+            [[REKEY_ORIGINAL_IDENTIFIER.decode('ascii')],
+             [REKEY_ORIGINAL_IDENTIFIER.decode('ascii')]]):
+        raise ValueError('fixture_rekey_identifier_or_placeholder_mismatch')
+
+
+def verify_rekey_create_response(response_tree):
+    items = [child for child in response_tree[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+    identifiers = [field for field in payloads[0][2]
+                   if field[0] == UNIQUE_IDENTIFIER_TAG and field[1] == 7] if len(payloads) == 1 else []
+    if (len(items) != 1 or numbers(items[0], 0x42005C) != [1] or
+            numbers(items[0], 0x42007F) != [0] or len(identifiers) != 1 or
+            identifiers[0][2] != REKEY_ORIGINAL_IDENTIFIER or
+            byte_string_values(items[0], 0x420093) != [REKEY_ITEM_IDS[0]]):
+        raise ValueError('fixture_rekey_create_response_identifier_mismatch')
+
+
+def verify_rekey_response(response_tree):
+    items = [child for child in response_tree[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if ([numbers(item, 0x42005C) for item in items] != [[4], [19], [20], [19], [20]] or
+            [byte_string_values(item, 0x420093) for item in items] !=
+            [[item_id] for item_id in REKEY_ITEM_IDS[1:]] or
+            [numbers(item, 0x42007F) for item in items] != [[0]] * 5):
+        raise ValueError('fixture_rekey_response_lifecycle_mismatch')
+    payload_values = []
+    for item in items:
+        payloads = [child for child in item[2]
+                    if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1]
+        if len(payloads) != 1:
+            raise ValueError('fixture_rekey_response_payload_missing')
+        identifiers = [field for field in payloads[0][2]
+                       if field[0] == UNIQUE_IDENTIFIER_TAG and field[1] == 7]
+        if len(identifiers) != 1:
+            raise ValueError('fixture_rekey_response_identifier_missing')
+        payload_values.append(identifiers[0][2])
+    if payload_values != [REKEY_REPLACEMENT_IDENTIFIER] * 3 + [REKEY_ORIGINAL_IDENTIFIER] * 2:
+        raise ValueError('fixture_rekey_response_identifiers_mismatch')
 
 
 def assert_certify_request(node):
@@ -2697,7 +2770,7 @@ def target_operation_exchange_index(recipe):
         return 3
     if recipe is not None and recipe[1] == 'async_process_then_poll_state':
         return 0
-    if recipe is not None and recipe[1] == 'join_split_key':
+    if recipe is not None and recipe[1] in ('join_split_key', 'rekey'):
         return 1
     return 1 if recipe is not None and recipe[1] in ('login_logout', 'cancel_async') else 0
 
@@ -2727,6 +2800,8 @@ def observation_for_cell(observations, cell, recipe, fallback_index):
     elif recipe[1] == 'async_process_then_poll_state':
         index = {'Create': 0, 'Process': 1, 'Poll': 2}.get(
             cell.get('workflow_operation'), fallback_index)
+    elif recipe[1] == 'rekey':
+        index = 0 if cell.get('workflow_operation') == 'Create' else 1
     if index < 0 or index >= len(observations):
         return None
     return observations[index]
@@ -2904,6 +2979,16 @@ class PeerState:
                 self.adjustable_attribute_values[joined_identifier] = {}
                 placeholder = joined_identifier
                 effect = 'split_key_joined'
+            elif operation == 4:
+                replacement_identifier = REKEY_REPLACEMENT_IDENTIFIER.decode('ascii')
+                if (identifier not in self.objects or replacement_identifier in self.objects):
+                    raise ValueError('fixture_rekey_source_or_replacement_mismatch')
+                self.objects[replacement_identifier] = 'pre_active'
+                self.attributes[replacement_identifier] = set()
+                self.attribute_values[replacement_identifier] = {}
+                self.adjustable_attribute_values[replacement_identifier] = {}
+                placeholder = replacement_identifier
+                effect = 'rekeyed'
             elif operation == 6:
                 private_identifier = self.key_pair_identifiers.get(5)
                 public_identifier = self.key_pair_identifiers.get(6)
@@ -3448,7 +3533,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         3 if attribute_mutation_recipe or
                                         recipe[1] in ('cancel_poll_race', 'async_poll_final_failure') else
                                         3 if recipe[1] == 'create_split_key' else
-                                        2 if recipe[1] == 'join_split_key' else
+                                        2 if recipe[1] in ('join_split_key', 'rekey') else
                                         5 if recipe[1] == 'async_poll_repeated_pending_to_success' else
                                         4 if recipe[1] == 'async_process_then_poll_state' else
                                         2 if placeholder_chain_recipe or batch_order_placeholder_recipe or
@@ -3616,6 +3701,21 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 returned_unique_identifiers = (
                                                     b'fixture-joined-key', b'fixture-joined-key',
                                                     *CREATE_SPLIT_KEY_IDENTIFIERS)
+                                        elif recipe[1] == 'rekey':
+                                            if exchange_index == 0:
+                                                assert_rekey_create_request(request_tree)
+                                                response_operations = (1,)
+                                                response_item_ids = (REKEY_ITEM_IDS[0],)
+                                            else:
+                                                assert_rekey_request(request_tree)
+                                                response_operations = (4, 19, 20, 19, 20)
+                                                response_item_ids = REKEY_ITEM_IDS[1:]
+                                                returned_unique_identifiers = (
+                                                    REKEY_REPLACEMENT_IDENTIFIER,
+                                                    REKEY_REPLACEMENT_IDENTIFIER,
+                                                    REKEY_REPLACEMENT_IDENTIFIER,
+                                                    REKEY_ORIGINAL_IDENTIFIER,
+                                                    REKEY_ORIGINAL_IDENTIFIER)
                                         elif cleanup_exchange:
                                             if placeholder_chain_recipe or batch_order_placeholder_recipe:
                                                 assert_placeholder_cleanup_request(request_tree, version)
@@ -4051,6 +4151,10 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 response_tree, JOIN_SPLIT_KEY_ITEM_IDS[0])
                                         elif recipe[1] == 'join_split_key':
                                             verify_join_split_key_response(response_tree)
+                                        elif recipe[1] == 'rekey' and exchange_index == 0:
+                                            verify_rekey_create_response(response_tree)
+                                        elif recipe[1] == 'rekey':
+                                            verify_rekey_response(response_tree)
                                         elif recipe[1] == 'certify':
                                             verify_certify_response(response_tree)
                                         elif recipe[1] == 'pkcs11':
@@ -4181,6 +4285,18 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                 observation[0][2]['peer_observed_state_after_sha256'] = \
                                     observation[-1][2]['peer_observed_state_after_sha256']
                             if recipe[1] == 'join_split_key' and len(observation) == 2:
+                                observation[1][2]['effects'] = [
+                                    effect for _, _, evidence in observation
+                                    for effect in evidence['effects']]
+                                observation[1][2]['statuses'] = [
+                                    status for _, _, evidence in observation
+                                    for status in evidence['statuses']]
+                                observation[1][2]['reasons'] = [
+                                    reason for _, _, evidence in observation
+                                    for reason in evidence['reasons']]
+                                observation[1][2]['peer_observed_state_before_sha256'] = \
+                                    observation[0][2]['peer_observed_state_before_sha256']
+                            if recipe[1] == 'rekey' and len(observation) == 2:
                                 observation[1][2]['effects'] = [
                                     effect for _, _, evidence in observation
                                     for effect in evidence['effects']]

@@ -236,6 +236,11 @@ def response(operations: tuple[int, ...], protocol_minor: int,
                 tlv(0x420094, 7, b"fixture-key-1")
         elif operation == 3:
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
+        elif operation == 4:
+            identifier = (returned_unique_identifiers[item_index]
+                          if returned_unique_identifiers is not None else
+                          returned_unique_identifier or b"fixture-rekeyed-key")
+            payload_value = tlv(0x420094, 7, identifier)
         elif operation == 31:
             payload_value = tlv(0x420094, 7, b"fixture-key-1") + tlv(
                 0x4200C2, 8, bytes.fromhex("69c4e0d86a7b0430d8cdb78070b4c55a"))
@@ -275,7 +280,10 @@ def response(operations: tuple[int, ...], protocol_minor: int,
         elif operation == 17:
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
         elif operation == 19 and result_status == 0:
-            payload_value = tlv(0x420094, 7, b"fixture-key-1")
+            identifier = (returned_unique_identifiers[item_index]
+                          if returned_unique_identifiers is not None else
+                          returned_unique_identifier or b"fixture-key-1")
+            payload_value = tlv(0x420094, 7, identifier)
         elif operation == 56:
             payload_value = tlv(0x420168, 1, b"")
         unique_batch_item_id = (unique_batch_item_ids[item_index]
@@ -563,6 +571,7 @@ def main() -> int:
     expected_operations += (2, 20, 20)
     expected_operations += (40, 20, 20)
     expected_operations += (40, 41, 20, 20, 20)
+    expected_operations += (1, 4, 19, 20, 19, 20)
     expected_operations += (2, 18, 6, 19, 20, 20, 20)
     expected_operations += (1, 18, 51, 19, 20)
     expected_cases += ("test-op-pkcs#11",)
@@ -613,6 +622,7 @@ def main() -> int:
     expected_cases += ("test-op-create-key-pair",)
     expected_cases += ("test-op-create-split-key",)
     expected_cases += ("test-op-join-split-key",)
+    expected_cases += ("test-op-re-key",)
     expected_cases += ("test-op-certify",)
     expected_cases += ("test-batch-stop-on-first-failure",)
     expected_cases += ("test-neg-destroy-active-without-revoke",)
@@ -744,6 +754,21 @@ def main() -> int:
                                 if not split_key_created or identifier in split_key_destroyed:
                                     raise AssertionError("Create Split Key cleanup identifier was reused or premature")
                                 split_key_destroyed.add(identifier)
+                            if operations == (1,) and tlv(0x420093, 8, b"rekey-create") in request:
+                                if (enumeration(0x420057, 2) not in request or
+                                        enumeration(0x420028, 3) not in request or
+                                        integer(0x42002A, 128) not in request or
+                                        integer(0x42002C, 4) not in request):
+                                    raise AssertionError("Re-key setup must create a typed AES-128 Symmetric Key")
+                            if operations == (4, 19, 20, 19, 20):
+                                item_ids = (b"rekey-target", b"rekey-revoke-replacement",
+                                            b"rekey-destroy-replacement", b"rekey-revoke-original",
+                                            b"rekey-destroy-original")
+                                if (request.count(tlv(0x420094, 7, b"fixture-key-1")) != 3 or
+                                        request.count(enumeration(0x420094, 1)) != 2 or
+                                        any(tlv(0x420093, 8, item_id) not in request for item_id in item_ids) or
+                                        tlv(0x420010, 6, b"\x00\x00\x00\x00\x00\x00\x00\x01") not in request):
+                                    raise AssertionError("Re-key must target the source, resolve ID Placeholder to the replacement, and clean both keys")
                             if operations == (41, 20, 20, 20):
                                 if (not split_key_created or
                                         request.count(tlv(0x420094, 7, split_identifiers[0])) != 2 or
@@ -1225,6 +1250,12 @@ def main() -> int:
                                 elif operations == (41, 20, 20, 20):
                                     response_item_ids = (b"join-split-target", b"join-split-destroy-joined",
                                         b"join-split-destroy-part-1", b"join-split-destroy-part-2")
+                                elif operations == (1,) and tlv(0x420093, 8, b"rekey-create") in request:
+                                    response_item_ids = (b"rekey-create",)
+                                elif operations == (4, 19, 20, 19, 20):
+                                    response_item_ids = (b"rekey-target", b"rekey-revoke-replacement",
+                                        b"rekey-destroy-replacement", b"rekey-revoke-original",
+                                        b"rekey-destroy-original")
                                 elif operations == (20,):
                                     split_cleanup_id = next((identifier for identifier in split_identifiers
                                         if tlv(0x420094, 7, identifier) in request), None)
@@ -1245,7 +1276,10 @@ def main() -> int:
                                         if operations == (20,) and tlv(0x420094, 7, identifier) in request), None),
                                     returned_unique_identifiers=(
                                         b"fixture-joined-key", b"fixture-joined-key",
-                                        *split_identifiers) if operations == (41, 20, 20, 20) else None))
+                                        *split_identifiers) if operations == (41, 20, 20, 20) else
+                                        (b"fixture-rekeyed-key", b"fixture-rekeyed-key",
+                                         b"fixture-rekeyed-key", b"fixture-key-1", b"fixture-key-1")
+                                        if operations == (4, 19, 20, 19, 20) else None))
                                 if operations == (25,):
                                     async_request_pending = False
                                     async_poll_mode = "none"

@@ -3498,6 +3498,7 @@ class RouteMatrixTests(unittest.TestCase):
                             for event in send_events))
         required_symbols = {
             'kmipkit_client_batch_item_create',
+            'kmipkit_client_batch_item_response_create',
             'kmipkit_client_batch_item_rekey',
             'kmipkit_client_batch_item_response_rekey',
             'kmipkit_client_batch_item_revoke',
