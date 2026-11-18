@@ -6205,10 +6205,11 @@ class ControlledTlsPeerTest {
             return;
         }
         String treeHash = normalizedTreeSha256(invocation.wire());
-        boolean construction = "construct".equals(invocation.action());
+        boolean requestTree = "construct".equals(invocation.action())
+                || "encode".equals(invocation.action());
         ObjectNode event = appendRouteEvent(events, invocation.caseId(), invocation.routeId(), invocation.targetId(),
                 invocation.symbol(), null, null, invocation.action(), version, null,
-                construction ? treeHash : null, construction ? null : treeHash);
+                requestTree ? treeHash : null, requestTree ? null : treeHash);
         appendWorkflowIdentity(event, invocation);
     }
 
