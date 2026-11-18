@@ -4627,14 +4627,18 @@ final class LocalCatalogRouteChecks {
     private static byte[] itemWire(int tag, int type, byte[] value) {
         int paddedLength = Math.addExact(value.length, 7) & ~7;
         if (type == TtlvItemType.BigInteger.code() && value.length != paddedLength) {
-            byte[] extended = new byte[paddedLength];
-            java.util.Arrays.fill(extended, value[0] < 0 ? (byte) 0xff : (byte) 0);
-            System.arraycopy(value, 0, extended, paddedLength - value.length, value.length);
-            value = extended;
+            value = signExtendBigInteger(value, paddedLength);
         }
         return ByteBuffer.allocate(Math.addExact(8, paddedLength))
                 .put((byte) (tag >>> 16)).put((byte) (tag >>> 8)).put((byte) tag)
                 .put((byte) type).putInt(value.length).put(value).put(new byte[paddedLength - value.length]).array();
+    }
+
+    private static byte[] signExtendBigInteger(byte[] value, int paddedLength) {
+        byte[] extended = new byte[paddedLength];
+        java.util.Arrays.fill(extended, value[0] < 0 ? (byte) 0xff : (byte) 0);
+        System.arraycopy(value, 0, extended, paddedLength - value.length, value.length);
+        return extended;
     }
 
     private static byte[] structureWire(int tag, byte[] child) {
