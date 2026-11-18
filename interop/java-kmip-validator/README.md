@@ -101,8 +101,8 @@ baseline, regenerate the checked-in ledger with
 rejects generated ledgers that do not record successful invocations.
 The generated ledger retains the artifact
 SHA-256 for each build; that build-specific digest is not used as a coverage
-baseline. These recipes execute 28,924 of 71,641 planned Java route cells, with
-no failed cells; the ledger records the other 42,717 as pending and does not imply
+baseline. These recipes execute 29,164 of 71,641 planned Java route cells, with
+no failed cells; the ledger records the other 42,477 as pending and does not imply
 vendor interoperability or full-matrix completion. Local TTLV recipes exercise 51
 enumeration families, all six bitmask aggregate cases, and all 44 individual
 bitmask value cases through the applicable
@@ -208,7 +208,7 @@ evidence for both `RawTag` identity routes and the `ClientBatch` setter. The
 setter's evidence comes from the serialized header of a controlled two-item
 Query request in KMIP 2.0 and 2.1 (KMIP 2.0 §11.54; KMIP 2.1 §11.56).
 
-The current Java ledger has 42,717 pending cells across 1,151 case IDs; every
+The current Java ledger has 42,477 pending cells across 1,151 case IDs; every
 one has the reason `route_evidence_not_emitted`. The applicability rule is the
 shared catalog and capability matrix after protocol-version, public-route,
 encoding/transport, and source-backed exclusion filters. A cell remaining in
@@ -355,3 +355,9 @@ planned Java ByteString cells and all five DateTimeExtended cells are covered.
 The selected report validates 28,924/28,924 cells; 42,717 of 71,641 remain
 pending. These local TTLV fixtures do not claim credential, PKCS#11, or
 certificate semantic validation.
+
+Catalogued Big Integer key-material fields now use generic construction, item
+creation, view, and decode routes with an eight-byte synthetic value. All 62
+planned Java BigInteger cells are covered. The selected report validates
+29,164/29,164 cells; 42,477 of 71,641 remain pending. No production key
+material is used or exposed by these local fixtures.

@@ -1669,6 +1669,36 @@
     "test-norm-structure-member-structure-member-7-27-pkcs-11-input-parameters",
     "test-norm-structure-member-structure-member-7-29-pkcs-11-output-parameters",
     "test-norm-structure-member-structure-member-9-11-hashed-password-timestamp",
+    "test-norm-structure-member-structure-member-2-8-split-key-prime-field-size",
+    "test-norm-structure-member-structure-member-3-10-key-material-g",
+    "test-norm-structure-member-structure-member-3-10-key-material-j",
+    "test-norm-structure-member-structure-member-3-10-key-material-p",
+    "test-norm-structure-member-structure-member-3-10-key-material-q",
+    "test-norm-structure-member-structure-member-3-10-key-material-y",
+    "test-norm-structure-member-structure-member-3-11-key-material-d",
+    "test-norm-structure-member-structure-member-3-5-key-material-g",
+    "test-norm-structure-member-structure-member-3-5-key-material-p",
+    "test-norm-structure-member-structure-member-3-5-key-material-q",
+    "test-norm-structure-member-structure-member-3-5-key-material-x",
+    "test-norm-structure-member-structure-member-3-6-key-material-g",
+    "test-norm-structure-member-structure-member-3-6-key-material-p",
+    "test-norm-structure-member-structure-member-3-6-key-material-q",
+    "test-norm-structure-member-structure-member-3-6-key-material-y",
+    "test-norm-structure-member-structure-member-3-7-key-material-crt-coefficient",
+    "test-norm-structure-member-structure-member-3-7-key-material-modulus",
+    "test-norm-structure-member-structure-member-3-7-key-material-p",
+    "test-norm-structure-member-structure-member-3-7-key-material-prime-exponent-p",
+    "test-norm-structure-member-structure-member-3-7-key-material-prime-exponent-q",
+    "test-norm-structure-member-structure-member-3-7-key-material-private-exponent",
+    "test-norm-structure-member-structure-member-3-7-key-material-public-exponent",
+    "test-norm-structure-member-structure-member-3-7-key-material-q",
+    "test-norm-structure-member-structure-member-3-8-key-material-modulus",
+    "test-norm-structure-member-structure-member-3-8-key-material-public-exponent",
+    "test-norm-structure-member-structure-member-3-9-key-material-g",
+    "test-norm-structure-member-structure-member-3-9-key-material-j",
+    "test-norm-structure-member-structure-member-3-9-key-material-p",
+    "test-norm-structure-member-structure-member-3-9-key-material-q",
+    "test-norm-structure-member-structure-member-3-9-key-material-x",
     "test-norm-enumeration-value-enum-value-item-type-big-integer-00000004",
     "test-norm-enumeration-value-enum-value-item-type-boolean-00000006",
     "test-norm-enumeration-value-enum-value-item-type-byte-string-00000008",
@@ -1702,7 +1732,7 @@
     "test-norm-credential-credential-hashed-password",
     "test-norm-credential-credential-username-and-password"
   ],
-  "executed_cells": 28924,
+  "executed_cells": 29164,
   "language": "java",
   "library_commit": "12496d646d11d4069b58bcc88fc76cc619211ec6",
   "pending_case_ids": [
@@ -6409,7 +6439,7 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-2-8-split-key-prime-field-size",
-      "pending_cells": 14
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-structure-member-structure-member-2-8-split-key-split-key-method",
@@ -6453,27 +6483,27 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-10-key-material-g",
-      "pending_cells": 36
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-10-key-material-j",
-      "pending_cells": 36
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-10-key-material-p",
-      "pending_cells": 36
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-10-key-material-q",
-      "pending_cells": 36
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-10-key-material-y",
-      "pending_cells": 36
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-11-key-material-d",
-      "pending_cells": 36
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-11-key-material-recommended-curve",
@@ -6541,95 +6571,95 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-5-key-material-g",
-      "pending_cells": 36
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-5-key-material-p",
-      "pending_cells": 36
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-5-key-material-q",
-      "pending_cells": 36
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-5-key-material-x",
-      "pending_cells": 36
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-6-key-material-g",
-      "pending_cells": 36
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-6-key-material-p",
-      "pending_cells": 36
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-6-key-material-q",
-      "pending_cells": 36
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-6-key-material-y",
-      "pending_cells": 36
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-7-key-material-crt-coefficient",
-      "pending_cells": 36
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-7-key-material-modulus",
-      "pending_cells": 36
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-7-key-material-p",
-      "pending_cells": 36
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-7-key-material-prime-exponent-p",
-      "pending_cells": 36
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-7-key-material-prime-exponent-q",
-      "pending_cells": 36
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-7-key-material-private-exponent",
-      "pending_cells": 36
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-7-key-material-public-exponent",
-      "pending_cells": 36
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-7-key-material-q",
-      "pending_cells": 36
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-8-key-material-modulus",
-      "pending_cells": 36
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-8-key-material-public-exponent",
-      "pending_cells": 36
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-9-key-material-g",
-      "pending_cells": 36
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-9-key-material-j",
-      "pending_cells": 36
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-9-key-material-p",
-      "pending_cells": 36
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-9-key-material-q",
-      "pending_cells": 36
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-9-key-material-x",
-      "pending_cells": 36
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-structure-member-structure-member-4-14-qlength",
@@ -7464,7 +7494,7 @@
       "pending_cells": 15
     }
   ],
-  "pending_cells": 42717,
+  "pending_cells": 42477,
   "pending_reason": "No validated per-cell route execution evidence is recorded for this cell.",
   "pending_reason_code": "route_evidence_not_emitted",
   "planned_cells": 71641,
@@ -7472,8 +7502,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 2908,
-      "pending_cells": 1176,
+      "executed_cells": 2938,
+      "pending_cells": 1146,
       "protocol_version": "2.0",
       "required_cells": 4084,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item",
@@ -7482,8 +7512,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 2959,
-      "pending_cells": 1220,
+      "executed_cells": 2989,
+      "pending_cells": 1190,
       "protocol_version": "2.1",
       "required_cells": 4179,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item",
@@ -7572,8 +7602,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 1,
-      "pending_cells": 30,
+      "executed_cells": 31,
+      "pending_cells": 0,
       "protocol_version": "2.0",
       "required_cells": 31,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.biginteger",
@@ -7582,8 +7612,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 1,
-      "pending_cells": 30,
+      "executed_cells": 31,
+      "pending_cells": 0,
       "protocol_version": "2.1",
       "required_cells": 31,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.biginteger",
@@ -7792,8 +7822,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 2956,
-      "pending_cells": 1175,
+      "executed_cells": 2986,
+      "pending_cells": 1145,
       "protocol_version": "2.0",
       "required_cells": 4131,
       "route_id": "java.generic-ttlv.ttlv_codec.decode",
@@ -7802,8 +7832,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 3007,
-      "pending_cells": 1219,
+      "executed_cells": 3037,
+      "pending_cells": 1189,
       "protocol_version": "2.1",
       "required_cells": 4226,
       "route_id": "java.generic-ttlv.ttlv_codec.decode",
@@ -7812,8 +7842,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 2908,
-      "pending_cells": 1175,
+      "executed_cells": 2938,
+      "pending_cells": 1145,
       "protocol_version": "2.0",
       "required_cells": 4083,
       "route_id": "java.generic-ttlv.ttlv_item.create",
@@ -7822,8 +7852,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 2959,
-      "pending_cells": 1219,
+      "executed_cells": 2989,
+      "pending_cells": 1189,
       "protocol_version": "2.1",
       "required_cells": 4178,
       "route_id": "java.generic-ttlv.ttlv_item.create",
@@ -34043,8 +34073,8 @@
   "route_manifest_sha256": "8e26f2efe33c63d3fc4dcd0cb11e465b15bbe9135ab56809c354f032a7aeac59",
   "route_summary": [
     {
-      "executed_cells": 5867,
-      "pending_cells": 2396,
+      "executed_cells": 5927,
+      "pending_cells": 2336,
       "required_cells": 8263,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item"
     },
@@ -34073,8 +34103,8 @@
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.withitem"
     },
     {
-      "executed_cells": 2,
-      "pending_cells": 60,
+      "executed_cells": 62,
+      "pending_cells": 0,
       "required_cells": 62,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.biginteger"
     },
@@ -34139,14 +34169,14 @@
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring"
     },
     {
-      "executed_cells": 5963,
-      "pending_cells": 2394,
+      "executed_cells": 6023,
+      "pending_cells": 2334,
       "required_cells": 8357,
       "route_id": "java.generic-ttlv.ttlv_codec.decode"
     },
     {
-      "executed_cells": 5867,
-      "pending_cells": 2394,
+      "executed_cells": 5927,
+      "pending_cells": 2334,
       "required_cells": 8261,
       "route_id": "java.generic-ttlv.ttlv_item.create"
     },
@@ -35514,7 +35544,7 @@
     }
   ],
   "schema_version": "1.0",
-  "selected_scope_cells": 28924,
+  "selected_scope_cells": 29164,
   "selected_scope_complete": true,
   "vendor_interoperability_claim": false
 }
