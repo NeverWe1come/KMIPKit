@@ -309,3 +309,18 @@ artifact. This is part of the FR-006 artifact provenance check.
 - The selected report validates 39,743/39,743 cells with zero failures. The
   ledger records 71,641 planned, 39,743 executed, and 31,898 pending cells.
   Full matrix closure remains open under FR-002/FR-003/FR-009.
+
+## Java Get Attribute List encoding and transport routes — 2026-11-18
+
+- **FR-001/FR-003/FR-005:** Both installed typed Get Attribute List builders
+  execute every catalogued case/version over TTLV, JSON, and XML on raw TLS
+  and HTTPS. Controlled mTLS peers inspect requests and return checked
+  responses; the test validates the Unique Identifier and ordered Attribute
+  References (OASIS KMIP 2.0/2.1 §6.1.21 and §§8.3, 8.6). Local evidence also
+  invokes the typed request payload encoder and typed response reader for the
+  catalogued operation and fields.
+- Red `5631cd0fb` detects missing per-case route evidence; Green `b8992a5c2`
+  exercises both public constructors and all six network combinations.
+- The selected report validates 40,101/40,101 cells with zero failures. The
+  ledger records 71,641 planned, 40,101 executed, and 31,540 pending cells.
+  Full matrix closure remains open under FR-002/FR-003/FR-009.

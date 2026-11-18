@@ -544,3 +544,22 @@ The Java suite passes 92/92 tests, the complete shared unit suite passes
 196/196, and the ledger comparison and 1,507-route capability audit pass. The
 full matrix remains open under KMIPKIT-0092-FR-002, FR-003, and FR-009, so #187
 and its dependent stack remain WIP.
+
+## Java Get Attribute List encoding and transport coverage — 2026-11-18
+
+Both installed typed Get Attribute List builders now execute every catalogued
+case/version over TTLV, JSON, and XML with raw TLS and HTTPS. Controlled mTLS
+peers inspect the operation, protocol version, optional Unique Identifier, and
+batch IDs, then return a response with ordered Attribute References. The Java
+consumer checks the typed Unique Identifier and both reference tags. It also
+runs `GetAttributeListRequest.toTtlvPayload` and the typed response reader for
+the operation and catalogued request/response fields (OASIS KMIP 2.0/2.1
+§6.1.21, §§8.3, 8.6). The fixtures test route execution and selected field
+shapes; they do not claim vendor interoperability.
+
+This closes 358 more selected route cells. The report validates
+40,101/40,101 selected cells with zero failures; the full Java ledger records
+71,641 planned, 40,101 executed, and 31,540 pending cells. The Java suite
+passes 92/92 tests, the full shared suite passes 196/196, and the ledger
+comparison and 1,507-route capability audit pass. The full Java matrix remains
+open under KMIPKIT-0092-FR-002/FR-003/FR-009, so the stack remains WIP.

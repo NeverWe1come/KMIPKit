@@ -110,7 +110,7 @@ class ControlledTlsPeerTest {
     private record NewAttributeMutationFixture(String methodName, String title, String ordinal,
             int operationValue) { }
 
-    private record GetAttributesNetworkRequest(String caseId, String routeId,
+    private record AttributeReadNetworkRequest(String caseId, String routeId,
             String publicApiSymbol, String uniqueBatchItemId) { }
 
     private static final List<NewAttributeMutationFixture> NEW_ATTRIBUTE_MUTATION_FIXTURES = List.of(
@@ -4423,19 +4423,19 @@ class ControlledTlsPeerTest {
         String baselineRequestHash = null;
         for (String encoding : List.of("TTLV", "JSON", "XML")) {
             for (String transport : List.of("raw_tls", "https")) {
-                List<GetAttributesNetworkRequest> invocations = new ArrayList<>();
+                List<AttributeReadNetworkRequest> invocations = new ArrayList<>();
                 for (int index = 0; index < caseIds.size(); index++) {
                     String caseId = caseIds.get(index);
                     String itemId = "getattr-" + index;
-                    invocations.add(new GetAttributesNetworkRequest(caseId,
+                    invocations.add(new AttributeReadNetworkRequest(caseId,
                             "java.typed-protocol.client_batch_item.get_attributes",
                             "org.kmipkit.extensions.ClientBatchItem.getAttributes", itemId + "-direct"));
-                    invocations.add(new GetAttributesNetworkRequest(caseId,
+                    invocations.add(new AttributeReadNetworkRequest(caseId,
                             "java.typed-protocol.function.attribute_request_get_attributes_to_batch_item",
                             "org.kmipkit.extensions.GetAttributesRequest.toBatchItem", itemId + "-request"));
                 }
                 List<String> uniqueBatchItemIds = invocations.stream()
-                        .map(GetAttributesNetworkRequest::uniqueBatchItemId).toList();
+                        .map(AttributeReadNetworkRequest::uniqueBatchItemId).toList();
                 byte[] responseTtlv = getAttributesBatchResponse(minor, uniqueBatchItemIds);
                 byte[] responseBytes = getAttributesBatchResponse(minor, uniqueBatchItemIds, encoding);
                 Path connectionFile = temporaryDirectory.resolve(
@@ -4453,7 +4453,7 @@ class ControlledTlsPeerTest {
                     Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
                             clientCertificatePem, clientPrivateKeyPem, false, protocolVersion, encoding, transport));
                     try {
-                        executeGetAttributesNetworkBatch(connectionFile, invocations, encoding, transport);
+                        executeAttributeReadNetworkBatch(connectionFile, invocations, encoding, transport);
                     } finally {
                         listener.close();
                     }
@@ -4490,16 +4490,16 @@ class ControlledTlsPeerTest {
                             serverCertificatePem, clientCertificatePem, clientPrivateKeyPem, false,
                             protocolVersion, encoding, transport));
                     try {
-                        executeGetAttributesNetworkBatch(connectionFile, invocations, encoding, transport);
+                        executeAttributeReadNetworkBatch(connectionFile, invocations, encoding, transport);
                     } finally {
                         listener.stop(0);
                     }
                     observedRequest = peer.get(15, TimeUnit.SECONDS);
                 }
-                assertGetAttributesNetworkRequest(observedRequest, encoding, protocolVersion, uniqueBatchItemIds);
+                assertAttributeReadNetworkRequest(observedRequest, encoding, protocolVersion, uniqueBatchItemIds);
                 if (baselineRequestHash == null) baselineRequestHash = normalizedTreeSha256(observedRequest);
                 String responseHash = normalizedTreeSha256(responseTtlv);
-                for (GetAttributesNetworkRequest invocation : invocations) {
+                for (AttributeReadNetworkRequest invocation : invocations) {
                     appendTypedNetworkRouteEvents(events, invocation.caseId(), invocation.routeId(),
                             "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES", invocation.publicApiSymbol(),
                             protocolVersion, baselineRequestHash, responseHash, encoding, transport);
@@ -4538,19 +4538,19 @@ class ControlledTlsPeerTest {
         String baselineRequestHash = null;
         for (String encoding : List.of("TTLV", "JSON", "XML")) {
             for (String transport : List.of("raw_tls", "https")) {
-                List<GetAttributesNetworkRequest> invocations = new ArrayList<>();
+                List<AttributeReadNetworkRequest> invocations = new ArrayList<>();
                 for (int index = 0; index < caseIds.size(); index++) {
                     String caseId = caseIds.get(index);
                     String itemId = "getattrlist-" + index;
-                    invocations.add(new GetAttributesNetworkRequest(caseId,
+                    invocations.add(new AttributeReadNetworkRequest(caseId,
                             "java.typed-protocol.client_batch_item.get_attribute_list",
                             "org.kmipkit.extensions.ClientBatchItem.getAttributeList", itemId + "-direct"));
-                    invocations.add(new GetAttributesNetworkRequest(caseId,
+                    invocations.add(new AttributeReadNetworkRequest(caseId,
                             "java.typed-protocol.function.attribute_request_get_attribute_list_to_batch_item",
                             "org.kmipkit.extensions.GetAttributeListRequest.toBatchItem", itemId + "-request"));
                 }
                 List<String> uniqueBatchItemIds = invocations.stream()
-                        .map(GetAttributesNetworkRequest::uniqueBatchItemId).toList();
+                        .map(AttributeReadNetworkRequest::uniqueBatchItemId).toList();
                 byte[] responseTtlv = getAttributeListBatchResponse(minor, uniqueBatchItemIds);
                 byte[] responseBytes = getAttributeListBatchResponse(minor, uniqueBatchItemIds, encoding);
                 Path connectionFile = temporaryDirectory.resolve(
@@ -4568,7 +4568,7 @@ class ControlledTlsPeerTest {
                     Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
                             clientCertificatePem, clientPrivateKeyPem, false, protocolVersion, encoding, transport));
                     try {
-                        executeGetAttributesNetworkBatch(connectionFile, invocations, encoding, transport);
+                        executeAttributeReadNetworkBatch(connectionFile, invocations, encoding, transport);
                     } finally {
                         listener.close();
                     }
@@ -4605,7 +4605,7 @@ class ControlledTlsPeerTest {
                             serverCertificatePem, clientCertificatePem, clientPrivateKeyPem, false,
                             protocolVersion, encoding, transport));
                     try {
-                        executeGetAttributesNetworkBatch(connectionFile, invocations, encoding, transport);
+                        executeAttributeReadNetworkBatch(connectionFile, invocations, encoding, transport);
                     } finally {
                         listener.stop(0);
                     }
@@ -4614,7 +4614,7 @@ class ControlledTlsPeerTest {
                 assertGetAttributeListNetworkRequest(observedRequest, encoding, protocolVersion, uniqueBatchItemIds);
                 if (baselineRequestHash == null) baselineRequestHash = normalizedTreeSha256(observedRequest);
                 String responseHash = normalizedTreeSha256(responseTtlv);
-                for (GetAttributesNetworkRequest invocation : invocations) {
+                for (AttributeReadNetworkRequest invocation : invocations) {
                     appendTypedNetworkRouteEvents(events, invocation.caseId(), invocation.routeId(),
                             "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST", invocation.publicApiSymbol(),
                             protocolVersion, baselineRequestHash, responseHash, encoding, transport);
@@ -4693,19 +4693,19 @@ class ControlledTlsPeerTest {
         sent.put("transport_invocation_count", 1);
     }
 
-    private void executeGetAttributesNetworkBatch(Path connectionFile,
-            List<GetAttributesNetworkRequest> invocations, String encoding, String transport) throws Exception {
+    private void executeAttributeReadNetworkBatch(Path connectionFile,
+            List<AttributeReadNetworkRequest> invocations, String encoding, String transport) throws Exception {
         try {
             try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile));
                     ClientBatch batch = ClientBatch.create()) {
-                for (GetAttributesNetworkRequest invocation : invocations) {
-                    addGetAttributesNetworkRequest(batch, invocation);
+                for (AttributeReadNetworkRequest invocation : invocations) {
+                    addAttributeReadNetworkRequest(batch, invocation);
                 }
                 try (ClientBatchResponse response = driver.executeBatchForEvidence(batch)) {
                     assertEquals(invocations.size(), response.itemCount());
                     for (int index = 0; index < invocations.size(); index++) {
                         try (ClientBatchItemResult result = response.itemAt(index)) {
-                            assertGetAttributesRouteResponse(result);
+                            assertAttributeReadRouteResponse(result);
                         }
                     }
                 }
@@ -4718,8 +4718,8 @@ class ControlledTlsPeerTest {
         }
     }
 
-    private static void addGetAttributesNetworkRequest(ClientBatch batch,
-            GetAttributesNetworkRequest invocation) {
+    private static void addAttributeReadNetworkRequest(ClientBatch batch,
+            AttributeReadNetworkRequest invocation) {
         byte[] uniqueBatchItemId = invocation.uniqueBatchItemId().getBytes(StandardCharsets.US_ASCII);
         if ("java.typed-protocol.client_batch_item.get_attribute_list".equals(invocation.routeId())) {
             batch.add(ClientBatchItem.getAttributeList(UniqueIdentifier.textString("object-7"))
@@ -4745,7 +4745,7 @@ class ControlledTlsPeerTest {
         }
     }
 
-    private static void assertGetAttributesRouteResponse(ClientBatchItemResult result) throws Exception {
+    private static void assertAttributeReadRouteResponse(ClientBatchItemResult result) throws Exception {
         if (result.operation() == 0x0c) {
             try (var typed = result.getAttributeListResponse().orElseThrow()) {
                 assertEquals(0L, result.resultStatus());
@@ -4995,7 +4995,7 @@ class ControlledTlsPeerTest {
         }
     }
 
-    private static void assertGetAttributesNetworkRequest(byte[] request, String encoding,
+    private static void assertAttributeReadNetworkRequest(byte[] request, String encoding,
             String protocolVersion, List<String> uniqueBatchItemIds) throws Exception {
         int minor = "2.0".equals(protocolVersion) ? 0 : 1;
         if ("TTLV".equals(encoding)) {

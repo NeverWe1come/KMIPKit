@@ -3828,3 +3828,27 @@ generated full ledger records 71,641 planned, 39,743 executed, and 31,898
 pending cells. The complete Java suite, shared evidence/schema/capability
 suites, ledger comparison, and capability audit pass. Full Java matrix closure
 remains required under KMIPKIT-0092-FR-002/FR-003/FR-009; #187 remains WIP.
+
+## Java Get Attribute List encoding and transport routes — 2026-11-18
+
+Both Java public Get Attribute List builders now run every applicable catalog
+case and version over TTLV, JSON, and XML on raw TLS and HTTPS controlled mTLS
+peers. The fixture checks the request operation, version, Unique Identifier,
+and batch IDs; the response checks the successful result, typed identifier,
+and ordered Attribute References. The local route evidence also invokes
+`GetAttributeListRequest.toTtlvPayload` and the typed response payload reader
+for the operation and catalogued request/response fields. Normative references:
+OASIS KMIP 2.0/2.1 §6.1.21 and §§8.3, 8.6.
+
+Red `5631cd0fb` requires per-case route evidence and fails on the missing
+Get Attribute List constructor call. Green `b8992a5c2` executes both typed
+builders, all six encoding/transport combinations, and checked controlled
+responses. Refactor renames the shared attribute-read fixture helpers to make
+their use by both Get Attributes and Get Attribute List explicit.
+
+The full Java suite passes 92/92; the complete shared unit suite passes
+196/196. The selected report validates 40,101/40,101 cells with zero failures;
+the ledger records 71,641 planned, 40,101 executed, and 31,540 pending cells.
+The ledger comparison and 1,507-route capability audit pass. Full Java matrix
+closure remains required under KMIPKIT-0092-FR-002/FR-003/FR-009; #187 stays
+WIP.
