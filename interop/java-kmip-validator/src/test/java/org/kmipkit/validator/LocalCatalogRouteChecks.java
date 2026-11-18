@@ -1604,25 +1604,25 @@ final class LocalCatalogRouteChecks {
             }
 
             if (builderTarget) {
-                emitMissingGenericStructureRoute(recordedRoutes, sink, caseId, targetId, version,
+                emitMissingGenericRoute(recordedRoutes, sink, caseId, targetId, version,
                         "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.create",
                         "org.kmipkit.ttlv.TtlvStructure.create", "construct", wire);
-                emitMissingGenericStructureRoute(recordedRoutes, sink, caseId, targetId, version,
+                emitMissingGenericRoute(recordedRoutes, sink, caseId, targetId, version,
                         "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.withitem",
                         "org.kmipkit.ttlv.TtlvStructure.withItem", "construct", wire);
             }
             if (valueTarget) {
-                emitMissingGenericStructureRoute(recordedRoutes, sink, caseId, targetId, version,
+                emitMissingGenericRoute(recordedRoutes, sink, caseId, targetId, version,
                         "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
                         "org.kmipkit.ttlv.TtlvValue.structure", "construct", wire);
             }
-            emitMissingGenericStructureRoute(recordedRoutes, sink, caseId, targetId, version,
+            emitMissingGenericRoute(recordedRoutes, sink, caseId, targetId, version,
                     "java.generic-ttlv.ttlv_item.create", "org.kmipkit.ttlv.TtlvItem.create",
                     "construct", wire);
-            emitMissingGenericStructureRoute(recordedRoutes, sink, caseId, targetId, version,
+            emitMissingGenericRoute(recordedRoutes, sink, caseId, targetId, version,
                     "java.generic-ttlv.function.ttlv_item_view_from_item", "org.kmipkit.ttlv.TtlvItem.view",
                     "decode", wire);
-            emitMissingGenericStructureRoute(recordedRoutes, sink, caseId, targetId, version,
+            emitMissingGenericRoute(recordedRoutes, sink, caseId, targetId, version,
                     "java.generic-ttlv.ttlv_codec.decode", "org.kmipkit.ttlv.TtlvCodec.decode", "decode", wire);
             emitted.add(caseId);
         }
@@ -1632,7 +1632,7 @@ final class LocalCatalogRouteChecks {
         }
     }
 
-    private static void emitMissingGenericStructureRoute(Set<RouteEvidenceKey> recordedRoutes, EvidenceSink sink,
+    private static void emitMissingGenericRoute(Set<RouteEvidenceKey> recordedRoutes, EvidenceSink sink,
             String caseId,
             String targetId, String version, String routeId, String symbol, String action, byte[] wire)
             throws Exception {
@@ -1722,13 +1722,13 @@ final class LocalCatalogRouteChecks {
             try (TtlvItem decoded = TtlvCodec.decode(wire)) {
                 assertScalarItem(decoded, operationTag, TtlvItemType.Enumeration, operationValue);
             }
-            emitMissingGenericStructureRoute(recordedRoutes, sink, caseId, targetId, version,
+            emitMissingGenericRoute(recordedRoutes, sink, caseId, targetId, version,
                     "java.generic-ttlv.ttlv_item.create", "org.kmipkit.ttlv.TtlvItem.create",
                     "construct", wire);
-            emitMissingGenericStructureRoute(recordedRoutes, sink, caseId, targetId, version,
+            emitMissingGenericRoute(recordedRoutes, sink, caseId, targetId, version,
                     "java.generic-ttlv.function.ttlv_item_view_from_item", "org.kmipkit.ttlv.TtlvItem.view",
                     "decode", wire);
-            emitMissingGenericStructureRoute(recordedRoutes, sink, caseId, targetId, version,
+            emitMissingGenericRoute(recordedRoutes, sink, caseId, targetId, version,
                     "java.generic-ttlv.ttlv_codec.decode", "org.kmipkit.ttlv.TtlvCodec.decode", "decode", wire);
             emitted.add(caseId);
         }
