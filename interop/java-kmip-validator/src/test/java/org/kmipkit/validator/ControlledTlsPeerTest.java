@@ -2329,7 +2329,21 @@ class ControlledTlsPeerTest {
                 {"test-norm-payload-client-check-request-20-004",
                         "KMIPKIT-PAYLOAD-CLIENT-CHECK-REQUEST-20-004", "KMIPKIT-ELEM-OP-C2S-CHECK"},
                 {"test-norm-payload-client-check-request-20-002",
-                        "KMIPKIT-PAYLOAD-CLIENT-CHECK-REQUEST-20-002", "KMIPKIT-ELEM-OP-C2S-CHECK"}
+                        "KMIPKIT-PAYLOAD-CLIENT-CHECK-REQUEST-20-002", "KMIPKIT-ELEM-OP-C2S-CHECK"},
+                {"test-norm-payload-client-decrypt-request-20-006",
+                        "KMIPKIT-PAYLOAD-CLIENT-DECRYPT-REQUEST-20-006", "KMIPKIT-ELEM-OP-C2S-DECRYPT"},
+                {"test-norm-payload-client-decrypt-request-20-007",
+                        "KMIPKIT-PAYLOAD-CLIENT-DECRYPT-REQUEST-20-007", "KMIPKIT-ELEM-OP-C2S-DECRYPT"},
+                {"test-norm-payload-client-rng-retrieve-request-20-001",
+                        "KMIPKIT-PAYLOAD-CLIENT-RNG-RETRIEVE-REQUEST-20-001", "KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE"},
+                {"test-norm-payload-client-locate-request-20-001",
+                        "KMIPKIT-PAYLOAD-CLIENT-LOCATE-REQUEST-20-001", "KMIPKIT-ELEM-OP-C2S-LOCATE"},
+                {"test-norm-payload-client-locate-request-20-002",
+                        "KMIPKIT-PAYLOAD-CLIENT-LOCATE-REQUEST-20-002", "KMIPKIT-ELEM-OP-C2S-LOCATE"},
+                {"test-norm-payload-client-re-key-request-20-002",
+                        "KMIPKIT-PAYLOAD-CLIENT-RE-KEY-REQUEST-20-002", "KMIPKIT-ELEM-OP-C2S-RE-KEY"},
+                {"test-norm-payload-client-login-request-20-002",
+                        "KMIPKIT-PAYLOAD-CLIENT-LOGIN-REQUEST-20-002", "KMIPKIT-ELEM-OP-C2S-LOGIN"}
         };
         for (String[] payload : additionalClientPayloadCases) {
             int routeEventCount = 0;
