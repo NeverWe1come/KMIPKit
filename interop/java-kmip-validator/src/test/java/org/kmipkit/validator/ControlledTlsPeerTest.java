@@ -1198,7 +1198,6 @@ class ControlledTlsPeerTest {
             String requestHash = normalizedTreeSha256(request);
             appendNetworkQueryRouteEvents(events, protocolVersion, requestHash, responseHash);
             appendControlledGetAttributesNetworkRouteEvents(events, protocolVersion);
-            assertGetAttributesNetworkRouteCoverage(events, readRouteEvidenceCatalog(), protocolVersion);
             appendControlledGetAttributeListNetworkRouteEvents(events, protocolVersion);
             assertGetAttributeListNetworkRouteCoverage(events, readRouteEvidenceCatalog(), protocolVersion);
             appendControlledKeyFormatRawResponseRouteEvents(events, protocolVersion);
@@ -1253,6 +1252,7 @@ class ControlledTlsPeerTest {
                 appendLocalCatalogInvocation(events, protocolVersion, invocation);
             }
             structureAttributeValueRouteEventCount += structureAttributeValueInvocations.size();
+            assertGetAttributesNetworkRouteCoverage(events, readRouteEvidenceCatalog(), protocolVersion);
             Set<String> missingTextAttributeCases = LocalCatalogRouteChecks.missingTextAttributeCaseIds(
                     readRouteEvidenceCatalog(), events, protocolVersion);
             textAttributeValueCaseIds.addAll(missingTextAttributeCases);
@@ -4643,6 +4643,22 @@ class ControlledTlsPeerTest {
                     }
                 }
             }
+            boolean payloadEncoded = false;
+            for (JsonNode event : events) {
+                if (caseId.equals(event.path("case_id").asText())
+                        && "java.typed-protocol.function.attribute_request_get_attributes_to_ttlv_payload"
+                                .equals(event.path("route_id").asText())
+                        && "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES".equals(event.path("target_id").asText())
+                        && protocolVersion.equals(event.path("protocol_version").asText())
+                        && "TTLV".equals(event.path("encoding").asText())
+                        && (event.path("transport").isNull() || event.path("transport").isMissingNode())
+                        && "encode".equals(event.path("action").asText())) {
+                    payloadEncoded = true;
+                    break;
+                }
+            }
+            assertTrue(payloadEncoded, "Missing local Get Attributes payload encoder evidence for "
+                    + caseId + " / " + protocolVersion);
         }
         for (JsonNode testCase : catalog.path("test_cases")) {
             String targetId = testCase.path("requires").path("normative_target_id").asText();
@@ -4725,7 +4741,10 @@ class ControlledTlsPeerTest {
                 payloadCaseVersionCount += testCase.path("execution").path("protocol_versions").size();
             }
         }
-        return caseVersionCount * 37 + payloadCaseVersionCount * 24;
+        // The controlled sweep adds operation cells and payload targets not already covered locally.
+        return caseVersionCount * 37 + payloadCaseVersionCount * 24
+                + caseVersionCount + payloadCaseVersionCount
+                - (2 * KMIP_2_0_AND_2_1.size());
     }
 
     private static int getAttributeListNetworkRouteEventCount(JsonNode catalog) {
@@ -4919,9 +4938,81 @@ class ControlledTlsPeerTest {
                                 "org.kmipkit.extensions.ClientBatchItemResult.getAttributesResponse",
                                 null, null, "decode", protocolVersion, null, null, responseHash);
                     }
+                    appendLocalGetAttributesPayloadRouteEvents(events, invocations, protocolVersion);
                 }
             }
         }
+    }
+
+    private static void appendLocalGetAttributesPayloadRouteEvents(ArrayNode events,
+            List<AttributeReadNetworkRequest> invocations, String protocolVersion) throws Exception {
+        Set<String> emittedOperationCases = new java.util.HashSet<>();
+        Set<String> emittedPayloadTargets = new java.util.HashSet<>();
+        for (AttributeReadNetworkRequest invocation : invocations) {
+            if (!"java.typed-protocol.function.attribute_request_get_attributes_to_batch_item"
+                    .equals(invocation.routeId())) continue;
+            boolean focusedLocalPayloadCase = Set.of("test-attr-activation-date", "test-attr-alternative-name")
+                    .contains(invocation.caseId());
+            boolean operationTargetCell = emittedOperationCases.add(invocation.caseId())
+                    && !focusedLocalPayloadCase
+                    && !hasGetAttributesPayloadRouteEvent(events, invocation.caseId(),
+                            "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES", protocolVersion);
+            boolean payloadTargetCell = invocation.targetId().startsWith(
+                    "KMIPKIT-PAYLOAD-CLIENT-GET-ATTRIBUTES-REQUEST-")
+                    && emittedPayloadTargets.add(invocation.targetId());
+            if (!operationTargetCell && !payloadTargetCell) continue;
+            UniqueIdentifier identifier = invocation.includeIdentifier()
+                    ? UniqueIdentifier.textString("object-7") : null;
+            List<AttributeReference> references = invocation.attributeReferenceTags().stream()
+                    .map(AttributeReference::tag).toList();
+            List<byte[]> expectedFields = new ArrayList<>();
+            if (invocation.includeIdentifier()) {
+                expectedFields.add(item(0x420094, 7, "object-7".getBytes(StandardCharsets.UTF_8)));
+            }
+            for (long tag : invocation.attributeReferenceTags()) {
+                expectedFields.add(item(0x42013b, 5, intBytes(Math.toIntExact(tag))));
+            }
+            byte[] expectedPayload = structure(0x42007c, expectedFields.toArray(byte[][]::new));
+            try (GetAttributesRequest request = GetAttributesRequest.create(identifier, references);
+                    TtlvStructure payload = request.toTtlvPayload()) {
+                assertGetAttributesPayloadShape(payload, invocation);
+                String requestHash = normalizedTreeSha256(expectedPayload);
+                if (operationTargetCell) {
+                    appendLocalGetAttributesPayloadEncoderEvent(events, invocation, protocolVersion,
+                            "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES", requestHash);
+                }
+                if (payloadTargetCell) {
+                    appendLocalGetAttributesPayloadEncoderEvent(events, invocation, protocolVersion,
+                            invocation.targetId(), requestHash);
+                }
+            }
+        }
+    }
+
+    private static void appendLocalGetAttributesPayloadEncoderEvent(ArrayNode events,
+            AttributeReadNetworkRequest invocation, String protocolVersion, String targetId,
+            String requestHash) {
+        appendRouteEvent(events, invocation.caseId(),
+                "java.typed-protocol.function.attribute_request_get_attributes_to_ttlv_payload", targetId,
+                "org.kmipkit.extensions.GetAttributesRequest.toTtlvPayload",
+                null, null, "encode", protocolVersion, null, requestHash, null);
+    }
+
+    private static boolean hasGetAttributesPayloadRouteEvent(ArrayNode events, String caseId,
+            String targetId, String protocolVersion) {
+        for (JsonNode event : events) {
+            if (caseId.equals(event.path("case_id").asText())
+                    && "java.typed-protocol.function.attribute_request_get_attributes_to_ttlv_payload"
+                            .equals(event.path("route_id").asText())
+                    && targetId.equals(event.path("target_id").asText())
+                    && protocolVersion.equals(event.path("protocol_version").asText())
+                    && "TTLV".equals(event.path("encoding").asText())
+                    && (event.path("transport").isNull() || event.path("transport").isMissingNode())
+                    && "encode".equals(event.path("action").asText())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void appendControlledGetAttributeListNetworkRouteEvents(ArrayNode events, String protocolVersion)

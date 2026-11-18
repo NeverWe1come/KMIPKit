@@ -302,7 +302,7 @@ artifact. This is part of the FR-006 artifact provenance check.
 - **FR-003/FR-009:** Both installed typed Get Attributes builder routes now
   execute for all catalogued Get Attributes cases in KMIP 2.0/2.1 controlled
   TTLV exchanges. The fixture checks the corresponding typed response under
-  OASIS KMIP 2.0/2.1 §6.1.17 and §§8.3, 8.6. It covers operation-level route
+  OASIS KMIP 2.0/2.1 §6.1.20 and §§8.3, 8.6. It covers operation-level route
   execution, not each attribute's independent semantic policy.
 - Red `51dd2f2a9` failed on missing route evidence; Green `8b5d8a7f6` added the
   controlled requests and response checks; Refactor `23e349af8` extracted the
@@ -427,7 +427,8 @@ interoperability.
   `TypedAttribute.create`, `TypedAttribute.fromItem`, `AttributeSet.tryNew`,
   and `GetAttributesRequest.toTtlvPayload` in KMIP 2.0 and 2.1. The fixture
   checks source-defined member tags/types/values and the Attribute Reference
-  request payload. References: OASIS KMIP 2.0/2.1 §4.2, §6.1.17, §§8.3, 8.6.
+  request payload. References: OASIS KMIP 2.0/2.1 §4.2, §6.1.20 Tables
+  208/223, §§8.3, 8.6.
   This is local typed-model and encoding evidence, not a server exchange or
   attribute-policy validation.
 - Red `d1e35d5e8`, `322554a5a`, and `a5b006191` establish missing route,
@@ -438,3 +439,20 @@ interoperability.
   validates 42,204/42,204 cells with zero failures. The ledger records 71,641
   planned, 42,204 executed, and 29,437 pending cells; ledger comparison passes.
   Full matrix closure remains open under FR-002/FR-003/FR-009.
+
+## Java Get Attributes local TTLV payload encoder matrix — 2026-11-18
+
+- **FR-003/FR-009:** `GetAttributesRequest.toTtlvPayload` now has local encoder
+  evidence for all 133 catalogued route cells across KMIP 2.0/2.1 operation
+  cases and the four request-payload targets. Tests check the source-shaped
+  payload, attribute references, and normalized request-tree hashes. Sources:
+  OASIS KMIP 2.0 §6.1.20 Table 208; KMIP 2.1 §6.1.20 Table 223; §§8.3, 8.6.
+- Red `dae729939` requires the missing encoder events; Green `73a07201e`
+  produces the per-case and payload-target evidence; Refactor `c0e998a4f`
+  centralizes event emission.
+- The full Java suite passes 95/95, shared evidence/schema/capability tests
+  109/109, traceability tests 33/33, and the capability audit accepts 1,507
+  routes. Selected evidence validates 42,333/42,333 cells with zero failures;
+  the ledger records 29,308 full-matrix cells still pending. Ledger comparison
+  passes. FR-002/FR-003/FR-009 matrix closure remains open and the PR stack
+  remains WIP.

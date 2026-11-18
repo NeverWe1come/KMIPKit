@@ -1010,7 +1010,7 @@ It also constructs a typed Get Attributes request with an Attribute Reference
 for the Alternative Name tag and invokes `GetAttributesRequest.toTtlvPayload`.
 The test checks member tags, types and values, the typed round trip, the
 one-item Attribute Set, and the request payload shape (OASIS KMIP 2.0/2.1
-§4.2, §6.1.17, §§8.3, 8.6). These are local construction and encoding routes;
+§4.2, §6.1.20 Tables 208/223, §§8.3, 8.6). These are local construction and encoding routes;
 they do not exercise server-side attribute policy or a network exchange.
 
 Red `d1e35d5e8` requires the four typed routes per protocol version;
@@ -1024,3 +1024,25 @@ validates 42,204/42,204 cells with zero failures. The generated ledger records
 71,641 planned, 42,204 executed, and 29,437 pending cells, and matches its
 checked-in reference. The Java matrix remains incomplete, so the stack stays
 WIP.
+
+### Get Attributes local TTLV payload encoder matrix — 2026-11-18
+
+The controlled TLS suite now invokes `GetAttributesRequest.toTtlvPayload` for
+every catalogued Get Attributes case and KMIP 2.0/2.1 context, and records the
+four request-payload normative targets separately. The encoder output is
+checked for Unique Identifier and Attribute Reference tags, types, values,
+and cardinality; each local `encode` event carries a normalized request-tree
+hash. The route now has 133/133 required cells. This local encoder evidence
+does not claim a deployed KMS accepted the payload. OASIS references: KMIP 2.0
+§6.1.20 Table 208; KMIP 2.1 §6.1.20 Table 223; §§8.3 and 8.6.
+
+Red `dae729939` requires per-case local encoder evidence. Green `73a07201e`
+adds the catalog-driven calls, four payload-target events, duplicate-cell
+avoidance, and regenerated ledger; Refactor `c0e998a4f` centralizes event
+emission. The full Gradle suite passes 95/95 tests, the focused controlled-TLS
+test passes, shared evidence/schema/capability tests pass 109/109, traceability
+tests pass 33/33, and the route-capability audit accepts 1,507 routes. The
+selected report validates 42,333/42,333 cells with zero failures; the full
+ledger has 71,641 planned, 42,333 executed, and 29,308 pending cells. Ledger
+comparison passes. The overall Java matrix remains incomplete, so the PR stack
+stays WIP.
