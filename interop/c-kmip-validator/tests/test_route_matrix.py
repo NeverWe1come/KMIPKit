@@ -2616,6 +2616,7 @@ class RouteMatrixTests(unittest.TestCase):
         manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
         expected = {
             'test-op-check': 'kmipkit_client_batch_item_response_check_ttlv',
+            'test-op-certify': 'kmipkit_client_batch_item_response_certify_ttlv',
             'test-op-get-attribute-list': 'kmipkit_client_batch_item_response_get_attribute_list_payload_ttlv',
             'test-op-log': 'kmipkit_client_batch_item_response_log_ttlv',
             'test-op-mac': 'kmipkit_client_batch_item_response_mac_ttlv',
