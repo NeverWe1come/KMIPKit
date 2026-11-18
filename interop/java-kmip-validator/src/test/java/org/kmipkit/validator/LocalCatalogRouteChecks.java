@@ -157,6 +157,7 @@ final class LocalCatalogRouteChecks {
             "test-norm-structure-member-structure-member-3-9-key-material-q",
             "test-norm-structure-member-structure-member-3-9-key-material-x");
     private static final Set<String> NON_INTEGER_TRANSPARENT_KEY_MATERIAL_CASE_IDS = Set.of(
+            "test-norm-structure-member-structure-member-3-4-key-material-key",
             "test-norm-structure-member-structure-member-3-11-key-material-recommended-curve",
             "test-norm-structure-member-structure-member-3-12-key-material-q-string",
             "test-norm-structure-member-structure-member-3-12-key-material-recommended-curve");
