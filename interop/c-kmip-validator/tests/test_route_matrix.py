@@ -3469,6 +3469,17 @@ class RouteMatrixTests(unittest.TestCase):
 
         self.assertEqual(recipe, ((1, 18, 10), 'batch_placeholder_chain'))
 
+    def test_forward_placeholder_case_maps_the_ordered_two_item_recipe(self):
+        from artifact_support import ROOT
+        from route_peer import recipe_for_case
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        case = next(item for item in catalog['test_cases']
+                    if item['case_id'] == 'test-batch-placeholder-forward-reference-rejected')
+
+        self.assertEqual(recipe_for_case(case, None),
+                         ((18, 1), 'batch_forward_placeholder_reference'))
+
     def test_register_operation_maps_to_an_isolated_certificate_recipe(self):
         from route_peer import recipe_for_case
 
