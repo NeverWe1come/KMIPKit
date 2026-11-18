@@ -2862,15 +2862,17 @@ class RouteMatrixTests(unittest.TestCase):
             self.assertTrue(any(event['public_api_symbol'] == symbol and event['action'] == 'send' for event in events), symbol)
 
     def test_operation_response_ttlv_accessors_are_executed(self):
-        """OASIS KMIP 2.0 §§6.1.6, 6.1.7, 6.1.21, 6.1.28, 6.1.31, 6.1.32,
-        6.1.26, 6.1.40, 6.1.42, 6.1.49, 6.1.50, 12.1; KMIP 2.1 §§6.1.6,
-        6.1.7, 6.1.21, 6.1.27, 6.1.29, 6.1.32, 6.1.33, 6.1.44, 6.1.46,
-        6.1.55, 6.1.56, 12.1."""
+        """OASIS KMIP 2.0 §§6.1.6, 6.1.7, 6.1.16, 6.1.21, 6.1.28, 6.1.31,
+        6.1.32, 6.1.26, 6.1.40, 6.1.42, 6.1.49, 6.1.50, 12.1; KMIP 2.1
+        §§6.1.6, 6.1.7, 6.1.16, 6.1.21, 6.1.27, 6.1.29, 6.1.32, 6.1.33,
+        6.1.44, 6.1.46, 6.1.55, 6.1.56, 12.1."""
         from artifact_support import ROOT
         from route_peer import execute_network_cells
         catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
         manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
         expected = {
+            'test-op-discover-versions':
+                'kmipkit_client_batch_item_response_discover_versions_supported_versions',
             'test-op-check': 'kmipkit_client_batch_item_response_check_ttlv',
             'test-op-certify': 'kmipkit_client_batch_item_response_certify_ttlv',
             'test-op-get-attribute-list': 'kmipkit_client_batch_item_response_get_attribute_list_payload_ttlv',
@@ -2896,9 +2898,10 @@ class RouteMatrixTests(unittest.TestCase):
                                     event['action'] == 'decode' and
                                     event['transport'] is None and
                                     event['status'] == 'passed' for event in events), symbol)
+                expected_versions = {'2.1'} if case_id == 'test-op-discover-versions' else {'2.0', '2.1'}
                 self.assertEqual({event['protocol_version'] for event in events
                                   if event['case_id'] == case_id and
-                                  event['public_api_symbol'] == symbol}, {'2.0', '2.1'})
+                                  event['public_api_symbol'] == symbol}, expected_versions)
 
     def test_import_response_ttlv_accessor_is_executed(self):
         """OASIS KMIP 2.0 §6.1.24 and 2.1 §6.1.25 define the Import response payload."""

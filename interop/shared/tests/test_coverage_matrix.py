@@ -231,6 +231,19 @@ class CoverageMatrixTests(unittest.TestCase):
             self.assertTrue(any(route['public_api_symbol'] == symbol for route in routes),
                             f'{language} Request Message parser must reject zero Batch Count locally')
 
+    def test_c_discover_versions_builder_is_limited_to_its_fixed_21_offer(self):
+        route_id = 'c.typed-protocol.kmipkit_client_batch_item_discover_versions'
+        route = next(route for route in self.manifest['routes'] if route['route_id'] == route_id)
+        self.assertEqual(route['protocol_versions'], ['2.1'])
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('c',))
+                 if cell['route_id'] == route_id and cell['case_id'] == 'test-op-discover-versions']
+        self.assertTrue(cells)
+        self.assertEqual({cell['protocol_version'] for cell in cells}, {'2.1'})
+
+        decoder_id = 'c.typed-protocol.function.client_batch_item_response_discover_versions_supported_versions'
+        decoder = next(route for route in self.manifest['routes'] if route['route_id'] == decoder_id)
+        self.assertEqual(decoder['protocol_versions'], ['2.0', '2.1'])
+
     def test_versioned_operation_payload_fields_only_expand_for_their_target_versions(self):
         case_id = 'test-async-indicator-omitted-default'
         payload_versions = {
