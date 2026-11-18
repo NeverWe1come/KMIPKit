@@ -790,6 +790,19 @@ class RouteMatrixTests(unittest.TestCase):
                 self.assertEqual(sum(event['public_api_symbol'] == symbol and
                                      event['action'] == action for event in events), count)
 
+    def test_catalog_query_async_requests_has_empty_result_recipe(self):
+        """OASIS KMIP 2.1 §6.1.41 Tables 285–287 permit zero outstanding requests."""
+        from artifact_support import ROOT
+        import route_peer
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        case = next(item for item in catalog['test_cases']
+                    if item['case_id'] == 'test-op-query-asynchronous-requests')
+
+        self.assertEqual(
+            route_peer.recipe_for_case(case, None),
+            ((1, 57, 19, 20), 'query_async_empty'))
+
     def test_async_query_filters_intersect_only_outstanding_requests(self):
         """OASIS KMIP 2.1 §6.1.41 Tables 285–287 and §7.2 Table 353."""
         from artifact_support import ROOT
