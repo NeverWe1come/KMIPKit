@@ -231,6 +231,38 @@ class CoverageMatrixTests(unittest.TestCase):
             self.assertTrue(any(route['public_api_symbol'] == symbol for route in routes),
                             f'{language} Request Message parser must reject zero Batch Count locally')
 
+    def test_versioned_operation_payload_fields_only_expand_for_their_target_versions(self):
+        case_id = 'test-async-indicator-omitted-default'
+        payload_versions = {
+            'KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-20-001': {'2.0'},
+            'KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-21-001': {'2.1'},
+        }
+        for language in ('rust', 'c', 'java', 'python'):
+            for target_id, expected_versions in payload_versions.items():
+                observed_versions = {
+                    cell['protocol_version']
+                    for cell in iter_cells(self.catalog, self.manifest, languages=(language,))
+                    if cell['case_id'] == case_id and cell['target_id'] == target_id
+                }
+                self.assertEqual(expected_versions, observed_versions,
+                                 f'{language} {target_id} must not cross target protocol versions')
+
+    def test_generic_ttlv_keeps_future_operation_and_enum_boundary_cells(self):
+        cells = list(iter_cells(self.catalog, self.manifest, languages=('c',)))
+        for case_id, target_id, expected_versions in (
+            ('test-v20-reject-ping', 'KMIPKIT-ELEM-OP-C2S-PING', {'2.0'}),
+            ('test-enum-operation', 'KMIPKIT-ELEM-ENUM-VALUE-OPERATION-PING-0000003B', {'2.0', '2.1'}),
+        ):
+            versions = {
+                cell['protocol_version']
+                for cell in cells
+                if cell['case_id'] == case_id
+                and cell['target_id'] == target_id
+                and cell['route_id'].startswith('c.generic-ttlv.')
+            }
+            self.assertEqual(expected_versions, versions,
+                             f'generic TTLV must preserve valid boundary cells for {case_id}')
+
     def test_source_backed_target_id_exclusions_apply_to_generic_routes(self):
         target_id = 'KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES'
         manifest = copy.deepcopy(self.manifest)
