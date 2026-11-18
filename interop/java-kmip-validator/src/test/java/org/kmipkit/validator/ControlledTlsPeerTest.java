@@ -111,6 +111,8 @@ class ControlledTlsPeerTest {
                     "KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-21-001", "2.1"),
             new CreateRequestPayloadFixture("test-norm-payload-client-create-request-21-002",
                     "KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-21-002", "2.1"));
+    private static final List<CreateOperationRouteFixture> CREATE_OPERATION_ROUTE_FIXTURES =
+            createOperationRouteFixtures();
     private static final List<String> CREATE_ROUTE_ENCODINGS = List.of("TTLV", "JSON", "XML");
     private static final List<String> CREATE_ROUTE_TRANSPORTS = List.of("raw_tls", "https");
     private static final List<String> NETWORK_ROUTE_ACTIONS = List.of("construct", "send", "decode");
@@ -126,6 +128,9 @@ class ControlledTlsPeerTest {
             int operationValue) { }
 
     private record CreateRequestPayloadFixture(String caseId, String targetId, String protocolVersion) { }
+
+    private record CreateOperationRouteFixture(String caseId, String protocolVersion,
+            String requestPayloadTargetId) { }
 
     private record AsyncCancelRouteScenario(String caseId, String cancellationResultName,
             int cancellationResultValue, List<String> targetIds, int workflowStepIndex) { }
@@ -2101,9 +2106,11 @@ class ControlledTlsPeerTest {
                         + 24 // Process and Query Asynchronous Requests construction and NotSent execution routes.
                         + 94 // BEC, batch IDs, async payload, Endpoint Role, Object Defaults, derivation, and Extension Information member cells.
                         + 18 // Ping construction, send, and response decode over six encoding/transport pairs.
-                        + CREATE_ROUTE_CASE_IDS.size() * KMIP_2_0_AND_2_1.size()
+                        + CREATE_OPERATION_ROUTE_FIXTURES.size()
                                 * CREATE_ROUTE_ENCODINGS.size() * CREATE_ROUTE_TRANSPORTS.size()
                                 * NETWORK_ROUTE_ACTIONS.size()
+                        + CREATE_REQUEST_PAYLOAD_FIXTURES.size() * CREATE_ROUTE_ENCODINGS.size()
+                                * CREATE_ROUTE_TRANSPORTS.size() * 2
                         + 7 // KMIP 2.1 §4.53 Rotate Name Type generic and typed Attribute routes.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Value generic and typed Attribute routes.
                         + tagAggregateEventCount
@@ -5969,6 +5976,23 @@ class ControlledTlsPeerTest {
         decoded.put("encoding", encoding);
     }
 
+    private static void appendTypedRequestNetworkRouteEvents(ArrayNode events, String caseId, String routeId,
+            String targetId, String publicApiSymbol, String protocolVersion,
+            String requestTreeHash, String encoding, String transport) {
+        String executionRoute = "java.execute.typed-batch";
+        String executionSymbol = "org.kmipkit.extensions.Client.execute";
+        ObjectNode constructed = appendRouteEvent(events, caseId, routeId, targetId, publicApiSymbol,
+                executionRoute, executionSymbol, "construct", protocolVersion, transport,
+                requestTreeHash, null);
+        constructed.put("encoding", encoding);
+        ObjectNode sent = appendRouteEvent(events, caseId, routeId, targetId, publicApiSymbol,
+                executionRoute, executionSymbol, "send", protocolVersion, transport,
+                requestTreeHash, null);
+        sent.put("encoding", encoding);
+        sent.put("request_delivery_state", "response_received");
+        sent.put("transport_invocation_count", 1);
+    }
+
     private static ObjectNode appendRouteEvent(ArrayNode events, String caseId, String routeId,
             String targetId, String publicApiSymbol, String executionRouteId, String executionApiSymbol,
             String action, String protocolVersion, String transport, String requestHash,
@@ -7930,77 +7954,96 @@ class ControlledTlsPeerTest {
         String routeId = "java.typed-protocol.client_batch_item.create";
         String targetId = "KMIPKIT-ELEM-OP-C2S-CREATE";
         String publicApi = "org.kmipkit.extensions.ClientBatchItem.create";
-        for (String caseId : CREATE_ROUTE_CASE_IDS) {
-            for (String protocolVersion : KMIP_2_0_AND_2_1) {
-                int minor = "2.0".equals(protocolVersion) ? 0 : 1;
-                String batchItemId = "item-0";
-                byte[] batchItemIdBytes = batchItemId.getBytes(StandardCharsets.US_ASCII);
-                byte[] responseTtlv = createResponse(minor);
-                String responseHash = normalizedTreeSha256(responseTtlv);
-                String requestHash = null;
-                for (String encoding : CREATE_ROUTE_ENCODINGS) {
-                    byte[] responseBytes = createRouteResponseBytes(minor, batchItemId, encoding, responseTtlv);
-                    for (String transport : CREATE_ROUTE_TRANSPORTS) {
-                        Path connectionFile = temporaryDirectory.resolve("create-route-" + caseId + "-"
-                                + protocolVersion.replace('.', '-') + "-" + encoding + "-" + transport + ".json");
-                        byte[] observedRequest;
-                        if ("raw_tls".equals(transport)) {
-                            SSLServerSocket listener = listener(certificate(serverCertificatePem),
-                                    privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
-                            FutureTask<byte[]> peer = new FutureTask<>(
-                                    () -> serveOneEncodedResponse(listener, responseBytes, encoding));
-                            Thread peerThread = new Thread(peer,
-                                    "java-validator-controlled-create-peer-" + encoding + "-" + protocolVersion);
-                            peerThread.setDaemon(true);
-                            peerThread.start();
-                            Files.writeString(connectionFile, connectionJson(listener.getLocalPort(),
-                                    serverCertificatePem, clientCertificatePem, clientPrivateKeyPem, true,
-                                    protocolVersion, encoding, transport));
-                            try {
-                                executeCreateRouteRequest(connectionFile, batchItemIdBytes);
-                            } finally {
-                                listener.close();
-                            }
-                            observedRequest = peer.get(15, TimeUnit.SECONDS);
-                        } else {
-                            CompletableFuture<byte[]> peer = new CompletableFuture<>();
-                            HttpsServer listener = httpsListener(certificate(serverCertificatePem),
-                                    privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
-                            listener.createContext("/kmip", exchange -> {
-                                try {
-                                    if (!"POST".equals(exchange.getRequestMethod())) {
-                                        throw new IllegalStateException("The controlled HTTP peer requires POST.");
-                                    }
-                                    byte[] request = exchange.getRequestBody().readAllBytes();
-                                    peer.complete(request);
-                                    exchange.getResponseHeaders().set("Content-Type", contentTypeForEncoding(encoding));
-                                    exchange.sendResponseHeaders(200, responseBytes.length);
-                                    exchange.getResponseBody().write(responseBytes);
-                                } catch (Exception failure) {
-                                    peer.completeExceptionally(failure);
-                                } finally {
-                                    exchange.close();
-                                }
-                            });
-                            listener.start();
-                            Files.writeString(connectionFile, connectionJson(listener.getAddress().getPort(),
-                                    serverCertificatePem, clientCertificatePem, clientPrivateKeyPem, true,
-                                    protocolVersion, encoding, transport));
-                            try {
-                                executeCreateRouteRequest(connectionFile, batchItemIdBytes);
-                            } finally {
-                                listener.stop(0);
-                            }
-                            observedRequest = peer.get(15, TimeUnit.SECONDS);
+        for (CreateOperationRouteFixture fixture : CREATE_OPERATION_ROUTE_FIXTURES) {
+            String caseId = fixture.caseId();
+            String protocolVersion = fixture.protocolVersion();
+            int minor = "2.0".equals(protocolVersion) ? 0 : 1;
+            String batchItemId = "item-0";
+            byte[] batchItemIdBytes = batchItemId.getBytes(StandardCharsets.US_ASCII);
+            byte[] responseTtlv = createResponse(minor);
+            String responseHash = normalizedTreeSha256(responseTtlv);
+            String requestHash = null;
+            for (String encoding : CREATE_ROUTE_ENCODINGS) {
+                byte[] responseBytes = createRouteResponseBytes(minor, batchItemId, encoding, responseTtlv);
+                for (String transport : CREATE_ROUTE_TRANSPORTS) {
+                    Path connectionFile = temporaryDirectory.resolve("create-route-" + caseId + "-"
+                            + protocolVersion.replace('.', '-') + "-" + encoding + "-" + transport + ".json");
+                    byte[] observedRequest;
+                    if ("raw_tls".equals(transport)) {
+                        SSLServerSocket listener = listener(certificate(serverCertificatePem),
+                                privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+                        FutureTask<byte[]> peer = new FutureTask<>(
+                                () -> serveOneEncodedResponse(listener, responseBytes, encoding));
+                        Thread peerThread = new Thread(peer,
+                                "java-validator-controlled-create-peer-" + encoding + "-" + protocolVersion);
+                        peerThread.setDaemon(true);
+                        peerThread.start();
+                        Files.writeString(connectionFile, connectionJson(listener.getLocalPort(),
+                                serverCertificatePem, clientCertificatePem, clientPrivateKeyPem, true,
+                                protocolVersion, encoding, transport));
+                        try {
+                            executeCreateRouteRequest(connectionFile, batchItemIdBytes);
+                        } finally {
+                            listener.close();
                         }
-                        assertCreateRouteRequest(observedRequest, encoding, protocolVersion, batchItemIdBytes);
-                        if (requestHash == null) requestHash = normalizedTreeSha256(observedRequest);
-                        appendTypedNetworkRouteEvents(events, caseId, routeId, targetId, publicApi,
-                                protocolVersion, requestHash, responseHash, encoding, transport);
+                        observedRequest = peer.get(15, TimeUnit.SECONDS);
+                    } else {
+                        CompletableFuture<byte[]> peer = new CompletableFuture<>();
+                        HttpsServer listener = httpsListener(certificate(serverCertificatePem),
+                                privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+                        listener.createContext("/kmip", exchange -> {
+                            try {
+                                if (!"POST".equals(exchange.getRequestMethod())) {
+                                    throw new IllegalStateException("The controlled HTTP peer requires POST.");
+                                }
+                                byte[] request = exchange.getRequestBody().readAllBytes();
+                                peer.complete(request);
+                                exchange.getResponseHeaders().set("Content-Type", contentTypeForEncoding(encoding));
+                                exchange.sendResponseHeaders(200, responseBytes.length);
+                                exchange.getResponseBody().write(responseBytes);
+                            } catch (Exception failure) {
+                                peer.completeExceptionally(failure);
+                            } finally {
+                                exchange.close();
+                            }
+                        });
+                        listener.start();
+                        Files.writeString(connectionFile, connectionJson(listener.getAddress().getPort(),
+                                serverCertificatePem, clientCertificatePem, clientPrivateKeyPem, true,
+                                protocolVersion, encoding, transport));
+                        try {
+                            executeCreateRouteRequest(connectionFile, batchItemIdBytes);
+                        } finally {
+                            listener.stop(0);
+                        }
+                        observedRequest = peer.get(15, TimeUnit.SECONDS);
+                    }
+                    assertCreateRouteRequest(observedRequest, encoding, protocolVersion, batchItemIdBytes);
+                    if (requestHash == null) requestHash = normalizedTreeSha256(observedRequest);
+                    appendTypedNetworkRouteEvents(events, caseId, routeId, targetId, publicApi,
+                            protocolVersion, requestHash, responseHash, encoding, transport);
+                    if (fixture.requestPayloadTargetId() != null) {
+                        appendTypedRequestNetworkRouteEvents(events, caseId, routeId,
+                                fixture.requestPayloadTargetId(), publicApi, protocolVersion,
+                                requestHash, encoding, transport);
                     }
                 }
             }
         }
+    }
+
+    private static List<CreateOperationRouteFixture> createOperationRouteFixtures() {
+        var fixtures = new ArrayList<CreateOperationRouteFixture>();
+        for (String caseId : CREATE_ROUTE_CASE_IDS) {
+            for (String protocolVersion : KMIP_2_0_AND_2_1) {
+                fixtures.add(new CreateOperationRouteFixture(caseId, protocolVersion, null));
+            }
+        }
+        for (CreateRequestPayloadFixture fixture : CREATE_REQUEST_PAYLOAD_FIXTURES) {
+            fixtures.add(new CreateOperationRouteFixture(
+                    fixture.caseId(), fixture.protocolVersion(), fixture.targetId()));
+        }
+        return List.copyOf(fixtures);
     }
 
     private static void executeCreateRouteRequest(Path connectionFile, byte[] batchItemId) throws Exception {
@@ -8125,24 +8168,24 @@ class ControlledTlsPeerTest {
     }
 
     private static void assertCreateOperationNetworkRouteCoverage(ArrayNode events) {
-        for (String caseId : CREATE_ROUTE_CASE_IDS) {
-            for (String version : KMIP_2_0_AND_2_1) {
-                for (String encoding : CREATE_ROUTE_ENCODINGS) {
-                    for (String transport : CREATE_ROUTE_TRANSPORTS) {
-                        for (String action : NETWORK_ROUTE_ACTIONS) {
-                            boolean present = events.valueStream().anyMatch(event ->
-                                    caseId.equals(event.path("case_id").asText())
-                                            && "java.typed-protocol.client_batch_item.create"
-                                                    .equals(event.path("route_id").asText())
-                                            && "KMIPKIT-ELEM-OP-C2S-CREATE"
-                                                    .equals(event.path("target_id").asText())
-                                            && version.equals(event.path("protocol_version").asText())
-                                            && encoding.equals(event.path("encoding").asText())
-                                            && transport.equals(event.path("transport").asText())
-                                            && action.equals(event.path("action").asText()));
-                            assertTrue(present, "Missing Create client batch route evidence for " + caseId + " / "
-                                    + version + " / " + encoding + " / " + transport + " / " + action);
-                        }
+        for (CreateOperationRouteFixture fixture : CREATE_OPERATION_ROUTE_FIXTURES) {
+            for (String encoding : CREATE_ROUTE_ENCODINGS) {
+                for (String transport : CREATE_ROUTE_TRANSPORTS) {
+                    for (String action : NETWORK_ROUTE_ACTIONS) {
+                        boolean present = events.valueStream().anyMatch(event ->
+                                fixture.caseId().equals(event.path("case_id").asText())
+                                        && "java.typed-protocol.client_batch_item.create"
+                                                .equals(event.path("route_id").asText())
+                                        && "KMIPKIT-ELEM-OP-C2S-CREATE"
+                                                .equals(event.path("target_id").asText())
+                                        && fixture.protocolVersion().equals(
+                                                event.path("protocol_version").asText())
+                                        && encoding.equals(event.path("encoding").asText())
+                                        && transport.equals(event.path("transport").asText())
+                                        && action.equals(event.path("action").asText()));
+                        assertTrue(present, "Missing Create client batch route evidence for "
+                                + fixture.caseId() + " / " + fixture.protocolVersion() + " / " + encoding
+                                + " / " + transport + " / " + action);
                     }
                 }
             }
