@@ -368,6 +368,39 @@ class LocalCatalogRouteChecksTest {
     }
 
     @Test
+    void executesRemainingByteStringAndDateTimeExtendedTargetsThroughGenericTtlvRoutes() throws Exception {
+        JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
+        Set<String> caseIds = Set.of(
+                "test-norm-operation-structure-operation-structure-7-9-data",
+                "test-norm-structure-member-structure-member-4-62-issuer-alternative-name",
+                "test-norm-structure-member-structure-member-4-63-subject-alternative-name",
+                "test-norm-structure-member-structure-member-7-27-pkcs-11-input-parameters",
+                "test-norm-structure-member-structure-member-7-29-pkcs-11-output-parameters",
+                "test-norm-structure-member-structure-member-9-11-hashed-password-timestamp");
+        List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
+
+        for (String version : List.of("2.0", "2.1")) {
+            LocalCatalogRouteChecks.executeRemainingFixedScalarTargets(catalog, version, caseIds, invocations::add);
+        }
+
+        assertEquals(caseIds, invocations.stream().map(LocalCatalogRouteChecks.Invocation::caseId)
+                .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(48, invocations.size(), "Every applicable target/version pair must use four routes.");
+        assertEquals(Set.of(
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.bytestring",
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.datetimeextended",
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode"),
+                invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId)
+                        .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(Set.of("construct", "decode"), invocations.stream()
+                .map(LocalCatalogRouteChecks.Invocation::action)
+                .collect(java.util.stream.Collectors.toSet()));
+        assertTrue(invocations.stream().allMatch(invocation -> invocation.wire().length >= 16));
+    }
+
+    @Test
     void executesRandomIvThroughTheTypedCryptographicParametersBuilder() throws Exception {
         JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
         String caseId = "test-norm-structure-member-structure-member-4-16-random-iv";

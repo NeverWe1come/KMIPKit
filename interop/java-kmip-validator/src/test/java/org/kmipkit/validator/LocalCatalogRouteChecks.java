@@ -115,6 +115,13 @@ final class LocalCatalogRouteChecks {
             "test-norm-structure-member-structure-member-7-21-unique-identifier",
             "test-norm-structure-member-structure-member-7-28-pkcs-11-interface",
             "test-norm-structure-member-structure-member-7-41-validation-profile");
+    static final Set<String> REMAINING_FIXED_SCALAR_TARGET_CASE_IDS = Set.of(
+            "test-norm-operation-structure-operation-structure-7-9-data",
+            "test-norm-structure-member-structure-member-4-62-issuer-alternative-name",
+            "test-norm-structure-member-structure-member-4-63-subject-alternative-name",
+            "test-norm-structure-member-structure-member-7-27-pkcs-11-input-parameters",
+            "test-norm-structure-member-structure-member-7-29-pkcs-11-output-parameters",
+            "test-norm-structure-member-structure-member-9-11-hashed-password-timestamp");
 
     private LocalCatalogRouteChecks() { }
 
@@ -1192,6 +1199,128 @@ final class LocalCatalogRouteChecks {
             assertEquals(tagCode, tag.raw());
             assertEquals(TtlvItemType.TextString, view.itemType());
             assertArrayEquals(expectedValue, value.bytes());
+        }
+    }
+
+    /** Exercises the remaining catalogued Byte String and Date Time Extended targets through generic TTLV. */
+    static void executeRemainingFixedScalarTargets(JsonNode catalog, String version, Set<String> selectedCaseIds,
+            EvidenceSink sink) throws Exception {
+        Set<String> applicable = new java.util.LinkedHashSet<>();
+        Set<String> emitted = new java.util.LinkedHashSet<>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String caseId = testCase.path("case_id").asText();
+            if (!selectedCaseIds.contains(caseId) || !applies(testCase, version)) continue;
+            applicable.add(caseId);
+            String targetId = testCase.path("requires").path("normative_target_id").asText();
+            JsonNode target = findTarget(catalog, targetId);
+            String targetName = target.path("name").asText();
+            String encoding = target.path("source_encoding").asText().toLowerCase(Locale.ROOT).replace(" ", "");
+            int tagCode = tagCodeNamed(catalog, targetName, version);
+            byte[] wire;
+            String constructorRoute;
+            String constructorSymbol;
+            if (encoding.startsWith("bytestring")) {
+                byte[] value = fixedScalarByteStringFixture(caseId);
+                wire = itemWire(tagCode, TtlvItemType.ByteString.code(), value);
+                constructorRoute = "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.bytestring";
+                constructorSymbol = "org.kmipkit.ttlv.TtlvValue.ByteString";
+                try (TtlvValue ttlvValue = TtlvValue.ByteString(value, CodecLimits.defaults());
+                        RawTag raw = RawTag.fromRaw(tagCode); Tag tag = raw.checked();
+                        TtlvItem item = TtlvItem.create(tag, ttlvValue, CodecLimits.defaults())) {
+                    assertByteStringAttributeItem(item, tagCode, value);
+                }
+                try (TtlvItem decoded = TtlvCodec.decode(wire)) {
+                    assertByteStringAttributeItem(decoded, tagCode, value);
+                }
+            } else if (encoding.startsWith("datetimeextended")) {
+                long value = 0x1_0000_0000L;
+                wire = itemWire(tagCode, TtlvItemType.DateTimeExtended.code(),
+                        ByteBuffer.allocate(Long.BYTES).putLong(value).array());
+                constructorRoute = "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.datetimeextended";
+                constructorSymbol = "org.kmipkit.ttlv.TtlvValue.DateTimeExtended";
+                try (TtlvValue ttlvValue = TtlvValue.DateTimeExtended(value);
+                        RawTag raw = RawTag.fromRaw(tagCode); Tag tag = raw.checked();
+                        TtlvItem item = TtlvItem.create(tag, ttlvValue, CodecLimits.defaults())) {
+                    assertDateTimeExtendedTargetItem(item, tagCode, value);
+                }
+                try (TtlvItem decoded = TtlvCodec.decode(wire)) {
+                    assertDateTimeExtendedTargetItem(decoded, tagCode, value);
+                }
+            } else {
+                throw new IllegalArgumentException("Selected target is not a Byte String or Date Time Extended: "
+                        + caseId);
+            }
+            emitRoute(sink, caseId, targetId, constructorRoute, constructorSymbol, "construct", wire);
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_item.create",
+                    "org.kmipkit.ttlv.TtlvItem.create", "construct", wire);
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.function.ttlv_item_view_from_item",
+                    "org.kmipkit.ttlv.TtlvItem.view", "decode", wire);
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_codec.decode",
+                    "org.kmipkit.ttlv.TtlvCodec.decode", "decode", wire);
+            emitted.add(caseId);
+        }
+        if (!emitted.equals(applicable)) {
+            throw new IllegalArgumentException("Selected fixed scalar targets were not executed for " + version);
+        }
+    }
+
+    static Set<String> missingRemainingFixedScalarTargetCaseIds(JsonNode catalog, JsonNode events, String version) {
+        Set<String> missing = new java.util.LinkedHashSet<>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String caseId = testCase.path("case_id").asText();
+            if (!REMAINING_FIXED_SCALAR_TARGET_CASE_IDS.contains(caseId) || !applies(testCase, version)) continue;
+            String targetId = testCase.path("requires").path("normative_target_id").asText();
+            String encoding = findTarget(catalog, targetId).path("source_encoding").asText()
+                    .toLowerCase(Locale.ROOT).replace(" ", "");
+            String constructorRoute = encoding.startsWith("bytestring")
+                    ? "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.bytestring"
+                    : "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.datetimeextended";
+            List<String> requiredRoutes = List.of(constructorRoute, "java.generic-ttlv.ttlv_item.create",
+                    "java.generic-ttlv.function.ttlv_item_view_from_item", "java.generic-ttlv.ttlv_codec.decode");
+            int present = 0;
+            for (String route : requiredRoutes) {
+                boolean found = false;
+                for (JsonNode event : events) {
+                    if (caseId.equals(event.path("case_id").asText())
+                            && targetId.equals(event.path("target_id").asText())
+                            && route.equals(event.path("route_id").asText())
+                            && version.equals(event.path("protocol_version").asText())
+                            && "TTLV".equals(event.path("encoding").asText())
+                            && event.path("transport").isNull()) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (found) present++;
+            }
+            if (present == 0) missing.add(caseId);
+            else assertEquals(requiredRoutes.size(), present,
+                    "Fixed scalar target route evidence must be complete before reuse for " + caseId);
+        }
+        return missing;
+    }
+
+    private static byte[] fixedScalarByteStringFixture(String caseId) {
+        return switch (caseId) {
+            case "test-norm-operation-structure-operation-structure-7-9-data" ->
+                    new byte[] {0x4b, 0x4d, 0x49, 0x50};
+            case "test-norm-structure-member-structure-member-4-62-issuer-alternative-name" ->
+                    new byte[] {0x30, 0x06, (byte) 0x82, 0x04, 'i', 's', 's', 'r'};
+            case "test-norm-structure-member-structure-member-4-63-subject-alternative-name" ->
+                    new byte[] {0x30, 0x06, (byte) 0x82, 0x04, 's', 'u', 'b', 'j'};
+            case "test-norm-structure-member-structure-member-7-27-pkcs-11-input-parameters" ->
+                    new byte[] {0x30, 0x02, 0x05, 0x00};
+            case "test-norm-structure-member-structure-member-7-29-pkcs-11-output-parameters" ->
+                    new byte[] {0x30, 0x02, 0x05, 0x00};
+            default -> throw new IllegalArgumentException("No Byte String fixture for " + caseId);
+        };
+    }
+
+    private static void assertDateTimeExtendedTargetItem(TtlvItem item, int tagCode, long expectedValue) {
+        try (TtlvItemView view = item.view(); Tag tag = view.tag(); TtlvValueView value = view.value()) {
+            assertEquals(tagCode, tag.raw());
+            assertEquals(TtlvItemType.DateTimeExtended, view.itemType());
+            assertEquals(expectedValue, value.dateTimeExtended());
         }
     }
 
