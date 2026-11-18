@@ -1244,9 +1244,7 @@ class ControlledTlsPeerTest {
             bigIntegerTargetRouteEventCount += bigIntegerTargetInvocations.size();
             List<LocalCatalogRouteChecks.Invocation> typedKeyMaterialInvocations = new ArrayList<>();
             LocalCatalogRouteChecks.executeTransparentKeyMaterialTargets(readRouteEvidenceCatalog(), protocolVersion,
-                    Set.of(
-                            "test-norm-structure-member-structure-member-3-8-key-material-modulus",
-                            "test-norm-structure-member-structure-member-3-8-key-material-public-exponent"),
+                    LocalCatalogRouteChecks.TRANSPARENT_KEY_MATERIAL_CASE_IDS,
                     typedKeyMaterialInvocations::add);
             for (LocalCatalogRouteChecks.Invocation invocation : typedKeyMaterialInvocations) {
                 appendLocalCatalogInvocation(events, protocolVersion, invocation);
@@ -1975,7 +1973,8 @@ class ControlledTlsPeerTest {
                         + 1 // KMIP 2.0/2.1 §8.2 Batch Order Option message-field case.
                         + 1 // KMIP 2.0/2.1 §8.2 Attestation Capable Indicator message-field case.
                         + 1 // KMIP 2.0/2.1 §5.1 Attributes generic Structure routes.
-                        + 2 // RSA public Key Material fields exercise both typed model constructors.
+                        + LocalCatalogRouteChecks.TRANSPARENT_KEY_MATERIAL_CASE_IDS.size()
+                        // Transparent Key Material members exercise both typed model constructors.
                         // Four scalar header cases are already included by the baseline report groups.
                         + scalarMessageFieldCaseIds(report.path("events")).size() - 4
                         + additionalCaseIdCount,
@@ -4332,8 +4331,7 @@ class ControlledTlsPeerTest {
         caseIds.add(OBJECT_DEFAULTS_OBJECT_TYPE_CASE_ID);
         caseIds.add("test-norm-operation-structure-operation-structure-7-2-asynchronous-request");
         caseIds.add("test-norm-operation-structure-operation-structure-7-13-extension-information");
-        caseIds.add("test-norm-structure-member-structure-member-3-8-key-material-modulus");
-        caseIds.add("test-norm-structure-member-structure-member-3-8-key-material-public-exponent");
+        LocalCatalogRouteChecks.TRANSPARENT_KEY_MATERIAL_CASE_IDS.forEach(caseIds::add);
         caseIds.add(OBJECT_TYPE_MEMBER_CASE_ID);
         caseIds.add(CONSTRAINT_CASE_ID);
         caseIds.add(CONSTRAINTS_CASE_ID);

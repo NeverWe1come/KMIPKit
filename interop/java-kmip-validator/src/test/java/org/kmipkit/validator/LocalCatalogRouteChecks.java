@@ -154,6 +154,9 @@ final class LocalCatalogRouteChecks {
             "test-norm-structure-member-structure-member-3-9-key-material-p",
             "test-norm-structure-member-structure-member-3-9-key-material-q",
             "test-norm-structure-member-structure-member-3-9-key-material-x");
+    static final Set<String> TRANSPARENT_KEY_MATERIAL_CASE_IDS = BIG_INTEGER_TARGET_CASE_IDS.stream()
+            .filter(caseId -> caseId.contains("-key-material-"))
+            .collect(java.util.stream.Collectors.toUnmodifiableSet());
     static final Set<String> REMAINING_ENUMERATION_FIELD_CASE_IDS = Set.of(
             "test-norm-operation-structure-operation-structure-7-15-interop-function",
             "test-norm-structure-member-structure-member-5-5-attribute-reference",
@@ -179,6 +182,8 @@ final class LocalCatalogRouteChecks {
                                    String workflowOperation, Integer workflowItemIndex) { }
 
     private record StructureAttributeMember(String name, String textValue) { }
+
+    private record KeyFieldFixture(String name, int itemType, byte[] valueBytes) { }
 
     private record RouteEvidenceKey(String caseId, String targetId, String routeId, String version,
                                    Integer workflowStepIndex, String workflowOperation,
@@ -1430,24 +1435,14 @@ final class LocalCatalogRouteChecks {
         }
     }
 
-    /** Executes typed Key Material constructors for the catalogued RSA public-key members. */
+    /** Executes typed Key Material constructors for catalogued transparent key-format members. */
     static void executeTransparentKeyMaterialTargets(JsonNode catalog, String version,
             Set<String> selectedCaseIds, EvidenceSink sink) throws Exception {
-        Set<String> expectedCases = Set.of(
-                "test-norm-structure-member-structure-member-3-8-key-material-modulus",
-                "test-norm-structure-member-structure-member-3-8-key-material-public-exponent");
-        if (!expectedCases.containsAll(selectedCaseIds)) {
-            throw new IllegalArgumentException("Selected case is not a catalogued RSA public-key member.");
+        if (!TRANSPARENT_KEY_MATERIAL_CASE_IDS.containsAll(selectedCaseIds)) {
+            throw new IllegalArgumentException("Selected case is not a catalogued transparent Key Material field.");
         }
         CodecLimits limits = CodecLimits.defaults();
-        int modulusTag = tagCodeNamed(catalog, "Modulus", version);
-        int exponentTag = tagCodeNamed(catalog, "Public Exponent", version);
         int keyMaterialTag = tagCodeNamed(catalog, "Key Material", version);
-        byte[] modulusBytes = new byte[] {0x11, 0x23};
-        byte[] exponentBytes = new byte[] {0x03};
-        byte[] modulusWire = itemWire(modulusTag, TtlvItemType.BigInteger.code(), modulusBytes);
-        byte[] exponentWire = itemWire(exponentTag, TtlvItemType.BigInteger.code(), exponentBytes);
-        byte[] keyMaterialWire = structureWire(keyMaterialTag, concat(modulusWire, exponentWire));
         Set<String> emitted = new java.util.LinkedHashSet<>();
 
         for (JsonNode testCase : catalog.path("test_cases")) {
@@ -1458,31 +1453,34 @@ final class LocalCatalogRouteChecks {
             JsonNode target = findTarget(catalog, targetId);
             if (!"structure_member".equals(requires.path("target_kind").asText())
                     || !"Big Integer".equals(target.path("source_encoding").asText())
-                    || !hasParent(target, "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-8-KEY-MATERIAL")) {
-                throw new IllegalArgumentException("Selected case does not identify an RSA public-key member: "
+                    || !TRANSPARENT_KEY_MATERIAL_CASE_IDS.contains(caseId)) {
+                throw new IllegalArgumentException("Selected case does not identify a transparent Key Material field: "
                         + caseId);
             }
-            try (TtlvValue modulusValue = TtlvValue.BigInteger(modulusBytes, limits);
-                    TtlvValue exponentValue = TtlvValue.BigInteger(exponentBytes, limits);
-                    RawTag modulusRaw = RawTag.fromRaw(modulusTag); Tag modulusChecked = modulusRaw.checked();
-                    RawTag exponentRaw = RawTag.fromRaw(exponentTag); Tag exponentChecked = exponentRaw.checked();
-                    TtlvItem modulus = TtlvItem.create(modulusChecked, modulusValue, limits);
-                    TtlvItem exponent = TtlvItem.create(exponentChecked, exponentValue, limits);
-                    KeyMaterial fromFields = KeyMaterial.fromFields(11, List.of(modulus, exponent));
-                    TtlvStructure empty = TtlvStructure.create();
-                    TtlvStructure withModulus = TtlvStructure.withItem(empty, modulus, limits);
-                    TtlvStructure fields = TtlvStructure.withItem(withModulus, exponent, limits);
-                    TtlvValue structureValue = TtlvValue.structure(fields, limits);
-                    RawTag keyMaterialRaw = RawTag.fromRaw(keyMaterialTag);
-                    Tag keyMaterialChecked = keyMaterialRaw.checked();
-                    TtlvItem keyMaterialItem = TtlvItem.create(keyMaterialChecked, structureValue, limits);
-                    KeyMaterial fromItem = KeyMaterial.fromItem(11, keyMaterialItem)) {
-                assertEquals(11, fromFields.formatRaw());
-                assertEquals(11, fromItem.formatRaw());
-                int targetTag = tagCodeNamed(catalog, target.path("name").asText(), version);
-                byte[] expected = "Modulus".equals(target.path("name").asText()) ? modulusBytes : exponentBytes;
-                assertArrayEquals(expected, fromFields.fieldBytes(targetTag));
-                assertArrayEquals(expected, fromItem.fieldBytes(targetTag));
+            int formatRaw = transparentKeyFormat(target);
+            List<KeyFieldFixture> fixture = transparentKeyMaterialFixture(formatRaw);
+            byte[] keyMaterialWire = keyMaterialWire(catalog, version, keyMaterialTag, fixture);
+            List<TtlvItem> fields = createKeyMaterialFieldItems(catalog, version, fixture, limits);
+            List<TtlvItem> itemFields = createKeyMaterialFieldItems(catalog, version, fixture, limits);
+            byte[] expected = fixture.stream()
+                    .filter(field -> field.name().equals(target.path("name").asText()))
+                    .map(KeyFieldFixture::valueBytes)
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Key Material fixture omits target field: "
+                            + target.path("name").asText()));
+            int targetTag = tagCodeNamed(catalog, target.path("name").asText(), version);
+            try {
+                try (KeyMaterial fromFields = KeyMaterial.fromFields(formatRaw, fields);
+                        TtlvItem keyMaterialItem = createStructureItem(keyMaterialTag, itemFields, limits);
+                        KeyMaterial fromItem = KeyMaterial.fromItem(formatRaw, keyMaterialItem)) {
+                    assertEquals(formatRaw, fromFields.formatRaw());
+                    assertEquals(formatRaw, fromItem.formatRaw());
+                    assertArrayEquals(expected, fromFields.fieldBytes(targetTag));
+                    assertArrayEquals(expected, fromItem.fieldBytes(targetTag));
+                }
+            } finally {
+                closeItems(fields);
+                closeItems(itemFields);
             }
             emitRoute(sink, caseId, targetId,
                     "java.typed-protocol.model.org.kmipkit.ttlv.keymaterial.fromfields",
@@ -1493,8 +1491,102 @@ final class LocalCatalogRouteChecks {
             emitted.add(caseId);
         }
         if (!emitted.equals(selectedCaseIds)) {
-            throw new IllegalArgumentException("Selected RSA public-key members were not executed for " + version);
+            throw new IllegalArgumentException("Selected transparent Key Material fields were not executed for "
+                    + version);
         }
+    }
+
+    private static int transparentKeyFormat(JsonNode target) {
+        for (JsonNode parent : target.path("parent_element_ids")) {
+            String parentId = parent.asText();
+            if (!parentId.startsWith("KMIPKIT-ELEM-OBJECT-STRUCTURE-3-")
+                    || !parentId.endsWith("-KEY-MATERIAL")) continue;
+            String section = parentId.substring("KMIPKIT-ELEM-OBJECT-STRUCTURE-3-".length(),
+                    parentId.length() - "-KEY-MATERIAL".length());
+            return switch (section) {
+                case "5" -> 8;   // Transparent DSA Private Key.
+                case "6" -> 9;   // Transparent DSA Public Key.
+                case "7" -> 10;  // Transparent RSA Private Key.
+                case "8" -> 11;  // Transparent RSA Public Key.
+                case "9" -> 12;  // Transparent DH Private Key.
+                case "10" -> 13; // Transparent DH Public Key.
+                case "11" -> 0x14; // Transparent EC Private Key.
+                default -> throw new IllegalArgumentException("No transparent key format for " + parentId);
+            };
+        }
+        throw new IllegalArgumentException("Key Material target has no supported transparent structure: "
+                + target.path("target_id").asText());
+    }
+
+    private static List<KeyFieldFixture> transparentKeyMaterialFixture(int formatRaw) {
+        List<String> names = switch (formatRaw) {
+            case 8 -> List.of("P", "Q", "G", "X");
+            case 9 -> List.of("P", "Q", "G", "Y");
+            case 10 -> List.of("Modulus", "Public Exponent", "Private Exponent", "P", "Q",
+                    "Prime Exponent P", "Prime Exponent Q", "CRT Coefficient");
+            case 11 -> List.of("Modulus", "Public Exponent");
+            case 12 -> List.of("P", "Q", "G", "J", "X");
+            case 13 -> List.of("P", "Q", "G", "J", "Y");
+            case 0x14 -> List.of("Recommended Curve", "D");
+            default -> throw new IllegalArgumentException("No transparent Key Material fixture for " + formatRaw);
+        };
+        List<KeyFieldFixture> fields = new ArrayList<>();
+        for (int index = 0; index < names.size(); index++) {
+            String name = names.get(index);
+            if ("Recommended Curve".equals(name)) {
+                fields.add(new KeyFieldFixture(name, TtlvItemType.Enumeration.code(),
+                        ByteBuffer.allocate(Integer.BYTES).putInt(0x80000014).array()));
+            } else {
+                int value = "Public Exponent".equals(name) ? 3 : index + 17;
+                fields.add(new KeyFieldFixture(name, TtlvItemType.BigInteger.code(), new byte[] {(byte) value}));
+            }
+        }
+        return List.copyOf(fields);
+    }
+
+    private static byte[] keyMaterialWire(JsonNode catalog, String version, int keyMaterialTag,
+            List<KeyFieldFixture> fields) {
+        List<byte[]> encodedFields = new ArrayList<>();
+        for (KeyFieldFixture field : fields) {
+            encodedFields.add(itemWire(tagCodeNamed(catalog, field.name(), version), field.itemType(),
+                    field.valueBytes()));
+        }
+        return structureWire(keyMaterialTag, concat(encodedFields.toArray(byte[][]::new)));
+    }
+
+    private static List<TtlvItem> createKeyMaterialFieldItems(JsonNode catalog, String version,
+            List<KeyFieldFixture> fields, CodecLimits limits) {
+        List<TtlvItem> items = new ArrayList<>();
+        try {
+            for (KeyFieldFixture field : fields) {
+                int tagCode = tagCodeNamed(catalog, field.name(), version);
+                try (TtlvValue value = field.itemType() == TtlvItemType.Enumeration.code()
+                        ? TtlvValue.Enumeration(Integer.toUnsignedLong(ByteBuffer.wrap(field.valueBytes()).getInt()))
+                        : TtlvValue.BigInteger(field.valueBytes(), limits);
+                        RawTag raw = RawTag.fromRaw(tagCode); Tag tag = raw.checked()) {
+                    items.add(TtlvItem.create(tag, value, limits));
+                }
+            }
+            return items;
+        } catch (RuntimeException error) {
+            closeItems(items);
+            throw error;
+        }
+    }
+
+    private static TtlvItem createStructureItem(int tagCode, List<TtlvItem> fields, CodecLimits limits) {
+        TtlvStructure structure = TtlvStructure.create();
+        for (TtlvItem field : fields) {
+            structure = TtlvStructure.withItem(structure, field, limits);
+        }
+        try (TtlvValue value = TtlvValue.structure(structure, limits);
+                RawTag raw = RawTag.fromRaw(tagCode); Tag tag = raw.checked()) {
+            return TtlvItem.create(tag, value, limits);
+        }
+    }
+
+    private static void closeItems(List<TtlvItem> items) {
+        for (TtlvItem item : items) item.close();
     }
 
     static Set<String> missingBigIntegerTargetCaseIds(JsonNode catalog, JsonNode events, String version) {
