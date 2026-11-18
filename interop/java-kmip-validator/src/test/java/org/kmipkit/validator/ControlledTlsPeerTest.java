@@ -1186,6 +1186,7 @@ class ControlledTlsPeerTest {
                         clientCertificatePem, clientPrivateKeyPem);
                 appendSimpleVersionBoundaryRouteEvidence(events, serverCertificatePem, serverPrivateKeyPem,
                         clientCertificatePem, clientPrivateKeyPem);
+                assertAsyncVersionBoundaryRouteCoverage(events);
                 assertSimpleVersionBoundaryRouteCoverage(events);
                 assertPingNetworkRouteCoverage(events);
                 assertPingVersionBoundaryRouteCoverage(events);
@@ -7514,6 +7515,43 @@ class ControlledTlsPeerTest {
                         }
                         assertTrue(found != null, "Missing KMIP 2.0 version boundary evidence for "
                                 + caseId + " / " + encoding + " / " + transport + " / " + action);
+                        if ("send".equals(action)) {
+                            assertEquals("not_sent", found.path("request_delivery_state").asText());
+                            assertEquals(0, found.path("transport_invocation_count").asInt());
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static void assertAsyncVersionBoundaryRouteCoverage(ArrayNode events) {
+        List<String[]> operations = List.of(
+                new String[] {"test-v20-reject-process", "client.execute_process",
+                        "KMIPKIT-ELEM-OP-C2S-PROCESS", "org.kmipkit.extensions.Client.executeProcess"},
+                new String[] {"test-v20-reject-query-asynchronous-requests", "client.execute_query_async_requests",
+                        "KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS",
+                        "org.kmipkit.extensions.Client.executeQueryAsyncRequests"});
+        for (String[] operation : operations) {
+            String routeId = "java.typed-protocol." + operation[1];
+            for (String encoding : List.of("TTLV", "JSON", "XML")) {
+                for (String transport : List.of("raw_tls", "https")) {
+                    for (String action : List.of("construct", "send")) {
+                        JsonNode found = null;
+                        for (JsonNode event : events) {
+                            if (operation[0].equals(event.path("case_id").asText())
+                                    && routeId.equals(event.path("route_id").asText())
+                                    && operation[2].equals(event.path("target_id").asText())
+                                    && "2.0".equals(event.path("protocol_version").asText())
+                                    && encoding.equals(event.path("encoding").asText())
+                                    && transport.equals(event.path("transport").asText())
+                                    && action.equals(event.path("action").asText())) {
+                                found = event;
+                                break;
+                            }
+                        }
+                        assertTrue(found != null, "Missing async KMIP 2.0 boundary evidence for "
+                                + operation[0] + " / " + encoding + " / " + transport + " / " + action);
                         if ("send".equals(action)) {
                             assertEquals("not_sent", found.path("request_delivery_state").asText());
                             assertEquals(0, found.path("transport_invocation_count").asInt());
