@@ -3682,3 +3682,19 @@ On the combined #216 head the Java suite passes 87/87, shared route suites pass
 the ledger comparison passes, and the capability audit accepts 1,507 routes.
 The full matrix remains incomplete with 36,923 pending cells of 71,641, so the
 stack remains WIP.
+
+## #216 Split Key managed-object member routes — 2026-11-18
+
+The #216 branch preserves its Usage Limits evidence and includes the Split Key
+member routes from #187. The named factory handles all six §2.8 Table 9
+structure members and the Split Key tag; `fromFields` and `fromItem` run for
+each applicable structure member in KMIP 2.0/2.1. The conditional Prime Field
+Size field uses Polynomial Sharing Prime Field and Big Integer 257. This is
+local model evidence, not a cryptographic split or server interoperability
+test.
+
+Verification on the combined #216 head: full Java suite 87/87, shared route
+suites 109/109, selected report 34,756/34,756 with zero failures, ledger
+comparison and capability audit of all 1,507 routes pass. The full ledger has
+36,885 pending of 71,641; #216 remains WIP pending full closure and exact-head
+CI.

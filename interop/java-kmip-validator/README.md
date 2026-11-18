@@ -475,3 +475,11 @@ field order, XOR, two parts, threshold two, and a Raw Key Block. This adds six
 local model cells; the combined selected report validates 34,718/34,718 cells
 with zero failures and leaves 36,923 of 71,641 pending. The full matrix remains
 WIP.
+
+The Split Key Table 9 member cases also run through the applicable
+`ManagedObject` factories on the #216 branch, alongside its Usage Limits
+coverage. The Prime Field Size case uses Polynomial Sharing Prime Field and
+Big Integer 257; other members use XOR and omit that conditional field. This
+adds 38 local route cells to the #216 selected report, which validates
+34,756/34,756 cells with zero failures and leaves 36,885 of 71,641 pending.
+Full matrix closure remains outstanding.

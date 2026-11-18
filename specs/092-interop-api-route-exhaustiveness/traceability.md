@@ -184,6 +184,17 @@ artifact. This is part of the FR-006 artifact provenance check.
   zero failures and leaves 36,947 of 71,641 pending. Full Java matrix closure
   remains open under FR-002/FR-003/FR-009.
 
+## Java Split Key managed-object member routes on #216 — 2026-11-18
+
+- **FR-003:** #216 retains its Usage Limits routes and adds the six Split Key
+  Table 9 member cases and tag through the named Java factory; `fromFields` and
+  `fromItem` cover each applicable member in KMIP 2.0/2.1. The Prime Field Size
+  fixture uses the required Polynomial Sharing Prime Field method and Big
+  Integer 257 (§§2.8, 3.1, 11.34).
+- Combined selected evidence validates 34,756/34,756 cells with zero failures;
+  36,885 of 71,641 remain pending. Full matrix closure remains open under
+  FR-002/FR-003/FR-009.
+
 ## Java key-bearing managed-object root routes — 2026-11-18
 
 - **FR-003:** The installed Java consumer now executes the Symmetric Key,

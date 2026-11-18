@@ -756,6 +756,41 @@ class LocalCatalogRouteChecksTest {
     }
 
     @Test
+    // KMIP 2.0/2.1 §2.8 Table 9 defines these Split Key members and their conditional field.
+    void executesSplitKeyManagedObjectMemberRoutesForBothProtocolVersions() throws Exception {
+        JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
+        Set<String> caseIds = LocalCatalogRouteChecks.SPLIT_KEY_MANAGED_OBJECT_MEMBER_CASE_IDS;
+        List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
+
+        for (String version : List.of("2.0", "2.1")) {
+            LocalCatalogRouteChecks.executeSplitKeyManagedObjectMemberTargets(
+                    catalog, version, caseIds, invocations::add);
+        }
+
+        assertEquals(38, invocations.size());
+        assertEquals(Set.of(
+                "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.splitkey",
+                "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromfields",
+                "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromitem"),
+                invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId)
+                        .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(Set.of(
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-8-SPLIT-KEY-KEY-BLOCK",
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-8-SPLIT-KEY-KEY-PART-IDENTIFIER",
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-8-SPLIT-KEY-PRIME-FIELD-SIZE",
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-8-SPLIT-KEY-SPLIT-KEY-METHOD",
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-8-SPLIT-KEY-SPLIT-KEY-PARTS",
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-8-SPLIT-KEY-SPLIT-KEY-THRESHOLD",
+                "KMIPKIT-ELEM-TAG-420089"), invocations.stream()
+                        .map(LocalCatalogRouteChecks.Invocation::targetId)
+                        .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(Set.of("construct"), invocations.stream()
+                .map(LocalCatalogRouteChecks.Invocation::action)
+                .collect(java.util.stream.Collectors.toSet()));
+        assertTrue(invocations.stream().allMatch(invocation -> caseIds.contains(invocation.caseId())));
+    }
+
+    @Test
     // KMIP 2.0/2.1 §2.1 defines Certificate as a managed-object structure.
     void executesManagedObjectFactoriesForEveryApplicableFactoryTargetAndVersion() throws Exception {
         JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
