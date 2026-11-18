@@ -108,3 +108,14 @@ artifact. This is part of the FR-006 artifact provenance check.
 - This adds 232 cells. The selected report validates 34,210/34,210 cells with
   zero failures; 37,431 of 71,641 remain pending. Full Java matrix closure
   remains open under FR-002/FR-003/FR-009.
+
+## Java EC public Key Material model routes — 2026-11-18
+
+- **FR-003:** The installed Java consumer now constructs EC public Key Material
+  with the catalogued `Recommended Curve` and `Q String` fields and exercises
+  `KeyMaterial`, `KeyValue`, and `KeyBlock` through both `fromFields` and
+  `fromItem` in KMIP 2.0 and 2.1 (§§3.11–3.12). The deterministic point bytes
+  are synthetic fixture data and do not claim cryptographic key validity.
+- This adds 36 cells. The selected report validates 34,246/34,246 cells with
+  zero failures; 37,395 of 71,641 remain pending. Full Java matrix closure
+  remains open under FR-002/FR-003/FR-009.

@@ -3389,3 +3389,39 @@ shared evidence/schema/capability suites pass 108 tests. The selected report
 validates 34,210/34,210 cells with zero failures and leaves 37,431 of 71,641
 planned Java cells pending. The generated route ledger matches its checked-in
 reference. Full Java matrix closure remains outstanding.
+
+## Java EC public Key Material typed routes — 2026-11-18
+
+Red commit `f89bac645` extends the route contract to require EC public Key
+Material `Recommended Curve` and `Q String` members through the two typed
+constructors for Key Material, Key Value, and Key Block. The focused test fails
+because the executor initially accepts only Big Integer targets. Green commit
+`12e24aeb7` adds source-typed Enumeration and Byte String field construction,
+builds an ordered EC public structure, and checks each target through the nested
+typed views. The curve and point values are deterministic test fixtures, not
+cryptographic key material.
+
+Verification on the #187 source branch:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-tmp" \
+  bash bindings/java/gradlew -p interop/java-kmip-validator \
+  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" \
+  test --rerun-tasks
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+python3 -m unittest interop.shared.tests.test_route_execution_evidence \
+  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+git diff --check
+```
+
+All 84 Java validator tests pass with no failures, errors, or skips; the shared
+evidence/schema/capability suites pass 108 tests. The selected report validates
+34,246/34,246 cells with zero failures and leaves 37,395 of 71,641 planned Java
+cells pending. The generated route ledger matches its checked-in reference.
+Full Java matrix closure remains outstanding.
