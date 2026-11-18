@@ -85,4 +85,9 @@ artifact. This is part of the FR-006 artifact provenance check.
 ## Java managed-object Object Type routes — 2026-11-18
 
 - **FR-003:** For all nine catalogued managed-object cases, the Java controlled consumer invokes the installed `TtlvItem.create`, `TtlvItem.view`, and `TtlvCodec.decode` routes for the Object Type Enumeration in KMIP 2.0 and 2.1 (§11.34). Each fixture checks the catalogued wire value and `Object Type` tag. This closes 54 local cells and makes no Register/Create transport claim.
-- The selected Java report validates 33,878/33,878 cells with zero failures; the generated ledger records 71,641 planned, 33,878 executed, and 37,763 pending cells. Full Java matrix closure remains required under FR-002/FR-003/FR-009.
+- The selected Java report validates 33,886/33,886 cells with zero failures; the generated ledger records 71,641 planned, 33,886 executed, and 37,755 pending cells. Full Java matrix closure remains required under FR-002/FR-003/FR-009.
+
+## Java RSA public Key Material model routes — 2026-11-18
+
+- **FR-003:** The installed Java consumer now builds and reads the RSA public Key Material structure with both typed constructors, `KeyMaterial.fromFields` and `KeyMaterial.fromItem`, for the catalogued Modulus and Public Exponent fields in KMIP 2.0 and 2.1 (§3.8). A deterministic synthetic fixture is checked through the typed readers; it is not production key material and does not claim cryptographic validity.
+- On the #187 branch, these routes add eight cells to 33,862. After syncing through #216, the selected Java report validates 33,886/33,886 cells with zero failures and records 37,755 pending cells of 71,641, including the Usage Limits coverage already in this stack. Full Java matrix closure remains required under FR-002/FR-003/FR-009.

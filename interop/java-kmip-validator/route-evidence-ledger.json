@@ -868,6 +868,8 @@
     "test-norm-structure-member-structure-member-7-22-object-type-objecttypes",
     "test-norm-operation-structure-operation-structure-7-2-asynchronous-request",
     "test-norm-operation-structure-operation-structure-7-13-extension-information",
+    "test-norm-structure-member-structure-member-3-8-key-material-modulus",
+    "test-norm-structure-member-structure-member-3-8-key-material-public-exponent",
     "test-norm-structure-member-structure-member-7-24-object-type",
     "test-norm-operation-structure-operation-structure-7-6-constraint",
     "test-norm-operation-structure-operation-structure-7-7-constraints",
@@ -1752,8 +1754,6 @@
     "test-norm-structure-member-structure-member-3-7-key-material-private-exponent",
     "test-norm-structure-member-structure-member-3-7-key-material-public-exponent",
     "test-norm-structure-member-structure-member-3-7-key-material-q",
-    "test-norm-structure-member-structure-member-3-8-key-material-modulus",
-    "test-norm-structure-member-structure-member-3-8-key-material-public-exponent",
     "test-norm-structure-member-structure-member-3-9-key-material-g",
     "test-norm-structure-member-structure-member-3-9-key-material-j",
     "test-norm-structure-member-structure-member-3-9-key-material-p",
@@ -2639,9 +2639,9 @@
     "test-norm-enumeration-value-enum-value-item-type-long-integer-00000003",
     "test-norm-enumeration-value-enum-value-item-type-structure-00000001",
     "test-norm-enumeration-value-enum-value-item-type-text-string-00000007",
+    "test-enum-pkcs#11-return-code",
     "test-enum-tag",
     "test-enum-pkcs#11-function",
-    "test-enum-pkcs#11-return-code",
     "test-norm-tag-tag-42000e",
     "test-norm-attribute-structure-attribute-structure-5-1-attributes",
     "test-op-ping",
@@ -2661,7 +2661,7 @@
     "test-norm-credential-credential-hashed-password",
     "test-norm-credential-credential-username-and-password"
   ],
-  "executed_cells": 33878,
+  "executed_cells": 33886,
   "language": "java",
   "library_commit": "12496d646d11d4069b58bcc88fc76cc619211ec6",
   "pending_case_ids": [
@@ -7415,11 +7415,11 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-8-key-material-modulus",
-      "pending_cells": 28
+      "pending_cells": 24
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-8-key-material-public-exponent",
-      "pending_cells": 28
+      "pending_cells": 24
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-9-key-material-g",
@@ -8198,7 +8198,7 @@
       "pending_cells": 15
     }
   ],
-  "pending_cells": 37763,
+  "pending_cells": 37755,
   "pending_reason": "No validated per-cell route execution evidence is recorded for this cell.",
   "pending_reason_code": "route_evidence_not_emitted",
   "planned_cells": 71641,
@@ -33616,8 +33616,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 44,
+      "executed_cells": 2,
+      "pending_cells": 42,
       "protocol_version": "2.0",
       "required_cells": 44,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.keymaterial.fromfields",
@@ -33626,8 +33626,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 44,
+      "executed_cells": 2,
+      "pending_cells": 42,
       "protocol_version": "2.1",
       "required_cells": 44,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.keymaterial.fromfields",
@@ -33636,8 +33636,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 44,
+      "executed_cells": 2,
+      "pending_cells": 42,
       "protocol_version": "2.0",
       "required_cells": 44,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.keymaterial.fromitem",
@@ -33646,8 +33646,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 44,
+      "executed_cells": 2,
+      "pending_cells": 42,
       "protocol_version": "2.1",
       "required_cells": 44,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.keymaterial.fromitem",
@@ -36103,14 +36103,14 @@
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.keyblock.fromitem"
     },
     {
-      "executed_cells": 0,
-      "pending_cells": 88,
+      "executed_cells": 4,
+      "pending_cells": 84,
       "required_cells": 88,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.keymaterial.fromfields"
     },
     {
-      "executed_cells": 0,
-      "pending_cells": 88,
+      "executed_cells": 4,
+      "pending_cells": 84,
       "required_cells": 88,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.keymaterial.fromitem"
     },
@@ -36248,7 +36248,7 @@
     }
   ],
   "schema_version": "1.0",
-  "selected_scope_cells": 33878,
+  "selected_scope_cells": 33886,
   "selected_scope_complete": true,
   "vendor_interoperability_claim": false
 }

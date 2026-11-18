@@ -101,12 +101,17 @@ baseline, regenerate the checked-in ledger with
 rejects generated ledgers that do not record successful invocations.
 The generated ledger retains the artifact
 SHA-256 for each build; that build-specific digest is not used as a coverage
-baseline. These recipes execute 33,878 of 71,641 planned Java route cells, with
-no failed cells; the ledger records the other 37,763 as pending and does not imply
+baseline. These recipes execute 33,886 of 71,641 planned Java route cells, with
+no failed cells; the ledger records the other 37,755 as pending and does not imply
 vendor interoperability or full-matrix completion. Local TTLV recipes exercise 51
 enumeration families, all six bitmask aggregate cases, and all 44 individual
 bitmask value cases through the applicable
 installed constructors, item views, decoders, and typed attribute wrappers.
+The RSA public Key Material members also pass through the installed typed
+`KeyMaterial.fromFields` and `KeyMaterial.fromItem` constructors in KMIP 2.0 and
+2.1, using a deterministic non-production modulus and public exponent fixture
+(§3.8). This adds eight local typed-model cells and does not claim cryptographic
+key validity or server acceptance.
 They also cover the optional and repeatable Object Group member in KMIP 2.1
 §7.23 with all three applicable generic Item routes; §4.35 Tables 99–100
 define its Text String attribute representation.
@@ -400,7 +405,7 @@ steps with their workflow identity; local enum fixtures keep their primary
 operation as context unless the catalog separately plans it as an Operation
 target. The new events add 2,883 cells to the parent ledger; the existing Usage Limits
 route slice remains included in this branch. The full Java matrix remains
-incomplete (33,878/71,641 executed), so the PR stack remains WIP. These are
+incomplete (33,886/71,641 executed), so the PR stack remains WIP. These are
 local TTLV checks, not evidence of operation payload validity or server
 behavior.
 
