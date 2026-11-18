@@ -445,6 +445,8 @@ RECIPES = {
     'test-norm-payload-client-add-attribute-request-20-002': ((1, 13, 19, 20), 'add_attribute'),
     'test-norm-payload-client-add-attribute-request-21-002': ((1, 13, 19, 20), 'add_attribute'),
     'test-op-modify-attribute': ((1, 13, 14, 19, 20), 'modify_attribute'),
+    'test-neg-modify-attribute-current-mismatch':
+        ((1, 13, 14, 19, 20), 'modify_attribute_mismatch'),
     'test-norm-payload-client-modify-attribute-request-20-002': ((1, 13, 14, 19, 20), 'modify_attribute'),
     'test-norm-payload-client-modify-attribute-request-20-003': ((1, 13, 14, 19, 20), 'modify_attribute'),
     'test-norm-payload-client-modify-attribute-response-20-001': ((1, 13, 14, 19, 20), 'modify_attribute'),
@@ -1686,7 +1688,7 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
             'test-norm-payload-client-add-attribute-request-21-002'} and
             not request_add_attribute_has_new_attribute(node)):
         raise ValueError('fixture_add_attribute_new_attribute_missing')
-    if selected_recipe[1] == 'modify_attribute' and case_id.startswith(
+    if selected_recipe[1] in ('modify_attribute', 'modify_attribute_mismatch') and case_id.startswith(
             'test-norm-payload-client-modify-attribute-request-'):
         current, new = request_modify_attribute_fields(
             next(item for item in node[2] if item[0] == BATCH_ITEM_TAG and
@@ -1962,7 +1964,10 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
                     if item[0] == REQUEST_PAYLOAD_TAG and item[1] == 1]
         comments = [item for item in descendants(payloads[0], 0x4200FD) if item[1] == 7] \
             if len(payloads) == 1 else []
-        if len(comments) != 1 or comments[0][2] != b'KMIPKit interoperability comment':
+        expected_comment = (b'KMIPKit interop test'
+                            if case_id == 'test-neg-modify-attribute-current-mismatch' else
+                            b'KMIPKit interoperability comment')
+        if len(comments) != 1 or comments[0][2] != expected_comment:
             observed = [(f'{item[0]:06X}', item[1])
                         for item in descendants(payloads[0], 0x4200FD)] if len(payloads) == 1 else []
             summary = [(len(item[2]), hashlib.sha256(item[2]).hexdigest()[:12])
@@ -3497,11 +3502,15 @@ class PeerState:
                     if old_digest is None:
                         raise ValueError('fixture_modify_attribute_value_missing')
                     if current is not None and hashlib.sha256(current[1]).hexdigest() != old_digest:
-                        raise ValueError('fixture_modify_attribute_current_value_mismatch')
-                    if new[0] != 'Comment':
+                        # KMIP 2.1 §6.1.34 Table 267 names this failed match as
+                        # Attribute Instance Not Found (32).
+                        status, reason, effect = (
+                            1, 32, 'attribute_modify_rejected_current_mismatch')
+                    elif new[0] != 'Comment':
                         raise ValueError('fixture_modify_attribute_name_mismatch')
-                    values[attribute_tag] = hashlib.sha256(new[1]).hexdigest()
-                    effect = 'attribute_modified'
+                    else:
+                        values[attribute_tag] = hashlib.sha256(new[1]).hexdigest()
+                        effect = 'attribute_modified'
                 elif operation == 48:
                     vendor, name, adjustment_type, adjustment_value = \
                         request_adjust_attribute_fields(item)
@@ -3849,7 +3858,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                          'test-norm-payload-client-modify-attribute-request-21-002',
                                                          'test-norm-payload-client-modify-attribute-request-21-003',
                                                          'test-norm-payload-client-modify-attribute-response-21-001',
-                                                         'test-op-modify-attribute', 'test-op-set-attribute',
+                                                         'test-op-modify-attribute',
+                                                         'test-neg-modify-attribute-current-mismatch',
+                                                         'test-op-set-attribute',
                                                          'test-op-delete-attribute', 'test-op-adjust-attribute'}
          or case['case_id'] in attribute_case_ids else ('direct',))]
     cells_by_case = {}
@@ -3895,11 +3906,13 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                         batch_order_placeholder_recipe = recipe[1] == 'batch_order_placeholder_two_item'
                         attribute_mutation_recipe = recipe[1] in (
                             'add_attribute', 'modify_attribute', 'set_attribute', 'delete_attribute',
-                            'adjust_attribute')
+                            'adjust_attribute', 'modify_attribute_mismatch')
                         delete_attribute_recipe = recipe[1] == 'delete_attribute'
-                        modify_attribute_recipe = recipe[1] == 'modify_attribute'
+                        modify_attribute_recipe = recipe[1] in (
+                            'modify_attribute', 'modify_attribute_mismatch')
                         attribute_mutation_operation = {
                             'add_attribute': 13, 'modify_attribute': 14,
+                            'modify_attribute_mismatch': 14,
                             'set_attribute': 49, 'delete_attribute': 15, 'adjust_attribute': 48,
                         }.get(recipe[1])
                         seeded_attribute_recipe = delete_attribute_recipe or modify_attribute_recipe
@@ -4667,10 +4680,14 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         elif attribute_mutation_recipe:
                                             response_items = [item for item in response_tree[2]
                                                               if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+                                            expected_statuses = ([1] if recipe[1] ==
+                                                                 'modify_attribute_mismatch' and
+                                                                 exchange_index == mutation_exchange_index
+                                                                 else [0])
                                             if ([numbers(item, 0x42005C) for item in response_items] !=
                                                     [[operation] for operation in response_operations] or
                                                     [numbers(item, 0x42007F) for item in response_items] !=
-                                                    [[0] for _ in response_operations]):
+                                                    [expected_statuses for _ in response_operations]):
                                                 raise ValueError('fixture_attribute_mutation_response_mismatch')
                                         elif recipe[1] in ('set_constraints', 'set_defaults'):
                                             response_items = [item for item in response_tree[2]
@@ -4754,9 +4771,10 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                     'test-norm-payload-client-get-attribute-list-request-20-001',
                                     'test-norm-payload-client-get-attribute-list-request-21-001'}:
                                 run_environment['KMIPKIT_C_ATTRIBUTE_REQUEST_IDENTIFIER'] = 'fixture-key-1'
-                            if recipe[1] == 'modify_attribute':
+                            if recipe[1] in ('modify_attribute', 'modify_attribute_mismatch'):
                                 run_environment['KMIPKIT_C_MODIFY_CURRENT_ATTRIBUTE'] = (
-                                    'present' if case_id.endswith('-002') else 'omitted')
+                                    'present' if recipe[1] == 'modify_attribute_mismatch' or
+                                    case_id.endswith('-002') else 'omitted')
                             run = subprocess.run([str(binary.resolve()), 'run', '--connection', str(connection_path),
                                 '--catalog', str(catalog_path), '--allow-mutations', '--output', str(result_path)],
                                 cwd=ROOT, capture_output=True,
@@ -5131,6 +5149,21 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                         'peer_observed_state_before_sha256'] !=
                                                     observation[mutation_index][2][
                                                         'peer_observed_state_after_sha256'],
+                                                **({'peer_response_result_statuses': [
+                                                        numbers(item, 0x42007F)[0]
+                                                        for item in observation[mutation_index][1][2]
+                                                        if item[0] == BATCH_ITEM_TAG],
+                                                    'peer_response_result_reasons': [
+                                                        numbers(item, 0x42007E)[0]
+                                                        for item in observation[mutation_index][1][2]
+                                                        if item[0] == BATCH_ITEM_TAG]}
+                                                   if recipe[1] == 'modify_attribute_mismatch' else {}),
+                                                **({'peer_final_state_matches_setup':
+                                                    observation[0][2][
+                                                        'peer_observed_state_before_sha256'] ==
+                                                    observation[-1][2][
+                                                        'peer_observed_state_after_sha256']}
+                                                   if recipe[1] == 'modify_attribute_mismatch' else {}),
                                                 }
                                                if attribute_mutation_recipe and len(observation) ==
                                                (4 if seeded_attribute_recipe else 3) else {}),
