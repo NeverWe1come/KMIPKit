@@ -1689,6 +1689,10 @@ final class LocalCatalogRouteChecks {
     }
 
     /** Executes the PGP Key and Secret Data object factories with their required table fields. */
+    static boolean isPgpKeyTargetId(String targetId) {
+        return targetId.contains("PGP-KEY") || targetId.equals("KMIPKIT-ELEM-TAG-4200BD");
+    }
+
     static void executePgpKeyAndSecretDataManagedObjectTargets(JsonNode catalog, String version,
             Set<String> selectedCaseIds, EvidenceSink sink) throws Exception {
         if (!PGP_KEY_AND_SECRET_DATA_CASE_IDS.containsAll(selectedCaseIds)) {
@@ -1701,7 +1705,7 @@ final class LocalCatalogRouteChecks {
             String caseId = testCase.path("case_id").asText();
             if (!selectedCaseIds.contains(caseId) || !applies(testCase, version)) continue;
             String targetId = testCase.path("requires").path("normative_target_id").asText();
-            boolean pgpKey = targetId.contains("PGP-KEY") || targetId.equals("KMIPKIT-ELEM-TAG-4200BD");
+            boolean pgpKey = isPgpKeyTargetId(targetId);
             String objectName = pgpKey ? "PGP Key" : "Secret Data";
             String typeName = pgpKey ? "PGP Key Version" : "Secret Data Type";
             String factoryName = pgpKey ? "pgpKey" : "secretData";

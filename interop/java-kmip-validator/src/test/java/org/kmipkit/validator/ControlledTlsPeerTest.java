@@ -2109,7 +2109,7 @@ class ControlledTlsPeerTest {
             }
             assertTrue(caseNode != null, "PGP Key or Secret Data case must exist in the route catalog.");
             String targetId = caseNode.path("requires").path("normative_target_id").asText();
-            boolean pgpKey = targetId.contains("PGP-KEY") || targetId.equals("KMIPKIT-ELEM-TAG-4200BD");
+            boolean pgpKey = LocalCatalogRouteChecks.isPgpKeyTargetId(targetId);
             boolean tagTarget = targetId.equals("KMIPKIT-ELEM-TAG-4200BD")
                     || targetId.equals("KMIPKIT-ELEM-TAG-420085");
             String factoryRoute = "java.typed-protocol.model.org.kmipkit.ttlv.managedobject."
