@@ -299,3 +299,14 @@ artifact. This is part of the FR-006 artifact provenance check.
   send unsupported requests.
 - Selected evidence validates 34,850/34,850 cells with zero failures; 36,791
   of 71,641 remain pending. Full closure remains open under FR-002/FR-003/FR-009.
+
+## Java inherited generic Batch Item workflow routes on #217 — 2026-11-18
+
+- **FR-003/FR-009:** #217 inherits generic Item construction, view, and decode
+  for catalogued batch-workflow Request Batch Item and Response Batch Item
+  targets through #216, for KMIP 2.0 and 2.1 (OASIS §§8.3, 8.6). This is
+  generic representation evidence only.
+- The Java suite passes 92/92 and shared route suites pass 109/109. Selected
+  evidence validates 35,000/35,000 cells with zero failures; the full ledger
+  records 71,641 planned, 35,000 executed, and 36,641 pending cells. Full
+  matrix closure remains open under FR-002/FR-003/FR-009.

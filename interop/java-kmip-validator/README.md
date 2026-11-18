@@ -500,3 +500,10 @@ boundary Operation fixtures inherited through #216. They exercise local TTLV
 Item construction, view, and decode for the 2.1-only operation values without
 sending requests. The combined report validates 34,850/34,850 cells; 36,791 of
 71,641 Java cells remain pending.
+
+The #217 tip inherits the generic TTLV construction, view, and decode evidence
+for catalogued batch-workflow Request Batch Item and Response Batch Item
+targets through #216. These KMIP 2.0/2.1 fixtures validate the generic
+representation only. The full Java suite passes 92/92; the selected report
+validates 35,000/35,000 cells with zero failures and leaves 36,641 of 71,641
+full Java route cells pending.

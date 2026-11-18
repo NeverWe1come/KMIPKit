@@ -3761,3 +3761,16 @@ selected evidence validates 34,850/34,850 cells with zero failures, the ledger
 matches its reference, and the capability audit accepts 1,507 routes. The full
 ledger records 71,641 planned, 34,850 executed, and 36,791 pending cells. Full
 closure and exact-head CI remain open; #217 stays WIP.
+
+## #217 inherited generic Batch Item workflow routes — 2026-11-18
+
+The #217 Right Usage Limits stack inherits the #187 generic TTLV Item evidence
+through #216 for catalogued batch-workflow Request Batch Item and Response
+Batch Item targets. The fixture invokes Item construction, view, and decode in
+KMIP 2.0 and 2.1; it validates generic representation only (OASIS §§8.3, 8.6).
+
+The merged Java suite passes 92/92; shared route suites pass 109/109; selected
+evidence validates 35,000/35,000 cells with zero failures; the generated
+ledger matches its reference and the capability audit accepts 1,507 routes.
+The full ledger has 71,641 planned, 35,000 executed, and 36,641 pending cells.
+Full matrix closure and exact-head CI remain open; #217 stays WIP.
