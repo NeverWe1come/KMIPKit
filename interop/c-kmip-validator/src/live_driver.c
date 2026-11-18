@@ -5740,6 +5740,9 @@ static kmip_execution_outcome_t execute_certify_public_key(kmip_live_client_t *c
         !same_text_identifier(&certificate_identifier, &private_identifier) &&
         !same_text_identifier(&certificate_identifier, &public_identifier) &&
         activate_response_matches_created_key(responses[1], &private_identifier, &status) &&
+        response_ttlv_matches_field_count(
+            responses[2], kmipkit_client_batch_item_response_certify_ttlv,
+            COMPLETE_RESPONSE_ITEM_TTLV_FIELD_COUNT, &status) &&
         revoke_response_matches_created_key(responses[3], &private_identifier, &status) &&
         response_ttlv_matches_identifier(
             responses[3], kmipkit_client_batch_item_response_revoke_ttlv,
