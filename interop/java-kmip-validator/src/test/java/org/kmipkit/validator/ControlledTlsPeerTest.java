@@ -2396,7 +2396,25 @@ class ControlledTlsPeerTest {
                         "KMIPKIT-ELEM-OP-C2S-CREATE-SPLIT-KEY"},
                 {"test-norm-payload-client-create-split-key-request-20-006",
                         "KMIPKIT-PAYLOAD-CLIENT-CREATE-SPLIT-KEY-REQUEST-20-006",
-                        "KMIPKIT-ELEM-OP-C2S-CREATE-SPLIT-KEY"}
+                        "KMIPKIT-ELEM-OP-C2S-CREATE-SPLIT-KEY"},
+                {"test-norm-payload-client-adjust-attribute-request-20-002",
+                        "KMIPKIT-PAYLOAD-CLIENT-ADJUST-ATTRIBUTE-REQUEST-20-002",
+                        "KMIPKIT-ELEM-OP-C2S-ADJUST-ATTRIBUTE"},
+                {"test-norm-payload-client-delete-attribute-request-20-003",
+                        "KMIPKIT-PAYLOAD-CLIENT-DELETE-ATTRIBUTE-REQUEST-20-003",
+                        "KMIPKIT-ELEM-OP-C2S-DELETE-ATTRIBUTE"},
+                {"test-norm-payload-client-get-attributes-request-20-002",
+                        "KMIPKIT-PAYLOAD-CLIENT-GET-ATTRIBUTES-REQUEST-20-002",
+                        "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES"},
+                {"test-norm-payload-client-re-key-key-pair-request-20-001",
+                        "KMIPKIT-PAYLOAD-CLIENT-RE-KEY-KEY-PAIR-REQUEST-20-001",
+                        "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR"},
+                {"test-norm-payload-client-re-provision-request-20-002",
+                        "KMIPKIT-PAYLOAD-CLIENT-RE-PROVISION-REQUEST-20-002",
+                        "KMIPKIT-ELEM-OP-C2S-RE-PROVISION"},
+                {"test-norm-payload-client-validate-request-20-001",
+                        "KMIPKIT-PAYLOAD-CLIENT-VALIDATE-REQUEST-20-001",
+                        "KMIPKIT-ELEM-OP-C2S-VALIDATE"}
         };
         for (String[] payload : additionalClientPayloadCases) {
             int routeEventCount = 0;
