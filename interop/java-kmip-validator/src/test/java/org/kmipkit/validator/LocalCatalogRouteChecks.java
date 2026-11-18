@@ -3262,6 +3262,23 @@ final class LocalCatalogRouteChecks {
                 target.workflowStepIndex(), target.workflowOperation(), target.workflowItemIndex()));
     }
 
+    private static boolean stopOmitsResponse(String caseId, OperationTarget target) {
+        return "test-batch-stop-on-first-failure".equals(caseId)
+                && "Get".equals(target.workflowOperation())
+                && Integer.valueOf(1).equals(target.workflowItemIndex());
+    }
+
+    private static void emitMissingNotApplicableGenericRoute(Set<RouteEvidenceKey> recordedRoutes,
+            EvidenceSink sink, String caseId, OperationTarget target, String version,
+            GenericOperationRoute route, String reason) throws Exception {
+        RouteEvidenceKey key = operationRouteKey(caseId, target, route.routeId(), version);
+        if (recordedRoutes.add(key)) {
+            sink.record(new Invocation(caseId, target.targetId(), route.routeId(), route.symbol(),
+                    route.action(), null, null, target.workflowStepIndex(), target.workflowOperation(),
+                    target.workflowItemIndex(), reason));
+        }
+    }
+
     private static Set<RouteEvidenceKey> routeEvidenceKeys(JsonNode events) {
         Set<RouteEvidenceKey> keys = new java.util.HashSet<>();
         for (JsonNode event : events) {
@@ -3338,9 +3355,7 @@ final class LocalCatalogRouteChecks {
                 long operationValue = enumValue(catalog, "OPERATION", target.operation());
                 byte[] wire = scalarWire(operationTag, TtlvItemType.Enumeration.code(),
                         Math.toIntExact(operationValue));
-                boolean stopOmitsItemResponse = "test-batch-stop-on-first-failure".equals(caseId)
-                        && "Get".equals(target.workflowOperation())
-                        && Integer.valueOf(1).equals(target.workflowItemIndex());
+                boolean stopOmitsItemResponse = stopOmitsResponse(caseId, target);
                 try (RawTag rawTag = RawTag.fromRaw(operationTag); Tag tag = rawTag.checked();
                         TtlvValue value = TtlvValue.Enumeration(operationValue);
                         TtlvItem item = TtlvItem.create(tag, value, limits)) {
@@ -3356,14 +3371,8 @@ final class LocalCatalogRouteChecks {
                 for (GenericOperationRoute route : GENERIC_OPERATION_ROUTES) {
                     if (stopOmitsItemResponse
                             && "decode".equals(route.action())) {
-                        RouteEvidenceKey key = operationRouteKey(caseId, target, route.routeId(), version);
-                        if (!recordedRoutes.contains(key)) {
-                            sink.record(new Invocation(caseId, targetId, route.routeId(), route.symbol(),
-                                    route.action(), null, null, target.workflowStepIndex(),
-                                    target.workflowOperation(), target.workflowItemIndex(),
-                                    "stop_unprocessed_response_omitted"));
-                            recordedRoutes.add(key);
-                        }
+                        emitMissingNotApplicableGenericRoute(recordedRoutes, sink, caseId, target,
+                                version, route, "stop_unprocessed_response_omitted");
                     } else {
                         emitMissingGenericRoute(recordedRoutes, sink, caseId, target, version,
                                 route.routeId(), route.symbol(), route.action(), wire);
