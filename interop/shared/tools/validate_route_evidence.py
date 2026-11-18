@@ -17,6 +17,18 @@ LANGUAGES = ("rust", "c", "java", "python")
 VERSIONS = {"2.0", "2.1"}
 ENCODINGS = {"TTLV", "JSON", "XML"}
 TRANSPORTS = {"raw_tls", "https"}
+LOCAL_BATCH_REJECTION_CONTRACTS = {
+    "test-batch-placeholder-without-producer-rejected": (
+        "rejected_or_operation_failed",
+        ["Activate"],
+        ["Activate(IDPlaceholder)"],
+    ),
+    "test-batch-placeholder-forward-reference-rejected": (
+        "rejected_or_server_reports_protocol_error",
+        ["Activate", "Create"],
+        ["Activate(IDPlaceholder from item 2)", "Create(unique-key)"],
+    ),
+}
 
 
 def _key(record: dict) -> tuple:
@@ -93,19 +105,7 @@ def _expected_batch_operations(case: dict) -> list[str] | None:
 
 def _validate_local_batch_rejection(event: dict, case: dict, key: tuple) -> None:
     """Validate catalogued local Placeholder rejection boundaries."""
-    contracts = {
-        "test-batch-placeholder-without-producer-rejected": (
-            "rejected_or_operation_failed",
-            ["Activate"],
-            ["Activate(IDPlaceholder)"],
-        ),
-        "test-batch-placeholder-forward-reference-rejected": (
-            "rejected_or_server_reports_protocol_error",
-            ["Activate", "Create"],
-            ["Activate(IDPlaceholder from item 2)", "Create(unique-key)"],
-        ),
-    }
-    contract = contracts.get(case.get("case_id"))
+    contract = LOCAL_BATCH_REJECTION_CONTRACTS.get(case.get("case_id"))
     if contract is None:
         raise ValueError(f"local batch rejection is not defined by the catalog: {key}")
     expected_construction, operations, expected_items = contract
