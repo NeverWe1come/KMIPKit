@@ -206,6 +206,14 @@ final class LocalCatalogRouteChecks {
             "test-norm-object-structure-object-structure-split-key";
     static final Set<String> SPLIT_KEY_MANAGED_OBJECT_ROOT_CASE_IDS =
             Set.of(SPLIT_KEY_MANAGED_OBJECT_ROOT_CASE_ID);
+    static final Set<String> SPLIT_KEY_MANAGED_OBJECT_MEMBER_CASE_IDS = Set.of(
+            "test-norm-structure-member-structure-member-2-8-split-key-key-block",
+            "test-norm-structure-member-structure-member-2-8-split-key-key-part-identifier",
+            "test-norm-structure-member-structure-member-2-8-split-key-prime-field-size",
+            "test-norm-structure-member-structure-member-2-8-split-key-split-key-method",
+            "test-norm-structure-member-structure-member-2-8-split-key-split-key-parts",
+            "test-norm-structure-member-structure-member-2-8-split-key-split-key-threshold",
+            "test-norm-tag-tag-420089");
     static final Set<String> REMAINING_ENUMERATION_FIELD_CASE_IDS = Set.of(
             "test-norm-operation-structure-operation-structure-7-15-interop-function",
             "test-norm-structure-member-structure-member-5-5-attribute-reference",
@@ -1801,6 +1809,103 @@ final class LocalCatalogRouteChecks {
         assertEquals(2, object.splitKeyThreshold());
     }
 
+    /** Executes Split Key Table 9 member cases through the applicable typed object factories. */
+    static void executeSplitKeyManagedObjectMemberTargets(JsonNode catalog, String version,
+            Set<String> selectedCaseIds, EvidenceSink sink) throws Exception {
+        if (!SPLIT_KEY_MANAGED_OBJECT_MEMBER_CASE_IDS.containsAll(selectedCaseIds)) {
+            throw new IllegalArgumentException("Selected case is not a Split Key member or tag target.");
+        }
+        Set<String> emitted = new java.util.LinkedHashSet<>();
+        CodecLimits limits = CodecLimits.defaults();
+        int objectType = Math.toIntExact(enumValue(catalog, "OBJECT-TYPE", "Split Key"));
+        int objectTag = tagCodeNamed(catalog, "Split Key", version);
+        int keyBlockTag = tagCodeNamed(catalog, "Key Block", version);
+        int splitKeyPartsTag = tagCodeNamed(catalog, "Split Key Parts", version);
+        int keyPartIdentifierTag = tagCodeNamed(catalog, "Key Part Identifier", version);
+        int splitKeyThresholdTag = tagCodeNamed(catalog, "Split Key Threshold", version);
+        int splitKeyMethodTag = tagCodeNamed(catalog, "Split Key Method", version);
+        int primeFieldSizeTag = tagCodeNamed(catalog, "Prime Field Size", version);
+        byte[] keyBlockWire = rawKeyBlockWire(catalog, version);
+        byte[] primeFieldSize = new byte[] {1, 1};
+        long xorMethod = enumValue(catalog, "SPLIT-KEY-METHOD", "XOR");
+        long primeFieldMethod = enumValue(catalog, "SPLIT-KEY-METHOD", "Polynomial Sharing Prime Field");
+
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String caseId = testCase.path("case_id").asText();
+            if (!selectedCaseIds.contains(caseId) || !applies(testCase, version)) continue;
+            String targetId = testCase.path("requires").path("normative_target_id").asText();
+            boolean primeFieldTarget = targetId.equals(
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-8-SPLIT-KEY-PRIME-FIELD-SIZE");
+            boolean tagTarget = "tag".equals(testCase.path("requires").path("target_kind").asText());
+            long method = primeFieldTarget ? primeFieldMethod : xorMethod;
+
+            List<TtlvItem> fields = new ArrayList<>();
+            try {
+                fields.add(createIntegerItem(splitKeyPartsTag, 2, limits));
+                fields.add(createIntegerItem(keyPartIdentifierTag, 1, limits));
+                fields.add(createIntegerItem(splitKeyThresholdTag, 2, limits));
+                fields.add(createEnumerationItem(splitKeyMethodTag, method, limits));
+                if (primeFieldTarget) fields.add(createBigIntegerItem(primeFieldSizeTag, primeFieldSize, limits));
+                fields.add(rawKeyBlockItem(catalog, version, limits));
+
+                byte[] memberWire = structureWire(objectTag, concat(
+                        scalarWire(splitKeyPartsTag, TtlvItemType.Integer.code(), 2),
+                        scalarWire(keyPartIdentifierTag, TtlvItemType.Integer.code(), 1),
+                        scalarWire(splitKeyThresholdTag, TtlvItemType.Integer.code(), 2),
+                        scalarWire(splitKeyMethodTag, TtlvItemType.Enumeration.code(), Math.toIntExact(method)),
+                        primeFieldTarget
+                                ? itemWire(primeFieldSizeTag, TtlvItemType.BigInteger.code(), primeFieldSize)
+                                : new byte[0],
+                        keyBlockWire));
+                try (ManagedObject typedFactory = ManagedObject.splitKey(fields)) {
+                    assertSplitKeyMemberObject(typedFactory, objectType, method,
+                            primeFieldTarget ? primeFieldSize : null);
+                    if (!tagTarget) {
+                        try (ManagedObject fromFields = ManagedObject.fromFields(objectType, fields);
+                                TtlvItem objectItem = createStructureItem(objectTag, fields, limits);
+                                ManagedObject fromItem = ManagedObject.fromItem(objectType, objectItem)) {
+                            assertSplitKeyMemberObject(fromFields, objectType, method,
+                                    primeFieldTarget ? primeFieldSize : null);
+                            assertSplitKeyMemberObject(fromItem, objectType, method,
+                                    primeFieldTarget ? primeFieldSize : null);
+                        }
+                    }
+                }
+
+                emitRoute(sink, caseId, targetId,
+                        "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.splitkey",
+                        "org.kmipkit.ttlv.ManagedObject.splitKey", "construct", memberWire);
+                if (!tagTarget) {
+                    emitRoute(sink, caseId, targetId,
+                            "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromfields",
+                            "org.kmipkit.ttlv.ManagedObject.fromFields", "construct", memberWire);
+                    emitRoute(sink, caseId, targetId,
+                            "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromitem",
+                            "org.kmipkit.ttlv.ManagedObject.fromItem", "construct", memberWire);
+                }
+                emitted.add(caseId);
+            } finally {
+                closeItems(fields);
+            }
+        }
+        if (!emitted.equals(selectedCaseIds)) {
+            throw new IllegalArgumentException("Selected Split Key member targets were not executed for " + version);
+        }
+    }
+
+    private static void assertSplitKeyMemberObject(ManagedObject object, int objectType, long method,
+            byte[] expectedPrimeFieldSize) {
+        assertEquals(objectType, object.objectType());
+        assertEquals(true, object.hasKeyBlock());
+        assertEquals(1, object.keyPartIdentifier());
+        assertEquals(method, object.splitKeyMethod());
+        assertEquals(2, object.splitKeyParts());
+        assertEquals(2, object.splitKeyThreshold());
+        if (expectedPrimeFieldSize != null) {
+            assertArrayEquals(expectedPrimeFieldSize, object.primeFieldSize());
+        }
+    }
+
     private record ManagedObjectRootFixture(String objectName, String factoryName, String targetId) { }
 
     private static ManagedObjectRootFixture managedObjectRootFixture(String targetId) {
@@ -2171,6 +2276,13 @@ final class LocalCatalogRouteChecks {
 
     private static TtlvItem createIntegerItem(int tagCode, int value, CodecLimits limits) {
         try (TtlvValue ttlvValue = TtlvValue.Integer(value);
+                RawTag raw = RawTag.fromRaw(tagCode); Tag tag = raw.checked()) {
+            return TtlvItem.create(tag, ttlvValue, limits);
+        }
+    }
+
+    private static TtlvItem createBigIntegerItem(int tagCode, byte[] value, CodecLimits limits) {
+        try (TtlvValue ttlvValue = TtlvValue.BigInteger(value, limits);
                 RawTag raw = RawTag.fromRaw(tagCode); Tag tag = raw.checked()) {
             return TtlvItem.create(tag, ttlvValue, limits);
         }
