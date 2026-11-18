@@ -101,8 +101,8 @@ baseline, regenerate the checked-in ledger with
 rejects generated ledgers that do not record successful invocations.
 The generated ledger retains the artifact
 SHA-256 for each build; that build-specific digest is not used as a coverage
-baseline. These recipes execute 34,382 of 71,641 planned Java route cells, with
-no failed cells; the ledger records the other 37,259 as pending and does not imply
+baseline. These recipes execute 34,718 of 71,641 planned Java route cells, with
+no failed cells; the ledger records the other 36,923 as pending and does not imply
 vendor interoperability or full-matrix completion. Local TTLV recipes exercise 51
 enumeration families, all six bitmask aggregate cases, and all 44 individual
 bitmask value cases through the applicable
@@ -467,3 +467,11 @@ factory (`symmetricKey`, `privateKey`, or `publicKey`) for every transparent
 Key Material fixture. The #216 branch retains all Usage Limits coverage; its
 combined selected report validates 34,634/34,634 cells with zero failures and
 leaves 37,007 of 71,641 pending. Full matrix closure remains outstanding.
+
+The #216 stack tip also includes the Split Key root factory routes introduced
+on #187, alongside Usage Limits coverage. In KMIP 2.0 and 2.1 the fixture
+invokes `ManagedObject.splitKey`, `fromFields`, and `fromItem` using Table 9
+field order, XOR, two parts, threshold two, and a Raw Key Block. This adds six
+local model cells; the combined selected report validates 34,718/34,718 cells
+with zero failures and leaves 36,923 of 71,641 pending. The full matrix remains
+WIP.

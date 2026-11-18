@@ -726,6 +726,36 @@ class LocalCatalogRouteChecksTest {
     }
 
     @Test
+    // KMIP 2.0/2.1 §2.8 defines the Split Key managed-object structure.
+    void executesSplitKeyManagedObjectFactoryForRootTargetAndVersions() throws Exception {
+        JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
+        Set<String> caseIds = LocalCatalogRouteChecks.SPLIT_KEY_MANAGED_OBJECT_ROOT_CASE_IDS;
+        List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
+
+        for (String version : List.of("2.0", "2.1")) {
+            LocalCatalogRouteChecks.executeSplitKeyManagedObjectRootTargets(
+                    catalog, version, caseIds, invocations::add);
+        }
+
+        assertEquals(6, invocations.size());
+        assertEquals(Set.of(
+                "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.splitkey",
+                "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromfields",
+                "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromitem"),
+                invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId)
+                        .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(Set.of("KMIPKIT-ELEM-OBJECT-STRUCTURE-SPLIT-KEY"), invocations.stream()
+                .map(LocalCatalogRouteChecks.Invocation::targetId)
+                .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(Set.of("construct"), invocations.stream()
+                .map(LocalCatalogRouteChecks.Invocation::action)
+                .collect(java.util.stream.Collectors.toSet()));
+        assertTrue(invocations.stream().allMatch(invocation -> caseIds.contains(invocation.caseId())));
+        byte[] expectedWire = invocations.get(0).wire();
+        invocations.forEach(invocation -> assertArrayEquals(expectedWire, invocation.wire()));
+    }
+
+    @Test
     // KMIP 2.0/2.1 §2.1 defines Certificate as a managed-object structure.
     void executesManagedObjectFactoriesForEveryApplicableFactoryTargetAndVersion() throws Exception {
         JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());

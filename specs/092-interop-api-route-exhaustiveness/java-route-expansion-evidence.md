@@ -3661,9 +3661,24 @@ incomplete and the PR remains WIP.
 
 The #216 branch now includes the #187 key-object root routes and stable
 evidence-ledger generation while retaining its Usage Limits route evidence.
-The full Java validator suite passes 86/86 tests; the shared route suites pass
+The full Java validator suite passes 87/87 tests; the shared route suites pass
 109/109 tests; and the capability audit accepts all 1,507 routes. The selected
-report validates 34,712/34,712 cells with zero failures. The generated ledger
-matches its checked-in reference and records 71,641 planned, 34,712 executed,
-and 36,929 pending cells. The Java full matrix remains incomplete and #216
+report validates 34,718/34,718 cells with zero failures. The generated ledger
+matches its checked-in reference and records 71,641 planned, 34,718 executed,
+and 36,923 pending cells. The Java full matrix remains incomplete and #216
 remains WIP.
+
+## #216 Split Key managed-object root routes — 2026-11-18
+
+The #216 stack tip includes Red commit `45b9ab5c5`, Green commit `e3b1bdfe7`,
+and Refactor commit `e8fdeb63d` from #187. The fixture invokes
+`ManagedObject.splitKey`, `fromFields`, and `fromItem` in KMIP 2.0 and 2.1 with
+the §2.8 Table 9 member order, XOR, two parts, threshold two, and a Raw Key
+Block. It verifies object type and the typed Split Key accessors. The six
+events are local model evidence, not a cryptographic split or server exchange.
+
+On the combined #216 head the Java suite passes 87/87, shared route suites pass
+109/109, selected evidence validates 34,718/34,718 cells with zero failures,
+the ledger comparison passes, and the capability audit accepts 1,507 routes.
+The full matrix remains incomplete with 36,923 pending cells of 71,641, so the
+stack remains WIP.

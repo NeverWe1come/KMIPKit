@@ -310,8 +310,19 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
 
 - The #216 branch merges the Java key-object root routes and deterministic
   ledger fix from #187 while retaining the branch's Usage Limits evidence.
-- Verification: the Java suite passes 86/86 tests; the shared route suites
+- Verification: the Java suite passes 87/87 tests; the shared route suites
   pass 109/109; the 1,507-route capability audit passes; and the combined
-  report validates 34,712/34,712 selected cells with zero failures. The
-  regenerated ledger matches its reference and reports 36,929 pending cells
+  report validates 34,718/34,718 selected cells with zero failures. The
+  regenerated ledger matches its reference and reports 36,923 pending cells
   out of 71,641. T006, T007, T009, and full Java matrix closure remain open.
+
+## Java Split Key managed-object root routes on #216
+
+- #216 contains the #187 Split Key implementation in addition to its Usage
+  Limits routes. Red `45b9ab5c5`, Green `e3b1bdfe7`, and Refactor `e8fdeb63d`
+  preserve the TDD evidence and use the exact KMIP 2.0/2.1 §2.8 Table 9 member
+  order.
+- Verification on the combined #216 head: Java suite 87/87, shared route
+  suites 109/109, selected evidence 34,718/34,718 with zero failures, ledger
+  comparison, and the 1,507-route capability audit all pass. The full Java
+  matrix remains incomplete at 36,923 pending cells of 71,641; keep #216 WIP.
