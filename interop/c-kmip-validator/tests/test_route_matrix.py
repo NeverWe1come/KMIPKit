@@ -4660,6 +4660,36 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(all('kmipkit_client_execute' in check['public_api_trace_symbols']
                             for check in checks))
 
+    def test_single_item_default_continuation_keeps_stop_implicit(self):
+        """OASIS KMIP 2.0/2.1 §9.6 defaults an omitted continuation option to Stop."""
+        from artifact_support import ROOT
+        import route_peer
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case = next(item for item in catalog['test_cases']
+                    if item['case_id'] == 'test-batch-single-item-default-continuation')
+
+        self.assertEqual(
+            route_peer.recipe_for_case(case, None),
+            ((10,), 'batch_single_item_default_continuation'))
+
+        selected = {**catalog, 'test_cases': [case]}
+        events, _, checks = route_peer.execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertTrue(all(check.get('peer_single_get') is True and
+                            check.get('peer_batch_count_is_one') is True and
+                            check.get('peer_continuation_option_is_omitted') is True and
+                            check.get('peer_order_option_is_omitted') is True and
+                            check.get('peer_single_success_response') is True
+                            for check in checks), checks)
+        self.assertEqual(sum(event['public_api_symbol'] ==
+                             'kmipkit_client_batch_item_get' and
+                             event['action'] == 'send' for event in events), 12)
+
     def test_hash_and_rng_cases_call_their_public_routes_and_check_responses(self):
         from artifact_support import ROOT
         from route_peer import RECIPES, execute_network_cells
