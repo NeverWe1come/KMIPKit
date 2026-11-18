@@ -175,6 +175,73 @@ class LocalCatalogRouteChecksTest {
     }
 
     @Test
+    void messageProtocolVersionMinorMatchesSelectedVersion() throws Exception {
+        // OASIS KMIP 2.0/2.1 §9.16 Protocol Version.
+        JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
+        String caseId = "test-norm-message-field-message-field-9-16-protocol-version-minor";
+        for (String version : List.of("2.0", "2.1")) {
+            List<LocalCatalogRouteChecks.Invocation> calls = new ArrayList<>();
+            LocalCatalogRouteChecks.executeScalarMessageFields(catalog, version, Set.of(caseId), calls::add);
+            assertEquals(4, calls.size());
+            try (var decoded = TtlvCodec.decode(calls.get(0).wire()); var view = decoded.view();
+                    var tag = view.tag(); var value = view.value()) {
+                assertEquals(0x42006b, tag.raw());
+                assertEquals(TtlvItemType.Integer, view.itemType());
+                assertEquals(version.equals("2.0") ? 0 : 1, value.integer());
+            }
+        }
+    }
+
+    @Test
+    void splitKeyFixtureUsesAlignedBigIntegerLength() throws Exception {
+        assertBigIntegerFixtureLengths(true);
+    }
+
+    @Test
+    void transparentKeyFixtureUsesAlignedBigIntegerLength() throws Exception {
+        assertBigIntegerFixtureLengths(false);
+    }
+
+    // OASIS KMIP 2.0/2.1 §10.1.2 requires Big Integer length to be a multiple of eight.
+    private static void assertBigIntegerFixtureLengths(boolean split) throws Exception {
+        JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
+        for (String version : List.of("2.0", "2.1")) {
+            List<LocalCatalogRouteChecks.Invocation> calls = new ArrayList<>();
+            if (split) {
+                LocalCatalogRouteChecks.executeSplitKeyManagedObjectMemberTargets(catalog, version,
+                        Set.of("test-norm-structure-member-structure-member-2-8-split-key-prime-field-size"), calls::add);
+            } else {
+                LocalCatalogRouteChecks.executeTransparentKeyMaterialTargets(catalog, version,
+                        Set.of("test-norm-structure-member-structure-member-3-8-key-material-modulus"), calls::add);
+            }
+            assertTrue(calls.size() > 0);
+            for (var call : calls) {
+                assertTrue(assertAlignedBigIntegers(call.wire(), 0, call.wire().length) > 0, call.caseId());
+                try (var decoded = TtlvCodec.decode(call.wire())) {
+                    assertTrue(decoded != null);
+                }
+            }
+        }
+    }
+
+    private static int assertAlignedBigIntegers(byte[] wire, int offset, int end) {
+        int found = 0;
+        while (offset < end) {
+            int type = Byte.toUnsignedInt(wire[offset + 3]);
+            int length = java.nio.ByteBuffer.wrap(wire, offset + 4, 4).getInt();
+            if (type == TtlvItemType.BigInteger.code()) {
+                assertEquals(0, length % 8, "Big Integer Length must include sign-extension bytes");
+                found++;
+            } else if (type == TtlvItemType.Structure.code()) {
+                found += assertAlignedBigIntegers(wire, offset + 8, offset + 8 + length);
+            }
+            offset += 8 + ((length + 7) & ~7);
+        }
+        assertEquals(end, offset);
+        return found;
+    }
+
+    @Test
     void executesDerivationMethodPayloadUsingItsCataloguedEnumerationType() throws Exception {
         // OASIS KMIP 2.0/2.1 §6.1.14 and §11.14.
         ObjectMapper mapper = new ObjectMapper();

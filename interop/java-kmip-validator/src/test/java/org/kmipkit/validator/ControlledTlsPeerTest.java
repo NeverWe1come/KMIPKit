@@ -815,6 +815,18 @@ class ControlledTlsPeerTest {
     }
 
     @Test
+    void objectGroupsStructureTagMatchesCatalogAssignment() {
+        // OASIS KMIP 2.1 §§7.23 and 11.56.
+        assertEquals(0x420166, OPERATION_STRUCTURE_FIXTURES.get(0).structureTag());
+    }
+
+    @Test
+    void objectTypesStructureTagMatchesCatalogAssignment() {
+        // OASIS KMIP 2.1 §§7.24 and 11.56.
+        assertEquals(0x420167, OPERATION_STRUCTURE_FIXTURES.get(1).structureTag());
+    }
+
+    @Test
     void objectTypeEnumerationDoesNotUseTypedAttributeRoutes() throws Exception {
         List<EnumerationFixture> objectTypeFixtures = genericEnumerationFixtures().stream()
                 .filter(fixture -> "OBJECT-TYPE".equals(fixture.parentName()))
