@@ -161,9 +161,21 @@ final class LocalCatalogRouteChecks {
             "test-norm-structure-member-structure-member-3-11-key-material-recommended-curve",
             "test-norm-structure-member-structure-member-3-12-key-material-q-string",
             "test-norm-structure-member-structure-member-3-12-key-material-recommended-curve");
+    private static final Set<String> TRANSPARENT_KEY_MATERIAL_STRUCTURE_CASE_IDS = Set.of(
+            "test-norm-object-structure-object-structure-3-4-key-material",
+            "test-norm-object-structure-object-structure-3-5-key-material",
+            "test-norm-object-structure-object-structure-3-6-key-material",
+            "test-norm-object-structure-object-structure-3-7-key-material",
+            "test-norm-object-structure-object-structure-3-8-key-material",
+            "test-norm-object-structure-object-structure-3-9-key-material",
+            "test-norm-object-structure-object-structure-3-10-key-material",
+            "test-norm-object-structure-object-structure-3-11-key-material",
+            "test-norm-object-structure-object-structure-3-12-key-material");
     static final Set<String> TRANSPARENT_KEY_MATERIAL_CASE_IDS = java.util.stream.Stream.concat(
-            BIG_INTEGER_TARGET_CASE_IDS.stream().filter(caseId -> caseId.contains("-key-material-")),
-            NON_INTEGER_TRANSPARENT_KEY_MATERIAL_CASE_IDS.stream())
+            java.util.stream.Stream.concat(
+                    BIG_INTEGER_TARGET_CASE_IDS.stream().filter(caseId -> caseId.contains("-key-material-")),
+                    NON_INTEGER_TRANSPARENT_KEY_MATERIAL_CASE_IDS.stream()),
+            TRANSPARENT_KEY_MATERIAL_STRUCTURE_CASE_IDS.stream())
             .collect(java.util.stream.Collectors.toUnmodifiableSet());
     static final Set<String> REMAINING_ENUMERATION_FIELD_CASE_IDS = Set.of(
             "test-norm-operation-structure-operation-structure-7-15-interop-function",
