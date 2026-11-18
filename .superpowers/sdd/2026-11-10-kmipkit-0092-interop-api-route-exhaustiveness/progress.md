@@ -650,3 +650,23 @@ branches, and the common CI therefore reports a planned matrix only.
   Java matrix coverage. The PR remains WIP pending exact-head CI.
 - Commands and generated-ledger provenance are recorded in
   `specs/092-interop-api-route-exhaustiveness/java-route-expansion-evidence.md`.
+
+## #216 Split Key member routes — 2026-11-18
+
+- The #216 stack tip now includes the Split Key structure-member and tag
+  routes from #187 while preserving its Usage Limits tests. The combined
+  selected report validates 34,756/34,756 cells with zero failures; the full
+  ledger has 71,641 planned, 34,756 executed, and 36,885 pending cells.
+- The full Java suite passes 87/87; shared route suites pass 109/109; ledger
+  comparison and the 1,507-route capability audit pass. Full matrix closure and
+  exact-head CI remain open, so #216 stays WIP.
+
+## #217 Split Key member routes — 2026-11-18
+
+- The #217 stack tip inherits the Split Key structure-member and tag routes
+  from #187 through #216 and retains Right Usage Limits coverage. The combined
+  selected report validates 34,756/34,756 cells with zero failures; the full
+  ledger has 71,641 planned, 34,756 executed, and 36,885 pending cells.
+- The Java suite passes 87/87; shared route suites pass 109/109; ledger
+  comparison and the 1,507-route capability audit pass. Full matrix closure and
+  exact-head CI remain open, so #217 stays WIP.

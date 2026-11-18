@@ -469,3 +469,10 @@ The current #217 tip also includes the Split Key root factory routes from #187:
 Limits route/action cells remain present in the report. The combined selected
 report validates 34,718/34,718 cells with zero failures and leaves 36,923 of
 71,641 pending; the Java matrix remains WIP.
+
+The #217 branch includes all six Split Key Table 9 member routes and its tag,
+alongside the existing Right Usage Limits evidence. The Prime Field Size
+fixture uses Polynomial Sharing Prime Field and Big Integer 257; other members
+use XOR and omit that conditional field. The combined selected report validates
+34,756/34,756 cells with zero failures and leaves 36,885 of 71,641 pending.
+Full matrix closure remains outstanding.

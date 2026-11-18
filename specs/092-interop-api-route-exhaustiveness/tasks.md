@@ -337,3 +337,14 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
   selected evidence 34,718/34,718 with zero failures, generated ledger
   comparison, and the 1,507-route capability audit all pass. Full matrix
   closure remains open at 36,923 pending cells of 71,641; keep #217 WIP.
+
+## Java Split Key member routes on #217
+
+- #217 inherits the six §2.8 Table 9 member cases and Split Key tag from #187
+  through #216, retaining its Right Usage Limits routes. Red `3601224ff`,
+  Green `adbcd43d0`, Refactor `af53d1b39`, and the duplicate-ID correction
+  `5138855e4` are present in the stack history.
+- Verification: full Java suite 87/87; shared route suites 109/109; selected
+  report 34,756/34,756 with zero failures; ledger comparison and the 1,507-route
+  capability audit pass. The full Java ledger has 36,885 pending of 71,641;
+  full matrix closure and exact-head CI remain open, so #217 stays WIP.
