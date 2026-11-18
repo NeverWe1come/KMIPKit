@@ -872,6 +872,7 @@ class ControlledTlsPeerTest {
         int textStringTargetRouteEventCount = 0;
         int fixedScalarTargetRouteEventCount = 0;
         int bigIntegerTargetRouteEventCount = 0;
+        int typedKeyMaterialRouteEventCount = 0;
         int remainingEnumerationFieldRouteEventCount = 0;
         int genericStructureTargetRouteEventCount = 0;
         int managedObjectTypeRouteEventCount = 0;
@@ -1246,6 +1247,16 @@ class ControlledTlsPeerTest {
                 appendLocalCatalogInvocation(events, protocolVersion, invocation);
             }
             bigIntegerTargetRouteEventCount += bigIntegerTargetInvocations.size();
+            List<LocalCatalogRouteChecks.Invocation> typedKeyMaterialInvocations = new ArrayList<>();
+            LocalCatalogRouteChecks.executeTransparentKeyMaterialTargets(readRouteEvidenceCatalog(), protocolVersion,
+                    Set.of(
+                            "test-norm-structure-member-structure-member-3-8-key-material-modulus",
+                            "test-norm-structure-member-structure-member-3-8-key-material-public-exponent"),
+                    typedKeyMaterialInvocations::add);
+            for (LocalCatalogRouteChecks.Invocation invocation : typedKeyMaterialInvocations) {
+                appendLocalCatalogInvocation(events, protocolVersion, invocation);
+            }
+            typedKeyMaterialRouteEventCount += typedKeyMaterialInvocations.size();
             Set<String> missingRemainingEnumerationFields = LocalCatalogRouteChecks
                     .missingRemainingEnumerationFieldCaseIds(readRouteEvidenceCatalog(), events, protocolVersion);
             remainingEnumerationFieldCaseIds.addAll(missingRemainingEnumerationFields);
@@ -1918,6 +1929,7 @@ class ControlledTlsPeerTest {
                         + remainingEnumerationFieldRouteEventCount
                         + genericStructureTargetRouteEventCount
                         + managedObjectTypeRouteEventCount
+                        + typedKeyMaterialRouteEventCount
                         + 97 // BEC, batch IDs, async payload, Ping, Endpoint Role, Object Defaults, derivation, and Extension Information member cells.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Type generic and typed Attribute routes.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Value generic and typed Attribute routes.
@@ -1971,6 +1983,7 @@ class ControlledTlsPeerTest {
                         + 1 // KMIP 2.0/2.1 §8.2 Batch Order Option message-field case.
                         + 1 // KMIP 2.0/2.1 §8.2 Attestation Capable Indicator message-field case.
                         + 1 // KMIP 2.0/2.1 §5.1 Attributes generic Structure routes.
+                        + 2 // RSA public Key Material fields exercise both typed model constructors.
                         // Four scalar header cases are already included by the baseline report groups.
                         + scalarMessageFieldCaseIds(report.path("events")).size() - 4
                         + additionalCaseIdCount,
@@ -4327,6 +4340,8 @@ class ControlledTlsPeerTest {
         caseIds.add(OBJECT_DEFAULTS_OBJECT_TYPE_CASE_ID);
         caseIds.add("test-norm-operation-structure-operation-structure-7-2-asynchronous-request");
         caseIds.add("test-norm-operation-structure-operation-structure-7-13-extension-information");
+        caseIds.add("test-norm-structure-member-structure-member-3-8-key-material-modulus");
+        caseIds.add("test-norm-structure-member-structure-member-3-8-key-material-public-exponent");
         caseIds.add(OBJECT_TYPE_MEMBER_CASE_ID);
         caseIds.add(CONSTRAINT_CASE_ID);
         caseIds.add(CONSTRAINTS_CASE_ID);

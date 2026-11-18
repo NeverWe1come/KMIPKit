@@ -15,6 +15,7 @@ import org.kmipkit.ttlv.TtlvDecodeException;
 import org.kmipkit.ttlv.TtlvItem;
 import org.kmipkit.ttlv.TtlvItemView;
 import org.kmipkit.ttlv.TtlvItemType;
+import org.kmipkit.ttlv.KeyMaterial;
 import org.kmipkit.ttlv.TtlvStructure;
 import org.kmipkit.ttlv.TtlvStructureView;
 import org.kmipkit.ttlv.TtlvValue;
@@ -1426,6 +1427,73 @@ final class LocalCatalogRouteChecks {
         }
         if (!emitted.equals(applicable)) {
             throw new IllegalArgumentException("Selected Big Integer targets were not executed for " + version);
+        }
+    }
+
+    /** Executes typed Key Material constructors for the catalogued RSA public-key members. */
+    static void executeTransparentKeyMaterialTargets(JsonNode catalog, String version,
+            Set<String> selectedCaseIds, EvidenceSink sink) throws Exception {
+        Set<String> expectedCases = Set.of(
+                "test-norm-structure-member-structure-member-3-8-key-material-modulus",
+                "test-norm-structure-member-structure-member-3-8-key-material-public-exponent");
+        if (!expectedCases.containsAll(selectedCaseIds)) {
+            throw new IllegalArgumentException("Selected case is not a catalogued RSA public-key member.");
+        }
+        CodecLimits limits = CodecLimits.defaults();
+        int modulusTag = tagCodeNamed(catalog, "Modulus", version);
+        int exponentTag = tagCodeNamed(catalog, "Public Exponent", version);
+        int keyMaterialTag = tagCodeNamed(catalog, "Key Material", version);
+        byte[] modulusBytes = new byte[] {0x11, 0x23};
+        byte[] exponentBytes = new byte[] {0x03};
+        byte[] modulusWire = itemWire(modulusTag, TtlvItemType.BigInteger.code(), modulusBytes);
+        byte[] exponentWire = itemWire(exponentTag, TtlvItemType.BigInteger.code(), exponentBytes);
+        byte[] keyMaterialWire = structureWire(keyMaterialTag, concat(modulusWire, exponentWire));
+        Set<String> emitted = new java.util.LinkedHashSet<>();
+
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String caseId = testCase.path("case_id").asText();
+            if (!selectedCaseIds.contains(caseId) || !applies(testCase, version)) continue;
+            JsonNode requires = testCase.path("requires");
+            String targetId = requires.path("normative_target_id").asText();
+            JsonNode target = findTarget(catalog, targetId);
+            if (!"structure_member".equals(requires.path("target_kind").asText())
+                    || !"Big Integer".equals(target.path("source_encoding").asText())
+                    || !hasParent(target, "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-8-KEY-MATERIAL")) {
+                throw new IllegalArgumentException("Selected case does not identify an RSA public-key member: "
+                        + caseId);
+            }
+            try (TtlvValue modulusValue = TtlvValue.BigInteger(modulusBytes, limits);
+                    TtlvValue exponentValue = TtlvValue.BigInteger(exponentBytes, limits);
+                    RawTag modulusRaw = RawTag.fromRaw(modulusTag); Tag modulusChecked = modulusRaw.checked();
+                    RawTag exponentRaw = RawTag.fromRaw(exponentTag); Tag exponentChecked = exponentRaw.checked();
+                    TtlvItem modulus = TtlvItem.create(modulusChecked, modulusValue, limits);
+                    TtlvItem exponent = TtlvItem.create(exponentChecked, exponentValue, limits);
+                    KeyMaterial fromFields = KeyMaterial.fromFields(11, List.of(modulus, exponent));
+                    TtlvStructure empty = TtlvStructure.create();
+                    TtlvStructure withModulus = TtlvStructure.withItem(empty, modulus, limits);
+                    TtlvStructure fields = TtlvStructure.withItem(withModulus, exponent, limits);
+                    TtlvValue structureValue = TtlvValue.structure(fields, limits);
+                    RawTag keyMaterialRaw = RawTag.fromRaw(keyMaterialTag);
+                    Tag keyMaterialChecked = keyMaterialRaw.checked();
+                    TtlvItem keyMaterialItem = TtlvItem.create(keyMaterialChecked, structureValue, limits);
+                    KeyMaterial fromItem = KeyMaterial.fromItem(11, keyMaterialItem)) {
+                assertEquals(11, fromFields.formatRaw());
+                assertEquals(11, fromItem.formatRaw());
+                int targetTag = tagCodeNamed(catalog, target.path("name").asText(), version);
+                byte[] expected = "Modulus".equals(target.path("name").asText()) ? modulusBytes : exponentBytes;
+                assertArrayEquals(expected, fromFields.fieldBytes(targetTag));
+                assertArrayEquals(expected, fromItem.fieldBytes(targetTag));
+            }
+            emitRoute(sink, caseId, targetId,
+                    "java.typed-protocol.model.org.kmipkit.ttlv.keymaterial.fromfields",
+                    "org.kmipkit.ttlv.KeyMaterial.fromFields", "construct", keyMaterialWire);
+            emitRoute(sink, caseId, targetId,
+                    "java.typed-protocol.model.org.kmipkit.ttlv.keymaterial.fromitem",
+                    "org.kmipkit.ttlv.KeyMaterial.fromItem", "construct", keyMaterialWire);
+            emitted.add(caseId);
+        }
+        if (!emitted.equals(selectedCaseIds)) {
+            throw new IllegalArgumentException("Selected RSA public-key members were not executed for " + version);
         }
     }
 
