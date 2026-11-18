@@ -1496,6 +1496,12 @@ final class LocalCatalogRouteChecks {
     /** Exercises generic TTLV construction and decoding for catalogued scalar Attributes. */
     static void executeScalarAttributeValues(JsonNode catalog, String version, Set<String> selectedCaseIds,
             EvidenceSink sink) throws Exception {
+        executeScalarAttributeValues(catalog, version, selectedCaseIds, null, sink);
+    }
+
+    /** Executes only the scalar Attribute routes absent from the current evidence report. */
+    static void executeScalarAttributeValues(JsonNode catalog, String version, Set<String> selectedCaseIds,
+            JsonNode existingEvents, EvidenceSink sink) throws Exception {
         Set<String> applicable = new java.util.LinkedHashSet<>();
         Set<String> emitted = new java.util.LinkedHashSet<>();
         for (JsonNode testCase : catalog.path("test_cases")) {
@@ -1559,13 +1565,43 @@ final class LocalCatalogRouteChecks {
                 default -> throw new IllegalArgumentException("Selected attribute case is not scalar-valued: "
                         + caseId);
             }
-            emitRoute(sink, caseId, targetId, constructorRoute, constructorSymbol, "construct", wire);
-            emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_item.create",
-                    "org.kmipkit.ttlv.TtlvItem.create", "construct", wire);
-            emitRoute(sink, caseId, targetId, "java.generic-ttlv.function.ttlv_item_view_from_item",
-                    "org.kmipkit.ttlv.TtlvItem.view", "decode", wire);
-            emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_codec.decode",
-                    "org.kmipkit.ttlv.TtlvCodec.decode", "decode", wire);
+            List<String> genericRoutes = scalarAttributeGenericRoutes(valueType);
+            if (routeEvidenceCount(existingEvents, caseId, targetId, version, genericRoutes) == 0) {
+                emitRoute(sink, caseId, targetId, constructorRoute, constructorSymbol, "construct", wire);
+                emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_item.create",
+                        "org.kmipkit.ttlv.TtlvItem.create", "construct", wire);
+                emitRoute(sink, caseId, targetId, "java.generic-ttlv.function.ttlv_item_view_from_item",
+                        "org.kmipkit.ttlv.TtlvItem.view", "decode", wire);
+                emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_codec.decode",
+                        "org.kmipkit.ttlv.TtlvCodec.decode", "decode", wire);
+            }
+            List<String> typedRoutes = scalarAttributeTypedRoutes();
+            if (routeEvidenceCount(existingEvents, caseId, targetId, version, typedRoutes) == 0) {
+                StandardAttribute attribute = standardAttributeForTag(attributeTag);
+                if (attribute == null) {
+                    throw new IllegalArgumentException("Selected scalar Attribute has no StandardAttribute: "
+                            + attributeName);
+                }
+                switch (valueType) {
+                    case "Integer" -> {
+                        int value = integerAttributeFixture(attributeName);
+                        executeTypedAttributeRoutes(caseId, targetId, attributeTag, attribute,
+                                TtlvValue.Integer(value), TtlvItemType.Integer, wire,
+                                typedValue -> assertEquals(value, typedValue.integer()), sink);
+                    }
+                    case "Interval" -> executeTypedAttributeRoutes(caseId, targetId, attributeTag, attribute,
+                            TtlvValue.Interval(60), TtlvItemType.Interval, wire,
+                            typedValue -> assertEquals(60L, typedValue.interval()), sink);
+                    case "Byte String" -> {
+                        byte[] value = new byte[] {0x01, 0x23, 0x45, 0x67};
+                        executeTypedAttributeRoutes(caseId, targetId, attributeTag, attribute,
+                                TtlvValue.ByteString(value, CodecLimits.defaults()), TtlvItemType.ByteString, wire,
+                                typedValue -> assertArrayEquals(value, typedValue.bytes()), sink);
+                    }
+                    default -> throw new IllegalArgumentException(
+                            "Selected attribute case is not scalar-valued: " + caseId);
+                }
+            }
             emitted.add(caseId);
         }
         if (!emitted.equals(applicable)) {
@@ -1579,19 +1615,45 @@ final class LocalCatalogRouteChecks {
             String caseId = testCase.path("case_id").asText();
             if (!SCALAR_ATTRIBUTE_VALUE_CASE_IDS.contains(caseId) || !applies(testCase, version)) continue;
             String valueType = testCase.path("requires").path("attribute_policy").path("value_type").asText();
-            String constructorRoute = switch (valueType) {
-                case "Integer" -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.integer";
-                case "Interval" -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.interval";
-                case "Byte String" -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.bytestring";
-                default -> throw new IllegalArgumentException("Selected attribute case is not scalar-valued: "
-                        + caseId);
-            };
-            List<String> requiredRoutes = List.of(constructorRoute, "java.generic-ttlv.ttlv_item.create",
-                    "java.generic-ttlv.function.ttlv_item_view_from_item", "java.generic-ttlv.ttlv_codec.decode");
             String targetId = testCase.path("requires").path("normative_target_id").asText();
-            int present = 0;
-            for (String route : requiredRoutes) {
-                boolean found = false;
+            List<String> genericRoutes = scalarAttributeGenericRoutes(valueType);
+            List<String> typedRoutes = scalarAttributeTypedRoutes();
+            int genericPresent = routeEvidenceCount(events, caseId, targetId, version, genericRoutes);
+            int typedPresent = routeEvidenceCount(events, caseId, targetId, version, typedRoutes);
+            if (genericPresent > 0) assertEquals(genericRoutes.size(), genericPresent,
+                    "Generic scalar Attribute route evidence must be complete before reuse for " + caseId);
+            if (typedPresent > 0) assertEquals(typedRoutes.size(), typedPresent,
+                    "Typed scalar Attribute route evidence must be complete before reuse for " + caseId);
+            if (genericPresent == 0 || typedPresent == 0) missing.add(caseId);
+        }
+        return missing;
+    }
+
+    private static List<String> scalarAttributeGenericRoutes(String valueType) {
+        String constructorRoute = switch (valueType) {
+            case "Integer" -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.integer";
+            case "Interval" -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.interval";
+            case "Byte String" -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.bytestring";
+            default -> throw new IllegalArgumentException("Selected attribute case is not scalar-valued: "
+                    + valueType);
+        };
+        return List.of(constructorRoute, "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item", "java.generic-ttlv.ttlv_codec.decode");
+    }
+
+    private static List<String> scalarAttributeTypedRoutes() {
+        return List.of(
+                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
+                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
+                "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew");
+    }
+
+    private static int routeEvidenceCount(JsonNode events, String caseId, String targetId, String version,
+            List<String> routes) {
+        int count = 0;
+        for (String route : routes) {
+            boolean found = false;
+            if (events != null) {
                 for (JsonNode event : events) {
                     if (caseId.equals(event.path("case_id").asText())
                             && targetId.equals(event.path("target_id").asText())
@@ -1603,13 +1665,10 @@ final class LocalCatalogRouteChecks {
                         break;
                     }
                 }
-                if (found) present++;
             }
-            if (present == 0) missing.add(caseId);
-            else assertEquals(requiredRoutes.size(), present,
-                    "Scalar Attribute route evidence must be complete before reuse for " + caseId);
+            if (found) count++;
         }
-        return missing;
+        return count;
     }
 
     /** Exercises remaining catalogued Text String targets through generic TTLV routes. */

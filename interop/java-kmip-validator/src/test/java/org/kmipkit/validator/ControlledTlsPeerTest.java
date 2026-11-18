@@ -1265,7 +1265,7 @@ class ControlledTlsPeerTest {
             scalarAttributeValueCaseIds.addAll(missingScalarAttributeCases);
             List<LocalCatalogRouteChecks.Invocation> scalarAttributeValueInvocations = new ArrayList<>();
             LocalCatalogRouteChecks.executeScalarAttributeValues(readRouteEvidenceCatalog(), protocolVersion,
-                    missingScalarAttributeCases, scalarAttributeValueInvocations::add);
+                    missingScalarAttributeCases, events, scalarAttributeValueInvocations::add);
             for (LocalCatalogRouteChecks.Invocation invocation : scalarAttributeValueInvocations) {
                 appendLocalCatalogInvocation(events, protocolVersion, invocation);
             }
