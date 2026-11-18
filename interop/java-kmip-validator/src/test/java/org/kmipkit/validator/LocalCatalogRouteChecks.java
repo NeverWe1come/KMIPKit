@@ -1715,16 +1715,16 @@ final class LocalCatalogRouteChecks {
         }
     }
 
-    private record ManagedObjectRootFixture(String objectName, String factoryName, String targetId) { }
+    private record ManagedObjectRootFixture(String objectName, String factoryName) { }
 
     private static ManagedObjectRootFixture managedObjectRootFixture(String targetId) {
         return switch (targetId) {
             case "KMIPKIT-ELEM-OBJECT-STRUCTURE-SYMMETRIC-KEY" ->
-                    new ManagedObjectRootFixture("Symmetric Key", "symmetricKey", targetId);
+                    new ManagedObjectRootFixture("Symmetric Key", "symmetricKey");
             case "KMIPKIT-ELEM-OBJECT-STRUCTURE-PRIVATE-KEY" ->
-                    new ManagedObjectRootFixture("Private Key", "privateKey", targetId);
+                    new ManagedObjectRootFixture("Private Key", "privateKey");
             case "KMIPKIT-ELEM-OBJECT-STRUCTURE-PUBLIC-KEY" ->
-                    new ManagedObjectRootFixture("Public Key", "publicKey", targetId);
+                    new ManagedObjectRootFixture("Public Key", "publicKey");
             default -> throw new IllegalArgumentException("Target is not a key-bearing object structure: " + targetId);
         };
     }
