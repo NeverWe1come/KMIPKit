@@ -139,8 +139,8 @@ The `*.gaps.json` sidecar identifies every unexecuted matrix obligation rather
 than misclassifying it as an unavailable library route. Other sidecars retain
 installed-artifact availability checks and sanitized controlled-peer outcomes.
 The evidence JSON passes the shared schema independently of completeness.
-The latest full local C matrix run (`c-route-66f02f34-b938-488b-a732-974d0938bcf8`)
-has 66,736 expected cells, 43,035 invoked, zero failed, and 23,701 pending.
+The latest full local C matrix run (`c-route-5b7720d1-936c-42fa-bf3d-e32cf252bb18`)
+has 66,736 expected cells, 43,097 invoked, zero failed, and 23,639 pending.
 The MAC and Sign response TTLV accessors and the Continue batch-option
 constructor contribute four local cells each across KMIP 2.0/2.1. The
 Query Async Requests correlation builder contributes two KMIP 2.1 model cells.
@@ -344,9 +344,20 @@ repeated Enumeration tree under KMIP 2.1 §§6.1.41 and 7.25. It covers the
 Operations structure, its Operation member, the Operations tag, and the
 catalogued KMIP 2.1 request field, adding seven applicable local cells.
 
-Comparing the full report with the previous 43,016-event run by matrix cell
-identity retained every prior cell and added exactly 19 live Query Async
-cells. Catalog, route-manifest, installed-artifact, and library-commit
-fingerprints match the baseline. CTest passes 7/7, including 191 route-matrix
-contract tests and both controlled TLS peers. The global route-completeness
-gate remains open for the other 23,701 pending cells.
+The `test-batch-single-item-default-continuation` live route exercises one
+successful Get with Batch Count 1 and both batch options omitted across both
+protocol versions, all three encodings, raw TLS, and HTTPS. KMIP 2.0/2.1 §9.6
+defines the omitted continuation option as Stop and permits the option only
+when Batch Count is greater than one. The route therefore never calls the
+explicit Stop setter; its two setter cells remain pending until a valid
+multi-item Stop recipe is implemented. The peer checks the request shape and
+successful Get response; the C consumer checks response metadata, correlation,
+header and payload TTLV views, and the typed key response. This adds 62 cells:
+36 live construct/send/response cells and 26 local request/response cells.
+
+Comparing the full report with the previous 43,035-event run by matrix cell
+identity retained every prior cell and added exactly 62 cells for the single-
+item default-Stop route. Catalog, route-manifest, installed-artifact, and
+library-commit fingerprints match the baseline. CTest passes 7/7, including
+191 route-matrix contract tests and both controlled TLS peers. The global
+route-completeness gate remains open for the other 23,639 pending cells.
