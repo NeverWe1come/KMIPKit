@@ -683,6 +683,7 @@ def main() -> int:
     expected_cases += ("test-op-adjust-attribute",)
     expected_cases += ("test-batch-create-activate-destroy",)
     expected_cases += ("test-batch-placeholder-chain-resolves",)
+    expected_cases += ("test-batch-placeholder-forward-reference-rejected",)
     expected_cases += (
         "test-batch-order-required-placeholder-resolution",
         "test-batch-order-omitted-defaults-true",
