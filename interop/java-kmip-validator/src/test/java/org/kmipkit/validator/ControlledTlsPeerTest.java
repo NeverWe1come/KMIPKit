@@ -889,6 +889,7 @@ class ControlledTlsPeerTest {
         Set<String> bigIntegerTargetCaseIds = new java.util.LinkedHashSet<>();
         Set<String> remainingEnumerationFieldCaseIds = new java.util.LinkedHashSet<>();
         Set<String> genericStructureTargetCaseIds = new java.util.LinkedHashSet<>();
+        Set<String> genericTagCaseIds = new java.util.LinkedHashSet<>(genericOnlyTagCaseIds());
 
         for (String protocolVersion : KMIP_2_0_AND_2_1) {
             appendLocalQueryRouteEvents(events, protocolVersion, requestTreeHash);
@@ -955,8 +956,9 @@ class ControlledTlsPeerTest {
                     typedTagIdentityCases,
                     invocation -> appendLocalCatalogInvocation(events, protocolVersion, invocation));
             Set<String> missingGenericTagCases = missingGenericTagRouteCaseIds(events, protocolVersion);
+            genericTagCaseIds.addAll(missingGenericTagCases);
             LocalCatalogRouteChecks.executeTags(readRouteEvidenceCatalog(), protocolVersion, missingGenericTagCases,
-                    invocation -> appendAggregateTagInvocation(events, protocolVersion, invocation));
+                    invocation -> appendLocalCatalogInvocation(events, protocolVersion, invocation));
             LocalCatalogRouteChecks.executeReferencedEnums(readRouteEvidenceCatalog(), protocolVersion,
                     invocation -> appendLocalCatalogInvocation(events, protocolVersion, invocation));
             Set<String> missingBooleanFieldCases = missingBooleanFieldRouteCaseIds(events, protocolVersion);
@@ -1314,7 +1316,7 @@ class ControlledTlsPeerTest {
                 structureAttributeValueCaseIds, textAttributeValueCaseIds, booleanAttributeValueCaseIds,
                 dateTimeAttributeValueCaseIds, enumerationAttributeValueCaseIds, scalarAttributeValueCaseIds,
                 textStringTargetCaseIds, fixedScalarTargetCaseIds, bigIntegerTargetCaseIds,
-                remainingEnumerationFieldCaseIds, genericStructureTargetCaseIds);
+                remainingEnumerationFieldCaseIds, genericStructureTargetCaseIds, genericTagCaseIds);
         assertTrue(Files.isRegularFile(reportPath),
                 "Installed client calls against the controlled TLS peer must emit route execution evidence.");
         JsonNode report = new ObjectMapper().readTree(reportPath.toFile());
@@ -1818,7 +1820,6 @@ class ControlledTlsPeerTest {
         int referencedEnumEventCount = 0;
         int referencedEnumAggregateEventCount = 0;
         int referencedEnumCaseCount = 0;
-        Set<String> genericTagCaseIds = genericOnlyTagCaseIds();
         for (JsonNode testCase : readRouteEvidenceCatalog().path("test_cases")) {
             if ("referenced_enum_value".equals(testCase.path("requires").path("target_kind").asText())) {
                 referencedEnumEventCount += 4 * testCase.path("execution").path("protocol_versions").size();
@@ -1944,6 +1945,10 @@ class ControlledTlsPeerTest {
                     report.path("case_ids").get(index).asText());
         }
         assertEquals("test-attr-activation-date", report.path("case_ids").get(6).asText());
+        List<String> reportedCaseIds = new ArrayList<>();
+        report.path("case_ids").forEach(caseId -> reportedCaseIds.add(caseId.asText()));
+        assertTrue(reportedCaseIds.contains("test-norm-tag-tag-42000c"),
+                "Typed non-attribute Tags still need their generic TTLV case in the selected report.");
         assertEquals(2, report.path("protocol_versions").size());
         assertEquals("org.kmipkit.extensions.Client.execute",
                 findEvent(report.path("events"), "send", "2.0").path("execution_api_symbol").asText());
@@ -4204,7 +4209,8 @@ class ControlledTlsPeerTest {
             Set<String> dateTimeAttributeValueCaseIds, Set<String> enumerationAttributeValueCaseIds,
             Set<String> scalarAttributeValueCaseIds, Set<String> textStringTargetCaseIds,
             Set<String> fixedScalarTargetCaseIds, Set<String> bigIntegerTargetCaseIds,
-            Set<String> remainingEnumerationFieldCaseIds, Set<String> genericStructureTargetCaseIds)
+            Set<String> remainingEnumerationFieldCaseIds, Set<String> genericStructureTargetCaseIds,
+            Set<String> genericTagCaseIds)
             throws Exception {
         Path catalogPath = routeEvidenceCatalogPath();
         Path manifestPath = Path.of("../shared/coverage/route-capabilities.json");
@@ -4280,7 +4286,7 @@ class ControlledTlsPeerTest {
         caseIds.add("test-norm-payload-client-modify-attribute-request-21-003");
         caseIds.add("test-norm-payload-client-set-attribute-request-20-002");
         caseIds.add("test-norm-payload-client-set-attribute-request-21-002");
-        genericOnlyTagCaseIds().forEach(caseIds::add);
+        genericTagCaseIds.forEach(caseIds::add);
         typedTagIdentityCaseIds().stream()
                 .filter(caseId -> !"test-norm-tag-tag-420051".equals(caseId))
                 .forEach(caseIds::add);
@@ -4459,13 +4465,6 @@ class ControlledTlsPeerTest {
         appendRouteEvent(events, invocation.caseId(), invocation.routeId(), invocation.targetId(),
                 invocation.symbol(), null, null, invocation.action(), version, null,
                 construction ? treeHash : null, construction ? null : treeHash);
-    }
-
-    private static void appendAggregateTagInvocation(ArrayNode events, String version,
-            LocalCatalogRouteChecks.Invocation invocation) throws Exception {
-        appendLocalCatalogInvocation(events, version, new LocalCatalogRouteChecks.Invocation(
-                "test-enum-tag", invocation.targetId(), invocation.routeId(), invocation.symbol(),
-                invocation.action(), invocation.wire(), invocation.rejectionCode()));
     }
 
     // OASIS KMIP 2.0 §11.54 and KMIP 2.1 §11.56: exact Tag assignments and reservations.

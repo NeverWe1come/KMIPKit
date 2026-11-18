@@ -3608,16 +3608,36 @@ python3 interop/shared/tools/route_capabilities.py --check
 git diff --check
 ```
 
-## #216 Usage Limits stack synchronized with generic Structure routes — 2026-11-18
+## Assigned Tag generic routes retained per case — 2026-11-18
 
-The Java Usage Limits branch now includes the generic Structure route
-implementation and evidence from its parent matrix branch while retaining its
-own Usage Limits route additions. The installed-consumer Gradle suite passes;
-the selected report validates 30,126/30,126 cells with zero failures. The
-ledger records 30,126 executed and 41,515 pending cells of 71,641 across 1,112
-pending case IDs. Shared route-evidence, schema, and capability suites pass 108
-tests, and the route audit confirms 1,507 routes. The matrix is still
-incomplete, so #216 remains WIP.
+Red commit `70be6c72d` requires the Authentication Tag case to appear in the
+selected evidence report even though it also has typed Credential routes. The
+focused installed-consumer test failed because the route executor wrote its
+generic TTLV calls only into the aggregate Tag case and omitted the original
+normative case ID. Green commit `36fdfa4f5` preserves those calls per case and
+includes every repaired Tag case in the report selection before regenerating
+the Tag aggregate. This closes 470 cells for 47 assigned Tags across KMIP
+2.0/2.1: RawTag construction and validation, Item creation, Item view, and
+codec decoding. The synthetic Integer value verifies generic structural
+handling and the assigned tag identity only; it does not assert that Integer
+is a semantically valid value for each tag.
+
+The full Gradle suite passes. The parent selected report validates
+30,580/30,580 cells with zero failures; its ledger records 30,580 executed and
+41,061 pending cells of 71,641 across 1,114 pending case IDs. The route ledger
+comparer passes; shared route-evidence, schema, and capability suites pass 108
+tests; the route audit confirms 1,507 routes. This closes the Tag slice; the
+complete matrix remains WIP.
+
+## #216 Usage Limits stack synchronized with generic Structure and Tag routes — 2026-11-18
+
+The Java Usage Limits branch includes the updated generic Structure and
+per-case Tag routes from its parent while retaining its own Usage Limits route
+additions. The installed-consumer Gradle suite passes; the selected report
+validates 30,596/30,596 cells with zero failures. The ledger records 30,596
+executed and 41,045 pending cells of 71,641 across 1,112 pending case IDs.
+Shared route-evidence, schema, and capability suites pass 108 tests; the route
+audit confirms 1,507 routes. The matrix is incomplete, so #216 remains WIP.
 
 Verification:
 
@@ -3635,15 +3655,15 @@ python3 interop/shared/tools/route_capabilities.py --check
 git diff --check
 ```
 
-## #217 Right Usage Limits stack synchronized with generic Structure routes — 2026-11-18
+## #217 Right Usage Limits stack synchronized with generic Structure and Tag routes — 2026-11-18
 
 The Right Usage Limits branch now contains the updated #216 stack and the
-catalog-wide generic Structure route coverage. Its existing Right member
+catalog-wide generic Structure and per-case Tag route coverage. Its existing Right member
 fixture remains in the report with all eight KMIP 2.0/2.1 cells, checking the
 optional member and nested Usage Limits structure through the applicable local
 TTLV routes. The installed-consumer Gradle suite passes; the selected report
-validates 30,126/30,126 cells with zero failures. The ledger records 30,126
-executed and 41,515 pending cells of 71,641 across 1,112 pending case IDs.
+validates 30,596/30,596 cells with zero failures. The ledger records 30,596
+executed and 41,045 pending cells of 71,641 across 1,112 pending case IDs.
 Shared route-evidence, schema, and capability suites pass 108 tests, and the
 route audit confirms 1,507 routes. The matrix remains incomplete, so #217 stays
 WIP.
