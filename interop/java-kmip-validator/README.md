@@ -101,8 +101,8 @@ baseline, regenerate the checked-in ledger with
 rejects generated ledgers that do not record successful invocations.
 The generated ledger retains the artifact
 SHA-256 for each build; that build-specific digest is not used as a coverage
-baseline. These recipes execute 30,580 of 71,641 planned Java route cells, with
-no failed cells; the ledger records the other 41,061 as pending and does not imply
+baseline. These recipes execute 33,824 of 71,641 planned Java route cells, with
+no failed cells; the ledger records the other 37,817 as pending and does not imply
 vendor interoperability or full-matrix completion. Local TTLV recipes exercise 51
 enumeration families, all six bitmask aggregate cases, and all 44 individual
 bitmask value cases through the applicable
@@ -389,9 +389,33 @@ Sixty catalogued operation-target cases now exercise the `Operation` Enumeration
 as a generic TTLV Item through `TtlvItem.create`, `TtlvItem.view`, and
 `TtlvCodec.decode` for each applicable KMIP version (345 version-specific
 cells; §§8.2 and 11.36). This proves local generic TTLV behavior only; it does
-not prove operation payload validity or server behavior. The Usage Limits Structure and its Total, Count, and Unit members also complete
-16 local construction, view, and decode cells across KMIP 2.0/2.1 (KMIP 2.0
-§7.34 Table 354; KMIP 2.1 §7.40 Table 392). The selected report validates
-30,941/30,941 cells; 40,700 of 71,641 remain pending across 1,106 case IDs.
-The eight Right Usage Limits cells remain in this report and are covered by the
-catalog-wide generic Structure routes.
+not prove operation payload validity or server behavior. The selected report
+validates 30,925/30,925 cells; 40,716 of 71,641 remain pending across 1,108
+case IDs.
+
+The Java route matrix now adds generic `Operation` Item construction, view, and
+decode evidence for every Operation obligation in the selected catalog cases.
+This includes operation-bearing object and payload cases and ordered batch
+steps with their workflow identity; local enum fixtures keep their primary
+operation as context unless the catalog separately plans it as an Operation
+target. The new events add 2,883 cells to the parent ledger; the existing Usage Limits
+route slice remains included in this branch. The full Java matrix remains
+incomplete (33,824/71,641 executed), so the PR stack remains WIP. These are
+local TTLV checks, not evidence of operation payload validity or server
+behavior.
+
+Verification for this increment:
+
+```sh
+bash bindings/java/gradlew -p interop/java-kmip-validator test --rerun-tasks
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+python3 -m unittest interop.shared.tests.test_route_execution_evidence \
+  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+git diff --check
+```
