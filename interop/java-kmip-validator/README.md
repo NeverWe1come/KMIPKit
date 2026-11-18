@@ -706,3 +706,20 @@ pairs and records `NotSent` evidence. The Java suite passes 92/92; the selected
 report validates 40,962/40,962 cells with zero failures. The ledger records
 71,641 planned, 40,962 executed, and 30,679 pending cells. The matrix remains
 incomplete, so the PR stack stays WIP.
+
+### KMIP 2.0 asynchronous operation boundaries — 2026-11-18
+
+Process (§6.1.39) and Query Asynchronous Requests (§6.1.41) now invoke their
+installed Java client routes under KMIP 2.0 with the catalogued correlation
+and operation filters. TTLV, JSON, and XML are each exercised over raw TLS and
+HTTPS. Both operations fail locally as expected; no raw TLS connection is
+accepted and no HTTPS request arrives. This closes 24 network cells with no
+response-decode obligation. References: OASIS KMIP 2.1 §§6.1.39 and 6.1.41,
+KMIP 2.0 §6.1, and KMIPKIT-0092-FR-001/002/003.
+
+Red `81b432831` requires construct/send evidence for all 24 cells. Green
+`90cd82677` invokes the client routes for both operations in all six
+encoding/transport pairs and records `NotSent` evidence. The Java suite passes
+92/92; the selected report validates 40,986/40,986 cells with zero failures.
+The full ledger records 71,641 planned, 40,986 executed, and 30,655 pending
+cells. The matrix remains incomplete and #187 plus its dependents remain WIP.

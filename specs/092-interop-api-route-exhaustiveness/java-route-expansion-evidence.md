@@ -4031,3 +4031,24 @@ passes 92/92, and the selected report validates 40,962/40,962 cells with zero
 failures. The generated ledger has 71,641 planned, 40,962 executed, and 30,679
 pending cells. Ledger comparison and the capability audit pass. Full matrix
 closure and exact-head CI remain open, so the stack stays WIP.
+
+## Java KMIP 2.0 asynchronous NotSent routes — 2026-11-18
+
+The catalogued Process (§6.1.39) and Query Asynchronous Requests (§6.1.41)
+cases now invoke `Client.executeProcess` and
+`Client.executeQueryAsyncRequests` under KMIP 2.0. The requests use the
+catalogued correlation value and, for Query Asynchronous Requests, the
+operation filter. Each route runs with TTLV, JSON, and XML over raw TLS and
+HTTPS. Both calls fail locally with the expected input diagnostic; the raw
+TLS peers accept no connection and the HTTPS peers receive no request. The
+24 construct/send cells record zero transport invocations and no response
+decode obligation. References: OASIS KMIP 2.1 §§6.1.39 and 6.1.41, KMIP 2.0
+§6.1, and KMIPKIT-0092-FR-001/002/003.
+
+Red `81b432831` requires all 24 cells and fails when no route events exist.
+Green `90cd82677` invokes both installed client operations across the six
+encoding/transport combinations and checks that execution stops locally. The
+Java suite passes 92/92; the selected report validates 40,986/40,986 cells
+with zero failures. The generated ledger records 71,641 planned, 40,986
+executed, and 30,655 pending cells. Ledger comparison and the 1,507-route
+capability audit pass. Matrix closure and exact-head CI remain outstanding.
