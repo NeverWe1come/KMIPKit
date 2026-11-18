@@ -1019,7 +1019,7 @@ final class LocalCatalogRouteChecks {
                 case "Byte String" -> {
                     byte[] value = new byte[] {0x01, 0x23, 0x45, 0x67};
                     wire = itemWire(attributeTag, TtlvItemType.ByteString.code(), value);
-                    constructorRoute = "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.byte_string";
+                    constructorRoute = "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.bytestring";
                     constructorSymbol = "org.kmipkit.ttlv.TtlvValue.ByteString";
                     try (TtlvValue ttlvValue = TtlvValue.ByteString(value, CodecLimits.defaults());
                             RawTag raw = RawTag.fromRaw(attributeTag); Tag tag = raw.checked();
@@ -1056,7 +1056,7 @@ final class LocalCatalogRouteChecks {
             String constructorRoute = switch (valueType) {
                 case "Integer" -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.integer";
                 case "Interval" -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.interval";
-                case "Byte String" -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.byte_string";
+                case "Byte String" -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.bytestring";
                 default -> throw new IllegalArgumentException("Selected attribute case is not scalar-valued: "
                         + caseId);
             };

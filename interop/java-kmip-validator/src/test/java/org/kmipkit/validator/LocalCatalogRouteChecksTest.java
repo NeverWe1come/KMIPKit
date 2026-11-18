@@ -322,7 +322,7 @@ class LocalCatalogRouteChecksTest {
         assertEquals(Set.of(
                 "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.integer",
                 "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.interval",
-                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.byte_string",
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.bytestring",
                 "java.generic-ttlv.ttlv_item.create",
                 "java.generic-ttlv.function.ttlv_item_view_from_item",
                 "java.generic-ttlv.ttlv_codec.decode"),
