@@ -6698,7 +6698,8 @@ class ControlledTlsPeerTest {
     }
 
     private static boolean isSupportedScalarMessageFieldEncoding(String encoding) {
-        return List.of("Boolean", "Byte String", "Date-Time", "Enumeration", "Integer", "Text String",
+        return List.of("Boolean", "Byte String", "Date-Time", "Enumeration", "Integer", "Long Integer",
+                "Text String",
                 "Text String (with usage limited to alphanumeric, underscore and period – i.e. [A-Za-z0-9_.])")
                 .contains(encoding);
     }
@@ -6713,6 +6714,7 @@ class ControlledTlsPeerTest {
             case "Date-Time" -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.datetime";
             case "Enumeration" -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration";
             case "Integer" -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.integer";
+            case "Long Integer" -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.longinteger";
             case "Text String",
                     "Text String (with usage limited to alphanumeric, underscore and period – i.e. [A-Za-z0-9_.])"
                     -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring";

@@ -3732,6 +3732,7 @@ final class LocalCatalogRouteChecks {
             case "Date-Time" -> TtlvItemType.DateTime;
             case "Enumeration" -> TtlvItemType.Enumeration;
             case "Integer" -> TtlvItemType.Integer;
+            case "Long Integer" -> TtlvItemType.LongInteger;
             case "Text String",
                     "Text String (with usage limited to alphanumeric, underscore and period – i.e. [A-Za-z0-9_.])"
                     -> TtlvItemType.TextString;
@@ -3748,6 +3749,8 @@ final class LocalCatalogRouteChecks {
                     .putInt(Math.toIntExact(scalarMessageFieldNumber(caseId, encoding))).array();
             case "Integer" -> ByteBuffer.allocate(Integer.BYTES)
                     .putInt(Math.toIntExact(scalarMessageFieldNumber(caseId, encoding))).array();
+            case "Long Integer" -> ByteBuffer.allocate(Long.BYTES)
+                    .putLong(scalarMessageFieldNumber(caseId, encoding)).array();
             case "Text String",
                     "Text String (with usage limited to alphanumeric, underscore and period – i.e. [A-Za-z0-9_.])"
                     -> "kmipkit_route".getBytes(StandardCharsets.US_ASCII);
@@ -3757,6 +3760,9 @@ final class LocalCatalogRouteChecks {
 
     private static long scalarMessageFieldNumber(String caseId, String encoding) {
         if ("Date-Time".equals(encoding)) return 1_700_000_000L;
+        if ("Long Integer".equals(encoding)) {
+            return caseId.endsWith("usage-limits-count") ? 4_294_967_296L : 8_589_934_592L;
+        }
         if ("Integer".equals(encoding)) {
             if (caseId.endsWith("protocol-version-major")) return 2;
             if (caseId.endsWith("protocol-version-minor")) return 1;
@@ -3782,6 +3788,7 @@ final class LocalCatalogRouteChecks {
             case "Date-Time" -> TtlvValue.DateTime(number);
             case "Enumeration" -> TtlvValue.Enumeration(number);
             case "Integer" -> TtlvValue.Integer(Math.toIntExact(number));
+            case "Long Integer" -> TtlvValue.LongInteger(number);
             case "Text String",
                     "Text String (with usage limited to alphanumeric, underscore and period – i.e. [A-Za-z0-9_.])"
                     -> TtlvValue.TextString(bytes, limits);
@@ -3796,6 +3803,7 @@ final class LocalCatalogRouteChecks {
             case "Date-Time" -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.datetime";
             case "Enumeration" -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration";
             case "Integer" -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.integer";
+            case "Long Integer" -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.longinteger";
             case "Text String",
                     "Text String (with usage limited to alphanumeric, underscore and period – i.e. [A-Za-z0-9_.])"
                     -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring";
@@ -3810,6 +3818,7 @@ final class LocalCatalogRouteChecks {
             case "Date-Time" -> "org.kmipkit.ttlv.TtlvValue.DateTime";
             case "Enumeration" -> "org.kmipkit.ttlv.TtlvValue.Enumeration";
             case "Integer" -> "org.kmipkit.ttlv.TtlvValue.Integer";
+            case "Long Integer" -> "org.kmipkit.ttlv.TtlvValue.LongInteger";
             case "Text String",
                     "Text String (with usage limited to alphanumeric, underscore and period – i.e. [A-Za-z0-9_.])"
                     -> "org.kmipkit.ttlv.TtlvValue.TextString";
