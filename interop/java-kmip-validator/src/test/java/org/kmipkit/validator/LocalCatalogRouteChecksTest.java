@@ -218,6 +218,38 @@ class LocalCatalogRouteChecksTest {
     }
 
     @Test
+    void createSplitKeyPrimeFieldSizeIsBigIntegerPrime() throws Exception {
+        // OASIS KMIP 2.0/2.1 §§2.8, 6.1.10 and 10.1.2; 2^127 - 1 > 2^64.
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode catalog = mapper.readTree(CATALOG.toFile());
+        byte[] prime = new byte[16];
+        java.util.Arrays.fill(prime, (byte) 0xff);
+        prime[0] = 0x7f;
+        for (String version : List.of("2.0", "2.1")) {
+            String suffix = version.equals("2.0") ? "20" : "21";
+            String caseId = "test-norm-payload-client-create-split-key-request-" + suffix + "-006";
+            List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
+            LocalCatalogRouteChecks.executeClientPayloadScalarFields(catalog, version, Set.of(caseId),
+                    mapper.createArrayNode(), invocations::add);
+            assertEquals(6, invocations.size());
+            try (var decoded = TtlvCodec.decode(invocations.get(0).wire()); var view = decoded.view();
+                    var tag = view.tag(); var value = view.value()) {
+                assertEquals(0x420062, tag.raw(), caseId);
+                assertEquals(TtlvItemType.BigInteger, view.itemType(), caseId);
+                assertArrayEquals(prime, value.bytes());
+                assertTrue(new java.math.BigInteger(prime).isProbablePrime(100));
+            }
+        }
+    }
+
+    @Test
+    void checkLeaseRequestAndResponseUseInterval() throws Exception {
+        // OASIS KMIP 2.0/2.1 §4.30 and §6.1.6.
+        assertPayloadScalarType("check-request", "004", "Interval", "420049", 60);
+        assertPayloadScalarType("check-response", "004", "Interval", "420049", 60);
+    }
+
+    @Test
     void reKeyOffsetPayloadIsInterval() throws Exception {
         assertPayloadScalarType("re-key-request", "002", "Interval", "420058", 0);
     }
