@@ -187,6 +187,16 @@ final class LocalCatalogRouteChecks {
         }
     }
 
+    private record GenericOperationRoute(String routeId, String symbol, String action) { }
+
+    private static final List<GenericOperationRoute> GENERIC_OPERATION_ROUTES = List.of(
+            new GenericOperationRoute("java.generic-ttlv.ttlv_item.create", "org.kmipkit.ttlv.TtlvItem.create",
+                    "construct"),
+            new GenericOperationRoute("java.generic-ttlv.function.ttlv_item_view_from_item",
+                    "org.kmipkit.ttlv.TtlvItem.view", "decode"),
+            new GenericOperationRoute("java.generic-ttlv.ttlv_codec.decode", "org.kmipkit.ttlv.TtlvCodec.decode",
+                    "decode"));
+
     /** Executes generic TTLV routes for Boolean fields using their catalogued tag identities. */
     static void executeBooleanFields(JsonNode catalog, String version, Set<String> selectedCaseIds,
             EvidenceSink sink) throws Exception {
@@ -1704,10 +1714,8 @@ final class LocalCatalogRouteChecks {
             if (!applies(testCase, version)) continue;
             String caseId = testCase.path("case_id").asText();
             for (OperationTarget target : operationTargetsForCase(catalog, testCase, version)) {
-                for (String routeId : List.of("java.generic-ttlv.ttlv_item.create",
-                        "java.generic-ttlv.function.ttlv_item_view_from_item",
-                        "java.generic-ttlv.ttlv_codec.decode")) {
-                    if (!recordedRoutes.contains(operationRouteKey(caseId, target, routeId, version))) {
+                for (GenericOperationRoute route : GENERIC_OPERATION_ROUTES) {
+                    if (!recordedRoutes.contains(operationRouteKey(caseId, target, route.routeId(), version))) {
                         missing.add(caseId);
                         break;
                     }
@@ -1747,14 +1755,10 @@ final class LocalCatalogRouteChecks {
                 try (TtlvItem decoded = TtlvCodec.decode(wire)) {
                     assertScalarItem(decoded, operationTag, TtlvItemType.Enumeration, operationValue);
                 }
-                emitMissingGenericRoute(recordedRoutes, sink, caseId, target, version,
-                        "java.generic-ttlv.ttlv_item.create", "org.kmipkit.ttlv.TtlvItem.create",
-                        "construct", wire);
-                emitMissingGenericRoute(recordedRoutes, sink, caseId, target, version,
-                        "java.generic-ttlv.function.ttlv_item_view_from_item", "org.kmipkit.ttlv.TtlvItem.view",
-                        "decode", wire);
-                emitMissingGenericRoute(recordedRoutes, sink, caseId, target, version,
-                        "java.generic-ttlv.ttlv_codec.decode", "org.kmipkit.ttlv.TtlvCodec.decode", "decode", wire);
+                for (GenericOperationRoute route : GENERIC_OPERATION_ROUTES) {
+                    emitMissingGenericRoute(recordedRoutes, sink, caseId, target, version,
+                            route.routeId(), route.symbol(), route.action(), wire);
+                }
             }
             emitted.add(caseId);
         }
