@@ -1182,6 +1182,8 @@ class ControlledTlsPeerTest {
             if ("2.1".equals(protocolVersion)) {
                 appendPingResponseRouteEvidence(events, serverCertificatePem, serverPrivateKeyPem,
                         clientCertificatePem, clientPrivateKeyPem);
+                appendPingVersionBoundaryRouteEvidence(events, serverCertificatePem, serverPrivateKeyPem,
+                        clientCertificatePem, clientPrivateKeyPem);
                 assertPingNetworkRouteCoverage(events);
                 assertPingVersionBoundaryRouteCoverage(events);
             }
@@ -2055,6 +2057,7 @@ class ControlledTlsPeerTest {
                         + asyncCancellationEnumerationRouteEventCount
                         + asyncCancelNetworkRouteEventCount
                         + asyncIndicatorEnumerationRouteEventCount
+                        + 12 // KMIP 2.0 Ping construction and NotSent execution over six encoding/transport pairs.
                         + 94 // BEC, batch IDs, async payload, Endpoint Role, Object Defaults, derivation, and Extension Information member cells.
                         + 18 // Ping construction, send, and response decode over six encoding/transport pairs.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Type generic and typed Attribute routes.
@@ -7144,11 +7147,106 @@ class ControlledTlsPeerTest {
         }
     }
 
+    private void appendPingVersionBoundaryRouteEvidence(ArrayNode events, byte[] serverCertificatePem,
+            byte[] serverPrivateKeyPem, byte[] clientCertificatePem, byte[] clientPrivateKeyPem)
+            throws Exception {
+        String routeId = "java.typed-protocol.client_batch_item.ping";
+        String targetId = "KMIPKIT-ELEM-OP-C2S-PING";
+        String publicApi = "org.kmipkit.extensions.ClientBatchItem.ping";
+        String requestHash = normalizedTreeSha256(pingRequestTree(0));
+        for (String encoding : List.of("TTLV", "JSON", "XML")) {
+            for (String transport : List.of("raw_tls", "https")) {
+                Path connectionFile = temporaryDirectory.resolve(
+                        "ping-v20-boundary-" + encoding + "-" + transport + ".json");
+                boolean acceptedConnection;
+                int httpRequests;
+                if ("raw_tls".equals(transport)) {
+                    SSLServerSocket listener = listener(certificate(serverCertificatePem),
+                            privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+                    listener.setSoTimeout(1_000);
+                    FutureTask<Boolean> peer = new FutureTask<>(() -> acceptsConnection(listener));
+                    Thread peerThread = new Thread(peer, "java-validator-kmip20-ping-boundary-peer-" + encoding);
+                    peerThread.setDaemon(true);
+                    peerThread.start();
+                    Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
+                            clientCertificatePem, clientPrivateKeyPem, false, "2.0", encoding, transport));
+                    try {
+                        executePingBoundaryRequest(connectionFile);
+                        acceptedConnection = peer.get(3, TimeUnit.SECONDS);
+                    } finally {
+                        listener.close();
+                    }
+                    httpRequests = 0;
+                } else {
+                    AtomicInteger observedRequests = new AtomicInteger();
+                    HttpsServer listener = httpsListener(certificate(serverCertificatePem),
+                            privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+                    listener.createContext("/kmip", exchange -> {
+                        observedRequests.incrementAndGet();
+                        try {
+                            exchange.sendResponseHeaders(500, -1);
+                        } finally {
+                            exchange.close();
+                        }
+                    });
+                    listener.start();
+                    Files.writeString(connectionFile, connectionJson(listener.getAddress().getPort(),
+                            serverCertificatePem, clientCertificatePem, clientPrivateKeyPem, false,
+                            "2.0", encoding, transport));
+                    try {
+                        executePingBoundaryRequest(connectionFile);
+                    } finally {
+                        listener.stop(0);
+                    }
+                    acceptedConnection = false;
+                    httpRequests = observedRequests.get();
+                }
+                assertTrue(!acceptedConnection,
+                        "KMIP 2.0 Ping must fail before a raw TLS connection is accepted.");
+                assertEquals(0, httpRequests, "KMIP 2.0 Ping must fail before an HTTPS request is sent.");
+                ObjectNode constructed = appendRouteEvent(events, "test-v20-reject-ping", routeId,
+                        targetId, publicApi, "java.execute.typed-batch", "org.kmipkit.extensions.Client.execute",
+                        "construct", "2.0", transport, requestHash, null);
+                constructed.put("encoding", encoding);
+                ObjectNode sent = appendRouteEvent(events, "test-v20-reject-ping", routeId,
+                        targetId, publicApi, "java.execute.typed-batch", "org.kmipkit.extensions.Client.execute",
+                        "send", "2.0", transport, requestHash, null);
+                sent.put("encoding", encoding);
+                sent.put("request_delivery_state", "not_sent");
+                sent.put("transport_invocation_count", 0);
+            }
+        }
+    }
+
+    private static void executePingBoundaryRequest(Path connectionFile) throws Exception {
+        try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile));
+                ClientBatch batch = ClientBatch.create();
+                ClientBatchItem request = ClientBatchItem.ping()) {
+            batch.add(request);
+            ClientOperationException failure = assertThrows(ClientOperationException.class,
+                    () -> driver.executeBatchForEvidence(batch));
+            assertEquals(1, failure.deliveryStateCode(),
+                    "KMIP 2.0 Ping must report the request as NotSent.");
+        }
+    }
+
     private static byte[] pingResponseBytes(int minor, String encoding, byte[] ttlvResponse) {
         if ("TTLV".equals(encoding)) return ttlvResponse;
         String response = "JSON".equals(encoding)
                 ? jsonPingResponse(minor) : xmlPingResponse(minor);
         return response.getBytes(StandardCharsets.UTF_8);
+    }
+
+    private static byte[] pingRequestTree(int minor) throws Exception {
+        return structure(0x420078,
+                structure(0x420077,
+                        structure(0x420069,
+                                item(0x42006a, TtlvItemType.Integer.code(), intBytes(2)),
+                                item(0x42006b, TtlvItemType.Integer.code(), intBytes(minor))),
+                        item(0x42000d, TtlvItemType.Integer.code(), intBytes(1))),
+                structure(0x42000f,
+                        item(0x42005c, TtlvItemType.Enumeration.code(), intBytes(0x3b)),
+                        structure(0x420079)));
     }
 
     private static String jsonPingResponse(int minor) {
