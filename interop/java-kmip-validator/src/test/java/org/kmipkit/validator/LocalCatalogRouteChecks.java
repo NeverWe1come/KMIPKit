@@ -618,16 +618,17 @@ final class LocalCatalogRouteChecks {
         }
     }
 
-    /** Returns client payload Unique Identifier cases that lack generic local TTLV route evidence. */
-    static Set<String> missingClientIdentifierPayloadCaseIds(JsonNode catalog, JsonNode events, String version) {
+    /** Returns supported client scalar payload cases that lack generic local TTLV route evidence. */
+    static Set<String> missingClientPayloadScalarCaseIds(JsonNode catalog, JsonNode events, String version) {
         List<String> routes = List.of("java.generic-ttlv.ttlv_item.create",
                 "java.generic-ttlv.function.ttlv_item_view_from_item", "java.generic-ttlv.ttlv_codec.decode");
         Set<RouteEvidenceKey> recordedRoutes = routeEvidenceKeys(events);
         Set<String> missing = new java.util.LinkedHashSet<>();
         for (JsonNode testCase : catalog.path("test_cases")) {
             JsonNode requires = testCase.path("requires");
+            String fieldName = requires.path("field_name").asText();
             if (!"operation_payload_field".equals(requires.path("target_kind").asText())
-                    || !"Unique Identifier".equals(requires.path("field_name").asText())
+                    || !Set.of("Unique Identifier", "Correlation Value").contains(fieldName)
                     || !requires.path("operation_id").asText().startsWith("KMIPKIT-ELEM-OP-C2S-")
                     || !"local_model".equals(testCase.path("execution").path("mode").asText())
                     || !applies(testCase, version)) continue;
@@ -650,13 +651,12 @@ final class LocalCatalogRouteChecks {
         return Set.copyOf(missing);
     }
 
-    /** Exercises generic Item construction, view, and decode for client payload Unique Identifier fields. */
-    static void executeClientIdentifierPayloadFields(JsonNode catalog, String version, Set<String> selectedCaseIds,
+    /** Exercises generic Item construction, view, and decode for supported client scalar payload fields. */
+    static void executeClientPayloadScalarFields(JsonNode catalog, String version, Set<String> selectedCaseIds,
             JsonNode events, EvidenceSink sink) throws Exception {
         Set<RouteEvidenceKey> recordedRoutes = routeEvidenceKeys(events);
         Set<String> emitted = new java.util.LinkedHashSet<>();
         CodecLimits limits = CodecLimits.defaults();
-        byte[] identifier = "kmipkit-route-identifier".getBytes(StandardCharsets.US_ASCII);
         for (JsonNode testCase : catalog.path("test_cases")) {
             String caseId = testCase.path("case_id").asText();
             if (!selectedCaseIds.contains(caseId) || !applies(testCase, version)) continue;
@@ -664,15 +664,29 @@ final class LocalCatalogRouteChecks {
             String fieldName = requires.path("field_name").asText();
             String operationId = requires.path("operation_id").asText();
             if (!"operation_payload_field".equals(requires.path("target_kind").asText())
-                    || !"Unique Identifier".equals(fieldName)
+                    || !Set.of("Unique Identifier", "Correlation Value").contains(fieldName)
                     || !operationId.startsWith("KMIPKIT-ELEM-OP-C2S-")) {
-                throw new IllegalArgumentException("Selected case is not a client Unique Identifier payload: "
+                throw new IllegalArgumentException("Selected case is not a supported client scalar payload: "
                         + caseId);
             }
             String targetId = requires.path("normative_target_id").asText();
             int tagCode = tagCodeNamed(catalog, fieldName, version);
-            byte[] wire = scalarWire(tagCode, TtlvItemType.TextString.code(), identifier);
-            try (TtlvValue value = TtlvValue.TextString(identifier, limits);
+            TtlvItemType itemType = switch (fieldName) {
+                case "Unique Identifier" -> TtlvItemType.TextString;
+                case "Correlation Value" -> TtlvItemType.ByteString;
+                default -> throw new IllegalArgumentException("Unsupported client scalar payload field: "
+                        + fieldName);
+            };
+            byte[] fieldValue = switch (fieldName) {
+                case "Unique Identifier" -> "kmipkit-route-identifier".getBytes(StandardCharsets.US_ASCII);
+                case "Correlation Value" -> "kmipkit-route-correlation".getBytes(StandardCharsets.US_ASCII);
+                default -> throw new IllegalArgumentException("Unsupported client scalar payload field: "
+                        + fieldName);
+            };
+            byte[] wire = scalarWire(tagCode, itemType.code(), fieldValue);
+            TtlvValue value = itemType == TtlvItemType.TextString
+                    ? TtlvValue.TextString(fieldValue, limits) : TtlvValue.ByteString(fieldValue, limits);
+            try (value;
                     RawTag raw = RawTag.fromRaw(tagCode);
                     Tag tag = raw.checked();
                     TtlvItem item = TtlvItem.create(tag, value, limits);
@@ -680,14 +694,14 @@ final class LocalCatalogRouteChecks {
                     var viewedTag = view.tag();
                     var viewedValue = view.value()) {
                 assertEquals(tagCode, viewedTag.raw());
-                assertScalarMessageFieldValue(viewedValue, TtlvItemType.TextString, identifier, 0);
+                assertScalarMessageFieldValue(viewedValue, itemType, fieldValue, 0);
             }
             try (TtlvItem decoded = TtlvCodec.decode(wire);
                     var view = decoded.view();
                     var decodedTag = view.tag();
                     var decodedValue = view.value()) {
                 assertEquals(tagCode, decodedTag.raw());
-                assertScalarMessageFieldValue(decodedValue, TtlvItemType.TextString, identifier, 0);
+                assertScalarMessageFieldValue(decodedValue, itemType, fieldValue, 0);
             }
             for (String evidenceTargetId : List.of(targetId, operationId)) {
                 emitMissingGenericRoute(recordedRoutes, sink, caseId, evidenceTargetId, version,
@@ -703,7 +717,7 @@ final class LocalCatalogRouteChecks {
             emitted.add(caseId);
         }
         if (!emitted.equals(selectedCaseIds)) {
-            throw new IllegalArgumentException("Selected client Unique Identifier payloads were not executed for "
+            throw new IllegalArgumentException("Selected client scalar payloads were not executed for "
                     + version);
         }
     }
