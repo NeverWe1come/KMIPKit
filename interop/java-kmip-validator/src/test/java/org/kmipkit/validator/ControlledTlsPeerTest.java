@@ -7986,7 +7986,8 @@ class ControlledTlsPeerTest {
                                 serverCertificatePem, clientCertificatePem, clientPrivateKeyPem, true,
                                 protocolVersion, encoding, transport));
                         try {
-                            executeCreateRouteRequest(connectionFile, batchItemIdBytes);
+                            executeCreateRouteRequest(connectionFile, batchItemIdBytes,
+                                    hasProtectionStorageMasks(fixture));
                         } finally {
                             listener.close();
                         }
@@ -8016,7 +8017,8 @@ class ControlledTlsPeerTest {
                                 serverCertificatePem, clientCertificatePem, clientPrivateKeyPem, true,
                                 protocolVersion, encoding, transport));
                         try {
-                            executeCreateRouteRequest(connectionFile, batchItemIdBytes);
+                            executeCreateRouteRequest(connectionFile, batchItemIdBytes,
+                                    hasProtectionStorageMasks(fixture));
                         } finally {
                             listener.stop(0);
                         }
@@ -8052,11 +8054,18 @@ class ControlledTlsPeerTest {
         return List.copyOf(fixtures);
     }
 
-    private static void executeCreateRouteRequest(Path connectionFile, byte[] batchItemId) throws Exception {
+    private static boolean hasProtectionStorageMasks(CreateOperationRouteFixture fixture) {
+        return fixture.requestPayloadTargetId() != null
+                && fixture.requestPayloadTargetId().endsWith("-003");
+    }
+
+    private static void executeCreateRouteRequest(Path connectionFile, byte[] batchItemId,
+            boolean includeProtectionStorageMasks) throws Exception {
         try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile));
                 TtlvStructure attributes = createRouteAttributes();
+                TtlvStructure protectionStorageMasks = includeProtectionStorageMasks ? TtlvStructure.create() : null;
                 ClientBatch batch = ClientBatch.create();
-                ClientBatchItem request = ClientBatchItem.create(2, attributes, null)
+                ClientBatchItem request = ClientBatchItem.create(2, attributes, protectionStorageMasks)
                         .withUniqueBatchItemId(batchItemId)) {
             batch.add(request);
             try (ClientBatchResponse response = driver.executeBatchForEvidence(batch)) {
