@@ -845,6 +845,7 @@ class ControlledTlsPeerTest {
         int bigIntegerTargetRouteEventCount = 0;
         int typedKeyMaterialRouteEventCount = 0;
         int typedCertificateRouteEventCount = 0;
+        int typedKeyBearingManagedObjectRouteEventCount = 0;
         int remainingEnumerationFieldRouteEventCount = 0;
         int genericStructureTargetRouteEventCount = 0;
         int managedObjectTypeRouteEventCount = 0;
@@ -1231,6 +1232,14 @@ class ControlledTlsPeerTest {
                 appendLocalCatalogInvocation(events, protocolVersion, invocation);
             }
             typedCertificateRouteEventCount += certificateFactoryInvocations.size();
+            List<LocalCatalogRouteChecks.Invocation> keyBearingManagedObjectInvocations = new ArrayList<>();
+            LocalCatalogRouteChecks.executeKeyBearingManagedObjectRootTargets(readRouteEvidenceCatalog(),
+                    protocolVersion, LocalCatalogRouteChecks.KEY_BEARING_MANAGED_OBJECT_ROOT_CASE_IDS,
+                    keyBearingManagedObjectInvocations::add);
+            for (LocalCatalogRouteChecks.Invocation invocation : keyBearingManagedObjectInvocations) {
+                appendLocalCatalogInvocation(events, protocolVersion, invocation);
+            }
+            typedKeyBearingManagedObjectRouteEventCount += keyBearingManagedObjectInvocations.size();
             Set<String> missingRemainingEnumerationFields = LocalCatalogRouteChecks
                     .missingRemainingEnumerationFieldCaseIds(readRouteEvidenceCatalog(), events, protocolVersion);
             remainingEnumerationFieldCaseIds.addAll(missingRemainingEnumerationFields);
@@ -1900,6 +1909,7 @@ class ControlledTlsPeerTest {
                         + managedObjectTypeRouteEventCount
                         + typedKeyMaterialRouteEventCount
                         + typedCertificateRouteEventCount
+                        + typedKeyBearingManagedObjectRouteEventCount
                         + 97 // BEC, batch IDs, async payload, Ping, Endpoint Role, Object Defaults, derivation, and Extension Information member cells.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Type generic and typed Attribute routes.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Value generic and typed Attribute routes.
