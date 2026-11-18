@@ -3924,6 +3924,33 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual('rejected', result['decode_outcome'])
         self.assertEqual('invalid_batch_count', result['decode_rejection_code'])
         self.assertEqual(64, len(result['decode_input_sha256']))
+
+    def test_zero_batch_count_local_rejection_evidence_matches_schema(self):
+        from artifact_support import ROOT
+        from jsonschema import Draft202012Validator
+
+        schema = json.loads((ROOT / 'interop/shared/schemas/route-execution-evidence.schema.json')
+                            .read_text())['$defs']['event']
+        event = {
+            'case_id': 'test-batch-count-zero-rejected',
+            'route_id': 'c.typed-protocol.model.kmipkit.request.message.from.ttlv',
+            'target_id': 'KMIPKIT-ELEM-OP-C2S-GET',
+            'public_api_symbol': 'kmipkit_request_message_from_ttlv',
+            'execution_route_id': None,
+            'execution_api_symbol': None,
+            'invocation_id': 'c-local-zero-batch',
+            'action': 'decode',
+            'protocol_version': '2.1',
+            'encoding': 'TTLV',
+            'transport': None,
+            'status': 'passed',
+            'invocation_count': 1,
+            'decode_outcome': 'rejected',
+            'decode_rejection_code': 'invalid_batch_count',
+            'decode_input_sha256': 'a' * 64,
+        }
+
+        Draft202012Validator(schema).validate(event)
         undo_constructor_events = {
             (event['target_id'], event['protocol_version'])
             for event in events
