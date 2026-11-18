@@ -457,6 +457,35 @@ class LocalCatalogRouteChecksTest {
     }
 
     @Test
+    void executesRemainingEnumerationFieldsThroughGenericTtlvRoutes() throws Exception {
+        JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
+        Set<String> caseIds = Set.of(
+                "test-norm-operation-structure-operation-structure-7-15-interop-function",
+                "test-norm-structure-member-structure-member-5-5-attribute-reference",
+                "test-norm-structure-member-structure-member-7-13-extension-type");
+        List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
+
+        for (String version : List.of("2.0", "2.1")) {
+            LocalCatalogRouteChecks.executeRemainingEnumerationFields(catalog, version, caseIds, invocations::add);
+        }
+
+        assertEquals(caseIds, invocations.stream().map(LocalCatalogRouteChecks.Invocation::caseId)
+                .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(24, invocations.size(), "Every Enumeration field/version pair must use four routes.");
+        assertEquals(Set.of(
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode"),
+                invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId)
+                        .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(Set.of("construct", "decode"), invocations.stream()
+                .map(LocalCatalogRouteChecks.Invocation::action)
+                .collect(java.util.stream.Collectors.toSet()));
+        assertTrue(invocations.stream().allMatch(invocation -> invocation.wire().length == 16));
+    }
+
+    @Test
     void executesRandomIvThroughTheTypedCryptographicParametersBuilder() throws Exception {
         JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
         String caseId = "test-norm-structure-member-structure-member-4-16-random-iv";
