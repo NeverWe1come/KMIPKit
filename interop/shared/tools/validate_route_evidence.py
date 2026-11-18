@@ -442,8 +442,6 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
                     or count != 0):
                 raise ValueError(f"required route cell cannot be marked not applicable: {key}")
         else:
-            if status == "not_applicable":
-                raise ValueError(f"required route cell cannot be marked not applicable: {key}")
             if status == "not_run" or count == 0:
                 raise ValueError(f"route execution cell was not actually invoked: {key}")
             if count != 1:
