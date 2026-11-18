@@ -2331,6 +2331,25 @@ class RouteMatrixTests(unittest.TestCase):
                     'kmipkit_query_async_requests_request_with_correlation_values',
                     result['invoked_symbols'])
 
+    def test_query_async_operation_constructor_encodes_empty_optional_payload(self):
+        """OASIS KMIP 2.1 §6.1.41 Table 285 permits an empty Query request payload."""
+        from artifact_support import INSTALL, ROOT
+        from c_route_models import ModelCases
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        target = next(item for item in catalog['normative_targets']
+                      if item['target_id'] == 'KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS')
+        models = ModelCases(INSTALL / 'lib/libkmipkit_ffi.so', catalog)
+
+        result = models.execute(
+            target, '2.1', 'kmipkit_query_async_requests_request_to_ttlv_payload')
+
+        self.assertIsNotNone(result)
+        self.assertEqual(result['normalized_tree'], [])
+        self.assertEqual(result['sample_count'], 1)
+        self.assertIn('kmipkit_query_async_requests_request_create', result['invoked_symbols'])
+        self.assertIn('kmipkit_query_async_requests_request_to_ttlv_payload', result['invoked_symbols'])
+
     def test_async_cancel_response_payload_roundtrips_each_catalogued_result(self):
         """OASIS KMIP 2.0 §6.1.5 Table 162 and 2.1 §6.1.5 Table 177 define Cancellation Result."""
         from artifact_support import INSTALL, ROOT
