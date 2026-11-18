@@ -332,11 +332,11 @@ class ControlledTlsPeerTest {
             new OperationStructureFixture(
                     "test-norm-operation-structure-operation-structure-7-23-object-groups",
                     "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-23-OBJECT-GROUPS",
-                    0x420126, 0x420056, TtlvItemType.TextString, "kmipkit-object-group", 0),
+                    0x420166, 0x420056, TtlvItemType.TextString, "kmipkit-object-group", 0),
             new OperationStructureFixture(
                     "test-norm-operation-structure-operation-structure-7-24-object-types",
                     "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-24-OBJECT-TYPES",
-                    0x420125, 0x420057, TtlvItemType.Enumeration, "", 2));
+                    0x420167, 0x420057, TtlvItemType.Enumeration, "", 2));
 
     private static final ScalarOperationStructureFixture SIGNATURE_DATA_FIXTURE =
             new ScalarOperationStructureFixture(
@@ -9458,16 +9458,16 @@ class ControlledTlsPeerTest {
         byte[] secondGroupValue = "kmipkit-object-group-2".getBytes(StandardCharsets.UTF_8);
         byte[] firstGroup = textItem(objectGroupTag, firstGroupText);
         byte[] secondGroup = textItem(objectGroupTag, "kmipkit-object-group-2");
-        try (TtlvItem absentGroups = TtlvCodec.decode(structure(0x420126));
+        try (TtlvItem absentGroups = TtlvCodec.decode(structure(0x420166));
                 var absentView = absentGroups.view();
                 var absentValue = absentView.value();
                 var absentMembers = absentValue.structure();
-                TtlvItem repeatedGroups = TtlvCodec.decode(structure(0x420126, firstGroup, secondGroup));
+                TtlvItem repeatedGroups = TtlvCodec.decode(structure(0x420166, firstGroup, secondGroup));
                 var repeatedView = repeatedGroups.view();
                 var repeatedValue = repeatedView.value();
                 var repeatedMembers = repeatedValue.structure()) {
             try (Tag tag = absentView.tag()) {
-                assertEquals(0x420126, tag.raw());
+                assertEquals(0x420166, tag.raw());
             }
             assertEquals(0, absentMembers.itemCount(), "Object Group is optional in Object Groups.");
             assertEquals(2, repeatedMembers.itemCount(), "Object Group may be repeated.");
@@ -10425,7 +10425,7 @@ class ControlledTlsPeerTest {
 
     // OASIS KMIP 2.1 §7.24 Table 376: Object Type is optional and may be repeated.
     private static void appendObjectTypeMemberRouteEvents(ArrayNode events) throws Exception {
-        int objectTypesTag = 0x420125;
+        int objectTypesTag = 0x420167;
         int objectTypeTag = 0x420057;
         long firstObjectType = KmipValues.ObjectType.SYMMETRIC_KEY;
         long secondObjectType = KmipValues.ObjectType.PUBLIC_KEY;

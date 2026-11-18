@@ -384,8 +384,11 @@ final class LocalCatalogRouteChecks {
                     scalarMessageFieldEncoding(catalog, targetId, version));
             int tagCode = messageFieldTag(catalog, targetId, version);
             TtlvItemType itemType = scalarMessageFieldType(encoding);
-            byte[] valueBytes = scalarMessageFieldBytes(caseId, encoding);
-            long numericValue = scalarMessageFieldNumber(caseId, encoding);
+            long numericValue = caseId.endsWith("protocol-version-minor")
+                    ? ("2.0".equals(version) ? 0 : 1) : scalarMessageFieldNumber(caseId, encoding);
+            byte[] valueBytes = caseId.endsWith("protocol-version-minor")
+                    ? ByteBuffer.allocate(Integer.BYTES).putInt(Math.toIntExact(numericValue)).array()
+                    : scalarMessageFieldBytes(caseId, encoding);
             byte[] wire = scalarWire(tagCode, itemType.code(), valueBytes);
             CodecLimits limits = CodecLimits.defaults();
             try (TtlvValue value = scalarMessageFieldValue(encoding, valueBytes, numericValue, limits);
@@ -4619,6 +4622,12 @@ final class LocalCatalogRouteChecks {
 
     private static byte[] itemWire(int tag, int type, byte[] value) {
         int paddedLength = Math.addExact(value.length, 7) & ~7;
+        if (type == TtlvItemType.BigInteger.code() && value.length != paddedLength) {
+            byte[] extended = new byte[paddedLength];
+            java.util.Arrays.fill(extended, value[0] < 0 ? (byte) 0xff : (byte) 0);
+            System.arraycopy(value, 0, extended, paddedLength - value.length, value.length);
+            value = extended;
+        }
         return ByteBuffer.allocate(Math.addExact(8, paddedLength))
                 .put((byte) (tag >>> 16)).put((byte) (tag >>> 8)).put((byte) tag)
                 .put((byte) type).putInt(value.length).put(value).put(new byte[paddedLength - value.length]).array();
