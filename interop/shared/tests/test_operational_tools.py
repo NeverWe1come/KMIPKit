@@ -150,8 +150,8 @@ class OperationalToolsTests(unittest.TestCase):
         # Test command building for all 4 languages
         dummy_dir = BASE_DIR
         prof = SHARED_DIR / "profiles/generic-kmip-2.1.json"
-        cat = SHARED_DIR / "catalog/test-catalog.json"
-        vec = SHARED_DIR / "vectors/canonical-test-vectors.json"
+        cat = SHARED_DIR / "catalog/kmipkit-1.0-test-catalog.json"
+        vec = SHARED_DIR / "vectors/canonical-vectors.json"
         out = SHARED_DIR / "test-out.json"
 
         cmd_rust = build_command_for_language("rust", dummy_dir, prof, None, cat, vec, out)
@@ -160,7 +160,9 @@ class OperationalToolsTests(unittest.TestCase):
         cmd_py = build_command_for_language("python", dummy_dir, prof, None, cat, vec, out)
 
         self.assertIn("cargo", cmd_rust[0])
-        self.assertIn("kmipkit_c_validator", cmd_c[0])
+        self.assertIn("kmip_validator_c", cmd_c[0])
+        self.assertEqual(cmd_c[1], "run")
+        self.assertNotIn("--vectors", cmd_c)
         self.assertTrue("gradle" in cmd_java[0] or "java" in cmd_java[0])
         self.assertIn("python", cmd_py[0])
 

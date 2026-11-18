@@ -1231,6 +1231,11 @@ class RouteMatrixTests(unittest.TestCase):
         }
         self.assert_route_cells_pass(symbols)
 
+    def test_cancel_response_result_uses_catalogued_enum_even_when_not_a_case_target(self):
+        self.assertEqual(1, self.runner._cancellation_result_value('Canceled'))
+        with self.assertRaises(self.runner.RecipePending):
+            self.runner._cancellation_result_value('Unassigned Cancellation Result')
+
     def test_batch_result_and_response_payload_accessors_execute_live(self):
         symbols = {
             'kmipkit.client.BatchItemResult.raw',

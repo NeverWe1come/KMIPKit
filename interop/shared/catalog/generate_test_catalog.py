@@ -303,6 +303,18 @@ def add_execution_contract(test_case: dict, elements: list[dict], indexes: dict[
     if category == "version_boundaries":
         # The operation is defined in KMIP 2.1 and intentionally has no KMIP 2.0 entry.
         test_case["normative_refs"].append({"document": "OASIS KMIP 2.0 Specification", "section": "6.1"})
+    if category == "object_lifecycle" and test_case.get("operation") in {
+        "Sign", "Signature Verify", "Certify"
+    }:
+        # The Cryptographic Usage Mask's operation/object-type mapping is an
+        # independent normative constraint on these isolated operation fixtures.
+        for version in versions:
+            reference = {
+                "document": f"OASIS KMIP {version} Specification",
+                "section": "12.1",
+            }
+            if reference not in test_case["normative_refs"]:
+                test_case["normative_refs"].append(reference)
     test_case["execution"] = {
         "mode": mode,
         "protocol_versions": versions,
@@ -1205,10 +1217,13 @@ def _protocol_scenario_cases(
         sections=async_base + ["6.1.41"], versions=["2.1"], setup=["Configure multiple pending requests with distinct correlations"])
     add("test-async-no-recursive-async-poll-cancel", "asynchronous_workflows", ["Cancel", "Poll"],
         [correlation, cancel_op, poll_op, *cancel_request, *cancel_response],
-        parameters={"operations": ["Cancel", "Poll"], "asynchronous_indicator": "omitted"},
-        expected={"poll_or_cancel_response": "not Pending and contains no async correlation"},
+        parameters={"operations": ["Cancel", "Poll"], "asynchronous_indicator": "omitted",
+                    "cancel_result": "Canceled"},
+        expected={"poll_response": "terminal and contains no async correlation",
+                  "cancel_response": "not Pending and echoes the request correlation"},
         steps=["execute_poll_and_cancel_responses", "inspect_response_headers_and_payloads"],
-        assertions=["poll_and_cancel_are_not_returned_as_pending", "poll_and_cancel_responses_do_not_create_async_correlations"],
+        assertions=["poll_response_is_terminal_without_async_correlation",
+                    "cancel_success_echoes_request_correlation_without_pending_status"],
         sections=async_base + ["6.1.5", "6.1.38"], versions=["2.1"], mutation="read_only")
 
     sign_operation = operation("Sign")
@@ -1493,9 +1508,26 @@ def generate_catalog(normative_catalog_path: Path) -> dict:
 
         setup = []
         teardown = []
-        if name not in {"Create", "Create Key Pair", "Create Split Key", "Register", "Import", "Locate"}:
+        if name == "Certify":
+            setup = [
+                "Create Key Pair with Certificate Sign usage on Private Key",
+                "Activate Private Key",
+            ]
+            teardown = [
+                "Revoke Private Key", "Destroy Certificate",
+                "Destroy Private Key", "Destroy Public Key",
+            ]
+        elif name == "Sign":
+            setup = ["Create Key Pair with Sign usage on Private Key", "Activate Private Key"]
+            teardown = ["Revoke Private Key", "Destroy Private Key", "Destroy Public Key"]
+        elif name == "Signature Verify":
+            setup = ["Create Key Pair with Verify usage on Public Key", "Activate Public Key"]
+            teardown = ["Revoke Public Key", "Destroy Public Key", "Destroy Private Key"]
+        elif name not in {"Create", "Create Key Pair", "Create Split Key", "Register", "Import", "Locate"}:
             setup = ["Create unique SymmetricKey"]
             teardown = ["Revoke SymmetricKey", "Destroy SymmetricKey"]
+        elif name == "Create Key Pair":
+            teardown = ["Destroy Private Key", "Destroy Public Key"]
         elif name in {"Create", "Create Key Pair", "Create Split Key", "Register", "Import"}:
             teardown = ["Destroy object"]
 
@@ -1512,7 +1544,8 @@ def generate_catalog(normative_catalog_path: Path) -> dict:
             "isolation_recipe": {
                 "unique_name_prefix": f"kmipkit-{name.lower().replace(' ', '-')}",
                 "setup_steps": setup,
-                "target_step": f"Execute {name}",
+            "target_step": "Certify Public Key with Certificate Type X.509" if name == "Certify"
+            else f"Execute {name}",
                 "teardown_steps": teardown,
                 "normalized_fields": ["TimeStamp", "UniqueIdentifier", "InitialDate", "ActivationDate", "LastChangeDate", "DestroyDate"]
             }
