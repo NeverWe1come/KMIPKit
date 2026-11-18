@@ -810,9 +810,9 @@ def main() -> None:
                 "executed_cells": ledger["executed_cells"], "pending_cells": ledger["pending_cells"],
                 "complete_matrix": ledger["complete_matrix"],
             }
-    elif args.write_ledger:
-        parser.error("--write-ledger requires --selected-scope")
     elif args.parity:
+        if args.write_ledger:
+            parser.error("--write-ledger does not support cross-language parity reports")
         artifacts = {}
         for value in args.artifact_sha256:
             if "=" not in value:
@@ -828,11 +828,25 @@ def main() -> None:
     else:
         if len(args.artifact_sha256) != 1 or "=" in args.artifact_sha256[0]:
             parser.error("single-language validation requires one --artifact-sha256 SHA256 value")
+        if args.write_ledger and len(reports) != 1:
+            parser.error("full-matrix ledger writing requires exactly one report")
         summary = validate_collection(
             reports, catalog, manifest, catalog_sha256=catalog_sha,
             route_manifest_sha256=route_sha,
             expected_artifact_sha256=args.artifact_sha256[0],
         )
+        if args.write_ledger:
+            ledger = build_evidence_ledger(
+                reports[0], catalog, manifest, catalog_sha256=catalog_sha,
+                route_manifest_sha256=route_sha,
+                expected_artifact_sha256=args.artifact_sha256[0],
+            )
+            ledger_path = write_java_route_evidence_ledger(ledger)
+            summary["ledger"] = {
+                "path": str(ledger_path), "planned_cells": ledger["planned_cells"],
+                "executed_cells": ledger["executed_cells"], "pending_cells": ledger["pending_cells"],
+                "complete_matrix": ledger["complete_matrix"],
+            }
     print(json.dumps(summary, sort_keys=True))
     if (not summary["all_invocations_passed"]
             or (args.parity and not summary["parity_coverage_complete"])):
