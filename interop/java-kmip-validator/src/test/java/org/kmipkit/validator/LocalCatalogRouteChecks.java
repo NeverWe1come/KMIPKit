@@ -638,7 +638,8 @@ final class LocalCatalogRouteChecks {
                             "Replace Existing", "Interop Identifier", "Storage Status Mask", "Log Message",
                             "Compromise Occurrence Date", "Validity Date", "Key Format Type",
                             "Key Compression Type", "Secret Data Type", "Split Key Method", "Prime Field Size",
-                            "Split Key Parts", "Split Key Threshold")
+                            "Split Key Parts", "Split Key Threshold", "Attribute Reference",
+                            "Private Key Unique Identifier", "Certificate")
                             .contains(fieldName)
                     || !requires.path("operation_id").asText().startsWith("KMIPKIT-ELEM-OP-C2S-")
                     || !"local_model".equals(testCase.path("execution").path("mode").asText())
@@ -685,7 +686,8 @@ final class LocalCatalogRouteChecks {
                             "Replace Existing", "Interop Identifier", "Storage Status Mask", "Log Message",
                             "Compromise Occurrence Date", "Validity Date", "Key Format Type",
                             "Key Compression Type", "Secret Data Type", "Split Key Method", "Prime Field Size",
-                            "Split Key Parts", "Split Key Threshold")
+                            "Split Key Parts", "Split Key Threshold", "Attribute Reference",
+                            "Private Key Unique Identifier", "Certificate")
                             .contains(fieldName)
                     || !operationId.startsWith("KMIPKIT-ELEM-OP-C2S-")) {
                 throw new IllegalArgumentException("Selected case is not a supported client scalar payload: "
@@ -693,13 +695,48 @@ final class LocalCatalogRouteChecks {
             }
             String targetId = requires.path("normative_target_id").asText();
             int tagCode = tagCodeNamed(catalog, fieldName, version);
+            if ("Certificate".equals(fieldName)) {
+                int certificateTypeTag = tagCodeNamed(catalog, "Certificate Type", version);
+                int certificateValueTag = tagCodeNamed(catalog, "Certificate Value", version);
+                long certificateType = enumValue(catalog, "CERTIFICATE-TYPE", "X.509");
+                byte[] certificateBytes = {0x30, 0x00};
+                byte[] certificateTypeBytes = ByteBuffer.allocate(Integer.BYTES)
+                        .putInt(Math.toIntExact(certificateType)).array();
+                byte[] wire = structureWire(tagCode, concat(
+                        itemWire(certificateTypeTag, TtlvItemType.Enumeration.code(), certificateTypeBytes),
+                        itemWire(certificateValueTag, TtlvItemType.ByteString.code(), certificateBytes)));
+                try (TtlvItem type = createEnumerationItem(certificateTypeTag, certificateType, limits);
+                        TtlvItem value = createByteStringItem(certificateValueTag, certificateBytes, limits);
+                        TtlvItem certificate = createStructureItem(tagCode, List.of(type, value), limits)) {
+                    assertCertificatePayloadItem(certificate, tagCode, certificateTypeTag, certificateValueTag,
+                            certificateType, certificateBytes);
+                    try (TtlvItem decoded = TtlvCodec.decode(wire)) {
+                        assertCertificatePayloadItem(decoded, tagCode, certificateTypeTag, certificateValueTag,
+                                certificateType, certificateBytes);
+                    }
+                }
+                for (String evidenceTargetId : List.of(targetId, operationId)) {
+                    emitMissingGenericRoute(recordedRoutes, sink, caseId, evidenceTargetId, version,
+                            "java.generic-ttlv.ttlv_item.create", "org.kmipkit.ttlv.TtlvItem.create",
+                            "construct", wire);
+                    emitMissingGenericRoute(recordedRoutes, sink, caseId, evidenceTargetId, version,
+                            "java.generic-ttlv.function.ttlv_item_view_from_item", "org.kmipkit.ttlv.TtlvItem.view",
+                            "decode", wire);
+                    emitMissingGenericRoute(recordedRoutes, sink, caseId, evidenceTargetId, version,
+                            "java.generic-ttlv.ttlv_codec.decode", "org.kmipkit.ttlv.TtlvCodec.decode",
+                            "decode", wire);
+                }
+                emitted.add(caseId);
+                continue;
+            }
             TtlvItemType itemType = switch (fieldName) {
-                case "Unique Identifier" -> TtlvItemType.TextString;
+                case "Unique Identifier", "Private Key Unique Identifier" -> TtlvItemType.TextString;
                 case "Correlation Value", "Asynchronous Correlation Value", "Data", "IV/Counter/Nonce",
                         "Certificate Request Value", "Authenticated Encryption Additional Data",
                         "Authenticated Encryption Tag", "Digested Data" ->
                     TtlvItemType.ByteString;
-                case "Object Type", "Certificate Request Type", "Key Wrap Type", "Query Function" ->
+                case "Object Type", "Certificate Request Type", "Key Wrap Type", "Query Function",
+                        "Attribute Reference" ->
                     TtlvItemType.Enumeration;
                 case "Key Format Type", "Key Compression Type", "Secret Data Type", "Split Key Method" ->
                     TtlvItemType.Enumeration;
@@ -722,6 +759,7 @@ final class LocalCatalogRouteChecks {
                 case "Certificate Request Type" -> enumValue(catalog, "CERTIFICATE-REQUEST-TYPE", "PKCS#10");
                 case "Key Wrap Type" -> enumValue(catalog, "KEY-WRAP-TYPE", "As Registered");
                 case "Query Function" -> enumValue(catalog, "QUERY-FUNCTION", "Query Operations");
+                case "Attribute Reference" -> tagCodeNamed(catalog, "Unique Identifier", version);
                 case "Adjustment Type" -> enumValue(catalog, "ADJUSTMENT-TYPE", "Increment");
                 case "Key Format Type" -> enumValue(catalog, "KEY-FORMAT-TYPE", "Raw");
                 case "Key Compression Type" -> enumValue(catalog, "KEY-COMPRESSION-TYPE",
@@ -740,7 +778,9 @@ final class LocalCatalogRouteChecks {
                 default -> 0;
             };
             byte[] fieldValue = switch (itemType) {
-                case TextString -> "kmipkit-route-identifier".getBytes(StandardCharsets.US_ASCII);
+                case TextString -> ("Private Key Unique Identifier".equals(fieldName)
+                        ? "kmipkit-route-private-key-id" : "kmipkit-route-identifier")
+                        .getBytes(StandardCharsets.US_ASCII);
                 case ByteString -> "kmipkit-route-correlation".getBytes(StandardCharsets.US_ASCII);
                 case Boolean -> ByteBuffer.allocate(Long.BYTES).putLong(numericValue).array();
                 case DateTime -> ByteBuffer.allocate(Long.BYTES).putLong(numericValue).array();
@@ -2542,6 +2582,13 @@ final class LocalCatalogRouteChecks {
         }
     }
 
+    private static TtlvItem createByteStringItem(int tagCode, byte[] value, CodecLimits limits) {
+        try (TtlvValue ttlvValue = TtlvValue.ByteString(value, limits);
+                RawTag raw = RawTag.fromRaw(tagCode); Tag tag = raw.checked()) {
+            return TtlvItem.create(tag, ttlvValue, limits);
+        }
+    }
+
     private static TtlvItem createIntegerItem(int tagCode, int value, CodecLimits limits) {
         try (TtlvValue ttlvValue = TtlvValue.Integer(value);
                 RawTag raw = RawTag.fromRaw(tagCode); Tag tag = raw.checked()) {
@@ -2671,6 +2718,30 @@ final class LocalCatalogRouteChecks {
         try (TtlvValue value = TtlvValue.structure(structure, limits);
                 RawTag raw = RawTag.fromRaw(tagCode); Tag tag = raw.checked()) {
             return TtlvItem.create(tag, value, limits);
+        }
+    }
+
+    private static void assertCertificatePayloadItem(TtlvItem item, int tagCode, int certificateTypeTag,
+            int certificateValueTag, long certificateType, byte[] certificateBytes) {
+        try (var view = item.view();
+                var tag = view.tag();
+                var value = view.value();
+                var structure = value.structure();
+                var typeItem = structure.itemAt(0);
+                var typeTag = typeItem.tag();
+                var typeValue = typeItem.value();
+                var certificateItem = structure.itemAt(1);
+                var certificateTag = certificateItem.tag();
+                var certificateValue = certificateItem.value()) {
+            assertEquals(tagCode, tag.raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertEquals(2L, structure.itemCount());
+            assertEquals(certificateTypeTag, typeTag.raw());
+            assertEquals(TtlvItemType.Enumeration, typeItem.itemType());
+            assertEquals(certificateType, typeValue.enumeration());
+            assertEquals(certificateValueTag, certificateTag.raw());
+            assertEquals(TtlvItemType.ByteString, certificateItem.itemType());
+            assertArrayEquals(certificateBytes, certificateValue.bytes());
         }
     }
 
