@@ -137,8 +137,8 @@ The `*.gaps.json` sidecar identifies every unexecuted matrix obligation rather
 than misclassifying it as an unavailable library route. Other sidecars retain
 installed-artifact availability checks and sanitized controlled-peer outcomes.
 The evidence JSON passes the shared schema independently of completeness.
-The latest full local C matrix run (`c-route-0039e1d7-d8bc-41c0-86bf-394cfccd5388`)
-has 66,736 expected cells, 42,961 invoked, zero failed, and 23,775 pending.
+The latest full local C matrix run (`c-route-60569de0-095a-4a6e-ac61-63b1bbde609a`)
+has 66,736 expected cells, 42,963 invoked, zero failed, and 23,773 pending.
 The MAC and Sign response TTLV accessors and the Continue batch-option
 constructor contribute four local cells each across KMIP 2.0/2.1. The
 Query Async Requests correlation builder contributes two KMIP 2.1 model cells.
@@ -162,7 +162,10 @@ interoperability.
 The Join Split Key route creates the same isolated pair, joins the two returned
 identifiers, then destroys the joined object through the batch ID Placeholder
 and both source parts through their exact identifiers. It verifies the typed
-Join response and the final fixture state across the same 12 network routes.
+Join response and complete response TTLV through
+`kmipkit_client_batch_item_response_join_split_key_ttlv`, as well as the final
+fixture state across the same 12 network routes. The latest matrix records 44
+passed cells for this case and no pending cells.
 The Re-key route creates an AES-128 Symmetric Key with explicit Encrypt usage,
 then sends Re-key without an offset or additional attributes. It reads the
 replacement identifier through the typed response accessor and verifies the
