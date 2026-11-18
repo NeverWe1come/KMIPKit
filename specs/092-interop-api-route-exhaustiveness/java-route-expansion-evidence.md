@@ -3757,3 +3757,26 @@ failures; the generated ledger matches its reference and the capability audit
 accepts all 1,507 routes. The full ledger records 71,641 planned, 34,834
 executed, and 36,807 pending cells. Full closure and exact-head CI remain open;
 #187 stays WIP.
+
+## #187 generic Batch Item routes for batch workflow cases — 2026-11-18
+
+The catalog's batch workflow cases now execute generic TTLV Item construction,
+view, and decode for every applicable Request Batch Item and Response Batch
+Item target. The local fixtures use a valid Query Batch Item structure for the
+selected target and protocol version; they exercise the generic representation
+routes only and do not claim that the fixture runs each workflow's semantics
+(OASIS KMIP 2.0/2.1 §§8.3, 8.6).
+
+Red `fb43d7432` requires exact route evidence for every catalogued case/target
+pair in both protocol versions and fails because those events are absent.
+Green `be6a84fd4` builds each request or response structure, checks the
+installed `TtlvItem.create`, `TtlvItem.view`, and `TtlvCodec.decode` calls, and
+emits only the declared manifest routes. Refactor `e39b24fc1` compares the
+exact expected evidence keys, including case, target, version, and route.
+
+The Java suite passes 92/92, including the controlled TLS peer workflows. The
+shared route suites pass 109/109; the selected route report validates
+34,984/34,984 cells with zero failures, the generated ledger matches its
+reference, and the capability audit accepts 1,507 public routes. The full
+ledger records 71,641 planned, 34,984 executed, and 36,657 pending cells.
+Full matrix closure and exact-head CI remain open; #187 stays WIP.

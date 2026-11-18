@@ -506,3 +506,10 @@ Query Asynchronous Requests, Set Constraints, and Set Defaults now execute the
 assigned KMIP 2.1 Operation values through local generic Item construction,
 view, and decode. No unsupported 2.0 request is sent. The selected report
 validates 34,834/34,834 cells; 36,807 of 71,641 Java cells remain pending.
+
+Batch workflow cases now exercise the generic TTLV construction, view, and
+decode routes for each catalogued Request Batch Item and Response Batch Item
+target in KMIP 2.0/2.1 (§§8.3, 8.6). These local fixtures cover only generic
+representation routes, not workflow behavior. The full Java suite passes
+92/92; the selected report validates 34,984/34,984 cells with zero failures,
+and 36,657 of 71,641 full Java route cells remain pending.
