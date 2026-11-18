@@ -4946,9 +4946,15 @@ static bool created_key_crypto_response_matches(kmipkit_client_batch_item_respon
             item, &present, &result_identifier, &validity_present, &validity_indicator,
             &correlation_present, &correlation);
         *out_status = status;
-        return status == 0 && present && same_text_identifier(identifier, &result_identifier) &&
+        bool valid = status == 0 && present && same_text_identifier(identifier, &result_identifier) &&
             validity_present && validity_indicator == KMIPKIT_ENUMERATION_VALIDITY_INDICATOR_VALID &&
             !correlation_present;
+        if (valid) {
+            valid = response_ttlv_matches_field_count(
+                item, kmipkit_client_batch_item_response_mac_verify_ttlv,
+                COMPLETE_RESPONSE_ITEM_TTLV_FIELD_COUNT, out_status);
+        }
+        return valid;
     }
     uint8_t present = 0, data_present = 0, iv_present = 0, correlation_present = 0, tag_present = 0;
     kmipkit_unique_identifier_v1_t result_identifier = {
@@ -5395,9 +5401,15 @@ static bool created_key_signature_response_matches(
         item, &present, &result_identifier, &validity_present, &validity_indicator,
         &recovered_data_present, &output, &correlation_present, &correlation);
     *out_status = status;
-    return status == 0 && present && same_text_identifier(identifier, &result_identifier) &&
+    bool valid = status == 0 && present && same_text_identifier(identifier, &result_identifier) &&
         validity_present && validity_indicator == KMIPKIT_ENUMERATION_VALIDITY_INDICATOR_VALID &&
         !recovered_data_present && !correlation_present;
+    if (valid) {
+        valid = response_ttlv_matches_field_count(
+            item, kmipkit_client_batch_item_response_signature_verify_ttlv,
+            COMPLETE_RESPONSE_ITEM_TTLV_FIELD_COUNT, out_status);
+    }
+    return valid;
 }
 
 static kmip_execution_outcome_t execute_create_key_pair(kmip_live_client_t *client) {
