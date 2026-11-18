@@ -1142,6 +1142,7 @@ class ControlledTlsPeerTest {
             appendNetworkQueryRouteEvents(events, protocolVersion, requestHash, responseHash);
             appendControlledGetAttributesNetworkRouteEvents(events, protocolVersion);
             assertGetAttributesNetworkRouteCoverage(events, readRouteEvidenceCatalog(), protocolVersion);
+            assertGetAttributeListNetworkRouteCoverage(events, readRouteEvidenceCatalog(), protocolVersion);
             appendControlledKeyFormatRawResponseRouteEvents(events, protocolVersion);
             appendPendingQueryCorrelationEvidence(events, protocolVersion, serverCertificatePem,
                     serverPrivateKeyPem, clientCertificatePem, clientPrivateKeyPem);
@@ -4290,6 +4291,17 @@ class ControlledTlsPeerTest {
         return caseIds;
     }
 
+    private static Set<String> getAttributeListNetworkRouteCaseIds(JsonNode catalog, String protocolVersion) {
+        Set<String> caseIds = new java.util.LinkedHashSet<>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            if (!"Get Attribute List".equals(testCase.path("operation").asText())) continue;
+            if (containsText(testCase.path("execution").path("protocol_versions"), protocolVersion)) {
+                caseIds.add(testCase.path("case_id").asText());
+            }
+        }
+        return caseIds;
+    }
+
     private static void assertGetAttributesNetworkRouteCoverage(ArrayNode events, JsonNode catalog,
             String protocolVersion) {
         Set<String> expected = getAttributesNetworkRouteCaseIds(catalog, protocolVersion);
@@ -4314,6 +4326,39 @@ class ControlledTlsPeerTest {
                                 }
                             }
                             assertTrue(observed, "Missing Get Attributes route evidence for " + caseId + " / "
+                                    + routeId + " / " + protocolVersion + " / " + encoding + " / " + transport
+                                    + " / " + action);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static void assertGetAttributeListNetworkRouteCoverage(ArrayNode events, JsonNode catalog,
+            String protocolVersion) {
+        Set<String> expected = getAttributeListNetworkRouteCaseIds(catalog, protocolVersion);
+        List<String> routeIds = List.of(
+                "java.typed-protocol.client_batch_item.get_attribute_list",
+                "java.typed-protocol.function.attribute_request_get_attribute_list_to_batch_item");
+        for (String caseId : expected) {
+            for (String routeId : routeIds) {
+                for (String encoding : List.of("TTLV", "JSON", "XML")) {
+                    for (String transport : List.of("raw_tls", "https")) {
+                        for (String action : List.of("construct", "send", "decode")) {
+                            boolean observed = false;
+                            for (JsonNode event : events) {
+                                if (caseId.equals(event.path("case_id").asText())
+                                        && routeId.equals(event.path("route_id").asText())
+                                        && protocolVersion.equals(event.path("protocol_version").asText())
+                                        && encoding.equals(event.path("encoding").asText())
+                                        && transport.equals(event.path("transport").asText())
+                                        && action.equals(event.path("action").asText())) {
+                                    observed = true;
+                                    break;
+                                }
+                            }
+                            assertTrue(observed, "Missing Get Attribute List route evidence for " + caseId + " / "
                                     + routeId + " / " + protocolVersion + " / " + encoding + " / " + transport
                                     + " / " + action);
                         }
