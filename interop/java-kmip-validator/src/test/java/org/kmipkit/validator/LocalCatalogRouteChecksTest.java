@@ -689,6 +689,39 @@ class LocalCatalogRouteChecksTest {
     }
 
     @Test
+    // KMIP 2.0/2.1 §2.1 defines Certificate as a managed-object structure.
+    void executesCertificateFactoryForEveryApplicableCertificateTargetAndVersion() throws Exception {
+        JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
+        Set<String> caseIds = Set.of(
+                "test-norm-object-structure-object-structure-certificate",
+                "test-norm-structure-member-structure-member-2-1-certificate-certificate-type",
+                "test-norm-structure-member-structure-member-2-1-certificate-certificate-value",
+                "test-norm-tag-tag-420013");
+        List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
+
+        for (String version : List.of("2.0", "2.1")) {
+            LocalCatalogRouteChecks.executeCertificateFactoryTargets(catalog, version, caseIds, invocations::add);
+        }
+
+        assertEquals(caseIds.size() * 2, invocations.size());
+        assertEquals(Set.of("java.typed-protocol.model.org.kmipkit.ttlv.managedobject.certificate"),
+                invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId)
+                        .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(Set.of("construct"), invocations.stream()
+                .map(LocalCatalogRouteChecks.Invocation::action)
+                .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(caseIds, invocations.stream().map(LocalCatalogRouteChecks.Invocation::caseId)
+                .collect(java.util.stream.Collectors.toSet()));
+        for (LocalCatalogRouteChecks.Invocation invocation : invocations) {
+            try (var decoded = TtlvCodec.decode(invocation.wire());
+                    var view = decoded.view(); var value = view.value(); var structure = value.structure()) {
+                assertEquals(TtlvItemType.Structure, view.itemType());
+                assertEquals(2, structure.itemCount());
+            }
+        }
+    }
+
+    @Test
     void executesRemainingEnumerationFieldsThroughGenericTtlvRoutes() throws Exception {
         JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
         Set<String> caseIds = Set.of(
