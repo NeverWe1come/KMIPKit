@@ -4538,22 +4538,98 @@ class RouteMatrixTests(unittest.TestCase):
 
         self.assertEqual(len(checks), 12)
         self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
-        self.assertTrue(all(check.get('peer_single_activate') is True and
-                            check.get('peer_batch_count_is_one') is True and
-                            check.get('peer_unique_identifier_is_omitted') is True and
-                            check.get('peer_continuation_option_is_omitted') is True and
-                            check.get('peer_order_option_is_omitted') is True and
-                            check.get('peer_operation_failed_without_mutation') is True
+        self.assertTrue(all(check.get('local_placeholder_activate_rejected') is True and
+                            check.get('local_placeholder_batch_count_is_one') is True and
+                            check.get('local_placeholder_unique_identifier_is_omitted') is True and
+                            check.get('local_placeholder_options_are_omitted') is True and
+                            check.get('local_placeholder_transport_was_not_invoked') is True
                             for check in checks), checks)
         send_events = [event for event in events if event['action'] == 'send']
         self.assertEqual(len(send_events), 12)
-        self.assertTrue(all(event.get('batch_operation_sequence') == ['Activate'] and
+        self.assertTrue(all(event.get('request_delivery_state') == 'not_sent' and
+                            event.get('transport_invocation_count') == 0 and
+                            event.get('local_rejection_code') ==
+                            'batch_placeholder_forward_reference' and
+                            event.get('client_error_category') == 'validation' and
+                            event.get('client_error_cause') == 'invalid_input' and
+                            event.get('batch_operation_sequence') == ['Activate'] and
                             event.get('batch_item_count') == 1 and
-                            event.get('peer_observed_operation_sequence') == ['Activate'] and
-                            event.get('peer_observed_response_count') == 1
+                            'request_tree_sha256' not in event
                             for event in send_events), send_events)
         self.assertTrue(all(event['execution_api_symbol'] == 'kmipkit_client_execute'
                             for event in send_events))
+
+    def test_local_rejection_event_uses_only_schema_approved_fields(self):
+        from artifact_support import ROOT
+        from jsonschema import Draft202012Validator
+
+        schema = json.loads((ROOT / 'interop/shared/schemas/route-execution-evidence.schema.json')
+                            .read_text())['$defs']['event']
+        validator = Draft202012Validator(schema)
+        event = {
+            'case_id': 'test-batch-placeholder-without-producer-rejected',
+            'route_id': 'c.typed-protocol.kmipkit_client_batch_item_activate',
+            'target_id': 'KMIPKIT-ELEM-OP-C2S-ACTIVATE',
+            'public_api_symbol': 'kmipkit_client_batch_item_activate',
+            'execution_route_id': 'c.execute.typed-batch',
+            'execution_api_symbol': 'kmipkit_client_execute',
+            'invocation_id': 'c-peer-test',
+            'action': 'send',
+            'protocol_version': '2.1',
+            'encoding': 'TTLV',
+            'transport': 'raw_tls',
+            'status': 'passed',
+            'invocation_count': 1,
+            'request_delivery_state': 'not_sent',
+            'transport_invocation_count': 0,
+            'local_rejection_code': 'batch_placeholder_forward_reference',
+            'client_error_category': 'validation',
+            'client_error_cause': 'invalid_input',
+            'batch_operation_sequence': ['Activate'],
+            'batch_item_count': 1,
+        }
+
+        invalid_event = {**event, 'local_validation_rejection': True}
+        errors = list(validator.iter_errors(invalid_event))
+        self.assertTrue(any(error.validator == 'additionalProperties' and
+                            'local_validation_rejection' in error.message
+                            for error in errors), errors)
+        validator.validate(event)
+
+    def test_version_boundary_event_does_not_claim_batch_rejection(self):
+        from artifact_support import ROOT
+        from jsonschema import Draft202012Validator
+
+        schema = json.loads((ROOT / 'interop/shared/schemas/route-execution-evidence.schema.json')
+                            .read_text())['$defs']['event']
+        validator = Draft202012Validator(schema)
+        event = {
+            'case_id': 'test-v20-reject-get-constraints',
+            'route_id': 'c.typed-protocol.kmipkit_client_batch_item_get_constraints',
+            'target_id': 'KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS',
+            'public_api_symbol': 'kmipkit_client_batch_item_get_constraints',
+            'execution_route_id': 'c.execute.typed-batch',
+            'execution_api_symbol': 'kmipkit_client_execute',
+            'invocation_id': 'c-peer-version-boundary',
+            'action': 'send',
+            'protocol_version': '2.0',
+            'encoding': 'TTLV',
+            'transport': 'raw_tls',
+            'status': 'passed',
+            'invocation_count': 1,
+            'request_delivery_state': 'not_sent',
+            'transport_invocation_count': 0,
+        }
+
+        self.assertNotIn('batch_item_count', event)
+        self.assertNotIn('local_rejection_code', event)
+        validator.validate(event)
+        invalid_event = {**event, 'batch_operation_sequence': ['Get Constraints'],
+                         'batch_item_count': 1}
+        errors = list(validator.iter_errors(invalid_event))
+        self.assertTrue(any(error.validator == 'required' and
+                            'local_rejection_code' in error.message
+                            for error in errors), errors)
 
 
     def test_placeholder_batch_evidence_matches_the_catalog_before_cleanup(self):
