@@ -4060,8 +4060,8 @@ source-shaped Structure from the KMIP catalog and invokes `TypedAttribute`
 creation, decoding from an Item, and `AttributeSet.tryNew`. It also invokes
 `GetAttributesRequest.toTtlvPayload` with the Alternative Name tag as an
 Attribute Reference and checks the Unique Identifier and payload shape.
-References: OASIS KMIP 2.0 and 2.1 §4.2 (Alternative Name), §6.1.17 (Get
-Attributes), §§8.3 and 8.6 (Attributes and Attribute References). The tests
+References: OASIS KMIP 2.0 §4.2 (Alternative Name), §6.1.20 Table 208; KMIP
+2.1 §6.1.20 Table 223; §§8.3 and 8.6 (Attributes and Attribute References). The tests
 cover local typed construction and encoding only; they do not claim server
 policy behavior or network execution.
 
@@ -4076,3 +4076,27 @@ report validates 42,204/42,204 cells with zero failures. The generated ledger
 records 71,641 planned, 42,204 executed, and 29,437 pending cells, and its
 comparison passes. The full matrix remains incomplete and the stack remains
 WIP.
+
+## Java Get Attributes local TTLV payload encoder matrix — 2026-11-18
+
+The installed Java suite now calls `GetAttributesRequest.toTtlvPayload` for
+every catalogued Get Attributes case in both KMIP 2.0 and 2.1 contexts. It
+records the operation target for each case and the four request-payload
+normative targets separately, checking Unique Identifier and Attribute
+Reference tags, types, values, and cardinality and recording a normalized
+request-tree hash. The route has 133/133 required cells. References: OASIS
+KMIP 2.0 §6.1.20 Table 208, KMIP 2.1 §6.1.20 Table 223, and §§8.3, 8.6.
+This demonstrates local typed encoding. The separate controlled TLS exchanges
+exercise request transport; this route evidence does not claim a deployed KMS
+accepted the request.
+
+Red `dae729939` fails when the local encoder evidence is absent. Green
+`73a07201e` adds per-case and payload-target evidence, checks the emitted
+payload shape, avoids duplicate route cells, and refreshes the generated
+ledger. Refactor `c0e998a4f` centralizes local encoder-event creation. The full
+Gradle suite passes 95/95 tests; the focused controlled-TLS test passes; shared
+evidence/schema/capability tests pass 109/109; traceability tests pass 33/33;
+and the capability audit accepts 1,507 routes. The selected report validates
+42,333/42,333 cells with zero failures. The ledger records 71,641 planned,
+42,333 executed, and 29,308 pending cells, and the ledger comparison passes.
+The Java matrix remains incomplete, so the stack remains WIP.
