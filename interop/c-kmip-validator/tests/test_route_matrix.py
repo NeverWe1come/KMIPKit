@@ -3649,14 +3649,12 @@ class RouteMatrixTests(unittest.TestCase):
                                                if case['case_id'] == case_id]}
 
         events, _, checks = execute_network_cells(
-            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest,
-            peer_rejection={'case_id': case_id, 'exchange_index': 0, 'operation': 10,
-                            'result_status': 1, 'result_reason': 55})
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
 
         self.assertEqual(12, len(checks), 'Undo must pass both versions and all six wire routes')
         self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
         send_events = [event for event in events if event['action'] == 'send']
-        self.assertEqual(12, len(send_events))
+        self.assertEqual(24, len(send_events), 'both Create and Get targets must receive send evidence')
         self.assertTrue(all(
             event['peer_observed_operation_sequence'] == ['Create', 'Get'] and
             event['peer_observed_result_status_codes'] == [3, 1] and

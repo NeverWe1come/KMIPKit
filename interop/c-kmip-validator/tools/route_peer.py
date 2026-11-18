@@ -6,6 +6,7 @@ request bodies, credentials, tickets, or key bytes.
 """
 from __future__ import annotations
 
+import copy
 import datetime as dt
 import hashlib
 import json
@@ -425,6 +426,7 @@ RECIPES = {
     'test-sign-missing-managed-object-cryptographic-parameters': (
         (2, 18, 33, 19, 20, 20), 'sign_missing_parameters'),
     'test-op-signature-verify': ((2, 18, 34, 19, 20, 20), 'signature_verify'),
+    'test-batch-undo-rolls-back-prior-success': ((1, 10), 'batch_undo_rollback'),
     'test-op-create-key-pair': ((2, 20, 20), 'create_key_pair'),
     'test-op-create-split-key': ((40, 20, 20), 'create_split_key'),
     'test-op-join-split-key': ((40, 41, 20, 20, 20), 'join_split_key'),
@@ -1047,6 +1049,52 @@ def verify_signature_missing_parameters_response(response_tree):
         raise ValueError('fixture_signature_failed_sign_response_payload_present')
 
 
+def assert_undo_rollback_request(node):
+    """Check Create followed by a missing-object Get under Batch Error Undo."""
+    items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if ([numbers(item, 0x42005C) for item in items] != [[1], [10]] or
+            [byte_string_values(item, 0x420093) for item in items] !=
+            [[b'undo-create'], [b'undo-get']] or
+            numbers(node, 0x42000D) != [2] or numbers(node, 0x42000E) != [3] or
+            numbers(node, 0x420010) != [1]):
+        raise ValueError('fixture_undo_rollback_request_options_or_items_mismatch')
+    create_payloads = [child for child in items[0][2]
+                       if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+    get_payloads = [child for child in items[1][2]
+                    if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+    if len(create_payloads) != 1 or len(get_payloads) != 1:
+        raise ValueError('fixture_undo_rollback_payload_missing')
+    create_fields = create_payloads[0][2]
+    if (len(create_fields) != 2 or create_fields[0][0] != 0x420057 or
+            numbers(create_fields[0], 0x420057) != [2] or create_fields[1][0] != 0x420125):
+        raise ValueError(
+            'fixture_undo_rollback_create_fields_mismatch:'
+            f'tags={[field[0] for field in create_fields]}:'
+            f'object_type={numbers(create_fields[0], 0x420057) if create_fields else []}')
+    if text_values(items[1], UNIQUE_IDENTIFIER_TAG) != ['missing-key']:
+        raise ValueError('fixture_undo_rollback_get_identifier_mismatch')
+
+
+def verify_undo_rollback_response(response_tree):
+    """Check the prior Create is Undone and the failing Get is reported."""
+    items = [child for child in response_tree[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if ([numbers(item, 0x42005C) for item in items] != [[1], [10]] or
+            [byte_string_values(item, 0x420093) for item in items] !=
+            [[b'undo-create'], [b'undo-get']] or
+            [numbers(item, 0x42007F) for item in items] != [[3], [1]] or
+            [numbers(item, 0x42007E) for item in items] != [[], [55]] or
+            len([child for child in items[0][2]
+                 if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1]) != 1 or
+            any(child[0] == RESPONSE_PAYLOAD_TAG for child in items[1][2])):
+        raise ValueError('fixture_undo_rollback_response_mismatch')
+    create_payload = next(child for child in items[0][2]
+                          if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1)
+    identifiers = [field for field in create_payload[2]
+                   if field[0] == UNIQUE_IDENTIFIER_TAG and field[1] == 7]
+    if len(identifiers) != 1 or identifiers[0][2] != b'fixture-key-1':
+        raise ValueError('fixture_undo_rollback_created_identifier_missing')
+
+
 def assert_create_key_pair_request(node):
     """Check a Create Key Pair request and cleanup of both returned objects."""
     items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
@@ -1584,6 +1632,8 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
         raise ValueError('fixture_batch_count_mismatch')
     if selected_recipe[1] in ('cancel_async', 'cancel_poll_race'):
         assert_cancel_request(node)
+    if selected_recipe[1] == 'batch_undo_rollback':
+        assert_undo_rollback_request(node)
     if selected_recipe[1] == 'archive':
         archive_items = [item for item in node[2]
                          if item[0] == BATCH_ITEM_TAG and numbers(item, 0x42005C) == [21]]
@@ -1690,7 +1740,8 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
             2048 if object_type in (3, 4) else 128)
         if numbers(node, 0x42002A) != [expected_key_length]:
             raise ValueError('fixture_key_length_mismatch')
-        if numbers(node, 0x42000E) != [1]:
+        if (selected_recipe[1] != 'batch_undo_rollback' and
+                numbers(node, 0x42000E) != [1]):
             raise ValueError('fixture_cleanup_continuation_missing')
         implicit_target = case_id in ('test-op-get-attributes', 'test-op-get-attribute-list',
             'test-norm-payload-client-get-attribute-list-request-20-001',
@@ -3179,9 +3230,11 @@ class PeerState:
         return hashlib.sha256(state.encode()).hexdigest()
 
     def execute(self, request_tree, *, continued_batch=False, stop_after_failure=False,
+                undo_prior_success=False,
                 rejected_operation=None,
                 rejection_status=1, rejection_reason=5):
         before = self.digest()
+        state_snapshot = copy.deepcopy(self.__dict__) if undo_prior_success else None
         effects, statuses, reasons = [], [], []
         placeholder = None
         labels = {9: 'checked', 10: 'object_retrieved', 11: 'attributes_retrieved',
@@ -3471,6 +3524,16 @@ class PeerState:
             reasons.append(reason)
             if stop_after_failure and status != 0:
                 break
+        if undo_prior_success:
+            failure_index = next((index for index, status in enumerate(statuses) if status != 0), None)
+            if failure_index is not None:
+                for index in range(failure_index):
+                    if statuses[index] == 0:
+                        statuses[index] = 3
+                        reasons[index] = 0
+                        effects[index] = 'undone'
+                self.__dict__.clear()
+                self.__dict__.update(state_snapshot)
         return {'effects': effects, 'statuses': statuses, 'reasons': reasons,
                 'peer_observed_state_before_sha256': before,
                 'peer_observed_state_after_sha256': self.digest()}
@@ -4146,6 +4209,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             response_item_ids = SIGN_ITEM_IDS
                                         elif recipe[1] == 'signature_verify':
                                             response_item_ids = SIGNATURE_VERIFY_ITEM_IDS
+                                        elif recipe[1] == 'batch_undo_rollback':
+                                            response_item_ids = (b'undo-create', b'undo-get')
                                         elif recipe[1] == 'create_key_pair':
                                             response_item_ids = CREATE_KEY_PAIR_ITEM_IDS
                                         elif recipe[1] == 'archive':
@@ -4267,6 +4332,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 continued_batch=recipe[1] in (
                                                     'batch_continue_after_failure', 'sign_missing_parameters'),
                                                 stop_after_failure=recipe[1] == 'batch_stop_on_first_failure',
+                                                undo_prior_success=recipe[1] == 'batch_undo_rollback',
                                                 rejected_operation=peer_rejection.get('operation')
                                                 if reject_this_exchange else None,
                                                 rejection_status=peer_rejection.get('result_status', 1)
@@ -4529,6 +4595,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             verify_lifecycle(recipe[0], response_tree)
                                         elif recipe[1] == 'sign_missing_parameters':
                                             verify_signature_missing_parameters_response(response_tree)
+                                        elif recipe[1] == 'batch_undo_rollback':
+                                            verify_undo_rollback_response(response_tree)
                                         elif recipe[1] in ('sign', 'signature_verify'):
                                             verify_signature_response(
                                                 response_tree, recipe[1] == 'signature_verify')
