@@ -3707,3 +3707,24 @@ Verification on #217: Java suite 87/87, shared route suites 109/109, selected
 report 34,756/34,756 with zero failures, ledger comparison, and the 1,507-route
 capability audit pass. The full ledger has 36,885 pending of 71,641; #217
 remains WIP pending full matrix closure and exact-head CI.
+
+## #217 synchronized PGP Key and Secret Data routes — 2026-11-18
+
+The #217 stack tip includes the PGP Key and Secret Data route implementation
+from #187 through #216, along with Right Usage Limits and Split Key evidence.
+The fixture runs `ManagedObject.pgpKey` or `ManagedObject.secretData` and the
+applicable `fromFields` and `fromItem` factories for their catalogued object,
+structure-member, and tag targets under KMIP 2.0 and 2.1. PGP Key Version and
+Secret Data Type are present in the corresponding structures together with a
+Raw Key Block (KMIP §§2.4, 2.7). These are local model checks; they do not
+validate cryptographic key material or server behavior.
+
+Red commit `7b1f65d3b` requires the PGP and Secret Data routes; Green commit
+`6c7820757` implements them; Refactor commit `1c67d3647` shares the PGP target
+matching. The report then records the resulting version-specific events.
+
+On the synchronized #217 tip, the full Java suite passes 89/89 tests, shared
+route suites pass 109/109, the capability audit accepts all 1,507 routes, and
+the regenerated ledger matches its reference. Selected evidence validates
+34,796/34,796 cells with zero failures; the full ledger has 36,845 pending of
+71,641. The Java matrix remains incomplete and the stack remains WIP.

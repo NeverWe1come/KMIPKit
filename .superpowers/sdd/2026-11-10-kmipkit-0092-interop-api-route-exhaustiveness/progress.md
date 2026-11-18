@@ -670,3 +670,17 @@ branches, and the common CI therefore reports a planned matrix only.
 - The Java suite passes 87/87; shared route suites pass 109/109; ledger
   comparison and the 1,507-route capability audit pass. Full matrix closure and
   exact-head CI remain open, so #217 stays WIP.
+
+## #217 synchronized Java managed-object routes — 2026-11-18
+
+- Synced the updated #216 branch into #217, preserving the Right Usage Limits
+  route slice and incorporating PGP Key and Secret Data routes from #187.
+  The PGP fixtures exercise named factories and applicable `fromFields` /
+  `fromItem` routes with PGP Key Version or Secret Data Type and a Raw Key
+  Block; they are local model evidence, not server interoperability evidence.
+- The full Java suite passes 89/89 tests; shared route suites pass 109/109;
+  the 1,507-route capability audit passes; and ledger comparison passes.
+  Selected evidence validates 34,796/34,796 cells with zero failures. The full
+  ledger has 71,641 planned, 34,796 executed, and 36,845 pending cells.
+- Full matrix closure remains open. #187, #216, and #217 remain WIP; exact-head
+  CI must be checked after the synchronization commit is pushed.

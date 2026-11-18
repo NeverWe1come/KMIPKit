@@ -348,3 +348,13 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
   report 34,756/34,756 with zero failures; ledger comparison and the 1,507-route
   capability audit pass. The full Java ledger has 36,885 pending of 71,641;
   full matrix closure and exact-head CI remain open, so #217 stays WIP.
+
+## Java PGP Key and Secret Data routes on synchronized #217
+
+- #217 now includes the PGP Key and Secret Data routes from #187 via #216,
+  while retaining Right Usage Limits and Split Key evidence. Red `7b1f65d3b`,
+  Green `6c7820757`, and Refactor `1c67d3647` are in the parent history.
+- Verification: Java suite 89/89; shared route suites 109/109; selected report
+  34,796/34,796 with zero failures; ledger comparison and the 1,507-route
+  capability audit pass. The full ledger has 36,845 pending of 71,641, so the
+  matrix and stack remain open and WIP.

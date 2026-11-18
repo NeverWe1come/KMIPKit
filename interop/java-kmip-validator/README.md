@@ -476,3 +476,9 @@ fixture uses Polynomial Sharing Prime Field and Big Integer 257; other members
 use XOR and omit that conditional field. The combined selected report validates
 34,756/34,756 cells with zero failures and leaves 36,885 of 71,641 pending.
 Full matrix closure remains outstanding.
+
+The #216 branch also carries the PGP Key and Secret Data routes from #187
+alongside Usage Limits. Their KMIP 2.0/2.1 fixtures include the required PGP
+Key Version or Secret Data Type and a Raw Key Block (§§2.4, 2.7). This adds 40
+local model route cells. The combined report validates 34,796/34,796 cells with
+zero failures and leaves 36,845 of 71,641 pending; full closure remains open.

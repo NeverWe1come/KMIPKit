@@ -248,3 +248,14 @@ artifact. This is part of the FR-006 artifact provenance check.
 - The combined selected report validates 34,718/34,718 cells with zero
   failures; 36,923 of 71,641 planned cells remain pending. Full matrix closure
   remains open under FR-002/FR-003/FR-009.
+
+## Java PGP Key and Secret Data routes on synchronized #217 — 2026-11-18
+
+- **FR-003:** The #217 tip inherits PGP Key and Secret Data named managed-object
+  factories and applicable `fromFields` / `fromItem` routes from #187 via #216.
+  The KMIP 2.0/2.1 fixtures include the required PGP Key Version or Secret Data
+  Type and a Raw Key Block (KMIP §§2.4, 2.7). They establish local model route
+  execution, not key-material validity or server interoperability.
+- The selected report validates 34,796/34,796 cells with zero failures; 36,845
+  of 71,641 remain pending. Full matrix closure remains open under
+  FR-002/FR-003/FR-009.
