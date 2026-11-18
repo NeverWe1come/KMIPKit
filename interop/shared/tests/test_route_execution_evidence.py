@@ -369,6 +369,111 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         self.assertEqual(1, summary["not_applicable_cells"])
         self.assertTrue(summary["all_invocations_passed"])
 
+    def test_forward_placeholder_network_decoders_require_exact_not_sent_item_events(self):
+        catalog_path = ROOT / "interop/shared/catalog/kmipkit-1.0-test-catalog.json"
+        manifest_path = ROOT / "interop/shared/coverage/route-capabilities.json"
+        installed_catalog = json.loads(catalog_path.read_text())
+        manifest = json.loads(manifest_path.read_text())
+        case_id = "test-batch-placeholder-forward-reference-rejected"
+        case = next(case for case in installed_catalog["test_cases"]
+                    if case["case_id"] == case_id)
+        catalog = {**installed_catalog, "test_cases": [case]}
+        cells = [cell for cell in iter_cells(catalog, manifest, languages=("c",))
+                 if cell["case_id"] == case_id and cell["mode"] == "network"]
+        decoders = [cell for cell in cells if cell["action"] == "decode"]
+        sends = [cell for cell in cells if cell["action"] == "send"]
+
+        self.assertEqual(24, len(decoders), "2 items x 2 versions x 6 network combinations")
+        self.assertEqual(len(decoders), sum(cell["execution_status"] == "not_applicable"
+                                            and cell.get("not_applicable_reason") == "local_rejection_no_response"
+                                            for cell in decoders))
+        self.assertEqual(24, len(sends))
+        self.assertEqual(
+            {(cell["workflow_item_index"], cell["protocol_version"], cell["encoding"], cell["transport"])
+             for cell in decoders},
+            {(cell["workflow_item_index"], cell["protocol_version"], cell["encoding"], cell["transport"])
+             for cell in sends},
+        )
+
+        def event_for(cell, index):
+            identity = {field: cell[field] for field in (
+                "case_id", "route_id", "target_id", "workflow_operation", "workflow_item_index",
+                "execution_route_id", "execution_api_symbol", "public_api_symbol", "action",
+                "protocol_version", "encoding", "transport",
+            ) if field in cell}
+            if cell["action"] == "decode":
+                return {**identity, "status": "not_applicable", "invocation_count": 0,
+                        "not_applicable_reason": "local_rejection_no_response"}
+            return {
+                **identity,
+                "status": "passed",
+                "invocation_count": 1,
+                "invocation_id": f"forward-placeholder-send-{index}",
+                "request_delivery_state": "not_sent",
+                "transport_invocation_count": 0,
+                "batch_operation_sequence": ["Activate", "Create"],
+                "batch_item_count": 2,
+                "local_rejection_code": "batch_placeholder_forward_reference",
+                "client_error_category": "validation",
+                "client_error_cause": "invalid_input",
+            }
+
+        report = {
+            **self.report,
+            "library_commit": manifest["library_commit"],
+            "protocol_versions": ["2.0", "2.1"],
+            "network_combinations": [
+                {"encoding": encoding, "transport": transport}
+                for encoding in ("TTLV", "JSON", "XML")
+                for transport in ("raw_tls", "https")
+            ],
+            "events": [event_for(cell, index) for index, cell in enumerate([*sends, *decoders])],
+        }
+        scope = [*sends, *decoders]
+
+        summary = validate_report(
+            report, catalog, manifest,
+            catalog_sha256="c" * 64,
+            route_manifest_sha256="d" * 64,
+            expected_artifact_sha256="b" * 64,
+            scope_cells=scope,
+        )
+
+        self.assertEqual(24, summary["invoked_cells"])
+        self.assertEqual(24, summary["not_applicable_cells"])
+        self.assertTrue(summary["all_invocations_passed"])
+
+        missing_send = copy.deepcopy(report)
+        missing_send["events"] = [event for event in missing_send["events"]
+                                  if not (event["action"] == "send"
+                                          and event["workflow_item_index"] == 0
+                                          and event["protocol_version"] == "2.0"
+                                          and event["encoding"] == "TTLV"
+                                          and event["transport"] == "raw_tls")]
+        with self.assertRaisesRegex(ValueError, "missing route execution cells"):
+            validate_report(
+                missing_send, catalog, manifest,
+                catalog_sha256="c" * 64,
+                route_manifest_sha256="d" * 64,
+                expected_artifact_sha256="b" * 64,
+                scope_cells=scope,
+            )
+
+        mismatched_send = copy.deepcopy(report)
+        send = next(event for event in mismatched_send["events"]
+                    if event["action"] == "send" and event["workflow_item_index"] == 0
+                    and event["protocol_version"] == "2.0" and event["encoding"] == "TTLV"
+                    and event["transport"] == "raw_tls")
+        send["encoding"] = "JSON"
+        with self.assertRaisesRegex(ValueError, "outside the declared route scope"):
+            validate_report(
+                mismatched_send, catalog, manifest,
+                catalog_sha256="c" * 64,
+                route_manifest_sha256="d" * 64,
+                expected_artifact_sha256="b" * 64,
+                scope_cells=scope,
+            )
+
     def test_missing_action_fails_coverage_even_when_the_route_was_called(self):
         report = copy.deepcopy(self.report)
         report["events"].pop()

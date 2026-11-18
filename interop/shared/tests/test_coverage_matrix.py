@@ -115,6 +115,26 @@ class CoverageMatrixTests(unittest.TestCase):
         self.assertTrue(all(cell['execution_status'] == 'required'
                             and 'not_applicable_reason' not in cell for cell in first_response))
 
+    def test_forward_placeholder_local_rejection_only_exempts_network_response_decoders(self):
+        case_id = 'test-batch-placeholder-forward-reference-rejected'
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('c',))
+                 if cell['case_id'] == case_id and cell['action'] == 'decode']
+        network_cells = [cell for cell in cells if cell['mode'] == 'network']
+        local_cells = [cell for cell in cells if cell['mode'] == 'local']
+
+        self.assertTrue(network_cells)
+        self.assertTrue(all(cell['execution_status'] == 'not_applicable' and
+                            cell['not_applicable_reason'] == 'local_rejection_no_response'
+                            for cell in network_cells), network_cells)
+        self.assertTrue(local_cells)
+        self.assertTrue(all(cell['execution_status'] == 'required' and
+                            'not_applicable_reason' not in cell for cell in local_cells), local_cells)
+        request_cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('c',))
+                         if cell['case_id'] == case_id and cell['action'] in {'construct', 'send'}]
+        self.assertTrue(request_cells)
+        self.assertTrue(all(cell['execution_status'] == 'required' and
+                            'not_applicable_reason' not in cell for cell in request_cells), request_cells)
+
     def test_explicit_batch_recipe_does_not_inherit_unrelated_primary_operation(self):
         case = next(case for case in self.catalog["test_cases"]
                     if case["case_id"] == "test-batch-register-encrypt-decrypt-destroy")
