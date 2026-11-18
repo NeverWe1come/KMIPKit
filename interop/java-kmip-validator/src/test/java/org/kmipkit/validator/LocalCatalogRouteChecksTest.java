@@ -466,7 +466,7 @@ class LocalCatalogRouteChecksTest {
     }
 
     @Test
-    void executesBooleanAttributesThroughGenericTtlvRoutes() throws Exception {
+    void executesBooleanAttributesThroughGenericAndTypedTtlvRoutes() throws Exception {
         JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
         Set<String> caseIds = Set.of(
                 "test-attr-always-sensitive",
@@ -490,9 +490,13 @@ class LocalCatalogRouteChecksTest {
                 "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.boolean",
                 "java.generic-ttlv.ttlv_item.create",
                 "java.generic-ttlv.function.ttlv_item_view_from_item",
-                "java.generic-ttlv.ttlv_codec.decode"),
+                "java.generic-ttlv.ttlv_codec.decode",
+                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
+                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
+                "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew"),
                 invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId)
                         .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(caseIds.size() * 2 * 7, invocations.size());
         assertEquals(Set.of("construct", "decode"), invocations.stream()
                 .map(LocalCatalogRouteChecks.Invocation::action)
                 .collect(java.util.stream.Collectors.toSet()));
