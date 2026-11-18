@@ -2654,6 +2654,42 @@ python3 interop/shared/tools/route_capabilities.py --check
 git diff --check
 ```
 
+## Operation field routes for catalogued obligations — 2026-11-18
+
+Sources: OASIS KMIP 2.0/2.1 §8.2 (Operation request field) and §11.36
+(Operation enumeration). The earlier Java slice covered only cases whose
+primary normative target was an Operation. The shared route planner also
+assigns Operation obligations to selected object and payload cases and to each
+ordered operation in a batch. The Java fixture now constructs the exact
+catalogued Operation Enumeration and exercises the installed
+`TtlvItem.create`, item view, and `TtlvCodec.decode` routes for those cases.
+Batch events preserve workflow step, operation, and item identity so that
+repeated operations remain distinct. A primary operation on a local enum or
+bitmask value case remains descriptive context unless the catalog separately
+plans an Operation target. Existing operation evidence from other recipes is
+reused rather than emitted twice.
+
+The selected Java report gained 2,883 cells over the previous parent ledger:
+33,808 of 71,641 cells pass, zero fail, and 37,833 remain pending. This is
+local TTLV evidence only; it does not establish operation-payload validity,
+server execution, or vendor interoperability. The full matrix and stack remain
+WIP.
+
+Red commits `7d70e1224` and `2e44d69ce` first require the object Register route
+case and assert its encoded Operation Item. Green commit `cbb4b6375` executes
+all catalogued operation obligations and records the selected evidence.
+Refactor commit `35d5c554f` centralizes the three generic Operation routes so
+selection and execution use the same route inventory.
+
+Final verification on #187:
+
+- Full Gradle suite: 82 tests passed, with zero failures, errors, or skips.
+- Shared route-evidence, schema, and capability suites: 108 tests passed.
+- Shared validator: 33,808/33,808 selected cells passed;
+  `complete_matrix=false`, with 37,833 cells pending globally.
+- Generated ledger comparison passed; the route capability audit found 1,507
+  routes; `git diff --check` passed.
+
 ## Client asynchronous correlation payload TTLV routes — 2026-11-18
 
 Red commit `b99d1b3a1` requires generic TTLV item creation, item view, and
@@ -3389,5 +3425,32 @@ python3 interop/java-kmip-validator/tools/compare_route_ledger.py
 python3 -m unittest interop.shared.tests.test_route_execution_evidence \
   interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
 python3 interop/shared/tools/route_capabilities.py --check
+git diff --check
+```
+
+
+## #216 Usage Limits branch synchronized with Operation route expansion — 2026-11-18
+
+The #216 branch now includes the updated #187 Java Operation route
+obligations and retains its Usage Limits structure/member coverage. The final
+installed-consumer Gradle suite passes 82 tests with no failures, errors, or
+skips. The shared validator accepts all 33,824 selected cells with zero
+failures; the ledger records 33,824 executed and 37,817 pending out of 71,641,
+so the complete Java matrix remains unfinished and the PR remains WIP. The
+generated ledger comparer passes.
+
+Verification used a worktree-local Java temporary directory because `/tmp` was full during the run:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-tmp" \
+  bash bindings/java/gradlew -p interop/java-kmip-validator \
+  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" \
+  test --rerun-tasks
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
 git diff --check
 ```

@@ -801,6 +801,7 @@ class ControlledTlsPeerTest {
         Files.deleteIfExists(reportPath);
         ObjectMapper mapper = new ObjectMapper();
         ArrayNode events = mapper.createArrayNode();
+        ArrayNode genericOperationEvents = mapper.createArrayNode();
         List<EnumerationFixture> enumerationFixtures = genericEnumerationFixtures();
         List<EnumerationFixture> localEnumerationFixtures = genericLocalEnumerationFixtures();
         Set<String> expectedLocalEnumerationCases = cataloguedLocalEnumerationCaseIds(readRouteEvidenceCatalog());
@@ -869,7 +870,6 @@ class ControlledTlsPeerTest {
         int bigIntegerTargetRouteEventCount = 0;
         int remainingEnumerationFieldRouteEventCount = 0;
         int genericStructureTargetRouteEventCount = 0;
-        int genericOperationTargetRouteEventCount = 0;
         Set<String> booleanFieldCaseIds = new java.util.HashSet<>();
         Set<String> anyObjectAttributeCaseIds = new java.util.HashSet<>();
         Set<String> scalarStructureMemberCaseIds = new java.util.LinkedHashSet<>();
@@ -1264,20 +1264,6 @@ class ControlledTlsPeerTest {
                 appendLocalCatalogInvocation(events, protocolVersion, invocation);
             }
             genericStructureTargetRouteEventCount += genericStructureTargetInvocations.size();
-            Set<String> missingGenericOperationTargets =
-                    LocalCatalogRouteChecks.missingGenericOperationTargetCaseIds(
-                            readRouteEvidenceCatalog(), events, protocolVersion);
-            genericOperationTargetCaseIds.addAll(missingGenericOperationTargets);
-            List<LocalCatalogRouteChecks.Invocation> genericOperationTargetInvocations = new ArrayList<>();
-            LocalCatalogRouteChecks.executeGenericOperationTargets(readRouteEvidenceCatalog(), protocolVersion,
-                    missingGenericOperationTargets, events, genericOperationTargetInvocations::add);
-            for (LocalCatalogRouteChecks.Invocation invocation : genericOperationTargetInvocations) {
-                appendLocalCatalogInvocation(events, protocolVersion, invocation);
-            }
-            genericOperationTargetRouteEventCount += genericOperationTargetInvocations.size();
-            assertTrue(LocalCatalogRouteChecks.missingGenericOperationTargetCaseIds(
-                    readRouteEvidenceCatalog(), events, protocolVersion).isEmpty(),
-                    "Every selected Operation target must exercise the generic TTLV Item routes.");
             Set<String> missingAnyObjectAttributeCases = missingAnyObjectAttributeCaseIds(
                     readRouteEvidenceCatalog(), events, protocolVersion);
             anyObjectAttributeCaseIds.addAll(missingAnyObjectAttributeCases);
@@ -1319,6 +1305,19 @@ class ControlledTlsPeerTest {
             correlationPayloadRouteEventCount += correlationInvocations.size();
         }
 
+        for (String protocolVersion : KMIP_2_0_AND_2_1) {
+            Set<String> missingGenericOperationTargets =
+                    LocalCatalogRouteChecks.missingGenericOperationTargetCaseIds(
+                            readRouteEvidenceCatalog(), events, protocolVersion);
+            genericOperationTargetCaseIds.addAll(missingGenericOperationTargets);
+            List<LocalCatalogRouteChecks.Invocation> genericOperationTargetInvocations = new ArrayList<>();
+            LocalCatalogRouteChecks.executeGenericOperationTargets(readRouteEvidenceCatalog(), protocolVersion,
+                    missingGenericOperationTargets, events, genericOperationTargetInvocations::add);
+            for (LocalCatalogRouteChecks.Invocation invocation : genericOperationTargetInvocations) {
+                appendLocalCatalogInvocation(genericOperationEvents, protocolVersion, invocation);
+            }
+        }
+
         int tagAggregateEventCount = appendTagAggregateRouteEvents(events);
         assertEquals(expectedTagAggregateEventCount(), tagAggregateEventCount,
                 "The Tag aggregate must represent every catalogued tag and tag-allocation range cell.");
@@ -1328,7 +1327,7 @@ class ControlledTlsPeerTest {
                 dateTimeAttributeValueCaseIds, enumerationAttributeValueCaseIds, scalarAttributeValueCaseIds,
                 textStringTargetCaseIds, fixedScalarTargetCaseIds, bigIntegerTargetCaseIds,
                 remainingEnumerationFieldCaseIds, genericStructureTargetCaseIds,
-                genericOperationTargetCaseIds, genericTagCaseIds);
+                Set.of(), genericTagCaseIds);
         assertTrue(Files.isRegularFile(reportPath),
                 "Installed client calls against the controlled TLS peer must emit route execution evidence.");
         JsonNode report = new ObjectMapper().readTree(reportPath.toFile());
@@ -1884,7 +1883,6 @@ class ControlledTlsPeerTest {
                         + bigIntegerTargetRouteEventCount
                         + remainingEnumerationFieldRouteEventCount
                         + genericStructureTargetRouteEventCount
-                        + genericOperationTargetRouteEventCount
                         + 97 // BEC, batch IDs, async payload, Ping, Endpoint Role, Object Defaults, derivation, and Extension Information member cells.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Type generic and typed Attribute routes.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Value generic and typed Attribute routes.
@@ -1966,6 +1964,24 @@ class ControlledTlsPeerTest {
                 findRouteEvent(report.path("events"),
                         "java.typed-protocol.function.client_batch_item_response_query", "2.1")
                         .path("public_api_symbol").asText());
+
+        events.addAll(genericOperationEvents);
+        for (String protocolVersion : KMIP_2_0_AND_2_1) {
+            assertTrue(LocalCatalogRouteChecks.missingGenericOperationTargetCaseIds(
+                    readRouteEvidenceCatalog(), events, protocolVersion).isEmpty(),
+                    "Every selected Operation target must exercise the generic TTLV Item routes.");
+        }
+        writeRouteExecutionReport(reportPath, mapper, events,
+                scalarStructureMemberCaseIds, serverPayloadCaseIds, correlationPayloadCaseIds,
+                structureAttributeValueCaseIds, textAttributeValueCaseIds, booleanAttributeValueCaseIds,
+                dateTimeAttributeValueCaseIds, enumerationAttributeValueCaseIds, scalarAttributeValueCaseIds,
+                textStringTargetCaseIds, fixedScalarTargetCaseIds, bigIntegerTargetCaseIds,
+                remainingEnumerationFieldCaseIds, genericStructureTargetCaseIds,
+                genericOperationTargetCaseIds, genericTagCaseIds);
+        JsonNode completeReport = mapper.readTree(reportPath.toFile());
+        assertEquals(report.path("events").size() + genericOperationEvents.size(),
+                completeReport.path("events").size(),
+                "Operation evidence is appended after the legacy case aggregates are checked.");
     }
 
     @Test
@@ -4323,9 +4339,7 @@ class ControlledTlsPeerTest {
         additionalCaseIdCount += appendCaseIds(caseIds, genericStructureTargetCaseIds);
         additionalCaseIdCount += appendCaseIds(caseIds, genericOperationTargetCaseIds);
         appendItemTypeEnumerationCaseIds(caseIds, events);
-        caseIds.add("test-enum-pkcs#11-function");
-        caseIds.add("test-enum-pkcs#11-return-code");
-        caseIds.add("test-enum-tag");
+        appendCaseIds(caseIds, Set.of("test-enum-pkcs#11-function", "test-enum-pkcs#11-return-code", "test-enum-tag"));
         caseIds.add("test-norm-tag-tag-42000e");
         caseIds.add("test-norm-attribute-structure-attribute-structure-5-1-attributes");
         caseIds.add("test-op-ping");
@@ -4333,7 +4347,7 @@ class ControlledTlsPeerTest {
         caseIds.add("test-norm-payload-client-set-endpoint-role-response-20-001");
         caseIds.add("test-norm-payload-client-set-endpoint-role-request-21-001");
         caseIds.add("test-norm-payload-client-set-endpoint-role-response-21-001");
-        caseIds.add("test-enum-item-type");
+        appendCaseIds(caseIds, Set.of("test-enum-item-type"));
         appendAnyObjectAttributeCaseIds(caseIds, events);
         CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().forEach(caseIds::add);
         report.putArray("protocol_versions").add("2.0").add("2.1");
@@ -4465,6 +4479,7 @@ class ControlledTlsPeerTest {
         if (invocation.rejectionCode() != null) {
             ObjectNode event = newRouteEvent(events, invocation.caseId(), invocation.routeId(),
                     invocation.targetId(), invocation.symbol(), null, null, invocation.action(), version, null);
+            appendWorkflowIdentity(event, invocation);
             event.put("decode_outcome", "rejected");
             event.put("decode_rejection_code", invocation.rejectionCode());
             event.put("decode_input_sha256", sha256(invocation.wire()));
@@ -4472,9 +4487,17 @@ class ControlledTlsPeerTest {
         }
         String treeHash = normalizedTreeSha256(invocation.wire());
         boolean construction = "construct".equals(invocation.action());
-        appendRouteEvent(events, invocation.caseId(), invocation.routeId(), invocation.targetId(),
+        ObjectNode event = appendRouteEvent(events, invocation.caseId(), invocation.routeId(), invocation.targetId(),
                 invocation.symbol(), null, null, invocation.action(), version, null,
                 construction ? treeHash : null, construction ? null : treeHash);
+        appendWorkflowIdentity(event, invocation);
+    }
+
+    private static void appendWorkflowIdentity(ObjectNode event,
+            LocalCatalogRouteChecks.Invocation invocation) {
+        if (invocation.workflowStepIndex() != null) event.put("workflow_step_index", invocation.workflowStepIndex());
+        if (invocation.workflowOperation() != null) event.put("workflow_operation", invocation.workflowOperation());
+        if (invocation.workflowItemIndex() != null) event.put("workflow_item_index", invocation.workflowItemIndex());
     }
 
     // OASIS KMIP 2.0 §11.54 and KMIP 2.1 §11.56: exact Tag assignments and reservations.
@@ -4896,8 +4919,8 @@ class ControlledTlsPeerTest {
             String targetId = requires.path("normative_target_id").asText();
             String operationId = requires.path("operation_id").asText();
             int present = 0;
-            for (String evidenceTargetId : List.of(targetId, operationId)) {
-                for (String route : routes) {
+            for (String route : routes) {
+                for (String evidenceTargetId : List.of(targetId, operationId)) {
                     if (hasRouteEvent(events, caseId, route, version, evidenceTargetId)) present++;
                 }
             }
