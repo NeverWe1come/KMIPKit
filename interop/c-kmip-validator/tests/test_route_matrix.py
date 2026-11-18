@@ -2666,6 +2666,7 @@ class RouteMatrixTests(unittest.TestCase):
                             event['public_api_symbol'] == 'kmipkit_client_batch_item_response_login_ttlv' and
                             event['action'] == 'decode' and event['status'] == 'passed'
                             for event in events))
+        self.assertNotIn('controlled-login-ticket', json.dumps(events + checks))
 
     @staticmethod
     def _delegated_login_route_inputs():

@@ -9048,6 +9048,31 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             outcome.library_failed = status != 0;
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),
                      "KMIPKit did not expose a valid typed Login response");
+        } else {
+            /* Inspect only the TTLV structure shape; never copy or expose the Ticket bytes. */
+            kmipkit_ttlv_structure_t *login_response_ttlv = NULL;
+            kmipkit_ttlv_structure_view_t *login_response_view = NULL;
+            uint8_t ttlv_present = 0;
+            uint64_t item_count = 0;
+            status = kmipkit_client_batch_item_response_login_ttlv(
+                response_item, &ttlv_present, &login_response_ttlv);
+            if (status == 0 && ttlv_present && login_response_ttlv)
+                status = kmipkit_ttlv_structure_view(login_response_ttlv, &login_response_view);
+            else if (status == 0)
+                status = KMIPKIT_ERROR_INVALID_INPUT;
+            if (status == 0) status = kmipkit_ttlv_structure_view_item_count(
+                login_response_view, &item_count);
+            if (status == 0 && item_count == 0) status = KMIPKIT_ERROR_INVALID_INPUT;
+            if (login_response_view)
+                kmipkit_ttlv_structure_view_release(login_response_view);
+            if (login_response_ttlv)
+                kmipkit_ttlv_structure_release(login_response_ttlv);
+            if (status != 0) {
+                outcome.success = false;
+                outcome.library_failed = true;
+                snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                         "KMIPKit did not expose a nonempty Login response TTLV structure");
+            }
         }
     } else if (strcmp(test_case->operation, "Ping") == 0) {
         uint8_t present = 0;
