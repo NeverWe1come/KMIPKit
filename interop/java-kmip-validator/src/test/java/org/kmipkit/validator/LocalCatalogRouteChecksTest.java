@@ -496,11 +496,22 @@ class LocalCatalogRouteChecksTest {
                 "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew"),
                 invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId)
                         .collect(java.util.stream.Collectors.toSet()));
-        assertEquals(caseIds.size() * 2 * 7, invocations.size());
+        long applicableCaseVersions = 0;
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            if (!caseIds.contains(testCase.path("case_id").asText())) continue;
+            for (String version : List.of("2.0", "2.1")) {
+                for (JsonNode protocolVersion : testCase.path("execution").path("protocol_versions")) {
+                    if (version.equals(protocolVersion.asText())) applicableCaseVersions++;
+                }
+            }
+        }
+        assertEquals(applicableCaseVersions * 7, invocations.size());
         assertEquals(Set.of("construct", "decode"), invocations.stream()
                 .map(LocalCatalogRouteChecks.Invocation::action)
                 .collect(java.util.stream.Collectors.toSet()));
-        assertTrue(invocations.stream().allMatch(invocation -> invocation.wire().length == 16));
+        assertTrue(invocations.stream().allMatch(invocation ->
+                invocation.wire().length == ("java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew"
+                        .equals(invocation.routeId()) ? 24 : 16)));
     }
 
     @Test
