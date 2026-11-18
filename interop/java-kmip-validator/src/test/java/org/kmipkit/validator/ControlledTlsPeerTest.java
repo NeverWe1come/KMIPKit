@@ -1186,6 +1186,8 @@ class ControlledTlsPeerTest {
                         clientCertificatePem, clientPrivateKeyPem);
                 appendSimpleVersionBoundaryRouteEvidence(events, serverCertificatePem, serverPrivateKeyPem,
                         clientCertificatePem, clientPrivateKeyPem);
+                appendAsyncVersionBoundaryRouteEvidence(events, serverCertificatePem, serverPrivateKeyPem,
+                        clientCertificatePem, clientPrivateKeyPem);
                 assertAsyncVersionBoundaryRouteCoverage(events);
                 assertSimpleVersionBoundaryRouteCoverage(events);
                 assertPingNetworkRouteCoverage(events);
@@ -2063,6 +2065,7 @@ class ControlledTlsPeerTest {
                         + asyncIndicatorEnumerationRouteEventCount
                         + 12 // KMIP 2.0 Ping construction and NotSent execution over six encoding/transport pairs.
                         + 36 // Get/Set Constraints and Set Defaults construction and NotSent execution routes.
+                        + 24 // Process and Query Asynchronous Requests construction and NotSent execution routes.
                         + 94 // BEC, batch IDs, async payload, Endpoint Role, Object Defaults, derivation, and Extension Information member cells.
                         + 18 // Ping construction, send, and response decode over six encoding/transport pairs.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Type generic and typed Attribute routes.
@@ -7346,6 +7349,133 @@ class ControlledTlsPeerTest {
             assertEquals(1, failure.deliveryStateCode(),
                     "The KMIP version boundary must report the request as NotSent.");
         }
+    }
+
+    private void appendAsyncVersionBoundaryRouteEvidence(ArrayNode events, byte[] serverCertificatePem,
+            byte[] serverPrivateKeyPem, byte[] clientCertificatePem, byte[] clientPrivateKeyPem)
+            throws Exception {
+        String[][] operations = {
+                {"test-v20-reject-process", "Process", "client.execute_process",
+                        "KMIPKIT-ELEM-OP-C2S-PROCESS", "org.kmipkit.extensions.Client.executeProcess",
+                        "java.execute.process", "25", "1"},
+                {"test-v20-reject-query-asynchronous-requests", "Query Asynchronous Requests",
+                        "client.execute_query_async_requests", "KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS",
+                        "org.kmipkit.extensions.Client.executeQueryAsyncRequests",
+                        "java.execute.queryasyncrequests", "24", "2"}};
+        var catalog = CatalogLoader.load(Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json"));
+        List<CatalogLoader.CatalogCase> cases = casesById(catalog,
+                "test-v20-reject-process", "test-v20-reject-query-asynchronous-requests");
+        Map<String, CatalogLoader.CatalogCase> casesById = cases.stream()
+                .collect(java.util.stream.Collectors.toMap(CatalogLoader.CatalogCase::caseId, value -> value));
+        byte[] correlation = {0x20, 0x20, 0x20, 0x32};
+        for (String[] operation : operations) {
+            String caseId = operation[0];
+            String operationName = operation[1];
+            String routeId = "java.typed-protocol." + operation[2];
+            String targetId = operation[3];
+            String publicApi = operation[4];
+            String executionRoute = operation[5];
+            int operationCode = Integer.parseInt(operation[6]);
+            int asynchronousIndicator = Integer.parseInt(operation[7]);
+            String requestHash = normalizedTreeSha256(asyncVersionBoundaryRequestTree(
+                    operationCode, asynchronousIndicator, "Process".equals(operationName), correlation));
+            CatalogLoader.CatalogCase testCase = casesById.get(caseId);
+            for (String encoding : List.of("TTLV", "JSON", "XML")) {
+                for (String transport : List.of("raw_tls", "https")) {
+                    Path connectionFile = temporaryDirectory.resolve(
+                            "async-boundary-" + operation[2] + "-" + encoding + "-" + transport + ".json");
+                    boolean acceptedConnection;
+                    int httpRequests;
+                    if ("raw_tls".equals(transport)) {
+                        SSLServerSocket listener = listener(certificate(serverCertificatePem),
+                                privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+                        listener.setSoTimeout(1_000);
+                        FutureTask<Boolean> peer = new FutureTask<>(() -> acceptsConnection(listener));
+                        Thread peerThread = new Thread(peer,
+                                "java-validator-kmip20-async-boundary-peer-" + operation[2]);
+                        peerThread.setDaemon(true);
+                        peerThread.start();
+                        Files.writeString(connectionFile, connectionJson(listener.getLocalPort(),
+                                serverCertificatePem, clientCertificatePem, clientPrivateKeyPem,
+                                false, "2.0", encoding, transport));
+                        try {
+                            executeAsyncBoundaryRequest(connectionFile, testCase, correlation);
+                            acceptedConnection = peer.get(3, TimeUnit.SECONDS);
+                        } finally {
+                            listener.close();
+                        }
+                        httpRequests = 0;
+                    } else {
+                        AtomicInteger observedRequests = new AtomicInteger();
+                        HttpsServer listener = httpsListener(certificate(serverCertificatePem),
+                                privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+                        listener.createContext("/kmip", exchange -> {
+                            observedRequests.incrementAndGet();
+                            try {
+                                exchange.sendResponseHeaders(500, -1);
+                            } finally {
+                                exchange.close();
+                            }
+                        });
+                        listener.start();
+                        Files.writeString(connectionFile, connectionJson(listener.getAddress().getPort(),
+                                serverCertificatePem, clientCertificatePem, clientPrivateKeyPem,
+                                false, "2.0", encoding, transport));
+                        try {
+                            executeAsyncBoundaryRequest(connectionFile, testCase, correlation);
+                        } finally {
+                            listener.stop(0);
+                        }
+                        acceptedConnection = false;
+                        httpRequests = observedRequests.get();
+                    }
+                    assertTrue(!acceptedConnection,
+                            operationName + " under KMIP 2.0 must fail before raw TLS accepts a connection.");
+                    assertEquals(0, httpRequests,
+                            operationName + " under KMIP 2.0 must fail before an HTTPS request is sent.");
+                    ObjectNode constructed = appendRouteEvent(events, caseId, routeId, targetId,
+                            publicApi, executionRoute, publicApi, "construct", "2.0", transport,
+                            requestHash, null);
+                    constructed.put("encoding", encoding);
+                    ObjectNode sent = appendRouteEvent(events, caseId, routeId, targetId,
+                            publicApi, executionRoute, publicApi, "send", "2.0", transport,
+                            requestHash, null);
+                    sent.put("encoding", encoding);
+                    sent.put("request_delivery_state", "not_sent");
+                    sent.put("transport_invocation_count", 0);
+                }
+            }
+        }
+    }
+
+    private static void executeAsyncBoundaryRequest(Path connectionFile,
+            CatalogLoader.CatalogCase testCase, byte[] correlation) throws Exception {
+        try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile))) {
+            var outcome = driver.executeAsynchronousRequest(testCase, correlation);
+            assertEquals("failed", outcome.status(), testCase.operation() + ": " + outcome);
+            assertTrue(outcome.diagnostic().contains("InvalidInputException"),
+                    testCase.operation() + ": " + outcome);
+        }
+    }
+
+    private static byte[] asyncVersionBoundaryRequestTree(int operation, int asynchronousIndicator,
+            boolean process, byte[] correlation) throws Exception {
+        byte[] payload = process
+                ? structure(0x420079, item(0x420006, TtlvItemType.ByteString.code(), correlation))
+                : structure(0x420079,
+                        structure(0x420176, item(0x420006, TtlvItemType.ByteString.code(), correlation)),
+                        structure(0x42014f,
+                                item(0x42005c, TtlvItemType.Enumeration.code(), intBytes(0x18))));
+        return structure(0x420078,
+                structure(0x420077,
+                        structure(0x420069,
+                                item(0x42006a, TtlvItemType.Integer.code(), intBytes(2)),
+                                item(0x42006b, TtlvItemType.Integer.code(), intBytes(0))),
+                        item(0x420007, TtlvItemType.Enumeration.code(), intBytes(asynchronousIndicator)),
+                        item(0x42000d, TtlvItemType.Integer.code(), intBytes(1))),
+                structure(0x42000f,
+                        item(0x42005c, TtlvItemType.Enumeration.code(), intBytes(operation)),
+                        payload));
     }
 
     private static byte[] simpleVersionBoundaryRequestTree(long operation, String operationName)
