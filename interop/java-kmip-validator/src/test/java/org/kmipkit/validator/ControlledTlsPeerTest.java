@@ -2005,7 +2005,7 @@ class ControlledTlsPeerTest {
         int normativeMessageFieldParserRouteEventCount = KMIP_2_0_AND_2_1.size()
                 * (19 + REQUEST_HEADER_SCALAR_ROUTE_TARGETS.size());
         int normativeBatchItemAccessorRouteEventCount = KMIP_2_0_AND_2_1.size() * 10;
-        int typedResponsePayloadRouteEventCount = KMIP_2_0_AND_2_1.size() * 2;
+        int localTypedResponseAccessorEventCount = KMIP_2_0_AND_2_1.size() * 2;
         int newAttributePayloadRouteEventCount = KMIP_2_0_AND_2_1.size() * 3 * 20;
         int objectGroupLocalRouteEventCount = 3;
         int asynchronousRequestOperationStructureRouteEventCount = 6;
@@ -2077,7 +2077,7 @@ class ControlledTlsPeerTest {
                         + credentialGenericRouteEventCount
                         + normativeMessageFieldGenericRouteEventCount + normativeMessageFieldParserRouteEventCount
                         + normativeBatchItemAccessorRouteEventCount + newAttributePayloadRouteEventCount
-                        + typedResponsePayloadRouteEventCount
+                        + localTypedResponseAccessorEventCount
                         + credentialEnvelopeEventCount + objectGroupLocalRouteEventCount
                         + asynchronousRequestOperationStructureRouteEventCount
                         + operationStructureRouteEventCount
@@ -4950,12 +4950,12 @@ class ControlledTlsPeerTest {
                                 null, null, "decode", protocolVersion, null, null, responseHash);
                     }
                     String responsePayloadSuffix = protocolVersion.replace(".", "") + "-001";
-                    appendRouteEvent(events,
+                    appendLocalTypedResponseAccessorRouteEvent(events,
                             "test-norm-payload-client-get-attributes-response-" + responsePayloadSuffix,
                             "java.typed-protocol.function.client_batch_item_response_get_attributes",
                             "KMIPKIT-PAYLOAD-CLIENT-GET-ATTRIBUTES-RESPONSE-" + responsePayloadSuffix,
                             "org.kmipkit.extensions.ClientBatchItemResult.getAttributesResponse",
-                            null, null, "decode", protocolVersion, null, null, responseHash);
+                            protocolVersion, responseHash);
                     appendLocalGetAttributesPayloadRouteEvents(events, invocations, protocolVersion);
                 }
             }
@@ -6031,6 +6031,13 @@ class ControlledTlsPeerTest {
         if (requestHash != null) event.put("request_tree_sha256", requestHash);
         if (responseHash != null) event.put("response_tree_sha256", responseHash);
         return event;
+    }
+
+    private static void appendLocalTypedResponseAccessorRouteEvent(ArrayNode events, String caseId,
+            String routeId, String targetId, String publicApiSymbol, String protocolVersion,
+            String responseTreeHash) {
+        appendRouteEvent(events, caseId, routeId, targetId, publicApiSymbol,
+                null, null, "decode", protocolVersion, null, null, responseTreeHash);
     }
 
     private static ObjectNode newRouteEvent(ArrayNode events, String caseId, String routeId,
@@ -8063,11 +8070,11 @@ class ControlledTlsPeerTest {
                             && fixture.requestPayloadTargetId() != null
                             && fixture.requestPayloadTargetId().endsWith("-REQUEST-"
                                     + protocolVersion.replace(".", "") + "-001")) {
-                        appendRouteEvent(events, caseId,
+                        appendLocalTypedResponseAccessorRouteEvent(events, caseId,
                                 "java.typed-protocol.function.client_batch_item_response_create",
                                 targetId,
                                 "org.kmipkit.extensions.ClientBatchItemResult.createResponse",
-                                null, null, "decode", protocolVersion, null, null, responseHash);
+                                protocolVersion, responseHash);
                     }
                 }
             }
