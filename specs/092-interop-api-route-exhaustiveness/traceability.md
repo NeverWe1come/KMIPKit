@@ -183,3 +183,26 @@ artifact. This is part of the FR-006 artifact provenance check.
 - This adds 40 cells. The selected report validates 34,694/34,694 cells with
   zero failures and leaves 36,947 of 71,641 pending. Full Java matrix closure
   remains open under FR-002/FR-003/FR-009.
+
+## Java key-bearing managed-object root routes — 2026-11-18
+
+- **FR-003:** The installed Java consumer now executes the Symmetric Key,
+  Private Key, and Public Key root cases through the matching named factory,
+  `ManagedObject.fromFields`, and `ManagedObject.fromItem` in KMIP 2.0 and 2.1.
+  Each uses a deterministic Raw Key Block fixture and verifies the parsed
+  object type and Key Block presence (KMIP §§2.5, 2.6, 2.9, 3.1, 3.2, 11.25).
+- The selected report validates 34,696/34,696 cells with zero failures; the
+  full Java ledger records 71,641 planned, 34,696 executed, and 36,945 pending
+  cells. Full-matrix closure remains required under FR-002/FR-003/FR-009.
+- **FR-007:** Generated ledger case IDs are sorted, with a regression test
+  confirming output stability when the declared input order varies. The
+  regenerated reference and comparison now pass with the 34,696-cell Java
+  report.
+
+## #216 Usage Limits stack-tip verification — 2026-11-18
+
+- **FR-003/FR-007:** #216 retains its Usage Limits routes with the new Java
+  key-object root evidence and deterministic ledger output. The selected report
+  validates 34,712/34,712 cells; the canonical ledger records 71,641 planned,
+  34,712 executed, and 36,929 pending cells. The full Java matrix remains
+  open.

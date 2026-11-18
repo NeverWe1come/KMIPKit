@@ -870,6 +870,7 @@ class ControlledTlsPeerTest {
         int bigIntegerTargetRouteEventCount = 0;
         int typedKeyMaterialRouteEventCount = 0;
         int typedCertificateRouteEventCount = 0;
+        int typedKeyBearingManagedObjectRouteEventCount = 0;
         int remainingEnumerationFieldRouteEventCount = 0;
         int genericStructureTargetRouteEventCount = 0;
         int managedObjectTypeRouteEventCount = 0;
@@ -1259,6 +1260,14 @@ class ControlledTlsPeerTest {
                 appendLocalCatalogInvocation(events, protocolVersion, invocation);
             }
             typedCertificateRouteEventCount += certificateFactoryInvocations.size();
+            List<LocalCatalogRouteChecks.Invocation> keyBearingManagedObjectInvocations = new ArrayList<>();
+            LocalCatalogRouteChecks.executeKeyBearingManagedObjectRootTargets(readRouteEvidenceCatalog(),
+                    protocolVersion, LocalCatalogRouteChecks.KEY_BEARING_MANAGED_OBJECT_ROOT_CASE_IDS,
+                    keyBearingManagedObjectInvocations::add);
+            for (LocalCatalogRouteChecks.Invocation invocation : keyBearingManagedObjectInvocations) {
+                appendLocalCatalogInvocation(events, protocolVersion, invocation);
+            }
+            typedKeyBearingManagedObjectRouteEventCount += keyBearingManagedObjectInvocations.size();
             Set<String> missingRemainingEnumerationFields = LocalCatalogRouteChecks
                     .missingRemainingEnumerationFieldCaseIds(readRouteEvidenceCatalog(), events, protocolVersion);
             remainingEnumerationFieldCaseIds.addAll(missingRemainingEnumerationFields);
@@ -1931,6 +1940,7 @@ class ControlledTlsPeerTest {
                         + managedObjectTypeRouteEventCount
                         + typedKeyMaterialRouteEventCount
                         + typedCertificateRouteEventCount
+                        + typedKeyBearingManagedObjectRouteEventCount
                         + 97 // BEC, batch IDs, async payload, Ping, Endpoint Role, Object Defaults, derivation, and Extension Information member cells.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Type generic and typed Attribute routes.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Value generic and typed Attribute routes.
@@ -2009,6 +2019,32 @@ class ControlledTlsPeerTest {
         report.path("case_ids").forEach(caseId -> reportedCaseIds.add(caseId.asText()));
         assertTrue(reportedCaseIds.contains("test-norm-tag-tag-42000c"),
                 "Typed non-attribute Tags still need their generic TTLV case in the selected report.");
+        for (String caseId : LocalCatalogRouteChecks.KEY_BEARING_MANAGED_OBJECT_ROOT_CASE_IDS) {
+            assertTrue(reportedCaseIds.contains(caseId),
+                    "Key-bearing managed-object factories need their root case in the selected report.");
+            String factory = switch (caseId) {
+                case "test-norm-object-structure-object-structure-symmetric-key" -> "symmetrickey";
+                case "test-norm-object-structure-object-structure-private-key" -> "privatekey";
+                case "test-norm-object-structure-object-structure-public-key" -> "publickey";
+                default -> throw new IllegalArgumentException("Unexpected key-object root case: " + caseId);
+            };
+            String targetId = "KMIPKIT-ELEM-OBJECT-STRUCTURE-" + factory.toUpperCase(Locale.ROOT)
+                    .replace("SYMMETRICKEY", "SYMMETRIC-KEY")
+                    .replace("PRIVATEKEY", "PRIVATE-KEY").replace("PUBLICKEY", "PUBLIC-KEY");
+            for (String version : KMIP_2_0_AND_2_1) {
+                JsonNode factoryEvent = findRouteEvent(report.path("events"), caseId,
+                        "java.typed-protocol.model.org.kmipkit.ttlv.managedobject." + factory,
+                        version, targetId);
+                assertEquals("passed", factoryEvent.path("status").asText());
+                for (String genericRoute : List.of(
+                        "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromfields",
+                        "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromitem")) {
+                    JsonNode genericEvent = findRouteEvent(report.path("events"), caseId,
+                            genericRoute, version, targetId);
+                    assertEquals("passed", genericEvent.path("status").asText());
+                }
+            }
+        }
         assertEquals(2, report.path("protocol_versions").size());
         assertEquals("org.kmipkit.extensions.Client.execute",
                 findEvent(report.path("events"), "send", "2.0").path("execution_api_symbol").asText());

@@ -166,6 +166,27 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         self.assertEqual(2, summary["expected_cells"])
         self.assertEqual(2, summary["invoked_cells"])
 
+    def test_ledger_sorts_declared_evidence_case_ids(self):
+        second_case = copy.deepcopy(self.catalog["test_cases"][0])
+        second_case["case_id"] = "case-two"
+        self.catalog["test_cases"].append(second_case)
+        report = copy.deepcopy(self.report)
+        report["case_ids"] = ["case-two", "case-one"]
+        scope_fields = ("case_id", "route_id", "target_id", "workflow_step_index", "workflow_operation",
+                        "workflow_item_index", "execution_route_id", "action", "protocol_version", "encoding",
+                        "transport")
+        report["scope_cells"] = [
+            {field: event[field] for field in scope_fields if field in event}
+            for event in report["events"]
+        ]
+
+        ledger = build_evidence_ledger(
+            report, self.catalog, self.manifest, catalog_sha256="c" * 64,
+            route_manifest_sha256="d" * 64, expected_artifact_sha256="b" * 64,
+        )
+
+        self.assertEqual(["case-one", "case-two"], ledger["evidence_case_ids"])
+
     def test_report_declared_scope_validates_exact_cells_without_claiming_full_matrix(self):
         fields = ("case_id", "route_id", "target_id", "workflow_step_index", "workflow_operation",
                   "workflow_item_index", "execution_route_id", "action", "protocol_version", "encoding",

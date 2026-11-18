@@ -276,17 +276,42 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
   cells across 1,254 case IDs. T006, T007, and T009 remain open; the PR stays
   WIP.
 
-## Development evidence: refreshed Java Usage Limits stack base
+## Development evidence: Java key-bearing managed-object root routes
 
-- Updated the Usage Limits branch from the latest Java route-matrix head
-  `94bbc7cf2f09d04f047de9e83185604aa7fad48d`. The merge had conflicts in the
-  controlled-peer test, README, generated route ledger, traceability, and route
-  evidence; resolution preserves the Usage Limits fixtures while incorporating
-  the Boolean-field and Item Type individual-case coverage from the parent.
-- The focused local and controlled-TLS tests pass. The full Java validator
-  Gradle suite passes 57/57 tests with zero failures, errors, or skips. The
-  selected report validates 26,957/26,957 cells; generated-ledger refresh,
-  normal ledger comparison, and `git diff --check` pass.
-- The combined ledger has 71,649 planned, 26,957 executed, and 44,692 pending
-  cells across 1,250 case IDs. The full Java route matrix remains incomplete;
-  this stack update is not a PR merge or a readiness change.
+- Red commit `a76832637` added the required test for the Symmetric Key,
+  Private Key, and Public Key root structures; it failed to compile because
+  the focused route recipe did not exist.
+- Green commit `10afa5ac8` exercises each matching named factory plus
+  `ManagedObject.fromFields` and `ManagedObject.fromItem` with a Key Block
+  containing Raw Key Material. Report Red commit `f1552eebe` then proved that
+  the selected evidence omitted those exact installed-package routes; Green
+  commit `2457ade76` added them to the report and generated ledger. Refactor
+  commit `178686b75` binds fixture identities to the exact catalog target.
+- Verification: both focused Java route tests passed; the controlled report
+  validates 34,696/34,696 selected cells with zero failures. The full ledger
+  now has 71,641 planned, 34,696 executed, and 36,945 pending cells. Full
+  Java matrix closure and exact-head CI remain open; T006, T007, and T009
+  remain incomplete.
+
+## Development evidence: deterministic Java evidence ledger
+
+- Red commit `c5e78d52d` added a regression proving that unordered declared
+  case IDs made otherwise equivalent evidence ledgers differ.
+- Green commit `7d478fe82` sorts the case IDs when building the ledger;
+  Refactor commit `0fb31cfa6` names the normalized input before assembling the
+  output. The focused regression and all 109 shared route tests pass, and the
+  capability audit accepts 1,507 routes.
+- The selected Java report validates 34,696/34,696 cells with zero failures.
+  Refreshing and rechecking the generated ledger now succeeds reproducibly;
+  36,945 of 71,641 Java cells remain pending. T006, T007, and T009 remain
+  open.
+
+## Development evidence: #216 Usage Limits stack tip after Java key routes
+
+- The #216 branch merges the Java key-object root routes and deterministic
+  ledger fix from #187 while retaining the branch's Usage Limits evidence.
+- Verification: the Java suite passes 86/86 tests; the shared route suites
+  pass 109/109; the 1,507-route capability audit passes; and the combined
+  report validates 34,712/34,712 selected cells with zero failures. The
+  regenerated ledger matches its reference and reports 36,929 pending cells
+  out of 71,641. T006, T007, T009, and full Java matrix closure remain open.
