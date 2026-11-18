@@ -127,6 +127,32 @@ _ZERO_BATCH_COUNT_REQUEST_PARSERS = {
     ('rust', 'kmipkit_protocol::RequestMessage::try_from_ttlv'):
         'crates/kmipkit-protocol/src/message/mod.rs',
 }
+_ROUTE_PROTOCOL_VERSION_LIMITS = {
+    ('c', 'kmipkit_client_batch_item_discover_versions'): {
+        'bindings/c/include/kmipkit.h':
+            'kmipkit_client_batch_item_discover_versions(kmipkit_client_batch_item_t ** out_item);',
+        'crates/kmipkit-ffi/src/extension_registry.rs':
+            'HandleValue::BatchItem(Box::new(ClientBatchItem::discover_versions()))',
+        'crates/kmipkit-client/src/execute.rs':
+            'Self::DiscoverVersions(DiscoverVersionsRequest::new())',
+        'crates/kmipkit-protocol/src/discover_versions.rs':
+            'static DEFAULT_OFFER: [ProtocolVersion; 1] = [ProtocolVersion::from_raw(2, 1)];',
+    },
+}
+
+
+def _route_protocol_support(root, commit, language, symbol, declaration_path):
+    source_markers = _ROUTE_PROTOCOL_VERSION_LIMITS.get((language, symbol))
+    if source_markers is None:
+        return ['2.0', '2.1'], [declaration_path]
+
+    source_paths = [declaration_path]
+    for path, marker in source_markers.items():
+        if marker not in source(root, commit, path):
+            raise ValueError(f'pinned protocol-version limit source changed: {path}')
+        if path not in source_paths:
+            source_paths.append(path)
+    return ['2.1'], source_paths
 
 
 def _case_exclusions(root, commit, language, symbol):
@@ -726,14 +752,16 @@ def build_manifest(root=ROOT, commit=PINNED_SOURCE_COMMIT):
         combinations = ([{'encoding': 'TTLV', 'transport': None}] if mode == 'local' else
             [{'encoding': encoding, 'transport': transport}
              for encoding in ('TTLV', 'JSON', 'XML') for transport in ('raw_tls', 'https')])
+        protocol_versions, route_source_paths = _route_protocol_support(
+            root, commit, language, symbol, path)
         data['routes'].append({'route_id': route_id, 'language': language, 'api_level': family,
             'mode': mode, 'public_api_symbol': symbol,
             'operation_ids': [operation_id] if operation_id else [],
             'normative_target_ids': (_request_operation_targets(operation_id, targets) if operation_id else
                 _client_request_targets(targets) if symbol == 'kmipkit_client::ClientBatchItem::new' else ['*']),
-            'case_categories': categories + ['normative_inventory'], 'protocol_versions': ['2.0', '2.1'],
+            'case_categories': categories + ['normative_inventory'], 'protocol_versions': protocol_versions,
             'combinations': combinations, 'actions': ['decode'] if generic and 'decode' in symbol else ['construct'],
-            'source_paths': [path], 'artifact_commit': commit,
+            'source_paths': route_source_paths, 'artifact_commit': commit,
             'execution_route_id': execution_id, 'artifact_verification': 'required'})
     request_symbols = {(route['language'], route['public_api_symbol']) for route in data['routes']}
     for model in _models(root, commit, json.dumps(targets, sort_keys=True)):
