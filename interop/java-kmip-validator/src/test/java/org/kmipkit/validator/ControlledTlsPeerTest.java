@@ -1407,6 +1407,19 @@ class ControlledTlsPeerTest {
                 "Installed client calls against the controlled TLS peer must emit route execution evidence.");
         JsonNode report = new ObjectMapper().readTree(reportPath.toFile());
         assertEquals("java", report.path("language").asText());
+        Set<String> observedNetworkCombinations = new java.util.TreeSet<>();
+        for (JsonNode event : report.path("events")) {
+            if (!event.path("transport").isTextual()) continue;
+            observedNetworkCombinations.add(event.path("encoding").asText() + "/"
+                    + event.path("transport").asText());
+        }
+        Set<String> declaredNetworkCombinations = new java.util.TreeSet<>();
+        for (JsonNode combination : report.path("network_combinations")) {
+            declaredNetworkCombinations.add(combination.path("encoding").asText() + "/"
+                    + combination.path("transport").asText());
+        }
+        assertEquals(observedNetworkCombinations, declaredNetworkCombinations,
+                "The report must declare each encoding/transport pair emitted by its network route events.");
         assertGenericOnlyTagInventoryEvidence(report.path("events"));
         assertTagAggregateEvidence(report.path("events"));
         assertTypedTagIdentityEvidence(report.path("events"));
