@@ -366,7 +366,7 @@ class LocalCatalogRouteChecksTest {
     }
 
     @Test
-    void executesSevenStructuredAttributeValuesThroughGenericTtlvRoutes() throws Exception {
+    void executesSevenStructuredAttributeValuesThroughGenericAndTypedTtlvRoutes() throws Exception {
         JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
         Set<String> caseIds = Set.of(
                 "test-attr-alternative-name",
@@ -382,6 +382,7 @@ class LocalCatalogRouteChecksTest {
             LocalCatalogRouteChecks.executeStructureAttributeValues(catalog, version, caseIds, invocations::add);
         }
 
+        assertEquals(93, invocations.size());
         List<LocalCatalogRouteChecks.Invocation> genericInvocations = invocations.stream()
                 .filter(invocation -> invocation.routeId().startsWith("java.generic-ttlv."))
                 .toList();
@@ -397,6 +398,18 @@ class LocalCatalogRouteChecksTest {
                 .collect(java.util.stream.Collectors.toSet()));
         assertEquals(Set.of("construct", "decode"), genericInvocations.stream()
                 .map(LocalCatalogRouteChecks.Invocation::action)
+                .collect(java.util.stream.Collectors.toSet()));
+        List<LocalCatalogRouteChecks.Invocation> typedInvocations = invocations.stream()
+                .filter(invocation -> invocation.routeId().startsWith("java.typed-protocol.model."))
+                .toList();
+        assertEquals(39, typedInvocations.size(), "Every applicable Structure Attribute pair uses three typed routes.");
+        assertEquals(Set.of(
+                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
+                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
+                "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew"),
+                typedInvocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId)
+                        .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(caseIds, typedInvocations.stream().map(LocalCatalogRouteChecks.Invocation::caseId)
                 .collect(java.util.stream.Collectors.toSet()));
     }
 
