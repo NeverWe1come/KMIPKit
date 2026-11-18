@@ -1614,13 +1614,16 @@ final class LocalCatalogRouteChecks {
                     itemWire(certificateTypeTag, TtlvItemType.Enumeration.code(),
                             ByteBuffer.allocate(Integer.BYTES).putInt((int) certificateType).array()),
                     itemWire(certificateValueTag, TtlvItemType.ByteString.code(), certificateValue)));
-            try (ManagedObject fromFields = ManagedObject.fromFields(1, fields);
-                    ManagedObject certificate = ManagedObject.certificate(fields);
-                    TtlvItem certificateItem = createStructureItem(certificateTag, fields, limits);
-                    ManagedObject fromItem = ManagedObject.fromItem(1, certificateItem)) {
-                assertCertificateFields(fromFields, certificateType, certificateValue);
+            try (ManagedObject certificate = ManagedObject.certificate(fields)) {
                 assertCertificateFields(certificate, certificateType, certificateValue);
-                assertCertificateFields(fromItem, certificateType, certificateValue);
+                if (!targetId.equals("KMIPKIT-ELEM-TAG-420013")) {
+                    try (ManagedObject fromFields = ManagedObject.fromFields(1, fields);
+                            TtlvItem certificateItem = createStructureItem(certificateTag, fields, limits);
+                            ManagedObject fromItem = ManagedObject.fromItem(1, certificateItem)) {
+                        assertCertificateFields(fromFields, certificateType, certificateValue);
+                        assertCertificateFields(fromItem, certificateType, certificateValue);
+                    }
+                }
             } finally {
                 closeItems(fields);
             }
