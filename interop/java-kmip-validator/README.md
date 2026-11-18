@@ -965,3 +965,19 @@ validates 42,180/42,180 cells with zero failures; ledger comparison and the
 1,507-route audit pass. The full ledger records 71,641 planned, 42,180
 executed, and 29,461 pending cells. The matrix remains incomplete, so #187
 and its dependents stay WIP.
+
+### Usage Limits Long Integer structure member routes — 2026-11-18
+
+The scalar structure-member runner now constructs, views, and decodes
+`Usage Limits Count` and `Usage Limits Total` as Long Integer TTLV values for
+KMIP 2.0 and 2.1. Fixtures exceed the signed 32-bit range to verify that the
+Long Integer path is used. The source requirements are OASIS KMIP 2.0 §7.34
+and KMIP 2.1 §7.40. This is local TTLV evidence and does not claim KMS
+acceptance.
+
+Red `f644bc6bf` showed that these structure members were omitted because the
+scalar route runner did not support Long Integer. Green `5347fe7c0` added the
+Long Integer constructor and route checks. The full Java suite passes 93/93;
+the selected report validates 42,196/42,196 cells with zero failures. The
+ledger records 71,641 planned, 42,196 executed, and 29,445 pending cells. The
+matrix remains incomplete, so #187 and its dependents stay WIP.
