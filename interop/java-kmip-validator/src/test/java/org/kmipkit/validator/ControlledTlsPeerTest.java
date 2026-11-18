@@ -1184,6 +1184,8 @@ class ControlledTlsPeerTest {
                         clientCertificatePem, clientPrivateKeyPem);
                 appendPingVersionBoundaryRouteEvidence(events, serverCertificatePem, serverPrivateKeyPem,
                         clientCertificatePem, clientPrivateKeyPem);
+                appendSimpleVersionBoundaryRouteEvidence(events, serverCertificatePem, serverPrivateKeyPem,
+                        clientCertificatePem, clientPrivateKeyPem);
                 assertSimpleVersionBoundaryRouteCoverage(events);
                 assertPingNetworkRouteCoverage(events);
                 assertPingVersionBoundaryRouteCoverage(events);
@@ -2059,6 +2061,7 @@ class ControlledTlsPeerTest {
                         + asyncCancelNetworkRouteEventCount
                         + asyncIndicatorEnumerationRouteEventCount
                         + 12 // KMIP 2.0 Ping construction and NotSent execution over six encoding/transport pairs.
+                        + 36 // Get/Set Constraints and Set Defaults construction and NotSent execution routes.
                         + 94 // BEC, batch IDs, async payload, Endpoint Role, Object Defaults, derivation, and Extension Information member cells.
                         + 18 // Ping construction, send, and response decode over six encoding/transport pairs.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Type generic and typed Attribute routes.
@@ -7229,6 +7232,134 @@ class ControlledTlsPeerTest {
             assertEquals(1, failure.deliveryStateCode(),
                     "KMIP 2.0 Ping must report the request as NotSent.");
         }
+    }
+
+    private void appendSimpleVersionBoundaryRouteEvidence(ArrayNode events, byte[] serverCertificatePem,
+            byte[] serverPrivateKeyPem, byte[] clientCertificatePem, byte[] clientPrivateKeyPem)
+            throws Exception {
+        String[][] operations = {
+                {"test-v20-reject-get-constraints", "Get Constraints", "get_constraints",
+                        "KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS", "getConstraints"},
+                {"test-v20-reject-set-constraints", "Set Constraints", "set_constraints",
+                        "KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS", "setConstraints"},
+                {"test-v20-reject-set-defaults", "Set Defaults", "set_defaults",
+                        "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS", "setDefaults"}};
+        for (String[] operation : operations) {
+            String caseId = operation[0];
+            String operationName = operation[1];
+            String routeId = "java.typed-protocol.client_batch_item." + operation[2];
+            String targetId = operation[3];
+            String publicApi = "org.kmipkit.extensions.ClientBatchItem." + operation[4];
+            for (String encoding : List.of("TTLV", "JSON", "XML")) {
+                for (String transport : List.of("raw_tls", "https")) {
+                    Path connectionFile = temporaryDirectory.resolve(
+                            "boundary-" + operation[2] + "-" + encoding + "-" + transport + ".json");
+                    try (ClientBatchItem request = simpleVersionBoundaryItem(operationName)) {
+                        String requestHash = normalizedTreeSha256(simpleVersionBoundaryRequestTree(
+                                request.operation(), operationName));
+                        boolean acceptedConnection;
+                        int httpRequests;
+                        if ("raw_tls".equals(transport)) {
+                            SSLServerSocket listener = listener(certificate(serverCertificatePem),
+                                    privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+                            listener.setSoTimeout(1_000);
+                            FutureTask<Boolean> peer = new FutureTask<>(() -> acceptsConnection(listener));
+                            Thread peerThread = new Thread(peer,
+                                    "java-validator-kmip20-boundary-peer-" + operation[2]);
+                            peerThread.setDaemon(true);
+                            peerThread.start();
+                            Files.writeString(connectionFile, connectionJson(listener.getLocalPort(),
+                                    serverCertificatePem, clientCertificatePem, clientPrivateKeyPem,
+                                    false, "2.0", encoding, transport));
+                            try {
+                                executeSimpleBoundaryRequest(connectionFile, request);
+                                acceptedConnection = peer.get(3, TimeUnit.SECONDS);
+                            } finally {
+                                listener.close();
+                            }
+                            httpRequests = 0;
+                        } else {
+                            AtomicInteger observedRequests = new AtomicInteger();
+                            HttpsServer listener = httpsListener(certificate(serverCertificatePem),
+                                    privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+                            listener.createContext("/kmip", exchange -> {
+                                observedRequests.incrementAndGet();
+                                try {
+                                    exchange.sendResponseHeaders(500, -1);
+                                } finally {
+                                    exchange.close();
+                                }
+                            });
+                            listener.start();
+                            Files.writeString(connectionFile, connectionJson(listener.getAddress().getPort(),
+                                    serverCertificatePem, clientCertificatePem, clientPrivateKeyPem,
+                                    false, "2.0", encoding, transport));
+                            try {
+                                executeSimpleBoundaryRequest(connectionFile, request);
+                            } finally {
+                                listener.stop(0);
+                            }
+                            acceptedConnection = false;
+                            httpRequests = observedRequests.get();
+                        }
+                        assertTrue(!acceptedConnection,
+                                operationName + " under KMIP 2.0 must fail before raw TLS accepts a connection.");
+                        assertEquals(0, httpRequests,
+                                operationName + " under KMIP 2.0 must fail before an HTTPS request is sent.");
+                        ObjectNode constructed = appendRouteEvent(events, caseId, routeId, targetId,
+                                publicApi, "java.execute.typed-batch", "org.kmipkit.extensions.Client.execute",
+                                "construct", "2.0", transport, requestHash, null);
+                        constructed.put("encoding", encoding);
+                        ObjectNode sent = appendRouteEvent(events, caseId, routeId, targetId,
+                                publicApi, "java.execute.typed-batch", "org.kmipkit.extensions.Client.execute",
+                                "send", "2.0", transport, requestHash, null);
+                        sent.put("encoding", encoding);
+                        sent.put("request_delivery_state", "not_sent");
+                        sent.put("transport_invocation_count", 0);
+                    }
+                }
+            }
+        }
+    }
+
+    private static ClientBatchItem simpleVersionBoundaryItem(String operation) {
+        return switch (operation) {
+            case "Get Constraints" -> ClientBatchItem.getConstraints();
+            case "Set Constraints" -> {
+                try (TtlvStructure constraints = TtlvStructure.create()) {
+                    yield ClientBatchItem.setConstraints(constraints);
+                }
+            }
+            case "Set Defaults" -> ClientBatchItem.setDefaults();
+            default -> throw new IllegalArgumentException("Unknown KMIP 2.0 boundary operation.");
+        };
+    }
+
+    private static void executeSimpleBoundaryRequest(Path connectionFile, ClientBatchItem request)
+            throws Exception {
+        try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile));
+                ClientBatch batch = ClientBatch.create()) {
+            batch.add(request);
+            ClientOperationException failure = assertThrows(ClientOperationException.class,
+                    () -> driver.executeBatchForEvidence(batch));
+            assertEquals(1, failure.deliveryStateCode(),
+                    "The KMIP version boundary must report the request as NotSent.");
+        }
+    }
+
+    private static byte[] simpleVersionBoundaryRequestTree(long operation, String operationName)
+            throws Exception {
+        byte[] requestPayload = "Set Constraints".equals(operationName)
+                ? structure(0x420079, structure(0x420168)) : structure(0x420079);
+        return structure(0x420078,
+                structure(0x420077,
+                        structure(0x420069,
+                                item(0x42006a, TtlvItemType.Integer.code(), intBytes(2)),
+                                item(0x42006b, TtlvItemType.Integer.code(), intBytes(0))),
+                        item(0x42000d, TtlvItemType.Integer.code(), intBytes(1))),
+                structure(0x42000f,
+                        item(0x42005c, TtlvItemType.Enumeration.code(), intBytes((int) operation)),
+                        requestPayload));
     }
 
     private static byte[] pingResponseBytes(int minor, String encoding, byte[] ttlvResponse) {
