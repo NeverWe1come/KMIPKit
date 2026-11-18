@@ -1148,19 +1148,22 @@ WIP.
 
 ### Typed Create network routes — 2026-11-18
 
-The installed Java consumer now constructs, sends, and decodes typed Create
+The installed Java consumer constructs, sends, and decodes typed Create
 requests for `test-op-create` and `test-obj-symmetric-key` across KMIP 2.0 and
-2.1, TTLV/JSON/XML, and raw TLS/HTTPS. This adds 72 selected route cells and
-checks the Create operation, Symmetric Key object type, protocol version,
-batch item identity, and returned typed object identifier. The source
-operations are OASIS KMIP 2.0/2.1 §6.1.1. Controlled peer evidence confirms
-the client route and fixture response only; it does not claim acceptance by an
-external KMS.
+2.1, TTLV/JSON/XML, and raw TLS/HTTPS. It also covers four normative Create
+request payload cases for required Object Type and Attributes in KMIP 2.0 and
+2.1. Together these cases add 192 selected route cells and verify the
+Symmetric Key object type, protocol version, batch item identity, and returned
+typed object identifier. Sources: OASIS KMIP 2.0 §6.1.1 Table 171 and KMIP 2.1
+§6.1.1 Table 186. Controlled peer evidence confirms the client route and
+fixture response only; it does not claim acceptance by an external KMS.
 
-Red `4fc22dbca` requires the route cells; Green `ad069d2d7` executes the
-controlled network exchanges; Refactor `f1465cf88` shares the matrix
-dimensions between execution, coverage assertions, and event totals. The
-Gradle suite passes 95/95 tests, and the selected report validates
-42,684/42,684 cells with zero failures. The ledger records 71,641 planned,
-42,684 executed, and 28,957 pending cells; its comparison passes. The full
-matrix remains open, so the stack stays WIP.
+Red `4fc22dbca` requires the base Create route cells; Green `ad069d2d7`
+executes the controlled network exchanges; Refactor `f1465cf88` centralizes
+the base matrix dimensions. The payload extension has Red `fe43a4a01`, Green
+`653edda53`, and Refactor `b5ff08039`, which shares the route evidence
+assertions. The Gradle suite passes 95/95 tests; shared evidence/schema/
+capability tests pass 109/109; route audit accepts 1,507 routes; the selected
+report validates 42,804/42,804 cells with zero failures. The ledger records
+71,641 planned, 42,804 executed, and 28,837 pending cells; its comparison
+passes. Full matrix closure remains open, so the stack stays WIP.
