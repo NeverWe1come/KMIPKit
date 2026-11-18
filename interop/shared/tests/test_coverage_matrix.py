@@ -96,6 +96,24 @@ class CoverageMatrixTests(unittest.TestCase):
                               in enumerate(zip(case["requires"]["protocol_scenario"]["operations"], target_ids))},
                              steps)
 
+    def test_stop_omitted_response_cells_are_explicitly_not_applicable(self):
+        case_id = 'test-batch-stop-on-first-failure'
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('c',))
+                 if cell['case_id'] == case_id and cell['action'] == 'decode'
+                 and cell.get('workflow_item_index') == 1]
+
+        self.assertTrue(cells)
+        self.assertTrue(all(cell['execution_status'] == 'not_applicable' for cell in cells), cells)
+        self.assertTrue(all(cell['not_applicable_reason'] ==
+                            'stop_unprocessed_response_omitted' for cell in cells), cells)
+        self.assertEqual({'local', 'network'}, {cell['mode'] for cell in cells})
+        first_response = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('c',))
+                          if cell['case_id'] == case_id and cell['action'] == 'decode'
+                          and cell.get('workflow_item_index') == 0]
+        self.assertTrue(first_response)
+        self.assertTrue(all(cell['execution_status'] == 'required'
+                            and 'not_applicable_reason' not in cell for cell in first_response))
+
     def test_explicit_batch_recipe_does_not_inherit_unrelated_primary_operation(self):
         case = next(case for case in self.catalog["test_cases"]
                     if case["case_id"] == "test-batch-register-encrypt-decrypt-destroy")
