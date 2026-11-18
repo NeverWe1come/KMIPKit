@@ -473,3 +473,13 @@ checks the typed accessors and object type. This adds six local model cells and
 does not test cryptographic splitting or server behavior. The selected report
 validates 34,702/34,702 cells with zero failures; 36,939 of 71,641 planned Java
 cells remain pending, so the full matrix remains WIP.
+
+The Split Key Table 9 member cases now exercise `ManagedObject.splitKey`,
+`ManagedObject.fromFields`, and `ManagedObject.fromItem` for all six structure
+members and the Split Key tag in KMIP 2.0 and 2.1. The Prime Field Size fixture
+uses Polynomial Sharing Prime Field and Big Integer 257, as required by the
+conditional field rule; other fixtures use XOR and omit that field. The
+deterministic Raw Key Block is model data, not a test of key splitting. This
+adds 38 local route cells. The selected report validates 34,740/34,740 cells
+with zero failures; 36,901 of 71,641 planned Java cells remain pending, so the
+full matrix and stack remain WIP.

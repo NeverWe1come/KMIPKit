@@ -1983,7 +1983,7 @@ class ControlledTlsPeerTest {
                         + 1 // KMIP 2.0/2.1 §8.2 Attestation Capable Indicator message-field case.
                         + 1 // KMIP 2.0/2.1 §5.1 Attributes generic Structure routes.
                         + LocalCatalogRouteChecks.TRANSPARENT_KEY_MATERIAL_CASE_IDS.size()
-                        + LocalCatalogRouteChecks.SPLIT_KEY_MANAGED_OBJECT_MEMBER_CASE_IDS.size()
+                        + LocalCatalogRouteChecks.SPLIT_KEY_MANAGED_OBJECT_MEMBER_CASE_IDS.size() - 1
                         + LocalCatalogRouteChecks.TYPED_MANAGED_OBJECT_FACTORY_CASE_IDS.stream()
                                 .filter(caseId -> !genericTagCaseIds.contains(caseId)).count()
                         // Transparent Key Material members exercise both typed model constructors.
@@ -4422,7 +4422,8 @@ class ControlledTlsPeerTest {
         caseIds.add("test-norm-operation-structure-operation-structure-7-13-extension-information");
         LocalCatalogRouteChecks.TRANSPARENT_KEY_MATERIAL_CASE_IDS.forEach(caseIds::add);
         LocalCatalogRouteChecks.SPLIT_KEY_MANAGED_OBJECT_ROOT_CASE_IDS.forEach(caseIds::add);
-        LocalCatalogRouteChecks.SPLIT_KEY_MANAGED_OBJECT_MEMBER_CASE_IDS.forEach(caseIds::add);
+        LocalCatalogRouteChecks.SPLIT_KEY_MANAGED_OBJECT_MEMBER_CASE_IDS.stream()
+                .filter(caseId -> !"test-norm-tag-tag-420089".equals(caseId)).forEach(caseIds::add);
         LocalCatalogRouteChecks.TYPED_MANAGED_OBJECT_FACTORY_CASE_IDS.stream()
                 .filter(caseId -> !genericTagCaseIds.contains(caseId)).forEach(caseIds::add);
         caseIds.add(OBJECT_TYPE_MEMBER_CASE_ID);

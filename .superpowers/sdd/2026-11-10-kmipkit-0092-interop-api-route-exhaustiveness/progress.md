@@ -505,3 +505,37 @@ branches, and the common CI therefore reports a planned matrix only.
   `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
 - This adds eight local-model cells. It does not establish server
   interoperability or complete the Java matrix; the Java PR remains WIP.
+
+## 2026-11-18 Java Split Key managed-object root routes
+
+- Red commit `45b9ab5c5` fails because the Split Key root route recipe is
+  missing. Green commit `e3b1bdfe7` adds the `ManagedObject.splitKey`,
+  `fromFields`, and `fromItem` calls in KMIP 2.0/2.1 with the §2.8 Table 9
+  field order; Refactor commit `e8fdeb63d` reuses canonical scalar wire
+  encoding and checks that all route events have identical bytes.
+- Ruling: keep the fixture member order identical to §2.8 Table 9 because the
+  installed native `fromItem` validator rejects a noncanonical order; if this
+  is wrong, the cost is incorrect route evidence for an invalid KMIP object.
+- Verification: Java suite 87/87; shared route suites 109/109; selected scope
+  34,702/34,702 with no failures; ledger comparison, 1,507-route capability
+  audit, and `git diff --check` pass. Full matrix: 71,641 planned, 34,702
+  executed, 36,939 pending. Exact-head hosted CI and full matrix closure remain
+  outstanding; keep all three stack PRs WIP.
+
+## 2026-11-18 Java Split Key managed-object member routes
+
+- Red `3601224ff` adds tests requiring six Split Key Table 9 members plus the
+  tag to run through the applicable named and generic factories. Green
+  `adbcd43d0` adds those recipes and evidence events. Refactor `af53d1b39`
+  shares report-event matching. The first ledger validation found the Split Key
+  tag duplicated in `case_ids`; the report now omits only that redundant list
+  entry while preserving its new named-factory events.
+- The fixtures use Table 9 order, XOR except for Polynomial Sharing Prime
+  Field with Prime Field Size 257, and a deterministic Raw Key Block. They
+  test local model construction, not cryptographic splitting or server
+  interoperability.
+- Verification: Java suite 87/87 before the case-ID list correction; focused
+  TLS report test passes after correction; selected evidence validates
+  34,740/34,740 cells with zero failures; ledger comparison and 1,507-route
+  capability audit pass. Full Java matrix remains incomplete: 36,901/71,641
+  pending. Exact-head CI and full closure remain open; stack stays WIP.

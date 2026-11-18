@@ -322,3 +322,23 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
   comparison, 1,507-route capability audit, and `git diff --check` pass. The
   full Java ledger remains incomplete at 36,939 pending of 71,641; the stack
   remains WIP and T006, T007, and T009 remain open.
+
+## Java Split Key managed-object member routes
+
+- Red commit `3601224ff` requires all six §2.8 Table 9 structure members and
+  the Split Key tag to execute through the applicable named and generic Java
+  managed-object factories in KMIP 2.0/2.1.
+- Green commit `adbcd43d0` adds the member fixtures and controlled-report
+  events. It validates the conditional Prime Field Size path with Polynomial
+  Sharing Prime Field and Big Integer 257, and uses XOR without that optional
+  field for the other members.
+- Refactor commit `af53d1b39` shares exact route-event matching between report
+  lookup and cardinality checks. A subsequent validator run exposed a duplicate
+  `case_id` because the tag was already included by generic tag evidence; the
+  selected-case list now adds only the six new member IDs.
+- Verification: full Java suite 87/87 before the case-ID correction; the
+  focused controlled TLS report test passes after it. Selected evidence
+  validates 34,740/34,740 cells with zero failures; ledger comparison and the
+  1,507-route capability audit pass. The ledger has 71,641 planned, 34,740
+  executed, and 36,901 pending cells. Full matrix closure and exact-head CI
+  remain outstanding; keep the stack WIP.

@@ -217,3 +217,16 @@ artifact. This is part of the FR-006 artifact provenance check.
   cells with zero failures; the Java ledger records 71,641 planned, 34,702
   executed, and 36,939 pending cells. Full matrix closure remains open under
   FR-002/FR-003/FR-009.
+
+## Java Split Key managed-object member routes — 2026-11-18
+
+- **FR-003:** The installed Java consumer executes the named Split Key factory
+  for all six §2.8 Table 9 members and the Split Key tag; `fromFields` and
+  `fromItem` execute for each applicable structure member in KMIP 2.0/2.1.
+  Fixtures preserve Table 9 order and include Prime Field Size only with
+  Polynomial Sharing Prime Field (KMIP §§2.8, 3.1, 11.34).
+- The 38 new route events cover six member cases through three factories and
+  the tag through its named factory in each protocol version. The selected
+  report validates 34,740/34,740 cells with zero failures; the full Java
+  ledger records 71,641 planned, 34,740 executed, and 36,901 pending cells.
+  Full matrix closure remains open under FR-002/FR-003/FR-009.

@@ -3680,3 +3680,21 @@ cells; the generated ledger matches its reference; the capability audit accepts
 1,507 routes; and `git diff --check` passes. The ledger has 71,641 planned,
 34,702 executed, and 36,939 pending cells. Full matrix closure and exact-head
 CI remain open, so the stack remains WIP.
+
+## Java Split Key managed-object member routes — 2026-11-18
+
+Red commit `3601224ff` requires exact routes for the six Split Key structure
+members and the Split Key tag. Green commit `adbcd43d0` executes the named
+factory for every target and both generic managed-object factories for the six
+structure members. It uses the §2.8 Table 9 order, XOR for ordinary fixtures,
+and Polynomial Sharing Prime Field plus Big Integer 257 for the conditional
+Prime Field Size member. The Raw Key Block is deterministic TTLV fixture data;
+it does not exercise cryptographic splitting. Refactor commit `af53d1b39`
+shares report-event matching. The selected-case list excludes the already
+reported generic Split Key tag ID to keep `case_ids` unique.
+
+Verification: the full Java Gradle suite passed 87/87 before the duplicate-ID
+correction, and the focused controlled TLS report test passed after it. The
+selected report validates 34,740/34,740 cells with zero failures; the ledger
+comparison passes, and the capability audit accepts all 1,507 public routes.
+The full Java matrix remains incomplete: 36,901 of 71,641 cells are pending.
