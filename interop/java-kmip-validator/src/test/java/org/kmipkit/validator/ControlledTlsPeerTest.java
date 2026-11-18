@@ -977,6 +977,7 @@ class ControlledTlsPeerTest {
                 appendObjectTypeMemberRouteEvents(events);
                 appendConstraintStructureRouteEvents(events);
             }
+            appendAsyncCancellationEnumerationTtlvRoutes(events, protocolVersion);
             for (ScalarOperationStructureFixture fixture : SCALAR_OPERATION_STRUCTURE_FIXTURES) {
                 appendScalarOperationStructureRouteEvents(events, fixture, protocolVersion);
             }
@@ -1961,7 +1962,14 @@ class ControlledTlsPeerTest {
         int referencedEnumEventCount = 0;
         int referencedEnumAggregateEventCount = 0;
         int referencedEnumCaseCount = 0;
+        int asyncCancellationEnumerationRouteEventCount = 0;
         for (JsonNode testCase : readRouteEvidenceCatalog().path("test_cases")) {
+            JsonNode scenario = testCase.path("requires").path("protocol_scenario");
+            if ("asynchronous_workflows".equals(testCase.path("category").asText())
+                    && scenario.path("parameters").has("cancel_result")) {
+                asyncCancellationEnumerationRouteEventCount += 3
+                        * testCase.path("execution").path("protocol_versions").size();
+            }
             if ("referenced_enum_value".equals(testCase.path("requires").path("target_kind").asText())) {
                 referencedEnumEventCount += 4 * testCase.path("execution").path("protocol_versions").size();
                 referencedEnumAggregateEventCount +=
@@ -2022,6 +2030,7 @@ class ControlledTlsPeerTest {
                         + typedKeyBearingManagedObjectRouteEventCount
                         + typedSplitKeyManagedObjectRouteEventCount
                         + typedSplitKeyManagedObjectMemberRouteEventCount
+                        + asyncCancellationEnumerationRouteEventCount
                         + 97 // BEC, batch IDs, async payload, Ping, Endpoint Role, Object Defaults, derivation, and Extension Information member cells.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Type generic and typed Attribute routes.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Value generic and typed Attribute routes.
@@ -7108,6 +7117,50 @@ class ControlledTlsPeerTest {
         appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_codec.decode", targetId,
                 "org.kmipkit.ttlv.TtlvCodec.decode", null, null, "decode", protocolVersion,
                 null, null, treeHash);
+    }
+
+    // OASIS KMIP 2.0/2.1 §6.1.5 and §11.7 define Cancellation Result as an Enumeration member.
+    private static void appendAsyncCancellationEnumerationTtlvRoutes(ArrayNode events, String protocolVersion)
+            throws Exception {
+        JsonNode catalog = readRouteEvidenceCatalog();
+        int cancellationResultTag = -1;
+        for (JsonNode target : catalog.path("normative_targets")) {
+            if ("tag".equals(target.path("kind").asText())
+                    && "Cancellation Result".equals(target.path("name").asText())) {
+                cancellationResultTag = parseWireTag(target.path("wire_value").asText());
+                break;
+            }
+        }
+        assertTrue(cancellationResultTag >= 0, "The catalog must define the Cancellation Result tag.");
+
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            JsonNode scenario = testCase.path("requires").path("protocol_scenario");
+            if (!"asynchronous_workflows".equals(testCase.path("category").asText())
+                    || !scenario.path("parameters").has("cancel_result")
+                    || !appliesToVersion(testCase, protocolVersion)) continue;
+            String caseId = testCase.path("case_id").asText();
+            String expectedName = scenario.path("parameters").path("cancel_result").asText();
+            JsonNode enumTarget = null;
+            for (JsonNode targetId : scenario.path("target_ids")) {
+                String value = targetId.asText();
+                if (!value.startsWith("KMIPKIT-ELEM-ENUM-VALUE-CANCELLATION-RESULT-")) continue;
+                for (JsonNode candidate : catalog.path("normative_targets")) {
+                    if (value.equals(candidate.path("target_id").asText())) {
+                        enumTarget = candidate;
+                        break;
+                    }
+                }
+                break;
+            }
+            assertTrue(enumTarget != null, "Cancellation scenario must identify its normative enum value: "
+                    + caseId);
+            assertEquals(expectedName, enumTarget.path("name").asText(),
+                    "Scenario parameter and normative Cancellation Result target must agree: " + caseId);
+            long enumValue = Long.parseUnsignedLong(
+                    enumTarget.path("wire_value").asText().replaceFirst("^0[xX]", ""), 16);
+            appendGenericEnumerationRouteEvents(events, caseId, enumTarget.path("target_id").asText(),
+                    cancellationResultTag, enumValue, protocolVersion);
+        }
     }
 
     private static byte[] queryResponseBatchItem() throws Exception {
