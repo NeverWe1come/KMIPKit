@@ -91,7 +91,9 @@ a way to offer KMIP 2.0, that specific KMIP 2.0 case is reported as a public
 API limitation. The public C Login builder only supports KMIP 2.1, so the
 KMIP 2.0 Login case is reported as a public API limitation. The KMIP 2.0 Logout
 case is not run because the C validator cannot obtain the server-issued Login
-Ticket required by Logout. The public C API exposes generic TTLV constructors,
+Ticket required by Logout. For KMIP 2.1 Login, the consumer checks the complete
+response TTLV structure shape without copying Ticket bytes into route evidence.
+The public C API exposes generic TTLV constructors,
 inspectors, and a decoder.
 It has no generic TTLV encoder and no generic TTLV request dispatch.
 It also exposes no high-level client API. The consumer records those route
@@ -137,8 +139,8 @@ The `*.gaps.json` sidecar identifies every unexecuted matrix obligation rather
 than misclassifying it as an unavailable library route. Other sidecars retain
 installed-artifact availability checks and sanitized controlled-peer outcomes.
 The evidence JSON passes the shared schema independently of completeness.
-The latest full local C matrix run (`c-route-60569de0-095a-4a6e-ac61-63b1bbde609a`)
-has 66,736 expected cells, 42,963 invoked, zero failed, and 23,773 pending.
+The latest full local C matrix run (`c-route-4e1e988c-6b56-4f6a-9411-2f1f6e2a4c1a`)
+has 66,736 expected cells, 42,964 invoked, zero failed, and 23,772 pending.
 The MAC and Sign response TTLV accessors and the Continue batch-option
 constructor contribute four local cells each across KMIP 2.0/2.1. The
 Query Async Requests correlation builder contributes two KMIP 2.1 model cells.
