@@ -902,3 +902,29 @@ The Java suite passes serially; the selected report validates 42,066/42,066
 cells with zero failures. The full ledger records 71,641 planned, 42,066
 executed, and 29,575 pending cells. The matrix remains incomplete, so #187
 and its dependents stay WIP.
+
+### Remaining common payload scalar routes — 2026-11-18
+
+The local generic TTLV runner now covers Query response `Operation`,
+`Application Namespace`, `Attestation Type`, and `Client Registration Method`;
+Cancel `Cancellation Result`; Obtain Lease `Last Change Date`; Locate
+`Object Group Member`; Re-certify `Certificate Request Unique Identifier`;
+Create Key Pair and Re-key Key Pair `Public Key Unique Identifier`; and the
+`Validity Indicator` responses for MAC Verify, Signature Verify, and Validate.
+The added source cases reference OASIS KMIP 2.0 §6.1.5 Table 162, §6.1.9 Table
+175, §6.1.27 Table 229, §6.1.32 Table 245, §6.1.34 Table 251, §6.1.37 Table
+260, §6.1.41 Table 274, §6.1.43 Table 285, §6.1.50 Table 306, and §6.1.51
+Table 309; KMIP 2.1 references are §6.1.5 Table 177, §6.1.9 Table 190,
+§6.1.28 Table 247, §6.1.33 Table 263, §6.1.35 Table 269, §6.1.40 Table 283,
+§6.1.45 Table 300, §6.1.47 Table 311, §6.1.56 Table 338, and §6.1.57 Table
+341. Fixtures use assigned catalog Enumeration values and local scalar data;
+they do not claim KMS acceptance.
+
+Red `b8d0a3b58` showed Query's `Operation` field had no generic Item evidence
+although its Operation target was covered. Green `c46f93c5b` adds the
+catalog-selected text, date-time, and Enumeration routes, closing 78 cells.
+The Java suite passes 92/92 serially; shared route tests pass 109/109. The
+selected report validates 42,144/42,144 cells with zero failures; ledger
+comparison and the 1,507-route audit pass. The full ledger records 71,641
+planned, 42,144 executed, and 29,497 pending cells. The matrix remains
+incomplete, so #187 and its dependents stay WIP.
