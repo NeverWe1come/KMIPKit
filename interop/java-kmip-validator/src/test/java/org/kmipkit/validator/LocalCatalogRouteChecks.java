@@ -1767,6 +1767,79 @@ final class LocalCatalogRouteChecks {
         }
     }
 
+    /** Finds managed-object cases missing any of their generic Object Type TTLV routes. */
+    static Set<String> missingManagedObjectTypeCaseIds(JsonNode catalog, JsonNode events, String version) {
+        Set<RouteEvidenceKey> recordedRoutes = routeEvidenceKeys(events);
+        Set<String> missing = new java.util.LinkedHashSet<>();
+        List<String> requiredRoutes = List.of(
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode");
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            if (!"managed_objects".equals(testCase.path("category").asText()) || !applies(testCase, version)) {
+                continue;
+            }
+            String caseId = testCase.path("case_id").asText();
+            String targetId = testCase.path("requires").path("normative_target_id").asText();
+            int recordedCount = 0;
+            for (String routeId : requiredRoutes) {
+                if (recordedRoutes.contains(new RouteEvidenceKey(caseId, targetId, routeId, version))) {
+                    recordedCount++;
+                }
+            }
+            if (recordedCount == 0) {
+                missing.add(caseId);
+            } else {
+                assertEquals(requiredRoutes.size(), recordedCount,
+                        "Object Type TTLV routes must be reused as a complete set: " + caseId + " / " + version);
+            }
+        }
+        return missing;
+    }
+
+    /** Executes Object Type construction and decoding for each selected managed-object case. */
+    static void executeManagedObjectTypeTargets(JsonNode catalog, String version, Set<String> selectedCaseIds,
+            JsonNode events, EvidenceSink sink) throws Exception {
+        Set<RouteEvidenceKey> recordedRoutes = routeEvidenceKeys(events);
+        Set<String> emitted = new java.util.LinkedHashSet<>();
+        int objectTypeTag = tagCodeNamed(catalog, "Object Type", version);
+        CodecLimits limits = CodecLimits.defaults();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String caseId = testCase.path("case_id").asText();
+            if (!selectedCaseIds.contains(caseId) || !"managed_objects".equals(testCase.path("category").asText())
+                    || !applies(testCase, version)) continue;
+            String targetId = testCase.path("requires").path("normative_target_id").asText();
+            JsonNode target = findTarget(catalog, targetId);
+            if (!"object_type".equals(target.path("kind").asText())) {
+                throw new IllegalArgumentException("Managed-object case does not target an Object Type: " + caseId);
+            }
+            long objectType = Long.parseUnsignedLong(
+                    target.path("wire_value").asText().replaceFirst("^0[xX]", ""), 16);
+            byte[] wire = scalarWire(objectTypeTag, TtlvItemType.Enumeration.code(),
+                    Math.toIntExact(objectType));
+            try (RawTag raw = RawTag.fromRaw(objectTypeTag);
+                    Tag tag = raw.checked();
+                    TtlvValue value = TtlvValue.Enumeration(objectType);
+                    TtlvItem item = TtlvItem.create(tag, value, limits)) {
+                assertScalarItem(item, objectTypeTag, TtlvItemType.Enumeration, objectType);
+            }
+            try (TtlvItem decoded = TtlvCodec.decode(wire)) {
+                assertScalarItem(decoded, objectTypeTag, TtlvItemType.Enumeration, objectType);
+            }
+            emitMissingGenericRoute(recordedRoutes, sink, caseId, targetId, version,
+                    "java.generic-ttlv.ttlv_item.create", "org.kmipkit.ttlv.TtlvItem.create", "construct", wire);
+            emitMissingGenericRoute(recordedRoutes, sink, caseId, targetId, version,
+                    "java.generic-ttlv.function.ttlv_item_view_from_item", "org.kmipkit.ttlv.TtlvItem.view",
+                    "decode", wire);
+            emitMissingGenericRoute(recordedRoutes, sink, caseId, targetId, version,
+                    "java.generic-ttlv.ttlv_codec.decode", "org.kmipkit.ttlv.TtlvCodec.decode", "decode", wire);
+            emitted.add(caseId);
+        }
+        if (!emitted.equals(selectedCaseIds)) {
+            throw new IllegalArgumentException("Selected managed-object cases were not executed for " + version);
+        }
+    }
+
     private static List<OperationTarget> operationTargetsForCase(JsonNode catalog, JsonNode testCase,
             String version) {
         JsonNode requires = testCase.path("requires");

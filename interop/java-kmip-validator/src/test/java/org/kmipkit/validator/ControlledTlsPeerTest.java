@@ -845,6 +845,7 @@ class ControlledTlsPeerTest {
         int bigIntegerTargetRouteEventCount = 0;
         int remainingEnumerationFieldRouteEventCount = 0;
         int genericStructureTargetRouteEventCount = 0;
+        int managedObjectTypeRouteEventCount = 0;
         Set<String> booleanFieldCaseIds = new java.util.HashSet<>();
         Set<String> anyObjectAttributeCaseIds = new java.util.HashSet<>();
         Set<String> scalarStructureMemberCaseIds = new java.util.LinkedHashSet<>();
@@ -862,12 +863,23 @@ class ControlledTlsPeerTest {
         Set<String> remainingEnumerationFieldCaseIds = new java.util.LinkedHashSet<>();
         Set<String> genericStructureTargetCaseIds = new java.util.LinkedHashSet<>();
         Set<String> genericOperationTargetCaseIds = new java.util.LinkedHashSet<>();
+        Set<String> managedObjectTypeCaseIds = new java.util.LinkedHashSet<>();
         Set<String> genericTagCaseIds = new java.util.LinkedHashSet<>(genericOnlyTagCaseIds());
 
         for (String protocolVersion : KMIP_2_0_AND_2_1) {
             appendLocalQueryRouteEvents(events, protocolVersion, requestTreeHash);
             appendTagRangeRouteEvents(events, protocolVersion);
             appendActivationDateLocalRouteEvents(events, protocolVersion);
+            Set<String> missingManagedObjectTypeCases = LocalCatalogRouteChecks.missingManagedObjectTypeCaseIds(
+                    readRouteEvidenceCatalog(), events, protocolVersion);
+            managedObjectTypeCaseIds.addAll(missingManagedObjectTypeCases);
+            List<LocalCatalogRouteChecks.Invocation> managedObjectTypeInvocations = new ArrayList<>();
+            LocalCatalogRouteChecks.executeManagedObjectTypeTargets(readRouteEvidenceCatalog(), protocolVersion,
+                    missingManagedObjectTypeCases, events, managedObjectTypeInvocations::add);
+            for (LocalCatalogRouteChecks.Invocation invocation : managedObjectTypeInvocations) {
+                appendLocalCatalogInvocation(events, protocolVersion, invocation);
+            }
+            managedObjectTypeRouteEventCount += managedObjectTypeInvocations.size();
             appendGenericEnumerationRouteEvents(events, enumerationFixtures, protocolVersion);
             if ("2.1".equals(protocolVersion)) {
                 List<LocalCatalogRouteChecks.Invocation> rotateNameTypeInvocations = new ArrayList<>();
@@ -1299,7 +1311,7 @@ class ControlledTlsPeerTest {
                 dateTimeAttributeValueCaseIds, enumerationAttributeValueCaseIds, scalarAttributeValueCaseIds,
                 textStringTargetCaseIds, fixedScalarTargetCaseIds, bigIntegerTargetCaseIds,
                 remainingEnumerationFieldCaseIds, genericStructureTargetCaseIds,
-                Set.of(), genericTagCaseIds);
+                Set.of(), genericTagCaseIds, managedObjectTypeCaseIds);
         assertTrue(Files.isRegularFile(reportPath),
                 "Installed client calls against the controlled TLS peer must emit route execution evidence.");
         JsonNode report = new ObjectMapper().readTree(reportPath.toFile());
@@ -1867,6 +1879,7 @@ class ControlledTlsPeerTest {
                         + bigIntegerTargetRouteEventCount
                         + remainingEnumerationFieldRouteEventCount
                         + genericStructureTargetRouteEventCount
+                        + managedObjectTypeRouteEventCount
                         + 97 // BEC, batch IDs, async payload, Ping, Endpoint Role, Object Defaults, derivation, and Extension Information member cells.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Type generic and typed Attribute routes.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Value generic and typed Attribute routes.
@@ -1961,7 +1974,7 @@ class ControlledTlsPeerTest {
                 dateTimeAttributeValueCaseIds, enumerationAttributeValueCaseIds, scalarAttributeValueCaseIds,
                 textStringTargetCaseIds, fixedScalarTargetCaseIds, bigIntegerTargetCaseIds,
                 remainingEnumerationFieldCaseIds, genericStructureTargetCaseIds,
-                genericOperationTargetCaseIds, genericTagCaseIds);
+                genericOperationTargetCaseIds, genericTagCaseIds, managedObjectTypeCaseIds);
         JsonNode completeReport = mapper.readTree(reportPath.toFile());
         assertEquals(report.path("events").size() + genericOperationEvents.size(),
                 completeReport.path("events").size(),
@@ -4220,7 +4233,8 @@ class ControlledTlsPeerTest {
             Set<String> scalarAttributeValueCaseIds, Set<String> textStringTargetCaseIds,
             Set<String> fixedScalarTargetCaseIds, Set<String> bigIntegerTargetCaseIds,
             Set<String> remainingEnumerationFieldCaseIds, Set<String> genericStructureTargetCaseIds,
-            Set<String> genericOperationTargetCaseIds, Set<String> genericTagCaseIds)
+            Set<String> genericOperationTargetCaseIds, Set<String> genericTagCaseIds,
+            Set<String> managedObjectTypeCaseIds)
             throws Exception {
         Path catalogPath = routeEvidenceCatalogPath();
         Path manifestPath = Path.of("../shared/coverage/route-capabilities.json");
@@ -4307,6 +4321,7 @@ class ControlledTlsPeerTest {
         appendScalarMessageFieldCaseIds(caseIds, events);
         int additionalCaseIdCount = appendCaseIds(caseIds,
                 scalarStructureMemberCaseIds);
+        additionalCaseIdCount += appendCaseIds(caseIds, managedObjectTypeCaseIds);
         additionalCaseIdCount += appendCaseIds(caseIds, serverPayloadCaseIds);
         additionalCaseIdCount += appendCaseIds(caseIds, correlationPayloadCaseIds);
         additionalCaseIdCount += appendCaseIds(caseIds, structureAttributeValueCaseIds);
@@ -4332,6 +4347,7 @@ class ControlledTlsPeerTest {
         caseIds.add("test-norm-payload-client-set-endpoint-role-response-21-001");
         appendCaseIds(caseIds, Set.of("test-enum-item-type"));
         appendAnyObjectAttributeCaseIds(caseIds, events);
+        additionalCaseIdCount += appendCaseIds(caseIds, managedObjectTypeCaseIds);
         CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().forEach(caseIds::add);
         report.putArray("protocol_versions").add("2.0").add("2.1");
         ObjectNode combination = mapper.createObjectNode();
