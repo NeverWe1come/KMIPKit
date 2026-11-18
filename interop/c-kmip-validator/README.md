@@ -139,9 +139,9 @@ The `*.gaps.json` sidecar identifies every unexecuted matrix obligation rather
 than misclassifying it as an unavailable library route. Other sidecars retain
 installed-artifact availability checks and sanitized controlled-peer outcomes.
 The evidence JSON passes the shared schema independently of completeness.
-The latest full local C matrix run (`c-route-bf2ec720-7bde-47e2-8fa0-5acaa641f94f`)
-has 66,736 expected cells, 43,609 invoked, 40 explicitly not applicable, zero
-failed, and 23,087 pending.
+The latest full local C matrix run (`c-route-3115b3c5-78fc-4a1e-98fc-f8645e434d84`)
+has 66,736 expected cells, 43,625 invoked, 40 explicitly not applicable, zero
+failed, and 23,071 pending.
 The MAC and Sign response TTLV accessors and the Continue batch-option
 constructor contribute four local cells each across KMIP 2.0/2.1. The
 Query Async Requests correlation builder contributes two KMIP 2.1 model cells.
@@ -162,6 +162,12 @@ assigned values across both versions; the extension value is checked in the
 local roundtrip too. The Credential Value fixture is an empty generic
 Structure, so this recipe exercises the outer envelope without retaining
 credential material.
+
+The `test-enum-asynchronous-indicator` and
+`test-enum-batch-error-continuation-option` local cases also invoke their C
+batch setters for each of three assigned values and one extension value. They
+add 16 construction cells across KMIP 2.0/2.1; generic TTLV roundtrips check the
+enum values independently, without sending a request.
 
 The PKCS#11 operation now covers its typed request and response accessors for
 both protocol versions across all six encoding and transport combinations.
@@ -406,19 +412,18 @@ An earlier C run (`c-route-3df0ddc1-8a8a-4d90-aa50-addbab9194f4`) emitted 43,255
 evidence rows: 43,239 actual invocations and 16 explicit N/A dispositions,
 with zero failed invocations. It had 23,481 pending recipe cells.
 
-The latest full run (`c-route-bf2ec720-7bde-47e2-8fa0-5acaa641f94f`) emitted
-43,649 evidence rows: 43,609 actual invocations and 40 explicit N/A
+The latest full run (`c-route-3115b3c5-78fc-4a1e-98fc-f8645e434d84`) emitted
+43,665 evidence rows: 43,625 actual invocations and 40 explicit N/A
 dispositions, with zero failed invocations. The shared validator accepts the
 emitted scope (`selected_scope_complete=true`, `all_invocations_passed=true`,
-`complete_matrix=false`); 23,087 cells remain pending, so the global gate is
+`complete_matrix=false`); 23,071 cells remain pending, so the global gate is
 still open. Compared with the previous full report, no cell identities were
-removed and 24 were added for Credential `from_ttlv` and `into_ttlv`: six
-assigned values across both versions, for each direction. Fourteen Credential
-Type constructor cells were already present; the common Credential Type event
-hashes now also include the typed envelope roundtrip. The previously covered
-Current Attribute mismatch route contributes 74 cells: 24 construction calls,
-24 send attempts, 24 network response decoders, and two local response-TTLV
-accessors for KMIP 2.0 and 2.1.
+removed and 16 were added for the two batch enum setters: eight
+Asynchronous Indicator cells and eight Batch Error Continuation Option cells.
+The Credential Type constructor and Credential envelope routes remain in the
+report. The previously covered Current Attribute mismatch route contributes
+74 cells: 24 construction calls, 24 send attempts, 24 network response
+decoders, and two local response-TTLV accessors for KMIP 2.0 and 2.1.
 The peer returns `OperationFailed` with `Attribute Instance Not Found` and
 confirms the original attribute remains unchanged. The earlier
 forward-Placeholder route contributes 24 N/A response decoders because each
@@ -426,9 +431,8 @@ matching request was rejected locally before transport; all 24 N/A cells match
 a `not_sent` event for the same case, route, operation, item index, protocol
 version, encoding, and transport. The 14 independent local
 response accessors remain pending; six local generic TTLV decodes pass using
-constructed fixtures. Of the cells shared with the previous run, 255 tree
+constructed fixtures. Of the cells shared with the previous run, 199 tree
 hashes differ: 192 request hashes contain regenerated public certificate or
-certificate-request bytes, 56 Credential Type digests now include the C
-Credential envelope roundtrip, and seven Query Async Requests response hashes
+certificate-request bytes and seven Query Async Requests response hashes
 include the fixture's current timestamp. Cell identities are unchanged for
 those rows. The report passes the evidence schema and scoped shared validation.
