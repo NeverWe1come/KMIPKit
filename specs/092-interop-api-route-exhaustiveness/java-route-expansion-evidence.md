@@ -3993,3 +3993,22 @@ report validates 40,914/40,914 cells with zero failures; the full ledger has
 passes, ledger comparison passes, and the capability audit accepts 1,507
 routes. FR-002, FR-003, FR-009 and exact-head CI remain open; the stack stays
 WIP.
+
+## Java KMIP 2.0 Ping NotSent routes — 2026-11-18
+
+The catalogued `test-v20-reject-ping` case now executes through the installed
+Java `ClientBatchItem.ping()` and `Client.execute` routes for TTLV, JSON, and
+XML over raw TLS and HTTPS. Every invocation returns delivery state `NotSent`;
+the raw TLS fixtures accept no connection and the HTTPS fixtures receive no
+request. Construction and send events record the six encoding/transport pairs,
+zero transport invocations, and no response-decode obligation. References:
+OASIS KMIP 2.1 §6.1.36, KMIP 2.0 §6.1, and KMIPKIT-0092-FR-001/002/003.
+
+Red `a3c4af6b0` added an assertion for all 12 required route cells and failed
+on missing KMIP 2.0 evidence. Green `3ed5e0d87` checks all six rejection paths
+and records a hash of the expected KMIP 2.0 Request Message tree. The Java
+suite passes 92/92, shared tests pass 196/196, and the selected report
+validates 40,926/40,926 cells with zero failures. The generated ledger records
+71,641 planned, 40,926 executed, and 30,715 pending cells. Ledger comparison
+and the 1,507-route capability audit pass. The Java matrix and exact-head CI
+remain open; the PR stack stays WIP.

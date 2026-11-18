@@ -3,7 +3,7 @@
   "artifact_sha256": "37d7eeae9e64644fd7cdde4bfd64b7da5ccbb0bf2be53a949826eb62dc3aaf86",
   "catalog_sha256": "55fcd64afba189ab7d04978fafb841fc73c9e5afc1ef25c93cb2eb04f4fba4a9",
   "complete_matrix": false,
-  "controlled_peer_cells": 2012,
+  "controlled_peer_cells": 2018,
   "evidence_case_ids": [
     "test-async-cancel-result-canceled",
     "test-async-cancel-result-completed",
@@ -2671,7 +2671,7 @@
     "test-v20-reject-set-constraints",
     "test-v20-reject-set-defaults"
   ],
-  "executed_cells": 40914,
+  "executed_cells": 40926,
   "language": "java",
   "library_commit": "12496d646d11d4069b58bcc88fc76cc619211ec6",
   "pending_case_ids": [
@@ -3747,7 +3747,6 @@
     "test-op-validate",
     "test-sign-missing-managed-object-cryptographic-parameters",
     "test-v20-reject-get-constraints",
-    "test-v20-reject-ping",
     "test-v20-reject-process",
     "test-v20-reject-query-asynchronous-requests",
     "test-v20-reject-set-constraints",
@@ -8043,10 +8042,6 @@
       "pending_cells": 12
     },
     {
-      "case_id": "test-v20-reject-ping",
-      "pending_cells": 12
-    },
-    {
       "case_id": "test-v20-reject-process",
       "pending_cells": 14
     },
@@ -8063,7 +8058,7 @@
       "pending_cells": 12
     }
   ],
-  "pending_cells": 30727,
+  "pending_cells": 30715,
   "pending_reason": "No validated per-cell route execution evidence is recorded for this cell.",
   "pending_reason_code": "route_evidence_not_emitted",
   "planned_cells": 71641,
@@ -21951,8 +21946,8 @@
     {
       "action": "construct",
       "encoding": "JSON",
-      "executed_cells": 0,
-      "pending_cells": 1,
+      "executed_cells": 1,
+      "pending_cells": 0,
       "protocol_version": "2.0",
       "required_cells": 1,
       "route_id": "java.typed-protocol.client_batch_item.ping",
@@ -21961,8 +21956,8 @@
     {
       "action": "construct",
       "encoding": "JSON",
-      "executed_cells": 0,
-      "pending_cells": 1,
+      "executed_cells": 1,
+      "pending_cells": 0,
       "protocol_version": "2.0",
       "required_cells": 1,
       "route_id": "java.typed-protocol.client_batch_item.ping",
@@ -21971,8 +21966,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 1,
+      "executed_cells": 1,
+      "pending_cells": 0,
       "protocol_version": "2.0",
       "required_cells": 1,
       "route_id": "java.typed-protocol.client_batch_item.ping",
@@ -21981,8 +21976,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 1,
+      "executed_cells": 1,
+      "pending_cells": 0,
       "protocol_version": "2.0",
       "required_cells": 1,
       "route_id": "java.typed-protocol.client_batch_item.ping",
@@ -21991,8 +21986,8 @@
     {
       "action": "construct",
       "encoding": "XML",
-      "executed_cells": 0,
-      "pending_cells": 1,
+      "executed_cells": 1,
+      "pending_cells": 0,
       "protocol_version": "2.0",
       "required_cells": 1,
       "route_id": "java.typed-protocol.client_batch_item.ping",
@@ -22001,8 +21996,8 @@
     {
       "action": "construct",
       "encoding": "XML",
-      "executed_cells": 0,
-      "pending_cells": 1,
+      "executed_cells": 1,
+      "pending_cells": 0,
       "protocol_version": "2.0",
       "required_cells": 1,
       "route_id": "java.typed-protocol.client_batch_item.ping",
@@ -22131,8 +22126,8 @@
     {
       "action": "send",
       "encoding": "JSON",
-      "executed_cells": 0,
-      "pending_cells": 1,
+      "executed_cells": 1,
+      "pending_cells": 0,
       "protocol_version": "2.0",
       "required_cells": 1,
       "route_id": "java.typed-protocol.client_batch_item.ping",
@@ -22141,8 +22136,8 @@
     {
       "action": "send",
       "encoding": "JSON",
-      "executed_cells": 0,
-      "pending_cells": 1,
+      "executed_cells": 1,
+      "pending_cells": 0,
       "protocol_version": "2.0",
       "required_cells": 1,
       "route_id": "java.typed-protocol.client_batch_item.ping",
@@ -22151,8 +22146,8 @@
     {
       "action": "send",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 1,
+      "executed_cells": 1,
+      "pending_cells": 0,
       "protocol_version": "2.0",
       "required_cells": 1,
       "route_id": "java.typed-protocol.client_batch_item.ping",
@@ -22161,8 +22156,8 @@
     {
       "action": "send",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 1,
+      "executed_cells": 1,
+      "pending_cells": 0,
       "protocol_version": "2.0",
       "required_cells": 1,
       "route_id": "java.typed-protocol.client_batch_item.ping",
@@ -22171,8 +22166,8 @@
     {
       "action": "send",
       "encoding": "XML",
-      "executed_cells": 0,
-      "pending_cells": 1,
+      "executed_cells": 1,
+      "pending_cells": 0,
       "protocol_version": "2.0",
       "required_cells": 1,
       "route_id": "java.typed-protocol.client_batch_item.ping",
@@ -22181,8 +22176,8 @@
     {
       "action": "send",
       "encoding": "XML",
-      "executed_cells": 0,
-      "pending_cells": 1,
+      "executed_cells": 1,
+      "pending_cells": 0,
       "protocol_version": "2.0",
       "required_cells": 1,
       "route_id": "java.typed-protocol.client_batch_item.ping",
@@ -34984,8 +34979,8 @@
       "route_id": "java.typed-protocol.client_batch_item.obtain_lease"
     },
     {
-      "executed_cells": 18,
-      "pending_cells": 12,
+      "executed_cells": 30,
+      "pending_cells": 0,
       "required_cells": 30,
       "route_id": "java.typed-protocol.client_batch_item.ping"
     },
@@ -36113,7 +36108,7 @@
     }
   ],
   "schema_version": "1.0",
-  "selected_scope_cells": 40914,
+  "selected_scope_cells": 40926,
   "selected_scope_complete": true,
   "vendor_interoperability_claim": false
 }

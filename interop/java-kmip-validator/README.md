@@ -671,3 +671,21 @@ Java suite passes; the selected report validates 40,914/40,914 cells with zero
 failures, while the ledger records 71,641 planned, 40,914 executed, and 30,727
 pending. Ledger comparison and the 1,507-route capability audit pass. The full
 matrix remains incomplete, so #187 and its dependents remain WIP.
+
+### KMIP 2.0 Ping NotSent boundary — 2026-11-18
+
+The Java matrix now exercises the catalogued KMIP 2.0 Ping rejection for
+TTLV, JSON, and XML over raw TLS and HTTPS. Every route constructs
+`ClientBatchItem.ping()`, invokes `Client.execute`, and checks delivery state
+`NotSent`; raw TLS listeners accept no connection and HTTPS peers receive no
+request. The fixture emits construction and send evidence for all six pairs,
+with zero transport invocations and no response-decode obligation. References:
+OASIS KMIP 2.1 §6.1.36, KMIP 2.0 §6.1, and KMIPKIT-0092-FR-001/002/003.
+
+Red `a3c4af6b0` fails on any missing route/action cell. Green `3ed5e0d87`
+checks all six local rejection paths and hashes the expected KMIP 2.0 request
+tree. The Java suite passes 92/92, the shared suite passes 196/196, and the
+selected report validates 40,926/40,926 cells with zero failures. The full
+ledger records 71,641 planned, 40,926 executed, and 30,715 pending cells;
+ledger comparison and the 1,507-route capability audit pass. The matrix stays
+incomplete and #187 plus its dependents remain WIP.
