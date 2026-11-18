@@ -2659,7 +2659,7 @@
     "test-s2c-set-endpoint-role",
     "test-sign-missing-managed-object-cryptographic-parameters"
   ],
-  "executed_cells": 34696,
+  "executed_cells": 34702,
   "language": "java",
   "library_commit": "12496d646d11d4069b58bcc88fc76cc619211ec6",
   "pending_case_ids": [
@@ -2827,7 +2827,6 @@
     "test-norm-object-structure-object-structure-mac-signature-key-information",
     "test-norm-object-structure-object-structure-pgp-key",
     "test-norm-object-structure-object-structure-secret-data",
-    "test-norm-object-structure-object-structure-split-key",
     "test-norm-operation-structure-operation-structure-7-1-asynchronous-correlation-values",
     "test-norm-operation-structure-operation-structure-7-25-operations",
     "test-norm-payload-client-activate-request-20-001",
@@ -4412,10 +4411,6 @@
     },
     {
       "case_id": "test-norm-object-structure-object-structure-secret-data",
-      "pending_cells": 6
-    },
-    {
-      "case_id": "test-norm-object-structure-object-structure-split-key",
       "pending_cells": 6
     },
     {
@@ -8131,7 +8126,7 @@
       "pending_cells": 15
     }
   ],
-  "pending_cells": 36945,
+  "pending_cells": 36939,
   "pending_reason": "No validated per-cell route execution evidence is recorded for this cell.",
   "pending_reason_code": "route_evidence_not_emitted",
   "planned_cells": 71641,
@@ -33709,8 +33704,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 54,
-      "pending_cells": 39,
+      "executed_cells": 55,
+      "pending_cells": 38,
       "protocol_version": "2.0",
       "required_cells": 93,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromfields",
@@ -33719,8 +33714,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 54,
-      "pending_cells": 39,
+      "executed_cells": 55,
+      "pending_cells": 38,
       "protocol_version": "2.1",
       "required_cells": 93,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromfields",
@@ -33729,8 +33724,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 54,
-      "pending_cells": 39,
+      "executed_cells": 55,
+      "pending_cells": 38,
       "protocol_version": "2.0",
       "required_cells": 93,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromitem",
@@ -33739,8 +33734,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 54,
-      "pending_cells": 39,
+      "executed_cells": 55,
+      "pending_cells": 38,
       "protocol_version": "2.1",
       "required_cells": 93,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromitem",
@@ -33849,8 +33844,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 73,
+      "executed_cells": 1,
+      "pending_cells": 72,
       "protocol_version": "2.0",
       "required_cells": 73,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.splitkey",
@@ -33859,8 +33854,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 73,
+      "executed_cells": 1,
+      "pending_cells": 72,
       "protocol_version": "2.1",
       "required_cells": 73,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.splitkey",
@@ -36084,14 +36079,14 @@
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.certificaterequest"
     },
     {
-      "executed_cells": 108,
-      "pending_cells": 78,
+      "executed_cells": 110,
+      "pending_cells": 76,
       "required_cells": 186,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromfields"
     },
     {
-      "executed_cells": 108,
-      "pending_cells": 78,
+      "executed_cells": 110,
+      "pending_cells": 76,
       "required_cells": 186,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromitem"
     },
@@ -36126,8 +36121,8 @@
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.secretdata"
     },
     {
-      "executed_cells": 0,
-      "pending_cells": 146,
+      "executed_cells": 2,
+      "pending_cells": 144,
       "required_cells": 146,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.splitkey"
     },
@@ -36181,7 +36176,7 @@
     }
   ],
   "schema_version": "1.0",
-  "selected_scope_cells": 34696,
+  "selected_scope_cells": 34702,
   "selected_scope_complete": true,
   "vendor_interoperability_claim": false
 }

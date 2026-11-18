@@ -729,7 +729,7 @@ class LocalCatalogRouteChecksTest {
     // KMIP 2.0/2.1 §2.8 defines the Split Key managed-object structure.
     void executesSplitKeyManagedObjectFactoryForRootTargetAndVersions() throws Exception {
         JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
-        Set<String> caseIds = Set.of("test-norm-object-structure-object-structure-split-key");
+        Set<String> caseIds = LocalCatalogRouteChecks.SPLIT_KEY_MANAGED_OBJECT_ROOT_CASE_IDS;
         List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
 
         for (String version : List.of("2.0", "2.1")) {

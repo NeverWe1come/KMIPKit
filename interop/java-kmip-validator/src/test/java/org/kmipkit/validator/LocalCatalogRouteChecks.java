@@ -202,6 +202,8 @@ final class LocalCatalogRouteChecks {
             "test-norm-object-structure-object-structure-symmetric-key",
             "test-norm-object-structure-object-structure-private-key",
             "test-norm-object-structure-object-structure-public-key");
+    static final Set<String> SPLIT_KEY_MANAGED_OBJECT_ROOT_CASE_IDS = Set.of(
+            "test-norm-object-structure-object-structure-split-key");
     static final Set<String> REMAINING_ENUMERATION_FIELD_CASE_IDS = Set.of(
             "test-norm-operation-structure-operation-structure-7-15-interop-function",
             "test-norm-structure-member-structure-member-5-5-attribute-reference",
@@ -1718,6 +1720,89 @@ final class LocalCatalogRouteChecks {
         }
     }
 
+    /** Executes the Split Key root through its named and generic public factories. */
+    static void executeSplitKeyManagedObjectRootTargets(JsonNode catalog, String version,
+            Set<String> selectedCaseIds, EvidenceSink sink) throws Exception {
+        String caseId = SPLIT_KEY_MANAGED_OBJECT_ROOT_CASE_IDS.iterator().next();
+        String targetId = "KMIPKIT-ELEM-OBJECT-STRUCTURE-SPLIT-KEY";
+        if (!SPLIT_KEY_MANAGED_OBJECT_ROOT_CASE_IDS.containsAll(selectedCaseIds)) {
+            throw new IllegalArgumentException("Selected case is not the Split Key managed-object root.");
+        }
+        Set<String> emitted = new java.util.LinkedHashSet<>();
+        CodecLimits limits = CodecLimits.defaults();
+        int objectTag = tagCodeNamed(catalog, "Split Key", version);
+        int keyBlockTag = tagCodeNamed(catalog, "Key Block", version);
+        int keyPartIdentifierTag = tagCodeNamed(catalog, "Key Part Identifier", version);
+        int splitKeyMethodTag = tagCodeNamed(catalog, "Split Key Method", version);
+        int splitKeyPartsTag = tagCodeNamed(catalog, "Split Key Parts", version);
+        int splitKeyThresholdTag = tagCodeNamed(catalog, "Split Key Threshold", version);
+        int objectType = Math.toIntExact(enumValue(catalog, "OBJECT-TYPE", "Split Key"));
+        int splitKeyMethod = Math.toIntExact(enumValue(catalog, "SPLIT-KEY-METHOD", "XOR"));
+        byte[] keyBlockWire = rawKeyBlockWire(catalog, version);
+
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            if (!caseId.equals(testCase.path("case_id").asText()) || !applies(testCase, version)) continue;
+            if (!selectedCaseIds.contains(caseId)) continue;
+            if (!targetId.equals(testCase.path("requires").path("normative_target_id").asText())) {
+                throw new IllegalArgumentException("Split Key root fixture does not match the catalog target.");
+            }
+
+            List<TtlvItem> fields = new ArrayList<>();
+            try {
+                fields.add(createIntegerItem(splitKeyPartsTag, 2, limits));
+                fields.add(createIntegerItem(keyPartIdentifierTag, 1, limits));
+                fields.add(createIntegerItem(splitKeyThresholdTag, 2, limits));
+                fields.add(createEnumerationItem(splitKeyMethodTag, splitKeyMethod, limits));
+                fields.add(rawKeyBlockItem(catalog, version, limits));
+
+                byte[] wire = structureWire(objectTag, concat(
+                        itemWire(splitKeyPartsTag, TtlvItemType.Integer.code(),
+                                ByteBuffer.allocate(Integer.BYTES).putInt(2).array()),
+                        itemWire(keyPartIdentifierTag, TtlvItemType.Integer.code(),
+                                ByteBuffer.allocate(Integer.BYTES).putInt(1).array()),
+                        itemWire(splitKeyThresholdTag, TtlvItemType.Integer.code(),
+                                ByteBuffer.allocate(Integer.BYTES).putInt(2).array()),
+                        itemWire(splitKeyMethodTag, TtlvItemType.Enumeration.code(),
+                                ByteBuffer.allocate(Integer.BYTES).putInt(splitKeyMethod).array()),
+                        keyBlockWire));
+                try (ManagedObject typedFactory = ManagedObject.splitKey(fields);
+                        ManagedObject fromFields = ManagedObject.fromFields(objectType, fields);
+                        TtlvItem objectItem = createStructureItem(objectTag, fields, limits);
+                        ManagedObject fromItem = ManagedObject.fromItem(objectType, objectItem)) {
+                    assertSplitKeyObject(typedFactory, objectType, splitKeyMethod);
+                    assertSplitKeyObject(fromFields, objectType, splitKeyMethod);
+                    assertSplitKeyObject(fromItem, objectType, splitKeyMethod);
+                }
+
+                emitRoute(sink, caseId, targetId,
+                        "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.splitkey",
+                        "org.kmipkit.ttlv.ManagedObject.splitKey", "construct", wire);
+                emitRoute(sink, caseId, targetId,
+                        "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromfields",
+                        "org.kmipkit.ttlv.ManagedObject.fromFields", "construct", wire);
+                emitRoute(sink, caseId, targetId,
+                        "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromitem",
+                        "org.kmipkit.ttlv.ManagedObject.fromItem", "construct", wire);
+                emitted.add(caseId);
+            } finally {
+                closeItems(fields);
+            }
+        }
+        if (!emitted.equals(selectedCaseIds)) {
+            throw new IllegalArgumentException("Selected Split Key managed-object root was not executed for "
+                    + version);
+        }
+    }
+
+    private static void assertSplitKeyObject(ManagedObject object, int objectType, int splitKeyMethod) {
+        assertEquals(objectType, object.objectType());
+        assertEquals(true, object.hasKeyBlock());
+        assertEquals(1, object.keyPartIdentifier());
+        assertEquals(splitKeyMethod, object.splitKeyMethod());
+        assertEquals(2, object.splitKeyParts());
+        assertEquals(2, object.splitKeyThreshold());
+    }
+
     private record ManagedObjectRootFixture(String objectName, String factoryName, String targetId) { }
 
     private static ManagedObjectRootFixture managedObjectRootFixture(String targetId) {
@@ -2081,6 +2166,13 @@ final class LocalCatalogRouteChecks {
 
     private static TtlvItem createEnumerationItem(int tagCode, long value, CodecLimits limits) {
         try (TtlvValue ttlvValue = TtlvValue.Enumeration(value);
+                RawTag raw = RawTag.fromRaw(tagCode); Tag tag = raw.checked()) {
+            return TtlvItem.create(tag, ttlvValue, limits);
+        }
+    }
+
+    private static TtlvItem createIntegerItem(int tagCode, int value, CodecLimits limits) {
+        try (TtlvValue ttlvValue = TtlvValue.Integer(value);
                 RawTag raw = RawTag.fromRaw(tagCode); Tag tag = raw.checked()) {
             return TtlvItem.create(tag, ttlvValue, limits);
         }
