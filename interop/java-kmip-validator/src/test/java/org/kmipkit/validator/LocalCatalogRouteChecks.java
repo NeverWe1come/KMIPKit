@@ -1237,38 +1237,43 @@ final class LocalCatalogRouteChecks {
             emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_codec.decode",
                     "org.kmipkit.ttlv.TtlvCodec.decode", "decode", wire);
 
-            byte[] attributesWire = structureWire(0x420125, wire);
-            try (TtlvValue typedValue = TtlvValue.Boolean(true);
-                    TypedAttribute typed = TypedAttribute.create(attribute, typedValue);
-                    TtlvItem typedItem = typed.asItem();
-                    TypedAttribute decoded = TypedAttribute.fromItem(attribute, typedItem);
-                    TtlvItem attributeItem = decoded.asItem();
-                    TtlvStructure empty = TtlvStructure.create();
-                    TtlvStructure items = TtlvStructure.withItem(empty, attributeItem, CodecLimits.defaults());
-                    AttributeSet attributes = AttributeSet.tryNew(items);
-                    TtlvItemView view = decoded.view(); Tag decodedTag = view.tag();
-                    TtlvValueView decodedValue = view.value()) {
-                assertEquals(attribute, decoded.attribute());
-                assertEquals(attributeTag, decodedTag.raw());
-                assertEquals(TtlvItemType.Boolean, decodedValue.itemType());
-                assertEquals(true, decodedValue.booleanValue());
-                assertEquals(1, attributes.len());
-                assertEquals(1, attributes.typedCount(attribute));
-            }
-            emitRoute(sink, caseId, targetId,
-                    "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
-                    "org.kmipkit.ttlv.TypedAttribute.create", "construct", wire);
-            emitRoute(sink, caseId, targetId,
-                    "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
-                    "org.kmipkit.ttlv.TypedAttribute.fromItem", "construct", wire);
-            emitRoute(sink, caseId, targetId,
-                    "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
-                    "org.kmipkit.extensions.AttributeSet.tryNew", "construct", attributesWire);
+            executeTypedBooleanAttribute(caseId, targetId, attributeTag, attribute, wire, sink);
             emitted.add(caseId);
         }
         if (!emitted.equals(applicable)) {
             throw new IllegalArgumentException("Selected Boolean Attribute cases were not executed for " + version);
         }
+    }
+
+    private static void executeTypedBooleanAttribute(String caseId, String targetId, int attributeTag,
+            StandardAttribute attribute, byte[] wire, EvidenceSink sink) throws Exception {
+        byte[] attributesWire = structureWire(0x420125, wire);
+        try (TtlvValue typedValue = TtlvValue.Boolean(true);
+                TypedAttribute typed = TypedAttribute.create(attribute, typedValue);
+                TtlvItem typedItem = typed.asItem();
+                TypedAttribute decoded = TypedAttribute.fromItem(attribute, typedItem);
+                TtlvItem attributeItem = decoded.asItem();
+                TtlvStructure empty = TtlvStructure.create();
+                TtlvStructure items = TtlvStructure.withItem(empty, attributeItem, CodecLimits.defaults());
+                AttributeSet attributes = AttributeSet.tryNew(items);
+                TtlvItemView view = decoded.view(); Tag decodedTag = view.tag();
+                TtlvValueView decodedValue = view.value()) {
+            assertEquals(attribute, decoded.attribute());
+            assertEquals(attributeTag, decodedTag.raw());
+            assertEquals(TtlvItemType.Boolean, decodedValue.itemType());
+            assertEquals(true, decodedValue.booleanValue());
+            assertEquals(1, attributes.len());
+            assertEquals(1, attributes.typedCount(attribute));
+        }
+        emitRoute(sink, caseId, targetId,
+                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
+                "org.kmipkit.ttlv.TypedAttribute.create", "construct", wire);
+        emitRoute(sink, caseId, targetId,
+                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
+                "org.kmipkit.ttlv.TypedAttribute.fromItem", "construct", wire);
+        emitRoute(sink, caseId, targetId,
+                "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
+                "org.kmipkit.extensions.AttributeSet.tryNew", "construct", attributesWire);
     }
 
     static Set<String> missingBooleanAttributeCaseIds(JsonNode catalog, JsonNode events, String version) {
