@@ -1480,6 +1480,7 @@
     "test-norm-message-field-message-field-9-21-unique-batch-item-id",
     "test-norm-message-field-message-field-9-6-batch-error-continuation-option",
     "test-norm-message-field-message-field-9-9-client-correlation-value",
+    "test-norm-message-field-message-field-8-2-request-header",
     "test-norm-structure-member-structure-member-2-1-certificate-certificate-type",
     "test-norm-structure-member-structure-member-2-1-certificate-certificate-value",
     "test-norm-structure-member-structure-member-2-2-certificate-request-certificate-request-type",
@@ -1702,6 +1703,97 @@
     "test-norm-operation-structure-operation-structure-7-15-interop-function",
     "test-norm-structure-member-structure-member-5-5-attribute-reference",
     "test-norm-structure-member-structure-member-7-13-extension-type",
+    "test-attr-cryptographic-domain-parameters",
+    "test-attr-cryptographic-parameters",
+    "test-attr-digest",
+    "test-attr-usage-limits",
+    "test-attr-vendor-attribute",
+    "test-attr-x.509-certificate-identifier",
+    "test-attr-x.509-certificate-issuer",
+    "test-attr-x.509-certificate-subject",
+    "test-norm-attribute-structure-attribute-structure-5-2-common-attributes",
+    "test-norm-attribute-structure-attribute-structure-5-3-private-key-attributes",
+    "test-norm-attribute-structure-attribute-structure-5-4-public-key-attributes",
+    "test-norm-attribute-structure-attribute-structure-5-5-attribute-reference",
+    "test-norm-attribute-structure-attribute-structure-5-6-current-attribute",
+    "test-norm-attribute-structure-attribute-structure-5-7-new-attribute",
+    "test-norm-credential-credential-credential",
+    "test-norm-credential-credential-one-time-password",
+    "test-norm-credential-credential-ticket",
+    "test-norm-message-field-message-field-8-1-batch-item",
+    "test-norm-message-field-message-field-8-1-request-header",
+    "test-norm-message-field-message-field-8-1-request-message",
+    "test-norm-message-field-message-field-8-3-batch-item",
+    "test-norm-message-field-message-field-8-4-response-header",
+    "test-norm-message-field-message-field-8-4-response-message",
+    "test-norm-message-field-message-field-8-5-response-header",
+    "test-norm-message-field-message-field-9-13-vendor-extension",
+    "test-norm-message-field-message-field-9-14-nonce",
+    "test-norm-message-field-message-field-9-16-protocol-version",
+    "test-norm-message-field-message-field-9-4-authentication",
+    "test-norm-message-field-message-field-9-4-credential-may-be-repeated",
+    "test-norm-object-structure-object-structure-3-10-key-material",
+    "test-norm-object-structure-object-structure-3-11-key-material",
+    "test-norm-object-structure-object-structure-3-12-key-material",
+    "test-norm-object-structure-object-structure-3-4-key-material",
+    "test-norm-object-structure-object-structure-3-5-key-material",
+    "test-norm-object-structure-object-structure-3-6-key-material",
+    "test-norm-object-structure-object-structure-3-7-key-material",
+    "test-norm-object-structure-object-structure-3-8-key-material",
+    "test-norm-object-structure-object-structure-3-9-key-material",
+    "test-norm-object-structure-object-structure-certificate",
+    "test-norm-object-structure-object-structure-certificate-request",
+    "test-norm-object-structure-object-structure-encryption-key-information",
+    "test-norm-object-structure-object-structure-key-block",
+    "test-norm-object-structure-object-structure-key-value",
+    "test-norm-object-structure-object-structure-key-wrapping-data",
+    "test-norm-object-structure-object-structure-mac-signature-key-information",
+    "test-norm-object-structure-object-structure-opaque-object",
+    "test-norm-object-structure-object-structure-pgp-key",
+    "test-norm-object-structure-object-structure-private-key",
+    "test-norm-object-structure-object-structure-public-key",
+    "test-norm-object-structure-object-structure-secret-data",
+    "test-norm-object-structure-object-structure-split-key",
+    "test-norm-object-structure-object-structure-symmetric-key",
+    "test-norm-operation-structure-operation-structure-7-11-defaults-information",
+    "test-norm-operation-structure-operation-structure-7-12-derivation-parameters",
+    "test-norm-operation-structure-operation-structure-7-18-key-wrapping-specification",
+    "test-norm-operation-structure-operation-structure-7-21-objects",
+    "test-norm-operation-structure-operation-structure-7-22-object-defaults",
+    "test-norm-operation-structure-operation-structure-7-25-operations",
+    "test-norm-operation-structure-operation-structure-7-26-pkcs-11-function",
+    "test-norm-operation-structure-operation-structure-7-27-pkcs-11-input-parameters",
+    "test-norm-operation-structure-operation-structure-7-28-pkcs-11-interface",
+    "test-norm-operation-structure-operation-structure-7-29-pkcs-11-output-parameters",
+    "test-norm-operation-structure-operation-structure-7-30-pkcs-11-return-code",
+    "test-norm-operation-structure-operation-structure-7-33-protection-storage-masks",
+    "test-norm-operation-structure-operation-structure-7-34-right",
+    "test-norm-operation-structure-operation-structure-7-35-rights",
+    "test-norm-operation-structure-operation-structure-7-36-rng-parameters",
+    "test-norm-operation-structure-operation-structure-7-39-ticket",
+    "test-norm-operation-structure-operation-structure-7-40-usage-limits",
+    "test-norm-operation-structure-operation-structure-7-41-validation-information",
+    "test-norm-operation-structure-operation-structure-7-5-capability-information",
+    "test-norm-structure-member-structure-member-2-9-symmetric-key-key-block",
+    "test-norm-structure-member-structure-member-3-2-key-value-attributes",
+    "test-norm-structure-member-structure-member-3-3-encryption-key-information-cryptographic-parameters",
+    "test-norm-structure-member-structure-member-3-3-key-wrapping-data-encryption-key-information",
+    "test-norm-structure-member-structure-member-3-3-key-wrapping-data-mac-signature-key-information",
+    "test-norm-structure-member-structure-member-3-3-mac-signature-key-information-cryptographic-parameters",
+    "test-norm-structure-member-structure-member-7-11-object-defaults",
+    "test-norm-structure-member-structure-member-7-12-cryptographic-parameters",
+    "test-norm-structure-member-structure-member-7-18-encryption-key-information",
+    "test-norm-structure-member-structure-member-7-18-mac-signature-key-information",
+    "test-norm-structure-member-structure-member-7-22-attributes",
+    "test-norm-structure-member-structure-member-7-22-object-groups",
+    "test-norm-structure-member-structure-member-7-34-object-groups",
+    "test-norm-structure-member-structure-member-7-34-objects",
+    "test-norm-structure-member-structure-member-7-34-operations",
+    "test-norm-structure-member-structure-member-7-34-usage-limits",
+    "test-norm-structure-member-structure-member-7-35-right",
+    "test-norm-structure-member-structure-member-9-11-attestation-nonce",
+    "test-norm-structure-member-structure-member-9-11-ticket-ticket",
+    "test-norm-operation-structure-operation-structure-7-1-asynchronous-correlation-values",
     "test-norm-enumeration-value-enum-value-item-type-big-integer-00000004",
     "test-norm-enumeration-value-enum-value-item-type-boolean-00000006",
     "test-norm-enumeration-value-enum-value-item-type-byte-string-00000008",
@@ -1735,7 +1827,7 @@
     "test-norm-credential-credential-hashed-password",
     "test-norm-credential-credential-username-and-password"
   ],
-  "executed_cells": 29188,
+  "executed_cells": 30110,
   "language": "java",
   "library_commit": "12496d646d11d4069b58bcc88fc76cc619211ec6",
   "pending_case_ids": [
@@ -1854,12 +1946,6 @@
     "test-neg-destroy-active-without-revoke",
     "test-neg-encrypt-preactive-key",
     "test-neg-modify-attribute-current-mismatch",
-    "test-norm-attribute-structure-attribute-structure-5-2-common-attributes",
-    "test-norm-attribute-structure-attribute-structure-5-3-private-key-attributes",
-    "test-norm-attribute-structure-attribute-structure-5-4-public-key-attributes",
-    "test-norm-attribute-structure-attribute-structure-5-5-attribute-reference",
-    "test-norm-attribute-structure-attribute-structure-5-6-current-attribute",
-    "test-norm-attribute-structure-attribute-structure-5-7-new-attribute",
     "test-norm-credential-credential-credential",
     "test-norm-credential-credential-one-time-password",
     "test-norm-credential-credential-ticket",
@@ -1917,27 +2003,7 @@
     "test-norm-object-structure-object-structure-split-key",
     "test-norm-object-structure-object-structure-symmetric-key",
     "test-norm-operation-structure-operation-structure-7-1-asynchronous-correlation-values",
-    "test-norm-operation-structure-operation-structure-7-11-defaults-information",
-    "test-norm-operation-structure-operation-structure-7-12-derivation-parameters",
-    "test-norm-operation-structure-operation-structure-7-15-interop-function",
-    "test-norm-operation-structure-operation-structure-7-18-key-wrapping-specification",
-    "test-norm-operation-structure-operation-structure-7-21-objects",
-    "test-norm-operation-structure-operation-structure-7-22-object-defaults",
     "test-norm-operation-structure-operation-structure-7-25-operations",
-    "test-norm-operation-structure-operation-structure-7-26-pkcs-11-function",
-    "test-norm-operation-structure-operation-structure-7-27-pkcs-11-input-parameters",
-    "test-norm-operation-structure-operation-structure-7-28-pkcs-11-interface",
-    "test-norm-operation-structure-operation-structure-7-29-pkcs-11-output-parameters",
-    "test-norm-operation-structure-operation-structure-7-30-pkcs-11-return-code",
-    "test-norm-operation-structure-operation-structure-7-33-protection-storage-masks",
-    "test-norm-operation-structure-operation-structure-7-34-right",
-    "test-norm-operation-structure-operation-structure-7-35-rights",
-    "test-norm-operation-structure-operation-structure-7-36-rng-parameters",
-    "test-norm-operation-structure-operation-structure-7-39-ticket",
-    "test-norm-operation-structure-operation-structure-7-40-usage-limits",
-    "test-norm-operation-structure-operation-structure-7-41-validation-information",
-    "test-norm-operation-structure-operation-structure-7-5-capability-information",
-    "test-norm-operation-structure-operation-structure-7-9-data",
     "test-norm-payload-client-activate-request-20-001",
     "test-norm-payload-client-activate-request-21-001",
     "test-norm-payload-client-activate-response-20-001",
@@ -2725,18 +2791,9 @@
     "test-norm-structure-member-structure-member-4-62-issuer-distinguished-name",
     "test-norm-structure-member-structure-member-4-63-subject-alternative-name",
     "test-norm-structure-member-structure-member-4-63-subject-distinguished-name",
-    "test-norm-structure-member-structure-member-7-11-object-defaults",
     "test-norm-structure-member-structure-member-7-12-cryptographic-parameters",
-    "test-norm-structure-member-structure-member-7-18-encryption-key-information",
-    "test-norm-structure-member-structure-member-7-18-mac-signature-key-information",
-    "test-norm-structure-member-structure-member-7-22-attributes",
-    "test-norm-structure-member-structure-member-7-22-object-groups",
     "test-norm-structure-member-structure-member-7-25-operation",
-    "test-norm-structure-member-structure-member-7-34-object-groups",
-    "test-norm-structure-member-structure-member-7-34-objects",
     "test-norm-structure-member-structure-member-7-34-operations",
-    "test-norm-structure-member-structure-member-7-34-usage-limits",
-    "test-norm-structure-member-structure-member-7-35-right",
     "test-norm-structure-member-structure-member-7-36-cryptographic-algorithm",
     "test-norm-structure-member-structure-member-7-36-hashing-algorithm",
     "test-norm-structure-member-structure-member-7-40-usage-limits-count",
@@ -3012,7 +3069,7 @@
     },
     {
       "case_id": "test-attr-cryptographic-domain-parameters",
-      "pending_cells": 96
+      "pending_cells": 88
     },
     {
       "case_id": "test-attr-cryptographic-length",
@@ -3020,7 +3077,7 @@
     },
     {
       "case_id": "test-attr-cryptographic-parameters",
-      "pending_cells": 104
+      "pending_cells": 96
     },
     {
       "case_id": "test-attr-cryptographic-usage-mask",
@@ -3040,7 +3097,7 @@
     },
     {
       "case_id": "test-attr-digest",
-      "pending_cells": 96
+      "pending_cells": 88
     },
     {
       "case_id": "test-attr-digital-signature-algorithm",
@@ -3192,23 +3249,23 @@
     },
     {
       "case_id": "test-attr-usage-limits",
-      "pending_cells": 96
+      "pending_cells": 88
     },
     {
       "case_id": "test-attr-vendor-attribute",
-      "pending_cells": 96
+      "pending_cells": 88
     },
     {
       "case_id": "test-attr-x.509-certificate-identifier",
-      "pending_cells": 96
+      "pending_cells": 88
     },
     {
       "case_id": "test-attr-x.509-certificate-issuer",
-      "pending_cells": 96
+      "pending_cells": 88
     },
     {
       "case_id": "test-attr-x.509-certificate-subject",
-      "pending_cells": 96
+      "pending_cells": 88
     },
     {
       "case_id": "test-batch-continue-after-failure",
@@ -3351,52 +3408,28 @@
       "pending_cells": 82
     },
     {
-      "case_id": "test-norm-attribute-structure-attribute-structure-5-2-common-attributes",
-      "pending_cells": 10
-    },
-    {
-      "case_id": "test-norm-attribute-structure-attribute-structure-5-3-private-key-attributes",
-      "pending_cells": 10
-    },
-    {
-      "case_id": "test-norm-attribute-structure-attribute-structure-5-4-public-key-attributes",
-      "pending_cells": 10
-    },
-    {
-      "case_id": "test-norm-attribute-structure-attribute-structure-5-5-attribute-reference",
-      "pending_cells": 10
-    },
-    {
-      "case_id": "test-norm-attribute-structure-attribute-structure-5-6-current-attribute",
-      "pending_cells": 10
-    },
-    {
-      "case_id": "test-norm-attribute-structure-attribute-structure-5-7-new-attribute",
-      "pending_cells": 10
-    },
-    {
       "case_id": "test-norm-credential-credential-credential",
-      "pending_cells": 10
+      "pending_cells": 2
     },
     {
       "case_id": "test-norm-credential-credential-one-time-password",
-      "pending_cells": 10
+      "pending_cells": 2
     },
     {
       "case_id": "test-norm-credential-credential-ticket",
-      "pending_cells": 10
+      "pending_cells": 2
     },
     {
       "case_id": "test-norm-message-field-message-field-8-1-batch-item",
-      "pending_cells": 26
+      "pending_cells": 18
     },
     {
       "case_id": "test-norm-message-field-message-field-8-1-request-header",
-      "pending_cells": 10
+      "pending_cells": 2
     },
     {
       "case_id": "test-norm-message-field-message-field-8-1-request-message",
-      "pending_cells": 10
+      "pending_cells": 2
     },
     {
       "case_id": "test-norm-message-field-message-field-8-2-authentication",
@@ -3408,11 +3441,11 @@
     },
     {
       "case_id": "test-norm-message-field-message-field-8-2-request-header",
-      "pending_cells": 10
+      "pending_cells": 2
     },
     {
       "case_id": "test-norm-message-field-message-field-8-3-batch-item",
-      "pending_cells": 26
+      "pending_cells": 18
     },
     {
       "case_id": "test-norm-message-field-message-field-8-3-message-extension",
@@ -3432,11 +3465,11 @@
     },
     {
       "case_id": "test-norm-message-field-message-field-8-4-response-header",
-      "pending_cells": 12
+      "pending_cells": 4
     },
     {
       "case_id": "test-norm-message-field-message-field-8-4-response-message",
-      "pending_cells": 10
+      "pending_cells": 2
     },
     {
       "case_id": "test-norm-message-field-message-field-8-5-nonce",
@@ -3448,7 +3481,7 @@
     },
     {
       "case_id": "test-norm-message-field-message-field-8-5-response-header",
-      "pending_cells": 12
+      "pending_cells": 4
     },
     {
       "case_id": "test-norm-message-field-message-field-8-5-server-hashed-password",
@@ -3488,203 +3521,123 @@
     },
     {
       "case_id": "test-norm-message-field-message-field-9-13-vendor-extension",
-      "pending_cells": 12
+      "pending_cells": 4
     },
     {
       "case_id": "test-norm-message-field-message-field-9-14-nonce",
-      "pending_cells": 14
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-message-field-message-field-9-16-protocol-version",
-      "pending_cells": 12
+      "pending_cells": 4
     },
     {
       "case_id": "test-norm-message-field-message-field-9-4-authentication",
-      "pending_cells": 14
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-message-field-message-field-9-4-credential-may-be-repeated",
-      "pending_cells": 14
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-object-structure-object-structure-3-10-key-material",
-      "pending_cells": 40
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-object-structure-object-structure-3-11-key-material",
-      "pending_cells": 40
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-object-structure-object-structure-3-12-key-material",
-      "pending_cells": 40
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-object-structure-object-structure-3-4-key-material",
-      "pending_cells": 40
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-object-structure-object-structure-3-5-key-material",
-      "pending_cells": 40
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-object-structure-object-structure-3-6-key-material",
-      "pending_cells": 40
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-object-structure-object-structure-3-7-key-material",
-      "pending_cells": 40
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-object-structure-object-structure-3-8-key-material",
-      "pending_cells": 40
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-object-structure-object-structure-3-9-key-material",
-      "pending_cells": 40
+      "pending_cells": 28
     },
     {
       "case_id": "test-norm-object-structure-object-structure-certificate",
-      "pending_cells": 18
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-object-structure-object-structure-certificate-request",
-      "pending_cells": 18
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-object-structure-object-structure-encryption-key-information",
-      "pending_cells": 36
+      "pending_cells": 24
     },
     {
       "case_id": "test-norm-object-structure-object-structure-key-block",
-      "pending_cells": 32
+      "pending_cells": 20
     },
     {
       "case_id": "test-norm-object-structure-object-structure-key-value",
-      "pending_cells": 36
+      "pending_cells": 24
     },
     {
       "case_id": "test-norm-object-structure-object-structure-key-wrapping-data",
-      "pending_cells": 36
+      "pending_cells": 24
     },
     {
       "case_id": "test-norm-object-structure-object-structure-mac-signature-key-information",
-      "pending_cells": 36
+      "pending_cells": 24
     },
     {
       "case_id": "test-norm-object-structure-object-structure-opaque-object",
-      "pending_cells": 18
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-object-structure-object-structure-pgp-key",
-      "pending_cells": 18
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-object-structure-object-structure-private-key",
-      "pending_cells": 18
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-object-structure-object-structure-public-key",
-      "pending_cells": 18
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-object-structure-object-structure-secret-data",
-      "pending_cells": 18
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-object-structure-object-structure-split-key",
-      "pending_cells": 18
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-object-structure-object-structure-symmetric-key",
-      "pending_cells": 18
+      "pending_cells": 6
     },
     {
       "case_id": "test-norm-operation-structure-operation-structure-7-1-asynchronous-correlation-values",
-      "pending_cells": 7
-    },
-    {
-      "case_id": "test-norm-operation-structure-operation-structure-7-11-defaults-information",
-      "pending_cells": 12
-    },
-    {
-      "case_id": "test-norm-operation-structure-operation-structure-7-12-derivation-parameters",
-      "pending_cells": 12
-    },
-    {
-      "case_id": "test-norm-operation-structure-operation-structure-7-15-interop-function",
-      "pending_cells": 4
-    },
-    {
-      "case_id": "test-norm-operation-structure-operation-structure-7-18-key-wrapping-specification",
-      "pending_cells": 12
-    },
-    {
-      "case_id": "test-norm-operation-structure-operation-structure-7-21-objects",
-      "pending_cells": 12
-    },
-    {
-      "case_id": "test-norm-operation-structure-operation-structure-7-22-object-defaults",
-      "pending_cells": 12
+      "pending_cells": 1
     },
     {
       "case_id": "test-norm-operation-structure-operation-structure-7-25-operations",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-operation-structure-operation-structure-7-26-pkcs-11-function",
-      "pending_cells": 12
-    },
-    {
-      "case_id": "test-norm-operation-structure-operation-structure-7-27-pkcs-11-input-parameters",
-      "pending_cells": 12
-    },
-    {
-      "case_id": "test-norm-operation-structure-operation-structure-7-28-pkcs-11-interface",
-      "pending_cells": 12
-    },
-    {
-      "case_id": "test-norm-operation-structure-operation-structure-7-29-pkcs-11-output-parameters",
-      "pending_cells": 12
-    },
-    {
-      "case_id": "test-norm-operation-structure-operation-structure-7-30-pkcs-11-return-code",
-      "pending_cells": 12
-    },
-    {
-      "case_id": "test-norm-operation-structure-operation-structure-7-33-protection-storage-masks",
-      "pending_cells": 12
-    },
-    {
-      "case_id": "test-norm-operation-structure-operation-structure-7-34-right",
-      "pending_cells": 12
-    },
-    {
-      "case_id": "test-norm-operation-structure-operation-structure-7-35-rights",
-      "pending_cells": 12
-    },
-    {
-      "case_id": "test-norm-operation-structure-operation-structure-7-36-rng-parameters",
-      "pending_cells": 12
-    },
-    {
-      "case_id": "test-norm-operation-structure-operation-structure-7-39-ticket",
-      "pending_cells": 12
-    },
-    {
-      "case_id": "test-norm-operation-structure-operation-structure-7-40-usage-limits",
-      "pending_cells": 12
-    },
-    {
-      "case_id": "test-norm-operation-structure-operation-structure-7-41-validation-information",
-      "pending_cells": 12
-    },
-    {
-      "case_id": "test-norm-operation-structure-operation-structure-7-5-capability-information",
-      "pending_cells": 12
-    },
-    {
-      "case_id": "test-norm-operation-structure-operation-structure-7-9-data",
-      "pending_cells": 4
+      "pending_cells": 2
     },
     {
       "case_id": "test-norm-payload-client-activate-request-20-001",
@@ -6456,7 +6409,7 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-2-9-symmetric-key-key-block",
-      "pending_cells": 18
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-1-key-block-cryptographic-algorithm",
@@ -6520,7 +6473,7 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-2-key-value-attributes",
-      "pending_cells": 32
+      "pending_cells": 24
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-2-key-value-key-material",
@@ -6528,7 +6481,7 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-3-encryption-key-information-cryptographic-parameters",
-      "pending_cells": 40
+      "pending_cells": 32
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-3-encryption-key-information-unique-identifier",
@@ -6540,7 +6493,7 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-3-key-wrapping-data-encryption-key-information",
-      "pending_cells": 32
+      "pending_cells": 24
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-3-key-wrapping-data-iv-counter-nonce",
@@ -6552,7 +6505,7 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-3-key-wrapping-data-mac-signature-key-information",
-      "pending_cells": 32
+      "pending_cells": 24
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-3-key-wrapping-data-wrapping-method",
@@ -6560,7 +6513,7 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-3-mac-signature-key-information-cryptographic-parameters",
-      "pending_cells": 40
+      "pending_cells": 32
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-3-mac-signature-key-information-unique-identifier",
@@ -6835,27 +6788,7 @@
       "pending_cells": 6
     },
     {
-      "case_id": "test-norm-structure-member-structure-member-7-11-object-defaults",
-      "pending_cells": 8
-    },
-    {
       "case_id": "test-norm-structure-member-structure-member-7-12-cryptographic-parameters",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-structure-member-structure-member-7-18-encryption-key-information",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-structure-member-structure-member-7-18-mac-signature-key-information",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-structure-member-structure-member-7-22-attributes",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-structure-member-structure-member-7-22-object-groups",
       "pending_cells": 8
     },
     {
@@ -6863,24 +6796,8 @@
       "pending_cells": 2
     },
     {
-      "case_id": "test-norm-structure-member-structure-member-7-34-object-groups",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-structure-member-structure-member-7-34-objects",
-      "pending_cells": 8
-    },
-    {
       "case_id": "test-norm-structure-member-structure-member-7-34-operations",
-      "pending_cells": 10
-    },
-    {
-      "case_id": "test-norm-structure-member-structure-member-7-34-usage-limits",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-structure-member-structure-member-7-35-right",
-      "pending_cells": 8
+      "pending_cells": 2
     },
     {
       "case_id": "test-norm-structure-member-structure-member-7-36-cryptographic-algorithm",
@@ -6912,7 +6829,7 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-9-11-attestation-nonce",
-      "pending_cells": 16
+      "pending_cells": 8
     },
     {
       "case_id": "test-norm-structure-member-structure-member-9-11-credential-credential-type",
@@ -6976,7 +6893,7 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-9-11-ticket-ticket",
-      "pending_cells": 10
+      "pending_cells": 2
     },
     {
       "case_id": "test-norm-structure-member-structure-member-9-11-username-and-password-password",
@@ -7487,7 +7404,7 @@
       "pending_cells": 15
     }
   ],
-  "pending_cells": 42453,
+  "pending_cells": 41531,
   "pending_reason": "No validated per-cell route execution evidence is recorded for this cell.",
   "pending_reason_code": "route_evidence_not_emitted",
   "planned_cells": 71641,
@@ -7495,8 +7412,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 2941,
-      "pending_cells": 1143,
+      "executed_cells": 3032,
+      "pending_cells": 1052,
       "protocol_version": "2.0",
       "required_cells": 4084,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item",
@@ -7505,8 +7422,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 2992,
-      "pending_cells": 1187,
+      "executed_cells": 3084,
+      "pending_cells": 1095,
       "protocol_version": "2.1",
       "required_cells": 4179,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item",
@@ -7555,8 +7472,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 16,
-      "pending_cells": 50,
+      "executed_cells": 66,
+      "pending_cells": 0,
       "protocol_version": "2.0",
       "required_cells": 66,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.create",
@@ -7565,8 +7482,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 21,
-      "pending_cells": 51,
+      "executed_cells": 72,
+      "pending_cells": 0,
       "protocol_version": "2.1",
       "required_cells": 72,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.create",
@@ -7575,8 +7492,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 16,
-      "pending_cells": 50,
+      "executed_cells": 66,
+      "pending_cells": 0,
       "protocol_version": "2.0",
       "required_cells": 66,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.withitem",
@@ -7585,8 +7502,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 21,
-      "pending_cells": 51,
+      "executed_cells": 72,
+      "pending_cells": 0,
       "protocol_version": "2.1",
       "required_cells": 72,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.withitem",
@@ -7775,8 +7692,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 23,
-      "pending_cells": 85,
+      "executed_cells": 108,
+      "pending_cells": 0,
       "protocol_version": "2.0",
       "required_cells": 108,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
@@ -7785,8 +7702,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 33,
-      "pending_cells": 86,
+      "executed_cells": 119,
+      "pending_cells": 0,
       "protocol_version": "2.1",
       "required_cells": 119,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
@@ -7815,8 +7732,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 2989,
-      "pending_cells": 1142,
+      "executed_cells": 3080,
+      "pending_cells": 1051,
       "protocol_version": "2.0",
       "required_cells": 4131,
       "route_id": "java.generic-ttlv.ttlv_codec.decode",
@@ -7825,8 +7742,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 3040,
-      "pending_cells": 1186,
+      "executed_cells": 3132,
+      "pending_cells": 1094,
       "protocol_version": "2.1",
       "required_cells": 4226,
       "route_id": "java.generic-ttlv.ttlv_codec.decode",
@@ -7835,8 +7752,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 2941,
-      "pending_cells": 1142,
+      "executed_cells": 3032,
+      "pending_cells": 1051,
       "protocol_version": "2.0",
       "required_cells": 4083,
       "route_id": "java.generic-ttlv.ttlv_item.create",
@@ -7845,8 +7762,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 2992,
-      "pending_cells": 1186,
+      "executed_cells": 3084,
+      "pending_cells": 1094,
       "protocol_version": "2.1",
       "required_cells": 4178,
       "route_id": "java.generic-ttlv.ttlv_item.create",
@@ -34066,8 +33983,8 @@
   "route_manifest_sha256": "8e26f2efe33c63d3fc4dcd0cb11e465b15bbe9135ab56809c354f032a7aeac59",
   "route_summary": [
     {
-      "executed_cells": 5933,
-      "pending_cells": 2330,
+      "executed_cells": 6116,
+      "pending_cells": 2147,
       "required_cells": 8263,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item"
     },
@@ -34084,14 +34001,14 @@
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.rawtag.fromraw"
     },
     {
-      "executed_cells": 37,
-      "pending_cells": 101,
+      "executed_cells": 138,
+      "pending_cells": 0,
       "required_cells": 138,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.create"
     },
     {
-      "executed_cells": 37,
-      "pending_cells": 101,
+      "executed_cells": 138,
+      "pending_cells": 0,
       "required_cells": 138,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.withitem"
     },
@@ -34150,8 +34067,8 @@
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.longinteger"
     },
     {
-      "executed_cells": 56,
-      "pending_cells": 171,
+      "executed_cells": 227,
+      "pending_cells": 0,
       "required_cells": 227,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure"
     },
@@ -34162,14 +34079,14 @@
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring"
     },
     {
-      "executed_cells": 6029,
-      "pending_cells": 2328,
+      "executed_cells": 6212,
+      "pending_cells": 2145,
       "required_cells": 8357,
       "route_id": "java.generic-ttlv.ttlv_codec.decode"
     },
     {
-      "executed_cells": 5933,
-      "pending_cells": 2328,
+      "executed_cells": 6116,
+      "pending_cells": 2145,
       "required_cells": 8261,
       "route_id": "java.generic-ttlv.ttlv_item.create"
     },
@@ -35537,7 +35454,7 @@
     }
   ],
   "schema_version": "1.0",
-  "selected_scope_cells": 29188,
+  "selected_scope_cells": 30110,
   "selected_scope_complete": true,
   "vendor_interoperability_claim": false
 }
