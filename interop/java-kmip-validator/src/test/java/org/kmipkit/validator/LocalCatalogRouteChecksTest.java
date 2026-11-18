@@ -401,6 +401,62 @@ class LocalCatalogRouteChecksTest {
     }
 
     @Test
+    void executesBigIntegerKeyMaterialTargetsThroughGenericTtlvRoutes() throws Exception {
+        JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
+        Set<String> caseIds = Set.of(
+                "test-norm-structure-member-structure-member-2-8-split-key-prime-field-size",
+                "test-norm-structure-member-structure-member-3-10-key-material-g",
+                "test-norm-structure-member-structure-member-3-10-key-material-j",
+                "test-norm-structure-member-structure-member-3-10-key-material-p",
+                "test-norm-structure-member-structure-member-3-10-key-material-q",
+                "test-norm-structure-member-structure-member-3-10-key-material-y",
+                "test-norm-structure-member-structure-member-3-11-key-material-d",
+                "test-norm-structure-member-structure-member-3-5-key-material-g",
+                "test-norm-structure-member-structure-member-3-5-key-material-p",
+                "test-norm-structure-member-structure-member-3-5-key-material-q",
+                "test-norm-structure-member-structure-member-3-5-key-material-x",
+                "test-norm-structure-member-structure-member-3-6-key-material-g",
+                "test-norm-structure-member-structure-member-3-6-key-material-p",
+                "test-norm-structure-member-structure-member-3-6-key-material-q",
+                "test-norm-structure-member-structure-member-3-6-key-material-y",
+                "test-norm-structure-member-structure-member-3-7-key-material-crt-coefficient",
+                "test-norm-structure-member-structure-member-3-7-key-material-modulus",
+                "test-norm-structure-member-structure-member-3-7-key-material-p",
+                "test-norm-structure-member-structure-member-3-7-key-material-prime-exponent-p",
+                "test-norm-structure-member-structure-member-3-7-key-material-prime-exponent-q",
+                "test-norm-structure-member-structure-member-3-7-key-material-private-exponent",
+                "test-norm-structure-member-structure-member-3-7-key-material-public-exponent",
+                "test-norm-structure-member-structure-member-3-7-key-material-q",
+                "test-norm-structure-member-structure-member-3-8-key-material-modulus",
+                "test-norm-structure-member-structure-member-3-8-key-material-public-exponent",
+                "test-norm-structure-member-structure-member-3-9-key-material-g",
+                "test-norm-structure-member-structure-member-3-9-key-material-j",
+                "test-norm-structure-member-structure-member-3-9-key-material-p",
+                "test-norm-structure-member-structure-member-3-9-key-material-q",
+                "test-norm-structure-member-structure-member-3-9-key-material-x");
+        List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
+
+        for (String version : List.of("2.0", "2.1")) {
+            LocalCatalogRouteChecks.executeBigIntegerTargets(catalog, version, caseIds, invocations::add);
+        }
+
+        assertEquals(caseIds, invocations.stream().map(LocalCatalogRouteChecks.Invocation::caseId)
+                .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(240, invocations.size(), "Every Big Integer target/version pair must use four routes.");
+        assertEquals(Set.of(
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.biginteger",
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode"),
+                invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId)
+                        .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(Set.of("construct", "decode"), invocations.stream()
+                .map(LocalCatalogRouteChecks.Invocation::action)
+                .collect(java.util.stream.Collectors.toSet()));
+        assertTrue(invocations.stream().allMatch(invocation -> invocation.wire().length == 16));
+    }
+
+    @Test
     void executesRandomIvThroughTheTypedCryptographicParametersBuilder() throws Exception {
         JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
         String caseId = "test-norm-structure-member-structure-member-4-16-random-iv";
