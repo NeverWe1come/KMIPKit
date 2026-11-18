@@ -440,6 +440,19 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         self.assertEqual(1, summary["not_applicable_cells"])
         self.assertTrue(summary["all_invocations_passed"])
 
+        malformed_order = copy.deepcopy(report)
+        send_event = next(event for event in malformed_order["events"]
+                          if event["action"] == "send")
+        send_event["batch_operation_sequence"] = ["Create", "Activate"]
+        with self.assertRaisesRegex(ValueError, "local rejection operation order"):
+            validate_report(
+                malformed_order, catalog, manifest,
+                catalog_sha256="c" * 64,
+                route_manifest_sha256="d" * 64,
+                expected_artifact_sha256="b" * 64,
+                scope_cells=scope,
+            )
+
         orphan_report = copy.deepcopy(report)
         orphan_report["events"] = [event for event in orphan_report["events"]
                                     if event["action"] != "send"]
