@@ -1131,6 +1131,7 @@ class ControlledTlsPeerTest {
             String requestHash = normalizedTreeSha256(request);
             appendNetworkQueryRouteEvents(events, protocolVersion, requestHash, responseHash);
             appendControlledActivationDateNetworkEvents(events, protocolVersion);
+            assertGetAttributesNetworkRouteCoverage(events, readRouteEvidenceCatalog(), protocolVersion);
             appendControlledKeyFormatRawResponseRouteEvents(events, protocolVersion);
             appendPendingQueryCorrelationEvidence(events, protocolVersion, serverCertificatePem,
                     serverPrivateKeyPem, clientCertificatePem, clientPrivateKeyPem);
@@ -4211,6 +4212,35 @@ class ControlledTlsPeerTest {
                 "org.kmipkit.extensions.ClientBatchItemResult.getAttributesResponse", null, null,
                 "decode", protocolVersion, null, null,
                 normalizedTreeSha256(activationDateResponse(minor)));
+    }
+
+    private static Set<String> getAttributesNetworkRouteCaseIds(JsonNode catalog, String protocolVersion) {
+        Set<String> caseIds = new java.util.LinkedHashSet<>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            if (!"Get Attributes".equals(testCase.path("operation").asText())) continue;
+            if (containsText(testCase.path("execution").path("protocol_versions"), protocolVersion)) {
+                caseIds.add(testCase.path("case_id").asText());
+            }
+        }
+        return caseIds;
+    }
+
+    private static void assertGetAttributesNetworkRouteCoverage(ArrayNode events, JsonNode catalog,
+            String protocolVersion) {
+        Set<String> expected = getAttributesNetworkRouteCaseIds(catalog, protocolVersion);
+        Set<String> observed = new java.util.HashSet<>();
+        for (JsonNode event : events) {
+            String routeId = event.path("route_id").asText();
+            if (protocolVersion.equals(event.path("protocol_version").asText())
+                    && "construct".equals(event.path("action").asText())
+                    && ("java.typed-protocol.client_batch_item.get_attributes".equals(routeId)
+                            || "java.typed-protocol.function.attribute_request_get_attributes_to_batch_item"
+                                    .equals(routeId))) {
+                observed.add(event.path("case_id").asText());
+            }
+        }
+        assertEquals(expected, observed,
+                "Every catalogued Get Attributes case must construct through both installed Java routes.");
     }
 
     private void appendControlledKeyFormatRawResponseRouteEvents(ArrayNode events, String protocolVersion)
