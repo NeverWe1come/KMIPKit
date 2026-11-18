@@ -3170,3 +3170,40 @@ python3 -m unittest interop.shared.tests.test_route_execution_evidence \
 python3 interop/shared/tools/route_capabilities.py --check
 git diff --check
 ```
+
+## Assigned Tag generic routes retained per case — 2026-11-18
+
+Red commit `70be6c72d` requires the Authentication Tag case to appear in the
+selected evidence report even though it also has typed Credential routes. The
+focused installed-consumer test failed because the route executor wrote its
+generic TTLV calls only into the aggregate Tag case and omitted the original
+normative case ID. Green commit `36fdfa4f5` preserves those calls per case and
+includes every repaired Tag case in the report selection before regenerating
+the Tag aggregate. This closes 470 cells for 47 assigned Tags across KMIP
+2.0/2.1: RawTag construction and validation, Item creation, Item view, and
+codec decoding. The synthetic Integer value verifies generic structural
+handling and the assigned tag identity only; it does not assert that Integer
+is a semantically valid value for each tag.
+
+The full Gradle suite passes. The selected report validates 30,580/30,580
+cells with zero failures; the ledger records 30,580 executed and 41,061 pending
+cells of 71,641 across 1,114 pending case IDs. The route ledger comparer passes;
+shared route-evidence, schema, and capability suites pass 108 tests; the route
+audit confirms 1,507 routes. The full matrix remains incomplete and the stack
+stays WIP.
+
+Verification:
+
+```sh
+bash bindings/java/gradlew -p interop/java-kmip-validator test --rerun-tasks
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+python3 -m unittest interop.shared.tests.test_route_execution_evidence \
+  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+git diff --check
+```
