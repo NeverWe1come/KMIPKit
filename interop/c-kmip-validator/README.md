@@ -93,11 +93,9 @@ construction to KMIP 2.1. The route-matrix fixture separately exercises the
 response decoder with a KMIP 2.0 message header and the builder's fixed KMIP 2.1
 offer; it verifies that the server returns only that offered version. This adds
 2.0 response-decoding evidence without claiming that the C builder can offer
-KMIP 2.0. The public C Login builder only supports KMIP 2.1, so the
-KMIP 2.0 Login case is reported as a public API limitation. The KMIP 2.0 Logout
-case is not run because the C validator cannot obtain the server-issued Login
-Ticket required by Logout. For KMIP 2.1 Login, the consumer checks the complete
-response TTLV structure shape without copying Ticket bytes into route evidence.
+KMIP 2.0. Controlled TLS fixtures execute the C Login and Logout lifecycle
+under both KMIP 2.0 and 2.1. They verify the Login Ticket is consumed for Logout
+without copying Ticket bytes into route evidence.
 The public C API exposes generic TTLV constructors,
 inspectors, and a decoder.
 It has no generic TTLV encoder and no generic TTLV request dispatch.
