@@ -862,3 +862,22 @@ closing 60 cells. The Java suite passes 92/92 serially; shared route tests pass
 ledger comparison and the 1,507-route audit pass. The full ledger records
 71,641 planned, 41,958 executed, and 29,683 pending cells. The matrix remains
 incomplete, so #187 and its dependents stay WIP.
+
+### Key format and Split Key scalar payload routes — 2026-11-18
+
+The local generic TTLV runner now covers `Key Format Type`, `Key Compression
+Type`, `Secret Data Type`, and `Split Key Method` as catalog-selected
+Enumerations, plus `Prime Field Size`, `Split Key Parts`, and `Split Key
+Threshold` as Integers. Exact sources are OASIS KMIP 2.0 §6.1.10 Table 178,
+§6.1.18 Table 202, and §6.1.26 Table 226; KMIP 2.1 §6.1.10 Table 193,
+§6.1.18 Table 217, and §6.1.27 Table 244. Evidence is local TTLV Item
+construction, view, and decode only.
+
+Red `c61733997` found the Export Key Format Type field missing after its
+Operation target already had events. Green `3ae90facb` adds the catalog-backed
+Enumeration and Integer values for the selected fields, closing 54 cells. The
+Java suite passes 92/92 serially; shared route tests pass 109/109. The selected
+report validates 42,012/42,012 cells with zero failures; ledger comparison and
+the 1,507-route audit pass. The full ledger records 71,641 planned, 42,012
+executed, and 29,629 pending cells. The matrix remains incomplete, so #187 and
+its dependents stay WIP.
