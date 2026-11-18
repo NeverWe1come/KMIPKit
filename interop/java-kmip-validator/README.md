@@ -428,3 +428,11 @@ python3 -m unittest interop.shared.tests.test_route_execution_evidence \
 python3 interop/shared/tools/route_capabilities.py --check
 git diff --check
 ```
+
+The transparent key-material cases now exercise the installed typed
+`KeyValue.fromFields`, `KeyValue.fromItem`, `KeyBlock.fromFields`, and
+`KeyBlock.fromItem` routes in addition to the two `KeyMaterial` constructors.
+The 29 catalogued Big Integer members run in both KMIP versions, with the
+nested member checked after each typed conversion. The selected Java report
+validates 34,210/34,210 cells with zero failures; 37,431 of the full 71,641
+cells remain pending, so the Java matrix and stack remain WIP.
