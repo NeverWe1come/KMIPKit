@@ -881,3 +881,24 @@ report validates 42,012/42,012 cells with zero failures; ledger comparison and
 the 1,507-route audit pass. The full ledger records 71,641 planned, 42,012
 executed, and 29,629 pending cells. The matrix remains incomplete, so #187 and
 its dependents stay WIP.
+
+### Attribute reference and certificate client payload routes — 2026-11-18
+
+The Java local TTLV runner now covers `Attribute Reference` as an Enumeration
+for Adjust Attribute, Delete Attribute, and Get Attributes; `Private Key
+Unique Identifier` as a Text String for Re-key Key Pair; and `Certificate` as
+the KMIP Certificate Structure (Certificate Type plus Certificate Value) for
+Re-Provision and Validate. The source cases cover OASIS KMIP 2.0 §6.1.3 Table
+155, §6.1.13 Table 187, §6.1.20 Table 208, §6.1.43 Table 284, §6.1.44 Table
+287, and §6.1.51 Table 308. Certificate structure and tag shapes follow §2.1
+and §11.56. The small Certificate Value fixture is only used to exercise the
+generic TTLV structure; it is not parsed or validated as an X.509 certificate,
+and no server acceptance is claimed.
+
+Red `507f926d8` showed that Adjust Attribute had only the three Operation
+target events, with its field and operation-target generic Item routes
+incomplete. Green `96dd8c71a` added all six catalog cases, closing 54 cells.
+The Java suite passes serially; the selected report validates 42,066/42,066
+cells with zero failures. The full ledger records 71,641 planned, 42,066
+executed, and 29,575 pending cells. The matrix remains incomplete, so #187
+and its dependents stay WIP.
