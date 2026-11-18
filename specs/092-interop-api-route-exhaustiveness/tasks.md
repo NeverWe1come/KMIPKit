@@ -181,10 +181,11 @@ The primary Login, Logout, and Delegated Login cases alter authenticated
 session state and therefore require the same explicit opt-in as Log.
 
 - Red commit `c35acc2a8` added a catalog regression; its initial version also
-  assumed Delegated Login applied to KMIP 2.0. The source-backed catalog shows
-  that Delegated Login is KMIP 2.1-only. Red commit `7ccde004f` scoped the
-  assertion to the three primary `protocol_and_session` cases and confirmed
-  that each was incorrectly classified as `read_only`.
+  assumed Delegated Login was unavailable in KMIP 2.0. That assumption was
+  incorrect: the pinned KMIP 2.0 source defines §6.1.12, Tables 184–186, as
+  does KMIP 2.1 §6.1.12, Tables 199–201. Red commit `7ccde004f` scoped the
+  assertion to the primary session cases and confirmed that each was
+  incorrectly classified as `read_only`; the catalog retains both versions.
 - Green commit `85f4095a2` classifies Log, Login, Logout, and Delegated Login as
   mutating and regenerates the shared catalog. Negative and boundary cases
   retain their individual classifications.
@@ -197,6 +198,48 @@ session state and therefore require the same explicit opt-in as Log.
 KMIP 2.0 §6.1.25 and KMIP 2.1 §6.1.26 define Interop as test-state
 control and prohibit its availability on production servers. The catalog now
 requires the explicit dedicated-environment mutation opt-in for both versions.
+
+## Development evidence: C Delegated Login payload fields
+
+The installed C consumer now constructs the required Rights structure and the
+Lease Time, Request Count, and Usage Limits variants from the Delegated Login
+catalog cases. The controlled peer checks their exact KMIP field order and
+values and returns a deterministic Ticket checked by the typed and TTLV
+response accessors. Generic TTLV route fixtures cover Rights and Ticket
+structures as well as the optional scalar and Usage Limits fields. This follows
+KMIP 2.0 §6.1.12 Tables 184–185 and KMIP 2.1 §6.1.12 Tables 199–200.
+
+- Red: the route recipe and fixture tests failed for all ten request/response
+  field cases. The installed-consumer test then reported all ten as `not_run`
+  with `fixture_peer_accept_timeout`, because the C driver recognized only the
+  primary operation case and skipped the payload variants.
+- Green: the recipe, local TTLV fixtures, and typed request construction now
+  cover all ten field cases. The focused route tests passed all ten cases over
+  TTLV/raw TLS for both protocol versions.
+- `cmake --build interop/c-kmip-validator/build --target kmip_validator_c
+  test_c_validator -j 2` passed. Exact-head CI and the full route matrix remain
+  open; this slice does not claim the overall C route gate is complete.
+- Full CTest passed 7/7. The full installed C route matrix now records 41,730
+  of 66,736 cells invoked, zero failed, and 25,006 pending. The 304-cell
+  increase from the preceding matrix includes all Delegated Login field
+  variants; no Delegated Login cells remain pending. The completeness gate is
+  still open.
+
+## Development evidence: C Login under KMIP 2.0
+
+The earlier C route evidence treated Login as KMIP 2.1-only and skipped Login
+and Logout in the KMIP 2.0 controlled fixture. The pinned OASIS KMIP 2.0
+Login payload tables (§6.1.29, Tables 235–236) have the same Lease Time,
+Request Count, Usage Limits, and Ticket fields exercised by the C typed
+constructor/readers in KMIP 2.1 (§6.1.30, Tables 253–254). The driver now
+executes both direct Login and the ticket-backed Logout flow under KMIP 2.0;
+the peer checks typed and generic Ticket access and never records the Ticket.
+
+- Red: the focused KMIP 2.0 TLS contract failed on the prior pre-transport
+  Login skip and then exposed an omitted expected Login exchange.
+- Green: `c_validator_controlled_tls_peer_kmip20` passes with the Login
+  constructor, typed/TTLV response readers, and Logout exchange exercised.
+- Exact-head CI and the complete C route matrix remain outstanding.
 
 - Red commit `8d1b1b938` added the catalog regression and observed that Interop
   was incorrectly classified as `read_only` for KMIP 2.0 and 2.1.
@@ -457,6 +500,15 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
   KMIP 2.0/2.1 controlled TLS peers. Feature traceability passed 31/31 tests.
   Exact-head CI and the full C route matrix remain open.
 
+## C typed batch count evidence
+
+The C controlled-peer case `test-batch-count-mismatch-rejected` now exercises
+the public typed batch API as a read-only network route. Across KMIP 2.0/2.1,
+TTLV/JSON/XML, and raw TLS/HTTPS, it sends Get plus Get Attribute List and the
+peer validates Batch Count 2 against the two Batch Items. This demonstrates
+that the typed send path derives the count from its items and exposes no count
+override. Its 12 focused checks pass; this does not complete T006/T007/T009 or
+the cross-language matrix.
 ## Development evidence: C Export request and response routes
 
 - Normative scope: OASIS KMIP v2.0 §6.1.18 Tables 202–203 and v2.1 §6.1.18

@@ -489,6 +489,24 @@ CONTROLLED_PEER_LOCAL_MODEL_CASES = frozenset({
     'test-norm-payload-client-query-request-21-002',
     'test-norm-payload-client-query-response-20-001',
     'test-norm-payload-client-query-response-21-001',
+    'test-norm-payload-client-login-request-20-001',
+    'test-norm-payload-client-login-request-20-002',
+    'test-norm-payload-client-login-request-20-003',
+    'test-norm-payload-client-login-request-21-001',
+    'test-norm-payload-client-login-request-21-002',
+    'test-norm-payload-client-login-request-21-003',
+    'test-norm-payload-client-login-response-20-001',
+    'test-norm-payload-client-login-response-21-001',
+    'test-norm-payload-client-delegated-login-request-20-001',
+    'test-norm-payload-client-delegated-login-request-20-002',
+    'test-norm-payload-client-delegated-login-request-20-003',
+    'test-norm-payload-client-delegated-login-request-20-004',
+    'test-norm-payload-client-delegated-login-response-20-001',
+    'test-norm-payload-client-delegated-login-request-21-001',
+    'test-norm-payload-client-delegated-login-request-21-002',
+    'test-norm-payload-client-delegated-login-request-21-003',
+    'test-norm-payload-client-delegated-login-request-21-004',
+    'test-norm-payload-client-delegated-login-response-21-001',
     'test-norm-payload-client-create-request-20-001',
     'test-norm-payload-client-create-request-20-002',
     'test-norm-payload-client-create-request-21-001',
@@ -713,6 +731,86 @@ def request_adjust_attribute_fields(batch_item):
                         if values else 1)
     return (vendors[0][2].decode('utf-8'), names[0][2].decode('utf-8'),
             int.from_bytes(types[0][2], 'big'), adjustment_value)
+
+
+def discover_versions_offer(node):
+    """Return direct Protocol Version offers from one request payload."""
+    offers = []
+    for version in node[2]:
+        if version[0] != 0x420069:
+            continue
+        if version[1] != 1:
+            return None
+        major = [child[2] for child in version[2]
+                 if child[0] == 0x42006A and child[1] == 2]
+        minor = [child[2] for child in version[2]
+                 if child[0] == 0x42006B and child[1] == 2]
+        if len(major) != 1 or len(minor) != 1:
+            return None
+        offers.append((int.from_bytes(major[0], 'big', signed=True),
+                       int.from_bytes(minor[0], 'big', signed=True)))
+    return offers
+
+
+def assert_discover_versions_offer(node):
+    """Check the optional offer is structurally valid and preference-ordered."""
+    items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+    offers = discover_versions_offer(payloads[0]) if len(payloads) == 1 else None
+    if offers is None or offers != sorted(offers, reverse=True):
+        raise ValueError('fixture_discover_versions_offer_mismatch')
+
+
+def assert_login_request_payload(node, case_id):
+    items = [item for item in node[2]
+             if item[0] == BATCH_ITEM_TAG and item[1] == 1 and
+             numbers(item, 0x42005C) == [45]]
+    payloads = ([child for child in items[0][2]
+                 if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+                if len(items) == 1 else [])
+    if len(payloads) != 1:
+        raise ValueError('fixture_login_request_payload_mismatch')
+    fields = payloads[0][2]
+    expected = []
+    if case_id.endswith('-001') and '-request-' in case_id:
+        expected = [(0x420049, 10, (60).to_bytes(4, 'big'))]
+    elif case_id.endswith('-002') and '-request-' in case_id:
+        expected = [(0x42014C, 2, (2).to_bytes(4, 'big', signed=True))]
+    elif case_id.endswith('-003') and '-request-' in case_id:
+        expected = [(0x420095, 1, [
+            (0x420097, 3, (10).to_bytes(8, 'big', signed=True)),
+            (0x420096, 3, (10).to_bytes(8, 'big', signed=True)),
+            (0x420098, 5, (1).to_bytes(4, 'big')),
+        ])]
+    if fields != expected:
+        raise ValueError('fixture_login_request_fields_mismatch')
+
+
+def assert_delegated_login_request_payload(node, case_id):
+    items = [item for item in node[2]
+             if item[0] == BATCH_ITEM_TAG and item[1] == 1 and
+             numbers(item, 0x42005C) == [47]]
+    payloads = ([child for child in items[0][2]
+                 if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+                if len(items) == 1 else [])
+    if len(payloads) != 1:
+        raise ValueError('fixture_delegated_login_request_payload_mismatch')
+    fields = payloads[0][2]
+    expected = []
+    if '-request-' in case_id and case_id.endswith('-001'):
+        expected.append((0x420049, 10, (60).to_bytes(4, 'big')))
+    elif '-request-' in case_id and case_id.endswith('-002'):
+        expected.append((0x42014C, 2, (2).to_bytes(4, 'big', signed=True)))
+    elif '-request-' in case_id and case_id.endswith('-003'):
+        expected.append((0x420095, 1, [
+            (0x420097, 3, (10).to_bytes(8, 'big', signed=True)),
+            (0x420096, 3, (10).to_bytes(8, 'big', signed=True)),
+            (0x420098, 5, (1).to_bytes(4, 'big')),
+        ]))
+    expected.append((0x42014D, 1, []))
+    if fields != expected:
+        raise ValueError('fixture_delegated_login_request_fields_mismatch')
 
 
 def assert_crypto_request(node, decrypt):
@@ -1102,6 +1200,12 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
         raise ValueError('fixture_batch_count_mismatch')
     if selected_recipe[1] in ('cancel_async', 'cancel_poll_race'):
         assert_cancel_request(node)
+    if selected_recipe[1] == 'discover_versions':
+        assert_discover_versions_offer(node)
+    if selected_recipe[1] == 'login':
+        assert_login_request_payload(node, case_id)
+    if selected_recipe[1] == 'delegated_login':
+        assert_delegated_login_request_payload(node, case_id)
     if selected_recipe[1] == 'archive':
         archive_items = [item for item in node[2]
                          if item[0] == BATCH_ITEM_TAG and numbers(item, 0x42005C) == [21]]
@@ -2457,6 +2561,10 @@ def recipe_for_case(case, attribute_fixture):
     recipe = RECIPES.get(case['case_id'])
     if recipe is not None:
         return recipe
+    if case['case_id'].startswith('test-norm-payload-client-login-'):
+        return ((45,), 'login')
+    if case['case_id'].startswith('test-norm-payload-client-delegated-login-'):
+        return ((47,), 'delegated_login')
     if attribute_fixture is not None:
         if attribute_fixture.get('register_certificate'):
             return ((3, 11, 20), 'get_attributes')
@@ -3091,7 +3199,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                         mutation_exchange_index = 2 if seeded_attribute_recipe else 1
                         attribute_cleanup_exchange_index = 3 if seeded_attribute_recipe else 2
                         reject_case = peer_rejection is not None and peer_rejection.get('case_id') == case_id
-                        if version == '2.0' and case_id in ('test-op-discover-versions', 'test-op-login', 'test-op-logout', 'test-op-get-constraints', 'test-op-ping'):
+                        if version == '2.0' and case_id in ('test-op-get-constraints', 'test-op-ping'):
                             continue
                         observation, errors = [], []
                         peer_state = PeerState(
@@ -3547,6 +3655,20 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 cancel_result,
                                                 int(version[-1]))
                                         else:
+                                            discover_versions_supported = None
+                                            if recipe[1] == 'discover_versions':
+                                                request_items = [item for item in request_tree[2]
+                                                                 if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+                                                request_payloads = [child for child in request_items[0][2]
+                                                                    if child[0] == REQUEST_PAYLOAD_TAG and
+                                                                    child[1] == 1] if len(request_items) == 1 else []
+                                                offered = (discover_versions_offer(request_payloads[0])
+                                                           if len(request_payloads) == 1 else None)
+                                                if offered is None:
+                                                    raise ValueError('fixture_discover_versions_offer_mismatch')
+                                                server_supported = ((2, int(version[-1])),)
+                                                discover_versions_supported = tuple(
+                                                    item for item in offered if item in server_supported)
                                             response_wire = response(
                                                 response_operations, int(version[-1]), selected_tag, object_type,
                                                 attribute_fixture['attribute_response_wire'] if attribute_fixture else None,
@@ -3554,7 +3676,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 rng_length=(numbers(request_tree, 0x4200C4) or [16])[0]
                                                 if recipe[1] == 'rng_retrieve' else
                                                 len(byte_string_values(request_tree, 0x4200C2)[0])
-                                                if recipe[1] == 'rng_seed' else 16)
+                                                if recipe[1] == 'rng_seed' else 16,
+                                                discover_versions=discover_versions_supported)
                                         export_response_negative = (
                                             case_id.startswith('test-norm-payload-client-export-response-') and
                                             variant == 'missing_rejected' and
@@ -3563,7 +3686,17 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             response_wire = omit_export_response_field(
                                                 response_wire, case['requires']['field_name'])
                                         response_tree = parse(response_wire)
-                                        if logout_recipe:
+                                        if recipe[1] == 'discover_versions':
+                                            response_items = [item for item in response_tree[2]
+                                                              if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+                                            response_payloads = [child for child in response_items[0][2]
+                                                                 if child[0] == RESPONSE_PAYLOAD_TAG and
+                                                                 child[1] == 1] if len(response_items) == 1 else []
+                                            observed = (discover_versions_offer(response_payloads[0])
+                                                        if len(response_payloads) == 1 else None)
+                                            if observed != list(discover_versions_supported):
+                                                raise ValueError('fixture_discover_versions_response_mismatch')
+                                        elif logout_recipe:
                                             verify_login_logout_response(response_tree, exchange_index)
                                         elif recipe[1] == 'async_poll_cancel_no_recursion':
                                             if exchange_index == 0:
