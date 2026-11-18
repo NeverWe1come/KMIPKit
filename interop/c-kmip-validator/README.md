@@ -139,8 +139,8 @@ The `*.gaps.json` sidecar identifies every unexecuted matrix obligation rather
 than misclassifying it as an unavailable library route. Other sidecars retain
 installed-artifact availability checks and sanitized controlled-peer outcomes.
 The evidence JSON passes the shared schema independently of completeness.
-The latest full local C matrix run (`c-route-4e1e988c-6b56-4f6a-9411-2f1f6e2a4c1a`)
-has 66,736 expected cells, 42,964 invoked, zero failed, and 23,772 pending.
+The latest full local C matrix run (`c-route-72c8514f-60b4-4977-ba17-7e529165dbf9`)
+has 66,736 expected cells, 43,004 invoked, zero failed, and 23,732 pending.
 The MAC and Sign response TTLV accessors and the Continue batch-option
 constructor contribute four local cells each across KMIP 2.0/2.1. The
 Query Async Requests correlation builder contributes two KMIP 2.1 model cells.
@@ -318,3 +318,19 @@ constructors. The controlled peer checks that the request carries
 successful response. This is supplemental C exchange evidence for the
 catalog's local construction case: it proves no inconsistent count reaches
 this controlled peer and does not claim external KMS behavior.
+
+The `test-op-import` route imports a nonsecret Opaque Object with an explicit
+Unique Identifier, empty caller-supplied Attributes, and one Any Object item.
+The controlled peer checks the object type, object fields, request item IDs,
+response status, and returned identifier; the C consumer checks both the typed
+Import result and the full response-item TTLV accessor, then destroys the
+imported object. The route passes all 12 KMIP 2.0/2.1 encoding and transport
+combinations. Neither the object value nor the request body is retained in
+route events or peer checks.
+
+For the full run above, the prior 42,964-event report was compared by matrix
+cell identity: all prior cells remain, and the report adds exactly 40 Import
+route cells. The unchanged catalog, route-manifest, installed-artifact, and
+library-commit fingerprints match the baseline. CTest passes 7/7, including
+187 route-matrix contract tests and both controlled TLS peers. The global
+route-completeness gate remains open for the other 23,732 pending cells.
