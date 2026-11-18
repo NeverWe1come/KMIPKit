@@ -539,3 +539,16 @@ branches, and the common CI therefore reports a planned matrix only.
   34,740/34,740 cells with zero failures; ledger comparison and 1,507-route
   capability audit pass. Full Java matrix remains incomplete: 36,901/71,641
   pending. Exact-head CI and full closure remain open; stack stays WIP.
+
+## 2026-11-18 Java PGP Key and Secret Data managed-object routes
+
+- Red `7b1f65d3b` requires both object structures, their required members, and
+  assigned tags to invoke the matching named/generic Java factories. Green
+  `6c7820757` adds valid §2.4/§2.7 Table-field fixtures and emits 40 route
+  cells. Refactor `1c67d3647` shares PGP target identification.
+- Fixtures include PGP Key Version 4 or Secret Data Type Password plus a Raw
+  Key Block; they test local model construction only, not key validity.
+- Verification: Java suite 89/89, shared suites 109/109, selected evidence
+  34,780/34,780 with zero failures, ledger comparison and 1,507-route audit
+  pass. The full matrix has 71,641 planned, 34,780 executed, 36,861 pending.
+  Exact-head CI and full closure remain open; all stack PRs remain WIP.

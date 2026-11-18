@@ -483,3 +483,11 @@ deterministic Raw Key Block is model data, not a test of key splitting. This
 adds 38 local route cells. The selected report validates 34,740/34,740 cells
 with zero failures; 36,901 of 71,641 planned Java cells remain pending, so the
 full matrix and stack remain WIP.
+
+The PGP Key and Secret Data structures now run through their named
+`ManagedObject` factories and the applicable `fromFields`/`fromItem` routes in
+KMIP 2.0 and 2.1 (§§2.4, 2.7). Fixtures preserve each structure's required
+version/type field followed by a Raw Key Block. This adds 40 local model route
+cells and does not test cryptographic key validity. The selected report
+validates 34,780/34,780 cells with zero failures; 36,861 of 71,641 planned Java
+cells remain pending, so the full matrix and stack remain WIP.

@@ -3698,3 +3698,19 @@ correction, and the focused controlled TLS report test passed after it. The
 selected report validates 34,740/34,740 cells with zero failures; the ledger
 comparison passes, and the capability audit accepts all 1,507 public routes.
 The full Java matrix remains incomplete: 36,901 of 71,641 cells are pending.
+
+## Java PGP Key and Secret Data managed-object routes — 2026-11-18
+
+Red commit `7b1f65d3b` adds tests for the PGP Key and Secret Data object
+structures, their required version/type members, and assigned tags. Green
+commit `6c7820757` executes `ManagedObject.pgpKey` and `ManagedObject.secretData`
+with PGP Key Version 4 or Secret Data Type Password and a Raw Key Block; it
+also executes `fromFields` and `fromItem` on the structures and members.
+Refactor commit `1c67d3647` centralizes PGP Key target classification used by
+the route executor and controlled-report assertions. Fixtures are local model
+data and do not claim key validity (KMIP 2.0/2.1 §§2.4, 2.7).
+
+Verification: full Java suite 89/89 with zero failures, errors, or skips;
+selected report 34,780/34,780 with zero failures; shared route suites 109/109;
+generated ledger comparison and 1,507-route capability audit pass. The full
+matrix remains incomplete with 36,861 of 71,641 cells pending.

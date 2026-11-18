@@ -342,3 +342,18 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
   1,507-route capability audit pass. The ledger has 71,641 planned, 34,740
   executed, and 36,901 pending cells. Full matrix closure and exact-head CI
   remain outstanding; keep the stack WIP.
+
+## Java PGP Key and Secret Data managed-object routes
+
+- Red commit `7b1f65d3b` requires both objects' root structures, required
+  members, and assigned tags to run through the applicable Java factories in
+  KMIP 2.0/2.1.
+- Green commit `6c7820757` constructs PGP Key Version 4 or Secret Data Type
+  Password followed by a Raw Key Block, exercises each named factory, and
+  applies `fromFields`/`fromItem` to object structures and members. Refactor
+  commit `1c67d3647` shares the PGP target identity check with report assertions.
+- Verification: Java suite 89/89 with zero failures, errors, or skips; selected
+  evidence 34,780/34,780 with zero failed cells; 109 shared tests pass; ledger
+  comparison and 1,507-route capability audit pass. The full Java ledger has
+  36,861 pending of 71,641. Full matrix closure and exact-head CI remain open;
+  keep the stack WIP.

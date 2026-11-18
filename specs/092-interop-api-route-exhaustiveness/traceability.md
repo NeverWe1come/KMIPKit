@@ -230,3 +230,15 @@ artifact. This is part of the FR-006 artifact provenance check.
   report validates 34,740/34,740 cells with zero failures; the full Java
   ledger records 71,641 planned, 34,740 executed, and 36,901 pending cells.
   Full matrix closure remains open under FR-002/FR-003/FR-009.
+
+## Java PGP Key and Secret Data managed-object routes — 2026-11-18
+
+- **FR-003:** The installed Java consumer exercises the PGP Key and Secret
+  Data root structures, required members, and assigned object tags through the
+  matching named factories; `fromFields` and `fromItem` run where applicable.
+  The deterministic fixtures include PGP Key Version or Secret Data Type plus
+  a Raw Key Block (KMIP §§2.4, 2.7).
+- This adds 40 local route cells. The selected report validates 34,780/34,780
+  cells with zero failures; the full Java ledger records 71,641 planned,
+  34,780 executed, and 36,861 pending cells. Full matrix closure remains open
+  under FR-002/FR-003/FR-009.
