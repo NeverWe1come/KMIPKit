@@ -643,7 +643,7 @@ final class LocalCatalogRouteChecks {
                             "Attestation Type", "Cancellation Result", "Client Registration Method",
                             "Last Change Date", "Object Group Member", "Operation",
                             "Certificate Request Unique Identifier", "Public Key Unique Identifier",
-                            "Validity Indicator")
+                            "Validity Indicator", "Located Items", "Signature Data", "Vendor Identification")
                             .contains(fieldName)
                     || !requires.path("operation_id").asText().startsWith("KMIPKIT-ELEM-OP-C2S-")
                     || !"local_model".equals(testCase.path("execution").path("mode").asText())
@@ -695,7 +695,7 @@ final class LocalCatalogRouteChecks {
                             "Attestation Type", "Cancellation Result", "Client Registration Method",
                             "Last Change Date", "Object Group Member", "Operation",
                             "Certificate Request Unique Identifier", "Public Key Unique Identifier",
-                            "Validity Indicator")
+                            "Validity Indicator", "Located Items", "Signature Data", "Vendor Identification")
                             .contains(fieldName)
                     || !operationId.startsWith("KMIPKIT-ELEM-OP-C2S-")) {
                 throw new IllegalArgumentException("Selected case is not a supported client scalar payload: "
@@ -739,11 +739,12 @@ final class LocalCatalogRouteChecks {
             }
             TtlvItemType itemType = switch (fieldName) {
                 case "Unique Identifier", "Private Key Unique Identifier", "Public Key Unique Identifier",
-                        "Certificate Request Unique Identifier", "Application Namespace", "Object Group Member" ->
+                        "Certificate Request Unique Identifier", "Application Namespace", "Object Group Member",
+                        "Vendor Identification" ->
                     TtlvItemType.TextString;
                 case "Correlation Value", "Asynchronous Correlation Value", "Data", "IV/Counter/Nonce",
                         "Certificate Request Value", "Authenticated Encryption Additional Data",
-                        "Authenticated Encryption Tag", "Digested Data" ->
+                        "Authenticated Encryption Tag", "Digested Data", "Signature Data" ->
                     TtlvItemType.ByteString;
                 case "Object Type", "Certificate Request Type", "Key Wrap Type", "Query Function",
                         "Attribute Reference" ->
@@ -761,6 +762,7 @@ final class LocalCatalogRouteChecks {
                     TtlvItemType.DateTime;
                 case "Adjustment Value", "Cryptographic Usage Mask", "Storage Status Mask",
                         "Data Length", "Maximum Items", "Offset Items", "Offset", "Request Count",
+                        "Located Items",
                         "Prime Field Size", "Split Key Parts", "Split Key Threshold" ->
                     TtlvItemType.Integer;
                 case "Replace Existing" -> TtlvItemType.Boolean;
@@ -787,7 +789,8 @@ final class LocalCatalogRouteChecks {
                 case "Split Key Method" -> enumValue(catalog, "SPLIT-KEY-METHOD", "XOR");
                 case "Lease Time" -> 60;
                 case "Usage Limits Count" -> 10;
-                case "Init Indicator", "Final Indicator", "Data Length", "Maximum Items", "Request Count" -> 1;
+                case "Init Indicator", "Final Indicator", "Data Length", "Maximum Items", "Request Count",
+                        "Located Items" -> 1;
                 case "Adjustment Value", "Cryptographic Usage Mask", "Storage Status Mask",
                         "Replace Existing" -> 1;
                 case "Prime Field Size" -> 8;
@@ -800,7 +803,9 @@ final class LocalCatalogRouteChecks {
                 case TextString -> ("Private Key Unique Identifier".equals(fieldName)
                         ? "kmipkit-route-private-key-id" : "kmipkit-route-identifier")
                         .getBytes(StandardCharsets.US_ASCII);
-                case ByteString -> "kmipkit-route-correlation".getBytes(StandardCharsets.US_ASCII);
+                case ByteString -> ("Signature Data".equals(fieldName)
+                        ? "kmipkit-route-signature" : "kmipkit-route-correlation")
+                        .getBytes(StandardCharsets.US_ASCII);
                 case Boolean -> ByteBuffer.allocate(Long.BYTES).putLong(numericValue).array();
                 case DateTime -> ByteBuffer.allocate(Long.BYTES).putLong(numericValue).array();
                 case Integer -> ByteBuffer.allocate(Integer.BYTES).putInt(Math.toIntExact(numericValue)).array();
