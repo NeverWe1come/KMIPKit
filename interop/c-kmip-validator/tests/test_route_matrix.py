@@ -2306,6 +2306,31 @@ class RouteMatrixTests(unittest.TestCase):
                             tags['Asynchronous Correlation Value'], 8,
                             b'fixture-cancel-request'.hex()]])
 
+    def test_query_async_correlation_values_model_covers_normative_structure(self):
+        """OASIS KMIP 2.1 §7.1 defines the repeated Asynchronous Correlation Value structure."""
+        from artifact_support import INSTALL, ROOT
+        from c_route_models import ModelCases
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        targets = {target['target_id']: target for target in catalog['normative_targets']}
+        expected_tree = [[0x420176, 1, [
+            [0x420006, 8, b'fixture-correlation-alpha'.hex()],
+            [0x420006, 8, b'fixture-correlation-beta'.hex()],
+        ]]]
+        models = ModelCases(INSTALL / 'lib/libkmipkit_ffi.so', catalog)
+        for target_id in (
+                'KMIPKIT-ELEM-OPERATION-STRUCTURE-7-1-ASYNCHRONOUS-CORRELATION-VALUES',
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-7-1-ASYNCHRONOUS-CORRELATION-VALUE'):
+            with self.subTest(target_id=target_id):
+                result = models.execute(
+                    targets[target_id], '2.1',
+                    'kmipkit_query_async_requests_request_with_correlation_values')
+                self.assertIsNotNone(result)
+                self.assertEqual(result['normalized_tree'], expected_tree)
+                self.assertIn(
+                    'kmipkit_query_async_requests_request_with_correlation_values',
+                    result['invoked_symbols'])
+
     def test_async_cancel_response_payload_roundtrips_each_catalogued_result(self):
         """OASIS KMIP 2.0 §6.1.5 Table 162 and 2.1 §6.1.5 Table 177 define Cancellation Result."""
         from artifact_support import INSTALL, ROOT
