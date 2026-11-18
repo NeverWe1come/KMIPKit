@@ -329,3 +329,28 @@ the C client and fixture request shape, not external KMS behavior.
   Green commit records 42,475/66,736 cells invoked, zero failed, and 24,261
   pending; this case has zero pending cells, a reduction of 126. FR-003/FR-005
   and the global completeness gate remain open.
+
+## C Batch Error Continuation Option constructor evidence
+
+The C `test-batch-continue-after-failure` request uses the public
+`kmipkit_client_batch_add_error_continuation_value` constructor with the
+observed `Continue` value. For KMIP 2.0 and 2.1, the local TTLV route now
+credits both the Batch Error Continuation Option message field and the
+`Continue` enumeration value only when that field is present with wire value
+1 in the request observed from the installed C consumer. OASIS KMIP 2.0/2.1
+§§8.1–8.6, 9.5–9.8, 9.21, and 11.5 are the catalogued references. This adds
+four unique local constructor cells; it does not classify the other pending
+enum scenarios as library limitations.
+
+- Red commit `1e446855f` added the field/value and 2.0/2.1 assertions; the
+  focused test failed because no matching constructor cells were emitted.
+- Green commit `9d158ec8f` recognizes the observed Continue request, emits the
+  field and enum cells, and records the observed numeric continuation option.
+- Refactor factors the STOP/CONTINUE constructor cases into one shared
+  constant so local evidence eligibility and observed-value checks stay aligned.
+- Verification: the focused Continue and Stop tests passed; all 176 tests in
+  `test_route_matrix.py` passed; CTest passed 7/7. The full local matrix report
+  passed schema validation and recorded 66,736 expected, 42,479 invoked, zero
+  failed, and 24,257 pending cells. The completeness validator still exits
+  nonzero on missing routes, as required while these recipes remain pending.
+  FR-003/FR-005 and the global completeness gate remain open.

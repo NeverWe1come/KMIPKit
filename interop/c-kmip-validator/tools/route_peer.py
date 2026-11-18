@@ -49,6 +49,10 @@ BATCH_CRYPTO_ITEM_IDS = (b'crypto-register', b'crypto-activate', b'crypto-encryp
 BATCH_CRYPTO_KEY = bytes(range(16))
 BATCH_CRYPTO_PLAINTEXT = bytes.fromhex('00112233445566778899aabbccddeeff')
 BATCH_CRYPTO_CIPHERTEXT = bytes.fromhex('69c4e0d86a7b0430d8cdb78070b4c55a')
+BATCH_CONTINUATION_CONSTRUCTOR_CASES = frozenset({
+    'test-batch-continue-after-failure',
+    'test-batch-stop-on-first-failure',
+})
 ENCRYPT_ITEM_IDS = (b'encrypt-create', b'encrypt-activate', b'encrypt-target',
                     b'encrypt-revoke', b'encrypt-destroy')
 DECRYPT_ITEM_IDS = (b'decrypt-create', b'decrypt-activate', b'decrypt-target',
@@ -3853,9 +3857,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                     attribute_check['request_certificate_attribute_tags'] = [
                                         f'{item[0]:06X}' for item in register_attributes[2]]
                             batch_continuation_option_check = {}
-                            if observation and case_id in {
-                                    'test-batch-continue-after-failure',
-                                    'test-batch-stop-on-first-failure'}:
+                            if observation and case_id in BATCH_CONTINUATION_CONSTRUCTOR_CASES:
                                 batch_continuation_option_check = {
                                     'peer_batch_error_continuation_option_values': numbers(
                                         observation[0][0], 0x42000E),
@@ -4088,9 +4090,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                     # Accessor routes remain local TTLV obligations.
                                     # Emit them once from an actual decoded TLS response.
                                     batch_continuation_constructor = (
-                                        case_id in {
-                                            'test-batch-stop-on-first-failure',
-                                            'test-batch-continue-after-failure'} and
+                                        case_id in BATCH_CONTINUATION_CONSTRUCTOR_CASES and
                                         cell['action'] == 'construct' and
                                         cell['public_api_symbol'] ==
                                         'kmipkit_client_batch_add_error_continuation_value')
@@ -4197,9 +4197,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                 elif target['kind'] == 'enumeration_value':
                                     option_tag = codec.tag('Batch Error Continuation Option')
                                     expected_value = int(target['wire_value'], 16)
-                                    if (case_id not in {
-                                            'test-batch-stop-on-first-failure',
-                                            'test-batch-continue-after-failure'} or
+                                    if (case_id not in BATCH_CONTINUATION_CONSTRUCTOR_CASES or
                                             cell['action'] != 'construct' or
                                             numbers(request_tree, option_tag) != [expected_value]):
                                         continue
