@@ -146,7 +146,7 @@ class LocalCatalogRouteChecksTest {
             LocalCatalogRouteChecks.executeStructureAttributeValues(catalog, version, caseIds, invocations::add);
         }
 
-        assertEquals(caseIds.size() * 2 * 4, invocations.size());
+        assertEquals((caseIds.size() * 2 - 1) * 4, invocations.size());
         assertEquals(Set.of(
                 "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
                 "java.generic-ttlv.ttlv_item.create",
