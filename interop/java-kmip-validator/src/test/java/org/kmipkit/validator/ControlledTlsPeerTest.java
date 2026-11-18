@@ -656,6 +656,29 @@ class ControlledTlsPeerTest {
     Path temporaryDirectory;
 
     @Test
+    void createTypedRouteFixturesCoverEveryCataloguedCreateCaseVersion() throws Exception {
+        Set<String> expected = new java.util.HashSet<>();
+        for (JsonNode testCase : readRouteEvidenceCatalog().path("test_cases")) {
+            if (!"Create".equals(testCase.path("operation").asText())) continue;
+            JsonNode operations = testCase.path("requires").path("protocol_scenario").path("operations");
+            if (operations.isArray() && !operations.isEmpty()
+                    && java.util.stream.StreamSupport.stream(operations.spliterator(), false)
+                            .noneMatch(operation -> "Create".equals(operation.asText()))) {
+                continue;
+            }
+            for (JsonNode version : testCase.path("execution").path("protocol_versions")) {
+                expected.add(testCase.path("case_id").asText() + "|" + version.asText());
+            }
+        }
+        Set<String> actual = CREATE_OPERATION_ROUTE_FIXTURES.stream()
+                .map(fixture -> fixture.caseId() + "|" + fixture.protocolVersion())
+                .collect(java.util.stream.Collectors.toSet());
+
+        assertEquals(expected, actual,
+                "Every catalogued Create obligation must execute its typed route for each applicable version.");
+    }
+
+    @Test
     void enumerationFixturesCoverEveryNamedDirectTagFamily() throws Exception {
         JsonNode catalog = readRouteEvidenceCatalog();
         Map<String, JsonNode> targets = new HashMap<>();
