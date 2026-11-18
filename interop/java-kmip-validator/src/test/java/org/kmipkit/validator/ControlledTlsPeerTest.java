@@ -1193,6 +1193,8 @@ class ControlledTlsPeerTest {
                 assertSimpleVersionBoundaryRouteCoverage(events);
                 assertPingNetworkRouteCoverage(events);
                 assertPingVersionBoundaryRouteCoverage(events);
+                appendCreateOperationRouteEvidence(events, serverCertificatePem, serverPrivateKeyPem,
+                        clientCertificatePem, clientPrivateKeyPem);
                 assertCreateOperationNetworkRouteCoverage(events);
             }
             if ("2.1".equals(protocolVersion)) appendObjectGroupLocalRouteEvents(events);
@@ -2084,6 +2086,7 @@ class ControlledTlsPeerTest {
                         + 24 // Process and Query Asynchronous Requests construction and NotSent execution routes.
                         + 94 // BEC, batch IDs, async payload, Endpoint Role, Object Defaults, derivation, and Extension Information member cells.
                         + 18 // Ping construction, send, and response decode over six encoding/transport pairs.
+                        + 72 // Create construction, send, and response decode across two cases and versions.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Type generic and typed Attribute routes.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Value generic and typed Attribute routes.
                         + tagAggregateEventCount
@@ -7903,6 +7906,205 @@ class ControlledTlsPeerTest {
                 }
             }
         }
+    }
+
+    private void appendCreateOperationRouteEvidence(ArrayNode events, byte[] serverCertificatePem,
+            byte[] serverPrivateKeyPem, byte[] clientCertificatePem, byte[] clientPrivateKeyPem) throws Exception {
+        String routeId = "java.typed-protocol.client_batch_item.create";
+        String targetId = "KMIPKIT-ELEM-OP-C2S-CREATE";
+        String publicApi = "org.kmipkit.extensions.ClientBatchItem.create";
+        for (String caseId : List.of("test-op-create", "test-obj-symmetric-key")) {
+            for (String protocolVersion : KMIP_2_0_AND_2_1) {
+                int minor = "2.0".equals(protocolVersion) ? 0 : 1;
+                String batchItemId = "item-0";
+                byte[] batchItemIdBytes = batchItemId.getBytes(StandardCharsets.US_ASCII);
+                byte[] responseTtlv = createResponse(minor);
+                String responseHash = normalizedTreeSha256(responseTtlv);
+                String requestHash = null;
+                for (String encoding : List.of("TTLV", "JSON", "XML")) {
+                    byte[] responseBytes = createRouteResponseBytes(minor, batchItemId, encoding, responseTtlv);
+                    for (String transport : List.of("raw_tls", "https")) {
+                        Path connectionFile = temporaryDirectory.resolve("create-route-" + caseId + "-"
+                                + protocolVersion.replace('.', '-') + "-" + encoding + "-" + transport + ".json");
+                        byte[] observedRequest;
+                        if ("raw_tls".equals(transport)) {
+                            SSLServerSocket listener = listener(certificate(serverCertificatePem),
+                                    privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+                            FutureTask<byte[]> peer = new FutureTask<>(
+                                    () -> serveOneEncodedResponse(listener, responseBytes, encoding));
+                            Thread peerThread = new Thread(peer,
+                                    "java-validator-controlled-create-peer-" + encoding + "-" + protocolVersion);
+                            peerThread.setDaemon(true);
+                            peerThread.start();
+                            Files.writeString(connectionFile, connectionJson(listener.getLocalPort(),
+                                    serverCertificatePem, clientCertificatePem, clientPrivateKeyPem, true,
+                                    protocolVersion, encoding, transport));
+                            try {
+                                executeCreateRouteRequest(connectionFile, batchItemIdBytes);
+                            } finally {
+                                listener.close();
+                            }
+                            observedRequest = peer.get(15, TimeUnit.SECONDS);
+                        } else {
+                            CompletableFuture<byte[]> peer = new CompletableFuture<>();
+                            HttpsServer listener = httpsListener(certificate(serverCertificatePem),
+                                    privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+                            listener.createContext("/kmip", exchange -> {
+                                try {
+                                    if (!"POST".equals(exchange.getRequestMethod())) {
+                                        throw new IllegalStateException("The controlled HTTP peer requires POST.");
+                                    }
+                                    byte[] request = exchange.getRequestBody().readAllBytes();
+                                    peer.complete(request);
+                                    exchange.getResponseHeaders().set("Content-Type", contentTypeForEncoding(encoding));
+                                    exchange.sendResponseHeaders(200, responseBytes.length);
+                                    exchange.getResponseBody().write(responseBytes);
+                                } catch (Exception failure) {
+                                    peer.completeExceptionally(failure);
+                                } finally {
+                                    exchange.close();
+                                }
+                            });
+                            listener.start();
+                            Files.writeString(connectionFile, connectionJson(listener.getAddress().getPort(),
+                                    serverCertificatePem, clientCertificatePem, clientPrivateKeyPem, true,
+                                    protocolVersion, encoding, transport));
+                            try {
+                                executeCreateRouteRequest(connectionFile, batchItemIdBytes);
+                            } finally {
+                                listener.stop(0);
+                            }
+                            observedRequest = peer.get(15, TimeUnit.SECONDS);
+                        }
+                        assertCreateRouteRequest(observedRequest, encoding, protocolVersion, batchItemIdBytes);
+                        if (requestHash == null) requestHash = normalizedTreeSha256(observedRequest);
+                        appendTypedNetworkRouteEvents(events, caseId, routeId, targetId, publicApi,
+                                protocolVersion, requestHash, responseHash, encoding, transport);
+                    }
+                }
+            }
+        }
+    }
+
+    private static void executeCreateRouteRequest(Path connectionFile, byte[] batchItemId) throws Exception {
+        try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile));
+                TtlvStructure attributes = createRouteAttributes();
+                ClientBatch batch = ClientBatch.create();
+                ClientBatchItem request = ClientBatchItem.create(2, attributes, null)
+                        .withUniqueBatchItemId(batchItemId)) {
+            batch.add(request);
+            try (ClientBatchResponse response = driver.executeBatchForEvidence(batch)) {
+                assertEquals(1, response.itemCount());
+                try (ClientBatchItemResult item = response.itemAt(0)) {
+                    assertEquals(1, item.operation());
+                    assertEquals(0, item.resultStatus());
+                    var payload = item.createResponse().orElseThrow();
+                    assertEquals(2, payload.objectType());
+                    assertEquals(CREATED_OBJECT_ID, payload.uniqueIdentifier().text());
+                }
+            }
+        }
+    }
+
+    private static TtlvStructure createRouteAttributes() {
+        CodecLimits limits = CodecLimits.defaults();
+        TtlvStructure name = TtlvStructure.create();
+        TtlvStructure attributes = null;
+        try {
+            name = appendTtlvItem(name, 0x420055,
+                    TtlvValue.TextString("create-route-key".getBytes(StandardCharsets.UTF_8), limits), limits);
+            name = appendTtlvItem(name, 0x420054, TtlvValue.Enumeration(1), limits);
+            attributes = TtlvStructure.create();
+            attributes = appendTtlvItem(attributes, 0x420053, TtlvValue.structure(name, limits), limits);
+            name.close();
+            name = null;
+            attributes = appendTtlvItem(attributes, 0x420028, TtlvValue.Enumeration(3), limits);
+            attributes = appendTtlvItem(attributes, 0x42002a, TtlvValue.Integer(256), limits);
+            TtlvStructure result = attributes;
+            attributes = null;
+            return result;
+        } finally {
+            if (name != null) name.close();
+            if (attributes != null) attributes.close();
+        }
+    }
+
+    private static byte[] createRouteResponseBytes(int minor, String batchItemId, String encoding,
+            byte[] responseTtlv) {
+        return switch (encoding) {
+            case "TTLV" -> responseTtlv;
+            case "JSON" -> jsonCreateRouteResponse(minor, batchItemId).getBytes(StandardCharsets.UTF_8);
+            case "XML" -> xmlCreateRouteResponse(minor, batchItemId).getBytes(StandardCharsets.UTF_8);
+            default -> throw new IllegalArgumentException("Unsupported fixture encoding.");
+        };
+    }
+
+    private static String jsonCreateRouteResponse(int minor, String batchItemId) {
+        String batchItemIdHex = HexFormat.of().formatHex(batchItemId.getBytes(StandardCharsets.US_ASCII));
+        return "{\"tag\":\"ResponseMessage\",\"value\":["
+                + "{\"tag\":\"ResponseHeader\",\"value\":["
+                + "{\"tag\":\"ProtocolVersion\",\"value\":["
+                + "{\"tag\":\"ProtocolVersionMajor\",\"type\":\"Integer\",\"value\":2},"
+                + "{\"tag\":\"ProtocolVersionMinor\",\"type\":\"Integer\",\"value\":" + minor + "}]},"
+                + "{\"tag\":\"TimeStamp\",\"type\":\"DateTime\",\"value\":\"0x0000000000000001\"},"
+                + "{\"tag\":\"BatchCount\",\"type\":\"Integer\",\"value\":1}]},"
+                + "{\"tag\":\"BatchItem\",\"value\":["
+                + "{\"tag\":\"Operation\",\"type\":\"Enumeration\",\"value\":\"Create\"},"
+                + "{\"tag\":\"UniqueBatchItemID\",\"type\":\"ByteString\",\"value\":\""
+                + batchItemIdHex + "\"},"
+                + "{\"tag\":\"ResultStatus\",\"type\":\"Enumeration\",\"value\":\"Success\"},"
+                + "{\"tag\":\"ResponsePayload\",\"value\":["
+                + "{\"tag\":\"ObjectType\",\"type\":\"Enumeration\",\"value\":\"SymmetricKey\"},"
+                + "{\"tag\":\"UniqueIdentifier\",\"type\":\"TextString\",\"value\":\""
+                + CREATED_OBJECT_ID + "\"}]}]}]}";
+    }
+
+    private static String xmlCreateRouteResponse(int minor, String batchItemId) {
+        String batchItemIdHex = HexFormat.of().withUpperCase()
+                .formatHex(batchItemId.getBytes(StandardCharsets.US_ASCII));
+        return "<ResponseMessage><ResponseHeader><ProtocolVersion>"
+                + "<ProtocolVersionMajor type=\"Integer\" value=\"2\"/>"
+                + "<ProtocolVersionMinor type=\"Integer\" value=\"" + minor + "\"/>"
+                + "</ProtocolVersion><TimeStamp type=\"DateTime\" value=\"1970-01-01T00:00:01Z\"/>"
+                + "<BatchCount type=\"Integer\" value=\"1\"/></ResponseHeader><BatchItem>"
+                + "<Operation type=\"Enumeration\" value=\"Create\"/>"
+                + "<UniqueBatchItemID type=\"ByteString\" value=\"" + batchItemIdHex + "\"/>"
+                + "<ResultStatus type=\"Enumeration\" value=\"Success\"/><ResponsePayload>"
+                + "<ObjectType type=\"Enumeration\" value=\"SymmetricKey\"/>"
+                + "<UniqueIdentifier type=\"TextString\" value=\"" + CREATED_OBJECT_ID + "\"/>"
+                + "</ResponsePayload></BatchItem></ResponseMessage>";
+    }
+
+    private static void assertCreateRouteRequest(byte[] request, String encoding, String protocolVersion,
+            byte[] batchItemId) throws Exception {
+        int minor = "2.0".equals(protocolVersion) ? 0 : 1;
+        if ("TTLV".equals(encoding)) {
+            assertEquals(1L, requestOperation(request));
+            assertEquals(minor, requestProtocolMinorVersion(request));
+            assertTrue(contains(request, item(0x420057, TtlvItemType.Enumeration.code(), intBytes(2))));
+            assertTrue(contains(request, item(0x420093, TtlvItemType.ByteString.code(), batchItemId)));
+            return;
+        }
+        String batchItemIdHex = HexFormat.of().formatHex(batchItemId);
+        if ("JSON".equals(encoding)) {
+            JsonNode root = new ObjectMapper().readTree(request);
+            assertEquals("RequestMessage", root.path("tag").asText());
+            assertEquals(List.of("Create"), jsonValuesForTag(root, "Operation").stream()
+                    .map(JsonNode::asText).toList());
+            assertEquals(List.of("SymmetricKey"), jsonValuesForTag(root, "ObjectType").stream()
+                    .map(JsonNode::asText).toList());
+            assertEquals(List.of(minor), jsonValuesForTag(root, "ProtocolVersionMinor").stream()
+                    .map(JsonNode::asInt).toList());
+            assertEquals(List.of(batchItemIdHex), jsonValuesForTag(root, "UniqueBatchItemID").stream()
+                    .map(JsonNode::asText).toList());
+            return;
+        }
+        String xml = new String(request, StandardCharsets.UTF_8);
+        assertTrue(xml.startsWith("<RequestMessage>"));
+        assertTrue(xml.contains("<Operation type=\"Enumeration\" value=\"Create\"/>"));
+        assertTrue(xml.contains("<ObjectType type=\"Enumeration\" value=\"SymmetricKey\"/>"));
+        assertTrue(xml.contains("<ProtocolVersionMinor type=\"Integer\" value=\"" + minor + "\"/>"));
+        assertTrue(xml.contains("value=\"" + HexFormat.of().withUpperCase().formatHex(batchItemId) + "\""));
     }
 
     private static void assertCreateOperationNetworkRouteCoverage(ArrayNode events) {
