@@ -509,7 +509,7 @@ def build_evidence_ledger(report: dict, catalog: dict, manifest: dict, *, catalo
         "artifact_sha256": report["artifact_sha256"],
         "catalog_sha256": catalog_sha256,
         "route_manifest_sha256": route_manifest_sha256,
-        "evidence_case_ids": report.get("case_ids", sorted({event["case_id"] for event in report["events"]})),
+        "evidence_case_ids": sorted(report.get("case_ids", {event["case_id"] for event in report["events"]})),
         "selected_scope_cells": summary["expected_cells"],
         "selected_scope_complete": summary["selected_scope_complete"],
         "all_invocations_passed": summary["all_invocations_passed"],
