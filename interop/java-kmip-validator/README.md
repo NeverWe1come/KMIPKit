@@ -636,6 +636,24 @@ passes 92/92 and the shared suite 196/196; ledger comparison and the
 1,507-route capability audit pass. The matrix remains open and the stack stays
 WIP.
 
+### Date-Time Attribute typed construction routes — 2026-11-18
+
+The local Java runner now exercises all 12 selected Date-Time Attribute cases
+through `TypedAttribute.create`, `TypedAttribute.fromItem`, and
+`AttributeSet.tryNew`, in addition to generic TTLV construction and decoding.
+Fixtures verify the standard attribute, exact Date-Time value, and one-item
+Attribute Set. The cases span 23 applicable KMIP 2.0/2.1 case/version pairs
+and close 63 previously pending route cells. Sources: OASIS KMIP 2.0/2.1
+§§4.1, 4.5, 4.10, 4.11, 4.18, 4.20, 4.25, 4.29, 4.38, 4.40, 4.41, 4.49,
+and 11.56. This is local construction evidence, not server acceptance.
+
+Red `ad2717b75` requires the typed routes; Green `cfdc4b51d` executes them;
+Refactor `22ff6a4e5` shares typed Attribute construction checks with the
+Boolean route. The Gradle suite passes 95/95 and the selected report validates
+42,444/42,444 cells with zero failures. The ledger records 71,641 planned,
+42,444 executed, and 29,197 pending cells. The Java matrix remains incomplete,
+so the PR stack stays WIP.
+
 ### Remaining asynchronous Cancel routes — 2026-11-18
 
 The Java consumer now executes every catalog-applicable `Client.executeCancel`
