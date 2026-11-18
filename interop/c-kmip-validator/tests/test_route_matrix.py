@@ -2475,23 +2475,25 @@ class RouteMatrixTests(unittest.TestCase):
         target = next(item for item in catalog['normative_targets']
                       if item['target_id'] ==
                       'KMIPKIT-PAYLOAD-CLIENT-QUERY-ASYNCHRONOUS-REQUESTS-REQUEST-21-001')
-        result = ModelCases(INSTALL / 'lib/libkmipkit_ffi.so', catalog).execute(
-            target, '2.1', 'kmipkit_query_async_requests_request_with_correlation_values')
-
-        self.assertIsNotNone(result)
         tags = {item['name']: int(item['wire_value'], 16)
                 for item in catalog['normative_targets'] if item['kind'] == 'tag'}
         expected_present = [[tags['Asynchronous Correlation Values'], 1, [
             [tags['Asynchronous Correlation Value'], 8, b'fixture-correlation-alpha'.hex()],
             [tags['Asynchronous Correlation Value'], 8, b'fixture-correlation-beta'.hex()],
         ]]]
-        self.assertEqual(result['normalized_trees'], [[], expected_present])
-        self.assertEqual(result['sample_count'], 2)
-        self.assertTrue({
+        expected_symbols = {
             'kmipkit_query_async_requests_request_create',
             'kmipkit_query_async_requests_request_with_correlation_values',
             'kmipkit_query_async_requests_request_to_ttlv_payload',
-        }.issubset(result['invoked_symbols']))
+        }
+        models = ModelCases(INSTALL / 'lib/libkmipkit_ffi.so', catalog)
+        for symbol in expected_symbols:
+            with self.subTest(symbol=symbol):
+                result = models.execute(target, '2.1', symbol)
+                self.assertIsNotNone(result)
+                self.assertEqual(result['normalized_trees'], [[], expected_present])
+                self.assertEqual(result['sample_count'], 2)
+                self.assertTrue(expected_symbols.issubset(result['invoked_symbols']))
 
     def test_query_async_operation_constructor_encodes_empty_optional_payload(self):
         """OASIS KMIP 2.1 §6.1.41 Table 285 permits an empty Query request payload."""
