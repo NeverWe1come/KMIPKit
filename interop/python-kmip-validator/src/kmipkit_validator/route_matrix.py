@@ -2355,6 +2355,15 @@ def run_matrix(catalog: dict, manifest: dict, artifact: dict,
     return report, gaps
 
 
+def _planned_not_applicable_event(identity: dict, cell: dict) -> dict:
+    """Build an event for a planned cell whose operation cannot be invoked."""
+    reason = cell.get('not_applicable_reason')
+    if not isinstance(reason, str) or not reason:
+        raise ValueError('planned not-applicable route cell has no reason')
+    return {**identity, 'invocation_count': 0, 'status': 'not_applicable',
+            'not_applicable_reason': reason}
+
+
 def _execute_matrix_cell(cell: dict, case: dict, target: dict) -> tuple[str, dict]:
     """Execute one matrix cell and return its sanitized event or pending record."""
     event_fields = ('case_id', 'route_id', 'target_id', 'workflow_step_index', 'workflow_operation',
@@ -2362,11 +2371,7 @@ def _execute_matrix_cell(cell: dict, case: dict, target: dict) -> tuple[str, dic
                     'action', 'protocol_version', 'encoding', 'transport')
     identity = {field: cell[field] for field in event_fields if field in cell}
     if cell.get('execution_status') == 'not_applicable':
-        reason = cell.get('not_applicable_reason')
-        if not isinstance(reason, str) or not reason:
-            raise ValueError('planned not-applicable route cell has no reason')
-        return 'event', {**identity, 'invocation_count': 0, 'status': 'not_applicable',
-                         'not_applicable_reason': reason}
+        return 'event', _planned_not_applicable_event(identity, cell)
     trace = None
     symbols = []
     try:
