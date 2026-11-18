@@ -8075,9 +8075,12 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         get_usage_allocation_identifier_variants_workflow;
     bool continue_after_failure_workflow =
         strcmp(test_case->case_id, "test-batch-continue-after-failure") == 0;
+    bool placeholder_without_producer_workflow =
+        strcmp(test_case->case_id, "test-batch-placeholder-without-producer-rejected") == 0;
     bool single_item_batch_options_workflow =
         strcmp(test_case->case_id, "test-batch-single-item-options-omitted") == 0 ||
-        strcmp(test_case->case_id, "test-batch-single-item-default-continuation") == 0;
+        strcmp(test_case->case_id, "test-batch-single-item-default-continuation") == 0 ||
+        placeholder_without_producer_workflow;
     bool single_item_default_continuation_workflow =
         strcmp(test_case->case_id, "test-batch-single-item-default-continuation") == 0;
     bool check_workflow = strcmp(test_case->case_id, "test-op-check") == 0;
@@ -8128,7 +8131,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     if (strcmp(test_case->operation, "Check") == 0 && !check_workflow) {
         return outcome_not_run("Check variations are not yet mapped to isolated C fixtures");
     }
-    if (strcmp(test_case->operation, "Activate") == 0 && !activate_workflow) {
+    if (strcmp(test_case->operation, "Activate") == 0 && !activate_workflow &&
+        !placeholder_without_producer_workflow) {
         return outcome_not_run("Activate variations are not yet mapped to isolated C fixtures");
     }
     if (strcmp(test_case->operation, "Revoke") == 0 && !revoke_workflow) {
@@ -8258,7 +8262,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         };
         const kmipkit_byte_span_v1_t span = {.data = seed, .length = rng_length};
         status = kmipkit_client_batch_item_rng_seed(&span, &item);
-    } else if (single_item_batch_options_workflow) {
+    } else if (single_item_batch_options_workflow &&
+               !placeholder_without_producer_workflow) {
         static const uint8_t fixture_identifier[] = "fixture-key-1";
         const kmipkit_unique_identifier_v1_t identifier = {
             .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
@@ -8339,6 +8344,15 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                 item, request_validation_diagnostic, sizeof(request_validation_diagnostic)) ||
                 !request_item_is_valid(
                 second_item, request_validation_diagnostic, sizeof(request_validation_diagnostic)))) {
+            status = KMIPKIT_ERROR_INVALID_INPUT;
+        }
+    } else if (placeholder_without_producer_workflow) {
+        /* KMIP §6.1.1 resolves an omitted Activate identifier from the current
+         * batch's ID Placeholder; §9.7 invalidates that placeholder after each batch. */
+        status = kmipkit_client_batch_item_activate(NULL, &item);
+        if (status == 0) status = set_batch_item_id(&item, "orphan-activate");
+        if (status == 0 && !request_item_is_valid(
+                item, request_validation_diagnostic, sizeof(request_validation_diagnostic))) {
             status = KMIPKIT_ERROR_INVALID_INPUT;
         }
     } else if (object_lifecycle_workflow) {
@@ -8753,6 +8767,14 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             outcome.library_validated = true;
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),
                      "KMIPKit rejected the operation before sending under KMIP 2.0");
+            goto cleanup;
+        }
+        if (placeholder_without_producer_workflow && category == 1 && cause == 1 &&
+            delivery == 1) {
+            outcome.success = true;
+            outcome.library_validated = true;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit rejected the unbound ID Placeholder before transport");
             goto cleanup;
         }
         snprintf(outcome.result_reason, sizeof(outcome.result_reason),

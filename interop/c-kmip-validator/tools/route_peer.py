@@ -461,6 +461,8 @@ RECIPES = {
     'test-batch-single-item-options-omitted': ((10,), 'batch_single_item_options_omitted'),
     'test-batch-single-item-default-continuation':
         ((10,), 'batch_single_item_default_continuation'),
+    'test-batch-placeholder-without-producer-rejected':
+        ((18,), 'batch_placeholder_without_producer'),
     'test-batch-count-matches-items': ((10, 12), 'batch_count_two_read_items'),
     'test-batch-count-mismatch-rejected': ((10, 12), 'batch_count_two_read_items'),
     'test-batch-unique-item-id-response-correlation': ((10, 12), 'batch_count_two_read_items'),
@@ -511,6 +513,7 @@ RECIPES = {
 
 CONTROLLED_PEER_LOCAL_MODEL_CASES = frozenset({
     'test-batch-single-item-options-omitted',
+    'test-batch-placeholder-without-producer-rejected',
     'test-norm-payload-client-get-request-20-001',
     'test-norm-payload-client-get-request-21-001',
     'test-norm-payload-client-get-attribute-list-request-20-001',
@@ -3795,7 +3798,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 'create_split_key', 'join_split_key') and
                                             recipe[0][0] not in (1, 2, 3))),
                             usage_allocation_ready=recipe[1] == 'get_usage_allocation_uid_variants')
-                        boundary = case_id in (
+                        local_placeholder_rejection = (
+                            case_id == 'test-batch-placeholder-without-producer-rejected')
+                        boundary = local_placeholder_rejection or case_id in (
                             'test-v20-reject-get-constraints', 'test-v20-reject-ping')
                         with socket.socket() as server:
                             server.bind(('127.0.0.1', 0))
@@ -4675,6 +4680,12 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                             case_passed = bool(result_case and (
                                 result_case.get('status') == 'passed' or expected_rejection_observed or
                                 response_rejection_observed))
+                            local_placeholder_rejection_observed = (
+                                local_placeholder_rejection and result_case.get('status') == 'passed' and
+                                result_case.get('server_compatibility') == 'unknown' and
+                                result_case.get('library_correctness') == 'passed')
+                            if local_placeholder_rejection_observed:
+                                case_passed = True
                             trace = [line.split('\t') for line in trace_path.read_text().splitlines()] if trace_path.exists() else []
                             called_symbols = {symbol for symbol, status in trace if status == '0'}
                             invoked_symbols = {symbol for symbol, _ in trace}
@@ -4688,10 +4699,18 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                 # public client rejects it before transport, so no response exists.
                                 operation_code = recipe[0][0]
                                 version_node = (0x420069, 1, [(0x42006A, 2, bytes.fromhex('00000002')),
-                                    (0x42006B, 2, bytes(4))])
-                                attempted = (0x420078, 1, [(0x420077, 1, [version_node]),
-                                    (0x42000F, 1, [(0x42005C, 5, operation_code.to_bytes(4, 'big')),
-                                                   (0x420079, 1, [])])])
+                                    (0x42006B, 2, int(version[-1]).to_bytes(4, 'big'))])
+                                request_header = [version_node]
+                                if local_placeholder_rejection:
+                                    request_header.append((0x42000D, 2, (1).to_bytes(4, 'big')))
+                                batch_item_fields = [
+                                    (0x42005C, 5, operation_code.to_bytes(4, 'big')),
+                                    (0x420079, 1, []),
+                                ]
+                                if local_placeholder_rejection:
+                                    batch_item_fields.insert(1, (0x420093, 8, b'orphan-activate'))
+                                attempted = (0x420078, 1, [(0x420077, 1, request_header),
+                                    (0x42000F, 1, batch_item_fields)])
                                 observation.append((attempted, None, {}))
                             code = errors[0] if errors else 'consumer_check_failed' if not case_passed else 'public_api_trace_missing' if not called_symbols else None
                             mutation_index = mutation_exchange_index if attribute_mutation_recipe else \
@@ -4736,6 +4755,19 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                            'consumer_diagnostic': (result.get('cases') or [{}])[0].get('diagnostic', ''),
                                            'public_api_trace_symbols': sorted(invoked_symbols),
                                            'public_api_success_symbols': sorted(called_symbols),
+                                           **({'local_placeholder_activate_rejected':
+                                                   local_placeholder_rejection_observed and
+                                                   numbers(observation[0][0], 0x42005C) == [18],
+                                               'local_placeholder_batch_count_is_one':
+                                                   numbers(observation[0][0], 0x42000D) == [1],
+                                               'local_placeholder_unique_identifier_is_omitted':
+                                                   not list(descendants(observation[0][0], UNIQUE_IDENTIFIER_TAG)),
+                                               'local_placeholder_options_are_omitted':
+                                                   not list(descendants(observation[0][0], 0x42000E)) and
+                                                   not list(descendants(observation[0][0], 0x420011)),
+                                               'local_placeholder_transport_was_not_invoked':
+                                                   boundary and not errors and observation[0][1] is None}
+                                              if local_placeholder_rejection and observation else {}),
                                            **({'peer_async_response_statuses': [
                                                    numbers(item, 0x42007F)[0]
                                                    for item in observation[0][1][2]
@@ -5088,7 +5120,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                     continue
                                 event = cell_fields(cell)
                                 event.update(status='passed', invocation_count=1, invocation_id=f'c-peer-{len(events)}')
-                                digest_tree = response_tree if cell['action'] == 'decode' else request_tree
+                                digest_tree = (response_tree if response_tree is not None else request_tree) \
+                                    if cell['action'] == 'decode' else request_tree
                                 if cell['action'] == 'encode' and target['kind'] == 'operation':
                                     target_operation = codec.values.get(
                                         (codec.tag('Operation'), normalize(target['name'])))
@@ -5098,14 +5131,24 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                     payload = next((child for child in target_item[2]
                                                     if child[0] == 0x420079 and child[1] == 1), None)
                                     digest_tree = payload or target_item
-                                event['response_tree_sha256' if cell['action'] == 'decode' else 'request_tree_sha256'] = tree_digest(digest_tree)
                                 if boundary and cell['action'] == 'send':
-                                    event.update(request_delivery_state='not_sent', transport_invocation_count=0)
+                                    event.update(request_delivery_state='not_sent',
+                                                 transport_invocation_count=0)
+                                    if local_placeholder_rejection:
+                                        event.update(
+                                            batch_operation_sequence=['Activate'],
+                                            batch_item_count=1,
+                                            local_rejection_code='batch_placeholder_forward_reference',
+                                            client_error_category='validation',
+                                            client_error_cause='invalid_input')
                                 elif cell['action'] == 'send':
                                     event.update(request_delivery_state='response_received', transport_invocation_count=1)
-                                if (cell['action'] == 'send' and
+                                if not (boundary and cell['action'] == 'send'):
+                                    event['response_tree_sha256' if cell['action'] == 'decode' else 'request_tree_sha256'] = tree_digest(digest_tree)
+                                if (cell['action'] == 'send' and not boundary and
                                         (len(recipe[0]) > 1 or
-                                         recipe[1] == 'batch_single_item_default_continuation') and
+                                         recipe[1] in ('batch_single_item_default_continuation',
+                                                       'batch_placeholder_without_producer')) and
                                         not attribute_mutation_recipe):
                                     operations = [next(t['name'] for t in catalog['normative_targets'] if t['kind'] == 'enumeration_value' and t.get('wire_value') == f'{op:08X}' and any(p.endswith('ENUMERATION-OPERATION') for p in t.get('parent_element_ids', []))) for op in recipe[0]]
                                     response_item_count = len([item for item in response_tree[2]
