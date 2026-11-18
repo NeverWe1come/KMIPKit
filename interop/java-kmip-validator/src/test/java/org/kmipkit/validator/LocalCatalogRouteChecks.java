@@ -16,6 +16,8 @@ import org.kmipkit.ttlv.TtlvItem;
 import org.kmipkit.ttlv.TtlvItemView;
 import org.kmipkit.ttlv.TtlvItemType;
 import org.kmipkit.ttlv.KeyMaterial;
+import org.kmipkit.ttlv.KeyBlock;
+import org.kmipkit.ttlv.KeyValue;
 import org.kmipkit.ttlv.TtlvStructure;
 import org.kmipkit.ttlv.TtlvStructureView;
 import org.kmipkit.ttlv.TtlvValue;
@@ -1482,6 +1484,57 @@ final class LocalCatalogRouteChecks {
                 closeItems(fields);
                 closeItems(itemFields);
             }
+
+            int keyValueTag = tagCodeNamed(catalog, "Key Value", version);
+            int keyBlockTag = tagCodeNamed(catalog, "Key Block", version);
+            int keyFormatTypeTag = tagCodeNamed(catalog, "Key Format Type", version);
+            byte[] keyValueWire = structureWire(keyValueTag, keyMaterialWire);
+            byte[] keyFormatTypeWire = itemWire(keyFormatTypeTag, TtlvItemType.Enumeration.code(),
+                    ByteBuffer.allocate(Integer.BYTES).putInt(formatRaw).array());
+            byte[] keyBlockWire = structureWire(keyBlockTag, concat(keyFormatTypeWire, keyValueWire));
+
+            TtlvItem keyMaterialForFields = createStructureItem(keyMaterialTag,
+                    createKeyMaterialFieldItems(catalog, version, fixture, limits), limits);
+            TtlvItem keyMaterialForItem = createStructureItem(keyMaterialTag,
+                    createKeyMaterialFieldItems(catalog, version, fixture, limits), limits);
+            TtlvItem keyValueForItem = createStructureItem(keyValueTag, List.of(keyMaterialForItem), limits);
+            try (keyMaterialForFields; keyValueForItem;
+                    KeyValue fromFields = KeyValue.fromFields(formatRaw, List.of(keyMaterialForFields));
+                    KeyValue fromItem = KeyValue.fromItem(formatRaw, keyValueForItem)) {
+                assertKeyValueTarget(fromFields, formatRaw, targetTag, expected);
+                assertKeyValueTarget(fromItem, formatRaw, targetTag, expected);
+            }
+            emitRoute(sink, caseId, targetId,
+                    "java.typed-protocol.model.org.kmipkit.ttlv.keyvalue.fromfields",
+                    "org.kmipkit.ttlv.KeyValue.fromFields", "construct", keyValueWire);
+            emitRoute(sink, caseId, targetId,
+                    "java.typed-protocol.model.org.kmipkit.ttlv.keyvalue.fromitem",
+                    "org.kmipkit.ttlv.KeyValue.fromItem", "construct", keyValueWire);
+
+            TtlvItem blockKeyMaterial = createStructureItem(keyMaterialTag,
+                    createKeyMaterialFieldItems(catalog, version, fixture, limits), limits);
+            TtlvItem blockKeyValue = createStructureItem(keyValueTag, List.of(blockKeyMaterial), limits);
+            TtlvItem blockFormat = createEnumerationItem(keyFormatTypeTag, formatRaw, limits);
+            TtlvItem itemKeyMaterial = createStructureItem(keyMaterialTag,
+                    createKeyMaterialFieldItems(catalog, version, fixture, limits), limits);
+            TtlvItem itemKeyValue = createStructureItem(keyValueTag, List.of(itemKeyMaterial), limits);
+            TtlvItem itemFormat = createEnumerationItem(keyFormatTypeTag, formatRaw, limits);
+            TtlvItem keyBlockItem = createStructureItem(keyBlockTag, List.of(itemFormat, itemKeyValue), limits);
+            List<TtlvItem> blockFields = List.of(blockFormat, blockKeyValue);
+            try (keyBlockItem; KeyBlock fromFields = KeyBlock.fromFields(blockFields);
+                    KeyBlock fromItem = KeyBlock.fromItem(keyBlockItem)) {
+                assertKeyBlockTarget(fromFields, formatRaw, targetTag, expected);
+                assertKeyBlockTarget(fromItem, formatRaw, targetTag, expected);
+            } finally {
+                closeItems(blockFields);
+            }
+            emitRoute(sink, caseId, targetId,
+                    "java.typed-protocol.model.org.kmipkit.ttlv.keyblock.fromfields",
+                    "org.kmipkit.ttlv.KeyBlock.fromFields", "construct", keyBlockWire);
+            emitRoute(sink, caseId, targetId,
+                    "java.typed-protocol.model.org.kmipkit.ttlv.keyblock.fromitem",
+                    "org.kmipkit.ttlv.KeyBlock.fromItem", "construct", keyBlockWire);
+
             emitRoute(sink, caseId, targetId,
                     "java.typed-protocol.model.org.kmipkit.ttlv.keymaterial.fromfields",
                     "org.kmipkit.ttlv.KeyMaterial.fromFields", "construct", keyMaterialWire);
@@ -1493,6 +1546,31 @@ final class LocalCatalogRouteChecks {
         if (!emitted.equals(selectedCaseIds)) {
             throw new IllegalArgumentException("Selected transparent Key Material fields were not executed for "
                     + version);
+        }
+    }
+
+    private static void assertKeyValueTarget(KeyValue keyValue, int formatRaw, int targetTag, byte[] expected) {
+        assertEquals(formatRaw, keyValue.formatRaw());
+        assertEquals(TtlvItemType.Structure, keyValue.keyMaterialType());
+        try (TtlvItem keyMaterialItem = keyValue.keyMaterialItem();
+                KeyMaterial keyMaterial = KeyMaterial.fromItem(formatRaw, keyMaterialItem)) {
+            assertArrayEquals(expected, keyMaterial.fieldBytes(targetTag));
+        }
+    }
+
+    private static void assertKeyBlockTarget(KeyBlock keyBlock, int formatRaw, int targetTag, byte[] expected) {
+        assertEquals(formatRaw, keyBlock.keyFormatType());
+        assertEquals(TtlvItemType.Structure, keyBlock.keyValueType());
+        try (TtlvItem keyValueItem = keyBlock.keyValueItem();
+                KeyValue keyValue = KeyValue.fromItem(formatRaw, keyValueItem)) {
+            assertKeyValueTarget(keyValue, formatRaw, targetTag, expected);
+        }
+    }
+
+    private static TtlvItem createEnumerationItem(int tagCode, long value, CodecLimits limits) {
+        try (TtlvValue ttlvValue = TtlvValue.Enumeration(value);
+                RawTag raw = RawTag.fromRaw(tagCode); Tag tag = raw.checked()) {
+            return TtlvItem.create(tag, ttlvValue, limits);
         }
     }
 

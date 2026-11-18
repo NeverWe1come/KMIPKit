@@ -96,3 +96,15 @@ artifact. This is part of the FR-006 artifact provenance check.
 
 - **FR-003:** The installed Java consumer exercises `KeyMaterial.fromFields` and `KeyMaterial.fromItem` for all 29 catalogued Big Integer members in transparent DSA, RSA, and DH private/public plus EC private formats (KMIP 2.0/2.1 §§3.5–3.11). Each fixture includes the format's required fields and applicable optional fields and verifies the target member through both typed readers. Values are synthetic and not tested as cryptographic keys.
 - The selected report validates 33,994/33,994 cells with zero failures and records 37,647 pending of 71,641. FR-002/FR-003/FR-009 remain open for full Java matrix closure and the remaining languages.
+
+## Java typed Key Value and Key Block routes — 2026-11-18
+
+- **FR-003:** The Java controlled consumer now invokes `KeyValue.fromFields`,
+  `KeyValue.fromItem`, `KeyBlock.fromFields`, and `KeyBlock.fromItem` for all
+  29 catalogued Big Integer members in the transparent DSA, RSA, DH, and EC
+  Key Material formats, for KMIP 2.0 and 2.1 (§§3.5–3.11). Each typed result is
+  read back through nested typed accessors and checked against the target
+  synthetic field.
+- This adds 232 cells to the #187 Java selected scope. The combined #216 report
+  validates 34,226/34,226 cells with zero failures and leaves 37,415 of 71,641
+  pending. Full Java matrix closure remains open under FR-002/FR-003/FR-009.
