@@ -82,6 +82,16 @@ class LocalCatalogRouteChecksTest {
     }
 
     @Test
+    void selectsOperationCasesMissingGenericTtlvItemEvidence() throws Exception {
+        JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
+
+        Set<String> missing = LocalCatalogRouteChecks.missingGenericOperationTargetCaseIds(
+                catalog, new ObjectMapper().createArrayNode(), "2.1");
+
+        assertTrue(missing.contains("test-op-create"));
+    }
+
+    @Test
     void executesClientPayloadCorrelationFieldThroughGenericTtlvRoutes() throws Exception {
         JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
         String caseId = "test-norm-payload-client-cancel-request-21-001";
