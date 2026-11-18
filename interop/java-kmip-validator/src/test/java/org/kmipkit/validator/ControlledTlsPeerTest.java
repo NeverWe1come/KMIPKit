@@ -8491,10 +8491,11 @@ class ControlledTlsPeerTest {
                     .map(JsonNode::asText).toList());
             assertEquals(List.of(minor), jsonValuesForTag(root, "ProtocolVersionMinor").stream()
                     .map(JsonNode::asInt).toList());
-            JsonNode leaseTime = jsonItemsForTag(root, "LeaseTime").stream().findFirst().orElseThrow();
+            List<JsonNode> leaseTimeItems = jsonItemsForTag(root, "LeaseTime");
+            assertEquals(1, leaseTimeItems.size());
+            JsonNode leaseTime = leaseTimeItems.get(0);
             assertEquals("DateTime", leaseTime.path("type").asText());
             assertEquals(expectedDateTime, parseDateTimeValue(leaseTime.path("value").asText()));
-            assertEquals(1, jsonItemsForTag(root, "LeaseTime").size());
             return;
         }
         String xml = new String(request, StandardCharsets.UTF_8);
