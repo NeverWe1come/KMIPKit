@@ -3963,7 +3963,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                         mutation_exchange_index = 2 if seeded_attribute_recipe else 1
                         attribute_cleanup_exchange_index = 3 if seeded_attribute_recipe else 2
                         reject_case = peer_rejection is not None and peer_rejection.get('case_id') == case_id
-                        if version == '2.0' and case_id in ('test-op-login', 'test-op-logout', 'test-op-get-constraints', 'test-op-ping'):
+                        if version == '2.0' and case_id in ('test-op-logout', 'test-op-get-constraints', 'test-op-ping'):
                             continue
                         observation, errors = [], []
                         peer_state = PeerState(

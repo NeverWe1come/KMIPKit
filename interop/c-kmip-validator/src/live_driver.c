@@ -8049,10 +8049,6 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         return outcome_not_run(
             "the public C Discover Versions builder only offers KMIP 2.1 and cannot construct a KMIP 2.0 offer");
     }
-    if (strcmp(test_case->operation, "Login") == 0 && client->protocol_minor == 0) {
-        return outcome_not_run(
-            "the public C Login builder only supports KMIP 2.1");
-    }
     bool cryptographic_algorithm_attribute_workflow =
         strcmp(test_case->case_id, "test-attr-cryptographic-algorithm") == 0;
     bool cryptographic_length_attribute_workflow =
