@@ -376,6 +376,7 @@ RECIPES = {
     'test-async-poll-final-operation-failure': ((1, 26), 'async_poll_final_failure'),
     'test-async-poll-repeated-pending-to-success': ((1, 26), 'async_poll_repeated_pending_to_success'),
     'test-async-process-then-poll-state': ((1, 58, 26), 'async_process_then_poll_state'),
+    'test-op-query-asynchronous-requests': ((1, 57, 19, 20), 'query_async_empty'),
     'test-async-query-outstanding-filter': ((1, 57), 'async_query_outstanding_filter'),
     'test-async-unknown-correlation-rejected': ((26,), 'async_unknown_correlation_rejected'),
     'test-op-cancel': ((25,), 'cancel_async'),
@@ -2233,6 +2234,53 @@ def async_query_outstanding_response(protocol_minor: int) -> bytes:
     return tlv(0x42007B, 1, header + item)
 
 
+def assert_query_async_empty_request(request_tree, version):
+    """Require the no-filter Query Asynchronous Requests request in KMIP 2.1."""
+    header = next(descendants(request_tree, 0x420077), request_tree)
+    items = [child for child in request_tree[2]
+             if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+    if (version != '2.1' or numbers(header, 0x42006A) != [2] or
+            numbers(header, 0x42006B) != [1] or len(items) != 1 or
+            numbers(items[0], 0x42005C) != [57] or len(payloads) != 1 or payloads[0][2] or
+            numbers(header, 0x420007)):
+        raise ValueError('fixture_query_async_empty_request_mismatch')
+
+
+def verify_query_async_empty_response(response_tree):
+    """Require a successful Query response with a present, empty payload."""
+    items = [child for child in response_tree[2]
+             if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+    if (len(items) != 1 or numbers(items[0], 0x42005C) != [57] or
+            numbers(items[0], 0x42007F) != [0] or len(payloads) != 1 or payloads[0][2]):
+        raise ValueError('fixture_query_async_empty_response_mismatch')
+
+
+def query_async_empty_peer_check(observation):
+    """Record the empty query contract and isolated fixture lifecycle."""
+    query_request, query_response, _ = observation[1]
+    verify_query_async_empty_response(query_response)
+    return {
+        'peer_async_query_has_no_filters':
+            not any(descendants(query_request, 0x420176)) and
+            not any(descendants(query_request, 0x42014F)),
+        'peer_async_query_result_is_empty':
+            not any(descendants(query_response, 0x420173)),
+        'peer_operation_sequence': [
+            operation for request, _, _ in observation
+            for item in request[2] if item[0] == BATCH_ITEM_TAG
+            for operation in numbers(item, 0x42005C)],
+        'peer_effects': [effect for _, _, evidence in observation
+                         for effect in evidence['effects']],
+        'peer_final_state_matches_setup':
+            observation[0][2]['peer_observed_state_before_sha256'] ==
+            observation[-1][2]['peer_observed_state_after_sha256'],
+    }
+
+
 def completed_poll_create_response_for_identifier(protocol_minor: int, identifier: str) -> bytes:
     """Build a successful Poll response for a Create with its issued identifier."""
     wire = completed_poll_create_response(protocol_minor)
@@ -2936,6 +2984,8 @@ def target_operation_exchange_index(recipe):
         return 0
     if recipe is not None and recipe[1] == 'async_query_outstanding_filter':
         return 4
+    if recipe is not None and recipe[1] == 'query_async_empty':
+        return 1
     if recipe is not None and recipe[1] == 'async_poll_final_failure':
         return 2
     if recipe is not None and recipe[1] == 'async_poll_repeated_pending_to_success':
@@ -2962,6 +3012,10 @@ def observation_for_cell(observations, cell, recipe, fallback_index):
     elif recipe[1] == 'async_query_outstanding_filter':
         index = {'Create': 0, 'Get': 2, 'Poll': 3,
                  'Query Asynchronous Requests': 4, 'Destroy': 7}.get(
+                     cell.get('workflow_operation'), fallback_index)
+    elif recipe[1] == 'query_async_empty':
+        index = {'Create': 0, 'Query Asynchronous Requests': 1,
+                 'Revoke': 2, 'Destroy': 2}.get(
                      cell.get('workflow_operation'), fallback_index)
     elif recipe[1] == 'async_poll_cancel_no_recursion':
         index = {'Poll': 0, 'Cancel': 1}.get(cell.get('workflow_operation'), fallback_index)
@@ -3089,6 +3143,8 @@ class PeerState:
             status, reason = 0, 0
             if operation == rejected_operation:
                 status, reason, effect = rejection_status, rejection_reason, 'operation_rejected'
+            elif operation == 57:
+                effect = labels[operation]
             elif operation == 52:
                 payloads = [child for child in item[2]
                             if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
@@ -3719,9 +3775,11 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                             port = server.getsockname()[1]
                             def serve():
                                 stream = None
+                                exchange_index = -1
                                 try:
                                     exchange_count = (
                                         9 if recipe[1] == 'async_query_outstanding_filter' else
+                                        3 if recipe[1] == 'query_async_empty' else
                                         4 if seeded_attribute_recipe or
                                         recipe[1] == 'async_create_poll_lifecycle' else
                                         3 if attribute_mutation_recipe or
@@ -3772,6 +3830,27 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         if logout_recipe:
                                             assert_login_logout_exchange(request_tree, version, exchange_index)
                                             response_operations = ((45,) if exchange_index == 0 else (46,))
+                                        elif recipe[1] == 'query_async_empty':
+                                            if exchange_index == 0:
+                                                items = [child for child in request_tree[2]
+                                                         if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+                                                if (len(items) != 1 or numbers(items[0], 0x42005C) != [1] or
+                                                        numbers(items[0], 0x420057) != [2]):
+                                                    raise ValueError('fixture_query_async_create_request_mismatch')
+                                                response_operations = (1,)
+                                            elif exchange_index == 1:
+                                                assert_query_async_empty_request(request_tree, version)
+                                                response_operations = (57,)
+                                            else:
+                                                items = [child for child in request_tree[2]
+                                                         if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+                                                operation_values = [numbers(item, 0x42005C) for item in items]
+                                                identifiers = [text_values(item, UNIQUE_IDENTIFIER_TAG)
+                                                               for item in items]
+                                                if (operation_values != [[19], [20]] or
+                                                        identifiers != [['fixture-key-1'], ['fixture-key-1']]):
+                                                    raise ValueError('fixture_query_async_cleanup_request_mismatch')
+                                                response_operations = (19, 20)
                                         elif recipe[1] == 'async_create_poll_lifecycle':
                                             response_operations, response_item_ids = \
                                                 assert_async_lifecycle_exchange(
@@ -4125,6 +4204,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 terminal_poll_response_without_correlation(int(version[-1]))
                                                 if exchange_index == 0 else
                                                 terminal_cancel_response_with_correlation(int(version[-1])))
+                                        elif recipe[1] == 'query_async_empty' and exchange_index == 1:
+                                            response_wire = response((57,), int(version[-1]))
                                         elif recipe[1] == 'async_query_outstanding_filter' and exchange_index < 7:
                                             response_wire = (
                                                 pending_create_response(
@@ -4304,6 +4385,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                     response_tree, 'controlled Get failure')
                                             else:
                                                 verify_lifecycle((20,), response_tree)
+                                        elif recipe[1] == 'query_async_empty' and exchange_index == 1:
+                                            verify_query_async_empty_response(response_tree)
                                         elif recipe[1] == 'interop':
                                             verify_interop_response(response_tree)
                                         elif recipe[1] in ('encrypt', 'decrypt'):
@@ -4412,6 +4495,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                     [numbers(item, 0x42007F) for item in response_items] != [[0]]):
                                                 raise ValueError('fixture_global_operation_response_mismatch')
                                         elif not logout_recipe and recipe[1] not in (
+                                                'query_async_empty',
                                                 'async_create_poll_lifecycle',
                                                 'async_poll_cancel_no_recursion',
                                                 'async_poll_final_failure',
@@ -4430,7 +4514,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             break
                                     stream.close()
                                 except TimeoutError:
-                                    errors.append('fixture_peer_accept_timeout')
+                                    errors.append(f'fixture_peer_timeout_exchange_{exchange_index}')
                                 except ssl.SSLError:
                                     errors.append('fixture_tls_handshake_failed')
                                 except ConnectionError:
@@ -4667,6 +4751,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                            **(async_query_outstanding_peer_check(observation)
                                               if recipe[1] == 'async_query_outstanding_filter' and
                                               len(observation) == 9 else {}),
+                                           **(query_async_empty_peer_check(observation)
+                                              if recipe[1] == 'query_async_empty' and
+                                              len(observation) == 3 else {}),
                                            **(async_unknown_correlation_peer_check(observation)
                                               if recipe[1] == 'async_unknown_correlation_rejected' and
                                               len(observation) == 1 else {}),

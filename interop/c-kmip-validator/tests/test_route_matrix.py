@@ -812,6 +812,9 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
         self.assertTrue(all(check.get('peer_async_query_has_no_filters') is True and
                             check.get('peer_async_query_result_is_empty') is True and
+                            check.get('peer_operation_sequence') == [1, 57, 19, 20] and
+                            check.get('peer_effects') == [
+                                'created', 'async_requests_queried', 'revoked', 'destroyed'] and
                             check.get('peer_final_state_matches_setup') is True
                             for check in checks), checks)
         self.assertEqual(sum(event['public_api_symbol'] ==

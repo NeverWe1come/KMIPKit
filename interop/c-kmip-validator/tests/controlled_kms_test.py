@@ -610,6 +610,8 @@ def main() -> int:
     if protocol_version == "2.1":
         expected_operations += (1, 57, 26, 20)
         expected_cases += ("test-async-lifecycle-poll",)
+        expected_operations += (1, 57, 19, 20)
+        expected_cases += ("test-op-query-asynchronous-requests",)
         expected_operations += (26, 25)
         expected_cases += (ASYNC_NO_RECURSIVE_POLL_CANCEL_CASE,)
         expected_operations += (1, 26, 25)
@@ -1239,10 +1241,18 @@ def main() -> int:
                                 stream.sendall(pending_create_response(protocol_minor, cancel_correlation))
                             elif operations == (57,):
                                 cancel_correlation = b"fixture-cancel-correlation"
-                                if request.count(tlv(0x420006, 8, cancel_correlation)) != 1:
-                                    raise AssertionError("Query Async Requests omitted its exact correlation filter")
-                                async_lifecycle_poll = True
-                                stream.sendall(query_async_requests_response(protocol_minor, cancel_correlation))
+                                if request.count(tlv(0x420006, 8, cancel_correlation)) == 1:
+                                    async_lifecycle_poll = True
+                                    stream.sendall(query_async_requests_response(
+                                        protocol_minor, cancel_correlation))
+                                else:
+                                    if (bytes.fromhex("420176") in request or
+                                            bytes.fromhex("42014F") in request or
+                                            bytes.fromhex("420006") in request):
+                                        raise AssertionError(
+                                            "empty Query Async Requests request included a filter"
+                                        )
+                                    stream.sendall(response((57,), protocol_minor))
                             elif operations == (58,):
                                 cancel_correlation = b"fixture-cancel-correlation"
                                 if (request.count(tlv(0x420006, 8, cancel_correlation)) != 1 or
