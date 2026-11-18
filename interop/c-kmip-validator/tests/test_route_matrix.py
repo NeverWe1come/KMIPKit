@@ -3470,6 +3470,43 @@ class RouteMatrixTests(unittest.TestCase):
                             ['key_pair_created', 'destroyed', 'destroyed']
                             for event in send_events))
 
+    def test_rekey_operation_reads_replacement_identifier_and_restores_state(self):
+        """OASIS KMIP 2.0 §6.1.42 and 2.1 §6.1.46 define Re-key."""
+        from artifact_support import ROOT
+        from route_peer import RECIPES, execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_id = 'test-op-re-key'
+        self.assertIn(case_id, RECIPES, 'Re-key has no controlled-peer route recipe')
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12, 'Re-key must pass both versions and all six wire routes')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertEqual({event['target_id'] for event in events},
+                         {'KMIPKIT-ELEM-OP-C2S-RE-KEY'})
+        send_events = [event for event in events if event['action'] == 'send']
+        self.assertEqual(len(send_events), 12)
+        self.assertTrue(all(event['peer_observed_operation_sequence'] ==
+                            ['Create', 'Re-key', 'Revoke', 'Destroy', 'Revoke', 'Destroy'] and
+                            event['peer_observed_effects'] ==
+                            ['created', 'rekeyed', 'revoked', 'destroyed', 'revoked', 'destroyed']
+                            for event in send_events))
+        required_symbols = {
+            'kmipkit_client_batch_item_create',
+            'kmipkit_client_batch_item_rekey',
+            'kmipkit_client_batch_item_response_rekey',
+            'kmipkit_client_batch_item_revoke',
+            'kmipkit_client_batch_item_destroy',
+            'kmipkit_client_execute',
+        }
+        self.assertTrue(all(required_symbols <= set(check['public_api_trace_symbols'])
+                            for check in checks), 'Re-key API route trace is incomplete')
+
     def test_certify_operation_targets_public_key_and_cleans_up_certificate_pair(self):
         """OASIS KMIP 2.0/2.1 §6.1.6 Certify targets a public key and returns a certificate ID."""
         from artifact_support import ROOT
