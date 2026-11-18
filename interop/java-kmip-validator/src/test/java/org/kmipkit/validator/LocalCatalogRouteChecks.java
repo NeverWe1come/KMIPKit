@@ -1010,8 +1010,8 @@ final class LocalCatalogRouteChecks {
             try (TtlvItem decoded = TtlvCodec.decode(wire)) {
                 assertStructureAttributeItem(decoded, attributeTag, memberTags, memberTypes, memberValues);
             }
-            if (routeEvidenceCount(existingEvents, caseId, targetId, version,
-                    structureAttributeGenericRoutes()) == 0) {
+            if (!routeGroupCompleteOrAbsent(existingEvents, caseId, targetId, version,
+                    structureAttributeGenericRoutes(), "Generic Structure Attribute")) {
                 emitRoute(sink, caseId, targetId,
                         "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
                         "org.kmipkit.ttlv.TtlvValue.structure", "construct", wire);
@@ -1022,8 +1022,8 @@ final class LocalCatalogRouteChecks {
                 emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_codec.decode", "org.kmipkit.ttlv.TtlvCodec.decode",
                         "decode", wire);
             }
-            if (routeEvidenceCount(existingEvents, caseId, targetId, version,
-                    structureAttributeTypedRoutes()) == 0) {
+            if (!routeGroupCompleteOrAbsent(existingEvents, caseId, targetId, version,
+                    structureAttributeTypedRoutes(), "Typed Structure Attribute")) {
                 if ("test-attr-alternative-name".equals(caseId)) {
                     executeTypedAlternativeNameRoutes(sink, caseId, targetId, attributeTag,
                             memberTags, memberTypes, memberValues, wire, version, limits);
@@ -1073,11 +1073,11 @@ final class LocalCatalogRouteChecks {
             String targetId = testCase.path("requires").path("normative_target_id").asText();
             int genericPresent = routeEvidenceCount(events, caseId, targetId, version, genericRoutes);
             int typedPresent = routeEvidenceCount(events, caseId, targetId, version, typedRoutes);
-            if (genericPresent > 0) assertEquals(genericRoutes.size(), genericPresent,
+            boolean genericComplete = routeGroupCompleteOrAbsent(genericPresent, genericRoutes.size(),
                     "Generic Structure Attribute route evidence must be complete before reuse for " + caseId);
-            if (typedPresent > 0) assertEquals(typedRoutes.size(), typedPresent,
+            boolean typedComplete = routeGroupCompleteOrAbsent(typedPresent, typedRoutes.size(),
                     "Typed Structure Attribute route evidence must be complete before reuse for " + caseId);
-            if (genericPresent == 0 || typedPresent == 0) missing.add(caseId);
+            if (!genericComplete || !typedComplete) missing.add(caseId);
         }
         return missing;
     }
@@ -1590,7 +1590,8 @@ final class LocalCatalogRouteChecks {
                         + caseId);
             }
             List<String> genericRoutes = scalarAttributeGenericRoutes(valueType);
-            if (routeEvidenceCount(existingEvents, caseId, targetId, version, genericRoutes) == 0) {
+            if (!routeGroupCompleteOrAbsent(existingEvents, caseId, targetId, version, genericRoutes,
+                    "Generic scalar Attribute")) {
                 emitRoute(sink, caseId, targetId, constructorRoute, constructorSymbol, "construct", wire);
                 emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_item.create",
                         "org.kmipkit.ttlv.TtlvItem.create", "construct", wire);
@@ -1600,7 +1601,8 @@ final class LocalCatalogRouteChecks {
                         "org.kmipkit.ttlv.TtlvCodec.decode", "decode", wire);
             }
             List<String> typedRoutes = scalarAttributeTypedRoutes();
-            if (routeEvidenceCount(existingEvents, caseId, targetId, version, typedRoutes) == 0) {
+            if (!routeGroupCompleteOrAbsent(existingEvents, caseId, targetId, version, typedRoutes,
+                    "Typed scalar Attribute")) {
                 executeTypedScalarAttributeRoutes(caseId, targetId, attributeName, attributeTag, valueType, wire, sink);
             }
             emitted.add(caseId);
@@ -1647,11 +1649,11 @@ final class LocalCatalogRouteChecks {
             List<String> typedRoutes = scalarAttributeTypedRoutes();
             int genericPresent = routeEvidenceCount(events, caseId, targetId, version, genericRoutes);
             int typedPresent = routeEvidenceCount(events, caseId, targetId, version, typedRoutes);
-            if (genericPresent > 0) assertEquals(genericRoutes.size(), genericPresent,
+            boolean genericComplete = routeGroupCompleteOrAbsent(genericPresent, genericRoutes.size(),
                     "Generic scalar Attribute route evidence must be complete before reuse for " + caseId);
-            if (typedPresent > 0) assertEquals(typedRoutes.size(), typedPresent,
+            boolean typedComplete = routeGroupCompleteOrAbsent(typedPresent, typedRoutes.size(),
                     "Typed scalar Attribute route evidence must be complete before reuse for " + caseId);
-            if (genericPresent == 0 || typedPresent == 0) missing.add(caseId);
+            if (!genericComplete || !typedComplete) missing.add(caseId);
         }
         return missing;
     }
@@ -1696,6 +1698,18 @@ final class LocalCatalogRouteChecks {
             if (found) count++;
         }
         return count;
+    }
+
+    private static boolean routeGroupCompleteOrAbsent(JsonNode events, String caseId, String targetId,
+            String version, List<String> routes, String description) {
+        int present = routeEvidenceCount(events, caseId, targetId, version, routes);
+        return routeGroupCompleteOrAbsent(present, routes.size(), description + " route evidence must be complete for "
+                + caseId);
+    }
+
+    private static boolean routeGroupCompleteOrAbsent(int present, int expected, String message) {
+        if (present > 0) assertEquals(expected, present, message);
+        return present == expected;
     }
 
     /** Exercises remaining catalogued Text String targets through generic TTLV routes. */
