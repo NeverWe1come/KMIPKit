@@ -3987,6 +3987,71 @@ static int32_t build_certificate_register_item(
     return status;
 }
 
+static int32_t build_opaque_object_register_item(
+    kmip_live_client_t *client,
+    kmipkit_client_batch_item_t **out_item) {
+    if (!client || !out_item) return KMIPKIT_ERROR_INVALID_INPUT;
+    static const uint8_t opaque_data[] = "opaque-register-data";
+    kmipkit_ttlv_value_t *opaque_data_type_value = NULL;
+    kmipkit_ttlv_value_t *opaque_data_value = NULL;
+    kmipkit_raw_tag_t *opaque_data_type_raw_tag = NULL;
+    kmipkit_raw_tag_t *opaque_data_value_raw_tag = NULL;
+    kmipkit_tag_t *opaque_data_type_tag = NULL;
+    kmipkit_tag_t *opaque_data_value_tag = NULL;
+    kmipkit_ttlv_item_t *opaque_data_type_item = NULL;
+    kmipkit_ttlv_item_t *opaque_data_value_item = NULL;
+    kmipkit_ttlv_item_t *opaque_object_item = NULL;
+    kmipkit_ttlv_item_t *opaque_fields[2] = {NULL, NULL};
+    kmipkit_ttlv_structure_t *attributes = NULL;
+    kmipkit_register_request_t *request = NULL;
+    kmipkit_register_request_t *contextual_request = NULL;
+    int32_t status = kmipkit_ttlv_value_enumeration(
+        UINT32_C(0x80000001), &opaque_data_type_value);
+    if (status == 0) status = kmipkit_ttlv_raw_tag_create(
+        UINT32_C(0x420059), &opaque_data_type_raw_tag);
+    if (status == 0) status = kmipkit_ttlv_raw_tag_try_checked(
+        opaque_data_type_raw_tag, &opaque_data_type_tag);
+    if (status == 0) status = kmipkit_ttlv_item_create(
+        opaque_data_type_tag, opaque_data_type_value, client->limits, &opaque_data_type_item);
+    if (status == 0) status = kmipkit_ttlv_value_byte_string(
+        client->limits, opaque_data, sizeof(opaque_data) - 1, &opaque_data_value);
+    if (status == 0) status = kmipkit_ttlv_raw_tag_create(
+        UINT32_C(0x42005A), &opaque_data_value_raw_tag);
+    if (status == 0) status = kmipkit_ttlv_raw_tag_try_checked(
+        opaque_data_value_raw_tag, &opaque_data_value_tag);
+    if (status == 0) status = kmipkit_ttlv_item_create(
+        opaque_data_value_tag, opaque_data_value, client->limits, &opaque_data_value_item);
+    if (status == 0) {
+        opaque_fields[0] = opaque_data_type_item;
+        opaque_fields[1] = opaque_data_value_item;
+        status = kmipkit_opaque_object_from_fields(opaque_fields, 2, &opaque_object_item);
+    }
+    if (status == 0) status = kmipkit_ttlv_structure_create(&attributes);
+    if (status == 0) {
+        kmipkit_ttlv_structure_t *owned_attributes = attributes;
+        attributes = NULL;
+        status = kmipkit_register_request_create(
+            KMIPKIT_ENUMERATION_OBJECT_TYPE_OPAQUE_OBJECT,
+            owned_attributes, opaque_object_item, &request);
+    }
+    if (status == 0) status = kmipkit_register_request_with_opaque_object_context(
+        request, KMIPKIT_OPAQUE_OBJECT_CONTEXT_GENERIC, &contextual_request);
+    if (status == 0) status = kmipkit_client_batch_item_register(contextual_request, out_item);
+    if (contextual_request) kmipkit_register_request_release(contextual_request);
+    if (request) kmipkit_register_request_release(request);
+    if (attributes) kmipkit_ttlv_structure_release(attributes);
+    if (opaque_object_item) kmipkit_ttlv_item_release(opaque_object_item);
+    if (opaque_data_type_item) kmipkit_ttlv_item_release(opaque_data_type_item);
+    if (opaque_data_value_item) kmipkit_ttlv_item_release(opaque_data_value_item);
+    if (opaque_data_type_tag) kmipkit_tag_release(opaque_data_type_tag);
+    if (opaque_data_value_tag) kmipkit_tag_release(opaque_data_value_tag);
+    if (opaque_data_type_raw_tag) kmipkit_raw_tag_release(opaque_data_type_raw_tag);
+    if (opaque_data_value_raw_tag) kmipkit_raw_tag_release(opaque_data_value_raw_tag);
+    if (opaque_data_type_value) kmipkit_ttlv_value_release(opaque_data_type_value);
+    if (opaque_data_value) kmipkit_ttlv_value_release(opaque_data_value);
+    return status;
+}
+
 static int32_t build_certificate_request_register_item(
     kmip_live_client_t *client,
     const char *request_path,
@@ -6181,13 +6246,17 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         strcmp(test_case->case_id, "test-obj-certificate") == 0;
     bool register_certificate_request_workflow =
         strcmp(test_case->case_id, "test-obj-certificate-request") == 0;
+    bool register_opaque_object_workflow =
+        strcmp(test_case->case_id, "test-obj-opaque-object") == 0;
     bool register_object_workflow = register_certificate_object_workflow ||
+        register_opaque_object_workflow ||
         register_certificate_request_workflow;
     bool register_certificate_workflow = certificate_attributes_workflow ||
         register_certificate_object_workflow;
     const char *register_object_path = test_case->register_object_path[0] != '\0' ?
         test_case->register_object_path : test_case->certificate_object_path;
-    if (register_object_workflow && register_object_path[0] == '\0') {
+    if ((register_certificate_object_workflow || register_certificate_request_workflow) &&
+        register_object_path[0] == '\0') {
         return outcome_not_run("Register requires the isolated object fixture prepared by the route matrix");
     }
     bool batch_create_activate_get_attribute_list_revoke_destroy_workflow =
@@ -6306,6 +6375,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         KMIPKIT_ENUMERATION_OBJECT_TYPE_PRIVATE_KEY : public_key_workflow ?
         KMIPKIT_ENUMERATION_OBJECT_TYPE_PUBLIC_KEY :
         register_certificate_request_workflow ? KMIPKIT_ENUMERATION_OBJECT_TYPE_CERTIFICATE_REQUEST :
+        register_opaque_object_workflow ? KMIPKIT_ENUMERATION_OBJECT_TYPE_OPAQUE_OBJECT :
         register_certificate_workflow ? KMIPKIT_ENUMERATION_OBJECT_TYPE_CERTIFICATE :
         KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY;
     bool revoke_workflow = strcmp(test_case->case_id, "test-op-revoke") == 0;
@@ -6551,16 +6621,26 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION,
             .enumeration_value = KMIPKIT_ENUMERATION_UNIQUE_IDENTIFIER_ID_PLACEHOLDER
         };
-        request_construction_step = register_certificate_request_workflow ? "Register Certificate Request" :
+        request_construction_step = register_opaque_object_workflow ? "Register Opaque Object" :
+            register_certificate_request_workflow ? "Register Certificate Request" :
             register_certificate_workflow ? "Register Certificate" :
             rsa_key_workflow ? "RSA key Attributes" : "symmetric key Attributes";
-        status = (register_certificate_workflow || register_certificate_request_workflow) ? 0 : (rsa_key_workflow ?
+        status = (register_certificate_workflow || register_certificate_request_workflow ||
+                  register_opaque_object_workflow) ? 0 : (rsa_key_workflow ?
             create_rsa_key_attributes(client, &request_attributes) :
             create_symmetric_key_attributes(client, &request_attributes)) ? 0 : -1;
         if (status == 0 && create_storage_masks_workflow) {
             status = kmipkit_ttlv_structure_create(&request_storage_masks);
         }
-        if (status == 0 && (register_certificate_workflow || register_certificate_request_workflow)) {
+        if (status == 0 && register_opaque_object_workflow) {
+            status = build_opaque_object_register_item(
+                client, create_workflow ? &item : &setup_item);
+            if (status == 0 && !request_item_is_valid(
+                    create_workflow ? item : setup_item,
+                    request_validation_diagnostic, sizeof(request_validation_diagnostic))) {
+                status = KMIPKIT_ERROR_INVALID_INPUT;
+            }
+        } else if (status == 0 && (register_certificate_workflow || register_certificate_request_workflow)) {
             status = register_certificate_request_workflow ?
                 build_certificate_request_register_item(
                     client, register_object_path, create_workflow ? &item : &setup_item) :
@@ -7326,14 +7406,16 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             goto cleanup;
         }
         uint32_t response_object_type = 0;
-        status = (register_certificate_workflow || register_certificate_request_workflow) ?
+        status = (register_certificate_workflow || register_certificate_request_workflow ||
+                  register_opaque_object_workflow) ?
             kmipkit_client_batch_item_response_register(
                 setup_response_item, &created_identifier_present, &created_identifier) :
             kmipkit_client_batch_item_response_create(
                 setup_response_item, &created_identifier_present,
                 &response_object_type, &created_identifier);
         if (status != 0 || !created_identifier_present ||
-            (!(register_certificate_workflow || register_certificate_request_workflow) &&
+            (!(register_certificate_workflow || register_certificate_request_workflow ||
+               register_opaque_object_workflow) &&
              response_object_type != requested_object_type) ||
             created_identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
             created_identifier.text_length == 0 || !created_identifier.text_data) {
@@ -7342,7 +7424,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                      "KMIPKit did not expose the typed Create/Register response for the isolated fixture");
             goto cleanup;
         }
-        if ((register_certificate_workflow || register_certificate_request_workflow) &&
+        if ((register_certificate_workflow || register_certificate_request_workflow ||
+             register_opaque_object_workflow) &&
             !response_ttlv_matches_identifier(
                 setup_response_item, kmipkit_client_batch_item_response_register_ttlv,
                 &created_identifier, &status)) {

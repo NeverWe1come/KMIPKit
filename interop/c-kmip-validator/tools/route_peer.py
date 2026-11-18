@@ -410,6 +410,7 @@ RECIPES = {
     'test-op-set-constraints': ((55,), 'set_constraints'),
     'test-op-set-defaults': ((54,), 'set_defaults'),
     'test-op-delete-attribute': ((1, 13, 15, 19, 20), 'delete_attribute'),
+    'test-obj-opaque-object': ((3, 20), 'register_opaque_object'),
     'test-obj-certificate': ((3, 20), 'register'),
     'test-obj-certificate-request': ((3, 20), 'register_certificate_request'),
     'test-batch-create-activate-destroy': ((1, 18, 12, 19, 20), 'create_activate_attribute_list_revoke_destroy'),
@@ -1281,6 +1282,20 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
                            if item[0] == 0x420125 and item[1] == 1), None) if request_payload else None
         if selected_recipe[1] == 'batch_register_crypto':
             assert_registered_crypto_batch(node)
+        elif selected_recipe[1] == 'register_opaque_object':
+            opaque_object = next(descendants(register_item, 0x42005B), None)
+            opaque_data_type = next(descendants(opaque_object, 0x420059), None) \
+                if opaque_object is not None else None
+            opaque_data_value = next(descendants(opaque_object, 0x42005A), None) \
+                if opaque_object is not None else None
+            if (numbers(node, 0x420057) != [8] or opaque_object is None or
+                    opaque_object[1] != 1 or
+                    [field[0] for field in opaque_object[2]] != [0x420059, 0x42005A] or
+                    opaque_data_type is None or opaque_data_type[1] != 5 or
+                    numbers(opaque_object, 0x420059) != [0x80000001] or
+                    opaque_data_value is None or opaque_data_value[1] != 8 or
+                    opaque_data_value[2] != b'opaque-register-data'):
+                raise ValueError('fixture_register_opaque_object_shape_mismatch')
         elif selected_recipe[1] == 'register_certificate_request':
             certificate_request = next(descendants(register_item, 0x420018), None)
             request_value = next(descendants(register_item, 0x420140), None)
