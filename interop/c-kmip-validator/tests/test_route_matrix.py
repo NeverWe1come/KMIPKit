@@ -4518,6 +4518,44 @@ class RouteMatrixTests(unittest.TestCase):
             self.assertTrue(all(symbol in check['public_api_trace_symbols'] for check in checks), symbol)
 
 
+    def test_placeholder_without_producer_does_not_reuse_an_identifier(self):
+        """OASIS KMIP 2.0/2.1 §§9.7 and 6.1.1 scope ID Placeholder to its batch."""
+        from artifact_support import ROOT
+        import route_peer
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case = next(item for item in catalog['test_cases']
+                    if item['case_id'] == 'test-batch-placeholder-without-producer-rejected')
+
+        self.assertEqual(
+            route_peer.recipe_for_case(case, None),
+            ((18,), 'batch_placeholder_without_producer'))
+
+        selected = {**catalog, 'test_cases': [case]}
+        events, _, checks = route_peer.execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertTrue(all(check.get('peer_single_activate') is True and
+                            check.get('peer_batch_count_is_one') is True and
+                            check.get('peer_unique_identifier_is_omitted') is True and
+                            check.get('peer_continuation_option_is_omitted') is True and
+                            check.get('peer_order_option_is_omitted') is True and
+                            check.get('peer_operation_failed_without_mutation') is True
+                            for check in checks), checks)
+        send_events = [event for event in events if event['action'] == 'send']
+        self.assertEqual(len(send_events), 12)
+        self.assertTrue(all(event.get('batch_operation_sequence') == ['Activate'] and
+                            event.get('batch_item_count') == 1 and
+                            event.get('peer_observed_operation_sequence') == ['Activate'] and
+                            event.get('peer_observed_response_count') == 1
+                            for event in send_events), send_events)
+        self.assertTrue(all(event['execution_api_symbol'] == 'kmipkit_client_execute'
+                            for event in send_events))
+
+
     def test_placeholder_batch_evidence_matches_the_catalog_before_cleanup(self):
         from artifact_support import ROOT
         from route_peer import execute_network_cells
