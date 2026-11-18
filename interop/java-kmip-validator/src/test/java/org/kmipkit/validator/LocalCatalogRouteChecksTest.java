@@ -130,6 +130,82 @@ class LocalCatalogRouteChecksTest {
     }
 
     @Test
+    void executesCataloguedObjectStructureThroughGenericTtlvRoutes() throws Exception {
+        JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
+        String caseId = "test-norm-object-structure-object-structure-certificate";
+        String targetId = "KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE";
+        List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
+
+        LocalCatalogRouteChecks.executeGenericStructureTargets(
+                catalog, "2.1", Set.of(caseId), Set.of(targetId), new ObjectMapper().createArrayNode(),
+                invocations::add);
+
+        assertEquals(List.of(
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.create",
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.withitem",
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode"),
+                invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId).toList());
+        assertEquals(Set.of(targetId), invocations.stream().map(LocalCatalogRouteChecks.Invocation::targetId)
+                .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(Set.of(caseId), invocations.stream().map(LocalCatalogRouteChecks.Invocation::caseId)
+                .collect(java.util.stream.Collectors.toSet()));
+        byte[] wire = invocations.get(0).wire();
+        assertEquals(1, invocations.stream().map(LocalCatalogRouteChecks.Invocation::wire)
+                .mapToInt(value -> value.length).distinct().count());
+        try (var decoded = TtlvCodec.decode(wire); var view = decoded.view();
+                var tag = view.tag(); var value = view.value(); var structure = value.structure()) {
+            assertEquals(0x420013, tag.raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertEquals(1, structure.itemCount());
+        }
+    }
+
+    @Test
+    void structureRouteSelectorIgnoresCatalogCasesWithoutNormativeTargets() throws Exception {
+        JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
+        JsonNode events = new ObjectMapper().createArrayNode();
+
+        Set<String> missing = LocalCatalogRouteChecks.missingGenericStructureTargetCaseIds(
+                catalog, events, "2.1", Set.of("KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE"));
+
+        assertTrue(missing.contains("test-norm-object-structure-object-structure-certificate"));
+    }
+
+    @Test
+    void structureRouteSelectorReusesIndependentGenericItemEvidence() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode catalog = mapper.readTree(CATALOG.toFile());
+        var events = mapper.createArrayNode();
+        String caseId = "test-norm-operation-structure-operation-structure-7-15-interop-function";
+        String targetId = "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-15-INTEROP-FUNCTION";
+        for (String route : List.of("java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item", "java.generic-ttlv.ttlv_codec.decode")) {
+            var event = events.addObject();
+            event.put("case_id", caseId);
+            event.put("target_id", targetId);
+            event.put("route_id", route);
+            event.put("protocol_version", "2.1");
+            event.put("encoding", "TTLV");
+            event.putNull("transport");
+        }
+
+        Set<String> missing = LocalCatalogRouteChecks.missingGenericStructureTargetCaseIds(
+                catalog, events, "2.1", Set.of(targetId));
+
+        assertTrue(missing.contains(caseId));
+        List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
+        LocalCatalogRouteChecks.executeGenericStructureTargets(
+                catalog, "2.1", Set.of(caseId), Set.of(targetId), events, invocations::add);
+        assertEquals(List.of(
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.create",
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.withitem"),
+                invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId).toList());
+    }
+
+    @Test
     void executesSevenStructuredAttributeValuesThroughGenericTtlvRoutes() throws Exception {
         JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
         Set<String> caseIds = Set.of(
