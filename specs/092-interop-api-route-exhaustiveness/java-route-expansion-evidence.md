@@ -1853,77 +1853,6 @@ python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-refe
 python3 interop/java-kmip-validator/tools/compare_route_ledger.py
 git diff --check
 ```
-
-## #217 stack-tip verification after Certificate Request and Opaque Object routes — 2026-11-18
-
-The #217 tip includes #187 Red `4b7b5afa1`, Green `c7e91b3d9`, and Refactor
-`613a1d235`, propagated through #216. It exercises the Certificate Request
-and Opaque Object factories, plus `fromFields` and `fromItem` for the
-structure/member targets where applicable. The eight Right Usage Limits cells
-remain covered. Fixture bytes are deterministic structural data.
-
-The full Java suite passes 85 tests; shared evidence/schema/capability suites
-pass 108 tests; and the capability audit reports 1,507 routes. The selected
-report validates 34,694/34,694 cells with zero failures and leaves 36,947 of
-71,641 planned Java cells pending. The generated ledger matches its checked-in
-reference; `git diff --check` passes, and the stack remains WIP.
-
-## #217 stack-tip verification after Certificate managed-object routes — 2026-11-18
-
-The #217 tip includes #187 Red `bb35578a4`, Green `e228e2f86`, and Refactor
-`7fcec3140`, propagated through #216. It executes the typed Certificate
-factory for four catalog cases in KMIP 2.0 and 2.1, plus `fromFields` and
-`fromItem` for the three cases where the generated capability matrix declares
-them applicable. The eight Right Usage Limits cells remain covered.
-
-The full Java suite passes 85 tests; shared evidence/schema/capability suites
-pass 108 tests; and the capability audit reports 1,507 routes. The selected
-report validates 34,654/34,654 cells with zero failures and leaves 36,987 of
-71,641 planned Java cells pending. The generated ledger matches its checked-in
-reference, `git diff --check` passes, and the stack remains WIP.
-
-## #217 stack-tip verification after typed ManagedObject key factories — 2026-11-18
-
-The #217 branch includes the current #216 head `dd43b20ba`, which carries #187
-Red `5f8345b72`, Green `26c0b4ce4`, and Refactor `4c3bab90c`. It exercises the
-matching `ManagedObject.symmetricKey`, `ManagedObject.privateKey`, or
-`ManagedObject.publicKey` factory for each transparent Key Material fixture,
-reads the Key Block back, and retains all eight Right Usage Limits cells.
-Fixtures are synthetic (KMIP 2.0/2.1 §§2.5–2.9, 3.1–3.12).
-
-The full Java suite passes 84 tests; shared evidence/schema/capability suites
-pass 108 tests; and the capability audit reports 1,507 routes. The selected
-report validates 34,634/34,634 cells with zero failures and leaves 37,007 of
-71,641 planned Java cells pending. The ledger matches its checked-in reference;
-`git diff --check` passes. The complete Java matrix remains open.
-
-## #217 stack-tip verification after ManagedObject Key Material routes — 2026-11-18
-
-The #217 branch includes Red commit `cc15e8801` and Green commit `8b02accb6`
-from #187, plus the intervening #216 Usage Limits routes. It exercises
-`ManagedObject.fromFields` and `ManagedObject.fromItem` for each transparent
-Key Material target in matching Symmetric Key, Private Key, or Public Key
-object structures. The eight Right Usage Limits cells remain covered. Test
-values are deterministic synthetic fixtures.
-
-The full Java suite passes 84 tests; shared evidence/schema/capability suites
-pass 108 tests; and the capability audit reports 1,507 routes. The selected
-report validates 34,550/34,550 cells with zero failures and leaves 37,091 of
-71,641 planned Java cells pending. The generated ledger matches its checked-in
-reference and `git diff --check` passes. The stack remains WIP.
-
-## #217 stack-tip verification after typed Key Value and Key Block sync — 2026-11-18
-
-The #217 tip contains the 232 typed Key Value and Key Block cells introduced
-by #187 through #216 and retains all eight Right Usage Limits Structure/Item
-cells. The full installed Java consumer suite passes 84/84 tests with zero
-failures, errors, or skips. The shared evidence, schema, and capability suites
-pass 108 tests; the route-capability audit reports 1,507 routes. The selected
-report validates 34,226/34,226 cells with zero failures and leaves 37,415 of
-71,641 planned Java cells pending. The Right Usage Limits cells also appear in
-the #216 report, so this child adds validation of the case without increasing
-the selected cell count. Ledger comparison and `git diff --check` pass. The
-full Java matrix and stack remain WIP.
 ## Java repeatable Any object-attribute members — 2026-11-17
 
 Red commit `d9285a466` requires the generic Item creation, Item view, and
@@ -2832,52 +2761,25 @@ python3 interop/shared/tools/route_capabilities.py --check
 git diff --check
 ```
 
-## Usage Limits branch synchronized with async response correlation routes — 2026-11-18
+## KMIP 2.0/2.1 Attributes generic Structure routes — 2026-11-18
 
-The #216 branch now includes Java route-matrix parent head `fa3863e78`, which
-adds generic TTLV evidence for the Cancel response correlation field in KMIP
-2.0 and 2.1. The Usage Limits routes and earlier request-side correlation
-routes remain present.
+Red commit `48bff5e27` adds a focused Java validator test requiring all five
+catalogued generic TTLV routes for the KMIP 2.0/2.1 §5.1 `Attributes`
+structure; it fails to compile because the route executor does not yet exist.
+Green commit `285e22fd8` builds a source-shaped Attribute containing the
+`Comment` name and text value, invokes the installed `TtlvStructure.create`,
+`TtlvStructure.withItem`, `TtlvItem.create`, item view, and `TtlvCodec.decode`
+APIs, then verifies the outer tag and structure shape. The refactor integration
+adds those per-version route invocations to the canonical report and ledger.
+These are local TTLV model cells; the enclosing test also runs its controlled
+TLS query, but these calls are not recorded as network exchanges.
 
-The Java consumer suite passes 62 tests with no failures, errors, or skips. The
-selected report validates 28,458/28,458 cells with zero failures. The ledger
-records 28,458 executed and 43,183 pending of 71,641 cells across 1,155 pending
-case IDs. The shared Python suites pass 108 tests and the route check confirms
-1,507 routes. The matrix is still incomplete; #216 remains WIP.
-
-Verification:
-
-```sh
-JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-tmp" \
-  bash bindings/java/gradlew -p interop/java-kmip-validator \
-  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" \
-  test --rerun-tasks --refresh-dependencies
-python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
-  --report interop/java-kmip-validator/build/route-execution-evidence.json \
-  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
-  --write-ledger
-python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
-python3 interop/java-kmip-validator/tools/compare_route_ledger.py
-python3 -m unittest interop.shared.tests.test_route_execution_evidence \
-  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
-python3 interop/shared/tools/route_capabilities.py --check
-git diff --check
-```
-
-## #216 Usage Limits stack sync with Attributes structure routes — 2026-11-18
-
-The #216 branch now includes parent #187 head `04d8ca9b8` and its KMIP 2.0/2.1
-§5.1 `Attributes` generic TTLV routes, while retaining the Usage Limits
-Structure and member routes. The inherited `controlledQueryProducesPerRouteEvidenceForBothProtocolVersions`
-fixture records five local routes for each protocol version. The fixture is not
-reported as a network exchange for those local model cells.
-
-The complete Java suite passes 65 tests with no failures, errors, or skips.
-The selected report validates 28,468/28,468 cells; the ledger records 28,468
-executed and 43,173 pending of 71,641 cells across 1,154 pending case IDs.
-Shared route evidence, schema, and capability tests pass 108 tests, and the
-route audit confirms 1,507 routes. The full matrix remains incomplete; #216
-remains WIP.
+The full Gradle suite passes 65 tests with zero failures, errors, or skips. The
+selected report validates 28,440/28,440 cells with zero failures. The ledger
+records 28,440 executed and 43,201 pending of 71,641 cells across 1,157 case
+IDs. Shared route evidence, schema, and capability suites pass 108 tests, and
+the route capability audit confirms 1,507 routes. Full Java matrix completion
+is still pending and the PR remains WIP.
 
 Verification:
 
@@ -2936,44 +2838,22 @@ python3 interop/shared/tools/route_capabilities.py --check
 git diff --check
 ```
 
-## #216 synchronized with expanded Structure Attribute routes — 2026-11-18
+## Text String Attribute generic TTLV routes — 2026-11-18
 
-The #216 branch now includes parent #187 head `7d814dac8`, adding generic TTLV
-model routes for seven Structure-valued Attribute cases while preserving its
-Usage Limits coverage. Its selected report validates 28,520/28,520 cells with
-zero failures; the ledger records 28,520 executed and 43,121 pending of 71,641
-cells across 1,154 pending case IDs. The full Gradle suite passes 66 tests, the
-shared Python suites pass 108 tests, and the route audit confirms 1,507 routes.
-The complete Java matrix remains unfinished, so #216 stays WIP.
+Red commit `660c9deb9` adds a focused test requiring the installed generic TTLV
+routes for all five catalogued Text String Attributes: Comment, Contact
+Information, Description, Object Group, and PKCS#12 Friendly Name. Green commit
+`3a8a315e5` constructs source-shaped text values using each catalogued tag,
+checks the item view and decoded bytes, and records TextString construction,
+item creation, view, and decode for KMIP 2.0 and 2.1. These are local TTLV
+model cells and are not network exchanges.
 
-Verification:
-
-```sh
-JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-tmp" \
-  bash bindings/java/gradlew -p interop/java-kmip-validator \
-  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" \
-  test --rerun-tasks
-python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
-  --report interop/java-kmip-validator/build/route-execution-evidence.json \
-  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
-  --write-ledger
-python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
-python3 interop/java-kmip-validator/tools/compare_route_ledger.py
-python3 -m unittest interop.shared.tests.test_route_execution_evidence \
-  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
-python3 interop/shared/tools/route_capabilities.py --check
-git diff --check
-```
-
-## #216 synchronized with Text String Attribute routes — 2026-11-18
-
-The #216 branch now includes parent #187 head `f32d08096`, adding generic TTLV
-coverage for five Text String Attributes while preserving its Usage Limits
-routes. Its selected report validates 28,560/28,560 cells with zero failures;
-the ledger records 28,560 executed and 43,081 pending of 71,641 cells across
-1,154 pending case IDs. The full Gradle suite passes 67 tests, shared route
-evidence/schema/capability tests pass 108 tests, and the route audit confirms
-1,507 routes. Full Java matrix completion is still pending and #216 remains WIP.
+The full Gradle suite passes 67 tests with zero failures, errors, or skips. The
+selected report validates 28,532/28,532 cells with zero failures; the generated
+ledger records 28,532 executed and 43,109 pending of 71,641 cells across 1,157
+pending case IDs. Shared route-evidence, schema, and capability suites pass 108
+tests; the route audit confirms 1,507 routes. Full Java matrix completion is
+still pending and the stack remains WIP.
 
 Verification:
 
@@ -3029,44 +2909,21 @@ python3 interop/shared/tools/route_capabilities.py --check
 git diff --check
 ```
 
-## #216 synchronized with Boolean Attribute routes — 2026-11-18
+## Date-Time Attribute generic TTLV routes — 2026-11-18
 
-The #216 branch now includes parent #187 head `3014c3ff2`, covering the nine
-Boolean Attribute cases through generic TTLV routes while retaining Usage
-Limits evidence. Its selected report validates 28,624/28,624 cells with zero
-failures; the ledger records 28,624 executed and 43,017 pending of 71,641 cells
-across 1,154 pending case IDs. The full Gradle suite passes 68 tests, shared
-Python suites pass 108 tests, and the route audit confirms 1,507 routes. Full
-Java matrix completion is still pending and #216 remains WIP.
+Red commit `93e197eda` adds a focused test for the twelve catalogued Date-Time
+Attribute cases. Green commit `a8941cc8e` constructs the TTLV DateTime value
+using a deterministic timestamp, then checks the tag, item type, decoded value,
+and four generic routes. Existing complete Activation Date evidence is reused
+by the controlled report; other applicable Date-Time cases are emitted without
+duplicating the completed case. These are local TTLV model routes.
 
-Verification:
-
-```sh
-JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-tmp" \
-  bash bindings/java/gradlew -p interop/java-kmip-validator \
-  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" \
-  test --rerun-tasks
-python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
-  --report interop/java-kmip-validator/build/route-execution-evidence.json \
-  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
-  --write-ledger
-python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
-python3 interop/java-kmip-validator/tools/compare_route_ledger.py
-python3 -m unittest interop.shared.tests.test_route_execution_evidence \
-  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
-python3 interop/shared/tools/route_capabilities.py --check
-git diff --check
-```
-
-## #216 synchronized with Date-Time Attribute routes — 2026-11-18
-
-The #216 branch now includes parent #187 head `80fc59398`, with generic TTLV
-coverage for the catalogued Date-Time Attributes while preserving its Usage
-Limits routes. The selected report validates 28,708/28,708 cells with zero
-failures; the ledger records 28,708 executed and 42,933 pending of 71,641 cells
-across 1,154 pending case IDs. The full Gradle suite passes 69 tests, shared
-Python suites pass 108 tests, and the route audit confirms 1,507 routes. Full
-Java matrix completion is pending; #216 remains WIP.
+The full Gradle suite passes 69 tests with zero failures, errors, or skips. The
+selected report validates 28,680/28,680 cells with zero failures; the generated
+ledger records 28,680 executed and 42,961 pending of 71,641 cells across 1,157
+pending case IDs. Shared route-evidence, schema, and capability suites pass 108
+tests, and the route audit confirms 1,507 routes. The full Java matrix remains
+incomplete and the stack stays WIP.
 
 Verification:
 
@@ -3122,35 +2979,6 @@ python3 interop/shared/tools/route_capabilities.py --check
 git diff --check
 ```
 
-## #216 synchronized with Enumeration Attribute routes — 2026-11-18
-
-The #216 branch now includes parent #187 head `150dfa885`, adding generic TTLV
-coverage for nine Enumeration Attributes while retaining Usage Limits routes.
-Its selected report validates 28,780/28,780 cells with zero failures; the ledger
-records 28,780 executed and 42,861 pending of 71,641 cells across 1,154 pending
-case IDs. The full Gradle suite passes 70 tests, shared Python suites pass 108
-tests, and the route audit confirms 1,507 routes. Full Java matrix completion
-remains pending and #216 stays WIP.
-
-Verification:
-
-```sh
-JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-tmp" \
-  bash bindings/java/gradlew -p interop/java-kmip-validator \
-  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" \
-  test --rerun-tasks
-python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
-  --report interop/java-kmip-validator/build/route-execution-evidence.json \
-  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
-  --write-ledger
-python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
-python3 interop/java-kmip-validator/tools/compare_route_ledger.py
-python3 -m unittest interop.shared.tests.test_route_execution_evidence \
-  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
-python3 interop/shared/tools/route_capabilities.py --check
-git diff --check
-```
-
 ## Scalar Attribute generic TTLV routes — 2026-11-18
 
 Red commit `5d2381c20` adds the focused test requiring four generic TTLV routes
@@ -3164,9 +2992,9 @@ fixed four-byte fixture. KMIP 2.1-only Rotate Attributes are exercised only
 for that version. Follow-up fix commit `da2f4aaf3` aligns the Byte String route
 identifier with the public capability manifest (`ttlvvalue.bytestring`).
 
-The full Gradle suite passes. The selected Java report validates 28,848/28,848
-cells with zero failures. The generated ledger records 28,848 executed and
-42,793 pending cells of 71,641 across 1,154 pending case IDs; full-matrix
+The full Gradle suite passes. The selected Java report validates 28,820/28,820
+cells with zero failures. The generated ledger records 28,820 executed and
+42,821 pending cells of 71,641 across 1,157 pending case IDs; full-matrix
 completion remains outstanding. The shared route-evidence, schema, and
 capability suites pass 108 tests, and the route audit confirms 1,507 routes.
 These cases exercise local generic TTLV construction and decoding; they do not
@@ -3228,43 +3056,6 @@ python3 interop/shared/tools/route_capabilities.py --check
 git diff --check
 ```
 
-## Remaining Text String generic TTLV routes — 2026-11-18
-
-Red commit `4c9457e77` adds a focused test for seven still-uncovered Text String
-targets across KMIP 2.0 and 2.1. Green commit `d953411a9` resolves each target's
-catalogued tag and source encoding, then constructs, views, and decodes an
-ASCII-only fixture through the installed Java API. The target set covers
-Unique Identifier, Encryption Key Information and MAC Signature Key
-Information identifiers, Attribute Name, PKCS#11 Interface, and Validation
-Profile. These local fixtures do not claim that a KMS accepts the values or
-that they satisfy server policy.
-
-The full Gradle suite passes. The selected report validates 28,904/28,904 cells
-with zero failures; the ledger records 28,904 executed and 42,737 pending cells
-of 71,641 across 1,150 pending case IDs. All 117 planned Java
-`TtlvValue.TextString` cells are now covered. Shared route-evidence, schema,
-and capability suites pass 108 tests; the route audit confirms 1,507 routes.
-The full Java matrix and stack remain WIP.
-
-Verification:
-
-```sh
-JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-tmp" \
-  bash bindings/java/gradlew -p interop/java-kmip-validator \
-  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" \
-  test --rerun-tasks
-python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
-  --report interop/java-kmip-validator/build/route-execution-evidence.json \
-  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
-  --write-ledger
-python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
-python3 interop/java-kmip-validator/tools/compare_route_ledger.py
-python3 -m unittest interop.shared.tests.test_route_execution_evidence \
-  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
-python3 interop/shared/tools/route_capabilities.py --check
-git diff --check
-```
-
 ## Remaining Byte String and Date Time Extended routes — 2026-11-18
 
 Red commit `23a06421e` adds a focused test for five catalogued Byte String
@@ -3277,9 +3068,9 @@ PKCS#11 parameter blobs; the Date Time Extended fixture is a synthetic
 TTLV type handling only, not semantic credential, certificate, or PKCS#11
 validation.
 
-The full Gradle suite passes. The selected report validates 28,952/28,952
-cells with zero failures; the ledger records 28,952 executed and 42,689
-pending cells of 71,641 across 1,148 pending case IDs. All 74 planned Java
+The full Gradle suite passes. The selected report validates 28,924/28,924
+cells with zero failures; the ledger records 28,924 executed and 42,717
+pending cells of 71,641 across 1,151 pending case IDs. All 74 planned Java
 ByteString cells and all five DateTimeExtended cells are now covered. Shared
 route-evidence, schema, and capability suites pass 108 tests; the route audit
 confirms 1,507 routes. The complete Java matrix and stack remain WIP.
@@ -3339,42 +3130,6 @@ python3 interop/shared/tools/route_capabilities.py --check
 git diff --check
 ```
 
-## Big Integer key-material generic TTLV routes — 2026-11-18
-
-Red commit `fb1488543` adds a test covering 30 catalogued Big Integer fields
-across KMIP 2.0 and 2.1. Green commit `517c1b18b` resolves each assigned tag,
-constructs and views each value through the installed Java API, and decodes an
-eight-octet positive synthetic value. The fixture meets TTLV's Big Integer
-non-empty, eight-octet alignment requirement. It is intentionally a local
-encoding fixture: it does not assert cryptographic key validity, and it uses
-no production key material.
-
-The full Gradle suite passes. The selected report validates 29,192/29,192
-cells with zero failures; the ledger records 29,192 executed and 42,449
-pending cells of 71,641 across 1,148 pending case IDs. All 62 planned Java
-BigInteger route cells are now covered. Shared route-evidence, schema, and
-capability suites pass 108 tests; the route audit confirms 1,507 routes. The
-complete Java matrix and stack remain WIP.
-
-Verification:
-
-```sh
-JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-tmp" \
-  bash bindings/java/gradlew -p interop/java-kmip-validator \
-  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" \
-  test --rerun-tasks
-python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
-  --report interop/java-kmip-validator/build/route-execution-evidence.json \
-  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
-  --write-ledger
-python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
-python3 interop/java-kmip-validator/tools/compare_route_ledger.py
-python3 -m unittest interop.shared.tests.test_route_execution_evidence \
-  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
-python3 interop/shared/tools/route_capabilities.py --check
-git diff --check
-```
-
 ## Remaining Enumeration fields generic TTLV routes — 2026-11-18
 
 Red commit `98882d8d6` adds focused checks for the three remaining catalogued
@@ -3384,9 +3139,9 @@ and Extension Type (the Structure Item Type), then constructs, views, and
 decodes each value through the installed Java TTLV API in KMIP 2.0 and 2.1.
 The selected report records each field/version through the four generic routes.
 
-The full Gradle suite passes. The selected report validates 29,216/29,216
-cells with zero failures; the ledger records 29,216 executed and 42,425
-pending cells of 71,641 across 1,146 pending case IDs. All 3,767 planned Java
+The full Gradle suite passes. The selected report validates 29,188/29,188
+cells with zero failures; the ledger records 29,188 executed and 42,453
+pending cells of 71,641 across 1,149 pending case IDs. All 3,767 planned Java
 `TtlvValue.Enumeration` cells are now covered. Shared route-evidence, schema,
 and capability suites pass 108 tests; the route audit confirms 1,507 routes.
 The full Java matrix and stack remain WIP.
@@ -3466,22 +3221,12 @@ codec decoding. The synthetic Integer value verifies generic structural
 handling and the assigned tag identity only; it does not assert that Integer
 is a semantically valid value for each tag.
 
-The full Gradle suite passes. The parent selected report validates
-30,580/30,580 cells with zero failures; its ledger records 30,580 executed and
-41,061 pending cells of 71,641 across 1,114 pending case IDs. The route ledger
-comparer passes; shared route-evidence, schema, and capability suites pass 108
-tests; the route audit confirms 1,507 routes. This closes the Tag slice; the
-complete matrix remains WIP.
-
-## #216 Usage Limits stack synchronized with generic Structure and Tag routes — 2026-11-18
-
-The Java Usage Limits branch includes the updated generic Structure and
-per-case Tag routes from its parent while retaining its own Usage Limits route
-additions. The installed-consumer Gradle suite passes; the selected report
-validates 30,596/30,596 cells with zero failures. The ledger records 30,596
-executed and 41,045 pending cells of 71,641 across 1,112 pending case IDs.
-Shared route-evidence, schema, and capability suites pass 108 tests; the route
-audit confirms 1,507 routes. The matrix is incomplete, so #216 remains WIP.
+The full Gradle suite passes. The selected report validates 30,580/30,580
+cells with zero failures; the ledger records 30,580 executed and 41,061 pending
+cells of 71,641 across 1,114 pending case IDs. The route ledger comparer passes;
+shared route-evidence, schema, and capability suites pass 108 tests; the route
+audit confirms 1,507 routes. The full matrix remains incomplete and the stack
+stays WIP.
 
 Verification:
 
@@ -3499,33 +3244,6 @@ python3 interop/shared/tools/route_capabilities.py --check
 git diff --check
 ```
 
-
-## #216 Usage Limits branch synchronized with Operation route expansion — 2026-11-18
-
-The #216 branch now includes the updated #187 Java Operation route
-obligations and retains its Usage Limits structure/member coverage. The final
-installed-consumer Gradle suite passes 82 tests with no failures, errors, or
-skips. The shared validator accepts all 33,824 selected cells with zero
-failures; the ledger records 33,824 executed and 37,817 pending out of 71,641,
-so the complete Java matrix remains unfinished and the PR remains WIP. The
-generated ledger comparer passes.
-
-Verification used a worktree-local Java temporary directory because `/tmp` was full during the run:
-
-```sh
-JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-tmp" \
-  bash bindings/java/gradlew -p interop/java-kmip-validator \
-  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" \
-  test --rerun-tasks
-python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
-  --report interop/java-kmip-validator/build/route-execution-evidence.json \
-  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
-  --write-ledger
-python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
-python3 interop/java-kmip-validator/tools/compare_route_ledger.py
-git diff --check
-```
-
 ## Managed-object Object Type generic routes — 2026-11-18
 
 Red commit `b37cd0597` adds an assertion for each catalogued managed-object
@@ -3539,8 +3257,8 @@ This closes 54 local cells across nine managed-object cases and two versions;
 it does not claim Register or Create transport coverage.
 
 The full Java Gradle suite passes all 82 tests with no failures, errors, or
-skips. The selected report validates 33,878/33,878 cells with zero failures;
-the full Java matrix contains 71,641 planned cells, of which 37,763 remain
+skips. The selected report validates 33,862/33,862 cells with zero failures;
+the full Java matrix contains 71,641 planned cells, of which 37,779 remain
 pending. The generated ledger comparison passes, and the stack remains WIP.
 
 Verification:
@@ -3672,59 +3390,18 @@ validates 34,210/34,210 cells with zero failures and leaves 37,431 of 71,641
 planned Java cells pending. The generated route ledger matches its checked-in
 reference. Full Java matrix closure remains outstanding.
 
-## #216 stack-tip verification after typed Key Value and Key Block sync — 2026-11-18
+## Java EC public Key Material typed routes — 2026-11-18
 
-The #216 branch contains the 232 typed Key Value and Key Block cells from
-#187 and retains its Usage Limits routes. Its installed Java consumer suite
-passes 84/84 tests with zero failures, errors, or skips. The shared evidence,
-schema, and capability suites pass 108 tests; the capability audit reports
-1,507 routes. The selected report validates 34,226/34,226 cells with zero
-failures and leaves 37,415 of 71,641 planned cells pending. Ledger comparison
-and `git diff --check` pass. The full Java matrix and stack remain WIP.
+Red commit `f89bac645` extends the route contract to require EC public Key
+Material `Recommended Curve` and `Q String` members through the two typed
+constructors for Key Material, Key Value, and Key Block. The focused test fails
+because the executor initially accepts only Big Integer targets. Green commit
+`12e24aeb7` adds source-typed Enumeration and Byte String field construction,
+builds an ordered EC public structure, and checks each target through the nested
+typed views. The curve and point values are deterministic test fixtures, not
+cryptographic key material.
 
-## #217 Right Usage Limits branch synchronized with Operation route expansion — 2026-11-18
-
-The #217 branch now contains the #216 Operation and managed-object route expansions and keeps its Right Usage Limits member fixture. The selected report includes all eight local Right Usage Limits route cells for KMIP 2.0/2.1. The full installed-consumer Gradle suite passes 82 tests with zero failures, errors, or skips. The shared validator accepts 33,878 selected cells with zero failures; 37,763 of 71,641 Java cells remain pending, so the complete Java matrix and this PR stack remain WIP. Ledger comparison and `git diff --check` pass.
-
-## #217 stack-tip verification after EC public typed routes — 2026-11-18
-
-The #217 tip includes the EC public `Recommended Curve` and `Q String` routes
-from #187 through `KeyMaterial`, `KeyValue`, and `KeyBlock` in both KMIP 2.0
-and 2.1. It retains all eight Right Usage Limits cells from the child branch.
-The full Java suite passes 84 tests; the shared evidence/schema/capability
-suites pass 108 tests and the capability audit reports 1,507 routes. The
-selected report validates 34,262/34,262 cells with zero failures and leaves
-37,379 of 71,641 planned cells pending. The generated ledger matches its
-checked-in reference, `git diff --check` passes, and the stack remains WIP.
-
-## #217 stack-tip verification after Transparent Symmetric Key routes — 2026-11-18
-
-The #217 tip includes Red commit `6fd9f4cf5` and Green commit `fe6cd8f3f`
-from #187. They add the §3.4 `Key` Byte String through `KeyMaterial`, `KeyValue`,
-and `KeyBlock` `fromFields`/`fromItem` routes in both KMIP versions. The branch
-continues to cover all eight Right Usage Limits cells.
-
-The full Java suite passes 84 tests; the shared evidence/schema/capability
-suites pass 108 tests; and the capability audit reports 1,507 routes. The
-selected report validates 34,274/34,274 cells with zero failures and leaves
-37,367 of 71,641 planned Java cells pending. The generated ledger matches its
-checked-in reference, `git diff --check` passes, and the stack remains WIP.
-
-## #217 stack-tip verification after typed Key Material structure routes — 2026-11-18
-
-The #217 tip includes Red commit `9a018c7de` and Green commit `6c12af9c2`
-from #187. The increment adds all six typed constructors for the nine
-transparent Key Material Structures in §§3.4–3.12. The branch also retains its
-eight Right Usage Limits cells. Key material fixtures are deterministic and
-synthetic.
-
-The full Java suite passes 84 tests; the shared evidence/schema/capability
-suites pass 108 tests; and the capability audit reports 1,507 routes. The
-selected report validates 34,382/34,382 cells with zero failures and leaves
-37,259 of 71,641 planned Java cells pending. The generated ledger matches its
-checked-in reference, `git diff --check` passes, and the stack remains WIP.
-
-The suite used a worktree-local Java temporary directory because `/tmp` was full:
+Verification on the #187 source branch:
 
 ```sh
 JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-tmp" \
@@ -3737,5 +3414,268 @@ python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
   --write-ledger
 python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
 python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+python3 -m unittest interop.shared.tests.test_route_execution_evidence \
+  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
 git diff --check
 ```
+
+All 84 Java validator tests pass with no failures, errors, or skips; the shared
+evidence/schema/capability suites pass 108 tests. The selected report validates
+34,246/34,246 cells with zero failures and leaves 37,395 of 71,641 planned Java
+cells pending. The generated route ledger matches its checked-in reference.
+Full Java matrix closure remains outstanding.
+
+## Java Transparent Symmetric Key typed routes — 2026-11-18
+
+Red commit `6fd9f4cf5` adds the catalogued §3.4 `Key` Byte String case to the
+typed Key Material route assertions. The focused test fails because the
+executor does not yet map the §3.4 structure to the Transparent Symmetric Key
+format. Green commit `fe6cd8f3f` adds the format mapping and a deterministic
+synthetic Byte String fixture, then verifies the target through `KeyMaterial`,
+`KeyValue`, and `KeyBlock` `fromFields`/`fromItem` routes. The route is local
+typed-model evidence, not cryptographic validation.
+
+Verification on the #187 source branch:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-tmp" \
+  bash bindings/java/gradlew -p interop/java-kmip-validator \
+  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" \
+  test --rerun-tasks
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+python3 -m unittest interop.shared.tests.test_route_execution_evidence \
+  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+git diff --check
+```
+
+All 84 Java validator tests pass; the shared evidence/schema/capability suites
+pass 108 tests and the capability audit reports 1,507 routes. The selected
+report validates 34,258/34,258 cells with zero failures and leaves 37,383 of
+71,641 planned Java cells pending. The generated ledger matches its checked-in
+reference. Full Java matrix closure remains outstanding.
+
+## Java typed Key Material structure routes — 2026-11-18
+
+Red commit `9a018c7de` adds the nine Key Material Structure cases from §§3.4–3.12
+to the existing typed-model assertions; the test fails because the executor
+accepts only structure-member targets. Green commit `6c12af9c2` maps each
+versioned structure to its transparent key format, builds its required
+source-defined fields, and verifies every field through the six installed
+`KeyMaterial`, `KeyValue`, and `KeyBlock` constructors. Fixture values are
+deterministic synthetic data, not cryptographic key material.
+
+Verification on the #187 source branch:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-tmp" \
+  bash bindings/java/gradlew -p interop/java-kmip-validator \
+  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" \
+  test --rerun-tasks
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+python3 -m unittest interop.shared.tests.test_route_execution_evidence \
+  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+git diff --check
+```
+
+All 84 Java validator tests pass; the shared evidence/schema/capability suites
+pass 108 tests and the capability audit reports 1,507 routes. The selected
+report validates 34,366/34,366 cells with zero failures and leaves 37,275 of
+71,641 planned Java cells pending. The generated ledger matches its checked-in
+reference. Full Java matrix closure remains outstanding.
+
+## Java ManagedObject Key Material routes — 2026-11-18
+
+Red commit `cc15e8801` raises the focused RSA public material route assertion
+from six to eight typed construction routes and fails because the
+`ManagedObject.fromFields` and `ManagedObject.fromItem` routes have no evidence.
+Green commit `8b02accb6` wraps every transparent format's catalogued material
+fixture in its matching Symmetric Key, Private Key, or Public Key structure,
+constructs the managed object through both public methods, and reads back the
+nested Key Block and target fields. The fixtures are synthetic and do not claim
+cryptographic validity (KMIP 2.0/2.1 §§2.5, 2.6, 2.9, 3.4–3.12).
+
+Verification on the #187 source branch:
+
+```sh
+bash bindings/java/gradlew -p interop/java-kmip-validator test --rerun-tasks
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+python3 -m unittest interop.shared.tests.test_route_execution_evidence \
+  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+git diff --check
+```
+
+All 84 Java validator tests pass; the shared evidence/schema/capability suites
+pass 108 tests and the capability audit reports 1,507 routes. The selected
+report validates 34,534/34,534 cells with zero failures and leaves 37,107 of
+71,641 planned Java cells pending. Full Java matrix closure remains outstanding.
+
+## Java typed ManagedObject key factory routes — 2026-11-18
+
+Red commit `5f8345b72` strengthens the focused RSA public-key test and the
+all-format route test to require one additional typed factory route for each
+case/version. Both tests fail while `ManagedObject.publicKey` and the matching
+Symmetric/Private Key factories have no execution evidence. Green commit
+`26c0b4ce4` invokes the matching public factory for each of the nine
+transparent Key Material formats, validates the managed object's type and
+nested Key Block, and records the named factory route. Refactor commit
+`4c3bab90c` centralizes the factory mapping and uses locale-independent route
+IDs. Fixture values remain synthetic (KMIP 2.0/2.1 §§2.5–2.9, 3.1–3.12).
+
+Verification on the #187 source branch:
+
+```sh
+bash bindings/java/gradlew -p interop/java-kmip-validator test --rerun-tasks
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+python3 -m unittest interop.shared.tests.test_route_execution_evidence \
+  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+git diff --check
+```
+
+The full Java suite passes 84 tests. The selected report validates
+34,618/34,618 cells with zero failures; 37,023 of 71,641 remain pending. The
+ledger comparison and capability audit pass, and the full Java matrix remains
+open.
+
+## Java Certificate managed-object routes — 2026-11-18
+
+Red commit `bb35578a4` adds a focused requirement for Certificate construction
+through every applicable public route and protocol version; it fails while the
+route executor is absent. Green commit `e228e2f86` builds a Certificate through
+`ManagedObject.certificate`, `ManagedObject.fromFields`, and
+`ManagedObject.fromItem`, then reads back the typed Certificate Type and Value.
+It records the named factory for four catalog cases in KMIP 2.0 and 2.1, and
+records the generic managed-object routes for the three applicable structure
+and member cases. The tag case is intentionally limited to the named factory,
+matching the generated capability matrix. Refactor commit `7fcec3140` keeps
+the executor from invoking generic routes for that tag-only case. The byte
+string is deterministic structural fixture data; it is not a certificate
+validation test (KMIP 2.0/2.1 §2.1).
+
+Verification on the #187 source branch:
+
+```sh
+bash bindings/java/gradlew -p interop/java-kmip-validator test --rerun-tasks
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+python3 -m unittest interop.shared.tests.test_route_execution_evidence \
+  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+git diff --check
+```
+
+All 85 Java validator tests pass. The selected report validates 34,638/34,638
+cells with zero failures; 37,003 of 71,641 remain pending. The shared suites
+pass 108 tests, all 1,507 public routes pass the capability audit, and the
+generated ledger matches its reference. Full Java matrix closure remains open.
+
+## Java Certificate Request and Opaque Object routes — 2026-11-18
+
+Red commit `4b7b5afa1` expands the typed managed-object test to require
+Certificate Request and Opaque Object factories and their applicable generic
+constructors; it fails because the generalized executor is missing. Green
+commit `c7e91b3d9` exercises `ManagedObject.certificateRequest` and
+`ManagedObject.opaqueObject`, including typed reads of their enum and byte
+string fields, alongside the Certificate routes. It records each named factory
+for its object structure, both fields, and tag cases in KMIP 2.0 and 2.1, and
+the generic `fromFields`/`fromItem` routes where applicable. Refactor commit
+`613a1d235` validates exact target identities and keeps fixture byte arrays
+defensive. Values are deterministic structure fixtures, not certificate or
+opaque payload validity tests (KMIP 2.0/2.1 §§2.1–2.3).
+
+Verification on the #187 source branch:
+
+```sh
+bash bindings/java/gradlew -p interop/java-kmip-validator test --rerun-tasks
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+python3 -m unittest interop.shared.tests.test_route_execution_evidence \
+  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+git diff --check
+```
+
+All 85 Java validator tests pass. The selected report validates 34,678/34,678
+cells with zero failures; 36,963 of 71,641 remain pending. The shared suites
+pass 108 tests, all 1,507 public routes pass the capability audit, and the
+generated ledger matches its reference. Full Java matrix closure remains open.
+
+## Java key-bearing managed-object root routes — 2026-11-18
+
+Red commit `a76832637` requires the Symmetric Key, Private Key, and Public Key
+root structures to execute through their named factories and both generic
+managed-object factories; it fails because the recipe is missing. Green commit
+`10afa5ac8` constructs each object with a Key Block containing Raw Key Material
+and verifies the parsed object type and required Key Block. A second Red,
+`f1552eebe`, showed that the controlled report did not include those invocations.
+Green commit `2457ade76` adds the three routes per object and protocol version
+to the report and generated ledger. Refactor commit `178686b75` verifies the
+fixture target against the exact catalog identity before recording evidence.
+The bytes are deterministic test fixtures, not production key material
+(KMIP 2.0/2.1 §§2.5, 2.6, 2.9, 3.1, 3.2, and 11.25).
+
+The two focused Java route tests pass. The full Java suite passes 86/86 tests;
+the shared route suites pass 109/109 tests, and the capability audit accepts
+all 1,507 routes. The selected report validates 34,696/34,696 cells with zero
+failures. The generated ledger comparison passes after a follow-up
+determinism fix: Red commit `c5e78d52d` showed that preserving the incoming
+case-ID order caused the comparison to fail across otherwise identical runs;
+Green commit `7d478fe82` sorts the IDs, and Refactor commit `0fb31cfa6` makes
+the normalization step explicit. The canonical Java ledger records 71,641
+planned, 34,696 executed, and 36,945 pending cells. The full matrix remains
+incomplete and the PR remains WIP.
+
+## #216 stack tip after Java key routes and deterministic ledger sync — 2026-11-18
+
+The #216 branch now includes the #187 key-object root routes and stable
+evidence-ledger generation while retaining its Usage Limits route evidence.
+The full Java validator suite passes 86/86 tests; the shared route suites pass
+109/109 tests; and the capability audit accepts all 1,507 routes. The selected
+report validates 34,712/34,712 cells with zero failures. The generated ledger
+matches its checked-in reference and records 71,641 planned, 34,712 executed,
+and 36,929 pending cells. The Java full matrix remains incomplete and #216
+remains WIP.
+
+## #217 stack tip after Right Usage Limits and Java route sync — 2026-11-18
+
+The #217 branch includes the updated #216 Usage Limits branch and retains the
+Right Usage Limits member recipe. The report contains all eight generic
+Structure, Item create, Item view, and decode cells for target
+`KMIPKIT-ELEM-STRUCTURE-MEMBER-7-34-USAGE-LIMITS` across KMIP 2.0 and 2.1.
+The full Java suite passes 86/86 tests; the route capability audit accepts all
+1,507 routes. The selected report validates 34,712/34,712 cells with zero
+failures, and the regenerated ledger matches its reference. The full matrix
+records 71,641 planned, 34,712 executed, and 36,929 pending cells; #217 remains
+WIP.
