@@ -2630,7 +2630,7 @@ final class LocalCatalogRouteChecks {
 
     /** Selects source-catalogued Structure targets missing their generic TTLV construction evidence. */
     static Set<String> missingGenericStructureTargetCaseIds(JsonNode catalog, JsonNode events, String version,
-            Set<String> structureBuilderTargetIds) {
+            Set<String> structureBuilderTargetIds, Set<String> structureValueTargetIds) {
         Set<RouteEvidenceKey> recordedRoutes = routeEvidenceKeys(events);
         Set<String> missing = new java.util.LinkedHashSet<>();
         for (JsonNode testCase : catalog.path("test_cases")) {
@@ -2641,10 +2641,12 @@ final class LocalCatalogRouteChecks {
                     || requires.path("normative_target_id").asText().isBlank()) continue;
             String targetId = requires.path("normative_target_id").asText();
             JsonNode target = findTarget(catalog, targetId);
-            boolean valueTarget = isStructureValueTarget(target);
+            boolean valueTarget = isStructureValueTarget(target)
+                    || structureValueTargetIds.contains(targetId);
+            boolean valueRouteTarget = structureValueTargetIds.contains(targetId);
             boolean builderTarget = structureBuilderTargetIds.contains(targetId);
             if (!valueTarget && !builderTarget) continue;
-            List<String> requiredRoutes = genericStructureRouteIds(valueTarget, builderTarget);
+            List<String> requiredRoutes = genericStructureRouteIds(valueRouteTarget, builderTarget);
             int present = 0;
             for (String route : requiredRoutes) {
                 if (recordedRoutes.contains(new RouteEvidenceKey(caseId, targetId, route, version))) present++;
@@ -2656,7 +2658,8 @@ final class LocalCatalogRouteChecks {
 
     /** Executes generic Structure constructors and item decoding without claiming field-level semantics. */
     static void executeGenericStructureTargets(JsonNode catalog, String version, Set<String> selectedCaseIds,
-            Set<String> structureBuilderTargetIds, JsonNode events, EvidenceSink sink) throws Exception {
+            Set<String> structureBuilderTargetIds, Set<String> structureValueTargetIds,
+            JsonNode events, EvidenceSink sink) throws Exception {
         CodecLimits limits = CodecLimits.defaults();
         Set<RouteEvidenceKey> recordedRoutes = routeEvidenceKeys(events);
         Set<String> emitted = new java.util.LinkedHashSet<>();
@@ -2665,7 +2668,9 @@ final class LocalCatalogRouteChecks {
             if (!selectedCaseIds.contains(caseId) || !applies(testCase, version)) continue;
             String targetId = testCase.path("requires").path("normative_target_id").asText();
             JsonNode target = findTarget(catalog, targetId);
-            boolean valueTarget = isStructureValueTarget(target);
+            boolean valueTarget = isStructureValueTarget(target)
+                    || structureValueTargetIds.contains(targetId);
+            boolean valueRouteTarget = structureValueTargetIds.contains(targetId);
             boolean builderTarget = structureBuilderTargetIds.contains(targetId);
             if (!valueTarget && !builderTarget) {
                 throw new IllegalArgumentException("Selected case has no catalogued generic Structure route: "
@@ -2707,7 +2712,7 @@ final class LocalCatalogRouteChecks {
                         "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.withitem",
                         "org.kmipkit.ttlv.TtlvStructure.withItem", "construct", wire);
             }
-            if (valueTarget) {
+            if (valueRouteTarget) {
                 emitMissingGenericRoute(recordedRoutes, sink, caseId, targetId, version,
                         "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
                         "org.kmipkit.ttlv.TtlvValue.structure", "construct", wire);
@@ -2759,18 +2764,20 @@ final class LocalCatalogRouteChecks {
 
     private static boolean isStructureValueTarget(JsonNode target) {
         String encoding = target.path("source_encoding").asText();
-        return encoding.startsWith("Structure")
-                || ("data_type".equals(target.path("kind").asText())
-                        && "Structure".equals(target.path("name").asText()));
+        boolean sourceUsesStructure = encoding.startsWith("Structure")
+                || encoding.equals("Object Data Structure");
+        boolean targetIsStructureDataType = "data_type".equals(target.path("kind").asText())
+                && "Structure".equals(target.path("name").asText());
+        return sourceUsesStructure || targetIsStructureDataType;
     }
 
-    private static List<String> genericStructureRouteIds(boolean valueTarget, boolean builderTarget) {
+    private static List<String> genericStructureRouteIds(boolean valueRouteTarget, boolean builderTarget) {
         List<String> routes = new ArrayList<>();
         if (builderTarget) {
             routes.add("java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.create");
             routes.add("java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.withitem");
         }
-        if (valueTarget) routes.add("java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure");
+        if (valueRouteTarget) routes.add("java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure");
         routes.add("java.generic-ttlv.ttlv_item.create");
         routes.add("java.generic-ttlv.function.ttlv_item_view_from_item");
         routes.add("java.generic-ttlv.ttlv_codec.decode");

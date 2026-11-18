@@ -586,3 +586,15 @@ branches, and the common CI therefore reports a planned matrix only.
 - The Java suite passes 89/89; shared tests pass 109/109; ledger comparison
   and the 1,507-route capability audit pass. Full matrix closure and exact-head
   CI remain open, so #216 stays WIP.
+
+## #216 Java generic routes for Key Block structure members — 2026-11-18
+
+- #216 now includes the Key Block structure-member route increment from #187,
+  preserving Usage Limits and PGP Key / Secret Data evidence. The catalog's
+  `Object Data Structure` cases execute generic Item construction, view, and
+  decode using the manifest-declared routes.
+- The full Java suite passes 90/90; shared suites pass 109/109; selected
+  evidence validates 34,832/34,832 cells with zero failures; ledger comparison
+  and the 1,507-route capability audit pass. The full ledger records 71,641
+  planned, 34,832 executed, and 36,809 pending cells.
+- Full matrix closure and exact-head CI remain open, so #216 stays WIP.

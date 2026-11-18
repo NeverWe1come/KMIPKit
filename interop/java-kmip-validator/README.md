@@ -489,3 +489,10 @@ alongside Usage Limits. Their KMIP 2.0/2.1 fixtures include the required PGP
 Key Version or Secret Data Type and a Raw Key Block (§§2.4, 2.7). This adds 40
 local model route cells. The combined report validates 34,796/34,796 cells with
 zero failures and leaves 36,845 of 71,641 pending; full closure remains open.
+
+The #216 Usage Limits branch now also includes generic Item construction, view,
+and decode routes for the catalogued Key Block members of PGP Key, Private Key,
+Public Key, Secret Data, and Split Key. The runner records `TtlvValue.structure`
+only for targets included by the shared route manifest. The selected report
+validates 34,832/34,832 cells with zero failures; 36,809 of 71,641 full Java
+cells remain pending. This is local route evidence, not server interoperability.

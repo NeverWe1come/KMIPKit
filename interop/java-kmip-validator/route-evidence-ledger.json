@@ -1987,6 +1987,8 @@
     "test-norm-structure-member-structure-member-2-3-opaque-object-opaque-data-value",
     "test-norm-structure-member-structure-member-2-4-pgp-key-key-block",
     "test-norm-structure-member-structure-member-2-4-pgp-key-pgp-key-version",
+    "test-norm-structure-member-structure-member-2-5-private-key-key-block",
+    "test-norm-structure-member-structure-member-2-6-public-key-key-block",
     "test-norm-structure-member-structure-member-2-7-secret-data-key-block",
     "test-norm-structure-member-structure-member-2-7-secret-data-secret-data-type",
     "test-norm-structure-member-structure-member-2-8-split-key-key-block",
@@ -2000,6 +2002,7 @@
     "test-norm-structure-member-structure-member-3-1-key-block-cryptographic-length",
     "test-norm-structure-member-structure-member-3-1-key-block-key-compression-type",
     "test-norm-structure-member-structure-member-3-1-key-block-key-format-type",
+    "test-norm-structure-member-structure-member-3-1-key-block-key-wrapping-data",
     "test-norm-structure-member-structure-member-3-10-key-material-g",
     "test-norm-structure-member-structure-member-3-10-key-material-j",
     "test-norm-structure-member-structure-member-3-10-key-material-p",
@@ -2664,7 +2667,7 @@
     "test-s2c-set-endpoint-role",
     "test-sign-missing-managed-object-cryptographic-parameters"
   ],
-  "executed_cells": 34796,
+  "executed_cells": 34832,
   "language": "java",
   "library_commit": "12496d646d11d4069b58bcc88fc76cc619211ec6",
   "pending_case_ids": [
@@ -7102,23 +7105,23 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-2-4-pgp-key-key-block",
-      "pending_cells": 10
+      "pending_cells": 4
     },
     {
       "case_id": "test-norm-structure-member-structure-member-2-5-private-key-key-block",
-      "pending_cells": 16
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-structure-member-structure-member-2-6-public-key-key-block",
-      "pending_cells": 16
+      "pending_cells": 10
     },
     {
       "case_id": "test-norm-structure-member-structure-member-2-7-secret-data-key-block",
-      "pending_cells": 10
+      "pending_cells": 4
     },
     {
       "case_id": "test-norm-structure-member-structure-member-2-8-split-key-key-block",
-      "pending_cells": 10
+      "pending_cells": 4
     },
     {
       "case_id": "test-norm-structure-member-structure-member-2-9-symmetric-key-key-block",
@@ -7146,7 +7149,7 @@
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-1-key-block-key-wrapping-data",
-      "pending_cells": 30
+      "pending_cells": 24
     },
     {
       "case_id": "test-norm-structure-member-structure-member-3-10-key-material-g",
@@ -8061,7 +8064,7 @@
       "pending_cells": 15
     }
   ],
-  "pending_cells": 36845,
+  "pending_cells": 36809,
   "pending_reason": "No validated per-cell route execution evidence is recorded for this cell.",
   "pending_reason_code": "route_evidence_not_emitted",
   "planned_cells": 71641,
@@ -8069,8 +8072,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 3612,
-      "pending_cells": 472,
+      "executed_cells": 3618,
+      "pending_cells": 466,
       "protocol_version": "2.0",
       "required_cells": 4084,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item",
@@ -8079,8 +8082,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 3696,
-      "pending_cells": 483,
+      "executed_cells": 3702,
+      "pending_cells": 477,
       "protocol_version": "2.1",
       "required_cells": 4179,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item",
@@ -8389,8 +8392,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 3660,
-      "pending_cells": 471,
+      "executed_cells": 3666,
+      "pending_cells": 465,
       "protocol_version": "2.0",
       "required_cells": 4131,
       "route_id": "java.generic-ttlv.ttlv_codec.decode",
@@ -8399,8 +8402,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 3744,
-      "pending_cells": 482,
+      "executed_cells": 3750,
+      "pending_cells": 476,
       "protocol_version": "2.1",
       "required_cells": 4226,
       "route_id": "java.generic-ttlv.ttlv_codec.decode",
@@ -8409,8 +8412,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 3612,
-      "pending_cells": 471,
+      "executed_cells": 3618,
+      "pending_cells": 465,
       "protocol_version": "2.0",
       "required_cells": 4083,
       "route_id": "java.generic-ttlv.ttlv_item.create",
@@ -8419,8 +8422,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 3696,
-      "pending_cells": 482,
+      "executed_cells": 3702,
+      "pending_cells": 476,
       "protocol_version": "2.1",
       "required_cells": 4178,
       "route_id": "java.generic-ttlv.ttlv_item.create",
@@ -34640,8 +34643,8 @@
   "route_manifest_sha256": "8e26f2efe33c63d3fc4dcd0cb11e465b15bbe9135ab56809c354f032a7aeac59",
   "route_summary": [
     {
-      "executed_cells": 7308,
-      "pending_cells": 955,
+      "executed_cells": 7320,
+      "pending_cells": 943,
       "required_cells": 8263,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item"
     },
@@ -34736,14 +34739,14 @@
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring"
     },
     {
-      "executed_cells": 7404,
-      "pending_cells": 953,
+      "executed_cells": 7416,
+      "pending_cells": 941,
       "required_cells": 8357,
       "route_id": "java.generic-ttlv.ttlv_codec.decode"
     },
     {
-      "executed_cells": 7308,
-      "pending_cells": 953,
+      "executed_cells": 7320,
+      "pending_cells": 941,
       "required_cells": 8261,
       "route_id": "java.generic-ttlv.ttlv_item.create"
     },
@@ -36111,7 +36114,7 @@
     }
   ],
   "schema_version": "1.0",
-  "selected_scope_cells": 34796,
+  "selected_scope_cells": 34832,
   "selected_scope_complete": true,
   "vendor_interoperability_claim": false
 }

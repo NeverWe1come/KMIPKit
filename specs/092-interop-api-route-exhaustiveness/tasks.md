@@ -346,3 +346,14 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
 - Verification: Java suite 89/89; shared route suites 109/109; selected report
   34,796/34,796 with zero failures; ledger comparison and 1,507-route audit
   pass. The full ledger has 36,845 pending of 71,641, so #216 remains WIP.
+
+## Java generic TTLV routes for Key Block members on #216
+
+- #216 inherits the Key Block member route increment from #187 while
+  preserving Usage Limits and PGP Key / Secret Data evidence. The route runner
+  selects `TtlvValue.structure` cells only when the shared manifest declares
+  them for the target.
+- Verification: Java suite 90/90; shared suites 109/109; selected report
+  34,832/34,832 with zero failures; ledger comparison and the 1,507-route
+  capability audit pass. The full matrix has 36,809 pending of 71,641 cells;
+  #216 remains WIP.
