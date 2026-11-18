@@ -175,6 +175,76 @@ class LocalCatalogRouteChecksTest {
     }
 
     @Test
+    void executesDerivationMethodPayloadUsingItsCataloguedEnumerationType() throws Exception {
+        // OASIS KMIP 2.0/2.1 §6.1.11 and §11.14.
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode catalog = mapper.readTree(CATALOG.toFile());
+        for (String version : List.of("2.0", "2.1")) {
+            String suffix = version.equals("2.0") ? "20" : "21";
+            String caseId = "test-norm-payload-client-derive-key-request-" + suffix + "-003";
+            String targetId = "KMIPKIT-PAYLOAD-CLIENT-DERIVE-KEY-REQUEST-" + suffix + "-003";
+            JsonNode events = mapper.createArrayNode();
+            assertTrue(LocalCatalogRouteChecks.missingClientPayloadScalarCaseIds(catalog, events, version)
+                    .contains(caseId));
+            List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
+            LocalCatalogRouteChecks.executeClientPayloadScalarFields(catalog, version, Set.of(caseId),
+                    events, invocations::add);
+            assertEquals(6, invocations.size());
+            assertEquals(Set.of(targetId, "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY"), invocations.stream()
+                    .map(LocalCatalogRouteChecks.Invocation::targetId).collect(java.util.stream.Collectors.toSet()));
+            assertEquals(Set.of("java.generic-ttlv.ttlv_item.create",
+                    "java.generic-ttlv.function.ttlv_item_view_from_item", "java.generic-ttlv.ttlv_codec.decode"),
+                    invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId)
+                            .collect(java.util.stream.Collectors.toSet()));
+            byte[] expected = {0x42, 0x00, 0x31, 0x05, 0, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0, 0};
+            invocations.forEach(invocation -> assertArrayEquals(expected, invocation.wire()));
+            try (var decoded = TtlvCodec.decode(expected); var view = decoded.view();
+                    var tag = view.tag(); var value = view.value()) {
+                assertEquals(0x420031, tag.raw());
+                assertEquals(TtlvItemType.Enumeration, view.itemType());
+                assertEquals(1, value.enumeration());
+            }
+        }
+    }
+
+    @Test
+    void objectGroupMemberPayloadIsEnumeration() throws Exception {
+        assertPayloadScalarType("locate-request", "004", "Enumeration", "4200ac", 1);
+    }
+
+    @Test
+    void obtainLeasePayloadIsInterval() throws Exception {
+        assertPayloadScalarType("obtain-lease-response", "002", "Interval", "420049", 60);
+    }
+
+    @Test
+    void reKeyOffsetPayloadIsInterval() throws Exception {
+        assertPayloadScalarType("re-key-request", "002", "Interval", "420058", 0);
+    }
+
+    // OASIS KMIP 2.0/2.1 §§6.1.22, 6.1.33, 6.1.43 and §11.34.
+    private static void assertPayloadScalarType(String operationRole, String ordinal,
+            String type, String tagHex, long expected) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode catalog = mapper.readTree(CATALOG.toFile());
+        for (String version : List.of("2.0", "2.1")) {
+            String suffix = version.equals("2.0") ? "20" : "21";
+            String caseId = "test-norm-payload-client-" + operationRole + "-" + suffix + "-" + ordinal;
+            List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
+            LocalCatalogRouteChecks.executeClientPayloadScalarFields(catalog, version, Set.of(caseId),
+                    mapper.createArrayNode(), invocations::add);
+            assertEquals(6, invocations.size());
+            try (var decoded = TtlvCodec.decode(invocations.get(0).wire()); var view = decoded.view();
+                    var tag = view.tag(); var value = view.value()) {
+                assertEquals(Integer.parseInt(tagHex, 16), tag.raw(), caseId);
+                assertEquals(TtlvItemType.valueOf(type), view.itemType(), caseId);
+                long actual = view.itemType() == TtlvItemType.Interval ? value.interval() : value.enumeration();
+                assertEquals(expected, actual, caseId);
+            }
+        }
+    }
+
+    @Test
     void executesClientPayloadCorrelationFieldThroughGenericTtlvRoutes() throws Exception {
         JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
         String caseId = "test-norm-payload-client-cancel-request-21-001";
