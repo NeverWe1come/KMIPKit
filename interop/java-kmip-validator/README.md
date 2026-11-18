@@ -947,3 +947,21 @@ selected report validates 42,168/42,168 cells with zero failures; ledger
 comparison and the 1,507-route audit pass. The full ledger records 71,641
 planned, 42,168 executed, and 29,473 pending cells. The matrix remains
 incomplete, so #187 and its dependents stay WIP.
+
+### MAC payload data routes — 2026-11-18
+
+The local generic TTLV runner now covers `MAC Data` as a Byte String for MAC
+responses and MAC Verify requests, across the applicable KMIP 2.0 and 2.1
+cases. The source tables are OASIS KMIP 2.0 §6.1.31 Table 242 and §6.1.32
+Table 244; KMIP 2.1 §6.1.32 Table 260 and §6.1.33 Table 262. The fixture is
+deterministic local data and does not claim a server accepted the request or
+response.
+
+Red `164e2a185` found only the three Operation target events for the MAC
+response case; its payload field had no generic routes. Green `3708b2e67`
+adds the catalog-backed Byte String mapping for both cases. The Java suite
+passes 92/92 serially; shared route tests pass 109/109. The selected report
+validates 42,180/42,180 cells with zero failures; ledger comparison and the
+1,507-route audit pass. The full ledger records 71,641 planned, 42,180
+executed, and 29,461 pending cells. The matrix remains incomplete, so #187
+and its dependents stay WIP.
