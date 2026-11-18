@@ -798,3 +798,24 @@ ledger records 71,641 planned, 41,676 executed, and 29,965 pending cells. A
 parallel Gradle run hit a missing intermediate binary result during task
 finalization; the serialized full-suite rerun succeeded. The matrix remains
 incomplete, so #187 and its dependents stay WIP.
+
+### Common Boolean and Integer client payload routes — 2026-11-18
+
+The local generic TTLV runner now covers Boolean `Init Indicator` and `Final
+Indicator` fields and Integer `Data Length`, `Maximum Items`, `Offset Items`,
+`Offset`, and `Request Count` fields across their applicable client request
+cases. Exact table sources are OASIS KMIP 2.0 §6.1.11 Table 181, §6.1.17
+Table 199, §6.1.27 Table 229, §6.1.29 Table 235, §6.1.42 Table 279, and §6.1.45
+Table 290; KMIP 2.1 §6.1.11 Table 196, §6.1.17 Table 214, §6.1.28 Table 247,
+§6.1.30 Table 253, §6.1.46 Table 305, and §6.1.49 Table 316. This is local
+TTLV construction, view, and decode evidence; it does not assert server
+acceptance.
+
+Red `95af8a9d3` exposed the missing Init Indicator payload-field events after
+the Decrypt operation target was already covered. Green `890de56a7` adds the
+catalog-selected Boolean and Integer routes, closing 138 cells. The Java suite
+passes 92/92 serially; shared route tests pass 109/109. The selected report
+validates 41,814/41,814 cells with zero failures; ledger comparison and the
+1,507-route audit pass. The full ledger records 71,641 planned, 41,814
+executed, and 29,827 pending cells. The matrix remains incomplete, so #187 and
+its dependents stay WIP.
