@@ -724,20 +724,21 @@ encoding/transport pairs and records `NotSent` evidence. The Java suite passes
 The full ledger records 71,641 planned, 40,986 executed, and 30,655 pending
 cells. The matrix remains incomplete and #187 plus its dependents remain WIP.
 
-### Client payload Unique Identifier TTLV routes — 2026-11-18
+### Client operation payload scalar TTLV routes — 2026-11-18
 
-The Java route fixture now constructs, views, and decodes a Text String
-`Unique Identifier` for each applicable local-model client operation payload
-case. It records evidence against both the payload-field target and its
-operation target, using the assigned `Unique Identifier` Tag from the
-catalogue. For example, Activate request and response fields cite OASIS KMIP
-2.0 §6.1.1 Tables 149–150 and KMIP 2.1 §6.1.1 Tables 164–165. This is local
-TTLV model evidence; it does not claim that a server accepted the field.
+The Java route fixture now constructs, views, and decodes `Unique Identifier`
+Text Strings and `Correlation Value` Byte Strings for applicable local-model
+client operation payload cases. It records evidence against both each
+payload-field target and its operation target, using the assigned TTLV tags
+from the catalogue. Example sources include Activate's OASIS KMIP 2.0
+§6.1.1 Table 149 and Decrypt's §6.1.11 Table 181. This is local TTLV model
+evidence; it does not claim that a server accepted the field.
 
-Red `ac9d7c843` failed because the Activate request had evidence for the
-Operation Tag but none for the payload field. Green `9c272bc6a` adds all 390
-missing generic Item, view, and decode cells. The Java suite passes 92/92; the
-selected report validates 41,376/41,376 cells with zero failures. The full
-ledger records 71,641 planned, 41,376 executed, and 30,265 pending cells.
-Ledger comparison and the 1,507-route capability audit pass. The matrix
-remains incomplete, so #187 and its dependents stay WIP.
+Red `ac9d7c843` and `2b8a1d37a` exposed missing payload-field cells after
+Operation-target evidence was already present. Green `9c272bc6a` and
+`63f091d97` add 486 generic Item, view, and decode cells for these two field
+types. The Java suite passes 92/92 and the shared suite passes 196/196. The
+selected report validates 41,472/41,472 cells with zero failures; ledger
+comparison and the 1,507-route capability audit pass. The full ledger records
+71,641 planned, 41,472 executed, and 30,169 pending cells. The matrix remains
+incomplete, so #187 and its dependents stay WIP.
