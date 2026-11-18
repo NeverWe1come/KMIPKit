@@ -13,6 +13,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class LocalCatalogRouteChecksTest {
@@ -90,6 +91,8 @@ class LocalCatalogRouteChecksTest {
 
         assertTrue(missing.contains("test-op-create"));
         assertTrue(missing.contains("test-obj-certificate"));
+        assertFalse(missing.contains("test-enum-adjustment-type"),
+                "A local enumeration's primary operation is context, not a separate Operation obligation.");
     }
 
     @Test
@@ -110,6 +113,33 @@ class LocalCatalogRouteChecksTest {
                 .collect(java.util.stream.Collectors.toSet()));
         assertArrayEquals(new byte[] {0x42, 0x00, 0x5c, 0x05, 0, 0, 0, 4,
                 0, 0, 0, 3, 0, 0, 0, 0}, invocations.get(0).wire());
+    }
+
+    @Test
+    void executesBatchOperationObligationsWithTheirWorkflowIdentity() throws Exception {
+        JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
+        String caseId = "test-batch-create-activate-destroy";
+        List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
+
+        LocalCatalogRouteChecks.executeGenericOperationTargets(catalog, "2.1", Set.of(caseId),
+                new ObjectMapper().createArrayNode(), invocations::add);
+
+        assertEquals(List.of(
+                "KMIPKIT-ELEM-OP-C2S-CREATE",
+                "KMIPKIT-ELEM-OP-C2S-ACTIVATE",
+                "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST",
+                "KMIPKIT-ELEM-OP-C2S-REVOKE",
+                "KMIPKIT-ELEM-OP-C2S-DESTROY"), invocations.stream()
+                .filter(invocation -> "java.generic-ttlv.ttlv_item.create".equals(invocation.routeId()))
+                .map(LocalCatalogRouteChecks.Invocation::targetId).toList());
+        assertEquals(List.of(0, 1, 2, 3, 4), invocations.stream()
+                .filter(invocation -> "java.generic-ttlv.ttlv_item.create".equals(invocation.routeId()))
+                .map(LocalCatalogRouteChecks.Invocation::workflowStepIndex).toList());
+        assertEquals(List.of("Create", "Activate", "Get Attribute List", "Revoke", "Destroy"),
+                invocations.stream()
+                        .filter(invocation -> "java.generic-ttlv.ttlv_item.create".equals(invocation.routeId()))
+                        .map(LocalCatalogRouteChecks.Invocation::workflowOperation).toList());
+        assertEquals(15, invocations.size());
     }
 
     @Test

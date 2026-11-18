@@ -166,11 +166,26 @@ final class LocalCatalogRouteChecks {
     }
 
     record Invocation(String caseId, String targetId, String routeId, String symbol,
-                      String action, byte[] wire, String rejectionCode) { }
+                      String action, byte[] wire, String rejectionCode,
+                      Integer workflowStepIndex, String workflowOperation, Integer workflowItemIndex) {
+        Invocation(String caseId, String targetId, String routeId, String symbol,
+                String action, byte[] wire, String rejectionCode) {
+            this(caseId, targetId, routeId, symbol, action, wire, rejectionCode, null, null, null);
+        }
+    }
+
+    private record OperationTarget(String targetId, String operation, Integer workflowStepIndex,
+                                   String workflowOperation, Integer workflowItemIndex) { }
 
     private record StructureAttributeMember(String name, String textValue) { }
 
-    private record RouteEvidenceKey(String caseId, String targetId, String routeId, String version) { }
+    private record RouteEvidenceKey(String caseId, String targetId, String routeId, String version,
+                                   Integer workflowStepIndex, String workflowOperation,
+                                   Integer workflowItemIndex) {
+        RouteEvidenceKey(String caseId, String targetId, String routeId, String version) {
+            this(caseId, targetId, routeId, version, null, null, null);
+        }
+    }
 
     /** Executes generic TTLV routes for Boolean fields using their catalogued tag identities. */
     static void executeBooleanFields(JsonNode catalog, String version, Set<String> selectedCaseIds,
@@ -1640,12 +1655,23 @@ final class LocalCatalogRouteChecks {
         emitRoute(sink, caseId, targetId, routeId, symbol, action, wire);
     }
 
+    private static void emitMissingGenericRoute(Set<RouteEvidenceKey> recordedRoutes, EvidenceSink sink,
+            String caseId, OperationTarget target, String version, String routeId, String symbol,
+            String action, byte[] wire) throws Exception {
+        if (!recordedRoutes.add(operationRouteKey(caseId, target, routeId, version))) return;
+        sink.record(new Invocation(caseId, target.targetId(), routeId, symbol, action, wire, null,
+                target.workflowStepIndex(), target.workflowOperation(), target.workflowItemIndex()));
+    }
+
     private static Set<RouteEvidenceKey> routeEvidenceKeys(JsonNode events) {
         Set<RouteEvidenceKey> keys = new java.util.HashSet<>();
         for (JsonNode event : events) {
             if (!"TTLV".equals(event.path("encoding").asText()) || !event.path("transport").isNull()) continue;
             keys.add(new RouteEvidenceKey(event.path("case_id").asText(), event.path("target_id").asText(),
-                    event.path("route_id").asText(), event.path("protocol_version").asText()));
+                    event.path("route_id").asText(), event.path("protocol_version").asText(),
+                    event.path("workflow_step_index").isInt() ? event.path("workflow_step_index").intValue() : null,
+                    event.path("workflow_operation").isTextual() ? event.path("workflow_operation").asText() : null,
+                    event.path("workflow_item_index").isInt() ? event.path("workflow_item_index").intValue() : null));
         }
         return keys;
     }
@@ -1670,23 +1696,21 @@ final class LocalCatalogRouteChecks {
         return routes;
     }
 
-    /** Returns operation cases missing one or more generic local Operation-item routes. */
+    /** Returns cases missing one or more generic local Operation-item routes. */
     static Set<String> missingGenericOperationTargetCaseIds(JsonNode catalog, JsonNode events, String version) {
         Set<RouteEvidenceKey> recordedRoutes = routeEvidenceKeys(events);
         Set<String> missing = new java.util.LinkedHashSet<>();
         for (JsonNode testCase : catalog.path("test_cases")) {
             if (!applies(testCase, version)) continue;
             String caseId = testCase.path("case_id").asText();
-            String targetId = testCase.path("requires").path("normative_target_id").asText();
-            if (targetId.isEmpty()) continue;
-            JsonNode target = findTarget(catalog, targetId);
-            if (!"operation".equals(target.path("kind").asText())) continue;
-            for (String routeId : List.of("java.generic-ttlv.ttlv_item.create",
-                    "java.generic-ttlv.function.ttlv_item_view_from_item",
-                    "java.generic-ttlv.ttlv_codec.decode")) {
-                if (!recordedRoutes.contains(new RouteEvidenceKey(caseId, targetId, routeId, version))) {
-                    missing.add(caseId);
-                    break;
+            for (OperationTarget target : operationTargetsForCase(catalog, testCase, version)) {
+                for (String routeId : List.of("java.generic-ttlv.ttlv_item.create",
+                        "java.generic-ttlv.function.ttlv_item_view_from_item",
+                        "java.generic-ttlv.ttlv_codec.decode")) {
+                    if (!recordedRoutes.contains(operationRouteKey(caseId, target, routeId, version))) {
+                        missing.add(caseId);
+                        break;
+                    }
                 }
             }
         }
@@ -1694,7 +1718,7 @@ final class LocalCatalogRouteChecks {
     }
 
     /**
-     * Executes operation-valued catalog cases through generic TTLV Item construction and decoding.
+     * Executes catalogued operation obligations through generic TTLV Item construction and decoding.
      * The Operation member is defined in OASIS KMIP 2.0/2.1 §8.2 and its values in §11.36.
      */
     static void executeGenericOperationTargets(JsonNode catalog, String version, Set<String> selectedCaseIds,
@@ -1706,35 +1730,147 @@ final class LocalCatalogRouteChecks {
         for (JsonNode testCase : catalog.path("test_cases")) {
             String caseId = testCase.path("case_id").asText();
             if (!selectedCaseIds.contains(caseId) || !applies(testCase, version)) continue;
-            String targetId = testCase.path("requires").path("normative_target_id").asText();
-            JsonNode target = findTarget(catalog, targetId);
-            if (!"operation".equals(target.path("kind").asText())) {
-                throw new IllegalArgumentException("Selected case is not a catalogued operation: " + caseId);
+            List<OperationTarget> operationTargets = operationTargetsForCase(catalog, testCase, version);
+            if (operationTargets.isEmpty()) {
+                throw new IllegalArgumentException("Selected case has no catalogued operation target: " + caseId);
             }
-            String operation = testCase.path("operation").asText(target.path("name").asText());
-            long operationValue = enumValue(catalog, "OPERATION", operation);
-            byte[] wire = scalarWire(operationTag, TtlvItemType.Enumeration.code(), Math.toIntExact(operationValue));
-            try (RawTag rawTag = RawTag.fromRaw(operationTag); Tag tag = rawTag.checked();
-                    TtlvValue value = TtlvValue.Enumeration(operationValue);
-                    TtlvItem item = TtlvItem.create(tag, value, limits)) {
-                assertScalarItem(item, operationTag, TtlvItemType.Enumeration, operationValue);
+            for (OperationTarget target : operationTargets) {
+                String targetId = target.targetId();
+                long operationValue = enumValue(catalog, "OPERATION", target.operation());
+                byte[] wire = scalarWire(operationTag, TtlvItemType.Enumeration.code(),
+                        Math.toIntExact(operationValue));
+                try (RawTag rawTag = RawTag.fromRaw(operationTag); Tag tag = rawTag.checked();
+                        TtlvValue value = TtlvValue.Enumeration(operationValue);
+                        TtlvItem item = TtlvItem.create(tag, value, limits)) {
+                    assertScalarItem(item, operationTag, TtlvItemType.Enumeration, operationValue);
+                }
+                try (TtlvItem decoded = TtlvCodec.decode(wire)) {
+                    assertScalarItem(decoded, operationTag, TtlvItemType.Enumeration, operationValue);
+                }
+                emitMissingGenericRoute(recordedRoutes, sink, caseId, target, version,
+                        "java.generic-ttlv.ttlv_item.create", "org.kmipkit.ttlv.TtlvItem.create",
+                        "construct", wire);
+                emitMissingGenericRoute(recordedRoutes, sink, caseId, target, version,
+                        "java.generic-ttlv.function.ttlv_item_view_from_item", "org.kmipkit.ttlv.TtlvItem.view",
+                        "decode", wire);
+                emitMissingGenericRoute(recordedRoutes, sink, caseId, target, version,
+                        "java.generic-ttlv.ttlv_codec.decode", "org.kmipkit.ttlv.TtlvCodec.decode", "decode", wire);
             }
-            try (TtlvItem decoded = TtlvCodec.decode(wire)) {
-                assertScalarItem(decoded, operationTag, TtlvItemType.Enumeration, operationValue);
-            }
-            emitMissingGenericRoute(recordedRoutes, sink, caseId, targetId, version,
-                    "java.generic-ttlv.ttlv_item.create", "org.kmipkit.ttlv.TtlvItem.create",
-                    "construct", wire);
-            emitMissingGenericRoute(recordedRoutes, sink, caseId, targetId, version,
-                    "java.generic-ttlv.function.ttlv_item_view_from_item", "org.kmipkit.ttlv.TtlvItem.view",
-                    "decode", wire);
-            emitMissingGenericRoute(recordedRoutes, sink, caseId, targetId, version,
-                    "java.generic-ttlv.ttlv_codec.decode", "org.kmipkit.ttlv.TtlvCodec.decode", "decode", wire);
             emitted.add(caseId);
         }
         if (!emitted.equals(selectedCaseIds)) {
             throw new IllegalArgumentException("Selected operation targets were not executed for " + version);
         }
+    }
+
+    private static List<OperationTarget> operationTargetsForCase(JsonNode catalog, JsonNode testCase,
+            String version) {
+        JsonNode requires = testCase.path("requires");
+        List<OperationTarget> obligations = new ArrayList<>();
+        List<String> plainTargetIds = new ArrayList<>();
+        for (String field : List.of("normative_target_id", "operation_id")) {
+            String targetId = requires.path(field).asText();
+            if (!targetId.isBlank()) plainTargetIds.add(targetId);
+        }
+        for (JsonNode targetId : requires.path("normative_target_ids")) {
+            if (targetId.isTextual()) plainTargetIds.add(targetId.asText());
+        }
+
+        JsonNode scenario = requires.path("protocol_scenario");
+        List<String> scenarioOperations = textValues(scenario.path("operations"));
+        for (JsonNode targetId : scenario.path("target_ids")) {
+            if (targetId.isTextual()) plainTargetIds.add(targetId.asText());
+        }
+
+        JsonNode parameters = scenario.path("parameters");
+        Set<String> itemTargetIds = new java.util.HashSet<>();
+        JsonNode items = parameters.path("items");
+        if (items.isArray()) {
+            for (int index = 0; index < items.size(); index++) {
+                JsonNode item = items.get(index);
+                String operation = item.isTextual()
+                        ? item.asText().split("\\(", 2)[0].trim() : item.path("operation").asText();
+                if (operation.isBlank()) continue;
+                JsonNode target = operationTargetByName(catalog, operation, version);
+                if (target == null) continue;
+                String targetId = target.path("target_id").asText();
+                itemTargetIds.add(targetId);
+                addOperationTarget(obligations, target, operation, null, operation, index);
+            }
+        }
+
+        Set<String> scenarioStepTargetIds = new java.util.HashSet<>();
+        List<String> orderedOperations = new ArrayList<>(scenarioOperations);
+        orderedOperations.addAll(textValues(requires.path("operation_sequence")));
+        for (int index = 0; index < orderedOperations.size(); index++) {
+            String operation = orderedOperations.get(index);
+            JsonNode target = operationTargetByName(catalog, operation, version);
+            if (target == null) continue;
+            String targetId = target.path("target_id").asText();
+            if (itemTargetIds.contains(targetId)) continue;
+            scenarioStepTargetIds.add(targetId);
+            addOperationTarget(obligations, target, operation, index, operation, null);
+        }
+
+        for (String targetId : plainTargetIds) {
+            JsonNode target = findTarget(catalog, targetId);
+            if (!"operation".equals(target.path("kind").asText())
+                    || !supportsVersion(target, version)) continue;
+            if (itemTargetIds.contains(targetId) || scenarioStepTargetIds.contains(targetId)) continue;
+            addOperationTarget(obligations, target, target.path("name").asText(), null, null, null);
+        }
+
+        boolean localValueCase = "local_model".equals(testCase.path("execution").path("mode").asText())
+                && (requires.has("enum_type") || requires.has("bitmask_type"));
+        String caseOperation = testCase.path("operation").asText();
+        if (scenarioOperations.isEmpty() && !localValueCase && !caseOperation.isBlank()) {
+            JsonNode target = operationTargetByName(catalog, caseOperation, version);
+            if (target != null) {
+                String targetId = target.path("target_id").asText();
+                boolean explicitlyTargeted = plainTargetIds.stream()
+                        .map(plainTargetId -> findTarget(catalog, plainTargetId).path("name").asText())
+                        .anyMatch(name -> normalizeName(name).equals(normalizeName(caseOperation)));
+                if (!itemTargetIds.contains(targetId) && !scenarioStepTargetIds.contains(targetId)
+                        && !explicitlyTargeted) {
+                    addOperationTarget(obligations, target, caseOperation, null, null, null);
+                }
+            }
+        }
+        return obligations;
+    }
+
+    private static List<String> textValues(JsonNode values) {
+        List<String> result = new ArrayList<>();
+        if (values.isArray()) {
+            for (JsonNode value : values) if (value.isTextual()) result.add(value.asText());
+        }
+        return result;
+    }
+
+    private static JsonNode operationTargetByName(JsonNode catalog, String operation, String version) {
+        JsonNode match = null;
+        for (JsonNode candidate : catalog.path("normative_targets")) {
+            if (!"operation".equals(candidate.path("kind").asText())
+                    || !operation.equals(candidate.path("name").asText())
+                    || !candidate.path("target_id").asText().startsWith("KMIPKIT-ELEM-OP-C2S-")
+                    || !supportsVersion(candidate, version)) continue;
+            if (match != null) throw new IllegalArgumentException("Duplicate client operation target: " + operation);
+            match = candidate;
+        }
+        return match;
+    }
+
+    private static void addOperationTarget(List<OperationTarget> obligations, JsonNode target, String operation,
+            Integer stepIndex, String workflowOperation, Integer itemIndex) {
+        OperationTarget obligation = new OperationTarget(target.path("target_id").asText(), operation,
+                stepIndex, workflowOperation, itemIndex);
+        if (!obligations.contains(obligation)) obligations.add(obligation);
+    }
+
+    private static RouteEvidenceKey operationRouteKey(String caseId, OperationTarget target,
+            String routeId, String version) {
+        return new RouteEvidenceKey(caseId, target.targetId(), routeId, version,
+                target.workflowStepIndex(), target.workflowOperation(), target.workflowItemIndex());
     }
 
     private static int structureTargetTagCode(JsonNode catalog, JsonNode target, String version) {
