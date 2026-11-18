@@ -55,6 +55,8 @@ BATCH_CONTINUATION_CONSTRUCTOR_CASES = frozenset({
     'test-batch-stop-on-first-failure',
     'test-batch-undo-rolls-back-prior-success',
 })
+MODIFY_ATTRIBUTE_CURRENT_MISMATCH_CASE = 'test-neg-modify-attribute-current-mismatch'
+MODIFY_ATTRIBUTE_CURRENT_MISMATCH_REASON = 32
 ENCRYPT_ITEM_IDS = (b'encrypt-create', b'encrypt-activate', b'encrypt-target',
                     b'encrypt-revoke', b'encrypt-destroy')
 DECRYPT_ITEM_IDS = (b'decrypt-create', b'decrypt-activate', b'decrypt-target',
@@ -445,7 +447,7 @@ RECIPES = {
     'test-norm-payload-client-add-attribute-request-20-002': ((1, 13, 19, 20), 'add_attribute'),
     'test-norm-payload-client-add-attribute-request-21-002': ((1, 13, 19, 20), 'add_attribute'),
     'test-op-modify-attribute': ((1, 13, 14, 19, 20), 'modify_attribute'),
-    'test-neg-modify-attribute-current-mismatch':
+    MODIFY_ATTRIBUTE_CURRENT_MISMATCH_CASE:
         ((1, 13, 14, 19, 20), 'modify_attribute_mismatch'),
     'test-norm-payload-client-modify-attribute-request-20-002': ((1, 13, 14, 19, 20), 'modify_attribute'),
     'test-norm-payload-client-modify-attribute-request-20-003': ((1, 13, 14, 19, 20), 'modify_attribute'),
@@ -1965,7 +1967,7 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
         comments = [item for item in descendants(payloads[0], 0x4200FD) if item[1] == 7] \
             if len(payloads) == 1 else []
         expected_comment = (b'KMIPKit interop test'
-                            if case_id == 'test-neg-modify-attribute-current-mismatch' else
+                            if case_id == MODIFY_ATTRIBUTE_CURRENT_MISMATCH_CASE else
                             b'KMIPKit interoperability comment')
         if len(comments) != 1 or comments[0][2] != expected_comment:
             observed = [(f'{item[0]:06X}', item[1])
@@ -3505,7 +3507,8 @@ class PeerState:
                         # KMIP 2.1 §6.1.34 Table 267 names this failed match as
                         # Attribute Instance Not Found (32).
                         status, reason, effect = (
-                            1, 32, 'attribute_modify_rejected_current_mismatch')
+                            1, MODIFY_ATTRIBUTE_CURRENT_MISMATCH_REASON,
+                            'attribute_modify_rejected_current_mismatch')
                     elif new[0] != 'Comment':
                         raise ValueError('fixture_modify_attribute_name_mismatch')
                     else:
@@ -3859,7 +3862,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                          'test-norm-payload-client-modify-attribute-request-21-003',
                                                          'test-norm-payload-client-modify-attribute-response-21-001',
                                                          'test-op-modify-attribute',
-                                                         'test-neg-modify-attribute-current-mismatch',
+                                                         MODIFY_ATTRIBUTE_CURRENT_MISMATCH_CASE,
                                                          'test-op-set-attribute',
                                                          'test-op-delete-attribute', 'test-op-adjust-attribute'}
          or case['case_id'] in attribute_case_ids else ('direct',))]
