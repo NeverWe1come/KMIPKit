@@ -175,6 +175,213 @@ class LocalCatalogRouteChecksTest {
     }
 
     @Test
+    void marksUnprocessedStopResponseDecodeAsNotApplicable() throws Exception {
+        JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
+        List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
+        String caseId = "test-batch-stop-on-first-failure";
+
+        LocalCatalogRouteChecks.executeGenericOperationTargets(catalog, "2.0", Set.of(caseId),
+                new ObjectMapper().createArrayNode(), invocations::add);
+
+        List<LocalCatalogRouteChecks.Invocation> omittedResponseDecodes = invocations.stream()
+                .filter(invocation -> "Get".equals(invocation.workflowOperation())
+                        && Integer.valueOf(1).equals(invocation.workflowItemIndex())
+                        && "decode".equals(invocation.action()))
+                .toList();
+        assertEquals(Set.of("java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode"), omittedResponseDecodes.stream()
+                .map(LocalCatalogRouteChecks.Invocation::routeId)
+                .collect(java.util.stream.Collectors.toSet()));
+        assertTrue(omittedResponseDecodes.stream().allMatch(invocation -> invocation.wire() == null
+                && "stop_unprocessed_response_omitted".equals(invocation.notApplicableReason())));
+        LocalCatalogRouteChecks.Invocation processedResponseView = invocations.stream()
+                .filter(invocation -> "Get".equals(invocation.workflowOperation())
+                        && Integer.valueOf(0).equals(invocation.workflowItemIndex())
+                        && "java.generic-ttlv.function.ttlv_item_view_from_item".equals(invocation.routeId()))
+                .findFirst().orElseThrow();
+        assertTrue(processedResponseView.wire() != null);
+        assertTrue(processedResponseView.notApplicableReason() == null);
+    }
+
+    @Test
+    void messageProtocolVersionMinorMatchesSelectedVersion() throws Exception {
+        // OASIS KMIP 2.0/2.1 §9.16 Protocol Version.
+        JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
+        String caseId = "test-norm-message-field-message-field-9-16-protocol-version-minor";
+        for (String version : List.of("2.0", "2.1")) {
+            List<LocalCatalogRouteChecks.Invocation> calls = new ArrayList<>();
+            LocalCatalogRouteChecks.executeScalarMessageFields(catalog, version, Set.of(caseId), calls::add);
+            assertEquals(4, calls.size());
+            try (var decoded = TtlvCodec.decode(calls.get(0).wire()); var view = decoded.view();
+                    var tag = view.tag(); var value = view.value()) {
+                assertEquals(0x42006b, tag.raw());
+                assertEquals(TtlvItemType.Integer, view.itemType());
+                assertEquals(version.equals("2.0") ? 0 : 1, value.integer());
+            }
+        }
+    }
+
+    @Test
+    void splitKeyFixtureUsesAlignedBigIntegerLength() throws Exception {
+        assertBigIntegerFixtureLengths(true);
+    }
+
+    @Test
+    void transparentKeyFixtureUsesAlignedBigIntegerLength() throws Exception {
+        assertBigIntegerFixtureLengths(false);
+    }
+
+    // OASIS KMIP 2.0/2.1 §10.1.2 requires Big Integer length to be a multiple of eight.
+    private static void assertBigIntegerFixtureLengths(boolean split) throws Exception {
+        JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
+        for (String version : List.of("2.0", "2.1")) {
+            List<LocalCatalogRouteChecks.Invocation> calls = new ArrayList<>();
+            if (split) {
+                LocalCatalogRouteChecks.executeSplitKeyManagedObjectMemberTargets(catalog, version,
+                        Set.of("test-norm-structure-member-structure-member-2-8-split-key-prime-field-size"), calls::add);
+            } else {
+                LocalCatalogRouteChecks.executeTransparentKeyMaterialTargets(catalog, version,
+                        Set.of("test-norm-structure-member-structure-member-3-8-key-material-modulus"), calls::add);
+            }
+            assertTrue(calls.size() > 0);
+            for (var call : calls) {
+                assertTrue(assertAlignedBigIntegers(call.wire(), 0, call.wire().length) > 0, call.caseId());
+                try (var decoded = TtlvCodec.decode(call.wire())) {
+                    assertTrue(decoded != null);
+                }
+            }
+        }
+    }
+
+    private static int assertAlignedBigIntegers(byte[] wire, int offset, int end) {
+        int found = 0;
+        while (offset < end) {
+            int type = Byte.toUnsignedInt(wire[offset + 3]);
+            int length = java.nio.ByteBuffer.wrap(wire, offset + 4, 4).getInt();
+            if (type == TtlvItemType.BigInteger.code()) {
+                assertEquals(0, length % 8, "Big Integer Length must include sign-extension bytes");
+                int tag = (Byte.toUnsignedInt(wire[offset]) << 16)
+                        | (Byte.toUnsignedInt(wire[offset + 1]) << 8) | Byte.toUnsignedInt(wire[offset + 2]);
+                if (tag == 0x420062) {
+                    java.math.BigInteger prime = new java.math.BigInteger(
+                            java.util.Arrays.copyOfRange(wire, offset + 8, offset + 8 + length));
+                    assertTrue(prime.isProbablePrime(100));
+                    assertTrue(prime.compareTo(java.math.BigInteger.ONE.shiftLeft(32)) > 0,
+                            "Prime field must exceed 2^L for the 32-bit synthetic key");
+                }
+                found++;
+            } else if (type == TtlvItemType.Structure.code()) {
+                found += assertAlignedBigIntegers(wire, offset + 8, offset + 8 + length);
+            }
+            offset += 8 + ((length + 7) & ~7);
+        }
+        assertEquals(end, offset);
+        return found;
+    }
+
+    @Test
+    void executesDerivationMethodPayloadUsingItsCataloguedEnumerationType() throws Exception {
+        // OASIS KMIP 2.0/2.1 §6.1.14 and §11.14.
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode catalog = mapper.readTree(CATALOG.toFile());
+        for (String version : List.of("2.0", "2.1")) {
+            String suffix = version.equals("2.0") ? "20" : "21";
+            String caseId = "test-norm-payload-client-derive-key-request-" + suffix + "-003";
+            String targetId = "KMIPKIT-PAYLOAD-CLIENT-DERIVE-KEY-REQUEST-" + suffix + "-003";
+            JsonNode events = mapper.createArrayNode();
+            assertTrue(LocalCatalogRouteChecks.missingClientPayloadScalarCaseIds(catalog, events, version)
+                    .contains(caseId));
+            List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
+            LocalCatalogRouteChecks.executeClientPayloadScalarFields(catalog, version, Set.of(caseId),
+                    events, invocations::add);
+            assertEquals(6, invocations.size());
+            assertEquals(Set.of(targetId, "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY"), invocations.stream()
+                    .map(LocalCatalogRouteChecks.Invocation::targetId).collect(java.util.stream.Collectors.toSet()));
+            assertEquals(Set.of("java.generic-ttlv.ttlv_item.create",
+                    "java.generic-ttlv.function.ttlv_item_view_from_item", "java.generic-ttlv.ttlv_codec.decode"),
+                    invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId)
+                            .collect(java.util.stream.Collectors.toSet()));
+            byte[] expected = {0x42, 0x00, 0x31, 0x05, 0, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0, 0};
+            invocations.forEach(invocation -> assertArrayEquals(expected, invocation.wire()));
+            try (var decoded = TtlvCodec.decode(expected); var view = decoded.view();
+                    var tag = view.tag(); var value = view.value()) {
+                assertEquals(0x420031, tag.raw());
+                assertEquals(TtlvItemType.Enumeration, view.itemType());
+                assertEquals(1, value.enumeration());
+            }
+        }
+    }
+
+    @Test
+    void objectGroupMemberPayloadIsEnumeration() throws Exception {
+        assertPayloadScalarType("locate-request", "004", "Enumeration", "4200ac", 1);
+    }
+
+    @Test
+    void obtainLeasePayloadIsInterval() throws Exception {
+        assertPayloadScalarType("obtain-lease-response", "002", "Interval", "420049", 60);
+    }
+
+    @Test
+    void createSplitKeyPrimeFieldSizeIsBigIntegerPrime() throws Exception {
+        // OASIS KMIP 2.0/2.1 §§2.8, 6.1.10 and 10.1.2; 2^127 - 1 > 2^64.
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode catalog = mapper.readTree(CATALOG.toFile());
+        byte[] prime = new byte[16];
+        java.util.Arrays.fill(prime, (byte) 0xff);
+        prime[0] = 0x7f;
+        for (String version : List.of("2.0", "2.1")) {
+            String suffix = version.equals("2.0") ? "20" : "21";
+            String caseId = "test-norm-payload-client-create-split-key-request-" + suffix + "-006";
+            List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
+            LocalCatalogRouteChecks.executeClientPayloadScalarFields(catalog, version, Set.of(caseId),
+                    mapper.createArrayNode(), invocations::add);
+            assertEquals(6, invocations.size());
+            try (var decoded = TtlvCodec.decode(invocations.get(0).wire()); var view = decoded.view();
+                    var tag = view.tag(); var value = view.value()) {
+                assertEquals(0x420062, tag.raw(), caseId);
+                assertEquals(TtlvItemType.BigInteger, view.itemType(), caseId);
+                assertArrayEquals(prime, value.bytes());
+                assertTrue(new java.math.BigInteger(prime).isProbablePrime(100));
+            }
+        }
+    }
+
+    @Test
+    void checkLeaseRequestAndResponseUseInterval() throws Exception {
+        // OASIS KMIP 2.0/2.1 §4.30 and §6.1.7.
+        assertPayloadScalarType("check-request", "004", "Interval", "420049", 60);
+        assertPayloadScalarType("check-response", "004", "Interval", "420049", 60);
+    }
+
+    @Test
+    void reKeyOffsetPayloadIsInterval() throws Exception {
+        assertPayloadScalarType("re-key-request", "002", "Interval", "420058", 0);
+    }
+
+    // OASIS KMIP 2.0/2.1 §§6.1.27, 6.1.34, 6.1.42 and §11.34.
+    private static void assertPayloadScalarType(String operationRole, String ordinal,
+            String type, String tagHex, long expected) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode catalog = mapper.readTree(CATALOG.toFile());
+        for (String version : List.of("2.0", "2.1")) {
+            String suffix = version.equals("2.0") ? "20" : "21";
+            String caseId = "test-norm-payload-client-" + operationRole + "-" + suffix + "-" + ordinal;
+            List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
+            LocalCatalogRouteChecks.executeClientPayloadScalarFields(catalog, version, Set.of(caseId),
+                    mapper.createArrayNode(), invocations::add);
+            assertEquals(6, invocations.size());
+            try (var decoded = TtlvCodec.decode(invocations.get(0).wire()); var view = decoded.view();
+                    var tag = view.tag(); var value = view.value()) {
+                assertEquals(Integer.parseInt(tagHex, 16), tag.raw(), caseId);
+                assertEquals(TtlvItemType.valueOf(type), view.itemType(), caseId);
+                long actual = view.itemType() == TtlvItemType.Interval ? value.interval() : value.enumeration();
+                assertEquals(expected, actual, caseId);
+            }
+        }
+    }
+
+    @Test
     void executesClientPayloadCorrelationFieldThroughGenericTtlvRoutes() throws Exception {
         JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
         String caseId = "test-norm-payload-client-cancel-request-21-001";

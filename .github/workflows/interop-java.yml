@@ -140,7 +140,6 @@ jobs:
           JAVA_ARTIFACT_SHA256: ${{ steps.java-artifact.outputs.sha256 }}
         run: |
           python3 ../../interop/shared/tools/validate_route_evidence.py \
-            --selected-scope \
             --report build/route-execution-evidence.json \
             --artifact-sha256 "$JAVA_ARTIFACT_SHA256" \
             --write-ledger

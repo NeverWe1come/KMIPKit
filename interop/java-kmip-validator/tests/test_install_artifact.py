@@ -129,6 +129,17 @@ class ReproducibleArtifactBuildEnvironmentTests(unittest.TestCase):
 
 
 class InstalledRouteProbeWorkflowTests(unittest.TestCase):
+    def test_java_route_workflow_requires_the_complete_matrix(self):
+        workflow = Path(__file__).parents[3] / ".github" / "workflows" / "interop-java.yml"
+        content = workflow.read_text(encoding="utf-8")
+        validation_step = content.split(
+            "name: Validate invoked Java routes and write the pending coverage ledger", maxsplit=1
+        )[1].split("\n      - name:", maxsplit=1)[0]
+
+        self.assertNotIn("--selected-scope", validation_step)
+        self.assertIn("--report build/route-execution-evidence.json", validation_step)
+        self.assertIn("--write-ledger", validation_step)
+
     def test_java_workflow_probes_and_persists_installed_package_routes(self):
         workflow = Path(__file__).parents[3] / ".github" / "workflows" / "interop-java.yml"
         content = workflow.read_text(encoding="utf-8")
