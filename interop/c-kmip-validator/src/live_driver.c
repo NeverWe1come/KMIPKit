@@ -6035,7 +6035,7 @@ cleanup:
 }
 
 static kmip_execution_outcome_t execute_obtain_lease(kmip_live_client_t *client) {
-    /* OASIS KMIP 2.0 §6.1.34 and 2.1 §6.1.35, Tables 266 and 268–270. */
+    /* OASIS KMIP 2.0 §6.1.34, Tables 250–252; 2.1 §6.1.35, Tables 268–270. */
     static const uint32_t operations[] = {
         KMIPKIT_ENUMERATION_OPERATION_CREATE, KMIPKIT_ENUMERATION_OPERATION_OBTAIN_LEASE,
         KMIPKIT_ENUMERATION_OPERATION_REVOKE, KMIPKIT_ENUMERATION_OPERATION_DESTROY

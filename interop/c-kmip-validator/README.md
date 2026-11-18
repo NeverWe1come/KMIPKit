@@ -137,8 +137,8 @@ The `*.gaps.json` sidecar identifies every unexecuted matrix obligation rather
 than misclassifying it as an unavailable library route. Other sidecars retain
 installed-artifact availability checks and sanitized controlled-peer outcomes.
 The evidence JSON passes the shared schema independently of completeness.
-The latest full local C matrix run (`c-route-87ed3605-290b-4298-971d-ef04ed1be9a7`)
-has 66,736 expected cells, 42,633 invoked, zero failed, and 24,103 pending.
+The latest full local C matrix run (`c-route-1ad36230-4652-4aa7-a647-75d635467cf4`)
+has 66,736 expected cells, 42,727 invoked, zero failed, and 24,009 pending.
 The MAC and Sign response TTLV accessors and the Continue batch-option
 constructor contribute four local cells each across KMIP 2.0/2.1. The
 Query Async Requests correlation builder contributes two KMIP 2.1 model cells.
@@ -147,6 +147,14 @@ consumer across all 12 KMIP 2.0/2.1 encoding and transport combinations and
 verify typed response access plus independent Destroy cleanup.
 The evidence report passes schema validation, but the completeness gate
 remains open because validator recipes are still pending.
+
+The PKCS#11 operation now covers its typed request and response accessors for
+both protocol versions across all six encoding and transport combinations.
+The Obtain Lease recipe creates an AES-128 key, obtains a lease through its
+batch ID Placeholder, and revokes and destroys the object; it verifies the
+Unique Identifier, Lease Time, Last Change Date, and complete response TTLV.
+Both recipes use synthetic controlled-peer values and do not claim vendor
+interoperability.
 
 A generic TTLV wire encoder, generic-TTLV request dispatcher, and high-level
 C client are absent from the exact installed public artifact. The harness's

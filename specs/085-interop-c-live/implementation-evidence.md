@@ -11,7 +11,7 @@ network recipes. Library sources are unchanged.
 | KMIPKIT-0092-FR-002, FR-007, FR-009 | Per-cell evidence and explicit pending sidecar; duplicate protection; common schema and validator in CI. Incomplete recipes keep the gate failing. |
 | KMIPKIT-0092-FR-003 | Exact assigned scalar values, reserved-tag rejection, typed attributes, and cryptographic-parameter field/TTLV round trips are checked locally. Broader semantic branch/model recipes remain pending. No absent encoder/send/high-level API is fabricated. |
 | KMIPKIT-0092-FR-004 | Ordered, redacted tree digests are retained per cell. Cross-language digest normalization/parity is pending. |
-| KMIPKIT-0092-FR-005 | Controlled peers parse all six encoding/transport pairs, check recipe fields, numeric ordered results, lifecycle transitions and deletion. Check, Get Attribute List, Log, Revoke, Interop, and Export response TTLV accessors are read and structurally checked; Export checks all required response fields and its AES-128 attributes. The C peer covers catalogued asynchronous Cancel results, KMIP 2.1 Poll/Cancel and Process/Poll interleavings, and Query filters whose intersection returns only the matching outstanding request; other asynchronous and positive operation recipes remain pending. |
+| KMIPKIT-0092-FR-005 | Controlled peers parse all six encoding/transport pairs, check recipe fields, numeric ordered results, lifecycle transitions and deletion. Check, Get Attribute List, Log, Revoke, Interop, Export, PKCS#11, and Obtain Lease response TTLV accessors are read and structurally checked; Export checks all required response fields and its AES-128 attributes. The C peer covers catalogued asynchronous Cancel results, KMIP 2.1 Poll/Cancel and Process/Poll interleavings, and Query filters whose intersection returns only the matching outstanding request; other asynchronous and positive operation recipes remain pending. |
 | KMIPKIT-0092-FR-008 | Reports contain public identities, axes, digests, sanitized failure codes and numeric outcomes. Request bodies and fixture keys/tickets never enter evidence. |
 
 The exact OASIS document and section remain on each case in the generated shared
@@ -1542,3 +1542,32 @@ it does not claim compatibility with a vendor PKCS#11 service.
   for `test-op-pkcs#11` passed, covering both protocol versions and all 12
   encoding/transport combinations. The completeness gate remains open for the
   other pending recipes; no vendor interoperability is claimed.
+
+## Obtain Lease operation route
+
+The installed C consumer executes the catalogued Create/Obtain Lease/Revoke/
+Destroy recipe. Create uses an AES-128 Symmetric Key with explicit Encrypt
+usage; Obtain Lease omits its optional Unique Identifier in the ordered batch
+and resolves the preceding Create ID Placeholder. The consumer checks the
+returned identifier, Lease Time, and Last Change Date, then calls the complete
+Obtain Lease response-TTLV accessor and verifies its four fields. The
+controlled peer tracks the lease in fixture state, verifies the ordered
+request, and removes the object and lease during cleanup. Its fixed response
+values test the typed C routes and do not claim real-server lease policy.
+
+- Red commit `19be2b5da` adds the installed route contract and fails because
+  Obtain Lease has no controlled-peer recipe.
+- Green commit `e751eeeb1` adds the typed C batch route and controlled peer
+  request, response, state, and cleanup checks.
+- Normative scope: OASIS KMIP 2.0 §6.1.34, Tables 250–252, and KMIP 2.1
+  §6.1.35, Tables 268–270. Create, Revoke, and Destroy setup and cleanup follow the exact
+  isolation sequence in the approved catalog; ordered ID Placeholder use
+  follows §6.1 and §8.
+- Verification: the focused installed C route passed all 12 exchanges. CTest
+  passed 7/7, including the complete route-matrix contract suite and both
+  controlled TLS peers. The exhaustive report
+  (`c-route-1ad36230-4652-4aa7-a647-75d635467cf4`) passes the shared JSON Schema
+  and records 42,727 of 66,736 cells invoked, zero failed, and 24,009 pending.
+  All 44 Obtain Lease report events passed across both protocol versions and
+  all 12 encoding/transport combinations. The completeness gate remains open
+  for the other pending recipes.
