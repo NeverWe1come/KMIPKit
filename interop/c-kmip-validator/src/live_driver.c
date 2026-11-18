@@ -3987,6 +3987,119 @@ static int32_t build_certificate_register_item(
     return status;
 }
 
+static int32_t build_pgp_key_register_item(
+    kmip_live_client_t *client,
+    kmipkit_client_batch_item_t **out_item) {
+    if (!client || !out_item) return KMIPKIT_ERROR_INVALID_INPUT;
+    uint8_t key_material_bytes[] = {UINT8_C(0xA1)};
+    kmipkit_ttlv_value_t *pgp_key_version_value = NULL;
+    kmipkit_ttlv_value_t *key_format_value = NULL;
+    kmipkit_ttlv_value_t *key_material_value = NULL;
+    kmipkit_raw_tag_t *pgp_key_version_raw_tag = NULL;
+    kmipkit_raw_tag_t *key_format_raw_tag = NULL;
+    kmipkit_raw_tag_t *key_material_raw_tag = NULL;
+    kmipkit_tag_t *pgp_key_version_tag = NULL;
+    kmipkit_tag_t *key_format_tag = NULL;
+    kmipkit_tag_t *key_material_tag = NULL;
+    kmipkit_ttlv_item_t *pgp_key_version_item = NULL;
+    kmipkit_ttlv_item_t *key_format_item = NULL;
+    kmipkit_ttlv_item_t *key_material_item = NULL;
+    kmipkit_ttlv_item_t *key_value_item = NULL;
+    kmipkit_ttlv_item_t *key_block_item = NULL;
+    kmipkit_ttlv_item_t *pgp_key_item = NULL;
+    kmipkit_ttlv_item_t *key_value_fields[1] = {NULL};
+    kmipkit_ttlv_item_t *key_block_fields[2] = {NULL, NULL};
+    kmipkit_ttlv_item_t *pgp_key_fields[2] = {NULL, NULL};
+    kmipkit_ttlv_structure_t *attributes = NULL;
+    kmipkit_register_request_t *request = NULL;
+    /* KMIP §2.4 permits PGP Key versions 3 and 4; use the newer supported form. */
+    int32_t status = kmipkit_ttlv_value_integer(4, &pgp_key_version_value);
+    if (status == 0) status = kmipkit_ttlv_raw_tag_create(
+        UINT32_C(0x4200BE), &pgp_key_version_raw_tag);
+    if (status == 0) status = kmipkit_ttlv_raw_tag_try_checked(
+        pgp_key_version_raw_tag, &pgp_key_version_tag);
+    if (status == 0) status = kmipkit_ttlv_item_create(
+        pgp_key_version_tag, pgp_key_version_value, client->limits, &pgp_key_version_item);
+    if (status == 0) pgp_key_version_value = NULL;
+    if (status == 0) status = kmipkit_ttlv_value_enumeration(
+        KMIPKIT_ENUMERATION_KEY_FORMAT_TYPE_RAW, &key_format_value);
+    if (status == 0) status = kmipkit_ttlv_raw_tag_create(
+        UINT32_C(0x420042), &key_format_raw_tag);
+    if (status == 0) status = kmipkit_ttlv_raw_tag_try_checked(
+        key_format_raw_tag, &key_format_tag);
+    if (status == 0) status = kmipkit_ttlv_item_create(
+        key_format_tag, key_format_value, client->limits, &key_format_item);
+    if (status == 0) key_format_value = NULL;
+    if (status == 0) status = kmipkit_ttlv_value_byte_string(
+        client->limits, key_material_bytes, sizeof(key_material_bytes), &key_material_value);
+    if (status == 0) status = kmipkit_ttlv_raw_tag_create(
+        UINT32_C(0x420043), &key_material_raw_tag);
+    if (status == 0) status = kmipkit_ttlv_raw_tag_try_checked(
+        key_material_raw_tag, &key_material_tag);
+    if (status == 0) status = kmipkit_ttlv_item_create(
+        key_material_tag, key_material_value, client->limits, &key_material_item);
+    if (status == 0) key_material_value = NULL;
+    if (status == 0) {
+        key_value_fields[0] = key_material_item;
+        status = kmipkit_key_value_from_fields(
+            KMIPKIT_ENUMERATION_KEY_FORMAT_TYPE_RAW,
+            key_value_fields, 1, &key_value_item);
+    }
+    if (status == 0) {
+        key_block_fields[0] = key_format_item;
+        key_block_fields[1] = key_value_item;
+        status = kmipkit_key_block_from_fields(key_block_fields, 2, &key_block_item);
+    }
+    if (status == 0) {
+        pgp_key_fields[0] = pgp_key_version_item;
+        pgp_key_fields[1] = key_block_item;
+        status = kmipkit_pgp_key_from_fields(pgp_key_fields, 2, &pgp_key_item);
+    }
+    if (status == 0 && !create_cryptographic_key_attributes(
+            client, KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_RSA, 2048, &attributes)) {
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    }
+    if (status == 0) {
+        status = kmipkit_ttlv_value_integer(
+            (int32_t)KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_SIGN, &key_material_value);
+    }
+    if (status == 0 && !append_ttlv_value(
+            client, &attributes, UINT32_C(0x42002C), &key_material_value)) {
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    }
+    if (status == 0) {
+        kmipkit_ttlv_structure_t *owned_attributes = attributes;
+        attributes = NULL;
+        status = kmipkit_register_request_create(
+            KMIPKIT_ENUMERATION_OBJECT_TYPE_PGP_KEY,
+            owned_attributes, pgp_key_item, &request);
+        pgp_key_item = NULL;
+    }
+    if (status == 0) {
+        status = kmipkit_client_batch_item_register(request, out_item);
+        request = NULL;
+    }
+    if (request) kmipkit_register_request_release(request);
+    if (attributes) kmipkit_ttlv_structure_release(attributes);
+    if (pgp_key_item) kmipkit_ttlv_item_release(pgp_key_item);
+    if (key_block_item) kmipkit_ttlv_item_release(key_block_item);
+    if (key_value_item) kmipkit_ttlv_item_release(key_value_item);
+    if (key_material_item) kmipkit_ttlv_item_release(key_material_item);
+    if (key_format_item) kmipkit_ttlv_item_release(key_format_item);
+    if (pgp_key_version_item) kmipkit_ttlv_item_release(pgp_key_version_item);
+    if (key_material_tag) kmipkit_tag_release(key_material_tag);
+    if (key_format_tag) kmipkit_tag_release(key_format_tag);
+    if (pgp_key_version_tag) kmipkit_tag_release(pgp_key_version_tag);
+    if (key_material_raw_tag) kmipkit_raw_tag_release(key_material_raw_tag);
+    if (key_format_raw_tag) kmipkit_raw_tag_release(key_format_raw_tag);
+    if (pgp_key_version_raw_tag) kmipkit_raw_tag_release(pgp_key_version_raw_tag);
+    if (key_material_value) kmipkit_ttlv_value_release(key_material_value);
+    if (key_format_value) kmipkit_ttlv_value_release(key_format_value);
+    if (pgp_key_version_value) kmipkit_ttlv_value_release(pgp_key_version_value);
+    memset(key_material_bytes, 0, sizeof(key_material_bytes));
+    return status;
+}
+
 static int32_t build_opaque_object_register_item(
     kmip_live_client_t *client,
     kmipkit_client_batch_item_t **out_item) {
@@ -6248,8 +6361,11 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         strcmp(test_case->case_id, "test-obj-certificate-request") == 0;
     bool register_opaque_object_workflow =
         strcmp(test_case->case_id, "test-obj-opaque-object") == 0;
+    bool register_pgp_key_workflow =
+        strcmp(test_case->case_id, "test-obj-pgp-key") == 0;
     bool register_object_workflow = register_certificate_object_workflow ||
         register_opaque_object_workflow ||
+        register_pgp_key_workflow ||
         register_certificate_request_workflow;
     bool register_certificate_workflow = certificate_attributes_workflow ||
         register_certificate_object_workflow;
@@ -6376,6 +6492,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         KMIPKIT_ENUMERATION_OBJECT_TYPE_PUBLIC_KEY :
         register_certificate_request_workflow ? KMIPKIT_ENUMERATION_OBJECT_TYPE_CERTIFICATE_REQUEST :
         register_opaque_object_workflow ? KMIPKIT_ENUMERATION_OBJECT_TYPE_OPAQUE_OBJECT :
+        register_pgp_key_workflow ? KMIPKIT_ENUMERATION_OBJECT_TYPE_PGP_KEY :
         register_certificate_workflow ? KMIPKIT_ENUMERATION_OBJECT_TYPE_CERTIFICATE :
         KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY;
     bool revoke_workflow = strcmp(test_case->case_id, "test-op-revoke") == 0;
@@ -6621,18 +6738,27 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION,
             .enumeration_value = KMIPKIT_ENUMERATION_UNIQUE_IDENTIFIER_ID_PLACEHOLDER
         };
-        request_construction_step = register_opaque_object_workflow ? "Register Opaque Object" :
+        request_construction_step = register_pgp_key_workflow ? "Register PGP Key" :
+            register_opaque_object_workflow ? "Register Opaque Object" :
             register_certificate_request_workflow ? "Register Certificate Request" :
             register_certificate_workflow ? "Register Certificate" :
             rsa_key_workflow ? "RSA key Attributes" : "symmetric key Attributes";
         status = (register_certificate_workflow || register_certificate_request_workflow ||
-                  register_opaque_object_workflow) ? 0 : (rsa_key_workflow ?
+                  register_opaque_object_workflow || register_pgp_key_workflow) ? 0 : (rsa_key_workflow ?
             create_rsa_key_attributes(client, &request_attributes) :
             create_symmetric_key_attributes(client, &request_attributes)) ? 0 : -1;
         if (status == 0 && create_storage_masks_workflow) {
             status = kmipkit_ttlv_structure_create(&request_storage_masks);
         }
-        if (status == 0 && register_opaque_object_workflow) {
+        if (status == 0 && register_pgp_key_workflow) {
+            status = build_pgp_key_register_item(
+                client, create_workflow ? &item : &setup_item);
+            if (status == 0 && !request_item_is_valid(
+                    create_workflow ? item : setup_item,
+                    request_validation_diagnostic, sizeof(request_validation_diagnostic))) {
+                status = KMIPKIT_ERROR_INVALID_INPUT;
+            }
+        } else if (status == 0 && register_opaque_object_workflow) {
             status = build_opaque_object_register_item(
                 client, create_workflow ? &item : &setup_item);
             if (status == 0 && !request_item_is_valid(
@@ -7407,7 +7533,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         }
         uint32_t response_object_type = 0;
         status = (register_certificate_workflow || register_certificate_request_workflow ||
-                  register_opaque_object_workflow) ?
+                  register_opaque_object_workflow || register_pgp_key_workflow) ?
             kmipkit_client_batch_item_response_register(
                 setup_response_item, &created_identifier_present, &created_identifier) :
             kmipkit_client_batch_item_response_create(
@@ -7415,7 +7541,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                 &response_object_type, &created_identifier);
         if (status != 0 || !created_identifier_present ||
             (!(register_certificate_workflow || register_certificate_request_workflow ||
-               register_opaque_object_workflow) &&
+               register_opaque_object_workflow || register_pgp_key_workflow) &&
              response_object_type != requested_object_type) ||
             created_identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
             created_identifier.text_length == 0 || !created_identifier.text_data) {
@@ -7425,7 +7551,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             goto cleanup;
         }
         if ((register_certificate_workflow || register_certificate_request_workflow ||
-             register_opaque_object_workflow) &&
+             register_opaque_object_workflow || register_pgp_key_workflow) &&
             !response_ttlv_matches_identifier(
                 setup_response_item, kmipkit_client_batch_item_response_register_ttlv,
                 &created_identifier, &status)) {

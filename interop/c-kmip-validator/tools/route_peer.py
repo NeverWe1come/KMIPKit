@@ -411,6 +411,7 @@ RECIPES = {
     'test-op-set-defaults': ((54,), 'set_defaults'),
     'test-op-delete-attribute': ((1, 13, 15, 19, 20), 'delete_attribute'),
     'test-obj-opaque-object': ((3, 20), 'register_opaque_object'),
+    'test-obj-pgp-key': ((3, 20), 'register_pgp_key'),
     'test-obj-certificate': ((3, 20), 'register'),
     'test-obj-certificate-request': ((3, 20), 'register_certificate_request'),
     'test-batch-create-activate-destroy': ((1, 18, 12, 19, 20), 'create_activate_attribute_list_revoke_destroy'),
@@ -1296,6 +1297,30 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
                     opaque_data_value is None or opaque_data_value[1] != 8 or
                     opaque_data_value[2] != b'opaque-register-data'):
                 raise ValueError('fixture_register_opaque_object_shape_mismatch')
+        elif selected_recipe[1] == 'register_pgp_key':
+            pgp_key = next(descendants(register_item, 0x4200BD), None)
+            version = next(descendants(pgp_key, 0x4200BE), None) \
+                if pgp_key is not None else None
+            key_block = next(descendants(pgp_key, 0x420040), None) \
+                if pgp_key is not None else None
+            key_value = next(descendants(key_block, 0x420045), None) \
+                if key_block is not None else None
+            key_format = next(descendants(key_block, 0x420042), None) \
+                if key_block is not None else None
+            key_material = next(descendants(key_value, 0x420043), None) \
+                if key_value is not None else None
+            if (numbers(node, 0x420057) != [9] or pgp_key is None or
+                    pgp_key[1] != 1 or [field[0] for field in pgp_key[2]] != [0x4200BE, 0x420040] or
+                    version is None or version[1] != 2 or version[2] != b'\x00\x00\x00\x04' or
+                    key_block is None or key_block[1] != 1 or key_format is None or
+                    key_format[1] != 5 or numbers(key_block, 0x420042) != [1] or
+                    key_value is None or key_value[1] != 1 or key_material is None or
+                    key_material[1] != 8 or key_material[2] != b'\xa1' or
+                    attributes is None or attributes[1] != 1 or
+                    numbers(attributes, 0x420028) != [4] or
+                    numbers(attributes, 0x42002A) != [2048] or
+                    numbers(attributes, 0x42002C) != [1]):
+                raise ValueError('fixture_register_pgp_key_shape_mismatch')
         elif selected_recipe[1] == 'register_certificate_request':
             certificate_request = next(descendants(register_item, 0x420018), None)
             request_value = next(descendants(register_item, 0x420140), None)
