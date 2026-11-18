@@ -639,7 +639,11 @@ final class LocalCatalogRouteChecks {
                             "Compromise Occurrence Date", "Validity Date", "Key Format Type",
                             "Key Compression Type", "Secret Data Type", "Split Key Method", "Prime Field Size",
                             "Split Key Parts", "Split Key Threshold", "Attribute Reference",
-                            "Private Key Unique Identifier", "Certificate")
+                            "Private Key Unique Identifier", "Certificate", "Application Namespace",
+                            "Attestation Type", "Cancellation Result", "Client Registration Method",
+                            "Last Change Date", "Object Group Member", "Operation",
+                            "Certificate Request Unique Identifier", "Public Key Unique Identifier",
+                            "Validity Indicator")
                             .contains(fieldName)
                     || !requires.path("operation_id").asText().startsWith("KMIPKIT-ELEM-OP-C2S-")
                     || !"local_model".equals(testCase.path("execution").path("mode").asText())
@@ -687,7 +691,11 @@ final class LocalCatalogRouteChecks {
                             "Compromise Occurrence Date", "Validity Date", "Key Format Type",
                             "Key Compression Type", "Secret Data Type", "Split Key Method", "Prime Field Size",
                             "Split Key Parts", "Split Key Threshold", "Attribute Reference",
-                            "Private Key Unique Identifier", "Certificate")
+                            "Private Key Unique Identifier", "Certificate", "Application Namespace",
+                            "Attestation Type", "Cancellation Result", "Client Registration Method",
+                            "Last Change Date", "Object Group Member", "Operation",
+                            "Certificate Request Unique Identifier", "Public Key Unique Identifier",
+                            "Validity Indicator")
                             .contains(fieldName)
                     || !operationId.startsWith("KMIPKIT-ELEM-OP-C2S-")) {
                 throw new IllegalArgumentException("Selected case is not a supported client scalar payload: "
@@ -730,7 +738,9 @@ final class LocalCatalogRouteChecks {
                 continue;
             }
             TtlvItemType itemType = switch (fieldName) {
-                case "Unique Identifier", "Private Key Unique Identifier" -> TtlvItemType.TextString;
+                case "Unique Identifier", "Private Key Unique Identifier", "Public Key Unique Identifier",
+                        "Certificate Request Unique Identifier", "Application Namespace", "Object Group Member" ->
+                    TtlvItemType.TextString;
                 case "Correlation Value", "Asynchronous Correlation Value", "Data", "IV/Counter/Nonce",
                         "Certificate Request Value", "Authenticated Encryption Additional Data",
                         "Authenticated Encryption Tag", "Digested Data" ->
@@ -738,6 +748,8 @@ final class LocalCatalogRouteChecks {
                 case "Object Type", "Certificate Request Type", "Key Wrap Type", "Query Function",
                         "Attribute Reference" ->
                     TtlvItemType.Enumeration;
+                case "Attestation Type", "Cancellation Result", "Client Registration Method", "Operation",
+                        "Validity Indicator" -> TtlvItemType.Enumeration;
                 case "Key Format Type", "Key Compression Type", "Secret Data Type", "Split Key Method" ->
                     TtlvItemType.Enumeration;
                 case "Lease Time" -> TtlvItemType.Integer;
@@ -745,7 +757,8 @@ final class LocalCatalogRouteChecks {
                 case "Init Indicator", "Final Indicator" -> TtlvItemType.Boolean;
                 case "Adjustment Type" -> TtlvItemType.Enumeration;
                 case "Interop Identifier", "Log Message" -> TtlvItemType.TextString;
-                case "Compromise Occurrence Date", "Validity Date" -> TtlvItemType.DateTime;
+                case "Compromise Occurrence Date", "Validity Date", "Last Change Date" ->
+                    TtlvItemType.DateTime;
                 case "Adjustment Value", "Cryptographic Usage Mask", "Storage Status Mask",
                         "Data Length", "Maximum Items", "Offset Items", "Offset", "Request Count",
                         "Prime Field Size", "Split Key Parts", "Split Key Threshold" ->
@@ -760,6 +773,12 @@ final class LocalCatalogRouteChecks {
                 case "Key Wrap Type" -> enumValue(catalog, "KEY-WRAP-TYPE", "As Registered");
                 case "Query Function" -> enumValue(catalog, "QUERY-FUNCTION", "Query Operations");
                 case "Attribute Reference" -> tagCodeNamed(catalog, "Unique Identifier", version);
+                case "Attestation Type" -> enumValue(catalog, "ATTESTATION-TYPE", "TPM Quote");
+                case "Cancellation Result" -> enumValue(catalog, "CANCELLATION-RESULT", "Canceled");
+                case "Client Registration Method" ->
+                    enumValue(catalog, "CLIENT-REGISTRATION-METHOD", "Unspecified");
+                case "Operation" -> enumValue(catalog, "OPERATION", "Query");
+                case "Validity Indicator" -> enumValue(catalog, "VALIDITY-INDICATOR", "Valid");
                 case "Adjustment Type" -> enumValue(catalog, "ADJUSTMENT-TYPE", "Increment");
                 case "Key Format Type" -> enumValue(catalog, "KEY-FORMAT-TYPE", "Raw");
                 case "Key Compression Type" -> enumValue(catalog, "KEY-COMPRESSION-TYPE",
@@ -773,7 +792,7 @@ final class LocalCatalogRouteChecks {
                         "Replace Existing" -> 1;
                 case "Prime Field Size" -> 8;
                 case "Split Key Parts", "Split Key Threshold" -> 2;
-                case "Compromise Occurrence Date", "Validity Date" -> 1_700_000_000;
+                case "Compromise Occurrence Date", "Validity Date", "Last Change Date" -> 1_700_000_000;
                 case "Offset Items", "Offset" -> 0;
                 default -> 0;
             };
