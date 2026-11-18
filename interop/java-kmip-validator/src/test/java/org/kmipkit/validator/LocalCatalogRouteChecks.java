@@ -157,6 +157,7 @@ final class LocalCatalogRouteChecks {
             "test-norm-structure-member-structure-member-3-9-key-material-q",
             "test-norm-structure-member-structure-member-3-9-key-material-x");
     private static final Set<String> NON_INTEGER_TRANSPARENT_KEY_MATERIAL_CASE_IDS = Set.of(
+            "test-norm-structure-member-structure-member-3-4-key-material-key",
             "test-norm-structure-member-structure-member-3-11-key-material-recommended-curve",
             "test-norm-structure-member-structure-member-3-12-key-material-q-string",
             "test-norm-structure-member-structure-member-3-12-key-material-recommended-curve");
@@ -1606,6 +1607,7 @@ final class LocalCatalogRouteChecks {
             String section = parentId.substring("KMIPKIT-ELEM-OBJECT-STRUCTURE-3-".length(),
                     parentId.length() - "-KEY-MATERIAL".length());
             return switch (section) {
+                case "4" -> 7;   // Transparent Symmetric Key.
                 case "5" -> 8;   // Transparent DSA Private Key.
                 case "6" -> 9;   // Transparent DSA Public Key.
                 case "7" -> 10;  // Transparent RSA Private Key.
@@ -1623,6 +1625,7 @@ final class LocalCatalogRouteChecks {
 
     private static List<KeyFieldFixture> transparentKeyMaterialFixture(int formatRaw) {
         List<String> names = switch (formatRaw) {
+            case 7 -> List.of("Key");
             case 8 -> List.of("P", "Q", "G", "X");
             case 9 -> List.of("P", "Q", "G", "Y");
             case 10 -> List.of("Modulus", "Public Exponent", "Private Exponent", "P", "Q",
@@ -1640,6 +1643,9 @@ final class LocalCatalogRouteChecks {
             if ("Recommended Curve".equals(name)) {
                 fields.add(new KeyFieldFixture(name, TtlvItemType.Enumeration.code(),
                         ByteBuffer.allocate(Integer.BYTES).putInt(3).array()));
+            } else if ("Key".equals(name)) {
+                fields.add(new KeyFieldFixture(name, TtlvItemType.ByteString.code(),
+                        new byte[] {1, 2, 3, 4}));
             } else if ("Q String".equals(name)) {
                 byte[] point = new byte[65];
                 point[0] = 0x04;

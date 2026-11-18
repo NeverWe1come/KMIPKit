@@ -3639,6 +3639,19 @@ selected report validates 34,262/34,262 cells with zero failures and leaves
 37,379 of 71,641 planned cells pending. The generated ledger matches its
 checked-in reference, `git diff --check` passes, and the stack remains WIP.
 
+## #217 stack-tip verification after Transparent Symmetric Key routes — 2026-11-18
+
+The #217 tip includes Red commit `6fd9f4cf5` and Green commit `fe6cd8f3f`
+from #187. They add the §3.4 `Key` Byte String through `KeyMaterial`, `KeyValue`,
+and `KeyBlock` `fromFields`/`fromItem` routes in both KMIP versions. The branch
+continues to cover all eight Right Usage Limits cells.
+
+The full Java suite passes 84 tests; the shared evidence/schema/capability
+suites pass 108 tests; and the capability audit reports 1,507 routes. The
+selected report validates 34,274/34,274 cells with zero failures and leaves
+37,367 of 71,641 planned Java cells pending. The generated ledger matches its
+checked-in reference, `git diff --check` passes, and the stack remains WIP.
+
 The suite used a worktree-local Java temporary directory because `/tmp` was full:
 
 ```sh

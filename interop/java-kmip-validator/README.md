@@ -444,7 +444,8 @@ cells, with 37,415 of 71,641 cells still pending. The PR stack remains WIP.
 
 The #217 tip retains and verifies all eight Right Usage Limits structure
 member cells across KMIP 2.0 and 2.1. After synchronizing the EC public typed
-routes from #216, its full Java suite passes 84 tests and the shared
+and §3.4 Transparent Symmetric Key typed routes from #216, its full Java suite
+passes 84 tests and the shared
 evidence/schema/capability suites pass 108 tests. The capability audit reports
-1,507 routes; the selected report validates 34,262/34,262 cells with zero
-failures and 37,379 pending. The stack is still incomplete and WIP.
+1,507 routes; the selected report validates 34,274/34,274 cells with zero
+failures and 37,367 pending. The stack is still incomplete and WIP.
