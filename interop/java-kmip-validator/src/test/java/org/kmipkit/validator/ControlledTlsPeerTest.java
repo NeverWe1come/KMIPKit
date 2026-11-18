@@ -1184,6 +1184,7 @@ class ControlledTlsPeerTest {
                         clientCertificatePem, clientPrivateKeyPem);
                 appendPingVersionBoundaryRouteEvidence(events, serverCertificatePem, serverPrivateKeyPem,
                         clientCertificatePem, clientPrivateKeyPem);
+                assertSimpleVersionBoundaryRouteCoverage(events);
                 assertPingNetworkRouteCoverage(events);
                 assertPingVersionBoundaryRouteCoverage(events);
             }
@@ -7346,6 +7347,46 @@ class ControlledTlsPeerTest {
                     if ("send".equals(action)) {
                         assertEquals("not_sent", found.path("request_delivery_state").asText());
                         assertEquals(0, found.path("transport_invocation_count").asInt());
+                    }
+                }
+            }
+        }
+    }
+
+    private static void assertSimpleVersionBoundaryRouteCoverage(ArrayNode events) {
+        List<String[]> operations = List.of(
+                new String[] {"test-v20-reject-get-constraints", "get_constraints",
+                        "KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS"},
+                new String[] {"test-v20-reject-set-constraints", "set_constraints",
+                        "KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS"},
+                new String[] {"test-v20-reject-set-defaults", "set_defaults",
+                        "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS"});
+        for (String[] operation : operations) {
+            String caseId = operation[0];
+            String routeId = "java.typed-protocol.client_batch_item." + operation[1];
+            String targetId = operation[2];
+            for (String encoding : List.of("TTLV", "JSON", "XML")) {
+                for (String transport : List.of("raw_tls", "https")) {
+                    for (String action : List.of("construct", "send")) {
+                        JsonNode found = null;
+                        for (JsonNode event : events) {
+                            if (caseId.equals(event.path("case_id").asText())
+                                    && routeId.equals(event.path("route_id").asText())
+                                    && targetId.equals(event.path("target_id").asText())
+                                    && "2.0".equals(event.path("protocol_version").asText())
+                                    && encoding.equals(event.path("encoding").asText())
+                                    && transport.equals(event.path("transport").asText())
+                                    && action.equals(event.path("action").asText())) {
+                                found = event;
+                                break;
+                            }
+                        }
+                        assertTrue(found != null, "Missing KMIP 2.0 version boundary evidence for "
+                                + caseId + " / " + encoding + " / " + transport + " / " + action);
+                        if ("send".equals(action)) {
+                            assertEquals("not_sent", found.path("request_delivery_state").asText());
+                            assertEquals(0, found.path("transport_invocation_count").asInt());
+                        }
                     }
                 }
             }
