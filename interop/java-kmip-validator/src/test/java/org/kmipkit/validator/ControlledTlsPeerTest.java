@@ -868,6 +868,7 @@ class ControlledTlsPeerTest {
         int dateTimeAttributeValueRouteEventCount = 0;
         int enumerationAttributeValueRouteEventCount = 0;
         int scalarAttributeValueRouteEventCount = 0;
+        int textStringTargetRouteEventCount = 0;
         Set<String> booleanFieldCaseIds = new java.util.HashSet<>();
         Set<String> anyObjectAttributeCaseIds = new java.util.HashSet<>();
         Set<String> scalarStructureMemberCaseIds = new java.util.LinkedHashSet<>();
@@ -879,6 +880,7 @@ class ControlledTlsPeerTest {
         Set<String> dateTimeAttributeValueCaseIds = new java.util.LinkedHashSet<>();
         Set<String> enumerationAttributeValueCaseIds = new java.util.LinkedHashSet<>();
         Set<String> scalarAttributeValueCaseIds = new java.util.LinkedHashSet<>();
+        Set<String> textStringTargetCaseIds = new java.util.LinkedHashSet<>();
 
         for (String protocolVersion : KMIP_2_0_AND_2_1) {
             appendLocalQueryRouteEvents(events, protocolVersion, requestTreeHash);
@@ -1190,6 +1192,16 @@ class ControlledTlsPeerTest {
                 appendLocalCatalogInvocation(events, protocolVersion, invocation);
             }
             scalarAttributeValueRouteEventCount += scalarAttributeValueInvocations.size();
+            Set<String> missingTextStringTargetCases = LocalCatalogRouteChecks.missingTextStringTargetCaseIds(
+                    readRouteEvidenceCatalog(), events, protocolVersion);
+            textStringTargetCaseIds.addAll(missingTextStringTargetCases);
+            List<LocalCatalogRouteChecks.Invocation> textStringTargetInvocations = new ArrayList<>();
+            LocalCatalogRouteChecks.executeTextStringTargets(readRouteEvidenceCatalog(), protocolVersion,
+                    missingTextStringTargetCases, textStringTargetInvocations::add);
+            for (LocalCatalogRouteChecks.Invocation invocation : textStringTargetInvocations) {
+                appendLocalCatalogInvocation(events, protocolVersion, invocation);
+            }
+            textStringTargetRouteEventCount += textStringTargetInvocations.size();
             List<LocalCatalogRouteChecks.Invocation> attributeStructureInvocations = new ArrayList<>();
             LocalCatalogRouteChecks.executeAttributeStructures(readRouteEvidenceCatalog(), protocolVersion,
                     Set.of("test-norm-attribute-structure-attribute-structure-5-1-attributes"),
@@ -1245,7 +1257,8 @@ class ControlledTlsPeerTest {
         int additionalCaseIdCount = writeRouteExecutionReport(reportPath, mapper, events,
                 scalarStructureMemberCaseIds, serverPayloadCaseIds, correlationPayloadCaseIds,
                 structureAttributeValueCaseIds, textAttributeValueCaseIds, booleanAttributeValueCaseIds,
-                dateTimeAttributeValueCaseIds, enumerationAttributeValueCaseIds, scalarAttributeValueCaseIds);
+                dateTimeAttributeValueCaseIds, enumerationAttributeValueCaseIds, scalarAttributeValueCaseIds,
+                textStringTargetCaseIds);
         assertTrue(Files.isRegularFile(reportPath),
                 "Installed client calls against the controlled TLS peer must emit route execution evidence.");
         JsonNode report = new ObjectMapper().readTree(reportPath.toFile());
@@ -1799,6 +1812,7 @@ class ControlledTlsPeerTest {
                         + dateTimeAttributeValueRouteEventCount
                         + enumerationAttributeValueRouteEventCount
                         + scalarAttributeValueRouteEventCount
+                        + textStringTargetRouteEventCount
                         + 97 // BEC, batch IDs, async payload, Ping, Endpoint Role, Object Defaults, derivation, and Extension Information member cells.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Type generic and typed Attribute routes.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Value generic and typed Attribute routes.
@@ -4128,7 +4142,7 @@ class ControlledTlsPeerTest {
             Set<String> correlationPayloadCaseIds, Set<String> structureAttributeValueCaseIds,
             Set<String> textAttributeValueCaseIds, Set<String> booleanAttributeValueCaseIds,
             Set<String> dateTimeAttributeValueCaseIds, Set<String> enumerationAttributeValueCaseIds,
-            Set<String> scalarAttributeValueCaseIds)
+            Set<String> scalarAttributeValueCaseIds, Set<String> textStringTargetCaseIds)
             throws Exception {
         Path catalogPath = routeEvidenceCatalogPath();
         Path manifestPath = Path.of("../shared/coverage/route-capabilities.json");
@@ -4225,6 +4239,7 @@ class ControlledTlsPeerTest {
         additionalCaseIdCount += appendCaseIds(caseIds, dateTimeAttributeValueCaseIds);
         additionalCaseIdCount += appendCaseIds(caseIds, enumerationAttributeValueCaseIds);
         additionalCaseIdCount += appendCaseIds(caseIds, scalarAttributeValueCaseIds);
+        additionalCaseIdCount += appendCaseIds(caseIds, textStringTargetCaseIds);
         appendItemTypeEnumerationCaseIds(caseIds, events);
         caseIds.add("test-enum-pkcs#11-function");
         caseIds.add("test-enum-pkcs#11-return-code");
