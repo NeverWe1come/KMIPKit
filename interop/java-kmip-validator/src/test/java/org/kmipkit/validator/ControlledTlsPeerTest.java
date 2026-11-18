@@ -1308,6 +1308,21 @@ class ControlledTlsPeerTest {
         assertTagAggregateEvidence(report.path("events"));
         assertTypedTagIdentityEvidence(report.path("events"));
         assertReferencedPkcs11Evidence(report.path("events"));
+        for (JsonNode testCase : readRouteEvidenceCatalog().path("test_cases")) {
+            if (!"managed_objects".equals(testCase.path("category").asText())) continue;
+            String caseId = testCase.path("case_id").asText();
+            String targetId = testCase.path("requires").path("normative_target_id").asText();
+            for (String version : KMIP_2_0_AND_2_1) {
+                for (String route : List.of(
+                        "java.generic-ttlv.ttlv_item.create",
+                        "java.generic-ttlv.function.ttlv_item_view_from_item",
+                        "java.generic-ttlv.ttlv_codec.decode")) {
+                    assertEquals("passed", findRouteEvent(report.path("events"), caseId, route,
+                            version, targetId).path("status").asText(),
+                            "KMIP 2.0/2.1 §11.34 Object Type cases must invoke each generic TTLV route.");
+                }
+            }
+        }
         assertTrue(enumerationFixtures.stream().noneMatch(fixture -> fixture.caseId().equals(
                         "test-norm-enumeration-value-profile-name-reserved-00000001-00000103")),
                 "A finite Profile Name range must remain pending until each named value is represented.");
