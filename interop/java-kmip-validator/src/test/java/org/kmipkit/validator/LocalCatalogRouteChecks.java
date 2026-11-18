@@ -628,7 +628,8 @@ final class LocalCatalogRouteChecks {
             JsonNode requires = testCase.path("requires");
             String fieldName = requires.path("field_name").asText();
             if (!"operation_payload_field".equals(requires.path("target_kind").asText())
-                    || !Set.of("Unique Identifier", "Correlation Value", "Object Type").contains(fieldName)
+                    || !Set.of("Unique Identifier", "Correlation Value", "Asynchronous Correlation Value",
+                            "Object Type", "Data", "IV/Counter/Nonce", "Lease Time").contains(fieldName)
                     || !requires.path("operation_id").asText().startsWith("KMIPKIT-ELEM-OP-C2S-")
                     || !"local_model".equals(testCase.path("execution").path("mode").asText())
                     || !applies(testCase, version)) continue;
@@ -664,7 +665,8 @@ final class LocalCatalogRouteChecks {
             String fieldName = requires.path("field_name").asText();
             String operationId = requires.path("operation_id").asText();
             if (!"operation_payload_field".equals(requires.path("target_kind").asText())
-                    || !Set.of("Unique Identifier", "Correlation Value", "Object Type").contains(fieldName)
+                    || !Set.of("Unique Identifier", "Correlation Value", "Asynchronous Correlation Value",
+                            "Object Type", "Data", "IV/Counter/Nonce", "Lease Time").contains(fieldName)
                     || !operationId.startsWith("KMIPKIT-ELEM-OP-C2S-")) {
                 throw new IllegalArgumentException("Selected case is not a supported client scalar payload: "
                         + caseId);
@@ -673,16 +675,22 @@ final class LocalCatalogRouteChecks {
             int tagCode = tagCodeNamed(catalog, fieldName, version);
             TtlvItemType itemType = switch (fieldName) {
                 case "Unique Identifier" -> TtlvItemType.TextString;
-                case "Correlation Value" -> TtlvItemType.ByteString;
+                case "Correlation Value", "Asynchronous Correlation Value", "Data", "IV/Counter/Nonce" ->
+                    TtlvItemType.ByteString;
                 case "Object Type" -> TtlvItemType.Enumeration;
+                case "Lease Time" -> TtlvItemType.Integer;
                 default -> throw new IllegalArgumentException("Unsupported client scalar payload field: "
                         + fieldName);
             };
-            long numericValue = "Object Type".equals(fieldName)
-                    ? enumValue(catalog, "OBJECT-TYPE", "Symmetric Key") : 0;
+            long numericValue = switch (fieldName) {
+                case "Object Type" -> enumValue(catalog, "OBJECT-TYPE", "Symmetric Key");
+                case "Lease Time" -> 60;
+                default -> 0;
+            };
             byte[] fieldValue = switch (itemType) {
                 case TextString -> "kmipkit-route-identifier".getBytes(StandardCharsets.US_ASCII);
                 case ByteString -> "kmipkit-route-correlation".getBytes(StandardCharsets.US_ASCII);
+                case Integer -> ByteBuffer.allocate(Integer.BYTES).putInt(Math.toIntExact(numericValue)).array();
                 case Enumeration -> ByteBuffer.allocate(Integer.BYTES).putInt(Math.toIntExact(numericValue)).array();
                 default -> throw new IllegalArgumentException("Unsupported client scalar payload type: " + itemType);
             };
@@ -690,6 +698,7 @@ final class LocalCatalogRouteChecks {
             TtlvValue value = switch (itemType) {
                 case TextString -> TtlvValue.TextString(fieldValue, limits);
                 case ByteString -> TtlvValue.ByteString(fieldValue, limits);
+                case Integer -> TtlvValue.Integer(Math.toIntExact(numericValue));
                 case Enumeration -> TtlvValue.Enumeration(numericValue);
                 default -> throw new IllegalArgumentException("Unsupported client scalar payload type: " + itemType);
             };
