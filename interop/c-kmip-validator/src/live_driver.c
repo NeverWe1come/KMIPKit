@@ -6054,6 +6054,8 @@ static kmip_execution_outcome_t execute_rekey(kmip_live_client_t *client) {
     kmipkit_client_batch_item_t *items[5] = {NULL};
     kmipkit_client_batch_item_response_t *responses[5] = {NULL};
     kmipkit_ttlv_structure_t *attributes = NULL;
+    kmipkit_ttlv_structure_t *response_ttlv = NULL;
+    kmipkit_ttlv_structure_view_t *response_ttlv_view = NULL;
     kmipkit_ttlv_value_t *value = NULL;
     kmipkit_authentication_t *authentication = NULL;
     kmipkit_unique_identifier_v1_t original_identifier = {
@@ -6063,7 +6065,9 @@ static kmip_execution_outcome_t execute_rekey(kmip_live_client_t *client) {
         .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1
     };
     uint8_t identifier_present = 0;
+    uint8_t response_ttlv_present = 0;
     uint32_t object_type = 0;
+    uint64_t response_ttlv_item_count = 0;
     int32_t status = create_cryptographic_key_attributes(
         client, KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES, 128, &attributes) ?
         0 : KMIPKIT_ERROR_INVALID_INPUT;
@@ -6167,6 +6171,14 @@ static kmip_execution_outcome_t execute_rekey(kmip_live_client_t *client) {
             !replacement_identifier.text_data || !replacement_identifier.text_length ||
             same_text_identifier(&replacement_identifier, &original_identifier)))
         status = KMIPKIT_ERROR_INVALID_INPUT;
+    if (status == 0) status = kmipkit_client_batch_item_response_rekey_ttlv(
+        responses[0], &response_ttlv_present, &response_ttlv);
+    if (status == 0 && (!response_ttlv_present || !response_ttlv))
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    if (status == 0) status = kmipkit_ttlv_structure_view(response_ttlv, &response_ttlv_view);
+    if (status == 0) status = kmipkit_ttlv_structure_view_item_count(
+        response_ttlv_view, &response_ttlv_item_count);
+    if (status == 0 && response_ttlv_item_count == 0) status = KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0 && (!destroy_response_matches_key(
             responses[2], &replacement_identifier, &status) ||
             !destroy_response_matches_key(responses[4], &original_identifier, &status)))
@@ -6195,6 +6207,8 @@ static kmip_execution_outcome_t execute_rekey(kmip_live_client_t *client) {
     if (rekey_batch) kmipkit_client_batch_release(rekey_batch);
     if (create_response) kmipkit_client_batch_response_release(create_response);
     if (create_batch) kmipkit_client_batch_release(create_batch);
+    if (response_ttlv_view) kmipkit_ttlv_structure_view_release(response_ttlv_view);
+    if (response_ttlv) kmipkit_ttlv_structure_release(response_ttlv);
     if (attributes) kmipkit_ttlv_structure_release(attributes);
     if (value) kmipkit_ttlv_value_release(value);
     return outcome;

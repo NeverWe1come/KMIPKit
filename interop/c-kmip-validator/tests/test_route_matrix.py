@@ -3503,6 +3503,7 @@ class RouteMatrixTests(unittest.TestCase):
             'kmipkit_client_batch_item_response_create',
             'kmipkit_client_batch_item_rekey',
             'kmipkit_client_batch_item_response_rekey',
+            'kmipkit_client_batch_item_response_rekey_ttlv',
             'kmipkit_client_batch_item_revoke',
             'kmipkit_client_batch_item_destroy',
             'kmipkit_client_execute',
