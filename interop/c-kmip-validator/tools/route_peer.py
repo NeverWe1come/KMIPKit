@@ -2455,6 +2455,46 @@ def assert_poll_request(node, version):
         raise ValueError('fixture_poll_correlation_mismatch')
 
 
+def assert_discover_versions_request(node, version):
+    """Check the message version and the C builder's fixed 2.1 offer."""
+    header = next((child for child in node[2]
+                   if child[0] == 0x420077 and child[1] == 1), None)
+    items = [child for child in node[2]
+             if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1] if items else []
+    offered_versions = [child for child in payloads[0][2]
+                        if child[0] == 0x420069 and child[1] == 1] if len(payloads) == 1 else []
+    if (header is None or
+            numbers(header, 0x42006A) != [2] or
+            numbers(header, 0x42006B) != [int(version[-1])] or
+            len(items) != 1 or numbers(items[0], 0x42005C) != [30] or
+            len(offered_versions) != 1 or
+            numbers(offered_versions[0], 0x42006A) != [2] or
+            numbers(offered_versions[0], 0x42006B) != [1]):
+        raise ValueError('fixture_discover_versions_fixed_offer_mismatch')
+
+
+def assert_discover_versions_response(node, version):
+    """Check that the fixture returns the intersection with the fixed offer."""
+    header = next(descendants(node, 0x42007A), None)
+    items = [child for child in node[2]
+             if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1] if items else []
+    supported_versions = [child for child in payloads[0][2]
+                          if child[0] == 0x420069 and child[1] == 1] if len(payloads) == 1 else []
+    if (header is None or
+            numbers(header, 0x42006A) != [2] or
+            numbers(header, 0x42006B) != [int(version[-1])] or
+            len(items) != 1 or numbers(items[0], 0x42005C) != [30] or
+            numbers(items[0], 0x42007F) != [0] or
+            len(supported_versions) != 1 or
+            numbers(supported_versions[0], 0x42006A) != [2] or
+            numbers(supported_versions[0], 0x42006B) != [1]):
+        raise ValueError('fixture_discover_versions_response_mismatch')
+
+
 def assert_async_failure_poll_request(node, version):
     """Require Poll with the exact pending Create correlation under KMIP 2.0 or 2.1."""
     items = [item for item in node[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
@@ -3992,25 +4032,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         wire = read_request(stream, encoding, transport, initial)
                                         request_tree = codec.decode(wire, encoding)
                                         if recipe[1] == 'discover_versions':
-                                            header = next((child for child in request_tree[2]
-                                                           if child[0] == 0x420077 and child[1] == 1), None)
-                                            batch_items = [child for child in request_tree[2]
-                                                           if child[0] == BATCH_ITEM_TAG and child[1] == 1]
-                                            request_payloads = [child for child in batch_items[0][2]
-                                                                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1] \
-                                                if batch_items else []
-                                            offered_versions = [child for child in request_payloads[0][2]
-                                                                if child[0] == 0x420069 and child[1] == 1] \
-                                                if len(request_payloads) == 1 else []
-                                            if (header is None or
-                                                    numbers(header, 0x42006A) != [2] or
-                                                    numbers(header, 0x42006B) != [int(version[-1])] or
-                                                    len(batch_items) != 1 or
-                                                    numbers(batch_items[0], 0x42005C) != [30] or
-                                                    len(offered_versions) != 1 or
-                                                    numbers(offered_versions[0], 0x42006A) != [2] or
-                                                    numbers(offered_versions[0], 0x42006B) != [1]):
-                                                raise ValueError('fixture_discover_versions_fixed_offer_mismatch')
+                                            assert_discover_versions_request(request_tree, version)
                                         reject_this_exchange = reject_case and exchange_index == peer_rejection.get(
                                             'exchange_index')
                                         cleanup_exchange = (
@@ -4524,6 +4546,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             response_wire = omit_export_response_field(
                                                 response_wire, case['requires']['field_name'])
                                         response_tree = parse(response_wire)
+                                        if recipe[1] == 'discover_versions':
+                                            assert_discover_versions_response(response_tree, version)
                                         if logout_recipe:
                                             verify_login_logout_response(response_tree, exchange_index)
                                         elif recipe[1] == 'async_poll_cancel_no_recursion':
