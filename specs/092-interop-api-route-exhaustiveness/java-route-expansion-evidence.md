@@ -3631,3 +3631,28 @@ All 85 Java validator tests pass. The selected report validates 34,678/34,678
 cells with zero failures; 36,963 of 71,641 remain pending. The shared suites
 pass 108 tests, all 1,507 public routes pass the capability audit, and the
 generated ledger matches its reference. Full Java matrix closure remains open.
+
+## Java key-bearing managed-object root routes — 2026-11-18
+
+Red commit `a76832637` requires the Symmetric Key, Private Key, and Public Key
+root structures to execute through their named factories and both generic
+managed-object factories; it fails because the recipe is missing. Green commit
+`10afa5ac8` constructs each object with a Key Block containing Raw Key Material
+and verifies the parsed object type and required Key Block. A second Red,
+`f1552eebe`, showed that the controlled report did not include those invocations.
+Green commit `2457ade76` adds the three routes per object and protocol version
+to the report and generated ledger. Refactor commit `178686b75` verifies the
+fixture target against the exact catalog identity before recording evidence.
+The bytes are deterministic test fixtures, not production key material
+(KMIP 2.0/2.1 §§2.5, 2.6, 2.9, 3.1, 3.2, and 11.25).
+
+The two focused Java route tests pass. The full Java suite passes 86/86 tests;
+the shared route suites pass 109/109 tests, and the capability audit accepts
+all 1,507 routes. The selected report validates 34,696/34,696 cells with zero
+failures. The generated ledger comparison passes after a follow-up
+determinism fix: Red commit `c5e78d52d` showed that preserving the incoming
+case-ID order caused the comparison to fail across otherwise identical runs;
+Green commit `7d478fe82` sorts the IDs, and Refactor commit `0fb31cfa6` makes
+the normalization step explicit. The canonical Java ledger records 71,641
+planned, 34,696 executed, and 36,945 pending cells. The full matrix remains
+incomplete and the PR remains WIP.

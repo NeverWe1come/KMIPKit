@@ -275,3 +275,33 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
 - The matrix remains incomplete at 26,921/71,649 executed and 44,728 pending
   cells across 1,254 case IDs. T006, T007, and T009 remain open; the PR stays
   WIP.
+
+## Development evidence: Java key-bearing managed-object root routes
+
+- Red commit `a76832637` added the required test for the Symmetric Key,
+  Private Key, and Public Key root structures; it failed to compile because
+  the focused route recipe did not exist.
+- Green commit `10afa5ac8` exercises each matching named factory plus
+  `ManagedObject.fromFields` and `ManagedObject.fromItem` with a Key Block
+  containing Raw Key Material. Report Red commit `f1552eebe` then proved that
+  the selected evidence omitted those exact installed-package routes; Green
+  commit `2457ade76` added them to the report and generated ledger. Refactor
+  commit `178686b75` binds fixture identities to the exact catalog target.
+- Verification: both focused Java route tests passed; the controlled report
+  validates 34,696/34,696 selected cells with zero failures. The full ledger
+  now has 71,641 planned, 34,696 executed, and 36,945 pending cells. Full
+  Java matrix closure and exact-head CI remain open; T006, T007, and T009
+  remain incomplete.
+
+## Development evidence: deterministic Java evidence ledger
+
+- Red commit `c5e78d52d` added a regression proving that unordered declared
+  case IDs made otherwise equivalent evidence ledgers differ.
+- Green commit `7d478fe82` sorts the case IDs when building the ledger;
+  Refactor commit `0fb31cfa6` names the normalized input before assembling the
+  output. The focused regression and all 109 shared route tests pass, and the
+  capability audit accepts 1,507 routes.
+- The selected Java report validates 34,696/34,696 cells with zero failures.
+  Refreshing and rechecking the generated ledger now succeeds reproducibly;
+  36,945 of 71,641 Java cells remain pending. T006, T007, and T009 remain
+  open.
