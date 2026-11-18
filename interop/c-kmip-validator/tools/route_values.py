@@ -22,6 +22,11 @@ class ValueCases:
         self.abi.bind('kmipkit_credential_into_ttlv', [C.c_void_p, C.POINTER(C.c_void_p)])
         self.abi.library.kmipkit_credential_release.argtypes = [C.c_void_p]
         self.abi.library.kmipkit_credential_release.restype = None
+        self.abi.bind('kmipkit_client_batch_create', [C.POINTER(C.c_void_p)])
+        self.abi.bind('kmipkit_client_batch_set_asynchronous_indicator', [C.c_void_p, C.c_uint32])
+        self.abi.bind('kmipkit_client_batch_add_error_continuation_value', [C.c_void_p, C.c_uint32])
+        self.abi.library.kmipkit_client_batch_release.argtypes = [C.c_void_p]
+        self.abi.library.kmipkit_client_batch_release.restype = None
         self.catalog = catalog
         self.tags = {norm(target['name']): int(target['wire_value'], 16)
                      for target in catalog['normative_targets'] if target['kind'] == 'tag'}
@@ -52,6 +57,17 @@ class ValueCases:
             self.abi.release('credential', credential)
             self.abi.release('ttlv_structure', source)
             self.abi.release('codec_limits', limits)
+
+    def exercise_batch_enum_values(self, symbol, values):
+        self.abi.called.clear()
+        for value in values:
+            batch = C.c_void_p()
+            try:
+                self.abi.call('kmipkit_client_batch_create', C.byref(batch))
+                self.abi.call(symbol, batch, value)
+            finally:
+                self.abi.release('client_batch', batch)
+        return set(self.abi.called)
 
     def item_type_values(self, version):
         return sorted(int(target['wire_value'], 16) for target in self.catalog['normative_targets']
@@ -151,6 +167,7 @@ class ValueCases:
             sample_count += 1
         credential_type_values_checked = 0
         credential_model_roundtrips = 0
+        batch_option_values_checked = 0
         if type_name == 'Credential Type':
             self.abi.bind('kmipkit_credential_type_from_raw', [C.c_uint32, C.POINTER(C.c_uint32)])
             for value in [*known, *unknown_values]:
@@ -170,10 +187,20 @@ class ValueCases:
                 state.update(b'\n')
                 symbols.update(self.abi.called)
                 credential_model_roundtrips += 1
+        batch_option_symbol = {
+            'Asynchronous Indicator': 'kmipkit_client_batch_set_asynchronous_indicator',
+            'Batch Error Continuation Option': 'kmipkit_client_batch_add_error_continuation_value',
+        }.get(type_name)
+        if batch_option_symbol:
+            batch_option_values = [*known, *unknown_values]
+            symbols.update(self.exercise_batch_enum_values(batch_option_symbol, batch_option_values))
+            batch_option_values_checked = len(batch_option_values)
         result = {'tree_sha256': state.hexdigest(), 'invoked_symbols': symbols, 'sample_count': sample_count,
                   'known_values_checked': len(known), 'unknown_value_preserved': True,
                   'combination_count': count, 'tag': tag}
         if type_name == 'Credential Type':
             result['credential_type_values_checked'] = credential_type_values_checked
             result['credential_model_roundtrips'] = credential_model_roundtrips
+        if batch_option_symbol:
+            result['batch_option_values_checked'] = batch_option_values_checked
         return result
