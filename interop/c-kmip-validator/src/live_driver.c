@@ -5690,6 +5690,30 @@ static bool created_key_signature_response_matches(
     return valid;
 }
 
+static bool created_key_sign_failure_response_is_empty(
+    kmipkit_client_batch_item_response_t *item,
+    int32_t *out_status) {
+    uint8_t response_present = 1, signature_present = 1, correlation_present = 1;
+    kmipkit_unique_identifier_v1_t identifier = {
+        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1
+    };
+    kmipkit_byte_span_v1_t signature = {.data = (const uint8_t *)"unexpected", .length = 10};
+    kmipkit_byte_span_v1_t correlation = {.data = (const uint8_t *)"unexpected", .length = 10};
+    kmipkit_ttlv_structure_t *response_ttlv = NULL;
+    int32_t status = kmipkit_client_batch_item_response_sign(
+        item, &response_present, &identifier, &signature_present, &signature,
+        &correlation_present, &correlation);
+    if (status == 0) status = kmipkit_client_batch_item_response_sign_ttlv(
+        item, &response_present, &response_ttlv);
+    bool valid = status == 0 && !response_present && !signature_present && !signature.data &&
+        signature.length == 0 && !correlation_present && !correlation.data &&
+        correlation.length == 0 && !response_ttlv && identifier.kind == 0;
+    if (status == 0 && !valid) status = KMIPKIT_ERROR_INVALID_INPUT;
+    *out_status = status;
+    if (response_ttlv) kmipkit_ttlv_structure_release(response_ttlv);
+    return valid;
+}
+
 static kmip_execution_outcome_t execute_create_key_pair(kmip_live_client_t *client) {
     /* OASIS KMIP 2.0/2.1 §6.1.9 returns identifiers for both created objects. */
     static const uint32_t operations[] = {
@@ -7354,7 +7378,8 @@ cleanup:
 }
 
 static kmip_execution_outcome_t execute_created_key_signature(kmip_live_client_t *client,
-                                                               uint32_t operation) {
+                                                               uint32_t operation,
+                                                               bool expect_missing_parameters) {
     /* OASIS KMIP 2.0 §§6.1.49–6.1.50, 2.1 §§6.1.55–6.1.56, and §12.1. */
     bool verify = operation == KMIPKIT_ENUMERATION_OPERATION_SIGNATURE_VERIFY;
     static const uint32_t sign_operations[] = {
@@ -7435,10 +7460,11 @@ static kmip_execution_outcome_t execute_created_key_signature(kmip_live_client_t
     if (status == 0) status = kmipkit_client_batch_item_create_key_pair(
         common_attributes, private_attributes, public_attributes, NULL, NULL, NULL, &items[0]);
     if (status == 0) status = kmipkit_client_batch_item_activate(&target_identifier, &items[1]);
-    if (status == 0) status = kmipkit_ttlv_structure_create(&parameters);
-    if (status == 0) status = kmipkit_ttlv_value_enumeration(
+    if (status == 0 && !expect_missing_parameters)
+        status = kmipkit_ttlv_structure_create(&parameters);
+    if (status == 0 && !expect_missing_parameters) status = kmipkit_ttlv_value_enumeration(
         KMIPKIT_ENUMERATION_DIGITAL_SIGNATURE_ALGORITHM_SHA_256_WITH_RSA_ENCRYPTION, &value);
-    if (status == 0 && !append_ttlv_value(
+    if (status == 0 && !expect_missing_parameters && !append_ttlv_value(
             client, &parameters, UINT32_C(0x42004E), &value))
         status = KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0) status = batch_crypto_secret_value(
@@ -7498,7 +7524,12 @@ static kmip_execution_outcome_t execute_created_key_signature(kmip_live_client_t
         if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
             responses[index], &metadata);
         if (status == 0 && metadata.operation != operations[index]) status = KMIPKIT_ERROR_INVALID_INPUT;
-        if (status == 0 && metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
+        bool expected_sign_failure = expect_missing_parameters && index == 2 &&
+            metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_OPERATION_FAILED &&
+            metadata.has_result_reason &&
+            metadata.result_reason == KMIPKIT_ENUMERATION_RESULT_REASON_BAD_CRYPTOGRAPHIC_PARAMETERS;
+        if (status == 0 && metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS &&
+            !expected_sign_failure) {
             record_kmip_result(&outcome, &metadata);
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),
                      "controlled %s lifecycle item %zu was rejected (status=%u reason=%u)",
@@ -7530,7 +7561,9 @@ static kmip_execution_outcome_t execute_created_key_signature(kmip_live_client_t
         public_identifier.text_data && public_identifier.text_length &&
         !same_text_identifier(&private_identifier, &public_identifier) &&
         activate_response_matches_created_key(responses[1], target, &status) &&
-        created_key_signature_response_matches(responses[2], target, operation, &status) &&
+        (expect_missing_parameters ?
+            created_key_sign_failure_response_is_empty(responses[2], &status) :
+            created_key_signature_response_matches(responses[2], target, operation, &status)) &&
         revoke_response_matches_created_key(responses[3], target, &status) &&
         response_ttlv_matches_identifier(responses[3], kmipkit_client_batch_item_response_revoke_ttlv,
                                          target, &status) &&
@@ -7540,7 +7573,12 @@ static kmip_execution_outcome_t execute_created_key_signature(kmip_live_client_t
     outcome.library_failed = status != 0;
     outcome.library_validated = status == 0;
     outcome.has_result_status_code = status == 0;
-    outcome.result_status_code = KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS;
+    outcome.result_status_code = expect_missing_parameters ?
+        KMIPKIT_ENUMERATION_RESULT_STATUS_OPERATION_FAILED :
+        KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS;
+    outcome.has_result_reason_code = expect_missing_parameters;
+    outcome.result_reason_code = expect_missing_parameters ?
+        KMIPKIT_ENUMERATION_RESULT_REASON_BAD_CRYPTOGRAPHIC_PARAMETERS : 0;
     if (!valid) snprintf(outcome.result_reason, sizeof(outcome.result_reason),
         "KMIPKit %s response did not match the key pair, signature result, or cleanup results",
         operation_name);
@@ -7936,10 +7974,13 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     if (strcmp(test_case->case_id, "test-op-obtain-lease") == 0)
         return execute_obtain_lease(client);
     if (strcmp(test_case->case_id, "test-op-sign") == 0)
-        return execute_created_key_signature(client, KMIPKIT_ENUMERATION_OPERATION_SIGN);
+        return execute_created_key_signature(client, KMIPKIT_ENUMERATION_OPERATION_SIGN, false);
+    if (strcmp(test_case->case_id,
+               "test-sign-missing-managed-object-cryptographic-parameters") == 0)
+        return execute_created_key_signature(client, KMIPKIT_ENUMERATION_OPERATION_SIGN, true);
     if (strcmp(test_case->case_id, "test-op-signature-verify") == 0)
         return execute_created_key_signature(
-            client, KMIPKIT_ENUMERATION_OPERATION_SIGNATURE_VERIFY);
+            client, KMIPKIT_ENUMERATION_OPERATION_SIGNATURE_VERIFY, false);
     if (strcmp(test_case->operation, "Discover Versions") == 0 &&
         client->protocol_minor == 0) {
         return outcome_not_run(

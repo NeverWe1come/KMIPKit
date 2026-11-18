@@ -422,6 +422,8 @@ RECIPES = {
     'test-op-mac': ((1, 18, 35, 19, 20), 'mac'),
     'test-op-mac-verify': ((1, 18, 36, 19, 20), 'mac_verify'),
     'test-op-sign': ((2, 18, 33, 19, 20, 20), 'sign'),
+    'test-sign-missing-managed-object-cryptographic-parameters': (
+        (2, 18, 33, 19, 20, 20), 'sign_missing_parameters'),
     'test-op-signature-verify': ((2, 18, 34, 19, 20, 20), 'signature_verify'),
     'test-op-create-key-pair': ((2, 20, 20), 'create_key_pair'),
     'test-op-create-split-key': ((40, 20, 20), 'create_split_key'),
@@ -927,7 +929,7 @@ def verify_mac_verify_response(response_tree):
         raise ValueError('fixture_mac_verify_response_fields_mismatch')
 
 
-def assert_signature_request(node, verify):
+def assert_signature_request(node, verify, require_parameters=True):
     """Check a key-pair-backed RSA Sign or Signature Verify batch."""
     operation = 34 if verify else 33
     item_ids = SIGNATURE_VERIFY_ITEM_IDS if verify else SIGN_ITEM_IDS
@@ -956,13 +958,18 @@ def assert_signature_request(node, verify):
     if len(payloads) != 1:
         raise ValueError('fixture_signature_request_payload_missing')
     fields = payloads[0][2]
-    expected_tags = [UNIQUE_IDENTIFIER_TAG, 0x42002B, 0x4200C2]
+    expected_tags = [UNIQUE_IDENTIFIER_TAG]
+    if require_parameters:
+        expected_tags.append(0x42002B)
+    expected_tags.append(0x4200C2)
     if verify:
         expected_tags.append(0x4200C3)
+    parameter_fields = [field for field in fields if field[0] == 0x42002B]
     if ([field[0] for field in fields] != expected_tags or
             len([field for field in fields if field[0] == UNIQUE_IDENTIFIER_TAG and field[1] == 5]) != 1 or
-            [field[0] for field in fields[1][2]] != [0x42004E] or
-            numbers(fields[1], 0x42004E) != [5] or
+            (require_parameters and (len(parameter_fields) != 1 or
+                                     [field[0] for field in parameter_fields[0][2]] != [0x42004E] or
+                                     numbers(parameter_fields[0], 0x42004E) != [5])) or
             len([field for field in fields if field[0] == 0x4200C2 and field[1] == 8]) != 1 or
             [field[2] for field in fields if field[0] == 0x4200C2] != [BATCH_CRYPTO_PLAINTEXT]):
         raise ValueError('fixture_signature_request_fields_mismatch')
@@ -1015,6 +1022,29 @@ def verify_signature_response(response_tree, verify):
         if (len(fields) != 2 or text_values(items[2], UNIQUE_IDENTIFIER_TAG) != [target_identifier.decode()] or
                 len(signature) != 1 or len(signature[0][2]) != 256):
             raise ValueError('fixture_sign_response_fields_mismatch')
+
+
+def verify_signature_missing_parameters_response(response_tree):
+    """Check the required failed Sign result and successful key cleanup."""
+    items = [child for child in response_tree[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if ([numbers(item, 0x42005C) for item in items] != [[2], [18], [33], [19], [20], [20]] or
+            [byte_string_values(item, 0x420093) for item in items] !=
+            [[item_id] for item_id in SIGN_ITEM_IDS] or
+            [numbers(item, 0x42007F) for item in items] != [[0], [0], [1], [0], [0], [0]] or
+            [numbers(item, 0x42007E) for item in items] != [[], [], [36], [], [], []]):
+        raise ValueError(
+            'fixture_signature_missing_parameters_result_mismatch:'
+            f'operations={[numbers(item, 0x42005C) for item in items]}:'
+            f'ids={[byte_string_values(item, 0x420093) for item in items]}:'
+            f'statuses={[numbers(item, 0x42007F) for item in items]}:'
+            f'reasons={[numbers(item, 0x42007E) for item in items]}')
+    for index in (0, 1, 3, 4, 5):
+        payloads = [child for child in items[index][2]
+                    if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1]
+        if len(payloads) != 1:
+            raise ValueError('fixture_signature_missing_parameters_cleanup_payload_missing')
+    if any(child[0] == RESPONSE_PAYLOAD_TAG for child in items[2][2]):
+        raise ValueError('fixture_signature_failed_sign_response_payload_present')
 
 
 def assert_create_key_pair_request(node):
@@ -1572,8 +1602,10 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
         assert_mac_request(node)
     if selected_recipe[1] == 'mac_verify':
         assert_mac_verify_request(node)
-    if selected_recipe[1] in ('sign', 'signature_verify'):
-        assert_signature_request(node, selected_recipe[1] == 'signature_verify')
+    if selected_recipe[1] in ('sign', 'signature_verify', 'sign_missing_parameters'):
+        assert_signature_request(
+            node, selected_recipe[1] == 'signature_verify',
+            require_parameters=selected_recipe[1] != 'sign_missing_parameters')
     if selected_recipe[1] == 'create_key_pair':
         assert_create_key_pair_request(node)
     if selected_recipe[1] == 'certify':
@@ -4110,7 +4142,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             response_item_ids = MAC_ITEM_IDS
                                         elif recipe[1] == 'mac_verify':
                                             response_item_ids = MAC_VERIFY_ITEM_IDS
-                                        elif recipe[1] == 'sign':
+                                        elif recipe[1] in ('sign', 'sign_missing_parameters'):
                                             response_item_ids = SIGN_ITEM_IDS
                                         elif recipe[1] == 'signature_verify':
                                             response_item_ids = SIGNATURE_VERIFY_ITEM_IDS
@@ -4232,7 +4264,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 peer_state.attribute_values['fixture-key-1'] = {}
                                             state_evidence = peer_state.execute(
                                                 request_tree,
-                                                continued_batch=recipe[1] == 'batch_continue_after_failure',
+                                                continued_batch=recipe[1] in (
+                                                    'batch_continue_after_failure', 'sign_missing_parameters'),
                                                 stop_after_failure=recipe[1] == 'batch_stop_on_first_failure',
                                                 rejected_operation=peer_rejection.get('operation')
                                                 if reject_this_exchange else None,
@@ -4494,6 +4527,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         elif recipe[1] == 'archive':
                                             verify_archive_response(response_tree)
                                             verify_lifecycle(recipe[0], response_tree)
+                                        elif recipe[1] == 'sign_missing_parameters':
+                                            verify_signature_missing_parameters_response(response_tree)
                                         elif recipe[1] in ('sign', 'signature_verify'):
                                             verify_signature_response(
                                                 response_tree, recipe[1] == 'signature_verify')
@@ -5171,6 +5206,10 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         peer_observed_operation_sequence=operations,
                                         peer_observed_response_count=response_item_count,
                                         peer_observed_result_status_codes=numbers(response_tree, 0x42007F),
+                                        peer_observed_result_reason_codes=[
+                                            (numbers(item, 0x42007E) or [0])[0]
+                                            for item in response_tree[2]
+                                            if item[0] == BATCH_ITEM_TAG and item[1] == 1],
                                         peer_observed_effects=state_evidence['effects'],
                                         peer_observed_state_before_sha256=state_evidence[
                                             'peer_observed_state_before_sha256'],
