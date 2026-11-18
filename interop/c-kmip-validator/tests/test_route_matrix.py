@@ -2350,6 +2350,36 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertIn('kmipkit_query_async_requests_request_create', result['invoked_symbols'])
         self.assertIn('kmipkit_query_async_requests_request_to_ttlv_payload', result['invoked_symbols'])
 
+    def test_query_async_operations_filter_model_covers_normative_structure(self):
+        """OASIS KMIP 2.1 §§6.1.41, 7.25 define repeated Operation filters."""
+        from artifact_support import INSTALL, ROOT
+        from c_route_models import ModelCases
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        targets = {item['target_id']: item for item in catalog['normative_targets']}
+        tags = self.runner.catalog_tag_values(catalog)
+        expected_tree = [[tags['Operations'], 1, [
+            [tags['Operation'], 5, (1).to_bytes(4, 'big').hex()],
+            [tags['Operation'], 5, (10).to_bytes(4, 'big').hex()],
+        ]]]
+        models = ModelCases(INSTALL / 'lib/libkmipkit_ffi.so', catalog)
+
+        for target_id, versions in (
+                ('KMIPKIT-ELEM-OPERATION-STRUCTURE-7-25-OPERATIONS', ('2.0', '2.1')),
+                ('KMIPKIT-ELEM-STRUCTURE-MEMBER-7-25-OPERATION', ('2.0', '2.1')),
+                ('KMIPKIT-ELEM-TAG-42014F', ('2.0', '2.1')),
+                ('KMIPKIT-PAYLOAD-CLIENT-QUERY-ASYNCHRONOUS-REQUESTS-REQUEST-21-002', ('2.1',))):
+            for version in versions:
+                with self.subTest(target_id=target_id, protocol_version=version):
+                    result = models.execute(
+                        targets[target_id], version,
+                        'kmipkit_query_async_requests_request_with_operations')
+                    self.assertIsNotNone(result)
+                    self.assertEqual(result['normalized_tree'], expected_tree)
+                    self.assertIn(
+                        'kmipkit_query_async_requests_request_with_operations',
+                        result['invoked_symbols'])
+
     def test_async_cancel_response_payload_roundtrips_each_catalogued_result(self):
         """OASIS KMIP 2.0 §6.1.5 Table 162 and 2.1 §6.1.5 Table 177 define Cancellation Result."""
         from artifact_support import INSTALL, ROOT
