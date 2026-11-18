@@ -3652,6 +3652,20 @@ selected report validates 34,274/34,274 cells with zero failures and leaves
 37,367 of 71,641 planned Java cells pending. The generated ledger matches its
 checked-in reference, `git diff --check` passes, and the stack remains WIP.
 
+## #217 stack-tip verification after typed Key Material structure routes — 2026-11-18
+
+The #217 tip includes Red commit `9a018c7de` and Green commit `6c12af9c2`
+from #187. The increment adds all six typed constructors for the nine
+transparent Key Material Structures in §§3.4–3.12. The branch also retains its
+eight Right Usage Limits cells. Key material fixtures are deterministic and
+synthetic.
+
+The full Java suite passes 84 tests; the shared evidence/schema/capability
+suites pass 108 tests; and the capability audit reports 1,507 routes. The
+selected report validates 34,382/34,382 cells with zero failures and leaves
+37,259 of 71,641 planned Java cells pending. The generated ledger matches its
+checked-in reference, `git diff --check` passes, and the stack remains WIP.
+
 The suite used a worktree-local Java temporary directory because `/tmp` was full:
 
 ```sh

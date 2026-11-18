@@ -138,3 +138,13 @@ artifact. This is part of the FR-006 artifact provenance check.
 - The selected report validates 34,274/34,274 cells with zero failures and
   leaves 37,367 of 71,641 pending. Full Java matrix closure remains open under
   FR-002/FR-003/FR-009.
+
+## Java typed Key Material structure routes — #217 stack sync — 2026-11-18
+
+- **FR-003:** The #217 consumer includes all six typed `KeyMaterial`,
+  `KeyValue`, and `KeyBlock` `fromFields`/`fromItem` routes for all nine
+  transparent Key Material Structures in KMIP 2.0 and 2.1 (§§3.4–3.12). The
+  eight Right Usage Limits cells remain covered.
+- The selected report validates 34,382/34,382 cells with zero failures and
+  leaves 37,259 of 71,641 pending. Full Java matrix closure remains open under
+  FR-002/FR-003/FR-009.

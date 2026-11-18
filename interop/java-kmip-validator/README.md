@@ -447,5 +447,5 @@ member cells across KMIP 2.0 and 2.1. After synchronizing the EC public typed
 and §3.4 Transparent Symmetric Key typed routes from #216, its full Java suite
 passes 84 tests and the shared
 evidence/schema/capability suites pass 108 tests. The capability audit reports
-1,507 routes; the selected report validates 34,274/34,274 cells with zero
-failures and 37,367 pending. The stack is still incomplete and WIP.
+1,507 routes; the selected report validates 34,382/34,382 cells with zero
+failures and 37,259 pending. The stack is still incomplete and WIP.
