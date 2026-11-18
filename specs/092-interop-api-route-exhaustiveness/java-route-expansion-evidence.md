@@ -3656,3 +3656,27 @@ Green commit `7d478fe82` sorts the IDs, and Refactor commit `0fb31cfa6` makes
 the normalization step explicit. The canonical Java ledger records 71,641
 planned, 34,696 executed, and 36,945 pending cells. The full matrix remains
 incomplete and the PR remains WIP.
+
+## Java Split Key managed-object root routes — 2026-11-18
+
+Red commit `45b9ab5c5` adds a focused requirement for the Split Key root case
+to invoke its named factory and both generic `ManagedObject` factories in KMIP
+2.0 and 2.1; it fails because the focused route recipe is missing. The first
+fixture attempt exposed that the native `fromItem` validator requires the
+source-defined §2.8 Table 9 member order. The corrected fixture orders Split
+Key Parts, Key Part Identifier, Split Key Threshold, Split Key Method, and Key
+Block; it uses XOR, two parts, threshold two, and Raw Key Material. This is
+deterministic local model data, not a cryptographic splitting test.
+
+Green commit `e3b1bdfe7` invokes `ManagedObject.splitKey`, `fromFields`, and
+`fromItem`, then checks object type, Key Block presence, part identifier,
+method, part count, and threshold. The controlled TLS report emits the three
+route events for each version. Refactor commit `e8fdeb63d` reuses the canonical
+scalar TTLV encoder and asserts identical wire bytes across the six events.
+
+Verification: the full Java suite passes 87/87 tests; shared route suites pass
+109/109; the selected report validates 34,702/34,702 cells with zero failed
+cells; the generated ledger matches its reference; the capability audit accepts
+1,507 routes; and `git diff --check` passes. The ledger has 71,641 planned,
+34,702 executed, and 36,939 pending cells. Full matrix closure and exact-head
+CI remain open, so the stack remains WIP.

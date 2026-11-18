@@ -205,3 +205,15 @@ artifact. This is part of the FR-006 artifact provenance check.
   confirming output stability when the declared input order varies. The
   regenerated reference and comparison now pass with the 34,696-cell Java
   report.
+
+## Java Split Key managed-object root routes — 2026-11-18
+
+- **FR-003:** The installed Java consumer now exercises the Split Key root
+  through `ManagedObject.splitKey`, `ManagedObject.fromFields`, and
+  `ManagedObject.fromItem` in KMIP 2.0 and 2.1. The fixture uses Table 9 field
+  order, the assigned XOR method, valid part/threshold counts, and a Raw Key
+  Block, then checks the typed accessors and object type (KMIP §§2.8, 3.1, 11.34).
+- This adds six local model cells. The selected report validates 34,702/34,702
+  cells with zero failures; the Java ledger records 71,641 planned, 34,702
+  executed, and 36,939 pending cells. Full matrix closure remains open under
+  FR-002/FR-003/FR-009.

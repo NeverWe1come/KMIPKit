@@ -305,3 +305,20 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
   Refreshing and rechecking the generated ledger now succeeds reproducibly;
   36,945 of 71,641 Java cells remain pending. T006, T007, and T009 remain
   open.
+
+## Java Split Key managed-object root routes
+
+- Red commit `45b9ab5c5` requires the Split Key root case to emit the specific
+  factory and both generic `ManagedObject` factory routes; it fails to compile
+  because the route recipe is absent.
+- Green commit `e3b1bdfe7` constructs the Split Key with KMIP 2.0/2.1 §2.8
+  Table 9 field order, the XOR method, two parts, threshold two, and a Raw Key
+  Block. It invokes `ManagedObject.splitKey`, `fromFields`, and `fromItem`,
+  checks the parsed fields, and records each route in the controlled report.
+- Refactor commit `e8fdeb63d` uses the existing canonical scalar TTLV encoder
+  and verifies that all emitted routes carry identical bytes.
+- Verification: full Java validator suite 87/87, shared route suites 109/109,
+  selected route evidence 34,702/34,702 with zero failures, generated ledger
+  comparison, 1,507-route capability audit, and `git diff --check` pass. The
+  full Java ledger remains incomplete at 36,939 pending of 71,641; the stack
+  remains WIP and T006, T007, and T009 remain open.
