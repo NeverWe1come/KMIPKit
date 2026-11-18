@@ -202,6 +202,35 @@ class CoverageMatrixTests(unittest.TestCase):
         self.assertIn('rust.generic-ttlv.model.kmipkit.ttlv.rawtag.new', route_ids)
         self.assertIn('rust.generic-ttlv.codec.decode', route_ids)
 
+    def test_zero_batch_count_case_excludes_only_get_item_routes_for_that_case(self):
+        get_item_route = 'c.typed-protocol.kmipkit_client_batch_item_get'
+        zero_count_cells = [cell for cell in iter_cells(
+            self.catalog, self.manifest, languages=('c',))
+            if cell['case_id'] == 'test-batch-count-zero-rejected'
+            and cell['route_id'] == get_item_route]
+        get_cells = [cell for cell in iter_cells(
+            self.catalog, self.manifest, languages=('c',))
+            if cell['case_id'] == 'test-op-get' and cell['route_id'] == get_item_route]
+
+        self.assertFalse(zero_count_cells)
+        self.assertTrue(get_cells)
+
+    def test_zero_batch_count_case_includes_local_request_message_parsers(self):
+        from coverage_matrix import applicable_routes, _operation_ids
+
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] == 'test-batch-count-zero-rejected')
+        for language, symbol in (
+            ('rust', 'kmipkit_protocol::RequestMessage::try_from_ttlv'),
+            ('c', 'kmipkit_request_message_from_ttlv'),
+            ('java', 'org.kmipkit.message.RequestMessage.fromTtlv'),
+            ('python', 'kmipkit.messages.RequestMessage.from_ttlv'),
+        ):
+            routes = applicable_routes(case, self.manifest, language, _operation_ids(self.catalog),
+                                       self.catalog['normative_targets'])
+            self.assertTrue(any(route['public_api_symbol'] == symbol for route in routes),
+                            f'{language} Request Message parser must reject zero Batch Count locally')
+
     def test_source_backed_target_id_exclusions_apply_to_generic_routes(self):
         target_id = 'KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES'
         manifest = copy.deepcopy(self.manifest)

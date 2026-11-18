@@ -785,6 +785,7 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
             'mode': 'local',
             'language': 'c',
             'route_id': 'c.typed-protocol.model.kmipkit.request.message.from.ttlv',
+            'target_id': 'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-COUNT',
             'public_api_symbol': 'kmipkit_request_message_from_ttlv',
         }
 

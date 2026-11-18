@@ -3885,6 +3885,25 @@ class RouteMatrixTests(unittest.TestCase):
             event['peer_observed_effects'] == ['undone', 'object_not_found'] and
             event['peer_observed_state_before_sha256'] == event['peer_observed_state_after_sha256']
             for event in send_events))
+        undo_constructor_events = {
+            (event['target_id'], event['protocol_version'])
+            for event in events
+            if event['route_id'] == 'c.typed-protocol.function.client_batch_add_error_continuation_value'
+            and event['public_api_symbol'] == 'kmipkit_client_batch_add_error_continuation_value'
+            and event['action'] == 'construct'
+            and event['encoding'] == 'TTLV'
+            and event['transport'] is None
+        }
+        self.assertEqual(undo_constructor_events, {
+            (target, version)
+            for target in (
+                'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION',
+                'KMIPKIT-ELEM-ENUM-VALUE-BATCH-ERROR-CONTINUATION-OPTION-UNDO-00000003',
+            )
+            for version in ('2.0', '2.1')
+        }, 'the executed Undo builder must cover the field and selected enum value')
+        self.assertTrue(all(check.get('peer_batch_error_continuation_option_values') == [3]
+                            for check in checks))
 
     def test_batch_count_zero_case_selects_local_rejection_without_network(self):
         from artifact_support import ROOT
@@ -3907,7 +3926,7 @@ class RouteMatrixTests(unittest.TestCase):
                         cells)
         self.assertFalse(any(cell['action'] == 'send' for cell in cells), cells)
         self.assertTrue(any(cell['public_api_symbol'] == 'kmipkit_request_message_from_ttlv'
-                            and cell['target_id'] == 'KMIPKIT-ELEM-OP-C2S-GET'
+                            and cell['target_id'] == 'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-COUNT'
                             for cell in cells), cells)
 
     def test_zero_batch_count_request_parser_reports_expected_local_rejection(self):
@@ -3915,10 +3934,12 @@ class RouteMatrixTests(unittest.TestCase):
         from c_route_models import ModelCases
 
         catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        case = next(item for item in catalog['test_cases']
+                    if item['case_id'] == 'test-batch-count-zero-rejected')
         target = next(item for item in catalog['normative_targets']
-                      if item['target_id'] == 'KMIPKIT-ELEM-OP-C2S-GET')
+                      if item['target_id'] == 'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-COUNT')
         result = ModelCases(INSTALL / 'lib/libkmipkit_ffi.so', catalog).execute(
-            target, '2.1', 'kmipkit_request_message_from_ttlv')
+            target, '2.1', 'kmipkit_request_message_from_ttlv', case=case)
 
         self.assertIsNotNone(result)
         self.assertEqual('rejected', result['decode_outcome'])
@@ -3951,25 +3972,6 @@ class RouteMatrixTests(unittest.TestCase):
         }
 
         Draft202012Validator(schema).validate(event)
-        undo_constructor_events = {
-            (event['target_id'], event['protocol_version'])
-            for event in events
-            if event['route_id'] == 'c.typed-protocol.function.client_batch_add_error_continuation_value'
-            and event['public_api_symbol'] == 'kmipkit_client_batch_add_error_continuation_value'
-            and event['action'] == 'construct'
-            and event['encoding'] == 'TTLV'
-            and event['transport'] is None
-        }
-        self.assertEqual(undo_constructor_events, {
-            (target, version)
-            for target in (
-                'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION',
-                'KMIPKIT-ELEM-ENUM-VALUE-BATCH-ERROR-CONTINUATION-OPTION-UNDO-00000003',
-            )
-            for version in ('2.0', '2.1')
-        }, 'the executed Undo builder must cover the field and selected enum value')
-        self.assertTrue(all(check.get('peer_batch_error_continuation_option_values') == [3]
-                            for check in checks))
 
     def test_signature_verify_operation_uses_public_key_pair_and_installed_route(self):
         """OASIS KMIP 2.0 §6.1.50 and 2.1 §6.1.56 define Signature Verify."""
