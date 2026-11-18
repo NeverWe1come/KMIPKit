@@ -2673,7 +2673,7 @@
     "test-v20-reject-set-constraints",
     "test-v20-reject-set-defaults"
   ],
-  "executed_cells": 42381,
+  "executed_cells": 42444,
   "language": "java",
   "library_commit": "12496d646d11d4069b58bcc88fc76cc619211ec6",
   "pending_case_ids": [
@@ -2695,28 +2695,21 @@
     "test-async-query-outstanding-filter",
     "test-async-unknown-correlation-rejected",
     "test-attr-application-specific-information",
-    "test-attr-archive-date",
     "test-attr-certificate-attributes",
     "test-attr-certificate-length",
     "test-attr-certificate-type",
     "test-attr-comment",
-    "test-attr-compromise-date",
-    "test-attr-compromise-occurrence-date",
     "test-attr-contact-information",
     "test-attr-cryptographic-algorithm",
     "test-attr-cryptographic-domain-parameters",
     "test-attr-cryptographic-length",
     "test-attr-cryptographic-parameters",
     "test-attr-cryptographic-usage-mask",
-    "test-attr-deactivation-date",
     "test-attr-description",
-    "test-attr-destroy-date",
     "test-attr-digest",
     "test-attr-digital-signature-algorithm",
-    "test-attr-initial-date",
     "test-attr-key-format-type",
     "test-attr-key-value-location",
-    "test-attr-last-change-date",
     "test-attr-lease-time",
     "test-attr-link",
     "test-attr-name",
@@ -2724,16 +2717,12 @@
     "test-attr-object-group",
     "test-attr-object-type",
     "test-attr-opaque-data-type",
-    "test-attr-original-creation-date",
     "test-attr-pkcs#12-friendly-name",
-    "test-attr-process-start-date",
-    "test-attr-protect-stop-date",
     "test-attr-protection-level",
     "test-attr-protection-period",
     "test-attr-protection-storage-mask",
     "test-attr-random-number-generator",
     "test-attr-revocation-reason",
-    "test-attr-rotate-date",
     "test-attr-rotate-generation",
     "test-attr-rotate-interval",
     "test-attr-rotate-name",
@@ -3802,10 +3791,6 @@
       "pending_cells": 6
     },
     {
-      "case_id": "test-attr-archive-date",
-      "pending_cells": 6
-    },
-    {
       "case_id": "test-attr-certificate-attributes",
       "pending_cells": 2
     },
@@ -3819,14 +3804,6 @@
     },
     {
       "case_id": "test-attr-comment",
-      "pending_cells": 6
-    },
-    {
-      "case_id": "test-attr-compromise-date",
-      "pending_cells": 6
-    },
-    {
-      "case_id": "test-attr-compromise-occurrence-date",
       "pending_cells": 6
     },
     {
@@ -3854,15 +3831,7 @@
       "pending_cells": 6
     },
     {
-      "case_id": "test-attr-deactivation-date",
-      "pending_cells": 6
-    },
-    {
       "case_id": "test-attr-description",
-      "pending_cells": 6
-    },
-    {
-      "case_id": "test-attr-destroy-date",
       "pending_cells": 6
     },
     {
@@ -3874,19 +3843,11 @@
       "pending_cells": 8
     },
     {
-      "case_id": "test-attr-initial-date",
-      "pending_cells": 6
-    },
-    {
       "case_id": "test-attr-key-format-type",
       "pending_cells": 6
     },
     {
       "case_id": "test-attr-key-value-location",
-      "pending_cells": 6
-    },
-    {
-      "case_id": "test-attr-last-change-date",
       "pending_cells": 6
     },
     {
@@ -3918,19 +3879,7 @@
       "pending_cells": 6
     },
     {
-      "case_id": "test-attr-original-creation-date",
-      "pending_cells": 6
-    },
-    {
       "case_id": "test-attr-pkcs#12-friendly-name",
-      "pending_cells": 6
-    },
-    {
-      "case_id": "test-attr-process-start-date",
-      "pending_cells": 6
-    },
-    {
-      "case_id": "test-attr-protect-stop-date",
       "pending_cells": 6
     },
     {
@@ -3952,10 +3901,6 @@
     {
       "case_id": "test-attr-revocation-reason",
       "pending_cells": 6
-    },
-    {
-      "case_id": "test-attr-rotate-date",
-      "pending_cells": 3
     },
     {
       "case_id": "test-attr-rotate-generation",
@@ -7930,7 +7875,7 @@
       "pending_cells": 2
     }
   ],
-  "pending_cells": 29260,
+  "pending_cells": 29197,
   "pending_reason": "No validated per-cell route execution evidence is recorded for this cell.",
   "pending_reason_code": "route_evidence_not_emitted",
   "planned_cells": 71641,
@@ -32788,8 +32733,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 495,
-      "pending_cells": 92,
+      "executed_cells": 505,
+      "pending_cells": 82,
       "protocol_version": "2.0",
       "required_cells": 587,
       "route_id": "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
@@ -32798,8 +32743,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 499,
-      "pending_cells": 97,
+      "executed_cells": 510,
+      "pending_cells": 86,
       "protocol_version": "2.1",
       "required_cells": 596,
       "route_id": "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
@@ -33688,8 +33633,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 495,
-      "pending_cells": 92,
+      "executed_cells": 505,
+      "pending_cells": 82,
       "protocol_version": "2.0",
       "required_cells": 587,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
@@ -33698,8 +33643,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 499,
-      "pending_cells": 97,
+      "executed_cells": 510,
+      "pending_cells": 86,
       "protocol_version": "2.1",
       "required_cells": 596,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
@@ -33708,8 +33653,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 495,
-      "pending_cells": 92,
+      "executed_cells": 505,
+      "pending_cells": 82,
       "protocol_version": "2.0",
       "required_cells": 587,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
@@ -33718,8 +33663,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 499,
-      "pending_cells": 97,
+      "executed_cells": 510,
+      "pending_cells": 86,
       "protocol_version": "2.1",
       "required_cells": 596,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
@@ -35667,8 +35612,8 @@
       "route_id": "java.typed-protocol.model.org.kmipkit.credentials.usernameandpasswordcredential.fromttlv"
     },
     {
-      "executed_cells": 994,
-      "pending_cells": 189,
+      "executed_cells": 1015,
+      "pending_cells": 168,
       "required_cells": 1183,
       "route_id": "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew"
     },
@@ -35937,14 +35882,14 @@
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.symmetrickey"
     },
     {
-      "executed_cells": 994,
-      "pending_cells": 189,
+      "executed_cells": 1015,
+      "pending_cells": 168,
       "required_cells": 1183,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create"
     },
     {
-      "executed_cells": 994,
-      "pending_cells": 189,
+      "executed_cells": 1015,
+      "pending_cells": 168,
       "required_cells": 1183,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem"
     },
@@ -35980,7 +35925,7 @@
     }
   ],
   "schema_version": "1.0",
-  "selected_scope_cells": 42381,
+  "selected_scope_cells": 42444,
   "selected_scope_complete": true,
   "vendor_interoperability_claim": false
 }
