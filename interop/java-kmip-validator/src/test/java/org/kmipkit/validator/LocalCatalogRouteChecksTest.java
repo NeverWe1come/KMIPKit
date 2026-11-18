@@ -382,17 +382,20 @@ class LocalCatalogRouteChecksTest {
             LocalCatalogRouteChecks.executeStructureAttributeValues(catalog, version, caseIds, invocations::add);
         }
 
-        assertEquals((caseIds.size() * 2 - 1) * 4, invocations.size());
+        List<LocalCatalogRouteChecks.Invocation> genericInvocations = invocations.stream()
+                .filter(invocation -> invocation.routeId().startsWith("java.generic-ttlv."))
+                .toList();
+        assertEquals((caseIds.size() * 2 - 1) * 4, genericInvocations.size());
         assertEquals(Set.of(
                 "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
                 "java.generic-ttlv.ttlv_item.create",
                 "java.generic-ttlv.function.ttlv_item_view_from_item",
                 "java.generic-ttlv.ttlv_codec.decode"),
-                invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId)
+                genericInvocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId)
                         .collect(java.util.stream.Collectors.toSet()));
-        assertEquals(caseIds, invocations.stream().map(LocalCatalogRouteChecks.Invocation::caseId)
+        assertEquals(caseIds, genericInvocations.stream().map(LocalCatalogRouteChecks.Invocation::caseId)
                 .collect(java.util.stream.Collectors.toSet()));
-        assertEquals(Set.of("construct", "decode"), invocations.stream()
+        assertEquals(Set.of("construct", "decode"), genericInvocations.stream()
                 .map(LocalCatalogRouteChecks.Invocation::action)
                 .collect(java.util.stream.Collectors.toSet()));
     }
@@ -421,6 +424,11 @@ class LocalCatalogRouteChecksTest {
                 invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId)
                         .collect(java.util.stream.Collectors.toSet()));
         assertEquals(Set.of(caseId), invocations.stream().map(LocalCatalogRouteChecks.Invocation::caseId)
+                .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(Set.of("KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES"), invocations.stream()
+                .filter(invocation -> invocation.routeId().equals(
+                        "java.typed-protocol.function.attribute_request_get_attributes_to_ttlv_payload"))
+                .map(LocalCatalogRouteChecks.Invocation::targetId)
                 .collect(java.util.stream.Collectors.toSet()));
         assertEquals(Set.of("construct", "decode", "encode"), invocations.stream()
                 .map(LocalCatalogRouteChecks.Invocation::action)
