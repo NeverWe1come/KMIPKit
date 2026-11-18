@@ -467,17 +467,8 @@ class LocalCatalogRouteChecksTest {
         assertEquals(Set.of("construct", "decode"), invocations.stream()
                 .map(LocalCatalogRouteChecks.Invocation::action)
                 .collect(java.util.stream.Collectors.toSet()));
-        List<LocalCatalogRouteChecks.Invocation> attributeSets = invocations.stream()
-                .filter(invocation ->
-                        "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew"
-                                .equals(invocation.routeId()))
-                .toList();
-        assertEquals(caseIds.size() * 2, attributeSets.size());
-        assertTrue(attributeSets.stream().allMatch(invocation -> {
-            byte[] wire = invocation.wire();
-            return wire.length >= 24 && wire[0] == 0x42 && wire[1] == 0x01
-                    && wire[2] == 0x25 && wire[3] == 0x01;
-        }));
+        assertAttributeSetRouteEvents(invocations,
+                applicableCaseVersionCount(catalog, caseIds, List.of("2.0", "2.1")));
     }
 
     @Test
@@ -516,9 +507,8 @@ class LocalCatalogRouteChecksTest {
         assertEquals(Set.of("construct", "decode"), invocations.stream()
                 .map(LocalCatalogRouteChecks.Invocation::action)
                 .collect(java.util.stream.Collectors.toSet()));
-        assertTrue(invocations.stream().allMatch(invocation ->
-                invocation.wire().length == ("java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew"
-                        .equals(invocation.routeId()) ? 24 : 16)));
+        assertAttributeSetRouteEvents(invocations,
+                applicableCaseVersionCount(catalog, caseIds, List.of("2.0", "2.1")));
     }
 
     @Test
@@ -560,9 +550,8 @@ class LocalCatalogRouteChecksTest {
         assertEquals(Set.of("construct", "decode"), invocations.stream()
                 .map(LocalCatalogRouteChecks.Invocation::action)
                 .collect(java.util.stream.Collectors.toSet()));
-        assertTrue(invocations.stream().allMatch(invocation ->
-                invocation.wire().length == ("java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew"
-                        .equals(invocation.routeId()) ? 24 : 16)));
+        assertAttributeSetRouteEvents(invocations,
+                applicableCaseVersionCount(catalog, caseIds, List.of("2.0", "2.1")));
     }
 
     @Test
@@ -601,9 +590,8 @@ class LocalCatalogRouteChecksTest {
         assertEquals(Set.of("construct", "decode"), invocations.stream()
                 .map(LocalCatalogRouteChecks.Invocation::action)
                 .collect(java.util.stream.Collectors.toSet()));
-        assertTrue(invocations.stream().allMatch(invocation ->
-                invocation.wire().length == ("java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew"
-                        .equals(invocation.routeId()) ? 24 : 16)));
+        assertAttributeSetRouteEvents(invocations,
+                applicableCaseVersionCount(catalog, caseIds, List.of("2.0", "2.1")));
     }
 
     @Test
@@ -1267,5 +1255,20 @@ class LocalCatalogRouteChecksTest {
             }
         }
         return count;
+    }
+
+    private static void assertAttributeSetRouteEvents(List<LocalCatalogRouteChecks.Invocation> invocations,
+            long expectedCount) {
+        List<LocalCatalogRouteChecks.Invocation> attributeSets = invocations.stream()
+                .filter(invocation ->
+                        "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew"
+                                .equals(invocation.routeId()))
+                .toList();
+        assertEquals(expectedCount, attributeSets.size());
+        assertTrue(attributeSets.stream().allMatch(invocation -> {
+            byte[] wire = invocation.wire();
+            return wire.length >= 24 && wire[0] == 0x42 && wire[1] == 0x01
+                    && wire[2] == 0x25 && wire[3] == 0x01;
+        }));
     }
 }
