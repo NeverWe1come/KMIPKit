@@ -107,6 +107,14 @@ final class LocalCatalogRouteChecks {
             "test-attr-rotate-interval",
             "test-attr-rotate-offset",
             "test-attr-short-unique-identifier");
+    static final Set<String> REMAINING_TEXT_STRING_TARGET_CASE_IDS = Set.of(
+            "test-attr-unique-identifier",
+            "test-norm-structure-member-structure-member-3-3-encryption-key-information-unique-identifier",
+            "test-norm-structure-member-structure-member-3-3-mac-signature-key-information-unique-identifier",
+            "test-norm-structure-member-structure-member-7-18-attribute-name",
+            "test-norm-structure-member-structure-member-7-21-unique-identifier",
+            "test-norm-structure-member-structure-member-7-28-pkcs-11-interface",
+            "test-norm-structure-member-structure-member-7-41-validation-profile");
 
     private LocalCatalogRouteChecks() { }
 
@@ -1084,6 +1092,107 @@ final class LocalCatalogRouteChecks {
                     "Scalar Attribute route evidence must be complete before reuse for " + caseId);
         }
         return missing;
+    }
+
+    /** Exercises remaining catalogued Text String targets through generic TTLV routes. */
+    static void executeTextStringTargets(JsonNode catalog, String version, Set<String> selectedCaseIds,
+            EvidenceSink sink) throws Exception {
+        Set<String> applicable = new java.util.LinkedHashSet<>();
+        Set<String> emitted = new java.util.LinkedHashSet<>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String caseId = testCase.path("case_id").asText();
+            if (!selectedCaseIds.contains(caseId) || !applies(testCase, version)) continue;
+            applicable.add(caseId);
+            String targetId = testCase.path("requires").path("normative_target_id").asText();
+            JsonNode target = findTarget(catalog, targetId);
+            String targetName = target.path("name").asText();
+            String encoding = target.path("source_encoding").asText();
+            if (!encoding.toLowerCase(Locale.ROOT).replace(" ", "").startsWith("textstring")) {
+                throw new IllegalArgumentException("Selected target is not catalogued as Text String: " + caseId);
+            }
+            int tagCode = tagCodeNamed(catalog, targetName, version);
+            byte[] value = textStringTargetFixture(caseId).getBytes(StandardCharsets.UTF_8);
+            byte[] wire = itemWire(tagCode, TtlvItemType.TextString.code(), value);
+            try (TtlvValue ttlvValue = TtlvValue.TextString(value, CodecLimits.defaults());
+                    RawTag raw = RawTag.fromRaw(tagCode); Tag tag = raw.checked();
+                    TtlvItem item = TtlvItem.create(tag, ttlvValue, CodecLimits.defaults())) {
+                assertTextStringTargetItem(item, tagCode, value);
+            }
+            try (TtlvItem decoded = TtlvCodec.decode(wire)) {
+                assertTextStringTargetItem(decoded, tagCode, value);
+            }
+            emitRoute(sink, caseId, targetId,
+                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring",
+                    "org.kmipkit.ttlv.TtlvValue.TextString", "construct", wire);
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_item.create",
+                    "org.kmipkit.ttlv.TtlvItem.create", "construct", wire);
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.function.ttlv_item_view_from_item",
+                    "org.kmipkit.ttlv.TtlvItem.view", "decode", wire);
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_codec.decode",
+                    "org.kmipkit.ttlv.TtlvCodec.decode", "decode", wire);
+            emitted.add(caseId);
+        }
+        if (!emitted.equals(applicable)) {
+            throw new IllegalArgumentException("Selected Text String targets were not executed for " + version);
+        }
+    }
+
+    static Set<String> missingTextStringTargetCaseIds(JsonNode catalog, JsonNode events, String version) {
+        List<String> requiredRoutes = List.of(
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring",
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode");
+        Set<String> missing = new java.util.LinkedHashSet<>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String caseId = testCase.path("case_id").asText();
+            if (!REMAINING_TEXT_STRING_TARGET_CASE_IDS.contains(caseId) || !applies(testCase, version)) continue;
+            String targetId = testCase.path("requires").path("normative_target_id").asText();
+            int present = 0;
+            for (String route : requiredRoutes) {
+                boolean found = false;
+                for (JsonNode event : events) {
+                    if (caseId.equals(event.path("case_id").asText())
+                            && targetId.equals(event.path("target_id").asText())
+                            && route.equals(event.path("route_id").asText())
+                            && version.equals(event.path("protocol_version").asText())
+                            && "TTLV".equals(event.path("encoding").asText())
+                            && event.path("transport").isNull()) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (found) present++;
+            }
+            if (present == 0) missing.add(caseId);
+            else assertEquals(requiredRoutes.size(), present,
+                    "Text String target route evidence must be complete before reuse for " + caseId);
+        }
+        return missing;
+    }
+
+    private static String textStringTargetFixture(String caseId) {
+        return switch (caseId) {
+            case "test-attr-unique-identifier" -> "kmipkit-java-route-fixture-id";
+            case "test-norm-structure-member-structure-member-3-3-encryption-key-information-unique-identifier" ->
+                    "kmipkit-java-encryption-key-fixture";
+            case "test-norm-structure-member-structure-member-3-3-mac-signature-key-information-unique-identifier" ->
+                    "kmipkit-java-mac-key-fixture";
+            case "test-norm-structure-member-structure-member-7-18-attribute-name" -> "Cryptographic Algorithm";
+            case "test-norm-structure-member-structure-member-7-21-unique-identifier" ->
+                    "kmipkit-java-object-fixture";
+            case "test-norm-structure-member-structure-member-7-28-pkcs-11-interface" -> "PKCS11";
+            case "test-norm-structure-member-structure-member-7-41-validation-profile" -> "KMIP Basic Profile";
+            default -> throw new IllegalArgumentException("No Text String fixture for " + caseId);
+        };
+    }
+
+    private static void assertTextStringTargetItem(TtlvItem item, int tagCode, byte[] expectedValue) {
+        try (TtlvItemView view = item.view(); Tag tag = view.tag(); TtlvValueView value = view.value()) {
+            assertEquals(tagCode, tag.raw());
+            assertEquals(TtlvItemType.TextString, view.itemType());
+            assertArrayEquals(expectedValue, value.bytes());
+        }
     }
 
     private static int integerAttributeFixture(String attributeName) {
