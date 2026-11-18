@@ -95,20 +95,34 @@ def _expected_batch_operations(case: dict) -> list[str] | None:
 
 
 def _validate_local_batch_rejection(event: dict, case: dict, key: tuple) -> None:
-    """Validate the approved orphan-Placeholder local rejection boundary."""
+    """Validate catalogued local Placeholder rejection boundaries."""
+    contracts = {
+        "test-batch-placeholder-without-producer-rejected": (
+            "rejected_or_operation_failed",
+            ["Activate"],
+            ["Activate(IDPlaceholder)"],
+        ),
+        "test-batch-placeholder-forward-reference-rejected": (
+            "rejected_or_server_reports_protocol_error",
+            ["Activate", "Create"],
+            ["Activate(IDPlaceholder from item 2)", "Create(unique-key)"],
+        ),
+    }
+    contract = contracts.get(case.get("case_id"))
+    if contract is None:
+        raise ValueError(f"local batch rejection is not defined by the catalog: {key}")
+    expected_construction, operations, expected_items = contract
     scenario = case.get("requires", {}).get("protocol_scenario", {})
     expected = scenario.get("expected", {}) if isinstance(scenario, dict) else {}
     parameters = scenario.get("parameters", {}) if isinstance(scenario, dict) else {}
-    if (case.get("case_id") != "test-batch-placeholder-without-producer-rejected"
-            or not isinstance(scenario, dict)
+    if (not isinstance(scenario, dict)
             or scenario.get("mode") != "local_model"
             or not isinstance(expected, dict)
-            or expected.get("construction") != "rejected_or_operation_failed"
-            or scenario.get("operations") != ["Activate"]
+            or expected.get("construction") != expected_construction
+            or scenario.get("operations") != operations
             or not isinstance(parameters, dict)
-            or parameters.get("items") != ["Activate(IDPlaceholder)"]):
+            or parameters.get("items") != expected_items):
         raise ValueError(f"local batch rejection is not defined by the catalog: {key}")
-    operations = ["Activate"]
     if event.get("action") != "send" or event.get("status") != "passed":
         raise ValueError(f"local batch rejection must be a passed send event: {key}")
     if event.get("batch_operation_sequence") != operations:
