@@ -3626,7 +3626,9 @@ class RouteMatrixTests(unittest.TestCase):
 
         self.assertEqual(12, len(checks), 'Sign failure must pass both versions and all six wire routes')
         self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
-        send_events = [event for event in events if event['action'] == 'send']
+        send_events = [event for event in events
+                       if event['action'] == 'send' and
+                       event['target_id'] == 'KMIPKIT-ELEM-OP-C2S-SIGN']
         self.assertEqual(12, len(send_events))
         self.assertTrue(all(event['peer_observed_operation_sequence'] ==
                             ['Create Key Pair', 'Activate', 'Sign', 'Revoke', 'Destroy', 'Destroy'] and
@@ -3646,18 +3648,26 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(all(check.get('peer_sign_cryptographic_parameters_present') is False
                             for check in checks), checks)
 
-    def test_sign_cryptographic_parameters_field_has_an_isolated_encoder_fixture(self):
+    def test_crypto_parameters_operation_payload_fields_have_encoder_fixtures(self):
         from artifact_support import INSTALL, ROOT
         from c_route_models import ModelCases
 
         catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
-        target = next(item for item in catalog['normative_targets']
-                      if item['target_id'] == 'KMIPKIT-PAYLOAD-CLIENT-SIGN-REQUEST-20-002')
-        result = ModelCases(INSTALL / 'lib/libkmipkit_ffi.so', catalog).execute(
-            target, '2.0', 'kmipkit_cryptographic_parameters_into_ttlv')
+        targets = [item for item in catalog['normative_targets']
+                   if item.get('kind') == 'operation_payload_field' and
+                   item.get('name', '').strip().rstrip(',') == 'Cryptographic Parameters']
+        self.assertEqual(14, len(targets), 'expected all seven request shapes across two versions')
+        cases = ModelCases(INSTALL / 'lib/libkmipkit_ffi.so', catalog)
+        for target in targets:
+            protocol_version = '2.0' if '-20-' in target['target_id'] else '2.1'
+            with self.subTest(protocol_version=protocol_version):
+                result = cases.execute(
+                    target, protocol_version, 'kmipkit_cryptographic_parameters_into_ttlv')
 
-        self.assertIsNotNone(result, 'Sign Cryptographic Parameters encoder fixture is missing')
-        self.assertIn('kmipkit_cryptographic_parameters_into_ttlv', result['invoked_symbols'])
+                self.assertIsNotNone(result,
+                                     f"{target['target_id']} encoder fixture is missing")
+                self.assertIn('kmipkit_cryptographic_parameters_into_ttlv',
+                              result['invoked_symbols'])
 
     def test_batch_undo_reverses_prior_create_when_later_get_fails(self):
         """OASIS KMIP 2.1 §11.5 Table 434 requires Undo of prior items on failure."""

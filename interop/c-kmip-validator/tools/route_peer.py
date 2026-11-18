@@ -64,6 +64,11 @@ MAC_VERIFY_ITEM_IDS = (b'mac-verify-create', b'mac-verify-activate', b'mac-verif
                        b'mac-verify-revoke', b'mac-verify-destroy')
 SIGN_ITEM_IDS = (b'sign-create-pair', b'sign-activate', b'sign-target', b'sign-revoke',
                  b'sign-destroy-private', b'sign-destroy-public')
+SIGN_MISSING_PARAMETERS_CASE = 'test-sign-missing-managed-object-cryptographic-parameters'
+SIGN_PARAMETERS_TARGETS = frozenset({
+    'KMIPKIT-PAYLOAD-CLIENT-SIGN-REQUEST-20-002',
+    'KMIPKIT-PAYLOAD-CLIENT-SIGN-REQUEST-21-002',
+})
 SIGNATURE_VERIFY_ITEM_IDS = (b'verify-create-pair', b'verify-activate', b'verify-target',
                              b'verify-revoke', b'verify-destroy-public', b'verify-destroy-private')
 PKCS11_ITEM_IDS = (b'pkcs11-create', b'pkcs11-activate', b'pkcs11-target',
@@ -980,6 +985,15 @@ def assert_signature_request(node, verify, require_parameters=True):
         signature = [field for field in fields if field[0] == 0x4200C3 and field[1] == 8]
         if len(signature) != 1 or signature[0][2] != bytes(256):
             raise ValueError('fixture_signature_verify_input_mismatch')
+
+
+def sign_cryptographic_parameters_present(node):
+    """Return only whether a Sign request carries Cryptographic Parameters."""
+    sign_items = [item for item in node[2]
+                  if item[0] == BATCH_ITEM_TAG and numbers(item, 0x42005C) == [33]]
+    payloads = [child for item in sign_items for child in item[2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+    return any(child[0] == 0x42002B for payload in payloads for child in payload[2])
 
 
 def verify_signature_response(response_tree, verify):
@@ -4334,12 +4348,15 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                     'batch_continue_after_failure', 'sign_missing_parameters'),
                                                 stop_after_failure=recipe[1] == 'batch_stop_on_first_failure',
                                                 undo_prior_success=recipe[1] == 'batch_undo_rollback',
-                                                rejected_operation=peer_rejection.get('operation')
-                                                if reject_this_exchange else None,
-                                                rejection_status=peer_rejection.get('result_status', 1)
-                                                if reject_this_exchange else 1,
-                                                rejection_reason=peer_rejection.get('result_reason', 5)
-                                                if reject_this_exchange else 5)
+                                                rejected_operation=(33 if recipe[1] == 'sign_missing_parameters'
+                                                                    else peer_rejection.get('operation')
+                                                                    if reject_this_exchange else None),
+                                                rejection_status=(1 if recipe[1] == 'sign_missing_parameters'
+                                                                  else peer_rejection.get('result_status', 1)
+                                                                  if reject_this_exchange else 1),
+                                                rejection_reason=(36 if recipe[1] == 'sign_missing_parameters'
+                                                                  else peer_rejection.get('result_reason', 5)
+                                                                  if reject_this_exchange else 5))
                                         response_statuses = tuple(state_evidence['statuses'])
                                         response_reasons = tuple(reason or None for reason in state_evidence['reasons'])
                                         if response_operations != recipe[0] and not cleanup_exchange:
@@ -4894,6 +4911,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                'peer_async_empty_response_payload':
                                                    response_has_single_empty_payload(observation[0][1])}
                                               if recipe[1] == 'async_create_pending' else {}),
+                                           **({'peer_sign_cryptographic_parameters_present':
+                                               sign_cryptographic_parameters_present(observation[0][0])}
+                                              if recipe[1] == 'sign_missing_parameters' and observation else {}),
                                            **({'peer_async_response_statuses': [
                                                    numbers(item, 0x42007F)[0]
                                                    for item in observation[0][1][2]
@@ -5228,12 +5248,20 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                     targets_by_id, codec)
                                                            for item in descendants(response_tree, BATCH_ITEM_TAG))):
                                             continue
-                                    elif (target.get('role') != 'request' or
-                                          not any(request_payload_field_present(target, item,
-                                              targets_by_id, codec)
-                                                  for item in descendants(request_tree, BATCH_ITEM_TAG)) or
-                                          (cell['action'] not in ('construct', 'encode') and not is_network)):
-                                        continue
+                                    else:
+                                        if target.get('role') != 'request':
+                                            continue
+                                        request_field_present = any(
+                                            request_payload_field_present(target, item, targets_by_id, codec)
+                                            for item in descendants(request_tree, BATCH_ITEM_TAG))
+                                        omitted_sign_parameter = (
+                                            case_id == SIGN_MISSING_PARAMETERS_CASE and
+                                            target['target_id'] in SIGN_PARAMETERS_TARGETS and
+                                            cell['action'] in ('construct', 'send') and
+                                            not request_field_present)
+                                        if (not request_field_present and not omitted_sign_parameter) or (
+                                                cell['action'] not in ('construct', 'encode') and not is_network):
+                                            continue
                                 else:
                                     continue
                                 event = cell_fields(cell)

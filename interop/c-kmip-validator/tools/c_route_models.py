@@ -777,7 +777,7 @@ class ModelCases:
                         self._enum_value(name, 'ECDSA with SHA256', protocol_version))
             return None
 
-        if target.get('kind') not in {'tag', 'structure_member'}:
+        if target.get('kind') not in {'tag', 'structure_member', 'operation_payload_field'}:
             return None
         name = target.get('name', '').rstrip(',')
         if name == 'Cryptographic Parameters':
@@ -1124,7 +1124,9 @@ class ModelCases:
                                   'kmipkit_cryptographic_parameters_read_fields_v1',
                                   'kmipkit_cryptographic_parameters_into_ttlv',
                                   'kmipkit_cryptographic_parameters_from_ttlv'}
-                and target.get('kind') in {'enumeration_value', 'tag', 'structure_member', 'attribute'}):
+                and target.get('kind') in {
+                    'enumeration_value', 'tag', 'structure_member', 'attribute',
+                    'operation_payload_field'}):
             selected = self._crypto_target_field(target, protocol_version)
             if selected is not None:
                 self.abi.called.clear()
