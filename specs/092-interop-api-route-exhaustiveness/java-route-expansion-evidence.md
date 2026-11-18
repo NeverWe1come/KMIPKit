@@ -3560,3 +3560,39 @@ The full Java suite passes 84 tests. The selected report validates
 34,618/34,618 cells with zero failures; 37,023 of 71,641 remain pending. The
 ledger comparison and capability audit pass, and the full Java matrix remains
 open.
+
+## Java Certificate managed-object routes — 2026-11-18
+
+Red commit `bb35578a4` adds a focused requirement for Certificate construction
+through every applicable public route and protocol version; it fails while the
+route executor is absent. Green commit `e228e2f86` builds a Certificate through
+`ManagedObject.certificate`, `ManagedObject.fromFields`, and
+`ManagedObject.fromItem`, then reads back the typed Certificate Type and Value.
+It records the named factory for four catalog cases in KMIP 2.0 and 2.1, and
+records the generic managed-object routes for the three applicable structure
+and member cases. The tag case is intentionally limited to the named factory,
+matching the generated capability matrix. Refactor commit `7fcec3140` keeps
+the executor from invoking generic routes for that tag-only case. The byte
+string is deterministic structural fixture data; it is not a certificate
+validation test (KMIP 2.0/2.1 §2.1).
+
+Verification on the #187 source branch:
+
+```sh
+bash bindings/java/gradlew -p interop/java-kmip-validator test --rerun-tasks
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+python3 -m unittest interop.shared.tests.test_route_execution_evidence \
+  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+git diff --check
+```
+
+All 85 Java validator tests pass. The selected report validates 34,638/34,638
+cells with zero failures; 37,003 of 71,641 remain pending. The shared suites
+pass 108 tests, all 1,507 public routes pass the capability audit, and the
+generated ledger matches its reference. Full Java matrix closure remains open.

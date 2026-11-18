@@ -166,3 +166,15 @@ artifact. This is part of the FR-006 artifact provenance check.
 - This adds 84 cells. The selected report validates 34,618/34,618 cells with
   zero failures and leaves 37,023 of 71,641 pending. Full Java matrix closure
   remains open under FR-002/FR-003/FR-009.
+
+## Java Certificate managed-object routes — 2026-11-18
+
+- **FR-003:** The installed Java consumer exercises
+  `ManagedObject.certificate` for the Certificate Object Structure, Certificate
+  Type, Certificate Value, and Certificate tag cases in KMIP 2.0 and 2.1.
+  `ManagedObject.fromFields` and `ManagedObject.fromItem` run for the three
+  structure/member cases where the generated matrix declares them applicable
+  (KMIP 2.0/2.1 §2.1).
+- This adds 20 cells. The selected report validates 34,638/34,638 cells with
+  zero failures and leaves 37,003 of 71,641 pending. Full Java matrix closure
+  remains open under FR-002/FR-003/FR-009.
