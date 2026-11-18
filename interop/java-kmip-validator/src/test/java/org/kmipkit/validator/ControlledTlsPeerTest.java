@@ -14264,6 +14264,7 @@ class ControlledTlsPeerTest {
         }
         assertAsyncPollRaceRouteCoverage(events, protocolVersion);
         assertAsyncLifecyclePollRouteCoverage(events, protocolVersion);
+        assertAsyncLifecycleQueryRouteCoverage(events, protocolVersion);
     }
 
 
@@ -14946,6 +14947,34 @@ class ControlledTlsPeerTest {
                     }
                     assertEquals(1, matches,
                             "The async lifecycle Poll route must execute once for each wire combination.");
+                }
+            }
+        }
+    }
+
+    private static void assertAsyncLifecycleQueryRouteCoverage(ArrayNode events, String protocolVersion)
+            throws Exception {
+        if (!"2.1".equals(protocolVersion)) return;
+        String caseId = "test-async-lifecycle-poll";
+        String targetId = "KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS";
+        String routeId = "java.typed-protocol.client.execute_query_async_requests";
+        int workflowStepIndex = asyncWorkflowStepIndex(readRouteEvidenceCatalog(),
+                caseId, "Query Asynchronous Requests");
+        for (String encoding : List.of("TTLV", "JSON", "XML")) {
+            for (String transport : List.of("raw_tls", "https")) {
+                for (String action : List.of("construct", "send", "decode")) {
+                    int matches = 0;
+                    for (JsonNode event : events) {
+                        if (!routeEventMatches(event, caseId, routeId, protocolVersion, targetId)
+                                || !action.equals(event.path("action").asText())
+                                || !encoding.equals(event.path("encoding").asText())
+                                || !transport.equals(event.path("transport").asText())) continue;
+                        assertEquals(workflowStepIndex, event.path("workflow_step_index").asInt(-1));
+                        assertEquals("Query Asynchronous Requests", event.path("workflow_operation").asText());
+                        matches++;
+                    }
+                    assertEquals(1, matches,
+                            "The async lifecycle Query route must execute once for each wire combination.");
                 }
             }
         }
