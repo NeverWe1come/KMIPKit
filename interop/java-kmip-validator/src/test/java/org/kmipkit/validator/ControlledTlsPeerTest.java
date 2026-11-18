@@ -2447,7 +2447,16 @@ class ControlledTlsPeerTest {
                         "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY"},
                 {"test-norm-payload-client-validate-response-20-001",
                         "KMIPKIT-PAYLOAD-CLIENT-VALIDATE-RESPONSE-20-001",
-                        "KMIPKIT-ELEM-OP-C2S-VALIDATE"}
+                        "KMIPKIT-ELEM-OP-C2S-VALIDATE"},
+                {"test-norm-payload-client-locate-response-20-001",
+                        "KMIPKIT-PAYLOAD-CLIENT-LOCATE-RESPONSE-20-001", "KMIPKIT-ELEM-OP-C2S-LOCATE"},
+                {"test-norm-payload-client-sign-response-20-002",
+                        "KMIPKIT-PAYLOAD-CLIENT-SIGN-RESPONSE-20-002", "KMIPKIT-ELEM-OP-C2S-SIGN"},
+                {"test-norm-payload-client-signature-verify-request-20-005",
+                        "KMIPKIT-PAYLOAD-CLIENT-SIGNATURE-VERIFY-REQUEST-20-005",
+                        "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY"},
+                {"test-norm-payload-client-query-response-20-003",
+                        "KMIPKIT-PAYLOAD-CLIENT-QUERY-RESPONSE-20-003", "KMIPKIT-ELEM-OP-C2S-QUERY"}
         };
         for (String[] payload : additionalClientPayloadCases) {
             int routeEventCount = 0;
