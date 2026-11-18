@@ -2297,6 +2297,17 @@ class ControlledTlsPeerTest {
         assertEquals(6, activateIdentifierRouteEventCount,
                 "A client operation payload field needs generic TTLV construction, view, and decode evidence "
                         + "for both its payload target and operation target.");
+        String decryptCorrelationCase = "test-norm-payload-client-decrypt-request-20-005";
+        int decryptCorrelationRouteEventCount = 0;
+        for (String route : activateIdentifierRoutes) {
+            decryptCorrelationRouteEventCount += routeEventCount(events, decryptCorrelationCase, route, "2.0",
+                    "KMIPKIT-PAYLOAD-CLIENT-DECRYPT-REQUEST-20-005");
+            decryptCorrelationRouteEventCount += routeEventCount(events, decryptCorrelationCase, route, "2.0",
+                    "KMIPKIT-ELEM-OP-C2S-DECRYPT");
+        }
+        assertEquals(6, decryptCorrelationRouteEventCount,
+                "A client operation payload Correlation Value needs generic TTLV construction, view, and decode "
+                        + "evidence for both its payload target and operation target.");
         for (String protocolVersion : KMIP_2_0_AND_2_1) {
             assertTrue(LocalCatalogRouteChecks.missingGenericOperationTargetCaseIds(
                     readRouteEvidenceCatalog(), events, protocolVersion).isEmpty(),
