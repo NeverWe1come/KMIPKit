@@ -5859,6 +5859,8 @@ static kmip_execution_outcome_t execute_join_split_key(kmip_live_client_t *clien
     kmipkit_client_batch_item_response_t *responses[4] = {NULL};
     kmipkit_split_key_reference_t *references[2] = {NULL};
     kmipkit_ttlv_structure_t *attributes = NULL;
+    kmipkit_ttlv_structure_t *response_ttlv = NULL;
+    kmipkit_ttlv_structure_view_t *response_ttlv_view = NULL;
     kmipkit_ttlv_value_t *value = NULL;
     kmipkit_authentication_t *authentication = NULL;
     const kmipkit_unique_identifier_v1_t placeholder = {
@@ -5873,6 +5875,8 @@ static kmip_execution_outcome_t execute_join_split_key(kmip_live_client_t *clien
     kmipkit_unique_identifier_v1_t joined_identifier = {
         .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1
     };
+    uint8_t response_ttlv_present = 0;
+    uint64_t response_ttlv_item_count = 0;
     int32_t status = create_cryptographic_key_attributes(
         client, KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES, 128, &attributes) ?
         0 : KMIPKIT_ERROR_INVALID_INPUT;
@@ -5989,6 +5993,14 @@ static kmip_execution_outcome_t execute_join_split_key(kmip_live_client_t *clien
             same_text_identifier(&joined_identifier, &split_identifiers[0]) ||
             same_text_identifier(&joined_identifier, &split_identifiers[1])))
         status = KMIPKIT_ERROR_INVALID_INPUT;
+    if (status == 0) status = kmipkit_client_batch_item_response_join_split_key_ttlv(
+        responses[0], &response_ttlv_present, &response_ttlv);
+    if (status == 0 && (!response_ttlv_present || !response_ttlv))
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    if (status == 0) status = kmipkit_ttlv_structure_view(response_ttlv, &response_ttlv_view);
+    if (status == 0) status = kmipkit_ttlv_structure_view_item_count(
+        response_ttlv_view, &response_ttlv_item_count);
+    if (status == 0 && response_ttlv_item_count == 0) status = KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0 && (!destroy_response_matches_key(
             responses[1], &joined_identifier, &status) ||
             !destroy_response_matches_key(responses[2], &split_identifiers[0], &status) ||
@@ -6020,6 +6032,8 @@ static kmip_execution_outcome_t execute_join_split_key(kmip_live_client_t *clien
     if (create_batch) kmipkit_client_batch_release(create_batch);
     for (size_t index = 0; index < 2; ++index)
         if (references[index]) kmipkit_split_key_reference_release(references[index]);
+    if (response_ttlv_view) kmipkit_ttlv_structure_view_release(response_ttlv_view);
+    if (response_ttlv) kmipkit_ttlv_structure_release(response_ttlv);
     if (attributes) kmipkit_ttlv_structure_release(attributes);
     if (value) kmipkit_ttlv_value_release(value);
     return outcome;
