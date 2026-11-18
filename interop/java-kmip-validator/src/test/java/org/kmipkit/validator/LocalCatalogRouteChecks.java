@@ -1,8 +1,11 @@
 package org.kmipkit.validator;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.kmipkit.extensions.AttributeReference;
 import org.kmipkit.extensions.InvalidExtensionSchemaException;
 import org.kmipkit.extensions.AttributeSet;
+import org.kmipkit.extensions.GetAttributesRequest;
+import org.kmipkit.extensions.UniqueIdentifier;
 import org.kmipkit.protocol.CryptographicParameters;
 import org.kmipkit.ttlv.CodecLimits;
 import org.kmipkit.ttlv.RawTag;
@@ -1010,11 +1013,75 @@ final class LocalCatalogRouteChecks {
                     "org.kmipkit.ttlv.TtlvItem.view", "decode", wire);
             emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_codec.decode",
                     "org.kmipkit.ttlv.TtlvCodec.decode", "decode", wire);
+            if ("test-attr-alternative-name".equals(caseId)) {
+                executeTypedAlternativeNameRoutes(sink, caseId, targetId, attributeTag,
+                        memberTags, memberTypes, memberValues, wire, version, limits);
+            }
             emitted.add(caseId);
         }
         if (!emitted.equals(applicable)) {
             throw new IllegalArgumentException("Selected structure-valued attribute cases were not executed for "
                     + version);
+        }
+    }
+
+    private static void executeTypedAlternativeNameRoutes(EvidenceSink sink, String caseId, String targetId,
+            int attributeTag, List<Integer> memberTags, List<TtlvItemType> memberTypes,
+            List<byte[]> memberValues, byte[] attributeWire, String version, CodecLimits limits) throws Exception {
+        TtlvStructure typedStructure = TtlvStructure.create();
+        try {
+            for (int index = 0; index < memberTags.size(); index++) {
+                byte[] bytes = memberValues.get(index);
+                TtlvValue value = memberTypes.get(index) == TtlvItemType.Enumeration
+                        ? TtlvValue.Enumeration(Integer.toUnsignedLong(ByteBuffer.wrap(bytes).getInt()))
+                        : TtlvValue.TextString(bytes, limits);
+                typedStructure = append(typedStructure, memberTags.get(index), value);
+            }
+        } catch (RuntimeException failure) {
+            typedStructure.close();
+            throw failure;
+        }
+
+        byte[] attributeSetWire = structureWire(0x420125, attributeWire);
+        try (TtlvValue value = TtlvValue.structure(typedStructure, limits);
+                TypedAttribute typed = TypedAttribute.create(StandardAttribute.ALTERNATIVE_NAME, value);
+                TtlvItem typedItem = typed.asItem();
+                TypedAttribute decoded = TypedAttribute.fromItem(StandardAttribute.ALTERNATIVE_NAME, typedItem);
+                TtlvItem decodedItem = decoded.asItem()) {
+            assertEquals(StandardAttribute.ALTERNATIVE_NAME, decoded.attribute());
+            assertStructureAttributeItem(typedItem, attributeTag, memberTags, memberTypes, memberValues);
+            assertStructureAttributeItem(decodedItem, attributeTag, memberTags, memberTypes, memberValues);
+            emitRoute(sink, caseId, targetId,
+                    "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
+                    "org.kmipkit.ttlv.TypedAttribute.create", "construct", attributeWire);
+            emitRoute(sink, caseId, targetId,
+                    "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
+                    "org.kmipkit.ttlv.TypedAttribute.fromItem", "construct", attributeWire);
+            try (TtlvStructure empty = TtlvStructure.create();
+                    TtlvStructure items = TtlvStructure.withItem(empty, decoded.asItem(), limits);
+                    AttributeSet attributes = AttributeSet.tryNew(items)) {
+                assertEquals(1, attributes.len());
+                emitRoute(sink, caseId, targetId,
+                        "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
+                        "org.kmipkit.extensions.AttributeSet.tryNew", "construct", attributeSetWire);
+            }
+        }
+
+        String identifier = "object-7";
+        byte[] identifierBytes = identifier.getBytes(StandardCharsets.UTF_8);
+        byte[] requestPayloadWire = structureWire(0x42007c,
+                concat(itemWire(0x420094, TtlvItemType.TextString.code(), identifierBytes),
+                        itemWire(0x42013b, TtlvItemType.Enumeration.code(),
+                                ByteBuffer.allocate(Integer.BYTES).putInt(attributeTag).array())));
+        try (GetAttributesRequest request = GetAttributesRequest.create(
+                        UniqueIdentifier.textString(identifier), List.of(AttributeReference.tag(attributeTag)));
+                TtlvStructure payload = request.toTtlvPayload();
+                TtlvStructureView view = payload.view()) {
+            assertEquals(2, view.itemCount());
+            assertEquals(attributeTag, request.attributeReferences().get(0).tagValue().orElseThrow());
+            emitRoute(sink, caseId, targetId,
+                    "java.typed-protocol.function.attribute_request_get_attributes_to_ttlv_payload",
+                    "org.kmipkit.extensions.GetAttributesRequest.toTtlvPayload", "encode", requestPayloadWire);
         }
     }
 
