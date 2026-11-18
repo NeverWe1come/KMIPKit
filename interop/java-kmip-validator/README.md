@@ -101,8 +101,8 @@ baseline, regenerate the checked-in ledger with
 rejects generated ledgers that do not record successful invocations.
 The generated ledger retains the artifact
 SHA-256 for each build; that build-specific digest is not used as a coverage
-baseline. These recipes execute 30,596 of 71,641 planned Java route cells, with
-no failed cells; the ledger records the other 41,045 as pending and does not imply
+baseline. These recipes execute 30,580 of 71,641 planned Java route cells, with
+no failed cells; the ledger records the other 41,061 as pending and does not imply
 vendor interoperability or full-matrix completion. Local TTLV recipes exercise 51
 enumeration families, all six bitmask aggregate cases, and all 44 individual
 bitmask value cases through the applicable
@@ -167,14 +167,6 @@ Endpoints, and two heterogeneous Vendor-Specific values. The controlled mTLS
 Query response invokes `QueryResponse.serverInformations()` and checks the
 12-field tag order, types, and values; this convenience getter has no separate
 route ID in the manifest.
-Usage Limits completes its KMIP 2.0/2.1 local Structure and required-member
-routes. The enclosing Structure and its Total, Count, and Unit members are
-checked for exact order, tags, TTLV types, and values (KMIP 2.0 §7.34
-Table 354; KMIP 2.1 §7.40 Table 392).
-The optional Usage Limits member of Right adds eight local cells across
-KMIP 2.0 §7.28 Table 348 and KMIP 2.1 §7.34 Table 386. Its fixture checks
-absence and presence in Right contents and roundtrips the nested three-field
-Usage Limits Structure through its applicable Item and decoder routes.
 Four optional/repeatable members in the KMIP 2.1 Constraint and Constraints
 structures also exercise the installed `TtlvValue.structure`, Item creation,
 Item view, and decoder routes (§§7.6–7.7, Tables 357–358).
@@ -216,7 +208,7 @@ evidence for both `RawTag` identity routes and the `ClientBatch` setter. The
 setter's evidence comes from the serialized header of a controlled two-item
 Query request in KMIP 2.0 and 2.1 (KMIP 2.0 §11.54; KMIP 2.1 §11.56).
 
-The current Java ledger has 41,045 pending cells across 1,112 case IDs; every
+The current Java ledger has 41,061 pending cells across 1,114 case IDs; every
 one has the reason `route_evidence_not_emitted`. The applicability rule is the
 shared catalog and capability matrix after protocol-version, public-route,
 encoding/transport, and source-backed exclusion filters. A cell remaining in
@@ -324,7 +316,7 @@ the peer-observed Operation, and reads the successful response through
 `ClientBatchItemResult.pingResponse()`. The same case round-trips the Operation
 Enumeration through the installed generic TTLV item constructor, view, and
 decoder, as required by KMIP 2.1 §6.1.36. The selected Java report now validates
-28,788/28,788 cells; 42,853 of the full 71,641-cell Java matrix remain pending,
+28,752/28,752 cells; 42,889 of the full 71,641-cell Java matrix remain pending,
 so this does not complete the Java matrix. The Set Endpoint Role request field
 and Operation now have generic TTLV item creation, view, and decode evidence for
 the KMIP 2.1 request and both KMIP 2.0 request and response cases (KMIP 2.0
@@ -335,58 +327,71 @@ and 407).
 The Attestation Capable Indicator case completes the same four routes in both
 versions (§8.2; §9.3 Tables 364 and 402).
 
-The KMIP 2.0/2.1 §5.1 `Attributes` structure exercises the installed
+The KMIP 2.0/2.1 §5.1 `Attributes` structure now exercises the installed
 `TtlvStructure.create`, `TtlvStructure.withItem`, `TtlvItem.create`, item view,
 and `TtlvCodec.decode` routes using one source-shaped Attribute with a Comment
-name and text value. The selected report validates 28,788/28,788 cells; 42,853
-of 71,641 remain pending, so the Java matrix and #217 remain WIP.
+name and text value. The selected report validates 28,752/28,752 cells; 42,889
+of 71,641 remain pending, so the matrix and PR remain WIP.
+
+The scalar Attribute cases for Integer, Interval, and Byte String now exercise
+the installed value constructors, `TtlvItem.create`, item view, and decoder.
+The fixtures cover Certificate Length, Cryptographic Length and Usage Mask,
+Protection Storage Mask, Lease Time, Protection Period, Short Unique Identifier,
+and the KMIP 2.1 Rotate Generation, Rotate Interval, and Rotate Offset
+attributes. The selected report validates 28,820/28,820 cells with zero
+failures; 42,821 of 71,641 remain pending, so this local generic-TTLV evidence
+does not complete the Java matrix or demonstrate server policy behavior.
 
 The remaining catalogued Text String targets now use generic value construction,
 item creation, view, and decode routes. This completes all 117 planned Java
-`TtlvValue.TextString` cells; the selected report validates 28,912/28,912 cells
-with zero failures, while 42,729 of the complete 71,641-cell matrix remain
-pending. These local fixtures do not assert server-side identifier or profile
-policy.
+`TtlvValue.TextString` cells; the selected report validates 28,876/28,876 cells
+with zero failures, while 42,765 of the complete 71,641-cell matrix remain
+pending. The examples are local TTLV fixtures and do not assert server-side
+identifier or profile policy.
 
 The remaining source-catalogued Byte String and Date Time Extended values now
 use generic construction, item creation, view, and decode routes. All 74
 planned Java ByteString cells and all five DateTimeExtended cells are covered.
-The selected report validates 28,960/28,960 cells; 42,681 of 71,641 remain
+The selected report validates 28,924/28,924 cells; 42,717 of 71,641 remain
 pending. These local TTLV fixtures do not claim credential, PKCS#11, or
 certificate semantic validation.
 
 Catalogued Big Integer key-material fields now use generic construction, item
 creation, view, and decode routes with an eight-byte synthetic value. All 62
 planned Java BigInteger cells are covered. The selected report validates
-29,200/29,200 cells; 42,441 of 71,641 remain pending. No production key
+29,164/29,164 cells; 42,477 of 71,641 remain pending. No production key
 material is used or exposed by these local fixtures.
 
-The final three source-catalogued Enumeration fields now exercise generic
-construction, item creation, view, and decode: Interop Function, Attribute
-Reference as its assigned Tag value, and Extension Type as an Item Type. All
-3,767 planned Java Enumeration constructor cells are covered. The selected
-report validated 29,224/29,224 cells before generic Structure routes were added.
-Local TTLV evidence does not claim server interoperability.
+The last three source-catalogued Enumeration fields now use generic value
+construction, item creation, view, and decode routes. These cover Interop
+Function, Attribute Reference encoded as a Tag, and Extension Type encoded as
+an Item Type. The Java Enumeration constructor route is now complete across all
+3,767 planned cells. The selected report validates 29,188/29,188 cells; 42,453
+of 71,641 remained pending at that point.
 
 Generic Structure routes now cover all 138 planned `TtlvStructure.create` and
 `TtlvStructure.withItem` cells and all 227 planned `TtlvValue.structure` cells.
 The fixtures use catalogued Structure tags where available, parent tags for
 catalogued members, and a generic extension-range tag for untagged model types.
 They verify only local generic TTLV construction, view, and decode behavior;
-they do not assert KMIP field semantics or conformance. The parent report
-validated 30,110/30,110 cells after the Structure slice; those Structure builder
-and value routes are complete, while generic Item creation, view, and decoding
-still have pending cells for other targets.
+they do not assert KMIP field semantics or conformance. The selected report
+validated 30,110/30,110 cells at that point; 41,531 of 71,641 were then pending.
 
 Assigned Tag cases that also have typed API routes now retain their own generic
 `RawTag`, Item creation, Item view, and decode events. This includes tags such
 as Authentication whose typed route is not a `StandardAttribute` route. The
 generic fixture checks the assigned 24-bit tag and an Integer value; it does
-not claim the value is semantically valid for the tag. The parent report then
-validated 30,580/30,580 cells; 41,061 of 71,641 remained pending across 1,114
+not claim the value is semantically valid for the tag. The selected report now
+validates 30,580/30,580 cells; 41,061 of 71,641 remain pending across 1,114
 case IDs.
 
-The eight Right Usage Limits cells remain present in the combined report and
-are included in the catalog-wide generic Structure coverage. With the Usage
-Limits cells retained by #216, the selected report validates 30,596/30,596
-cells; 41,045 of 71,641 remain pending across 1,112 case IDs.
+Sixty catalogued operation-target cases now exercise the `Operation` Enumeration
+as a generic TTLV Item through `TtlvItem.create`, `TtlvItem.view`, and
+`TtlvCodec.decode` for each applicable KMIP version (345 version-specific
+cells; §§8.2 and 11.36). This proves local generic TTLV behavior only; it does
+not prove operation payload validity or server behavior. The Usage Limits Structure and its Total, Count, and Unit members also complete
+16 local construction, view, and decode cells across KMIP 2.0/2.1 (KMIP 2.0
+§7.34 Table 354; KMIP 2.1 §7.40 Table 392). The selected report validates
+30,941/30,941 cells; 40,700 of 71,641 remain pending across 1,106 case IDs.
+The eight Right Usage Limits cells remain in this report and are covered by the
+catalog-wide generic Structure routes.
