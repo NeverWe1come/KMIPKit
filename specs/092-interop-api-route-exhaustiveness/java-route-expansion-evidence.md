@@ -1854,6 +1854,21 @@ python3 interop/java-kmip-validator/tools/compare_route_ledger.py
 git diff --check
 ```
 
+## #217 stack-tip verification after ManagedObject Key Material routes — 2026-11-18
+
+The #217 branch includes Red commit `cc15e8801` and Green commit `8b02accb6`
+from #187, plus the intervening #216 Usage Limits routes. It exercises
+`ManagedObject.fromFields` and `ManagedObject.fromItem` for each transparent
+Key Material target in matching Symmetric Key, Private Key, or Public Key
+object structures. The eight Right Usage Limits cells remain covered. Test
+values are deterministic synthetic fixtures.
+
+The full Java suite passes 84 tests; shared evidence/schema/capability suites
+pass 108 tests; and the capability audit reports 1,507 routes. The selected
+report validates 34,550/34,550 cells with zero failures and leaves 37,091 of
+71,641 planned Java cells pending. The generated ledger matches its checked-in
+reference and `git diff --check` passes. The stack remains WIP.
+
 ## #217 stack-tip verification after typed Key Value and Key Block sync — 2026-11-18
 
 The #217 tip contains the 232 typed Key Value and Key Block cells introduced

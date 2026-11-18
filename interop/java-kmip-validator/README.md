@@ -449,3 +449,10 @@ passes 84 tests and the shared
 evidence/schema/capability suites pass 108 tests. The capability audit reports
 1,507 routes; the selected report validates 34,382/34,382 cells with zero
 failures and 37,259 pending. The stack is still incomplete and WIP.
+
+After syncing the latest #216 head, #217 retains all eight Right Usage Limits
+cells and adds the 168 `ManagedObject.fromFields`/`ManagedObject.fromItem`
+cells for transparent Key Material fields and structures. Each format is
+wrapped by its matching Symmetric Key, Private Key, or Public Key structure
+(§§2.5, 2.6, 2.9, 3.4–3.12). The selected report validates 34,550/34,550 cells
+with zero failures and leaves 37,091 of 71,641 planned cells pending.
