@@ -1854,6 +1854,20 @@ python3 interop/java-kmip-validator/tools/compare_route_ledger.py
 git diff --check
 ```
 
+## #217 stack-tip verification after Certificate Request and Opaque Object routes — 2026-11-18
+
+The #217 tip includes #187 Red `4b7b5afa1`, Green `c7e91b3d9`, and Refactor
+`613a1d235`, propagated through #216. It exercises the Certificate Request
+and Opaque Object factories, plus `fromFields` and `fromItem` for the
+structure/member targets where applicable. The eight Right Usage Limits cells
+remain covered. Fixture bytes are deterministic structural data.
+
+The full Java suite passes 85 tests; shared evidence/schema/capability suites
+pass 108 tests; and the capability audit reports 1,507 routes. The selected
+report validates 34,694/34,694 cells with zero failures and leaves 36,947 of
+71,641 planned Java cells pending. The generated ledger matches its checked-in
+reference; `git diff --check` passes, and the stack remains WIP.
+
 ## #217 stack-tip verification after Certificate managed-object routes — 2026-11-18
 
 The #217 tip includes #187 Red `bb35578a4`, Green `e228e2f86`, and Refactor

@@ -690,32 +690,61 @@ class LocalCatalogRouteChecksTest {
 
     @Test
     // KMIP 2.0/2.1 §2.1 defines Certificate as a managed-object structure.
-    void executesCertificateFactoryForEveryApplicableCertificateTargetAndVersion() throws Exception {
+    void executesManagedObjectFactoriesForEveryApplicableFactoryTargetAndVersion() throws Exception {
         JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
         Set<String> caseIds = Set.of(
                 "test-norm-object-structure-object-structure-certificate",
                 "test-norm-structure-member-structure-member-2-1-certificate-certificate-type",
                 "test-norm-structure-member-structure-member-2-1-certificate-certificate-value",
-                "test-norm-tag-tag-420013");
+                "test-norm-tag-tag-420013",
+                "test-norm-object-structure-object-structure-certificate-request",
+                "test-norm-structure-member-structure-member-2-2-certificate-request-certificate-request-type",
+                "test-norm-structure-member-structure-member-2-2-certificate-request-certificate-request-value",
+                "test-norm-tag-tag-420018",
+                "test-norm-object-structure-object-structure-opaque-object",
+                "test-norm-structure-member-structure-member-2-3-opaque-object-opaque-data-type",
+                "test-norm-structure-member-structure-member-2-3-opaque-object-opaque-data-value",
+                "test-norm-tag-tag-42005b");
         List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
 
         for (String version : List.of("2.0", "2.1")) {
-            LocalCatalogRouteChecks.executeCertificateFactoryTargets(catalog, version, caseIds, invocations::add);
+            LocalCatalogRouteChecks.executeManagedObjectFactoryTargets(catalog, version, caseIds, invocations::add);
         }
 
-        assertEquals(20, invocations.size());
+        assertEquals(60, invocations.size());
         assertEquals(Set.of(
                 "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.certificate",
+                "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.certificaterequest",
+                "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.opaqueobject",
                 "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromfields",
                 "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromitem"),
                 invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId)
                         .collect(java.util.stream.Collectors.toSet()));
         assertEquals(8, invocations.stream().filter(invocation -> invocation.routeId().endsWith("managedobject.certificate"))
                 .count());
-        assertEquals(6, invocations.stream().filter(invocation -> invocation.routeId().endsWith("managedobject.fromfields"))
+        assertEquals(8, invocations.stream().filter(invocation -> invocation.routeId().endsWith("managedobject.certificaterequest"))
                 .count());
-        assertEquals(6, invocations.stream().filter(invocation -> invocation.routeId().endsWith("managedobject.fromitem"))
+        assertEquals(8, invocations.stream().filter(invocation -> invocation.routeId().endsWith("managedobject.opaqueobject"))
                 .count());
+        assertEquals(18, invocations.stream().filter(invocation -> invocation.routeId().endsWith("managedobject.fromfields"))
+                .count());
+        assertEquals(18, invocations.stream().filter(invocation -> invocation.routeId().endsWith("managedobject.fromitem"))
+                .count());
+        assertEquals(Set.of(
+                "KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE",
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-1-CERTIFICATE-CERTIFICATE-TYPE",
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-1-CERTIFICATE-CERTIFICATE-VALUE",
+                "KMIPKIT-ELEM-TAG-420013",
+                "KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE-REQUEST",
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-2-CERTIFICATE-REQUEST-CERTIFICATE-REQUEST-TYPE",
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-2-CERTIFICATE-REQUEST-CERTIFICATE-REQUEST-VALUE",
+                "KMIPKIT-ELEM-TAG-420018",
+                "KMIPKIT-ELEM-OBJECT-STRUCTURE-OPAQUE-OBJECT",
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-3-OPAQUE-OBJECT-OPAQUE-DATA-TYPE",
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-3-OPAQUE-OBJECT-OPAQUE-DATA-VALUE",
+                "KMIPKIT-ELEM-TAG-42005B"), invocations.stream()
+                        .map(LocalCatalogRouteChecks.Invocation::targetId)
+                        .collect(java.util.stream.Collectors.toSet()));
         assertEquals(Set.of("construct"), invocations.stream()
                 .map(LocalCatalogRouteChecks.Invocation::action)
                 .collect(java.util.stream.Collectors.toSet()));
