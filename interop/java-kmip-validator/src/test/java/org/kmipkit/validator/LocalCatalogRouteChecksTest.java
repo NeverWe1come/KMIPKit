@@ -163,6 +163,17 @@ class LocalCatalogRouteChecksTest {
     }
 
     @Test
+    void structureRouteSelectorIgnoresCatalogCasesWithoutNormativeTargets() throws Exception {
+        JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
+        JsonNode events = new ObjectMapper().createArrayNode();
+
+        Set<String> missing = LocalCatalogRouteChecks.missingGenericStructureTargetCaseIds(
+                catalog, events, "2.1", Set.of("KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE"));
+
+        assertTrue(missing.contains("test-norm-object-structure-object-structure-certificate"));
+    }
+
+    @Test
     void executesSevenStructuredAttributeValuesThroughGenericTtlvRoutes() throws Exception {
         JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
         Set<String> caseIds = Set.of(
