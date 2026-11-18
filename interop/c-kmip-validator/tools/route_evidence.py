@@ -4,6 +4,7 @@ CELL_FIELDS = (
     'case_id', 'route_id', 'target_id', 'public_api_symbol', 'execution_route_id',
     'execution_api_symbol', 'action', 'protocol_version', 'encoding', 'transport',
     'workflow_step_index', 'workflow_operation', 'workflow_item_index',
+    'not_applicable_reason',
 )
 
 

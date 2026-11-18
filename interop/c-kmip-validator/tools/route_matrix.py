@@ -191,8 +191,14 @@ def require_complete(events: list[dict], pending: list[dict]) -> None:
     keys = [_key(event) for event in events]
     if len(keys) != len(set(keys)):
         raise ValueError('duplicate route execution cells')
-    if any(event['status'] != 'passed' for event in events):
+    if any(event['status'] not in {'passed', 'not_applicable'} for event in events):
         raise ValueError('failed route execution cells')
+    for event in events:
+        if event['status'] == 'not_applicable' and (
+                event.get('invocation_count') != 0
+                or event.get('not_applicable_reason') != 'stop_unprocessed_response_omitted'
+                or 'invocation_id' in event):
+            raise ValueError('not-applicable route cell claims invocation evidence')
 
 
 def _name(value: str) -> str:
@@ -938,6 +944,16 @@ def invoked_event(cell: dict, index: int) -> dict:
     return event
 
 
+def not_applicable_event(cell: dict) -> dict:
+    """Record an approved omitted response without claiming an API call."""
+    if (cell.get('execution_status') != 'not_applicable'
+            or cell.get('not_applicable_reason') != 'stop_unprocessed_response_omitted'):
+        raise ValueError('route cell has no approved non-applicability disposition')
+    event = cell_fields(cell)
+    event.update(status='not_applicable', invocation_count=0)
+    return event
+
+
 def event_from_cell(cell: dict, wire: bytes, index: int) -> dict:
     event = invoked_event(cell, index)
     tree = {'tag': int.from_bytes(wire[:3], 'big'), 'type': wire[3], 'value': wire[8:12].hex()}
@@ -994,6 +1010,9 @@ def run(output: Path, binary: Path | None = None) -> int:
     model_cases = ModelCases(library, catalog)
     generic_cache = {}
     for index, cell in enumerate(iter_cells(catalog, manifest, languages=('c',))):
+        if cell.get('execution_status') == 'not_applicable':
+            events.append(not_applicable_event(cell))
+            continue
         target = targets[cell['target_id']]
         fixture = scalar_fixture(target, tags, catalog, cell['protocol_version'])
         case = cases[cell['case_id']]
@@ -1149,9 +1168,14 @@ def run(output: Path, binary: Path | None = None) -> int:
     output.write_text(json.dumps(report, indent=2) + '\n')
     gaps_path = output.with_suffix('.gaps.json')
     gaps_path.write_text(json.dumps({'expected_cells': len(events) + len(pending),
-        'invoked_cells': len(events), 'failed_cells': sum(e['status'] != 'passed' for e in events),
+        'invoked_cells': sum(e.get('invocation_count', 0) > 0 for e in events),
+        'not_applicable_cells': sum(e['status'] == 'not_applicable' for e in events),
+        'failed_cells': sum(e['status'] == 'failed' for e in events),
         'pending_cells': len(pending), 'pending': pending}, indent=2) + '\n')
-    print(json.dumps({'evidence': str(output), 'invoked_cells': len(events), 'pending_cells': len(pending)}))
+    print(json.dumps({'evidence': str(output),
+        'invoked_cells': sum(e.get('invocation_count', 0) > 0 for e in events),
+        'not_applicable_cells': sum(e['status'] == 'not_applicable' for e in events),
+        'pending_cells': len(pending)}))
     try:
         require_complete(events, pending)
         validate_collection([report], catalog, manifest, catalog_sha256=report['catalog_sha256'],

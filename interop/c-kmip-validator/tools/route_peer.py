@@ -4981,6 +4981,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                             if not observation or code or run.returncode != 0:
                                 continue
                             for cell in cells_by_case[case_id]:
+                                if cell.get('execution_status') == 'not_applicable':
+                                    continue
                                 if _key(cell) in keys:
                                     continue
                                 if cell['protocol_version'] != version or cell['public_api_symbol'] not in called_symbols:
