@@ -1245,3 +1245,20 @@ Delegated Login, KMIP 2.0 §§6.1.12/6.1.29 and KMIP 2.1 §§6.1.12/6.1.30 permi
 Lease Time as an Interval or Date Time; only Interval is exercised here. The
 full-matrix gate correctly rejects the incomplete report, so the stack remains
 WIP.
+
+### Create batch workflows and omitted response evidence — 2026-11-18
+
+The full installed-consumer run now exercises catalogued Create workflows,
+including ordered Create/Activate/Get/Destroy, pending Create, Undo, Stop, and
+Placeholder cases. It records a typed-item construction result for a locally
+rejected forward Placeholder reference, proves the batch was not sent, and
+marks response decoders not applicable only when the matching send event
+proves `not_sent`. The Stop fixture also preserves the explicitly omitted
+second response item as not applicable without fabricating a decode call.
+
+The Java suite passes 109/109 tests. The selected report validates 43,831 of
+71,641 planned cells: 43,815 invocations, 16 not-applicable cells, and zero
+failures. The Create client-batch-item route is now 1,200/1,200; 27,810 cells
+remain pending across the full matrix. The generated ledger comparison passes.
+These controlled TLS fixtures do not establish interoperability with an
+external KMS. The stack remains WIP while any applicable matrix cells remain.
