@@ -18,9 +18,40 @@ def norm(value):
 class ValueCases:
     def __init__(self, library: Path, catalog):
         self.abi = TreeAbi(library)
+        self.abi.bind('kmipkit_credential_from_ttlv', [C.c_void_p, C.POINTER(C.c_void_p)])
+        self.abi.bind('kmipkit_credential_into_ttlv', [C.c_void_p, C.POINTER(C.c_void_p)])
+        self.abi.library.kmipkit_credential_release.argtypes = [C.c_void_p]
+        self.abi.library.kmipkit_credential_release.restype = None
         self.catalog = catalog
         self.tags = {norm(target['name']): int(target['wire_value'], 16)
                      for target in catalog['normative_targets'] if target['kind'] == 'tag'}
+
+    def credential_model_roundtrip(self, raw_type):
+        type_tag = self.tags.get(norm('Credential Type'))
+        value_tag = self.tags.get(norm('Credential Value'))
+        if type_tag is None or value_tag is None:
+            raise ValueError('credential_outer_tags_missing')
+        limits, source, credential, encoded = (C.c_void_p() for _ in range(4))
+        try:
+            self.abi.call('kmipkit_codec_limits_defaults', C.byref(limits))
+            source = self.abi.construct_structure([
+                (type_tag, 5, raw_type.to_bytes(4, 'big')),
+                (value_tag, 1, []),
+            ], limits)
+            expected = self.abi.read_structure(source)
+            self.abi.call('kmipkit_credential_from_ttlv', source, C.byref(credential))
+            source = C.c_void_p()
+            self.abi.call('kmipkit_credential_into_ttlv', credential, C.byref(encoded))
+            credential = C.c_void_p()
+            actual = self.abi.read_structure(encoded)
+            if actual != expected:
+                raise ValueError('credential_ttlv_tree_not_preserved')
+            return actual
+        finally:
+            self.abi.release('ttlv_structure', encoded)
+            self.abi.release('credential', credential)
+            self.abi.release('ttlv_structure', source)
+            self.abi.release('codec_limits', limits)
 
     def item_type_values(self, version):
         return sorted(int(target['wire_value'], 16) for target in self.catalog['normative_targets']
@@ -119,6 +150,7 @@ class ValueCases:
             symbols.update(result['invoked_symbols'])
             sample_count += 1
         credential_type_values_checked = 0
+        credential_model_roundtrips = 0
         if type_name == 'Credential Type':
             self.abi.bind('kmipkit_credential_type_from_raw', [C.c_uint32, C.POINTER(C.c_uint32)])
             for value in [*known, *unknown_values]:
@@ -128,9 +160,20 @@ class ValueCases:
                     raise ValueError('credential_type_raw_value_not_preserved')
                 symbols.update(self.abi.called)
                 credential_type_values_checked += 1
+                credential_tree = self.credential_model_roundtrip(value)
+                normalized_credential = [
+                    [child_tag, item_type,
+                     child_value.hex() if isinstance(child_value, bytes) else child_value]
+                    for child_tag, item_type, child_value in credential_tree
+                ]
+                state.update(json.dumps(normalized_credential, separators=(',', ':')).encode())
+                state.update(b'\n')
+                symbols.update(self.abi.called)
+                credential_model_roundtrips += 1
         result = {'tree_sha256': state.hexdigest(), 'invoked_symbols': symbols, 'sample_count': sample_count,
                   'known_values_checked': len(known), 'unknown_value_preserved': True,
                   'combination_count': count, 'tag': tag}
         if type_name == 'Credential Type':
             result['credential_type_values_checked'] = credential_type_values_checked
+            result['credential_model_roundtrips'] = credential_model_roundtrips
         return result
