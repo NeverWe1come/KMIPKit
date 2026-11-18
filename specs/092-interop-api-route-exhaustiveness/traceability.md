@@ -81,3 +81,8 @@ artifact. This is part of the FR-006 artifact provenance check.
 
 - **FR-003:** The Java fixture now covers every Operation obligation in the selected catalog cases through generic Item creation, view, and decoding. It preserves workflow step, operation, and item identity for batch targets, and reuses Operation evidence emitted by other local recipes. Local enum and bitmask fixture operations remain descriptive context unless they are separately catalogued as Operation targets.
 - The selected Java report validates 33,808/33,808 cells with zero failures. The generated ledger records 71,641 planned, 33,808 executed, and 37,833 pending cells. The selected scope is complete, but the Java full matrix is not; other languages and the full controlled-peer matrix remain open under FR-002, FR-003, FR-005, and FR-006.
+
+## Java managed-object Object Type routes — 2026-11-18
+
+- **FR-003:** For all nine catalogued managed-object cases, the Java controlled consumer now invokes the installed `TtlvItem.create`, `TtlvItem.view`, and `TtlvCodec.decode` routes for the Object Type Enumeration in KMIP 2.0 and 2.1 (§11.34). Each fixture checks the catalogued wire value and `Object Type` tag. This closes 54 local cells and makes no Register/Create transport claim.
+- The selected Java report validates 33,862/33,862 cells with zero failures; the generated ledger records 71,641 planned, 33,862 executed, and 37,779 pending cells. Full Java matrix closure remains required under FR-002/FR-003/FR-009.
