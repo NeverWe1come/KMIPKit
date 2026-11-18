@@ -1905,6 +1905,10 @@ class ControlledTlsPeerTest {
                     report.path("case_ids").get(index).asText());
         }
         assertEquals("test-attr-activation-date", report.path("case_ids").get(6).asText());
+        List<String> reportedCaseIds = new ArrayList<>();
+        report.path("case_ids").forEach(caseId -> reportedCaseIds.add(caseId.asText()));
+        assertTrue(reportedCaseIds.contains("test-norm-tag-tag-42000c"),
+                "Typed non-attribute Tags still need their generic TTLV case in the selected report.");
         assertEquals(2, report.path("protocol_versions").size());
         assertEquals("org.kmipkit.extensions.Client.execute",
                 findEvent(report.path("events"), "send", "2.0").path("execution_api_symbol").asText());
