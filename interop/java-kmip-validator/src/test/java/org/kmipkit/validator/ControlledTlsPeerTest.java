@@ -9557,24 +9557,26 @@ class ControlledTlsPeerTest {
         }
         StructureMemberByteStringFixture queryFilterFixture = STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.stream()
                 .filter(StructureMemberByteStringFixture::typedQueryFilter).findFirst().orElseThrow();
-        appendRouteEvent(events, queryFilterFixture.caseId(),
-                "java.typed-protocol.model.org.kmipkit.extensions.queryasyncrequestsrequest"
-                        + ".withcorrelationvalues", queryFilterFixture.targetId(),
-                "org.kmipkit.extensions.QueryAsyncRequestsRequest.withCorrelationValues", null, null,
-                "construct", "2.1", null, typedPayloadHash, null);
-        appendRouteEvent(events,
+        appendQueryAsyncCorrelationValuesRouteEvent(events, queryFilterFixture.caseId(),
+                queryFilterFixture.targetId(), typedPayloadHash);
+        appendQueryAsyncCorrelationValuesRouteEvent(events,
                 "test-norm-operation-structure-operation-structure-7-1-asynchronous-correlation-values",
-                "java.typed-protocol.model.org.kmipkit.extensions.queryasyncrequestsrequest"
-                        + ".withcorrelationvalues",
-                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-1-ASYNCHRONOUS-CORRELATION-VALUES",
-                "org.kmipkit.extensions.QueryAsyncRequestsRequest.withCorrelationValues", null, null,
-                "construct", "2.1", null, typedPayloadHash, null);
+                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-1-ASYNCHRONOUS-CORRELATION-VALUES", typedPayloadHash);
         assertRouteEventRecorded(events,
                 "test-norm-operation-structure-operation-structure-7-1-asynchronous-correlation-values",
                 "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-1-ASYNCHRONOUS-CORRELATION-VALUES",
                 "java.typed-protocol.model.org.kmipkit.extensions.queryasyncrequestsrequest"
                         + ".withcorrelationvalues",
                 "construct", "2.1");
+    }
+
+    private static void appendQueryAsyncCorrelationValuesRouteEvent(ArrayNode events, String caseId,
+            String targetId, String payloadHash) {
+        appendRouteEvent(events, caseId,
+                "java.typed-protocol.model.org.kmipkit.extensions.queryasyncrequestsrequest"
+                        + ".withcorrelationvalues",
+                targetId, "org.kmipkit.extensions.QueryAsyncRequestsRequest.withCorrelationValues",
+                null, null, "construct", "2.1", null, payloadHash, null);
     }
 
     // OASIS KMIP 2.1 §7.2 Table 353: these required Asynchronous Request fields use their §11.56 tags.
