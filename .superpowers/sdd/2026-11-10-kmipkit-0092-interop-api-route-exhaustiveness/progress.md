@@ -666,3 +666,19 @@ branches, and the common CI therefore reports a planned matrix only.
   shared suite passes 68 tests plus 503 subtests. The ledger comparison passes.
 - These controlled TLS runs establish fixture-level route evidence, not
   external KMS interoperability. Keep #187, #216, and #217 WIP.
+
+## 2026-11-18 Python omitted Batch Stop response evidence
+
+- The exact-head Python installed consumer exposed an invalid invocation for
+  `ttlv_item_view_from_item` on Get response item 1, which the catalog marks
+  omitted after Batch Stop. Red `a2f025e40` asserts the cell is recorded as
+  `not_applicable` with zero invocations and no invocation ID; it failed
+  because the runner returned a gap. Green `6214f2156` emits the planned
+  not-applicable event before entering the route trace. Refactor `660c007e5`
+  extracts the sanitized planned-cell event builder.
+- The focused Python route-matrix regression passes after Green and Refactor.
+  The earlier CI run had zero failed cells but was rejected for this evidence
+  mismatch; the full installed Python matrix must pass again on the new head.
+- Batch Stop semantics follow OASIS KMIP 2.0 §11.5 Table 396 and KMIP 2.1
+  §11.5 Table 434. Keep the Java stack WIP until the exact-head CI and full
+  matrix contract pass.
