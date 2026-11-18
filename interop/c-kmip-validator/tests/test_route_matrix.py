@@ -1918,6 +1918,36 @@ class RouteMatrixTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'pending'):
             self.runner.require_complete([{'status': 'passed'}], [{'reason': 'validator_recipe_pending'}])
 
+    def test_omitted_stop_response_is_emitted_as_non_invocation(self):
+        cell = {
+            'case_id': 'test-batch-stop-on-first-failure',
+            'route_id': 'c.network.batch.response',
+            'target_id': 'KMIPKIT-ELEM-OP-C2S-GET',
+            'public_api_symbol': 'kmipkit_client_batch_item_response_get_ttlv',
+            'execution_route_id': 'c.execute',
+            'execution_api_symbol': 'kmipkit_client_execute',
+            'action': 'decode',
+            'protocol_version': '2.0',
+            'encoding': 'TTLV',
+            'transport': 'raw_tls',
+            'workflow_operation': 'Get',
+            'workflow_item_index': 1,
+            'execution_status': 'not_applicable',
+            'not_applicable_reason': 'stop_unprocessed_response_omitted',
+        }
+
+        event = self.runner.not_applicable_event(cell)
+        self.runner.require_complete([event], [])
+
+        self.assertEqual('not_applicable', event['status'])
+        self.assertEqual(0, event['invocation_count'])
+        self.assertEqual('stop_unprocessed_response_omitted', event['not_applicable_reason'])
+        self.assertNotIn('invocation_id', event)
+        schema_path = Path(__file__).resolve().parents[2] / 'shared/schemas/route-execution-evidence.schema.json'
+        schema = json.loads(schema_path.read_text())
+        import jsonschema
+        jsonschema.validate(event, schema['$defs']['event'])
+
     def test_duplicate_events_rejected(self):
         event = {'case_id': 'case', 'route_id': 'route', 'target_id': 'target',
                  'protocol_version': '2.1', 'encoding': 'TTLV', 'transport': None,
