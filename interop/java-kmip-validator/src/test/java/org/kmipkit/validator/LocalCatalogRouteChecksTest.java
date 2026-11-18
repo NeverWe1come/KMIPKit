@@ -751,6 +751,8 @@ class LocalCatalogRouteChecksTest {
                 .map(LocalCatalogRouteChecks.Invocation::action)
                 .collect(java.util.stream.Collectors.toSet()));
         assertTrue(invocations.stream().allMatch(invocation -> caseIds.contains(invocation.caseId())));
+        byte[] expectedWire = invocations.get(0).wire();
+        invocations.forEach(invocation -> assertArrayEquals(expectedWire, invocation.wire()));
     }
 
     @Test

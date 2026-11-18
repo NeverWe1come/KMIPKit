@@ -202,8 +202,10 @@ final class LocalCatalogRouteChecks {
             "test-norm-object-structure-object-structure-symmetric-key",
             "test-norm-object-structure-object-structure-private-key",
             "test-norm-object-structure-object-structure-public-key");
-    static final Set<String> SPLIT_KEY_MANAGED_OBJECT_ROOT_CASE_IDS = Set.of(
-            "test-norm-object-structure-object-structure-split-key");
+    static final String SPLIT_KEY_MANAGED_OBJECT_ROOT_CASE_ID =
+            "test-norm-object-structure-object-structure-split-key";
+    static final Set<String> SPLIT_KEY_MANAGED_OBJECT_ROOT_CASE_IDS =
+            Set.of(SPLIT_KEY_MANAGED_OBJECT_ROOT_CASE_ID);
     static final Set<String> REMAINING_ENUMERATION_FIELD_CASE_IDS = Set.of(
             "test-norm-operation-structure-operation-structure-7-15-interop-function",
             "test-norm-structure-member-structure-member-5-5-attribute-reference",
@@ -1723,7 +1725,7 @@ final class LocalCatalogRouteChecks {
     /** Executes the Split Key root through its named and generic public factories. */
     static void executeSplitKeyManagedObjectRootTargets(JsonNode catalog, String version,
             Set<String> selectedCaseIds, EvidenceSink sink) throws Exception {
-        String caseId = SPLIT_KEY_MANAGED_OBJECT_ROOT_CASE_IDS.iterator().next();
+        String caseId = SPLIT_KEY_MANAGED_OBJECT_ROOT_CASE_ID;
         String targetId = "KMIPKIT-ELEM-OBJECT-STRUCTURE-SPLIT-KEY";
         if (!SPLIT_KEY_MANAGED_OBJECT_ROOT_CASE_IDS.containsAll(selectedCaseIds)) {
             throw new IllegalArgumentException("Selected case is not the Split Key managed-object root.");
@@ -1756,14 +1758,10 @@ final class LocalCatalogRouteChecks {
                 fields.add(rawKeyBlockItem(catalog, version, limits));
 
                 byte[] wire = structureWire(objectTag, concat(
-                        itemWire(splitKeyPartsTag, TtlvItemType.Integer.code(),
-                                ByteBuffer.allocate(Integer.BYTES).putInt(2).array()),
-                        itemWire(keyPartIdentifierTag, TtlvItemType.Integer.code(),
-                                ByteBuffer.allocate(Integer.BYTES).putInt(1).array()),
-                        itemWire(splitKeyThresholdTag, TtlvItemType.Integer.code(),
-                                ByteBuffer.allocate(Integer.BYTES).putInt(2).array()),
-                        itemWire(splitKeyMethodTag, TtlvItemType.Enumeration.code(),
-                                ByteBuffer.allocate(Integer.BYTES).putInt(splitKeyMethod).array()),
+                        scalarWire(splitKeyPartsTag, TtlvItemType.Integer.code(), 2),
+                        scalarWire(keyPartIdentifierTag, TtlvItemType.Integer.code(), 1),
+                        scalarWire(splitKeyThresholdTag, TtlvItemType.Integer.code(), 2),
+                        scalarWire(splitKeyMethodTag, TtlvItemType.Enumeration.code(), splitKeyMethod),
                         keyBlockWire));
                 try (ManagedObject typedFactory = ManagedObject.splitKey(fields);
                         ManagedObject fromFields = ManagedObject.fromFields(objectType, fields);
