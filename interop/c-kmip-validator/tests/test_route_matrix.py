@@ -2744,6 +2744,19 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(result['unknown_value_preserved'])
         self.assertIn('kmipkit_ttlv_value_enumeration', result['invoked_symbols'])
 
+    def test_credential_type_case_executes_the_credential_type_constructor(self):
+        """OASIS KMIP 2.0/2.1 §11.11: preserve Credential Type values through the typed C constructor."""
+        from artifact_support import ROOT
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        case = next(item for item in catalog['test_cases']
+                    if item['case_id'] == 'test-enum-credential-type')
+
+        result = self.value_executor().execute(case, '2.1')
+
+        self.assertIn('kmipkit_credential_type_from_raw', result['invoked_symbols'])
+        self.assertEqual(result['credential_type_values_checked'], 7)
+        self.assertTrue(result['unknown_value_preserved'])
+
     def test_bitmask_case_executes_every_flag_combination(self):
         result = self.value_executor().execute({'requires': {'bitmask_type': 'Cryptographic Usage Mask',
             'exhaustive_bitmask_combinations': {'flag_wire_values': ['00000001', '00000002', '00000004'],
