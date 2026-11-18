@@ -769,6 +769,32 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
             'tag_not_allocated',
         )
 
+    def test_zero_batch_count_parser_rejection_is_expected_for_local_message_decode(self):
+        case = {
+            'case_id': 'test-batch-count-zero-rejected',
+            'category': 'batch_workflows',
+            'requires': {'protocol_scenario': {
+                'mode': 'local_model',
+                'parameters': {'batch_count': 0, 'request_item_count': 0},
+                'expected': {'construction': 'rejected_before_transport',
+                             'parser_error': 'invalid_batch_count', 'transport_call_count': 0},
+            }},
+        }
+        cell = {
+            'action': 'decode',
+            'mode': 'local',
+            'language': 'c',
+            'route_id': 'c.typed-protocol.model.kmipkit.request.message.from.ttlv',
+            'public_api_symbol': 'kmipkit_request_message_from_ttlv',
+        }
+
+        self.assertEqual(
+            _expected_tag_decode_rejection_code(
+                cell, case, {'kind': 'operation', 'target_id': 'KMIPKIT-ELEM-OP-C2S-GET'}
+            ),
+            'invalid_batch_count',
+        )
+
     def test_network_events_must_name_the_real_separate_execution_entrypoint(self):
         report = copy.deepcopy(self.report)
         report["events"][3]["execution_api_symbol"] = "kmipkit_client_batch_item_create"
