@@ -110,7 +110,11 @@ class ControlledTlsPeerTest {
             new CreateRequestPayloadFixture("test-norm-payload-client-create-request-21-001",
                     "KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-21-001", "2.1"),
             new CreateRequestPayloadFixture("test-norm-payload-client-create-request-21-002",
-                    "KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-21-002", "2.1"));
+                    "KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-21-002", "2.1"),
+            new CreateRequestPayloadFixture("test-norm-payload-client-create-request-20-003",
+                    "KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-20-003", "2.0"),
+            new CreateRequestPayloadFixture("test-norm-payload-client-create-request-21-003",
+                    "KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-21-003", "2.1"));
     private static final List<CreateOperationRouteFixture> CREATE_OPERATION_ROUTE_FIXTURES =
             createOperationRouteFixtures();
     private static final List<String> CREATE_ROUTE_ENCODINGS = List.of("TTLV", "JSON", "XML");
@@ -8018,7 +8022,9 @@ class ControlledTlsPeerTest {
                         }
                         observedRequest = peer.get(15, TimeUnit.SECONDS);
                     }
-                    assertCreateRouteRequest(observedRequest, encoding, protocolVersion, batchItemIdBytes);
+                    assertCreateRouteRequest(observedRequest, encoding, protocolVersion, batchItemIdBytes,
+                            fixture.requestPayloadTargetId() != null
+                                    && fixture.requestPayloadTargetId().endsWith("-003"));
                     if (requestHash == null) requestHash = normalizedTreeSha256(observedRequest);
                     appendTypedNetworkRouteEvents(events, caseId, routeId, targetId, publicApi,
                             protocolVersion, requestHash, responseHash, encoding, transport);
@@ -8136,13 +8142,15 @@ class ControlledTlsPeerTest {
     }
 
     private static void assertCreateRouteRequest(byte[] request, String encoding, String protocolVersion,
-            byte[] batchItemId) throws Exception {
+            byte[] batchItemId, boolean expectProtectionStorageMasks) throws Exception {
         int minor = "2.0".equals(protocolVersion) ? 0 : 1;
         if ("TTLV".equals(encoding)) {
             assertEquals(1L, requestOperation(request));
             assertEquals(minor, requestProtocolMinorVersion(request));
             assertTrue(contains(request, item(0x420057, TtlvItemType.Enumeration.code(), intBytes(2))));
             assertTrue(contains(request, item(0x420093, TtlvItemType.ByteString.code(), batchItemId)));
+            assertEquals(expectProtectionStorageMasks, contains(request, structure(0x42015f)),
+                    "Create must preserve the optional Protection Storage Masks structure.");
             return;
         }
         String batchItemIdHex = HexFormat.of().formatHex(batchItemId);
@@ -8157,6 +8165,9 @@ class ControlledTlsPeerTest {
                     .map(JsonNode::asInt).toList());
             assertEquals(List.of(batchItemIdHex), jsonValuesForTag(root, "UniqueBatchItemID").stream()
                     .map(JsonNode::asText).toList());
+            assertEquals(expectProtectionStorageMasks ? 1 : 0,
+                    jsonValuesForTag(root, "ProtectionStorageMasks").size(),
+                    "Create JSON must preserve the optional Protection Storage Masks structure.");
             return;
         }
         String xml = new String(request, StandardCharsets.UTF_8);
@@ -8165,6 +8176,8 @@ class ControlledTlsPeerTest {
         assertTrue(xml.contains("<ObjectType type=\"Enumeration\" value=\"SymmetricKey\"/>"));
         assertTrue(xml.contains("<ProtocolVersionMinor type=\"Integer\" value=\"" + minor + "\"/>"));
         assertTrue(xml.contains("value=\"" + HexFormat.of().withUpperCase().formatHex(batchItemId) + "\""));
+        assertEquals(expectProtectionStorageMasks, xml.contains("<ProtectionStorageMasks>"),
+                "Create XML must preserve the optional Protection Storage Masks structure.");
     }
 
     private static void assertCreateOperationNetworkRouteCoverage(ArrayNode events) {
