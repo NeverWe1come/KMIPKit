@@ -104,6 +104,26 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ControlledTlsPeerTest {
     private static final List<String> KMIP_2_0_AND_2_1 = List.of("2.0", "2.1");
     private static final List<String> CREATE_ROUTE_CASE_IDS = List.of("test-op-create", "test-obj-symmetric-key");
+    private static final List<LoginLeaseTimeDateTimeRouteFixture> LOGIN_LEASE_TIME_DATE_TIME_ROUTE_FIXTURES = List.of(
+            new LoginLeaseTimeDateTimeRouteFixture("test-norm-payload-client-login-request-20-001-type-date-time",
+                    "KMIPKIT-PAYLOAD-CLIENT-LOGIN-REQUEST-20-001-TYPE-DATE-TIME", "2.0", "login",
+                    "org.kmipkit.extensions.ClientBatchItem.login"),
+            new LoginLeaseTimeDateTimeRouteFixture("test-norm-payload-client-login-request-21-001-type-date-time",
+                    "KMIPKIT-PAYLOAD-CLIENT-LOGIN-REQUEST-21-001-TYPE-DATE-TIME", "2.1", "login",
+                    "org.kmipkit.extensions.ClientBatchItem.login"),
+            new LoginLeaseTimeDateTimeRouteFixture(
+                    "test-norm-payload-client-delegated-login-request-20-001-type-date-time",
+                    "KMIPKIT-PAYLOAD-CLIENT-DELEGATED-LOGIN-REQUEST-20-001-TYPE-DATE-TIME", "2.0",
+                    "delegated_login", "org.kmipkit.extensions.ClientBatchItem.delegatedLogin"),
+            new LoginLeaseTimeDateTimeRouteFixture(
+                    "test-norm-payload-client-delegated-login-request-21-001-type-date-time",
+                    "KMIPKIT-PAYLOAD-CLIENT-DELEGATED-LOGIN-REQUEST-21-001-TYPE-DATE-TIME", "2.1",
+                    "delegated_login", "org.kmipkit.extensions.ClientBatchItem.delegatedLogin"));
+
+    @Test
+    void requiresEveryLoginLeaseTimeDateTimeNetworkCell() {
+        assertLoginLeaseTimeDateTimeRouteCoverage(new ObjectMapper().createArrayNode());
+    }
 
     @Test
     void createBatchWorkflowJsonResponseIsOneValidDocument() throws Exception {
@@ -199,6 +219,9 @@ class ControlledTlsPeerTest {
 
     private record CreateRequestPayloadFixture(String caseId, String targetId, String protocolVersion,
             boolean protectionStorageMasksPresent) { }
+
+    private record LoginLeaseTimeDateTimeRouteFixture(String caseId, String targetId,
+            String protocolVersion, String operation, String publicApiSymbol) { }
 
     private record CreateOperationRouteFixture(String caseId, String protocolVersion,
             List<String> requestPayloadTargetIds, boolean protectionStorageMasksPresent,
@@ -1350,6 +1373,7 @@ class ControlledTlsPeerTest {
                 assertPingVersionBoundaryRouteCoverage(events);
                 appendCreateOperationRouteEvidence(events, serverCertificatePem, serverPrivateKeyPem,
                         clientCertificatePem, clientPrivateKeyPem);
+                assertLoginLeaseTimeDateTimeRouteCoverage(events);
                 assertRouteEventRecorded(events, "test-norm-payload-client-create-request-20-001",
                         "KMIPKIT-ELEM-OP-C2S-CREATE",
                         "java.typed-protocol.function.client_batch_item_response_create",
@@ -9242,6 +9266,32 @@ class ControlledTlsPeerTest {
                 "Create fixture must encode exactly its selected Batch Error Continuation Option.");
         if (fixture.batchErrorContinuationOption() != null) {
             assertTrue(request.contains("<BatchErrorContinuationOption type=\"Enumeration\" value=\"Undo\"/>"));
+        }
+    }
+
+    private static void assertLoginLeaseTimeDateTimeRouteCoverage(ArrayNode events) {
+        for (LoginLeaseTimeDateTimeRouteFixture fixture : LOGIN_LEASE_TIME_DATE_TIME_ROUTE_FIXTURES) {
+            String routeId = "java.typed-protocol.client_batch_item." + fixture.operation();
+            for (String encoding : List.of("TTLV", "JSON", "XML")) {
+                for (String transport : List.of("raw_tls", "https")) {
+                    for (String action : List.of("construct", "send")) {
+                        long matches = events.findParents("action").stream()
+                                .filter(event -> fixture.caseId().equals(event.path("case_id").asText())
+                                        && fixture.targetId().equals(event.path("target_id").asText())
+                                        && routeId.equals(event.path("route_id").asText())
+                                        && fixture.protocolVersion().equals(
+                                                event.path("protocol_version").asText())
+                                        && encoding.equals(event.path("encoding").asText())
+                                        && transport.equals(event.path("transport").asText())
+                                        && action.equals(event.path("action").asText())
+                                        && fixture.publicApiSymbol().equals(
+                                                event.path("public_api_symbol").asText()))
+                                .count();
+                        assertEquals(1L, matches, "Missing or duplicate Login Lease Time Date Time evidence for "
+                                + fixture.caseId() + " / " + encoding + " / " + transport + " / " + action);
+                    }
+                }
+            }
         }
     }
 
