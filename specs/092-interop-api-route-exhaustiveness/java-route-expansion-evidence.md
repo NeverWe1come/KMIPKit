@@ -2790,3 +2790,70 @@ python3 -m unittest interop.shared.tests.test_route_execution_evidence \
 python3 interop/shared/tools/route_capabilities.py --check
 git diff --check
 ```
+
+## Structure-valued Attribute generic TTLV routes — 2026-11-18
+
+Red commit `5fb9d2bff` adds a focused test requiring the four generic TTLV
+routes for seven source-defined Structure-valued Attributes: Alternative Name,
+Application Specific Information, Key Value Location, Link, Name, Revocation
+Reason, and KMIP 2.1 Rotate Name. Green commit `58de68136` builds these
+structures using their catalogued member tags and source encodings, then
+checks member order, types, values, item views, and decoding. The controlled
+TLS report records the four generic routes per applicable test case and
+protocol version; the structures themselves are local model exercises, not
+network exchanges.
+
+The full Gradle suite passes 66 tests with zero failures, errors, or skips. The
+selected report validates 28,492/28,492 cells with zero failures. The generated
+ledger records 28,492 executed and 43,149 pending of 71,641 cells across 1,156
+pending case IDs. The shared route-evidence, schema, and capability suites pass
+108 tests; the route-capability audit confirms 1,507 routes. Full Java matrix
+completion is still pending and the stack remains WIP.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-tmp" \
+  bash bindings/java/gradlew -p interop/java-kmip-validator \
+  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" \
+  test --rerun-tasks
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+python3 -m unittest interop.shared.tests.test_route_execution_evidence \
+  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+git diff --check
+```
+
+## #216 synchronized with expanded Structure Attribute routes — 2026-11-18
+
+The #216 branch now includes parent #187 head `7d814dac8`, adding generic TTLV
+model routes for seven Structure-valued Attribute cases while preserving its
+Usage Limits coverage. Its selected report validates 28,520/28,520 cells with
+zero failures; the ledger records 28,520 executed and 43,121 pending of 71,641
+cells across 1,154 pending case IDs. The full Gradle suite passes 66 tests, the
+shared Python suites pass 108 tests, and the route audit confirms 1,507 routes.
+The complete Java matrix remains unfinished, so #216 stays WIP.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-tmp" \
+  bash bindings/java/gradlew -p interop/java-kmip-validator \
+  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" \
+  test --rerun-tasks
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+python3 -m unittest interop.shared.tests.test_route_execution_evidence \
+  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+git diff --check
+```

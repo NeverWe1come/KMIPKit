@@ -22,6 +22,7 @@ import org.kmipkit.ttlv.TtlvValueView;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -48,6 +49,14 @@ final class LocalCatalogRouteChecks {
             "test-norm-message-field-message-field-8-2-attestation-capable-indicator";
     static final String ATTESTATION_CAPABLE_TARGET_ID =
             "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ATTESTATION-CAPABLE-INDICATOR";
+    static final Set<String> STRUCTURE_ATTRIBUTE_VALUE_CASE_IDS = Set.of(
+            "test-attr-alternative-name",
+            "test-attr-application-specific-information",
+            "test-attr-key-value-location",
+            "test-attr-link",
+            "test-attr-name",
+            "test-attr-revocation-reason",
+            "test-attr-rotate-name");
 
     private LocalCatalogRouteChecks() { }
 
@@ -58,6 +67,8 @@ final class LocalCatalogRouteChecks {
 
     record Invocation(String caseId, String targetId, String routeId, String symbol,
                       String action, byte[] wire, String rejectionCode) { }
+
+    private record StructureAttributeMember(String name, String textValue) { }
 
     /** Executes generic TTLV routes for Boolean fields using their catalogued tag identities. */
     static void executeBooleanFields(JsonNode catalog, String version, Set<String> selectedCaseIds,
@@ -476,6 +487,194 @@ final class LocalCatalogRouteChecks {
         if (!emitted.equals(selectedCaseIds)) {
             throw new IllegalArgumentException("Selected Attributes structure cases were not executed for "
                     + version);
+        }
+    }
+
+    /** Exercises generic TTLV routes for the source-defined scalar children of selected Structure attributes. */
+    static void executeStructureAttributeValues(JsonNode catalog, String version, Set<String> selectedCaseIds,
+            EvidenceSink sink) throws Exception {
+        CodecLimits limits = CodecLimits.defaults();
+        Set<String> applicable = new java.util.LinkedHashSet<>();
+        Set<String> emitted = new java.util.LinkedHashSet<>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String caseId = testCase.path("case_id").asText();
+            if (!selectedCaseIds.contains(caseId) || !applies(testCase, version)) continue;
+            applicable.add(caseId);
+            JsonNode requires = testCase.path("requires");
+            if (!"Structure".equals(requires.path("attribute_policy").path("value_type").asText())) {
+                throw new IllegalArgumentException("Selected attribute case is not Structure-valued: " + caseId);
+            }
+            String targetId = requires.path("normative_target_id").asText();
+            String attributeName = requires.path("attribute").asText();
+            List<StructureAttributeMember> members = structureAttributeMembers(attributeName);
+            int attributeTag = tagCodeNamed(catalog, attributeName, version);
+            TtlvStructure structure = TtlvStructure.create();
+            List<Integer> memberTags = new ArrayList<>();
+            List<TtlvItemType> memberTypes = new ArrayList<>();
+            List<byte[]> memberValues = new ArrayList<>();
+            byte[] children = new byte[0];
+            try {
+                for (StructureAttributeMember member : members) {
+                    String encoding = structureMemberEncoding(catalog, targetId, member.name(), version);
+                    int tagCode = tagCodeNamed(catalog, member.name(), version);
+                    TtlvItemType itemType;
+                    byte[] bytes;
+                    TtlvValue value;
+                    if (encoding.contains("Enumeration") && !encoding.contains("Text String")) {
+                        long enumeration = representativeEnumerationValue(catalog, member.name(), version);
+                        itemType = TtlvItemType.Enumeration;
+                        bytes = ByteBuffer.allocate(Integer.BYTES).putInt(Math.toIntExact(enumeration)).array();
+                        value = TtlvValue.Enumeration(enumeration);
+                    } else if (encoding.contains("Text String")) {
+                        itemType = TtlvItemType.TextString;
+                        bytes = member.textValue().getBytes(StandardCharsets.UTF_8);
+                        value = TtlvValue.TextString(bytes, limits);
+                    } else {
+                        throw new IllegalArgumentException("No source-backed scalar fixture for "
+                                + attributeName + "." + member.name() + ": " + encoding);
+                    }
+                    structure = append(structure, tagCode, value);
+                    children = concat(children, itemWire(tagCode, itemType.code(), bytes));
+                    memberTags.add(tagCode);
+                    memberTypes.add(itemType);
+                    memberValues.add(bytes);
+                }
+            } catch (RuntimeException failure) {
+                structure.close();
+                throw failure;
+            }
+
+            byte[] wire = structureWire(attributeTag, children);
+            TtlvValue outerValue = TtlvValue.structure(structure, limits);
+            TtlvItem item;
+            try (RawTag raw = RawTag.fromRaw(attributeTag); Tag tag = raw.checked()) {
+                item = TtlvItem.create(tag, outerValue, limits);
+            }
+            try (item) {
+                assertStructureAttributeItem(item, attributeTag, memberTags, memberTypes, memberValues);
+            }
+            try (TtlvItem decoded = TtlvCodec.decode(wire)) {
+                assertStructureAttributeItem(decoded, attributeTag, memberTags, memberTypes, memberValues);
+            }
+            emitRoute(sink, caseId, targetId,
+                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
+                    "org.kmipkit.ttlv.TtlvValue.structure", "construct", wire);
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_item.create",
+                    "org.kmipkit.ttlv.TtlvItem.create", "construct", wire);
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.function.ttlv_item_view_from_item",
+                    "org.kmipkit.ttlv.TtlvItem.view", "decode", wire);
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_codec.decode",
+                    "org.kmipkit.ttlv.TtlvCodec.decode", "decode", wire);
+            emitted.add(caseId);
+        }
+        if (!emitted.equals(applicable)) {
+            throw new IllegalArgumentException("Selected structure-valued attribute cases were not executed for "
+                    + version);
+        }
+    }
+
+    static Set<String> missingStructureAttributeValueCaseIds(JsonNode catalog, JsonNode events, String version) {
+        List<String> requiredRoutes = List.of(
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode");
+        Set<String> missing = new java.util.LinkedHashSet<>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String caseId = testCase.path("case_id").asText();
+            if (!STRUCTURE_ATTRIBUTE_VALUE_CASE_IDS.contains(caseId) || !applies(testCase, version)) continue;
+            String targetId = testCase.path("requires").path("normative_target_id").asText();
+            int present = 0;
+            for (String route : requiredRoutes) {
+                boolean found = false;
+                for (JsonNode event : events) {
+                    if (caseId.equals(event.path("case_id").asText())
+                            && targetId.equals(event.path("target_id").asText())
+                            && route.equals(event.path("route_id").asText())
+                            && version.equals(event.path("protocol_version").asText())
+                            && "TTLV".equals(event.path("encoding").asText())
+                            && event.path("transport").isNull()) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (found) present++;
+            }
+            if (present == 0) missing.add(caseId);
+            else assertEquals(requiredRoutes.size(), present,
+                    "Structure attribute route evidence must be complete before reuse for " + caseId);
+        }
+        return missing;
+    }
+
+    private static List<StructureAttributeMember> structureAttributeMembers(String attributeName) {
+        return switch (attributeName) {
+            case "Alternative Name" -> List.of(
+                    new StructureAttributeMember("Alternative Name Value", "https://kmipkit.example/fixture"),
+                    new StructureAttributeMember("Alternative Name Type", null));
+            case "Application Specific Information" -> List.of(
+                    new StructureAttributeMember("Application Namespace", "org.kmipkit.fixture"),
+                    new StructureAttributeMember("Application Data", "route-matrix-fixture"));
+            case "Key Value Location" -> List.of(
+                    new StructureAttributeMember("Key Value Location Value", "test://key-material"),
+                    new StructureAttributeMember("Key Value Location Type", null));
+            case "Link" -> List.of(
+                    new StructureAttributeMember("Link Type", null),
+                    new StructureAttributeMember("Linked Object Identifier", "linked-object-7"));
+            case "Name" -> List.of(
+                    new StructureAttributeMember("Name Value", "KMIPKit route fixture"),
+                    new StructureAttributeMember("Name Type", null));
+            case "Revocation Reason" -> List.of(
+                    new StructureAttributeMember("Revocation Reason Code", null),
+                    new StructureAttributeMember("Revocation Message", "controlled fixture"));
+            case "Rotate Name" -> List.of(
+                    new StructureAttributeMember("Rotate Name Value", "KMIPKit route fixture"),
+                    new StructureAttributeMember("Rotate Name Type", null));
+            default -> throw new IllegalArgumentException("No source-backed Structure attribute recipe for: "
+                    + attributeName);
+        };
+    }
+
+    private static String structureMemberEncoding(JsonNode catalog, String parentTargetId, String memberName,
+            String version) {
+        String encoding = null;
+        for (JsonNode target : catalog.path("normative_targets")) {
+            if (!"structure_member".equals(target.path("kind").asText())
+                    || !memberName.equals(target.path("name").asText())
+                    || !hasParent(target, parentTargetId) || !supportsVersion(target, version)) continue;
+            if (encoding != null) {
+                throw new IllegalArgumentException("Structure member is ambiguous in the source inventory: "
+                        + parentTargetId + "." + memberName);
+            }
+            encoding = target.path("source_encoding").asText();
+        }
+        if (encoding == null || encoding.isBlank()) {
+            throw new IllegalArgumentException("Structure member has no source encoding: "
+                    + parentTargetId + "." + memberName);
+        }
+        return encoding;
+    }
+
+    private static void assertStructureAttributeItem(TtlvItem item, int attributeTag, List<Integer> memberTags,
+            List<TtlvItemType> memberTypes, List<byte[]> memberValues) {
+        try (TtlvItemView view = item.view(); Tag tag = view.tag(); TtlvValueView value = view.value();
+                TtlvStructureView structure = value.structure()) {
+            assertEquals(attributeTag, tag.raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertEquals(memberTags.size(), structure.itemCount());
+            for (int i = 0; i < memberTags.size(); i++) {
+                try (TtlvItemView member = structure.itemAt(i);
+                        Tag memberTag = member.tag(); TtlvValueView memberValue = member.value()) {
+                    assertEquals(memberTags.get(i), memberTag.raw());
+                    assertEquals(memberTypes.get(i), member.itemType());
+                    if (memberTypes.get(i) == TtlvItemType.Enumeration) {
+                        assertEquals(Integer.toUnsignedLong(ByteBuffer.wrap(memberValues.get(i)).getInt()),
+                                memberValue.enumeration());
+                    } else {
+                        assertArrayEquals(memberValues.get(i), memberValue.bytes());
+                    }
+                }
+            }
         }
     }
 
