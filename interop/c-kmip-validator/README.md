@@ -137,8 +137,8 @@ The `*.gaps.json` sidecar identifies every unexecuted matrix obligation rather
 than misclassifying it as an unavailable library route. Other sidecars retain
 installed-artifact availability checks and sanitized controlled-peer outcomes.
 The evidence JSON passes the shared schema independently of completeness.
-The latest full local C matrix run (`c-route-bca965c6-09eb-4097-acde-158a0aa803ae`)
-has 66,736 expected cells, 42,959 invoked, zero failed, and 23,777 pending.
+The latest full local C matrix run (`c-route-0039e1d7-d8bc-41c0-86bf-394cfccd5388`)
+has 66,736 expected cells, 42,961 invoked, zero failed, and 23,775 pending.
 The MAC and Sign response TTLV accessors and the Continue batch-option
 constructor contribute four local cells each across KMIP 2.0/2.1. The
 Query Async Requests correlation builder contributes two KMIP 2.1 model cells.
@@ -165,13 +165,15 @@ and both source parts through their exact identifiers. It verifies the typed
 Join response and the final fixture state across the same 12 network routes.
 The Re-key route creates an AES-128 Symmetric Key with explicit Encrypt usage,
 then sends Re-key without an offset or additional attributes. It reads the
-replacement identifier through the typed response accessor, revokes and
-destroys that replacement through the batch ID Placeholder, and revokes and
-destroys the original by its returned identifier. The controlled peer verifies
-both responses and complete cleanup for KMIP 2.0/2.1 across TTLV, JSON, and XML
-over raw TLS and HTTPS. The latest matrix run records 66 passed cells for the
-Re-key operation target; these synthetic values do not establish external KMS
-interoperability.
+replacement identifier through the typed response accessor and verifies the
+complete response payload through
+`kmipkit_client_batch_item_response_rekey_ttlv`, then revokes and destroys the
+replacement through the batch ID Placeholder and revokes and destroys the
+original by its returned identifier. The controlled peer verifies both
+responses and complete cleanup for KMIP 2.0/2.1 across TTLV, JSON, and XML over
+raw TLS and HTTPS. The latest matrix run records 44 passed cells for the Re-key
+case and no pending cells. These synthetic values do not establish external
+KMS interoperability.
 The Secret Data Register route builds a Password object with a Raw Key Block
 and explicit Derive Key usage, reads the typed Register result and response
 TTLV, then destroys the object through its batch ID Placeholder. Its synthetic
@@ -191,10 +193,10 @@ for KMIP 2.0 and 2.1; the latest full matrix records 44 passed cells for this
 case and no pending cells. These fixtures exercise the installed C consumer
 and do not claim external KMS interoperability.
 
-In the latest matrix run, Re-key has 42 passed cells and two pending typed
-response-TTLV accessor cells (one per protocol version). Its controlled network
-journeys pass across all 12 combinations, but that accessor gap remains in the
-global completeness total.
+In the latest matrix run, Re-key has 44 passed cells and no pending cells for
+its covered targets. Its controlled network journeys pass across all 12
+combinations; the response-TTLV accessor is exercised for both protocol
+versions.
 
 The `test-op-poll` controlled route remains pending: the approved catalog does
 not yet provide a complete request, response, correlation, and cleanup recipe
