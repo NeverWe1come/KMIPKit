@@ -173,3 +173,13 @@ artifact. This is part of the FR-006 artifact provenance check.
 - This adds 20 cells to the #216 report, which validates 34,654/34,654 cells
   with zero failures and leaves 36,987 of 71,641 pending. Full Java matrix
   closure remains open under FR-002/FR-003/FR-009.
+
+## Java Certificate Request and Opaque Object routes — #216 stack sync — 2026-11-18
+
+- **FR-003:** The #216 consumer now exercises `ManagedObject.certificateRequest`
+  and `ManagedObject.opaqueObject` for their object structure, type, value, and
+  tag cases in KMIP 2.0 and 2.1. `fromFields` and `fromItem` run on the
+  structure/member targets where applicable (KMIP 2.0/2.1 §§2.2–2.3).
+- This adds 40 cells. The selected report validates 34,694/34,694 cells with
+  zero failures and leaves 36,947 of 71,641 pending. Full Java matrix closure
+  remains open under FR-002/FR-003/FR-009.

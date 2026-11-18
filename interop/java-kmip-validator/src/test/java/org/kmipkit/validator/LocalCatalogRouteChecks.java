@@ -183,6 +183,21 @@ final class LocalCatalogRouteChecks {
             "test-norm-structure-member-structure-member-2-1-certificate-certificate-type",
             "test-norm-structure-member-structure-member-2-1-certificate-certificate-value",
             "test-norm-tag-tag-420013");
+    static final Set<String> CERTIFICATE_REQUEST_MANAGED_OBJECT_CASE_IDS = Set.of(
+            "test-norm-object-structure-object-structure-certificate-request",
+            "test-norm-structure-member-structure-member-2-2-certificate-request-certificate-request-type",
+            "test-norm-structure-member-structure-member-2-2-certificate-request-certificate-request-value",
+            "test-norm-tag-tag-420018");
+    static final Set<String> OPAQUE_OBJECT_MANAGED_OBJECT_CASE_IDS = Set.of(
+            "test-norm-object-structure-object-structure-opaque-object",
+            "test-norm-structure-member-structure-member-2-3-opaque-object-opaque-data-type",
+            "test-norm-structure-member-structure-member-2-3-opaque-object-opaque-data-value",
+            "test-norm-tag-tag-42005b");
+    static final Set<String> TYPED_MANAGED_OBJECT_FACTORY_CASE_IDS = java.util.stream.Stream.of(
+            CERTIFICATE_MANAGED_OBJECT_CASE_IDS, CERTIFICATE_REQUEST_MANAGED_OBJECT_CASE_IDS,
+            OPAQUE_OBJECT_MANAGED_OBJECT_CASE_IDS)
+            .flatMap(Set::stream)
+            .collect(java.util.stream.Collectors.toUnmodifiableSet());
     static final Set<String> REMAINING_ENUMERATION_FIELD_CASE_IDS = Set.of(
             "test-norm-operation-structure-operation-structure-7-15-interop-function",
             "test-norm-structure-member-structure-member-5-5-attribute-reference",
@@ -1583,54 +1598,56 @@ final class LocalCatalogRouteChecks {
         }
     }
 
-    /** Executes all typed managed-object construction routes for Certificate catalog targets. */
-    static void executeCertificateFactoryTargets(JsonNode catalog, String version,
+    /** Executes typed factories and the applicable generic constructors for catalogued managed objects. */
+    static void executeManagedObjectFactoryTargets(JsonNode catalog, String version,
             Set<String> selectedCaseIds, EvidenceSink sink) throws Exception {
-        if (!CERTIFICATE_MANAGED_OBJECT_CASE_IDS.containsAll(selectedCaseIds)) {
-            throw new IllegalArgumentException("Selected case is not a Certificate managed-object target.");
+        if (!TYPED_MANAGED_OBJECT_FACTORY_CASE_IDS.containsAll(selectedCaseIds)) {
+            throw new IllegalArgumentException("Selected case is not a typed managed-object factory target.");
         }
         Set<String> emitted = new java.util.LinkedHashSet<>();
-        int certificateTypeTag = tagCodeNamed(catalog, "Certificate Type", version);
-        int certificateValueTag = tagCodeNamed(catalog, "Certificate Value", version);
-        int certificateTag = tagCodeNamed(catalog, "Certificate", version);
-        long certificateType = representativeEnumerationValue(catalog, "Certificate Type", version);
-        byte[] certificateValue = new byte[] {0x30, 0x00};
         CodecLimits limits = CodecLimits.defaults();
 
         for (JsonNode testCase : catalog.path("test_cases")) {
             String caseId = testCase.path("case_id").asText();
             if (!selectedCaseIds.contains(caseId) || !applies(testCase, version)) continue;
             String targetId = testCase.path("requires").path("normative_target_id").asText();
-            if (!isCertificateManagedObjectTarget(targetId)) {
-                throw new IllegalArgumentException("Selected case is not a Certificate target: " + caseId);
+            ManagedObjectFactoryFixture fixture = managedObjectFactoryFixture(targetId);
+            if (!fixture.supportsTarget(targetId)) {
+                throw new IllegalArgumentException("Target is not a field of " + fixture.objectName() + ": "
+                        + targetId);
             }
+            int typeTag = tagCodeNamed(catalog, fixture.typeFieldName(), version);
+            int valueTag = tagCodeNamed(catalog, fixture.valueFieldName(), version);
+            int objectTag = tagCodeNamed(catalog, fixture.objectName(), version);
+            long typeValue = representativeEnumerationValue(catalog, fixture.typeFieldName(), version);
             List<TtlvItem> fields = new ArrayList<>();
-            fields.add(createEnumerationItem(certificateTypeTag, certificateType, limits));
-            try (TtlvValue value = TtlvValue.ByteString(certificateValue, limits);
-                    RawTag raw = RawTag.fromRaw(certificateValueTag); Tag tag = raw.checked()) {
+            fields.add(createEnumerationItem(typeTag, typeValue, limits));
+            try (TtlvValue value = TtlvValue.ByteString(fixture.valueBytes(), limits);
+                    RawTag raw = RawTag.fromRaw(valueTag); Tag tag = raw.checked()) {
                 fields.add(TtlvItem.create(tag, value, limits));
             }
-            byte[] wire = structureWire(certificateTag, concat(
-                    itemWire(certificateTypeTag, TtlvItemType.Enumeration.code(),
-                            ByteBuffer.allocate(Integer.BYTES).putInt((int) certificateType).array()),
-                    itemWire(certificateValueTag, TtlvItemType.ByteString.code(), certificateValue)));
-            try (ManagedObject certificate = ManagedObject.certificate(fields)) {
-                assertCertificateFields(certificate, certificateType, certificateValue);
-                if (!targetId.equals("KMIPKIT-ELEM-TAG-420013")) {
-                    try (ManagedObject fromFields = ManagedObject.fromFields(1, fields);
-                            TtlvItem certificateItem = createStructureItem(certificateTag, fields, limits);
-                            ManagedObject fromItem = ManagedObject.fromItem(1, certificateItem)) {
-                        assertCertificateFields(fromFields, certificateType, certificateValue);
-                        assertCertificateFields(fromItem, certificateType, certificateValue);
+            byte[] wire = structureWire(objectTag, concat(
+                    itemWire(typeTag, TtlvItemType.Enumeration.code(),
+                            ByteBuffer.allocate(Integer.BYTES).putInt((int) typeValue).array()),
+                    itemWire(valueTag, TtlvItemType.ByteString.code(), fixture.valueBytes())));
+            try (ManagedObject typedFactory = createManagedObjectFactory(fixture, fields)) {
+                assertManagedObjectFixture(typedFactory, fixture, typeValue);
+                if (!targetId.equals(fixture.tagTargetId())) {
+                    try (ManagedObject fromFields = ManagedObject.fromFields(fixture.objectType(), fields);
+                            TtlvItem objectItem = createStructureItem(objectTag, fields, limits);
+                            ManagedObject fromItem = ManagedObject.fromItem(fixture.objectType(), objectItem)) {
+                        assertManagedObjectFixture(fromFields, fixture, typeValue);
+                        assertManagedObjectFixture(fromItem, fixture, typeValue);
                     }
                 }
             } finally {
                 closeItems(fields);
             }
+            String factoryName = fixture.factoryName();
             emitRoute(sink, caseId, targetId,
-                    "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.certificate",
-                    "org.kmipkit.ttlv.ManagedObject.certificate", "construct", wire);
-            if (!targetId.equals("KMIPKIT-ELEM-TAG-420013")) {
+                    "java.typed-protocol.model.org.kmipkit.ttlv.managedobject." + factoryName.toLowerCase(Locale.ROOT),
+                    "org.kmipkit.ttlv.ManagedObject." + factoryName, "construct", wire);
+            if (!targetId.equals(fixture.tagTargetId())) {
                 emitRoute(sink, caseId, targetId,
                         "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromfields",
                         "org.kmipkit.ttlv.ManagedObject.fromFields", "construct", wire);
@@ -1641,21 +1658,90 @@ final class LocalCatalogRouteChecks {
             emitted.add(caseId);
         }
         if (!emitted.equals(selectedCaseIds)) {
-            throw new IllegalArgumentException("Selected Certificate targets were not executed for " + version);
+            throw new IllegalArgumentException("Selected managed-object factory targets were not executed for "
+                    + version);
         }
     }
 
-    private static boolean isCertificateManagedObjectTarget(String targetId) {
-        return targetId.equals("KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE")
-                || targetId.equals("KMIPKIT-ELEM-STRUCTURE-MEMBER-2-1-CERTIFICATE-CERTIFICATE-TYPE")
-                || targetId.equals("KMIPKIT-ELEM-STRUCTURE-MEMBER-2-1-CERTIFICATE-CERTIFICATE-VALUE")
-                || targetId.equals("KMIPKIT-ELEM-TAG-420013");
+    private record ManagedObjectFactoryFixture(String objectName, int objectType, String typeFieldName,
+            String valueFieldName, String structureTargetId, String typeTargetId, String valueTargetId,
+            String tagTargetId, byte[] valueBytes, String factoryName) {
+        private ManagedObjectFactoryFixture {
+            valueBytes = valueBytes.clone();
+        }
+
+        @Override
+        public byte[] valueBytes() {
+            return valueBytes.clone();
+        }
+
+        boolean supportsTarget(String targetId) {
+            return structureTargetId.equals(targetId) || typeTargetId.equals(targetId)
+                    || valueTargetId.equals(targetId) || tagTargetId.equals(targetId);
+        }
     }
 
-    private static void assertCertificateFields(ManagedObject object, long certificateType, byte[] certificateValue) {
-        assertEquals(1, object.objectType());
-        assertEquals(certificateType, object.certificateType());
-        assertArrayEquals(certificateValue, object.certificateValue());
+    private static ManagedObjectFactoryFixture managedObjectFactoryFixture(String targetId) {
+        if (targetId.equals("KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE")
+                || targetId.equals("KMIPKIT-ELEM-STRUCTURE-MEMBER-2-1-CERTIFICATE-CERTIFICATE-TYPE")
+                || targetId.equals("KMIPKIT-ELEM-STRUCTURE-MEMBER-2-1-CERTIFICATE-CERTIFICATE-VALUE")
+                || targetId.equals("KMIPKIT-ELEM-TAG-420013")) {
+            return new ManagedObjectFactoryFixture("Certificate", 1, "Certificate Type", "Certificate Value",
+                    "KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-1-CERTIFICATE-CERTIFICATE-TYPE",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-1-CERTIFICATE-CERTIFICATE-VALUE",
+                    "KMIPKIT-ELEM-TAG-420013", new byte[] {0x30, 0x00}, "certificate");
+        }
+        if (targetId.equals("KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE-REQUEST")
+                || targetId.equals("KMIPKIT-ELEM-STRUCTURE-MEMBER-2-2-CERTIFICATE-REQUEST-CERTIFICATE-REQUEST-TYPE")
+                || targetId.equals("KMIPKIT-ELEM-STRUCTURE-MEMBER-2-2-CERTIFICATE-REQUEST-CERTIFICATE-REQUEST-VALUE")
+                || targetId.equals("KMIPKIT-ELEM-TAG-420018")) {
+            return new ManagedObjectFactoryFixture("Certificate Request", 10, "Certificate Request Type",
+                    "Certificate Request Value", "KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE-REQUEST",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-2-CERTIFICATE-REQUEST-CERTIFICATE-REQUEST-TYPE",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-2-CERTIFICATE-REQUEST-CERTIFICATE-REQUEST-VALUE",
+                    "KMIPKIT-ELEM-TAG-420018", new byte[] {0x30, 0x00}, "certificateRequest");
+        }
+        if (targetId.equals("KMIPKIT-ELEM-OBJECT-STRUCTURE-OPAQUE-OBJECT")
+                || targetId.equals("KMIPKIT-ELEM-STRUCTURE-MEMBER-2-3-OPAQUE-OBJECT-OPAQUE-DATA-TYPE")
+                || targetId.equals("KMIPKIT-ELEM-STRUCTURE-MEMBER-2-3-OPAQUE-OBJECT-OPAQUE-DATA-VALUE")
+                || targetId.equals("KMIPKIT-ELEM-TAG-42005B")) {
+            return new ManagedObjectFactoryFixture("Opaque Object", 8, "Opaque Data Type", "Opaque Data Value",
+                    "KMIPKIT-ELEM-OBJECT-STRUCTURE-OPAQUE-OBJECT",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-3-OPAQUE-OBJECT-OPAQUE-DATA-TYPE",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-3-OPAQUE-OBJECT-OPAQUE-DATA-VALUE",
+                    "KMIPKIT-ELEM-TAG-42005B", new byte[] {0x01, 0x02}, "opaqueObject");
+        }
+        throw new IllegalArgumentException("Target is not supported by a typed managed-object factory: " + targetId);
+    }
+
+    private static ManagedObject createManagedObjectFactory(ManagedObjectFactoryFixture fixture,
+            List<TtlvItem> fields) {
+        return switch (fixture.objectType()) {
+            case 1 -> ManagedObject.certificate(fields);
+            case 8 -> ManagedObject.opaqueObject(fields);
+            case 10 -> ManagedObject.certificateRequest(fields);
+            default -> throw new IllegalArgumentException("Unsupported managed-object factory.");
+        };
+    }
+
+    private static void assertManagedObjectFixture(ManagedObject object, ManagedObjectFactoryFixture fixture,
+            long typeValue) {
+        assertEquals(fixture.objectType(), object.objectType());
+        long actualType = switch (fixture.objectType()) {
+            case 1 -> object.certificateType();
+            case 8 -> object.opaqueDataType();
+            case 10 -> object.certificateRequestType();
+            default -> throw new IllegalArgumentException("Unsupported managed-object fixture.");
+        };
+        byte[] actualValue = switch (fixture.objectType()) {
+            case 1 -> object.certificateValue();
+            case 8 -> object.opaqueDataValue();
+            case 10 -> object.certificateRequestValue();
+            default -> throw new IllegalArgumentException("Unsupported managed-object fixture.");
+        };
+        assertEquals(typeValue, actualType);
+        assertArrayEquals(fixture.valueBytes(), actualValue);
     }
 
     private static void assertKeyMaterialTarget(KeyMaterial keyMaterial, int formatRaw, int targetTag,

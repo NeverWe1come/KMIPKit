@@ -3694,3 +3694,18 @@ pass 108 tests; and the capability audit reports 1,507 routes. The selected
 report validates 34,654/34,654 cells with zero failures and leaves 36,987 of
 71,641 planned Java cells pending. The generated ledger matches its checked-in
 reference; `git diff --check` passes. Full matrix closure remains outstanding.
+
+## #216 stack-tip verification after Certificate Request and Opaque Object routes — 2026-11-18
+
+The #216 tip includes #187 Red `4b7b5afa1`, Green `c7e91b3d9`, and Refactor
+`613a1d235`. It adds the Certificate Request and Opaque Object typed factories
+and their applicable generic `fromFields`/`fromItem` routes for KMIP 2.0 and
+2.1. The exact target mapping follows the generated capability matrix; the
+eight Right Usage Limits cells remain covered. Payload fixtures are
+deterministic structural values, not certificate validation tests.
+
+The full Java suite passes 85 tests; shared evidence/schema/capability suites
+pass 108 tests; and the capability audit reports 1,507 routes. The selected
+report validates 34,694/34,694 cells with zero failures and leaves 36,947 of
+71,641 planned Java cells pending. The generated ledger matches its checked-in
+reference; `git diff --check` passes. Full matrix closure remains outstanding.
