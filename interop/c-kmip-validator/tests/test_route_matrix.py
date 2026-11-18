@@ -3986,10 +3986,34 @@ class RouteMatrixTests(unittest.TestCase):
 
         recipe = route_peer.recipe_for_case(case, None)
 
-        self.assertEqual(recipe, ((1, 18, 11, 19, 20), 'derive_key'))
+        self.assertEqual(recipe, ((1, 18, 5, 19, 20, 20), 'derive_key'))
         self.assertEqual(case['isolation_recipe']['setup_steps'], ['Create unique SymmetricKey'])
         self.assertEqual(case['isolation_recipe']['teardown_steps'],
                          ['Revoke SymmetricKey', 'Destroy SymmetricKey'])
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        events, _, checks = route_peer.execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c',
+            {**catalog, 'test_cases': [case]}, manifest)
+
+        self.assertEqual(len(checks), 12)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        required_symbols = {
+            'kmipkit_client_batch_item_derive_key',
+            'kmipkit_client_batch_item_response_derive_key',
+            'kmipkit_client_batch_item_response_derive_key_ttlv',
+            'kmipkit_client_batch_item_create',
+            'kmipkit_client_batch_item_activate',
+            'kmipkit_client_batch_item_revoke',
+            'kmipkit_client_batch_item_destroy',
+            'kmipkit_client_execute',
+        }
+        self.assertTrue(all(required_symbols <= set(check['public_api_trace_symbols'])
+                            for check in checks))
+        self.assertTrue(any(event['target_id'] == 'KMIPKIT-ELEM-OP-C2S-DERIVE-KEY'
+                            and event['action'] == 'send' for event in events))
+        evidence = json.dumps(events + checks)
+        self.assertNotIn('synthetic-derivation-data', evidence)
+        self.assertNotIn('synthetic-derivation-salt', evidence)
 
     def test_placeholder_chain_executes_typed_create_activate_get_batch(self):
         from artifact_support import ROOT

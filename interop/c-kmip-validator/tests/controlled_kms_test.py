@@ -242,6 +242,8 @@ def response(operations: tuple[int, ...], protocol_minor: int,
                           if returned_unique_identifiers is not None else
                           returned_unique_identifier or b"fixture-rekeyed-key")
             payload_value = tlv(0x420094, 7, identifier)
+        elif operation == 5:
+            payload_value = tlv(0x420094, 7, returned_unique_identifier or b"fixture-derived-key")
         elif operation == 31:
             payload_value = tlv(0x420094, 7, b"fixture-key-1") + tlv(
                 0x4200C2, 8, bytes.fromhex("69c4e0d86a7b0430d8cdb78070b4c55a"))
@@ -575,6 +577,8 @@ def main() -> int:
     expected_operations += (40, 20, 20)
     expected_operations += (40, 41, 20, 20, 20)
     expected_operations += (1, 4, 19, 20, 19, 20)
+    expected_operations += (1, 18, 5, 19, 20, 20)
+    expected_cases += ("test-op-derive-key",)
     expected_operations += (2, 18, 6, 19, 20, 20, 20)
     expected_operations += (1, 18, 51, 19, 20)
     expected_cases += ("test-op-pkcs#11",)
@@ -718,6 +722,7 @@ def main() -> int:
             async_process_completed = False
             async_process_route_finished = False
             async_query_route_stage = 0
+            batch_order_placeholder_seen = 0
             async_query_correlations = (
                 b"fixture-query-create-completed",
                 b"fixture-query-create-pending",
@@ -763,6 +768,29 @@ def main() -> int:
                                         integer(0x42002A, 128) not in request or
                                         integer(0x42002C, 4) not in request):
                                     raise AssertionError("Re-key setup must create a typed AES-128 Symmetric Key")
+                            if operations == (1, 18) and tlv(0x420093, 8, b"derive-create") in request:
+                                if (enumeration(0x420057, 2) not in request or
+                                        enumeration(0x420028, 3) not in request or
+                                        integer(0x42002A, 128) not in request or
+                                        integer(0x42002C, 512) not in request or
+                                        enumeration(0x420094, 1) not in request or
+                                        any(tlv(0x420093, 8, item_id) not in request for item_id in (
+                                            b"derive-create", b"derive-activate"))):
+                                    raise AssertionError("Derive Key setup must create and activate an AES source with Derive Key usage")
+                            if operations == (5, 19, 20, 20):
+                                if (request.count(tlv(0x420094, 7, b"fixture-key-1")) != 3 or
+                                        request.count(enumeration(0x420094, 1)) != 1 or
+                                        tlv(0x420030, 8, b"synthetic-derivation-data") not in request or
+                                        tlv(0x420084, 8, b"synthetic-derivation-salt") not in request or
+                                        integer(0x42003C, 1000) not in request or
+                                        enumeration(0x420038, 6) not in request or
+                                        integer(0x42002C, 4) not in request or
+                                        any(tlv(0x420093, 8, item_id) not in request for item_id in (
+                                            b"derive-target", b"derive-revoke-source",
+                                            b"derive-destroy-derived", b"derive-destroy-source")) or
+                                        tlv(0x420010, 6, b"\x00\x00\x00\x00\x00\x00\x00\x01") not in request or
+                                        enumeration(0x42000E, 1) not in request):
+                                    raise AssertionError("Derive Key request fields or placeholder cleanup mismatch")
                             if operations == (4, 19, 20, 19, 20):
                                 item_ids = (b"rekey-target", b"rekey-revoke-replacement",
                                             b"rekey-destroy-replacement", b"rekey-revoke-original",
@@ -814,7 +842,8 @@ def main() -> int:
                                     raise AssertionError("Interop function order or shared identifier mismatch")
                             two_read_batch = operations == (10, 12)
                             placeholder_chain = operations == (1, 18, 10)
-                            batch_order_placeholder = operations == (1, 18)
+                            batch_order_placeholder = (operations == (1, 18) and
+                                                       tlv(0x420093, 8, b"ordered-create") in request)
                             placeholder_cleanup = operations == (19, 20) and \
                                 tlv(0x420093, 8, b"placeholder-revoke-cleanup") in request
                             response_operations = operations
@@ -822,7 +851,7 @@ def main() -> int:
                             if operations == (52, 52, 52):
                                 response_item_ids = (b"interop-begin", b"interop-end", b"interop-reset")
                             if batch_order_placeholder:
-                                is_required_option_case = handled_batches.count((1, 18)) == 0
+                                is_required_option_case = batch_order_placeholder_seen == 0
                                 expected_item_ids = (b"ordered-create", b"ordered-activate")
                                 batch_order_option = tlv(0x420010, 6, b"\x00" * 7 + b"\x01")
                                 if (request.count(enumeration(0x420094, 1)) != 1 or
@@ -832,7 +861,13 @@ def main() -> int:
                                     raise AssertionError(
                                         "Batch Order placeholder request shape or option mismatch"
                                     )
+                                batch_order_placeholder_seen += 1
                                 response_item_ids = expected_item_ids
+                            if operations == (1, 18) and tlv(0x420093, 8, b"derive-create") in request:
+                                response_item_ids = (b"derive-create", b"derive-activate")
+                            if operations == (5, 19, 20, 20):
+                                response_item_ids = (b"derive-target", b"derive-revoke-source",
+                                                     b"derive-destroy-derived", b"derive-destroy-source")
                             if operations == registered_key_batch:
                                 if any(request.count(tlv(0x420093, 8, item_id)) != 1
                                        for item_id in registered_key_batch_item_ids):
@@ -1292,11 +1327,16 @@ def main() -> int:
                                     rng_length=32 if integer(0x4200C4, 32) in request or
                                     tlv(0x4200C2, 8, bytes(range(32))) in request else 16,
                                     cancellation_result=cancellation_result,
-                                    returned_unique_identifier=next((identifier for identifier in split_identifiers
-                                        if operations == (20,) and tlv(0x420094, 7, identifier) in request), None),
+                                    returned_unique_identifier=(
+                                        b"fixture-derived-key" if operations == (5, 19, 20, 20) else
+                                        next((identifier for identifier in split_identifiers
+                                            if operations == (20,) and tlv(0x420094, 7, identifier) in request), None)),
                                     returned_unique_identifiers=(
                                         b"fixture-joined-key", b"fixture-joined-key",
                                         *split_identifiers) if operations == (41, 20, 20, 20) else
+                                        (b"fixture-derived-key", b"fixture-key-1",
+                                         b"fixture-derived-key", b"fixture-key-1")
+                                        if operations == (5, 19, 20, 20) else
                                         (b"fixture-rekeyed-key", b"fixture-rekeyed-key",
                                          b"fixture-rekeyed-key", b"fixture-key-1", b"fixture-key-1")
                                         if operations == (4, 19, 20, 19, 20) else None))

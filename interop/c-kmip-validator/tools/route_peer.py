@@ -81,6 +81,12 @@ REKEY_ITEM_IDS = (b'rekey-create', b'rekey-target', b'rekey-revoke-replacement',
                   b'rekey-destroy-replacement', b'rekey-revoke-original', b'rekey-destroy-original')
 REKEY_ORIGINAL_IDENTIFIER = b'fixture-key-1'
 REKEY_REPLACEMENT_IDENTIFIER = b'fixture-rekeyed-key'
+DERIVE_KEY_ITEM_IDS = (b'derive-create', b'derive-activate', b'derive-target',
+                       b'derive-revoke-source', b'derive-destroy-derived', b'derive-destroy-source')
+DERIVE_KEY_SOURCE_IDENTIFIER = b'fixture-key-1'
+DERIVE_KEY_RESULT_IDENTIFIER = b'fixture-derived-key'
+DERIVE_KEY_DATA = b'synthetic-derivation-data'
+DERIVE_KEY_SALT = b'synthetic-derivation-salt'
 SECRET_DATA_MATERIAL = b'synthetic-secret-material'
 SECRET_DATA_ITEM_IDS = (b'interop-register', b'interop-destroy')
 CERTIFY_ITEM_IDS = (b'certify-create-pair', b'certify-activate-private', b'certify-public-key',
@@ -416,6 +422,7 @@ RECIPES = {
     'test-op-create-split-key': ((40, 20, 20), 'create_split_key'),
     'test-op-join-split-key': ((40, 41, 20, 20, 20), 'join_split_key'),
     'test-op-re-key': ((1, 4, 19, 20, 19, 20), 'rekey'),
+    'test-op-derive-key': ((1, 18, 5, 19, 20, 20), 'derive_key'),
     'test-op-certify': ((2, 18, 6, 19, 20, 20, 20), 'certify'),
     'test-op-pkcs#11': ((1, 18, 51, 19, 20), 'pkcs11'),
     'test-op-obtain-lease': ((1, 16, 19, 20), 'obtain_lease'),
@@ -1211,6 +1218,95 @@ def verify_rekey_response(response_tree):
         payload_values.append(identifiers[0][2])
     if payload_values != [REKEY_REPLACEMENT_IDENTIFIER] * 3 + [REKEY_ORIGINAL_IDENTIFIER] * 2:
         raise ValueError('fixture_rekey_response_identifiers_mismatch')
+
+
+def assert_derive_key_create_request(node, version):
+    """Check the catalog's isolated AES source key and required activation."""
+    items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    header = next(descendants(node, 0x420077), node)
+    if (numbers(header, 0x42006A) != [2] or numbers(header, 0x42006B) != [int(version[-1])] or
+            numbers(node, 0x42000D) != [2] or
+            [numbers(item, 0x42005C) for item in items] != [[1], [18]] or
+            [byte_string_values(item, 0x420093) for item in items] !=
+            [[DERIVE_KEY_ITEM_IDS[0]], [DERIVE_KEY_ITEM_IDS[1]]] or
+            numbers(items[0], 0x420057) != [2] or numbers(items[0], 0x420028) != [3] or
+            numbers(items[0], 0x42002A) != [128] or numbers(items[0], 0x42002C) != [512] or
+            numbers(items[1], UNIQUE_IDENTIFIER_TAG) != [ID_PLACEHOLDER_ENUMERATION]):
+        raise ValueError('fixture_derive_key_create_request_mismatch')
+
+
+def assert_derive_key_request(node, version):
+    """Check explicit PBKDF2 parameters, output attributes, and placeholder cleanup."""
+    items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    header = next(descendants(node, 0x420077), node)
+    if (numbers(header, 0x42006A) != [2] or numbers(header, 0x42006B) != [int(version[-1])]):
+        raise ValueError('fixture_derive_key_version_mismatch')
+    if numbers(node, 0x42000D) != [4]:
+        raise ValueError('fixture_derive_key_batch_count_mismatch')
+    if numbers(node, 0x42000E) != [1] or numbers(node, 0x420010) != [1]:
+        raise ValueError('fixture_derive_key_batch_option_mismatch')
+    if [numbers(item, 0x42005C) for item in items] != [[5], [19], [20], [20]]:
+        raise ValueError('fixture_derive_key_operations_mismatch')
+    if [byte_string_values(item, 0x420093) for item in items] != [
+            [item_id] for item_id in DERIVE_KEY_ITEM_IDS[2:]]:
+        raise ValueError('fixture_derive_key_batch_item_id_mismatch')
+    if text_values(items[0], UNIQUE_IDENTIFIER_TAG) != [DERIVE_KEY_SOURCE_IDENTIFIER.decode()]:
+        raise ValueError('fixture_derive_key_source_identifier_mismatch')
+    if text_values(items[1], UNIQUE_IDENTIFIER_TAG) != [DERIVE_KEY_SOURCE_IDENTIFIER.decode()]:
+        raise ValueError('fixture_derive_key_revoke_identifier_mismatch')
+    if numbers(items[2], UNIQUE_IDENTIFIER_TAG) != [ID_PLACEHOLDER_ENUMERATION]:
+        raise ValueError('fixture_derive_key_destroy_placeholder_mismatch')
+    if text_values(items[3], UNIQUE_IDENTIFIER_TAG) != [DERIVE_KEY_SOURCE_IDENTIFIER.decode()]:
+        raise ValueError('fixture_derive_key_source_cleanup_identifier_mismatch')
+    payloads = [child for child in items[0][2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+    if len(payloads) != 1:
+        raise ValueError('fixture_derive_key_payload_missing')
+    payload = payloads[0]
+    parameters = [child for child in payload[2]
+                  if child[0] == 0x420032 and child[1] == 1]
+    attrs = [child for child in payload[2]
+             if child[0] == 0x420125 and child[1] == 1]
+    parameter = parameters[0] if len(parameters) == 1 else None
+    crypto_parameters = [child for child in parameter[2]
+                         if child[0] == 0x42002B and child[1] == 1] if parameter else []
+    crypto_parameters = crypto_parameters[0] if len(crypto_parameters) == 1 else None
+    fields = parameter[2] if parameter else []
+    if (numbers(payload, 0x420057) != [2] or numbers(payload, 0x420031) != [1] or
+            len(attrs) != 1 or numbers(attrs[0], 0x420028) != [3] or
+            numbers(attrs[0], 0x42002A) != [128] or
+            numbers(attrs[0], 0x42002C) != [4] or
+            byte_string_values(parameter, 0x420030) != [DERIVE_KEY_DATA] or
+            byte_string_values(parameter, 0x420084) != [DERIVE_KEY_SALT] or
+            numbers(parameter, 0x42003C) != [1000] or
+            numbers(crypto_parameters, 0x420038) != [6]):
+        raise ValueError('fixture_derive_key_parameters_mismatch')
+
+
+def verify_derive_key_create_response(response_tree):
+    items = [child for child in response_tree[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if ([numbers(item, 0x42005C) for item in items] != [[1], [18]] or
+            [byte_string_values(item, 0x420093) for item in items] !=
+            [[DERIVE_KEY_ITEM_IDS[0]], [DERIVE_KEY_ITEM_IDS[1]]] or
+            [numbers(item, 0x42007F) for item in items] != [[0], [0]] or
+            [text_values(item, UNIQUE_IDENTIFIER_TAG) for item in items] !=
+            [[DERIVE_KEY_SOURCE_IDENTIFIER.decode()], [DERIVE_KEY_SOURCE_IDENTIFIER.decode()]]):
+        raise ValueError('fixture_derive_key_create_response_mismatch')
+
+
+def verify_derive_key_response(response_tree):
+    items = [child for child in response_tree[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if [numbers(item, 0x42005C) for item in items] != [[5], [19], [20], [20]]:
+        raise ValueError('fixture_derive_key_response_operations_mismatch')
+    if [byte_string_values(item, 0x420093) for item in items] != [
+            [item_id] for item_id in DERIVE_KEY_ITEM_IDS[2:]]:
+        raise ValueError('fixture_derive_key_response_item_ids_mismatch')
+    if [numbers(item, 0x42007F) for item in items] != [[0]] * 4:
+        raise ValueError('fixture_derive_key_response_status_mismatch')
+    if [text_values(item, UNIQUE_IDENTIFIER_TAG) for item in items] != [
+            [DERIVE_KEY_RESULT_IDENTIFIER.decode()], [DERIVE_KEY_SOURCE_IDENTIFIER.decode()],
+            [DERIVE_KEY_RESULT_IDENTIFIER.decode()], [DERIVE_KEY_SOURCE_IDENTIFIER.decode()]]:
+        raise ValueError('fixture_derive_key_response_identifiers_mismatch')
 
 
 def verify_secret_data_response(response_tree):
@@ -2810,7 +2906,7 @@ def target_operation_exchange_index(recipe):
         return 3
     if recipe is not None and recipe[1] == 'async_process_then_poll_state':
         return 0
-    if recipe is not None and recipe[1] in ('join_split_key', 'rekey'):
+    if recipe is not None and recipe[1] in ('join_split_key', 'rekey', 'derive_key'):
         return 1
     return 1 if recipe is not None and recipe[1] in ('login_logout', 'cancel_async') else 0
 
@@ -2842,6 +2938,8 @@ def observation_for_cell(observations, cell, recipe, fallback_index):
             cell.get('workflow_operation'), fallback_index)
     elif recipe[1] == 'rekey':
         index = 0 if cell.get('workflow_operation') == 'Create' else 1
+    elif recipe[1] == 'derive_key':
+        index = 0 if cell.get('workflow_operation') in ('Create', 'Activate') else 1
     if index < 0 or index >= len(observations):
         return None
     return observations[index]
@@ -3029,6 +3127,17 @@ class PeerState:
                 self.adjustable_attribute_values[replacement_identifier] = {}
                 placeholder = replacement_identifier
                 effect = 'rekeyed'
+            elif operation == 5:
+                derived_identifier = DERIVE_KEY_RESULT_IDENTIFIER.decode('ascii')
+                if (identifier not in self.objects or self.objects[identifier] != 'active' or
+                        derived_identifier in self.objects):
+                    raise ValueError('fixture_derive_key_source_or_result_mismatch')
+                self.objects[derived_identifier] = 'pre_active'
+                self.attributes[derived_identifier] = set()
+                self.attribute_values[derived_identifier] = {}
+                self.adjustable_attribute_values[derived_identifier] = {}
+                placeholder = derived_identifier
+                effect = 'derived_key_created'
             elif operation == 6:
                 private_identifier = self.key_pair_identifiers.get(5)
                 public_identifier = self.key_pair_identifiers.get(6)
@@ -3573,7 +3682,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         3 if attribute_mutation_recipe or
                                         recipe[1] in ('cancel_poll_race', 'async_poll_final_failure') else
                                         3 if recipe[1] == 'create_split_key' else
-                                        2 if recipe[1] in ('join_split_key', 'rekey') else
+                                        2 if recipe[1] in ('join_split_key', 'rekey', 'derive_key') else
                                         5 if recipe[1] == 'async_poll_repeated_pending_to_success' else
                                         4 if recipe[1] == 'async_process_then_poll_state' else
                                         2 if placeholder_chain_recipe or batch_order_placeholder_recipe or
@@ -3756,6 +3865,21 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                     REKEY_REPLACEMENT_IDENTIFIER,
                                                     REKEY_ORIGINAL_IDENTIFIER,
                                                     REKEY_ORIGINAL_IDENTIFIER)
+                                        elif recipe[1] == 'derive_key':
+                                            if exchange_index == 0:
+                                                assert_derive_key_create_request(request_tree, version)
+                                                response_operations = (1, 18)
+                                                response_item_ids = DERIVE_KEY_ITEM_IDS[:2]
+                                            else:
+                                                assert_derive_key_request(request_tree, version)
+                                                response_operations = (5, 19, 20, 20)
+                                                response_item_ids = DERIVE_KEY_ITEM_IDS[2:]
+                                                returned_unique_identifier = DERIVE_KEY_RESULT_IDENTIFIER
+                                                returned_unique_identifiers = (
+                                                    DERIVE_KEY_RESULT_IDENTIFIER,
+                                                    DERIVE_KEY_SOURCE_IDENTIFIER,
+                                                    DERIVE_KEY_RESULT_IDENTIFIER,
+                                                    DERIVE_KEY_SOURCE_IDENTIFIER)
                                         elif cleanup_exchange:
                                             if placeholder_chain_recipe or batch_order_placeholder_recipe:
                                                 assert_placeholder_cleanup_request(request_tree, version)
@@ -4197,6 +4321,11 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             verify_rekey_create_response(response_tree)
                                         elif recipe[1] == 'rekey':
                                             verify_rekey_response(response_tree)
+                                        elif recipe[1] == 'derive_key':
+                                            if exchange_index == 0:
+                                                verify_derive_key_create_response(response_tree)
+                                            else:
+                                                verify_derive_key_response(response_tree)
                                         elif recipe[1] == 'register_secret_data':
                                             verify_secret_data_response(response_tree)
                                         elif recipe[1] == 'certify':
