@@ -83,6 +83,38 @@ class LocalCatalogRouteChecksTest {
     }
 
     @Test
+    void executesVersionBoundaryOperationTargetsThroughGenericTtlvRoutes() throws Exception {
+        JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
+        List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
+        Set<String> caseIds = Set.of(
+                "test-v20-reject-get-constraints",
+                "test-v20-reject-ping",
+                "test-v20-reject-process",
+                "test-v20-reject-query-asynchronous-requests",
+                "test-v20-reject-set-constraints",
+                "test-v20-reject-set-defaults");
+
+        LocalCatalogRouteChecks.executeGenericOperationTargets(
+                catalog, "2.0", caseIds, new ObjectMapper().createArrayNode(), invocations::add);
+
+        assertEquals(18, invocations.size());
+        assertEquals(caseIds, invocations.stream().map(LocalCatalogRouteChecks.Invocation::caseId)
+                .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(Set.of(
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode"),
+                invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId)
+                        .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(Set.of("KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS", "KMIPKIT-ELEM-OP-C2S-PING",
+                "KMIPKIT-ELEM-OP-C2S-PROCESS", "KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS",
+                "KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS", "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS"),
+                invocations.stream().map(LocalCatalogRouteChecks.Invocation::targetId)
+                        .collect(java.util.stream.Collectors.toSet()));
+        assertTrue(invocations.stream().allMatch(invocation -> invocation.wire().length == 16));
+    }
+
+    @Test
     void selectsOperationCasesMissingGenericTtlvItemEvidence() throws Exception {
         JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
 
