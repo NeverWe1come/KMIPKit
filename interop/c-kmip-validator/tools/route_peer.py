@@ -53,6 +53,7 @@ BATCH_CRYPTO_CIPHERTEXT = bytes.fromhex('69c4e0d86a7b0430d8cdb78070b4c55a')
 BATCH_CONTINUATION_CONSTRUCTOR_CASES = frozenset({
     'test-batch-continue-after-failure',
     'test-batch-stop-on-first-failure',
+    'test-batch-undo-rolls-back-prior-success',
 })
 ENCRYPT_ITEM_IDS = (b'encrypt-create', b'encrypt-activate', b'encrypt-target',
                     b'encrypt-revoke', b'encrypt-destroy')
