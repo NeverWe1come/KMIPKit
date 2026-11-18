@@ -116,7 +116,8 @@ def response(operations: tuple[int, ...], protocol_minor: int,
              rng_length: int = 16,
              cancellation_result: int = 1,
              returned_unique_identifier: bytes | None = None,
-             returned_unique_identifiers: tuple[bytes, ...] | None = None) -> bytes:
+             returned_unique_identifiers: tuple[bytes, ...] | None = None,
+             discover_versions_minors: tuple[int, ...] | None = None) -> bytes:
     version = tlv(0x420069, 1,
                   integer(0x42006A, 2) + integer(0x42006B, protocol_minor))
     header = tlv(
@@ -175,9 +176,11 @@ def response(operations: tuple[int, ...], protocol_minor: int,
                 }[item_index]
                 payload_value = tlv(0x420094, 7, identifier)
         elif operation == 30:
-            payload_value = tlv(
-            0x420069, 1,
-            integer(0x42006A, 2) + integer(0x42006B, protocol_minor),
+            supported_minors = discover_versions_minors or (protocol_minor,)
+            payload_value = b"".join(
+                tlv(0x420069, 1,
+                    integer(0x42006A, 2) + integer(0x42006B, minor))
+                for minor in supported_minors
             )
         elif operation == 24:
             query_operations = (24, 30, 44) if protocol_minor == 0 else (24, 30, 44, 59)

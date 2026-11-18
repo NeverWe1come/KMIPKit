@@ -3923,7 +3923,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                         mutation_exchange_index = 2 if seeded_attribute_recipe else 1
                         attribute_cleanup_exchange_index = 3 if seeded_attribute_recipe else 2
                         reject_case = peer_rejection is not None and peer_rejection.get('case_id') == case_id
-                        if version == '2.0' and case_id in ('test-op-discover-versions', 'test-op-login', 'test-op-logout', 'test-op-get-constraints', 'test-op-ping'):
+                        if version == '2.0' and case_id in ('test-op-login', 'test-op-logout', 'test-op-get-constraints', 'test-op-ping'):
                             continue
                         observation, errors = [], []
                         peer_state = PeerState(
@@ -3991,6 +3991,26 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         stream.settimeout(5)
                                         wire = read_request(stream, encoding, transport, initial)
                                         request_tree = codec.decode(wire, encoding)
+                                        if recipe[1] == 'discover_versions':
+                                            header = next((child for child in request_tree[2]
+                                                           if child[0] == 0x420077 and child[1] == 1), None)
+                                            batch_items = [child for child in request_tree[2]
+                                                           if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+                                            request_payloads = [child for child in batch_items[0][2]
+                                                                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1] \
+                                                if batch_items else []
+                                            offered_versions = [child for child in request_payloads[0][2]
+                                                                if child[0] == 0x420069 and child[1] == 1] \
+                                                if len(request_payloads) == 1 else []
+                                            if (header is None or
+                                                    numbers(header, 0x42006A) != [2] or
+                                                    numbers(header, 0x42006B) != [int(version[-1])] or
+                                                    len(batch_items) != 1 or
+                                                    numbers(batch_items[0], 0x42005C) != [30] or
+                                                    len(offered_versions) != 1 or
+                                                    numbers(offered_versions[0], 0x42006A) != [2] or
+                                                    numbers(offered_versions[0], 0x42006B) != [1]):
+                                                raise ValueError('fixture_discover_versions_fixed_offer_mismatch')
                                         reject_this_exchange = reject_case and exchange_index == peer_rejection.get(
                                             'exchange_index')
                                         cleanup_exchange = (
@@ -4489,6 +4509,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 response_operations, int(version[-1]), selected_tag, object_type,
                                                 attribute_fixture['attribute_response_wire'] if attribute_fixture else None,
                                                 response_item_ids, response_statuses, response_reasons,
+                                                discover_versions_minors=(1,) if recipe[1] == 'discover_versions' else None,
                                                 rng_length=(numbers(request_tree, 0x4200C4) or [16])[0]
                                                 if recipe[1] == 'rng_retrieve' else
                                                 len(byte_string_values(request_tree, 0x4200C2)[0])
@@ -4762,6 +4783,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                 **os.environ,
                                 'KMIPKIT_C_ROUTE_OBSERVATIONS': str(trace_path),
                             }
+                            if case_id == 'test-op-discover-versions' and version == '2.0':
+                                run_environment['KMIPKIT_C_ROUTE_DISCOVER_VERSIONS_V20_DECODE'] = '1'
                             if recipe[1] in ('get_usage_allocation_uid_variant',
                                              'get_usage_allocation_uid_variants'):
                                 run_environment['KMIPKIT_C_USAGE_ALLOCATION_IDENTIFIER_FORM'] = (

@@ -8040,8 +8040,12 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     if (strcmp(test_case->case_id, "test-op-signature-verify") == 0)
         return execute_created_key_signature(
             client, KMIPKIT_ENUMERATION_OPERATION_SIGNATURE_VERIFY, false);
+    const char *const allow_v20_discover_versions_decode =
+        getenv("KMIPKIT_C_ROUTE_DISCOVER_VERSIONS_V20_DECODE");
     if (strcmp(test_case->operation, "Discover Versions") == 0 &&
-        client->protocol_minor == 0) {
+        client->protocol_minor == 0 &&
+        (!allow_v20_discover_versions_decode ||
+         strcmp(allow_v20_discover_versions_decode, "1") != 0)) {
         return outcome_not_run(
             "the public C Discover Versions builder only offers KMIP 2.1 and cannot construct a KMIP 2.0 offer");
     }
@@ -9521,15 +9525,12 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                      "KMIPKit could not read the typed Discover Versions payload (status %d)", status);
             goto cleanup;
         }
-        bool configured_version_found = false;
-        for (uint64_t index = 0; index < version_count; ++index) {
-            if (versions[index].major == client->protocol_major &&
-                versions[index].minor == client->protocol_minor) configured_version_found = true;
-        }
-        if (!present || !configured_version_found) {
+        const bool fixed_offer_matches = version_count == 1 &&
+            versions[0].major == 2 && versions[0].minor == 1;
+        if (!present || !fixed_offer_matches) {
             outcome.success = false;
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                     "server did not advertise the configured KMIP protocol version");
+                     "server did not report the C Discover Versions builder's fixed KMIP 2.1 offer");
         }
     } else if (delegated_login_workflow) {
         if (!delegated_login_response_matches_fixture(response_item, &status)) {
