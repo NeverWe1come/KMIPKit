@@ -153,6 +153,10 @@ final class LocalCatalogRouteChecks {
             "test-norm-structure-member-structure-member-3-9-key-material-p",
             "test-norm-structure-member-structure-member-3-9-key-material-q",
             "test-norm-structure-member-structure-member-3-9-key-material-x");
+    static final Set<String> REMAINING_ENUMERATION_FIELD_CASE_IDS = Set.of(
+            "test-norm-operation-structure-operation-structure-7-15-interop-function",
+            "test-norm-structure-member-structure-member-5-5-attribute-reference",
+            "test-norm-structure-member-structure-member-7-13-extension-type");
 
     private LocalCatalogRouteChecks() { }
 
@@ -1438,6 +1442,92 @@ final class LocalCatalogRouteChecks {
             assertEquals(TtlvItemType.BigInteger, view.itemType());
             assertArrayEquals(expectedValue, value.bytes());
         }
+    }
+
+    /** Exercises catalogued Enumeration fields encoded as an enum, a Tag, or an Item Type. */
+    static void executeRemainingEnumerationFields(JsonNode catalog, String version, Set<String> selectedCaseIds,
+            EvidenceSink sink) throws Exception {
+        Set<String> applicable = new java.util.LinkedHashSet<>();
+        Set<String> emitted = new java.util.LinkedHashSet<>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String caseId = testCase.path("case_id").asText();
+            if (!selectedCaseIds.contains(caseId) || !applies(testCase, version)) continue;
+            applicable.add(caseId);
+            String targetId = testCase.path("requires").path("normative_target_id").asText();
+            JsonNode target = findTarget(catalog, targetId);
+            String encoding = target.path("source_encoding").asText();
+            if (!encoding.startsWith("Enumeration")) {
+                throw new IllegalArgumentException("Selected target is not catalogued as Enumeration: " + caseId);
+            }
+            String targetName = target.path("name").asText();
+            int tagCode = tagCodeNamed(catalog, targetName, version);
+            long enumeration = switch (caseId) {
+                case "test-norm-operation-structure-operation-structure-7-15-interop-function" ->
+                        representativeEnumerationValue(catalog, targetName, version);
+                case "test-norm-structure-member-structure-member-5-5-attribute-reference" ->
+                        tagCodeNamed(catalog, "Unique Identifier", version);
+                case "test-norm-structure-member-structure-member-7-13-extension-type" ->
+                        TtlvItemType.Structure.code();
+                default -> throw new IllegalArgumentException("No Enumeration fixture for " + caseId);
+            };
+            byte[] valueBytes = ByteBuffer.allocate(Integer.BYTES).putInt((int) enumeration).array();
+            byte[] wire = scalarWire(tagCode, TtlvItemType.Enumeration.code(), (int) enumeration);
+            try (TtlvValue value = TtlvValue.Enumeration(enumeration);
+                    RawTag raw = RawTag.fromRaw(tagCode); Tag tag = raw.checked();
+                    TtlvItem item = TtlvItem.create(tag, value, CodecLimits.defaults())) {
+                assertScalarItem(item, tagCode, TtlvItemType.Enumeration, enumeration);
+            }
+            try (TtlvItem decoded = TtlvCodec.decode(wire)) {
+                assertScalarItem(decoded, tagCode, TtlvItemType.Enumeration, enumeration);
+            }
+            emitRoute(sink, caseId, targetId,
+                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
+                    "org.kmipkit.ttlv.TtlvValue.Enumeration", "construct", wire);
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_item.create",
+                    "org.kmipkit.ttlv.TtlvItem.create", "construct", wire);
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.function.ttlv_item_view_from_item",
+                    "org.kmipkit.ttlv.TtlvItem.view", "decode", wire);
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_codec.decode",
+                    "org.kmipkit.ttlv.TtlvCodec.decode", "decode", wire);
+            emitted.add(caseId);
+        }
+        if (!emitted.equals(applicable)) {
+            throw new IllegalArgumentException("Selected Enumeration fields were not executed for " + version);
+        }
+    }
+
+    static Set<String> missingRemainingEnumerationFieldCaseIds(JsonNode catalog, JsonNode events, String version) {
+        List<String> requiredRoutes = List.of(
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode");
+        Set<String> missing = new java.util.LinkedHashSet<>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String caseId = testCase.path("case_id").asText();
+            if (!REMAINING_ENUMERATION_FIELD_CASE_IDS.contains(caseId) || !applies(testCase, version)) continue;
+            String targetId = testCase.path("requires").path("normative_target_id").asText();
+            int present = 0;
+            for (String route : requiredRoutes) {
+                boolean found = false;
+                for (JsonNode event : events) {
+                    if (caseId.equals(event.path("case_id").asText())
+                            && targetId.equals(event.path("target_id").asText())
+                            && route.equals(event.path("route_id").asText())
+                            && version.equals(event.path("protocol_version").asText())
+                            && "TTLV".equals(event.path("encoding").asText())
+                            && event.path("transport").isNull()) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (found) present++;
+            }
+            if (present == 0) missing.add(caseId);
+            else assertEquals(requiredRoutes.size(), present,
+                    "Enumeration field route evidence must be complete before reuse for " + caseId);
+        }
+        return missing;
     }
 
     private static int integerAttributeFixture(String attributeName) {
