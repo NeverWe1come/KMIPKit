@@ -318,6 +318,7 @@ class LocalCatalogRouteChecksTest {
 
         assertEquals(caseIds, invocations.stream().map(LocalCatalogRouteChecks.Invocation::caseId)
                 .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(68, invocations.size(), "Every applicable Attribute/version pair must use four routes.");
         assertEquals(Set.of(
                 "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.integer",
                 "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.interval",
