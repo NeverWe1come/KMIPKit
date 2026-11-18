@@ -285,6 +285,50 @@ class ModelCases:
             if request.value:
                 release(request)
 
+    def _execute_query_async_operations(self, target: dict,
+                                        public_api_symbol: str) -> dict | None:
+        supported_targets = {
+            'KMIPKIT-ELEM-OPERATION-STRUCTURE-7-25-OPERATIONS',
+            'KMIPKIT-ELEM-STRUCTURE-MEMBER-7-25-OPERATION',
+            'KMIPKIT-ELEM-TAG-42014F',
+            'KMIPKIT-PAYLOAD-CLIENT-QUERY-ASYNCHRONOUS-REQUESTS-REQUEST-21-002',
+        }
+        if (target.get('target_id') not in supported_targets or
+                public_api_symbol != 'kmipkit_query_async_requests_request_with_operations'):
+            return None
+
+        operations = (C.c_uint32 * 2)(1, 10)
+        self.abi.bind('kmipkit_query_async_requests_request_create', [C.POINTER(C.c_void_p)])
+        self.abi.bind(public_api_symbol, [C.c_void_p, C.POINTER(C.c_uint32), C.c_uint64,
+                                          C.POINTER(C.c_void_p)])
+        self.abi.bind('kmipkit_query_async_requests_request_to_ttlv_payload',
+                      [C.c_void_p, C.POINTER(C.c_void_p)])
+        release = self.abi.library.kmipkit_query_async_requests_request_release
+        release.argtypes, release.restype = [C.c_void_p], None
+
+        self.abi.called.clear()
+        request, filtered, payload = C.c_void_p(), C.c_void_p(), C.c_void_p()
+        try:
+            self.abi.call('kmipkit_query_async_requests_request_create', C.byref(request))
+            self.abi.call(public_api_symbol, request, operations, len(operations), C.byref(filtered))
+            self.abi.call('kmipkit_query_async_requests_request_to_ttlv_payload',
+                          filtered, C.byref(payload))
+            normalized_tree = [normalized(tree) for tree in self.abi.read_structure(payload)]
+            expected = [[self._tag('Operations'), 1, [
+                [self._tag('Operation'), 5, (value).to_bytes(4, 'big').hex()]
+                for value in operations
+            ]]]
+            if normalized_tree != expected:
+                raise ValueError('query_async_operations_payload_mismatch')
+            return {'sample_count': 1, 'normalized_tree': normalized_tree,
+                    'tree_sha256': digest(normalized_tree), 'invoked_symbols': set(self.abi.called)}
+        finally:
+            self.abi.release('ttlv_structure', payload)
+            if filtered.value:
+                release(filtered)
+            if request.value:
+                release(request)
+
     def _execute_empty_query_async_request(self, target: dict,
                                            public_api_symbol: str) -> dict | None:
         if (target.get('target_id') != 'KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS'
@@ -1039,6 +1083,8 @@ class ModelCases:
             return self._execute_cancel_request(target, public_api_symbol)
         if public_api_symbol == 'kmipkit_query_async_requests_request_with_correlation_values':
             return self._execute_query_async_correlation_values(target, public_api_symbol)
+        if public_api_symbol == 'kmipkit_query_async_requests_request_with_operations':
+            return self._execute_query_async_operations(target, public_api_symbol)
         if public_api_symbol == 'kmipkit_query_async_requests_request_to_ttlv_payload':
             return self._execute_empty_query_async_request(target, public_api_symbol)
         if (target.get('kind') == 'object_type'
