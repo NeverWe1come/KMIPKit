@@ -1118,3 +1118,29 @@ evidence validates 42,498/42,498 cells with zero failures. The ledger records
 71,641 planned, 42,498 executed, and 29,143 pending cells and matches its
 checked-in reference. The Java matrix remains incomplete, so the PR stack stays
 WIP.
+
+### Typed scalar Attribute construction routes — 2026-11-18
+
+The installed Java consumer now exercises the ten catalogued Integer,
+Interval, and Byte String Attribute cases through `TypedAttribute.create`,
+`TypedAttribute.fromItem`, and `AttributeSet.tryNew`, in addition to generic
+TTLV construction and decoding. The fixtures verify each standard attribute,
+the decoded value and the one-item Attribute Set. Seven attributes apply in
+KMIP 2.0 and 2.1; the three Rotate attributes apply in KMIP 2.1 only, for 17
+case/version pairs and 51 additional local route cells. Sources: OASIS KMIP
+2.0 §§4.8, 4.15, 4.17, 4.30, 4.43, 4.44, 4.49, and 11.54; KMIP 2.1 §§4.8,
+4.15, 4.17, 4.30, 4.43, 4.44, 4.49–4.51, 4.54, and 11.56. This is local
+construction evidence and does not claim KMS acceptance.
+
+Red `67471b84b` requires all seven routes per applicable pair; Green
+`06db9dcce` exercises the installed APIs and generated ledger; Refactor
+`6c809e7c2` isolates typed scalar assertions and avoids duplicate generic
+events. The Gradle suite passes 95/95 tests; shared evidence/schema/capability
+tests pass 109/109; requirement traceability passes 2/2; feature traceability
+passes 31/31; and the route capability audit accepts 1,507 routes. The
+selected report validates 42,579/42,579 cells with zero failures. The ledger
+records 71,641 planned, 42,579 executed, and 29,062 pending cells and matches
+its checked-in reference. The full Java matrix remains incomplete, so the
+stack stays WIP. The host `/tmp` tmpfs was full during one attempt; the
+successful artifact install and full suite used a worktree-backed temporary
+directory.
