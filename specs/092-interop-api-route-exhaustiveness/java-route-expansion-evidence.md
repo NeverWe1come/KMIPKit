@@ -3228,6 +3228,46 @@ shared route-evidence, schema, and capability suites pass 108 tests; the route
 audit confirms 1,507 routes. The full matrix remains incomplete and the stack
 stays WIP.
 
+## Java Asynchronous Indicator generic TTLV routes — 2026-11-18
+
+The four catalogued asynchronous-indicator scenarios resolve the enum target,
+tag, and value from the normative catalog. For KMIP 2.0 and 2.1, the installed
+Java generic TTLV API constructs the Enumeration Item, obtains its typed view,
+and decodes its encoding. The omitted indicator is verified as Prohibited;
+explicit Prohibited, Optional, and Mandatory values are exercised. The tests
+cover local generic representation and do not claim an asynchronous network
+lifecycle. References: OASIS KMIP 2.0/2.1 §8.2, §§11.3 and 11.56.
+
+Red `a484aa932` fails if any applicable case/version lacks the three generic
+TTLV route events. Green `4f78ac602` executes each catalog-driven route and
+checks the exact tag, TTLV type, and numeric value. This adds 24 cells: the
+selected report validates 40,251/40,251 with zero failures, and the ledger
+records 71,641 planned, 40,251 executed, and 31,390 pending. The Java suite
+passes 92/92; shared tests pass 196/196; ledger comparison and the 1,507-route
+capability audit pass. Full matrix closure and exact-head CI remain required,
+so the PR stack stays WIP.
+
+## Java Asynchronous Cancel request and response routes — 2026-11-18
+
+The five catalogued Cancellation Result scenarios run through the installed
+Java `Client.executeCancel` against controlled mutual-TLS peers. Each case is
+sent for KMIP 2.0 and 2.1 over TTLV, JSON, and XML on raw TLS and HTTPS. Peers
+check the request operation, protocol minor version, and exact correlation
+value, then return the matching Cancellation Result; Java checks the response
+operation, success status, correlation echo, and enum value. This records
+Cancel exchanges and does not claim that a later Poll or complete
+asynchronous workflow ran. Normative references: OASIS KMIP 2.0/2.1 §6.1.5
+Tables 161, 162, 176, and 177, §§8.2, 8.3, 8.6, 11.7, and 11.56.
+
+Red `c5ec2ae4d` requires the Cancel route for all five scenarios, both
+versions, six encoding/transport combinations, and every required target and
+action. Green `edb09424d` passes all 60 controlled exchanges and emits 420
+route cells. The selected report validates 40,671/40,671 with zero failures;
+the generated ledger records 71,641 planned, 40,671 executed, and 30,970
+pending. Java tests pass 92/92, shared tests 196/196, ledger comparison passes,
+and the 1,507-route capability audit passes. Full matrix closure and exact-head
+CI remain required, so the PR stack remains WIP.
+
 Verification:
 
 ```sh
@@ -3657,120 +3697,376 @@ the normalization step explicit. The canonical Java ledger records 71,641
 planned, 34,696 executed, and 36,945 pending cells. The full matrix remains
 incomplete and the PR remains WIP.
 
-## #216 stack tip after Java key routes and deterministic ledger sync — 2026-11-18
+## Java Split Key managed-object root routes — 2026-11-18
 
-The #216 branch now includes the #187 key-object root routes and stable
-evidence-ledger generation while retaining its Usage Limits route evidence.
-The full Java validator suite passes 87/87 tests; the shared route suites pass
-109/109 tests; and the capability audit accepts all 1,507 routes. The selected
-report validates 34,718/34,718 cells with zero failures. The generated ledger
-matches its checked-in reference and records 71,641 planned, 34,718 executed,
-and 36,923 pending cells. The Java full matrix remains incomplete and #216
-remains WIP.
+Red commit `45b9ab5c5` adds a focused requirement for the Split Key root case
+to invoke its named factory and both generic `ManagedObject` factories in KMIP
+2.0 and 2.1; it fails because the focused route recipe is missing. The first
+fixture attempt exposed that the native `fromItem` validator requires the
+source-defined §2.8 Table 9 member order. The corrected fixture orders Split
+Key Parts, Key Part Identifier, Split Key Threshold, Split Key Method, and Key
+Block; it uses XOR, two parts, threshold two, and Raw Key Material. This is
+deterministic local model data, not a cryptographic splitting test.
 
-## #216 Split Key managed-object root routes — 2026-11-18
+Green commit `e3b1bdfe7` invokes `ManagedObject.splitKey`, `fromFields`, and
+`fromItem`, then checks object type, Key Block presence, part identifier,
+method, part count, and threshold. The controlled TLS report emits the three
+route events for each version. Refactor commit `e8fdeb63d` reuses the canonical
+scalar TTLV encoder and asserts identical wire bytes across the six events.
 
-The #216 stack tip includes Red commit `45b9ab5c5`, Green commit `e3b1bdfe7`,
-and Refactor commit `e8fdeb63d` from #187. The fixture invokes
-`ManagedObject.splitKey`, `fromFields`, and `fromItem` in KMIP 2.0 and 2.1 with
-the §2.8 Table 9 member order, XOR, two parts, threshold two, and a Raw Key
-Block. It verifies object type and the typed Split Key accessors. The six
-events are local model evidence, not a cryptographic split or server exchange.
+Verification: the full Java suite passes 87/87 tests; shared route suites pass
+109/109; the selected report validates 34,702/34,702 cells with zero failed
+cells; the generated ledger matches its reference; the capability audit accepts
+1,507 routes; and `git diff --check` passes. The ledger has 71,641 planned,
+34,702 executed, and 36,939 pending cells. Full matrix closure and exact-head
+CI remain open, so the stack remains WIP.
 
-On the combined #216 head the Java suite passes 87/87, shared route suites pass
-109/109, selected evidence validates 34,718/34,718 cells with zero failures,
-the ledger comparison passes, and the capability audit accepts 1,507 routes.
-The full matrix remains incomplete with 36,923 pending cells of 71,641, so the
-stack remains WIP.
+## Java Split Key managed-object member routes — 2026-11-18
 
-## #216 Split Key managed-object member routes — 2026-11-18
+Red commit `3601224ff` requires exact routes for the six Split Key structure
+members and the Split Key tag. Green commit `adbcd43d0` executes the named
+factory for every target and both generic managed-object factories for the six
+structure members. It uses the §2.8 Table 9 order, XOR for ordinary fixtures,
+and Polynomial Sharing Prime Field plus Big Integer 257 for the conditional
+Prime Field Size member. The Raw Key Block is deterministic TTLV fixture data;
+it does not exercise cryptographic splitting. Refactor commit `af53d1b39`
+shares report-event matching. The selected-case list excludes the already
+reported generic Split Key tag ID to keep `case_ids` unique.
 
-The #216 branch preserves its Usage Limits evidence and includes the Split Key
-member routes from #187. The named factory handles all six §2.8 Table 9
-structure members and the Split Key tag; `fromFields` and `fromItem` run for
-each applicable structure member in KMIP 2.0/2.1. The conditional Prime Field
-Size field uses Polynomial Sharing Prime Field and Big Integer 257. This is
-local model evidence, not a cryptographic split or server interoperability
-test.
+Verification: the full Java Gradle suite passed 87/87 before the duplicate-ID
+correction, and the focused controlled TLS report test passed after it. The
+selected report validates 34,740/34,740 cells with zero failures; the ledger
+comparison passes, and the capability audit accepts all 1,507 public routes.
+The full Java matrix remains incomplete: 36,901 of 71,641 cells are pending.
 
-Verification on the combined #216 head: full Java suite 87/87, shared route
-suites 109/109, selected report 34,756/34,756 with zero failures, ledger
-comparison and capability audit of all 1,507 routes pass. The full ledger has
-36,885 pending of 71,641; #216 remains WIP pending full closure and exact-head
-CI.
+## Java PGP Key and Secret Data managed-object routes — 2026-11-18
 
-## #216 PGP Key and Secret Data routes — 2026-11-18
+Red commit `7b1f65d3b` adds tests for the PGP Key and Secret Data object
+structures, their required version/type members, and assigned tags. Green
+commit `6c7820757` executes `ManagedObject.pgpKey` and `ManagedObject.secretData`
+with PGP Key Version 4 or Secret Data Type Password and a Raw Key Block; it
+also executes `fromFields` and `fromItem` on the structures and members.
+Refactor commit `1c67d3647` centralizes PGP Key target classification used by
+the route executor and controlled-report assertions. Fixtures are local model
+data and do not claim key validity (KMIP 2.0/2.1 §§2.4, 2.7).
 
-The #216 branch retains its Usage Limits scope and includes the PGP Key and
-Secret Data managed-object routes from #187. The named factories and applicable
-`fromFields`/`fromItem` calls use their required type/version members and a Raw
-Key Block in KMIP 2.0/2.1 (§§2.4, 2.7). This is local model evidence, not key
-validity or server interoperability evidence.
+Verification: full Java suite 89/89 with zero failures, errors, or skips;
+selected report 34,780/34,780 with zero failures; shared route suites 109/109;
+generated ledger comparison and 1,507-route capability audit pass. The full
+matrix remains incomplete with 36,861 of 71,641 cells pending.
 
-The combined Java suite passes 89/89; shared route suites pass 109/109; the
-selected report validates 34,796/34,796 cells with zero failures; ledger
-comparison and the 1,507-route capability audit pass. The full ledger has
-36,845 pending of 71,641; #216 remains WIP.
+## Java generic TTLV routes for Key Block structure members — 2026-11-18
 
-## #216 generic TTLV routes for Key Block structure members — 2026-11-18
+The Java local route runner now recognizes `Object Data Structure` as a
+catalogued Structure encoding for the Key Block members of PGP Key, Private
+Key, Public Key, Secret Data, and Split Key (KMIP 2.0/2.1 §§2.4–2.8, 3.1).
+It executes generic Item construction, Item view, and TTLV decoding using each
+member's catalogued tag. `TtlvValue.structure` evidence is emitted only when
+the shared route manifest declares that route for the target; the Key Block
+member cases do not declare it. These fixtures prove generic local TTLV route
+execution, not full field semantics or server interoperability.
 
-The #216 tip incorporates the Key Block member route increment from #187 while
-retaining its Usage Limits and PGP Key / Secret Data evidence. The installed
-Java package executes generic Item construction, Item view, and TTLV decode
-for the catalogued PGP Key, Private Key, Public Key, Secret Data, and Split Key
-Key Block member cases under KMIP 2.0/2.1 (KMIP §§2.4–2.8, 3.1). Route evidence
-for `TtlvValue.structure` is limited to targets declared for that route in the
-shared manifest. These checks do not establish field-level conformance or
-server interoperability.
+Red `738a80069` adds the required Key Block member route test and fails because
+the `Object Data Structure` source encoding is not selected. Green `473f57a70`
+includes that encoding, and Refactor `14210bf1a` clarifies the classification.
+Follow-up Red `13e375785` exposes an unplanned `TtlvValue.structure` event;
+Green `f46295a92` separates source Structure targets from manifest-declared
+value-route targets.
 
-Red `738a80069`, Green `473f57a70`, Refactor `14210bf1a`, follow-up Red
-`13e375785`, and Green `f46295a92` are in the #187 parent history. On the
-combined #216 head, the full Java suite passes 90/90, shared route suites pass
-109/109, selected evidence validates 34,832/34,832 cells with zero failures,
-the generated ledger matches its reference, and the capability audit accepts
-1,507 routes. The full ledger records 36,809 pending of 71,641; the matrix
-remains incomplete and #216 stays WIP.
+On #187, the full Java suite passes 90/90, shared route suites pass 109/109,
+the selected report validates 34,816/34,816 cells with zero failures, the
+ledger matches its reference, and the capability audit accepts 1,507 routes.
+The full ledger has 36,825 pending of 71,641; matrix closure remains open.
 
-## #216 generic Operation routes for KMIP 2.0 version boundaries — 2026-11-18
+## #187 generic Operation routes for KMIP 2.0 version boundaries — 2026-11-18
 
-The #216 tip inherits the version-boundary Operation route evidence from #187
-while keeping its Usage Limits cases. Get Constraints, Ping, Process, Query
-Asynchronous Requests, Set Constraints, and Set Defaults are 2.1 operations;
-the local TTLV fixture represents each assigned Operation value in the 2.0
-rejection case and checks Item construction, view, and decode. No unsupported
-request is sent. Red `7288a8643` and Green `2843cdfe3` are in #187's parent
-history. On #216, the full Java suite passes 91/91, shared suites pass 109/109,
-selected evidence validates 34,850/34,850 cells with zero failures, the ledger
-matches its reference, and the capability audit accepts 1,507 routes. The full
-ledger records 71,641 planned, 34,850 executed, and 36,791 pending cells. Full
-closure and exact-head CI remain open; #216 stays WIP.
+The six version-boundary cases cover Get Constraints, Ping, Process, Query
+Asynchronous Requests, Set Constraints, and Set Defaults. Each operation is
+introduced in KMIP 2.1 but has a KMIP 2.0 rejection case. The route fixture
+uses the assigned 2.1 Operation enumeration value for local generic TTLV Item
+construction, Item view, and decode in a 2.0 protocol context. It verifies the
+Operation field representation; it does not send an unsupported request or
+claim that the operation is valid in KMIP 2.0 (KMIP 2.0 §6.1; KMIP 2.1
+§§6.1.22, 6.1.36, 6.1.39, 6.1.41, 6.1.52–6.1.53; §§8.2, 11.36).
 
-## #216 inherited generic Batch Item workflow routes — 2026-11-18
+Red `7288a8643` requires all six cases and fails because the unsupported
+operations had no generic TTLV evidence under KMIP 2.0. Green `2843cdfe3`
+resolves their 2.1 catalog targets for this local fixture. The full Java suite
+passes 91/91; the selected report validates 34,834/34,834 cells with zero
+failures; the generated ledger matches its reference and the capability audit
+accepts all 1,507 routes. The full ledger records 71,641 planned, 34,834
+executed, and 36,807 pending cells. Full closure and exact-head CI remain open;
+#187 stays WIP.
 
-The #216 Usage Limits stack inherits the #187 generic TTLV Item evidence for
-all catalogued batch-workflow Request Batch Item and Response Batch Item
-targets. Each target is exercised through Item construction, Item view, and
-TTLV decode in KMIP 2.0 and 2.1, using the installed Java package. This is
-local generic representation evidence only (OASIS KMIP 2.0/2.1 §§8.3, 8.6).
+## #187 generic Batch Item routes for batch workflow cases — 2026-11-18
 
-The merged Java suite passes 92/92; shared route suites pass 109/109; the
-selected report validates 35,000/35,000 cells with zero failures; the ledger
-matches its reference and the capability audit accepts 1,507 routes. The full
-ledger has 71,641 planned, 35,000 executed, and 36,641 pending cells. Full
-matrix closure and exact-head CI remain open; #216 stays WIP.
+The catalog's batch workflow cases now execute generic TTLV Item construction,
+view, and decode for every applicable Request Batch Item and Response Batch
+Item target. The local fixtures use a valid Query Batch Item structure for the
+selected target and protocol version; they exercise the generic representation
+routes only and do not claim that the fixture runs each workflow's semantics
+(OASIS KMIP 2.0/2.1 §§8.3, 8.6).
 
+Red `fb43d7432` requires exact route evidence for every catalogued case/target
+pair in both protocol versions and fails because those events are absent.
+Green `be6a84fd4` builds each request or response structure, checks the
+installed `TtlvItem.create`, `TtlvItem.view`, and `TtlvCodec.decode` calls, and
+emits only the declared manifest routes. Refactor `e39b24fc1` compares the
+exact expected evidence keys, including case, target, version, and route.
 
-## #216 inherited Java Get Attributes routes — 2026-11-18
+The Java suite passes 92/92, including the controlled TLS peer workflows. The
+shared route suites pass 109/109; the selected route report validates
+34,984/34,984 cells with zero failures, the generated ledger matches its
+reference, and the capability audit accepts 1,507 public routes. The full
+ledger records 71,641 planned, 34,984 executed, and 36,657 pending cells.
+Full matrix closure and exact-head CI remain open; #187 stays WIP.
 
-The #216 branch inherits the #187 controlled mutual-TLS TTLV coverage for both
-typed Get Attributes builders across the catalogued cases in KMIP 2.0/2.1
-contexts. The peer validates the returned typed response (OASIS KMIP 2.0/2.1
-§6.1.17 and §§8.3, 8.6). This is operation-level request/response evidence;
-it does not establish each attribute's independent semantic construction
-policy.
+## Java Get Attributes typed builder routes — 2026-11-18
+
+The controlled mutual-TLS TTLV fixture now exercises both public typed routes
+for every catalogued Get Attributes case in KMIP 2.0 and 2.1 contexts:
+`ClientBatchItem.getAttributes` and
+`AttributeRequest.getAttributesToBatchItem`. It sends the requests as batch
+items and checks the typed response shape. The fixtures follow the Get
+Attributes operation contract (OASIS KMIP 2.0/2.1 §6.1.20 and §§8.3, 8.6).
+This closes operation-level request/response route evidence; it does not
+independently prove every catalogued attribute's semantic policy.
+
+Red `51dd2f2a9` added exact per-case assertions for both routes and failed
+because only the existing Activation Date case was covered. Green `8b5d8a7f6`
+added controlled peer fixtures for the remaining catalogued cases. Refactor
+`23e349af8` extracted shared request and response assertions.
 
 The full Java suite passes 92/92 tests, and the shared route suites pass
-109/109. The selected report validates 35,889/35,889 cells with zero failures;
-the generated ledger matches its reference and the capability audit accepts
-all 1,507 public routes. The ledger has 71,641 planned, 35,889 executed, and
-35,752 pending cells. The Java matrix remains incomplete and #216 stays WIP.
+109/109. The selected report validates 35,873/35,873 cells with zero failures;
+the generated ledger matches its checked-in reference and the route capability
+audit accepts all 1,507 public routes. The ledger records 71,641 planned,
+35,873 executed, and 35,768 pending cells. Remaining matrix cells and
+exact-head CI keep #187 WIP.
+
+## Java Get Attributes encoding and transport routes — 2026-11-18
+
+The controlled Java consumer runs both installed Get Attributes builders for
+every catalogued case and supported protocol version over all six approved
+encoding/transport combinations: TTLV, JSON, and XML over raw TLS and HTTPS.
+The controlled mTLS peers decode and inspect requests, then return matching
+encoded responses. The test checks the operation, version, requested Attribute
+References, batch identifiers, and typed response. The HTTPS configuration
+retains the request target and does not set a DNS-name override unless the
+caller explicitly configured one. References: OASIS KMIP 2.0/2.1 §6.1.20 and
+§§8.3, 8.6; the encoding and transport combinations follow the approved
+KMIPKit 1.0 encoding and framing specifications.
+
+Red `eca46473a` asserts that every emitted network combination is declared in
+the report and fails because the report listed only TTLV/raw TLS. Green
+`d6486c936` derives the report's combinations from its emitted route events.
+The earlier Get Attributes route-count assertion was corrected to include 36
+network cells plus the typed response accessor per case/version.
+
+The selected report validates 39,743/39,743 cells with zero failures. The
+generated full ledger records 71,641 planned, 39,743 executed, and 31,898
+pending cells. The complete Java suite, shared evidence/schema/capability
+suites, ledger comparison, and capability audit pass. Full Java matrix closure
+remains required under KMIPKIT-0092-FR-002/FR-003/FR-009; #187 remains WIP.
+
+## Java Get Attribute List encoding and transport routes — 2026-11-18
+
+Both Java public Get Attribute List builders now run every applicable catalog
+case and version over TTLV, JSON, and XML on raw TLS and HTTPS controlled mTLS
+peers. The fixture checks the request operation, version, Unique Identifier,
+and batch IDs; the response checks the successful result, typed identifier,
+and ordered Attribute References. The local route evidence also invokes
+`GetAttributeListRequest.toTtlvPayload` and the typed response payload reader
+for the operation and catalogued request/response fields. Normative references:
+OASIS KMIP 2.0/2.1 §6.1.21 and §§8.3, 8.6.
+
+Red `5631cd0fb` requires per-case route evidence and fails on the missing
+Get Attribute List constructor call. Green `b8992a5c2` executes both typed
+builders, all six encoding/transport combinations, and checked controlled
+responses. Refactor renames the shared attribute-read fixture helpers to make
+their use by both Get Attributes and Get Attribute List explicit.
+
+The full Java suite passes 92/92; the complete shared unit suite passes
+196/196. The selected report validates 40,101/40,101 cells with zero failures;
+the ledger records 71,641 planned, 40,101 executed, and 31,540 pending cells.
+The ledger comparison and 1,507-route capability audit pass. Full Java matrix
+closure remains required under KMIPKIT-0092-FR-002/FR-003/FR-009; #187 stays
+WIP.
+
+## Java Get Attributes payload-field routes — 2026-11-18
+
+Both public typed Get Attributes request routes now cover the catalogued
+Unique Identifier presence/omission and Attribute Reference cardinalities of
+zero, one, and two. For the omitted-ID path, the controlled batch first creates
+an object and then uses ID Placeholder, so the tested request refers to a real
+batch-produced identifier. The requests run over TTLV, JSON, and XML on raw TLS
+and HTTPS; controlled mutual-TLS peers inspect the wire fields and the Java
+client validates the typed response. References: OASIS KMIP 2.0/2.1 §6.1.20,
+§11.58, §§8.3, 8.6.
+
+Red `daf05f7df` fails when either builder route lacks one of the catalogued
+payload-field network cells. Green `3c41ea623` executes the direct
+`ClientBatchItem.getAttributes` and
+`AttributeRequest.getAttributesToBatchItem` APIs, including the Create/ID
+Placeholder batch variant. The selected report validates 40,197/40,197 cells
+with zero failures; the ledger records 71,641 planned, 40,197 executed, and
+31,444 pending. Java tests pass 92/92, shared tests 196/196, ledger comparison
+passes, and the route capability audit accepts 1,507 routes. The complete Java
+matrix and exact-head CI remain open; the dependent stack stays WIP.
+
+## Java asynchronous Cancellation Result generic TTLV routes — 2026-11-18
+
+The five catalogued asynchronous Cancel result scenarios now resolve the
+Cancellation Result enum target and numeric value from the shared normative
+catalog and construct a generic Enumeration Item using the assigned
+Cancellation Result tag. The installed Java API performs Item creation, Item
+view, and TTLV decode for each value in KMIP 2.0 and 2.1. This proves generic
+local representation only. Normative sources: OASIS KMIP 2.0 §6.1.5 Table 162,
+§11.7, §11.56; KMIP 2.1 §6.1.5 Table 177, §11.7, §11.56.
+
+Red `af7765d94` fails while any scenario/version lacks one of the three local
+TTLV routes. Green `bb7b4d7b2` executes the catalog-driven fixtures and checks
+the exact tag, TTLV type, and value. This adds 30 cells: the selected report
+validates 40,227/40,227 with zero failures, and the ledger records 71,641
+planned, 40,227 executed, and 31,414 pending. The Java suite passes 92/92, the
+shared suite 196/196, ledger comparison passes, and the route capability audit
+accepts 1,507 routes. The full matrix and exact-head CI remain open; the stack
+stays WIP.
+
+## Java Asynchronous Indicator generic TTLV routes — 2026-11-18
+
+The four catalogued asynchronous-indicator scenarios resolve the enum target,
+tag, and value from the normative catalog. For KMIP 2.0 and 2.1, the installed
+Java generic TTLV API constructs the Enumeration Item, obtains its typed view,
+and decodes its encoding. The omitted indicator is verified as Prohibited;
+explicit Prohibited, Optional, and Mandatory values are exercised. The tests
+cover local generic representation and do not claim an asynchronous network
+lifecycle. References: OASIS KMIP 2.0/2.1 §8.2, §§11.3 and 11.56.
+
+Red `a484aa932` fails if any applicable case/version lacks the three generic
+TTLV route events. Green `4f78ac602` executes each catalog-driven route and
+checks the exact tag, TTLV type, and numeric value. This adds 24 cells: the
+selected report validates 40,251/40,251 with zero failures, and the ledger
+records 71,641 planned, 40,251 executed, and 31,390 pending. The Java suite
+passes 92/92; shared tests pass 196/196; ledger comparison and the 1,507-route
+capability audit pass. Full matrix closure and exact-head CI remain required,
+so the PR stack stays WIP.
+
+## Java asynchronous Cancel remaining route cells — 2026-11-18
+
+`Client.executeCancel` now has route evidence for every catalog-applicable
+case: ordinary Cancel, normative request and response payload cases, and the
+catalogued asynchronous workflow cases. The fixture runs the applicable
+KMIP 2.0 and 2.1 cases over TTLV, JSON, and XML on raw TLS and HTTPS against
+controlled mutual-TLS peers. The peers check operation, protocol version, and
+correlation; the client checks the response operation, success status,
+correlation, result, and response shape. The race and recursion cases exercise
+the Cancel exchange, not a complete Poll lifecycle. References: OASIS KMIP
+2.0 §6.1.5 Tables 161 and 162, §§8.2, 8.3, 8.6, 11.7, and 11.56; KMIP 2.1
+§6.1.5 Tables 176 and 177, §§8.2, 8.3, 8.6, 11.7, and 11.56.
+
+Red `58d8e2b90` added the exact remaining-cell assertion and failed because
+the ordinary `test-op-cancel` network route had no evidence. Green `d00cf8272`
+generates applicable fixtures from the catalog and executes 120 controlled
+exchanges, adding 228 selected route cells. The Java suite passes 92/92; the
+selected report validates 40,899/40,899 cells with zero failures. The
+generated ledger records 71,641 planned, 40,899 executed, and 30,742 pending
+cells. The ledger comparison and 1,507-route capability audit pass. This
+closes the `Client.executeCancel` route, not the Java matrix; FR-002, FR-003,
+FR-009, and exact-head CI remain open, so the stack remains WIP.
+
+## Java Ping encoding and transport routes — 2026-11-18
+
+For `test-op-ping`, Java now sends `ClientBatchItem.ping()` through the
+installed client using TTLV, JSON, and XML over both raw TLS and HTTPS. Each
+controlled mutual-TLS peer validates the encoded Ping request and KMIP 2.1
+version, and returns a matching successful response that the client decodes.
+The test requires construct, send, and decode evidence in each of the six
+combinations. This covers the typed operation in OASIS KMIP 2.1 §6.1.36 and
+KMIPKIT-0092-FR-002/005; it does not assess high-level API usability.
+
+Red `b4a6638a2` failed because the installed Ping route had evidence only for
+TTLV over raw TLS. Green `251a7cff4` adds the six controlled exchanges and
+updates the generated ledger using `validate_route_evidence.py`. The selected
+report validates 40,914/40,914 cells with zero failures; the full ledger has
+71,641 planned, 40,914 executed, and 30,727 pending cells. The Java suite
+passes, ledger comparison passes, and the capability audit accepts 1,507
+routes. FR-002, FR-003, FR-009 and exact-head CI remain open; the stack stays
+WIP.
+
+## Java KMIP 2.0 Ping NotSent routes — 2026-11-18
+
+The catalogued `test-v20-reject-ping` case now executes through the installed
+Java `ClientBatchItem.ping()` and `Client.execute` routes for TTLV, JSON, and
+XML over raw TLS and HTTPS. Every invocation returns delivery state `NotSent`;
+the raw TLS fixtures accept no connection and the HTTPS fixtures receive no
+request. Construction and send events record the six encoding/transport pairs,
+zero transport invocations, and no response-decode obligation. References:
+OASIS KMIP 2.1 §6.1.36, KMIP 2.0 §6.1, and KMIPKIT-0092-FR-001/002/003.
+
+Red `a3c4af6b0` added an assertion for all 12 required route cells and failed
+on missing KMIP 2.0 evidence. Green `3ed5e0d87` checks all six rejection paths
+and records a hash of the expected KMIP 2.0 Request Message tree. The Java
+suite passes 92/92, shared tests pass 196/196, and the selected report
+validates 40,926/40,926 cells with zero failures. The generated ledger records
+71,641 planned, 40,926 executed, and 30,715 pending cells. Ledger comparison
+and the 1,507-route capability audit pass. The Java matrix and exact-head CI
+remain open; the PR stack stays WIP.
+
+## Java KMIP 2.0 Constraints NotSent routes — 2026-11-18
+
+The catalogued Get Constraints (§6.1.22), Set Constraints (§6.1.52), and Set
+Defaults (§6.1.53) cases now invoke their installed `ClientBatchItem` typed
+constructors and `Client.execute` under KMIP 2.0. For each operation, TTLV,
+JSON, and XML are exercised over both raw TLS and HTTPS. The client reports
+`NotSent`; raw TLS fixtures accept no connection and HTTPS fixtures receive no
+request. The 36 network cells have construct/send evidence and no response
+decode obligation. References: OASIS KMIP 2.1 §§6.1.22, 6.1.52, 6.1.53; KMIP
+2.0 §6.1; KMIPKIT-0092-FR-001/002/003.
+
+Red `c83a8e4c8` fails when any required cell is absent. Green `817c3c970`
+executes the three operations across all six encoding/transport combinations,
+checks `NotSent`, and records the expected request-tree hashes. The Java suite
+passes 92/92, and the selected report validates 40,962/40,962 cells with zero
+failures. The generated ledger has 71,641 planned, 40,962 executed, and 30,679
+pending cells. Ledger comparison and the capability audit pass. Full matrix
+closure and exact-head CI remain open, so the stack stays WIP.
+
+## Java KMIP 2.0 asynchronous NotSent routes — 2026-11-18
+
+The catalogued Process (§6.1.39) and Query Asynchronous Requests (§6.1.41)
+cases now invoke `Client.executeProcess` and
+`Client.executeQueryAsyncRequests` under KMIP 2.0. The requests use the
+catalogued correlation value and, for Query Asynchronous Requests, the
+operation filter. Each route runs with TTLV, JSON, and XML over raw TLS and
+HTTPS. Both calls fail locally with the expected input diagnostic; the raw
+TLS peers accept no connection and the HTTPS peers receive no request. The
+24 construct/send cells record zero transport invocations and no response
+decode obligation. References: OASIS KMIP 2.1 §§6.1.39 and 6.1.41, KMIP 2.0
+§6.1, and KMIPKIT-0092-FR-001/002/003.
+
+Red `81b432831` requires all 24 cells and fails when no route events exist.
+Green `90cd82677` invokes both installed client operations across the six
+encoding/transport combinations and checks that execution stops locally. The
+Java suite passes 92/92; the selected report validates 40,986/40,986 cells
+with zero failures. The generated ledger records 71,641 planned, 40,986
+executed, and 30,655 pending cells. Ledger comparison and the 1,507-route
+capability audit pass. Matrix closure and exact-head CI remain outstanding.
+
+## Java Usage Limits structure assertions inherited from #216 — 2026-11-18
+
+The #216 consumer retains explicit fixture assertions for the three required
+Usage Limits members in KMIP 2.0 and 2.1: Total and Count are Long Integer,
+Unit is Enumeration, and member order and tags match OASIS KMIP 2.0 §7.34
+Table 354 and KMIP 2.1 §7.40 Table 392. The deterministic fixture checks Total
+100, Count 73, and Unit Object. These are local TTLV assertions, not KMS
+interoperability evidence.
+
+- Red `13f286948` requires route evidence for the Usage Limits structure and
+  members. Green `614c8714b` adds construction, view, decode, and typed-value
+  assertions. Refactor `460741a43` refreshes the ledger and documentation.
+- On the combined head, the Java suite passes; selected evidence validates
+  42,196/42,196 cells with zero failures, and the generated ledger records
+  71,641 planned, 42,196 executed, and 29,445 pending. These routes overlap
+  catalog cells already covered on #187, so the combined ledger does not count
+  them twice. Full matrix closure and exact-head CI remain open; #216 stays WIP.
