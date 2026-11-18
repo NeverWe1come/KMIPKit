@@ -279,3 +279,19 @@ artifact. This is part of the FR-006 artifact provenance check.
   selected report validates 34,984/34,984 cells with zero failures. The ledger
   records 71,641 planned, 34,984 executed, and 36,657 pending cells. Full
   matrix closure remains open under FR-002/FR-003/FR-009.
+
+## Java Get Attributes typed request routes — 2026-11-18
+
+- **FR-003/FR-009:** Both installed typed Get Attributes builder routes now
+  execute for all catalogued Get Attributes cases in KMIP 2.0/2.1 controlled
+  TTLV exchanges. The fixture checks the corresponding typed response under
+  OASIS KMIP 2.0/2.1 §6.1.17 and §§8.3, 8.6. It covers operation-level route
+  execution, not each attribute's independent semantic policy.
+- Red `51dd2f2a9` failed on missing route evidence; Green `8b5d8a7f6` added the
+  controlled requests and response checks; Refactor `23e349af8` extracted the
+  common assertions.
+- Selected evidence validates 35,873/35,873 cells with zero failures. The
+  full Java suite passes 92/92 and shared route tests pass 109/109. The ledger
+  matches its reference and the capability audit accepts 1,507 public routes.
+  It records 71,641 planned, 35,873 executed, and 35,768 pending cells. Full
+  matrix closure remains open under FR-002/FR-003/FR-009.

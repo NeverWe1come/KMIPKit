@@ -513,3 +513,12 @@ target in KMIP 2.0/2.1 (§§8.3, 8.6). These local fixtures cover only generic
 representation routes, not workflow behavior. The full Java suite passes
 92/92; the selected report validates 34,984/34,984 cells with zero failures,
 and 36,657 of 71,641 full Java route cells remain pending.
+
+Get Attributes now exercises both installed typed builder routes for every
+catalogued Get Attributes case in the supported KMIP 2.0/2.1 test contexts.
+Each request runs through the controlled mutual-TLS TTLV peer and validates
+the returned attribute response. This adds 889 selected route cells: the
+report validates 35,873/35,873 selected cells with zero failures, while
+35,768 of the full 71,641-cell matrix remain pending. These operation-level
+fixtures do not claim that every attribute has independently completed its
+semantic construction policy.

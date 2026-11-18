@@ -3780,3 +3780,26 @@ shared route suites pass 109/109; the selected route report validates
 reference, and the capability audit accepts 1,507 public routes. The full
 ledger records 71,641 planned, 34,984 executed, and 36,657 pending cells.
 Full matrix closure and exact-head CI remain open; #187 stays WIP.
+
+## Java Get Attributes typed builder routes — 2026-11-18
+
+The controlled mutual-TLS TTLV fixture now exercises both public typed routes
+for every catalogued Get Attributes case in KMIP 2.0 and 2.1 contexts:
+`ClientBatchItem.getAttributes` and
+`AttributeRequest.getAttributesToBatchItem`. It sends the requests as batch
+items and checks the typed response shape. The fixtures follow the Get
+Attributes operation contract (OASIS KMIP 2.0/2.1 §6.1.17 and §§8.3, 8.6).
+This closes operation-level request/response route evidence; it does not
+independently prove every catalogued attribute's semantic policy.
+
+Red `51dd2f2a9` added exact per-case assertions for both routes and failed
+because only the existing Activation Date case was covered. Green `8b5d8a7f6`
+added controlled peer fixtures for the remaining catalogued cases. Refactor
+`23e349af8` extracted shared request and response assertions.
+
+The full Java suite passes 92/92 tests, and the shared route suites pass
+109/109. The selected report validates 35,873/35,873 cells with zero failures;
+the generated ledger matches its checked-in reference and the route capability
+audit accepts all 1,507 public routes. The ledger records 71,641 planned,
+35,873 executed, and 35,768 pending cells. Remaining matrix cells and
+exact-head CI keep #187 WIP.
