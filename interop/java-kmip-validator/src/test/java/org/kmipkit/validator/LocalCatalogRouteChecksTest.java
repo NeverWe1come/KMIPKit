@@ -89,6 +89,7 @@ class LocalCatalogRouteChecksTest {
                 catalog, new ObjectMapper().createArrayNode(), "2.1");
 
         assertTrue(missing.contains("test-op-create"));
+        assertTrue(missing.contains("test-obj-certificate"));
     }
 
     @Test
