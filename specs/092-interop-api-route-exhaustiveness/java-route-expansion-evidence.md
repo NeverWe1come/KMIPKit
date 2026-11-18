@@ -3728,3 +3728,22 @@ route suites pass 109/109, the capability audit accepts all 1,507 routes, and
 the regenerated ledger matches its reference. Selected evidence validates
 34,796/34,796 cells with zero failures; the full ledger has 36,845 pending of
 71,641. The Java matrix remains incomplete and the stack remains WIP.
+
+## #217 generic TTLV routes for Key Block structure members — 2026-11-18
+
+The #217 branch inherits the Key Block member increment from #187 through #216
+and retains Right Usage Limits plus PGP Key / Secret Data routes. The installed
+Java package executes generic Item construction, view, and TTLV decode for the
+catalogued PGP, Private, Public, Secret Data, and Split Key Key Block member
+cases in KMIP 2.0/2.1 (KMIP §§2.4–2.8, 3.1). The `TtlvValue.structure` route is
+recorded only for targets declared by the shared manifest. This is local model
+route evidence, not field-level conformance or server interoperability.
+
+Red `738a80069`, Green `473f57a70`, Refactor `14210bf1a`, follow-up Red
+`13e375785`, and Green `f46295a92` are present in #187's parent history. On the
+combined #217 head, the full Java suite passes 90/90, shared route suites pass
+109/109, selected evidence validates 34,832/34,832 cells with zero failures,
+the generated ledger matches its reference, and the capability audit accepts
+1,507 routes. The full ledger records 71,641 planned, 34,832 executed, and
+36,809 pending cells. Full closure and exact-head CI remain open; #217 stays
+WIP.

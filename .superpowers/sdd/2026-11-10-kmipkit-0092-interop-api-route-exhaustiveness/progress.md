@@ -684,3 +684,16 @@ branches, and the common CI therefore reports a planned matrix only.
   ledger has 71,641 planned, 34,796 executed, and 36,845 pending cells.
 - Full matrix closure remains open. #187, #216, and #217 remain WIP; exact-head
   CI must be checked after the synchronization commit is pushed.
+
+## #217 synchronized Key Block generic routes — 2026-11-18
+
+- #217 now includes the Key Block structure-member generic Item routes inherited
+  from #187 through #216 while preserving Right Usage Limits and the earlier
+  PGP Key / Secret Data evidence. Structure-value events are emitted only for
+  targets declared for that route by the shared manifest.
+- The Java suite passes 90/90; shared route suites pass 109/109; selected
+  evidence validates 34,832/34,832 cells with zero failures; ledger comparison
+  and the 1,507-route capability audit pass. The full ledger has 71,641 planned,
+  34,832 executed, and 36,809 pending cells.
+- Full matrix closure and exact-head CI remain open. #187, #216, and #217 stay
+  WIP.

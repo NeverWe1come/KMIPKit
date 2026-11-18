@@ -1320,16 +1320,20 @@ class ControlledTlsPeerTest {
             attributeStructureRouteEventCount += attributeStructureInvocations.size();
             Set<String> genericStructureBuilderTargetIds = javaRouteTargetIds(
                     "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.create");
+            Set<String> genericStructureValueTargetIds = javaRouteTargetIds(
+                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure");
             assertEquals(genericStructureBuilderTargetIds, javaRouteTargetIds(
                     "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.withitem"),
                     "Generic Structure creation and insertion routes must have the same catalog targets.");
             Set<String> missingGenericStructureTargets =
                     LocalCatalogRouteChecks.missingGenericStructureTargetCaseIds(
-                            readRouteEvidenceCatalog(), events, protocolVersion, genericStructureBuilderTargetIds);
+                            readRouteEvidenceCatalog(), events, protocolVersion, genericStructureBuilderTargetIds,
+                            genericStructureValueTargetIds);
             genericStructureTargetCaseIds.addAll(missingGenericStructureTargets);
             List<LocalCatalogRouteChecks.Invocation> genericStructureTargetInvocations = new ArrayList<>();
             LocalCatalogRouteChecks.executeGenericStructureTargets(readRouteEvidenceCatalog(), protocolVersion,
-                    missingGenericStructureTargets, genericStructureBuilderTargetIds, events,
+                    missingGenericStructureTargets, genericStructureBuilderTargetIds,
+                    genericStructureValueTargetIds, events,
                     genericStructureTargetInvocations::add);
             for (LocalCatalogRouteChecks.Invocation invocation : genericStructureTargetInvocations) {
                 appendLocalCatalogInvocation(events, protocolVersion, invocation);

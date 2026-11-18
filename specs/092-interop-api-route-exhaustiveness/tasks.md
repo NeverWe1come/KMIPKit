@@ -358,3 +358,14 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
   34,796/34,796 with zero failures; ledger comparison and the 1,507-route
   capability audit pass. The full ledger has 36,845 pending of 71,641, so the
   matrix and stack remain open and WIP.
+
+## Java generic TTLV routes for Key Block members on synchronized #217
+
+- #217 inherits the Key Block structure-member increment from #187 through
+  #216 while retaining Right Usage Limits, PGP Key, and Secret Data evidence.
+  The runner records generic Item creation, view, and decode only where the
+  route manifest declares the target.
+- Verification: Java suite 90/90; shared suites 109/109; selected report
+  34,832/34,832 with zero failures; ledger comparison and the 1,507-route
+  capability audit pass. The full matrix has 36,809 pending of 71,641 cells.
+  Full closure and exact-head CI remain open, so #217 stays WIP.

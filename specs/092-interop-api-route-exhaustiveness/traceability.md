@@ -259,3 +259,14 @@ artifact. This is part of the FR-006 artifact provenance check.
 - The selected report validates 34,796/34,796 cells with zero failures; 36,845
   of 71,641 remain pending. Full matrix closure remains open under
   FR-002/FR-003/FR-009.
+
+## Java Key Block generic TTLV routes on synchronized #217 — 2026-11-18
+
+- **FR-003:** #217 inherits generic Item construction, view, and decode
+  evidence for the catalogued Key Block member targets from #187 via #216
+  (KMIP §§2.4–2.8, 3.1). `TtlvValue.structure` events remain restricted to
+  targets declared for that route by the shared manifest; Right Usage Limits
+  evidence is retained.
+- Selected evidence validates 34,832/34,832 cells with zero failures; 36,809
+  of 71,641 remain pending. Full matrix closure remains open under
+  FR-002/FR-003/FR-009.
