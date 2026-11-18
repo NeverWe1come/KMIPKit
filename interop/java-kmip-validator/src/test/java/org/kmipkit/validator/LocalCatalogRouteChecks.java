@@ -1681,6 +1681,9 @@ final class LocalCatalogRouteChecks {
             if (!selectedCaseIds.contains(caseId) || !applies(testCase, version)) continue;
             String targetId = testCase.path("requires").path("normative_target_id").asText();
             ManagedObjectRootFixture fixture = managedObjectRootFixture(targetId);
+            if (!targetId.equals(fixture.targetId())) {
+                throw new IllegalArgumentException("Fixture does not match the catalogued key-object root target.");
+            }
             long objectType = enumValue(catalog, "OBJECT-TYPE", fixture.objectName());
             int objectTag = tagCodeNamed(catalog, fixture.objectName(), version);
             byte[] keyBlockWire = rawKeyBlockWire(catalog, version);
@@ -1698,13 +1701,13 @@ final class LocalCatalogRouteChecks {
                 assertKeyBearingManagedObject(typedFactory, fixture, objectType);
             }
 
-            emitRoute(sink, caseId, targetId,
+            emitRoute(sink, caseId, fixture.targetId(),
                     "java.typed-protocol.model.org.kmipkit.ttlv.managedobject." + fixture.factoryName().toLowerCase(Locale.ROOT),
                     "org.kmipkit.ttlv.ManagedObject." + fixture.factoryName(), "construct", wire);
-            emitRoute(sink, caseId, targetId,
+            emitRoute(sink, caseId, fixture.targetId(),
                     "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromfields",
                     "org.kmipkit.ttlv.ManagedObject.fromFields", "construct", wire);
-            emitRoute(sink, caseId, targetId,
+            emitRoute(sink, caseId, fixture.targetId(),
                     "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromitem",
                     "org.kmipkit.ttlv.ManagedObject.fromItem", "construct", wire);
             emitted.add(caseId);
@@ -1715,16 +1718,16 @@ final class LocalCatalogRouteChecks {
         }
     }
 
-    private record ManagedObjectRootFixture(String objectName, String factoryName) { }
+    private record ManagedObjectRootFixture(String objectName, String factoryName, String targetId) { }
 
     private static ManagedObjectRootFixture managedObjectRootFixture(String targetId) {
         return switch (targetId) {
             case "KMIPKIT-ELEM-OBJECT-STRUCTURE-SYMMETRIC-KEY" ->
-                    new ManagedObjectRootFixture("Symmetric Key", "symmetricKey");
+                    new ManagedObjectRootFixture("Symmetric Key", "symmetricKey", targetId);
             case "KMIPKIT-ELEM-OBJECT-STRUCTURE-PRIVATE-KEY" ->
-                    new ManagedObjectRootFixture("Private Key", "privateKey");
+                    new ManagedObjectRootFixture("Private Key", "privateKey", targetId);
             case "KMIPKIT-ELEM-OBJECT-STRUCTURE-PUBLIC-KEY" ->
-                    new ManagedObjectRootFixture("Public Key", "publicKey");
+                    new ManagedObjectRootFixture("Public Key", "publicKey", targetId);
             default -> throw new IllegalArgumentException("Target is not a key-bearing object structure: " + targetId);
         };
     }
