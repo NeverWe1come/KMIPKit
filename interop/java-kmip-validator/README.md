@@ -742,6 +742,25 @@ report validates 40,962/40,962 cells with zero failures. The ledger records
 71,641 planned, 40,962 executed, and 30,679 pending cells. The matrix remains
 incomplete, so the PR stack stays WIP.
 
+### Query Async Correlation Values operation-structure route — 2026-11-18
+
+The catalogued KMIP 2.1 §7.1 Asynchronous Correlation Values operation
+structure now has explicit evidence for the installed
+`QueryAsyncRequestsRequest.withCorrelationValues` route. The same constructed
+request is also attributed to the existing structure-member target; the test
+asserts that the operation-structure obligation is present in the report.
+This is local typed-construction evidence for OASIS KMIP 2.1 §7.1, not a new
+server exchange or an external KMS claim.
+
+Red `bfb86dd6a` proves the operation-structure route cell was missing; Green
+`985371e43` records the existing typed invocation against that target; Refactor
+`0bb2e3614` shares the evidence emission. The focused controlled-TLS test and
+full Gradle suite pass 95/95; shared evidence/schema/capability tests pass
+109/109; the capability audit accepts 1,507 routes. The selected report
+validates 42,865/42,865 cells with zero failures. The ledger records 71,641
+planned, 42,865 executed, and 28,776 pending cells; comparison passes. The
+full Java matrix remains incomplete, so the PR stack stays WIP.
+
 ### KMIP 2.0 asynchronous operation boundaries — 2026-11-18
 
 Process (§6.1.39) and Query Asynchronous Requests (§6.1.41) now invoke their
