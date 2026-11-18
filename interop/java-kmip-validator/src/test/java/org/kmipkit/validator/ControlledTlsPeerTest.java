@@ -792,7 +792,8 @@ class ControlledTlsPeerTest {
             }
         }
 
-        assertEquals(expectedPairs.size() * KMIP_2_0_AND_2_1.size() * 3, observed.size(),
+        Set<String> expected = batchWorkflowGenericRouteEvidenceKeys(expectedPairs);
+        assertEquals(expected, observed,
                 "Every catalogued request/response Batch Item target must use create, view, and decode routes.");
     }
 
@@ -6062,6 +6063,22 @@ class ControlledTlsPeerTest {
             caseIds.add(pair.substring(0, pair.indexOf('|')));
         }
         return caseIds;
+    }
+
+    private static Set<String> batchWorkflowGenericRouteEvidenceKeys(Set<String> targetPairs) {
+        Set<String> expected = new java.util.HashSet<>();
+        List<String> routes = List.of(
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode");
+        for (String pair : targetPairs) {
+            for (String protocolVersion : KMIP_2_0_AND_2_1) {
+                for (String routeId : routes) {
+                    expected.add(pair + "|" + protocolVersion + "|" + routeId);
+                }
+            }
+        }
+        return expected;
     }
 
     private static void appendBatchWorkflowBatchItemGenericRouteEvents(ArrayNode events, String protocolVersion)
