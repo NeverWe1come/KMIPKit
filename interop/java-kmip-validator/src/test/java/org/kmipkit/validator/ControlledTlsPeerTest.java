@@ -8169,44 +8169,31 @@ class ControlledTlsPeerTest {
 
     private static void assertCreateOperationNetworkRouteCoverage(ArrayNode events) {
         for (CreateOperationRouteFixture fixture : CREATE_OPERATION_ROUTE_FIXTURES) {
-            for (String encoding : CREATE_ROUTE_ENCODINGS) {
-                for (String transport : CREATE_ROUTE_TRANSPORTS) {
-                    for (String action : NETWORK_ROUTE_ACTIONS) {
-                        boolean present = events.valueStream().anyMatch(event ->
-                                fixture.caseId().equals(event.path("case_id").asText())
-                                        && "java.typed-protocol.client_batch_item.create"
-                                                .equals(event.path("route_id").asText())
-                                        && "KMIPKIT-ELEM-OP-C2S-CREATE"
-                                                .equals(event.path("target_id").asText())
-                                        && fixture.protocolVersion().equals(
-                                                event.path("protocol_version").asText())
-                                        && encoding.equals(event.path("encoding").asText())
-                                        && transport.equals(event.path("transport").asText())
-                                        && action.equals(event.path("action").asText()));
-                        assertTrue(present, "Missing Create client batch route evidence for "
-                                + fixture.caseId() + " / " + fixture.protocolVersion() + " / " + encoding
-                                + " / " + transport + " / " + action);
-                    }
-                }
-            }
+            assertNetworkRouteEvidence(events, fixture.caseId(), "KMIPKIT-ELEM-OP-C2S-CREATE",
+                    fixture.protocolVersion(), NETWORK_ROUTE_ACTIONS, "Create client batch");
         }
         for (CreateRequestPayloadFixture fixture : CREATE_REQUEST_PAYLOAD_FIXTURES) {
-            for (String encoding : CREATE_ROUTE_ENCODINGS) {
-                for (String transport : CREATE_ROUTE_TRANSPORTS) {
-                    for (String action : List.of("construct", "send")) {
-                        boolean present = events.valueStream().anyMatch(event ->
-                                fixture.caseId().equals(event.path("case_id").asText())
-                                        && "java.typed-protocol.client_batch_item.create"
-                                                .equals(event.path("route_id").asText())
-                                        && fixture.targetId().equals(event.path("target_id").asText())
-                                        && fixture.protocolVersion().equals(
-                                                event.path("protocol_version").asText())
-                                        && encoding.equals(event.path("encoding").asText())
-                                        && transport.equals(event.path("transport").asText())
-                                        && action.equals(event.path("action").asText()));
-                        assertTrue(present, "Missing Create request payload route evidence for "
-                                + fixture.caseId() + " / " + encoding + " / " + transport + " / " + action);
-                    }
+            assertNetworkRouteEvidence(events, fixture.caseId(), fixture.targetId(),
+                    fixture.protocolVersion(), List.of("construct", "send"), "Create request payload");
+        }
+    }
+
+    private static void assertNetworkRouteEvidence(ArrayNode events, String caseId, String targetId,
+            String protocolVersion, List<String> actions, String description) {
+        for (String encoding : CREATE_ROUTE_ENCODINGS) {
+            for (String transport : CREATE_ROUTE_TRANSPORTS) {
+                for (String action : actions) {
+                    boolean present = events.valueStream().anyMatch(event ->
+                            caseId.equals(event.path("case_id").asText())
+                                    && "java.typed-protocol.client_batch_item.create"
+                                            .equals(event.path("route_id").asText())
+                                    && targetId.equals(event.path("target_id").asText())
+                                    && protocolVersion.equals(event.path("protocol_version").asText())
+                                    && encoding.equals(event.path("encoding").asText())
+                                    && transport.equals(event.path("transport").asText())
+                                    && action.equals(event.path("action").asText()));
+                    assertTrue(present, "Missing " + description + " route evidence for " + caseId + " / "
+                            + protocolVersion + " / " + encoding + " / " + transport + " / " + action);
                 }
             }
         }
