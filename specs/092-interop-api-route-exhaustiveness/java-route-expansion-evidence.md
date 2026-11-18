@@ -3565,3 +3565,101 @@ python3 -m unittest interop.shared.tests.test_route_execution_evidence \
 python3 interop/shared/tools/route_capabilities.py --check
 git diff --check
 ```
+
+## Generic Structure routes for catalogued Java types — 2026-11-18
+
+Red commits `0f8fcb5b2`, `5e3fbd758`, and `ae8da2dd3` add checks that select
+catalogued `Structure` values and Java `TtlvStructure` builder targets, ignore
+cases without a normative target, and reuse existing generic Item evidence.
+Green commit `9ba4481d0` executes the missing installed-JAR builder, value,
+Item, view, and decode calls against local TTLV fixtures. All 138 planned
+`TtlvStructure.create` cells, all 138 `TtlvStructure.withItem` cells, and all
+227 `TtlvValue.structure` cells are now covered. The fixtures use the catalogued
+target tag when available, a catalogued parent tag for nested types, and a
+generic extension-range tag for otherwise untagged model types. Those cases
+prove generic TTLV structure handling only; they make no claim about
+field-specific KMIP semantics or conformance.
+
+The full Gradle suite passes. The selected report validates 30,110/30,110
+selected cells with zero failures; the ledger records 30,110 executed and
+41,531 pending cells of 71,641 across 1,114 pending case IDs. The three
+Structure builder/value routes above have no pending cells, while generic Item
+creation, view, and decoding still have pending cells for other targets. Shared
+route-evidence, schema, and capability suites pass 108 tests; the route audit
+confirms 1,507 routes. The complete matrix remains unfinished and all stack PRs
+remain WIP.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-tmp" \
+  bash bindings/java/gradlew -p interop/java-kmip-validator \
+  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" \
+  test --rerun-tasks
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+python3 -m unittest interop.shared.tests.test_route_execution_evidence \
+  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+git diff --check
+```
+
+## #216 Usage Limits stack synchronized with generic Structure routes — 2026-11-18
+
+The Java Usage Limits branch now includes the generic Structure route
+implementation and evidence from its parent matrix branch while retaining its
+own Usage Limits route additions. The installed-consumer Gradle suite passes;
+the selected report validates 30,126/30,126 cells with zero failures. The
+ledger records 30,126 executed and 41,515 pending cells of 71,641 across 1,112
+pending case IDs. Shared route-evidence, schema, and capability suites pass 108
+tests, and the route audit confirms 1,507 routes. The matrix is still
+incomplete, so #216 remains WIP.
+
+Verification:
+
+```sh
+bash bindings/java/gradlew -p interop/java-kmip-validator test --rerun-tasks
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+python3 -m unittest interop.shared.tests.test_route_execution_evidence \
+  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+git diff --check
+```
+
+## #217 Right Usage Limits stack synchronized with generic Structure routes — 2026-11-18
+
+The Right Usage Limits branch now contains the updated #216 stack and the
+catalog-wide generic Structure route coverage. Its existing Right member
+fixture remains in the report with all eight KMIP 2.0/2.1 cells, checking the
+optional member and nested Usage Limits structure through the applicable local
+TTLV routes. The installed-consumer Gradle suite passes; the selected report
+validates 30,126/30,126 cells with zero failures. The ledger records 30,126
+executed and 41,515 pending cells of 71,641 across 1,112 pending case IDs.
+Shared route-evidence, schema, and capability suites pass 108 tests, and the
+route audit confirms 1,507 routes. The matrix remains incomplete, so #217 stays
+WIP.
+
+Verification:
+
+```sh
+bash bindings/java/gradlew -p interop/java-kmip-validator test --rerun-tasks
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+python3 -m unittest interop.shared.tests.test_route_execution_evidence \
+  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+git diff --check
+```

@@ -872,6 +872,7 @@ class ControlledTlsPeerTest {
         int fixedScalarTargetRouteEventCount = 0;
         int bigIntegerTargetRouteEventCount = 0;
         int remainingEnumerationFieldRouteEventCount = 0;
+        int genericStructureTargetRouteEventCount = 0;
         Set<String> booleanFieldCaseIds = new java.util.HashSet<>();
         Set<String> anyObjectAttributeCaseIds = new java.util.HashSet<>();
         Set<String> scalarStructureMemberCaseIds = new java.util.LinkedHashSet<>();
@@ -887,6 +888,7 @@ class ControlledTlsPeerTest {
         Set<String> fixedScalarTargetCaseIds = new java.util.LinkedHashSet<>();
         Set<String> bigIntegerTargetCaseIds = new java.util.LinkedHashSet<>();
         Set<String> remainingEnumerationFieldCaseIds = new java.util.LinkedHashSet<>();
+        Set<String> genericStructureTargetCaseIds = new java.util.LinkedHashSet<>();
 
         for (String protocolVersion : KMIP_2_0_AND_2_1) {
             appendLocalQueryRouteEvents(events, protocolVersion, requestTreeHash);
@@ -1246,6 +1248,23 @@ class ControlledTlsPeerTest {
                 appendLocalCatalogInvocation(events, protocolVersion, invocation);
             }
             attributeStructureRouteEventCount += attributeStructureInvocations.size();
+            Set<String> genericStructureBuilderTargetIds = javaRouteTargetIds(
+                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.create");
+            assertEquals(genericStructureBuilderTargetIds, javaRouteTargetIds(
+                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.withitem"),
+                    "Generic Structure creation and insertion routes must have the same catalog targets.");
+            Set<String> missingGenericStructureTargets =
+                    LocalCatalogRouteChecks.missingGenericStructureTargetCaseIds(
+                            readRouteEvidenceCatalog(), events, protocolVersion, genericStructureBuilderTargetIds);
+            genericStructureTargetCaseIds.addAll(missingGenericStructureTargets);
+            List<LocalCatalogRouteChecks.Invocation> genericStructureTargetInvocations = new ArrayList<>();
+            LocalCatalogRouteChecks.executeGenericStructureTargets(readRouteEvidenceCatalog(), protocolVersion,
+                    missingGenericStructureTargets, genericStructureBuilderTargetIds, events,
+                    genericStructureTargetInvocations::add);
+            for (LocalCatalogRouteChecks.Invocation invocation : genericStructureTargetInvocations) {
+                appendLocalCatalogInvocation(events, protocolVersion, invocation);
+            }
+            genericStructureTargetRouteEventCount += genericStructureTargetInvocations.size();
             Set<String> missingAnyObjectAttributeCases = missingAnyObjectAttributeCaseIds(
                     readRouteEvidenceCatalog(), events, protocolVersion);
             anyObjectAttributeCaseIds.addAll(missingAnyObjectAttributeCases);
@@ -1295,7 +1314,7 @@ class ControlledTlsPeerTest {
                 structureAttributeValueCaseIds, textAttributeValueCaseIds, booleanAttributeValueCaseIds,
                 dateTimeAttributeValueCaseIds, enumerationAttributeValueCaseIds, scalarAttributeValueCaseIds,
                 textStringTargetCaseIds, fixedScalarTargetCaseIds, bigIntegerTargetCaseIds,
-                remainingEnumerationFieldCaseIds);
+                remainingEnumerationFieldCaseIds, genericStructureTargetCaseIds);
         assertTrue(Files.isRegularFile(reportPath),
                 "Installed client calls against the controlled TLS peer must emit route execution evidence.");
         JsonNode report = new ObjectMapper().readTree(reportPath.toFile());
@@ -1853,6 +1872,7 @@ class ControlledTlsPeerTest {
                         + fixedScalarTargetRouteEventCount
                         + bigIntegerTargetRouteEventCount
                         + remainingEnumerationFieldRouteEventCount
+                        + genericStructureTargetRouteEventCount
                         + 97 // BEC, batch IDs, async payload, Ping, Endpoint Role, Object Defaults, derivation, and Extension Information member cells.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Type generic and typed Attribute routes.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Value generic and typed Attribute routes.
@@ -4184,7 +4204,7 @@ class ControlledTlsPeerTest {
             Set<String> dateTimeAttributeValueCaseIds, Set<String> enumerationAttributeValueCaseIds,
             Set<String> scalarAttributeValueCaseIds, Set<String> textStringTargetCaseIds,
             Set<String> fixedScalarTargetCaseIds, Set<String> bigIntegerTargetCaseIds,
-            Set<String> remainingEnumerationFieldCaseIds)
+            Set<String> remainingEnumerationFieldCaseIds, Set<String> genericStructureTargetCaseIds)
             throws Exception {
         Path catalogPath = routeEvidenceCatalogPath();
         Path manifestPath = Path.of("../shared/coverage/route-capabilities.json");
@@ -4285,6 +4305,7 @@ class ControlledTlsPeerTest {
         additionalCaseIdCount += appendCaseIds(caseIds, fixedScalarTargetCaseIds);
         additionalCaseIdCount += appendCaseIds(caseIds, bigIntegerTargetCaseIds);
         additionalCaseIdCount += appendCaseIds(caseIds, remainingEnumerationFieldCaseIds);
+        additionalCaseIdCount += appendCaseIds(caseIds, genericStructureTargetCaseIds);
         appendItemTypeEnumerationCaseIds(caseIds, events);
         caseIds.add("test-enum-pkcs#11-function");
         caseIds.add("test-enum-pkcs#11-return-code");
@@ -4891,6 +4912,20 @@ class ControlledTlsPeerTest {
             route.path("normative_target_ids").forEach(target -> targetIds.add(target.asText()));
         }
         return targetIds;
+    }
+
+    private static Set<String> javaRouteTargetIds(String routeId) throws Exception {
+        JsonNode manifest = new ObjectMapper().readTree(
+                Path.of("../shared/coverage/route-capabilities.json").toFile());
+        for (JsonNode route : manifest.path("routes")) {
+            if ("java".equals(route.path("language").asText())
+                    && routeId.equals(route.path("route_id").asText())) {
+                Set<String> targetIds = new java.util.LinkedHashSet<>();
+                route.path("normative_target_ids").forEach(target -> targetIds.add(target.asText()));
+                return Set.copyOf(targetIds);
+            }
+        }
+        throw new IllegalArgumentException("Missing Java route in the checked-in capability manifest: " + routeId);
     }
 
     private static Set<String> missingAnyObjectAttributeCaseIds(JsonNode catalog, JsonNode events, String version) {
