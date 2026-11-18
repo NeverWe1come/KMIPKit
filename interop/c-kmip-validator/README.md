@@ -137,8 +137,8 @@ The `*.gaps.json` sidecar identifies every unexecuted matrix obligation rather
 than misclassifying it as an unavailable library route. Other sidecars retain
 installed-artifact availability checks and sanitized controlled-peer outcomes.
 The evidence JSON passes the shared schema independently of completeness.
-The latest full local C matrix run (`c-route-5b045937-6dd4-4087-aeb3-fb8bdd4a2a30`)
-has 66,736 expected cells, 42,805 invoked, zero failed, and 23,931 pending.
+The latest full local C matrix run (`c-route-bb314345-7575-4b2a-978d-1bae619e182a`)
+has 66,736 expected cells, 42,843 invoked, zero failed, and 23,893 pending.
 The MAC and Sign response TTLV accessors and the Continue batch-option
 constructor contribute four local cells each across KMIP 2.0/2.1. The
 Query Async Requests correlation builder contributes two KMIP 2.1 model cells.
@@ -163,6 +163,15 @@ The Join Split Key route creates the same isolated pair, joins the two returned
 identifiers, then destroys the joined object through the batch ID Placeholder
 and both source parts through their exact identifiers. It verifies the typed
 Join response and the final fixture state across the same 12 network routes.
+The Re-key route creates an AES-128 Symmetric Key with explicit Encrypt usage,
+then sends Re-key without an offset or additional attributes. It reads the
+replacement identifier through the typed response accessor, revokes and
+destroys that replacement through the batch ID Placeholder, and revokes and
+destroys the original by its returned identifier. The controlled peer verifies
+both responses and complete cleanup for KMIP 2.0/2.1 across TTLV, JSON, and XML
+over raw TLS and HTTPS. The latest matrix run records 66 passed cells for the
+Re-key operation target; these synthetic values do not establish external KMS
+interoperability.
 
 The `test-op-poll` controlled route remains pending: the approved catalog does
 not yet provide a complete request, response, correlation, and cleanup recipe
