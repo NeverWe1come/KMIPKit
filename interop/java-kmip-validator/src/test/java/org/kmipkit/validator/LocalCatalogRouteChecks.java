@@ -122,6 +122,37 @@ final class LocalCatalogRouteChecks {
             "test-norm-structure-member-structure-member-7-27-pkcs-11-input-parameters",
             "test-norm-structure-member-structure-member-7-29-pkcs-11-output-parameters",
             "test-norm-structure-member-structure-member-9-11-hashed-password-timestamp");
+    static final Set<String> BIG_INTEGER_TARGET_CASE_IDS = Set.of(
+            "test-norm-structure-member-structure-member-2-8-split-key-prime-field-size",
+            "test-norm-structure-member-structure-member-3-10-key-material-g",
+            "test-norm-structure-member-structure-member-3-10-key-material-j",
+            "test-norm-structure-member-structure-member-3-10-key-material-p",
+            "test-norm-structure-member-structure-member-3-10-key-material-q",
+            "test-norm-structure-member-structure-member-3-10-key-material-y",
+            "test-norm-structure-member-structure-member-3-11-key-material-d",
+            "test-norm-structure-member-structure-member-3-5-key-material-g",
+            "test-norm-structure-member-structure-member-3-5-key-material-p",
+            "test-norm-structure-member-structure-member-3-5-key-material-q",
+            "test-norm-structure-member-structure-member-3-5-key-material-x",
+            "test-norm-structure-member-structure-member-3-6-key-material-g",
+            "test-norm-structure-member-structure-member-3-6-key-material-p",
+            "test-norm-structure-member-structure-member-3-6-key-material-q",
+            "test-norm-structure-member-structure-member-3-6-key-material-y",
+            "test-norm-structure-member-structure-member-3-7-key-material-crt-coefficient",
+            "test-norm-structure-member-structure-member-3-7-key-material-modulus",
+            "test-norm-structure-member-structure-member-3-7-key-material-p",
+            "test-norm-structure-member-structure-member-3-7-key-material-prime-exponent-p",
+            "test-norm-structure-member-structure-member-3-7-key-material-prime-exponent-q",
+            "test-norm-structure-member-structure-member-3-7-key-material-private-exponent",
+            "test-norm-structure-member-structure-member-3-7-key-material-public-exponent",
+            "test-norm-structure-member-structure-member-3-7-key-material-q",
+            "test-norm-structure-member-structure-member-3-8-key-material-modulus",
+            "test-norm-structure-member-structure-member-3-8-key-material-public-exponent",
+            "test-norm-structure-member-structure-member-3-9-key-material-g",
+            "test-norm-structure-member-structure-member-3-9-key-material-j",
+            "test-norm-structure-member-structure-member-3-9-key-material-p",
+            "test-norm-structure-member-structure-member-3-9-key-material-q",
+            "test-norm-structure-member-structure-member-3-9-key-material-x");
 
     private LocalCatalogRouteChecks() { }
 
@@ -1321,6 +1352,91 @@ final class LocalCatalogRouteChecks {
             assertEquals(tagCode, tag.raw());
             assertEquals(TtlvItemType.DateTimeExtended, view.itemType());
             assertEquals(expectedValue, value.dateTimeExtended());
+        }
+    }
+
+    /** Exercises source-catalogued Big Integer key-material fields with a non-secret synthetic value. */
+    static void executeBigIntegerTargets(JsonNode catalog, String version, Set<String> selectedCaseIds,
+            EvidenceSink sink) throws Exception {
+        Set<String> applicable = new java.util.LinkedHashSet<>();
+        Set<String> emitted = new java.util.LinkedHashSet<>();
+        // Big Integer TTLV payloads must be non-empty and aligned to eight octets.
+        byte[] fixture = new byte[] {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x23};
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String caseId = testCase.path("case_id").asText();
+            if (!selectedCaseIds.contains(caseId) || !applies(testCase, version)) continue;
+            applicable.add(caseId);
+            String targetId = testCase.path("requires").path("normative_target_id").asText();
+            JsonNode target = findTarget(catalog, targetId);
+            if (!target.path("source_encoding").asText().toLowerCase(Locale.ROOT)
+                    .replace(" ", "").startsWith("biginteger")) {
+                throw new IllegalArgumentException("Selected target is not catalogued as Big Integer: " + caseId);
+            }
+            int tagCode = tagCodeNamed(catalog, target.path("name").asText(), version);
+            byte[] wire = itemWire(tagCode, TtlvItemType.BigInteger.code(), fixture);
+            try (TtlvValue ttlvValue = TtlvValue.BigInteger(fixture, CodecLimits.defaults());
+                    RawTag raw = RawTag.fromRaw(tagCode); Tag tag = raw.checked();
+                    TtlvItem item = TtlvItem.create(tag, ttlvValue, CodecLimits.defaults())) {
+                assertBigIntegerTargetItem(item, tagCode, fixture);
+            }
+            try (TtlvItem decoded = TtlvCodec.decode(wire)) {
+                assertBigIntegerTargetItem(decoded, tagCode, fixture);
+            }
+            emitRoute(sink, caseId, targetId,
+                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.biginteger",
+                    "org.kmipkit.ttlv.TtlvValue.BigInteger", "construct", wire);
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_item.create",
+                    "org.kmipkit.ttlv.TtlvItem.create", "construct", wire);
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.function.ttlv_item_view_from_item",
+                    "org.kmipkit.ttlv.TtlvItem.view", "decode", wire);
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_codec.decode",
+                    "org.kmipkit.ttlv.TtlvCodec.decode", "decode", wire);
+            emitted.add(caseId);
+        }
+        if (!emitted.equals(applicable)) {
+            throw new IllegalArgumentException("Selected Big Integer targets were not executed for " + version);
+        }
+    }
+
+    static Set<String> missingBigIntegerTargetCaseIds(JsonNode catalog, JsonNode events, String version) {
+        List<String> requiredRoutes = List.of(
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.biginteger",
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode");
+        Set<String> missing = new java.util.LinkedHashSet<>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String caseId = testCase.path("case_id").asText();
+            if (!BIG_INTEGER_TARGET_CASE_IDS.contains(caseId) || !applies(testCase, version)) continue;
+            String targetId = testCase.path("requires").path("normative_target_id").asText();
+            int present = 0;
+            for (String route : requiredRoutes) {
+                boolean found = false;
+                for (JsonNode event : events) {
+                    if (caseId.equals(event.path("case_id").asText())
+                            && targetId.equals(event.path("target_id").asText())
+                            && route.equals(event.path("route_id").asText())
+                            && version.equals(event.path("protocol_version").asText())
+                            && "TTLV".equals(event.path("encoding").asText())
+                            && event.path("transport").isNull()) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (found) present++;
+            }
+            if (present == 0) missing.add(caseId);
+            else assertEquals(requiredRoutes.size(), present,
+                    "Big Integer target route evidence must be complete before reuse for " + caseId);
+        }
+        return missing;
+    }
+
+    private static void assertBigIntegerTargetItem(TtlvItem item, int tagCode, byte[] expectedValue) {
+        try (TtlvItemView view = item.view(); Tag tag = view.tag(); TtlvValueView value = view.value()) {
+            assertEquals(tagCode, tag.raw());
+            assertEquals(TtlvItemType.BigInteger, view.itemType());
+            assertArrayEquals(expectedValue, value.bytes());
         }
     }
 

@@ -3195,3 +3195,75 @@ python3 -m unittest interop.shared.tests.test_route_execution_evidence \
 python3 interop/shared/tools/route_capabilities.py --check
 git diff --check
 ```
+
+## Big Integer key-material generic TTLV routes — 2026-11-18
+
+Red commit `fb1488543` adds a test covering 30 catalogued Big Integer fields
+across KMIP 2.0 and 2.1. Green commit `517c1b18b` resolves each assigned tag,
+constructs and views each value through the installed Java API, and decodes an
+eight-octet positive synthetic value. The fixture meets TTLV's Big Integer
+non-empty, eight-octet alignment requirement. It is intentionally a local
+encoding fixture: it does not assert cryptographic key validity, and it uses
+no production key material.
+
+The full Gradle suite passes. The selected report validates 29,164/29,164
+cells with zero failures; the ledger records 29,164 executed and 42,477
+pending cells of 71,641 across 1,151 pending case IDs. All 62 planned Java
+BigInteger route cells are now covered. Shared route-evidence, schema, and
+capability suites pass 108 tests; the route audit confirms 1,507 routes. The
+complete Java matrix and stack remain WIP.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-tmp" \
+  bash bindings/java/gradlew -p interop/java-kmip-validator \
+  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" \
+  test --rerun-tasks
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+python3 -m unittest interop.shared.tests.test_route_execution_evidence \
+  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+git diff --check
+```
+
+## Big Integer key-material generic TTLV routes — 2026-11-18
+
+Red commit `fb1488543` adds a test covering 30 catalogued Big Integer fields
+across KMIP 2.0 and 2.1. Green commit `517c1b18b` resolves each assigned tag,
+constructs and views each value through the installed Java API, and decodes an
+eight-octet positive synthetic value. The fixture meets TTLV's Big Integer
+non-empty, eight-octet alignment requirement. It is intentionally a local
+encoding fixture: it does not assert cryptographic key validity, and it uses
+no production key material.
+
+The full Gradle suite passes. The selected report validates 29,192/29,192
+cells with zero failures; the ledger records 29,192 executed and 42,449
+pending cells of 71,641 across 1,148 pending case IDs. All 62 planned Java
+BigInteger route cells are now covered. Shared route-evidence, schema, and
+capability suites pass 108 tests; the route audit confirms 1,507 routes. The
+complete Java matrix and stack remain WIP.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-tmp" \
+  bash bindings/java/gradlew -p interop/java-kmip-validator \
+  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" \
+  test --rerun-tasks
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+python3 -m unittest interop.shared.tests.test_route_execution_evidence \
+  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+git diff --check
+```
