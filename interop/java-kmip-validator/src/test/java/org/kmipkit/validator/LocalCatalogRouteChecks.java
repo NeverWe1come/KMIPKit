@@ -633,7 +633,10 @@ final class LocalCatalogRouteChecks {
                             "Init Indicator", "Final Indicator", "Data Length", "Maximum Items", "Offset Items",
                             "Offset", "Request Count", "Certificate Request Value",
                             "Authenticated Encryption Additional Data", "Authenticated Encryption Tag",
-                            "Digested Data", "Certificate Request Type", "Key Wrap Type", "Query Function")
+                            "Digested Data", "Certificate Request Type", "Key Wrap Type", "Query Function",
+                            "Adjustment Type", "Adjustment Value", "Cryptographic Usage Mask",
+                            "Replace Existing", "Interop Identifier", "Storage Status Mask", "Log Message",
+                            "Compromise Occurrence Date", "Validity Date")
                             .contains(fieldName)
                     || !requires.path("operation_id").asText().startsWith("KMIPKIT-ELEM-OP-C2S-")
                     || !"local_model".equals(testCase.path("execution").path("mode").asText())
@@ -675,7 +678,10 @@ final class LocalCatalogRouteChecks {
                             "Init Indicator", "Final Indicator", "Data Length", "Maximum Items", "Offset Items",
                             "Offset", "Request Count", "Certificate Request Value",
                             "Authenticated Encryption Additional Data", "Authenticated Encryption Tag",
-                            "Digested Data", "Certificate Request Type", "Key Wrap Type", "Query Function")
+                            "Digested Data", "Certificate Request Type", "Key Wrap Type", "Query Function",
+                            "Adjustment Type", "Adjustment Value", "Cryptographic Usage Mask",
+                            "Replace Existing", "Interop Identifier", "Storage Status Mask", "Log Message",
+                            "Compromise Occurrence Date", "Validity Date")
                             .contains(fieldName)
                     || !operationId.startsWith("KMIPKIT-ELEM-OP-C2S-")) {
                 throw new IllegalArgumentException("Selected case is not a supported client scalar payload: "
@@ -694,8 +700,13 @@ final class LocalCatalogRouteChecks {
                 case "Lease Time" -> TtlvItemType.Integer;
                 case "Usage Limits Count" -> TtlvItemType.LongInteger;
                 case "Init Indicator", "Final Indicator" -> TtlvItemType.Boolean;
-                case "Data Length", "Maximum Items", "Offset Items", "Offset", "Request Count" ->
+                case "Adjustment Type" -> TtlvItemType.Enumeration;
+                case "Interop Identifier", "Log Message" -> TtlvItemType.TextString;
+                case "Compromise Occurrence Date", "Validity Date" -> TtlvItemType.DateTime;
+                case "Adjustment Value", "Cryptographic Usage Mask", "Storage Status Mask",
+                        "Data Length", "Maximum Items", "Offset Items", "Offset", "Request Count" ->
                     TtlvItemType.Integer;
+                case "Replace Existing" -> TtlvItemType.Boolean;
                 default -> throw new IllegalArgumentException("Unsupported client scalar payload field: "
                         + fieldName);
             };
@@ -704,9 +715,13 @@ final class LocalCatalogRouteChecks {
                 case "Certificate Request Type" -> enumValue(catalog, "CERTIFICATE-REQUEST-TYPE", "PKCS#10");
                 case "Key Wrap Type" -> enumValue(catalog, "KEY-WRAP-TYPE", "As Registered");
                 case "Query Function" -> enumValue(catalog, "QUERY-FUNCTION", "Query Operations");
+                case "Adjustment Type" -> enumValue(catalog, "ADJUSTMENT-TYPE", "Increment");
                 case "Lease Time" -> 60;
                 case "Usage Limits Count" -> 10;
                 case "Init Indicator", "Final Indicator", "Data Length", "Maximum Items", "Request Count" -> 1;
+                case "Adjustment Value", "Cryptographic Usage Mask", "Storage Status Mask",
+                        "Replace Existing" -> 1;
+                case "Compromise Occurrence Date", "Validity Date" -> 1_700_000_000;
                 case "Offset Items", "Offset" -> 0;
                 default -> 0;
             };
@@ -714,6 +729,7 @@ final class LocalCatalogRouteChecks {
                 case TextString -> "kmipkit-route-identifier".getBytes(StandardCharsets.US_ASCII);
                 case ByteString -> "kmipkit-route-correlation".getBytes(StandardCharsets.US_ASCII);
                 case Boolean -> ByteBuffer.allocate(Long.BYTES).putLong(numericValue).array();
+                case DateTime -> ByteBuffer.allocate(Long.BYTES).putLong(numericValue).array();
                 case Integer -> ByteBuffer.allocate(Integer.BYTES).putInt(Math.toIntExact(numericValue)).array();
                 case LongInteger -> ByteBuffer.allocate(Long.BYTES).putLong(numericValue).array();
                 case Enumeration -> ByteBuffer.allocate(Integer.BYTES).putInt(Math.toIntExact(numericValue)).array();
@@ -724,6 +740,7 @@ final class LocalCatalogRouteChecks {
                 case TextString -> TtlvValue.TextString(fieldValue, limits);
                 case ByteString -> TtlvValue.ByteString(fieldValue, limits);
                 case Boolean -> TtlvValue.Boolean(numericValue != 0);
+                case DateTime -> TtlvValue.DateTime(numericValue);
                 case Integer -> TtlvValue.Integer(Math.toIntExact(numericValue));
                 case LongInteger -> TtlvValue.LongInteger(numericValue);
                 case Enumeration -> TtlvValue.Enumeration(numericValue);
