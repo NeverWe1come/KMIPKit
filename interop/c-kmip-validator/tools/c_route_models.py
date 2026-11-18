@@ -285,6 +285,32 @@ class ModelCases:
             if request.value:
                 release(request)
 
+    def _execute_empty_query_async_request(self, target: dict,
+                                           public_api_symbol: str) -> dict | None:
+        if (target.get('target_id') != 'KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS'
+                or public_api_symbol != 'kmipkit_query_async_requests_request_to_ttlv_payload'):
+            return None
+
+        self.abi.bind('kmipkit_query_async_requests_request_create', [C.POINTER(C.c_void_p)])
+        self.abi.bind(public_api_symbol, [C.c_void_p, C.POINTER(C.c_void_p)])
+        release = self.abi.library.kmipkit_query_async_requests_request_release
+        release.argtypes, release.restype = [C.c_void_p], None
+
+        self.abi.called.clear()
+        request, payload = C.c_void_p(), C.c_void_p()
+        try:
+            self.abi.call('kmipkit_query_async_requests_request_create', C.byref(request))
+            self.abi.call(public_api_symbol, request, C.byref(payload))
+            normalized_tree = [normalized(tree) for tree in self.abi.read_structure(payload)]
+            if normalized_tree:
+                raise ValueError('query_async_empty_request_payload_mismatch')
+            return {'sample_count': 1, 'normalized_tree': normalized_tree,
+                    'tree_sha256': digest(normalized_tree), 'invoked_symbols': set(self.abi.called)}
+        finally:
+            self.abi.release('ttlv_structure', payload)
+            if request.value:
+                release(request)
+
     def _execute_secret_ttlv_value(self, target: dict, symbol: str) -> dict | None:
         route = _SECRET_TTLV_ROUTE_FIXTURES.get(symbol)
         if route is None or target.get('target_id') != route['target_id']:
@@ -1013,6 +1039,8 @@ class ModelCases:
             return self._execute_cancel_request(target, public_api_symbol)
         if public_api_symbol == 'kmipkit_query_async_requests_request_with_correlation_values':
             return self._execute_query_async_correlation_values(target, public_api_symbol)
+        if public_api_symbol == 'kmipkit_query_async_requests_request_to_ttlv_payload':
+            return self._execute_empty_query_async_request(target, public_api_symbol)
         if (target.get('kind') == 'object_type'
                 and _NAMED_OBJECT_CONSTRUCTORS.get(target.get('name')) == public_api_symbol):
             root = next((item for item in self.catalog['normative_targets']
