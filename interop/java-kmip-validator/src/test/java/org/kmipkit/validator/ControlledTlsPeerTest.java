@@ -121,11 +121,6 @@ class ControlledTlsPeerTest {
                     "delegated_login", "org.kmipkit.extensions.ClientBatchItem.delegatedLogin"));
 
     @Test
-    void requiresEveryLoginLeaseTimeDateTimeNetworkCell() {
-        assertLoginLeaseTimeDateTimeRouteCoverage(new ObjectMapper().createArrayNode());
-    }
-
-    @Test
     void createBatchWorkflowJsonResponseIsOneValidDocument() throws Exception {
         String response = jsonCreateBatchWorkflowResponse(0, "test-batch-create-activate-destroy",
                 List.of("Create", "Activate", "Get", "Get Attribute List", "Revoke", "Destroy"));
@@ -1373,7 +1368,6 @@ class ControlledTlsPeerTest {
                 assertPingVersionBoundaryRouteCoverage(events);
                 appendCreateOperationRouteEvidence(events, serverCertificatePem, serverPrivateKeyPem,
                         clientCertificatePem, clientPrivateKeyPem);
-                assertLoginLeaseTimeDateTimeRouteCoverage(events);
                 assertRouteEventRecorded(events, "test-norm-payload-client-create-request-20-001",
                         "KMIPKIT-ELEM-OP-C2S-CREATE",
                         "java.typed-protocol.function.client_batch_item_response_create",
@@ -1383,6 +1377,9 @@ class ControlledTlsPeerTest {
                         "java.typed-protocol.function.client_batch_item_response_create",
                         "decode", "2.1");
                 assertCreateOperationNetworkRouteCoverage(events);
+                appendLoginLeaseTimeDateTimeRouteEvidence(events, serverCertificatePem, serverPrivateKeyPem,
+                        clientCertificatePem, clientPrivateKeyPem);
+                assertLoginLeaseTimeDateTimeRouteCoverage(events);
             }
             if ("2.1".equals(protocolVersion)) appendObjectGroupLocalRouteEvents(events);
             if ("2.1".equals(protocolVersion)) appendStructureMemberStructureRouteEvents(events);
@@ -2216,6 +2213,7 @@ class ControlledTlsPeerTest {
             genericTagEventCount += routes * testCase.path("execution").path("protocol_versions").size();
         }
         assertEquals(68 + enumerationEventCount + localEnumerationEventCount + bitmaskEventCount + 80
+                        + LOGIN_LEASE_TIME_DATE_TIME_ROUTE_FIXTURES.size() * 3 * 2 * 2
                         + batchItemAccessorEventCount
                         + batchItemExtensionCountEventCount + batchItemGenericRouteEventCount
                         + getAttributesNetworkRouteEventCount
@@ -8358,6 +8356,226 @@ class ControlledTlsPeerTest {
                 }
             }
         }
+    }
+
+    private void appendLoginLeaseTimeDateTimeRouteEvidence(ArrayNode events, byte[] serverCertificatePem,
+            byte[] serverPrivateKeyPem, byte[] clientCertificatePem, byte[] clientPrivateKeyPem)
+            throws Exception {
+        long leaseTimeDateTime = 1_800_000_000L;
+        byte[] batchItemId = "lease-date-time".getBytes(StandardCharsets.US_ASCII);
+        for (LoginLeaseTimeDateTimeRouteFixture fixture : LOGIN_LEASE_TIME_DATE_TIME_ROUTE_FIXTURES) {
+            int minor = "2.0".equals(fixture.protocolVersion()) ? 0 : 1;
+            long operation = "login".equals(fixture.operation())
+                    ? KmipValues.Operation.LOGIN : KmipValues.Operation.DELEGATED_LOGIN;
+            byte[] responseTtlv = loginLeaseTimeDateTimeFailureResponse(operation, minor, batchItemId);
+            String routeId = "java.typed-protocol.client_batch_item." + fixture.operation();
+            for (String encoding : List.of("TTLV", "JSON", "XML")) {
+                byte[] responseBytes = loginLeaseTimeDateTimeResponseBytes(
+                        operation, minor, batchItemId, encoding, responseTtlv);
+                for (String transport : List.of("raw_tls", "https")) {
+                    Path connectionFile = temporaryDirectory.resolve("login-lease-date-time-"
+                            + fixture.operation() + "-" + fixture.protocolVersion().replace('.', '-')
+                            + "-" + encoding + "-" + transport + ".json");
+                    byte[] observedRequest;
+                    if ("raw_tls".equals(transport)) {
+                        SSLServerSocket listener = listener(certificate(serverCertificatePem),
+                                privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+                        FutureTask<byte[]> peer = new FutureTask<>(
+                                () -> serveOneEncodedResponse(listener, responseBytes, encoding));
+                        Thread peerThread = new Thread(peer, "java-validator-login-lease-date-time-peer-"
+                                + fixture.operation() + "-" + fixture.protocolVersion() + "-" + encoding);
+                        peerThread.setDaemon(true);
+                        peerThread.start();
+                        Files.writeString(connectionFile, connectionJson(listener.getLocalPort(),
+                                serverCertificatePem, clientCertificatePem, clientPrivateKeyPem, true,
+                                fixture.protocolVersion(), encoding, transport));
+                        try {
+                            executeLoginLeaseTimeDateTimeRequest(connectionFile, fixture,
+                                    leaseTimeDateTime, batchItemId);
+                        } finally {
+                            listener.close();
+                        }
+                        observedRequest = peer.get(15, TimeUnit.SECONDS);
+                    } else {
+                        CompletableFuture<byte[]> peer = new CompletableFuture<>();
+                        HttpsServer listener = httpsListener(certificate(serverCertificatePem),
+                                privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+                        listener.createContext("/kmip", exchange -> {
+                            try {
+                                if (!"POST".equals(exchange.getRequestMethod())) {
+                                    throw new IllegalStateException("The controlled HTTP peer requires POST.");
+                                }
+                                byte[] request = exchange.getRequestBody().readAllBytes();
+                                peer.complete(request);
+                                exchange.getResponseHeaders().set("Content-Type", contentTypeForEncoding(encoding));
+                                exchange.sendResponseHeaders(200, responseBytes.length);
+                                try (OutputStream output = exchange.getResponseBody()) {
+                                    output.write(responseBytes);
+                                }
+                            } catch (Exception failure) {
+                                peer.completeExceptionally(failure);
+                                try {
+                                    exchange.sendResponseHeaders(500, -1);
+                                } catch (Exception ignored) {
+                                    // The peer future retains the fixture failure for the test thread.
+                                }
+                            } finally {
+                                exchange.close();
+                            }
+                        });
+                        listener.start();
+                        Files.writeString(connectionFile, connectionJson(listener.getAddress().getPort(),
+                                serverCertificatePem, clientCertificatePem, clientPrivateKeyPem, true,
+                                fixture.protocolVersion(), encoding, transport));
+                        try {
+                            executeLoginLeaseTimeDateTimeRequest(connectionFile, fixture,
+                                    leaseTimeDateTime, batchItemId);
+                        } finally {
+                            listener.stop(0);
+                        }
+                        observedRequest = peer.get(15, TimeUnit.SECONDS);
+                    }
+                    assertLoginLeaseTimeDateTimeRequest(observedRequest, encoding,
+                            fixture.protocolVersion(), operation, leaseTimeDateTime);
+                    String requestHash = "TTLV".equals(encoding)
+                            ? normalizedTreeSha256(observedRequest) : sha256(observedRequest);
+                    appendTypedRequestNetworkRouteEvents(events, fixture.caseId(), routeId,
+                            fixture.targetId(), fixture.publicApiSymbol(), fixture.protocolVersion(),
+                            requestHash, encoding, transport);
+                }
+            }
+        }
+    }
+
+    private static void executeLoginLeaseTimeDateTimeRequest(Path connectionFile,
+            LoginLeaseTimeDateTimeRouteFixture fixture, long leaseTimeDateTime, byte[] batchItemId)
+            throws Exception {
+        try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile));
+                ClientBatch batch = ClientBatch.create();
+                ClientBatchItem request = loginLeaseTimeDateTimeItem(fixture, leaseTimeDateTime, batchItemId)) {
+            batch.add(request);
+            try (ClientBatchResponse response = driver.executeBatchForEvidence(batch)) {
+                assertEquals(1, response.itemCount());
+            }
+        }
+    }
+
+    private static ClientBatchItem loginLeaseTimeDateTimeItem(
+            LoginLeaseTimeDateTimeRouteFixture fixture, long leaseTimeDateTime, byte[] batchItemId) {
+        ClientBatchItem request;
+        if ("login".equals(fixture.operation())) {
+            request = ClientBatchItem.login(null, leaseTimeDateTime, null, null);
+        } else {
+            try (TtlvStructure rights = TtlvStructure.create()) {
+                request = ClientBatchItem.delegatedLogin(rights, null, leaseTimeDateTime, null, null);
+            }
+        }
+        return request.withUniqueBatchItemId(batchItemId);
+    }
+
+    private static void assertLoginLeaseTimeDateTimeRequest(byte[] request, String encoding,
+            String protocolVersion, long operation, long expectedDateTime) throws Exception {
+        int minor = "2.0".equals(protocolVersion) ? 0 : 1;
+        if ("TTLV".equals(encoding)) {
+            assertEquals(operation, requestOperation(request));
+            assertEquals(minor, requestProtocolMinorVersion(request));
+            assertTrue(contains(request, item(0x420049, TtlvItemType.DateTime.code(), longBytes(expectedDateTime))),
+                    "The controlled peer must receive Lease Time with the DateTime TTLV type and value.");
+            return;
+        }
+        String operationName = operation == KmipValues.Operation.LOGIN ? "Login" : "DelegatedLogin";
+        if ("JSON".equals(encoding)) {
+            JsonNode root = new ObjectMapper().readTree(request);
+            assertEquals("RequestMessage", root.path("tag").asText());
+            assertEquals(List.of(operationName), jsonValuesForTag(root, "Operation").stream()
+                    .map(JsonNode::asText).toList());
+            assertEquals(List.of(minor), jsonValuesForTag(root, "ProtocolVersionMinor").stream()
+                    .map(JsonNode::asInt).toList());
+            JsonNode leaseTime = jsonItemsForTag(root, "LeaseTime").stream().findFirst().orElseThrow();
+            assertEquals("DateTime", leaseTime.path("type").asText());
+            assertEquals(expectedDateTime, parseDateTimeValue(leaseTime.path("value").asText()));
+            assertEquals(1, jsonItemsForTag(root, "LeaseTime").size());
+            return;
+        }
+        String xml = new String(request, StandardCharsets.UTF_8);
+        assertTrue(xml.startsWith("<RequestMessage>"));
+        assertTrue(xml.contains("<Operation type=\"Enumeration\" value=\"" + operationName + "\"/>"));
+        assertTrue(xml.contains("<ProtocolVersionMinor type=\"Integer\" value=\"" + minor + "\"/>"));
+        java.util.regex.Matcher leaseTime = java.util.regex.Pattern.compile(
+                "<LeaseTime type=\"([^\"]+)\" value=\"([^\"]+)\"/>").matcher(xml);
+        assertTrue(leaseTime.find(), "The controlled peer must receive a typed LeaseTime XML element.");
+        assertEquals("DateTime", leaseTime.group(1));
+        assertEquals(expectedDateTime, parseDateTimeValue(leaseTime.group(2)));
+        assertTrue(!leaseTime.find(), "The request must contain exactly one LeaseTime value.");
+    }
+
+    private static long parseDateTimeValue(String value) {
+        if (value.startsWith("0x")) return Long.parseUnsignedLong(value.substring(2), 16);
+        return java.time.Instant.parse(value).getEpochSecond();
+    }
+
+    private static List<JsonNode> jsonItemsForTag(JsonNode node, String tag) {
+        List<JsonNode> items = new ArrayList<>();
+        collectJsonItemsForTag(node, tag, items);
+        return items;
+    }
+
+    private static void collectJsonItemsForTag(JsonNode node, String tag, List<JsonNode> items) {
+        if (node.isObject() && tag.equals(node.path("tag").asText())) items.add(node);
+        if (node.isContainerNode()) {
+            node.elements().forEachRemaining(child -> collectJsonItemsForTag(child, tag, items));
+        }
+    }
+
+    private static byte[] loginLeaseTimeDateTimeFailureResponse(long operation, int minor,
+            byte[] batchItemId) throws Exception {
+        byte[] protocolVersion = structure(0x420069,
+                item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(minor)));
+        byte[] header = structure(0x42007a, protocolVersion,
+                item(0x420092, 9, longBytes(1)), item(0x42000d, 2, intBytes(1)));
+        byte[] batchItem = structure(0x42000f,
+                item(0x42005c, 5, intBytes(Math.toIntExact(operation))),
+                item(0x420093, 8, batchItemId),
+                item(0x42007f, 5, intBytes(1)),
+                item(0x42007e, 5, intBytes(Math.toIntExact(KmipValues.ResultReason.OPERATION_NOT_SUPPORTED))));
+        return structure(0x42007b, header, batchItem);
+    }
+
+    private static byte[] loginLeaseTimeDateTimeResponseBytes(long operation, int minor,
+            byte[] batchItemId, String encoding, byte[] ttlv) {
+        if ("TTLV".equals(encoding)) return ttlv;
+        String operationName = operation == KmipValues.Operation.LOGIN ? "Login" : "DelegatedLogin";
+        String batchItemIdHex = "JSON".equals(encoding)
+                ? HexFormat.of().formatHex(batchItemId)
+                : HexFormat.of().withUpperCase().formatHex(batchItemId);
+        if ("JSON".equals(encoding)) {
+            return ("{\"tag\":\"ResponseMessage\",\"value\":["
+                    + "{\"tag\":\"ResponseHeader\",\"value\":["
+                    + "{\"tag\":\"ProtocolVersion\",\"value\":["
+                    + "{\"tag\":\"ProtocolVersionMajor\",\"type\":\"Integer\",\"value\":2},"
+                    + "{\"tag\":\"ProtocolVersionMinor\",\"type\":\"Integer\",\"value\":" + minor + "}]},"
+                    + "{\"tag\":\"TimeStamp\",\"type\":\"DateTime\",\"value\":\"0x0000000000000001\"},"
+                    + "{\"tag\":\"BatchCount\",\"type\":\"Integer\",\"value\":1}]},"
+                    + "{\"tag\":\"BatchItem\",\"value\":["
+                    + "{\"tag\":\"Operation\",\"type\":\"Enumeration\",\"value\":\""
+                    + operationName + "\"},"
+                    + "{\"tag\":\"UniqueBatchItemID\",\"type\":\"ByteString\",\"value\":\""
+                    + batchItemIdHex + "\"},"
+                    + "{\"tag\":\"ResultStatus\",\"type\":\"Enumeration\",\"value\":\"OperationFailed\"},"
+                    + "{\"tag\":\"ResultReason\",\"type\":\"Enumeration\",\"value\":\"OperationNotSupported\"}]}]}")
+                    .getBytes(StandardCharsets.UTF_8);
+        }
+        String xml = "<ResponseMessage><ResponseHeader><ProtocolVersion>"
+                + "<ProtocolVersionMajor type=\"Integer\" value=\"2\"/>"
+                + "<ProtocolVersionMinor type=\"Integer\" value=\"" + minor + "\"/></ProtocolVersion>"
+                + "<TimeStamp type=\"DateTime\" value=\"1970-01-01T00:00:01Z\"/>"
+                + "<BatchCount type=\"Integer\" value=\"1\"/></ResponseHeader><BatchItem>"
+                + "<Operation type=\"Enumeration\" value=\"" + operationName + "\"/>"
+                + "<UniqueBatchItemID type=\"ByteString\" value=\"" + batchItemIdHex + "\"/>"
+                + "<ResultStatus type=\"Enumeration\" value=\"OperationFailed\"/>"
+                + "<ResultReason type=\"Enumeration\" value=\"OperationNotSupported\"/>"
+                + "</BatchItem></ResponseMessage>";
+        return xml.getBytes(StandardCharsets.UTF_8);
     }
 
     private static List<CreateOperationRouteFixture> createOperationRouteFixtures() {
