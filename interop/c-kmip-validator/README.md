@@ -137,8 +137,8 @@ The `*.gaps.json` sidecar identifies every unexecuted matrix obligation rather
 than misclassifying it as an unavailable library route. Other sidecars retain
 installed-artifact availability checks and sanitized controlled-peer outcomes.
 The evidence JSON passes the shared schema independently of completeness.
-The latest full local C matrix run (`c-route-f2e15c0b-0d7a-4c5c-9964-4ea547bb6787`)
-has 66,736 expected cells, 42,904 invoked, zero failed, and 23,832 pending.
+The latest full local C matrix run (`c-route-bca965c6-09eb-4097-acde-158a0aa803ae`)
+has 66,736 expected cells, 42,959 invoked, zero failed, and 23,777 pending.
 The MAC and Sign response TTLV accessors and the Continue batch-option
 constructor contribute four local cells each across KMIP 2.0/2.1. The
 Query Async Requests correlation builder contributes two KMIP 2.1 model cells.
