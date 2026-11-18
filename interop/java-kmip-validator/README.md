@@ -101,8 +101,8 @@ baseline, regenerate the checked-in ledger with
 rejects generated ledgers that do not record successful invocations.
 The generated ledger retains the artifact
 SHA-256 for each build; that build-specific digest is not used as a coverage
-baseline. These recipes execute 33,824 of 71,641 planned Java route cells, with
-no failed cells; the ledger records the other 37,817 as pending and does not imply
+baseline. These recipes execute 33,878 of 71,641 planned Java route cells, with
+no failed cells; the ledger records the other 37,763 as pending and does not imply
 vendor interoperability or full-matrix completion. Local TTLV recipes exercise 51
 enumeration families, all six bitmask aggregate cases, and all 44 individual
 bitmask value cases through the applicable
@@ -400,7 +400,7 @@ steps with their workflow identity; local enum fixtures keep their primary
 operation as context unless the catalog separately plans it as an Operation
 target. The new events add 2,883 cells to the parent ledger; the existing Usage Limits
 route slice remains included in this branch. The full Java matrix remains
-incomplete (33,824/71,641 executed), so the PR stack remains WIP. These are
+incomplete (33,878/71,641 executed), so the PR stack remains WIP. These are
 local TTLV checks, not evidence of operation payload validity or server
 behavior.
 

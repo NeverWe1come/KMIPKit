@@ -3458,7 +3458,7 @@ git diff --check
 
 ## #217 Right Usage Limits branch synchronized with Operation route expansion — 2026-11-18
 
-The #217 branch now contains the #216 Operation route expansion and keeps its Right Usage Limits member fixture. The selected report includes all eight local Right Usage Limits route cells for KMIP 2.0/2.1. The full installed-consumer Gradle suite passes 82 tests with zero failures, errors, or skips. The shared validator accepts 33,824 selected cells with zero failures; 37,817 of 71,641 Java cells remain pending, so the complete Java matrix and this PR stack remain WIP. Ledger comparison and `git diff --check` pass.
+The #217 branch now contains the #216 Operation and managed-object route expansions and keeps its Right Usage Limits member fixture. The selected report includes all eight local Right Usage Limits route cells for KMIP 2.0/2.1. The full installed-consumer Gradle suite passes 82 tests with zero failures, errors, or skips. The shared validator accepts 33,878 selected cells with zero failures; 37,763 of 71,641 Java cells remain pending, so the complete Java matrix and this PR stack remain WIP. Ledger comparison and `git diff --check` pass.
 
 The suite used a worktree-local Java temporary directory because `/tmp` was full:
 
@@ -3473,5 +3473,37 @@ python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
   --write-ledger
 python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
 python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+git diff --check
+```
+
+## Managed-object Object Type generic routes — 2026-11-18
+
+Red commit `b37cd0597` adds an assertion for each catalogued managed-object
+case requiring generic Item creation, Item view, and codec decoding in KMIP
+2.0 and 2.1. The focused installed-consumer test fails on the missing
+`test-obj-certificate` `TtlvItem.create` event. Green commit `31a8d70ec`
+constructs each catalogued Object Type Enumeration through the installed JAR,
+creates and views its Item, decodes the deterministic TTLV value, and checks the
+exact `Object Type` tag and catalogued wire value (§11.34 in KMIP 2.0/2.1).
+This closes 54 local cells across nine managed-object cases and two versions;
+it does not claim Register or Create transport coverage.
+
+The full Java Gradle suite passes all 82 tests with no failures, errors, or
+skips. The selected report validates 33,878/33,878 cells with zero failures;
+the full Java matrix contains 71,641 planned cells, of which 37,763 remain
+pending. The generated ledger comparison passes, and the stack remains WIP.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-tmp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks
+python3 ../../interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
 git diff --check
 ```
