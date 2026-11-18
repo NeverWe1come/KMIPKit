@@ -1192,6 +1192,13 @@ class ControlledTlsPeerTest {
             String requestHash = normalizedTreeSha256(request);
             appendNetworkQueryRouteEvents(events, protocolVersion, requestHash, responseHash);
             appendControlledGetAttributesNetworkRouteEvents(events, protocolVersion);
+            assertRouteEventRecorded(events,
+                    "test-norm-payload-client-get-attributes-response-"
+                            + protocolVersion.replace('.', '-') + "-001",
+                    "KMIPKIT-PAYLOAD-CLIENT-GET-ATTRIBUTES-RESPONSE-"
+                            + protocolVersion.replace('.', '-') + "-001",
+                    "java.typed-protocol.function.client_batch_item_response_get_attributes",
+                    "decode", protocolVersion);
             appendControlledGetAttributeListNetworkRouteEvents(events, protocolVersion);
             assertGetAttributeListNetworkRouteCoverage(events, readRouteEvidenceCatalog(), protocolVersion);
             appendControlledKeyFormatRawResponseRouteEvents(events, protocolVersion);
@@ -1220,6 +1227,14 @@ class ControlledTlsPeerTest {
                 assertPingVersionBoundaryRouteCoverage(events);
                 appendCreateOperationRouteEvidence(events, serverCertificatePem, serverPrivateKeyPem,
                         clientCertificatePem, clientPrivateKeyPem);
+                assertRouteEventRecorded(events, "test-norm-payload-client-create-request-20-001",
+                        "KMIPKIT-ELEM-OP-C2S-CREATE",
+                        "java.typed-protocol.function.client_batch_item_response_create",
+                        "decode", "2.0");
+                assertRouteEventRecorded(events, "test-norm-payload-client-create-request-21-001",
+                        "KMIPKIT-ELEM-OP-C2S-CREATE",
+                        "java.typed-protocol.function.client_batch_item_response_create",
+                        "decode", "2.1");
                 assertCreateOperationNetworkRouteCoverage(events);
             }
             if ("2.1".equals(protocolVersion)) appendObjectGroupLocalRouteEvents(events);
