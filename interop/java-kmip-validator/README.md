@@ -928,3 +928,22 @@ selected report validates 42,144/42,144 cells with zero failures; ledger
 comparison and the 1,507-route audit pass. The full ledger records 71,641
 planned, 42,144 executed, and 29,497 pending cells. The matrix remains
 incomplete, so #187 and its dependents stay WIP.
+
+### Remaining payload data field routes — 2026-11-18
+
+The Java local TTLV runner now covers Locate response `Located Items` as an
+Integer, Query response `Vendor Identification` as a Text String, and `Signature
+Data` as a Byte String in Sign responses and Signature Verify requests. The
+source cases reference OASIS KMIP 2.0 §6.1.27 Table 230, §6.1.37 Table 260,
+§6.1.49 Table 303, and §6.1.50 Table 305; KMIP 2.1 sources are §6.1.28 Table
+248, §6.1.40 Table 283, §6.1.55 Table 335, and §6.1.56 Table 337. The
+fixtures exercise local generic TTLV construction, view, and decode only.
+
+Red `04d4534f6` showed that Locate's `Located Items` field lacked generic Item
+routes despite its Operation target being covered. Green `84284aa1c` adds the
+catalogued Integer, Text String, and Byte String fields, closing 24 cells.
+The Java suite passes 92/92 serially; shared route tests pass 109/109. The
+selected report validates 42,168/42,168 cells with zero failures; ledger
+comparison and the 1,507-route audit pass. The full ledger records 71,641
+planned, 42,168 executed, and 29,473 pending cells. The matrix remains
+incomplete, so #187 and its dependents stay WIP.
