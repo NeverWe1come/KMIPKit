@@ -510,3 +510,19 @@ vendor KMS interoperability.
   records 71,641 planned, 42,498 executed, and 29,143 pending cells; ledger
   comparison passes. Matrix closure remains open under FR-002/FR-003/FR-009;
   the Java stack stays WIP.
+
+## Java typed Text String Attribute routes — 2026-11-18
+
+- **FR-003/FR-009:** Five catalogued Text String Attribute cases now execute
+  `TypedAttribute.create`, `TypedAttribute.fromItem`, and
+  `AttributeSet.tryNew` alongside generic TTLV construction and decoding.
+  Fixtures use catalog-derived text and verify the returned bytes and
+  one-item Attribute Set. These cases close 30 previously pending local route
+  cells. Sources: OASIS KMIP 2.0/2.1 §§4.9, 4.12, 4.19, 4.35, 4.39, and 11.56.
+  This is local construction evidence, not server acceptance.
+- Red `67062a60e` requires all seven routes; Green `3d29e04e8` emits and checks
+  them; Refactor `798985852` centralizes Attribute Set route assertions. The
+  Gradle suite passes 95/95; the selected evidence validates 42,528/42,528
+  cells with zero failures; and the ledger records 71,641 planned, 42,528
+  executed, and 29,113 pending cells. Ledger comparison passes. Full matrix
+  closure remains open under FR-002/FR-003/FR-009; the stack remains WIP.

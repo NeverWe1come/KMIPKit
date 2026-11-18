@@ -436,7 +436,7 @@ class LocalCatalogRouteChecksTest {
     }
 
     @Test
-    void executesFiveTextAttributesThroughGenericTtlvRoutes() throws Exception {
+    void executesTextAttributesThroughGenericAndTypedTtlvRoutes() throws Exception {
         JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
         Set<String> caseIds = Set.of(
                 "test-attr-comment",
@@ -450,19 +450,25 @@ class LocalCatalogRouteChecksTest {
             LocalCatalogRouteChecks.executeTextAttributeValues(catalog, version, caseIds, invocations::add);
         }
 
-        assertEquals(caseIds.size() * 2 * 4, invocations.size());
         assertEquals(Set.of(
                 "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring",
                 "java.generic-ttlv.ttlv_item.create",
                 "java.generic-ttlv.function.ttlv_item_view_from_item",
-                "java.generic-ttlv.ttlv_codec.decode"),
+                "java.generic-ttlv.ttlv_codec.decode",
+                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
+                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
+                "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew"),
                 invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId)
                         .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(applicableCaseVersionCount(catalog, caseIds, List.of("2.0", "2.1")) * 7,
+                invocations.size());
         assertEquals(caseIds, invocations.stream().map(LocalCatalogRouteChecks.Invocation::caseId)
                 .collect(java.util.stream.Collectors.toSet()));
         assertEquals(Set.of("construct", "decode"), invocations.stream()
                 .map(LocalCatalogRouteChecks.Invocation::action)
                 .collect(java.util.stream.Collectors.toSet()));
+        assertAttributeSetRouteEvents(invocations,
+                applicableCaseVersionCount(catalog, caseIds, List.of("2.0", "2.1")));
     }
 
     @Test
@@ -501,9 +507,8 @@ class LocalCatalogRouteChecksTest {
         assertEquals(Set.of("construct", "decode"), invocations.stream()
                 .map(LocalCatalogRouteChecks.Invocation::action)
                 .collect(java.util.stream.Collectors.toSet()));
-        assertTrue(invocations.stream().allMatch(invocation ->
-                invocation.wire().length == ("java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew"
-                        .equals(invocation.routeId()) ? 24 : 16)));
+        assertAttributeSetRouteEvents(invocations,
+                applicableCaseVersionCount(catalog, caseIds, List.of("2.0", "2.1")));
     }
 
     @Test
@@ -545,9 +550,8 @@ class LocalCatalogRouteChecksTest {
         assertEquals(Set.of("construct", "decode"), invocations.stream()
                 .map(LocalCatalogRouteChecks.Invocation::action)
                 .collect(java.util.stream.Collectors.toSet()));
-        assertTrue(invocations.stream().allMatch(invocation ->
-                invocation.wire().length == ("java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew"
-                        .equals(invocation.routeId()) ? 24 : 16)));
+        assertAttributeSetRouteEvents(invocations,
+                applicableCaseVersionCount(catalog, caseIds, List.of("2.0", "2.1")));
     }
 
     @Test
@@ -586,9 +590,8 @@ class LocalCatalogRouteChecksTest {
         assertEquals(Set.of("construct", "decode"), invocations.stream()
                 .map(LocalCatalogRouteChecks.Invocation::action)
                 .collect(java.util.stream.Collectors.toSet()));
-        assertTrue(invocations.stream().allMatch(invocation ->
-                invocation.wire().length == ("java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew"
-                        .equals(invocation.routeId()) ? 24 : 16)));
+        assertAttributeSetRouteEvents(invocations,
+                applicableCaseVersionCount(catalog, caseIds, List.of("2.0", "2.1")));
     }
 
     @Test
@@ -1252,5 +1255,20 @@ class LocalCatalogRouteChecksTest {
             }
         }
         return count;
+    }
+
+    private static void assertAttributeSetRouteEvents(List<LocalCatalogRouteChecks.Invocation> invocations,
+            long expectedCount) {
+        List<LocalCatalogRouteChecks.Invocation> attributeSets = invocations.stream()
+                .filter(invocation ->
+                        "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew"
+                                .equals(invocation.routeId()))
+                .toList();
+        assertEquals(expectedCount, attributeSets.size());
+        assertTrue(attributeSets.stream().allMatch(invocation -> {
+            byte[] wire = invocation.wire();
+            return wire.length >= 24 && wire[0] == 0x42 && wire[1] == 0x01
+                    && wire[2] == 0x25 && wire[3] == 0x01;
+        }));
     }
 }

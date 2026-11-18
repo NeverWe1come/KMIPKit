@@ -1136,6 +1136,11 @@ final class LocalCatalogRouteChecks {
             String targetId = requires.path("normative_target_id").asText();
             String attributeName = requires.path("attribute").asText();
             int attributeTag = tagCodeNamed(catalog, attributeName, version);
+            StandardAttribute attribute = standardAttributeForTag(attributeTag);
+            if (attribute == null) {
+                throw new AssertionError("Catalogued Text String Attribute has no Java StandardAttribute: "
+                        + attributeName);
+            }
             byte[] textBytes = textAttributeFixture(attributeName).getBytes(StandardCharsets.UTF_8);
             byte[] wire = itemWire(attributeTag, TtlvItemType.TextString.code(), textBytes);
             try (TtlvValue text = TtlvValue.TextString(textBytes, limits);
@@ -1155,6 +1160,9 @@ final class LocalCatalogRouteChecks {
                     "org.kmipkit.ttlv.TtlvItem.view", "decode", wire);
             emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_codec.decode",
                     "org.kmipkit.ttlv.TtlvCodec.decode", "decode", wire);
+            executeTypedAttributeRoutes(caseId, targetId, attributeTag, attribute,
+                    TtlvValue.TextString(textBytes, limits), TtlvItemType.TextString, wire,
+                    value -> assertArrayEquals(textBytes, value.bytes()), sink);
             emitted.add(caseId);
         }
         if (!emitted.equals(applicable)) {

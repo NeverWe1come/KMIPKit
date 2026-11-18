@@ -3228,6 +3228,23 @@ shared route-evidence, schema, and capability suites pass 108 tests; the route
 audit confirms 1,507 routes. The full matrix remains incomplete and the stack
 stays WIP.
 
+## Java typed Text String Attribute routes — 2026-11-18
+
+The installed Java validator now runs all five catalogued Text String
+Attributes through `TypedAttribute.create`, `TypedAttribute.fromItem`, and
+`AttributeSet.tryNew`, as well as the generic TTLV routes. The fixtures use
+catalog-derived Text String values and validate the decoded bytes and
+one-item Attribute Set. The new evidence closes 30 local cells across KMIP
+2.0 and 2.1. Sources: OASIS KMIP 2.0/2.1 §§4.9, 4.12, 4.19, 4.35, 4.39, and
+11.56; no server acceptance is claimed.
+
+Red `67062a60e` requires every typed route; Green `3d29e04e8` adds execution
+and value checks; Refactor `798985852` shares the Attribute Set evidence
+assertion. Gradle passes 95/95 tests, and the selected matrix validates
+42,528/42,528 cells with zero failures. The full ledger records 71,641
+planned, 42,528 executed, and 29,113 pending cells and matches the checked-in
+reference. Full Java matrix closure remains open; the stack remains WIP.
+
 ## Java Asynchronous Indicator generic TTLV routes — 2026-11-18
 
 The four catalogued asynchronous-indicator scenarios resolve the enum target,
