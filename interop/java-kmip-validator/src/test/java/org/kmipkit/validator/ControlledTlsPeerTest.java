@@ -4907,7 +4907,6 @@ class ControlledTlsPeerTest {
 
     private static void appendLocalGetAttributesPayloadRouteEvents(ArrayNode events,
             List<AttributeReadNetworkRequest> invocations, String protocolVersion) throws Exception {
-        String routeId = "java.typed-protocol.function.attribute_request_get_attributes_to_ttlv_payload";
         Set<String> emittedOperationCases = new java.util.HashSet<>();
         Set<String> emittedPayloadTargets = new java.util.HashSet<>();
         for (AttributeReadNetworkRequest invocation : invocations) {
@@ -4940,18 +4939,24 @@ class ControlledTlsPeerTest {
                 assertGetAttributesPayloadShape(payload, invocation);
                 String requestHash = normalizedTreeSha256(expectedPayload);
                 if (operationTargetCell) {
-                    appendRouteEvent(events, invocation.caseId(), routeId,
-                            "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES",
-                            "org.kmipkit.extensions.GetAttributesRequest.toTtlvPayload",
-                            null, null, "encode", protocolVersion, null, requestHash, null);
+                    appendLocalGetAttributesPayloadEncoderEvent(events, invocation, protocolVersion,
+                            "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES", requestHash);
                 }
                 if (payloadTargetCell) {
-                    appendRouteEvent(events, invocation.caseId(), routeId, invocation.targetId(),
-                            "org.kmipkit.extensions.GetAttributesRequest.toTtlvPayload",
-                            null, null, "encode", protocolVersion, null, requestHash, null);
+                    appendLocalGetAttributesPayloadEncoderEvent(events, invocation, protocolVersion,
+                            invocation.targetId(), requestHash);
                 }
             }
         }
+    }
+
+    private static void appendLocalGetAttributesPayloadEncoderEvent(ArrayNode events,
+            AttributeReadNetworkRequest invocation, String protocolVersion, String targetId,
+            String requestHash) {
+        appendRouteEvent(events, invocation.caseId(),
+                "java.typed-protocol.function.attribute_request_get_attributes_to_ttlv_payload", targetId,
+                "org.kmipkit.extensions.GetAttributesRequest.toTtlvPayload",
+                null, null, "encode", protocolVersion, null, requestHash, null);
     }
 
     private static boolean hasGetAttributesPayloadRouteEvent(ArrayNode events, String caseId,
