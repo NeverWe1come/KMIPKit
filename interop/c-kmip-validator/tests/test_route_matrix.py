@@ -3553,8 +3553,21 @@ class RouteMatrixTests(unittest.TestCase):
                                                if case['case_id'] == case_id]}
         events, _, checks = execute_network_cells(
             ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
-        self.assertEqual(len(checks), 12, 'batch workflow must pass both versions over all six wire transports')
+        self.assertEqual(len(checks), 24,
+                         'both Get Attribute List constructors must pass both versions over all six wire routes')
         self.assertTrue(all(check['status'] == 'passed' for check in checks))
+        self.assertEqual({check['constructor_variant'] for check in checks}, {'direct', 'standalone'})
+        for check in checks:
+            if check['constructor_variant'] == 'standalone':
+                self.assertIn('kmipkit_client_batch_item_get_attribute_list_from_request',
+                              check['public_api_trace_symbols'])
+                self.assertIn('kmipkit_get_attribute_list_request_to_ttlv_payload',
+                              check['public_api_trace_symbols'])
+            else:
+                self.assertIn('kmipkit_client_batch_item_get_attribute_list',
+                              check['public_api_trace_symbols'])
+                self.assertNotIn('kmipkit_client_batch_item_get_attribute_list_from_request',
+                                 check['public_api_trace_symbols'])
         expected_operations = {
             'KMIPKIT-ELEM-OP-C2S-CREATE', 'KMIPKIT-ELEM-OP-C2S-ACTIVATE',
             'KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST', 'KMIPKIT-ELEM-OP-C2S-REVOKE',
@@ -3568,6 +3581,13 @@ class RouteMatrixTests(unittest.TestCase):
                                 for event in events), symbol)
         self.assertTrue(all('kmipkit_client_execute' in check['public_api_trace_symbols']
                             for check in checks))
+        standalone_events = [event for event in events
+                             if event['case_id'] == case_id and
+                             event['public_api_symbol'] ==
+                             'kmipkit_client_batch_item_get_attribute_list_from_request']
+        self.assertEqual(len(standalone_events), 36)
+        self.assertEqual({event['action'] for event in standalone_events},
+                         {'construct', 'send', 'decode'})
 
     def test_id_placeholder_accepts_omission_or_reserved_enumeration_only(self):
         from route_peer import assert_placeholder_usage, parse, tlv
