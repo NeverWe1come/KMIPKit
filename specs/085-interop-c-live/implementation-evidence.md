@@ -1490,3 +1490,26 @@ cleanup sequences. They do not satisfy this catalog case's exact isolation
 recipe. The `test-op-poll` cells therefore remain pending until the shared
 approved recipe and installed C route agree; no new scenario is inferred in
 this PR.
+
+## MAC Verify and Signature Verify response TTLV accessors
+
+OASIS KMIP 2.0 §6.1.32 and KMIP 2.1 §6.1.33 define MAC Verify; KMIP 2.0
+§6.1.50 and KMIP 2.1 §6.1.56 define Signature Verify. Their existing C routes
+already checked the typed Validity Indicator and key identity but did not call
+the operation-specific generic TTLV accessors. The installed consumer now
+reads `kmipkit_client_batch_item_response_mac_verify_ttlv` and
+`kmipkit_client_batch_item_response_signature_verify_ttlv`, checks each
+successful response's complete four-field item structure, and releases each
+returned structure.
+
+- Red commit `d66e05e3f` adds both accessors to the installed route contract;
+  the focused test fails for both cases because no accessor event is recorded.
+- Green commit `066185fcf` exercises both installed accessors after their
+  typed result checks and validates the complete response item.
+- Verification: the focused response accessor test and both operation route
+  tests passed; CTest passed 7/7. The exhaustive matrix at
+  `c-route-a48106ae-c008-4cc9-8633-dd2c2e269f35` recorded 42,639/66,736 cells
+  invoked, zero failed, and 24,097 pending. Both accessors passed for KMIP
+  2.0/2.1 and have no pending cells. `test-op-poll` still has 42 pending cells
+  for its catalog-specific recipe described above; the global C matrix gate
+  remains open.

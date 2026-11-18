@@ -182,7 +182,9 @@ parameters, fixed data, and a fixed MAC Data field. It then revokes and destroys
 the key. The peer checks the complete ordered request and returns a typed
 Validity Indicator of `Valid`; the C consumer checks that typed field and the
 created key identifier. The generated key is random, so the fixture does not
-establish cryptographic validity of the supplied MAC.
+establish cryptographic validity of the supplied MAC. It also reads and checks
+the complete response-item structure through
+`kmipkit_client_batch_item_response_mac_verify_ttlv`.
 
 The `test-op-sign` and `test-op-signature-verify` routes create an RSA-2048 key
 pair with separate usage masks: Sign on the Private Key and Verify on the Public
@@ -191,6 +193,8 @@ revokes and destroys the selected key and destroys its pair. The request uses
 the explicit SHA-256 with RSA signature algorithm. The peer checks the full
 request tree and typed response shape. Create generates a random pair, so the
 fixed signature inputs and response do not establish cryptographic validity.
+The Signature Verify route also reads and checks the complete response-item
+structure through `kmipkit_client_batch_item_response_signature_verify_ttlv`.
 
 The direct `test-op-create-key-pair` route constructs an RSA-2048 pair with
 explicit Sign and Verify usage masks, checks that the typed response returns
