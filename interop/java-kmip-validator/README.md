@@ -742,3 +742,21 @@ selected report validates 41,472/41,472 cells with zero failures; ledger
 comparison and the 1,507-route capability audit pass. The full ledger records
 71,641 planned, 41,472 executed, and 30,169 pending cells. The matrix remains
 incomplete, so #187 and its dependents stay WIP.
+
+### Client Create Object Type generic TTLV route — 2026-11-18
+
+Create request `Object Type` now exercises generic `Item` construction, view,
+and decode for its payload field and operation target (60 cells across the
+applicable route combinations). The source is OASIS KMIP 2.0 §6.1.8 Table 171.
+This is local TTLV model evidence and does not claim that a server accepted the
+field.
+
+Red `e52428de8` identified the missing six events for the representative
+Create request; Green `aaaf98819` adds the catalog-driven Enumeration path. The
+Java suite passes 92/92 and the shared suite passes 109/109. The selected
+report validates 41,532/41,532 cells with zero failures; ledger comparison and
+the 1,507-route capability audit pass. The full ledger records 71,641 planned,
+41,532 executed, and 30,109 pending cells. The matrix remains incomplete, so
+#187 and its dependents stay WIP. On this host the Java test JVM used the
+worktree temporary directory because `/tmp` had only 58 MiB free, less than the
+bundled JNI library's 116 MiB extracted size.
