@@ -311,6 +311,13 @@ def _unavailable_for_case(manifest: dict, language: str, targets: set[str]) -> d
     return None
 
 
+def _target_version_applies(target: dict | None, version: str) -> bool:
+    """Version payload-field obligations without restricting generic TTLV values."""
+    return (target is None
+            or target.get("kind") != "operation_payload_field"
+            or version in target.get("protocol_versions", []))
+
+
 def applicable_routes(
     case: dict,
     manifest: dict,
@@ -377,6 +384,8 @@ def iter_cells(catalog: dict, manifest: dict, *, languages: tuple[str, ...] = LA
                 for obligation in obligations:
                     target_id = obligation["target_id"]
                     target = normative_targets.get(target_id)
+                    if not _target_version_applies(target, version):
+                        continue
                     target_routes = [route for route in routes
                                      if version in route["protocol_versions"]
                                      and not _route_excludes_target(case, route, target)
@@ -392,7 +401,9 @@ def iter_cells(catalog: dict, manifest: dict, *, languages: tuple[str, ...] = LA
                     if version not in route["protocol_versions"]:
                         continue
                     route_obligations = [obligation for obligation in obligations
-                                         if not _route_excludes_target(
+                                         if _target_version_applies(
+                                             normative_targets.get(obligation["target_id"]), version)
+                                         and not _route_excludes_target(
                                              case, route, normative_targets.get(obligation["target_id"]))
                                          and ("*" in route["normative_target_ids"]
                                               or obligation["target_id"] in route["normative_target_ids"])]
