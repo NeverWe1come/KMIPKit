@@ -2007,7 +2007,7 @@ class ControlledTlsPeerTest {
         int pendingCorrelationAccessorEventCount = KMIP_2_0_AND_2_1.size();
         int structureMemberStructureRouteEventCount = STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size() * 4;
         int structureMemberByteStringRouteEventCount = STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.stream()
-                .mapToInt(fixture -> 4 + (fixture.typedQueryFilter() ? 1 : 0)).sum();
+                .mapToInt(fixture -> 4 + (fixture.typedQueryFilter() ? 2 : 0)).sum();
         int structureMemberValueRouteEventCount = STRUCTURE_MEMBER_VALUE_FIXTURES.size() * 4 + 1;
         int credentialGenericRouteEventCount = CREDENTIAL_TYPE_MODEL_CASE_IDS.size()
                 * KMIP_2_0_AND_2_1.size() * 4;
@@ -9560,6 +9560,13 @@ class ControlledTlsPeerTest {
         appendRouteEvent(events, queryFilterFixture.caseId(),
                 "java.typed-protocol.model.org.kmipkit.extensions.queryasyncrequestsrequest"
                         + ".withcorrelationvalues", queryFilterFixture.targetId(),
+                "org.kmipkit.extensions.QueryAsyncRequestsRequest.withCorrelationValues", null, null,
+                "construct", "2.1", null, typedPayloadHash, null);
+        appendRouteEvent(events,
+                "test-norm-operation-structure-operation-structure-7-1-asynchronous-correlation-values",
+                "java.typed-protocol.model.org.kmipkit.extensions.queryasyncrequestsrequest"
+                        + ".withcorrelationvalues",
+                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-1-ASYNCHRONOUS-CORRELATION-VALUES",
                 "org.kmipkit.extensions.QueryAsyncRequestsRequest.withCorrelationValues", null, null,
                 "construct", "2.1", null, typedPayloadHash, null);
         assertRouteEventRecorded(events,
