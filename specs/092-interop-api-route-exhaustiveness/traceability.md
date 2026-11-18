@@ -85,9 +85,14 @@ artifact. This is part of the FR-006 artifact provenance check.
 ## Java managed-object Object Type routes — 2026-11-18
 
 - **FR-003:** For all nine catalogued managed-object cases, the Java controlled consumer now invokes the installed `TtlvItem.create`, `TtlvItem.view`, and `TtlvCodec.decode` routes for the Object Type Enumeration in KMIP 2.0 and 2.1 (§11.34). Each fixture checks the catalogued wire value and `Object Type` tag. This closes 54 local cells and makes no Register/Create transport claim.
-- The selected Java report validates 33,870/33,870 cells with zero failures; the generated ledger records 71,641 planned, 33,870 executed, and 37,771 pending cells. Full Java matrix closure remains required under FR-002/FR-003/FR-009.
+- The selected Java report validates 33,978/33,978 cells with zero failures; the generated ledger records 71,641 planned, 33,978 executed, and 37,663 pending cells. Full Java matrix closure remains required under FR-002/FR-003/FR-009.
 
 ## Java RSA public Key Material model routes — 2026-11-18
 
 - **FR-003:** The installed Java consumer now builds and reads the RSA public Key Material structure with both typed constructors, `KeyMaterial.fromFields` and `KeyMaterial.fromItem`, for the catalogued Modulus and Public Exponent fields in KMIP 2.0 and 2.1 (§3.8). A deterministic synthetic fixture is checked through the typed readers; it is not production key material and does not claim cryptographic validity.
-- The selected report validates 33,870/33,870 cells with zero failures; the generated ledger records 71,641 planned, 33,870 executed, and 37,771 pending cells. The full Java matrix and the other language matrices remain open under FR-002/FR-003/FR-005/FR-006.
+- The selected report validates 33,978/33,978 cells with zero failures; the generated ledger records 71,641 planned, 33,978 executed, and 37,663 pending cells. The full Java matrix and the other language matrices remain open under FR-002/FR-003/FR-005/FR-006.
+
+## Java transparent Key Material model routes — 2026-11-18
+
+- **FR-003:** The installed Java consumer now exercises `KeyMaterial.fromFields` and `KeyMaterial.fromItem` for all 29 catalogued Big Integer members in transparent DSA, RSA, and DH private/public plus EC private formats (KMIP 2.0/2.1 §§3.5–3.11). Each fixture includes the format's required fields and applicable optional fields and verifies the target member through both typed readers. Values are deterministic, synthetic, and not tested as cryptographic keys.
+- This adds 108 cells to the previous Java selected scope. The report validates 33,978/33,978 cells with zero failures and leaves 37,663 of 71,641 pending. FR-002/FR-003/FR-009 remain open for full Java matrix closure and the remaining languages.

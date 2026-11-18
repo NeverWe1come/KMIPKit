@@ -3313,3 +3313,42 @@ or skips; the shared evidence, schema, and capability suites pass 108 tests.
 The selected report validates 33,870/33,870 cells with zero failures, and the
 generated ledger records 37,771 pending cells of 71,641. The selected scope is
 complete, but the full Java matrix and stack remain incomplete and WIP.
+
+## Transparent Key Material format model routes — 2026-11-18
+
+Red commit `f2797df71` requires typed Key Material route events for every
+catalogued Big Integer member in the transparent DSA, RSA, DH, and EC formats;
+the focused test fails because the executor only accepts RSA public fields.
+Green commit `67b113225` derives the transparent Key Format Type from the
+catalogued parent structure, constructs format-specific required fields and
+applicable optional fields, and invokes the installed `KeyMaterial.fromFields`
+and `KeyMaterial.fromItem` methods. The test checks the target Big Integer
+through both typed readers and records both routes in KMIP 2.0 and 2.1. This
+closes 108 additional cells across 29 fields under KMIP 2.0/2.1 §§3.5–3.11;
+fixtures are synthetic and make no cryptographic-key validity claim.
+
+Verification on the #187 source branch:
+
+```sh
+# Run from interop/java-kmip-validator.
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-tmp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks
+# Run from the repository root.
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+python3 -m unittest interop.shared.tests.test_route_execution_evidence \
+  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+git diff --check
+```
+
+The complete Java validator suite passes 84/84 tests with zero failures,
+errors, or skips; the shared evidence, schema, and capability suites pass 108
+tests. The selected report validates 33,978/33,978 cells with zero failures;
+37,663 of 71,641 cells remain pending. The full Java matrix and stack remain
+incomplete and WIP.
