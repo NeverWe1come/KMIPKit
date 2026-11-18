@@ -507,3 +507,16 @@ targets through #216. These KMIP 2.0/2.1 fixtures validate the generic
 representation only. The full Java suite passes 92/92; the selected report
 validates 35,000/35,000 cells with zero failures and leaves 36,641 of 71,641
 full Java route cells pending.
+
+
+The #216 branch inherits the Java Get Attributes operation-level routes for
+all catalogued cases from #187. Both typed builders run through the controlled
+mutual-TLS TTLV peer and check the typed response. The selected report now
+validates 35,889/35,889 cells with zero failures; 35,752 of the full 71,641
+cells remain pending. Per-attribute semantic policy coverage is tracked
+separately.
+
+
+The #217 Right Usage Limits tip includes the same inherited Get Attributes
+operation-level routes. Its selected report validates 35,889/35,889 cells
+with zero failures; 35,752 of the full 71,641-cell matrix remain pending.
