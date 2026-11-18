@@ -647,7 +647,7 @@ final class LocalCatalogRouteChecks {
                             "Last Change Date", "Object Group Member", "Operation",
                             "Certificate Request Unique Identifier", "Public Key Unique Identifier",
                             "Validity Indicator", "Located Items", "Signature Data", "Vendor Identification",
-                            "MAC Data")
+                            "MAC Data", "Derivation Method")
                             .contains(fieldName)
                     || !requires.path("operation_id").asText().startsWith("KMIPKIT-ELEM-OP-C2S-")
                     || !"local_model".equals(testCase.path("execution").path("mode").asText())
@@ -700,7 +700,7 @@ final class LocalCatalogRouteChecks {
                             "Last Change Date", "Object Group Member", "Operation",
                             "Certificate Request Unique Identifier", "Public Key Unique Identifier",
                             "Validity Indicator", "Located Items", "Signature Data", "Vendor Identification",
-                            "MAC Data")
+                            "MAC Data", "Derivation Method")
                             .contains(fieldName)
                     || !operationId.startsWith("KMIPKIT-ELEM-OP-C2S-")) {
                 throw new IllegalArgumentException("Selected case is not a supported client scalar payload: "
@@ -744,7 +744,7 @@ final class LocalCatalogRouteChecks {
             }
             TtlvItemType itemType = switch (fieldName) {
                 case "Unique Identifier", "Private Key Unique Identifier", "Public Key Unique Identifier",
-                        "Certificate Request Unique Identifier", "Application Namespace", "Object Group Member",
+                        "Certificate Request Unique Identifier", "Application Namespace",
                         "Vendor Identification" ->
                     TtlvItemType.TextString;
                 case "Correlation Value", "Asynchronous Correlation Value", "Data", "IV/Counter/Nonce",
@@ -755,20 +755,21 @@ final class LocalCatalogRouteChecks {
                         "Attribute Reference" ->
                     TtlvItemType.Enumeration;
                 case "Attestation Type", "Cancellation Result", "Client Registration Method", "Operation",
-                        "Validity Indicator" -> TtlvItemType.Enumeration;
+                        "Validity Indicator", "Object Group Member", "Derivation Method" -> TtlvItemType.Enumeration;
                 case "Key Format Type", "Key Compression Type", "Secret Data Type", "Split Key Method" ->
                     TtlvItemType.Enumeration;
-                case "Lease Time" -> TtlvItemType.Integer;
+                case "Lease Time", "Offset" -> TtlvItemType.Interval;
                 case "Usage Limits Count" -> TtlvItemType.LongInteger;
+                case "Prime Field Size" -> TtlvItemType.BigInteger;
                 case "Init Indicator", "Final Indicator" -> TtlvItemType.Boolean;
                 case "Adjustment Type" -> TtlvItemType.Enumeration;
                 case "Interop Identifier", "Log Message" -> TtlvItemType.TextString;
                 case "Compromise Occurrence Date", "Validity Date", "Last Change Date" ->
                     TtlvItemType.DateTime;
                 case "Adjustment Value", "Cryptographic Usage Mask", "Storage Status Mask",
-                        "Data Length", "Maximum Items", "Offset Items", "Offset", "Request Count",
+                        "Data Length", "Maximum Items", "Offset Items", "Request Count",
                         "Located Items",
-                        "Prime Field Size", "Split Key Parts", "Split Key Threshold" ->
+                        "Split Key Parts", "Split Key Threshold" ->
                     TtlvItemType.Integer;
                 case "Replace Existing" -> TtlvItemType.Boolean;
                 default -> throw new IllegalArgumentException("Unsupported client scalar payload field: "
@@ -776,6 +777,8 @@ final class LocalCatalogRouteChecks {
             };
             long numericValue = switch (fieldName) {
                 case "Object Type" -> enumValue(catalog, "OBJECT-TYPE", "Symmetric Key");
+                case "Object Group Member" -> enumValue(catalog, "OBJECT-GROUP-MEMBER", "Group Member Fresh");
+                case "Derivation Method" -> enumValue(catalog, "DERIVATION-METHOD", "PBKDF2");
                 case "Certificate Request Type" -> enumValue(catalog, "CERTIFICATE-REQUEST-TYPE", "PKCS#10");
                 case "Key Wrap Type" -> enumValue(catalog, "KEY-WRAP-TYPE", "As Registered");
                 case "Query Function" -> enumValue(catalog, "QUERY-FUNCTION", "Query Operations");
@@ -798,13 +801,15 @@ final class LocalCatalogRouteChecks {
                         "Located Items" -> 1;
                 case "Adjustment Value", "Cryptographic Usage Mask", "Storage Status Mask",
                         "Replace Existing" -> 1;
-                case "Prime Field Size" -> 8;
                 case "Split Key Parts", "Split Key Threshold" -> 2;
                 case "Compromise Occurrence Date", "Validity Date", "Last Change Date" -> 1_700_000_000;
                 case "Offset Items", "Offset" -> 0;
                 default -> 0;
             };
             byte[] fieldValue = switch (itemType) {
+                // The Mersenne prime 2^127 - 1 exceeds 2^64 for a 64-bit split value (§2.8).
+                case BigInteger -> new byte[] {0x7f, -1, -1, -1, -1, -1, -1, -1,
+                        -1, -1, -1, -1, -1, -1, -1, -1};
                 case TextString -> ("Private Key Unique Identifier".equals(fieldName)
                         ? "kmipkit-route-private-key-id" : "kmipkit-route-identifier")
                         .getBytes(StandardCharsets.US_ASCII);
@@ -815,18 +820,20 @@ final class LocalCatalogRouteChecks {
                 };
                 case Boolean -> ByteBuffer.allocate(Long.BYTES).putLong(numericValue).array();
                 case DateTime -> ByteBuffer.allocate(Long.BYTES).putLong(numericValue).array();
-                case Integer -> ByteBuffer.allocate(Integer.BYTES).putInt(Math.toIntExact(numericValue)).array();
+                case Integer, Interval -> ByteBuffer.allocate(Integer.BYTES).putInt(Math.toIntExact(numericValue)).array();
                 case LongInteger -> ByteBuffer.allocate(Long.BYTES).putLong(numericValue).array();
                 case Enumeration -> ByteBuffer.allocate(Integer.BYTES).putInt(Math.toIntExact(numericValue)).array();
                 default -> throw new IllegalArgumentException("Unsupported client scalar payload type: " + itemType);
             };
             byte[] wire = scalarWire(tagCode, itemType.code(), fieldValue);
             TtlvValue value = switch (itemType) {
+                case BigInteger -> TtlvValue.BigInteger(fieldValue, limits);
                 case TextString -> TtlvValue.TextString(fieldValue, limits);
                 case ByteString -> TtlvValue.ByteString(fieldValue, limits);
                 case Boolean -> TtlvValue.Boolean(numericValue != 0);
                 case DateTime -> TtlvValue.DateTime(numericValue);
                 case Integer -> TtlvValue.Integer(Math.toIntExact(numericValue));
+                case Interval -> TtlvValue.Interval(numericValue);
                 case LongInteger -> TtlvValue.LongInteger(numericValue);
                 case Enumeration -> TtlvValue.Enumeration(numericValue);
                 default -> throw new IllegalArgumentException("Unsupported client scalar payload type: " + itemType);
@@ -4062,7 +4069,8 @@ final class LocalCatalogRouteChecks {
         assertEquals(type, value.itemType());
         if (type == TtlvItemType.Boolean) {
             assertEquals(number != 0, value.booleanValue());
-        } else if (type == TtlvItemType.ByteString || type == TtlvItemType.TextString) {
+        } else if (type == TtlvItemType.BigInteger || type == TtlvItemType.ByteString
+                || type == TtlvItemType.TextString) {
             assertArrayEquals(bytes, value.bytes());
         } else if (type == TtlvItemType.DateTime) {
             assertEquals(number, value.dateTime());
@@ -4070,6 +4078,8 @@ final class LocalCatalogRouteChecks {
             assertEquals(number, value.enumeration());
         } else if (type == TtlvItemType.Integer) {
             assertEquals(Math.toIntExact(number), value.integer());
+        } else if (type == TtlvItemType.Interval) {
+            assertEquals(number, value.interval());
         } else if (type == TtlvItemType.LongInteger) {
             assertEquals(number, value.longInteger());
         } else {
