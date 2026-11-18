@@ -137,8 +137,8 @@ The `*.gaps.json` sidecar identifies every unexecuted matrix obligation rather
 than misclassifying it as an unavailable library route. Other sidecars retain
 installed-artifact availability checks and sanitized controlled-peer outcomes.
 The evidence JSON passes the shared schema independently of completeness.
-The latest full local C matrix run (`c-route-bb314345-7575-4b2a-978d-1bae619e182a`)
-has 66,736 expected cells, 42,843 invoked, zero failed, and 23,893 pending.
+The latest full local C matrix run (`c-route-48a800ef-1add-4ba2-87b2-cfa385072615`)
+has 66,736 expected cells, 42,919 invoked, zero failed, and 23,817 pending.
 The MAC and Sign response TTLV accessors and the Continue batch-option
 constructor contribute four local cells each across KMIP 2.0/2.1. The
 Query Async Requests correlation builder contributes two KMIP 2.1 model cells.
@@ -172,6 +172,14 @@ both responses and complete cleanup for KMIP 2.0/2.1 across TTLV, JSON, and XML
 over raw TLS and HTTPS. The latest matrix run records 66 passed cells for the
 Re-key operation target; these synthetic values do not establish external KMS
 interoperability.
+The Secret Data Register route builds a Password object with a Raw Key Block
+and explicit Derive Key usage, reads the typed Register result and response
+TTLV, then destroys the object through its batch ID Placeholder. Its synthetic
+material is cleared from the input buffer after construction and is omitted
+from route events and peer checks. The same 12 controlled network combinations
+pass for KMIP 2.0 and 2.1; the latest full matrix records 86 passed cells for
+this case and no pending cells. It does not execute Derive Key or claim external
+KMS interoperability.
 
 The `test-op-poll` controlled route remains pending: the approved catalog does
 not yet provide a complete request, response, correlation, and cleanup recipe
