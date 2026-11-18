@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.sun.net.httpserver.HttpsConfigurator;
+import com.sun.net.httpserver.HttpsParameters;
+import com.sun.net.httpserver.HttpsServer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.kmipkit.extensions.ClientBatch;
@@ -29,6 +32,7 @@ import org.kmipkit.credentials.DeviceCredential;
 import org.kmipkit.credentials.HashedPasswordCredential;
 import org.kmipkit.credentials.Nonce;
 import org.kmipkit.credentials.UsernameAndPasswordCredential;
+import org.kmipkit.ClientOperationException;
 import org.kmipkit.message.ResponseMessage;
 import org.kmipkit.message.RequestMessage;
 import org.kmipkit.protocol.CryptographicParameters;
@@ -52,6 +56,7 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLParameters;
 import javax.net.ssl.TrustManagerFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -59,6 +64,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -82,6 +88,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -1133,7 +1140,6 @@ class ControlledTlsPeerTest {
             assertEquals("2.0".equals(protocolVersion) ? 0 : 1, requestProtocolMinorVersion(request));
             String requestHash = normalizedTreeSha256(request);
             appendNetworkQueryRouteEvents(events, protocolVersion, requestHash, responseHash);
-            appendControlledActivationDateNetworkEvents(events, protocolVersion);
             appendControlledGetAttributesNetworkRouteEvents(events, protocolVersion);
             assertGetAttributesNetworkRouteCoverage(events, readRouteEvidenceCatalog(), protocolVersion);
             appendControlledKeyFormatRawResponseRouteEvents(events, protocolVersion);
@@ -1947,7 +1953,7 @@ class ControlledTlsPeerTest {
             int routes = "reserved".equals(testCase.path("requires").path("allocation").asText()) ? 3 : 5;
             genericTagEventCount += routes * testCase.path("execution").path("protocol_versions").size();
         }
-        assertEquals(68 + enumerationEventCount + localEnumerationEventCount + bitmaskEventCount + 94
+        assertEquals(68 + enumerationEventCount + localEnumerationEventCount + bitmaskEventCount + 80
                         + batchItemAccessorEventCount
                         + batchItemExtensionCountEventCount + batchItemGenericRouteEventCount
                         + getAttributesNetworkRouteEventCount
@@ -2835,6 +2841,13 @@ class ControlledTlsPeerTest {
     private String connectionJson(int port, byte[] serverCertificate, byte[] clientCertificate,
                                   byte[] clientPrivateKey, boolean allowMutations,
                                   String protocolVersion) throws Exception {
+        return connectionJson(port, serverCertificate, clientCertificate, clientPrivateKey, allowMutations,
+                protocolVersion, "TTLV", "raw_tls");
+    }
+
+    private String connectionJson(int port, byte[] serverCertificate, byte[] clientCertificate,
+                                  byte[] clientPrivateKey, boolean allowMutations,
+                                  String protocolVersion, String encoding, String transport) throws Exception {
         Path serverCert = temporaryDirectory.resolve("server-cert.pem");
         Path clientCert = temporaryDirectory.resolve("client-cert.pem");
         Path clientKey = temporaryDirectory.resolve("client-key.pem");
@@ -2845,16 +2858,20 @@ class ControlledTlsPeerTest {
         root.put("server_id", "controlled-test-peer");
         root.put("server_configuration_fingerprint", "a".repeat(64));
         root.put("protocol_version", protocolVersion);
-        root.put("transport", "raw_tls");
-        root.put("encoding", "TTLV");
+        root.put("transport", transport);
+        root.put("encoding", encoding);
         root.put("api_level", "typed-protocol");
         ObjectNode endpoints = root.putObject("endpoints");
-        endpoints.putObject("raw_tls").put("host", "127.0.0.1").put("port", port);
+        if ("raw_tls".equals(transport)) {
+            endpoints.putObject("raw_tls").put("host", "127.0.0.1").put("port", port);
+        } else {
+            endpoints.putObject("https").put("url", "https://localhost:" + port + "/kmip");
+        }
         ObjectNode tls = root.putObject("tls");
         tls.put("ca_cert_path", serverCert.toString());
         tls.put("client_cert_path", clientCert.toString());
         tls.put("client_key_path", clientKey.toString());
-        tls.put("server_name_override", "localhost");
+        tls.put("server_name_override", "raw_tls".equals(transport) ? "localhost" : "");
         tls.put("connect_timeout_seconds", 5);
         tls.put("read_timeout_seconds", 5);
         root.putObject("environment").put("kind", "dedicated_test")
@@ -2898,6 +2915,93 @@ class ControlledTlsPeerTest {
             output.flush();
             return request;
         }
+    }
+
+    private static byte[] serveOneEncodedResponse(SSLServerSocket listener, byte[] response,
+            String encoding) throws Exception {
+        try (SSLSocket socket = (SSLSocket) listener.accept()) {
+            socket.setEnabledProtocols(new String[] {"TLSv1.3"});
+            socket.setSoTimeout(10_000);
+            socket.startHandshake();
+            byte[] request = switch (encoding) {
+                case "TTLV" -> readTtlv(socket.getInputStream());
+                case "JSON" -> readJsonDocument(socket.getInputStream());
+                case "XML" -> readXmlDocument(socket.getInputStream());
+                default -> throw new IllegalArgumentException("Unsupported fixture encoding.");
+            };
+            OutputStream output = socket.getOutputStream();
+            output.write(response);
+            output.flush();
+            return request;
+        }
+    }
+
+    private static byte[] readJsonDocument(InputStream input) throws Exception {
+        ByteArrayOutputStream document = new ByteArrayOutputStream();
+        int depth = 0;
+        boolean inString = false;
+        boolean escaped = false;
+        int next;
+        while ((next = input.read()) != -1) {
+            document.write(next);
+            if (inString) {
+                if (escaped) escaped = false;
+                else if (next == '\\') escaped = true;
+                else if (next == '"') inString = false;
+            } else if (next == '"') {
+                inString = true;
+            } else if (next == '{') {
+                depth++;
+            } else if (next == '}' && --depth == 0) {
+                return document.toByteArray();
+            }
+        }
+        throw new IllegalStateException("The controlled TLS peer received an incomplete JSON document.");
+    }
+
+    private static byte[] readXmlDocument(InputStream input) throws Exception {
+        byte[] terminator = "</RequestMessage>".getBytes(StandardCharsets.US_ASCII);
+        ByteArrayOutputStream document = new ByteArrayOutputStream();
+        int matched = 0;
+        int next;
+        while ((next = input.read()) != -1) {
+            document.write(next);
+            matched = next == Byte.toUnsignedInt(terminator[matched])
+                    ? matched + 1
+                    : next == Byte.toUnsignedInt(terminator[0]) ? 1 : 0;
+            if (matched == terminator.length) return document.toByteArray();
+        }
+        throw new IllegalStateException("The controlled TLS peer received an incomplete XML document.");
+    }
+
+    private static HttpsServer httpsListener(X509Certificate serverCertificate, PrivateKey serverKey,
+            X509Certificate clientCertificate) throws Exception {
+        char[] password = "local-kmip-test".toCharArray();
+        KeyStore serverKeys = KeyStore.getInstance("PKCS12");
+        serverKeys.load(null, password);
+        serverKeys.setKeyEntry("server", serverKey, password, new Certificate[] {serverCertificate});
+        KeyManagerFactory keys = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+        keys.init(serverKeys, password);
+        KeyStore trust = KeyStore.getInstance("PKCS12");
+        trust.load(null, password);
+        trust.setCertificateEntry("client", clientCertificate);
+        TrustManagerFactory trustManagers = TrustManagerFactory.getInstance(
+                TrustManagerFactory.getDefaultAlgorithm());
+        trustManagers.init(trust);
+        SSLContext context = SSLContext.getInstance("TLS");
+        context.init(keys.getKeyManagers(), trustManagers.getTrustManagers(), new SecureRandom());
+        HttpsServer server = HttpsServer.create(new InetSocketAddress(
+                InetAddress.getByName("127.0.0.1"), 0), 0);
+        server.setHttpsConfigurator(new HttpsConfigurator(context) {
+            @Override
+            public void configure(HttpsParameters parameters) {
+                SSLParameters sslParameters = getSSLContext().getDefaultSSLParameters();
+                sslParameters.setNeedClientAuth(true);
+                sslParameters.setProtocols(new String[] {"TLSv1.3"});
+                parameters.setSSLParameters(sslParameters);
+            }
+        });
+        return server;
     }
 
     private static List<Long> serveUnsupportedResponses(SSLServerSocket listener, int count) throws Exception {
@@ -4281,11 +4385,9 @@ class ControlledTlsPeerTest {
     private static int getAttributesNetworkRouteEventCount(JsonNode catalog) {
         int caseVersionCount = 0;
         for (String protocolVersion : KMIP_2_0_AND_2_1) {
-            Set<String> caseIds = getAttributesNetworkRouteCaseIds(catalog, protocolVersion);
-            caseIds.remove("test-attr-activation-date");
-            caseVersionCount += caseIds.size();
+            caseVersionCount += getAttributesNetworkRouteCaseIds(catalog, protocolVersion).size();
         }
-        return caseVersionCount * 7;
+        return caseVersionCount * 37;
     }
 
     private static Set<String> getAttributesNetworkRouteEventCaseIds(JsonNode events) {
@@ -4305,76 +4407,130 @@ class ControlledTlsPeerTest {
             throws Exception {
         JsonNode catalog = readRouteEvidenceCatalog();
         List<String> caseIds = new ArrayList<>(getAttributesNetworkRouteCaseIds(catalog, protocolVersion));
-        caseIds.remove("test-attr-activation-date");
-        List<GetAttributesNetworkRequest> invocations = new ArrayList<>();
-        for (int index = 0; index < caseIds.size(); index++) {
-            String caseId = caseIds.get(index);
-            String itemId = "getattr-" + index;
-            invocations.add(new GetAttributesNetworkRequest(caseId,
-                    "java.typed-protocol.client_batch_item.get_attributes",
-                    "org.kmipkit.extensions.ClientBatchItem.getAttributes", itemId + "-direct"));
-            invocations.add(new GetAttributesNetworkRequest(caseId,
-                    "java.typed-protocol.function.attribute_request_get_attributes_to_batch_item",
-                    "org.kmipkit.extensions.GetAttributesRequest.toBatchItem", itemId + "-request"));
-        }
-        if (invocations.isEmpty()) return;
-
         int minor = "2.0".equals(protocolVersion) ? 0 : 1;
-        List<String> uniqueBatchItemIds = invocations.stream()
-                .map(GetAttributesNetworkRequest::uniqueBatchItemId).toList();
-        byte[] responseBytes = getAttributesBatchResponse(minor, uniqueBatchItemIds);
         byte[] serverCertificatePem = fixture("server-cert.pem");
         byte[] serverPrivateKeyPem = fixture("server-key.pem");
         byte[] clientCertificatePem = fixture("client-cert.pem");
         byte[] clientPrivateKeyPem = fixture("client-key.pem");
-        SSLServerSocket listener = listener(certificate(serverCertificatePem),
-                privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
-        FutureTask<byte[]> peer = new FutureTask<>(() -> serveOneResponse(listener, responseBytes));
-        Thread peerThread = new Thread(peer, "java-validator-get-attributes-route-peer-" + protocolVersion);
-        peerThread.setDaemon(true);
-        peerThread.start();
-
-        Path connectionFile = temporaryDirectory.resolve("get-attributes-routes-" + protocolVersion + ".json");
-        Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
-                clientCertificatePem, clientPrivateKeyPem, false, protocolVersion));
-        try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile));
-                ClientBatch batch = ClientBatch.create()) {
-            for (GetAttributesNetworkRequest invocation : invocations) {
-                addGetAttributesNetworkRequest(batch, invocation);
-            }
-            try (ClientBatchResponse response = driver.executeBatchForEvidence(batch)) {
-                assertEquals(invocations.size(), response.itemCount());
-                for (int index = 0; index < invocations.size(); index++) {
-                    try (ClientBatchItemResult result = response.itemAt(index)) {
-                        assertGetAttributesRouteResponse(result);
+        String baselineRequestHash = null;
+        for (String encoding : List.of("TTLV", "JSON", "XML")) {
+            for (String transport : List.of("raw_tls", "https")) {
+                List<GetAttributesNetworkRequest> invocations = new ArrayList<>();
+                for (int index = 0; index < caseIds.size(); index++) {
+                    String caseId = caseIds.get(index);
+                    String itemId = "getattr-" + index;
+                    invocations.add(new GetAttributesNetworkRequest(caseId,
+                            "java.typed-protocol.client_batch_item.get_attributes",
+                            "org.kmipkit.extensions.ClientBatchItem.getAttributes", itemId + "-direct"));
+                    invocations.add(new GetAttributesNetworkRequest(caseId,
+                            "java.typed-protocol.function.attribute_request_get_attributes_to_batch_item",
+                            "org.kmipkit.extensions.GetAttributesRequest.toBatchItem", itemId + "-request"));
+                }
+                List<String> uniqueBatchItemIds = invocations.stream()
+                        .map(GetAttributesNetworkRequest::uniqueBatchItemId).toList();
+                byte[] responseTtlv = getAttributesBatchResponse(minor, uniqueBatchItemIds);
+                byte[] responseBytes = getAttributesBatchResponse(minor, uniqueBatchItemIds, encoding);
+                Path connectionFile = temporaryDirectory.resolve(
+                        "get-attributes-routes-" + protocolVersion + "-" + encoding + "-" + transport + ".json");
+                byte[] observedRequest;
+                if ("raw_tls".equals(transport)) {
+                    SSLServerSocket listener = listener(certificate(serverCertificatePem),
+                            privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+                    FutureTask<byte[]> peer = new FutureTask<>(
+                            () -> serveOneEncodedResponse(listener, responseBytes, encoding));
+                    Thread peerThread = new Thread(peer, "java-validator-get-attributes-route-peer-"
+                            + protocolVersion + "-" + encoding);
+                    peerThread.setDaemon(true);
+                    peerThread.start();
+                    Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
+                            clientCertificatePem, clientPrivateKeyPem, false, protocolVersion, encoding, transport));
+                    try {
+                        executeGetAttributesNetworkBatch(connectionFile, invocations, encoding, transport);
+                    } finally {
+                        listener.close();
+                    }
+                    observedRequest = peer.get(15, TimeUnit.SECONDS);
+                } else {
+                    CompletableFuture<byte[]> peer = new CompletableFuture<>();
+                    HttpsServer listener = httpsListener(certificate(serverCertificatePem),
+                            privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+                    listener.createContext("/kmip", exchange -> {
+                        try {
+                            if (!"POST".equals(exchange.getRequestMethod())) {
+                                throw new IllegalStateException("The controlled HTTP peer requires POST.");
+                            }
+                            byte[] request = exchange.getRequestBody().readAllBytes();
+                            peer.complete(request);
+                            exchange.getResponseHeaders().set("Content-Type", contentTypeForEncoding(encoding));
+                            exchange.sendResponseHeaders(200, responseBytes.length);
+                            try (OutputStream output = exchange.getResponseBody()) {
+                                output.write(responseBytes);
+                            }
+                        } catch (Exception exception) {
+                            peer.completeExceptionally(exception);
+                            try {
+                                exchange.sendResponseHeaders(500, -1);
+                            } catch (Exception ignored) {
+                                // The peer future retains the sanitized fixture failure for the test thread.
+                            }
+                        } finally {
+                            exchange.close();
+                        }
+                    });
+                    listener.start();
+                    Files.writeString(connectionFile, connectionJson(listener.getAddress().getPort(),
+                            serverCertificatePem, clientCertificatePem, clientPrivateKeyPem, false,
+                            protocolVersion, encoding, transport));
+                    try {
+                        executeGetAttributesNetworkBatch(connectionFile, invocations, encoding, transport);
+                    } finally {
+                        listener.stop(0);
+                    }
+                    observedRequest = peer.get(15, TimeUnit.SECONDS);
+                }
+                assertGetAttributesNetworkRequest(observedRequest, encoding, protocolVersion, uniqueBatchItemIds);
+                if (baselineRequestHash == null) baselineRequestHash = normalizedTreeSha256(observedRequest);
+                String responseHash = normalizedTreeSha256(responseTtlv);
+                for (GetAttributesNetworkRequest invocation : invocations) {
+                    appendTypedNetworkRouteEvents(events, invocation.caseId(), invocation.routeId(),
+                            "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES", invocation.publicApiSymbol(),
+                            protocolVersion, baselineRequestHash, responseHash, encoding, transport);
+                }
+                if ("TTLV".equals(encoding) && "raw_tls".equals(transport)) {
+                    for (String caseId : caseIds) {
+                        appendRouteEvent(events, caseId,
+                                "java.typed-protocol.function.client_batch_item_response_get_attributes",
+                                "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES",
+                                "org.kmipkit.extensions.ClientBatchItemResult.getAttributesResponse",
+                                null, null, "decode", protocolVersion, null, null, responseHash);
                     }
                 }
             }
-        } finally {
-            listener.close();
         }
+    }
 
-        byte[] observedRequest = peer.get(15, TimeUnit.SECONDS);
-        assertEquals(0x0bL, requestOperation(observedRequest));
-        assertEquals(minor, requestProtocolMinorVersion(observedRequest));
-        for (String uniqueBatchItemId : uniqueBatchItemIds) {
-            assertTrue(contains(observedRequest, item(0x420093, 8,
-                    uniqueBatchItemId.getBytes(StandardCharsets.US_ASCII))),
-                    "The controlled peer must observe each catalogued request's unique batch item ID.");
-        }
-        String requestHash = normalizedTreeSha256(observedRequest);
-        String responseHash = normalizedTreeSha256(responseBytes);
-        for (GetAttributesNetworkRequest invocation : invocations) {
-            appendTypedNetworkRouteEvents(events, invocation.caseId(), invocation.routeId(),
-                    "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES", invocation.publicApiSymbol(),
-                    protocolVersion, requestHash, responseHash);
-        }
-        for (String caseId : caseIds) {
-            appendRouteEvent(events, caseId,
-                    "java.typed-protocol.function.client_batch_item_response_get_attributes",
-                    "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES",
-                    "org.kmipkit.extensions.ClientBatchItemResult.getAttributesResponse",
-                    null, null, "decode", protocolVersion, null, null, responseHash);
+    private void executeGetAttributesNetworkBatch(Path connectionFile,
+            List<GetAttributesNetworkRequest> invocations, String encoding, String transport) throws Exception {
+        try {
+            try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile));
+                    ClientBatch batch = ClientBatch.create()) {
+                for (GetAttributesNetworkRequest invocation : invocations) {
+                    addGetAttributesNetworkRequest(batch, invocation);
+                }
+                try (ClientBatchResponse response = driver.executeBatchForEvidence(batch)) {
+                    assertEquals(invocations.size(), response.itemCount());
+                    for (int index = 0; index < invocations.size(); index++) {
+                        try (ClientBatchItemResult result = response.itemAt(index)) {
+                            assertGetAttributesRouteResponse(result);
+                        }
+                    }
+                }
+            }
+        } catch (ClientOperationException exception) {
+            throw new AssertionError("Get Attributes " + encoding + " / " + transport
+                    + " exchange failed with status=" + exception.statusCode()
+                    + ", category=" + exception.categoryCode() + ", cause=" + exception.causeCode()
+                    + ", delivery=" + exception.deliveryStateCode(), exception);
         }
     }
 
@@ -4427,6 +4583,140 @@ class ControlledTlsPeerTest {
                     item(0x42007f, 5, intBytes(0)), payload);
         }
         return structure(0x42007b, responseItems);
+    }
+
+    private static byte[] getAttributesBatchResponse(int protocolMinorVersion,
+            List<String> uniqueBatchItemIds, String encoding) throws Exception {
+        if ("TTLV".equals(encoding)) return getAttributesBatchResponse(protocolMinorVersion, uniqueBatchItemIds);
+        String response = "JSON".equals(encoding)
+                ? jsonGetAttributesBatchResponse(protocolMinorVersion, uniqueBatchItemIds)
+                : xmlGetAttributesBatchResponse(protocolMinorVersion, uniqueBatchItemIds);
+        return response.getBytes(StandardCharsets.UTF_8);
+    }
+
+    private static String jsonGetAttributesBatchResponse(int protocolMinorVersion,
+            List<String> uniqueBatchItemIds) {
+        StringBuilder response = new StringBuilder("{\"tag\":\"ResponseMessage\",\"value\":[")
+                .append("{\"tag\":\"ResponseHeader\",\"value\":[")
+                .append("{\"tag\":\"ProtocolVersion\",\"value\":[")
+                .append("{\"tag\":\"ProtocolVersionMajor\",\"type\":\"Integer\",\"value\":2},")
+                .append("{\"tag\":\"ProtocolVersionMinor\",\"type\":\"Integer\",\"value\":")
+                .append(protocolMinorVersion).append("}]},")
+                .append("{\"tag\":\"TimeStamp\",\"type\":\"DateTime\",\"value\":\"0x0000000000000001\"},")
+                .append("{\"tag\":\"BatchCount\",\"type\":\"Integer\",\"value\":")
+                .append(uniqueBatchItemIds.size()).append("}]}");
+        for (String uniqueBatchItemId : uniqueBatchItemIds) {
+            response.append(",{\"tag\":\"BatchItem\",\"value\":[")
+                    .append("{\"tag\":\"Operation\",\"type\":\"Enumeration\",\"value\":\"GetAttributes\"},")
+                    .append("{\"tag\":\"UniqueBatchItemID\",\"type\":\"ByteString\",\"value\":\"")
+                    .append(HexFormat.of().formatHex(uniqueBatchItemId.getBytes(StandardCharsets.US_ASCII)))
+                    .append("\"},{\"tag\":\"ResultStatus\",\"type\":\"Enumeration\",\"value\":\"Success\"},")
+                    .append("{\"tag\":\"ResponsePayload\",\"value\":[")
+                    .append("{\"tag\":\"UniqueIdentifier\",\"type\":\"TextString\",\"value\":\"object-7\"},")
+                    .append("{\"tag\":\"Attributes\",\"value\":[")
+                    .append("{\"tag\":\"ActivationDate\",\"type\":\"DateTime\",\"value\":\"1970-01-01T00:00:01Z\"}]}]}]}");
+        }
+        return response.append("]}").toString();
+    }
+
+    private static String xmlGetAttributesBatchResponse(int protocolMinorVersion,
+            List<String> uniqueBatchItemIds) {
+        StringBuilder response = new StringBuilder("<ResponseMessage><ResponseHeader>")
+                .append("<ProtocolVersion><ProtocolVersionMajor type=\"Integer\" value=\"2\"/>")
+                .append("<ProtocolVersionMinor type=\"Integer\" value=\"")
+                .append(protocolMinorVersion).append("\"/></ProtocolVersion>")
+                .append("<TimeStamp type=\"DateTime\" value=\"1970-01-01T00:00:01Z\"/>")
+                .append("<BatchCount type=\"Integer\" value=\"")
+                .append(uniqueBatchItemIds.size()).append("\"/></ResponseHeader>");
+        for (String uniqueBatchItemId : uniqueBatchItemIds) {
+            response.append("<BatchItem><Operation type=\"Enumeration\" value=\"GetAttributes\"/>")
+                    .append("<UniqueBatchItemID type=\"ByteString\" value=\"")
+                    .append(HexFormat.of().formatHex(uniqueBatchItemId.getBytes(StandardCharsets.US_ASCII)))
+                    .append("\"/><ResultStatus type=\"Enumeration\" value=\"Success\"/>")
+                    .append("<ResponsePayload><UniqueIdentifier type=\"TextString\" value=\"object-7\"/>")
+                    .append("<Attributes><ActivationDate type=\"DateTime\" value=\"1970-01-01T00:00:01Z\"/>")
+                    .append("</Attributes></ResponsePayload></BatchItem>");
+        }
+        return response.append("</ResponseMessage>").toString();
+    }
+
+    private static String contentTypeForEncoding(String encoding) {
+        return switch (encoding) {
+            case "TTLV" -> "application/octet-stream";
+            case "JSON" -> "application/json";
+            case "XML" -> "text/xml";
+            default -> throw new IllegalArgumentException("Unsupported fixture encoding.");
+        };
+    }
+
+    private static void assertGetAttributesNetworkRequest(byte[] request, String encoding,
+            String protocolVersion, List<String> uniqueBatchItemIds) throws Exception {
+        int minor = "2.0".equals(protocolVersion) ? 0 : 1;
+        if ("TTLV".equals(encoding)) {
+            assertEquals(0x0bL, requestOperation(request));
+            assertEquals(minor, requestProtocolMinorVersion(request));
+            assertTrue(contains(request, item(0x42013b, 5, intBytes(0x420001))),
+                    "The controlled peer must observe the requested Activation Date reference.");
+            for (String uniqueBatchItemId : uniqueBatchItemIds) {
+                assertTrue(contains(request, item(0x420093, 8,
+                        uniqueBatchItemId.getBytes(StandardCharsets.US_ASCII))),
+                        "The controlled peer must observe each catalogued unique batch item ID.");
+            }
+            return;
+        }
+        if ("JSON".equals(encoding)) {
+            JsonNode root = new ObjectMapper().readTree(request);
+            assertEquals("RequestMessage", root.path("tag").asText());
+            List<JsonNode> operations = jsonValuesForTag(root, "Operation");
+            assertEquals(uniqueBatchItemIds.size(), operations.size());
+            assertTrue(operations.stream().allMatch(value -> "GetAttributes".equals(value.asText())));
+            List<JsonNode> minors = jsonValuesForTag(root, "ProtocolVersionMinor");
+            assertEquals(1, minors.size());
+            assertEquals(minor, minors.get(0).asInt());
+            List<JsonNode> references = jsonValuesForTag(root, "AttributeReference");
+            assertEquals(uniqueBatchItemIds.size(), references.size());
+            assertTrue(references.stream().allMatch(value -> "0x00420001".equals(value.asText())),
+                    "The JSON request must carry the catalogued Activation Date tag: " + references);
+            List<String> observedIds = jsonValuesForTag(root, "UniqueBatchItemID").stream()
+                    .map(JsonNode::asText).toList();
+            List<String> expectedIds = uniqueBatchItemIds.stream()
+                    .map(value -> HexFormat.of().formatHex(value.getBytes(StandardCharsets.US_ASCII))).toList();
+            assertEquals(expectedIds, observedIds);
+            return;
+        }
+        String xml = new String(request, StandardCharsets.UTF_8);
+        assertTrue(xml.startsWith("<RequestMessage>"));
+        assertEquals(uniqueBatchItemIds.size(), occurrences(xml,
+                "<Operation type=\"Enumeration\" value=\"GetAttributes\"/>"));
+        assertTrue(xml.contains("<ProtocolVersionMinor type=\"Integer\" value=\"" + minor + "\"/>"));
+        assertEquals(uniqueBatchItemIds.size(), occurrences(xml,
+                "<AttributeReference type=\"Enumeration\" value=\"0x00420001\"/>"));
+        for (String uniqueBatchItemId : uniqueBatchItemIds) {
+            String encodedId = HexFormat.of().withUpperCase()
+                    .formatHex(uniqueBatchItemId.getBytes(StandardCharsets.US_ASCII));
+            assertTrue(xml.contains("<UniqueBatchItemID type=\"ByteString\" value=\"" + encodedId + "\"/>"));
+        }
+    }
+
+    private static List<JsonNode> jsonValuesForTag(JsonNode node, String tag) {
+        List<JsonNode> values = new ArrayList<>();
+        collectJsonValuesForTag(node, tag, values);
+        return values;
+    }
+
+    private static void collectJsonValuesForTag(JsonNode node, String tag, List<JsonNode> values) {
+        if (node.isObject() && tag.equals(node.path("tag").asText())) values.add(node.path("value"));
+        if (node.isContainerNode()) node.elements().forEachRemaining(child -> collectJsonValuesForTag(child, tag, values));
+    }
+
+    private static int occurrences(String text, String value) {
+        int count = 0;
+        int from = 0;
+        while ((from = text.indexOf(value, from)) >= 0) {
+            count++;
+            from += value.length();
+        }
+        return count;
     }
 
     private void appendControlledKeyFormatRawResponseRouteEvents(ArrayNode events, String protocolVersion)
@@ -4604,19 +4894,29 @@ class ControlledTlsPeerTest {
     private static void appendTypedNetworkRouteEvents(ArrayNode events, String caseId, String routeId,
             String targetId, String publicApiSymbol, String protocolVersion,
             String requestTreeHash, String responseTreeHash) {
+        appendTypedNetworkRouteEvents(events, caseId, routeId, targetId, publicApiSymbol,
+                protocolVersion, requestTreeHash, responseTreeHash, "TTLV", "raw_tls");
+    }
+
+    private static void appendTypedNetworkRouteEvents(ArrayNode events, String caseId, String routeId,
+            String targetId, String publicApiSymbol, String protocolVersion,
+            String requestTreeHash, String responseTreeHash, String encoding, String transport) {
         String executionRoute = "java.execute.typed-batch";
         String executionSymbol = "org.kmipkit.extensions.Client.execute";
-        appendRouteEvent(events, caseId, routeId, targetId, publicApiSymbol,
-                executionRoute, executionSymbol, "construct", protocolVersion, "raw_tls",
+        ObjectNode constructed = appendRouteEvent(events, caseId, routeId, targetId, publicApiSymbol,
+                executionRoute, executionSymbol, "construct", protocolVersion, transport,
                 requestTreeHash, null);
+        constructed.put("encoding", encoding);
         ObjectNode sent = appendRouteEvent(events, caseId, routeId, targetId, publicApiSymbol,
-                executionRoute, executionSymbol, "send", protocolVersion, "raw_tls",
+                executionRoute, executionSymbol, "send", protocolVersion, transport,
                 requestTreeHash, null);
+        sent.put("encoding", encoding);
         sent.put("request_delivery_state", "response_received");
         sent.put("transport_invocation_count", 1);
-        appendRouteEvent(events, caseId, routeId, targetId, publicApiSymbol,
-                executionRoute, executionSymbol, "decode", protocolVersion, "raw_tls",
+        ObjectNode decoded = appendRouteEvent(events, caseId, routeId, targetId, publicApiSymbol,
+                executionRoute, executionSymbol, "decode", protocolVersion, transport,
                 null, responseTreeHash);
+        decoded.put("encoding", encoding);
     }
 
     private static ObjectNode appendRouteEvent(ArrayNode events, String caseId, String routeId,
@@ -4789,15 +5089,28 @@ class ControlledTlsPeerTest {
         additionalCaseIdCount += appendCaseIds(caseIds, managedObjectTypeCaseIds);
         CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().forEach(caseIds::add);
         report.putArray("protocol_versions").add("2.0").add("2.1");
-        ObjectNode combination = mapper.createObjectNode();
-        combination.put("encoding", "TTLV");
-        combination.put("transport", "raw_tls");
-        report.putArray("network_combinations").add(combination);
+        appendNetworkCombinations(report, events);
         report.set("events", events);
         appendDeclaredRouteScope(report, events);
         Files.createDirectories(reportPath.toAbsolutePath().normalize().getParent());
         mapper.writerWithDefaultPrettyPrinter().writeValue(reportPath.toFile(), report);
         return additionalCaseIdCount;
+    }
+
+    private static void appendNetworkCombinations(ObjectNode report, ArrayNode events) {
+        Set<String> combinations = new java.util.LinkedHashSet<>();
+        for (JsonNode event : events) {
+            if (!event.path("transport").isTextual()) continue;
+            combinations.add(event.path("encoding").asText() + "/"
+                    + event.path("transport").asText());
+        }
+        ArrayNode declared = report.putArray("network_combinations");
+        for (String combination : combinations) {
+            int separator = combination.indexOf('/');
+            ObjectNode item = declared.addObject();
+            item.put("encoding", combination.substring(0, separator));
+            item.put("transport", combination.substring(separator + 1));
+        }
     }
 
     private static void appendDeclaredRouteScope(ObjectNode report, ArrayNode events) {
