@@ -2671,7 +2671,7 @@
     "test-v20-reject-set-constraints",
     "test-v20-reject-set-defaults"
   ],
-  "executed_cells": 41814,
+  "executed_cells": 41898,
   "language": "java",
   "library_commit": "12496d646d11d4069b58bcc88fc76cc619211ec6",
   "pending_case_ids": [
@@ -4524,7 +4524,7 @@
     },
     {
       "case_id": "test-norm-payload-client-certify-request-20-002",
-      "pending_cells": 34
+      "pending_cells": 31
     },
     {
       "case_id": "test-norm-payload-client-certify-request-20-002-type-enumeration",
@@ -4532,7 +4532,7 @@
     },
     {
       "case_id": "test-norm-payload-client-certify-request-20-003",
-      "pending_cells": 34
+      "pending_cells": 31
     },
     {
       "case_id": "test-norm-payload-client-certify-request-20-003-type-byte-string",
@@ -4552,7 +4552,7 @@
     },
     {
       "case_id": "test-norm-payload-client-certify-request-21-002",
-      "pending_cells": 34
+      "pending_cells": 31
     },
     {
       "case_id": "test-norm-payload-client-certify-request-21-002-type-enumeration",
@@ -4560,7 +4560,7 @@
     },
     {
       "case_id": "test-norm-payload-client-certify-request-21-003",
-      "pending_cells": 34
+      "pending_cells": 31
     },
     {
       "case_id": "test-norm-payload-client-certify-request-21-003-type-byte-string",
@@ -4852,11 +4852,11 @@
     },
     {
       "case_id": "test-norm-payload-client-decrypt-request-20-008",
-      "pending_cells": 34
+      "pending_cells": 31
     },
     {
       "case_id": "test-norm-payload-client-decrypt-request-20-009",
-      "pending_cells": 34
+      "pending_cells": 31
     },
     {
       "case_id": "test-norm-payload-client-decrypt-request-21-001",
@@ -4888,11 +4888,11 @@
     },
     {
       "case_id": "test-norm-payload-client-decrypt-request-21-008",
-      "pending_cells": 34
+      "pending_cells": 31
     },
     {
       "case_id": "test-norm-payload-client-decrypt-request-21-009",
-      "pending_cells": 34
+      "pending_cells": 31
     },
     {
       "case_id": "test-norm-payload-client-decrypt-response-20-001",
@@ -5124,7 +5124,7 @@
     },
     {
       "case_id": "test-norm-payload-client-encrypt-request-20-008",
-      "pending_cells": 34
+      "pending_cells": 31
     },
     {
       "case_id": "test-norm-payload-client-encrypt-request-21-001",
@@ -5156,7 +5156,7 @@
     },
     {
       "case_id": "test-norm-payload-client-encrypt-request-21-008",
-      "pending_cells": 34
+      "pending_cells": 31
     },
     {
       "case_id": "test-norm-payload-client-encrypt-response-20-001",
@@ -5180,7 +5180,7 @@
     },
     {
       "case_id": "test-norm-payload-client-encrypt-response-20-005",
-      "pending_cells": 23
+      "pending_cells": 20
     },
     {
       "case_id": "test-norm-payload-client-encrypt-response-21-001",
@@ -5204,7 +5204,7 @@
     },
     {
       "case_id": "test-norm-payload-client-encrypt-response-21-005",
-      "pending_cells": 23
+      "pending_cells": 20
     },
     {
       "case_id": "test-norm-payload-client-export-request-20-001",
@@ -5216,7 +5216,7 @@
     },
     {
       "case_id": "test-norm-payload-client-export-request-20-003",
-      "pending_cells": 34
+      "pending_cells": 31
     },
     {
       "case_id": "test-norm-payload-client-export-request-20-004",
@@ -5236,7 +5236,7 @@
     },
     {
       "case_id": "test-norm-payload-client-export-request-21-003",
-      "pending_cells": 34
+      "pending_cells": 31
     },
     {
       "case_id": "test-norm-payload-client-export-request-21-004",
@@ -5332,7 +5332,7 @@
     },
     {
       "case_id": "test-norm-payload-client-get-request-20-003",
-      "pending_cells": 34
+      "pending_cells": 31
     },
     {
       "case_id": "test-norm-payload-client-get-request-20-004",
@@ -5352,7 +5352,7 @@
     },
     {
       "case_id": "test-norm-payload-client-get-request-21-003",
-      "pending_cells": 34
+      "pending_cells": 31
     },
     {
       "case_id": "test-norm-payload-client-get-request-21-004",
@@ -5492,7 +5492,7 @@
     },
     {
       "case_id": "test-norm-payload-client-import-request-20-004",
-      "pending_cells": 34
+      "pending_cells": 31
     },
     {
       "case_id": "test-norm-payload-client-import-request-20-005",
@@ -5520,7 +5520,7 @@
     },
     {
       "case_id": "test-norm-payload-client-import-request-21-004",
-      "pending_cells": 34
+      "pending_cells": 31
     },
     {
       "case_id": "test-norm-payload-client-import-request-21-005",
@@ -6124,11 +6124,11 @@
     },
     {
       "case_id": "test-norm-payload-client-query-request-20-001",
-      "pending_cells": 36
+      "pending_cells": 33
     },
     {
       "case_id": "test-norm-payload-client-query-request-21-001",
-      "pending_cells": 36
+      "pending_cells": 33
     },
     {
       "case_id": "test-norm-payload-client-query-request-21-002",
@@ -6264,7 +6264,7 @@
     },
     {
       "case_id": "test-norm-payload-client-re-certify-request-20-003",
-      "pending_cells": 34
+      "pending_cells": 31
     },
     {
       "case_id": "test-norm-payload-client-re-certify-request-20-003-type-enumeration",
@@ -6272,7 +6272,7 @@
     },
     {
       "case_id": "test-norm-payload-client-re-certify-request-20-004",
-      "pending_cells": 34
+      "pending_cells": 31
     },
     {
       "case_id": "test-norm-payload-client-re-certify-request-20-004-type-byte-string",
@@ -6304,7 +6304,7 @@
     },
     {
       "case_id": "test-norm-payload-client-re-certify-request-21-003",
-      "pending_cells": 34
+      "pending_cells": 31
     },
     {
       "case_id": "test-norm-payload-client-re-certify-request-21-003-type-enumeration",
@@ -6312,7 +6312,7 @@
     },
     {
       "case_id": "test-norm-payload-client-re-certify-request-21-004",
-      "pending_cells": 34
+      "pending_cells": 31
     },
     {
       "case_id": "test-norm-payload-client-re-certify-request-21-004-type-byte-string",
@@ -6668,7 +6668,7 @@
     },
     {
       "case_id": "test-norm-payload-client-sign-request-20-004",
-      "pending_cells": 35
+      "pending_cells": 32
     },
     {
       "case_id": "test-norm-payload-client-sign-request-20-004-type-byte-string",
@@ -6700,7 +6700,7 @@
     },
     {
       "case_id": "test-norm-payload-client-sign-request-21-004",
-      "pending_cells": 35
+      "pending_cells": 32
     },
     {
       "case_id": "test-norm-payload-client-sign-request-21-004-type-byte-string",
@@ -6764,7 +6764,7 @@
     },
     {
       "case_id": "test-norm-payload-client-signature-verify-request-20-004",
-      "pending_cells": 35
+      "pending_cells": 32
     },
     {
       "case_id": "test-norm-payload-client-signature-verify-request-20-004-type-byte-string",
@@ -6804,7 +6804,7 @@
     },
     {
       "case_id": "test-norm-payload-client-signature-verify-request-21-004",
-      "pending_cells": 35
+      "pending_cells": 32
     },
     {
       "case_id": "test-norm-payload-client-signature-verify-request-21-004-type-byte-string",
@@ -8023,7 +8023,7 @@
       "pending_cells": 2
     }
   ],
-  "pending_cells": 29827,
+  "pending_cells": 29743,
   "pending_reason": "No validated per-cell route execution evidence is recorded for this cell.",
   "pending_reason_code": "route_evidence_not_emitted",
   "planned_cells": 71641,
@@ -8031,8 +8031,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 3794,
-      "pending_cells": 290,
+      "executed_cells": 3808,
+      "pending_cells": 276,
       "protocol_version": "2.0",
       "required_cells": 4084,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item",
@@ -8041,8 +8041,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 3872,
-      "pending_cells": 307,
+      "executed_cells": 3886,
+      "pending_cells": 293,
       "protocol_version": "2.1",
       "required_cells": 4179,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item",
@@ -8351,8 +8351,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 3842,
-      "pending_cells": 289,
+      "executed_cells": 3856,
+      "pending_cells": 275,
       "protocol_version": "2.0",
       "required_cells": 4131,
       "route_id": "java.generic-ttlv.ttlv_codec.decode",
@@ -8361,8 +8361,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 3920,
-      "pending_cells": 306,
+      "executed_cells": 3934,
+      "pending_cells": 292,
       "protocol_version": "2.1",
       "required_cells": 4226,
       "route_id": "java.generic-ttlv.ttlv_codec.decode",
@@ -8371,8 +8371,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 3794,
-      "pending_cells": 289,
+      "executed_cells": 3808,
+      "pending_cells": 275,
       "protocol_version": "2.0",
       "required_cells": 4083,
       "route_id": "java.generic-ttlv.ttlv_item.create",
@@ -8381,8 +8381,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 3872,
-      "pending_cells": 306,
+      "executed_cells": 3886,
+      "pending_cells": 292,
       "protocol_version": "2.1",
       "required_cells": 4178,
       "route_id": "java.generic-ttlv.ttlv_item.create",
@@ -34602,8 +34602,8 @@
   "route_manifest_sha256": "8e26f2efe33c63d3fc4dcd0cb11e465b15bbe9135ab56809c354f032a7aeac59",
   "route_summary": [
     {
-      "executed_cells": 7666,
-      "pending_cells": 597,
+      "executed_cells": 7694,
+      "pending_cells": 569,
       "required_cells": 8263,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item"
     },
@@ -34698,14 +34698,14 @@
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring"
     },
     {
-      "executed_cells": 7762,
-      "pending_cells": 595,
+      "executed_cells": 7790,
+      "pending_cells": 567,
       "required_cells": 8357,
       "route_id": "java.generic-ttlv.ttlv_codec.decode"
     },
     {
-      "executed_cells": 7666,
-      "pending_cells": 595,
+      "executed_cells": 7694,
+      "pending_cells": 567,
       "required_cells": 8261,
       "route_id": "java.generic-ttlv.ttlv_item.create"
     },
@@ -36073,7 +36073,7 @@
     }
   ],
   "schema_version": "1.0",
-  "selected_scope_cells": 41814,
+  "selected_scope_cells": 41898,
   "selected_scope_complete": true,
   "vendor_interoperability_claim": false
 }

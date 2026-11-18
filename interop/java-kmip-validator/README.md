@@ -819,3 +819,24 @@ validates 41,814/41,814 cells with zero failures; ledger comparison and the
 1,507-route audit pass. The full ledger records 71,641 planned, 41,814
 executed, and 29,827 pending cells. The matrix remains incomplete, so #187 and
 its dependents stay WIP.
+
+### Common Byte String and Enumeration client payload routes — 2026-11-18
+
+The local TTLV runner now covers `Certificate Request Value`,
+`Authenticated Encryption Additional Data`, `Authenticated Encryption Tag`,
+and `Digested Data` as Byte Strings, plus `Certificate Request Type`, `Key Wrap
+Type`, and `Query Function` as catalog-selected Enumerations. Exact table
+sources are OASIS KMIP 2.0 §6.1.6 Table 164, §6.1.11 Table 181, §6.1.18 Table
+202, §6.1.37 Table 259, and §6.1.49 Table 302; KMIP 2.1 §6.1.6 Table 179,
+§6.1.11 Table 196, §6.1.18 Table 217, §6.1.40 Table 282, and §6.1.55 Table 334.
+These are local TTLV construction, view, and decode checks, not server
+acceptance.
+
+Red `6a7e3dd95` showed the Certify operation target had events but its
+Certificate Request Type payload did not. Green `a7bff34d3` adds the Byte
+String and Enumeration mappings for the selected client payload cases,
+closing 84 cells. The Java suite passes 92/92 serially; shared route tests pass
+109/109. The selected report validates 41,898/41,898 cells with zero failures;
+ledger comparison and the 1,507-route audit pass. The full ledger records
+71,641 planned, 41,898 executed, and 29,743 pending cells. The matrix remains
+incomplete, so #187 and its dependents stay WIP.
