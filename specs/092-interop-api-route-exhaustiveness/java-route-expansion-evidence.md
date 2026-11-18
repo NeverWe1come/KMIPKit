@@ -3019,3 +3019,41 @@ python3 -m unittest interop.shared.tests.test_route_execution_evidence \
 python3 interop/shared/tools/route_capabilities.py --check
 git diff --check
 ```
+
+## Remaining Byte String and Date Time Extended routes — 2026-11-18
+
+Red commit `23a06421e` adds a focused test for five catalogued Byte String
+values and one Date Time Extended field across KMIP 2.0 and 2.1. Green commit
+`ade5ccbe4` resolves each assigned tag from the catalog and constructs,
+views, and decodes the values with the installed Java API. The Byte String
+fixtures include `Data`, Issuer and Subject Alternative Name DER values, and
+PKCS#11 parameter blobs; the Date Time Extended fixture is a synthetic
+64-bit timestamp beyond the 32-bit Date-Time range. This demonstrates local
+TTLV type handling only, not semantic credential, certificate, or PKCS#11
+validation.
+
+The full Gradle suite passes. The selected report validates 28,924/28,924
+cells with zero failures; the ledger records 28,924 executed and 42,717
+pending cells of 71,641 across 1,151 pending case IDs. All 74 planned Java
+ByteString cells and all five DateTimeExtended cells are now covered. Shared
+route-evidence, schema, and capability suites pass 108 tests; the route audit
+confirms 1,507 routes. The complete Java matrix and stack remain WIP.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-tmp" \
+  bash bindings/java/gradlew -p interop/java-kmip-validator \
+  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" \
+  test --rerun-tasks
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+python3 -m unittest interop.shared.tests.test_route_execution_evidence \
+  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+git diff --check
+```
