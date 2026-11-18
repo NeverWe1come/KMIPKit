@@ -576,3 +576,24 @@ artifact. This is part of the FR-006 artifact provenance check.
   validates 42,869/42,869 cells with zero failures; ledger comparison passes.
   The full matrix remains incomplete at 42,869/71,641, with 28,772 pending,
   so FR-002/FR-003 are not yet complete and the stack remains WIP.
+
+## Java full-matrix CI enforcement — 2026-11-18
+
+- **FR-002/FR-007:** The Java workflow now invokes full collection validation
+  rather than the selected-scope mode. It cannot pass while any applicable
+  Java matrix cell is absent; ledger output is produced only after collection
+  validation succeeds. The route-evidence workflow contract, shared evidence
+  tests, Java install tests, and ledger comparison tests pass (49 tests).
+- Red `91aa2652c`, Green `73e399806`, and Refactor `103ca958a` add the
+  full-matrix gate and unified ledger writer. Running it against the current
+  report correctly detects missing cells.
+- Fixture-integrity TDD cycles use Red `9ef316a30`, Green `0fa84b23c`,
+  Refactor `48ee087f7`, plus Split Key Prime Field Size Red `73e71a69c` and
+  Green `95eef8546`. The full Java suite passes 106/106; fresh selected
+  evidence validates 42,875/42,875 cells with zero failures. The refreshed
+  ledger reports 42,875/71,641 overall and 28,766 pending. It correctly marks
+  `complete_matrix=false`, and the full-matrix gate rejects it. KMIP 2.0
+  §§6.1.12/6.1.29 and KMIP 2.1 §§6.1.12/6.1.30 permit Lease Time as an
+  Interval or Date Time for Delegated Login and Login; only Interval is
+  exercised, leaving the Date Time branch unverified. The PR stack remains
+  WIP.

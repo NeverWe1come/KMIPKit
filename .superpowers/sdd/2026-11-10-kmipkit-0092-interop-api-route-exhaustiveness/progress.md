@@ -596,3 +596,54 @@ branches, and the common CI therefore reports a planned matrix only.
   This does not meet the active objective's full-matrix requirement. Keep the
   Java stack WIP and continue implementing pending case recipes; later change
   the exact-head CI gate to require full-matrix completeness.
+
+## 2026-11-18 Java full-matrix CI gate
+
+- Red `91aa2652c` proves the Java workflow incorrectly invokes the
+  `--selected-scope` mode. Green `73e399806` removes it and permits full-mode
+  ledger output only after `validate_collection` checks every Java matrix
+  cell. Refactor `103ca958a` shares ledger-writing summary construction.
+- 49 targeted Python tests pass across route evidence, Java workflow contracts,
+  and ledger comparison. Running the actual full-mode CLI against the current
+  report fails on missing async, TTLV, and transport route cells as expected;
+  this confirms the new gate exposes the remaining work. Keep the PR WIP and
+  continue until the full report passes, then verify exact-head hosted CI.
+
+## Audit of previously emitted Java local evidence
+
+- Independent audit found potentially invalid executed cells that must be
+  corrected before treating prior counts as trustworthy: KMIP 2.1 Object
+  Groups/Object Types operation-structure fixtures use tags 0x420126/0x420125
+  instead of 0x420166/0x420167; Locate Object Group Member is Text String
+  instead of Enumeration; Offset and Lease Time are Integer instead of
+  Interval; Create Split Key Prime Field Size is Integer 8 instead of a
+  Big Integer prime; Check Lease Time is Integer instead of Interval.
+- The Protocol Version Minor scalar fixture also uses value 1 in a KMIP 2.0
+  context, where the wire value is 0. Structure-valued tag-only fixtures use
+  empty values, which does not invalidate tag identity but does not prove a
+  semantically valid complete Attribute.
+- Manual Big Integer wires for Split Key Prime Field Size and transparent key
+  material use item Length values not divisible by eight, contrary to the
+  pinned TTLV rule.
+
+## 2026-11-18 Java fixture integrity corrections
+
+- Red `9ef316a30`, Green `0fa84b23c`, and Refactor `48ee087f7` corrected the
+  KMIP 2.1 Object Groups/Object Types tags, Protocol Version Minor for KMIP
+  2.0, scalar TTLV types, Big Integer item-length alignment/sign extension,
+  and the Split Key Prime Field Size fixture. Separate Split Key bound cycle:
+  Red `73e71a69c`, Green `95eef8546`, Refactor `48ee087f7`; Prime Field Size is
+  `2^127 - 1`, a prime greater than `2^L` for the 32-bit synthetic secret
+  required by KMIP 2.1 §2.8.
+- The full Java suite passes 106/106 tests. Fresh evidence validates all
+  42,875 selected-scope cells with zero failures; the generated ledger reports
+  42,875/71,641 overall, 28,766 pending, and `complete_matrix=false`. The
+  reference ledger was refreshed through `compare_route_ledger.py` and matches
+  the generated ledger.
+- The regenerated artifact changes 814 existing evidence hashes after the
+  invalid wire fixtures were corrected. This improves the integrity of the
+  recorded events; it does not complete the pending route matrix.
+- For Login and Delegated Login, KMIP 2.0 §6.1.12/§6.1.29 and KMIP 2.1
+  §6.1.12/§6.1.30 describe Lease Time as an Interval or Date Time. Current
+  evidence exercises only the Interval form for those fields; Date Time must
+  not be inferred from the current cell count. The full stack remains WIP.

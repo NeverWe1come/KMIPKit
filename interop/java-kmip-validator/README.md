@@ -1227,3 +1227,21 @@ audit accepts 1,507 routes. The selected report validates 42,864/42,864 cells
 with zero failures. The ledger records 71,641 planned, 42,864 executed, and
 28,777 pending cells; its comparison passes. The full Java matrix remains
 incomplete, so the PR stack stays WIP.
+
+### Full-matrix Java CI gate — 2026-11-18
+
+Java CI no longer opts into `--selected-scope`. It now calls the shared
+collection validator, which rejects a report missing any applicable case,
+route, version, encoding, or transport cell before writing the coverage
+ledger. Red `91aa2652c` demonstrates the old subset-only workflow; Green
+`73e399806` changes the workflow and full-mode ledger handling; Refactor
+`103ca958a` shares the ledger output path. The workflow contract and shared
+route evidence, install, and ledger tests pass (49 tests). After correcting
+invalid fixture tags, scalar encodings, Protocol Version Minor, and Big
+Integer wire lengths, the full Java suite passes 106/106 tests. Fresh
+evidence validates 42,875/42,875 selected-scope cells with zero failures;
+the global ledger is 42,875/71,641, with 28,766 pending. For Login and
+Delegated Login, KMIP 2.0 §§6.1.12/6.1.29 and KMIP 2.1 §§6.1.12/6.1.30 permit
+Lease Time as an Interval or Date Time; only Interval is exercised here. The
+full-matrix gate correctly rejects the incomplete report, so the stack remains
+WIP.
