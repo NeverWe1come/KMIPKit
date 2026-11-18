@@ -554,7 +554,7 @@ def main() -> int:
     expected_operations = (
         (1, 20, 1, 11, 20, 1, 12, 20, 1, 10, 20, 1, 9, 19, 20, 1, 19, 20,
          1, 20, 19, 20,
-         1, 18, 19, 20, 8, 24, 44, 1, 11, 20, 1, 11, 20, 1, 20, 1, 20, 1, 20,
+         1, 18, 19, 20, 8, 24, 44, 45, 1, 11, 20, 1, 11, 20, 1, 20, 1, 20, 1, 20,
          1, 18, 20, 19, 20)
         if protocol_version == "2.0"
         else (1, 20, 1, 11, 20, 1, 12, 20, 1, 10, 20, 1, 9, 19, 20, 1, 19, 20,
@@ -562,7 +562,7 @@ def main() -> int:
               1, 11, 20, 1, 20, 1, 20, 1, 20, 1, 18, 20, 19, 20)
     )
     expected_cases = (
-        ("test-op-locate", "test-op-query", "test-op-log", "test-op-interop")
+        ("test-op-locate", "test-op-query", "test-op-log", "test-op-login", "test-op-interop")
         if protocol_version == "2.0"
         else ("test-op-discover-versions", "test-op-ping", "test-op-query", "test-op-log",
               "test-op-locate", "test-op-login", "test-op-logout", "test-op-interop", "test-op-get", "test-op-get-attributes",
@@ -1572,8 +1572,8 @@ def main() -> int:
                     "KMIP 2.0 Discover Versions must report the documented C API offer limitation"
                 )
             login = next(case for case in result["cases"] if case["case_id"] == "test-op-login")
-            if login["status"] != "not_run" or "Login builder only supports KMIP 2.1" not in login.get("diagnostic", ""):
-                raise AssertionError("KMIP 2.0 Login must report the documented public C API limitation")
+            if login["status"] != "passed":
+                raise AssertionError("KMIP 2.0 Login must execute its typed response route")
             logout = next(case for case in result["cases"] if case["case_id"] == "test-op-logout")
             if logout["status"] != "not_run" or "cannot obtain a server-issued Ticket" not in logout.get("diagnostic", ""):
                 raise AssertionError("KMIP 2.0 Logout must report the missing Login Ticket prerequisite")
