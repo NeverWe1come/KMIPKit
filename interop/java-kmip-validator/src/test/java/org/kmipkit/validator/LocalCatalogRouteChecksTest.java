@@ -335,6 +335,39 @@ class LocalCatalogRouteChecksTest {
     }
 
     @Test
+    void executesRemainingTextStringTargetsThroughGenericTtlvRoutes() throws Exception {
+        JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
+        Set<String> caseIds = Set.of(
+                "test-attr-unique-identifier",
+                "test-norm-structure-member-structure-member-3-3-encryption-key-information-unique-identifier",
+                "test-norm-structure-member-structure-member-3-3-mac-signature-key-information-unique-identifier",
+                "test-norm-structure-member-structure-member-7-18-attribute-name",
+                "test-norm-structure-member-structure-member-7-21-unique-identifier",
+                "test-norm-structure-member-structure-member-7-28-pkcs-11-interface",
+                "test-norm-structure-member-structure-member-7-41-validation-profile");
+        List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
+
+        for (String version : List.of("2.0", "2.1")) {
+            LocalCatalogRouteChecks.executeTextStringTargets(catalog, version, caseIds, invocations::add);
+        }
+
+        assertEquals(caseIds, invocations.stream().map(LocalCatalogRouteChecks.Invocation::caseId)
+                .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(56, invocations.size(), "Every applicable target/version pair must use four routes.");
+        assertEquals(Set.of(
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring",
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode"),
+                invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId)
+                        .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(Set.of("construct", "decode"), invocations.stream()
+                .map(LocalCatalogRouteChecks.Invocation::action)
+                .collect(java.util.stream.Collectors.toSet()));
+        assertTrue(invocations.stream().allMatch(invocation -> invocation.wire().length >= 16));
+    }
+
+    @Test
     void executesRandomIvThroughTheTypedCryptographicParametersBuilder() throws Exception {
         JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
         String caseId = "test-norm-structure-member-structure-member-4-16-random-iv";
