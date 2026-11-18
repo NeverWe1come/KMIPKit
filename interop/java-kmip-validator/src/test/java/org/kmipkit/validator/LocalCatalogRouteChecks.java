@@ -618,6 +618,96 @@ final class LocalCatalogRouteChecks {
         }
     }
 
+    /** Returns client payload Unique Identifier cases that lack generic local TTLV route evidence. */
+    static Set<String> missingClientIdentifierPayloadCaseIds(JsonNode catalog, JsonNode events, String version) {
+        List<String> routes = List.of("java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item", "java.generic-ttlv.ttlv_codec.decode");
+        Set<RouteEvidenceKey> recordedRoutes = routeEvidenceKeys(events);
+        Set<String> missing = new java.util.LinkedHashSet<>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            JsonNode requires = testCase.path("requires");
+            if (!"operation_payload_field".equals(requires.path("target_kind").asText())
+                    || !"Unique Identifier".equals(requires.path("field_name").asText())
+                    || !requires.path("operation_id").asText().startsWith("KMIPKIT-ELEM-OP-C2S-")
+                    || !"local_model".equals(testCase.path("execution").path("mode").asText())
+                    || !applies(testCase, version)) continue;
+            String caseId = testCase.path("case_id").asText();
+            String targetId = requires.path("normative_target_id").asText();
+            String operationId = requires.path("operation_id").asText();
+            int fieldRoutes = (int) routes.stream().filter(route -> recordedRoutes.contains(
+                    new RouteEvidenceKey(caseId, targetId, route, version))).count();
+            int operationRoutes = (int) routes.stream().filter(route -> recordedRoutes.contains(
+                    new RouteEvidenceKey(caseId, operationId, route, version))).count();
+            if (fieldRoutes == 0) {
+                missing.add(caseId);
+            } else {
+                assertEquals(routes.size(), fieldRoutes,
+                        "Client payload Unique Identifier routes must be complete before reuse: " + caseId);
+            }
+            assertEquals(true, operationRoutes == 0 || operationRoutes == routes.size(),
+                    "Operation-target TTLV evidence must be a complete route set: " + caseId);
+        }
+        return Set.copyOf(missing);
+    }
+
+    /** Exercises generic Item construction, view, and decode for client payload Unique Identifier fields. */
+    static void executeClientIdentifierPayloadFields(JsonNode catalog, String version, Set<String> selectedCaseIds,
+            JsonNode events, EvidenceSink sink) throws Exception {
+        Set<RouteEvidenceKey> recordedRoutes = routeEvidenceKeys(events);
+        Set<String> emitted = new java.util.LinkedHashSet<>();
+        CodecLimits limits = CodecLimits.defaults();
+        byte[] identifier = "kmipkit-route-identifier".getBytes(StandardCharsets.US_ASCII);
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String caseId = testCase.path("case_id").asText();
+            if (!selectedCaseIds.contains(caseId) || !applies(testCase, version)) continue;
+            JsonNode requires = testCase.path("requires");
+            String fieldName = requires.path("field_name").asText();
+            String operationId = requires.path("operation_id").asText();
+            if (!"operation_payload_field".equals(requires.path("target_kind").asText())
+                    || !"Unique Identifier".equals(fieldName)
+                    || !operationId.startsWith("KMIPKIT-ELEM-OP-C2S-")) {
+                throw new IllegalArgumentException("Selected case is not a client Unique Identifier payload: "
+                        + caseId);
+            }
+            String targetId = requires.path("normative_target_id").asText();
+            int tagCode = tagCodeNamed(catalog, fieldName, version);
+            byte[] wire = scalarWire(tagCode, TtlvItemType.TextString.code(), identifier);
+            try (TtlvValue value = TtlvValue.TextString(identifier, limits);
+                    RawTag raw = RawTag.fromRaw(tagCode);
+                    Tag tag = raw.checked();
+                    TtlvItem item = TtlvItem.create(tag, value, limits);
+                    var view = item.view();
+                    var viewedTag = view.tag();
+                    var viewedValue = view.value()) {
+                assertEquals(tagCode, viewedTag.raw());
+                assertScalarMessageFieldValue(viewedValue, TtlvItemType.TextString, identifier, 0);
+            }
+            try (TtlvItem decoded = TtlvCodec.decode(wire);
+                    var view = decoded.view();
+                    var decodedTag = view.tag();
+                    var decodedValue = view.value()) {
+                assertEquals(tagCode, decodedTag.raw());
+                assertScalarMessageFieldValue(decodedValue, TtlvItemType.TextString, identifier, 0);
+            }
+            for (String evidenceTargetId : List.of(targetId, operationId)) {
+                emitMissingGenericRoute(recordedRoutes, sink, caseId, evidenceTargetId, version,
+                        "java.generic-ttlv.ttlv_item.create", "org.kmipkit.ttlv.TtlvItem.create",
+                        "construct", wire);
+                emitMissingGenericRoute(recordedRoutes, sink, caseId, evidenceTargetId, version,
+                        "java.generic-ttlv.function.ttlv_item_view_from_item", "org.kmipkit.ttlv.TtlvItem.view",
+                        "decode", wire);
+                emitMissingGenericRoute(recordedRoutes, sink, caseId, evidenceTargetId, version,
+                        "java.generic-ttlv.ttlv_codec.decode", "org.kmipkit.ttlv.TtlvCodec.decode",
+                        "decode", wire);
+            }
+            emitted.add(caseId);
+        }
+        if (!emitted.equals(selectedCaseIds)) {
+            throw new IllegalArgumentException("Selected client Unique Identifier payloads were not executed for "
+                    + version);
+        }
+    }
+
     /** Exercises the generic structure-builder routes with the source-defined KMIP 5.1 Attributes shape. */
     static void executeAttributeStructures(JsonNode catalog, String version, Set<String> selectedCaseIds,
             EvidenceSink sink) throws Exception {

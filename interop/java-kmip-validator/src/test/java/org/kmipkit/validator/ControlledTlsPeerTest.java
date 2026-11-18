@@ -892,6 +892,7 @@ class ControlledTlsPeerTest {
         int anyObjectAttributeRouteEventCount = 0;
         int scalarTypedParserEventCount = 0;
         int correlationPayloadRouteEventCount = 0;
+        int clientIdentifierPayloadRouteEventCount = 0;
         int itemTypeRouteEventCount = 0;
         int attributeStructureRouteEventCount = 0;
         int structureAttributeValueRouteEventCount = 0;
@@ -917,6 +918,7 @@ class ControlledTlsPeerTest {
         Set<String> scalarStructureMemberCaseIds = new java.util.LinkedHashSet<>();
         Set<String> serverPayloadCaseIds = new java.util.LinkedHashSet<>();
         Set<String> correlationPayloadCaseIds = new java.util.LinkedHashSet<>();
+        Set<String> clientIdentifierPayloadCaseIds = new java.util.LinkedHashSet<>();
         Set<String> structureAttributeValueCaseIds = new java.util.LinkedHashSet<>();
         Set<String> textAttributeValueCaseIds = new java.util.LinkedHashSet<>();
         Set<String> booleanAttributeValueCaseIds = new java.util.LinkedHashSet<>();
@@ -1424,6 +1426,17 @@ class ControlledTlsPeerTest {
                 appendLocalCatalogInvocation(events, protocolVersion, invocation);
             }
             correlationPayloadRouteEventCount += correlationInvocations.size();
+            Set<String> missingClientIdentifierCases =
+                    LocalCatalogRouteChecks.missingClientIdentifierPayloadCaseIds(
+                            readRouteEvidenceCatalog(), events, protocolVersion);
+            clientIdentifierPayloadCaseIds.addAll(missingClientIdentifierCases);
+            List<LocalCatalogRouteChecks.Invocation> clientIdentifierInvocations = new ArrayList<>();
+            LocalCatalogRouteChecks.executeClientIdentifierPayloadFields(readRouteEvidenceCatalog(), protocolVersion,
+                    missingClientIdentifierCases, events, clientIdentifierInvocations::add);
+            for (LocalCatalogRouteChecks.Invocation invocation : clientIdentifierInvocations) {
+                appendLocalCatalogInvocation(events, protocolVersion, invocation);
+            }
+            clientIdentifierPayloadRouteEventCount += clientIdentifierInvocations.size();
         }
 
         for (String protocolVersion : KMIP_2_0_AND_2_1) {
@@ -1444,6 +1457,7 @@ class ControlledTlsPeerTest {
                 "The Tag aggregate must represent every catalogued tag and tag-allocation range cell.");
         int additionalCaseIdCount = writeRouteExecutionReport(reportPath, mapper, events,
                 scalarStructureMemberCaseIds, serverPayloadCaseIds, correlationPayloadCaseIds,
+                clientIdentifierPayloadCaseIds,
                 structureAttributeValueCaseIds, textAttributeValueCaseIds, booleanAttributeValueCaseIds,
                 dateTimeAttributeValueCaseIds, enumerationAttributeValueCaseIds, scalarAttributeValueCaseIds,
                 textStringTargetCaseIds, fixedScalarTargetCaseIds, bigIntegerTargetCaseIds,
@@ -2039,6 +2053,7 @@ class ControlledTlsPeerTest {
                         + scalarStructureMemberRouteEventCount + itemTypeRouteEventCount
                         + serverPayloadRouteEventCount
                         + correlationPayloadRouteEventCount
+                        + clientIdentifierPayloadRouteEventCount
                         + anyObjectAttributeRouteEventCount
                         + scalarTypedParserEventCount
                         + attributeStructureRouteEventCount
@@ -2289,6 +2304,7 @@ class ControlledTlsPeerTest {
         }
         writeRouteExecutionReport(reportPath, mapper, events,
                 scalarStructureMemberCaseIds, serverPayloadCaseIds, correlationPayloadCaseIds,
+                clientIdentifierPayloadCaseIds,
                 structureAttributeValueCaseIds, textAttributeValueCaseIds, booleanAttributeValueCaseIds,
                 dateTimeAttributeValueCaseIds, enumerationAttributeValueCaseIds, scalarAttributeValueCaseIds,
                 textStringTargetCaseIds, fixedScalarTargetCaseIds, bigIntegerTargetCaseIds,
@@ -5702,7 +5718,8 @@ class ControlledTlsPeerTest {
 
     private static int writeRouteExecutionReport(Path reportPath, ObjectMapper mapper,
             ArrayNode events, Set<String> scalarStructureMemberCaseIds, Set<String> serverPayloadCaseIds,
-            Set<String> correlationPayloadCaseIds, Set<String> structureAttributeValueCaseIds,
+            Set<String> correlationPayloadCaseIds, Set<String> clientIdentifierPayloadCaseIds,
+            Set<String> structureAttributeValueCaseIds,
             Set<String> textAttributeValueCaseIds, Set<String> booleanAttributeValueCaseIds,
             Set<String> dateTimeAttributeValueCaseIds, Set<String> enumerationAttributeValueCaseIds,
             Set<String> scalarAttributeValueCaseIds, Set<String> textStringTargetCaseIds,
@@ -5807,6 +5824,7 @@ class ControlledTlsPeerTest {
         additionalCaseIdCount += appendCaseIds(caseIds, managedObjectTypeCaseIds);
         additionalCaseIdCount += appendCaseIds(caseIds, serverPayloadCaseIds);
         additionalCaseIdCount += appendCaseIds(caseIds, correlationPayloadCaseIds);
+        additionalCaseIdCount += appendCaseIds(caseIds, clientIdentifierPayloadCaseIds);
         additionalCaseIdCount += appendCaseIds(caseIds, structureAttributeValueCaseIds);
         additionalCaseIdCount += appendCaseIds(caseIds, textAttributeValueCaseIds);
         additionalCaseIdCount += appendCaseIds(caseIds, booleanAttributeValueCaseIds);
