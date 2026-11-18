@@ -456,3 +456,23 @@ interoperability.
   the ledger records 29,308 full-matrix cells still pending. Ledger comparison
   passes. FR-002/FR-003/FR-009 matrix closure remains open and the PR stack
   remains WIP.
+
+## Java typed Boolean Attribute routes — 2026-11-18
+
+- **FR-003/FR-009:** Nine catalogued Boolean Attributes now exercise the
+  installed `TypedAttribute.create`, `TypedAttribute.fromItem`, and
+  `AttributeSet.tryNew` routes in addition to generic TTLV construction,
+  view, and decode. The fixtures check tag identity, Boolean value, and the
+  resulting one-item Attribute Set. Sixteen catalog-applicable case/version
+  pairs add 48 local route cells. Sources: OASIS KMIP 2.0/2.1 §§4.3, 4.23,
+  4.24, 4.28, 4.33, 4.45, 4.48, 4.52, 4.55, and 11.56. This is local
+  construction evidence, not server acceptance or attribute-policy evidence.
+- Red `5f619e9ac` requires all seven generic and typed routes; Green
+  `dfa28b4e5` executes them; Refactor `4d4abf496` isolates the typed Boolean
+  path. The Gradle suite passes 95/95, shared route/schema/capability tests
+  109/109, requirement traceability tests 2/2, feature traceability tests
+  31/31, and the route capability audit accepts 1,507 routes. Selected
+  evidence validates 42,381/42,381 cells with zero failures. The ledger
+  records 71,641 planned, 42,381 executed, and 29,260 pending cells; ledger
+  comparison passes. Full matrix closure remains open under FR-002/FR-003/
+  FR-009 and the Java stack stays WIP.

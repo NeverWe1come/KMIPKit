@@ -1046,3 +1046,21 @@ selected report validates 42,333/42,333 cells with zero failures; the full
 ledger has 71,641 planned, 42,333 executed, and 29,308 pending cells. Ledger
 comparison passes. The overall Java matrix remains incomplete, so the PR stack
 stays WIP.
+
+### Boolean Attribute typed construction routes — 2026-11-18
+
+The local catalog runner now executes Boolean Attribute cases through the
+installed `TypedAttribute.create`, `TypedAttribute.fromItem`, and
+`AttributeSet.tryNew` APIs in addition to generic TTLV construction and decode.
+The fixtures verify the selected standard attribute, Boolean value, and
+one-item Attribute Set. The nine selected cases contribute 16 applicable
+case/version pairs because Rotate Automatic and Rotate Latest apply to KMIP
+2.1 only. This adds 48 local route cells; it does not claim server acceptance.
+
+Red `5f619e9ac` requires all seven generic and typed routes. Green `dfa28b4e5`
+executes and checks them; Refactor `4d4abf496` isolates the typed route path.
+The focused test and full Gradle suite pass. The selected report validates
+42,381/42,381 cells with zero failures. The generated ledger records 71,641
+planned, 42,381 executed, and 29,260 pending cells and matches its checked-in
+reference. The overall Java matrix remains incomplete, so the PR stack stays
+WIP.
