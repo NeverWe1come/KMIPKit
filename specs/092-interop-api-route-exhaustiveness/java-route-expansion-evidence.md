@@ -4139,3 +4139,23 @@ traceability tests pass 2/2 and 31/31; the route capability audit accepts
 failures. The ledger records 71,641 planned, 42,381 executed, and 29,260
 pending cells and matches the checked-in reference. Full Java matrix closure
 remains outstanding, so the PR stack stays WIP.
+
+## Java typed Date-Time Attribute routes — 2026-11-18
+
+The installed Java runner now exercises all 12 catalogued Date-Time Attribute
+cases through `TypedAttribute.create`, `TypedAttribute.fromItem`, and
+`AttributeSet.tryNew`, as well as the generic TTLV routes. Fixtures verify
+the selected StandardAttribute, exact Date-Time value, and resulting
+Attribute Set. The cases cover 23 applicable KMIP 2.0/2.1 case/version pairs
+and close 63 previously pending cells. Sources: OASIS KMIP 2.0/2.1 §§4.1,
+4.5, 4.10, 4.11, 4.18, 4.20, 4.25, 4.29, 4.38, 4.40, 4.41, 4.49, and
+11.56. This does not claim server acceptance.
+
+Red `ad2717b75` requires all seven routes; Green `cfdc4b51d` adds the typed
+calls and assertions; Refactor `22ff6a4e5` shares them with the Boolean route.
+Gradle passes 95/95 tests, shared route/schema/capability tests pass 109/109,
+requirement and feature traceability pass 2/2 and 31/31, and the route audit
+accepts 1,507 routes. The selected matrix validates 42,444/42,444 cells with
+zero failures. The ledger records 71,641 planned, 42,444 executed, and 29,197
+pending cells and matches its checked-in reference. Full matrix closure remains
+open, so the Java stack remains WIP.

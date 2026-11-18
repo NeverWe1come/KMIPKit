@@ -470,3 +470,23 @@ vendor KMS interoperability.
   records 71,641 planned, 42,381 executed, and 29,260 pending cells; ledger
   comparison passes. Full matrix closure remains open under FR-002/FR-003/
   FR-009 and the Java stack stays WIP.
+
+## Java typed Date-Time Attribute routes — 2026-11-18
+
+- **FR-003/FR-009:** All 12 selected Date-Time Attribute cases now exercise
+  `TypedAttribute.create`, `TypedAttribute.fromItem`, and
+  `AttributeSet.tryNew` alongside generic TTLV construction and decoding.
+  Fixtures verify the assigned standard attribute, Date-Time value, and
+  one-item Attribute Set. The cases span 23 applicable version/case pairs
+  and close 63 previously pending cells. Sources: OASIS KMIP 2.0/2.1 §§4.1,
+  4.5, 4.10, 4.11, 4.18, 4.20, 4.25, 4.29, 4.38, 4.40, 4.41, 4.49, and
+  11.56. These checks establish local construction only, not server acceptance.
+- Red `ad2717b75` requires all seven routes; Green `cfdc4b51d` emits them;
+  Refactor `22ff6a4e5` shares typed route construction with Boolean Attributes.
+  The Gradle suite passes 95/95, shared route/schema/capability tests 109/109,
+  requirement traceability 2/2, feature traceability 31/31, and the route
+  capability audit accepts 1,507 routes. Selected evidence validates
+  42,444/42,444 cells with zero failures. The ledger records 71,641 planned,
+  42,444 executed, and 29,197 pending cells; ledger comparison passes. Full
+  matrix closure remains open under FR-002/FR-003/FR-009 and the Java stack
+  stays WIP.
