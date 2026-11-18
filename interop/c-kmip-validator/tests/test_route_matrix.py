@@ -3941,6 +3941,38 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(any(event['target_id'] == 'KMIPKIT-ELEM-OP-C2S-REGISTER'
                             and event['action'] == 'send' for event in events))
 
+    def test_secret_data_register_executes_typed_c_routes_and_cleanup(self):
+        """OASIS KMIP 2.0/2.1 §§2 and 11.34 define Secret Data registration."""
+        from artifact_support import ROOT
+        import route_peer
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case = next(item for item in catalog['test_cases']
+                    if item['case_id'] == 'test-obj-secret-data')
+
+        self.assertEqual(route_peer.recipe_for_case(case, None), ((3, 20), 'register_secret_data'))
+        events, _, checks = route_peer.execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c',
+            {**catalog, 'test_cases': [case]}, manifest)
+
+        self.assertEqual(len(checks), 12)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        required_symbols = {
+            'kmipkit_secret_data_from_fields',
+            'kmipkit_register_request_create',
+            'kmipkit_client_batch_item_register',
+            'kmipkit_client_batch_item_response_register',
+            'kmipkit_client_batch_item_response_register_ttlv',
+            'kmipkit_client_batch_item_destroy',
+            'kmipkit_client_execute',
+        }
+        self.assertTrue(all(required_symbols <= set(check['public_api_trace_symbols'])
+                            for check in checks))
+        self.assertTrue(any(event['target_id'] == 'KMIPKIT-ELEM-OP-C2S-REGISTER'
+                            and event['action'] == 'send' for event in events))
+        self.assertNotIn('fixture-secret-data', json.dumps(events))
+
     def test_placeholder_chain_executes_typed_create_activate_get_batch(self):
         from artifact_support import ROOT
         from route_peer import execute_network_cells
