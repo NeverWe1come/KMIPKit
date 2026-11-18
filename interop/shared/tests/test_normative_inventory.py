@@ -7,7 +7,11 @@ import unittest
 from pathlib import Path
 
 from tools.normative_catalog.attribute_policy_source import _SourceParser
-from interop.shared.catalog.generate_test_catalog import _section_versions, oasis_section_indexes
+from interop.shared.catalog.generate_test_catalog import (
+    _payload_value_type_alternatives,
+    _section_versions,
+    oasis_section_indexes,
+)
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -252,11 +256,7 @@ class NormativeInventoryTests(unittest.TestCase):
         expected_variants = {}
         for target in targets:
             description = source_descriptions[target["target_id"]]
-            expected = []
-            for name in type_names:
-                type_pattern = re.escape(name).replace(r"\ ", r"[\s-]+")
-                if re.search(r"\b(?:a|an)\s+" + type_pattern + r"\b", description, re.IGNORECASE):
-                    expected.append(name)
+            expected = _payload_value_type_alternatives(description, type_names)
             if expected:
                 expected_variants[target["target_id"]] = expected
                 self.assertEqual(expected, target["value_type_alternatives"])
