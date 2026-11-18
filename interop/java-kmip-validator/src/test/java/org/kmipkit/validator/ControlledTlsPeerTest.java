@@ -6218,6 +6218,22 @@ class ControlledTlsPeerTest {
         throw new AssertionError("The expected controlled Query route event is absent.");
     }
 
+    @Test
+    void recordsLocalEncodedPayloadAsRequestTree() throws Exception {
+        byte[] wire = new byte[] {0x42, 0x00, 0x01, 0x07, 0, 0, 0, 1, 'x', 0, 0, 0, 0, 0, 0, 0};
+        ArrayNode events = new ObjectMapper().createArrayNode();
+        LocalCatalogRouteChecks.Invocation invocation = new LocalCatalogRouteChecks.Invocation(
+                "test-attr-alternative-name", "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES",
+                "java.typed-protocol.function.attribute_request_get_attributes_to_ttlv_payload",
+                "org.kmipkit.extensions.GetAttributesRequest.toTtlvPayload", "encode", wire, null);
+
+        appendLocalCatalogInvocation(events, "2.0", invocation);
+
+        JsonNode event = events.get(0);
+        assertEquals(normalizedTreeSha256(wire), event.path("request_tree_sha256").asText());
+        assertTrue(event.path("response_tree_sha256").isMissingNode());
+    }
+
     private static void appendLocalCatalogInvocation(ArrayNode events, String version,
             LocalCatalogRouteChecks.Invocation invocation) throws Exception {
         if (invocation.rejectionCode() != null) {
@@ -6230,10 +6246,11 @@ class ControlledTlsPeerTest {
             return;
         }
         String treeHash = normalizedTreeSha256(invocation.wire());
-        boolean construction = "construct".equals(invocation.action());
+        boolean requestTree = "construct".equals(invocation.action())
+                || "encode".equals(invocation.action());
         ObjectNode event = appendRouteEvent(events, invocation.caseId(), invocation.routeId(), invocation.targetId(),
                 invocation.symbol(), null, null, invocation.action(), version, null,
-                construction ? treeHash : null, construction ? null : treeHash);
+                requestTree ? treeHash : null, requestTree ? null : treeHash);
         appendWorkflowIdentity(event, invocation);
     }
 

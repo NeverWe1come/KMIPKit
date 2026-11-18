@@ -986,9 +986,9 @@ matrix remains incomplete, so #187 and its dependents stay WIP.
 
 The #216 branch adds explicit checks for the required Usage Limits member order,
 tags, TTLV types, and values in KMIP 2.0 and 2.1 (§7.34 Table 354; §7.40 Table
-392). The combined selected report remains 42,196/42,196 with zero failures;
+392). The combined selected report validates 42,204/42,204 cells with zero failures;
 these checks exercise catalog cells already represented by the #187 route
-matrix and do not add another 36 cells. The full ledger has 29,445 pending of
+matrix and do not add another 36 cells. The full ledger has 29,437 pending of
 71,641, so the matrix and stack remain WIP.
 
 ### Right Usage Limits member evidence on #217 — 2026-11-18
@@ -998,5 +998,29 @@ Usage Limits Structure member across KMIP 2.0 and 2.1. It checks the optional
 member when absent and validates the nested required Usage Limits fields when
 present (OASIS KMIP 2.0 §7.28 Table 348; KMIP 2.1 §7.34 Table 386). These cells
 are already included in the selected catalog scope. The combined report
-validates 42,196/42,196 cells with zero failures; 29,445 of 71,641 remain
+validates 42,204/42,204 cells with zero failures; 29,437 of 71,641 remain
 pending, so the stack remains WIP.
+
+### Typed Alternative Name routes — 2026-11-18
+
+The local catalog runner now constructs and decodes the source-shaped KMIP
+`Alternative Name` Structure through `TypedAttribute.create`,
+`TypedAttribute.fromItem`, and `AttributeSet.tryNew` for KMIP 2.0 and 2.1.
+It also constructs a typed Get Attributes request with an Attribute Reference
+for the Alternative Name tag and invokes `GetAttributesRequest.toTtlvPayload`.
+The test checks member tags, types and values, the typed round trip, the
+one-item Attribute Set, and the request payload shape (OASIS KMIP 2.0/2.1
+§4.2, §6.1.17, §§8.3, 8.6). These are local construction and encoding routes;
+they do not exercise server-side attribute policy or a network exchange.
+
+Red `d1e35d5e8` requires the four typed routes per protocol version;
+Green `3535eac0a` executes them. Red `322554a5a` requires the payload encoder
+to use the Get Attributes operation target, and Green `3fbfb09f3` corrects
+that attribution. Red `a5b006191` verifies that a local `encode` event carries
+a request-tree hash; Green `13bd4226b` records the hash in the request field.
+The Gradle suite passes 95/95 tests; shared evidence/schema/capability tests
+pass 109/109; the capability audit accepts 1,507 routes. The selected report
+validates 42,204/42,204 cells with zero failures. The generated ledger records
+71,641 planned, 42,204 executed, and 29,437 pending cells, and matches its
+checked-in reference. The Java matrix remains incomplete, so the stack stays
+WIP.
