@@ -2054,7 +2054,8 @@ class ControlledTlsPeerTest {
                         + asyncCancellationEnumerationRouteEventCount
                         + asyncCancelNetworkRouteEventCount
                         + asyncIndicatorEnumerationRouteEventCount
-                        + 97 // BEC, batch IDs, async payload, Ping, Endpoint Role, Object Defaults, derivation, and Extension Information member cells.
+                        + 94 // BEC, batch IDs, async payload, Endpoint Role, Object Defaults, derivation, and Extension Information member cells.
+                        + 18 // Ping construction, send, and response decode over six encoding/transport pairs.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Type generic and typed Attribute routes.
                         + 7 // KMIP 2.1 §4.53 Rotate Name Value generic and typed Attribute routes.
                         + tagAggregateEventCount
@@ -7046,18 +7047,88 @@ class ControlledTlsPeerTest {
 
     private void appendPingResponseRouteEvidence(ArrayNode events, byte[] serverCertificatePem,
             byte[] serverPrivateKeyPem, byte[] clientCertificatePem, byte[] clientPrivateKeyPem) throws Exception {
-        SSLServerSocket listener = listener(certificate(serverCertificatePem), privateKey(serverPrivateKeyPem),
-                certificate(clientCertificatePem));
-        byte[] responseBytes = pingResponse(1);
-        String responseHash = normalizedTreeSha256(responseBytes);
-        FutureTask<byte[]> peer = new FutureTask<>(() -> serveOneResponse(listener, responseBytes));
-        Thread peerThread = new Thread(peer, "java-validator-controlled-ping-peer");
-        peerThread.setDaemon(true);
-        peerThread.start();
+        String requestHash = null;
+        byte[] responseTtlv = pingResponse(1);
+        String responseHash = normalizedTreeSha256(responseTtlv);
+        for (String encoding : List.of("TTLV", "JSON", "XML")) {
+            byte[] responseBytes = pingResponseBytes(1, encoding, responseTtlv);
+            for (String transport : List.of("raw_tls", "https")) {
+                Path connectionFile = temporaryDirectory.resolve(
+                        "ping-route-connection-" + encoding + "-" + transport + ".json");
+                byte[] observedRequest;
+                if ("raw_tls".equals(transport)) {
+                    SSLServerSocket listener = listener(certificate(serverCertificatePem),
+                            privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+                    FutureTask<byte[]> peer = new FutureTask<>(
+                            () -> serveOneEncodedResponse(listener, responseBytes, encoding));
+                    Thread peerThread = new Thread(peer,
+                            "java-validator-controlled-ping-peer-" + encoding);
+                    peerThread.setDaemon(true);
+                    peerThread.start();
+                    Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
+                            clientCertificatePem, clientPrivateKeyPem, false, "2.1", encoding, transport));
+                    try {
+                        executePingRequest(connectionFile);
+                    } finally {
+                        listener.close();
+                    }
+                    observedRequest = peer.get(15, TimeUnit.SECONDS);
+                } else {
+                    CompletableFuture<byte[]> peer = new CompletableFuture<>();
+                    HttpsServer listener = httpsListener(certificate(serverCertificatePem),
+                            privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+                    listener.createContext("/kmip", exchange -> {
+                        try {
+                            if (!"POST".equals(exchange.getRequestMethod())) {
+                                throw new IllegalStateException("The controlled HTTP peer requires POST.");
+                            }
+                            peer.complete(exchange.getRequestBody().readAllBytes());
+                            exchange.getResponseHeaders().set("Content-Type", contentTypeForEncoding(encoding));
+                            exchange.sendResponseHeaders(200, responseBytes.length);
+                            try (OutputStream output = exchange.getResponseBody()) {
+                                output.write(responseBytes);
+                            }
+                        } catch (Exception exception) {
+                            peer.completeExceptionally(exception);
+                            try {
+                                exchange.sendResponseHeaders(500, -1);
+                            } catch (Exception ignored) {
+                                // The peer future retains the controlled-fixture failure for the test thread.
+                            }
+                        } finally {
+                            exchange.close();
+                        }
+                    });
+                    listener.start();
+                    Files.writeString(connectionFile, connectionJson(listener.getAddress().getPort(),
+                            serverCertificatePem, clientCertificatePem, clientPrivateKeyPem, false,
+                            "2.1", encoding, transport));
+                    try {
+                        executePingRequest(connectionFile);
+                    } finally {
+                        listener.stop(0);
+                    }
+                    observedRequest = peer.get(15, TimeUnit.SECONDS);
+                }
 
-        Path connectionFile = temporaryDirectory.resolve("ping-route-connection.json");
-        Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
-                clientCertificatePem, clientPrivateKeyPem, false, "2.1"));
+                assertPingRequest(observedRequest, encoding);
+                if (requestHash == null) {
+                    assertEquals(0x3bL, requestOperation(observedRequest),
+                            "The controlled peer must parse the installed Ping request.");
+                    requestHash = normalizedTreeSha256(observedRequest);
+                    appendPingOperationGenericRouteEvents(events, requestHash);
+                }
+                appendTypedNetworkRouteEvents(events, "test-op-ping", "java.typed-protocol.client_batch_item.ping",
+                        "KMIPKIT-ELEM-OP-C2S-PING", "org.kmipkit.extensions.ClientBatchItem.ping", "2.1",
+                        requestHash, responseHash, encoding, transport);
+            }
+        }
+        appendRouteEvent(events, "test-op-ping", "java.typed-protocol.function.client_batch_item_response_ping",
+                "KMIPKIT-ELEM-OP-C2S-PING", "org.kmipkit.extensions.ClientBatchItemResult.pingResponse",
+                null, null, "decode", "2.1", null, null, responseHash);
+    }
+
+    private void executePingRequest(Path connectionFile) throws Exception {
         try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile));
                 ClientBatch batch = ClientBatch.create();
                 ClientBatchItem request = ClientBatchItem.ping()
@@ -7069,19 +7140,63 @@ class ControlledTlsPeerTest {
                     assertTrue(result.pingResponse().orElseThrow());
                 }
             }
-        } finally {
-            listener.close();
         }
-        byte[] request = peer.get(15, TimeUnit.SECONDS);
-        assertEquals(0x3bL, requestOperation(request), "The controlled peer must parse the installed Ping request.");
-        String requestHash = normalizedTreeSha256(request);
-        appendPingOperationGenericRouteEvents(events, requestHash);
-        appendTypedNetworkRouteEvents(events, "test-op-ping", "java.typed-protocol.client_batch_item.ping",
-                "KMIPKIT-ELEM-OP-C2S-PING", "org.kmipkit.extensions.ClientBatchItem.ping", "2.1",
-                requestHash, responseHash);
-        appendRouteEvent(events, "test-op-ping", "java.typed-protocol.function.client_batch_item_response_ping",
-                "KMIPKIT-ELEM-OP-C2S-PING", "org.kmipkit.extensions.ClientBatchItemResult.pingResponse",
-                null, null, "decode", "2.1", null, null, responseHash);
+    }
+
+    private static byte[] pingResponseBytes(int minor, String encoding, byte[] ttlvResponse) {
+        if ("TTLV".equals(encoding)) return ttlvResponse;
+        String response = "JSON".equals(encoding)
+                ? jsonPingResponse(minor) : xmlPingResponse(minor);
+        return response.getBytes(StandardCharsets.UTF_8);
+    }
+
+    private static String jsonPingResponse(int minor) {
+        return "{\"tag\":\"ResponseMessage\",\"value\":["
+                + "{\"tag\":\"ResponseHeader\",\"value\":["
+                + "{\"tag\":\"ProtocolVersion\",\"value\":["
+                + "{\"tag\":\"ProtocolVersionMajor\",\"type\":\"Integer\",\"value\":2},"
+                + "{\"tag\":\"ProtocolVersionMinor\",\"type\":\"Integer\",\"value\":" + minor + "}]},"
+                + "{\"tag\":\"TimeStamp\",\"type\":\"DateTime\",\"value\":\"0x0000000000000001\"},"
+                + "{\"tag\":\"BatchCount\",\"type\":\"Integer\",\"value\":1}]},"
+                + "{\"tag\":\"BatchItem\",\"value\":["
+                + "{\"tag\":\"Operation\",\"type\":\"Enumeration\",\"value\":\"Ping\"},"
+                + "{\"tag\":\"UniqueBatchItemID\",\"type\":\"ByteString\",\"value\":\"70696e672d726f7574652d66697874757265\"},"
+                + "{\"tag\":\"ResultStatus\",\"type\":\"Enumeration\",\"value\":\"Success\"},"
+                + "{\"tag\":\"ResponsePayload\",\"value\":[]}]}]}";
+    }
+
+    private static String xmlPingResponse(int minor) {
+        return "<ResponseMessage><ResponseHeader>"
+                + "<ProtocolVersion><ProtocolVersionMajor type=\"Integer\" value=\"2\"/>"
+                + "<ProtocolVersionMinor type=\"Integer\" value=\"" + minor + "\"/></ProtocolVersion>"
+                + "<TimeStamp type=\"DateTime\" value=\"1970-01-01T00:00:01Z\"/>"
+                + "<BatchCount type=\"Integer\" value=\"1\"/></ResponseHeader><BatchItem>"
+                + "<Operation type=\"Enumeration\" value=\"Ping\"/>"
+                + "<UniqueBatchItemID type=\"ByteString\" value=\"70696E672D726F7574652D66697874757265\"/>"
+                + "<ResultStatus type=\"Enumeration\" value=\"Success\"/><ResponsePayload/>"
+                + "</BatchItem></ResponseMessage>";
+    }
+
+    private static void assertPingRequest(byte[] request, String encoding) throws Exception {
+        if ("TTLV".equals(encoding)) {
+            assertEquals(0x3bL, requestOperation(request));
+            assertEquals(1, requestProtocolMinorVersion(request));
+            return;
+        }
+        if ("JSON".equals(encoding)) {
+            JsonNode root = new ObjectMapper().readTree(request);
+            assertEquals("RequestMessage", root.path("tag").asText());
+            assertEquals(List.of("Ping"), jsonValuesForTag(root, "Operation").stream()
+                    .map(JsonNode::asText).toList());
+            assertEquals(List.of(1), jsonValuesForTag(root, "ProtocolVersionMinor").stream()
+                    .map(JsonNode::asInt).toList());
+            return;
+        }
+        String xml = new String(request, StandardCharsets.UTF_8);
+        assertTrue(xml.startsWith("<RequestMessage>"));
+        assertTrue(xml.contains("<Operation type=\"Enumeration\" value=\"Ping\"/>"));
+        assertTrue(xml.contains("<ProtocolVersionMinor type=\"Integer\" value=\"1\"/>"));
+        assertTrue(xml.contains("70696E672D726F7574652D66697874757265"));
     }
 
     private static void assertPingNetworkRouteCoverage(ArrayNode events) {
