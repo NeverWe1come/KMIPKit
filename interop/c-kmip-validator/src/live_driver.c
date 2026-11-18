@@ -7676,10 +7676,6 @@ static kmip_execution_outcome_t execute_logout_with_login_ticket(kmip_live_clien
         .abi_version = 2
     };
 
-    if (client->protocol_minor == 0) {
-        return outcome_not_run(
-            "the installed C Login builder supports KMIP 2.1 only, so KMIP 2.0 Logout cannot obtain a server-issued Ticket");
-    }
     status = kmipkit_client_batch_item_login(0, 0, 1, 2, NULL, &login_item);
     if (status == 0) status = kmipkit_client_batch_create(&login_batch);
     if (status == 0) status = kmipkit_client_batch_add_item(login_batch, &login_item);
