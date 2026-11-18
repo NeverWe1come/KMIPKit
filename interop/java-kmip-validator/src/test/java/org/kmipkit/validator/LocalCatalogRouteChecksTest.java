@@ -162,6 +162,36 @@ class LocalCatalogRouteChecksTest {
     }
 
     @Test
+    void executesFiveTextAttributesThroughGenericTtlvRoutes() throws Exception {
+        JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
+        Set<String> caseIds = Set.of(
+                "test-attr-comment",
+                "test-attr-contact-information",
+                "test-attr-description",
+                "test-attr-object-group",
+                "test-attr-pkcs#12-friendly-name");
+        List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
+
+        for (String version : List.of("2.0", "2.1")) {
+            LocalCatalogRouteChecks.executeTextAttributeValues(catalog, version, caseIds, invocations::add);
+        }
+
+        assertEquals(caseIds.size() * 2 * 4, invocations.size());
+        assertEquals(Set.of(
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring",
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode"),
+                invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId)
+                        .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(caseIds, invocations.stream().map(LocalCatalogRouteChecks.Invocation::caseId)
+                .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(Set.of("construct", "decode"), invocations.stream()
+                .map(LocalCatalogRouteChecks.Invocation::action)
+                .collect(java.util.stream.Collectors.toSet()));
+    }
+
+    @Test
     void executesRandomIvThroughTheTypedCryptographicParametersBuilder() throws Exception {
         JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
         String caseId = "test-norm-structure-member-structure-member-4-16-random-iv";
