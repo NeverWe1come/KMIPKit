@@ -341,7 +341,6 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
                         "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-BATCH-ITEM",
                         target_id,
                         "KMIPKIT-ELEM-OP-C2S-CREATE",
-                        "KMIPKIT-ELEM-OP-S2C-ACTIVATE",
                     ],
                     "protocol_versions": ["2.0"],
                     "mode": "local_model",
@@ -354,7 +353,6 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
                 "target_id": target_id,
                 "kind": "operation",
                 "name": "Activate",
-                "role": "request",
             }, {
                 "target_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-BATCH-ITEM",
                 "kind": "message_field",
@@ -365,11 +363,6 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
                 "kind": "operation",
                 "name": "Create",
                 "role": "request",
-            }, {
-                "target_id": "KMIPKIT-ELEM-OP-S2C-ACTIVATE",
-                "kind": "operation",
-                "name": "Activate",
-                "role": "response",
             }],
         }
         route = copy.deepcopy(self.manifest["routes"][2])
@@ -381,10 +374,8 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         })
         manifest = copy.deepcopy(self.manifest)
         manifest["routes"] = [route]
-        response_target_id = "KMIPKIT-ELEM-OP-S2C-ACTIVATE"
         scope = [cell for cell in iter_cells(catalog, manifest, languages=("c",))
-                 if cell["target_id"] in {target_id, response_target_id}
-                 and cell["protocol_version"] == "2.0"
+                 if cell["target_id"] == target_id and cell["protocol_version"] == "2.0"
                  and cell["encoding"] == "TTLV" and cell["transport"] == "raw_tls"]
         self.assertEqual({"construct", "send", "decode"}, {cell["action"] for cell in scope})
         common_event = {
@@ -428,7 +419,6 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         }
         decode_event = {
             **common_event,
-            "target_id": response_target_id,
             "action": "decode",
             "status": "not_applicable",
             "invocation_count": 0,
@@ -449,6 +439,25 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         self.assertEqual(2, summary["invoked_cells"])
         self.assertEqual(1, summary["not_applicable_cells"])
         self.assertTrue(summary["all_invocations_passed"])
+
+        orphan_report = copy.deepcopy(report)
+        orphan_report["events"] = [event for event in orphan_report["events"]
+                                    if event["action"] != "send"]
+        with self.assertRaisesRegex(ValueError, "lacks a matching not-sent request"):
+            validate_report(
+                orphan_report, catalog, manifest,
+                catalog_sha256="c" * 64,
+                route_manifest_sha256="d" * 64,
+                expected_artifact_sha256="b" * 64,
+                scope_cells=scope,
+            )
+
+        try:
+            import jsonschema
+        except ImportError:
+            return
+        schema = json.loads((SHARED / "schemas/route-execution-evidence.schema.json").read_text())
+        jsonschema.validate(report, schema)
 
     def test_explicitly_omitted_stop_response_is_resolved_without_fake_invocation(self):
         from coverage_matrix import iter_cells

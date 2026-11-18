@@ -133,6 +133,55 @@ def _validate_local_batch_rejection(event: dict, case: dict, key: tuple) -> None
         raise ValueError(f"not-sent local rejection cannot claim request or peer evidence: {key}")
 
 
+def _validate_local_batch_construction(event: dict, case: dict, key: tuple) -> None:
+    """Validate typed-item evidence where a complete batch tree is not public."""
+    contract = LOCAL_BATCH_REJECTION_CONTRACTS.get(case.get("case_id"))
+    if contract is None:
+        raise ValueError(f"typed-item construction evidence is not defined by the catalog: {key}")
+    expected_construction, operations, expected_items = contract
+    scenario = case.get("requires", {}).get("protocol_scenario", {})
+    expected = scenario.get("expected", {}) if isinstance(scenario, dict) else {}
+    parameters = scenario.get("parameters", {}) if isinstance(scenario, dict) else {}
+    if (not isinstance(scenario, dict)
+            or scenario.get("mode") != "local_model"
+            or not isinstance(expected, dict)
+            or expected.get("construction") != expected_construction
+            or scenario.get("operations") != operations
+            or not isinstance(parameters, dict)
+            or parameters.get("items") != expected_items):
+        raise ValueError(f"typed-item construction is not defined by the catalog: {key}")
+    if (event.get("action") != "construct" or event.get("status") != "passed"
+            or event.get("construction_evidence_kind") != "typed_item_returned"):
+        raise ValueError(f"local batch construction must prove a typed item was returned: {key}")
+    if event.get("constructed_operation") != event.get("workflow_operation"):
+        raise ValueError(f"constructed operation does not match workflow identity: {key}")
+    if (event.get("batch_operation_sequence") != operations
+            or event.get("batch_item_count") != len(operations)):
+        raise ValueError(f"constructed batch identity does not match the catalog: {key}")
+    forbidden_evidence = {
+        "request_tree_sha256", "response_tree_sha256", "peer_observed_operation_sequence",
+        "peer_observed_response_count", "peer_observed_result_status_codes",
+        "peer_observed_result_reason_codes", "peer_observed_effects",
+    }
+    if forbidden_evidence.intersection(event):
+        raise ValueError(f"typed-item evidence cannot claim an unavailable batch tree: {key}")
+
+
+def _same_local_rejection_workflow(decode: dict, send: dict) -> bool:
+    """Match a response decode cell to its request send cell after local rejection."""
+    fields = (
+        "case_id", "route_id", "workflow_step_index", "workflow_operation",
+        "workflow_item_index", "execution_route_id", "protocol_version", "encoding", "transport",
+    )
+    if any(decode.get(field) != send.get(field) for field in fields):
+        return False
+    if decode.get("target_id") == send.get("target_id"):
+        return True
+    decode_match = re.fullmatch(r"KMIPKIT-ELEM-OP-S2C-(.+)", decode.get("target_id", ""))
+    send_match = re.fullmatch(r"KMIPKIT-ELEM-OP-C2S-(.+)", send.get("target_id", ""))
+    return bool(decode_match and send_match and decode_match.group(1) == send_match.group(1))
+
+
 def _ordinal(index: int) -> str:
     return {1: "first", 2: "second", 3: "third", 4: "fourth", 5: "fifth"}.get(index, f"item_{index}")
 
@@ -343,14 +392,11 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
                 raise ValueError(f"not-applicable route cell must not claim an invocation: {key}")
             if event.get("not_applicable_reason") != planned.get("not_applicable_reason"):
                 raise ValueError(f"not-applicable route reason does not match the planned cell: {key}")
-            forbidden_evidence = {
-                "invocation_id", "request_tree_sha256", "response_tree_sha256",
-                "decode_outcome", "decode_rejection_code", "decode_input_sha256",
-                "wire_bytes_sha256", "wire_bytes_deterministic", "request_delivery_state",
-                "transport_invocation_count", "failure_code", "not_run_reason",
-            }
-            if forbidden_evidence.intersection(event):
-                raise ValueError(f"not-applicable route cell cannot claim invocation evidence: {key}")
+        elif status == "not_applicable":
+            if (event.get("action") != "decode"
+                    or event.get("not_applicable_reason") != "local_rejection_no_response"
+                    or count != 0):
+                raise ValueError(f"required route cell cannot be marked not applicable: {key}")
         else:
             if status == "not_applicable":
                 raise ValueError(f"required route cell cannot be marked not applicable: {key}")
@@ -360,6 +406,15 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
                 raise ValueError(f"route execution invocation_count is invalid for {key}")
             if event.get("invocation_id") is None or not isinstance(event["invocation_id"], str) or not event["invocation_id"]:
                 raise ValueError(f"route execution event requires an invocation_id: {key}")
+        if status == "not_applicable":
+            forbidden_evidence = {
+                "invocation_id", "request_tree_sha256", "response_tree_sha256",
+                "decode_outcome", "decode_rejection_code", "decode_input_sha256",
+                "wire_bytes_sha256", "wire_bytes_deterministic", "request_delivery_state",
+                "transport_invocation_count", "failure_code", "not_run_reason",
+            }
+            if forbidden_evidence.intersection(event):
+                raise ValueError(f"not-applicable route cell cannot claim invocation evidence: {key}")
         if status == "failed" and (not isinstance(event.get("failure_code"), str) or not event["failure_code"]):
             raise ValueError(f"failed route execution requires a sanitized failure_code: {key}")
         if event.get("target_id") != planned["target_id"]:
@@ -415,6 +470,9 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
                         raise ValueError(f"not-sent route invocation must prove transport count zero: {key}")
                 elif local_batch_rejection:
                     _validate_local_batch_rejection(event, case, key)
+                elif (event["action"] == "construct"
+                      and event.get("construction_evidence_kind") == "typed_item_returned"):
+                    _validate_local_batch_construction(event, case, key)
                 elif not isinstance(tree_hash, str) or not re.fullmatch(r"[0-9a-f]{64}", tree_hash):
                     raise ValueError(f"passed {event['action']} event requires a valid request tree hash: {key}")
         if "wire_bytes_deterministic" in event and not isinstance(event["wire_bytes_deterministic"], bool):
@@ -435,6 +493,23 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
                 _validate_local_batch_rejection(event, case, key)
             _validate_batch_event(event, case, catalog, key)
         observed[key] = event
+
+    for event in observed.values():
+        if (event.get("status") != "not_applicable"
+                or event.get("not_applicable_reason") != "local_rejection_no_response"):
+            continue
+        case = case_by_id[event["case_id"]]
+        if case.get("case_id") not in LOCAL_BATCH_REJECTION_CONTRACTS:
+            raise ValueError(f"local-rejection N/A is not defined by the catalog: {_key(event)}")
+        matching_send = any(
+            candidate.get("action") == "send"
+            and candidate.get("status") == "passed"
+            and candidate.get("request_delivery_state") == "not_sent"
+            and _same_local_rejection_workflow(event, candidate)
+            for candidate in observed.values()
+        )
+        if not matching_send:
+            raise ValueError(f"local-rejection response N/A lacks a matching not-sent request: {_key(event)}")
 
     constructed = {
         _request_identity(event): event["request_tree_sha256"]
