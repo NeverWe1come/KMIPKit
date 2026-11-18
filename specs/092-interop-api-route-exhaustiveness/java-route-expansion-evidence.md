@@ -3680,3 +3680,17 @@ pass 108 tests; and the capability audit reports 1,507 routes. The selected
 report validates 34,634/34,634 cells with zero failures and leaves 37,007 of
 71,641 planned Java cells pending. The ledger matches its checked-in reference;
 `git diff --check` passes. Full matrix closure remains outstanding.
+
+## #216 stack-tip verification after Certificate managed-object routes — 2026-11-18
+
+The #216 branch includes #187 Red `bb35578a4`, Green `e228e2f86`, and Refactor
+`7fcec3140`. It executes the typed Certificate factory for four catalog cases
+in KMIP 2.0 and 2.1, plus the `fromFields` and `fromItem` routes for the three
+cases where the generated capability matrix declares them applicable. The
+tag-only case is not reported against those generic routes.
+
+The full Java suite passes 85 tests; shared evidence/schema/capability suites
+pass 108 tests; and the capability audit reports 1,507 routes. The selected
+report validates 34,654/34,654 cells with zero failures and leaves 36,987 of
+71,641 planned Java cells pending. The generated ledger matches its checked-in
+reference; `git diff --check` passes. Full matrix closure remains outstanding.
