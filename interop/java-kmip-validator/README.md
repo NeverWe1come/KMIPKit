@@ -101,8 +101,8 @@ baseline, regenerate the checked-in ledger with
 rejects generated ledgers that do not record successful invocations.
 The generated ledger retains the artifact
 SHA-256 for each build; that build-specific digest is not used as a coverage
-baseline. These recipes execute 28,752 of 71,641 planned Java route cells, with
-no failed cells; the ledger records the other 42,889 as pending and does not imply
+baseline. These recipes execute 28,820 of 71,641 planned Java route cells, with
+no failed cells; the ledger records the other 42,821 as pending and does not imply
 vendor interoperability or full-matrix completion. Local TTLV recipes exercise 51
 enumeration families, all six bitmask aggregate cases, and all 44 individual
 bitmask value cases through the applicable
@@ -208,7 +208,7 @@ evidence for both `RawTag` identity routes and the `ClientBatch` setter. The
 setter's evidence comes from the serialized header of a controlled two-item
 Query request in KMIP 2.0 and 2.1 (KMIP 2.0 §11.54; KMIP 2.1 §11.56).
 
-The current Java ledger has 42,889 pending cells across 1,157 case IDs; every
+The current Java ledger has 42,821 pending cells across 1,157 case IDs; every
 one has the reason `route_evidence_not_emitted`. The applicability rule is the
 shared catalog and capability matrix after protocol-version, public-route,
 encoding/transport, and source-backed exclusion filters. A cell remaining in
@@ -332,3 +332,12 @@ The KMIP 2.0/2.1 §5.1 `Attributes` structure now exercises the installed
 and `TtlvCodec.decode` routes using one source-shaped Attribute with a Comment
 name and text value. The selected report validates 28,752/28,752 cells; 42,889
 of 71,641 remain pending, so the matrix and PR remain WIP.
+
+The scalar Attribute cases for Integer, Interval, and Byte String now exercise
+the installed value constructors, `TtlvItem.create`, item view, and decoder.
+The fixtures cover Certificate Length, Cryptographic Length and Usage Mask,
+Protection Storage Mask, Lease Time, Protection Period, Short Unique Identifier,
+and the KMIP 2.1 Rotate Generation, Rotate Interval, and Rotate Offset
+attributes. The selected report validates 28,820/28,820 cells with zero
+failures; 42,821 of 71,641 remain pending, so this local generic-TTLV evidence
+does not complete the Java matrix or demonstrate server policy behavior.
