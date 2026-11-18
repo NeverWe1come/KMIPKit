@@ -3083,3 +3083,77 @@ python3 -m unittest interop.shared.tests.test_route_execution_evidence \
 python3 interop/shared/tools/route_capabilities.py --check
 git diff --check
 ```
+
+## Remaining Text String generic TTLV routes — 2026-11-18
+
+Red commit `4c9457e77` adds a focused test for seven still-uncovered Text String
+targets across KMIP 2.0 and 2.1. Green commit `d953411a9` resolves each target's
+catalogued tag and source encoding, then constructs, views, and decodes an
+ASCII-only fixture through the installed Java API. The target set covers
+Unique Identifier, Encryption Key Information and MAC Signature Key
+Information identifiers, Attribute Name, PKCS#11 Interface, and Validation
+Profile. These local fixtures do not claim that a KMS accepts the values or
+that they satisfy server policy.
+
+The complete Gradle suite passes. The selected report validates 28,876/28,876
+cells with zero failures; the ledger records 28,876 executed and 42,765 pending
+cells of 71,641 across 1,153 pending case IDs. All 117 planned Java
+`TtlvValue.TextString` cells are now covered. Shared route-evidence, schema,
+and capability suites pass 108 tests; the route audit confirms 1,507 routes.
+The full Java matrix and stack remain WIP.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-tmp" \
+  bash bindings/java/gradlew -p interop/java-kmip-validator \
+  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" \
+  test --rerun-tasks
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+python3 -m unittest interop.shared.tests.test_route_execution_evidence \
+  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+git diff --check
+```
+
+## Remaining Text String generic TTLV routes — 2026-11-18
+
+Red commit `4c9457e77` adds a focused test for seven still-uncovered Text String
+targets across KMIP 2.0 and 2.1. Green commit `d953411a9` resolves each target's
+catalogued tag and source encoding, then constructs, views, and decodes an
+ASCII-only fixture through the installed Java API. The target set covers
+Unique Identifier, Encryption Key Information and MAC Signature Key
+Information identifiers, Attribute Name, PKCS#11 Interface, and Validation
+Profile. These local fixtures do not claim that a KMS accepts the values or
+that they satisfy server policy.
+
+The full Gradle suite passes. The selected report validates 28,904/28,904 cells
+with zero failures; the ledger records 28,904 executed and 42,737 pending cells
+of 71,641 across 1,150 pending case IDs. All 117 planned Java
+`TtlvValue.TextString` cells are now covered. Shared route-evidence, schema,
+and capability suites pass 108 tests; the route audit confirms 1,507 routes.
+The full Java matrix and stack remain WIP.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/interop/java-kmip-validator/build/java-tmp" \
+  bash bindings/java/gradlew -p interop/java-kmip-validator \
+  -PkmipkitMavenRepo="$PWD/interop/java-kmip-validator/build/maven-repository" \
+  test --rerun-tasks
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py --refresh-reference
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+python3 -m unittest interop.shared.tests.test_route_execution_evidence \
+  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+git diff --check
+```
