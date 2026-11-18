@@ -137,8 +137,8 @@ The `*.gaps.json` sidecar identifies every unexecuted matrix obligation rather
 than misclassifying it as an unavailable library route. Other sidecars retain
 installed-artifact availability checks and sanitized controlled-peer outcomes.
 The evidence JSON passes the shared schema independently of completeness.
-The latest full local C matrix run (`c-route-48a800ef-1add-4ba2-87b2-cfa385072615`)
-has 66,736 expected cells, 42,919 invoked, zero failed, and 23,817 pending.
+The latest full local C matrix run (`c-route-f2e15c0b-0d7a-4c5c-9964-4ea547bb6787`)
+has 66,736 expected cells, 42,904 invoked, zero failed, and 23,832 pending.
 The MAC and Sign response TTLV accessors and the Continue batch-option
 constructor contribute four local cells each across KMIP 2.0/2.1. The
 Query Async Requests correlation builder contributes two KMIP 2.1 model cells.
@@ -180,6 +180,21 @@ from route events and peer checks. The same 12 controlled network combinations
 pass for KMIP 2.0 and 2.1; the latest full matrix records 86 passed cells for
 this case and no pending cells. It does not execute Derive Key or claim external
 KMS interoperability.
+
+The Derive Key route creates and activates an AES-128 source key with explicit
+Derive Key usage, then requests PBKDF2 with explicit SHA-256, derivation data,
+salt, iteration count, and AES-128 output attributes with Encrypt usage. It
+checks the typed result and complete response TTLV, then revokes and destroys
+the derived key and source key. Synthetic derivation data and salt are omitted
+from route events and peer checks. All 12 controlled network combinations pass
+for KMIP 2.0 and 2.1; the latest full matrix records 44 passed cells for this
+case and no pending cells. These fixtures exercise the installed C consumer
+and do not claim external KMS interoperability.
+
+In the latest matrix run, Re-key has 42 passed cells and two pending typed
+response-TTLV accessor cells (one per protocol version). Its controlled network
+journeys pass across all 12 combinations, but that accessor gap remains in the
+global completeness total.
 
 The `test-op-poll` controlled route remains pending: the approved catalog does
 not yet provide a complete request, response, correlation, and cleanup recipe
