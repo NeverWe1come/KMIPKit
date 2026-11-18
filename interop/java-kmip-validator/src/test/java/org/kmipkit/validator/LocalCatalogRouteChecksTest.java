@@ -272,9 +272,8 @@ class LocalCatalogRouteChecksTest {
         LocalCatalogRouteChecks.executeGenericStructureTargets(
                 catalog, "2.1", caseIds, Set.of(), events, invocations::add);
 
-        assertEquals(caseIds.size() * 4, invocations.size());
+        assertEquals(caseIds.size() * 3, invocations.size());
         assertEquals(Set.of(
-                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
                 "java.generic-ttlv.ttlv_item.create",
                 "java.generic-ttlv.function.ttlv_item_view_from_item",
                 "java.generic-ttlv.ttlv_codec.decode"),
