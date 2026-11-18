@@ -4604,6 +4604,22 @@ class ControlledTlsPeerTest {
                     }
                 }
             }
+            boolean payloadEncoded = false;
+            for (JsonNode event : events) {
+                if (caseId.equals(event.path("case_id").asText())
+                        && "java.typed-protocol.function.attribute_request_get_attributes_to_ttlv_payload"
+                                .equals(event.path("route_id").asText())
+                        && "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES".equals(event.path("target_id").asText())
+                        && protocolVersion.equals(event.path("protocol_version").asText())
+                        && "TTLV".equals(event.path("encoding").asText())
+                        && (event.path("transport").isNull() || event.path("transport").isMissingNode())
+                        && "encode".equals(event.path("action").asText())) {
+                    payloadEncoded = true;
+                    break;
+                }
+            }
+            assertTrue(payloadEncoded, "Missing local Get Attributes payload encoder evidence for "
+                    + caseId + " / " + protocolVersion);
         }
         for (JsonNode testCase : catalog.path("test_cases")) {
             String targetId = testCase.path("requires").path("normative_target_id").asText();
