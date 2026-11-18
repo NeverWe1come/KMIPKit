@@ -3698,3 +3698,16 @@ suites 109/109, selected report 34,756/34,756 with zero failures, ledger
 comparison and capability audit of all 1,507 routes pass. The full ledger has
 36,885 pending of 71,641; #216 remains WIP pending full closure and exact-head
 CI.
+
+## #216 PGP Key and Secret Data routes — 2026-11-18
+
+The #216 branch retains its Usage Limits scope and includes the PGP Key and
+Secret Data managed-object routes from #187. The named factories and applicable
+`fromFields`/`fromItem` calls use their required type/version members and a Raw
+Key Block in KMIP 2.0/2.1 (§§2.4, 2.7). This is local model evidence, not key
+validity or server interoperability evidence.
+
+The combined Java suite passes 89/89; shared route suites pass 109/109; the
+selected report validates 34,796/34,796 cells with zero failures; ledger
+comparison and the 1,507-route capability audit pass. The full ledger has
+36,845 pending of 71,641; #216 remains WIP.

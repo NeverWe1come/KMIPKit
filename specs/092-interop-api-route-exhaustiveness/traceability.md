@@ -184,6 +184,16 @@ artifact. This is part of the FR-006 artifact provenance check.
   zero failures and leaves 36,947 of 71,641 pending. Full Java matrix closure
   remains open under FR-002/FR-003/FR-009.
 
+## Java PGP Key and Secret Data routes on #216 — 2026-11-18
+
+- **FR-003:** The combined #216 head adds PGP Key and Secret Data structures,
+  required members, and tags through their named Java factories and the
+  applicable generic managed-object factories. Fixtures use PGP Key Version
+  or Secret Data Type plus a Raw Key Block (KMIP §§2.4, 2.7).
+- The combined selected report validates 34,796/34,796 cells with zero
+  failures; 36,845 of 71,641 remain pending. Full matrix closure remains open
+  under FR-002/FR-003/FR-009.
+
 ## Java Split Key managed-object member routes on #216 — 2026-11-18
 
 - **FR-003:** #216 retains its Usage Limits routes and adds the six Split Key

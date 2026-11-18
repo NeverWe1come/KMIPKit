@@ -577,3 +577,12 @@ branches, and the common CI therefore reports a planned matrix only.
 - The full Java suite passes 87/87; shared route suites pass 109/109; ledger
   comparison and the 1,507-route capability audit pass. Full matrix closure and
   exact-head CI remain open, so #216 stays WIP.
+
+## #216 PGP Key and Secret Data routes — 2026-11-18
+
+- #216 includes the PGP Key and Secret Data root/member/tag routes from #187,
+  preserving Usage Limits evidence. The combined report validates
+  34,796/34,796 cells with zero failures and records 36,845 pending of 71,641.
+- The Java suite passes 89/89; shared tests pass 109/109; ledger comparison
+  and the 1,507-route capability audit pass. Full matrix closure and exact-head
+  CI remain open, so #216 stays WIP.

@@ -198,6 +198,15 @@ final class LocalCatalogRouteChecks {
             OPAQUE_OBJECT_MANAGED_OBJECT_CASE_IDS)
             .flatMap(Set::stream)
             .collect(java.util.stream.Collectors.toUnmodifiableSet());
+    static final Set<String> PGP_KEY_AND_SECRET_DATA_CASE_IDS = Set.of(
+            "test-norm-object-structure-object-structure-pgp-key",
+            "test-norm-structure-member-structure-member-2-4-pgp-key-key-block",
+            "test-norm-structure-member-structure-member-2-4-pgp-key-pgp-key-version",
+            "test-norm-tag-tag-4200bd",
+            "test-norm-object-structure-object-structure-secret-data",
+            "test-norm-structure-member-structure-member-2-7-secret-data-key-block",
+            "test-norm-structure-member-structure-member-2-7-secret-data-secret-data-type",
+            "test-norm-tag-tag-420085");
     static final Set<String> KEY_BEARING_MANAGED_OBJECT_ROOT_CASE_IDS = Set.of(
             "test-norm-object-structure-object-structure-symmetric-key",
             "test-norm-object-structure-object-structure-private-key",
@@ -1500,6 +1509,7 @@ final class LocalCatalogRouteChecks {
         }
         CodecLimits limits = CodecLimits.defaults();
         int keyMaterialTag = tagCodeNamed(catalog, "Key Material", version);
+        int keyBlockTag = tagCodeNamed(catalog, "Key Block", version);
         Set<String> emitted = new java.util.LinkedHashSet<>();
 
         for (JsonNode testCase : catalog.path("test_cases")) {
@@ -1548,7 +1558,6 @@ final class LocalCatalogRouteChecks {
             }
 
             int keyValueTag = tagCodeNamed(catalog, "Key Value", version);
-            int keyBlockTag = tagCodeNamed(catalog, "Key Block", version);
             int keyFormatTypeTag = tagCodeNamed(catalog, "Key Format Type", version);
             byte[] keyValueWire = structureWire(keyValueTag, keyMaterialWire);
             byte[] keyFormatTypeWire = itemWire(keyFormatTypeTag, TtlvItemType.Enumeration.code(),
@@ -1677,6 +1686,87 @@ final class LocalCatalogRouteChecks {
             throw new IllegalArgumentException("Selected managed-object factory targets were not executed for "
                     + version);
         }
+    }
+
+    /** Executes the PGP Key and Secret Data object factories with their required table fields. */
+    static boolean isPgpKeyTargetId(String targetId) {
+        return targetId.contains("PGP-KEY") || targetId.equals("KMIPKIT-ELEM-TAG-4200BD");
+    }
+
+    static void executePgpKeyAndSecretDataManagedObjectTargets(JsonNode catalog, String version,
+            Set<String> selectedCaseIds, EvidenceSink sink) throws Exception {
+        if (!PGP_KEY_AND_SECRET_DATA_CASE_IDS.containsAll(selectedCaseIds)) {
+            throw new IllegalArgumentException("Selected case is not a PGP Key or Secret Data target.");
+        }
+        Set<String> emitted = new java.util.LinkedHashSet<>();
+        CodecLimits limits = CodecLimits.defaults();
+
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String caseId = testCase.path("case_id").asText();
+            if (!selectedCaseIds.contains(caseId) || !applies(testCase, version)) continue;
+            String targetId = testCase.path("requires").path("normative_target_id").asText();
+            boolean pgpKey = isPgpKeyTargetId(targetId);
+            String objectName = pgpKey ? "PGP Key" : "Secret Data";
+            String typeName = pgpKey ? "PGP Key Version" : "Secret Data Type";
+            String factoryName = pgpKey ? "pgpKey" : "secretData";
+            int objectType = Math.toIntExact(enumValue(catalog, "OBJECT-TYPE", objectName));
+            int objectTag = tagCodeNamed(catalog, objectName, version);
+            int typeTag = tagCodeNamed(catalog, typeName, version);
+            boolean tagTarget = targetId.equals(pgpKey ? "KMIPKIT-ELEM-TAG-4200BD" : "KMIPKIT-ELEM-TAG-420085");
+            long secretDataType = pgpKey ? 0L : enumValue(catalog, "SECRET-DATA-TYPE", "Password");
+            int pgpKeyVersion = 4;
+            byte[] keyBlockWire = rawKeyBlockWire(catalog, version);
+            byte[] typeWire = pgpKey
+                    ? scalarWire(typeTag, TtlvItemType.Integer.code(), pgpKeyVersion)
+                    : scalarWire(typeTag, TtlvItemType.Enumeration.code(), Math.toIntExact(secretDataType));
+            byte[] wire = structureWire(objectTag, concat(typeWire, keyBlockWire));
+            List<TtlvItem> fields = new ArrayList<>();
+            try {
+                fields.add(pgpKey
+                        ? createIntegerItem(typeTag, pgpKeyVersion, limits)
+                        : createEnumerationItem(typeTag, secretDataType, limits));
+                fields.add(rawKeyBlockItem(catalog, version, limits));
+                try (ManagedObject typedFactory = pgpKey
+                        ? ManagedObject.pgpKey(fields) : ManagedObject.secretData(fields)) {
+                    assertPgpKeyOrSecretData(typedFactory, objectType, pgpKey, pgpKeyVersion, secretDataType);
+                    if (!tagTarget) {
+                        try (ManagedObject fromFields = ManagedObject.fromFields(objectType, fields);
+                                TtlvItem objectItem = createStructureItem(objectTag, fields, limits);
+                                ManagedObject fromItem = ManagedObject.fromItem(objectType, objectItem)) {
+                            assertPgpKeyOrSecretData(fromFields, objectType, pgpKey, pgpKeyVersion, secretDataType);
+                            assertPgpKeyOrSecretData(fromItem, objectType, pgpKey, pgpKeyVersion, secretDataType);
+                        }
+                    }
+                }
+            } finally {
+                closeItems(fields);
+            }
+            emitRoute(sink, caseId, targetId,
+                    "java.typed-protocol.model.org.kmipkit.ttlv.managedobject."
+                            + factoryName.toLowerCase(Locale.ROOT),
+                    "org.kmipkit.ttlv.ManagedObject." + factoryName, "construct", wire);
+            if (!tagTarget) {
+                emitRoute(sink, caseId, targetId,
+                        "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromfields",
+                        "org.kmipkit.ttlv.ManagedObject.fromFields", "construct", wire);
+                emitRoute(sink, caseId, targetId,
+                        "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromitem",
+                        "org.kmipkit.ttlv.ManagedObject.fromItem", "construct", wire);
+            }
+            emitted.add(caseId);
+        }
+        if (!emitted.equals(selectedCaseIds)) {
+            throw new IllegalArgumentException("Selected PGP Key or Secret Data targets were not executed for "
+                    + version);
+        }
+    }
+
+    private static void assertPgpKeyOrSecretData(ManagedObject object, int objectType, boolean pgpKey,
+            int pgpKeyVersion, long secretDataType) {
+        assertEquals(objectType, object.objectType());
+        assertEquals(true, object.hasKeyBlock());
+        if (pgpKey) assertEquals(pgpKeyVersion, object.pgpKeyVersion());
+        else assertEquals(secretDataType, object.secretDataType());
     }
 
     /** Executes root key-object targets through their named and generic public factories. */
