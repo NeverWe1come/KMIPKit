@@ -93,6 +93,26 @@ class LocalCatalogRouteChecksTest {
     }
 
     @Test
+    void executesManagedObjectCaseThroughItsDeclaredOperationItemRoutes() throws Exception {
+        JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
+        List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
+
+        LocalCatalogRouteChecks.executeGenericOperationTargets(catalog, "2.1",
+                Set.of("test-obj-certificate"), new ObjectMapper().createArrayNode(), invocations::add);
+
+        assertEquals(List.of(
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode"),
+                invocations.stream().map(LocalCatalogRouteChecks.Invocation::routeId).toList());
+        assertEquals(Set.of("KMIPKIT-ELEM-OP-C2S-REGISTER"), invocations.stream()
+                .map(LocalCatalogRouteChecks.Invocation::targetId)
+                .collect(java.util.stream.Collectors.toSet()));
+        assertArrayEquals(new byte[] {0x42, 0x00, 0x5c, 0x05, 0, 0, 0, 4,
+                0, 0, 0, 3, 0, 0, 0, 0}, invocations.get(0).wire());
+    }
+
+    @Test
     void executesClientPayloadCorrelationFieldThroughGenericTtlvRoutes() throws Exception {
         JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
         String caseId = "test-norm-payload-client-cancel-request-21-001";
