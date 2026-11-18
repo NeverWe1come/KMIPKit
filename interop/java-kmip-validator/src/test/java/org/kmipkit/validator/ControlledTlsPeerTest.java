@@ -104,17 +104,17 @@ class ControlledTlsPeerTest {
     private static final List<String> CREATE_ROUTE_CASE_IDS = List.of("test-op-create", "test-obj-symmetric-key");
     private static final List<CreateRequestPayloadFixture> CREATE_REQUEST_PAYLOAD_FIXTURES = List.of(
             new CreateRequestPayloadFixture("test-norm-payload-client-create-request-20-001",
-                    "KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-20-001", "2.0"),
+                    "KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-20-001", "2.0", false),
             new CreateRequestPayloadFixture("test-norm-payload-client-create-request-20-002",
-                    "KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-20-002", "2.0"),
+                    "KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-20-002", "2.0", false),
             new CreateRequestPayloadFixture("test-norm-payload-client-create-request-21-001",
-                    "KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-21-001", "2.1"),
+                    "KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-21-001", "2.1", false),
             new CreateRequestPayloadFixture("test-norm-payload-client-create-request-21-002",
-                    "KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-21-002", "2.1"),
+                    "KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-21-002", "2.1", false),
             new CreateRequestPayloadFixture("test-norm-payload-client-create-request-20-003",
-                    "KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-20-003", "2.0"),
+                    "KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-20-003", "2.0", true),
             new CreateRequestPayloadFixture("test-norm-payload-client-create-request-21-003",
-                    "KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-21-003", "2.1"));
+                    "KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-21-003", "2.1", true));
     private static final List<CreateOperationRouteFixture> CREATE_OPERATION_ROUTE_FIXTURES =
             createOperationRouteFixtures();
     private static final List<String> CREATE_ROUTE_ENCODINGS = List.of("TTLV", "JSON", "XML");
@@ -131,10 +131,11 @@ class ControlledTlsPeerTest {
     private record NewAttributeMutationFixture(String methodName, String title, String ordinal,
             int operationValue) { }
 
-    private record CreateRequestPayloadFixture(String caseId, String targetId, String protocolVersion) { }
+    private record CreateRequestPayloadFixture(String caseId, String targetId, String protocolVersion,
+            boolean protectionStorageMasksPresent) { }
 
     private record CreateOperationRouteFixture(String caseId, String protocolVersion,
-            String requestPayloadTargetId) { }
+            String requestPayloadTargetId, boolean protectionStorageMasksPresent) { }
 
     private record AsyncCancelRouteScenario(String caseId, String cancellationResultName,
             int cancellationResultValue, List<String> targetIds, int workflowStepIndex) { }
@@ -7987,7 +7988,7 @@ class ControlledTlsPeerTest {
                                 protocolVersion, encoding, transport));
                         try {
                             executeCreateRouteRequest(connectionFile, batchItemIdBytes,
-                                    hasProtectionStorageMasks(fixture));
+                                    fixture.protectionStorageMasksPresent());
                         } finally {
                             listener.close();
                         }
@@ -8018,15 +8019,14 @@ class ControlledTlsPeerTest {
                                 protocolVersion, encoding, transport));
                         try {
                             executeCreateRouteRequest(connectionFile, batchItemIdBytes,
-                                    hasProtectionStorageMasks(fixture));
+                                    fixture.protectionStorageMasksPresent());
                         } finally {
                             listener.stop(0);
                         }
                         observedRequest = peer.get(15, TimeUnit.SECONDS);
                     }
                     assertCreateRouteRequest(observedRequest, encoding, protocolVersion, batchItemIdBytes,
-                            fixture.requestPayloadTargetId() != null
-                                    && fixture.requestPayloadTargetId().endsWith("-003"));
+                            fixture.protectionStorageMasksPresent());
                     if (requestHash == null) requestHash = normalizedTreeSha256(observedRequest);
                     appendTypedNetworkRouteEvents(events, caseId, routeId, targetId, publicApi,
                             protocolVersion, requestHash, responseHash, encoding, transport);
@@ -8044,19 +8044,15 @@ class ControlledTlsPeerTest {
         var fixtures = new ArrayList<CreateOperationRouteFixture>();
         for (String caseId : CREATE_ROUTE_CASE_IDS) {
             for (String protocolVersion : KMIP_2_0_AND_2_1) {
-                fixtures.add(new CreateOperationRouteFixture(caseId, protocolVersion, null));
+                fixtures.add(new CreateOperationRouteFixture(caseId, protocolVersion, null, false));
             }
         }
         for (CreateRequestPayloadFixture fixture : CREATE_REQUEST_PAYLOAD_FIXTURES) {
             fixtures.add(new CreateOperationRouteFixture(
-                    fixture.caseId(), fixture.protocolVersion(), fixture.targetId()));
+                    fixture.caseId(), fixture.protocolVersion(), fixture.targetId(),
+                    fixture.protectionStorageMasksPresent()));
         }
         return List.copyOf(fixtures);
-    }
-
-    private static boolean hasProtectionStorageMasks(CreateOperationRouteFixture fixture) {
-        return fixture.requestPayloadTargetId() != null
-                && fixture.requestPayloadTargetId().endsWith("-003");
     }
 
     private static void executeCreateRouteRequest(Path connectionFile, byte[] batchItemId,
