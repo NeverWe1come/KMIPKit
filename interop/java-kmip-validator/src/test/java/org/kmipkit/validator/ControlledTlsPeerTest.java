@@ -1182,6 +1182,7 @@ class ControlledTlsPeerTest {
             if ("2.1".equals(protocolVersion)) {
                 appendPingResponseRouteEvidence(events, serverCertificatePem, serverPrivateKeyPem,
                         clientCertificatePem, clientPrivateKeyPem);
+                assertPingNetworkRouteCoverage(events);
             }
             if ("2.1".equals(protocolVersion)) appendObjectGroupLocalRouteEvents(events);
             if ("2.1".equals(protocolVersion)) appendStructureMemberStructureRouteEvents(events);
@@ -7081,6 +7082,31 @@ class ControlledTlsPeerTest {
         appendRouteEvent(events, "test-op-ping", "java.typed-protocol.function.client_batch_item_response_ping",
                 "KMIPKIT-ELEM-OP-C2S-PING", "org.kmipkit.extensions.ClientBatchItemResult.pingResponse",
                 null, null, "decode", "2.1", null, null, responseHash);
+    }
+
+    private static void assertPingNetworkRouteCoverage(ArrayNode events) {
+        for (String encoding : List.of("TTLV", "JSON", "XML")) {
+            for (String transport : List.of("raw_tls", "https")) {
+                for (String action : List.of("construct", "send", "decode")) {
+                    boolean present = false;
+                    for (JsonNode event : events) {
+                        if ("test-op-ping".equals(event.path("case_id").asText())
+                                && "java.typed-protocol.client_batch_item.ping"
+                                        .equals(event.path("route_id").asText())
+                                && "KMIPKIT-ELEM-OP-C2S-PING".equals(event.path("target_id").asText())
+                                && "2.1".equals(event.path("protocol_version").asText())
+                                && encoding.equals(event.path("encoding").asText())
+                                && transport.equals(event.path("transport").asText())
+                                && action.equals(event.path("action").asText())) {
+                            present = true;
+                            break;
+                        }
+                    }
+                    assertTrue(present, "Missing typed Ping route evidence for 2.1 / " + encoding
+                            + " / " + transport + " / " + action);
+                }
+            }
+        }
     }
 
     private static void appendPingOperationGenericRouteEvents(ArrayNode events, String treeHash) throws Exception {
