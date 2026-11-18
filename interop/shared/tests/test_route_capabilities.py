@@ -38,6 +38,32 @@ class RouteCapabilitiesTests(unittest.TestCase):
         self.assertEqual(PINNED_RELEASE_COMMIT, self.data['library_commit'])
         self.assertEqual(PINNED_RELEASE_COMMIT, self.module.build_manifest(ROOT)['library_commit'])
 
+    def test_c_discover_versions_route_records_its_pinned_21_only_offer(self):
+        manifest = self.module.build_manifest(ROOT, self.data['library_commit'])
+        route = next(route for route in manifest['routes']
+                     if route['public_api_symbol'] ==
+                     'kmipkit_client_batch_item_discover_versions')
+        self.assertEqual(route['protocol_versions'], ['2.1'])
+        self.assertIn('crates/kmipkit-ffi/src/extension_registry.rs', route['source_paths'])
+        self.assertIn('crates/kmipkit-client/src/execute.rs', route['source_paths'])
+        self.assertIn('crates/kmipkit-protocol/src/discover_versions.rs', route['source_paths'])
+
+        api = self._pinned_public_api()
+        function = next(function for function in api['functions']
+                        if function['c']['symbol'] ==
+                        'kmipkit_client_batch_item_discover_versions')
+        self.assertEqual([parameter['name'] for parameter in function['c']['parameters']],
+                         ['out_item'])
+        ffi = self.module.source(ROOT, self.data['library_commit'],
+                                 'crates/kmipkit-ffi/src/extension_registry.rs')
+        client = self.module.source(ROOT, self.data['library_commit'],
+                                    'crates/kmipkit-client/src/execute.rs')
+        protocol = self.module.source(ROOT, self.data['library_commit'],
+                                      'crates/kmipkit-protocol/src/discover_versions.rs')
+        self.assertIn('ClientBatchItem::discover_versions()', ffi)
+        self.assertIn('DiscoverVersionsRequest::new()', client)
+        self.assertIn('ProtocolVersion::from_raw(2, 1)', protocol)
+
     def test_normative_inventory_requires_local_construct_and_decode_in_every_language(self):
         for language in ('rust', 'c', 'java', 'python'):
             routes = [r for r in self.data['routes'] if r['language'] == language
