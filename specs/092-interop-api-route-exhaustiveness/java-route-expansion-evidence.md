@@ -3628,6 +3628,17 @@ and `git diff --check` pass. The full Java matrix and stack remain WIP.
 
 The #217 branch now contains the #216 Operation and managed-object route expansions and keeps its Right Usage Limits member fixture. The selected report includes all eight local Right Usage Limits route cells for KMIP 2.0/2.1. The full installed-consumer Gradle suite passes 82 tests with zero failures, errors, or skips. The shared validator accepts 33,878 selected cells with zero failures; 37,763 of 71,641 Java cells remain pending, so the complete Java matrix and this PR stack remain WIP. Ledger comparison and `git diff --check` pass.
 
+## #217 stack-tip verification after EC public typed routes — 2026-11-18
+
+The #217 tip includes the EC public `Recommended Curve` and `Q String` routes
+from #187 through `KeyMaterial`, `KeyValue`, and `KeyBlock` in both KMIP 2.0
+and 2.1. It retains all eight Right Usage Limits cells from the child branch.
+The full Java suite passes 84 tests; the shared evidence/schema/capability
+suites pass 108 tests and the capability audit reports 1,507 routes. The
+selected report validates 34,262/34,262 cells with zero failures and leaves
+37,379 of 71,641 planned cells pending. The generated ledger matches its
+checked-in reference, `git diff --check` passes, and the stack remains WIP.
+
 The suite used a worktree-local Java temporary directory because `/tmp` was full:
 
 ```sh

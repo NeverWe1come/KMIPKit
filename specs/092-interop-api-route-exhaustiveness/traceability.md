@@ -116,5 +116,15 @@ artifact. This is part of the FR-006 artifact provenance check.
   Limits member in KMIP 2.0 and 2.1 (§7.28 and §7.34). The evidence uses the
   exact catalog target and confirms all four routes in both versions.
 - The full Java suite passes 84 tests. The #217 selected report validates
-  34,226/34,226 cells with zero failures and leaves 37,415 of 71,641 pending;
+  34,262/34,262 cells with zero failures and leaves 37,379 of 71,641 pending;
   full Java matrix closure remains open under FR-002/FR-003/FR-009.
+
+## Java EC public Key Material model routes — #217 stack sync — 2026-11-18
+
+- **FR-003:** The #217 installed consumer now includes the EC public
+  `Recommended Curve` and `Q String` routes through `KeyMaterial`, `KeyValue`,
+  and `KeyBlock` using both typed constructors in KMIP 2.0 and 2.1 (§§3.11–3.12).
+  The existing eight Right Usage Limits cells remain covered.
+- The selected report validates 34,262/34,262 cells with zero failures and
+  leaves 37,379 of 71,641 pending. Full Java matrix closure remains open under
+  FR-002/FR-003/FR-009.
