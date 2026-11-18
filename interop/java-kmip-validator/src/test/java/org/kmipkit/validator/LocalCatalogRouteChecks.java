@@ -18,6 +18,7 @@ import org.kmipkit.ttlv.TtlvItemType;
 import org.kmipkit.ttlv.KeyMaterial;
 import org.kmipkit.ttlv.KeyBlock;
 import org.kmipkit.ttlv.KeyValue;
+import org.kmipkit.ttlv.ManagedObject;
 import org.kmipkit.ttlv.TtlvStructure;
 import org.kmipkit.ttlv.TtlvStructureView;
 import org.kmipkit.ttlv.TtlvValue;
@@ -1566,6 +1567,9 @@ final class LocalCatalogRouteChecks {
             emitRoute(sink, caseId, targetId,
                     "java.typed-protocol.model.org.kmipkit.ttlv.keymaterial.fromitem",
                     "org.kmipkit.ttlv.KeyMaterial.fromItem", "construct", keyMaterialWire);
+            executeManagedObjectKeyMaterialRoutes(catalog, version, caseId, targetId, formatRaw,
+                    fixture, expected, targetTag, keyMaterialTag, keyValueTag, keyBlockTag,
+                    keyFormatTypeTag, keyBlockWire, limits, sink);
             emitted.add(caseId);
         }
         if (!emitted.equals(selectedCaseIds)) {
@@ -1688,6 +1692,68 @@ final class LocalCatalogRouteChecks {
         emitRoute(sink, caseId, target.path("target_id").asText(),
                 "java.typed-protocol.model.org.kmipkit.ttlv.keyblock.fromitem",
                 "org.kmipkit.ttlv.KeyBlock.fromItem", "construct", keyBlockWire);
+        executeManagedObjectKeyMaterialRoutes(catalog, version, caseId, target.path("target_id").asText(),
+                formatRaw, fixture, null, 0, keyMaterialTag, keyValueTag, keyBlockTag,
+                keyFormatTypeTag, keyBlockWire, limits, sink);
+    }
+
+    private static void executeManagedObjectKeyMaterialRoutes(JsonNode catalog, String version, String caseId,
+            String targetId, int formatRaw, List<KeyFieldFixture> fixture, KeyFieldFixture expected,
+            int targetTag, int keyMaterialTag, int keyValueTag, int keyBlockTag, int keyFormatTypeTag,
+            byte[] keyBlockWire, CodecLimits limits, EvidenceSink sink) throws Exception {
+        String objectName = switch (formatRaw) {
+            case 7 -> "Symmetric Key";
+            case 8, 10, 12, 20 -> "Private Key";
+            case 9, 11, 13, 21 -> "Public Key";
+            default -> throw new IllegalArgumentException("No managed-object type for transparent key format: "
+                    + formatRaw);
+        };
+        long objectType = enumValue(catalog, "OBJECT-TYPE", objectName);
+        int objectTag = tagCodeNamed(catalog, objectName, version);
+        byte[] managedObjectWire = structureWire(objectTag, keyBlockWire);
+
+        TtlvItem fieldsKeyMaterial = createStructureItem(keyMaterialTag,
+                createKeyMaterialFieldItems(catalog, version, fixture, limits), limits);
+        TtlvItem fieldsKeyValue = createStructureItem(keyValueTag, List.of(fieldsKeyMaterial), limits);
+        TtlvItem fieldsFormat = createEnumerationItem(keyFormatTypeTag, formatRaw, limits);
+        TtlvItem fieldsKeyBlock = createStructureItem(keyBlockTag, List.of(fieldsFormat, fieldsKeyValue), limits);
+        try (fieldsKeyBlock; ManagedObject fromFields = ManagedObject.fromFields(objectType, List.of(fieldsKeyBlock))) {
+            assertManagedObjectKeyMaterial(fromFields, objectType, keyBlockTag, formatRaw, targetTag, expected,
+                    catalog, version, fixture);
+        }
+
+        TtlvItem itemKeyMaterial = createStructureItem(keyMaterialTag,
+                createKeyMaterialFieldItems(catalog, version, fixture, limits), limits);
+        TtlvItem itemKeyValue = createStructureItem(keyValueTag, List.of(itemKeyMaterial), limits);
+        TtlvItem itemFormat = createEnumerationItem(keyFormatTypeTag, formatRaw, limits);
+        TtlvItem itemKeyBlock = createStructureItem(keyBlockTag, List.of(itemFormat, itemKeyValue), limits);
+        TtlvItem managedObjectItem = createStructureItem(objectTag, List.of(itemKeyBlock), limits);
+        try (managedObjectItem; ManagedObject fromItem = ManagedObject.fromItem(objectType, managedObjectItem)) {
+            assertManagedObjectKeyMaterial(fromItem, objectType, keyBlockTag, formatRaw, targetTag, expected,
+                    catalog, version, fixture);
+        }
+
+        emitRoute(sink, caseId, targetId,
+                "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromfields",
+                "org.kmipkit.ttlv.ManagedObject.fromFields", "construct", managedObjectWire);
+        emitRoute(sink, caseId, targetId,
+                "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.fromitem",
+                "org.kmipkit.ttlv.ManagedObject.fromItem", "construct", managedObjectWire);
+    }
+
+    private static void assertManagedObjectKeyMaterial(ManagedObject managedObject, long objectType,
+            int keyBlockTag, int formatRaw, int targetTag, KeyFieldFixture expected, JsonNode catalog,
+            String version, List<KeyFieldFixture> fixture) {
+        assertEquals(objectType, managedObject.objectType());
+        assertEquals(true, managedObject.hasKeyBlock());
+        try (TtlvItem keyBlockItem = managedObject.fieldItem(keyBlockTag);
+                KeyBlock keyBlock = KeyBlock.fromItem(keyBlockItem)) {
+            if (expected == null) {
+                assertKeyBlockFields(keyBlock, formatRaw, catalog, version, fixture);
+            } else {
+                assertKeyBlockTarget(keyBlock, formatRaw, targetTag, expected);
+            }
+        }
     }
 
     private static void assertKeyMaterialFields(KeyMaterial material, int formatRaw, JsonNode catalog,
