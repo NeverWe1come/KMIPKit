@@ -3247,6 +3247,27 @@ passes 92/92; shared tests pass 196/196; ledger comparison and the 1,507-route
 capability audit pass. Full matrix closure and exact-head CI remain required,
 so the PR stack stays WIP.
 
+## Java Asynchronous Cancel request and response routes — 2026-11-18
+
+The five catalogued Cancellation Result scenarios run through the installed
+Java `Client.executeCancel` against controlled mutual-TLS peers. Each case is
+sent for KMIP 2.0 and 2.1 over TTLV, JSON, and XML on raw TLS and HTTPS. Peers
+check the request operation, protocol minor version, and exact correlation
+value, then return the matching Cancellation Result; Java checks the response
+operation, success status, correlation echo, and enum value. This records
+Cancel exchanges and does not claim that a later Poll or complete
+asynchronous workflow ran. Normative references: OASIS KMIP 2.0/2.1 §6.1.5
+Tables 161, 162, 176, and 177, §§8.2, 8.3, 8.6, 11.7, and 11.56.
+
+Red `c5ec2ae4d` requires the Cancel route for all five scenarios, both
+versions, six encoding/transport combinations, and every required target and
+action. Green `edb09424d` passes all 60 controlled exchanges and emits 420
+route cells. The selected report validates 40,671/40,671 with zero failures;
+the generated ledger records 71,641 planned, 40,671 executed, and 30,970
+pending. Java tests pass 92/92, shared tests 196/196, ledger comparison passes,
+and the 1,507-route capability audit passes. Full matrix closure and exact-head
+CI remain required, so the PR stack remains WIP.
+
 Verification:
 
 ```sh

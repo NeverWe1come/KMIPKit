@@ -373,3 +373,20 @@ artifact. This is part of the FR-006 artifact provenance check.
   ledger records 71,641 planned, 40,251 executed, and 31,390 pending cells.
   Java tests pass 92/92, shared tests 196/196, ledger comparison passes, and
   the capability audit accepts 1,507 routes. The complete matrix remains open.
+
+### Java Asynchronous Cancel request and response routes — 2026-11-18
+
+- **FR-001/FR-003/FR-005/FR-009:** The five catalogued Cancellation Result
+  cases execute Java `Client.executeCancel` for both protocol versions, all
+  three encodings, and raw TLS/HTTPS against controlled mutual-TLS peers. The
+  peer validates operation, version, and correlation; Java validates the
+  decoded operation, success status, echo, and result. This covers the Cancel
+  exchange, not a subsequent Poll lifecycle. References: OASIS KMIP 2.0/2.1
+  §6.1.5 Tables 161, 162, 176, and 177, §§8.2, 8.3, 8.6, 11.7, and 11.56.
+- Red `c5ec2ae4d` requires all per-case/version/encoding/transport targets and
+  actions; Green `edb09424d` runs the 60 controlled exchanges and records their
+  event evidence.
+- The selected report validates 40,671/40,671 cells with zero failures. The
+  ledger records 71,641 planned, 40,671 executed, and 30,970 pending cells.
+  Java tests pass 92/92 and shared tests 196/196; ledger comparison passes and
+  the capability audit accepts 1,507 routes. Full matrix closure remains open.

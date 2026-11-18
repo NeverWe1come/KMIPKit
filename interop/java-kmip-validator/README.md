@@ -614,3 +614,24 @@ with zero failures, while the full Java ledger records 71,641 planned, 40,227
 executed, and 31,414 pending cells. Java tests pass 92/92; the shared suite
 passes 196/196; ledger comparison and the 1,507-route capability audit pass.
 The remaining matrix and exact-head CI keep #187 and its dependent stack WIP.
+
+### Asynchronous Cancel request and response routes — 2026-11-18
+
+For each of the five catalogued Cancellation Result values, Java now calls
+`Client.executeCancel` against a controlled mutual-TLS peer for KMIP 2.0 and
+2.1, with TTLV, JSON, and XML over raw TLS and HTTPS. The peer verifies the
+Cancel operation, protocol version, and exact correlation bytes, then returns
+the matching Cancellation Result. Java checks the decoded operation, success
+status, correlation echo, and enum value. These exchanges cover Cancel itself;
+they do not claim the later Poll or complete asynchronous workflow.
+References: OASIS KMIP 2.0/2.1 §6.1.5 Tables 161, 162, 176, and 177, §§8.2,
+8.3, 8.6, 11.7, and 11.56.
+
+Red `c5ec2ae4d` fails when any case, version, encoding, transport, target, or
+required action lacks evidence. Green `edb09424d` executes and checks all 60
+controlled exchanges and emits their per-target route events. The selected
+report validates 40,671/40,671 cells with zero failures; the ledger records
+71,641 planned, 40,671 executed, and 30,970 pending cells. The Java suite
+passes 92/92 and the shared suite 196/196; ledger comparison and the
+1,507-route capability audit pass. The matrix remains open and the stack stays
+WIP.

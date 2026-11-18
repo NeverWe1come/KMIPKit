@@ -3,7 +3,7 @@
   "artifact_sha256": "37d7eeae9e64644fd7cdde4bfd64b7da5ccbb0bf2be53a949826eb62dc3aaf86",
   "catalog_sha256": "55fcd64afba189ab7d04978fafb841fc73c9e5afc1ef25c93cb2eb04f4fba4a9",
   "complete_matrix": false,
-  "controlled_peer_cells": 1743,
+  "controlled_peer_cells": 1923,
   "evidence_case_ids": [
     "test-async-cancel-result-canceled",
     "test-async-cancel-result-completed",
@@ -2671,7 +2671,7 @@
     "test-v20-reject-set-constraints",
     "test-v20-reject-set-defaults"
   ],
-  "executed_cells": 40251,
+  "executed_cells": 40671,
   "language": "java",
   "library_commit": "12496d646d11d4069b58bcc88fc76cc619211ec6",
   "pending_case_ids": [
@@ -3757,23 +3757,23 @@
   "pending_cases": [
     {
       "case_id": "test-async-cancel-result-canceled",
-      "pending_cells": 176
+      "pending_cells": 92
     },
     {
       "case_id": "test-async-cancel-result-completed",
-      "pending_cells": 176
+      "pending_cells": 92
     },
     {
       "case_id": "test-async-cancel-result-failed",
-      "pending_cells": 176
+      "pending_cells": 92
     },
     {
       "case_id": "test-async-cancel-result-unable-to-cancel",
-      "pending_cells": 176
+      "pending_cells": 92
     },
     {
       "case_id": "test-async-cancel-result-unavailable",
-      "pending_cells": 176
+      "pending_cells": 92
     },
     {
       "case_id": "test-async-cancel-vs-poll-race",
@@ -8068,7 +8068,7 @@
       "pending_cells": 12
     }
   ],
-  "pending_cells": 31390,
+  "pending_cells": 30970,
   "pending_reason": "No validated per-cell route execution evidence is recorded for this cell.",
   "pending_reason_code": "route_evidence_not_emitted",
   "planned_cells": 71641,
@@ -8456,8 +8456,8 @@
     {
       "action": "construct",
       "encoding": "JSON",
-      "executed_cells": 0,
-      "pending_cells": 20,
+      "executed_cells": 15,
+      "pending_cells": 5,
       "protocol_version": "2.0",
       "required_cells": 20,
       "route_id": "java.typed-protocol.client.execute_cancel",
@@ -8466,8 +8466,8 @@
     {
       "action": "construct",
       "encoding": "JSON",
-      "executed_cells": 0,
-      "pending_cells": 20,
+      "executed_cells": 15,
+      "pending_cells": 5,
       "protocol_version": "2.0",
       "required_cells": 20,
       "route_id": "java.typed-protocol.client.execute_cancel",
@@ -8476,8 +8476,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 20,
+      "executed_cells": 15,
+      "pending_cells": 5,
       "protocol_version": "2.0",
       "required_cells": 20,
       "route_id": "java.typed-protocol.client.execute_cancel",
@@ -8486,8 +8486,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 20,
+      "executed_cells": 15,
+      "pending_cells": 5,
       "protocol_version": "2.0",
       "required_cells": 20,
       "route_id": "java.typed-protocol.client.execute_cancel",
@@ -8496,8 +8496,8 @@
     {
       "action": "construct",
       "encoding": "XML",
-      "executed_cells": 0,
-      "pending_cells": 20,
+      "executed_cells": 15,
+      "pending_cells": 5,
       "protocol_version": "2.0",
       "required_cells": 20,
       "route_id": "java.typed-protocol.client.execute_cancel",
@@ -8506,8 +8506,8 @@
     {
       "action": "construct",
       "encoding": "XML",
-      "executed_cells": 0,
-      "pending_cells": 20,
+      "executed_cells": 15,
+      "pending_cells": 5,
       "protocol_version": "2.0",
       "required_cells": 20,
       "route_id": "java.typed-protocol.client.execute_cancel",
@@ -8516,8 +8516,8 @@
     {
       "action": "construct",
       "encoding": "JSON",
-      "executed_cells": 0,
-      "pending_cells": 24,
+      "executed_cells": 15,
+      "pending_cells": 9,
       "protocol_version": "2.1",
       "required_cells": 24,
       "route_id": "java.typed-protocol.client.execute_cancel",
@@ -8526,8 +8526,8 @@
     {
       "action": "construct",
       "encoding": "JSON",
-      "executed_cells": 0,
-      "pending_cells": 24,
+      "executed_cells": 15,
+      "pending_cells": 9,
       "protocol_version": "2.1",
       "required_cells": 24,
       "route_id": "java.typed-protocol.client.execute_cancel",
@@ -8536,8 +8536,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 24,
+      "executed_cells": 15,
+      "pending_cells": 9,
       "protocol_version": "2.1",
       "required_cells": 24,
       "route_id": "java.typed-protocol.client.execute_cancel",
@@ -8546,8 +8546,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 24,
+      "executed_cells": 15,
+      "pending_cells": 9,
       "protocol_version": "2.1",
       "required_cells": 24,
       "route_id": "java.typed-protocol.client.execute_cancel",
@@ -8556,8 +8556,8 @@
     {
       "action": "construct",
       "encoding": "XML",
-      "executed_cells": 0,
-      "pending_cells": 24,
+      "executed_cells": 15,
+      "pending_cells": 9,
       "protocol_version": "2.1",
       "required_cells": 24,
       "route_id": "java.typed-protocol.client.execute_cancel",
@@ -8566,8 +8566,8 @@
     {
       "action": "construct",
       "encoding": "XML",
-      "executed_cells": 0,
-      "pending_cells": 24,
+      "executed_cells": 15,
+      "pending_cells": 9,
       "protocol_version": "2.1",
       "required_cells": 24,
       "route_id": "java.typed-protocol.client.execute_cancel",
@@ -8576,8 +8576,8 @@
     {
       "action": "decode",
       "encoding": "JSON",
-      "executed_cells": 0,
-      "pending_cells": 9,
+      "executed_cells": 5,
+      "pending_cells": 4,
       "protocol_version": "2.0",
       "required_cells": 9,
       "route_id": "java.typed-protocol.client.execute_cancel",
@@ -8586,8 +8586,8 @@
     {
       "action": "decode",
       "encoding": "JSON",
-      "executed_cells": 0,
-      "pending_cells": 9,
+      "executed_cells": 5,
+      "pending_cells": 4,
       "protocol_version": "2.0",
       "required_cells": 9,
       "route_id": "java.typed-protocol.client.execute_cancel",
@@ -8596,8 +8596,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 9,
+      "executed_cells": 5,
+      "pending_cells": 4,
       "protocol_version": "2.0",
       "required_cells": 9,
       "route_id": "java.typed-protocol.client.execute_cancel",
@@ -8606,8 +8606,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 9,
+      "executed_cells": 5,
+      "pending_cells": 4,
       "protocol_version": "2.0",
       "required_cells": 9,
       "route_id": "java.typed-protocol.client.execute_cancel",
@@ -8616,8 +8616,8 @@
     {
       "action": "decode",
       "encoding": "XML",
-      "executed_cells": 0,
-      "pending_cells": 9,
+      "executed_cells": 5,
+      "pending_cells": 4,
       "protocol_version": "2.0",
       "required_cells": 9,
       "route_id": "java.typed-protocol.client.execute_cancel",
@@ -8626,8 +8626,8 @@
     {
       "action": "decode",
       "encoding": "XML",
-      "executed_cells": 0,
-      "pending_cells": 9,
+      "executed_cells": 5,
+      "pending_cells": 4,
       "protocol_version": "2.0",
       "required_cells": 9,
       "route_id": "java.typed-protocol.client.execute_cancel",
@@ -8636,8 +8636,8 @@
     {
       "action": "decode",
       "encoding": "JSON",
-      "executed_cells": 0,
-      "pending_cells": 11,
+      "executed_cells": 5,
+      "pending_cells": 6,
       "protocol_version": "2.1",
       "required_cells": 11,
       "route_id": "java.typed-protocol.client.execute_cancel",
@@ -8646,8 +8646,8 @@
     {
       "action": "decode",
       "encoding": "JSON",
-      "executed_cells": 0,
-      "pending_cells": 11,
+      "executed_cells": 5,
+      "pending_cells": 6,
       "protocol_version": "2.1",
       "required_cells": 11,
       "route_id": "java.typed-protocol.client.execute_cancel",
@@ -8656,8 +8656,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 11,
+      "executed_cells": 5,
+      "pending_cells": 6,
       "protocol_version": "2.1",
       "required_cells": 11,
       "route_id": "java.typed-protocol.client.execute_cancel",
@@ -8666,8 +8666,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 11,
+      "executed_cells": 5,
+      "pending_cells": 6,
       "protocol_version": "2.1",
       "required_cells": 11,
       "route_id": "java.typed-protocol.client.execute_cancel",
@@ -8676,8 +8676,8 @@
     {
       "action": "decode",
       "encoding": "XML",
-      "executed_cells": 0,
-      "pending_cells": 11,
+      "executed_cells": 5,
+      "pending_cells": 6,
       "protocol_version": "2.1",
       "required_cells": 11,
       "route_id": "java.typed-protocol.client.execute_cancel",
@@ -8686,8 +8686,8 @@
     {
       "action": "decode",
       "encoding": "XML",
-      "executed_cells": 0,
-      "pending_cells": 11,
+      "executed_cells": 5,
+      "pending_cells": 6,
       "protocol_version": "2.1",
       "required_cells": 11,
       "route_id": "java.typed-protocol.client.execute_cancel",
@@ -8696,8 +8696,8 @@
     {
       "action": "send",
       "encoding": "JSON",
-      "executed_cells": 0,
-      "pending_cells": 20,
+      "executed_cells": 15,
+      "pending_cells": 5,
       "protocol_version": "2.0",
       "required_cells": 20,
       "route_id": "java.typed-protocol.client.execute_cancel",
@@ -8706,8 +8706,8 @@
     {
       "action": "send",
       "encoding": "JSON",
-      "executed_cells": 0,
-      "pending_cells": 20,
+      "executed_cells": 15,
+      "pending_cells": 5,
       "protocol_version": "2.0",
       "required_cells": 20,
       "route_id": "java.typed-protocol.client.execute_cancel",
@@ -8716,8 +8716,8 @@
     {
       "action": "send",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 20,
+      "executed_cells": 15,
+      "pending_cells": 5,
       "protocol_version": "2.0",
       "required_cells": 20,
       "route_id": "java.typed-protocol.client.execute_cancel",
@@ -8726,8 +8726,8 @@
     {
       "action": "send",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 20,
+      "executed_cells": 15,
+      "pending_cells": 5,
       "protocol_version": "2.0",
       "required_cells": 20,
       "route_id": "java.typed-protocol.client.execute_cancel",
@@ -8736,8 +8736,8 @@
     {
       "action": "send",
       "encoding": "XML",
-      "executed_cells": 0,
-      "pending_cells": 20,
+      "executed_cells": 15,
+      "pending_cells": 5,
       "protocol_version": "2.0",
       "required_cells": 20,
       "route_id": "java.typed-protocol.client.execute_cancel",
@@ -8746,8 +8746,8 @@
     {
       "action": "send",
       "encoding": "XML",
-      "executed_cells": 0,
-      "pending_cells": 20,
+      "executed_cells": 15,
+      "pending_cells": 5,
       "protocol_version": "2.0",
       "required_cells": 20,
       "route_id": "java.typed-protocol.client.execute_cancel",
@@ -8756,8 +8756,8 @@
     {
       "action": "send",
       "encoding": "JSON",
-      "executed_cells": 0,
-      "pending_cells": 24,
+      "executed_cells": 15,
+      "pending_cells": 9,
       "protocol_version": "2.1",
       "required_cells": 24,
       "route_id": "java.typed-protocol.client.execute_cancel",
@@ -8766,8 +8766,8 @@
     {
       "action": "send",
       "encoding": "JSON",
-      "executed_cells": 0,
-      "pending_cells": 24,
+      "executed_cells": 15,
+      "pending_cells": 9,
       "protocol_version": "2.1",
       "required_cells": 24,
       "route_id": "java.typed-protocol.client.execute_cancel",
@@ -8776,8 +8776,8 @@
     {
       "action": "send",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 24,
+      "executed_cells": 15,
+      "pending_cells": 9,
       "protocol_version": "2.1",
       "required_cells": 24,
       "route_id": "java.typed-protocol.client.execute_cancel",
@@ -8786,8 +8786,8 @@
     {
       "action": "send",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 24,
+      "executed_cells": 15,
+      "pending_cells": 9,
       "protocol_version": "2.1",
       "required_cells": 24,
       "route_id": "java.typed-protocol.client.execute_cancel",
@@ -8796,8 +8796,8 @@
     {
       "action": "send",
       "encoding": "XML",
-      "executed_cells": 0,
-      "pending_cells": 24,
+      "executed_cells": 15,
+      "pending_cells": 9,
       "protocol_version": "2.1",
       "required_cells": 24,
       "route_id": "java.typed-protocol.client.execute_cancel",
@@ -8806,8 +8806,8 @@
     {
       "action": "send",
       "encoding": "XML",
-      "executed_cells": 0,
-      "pending_cells": 24,
+      "executed_cells": 15,
+      "pending_cells": 9,
       "protocol_version": "2.1",
       "required_cells": 24,
       "route_id": "java.typed-protocol.client.execute_cancel",
@@ -34761,8 +34761,8 @@
       "route_id": "java.typed-protocol.cancel_request.create"
     },
     {
-      "executed_cells": 0,
-      "pending_cells": 648,
+      "executed_cells": 420,
+      "pending_cells": 228,
       "required_cells": 648,
       "route_id": "java.typed-protocol.client.execute_cancel"
     },
@@ -36118,7 +36118,7 @@
     }
   ],
   "schema_version": "1.0",
-  "selected_scope_cells": 40251,
+  "selected_scope_cells": 40671,
   "selected_scope_complete": true,
   "vendor_interoperability_claim": false
 }
