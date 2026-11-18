@@ -8062,6 +8062,12 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     bool get_workflow = strcmp(test_case->case_id, "test-op-get") == 0 ||
         strcmp(test_case->case_id, "test-norm-payload-client-get-request-20-001") == 0 ||
         strcmp(test_case->case_id, "test-norm-payload-client-get-request-21-001") == 0 ||
+        strcmp(test_case->case_id, "test-norm-payload-client-get-response-20-001") == 0 ||
+        strcmp(test_case->case_id, "test-norm-payload-client-get-response-20-002") == 0 ||
+        strcmp(test_case->case_id, "test-norm-payload-client-get-response-20-003") == 0 ||
+        strcmp(test_case->case_id, "test-norm-payload-client-get-response-21-001") == 0 ||
+        strcmp(test_case->case_id, "test-norm-payload-client-get-response-21-002") == 0 ||
+        strcmp(test_case->case_id, "test-norm-payload-client-get-response-21-003") == 0 ||
         strcmp(test_case->case_id, "test-batch-single-item-default-continuation") == 0;
     bool stop_on_first_failure_workflow =
         strcmp(test_case->case_id, "test-batch-stop-on-first-failure") == 0;

@@ -1054,33 +1054,41 @@ class RouteMatrixTests(unittest.TestCase):
             ((10, 10), 'batch_stop_on_first_failure'),
         )
 
-    def test_normative_get_response_payload_executes_typed_response_accessor(self):
-        """OASIS KMIP 2.0 §6.1.19 Table 206: decode a real Get response through C."""
+    def test_normative_get_response_payloads_execute_typed_response_accessor(self):
+        """OASIS KMIP 2.0/2.1 §6.1.19: decode real Get responses through C."""
         from artifact_support import ROOT
         from route_peer import execute_network_cells
 
-        case_id = 'test-norm-payload-client-get-response-20-001'
+        case_ids = {
+            f'test-norm-payload-client-get-response-{version}-{index:03d}'
+            for version in ('20', '21') for index in (1, 2, 3)
+        }
         catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
         manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
         selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
-                                               if case['case_id'] == case_id]}
+                                               if case['case_id'] in case_ids]}
 
         events, _, checks = execute_network_cells(
             ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest,
-            protocol_versions=('2.0',), network_combinations=(('TTLV', 'raw_tls'),))
+            protocol_versions=('2.0', '2.1'), network_combinations=(('TTLV', 'raw_tls'),))
 
-        self.assertEqual(len(checks), 1)
+        self.assertEqual({check['case_id'] for check in checks}, case_ids)
         self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
-        self.assertIn('kmipkit_client_batch_item_response_get',
-                      checks[0]['public_api_success_symbols'])
+        for check in checks:
+            self.assertIn('kmipkit_client_batch_item_response_get',
+                          check['public_api_success_symbols'])
         local_get_decode = [event for event in events
                             if event['route_id'] ==
                             'c.typed-protocol.function.client_batch_item_response_get'
                             and event['action'] == 'decode']
-        self.assertEqual({event['target_id'] for event in local_get_decode}, {
-            'KMIPKIT-PAYLOAD-CLIENT-GET-RESPONSE-20-001',
-            'KMIPKIT-ELEM-OP-C2S-GET',
-        })
+        expected_targets = {
+            (case['case_id'], case['requires']['normative_target_id'])
+            for case in selected['test_cases']
+        }
+        self.assertEqual(
+            {(event['case_id'], event['target_id']) for event in local_get_decode
+             if event['target_id'] != 'KMIPKIT-ELEM-OP-C2S-GET'}, expected_targets)
+        self.assertEqual({event['case_id'] for event in local_get_decode}, case_ids)
 
     def test_stop_batch_peer_does_not_execute_items_after_first_failure(self):
         from route_peer import PeerState
