@@ -1717,10 +1717,28 @@ final class LocalCatalogRouteChecks {
         TtlvItem fieldsKeyValue = createStructureItem(keyValueTag, List.of(fieldsKeyMaterial), limits);
         TtlvItem fieldsFormat = createEnumerationItem(keyFormatTypeTag, formatRaw, limits);
         TtlvItem fieldsKeyBlock = createStructureItem(keyBlockTag, List.of(fieldsFormat, fieldsKeyValue), limits);
-        try (fieldsKeyBlock; ManagedObject fromFields = ManagedObject.fromFields(objectType, List.of(fieldsKeyBlock))) {
+        try (fieldsKeyBlock; ManagedObject fromFields = ManagedObject.fromFields(objectType, List.of(fieldsKeyBlock));
+                ManagedObject typedFactory = switch (objectName) {
+                    case "Symmetric Key" -> ManagedObject.symmetricKey(List.of(fieldsKeyBlock));
+                    case "Private Key" -> ManagedObject.privateKey(List.of(fieldsKeyBlock));
+                    case "Public Key" -> ManagedObject.publicKey(List.of(fieldsKeyBlock));
+                    default -> throw new IllegalArgumentException("No typed key factory for " + objectName);
+                }) {
             assertManagedObjectKeyMaterial(fromFields, objectType, keyBlockTag, formatRaw, targetTag, expected,
                     catalog, version, fixture);
+            assertManagedObjectKeyMaterial(typedFactory, objectType, keyBlockTag, formatRaw, targetTag, expected,
+                    catalog, version, fixture);
         }
+
+        String factoryName = switch (objectName) {
+            case "Symmetric Key" -> "symmetricKey";
+            case "Private Key" -> "privateKey";
+            case "Public Key" -> "publicKey";
+            default -> throw new IllegalArgumentException("No typed key factory for " + objectName);
+        };
+        emitRoute(sink, caseId, targetId,
+                "java.typed-protocol.model.org.kmipkit.ttlv.managedobject." + factoryName.toLowerCase(),
+                "org.kmipkit.ttlv.ManagedObject." + factoryName, "construct", managedObjectWire);
 
         TtlvItem itemKeyMaterial = createStructureItem(keyMaterialTag,
                 createKeyMaterialFieldItems(catalog, version, fixture, limits), limits);
