@@ -1,6 +1,7 @@
 """Execute named enum/mask cases without substituting another KMIP type."""
 from __future__ import annotations
 
+import ctypes as C
 import hashlib
 import json
 from pathlib import Path
@@ -117,6 +118,19 @@ class ValueCases:
             state.update(b'\n')
             symbols.update(result['invoked_symbols'])
             sample_count += 1
-        return {'tree_sha256': state.hexdigest(), 'invoked_symbols': symbols, 'sample_count': sample_count,
-                'known_values_checked': len(known), 'unknown_value_preserved': True,
-                'combination_count': count, 'tag': tag}
+        credential_type_values_checked = 0
+        if type_name == 'Credential Type':
+            self.abi.bind('kmipkit_credential_type_from_raw', [C.c_uint32, C.POINTER(C.c_uint32)])
+            for value in [*known, *unknown_values]:
+                actual = C.c_uint32()
+                self.abi.call('kmipkit_credential_type_from_raw', value, C.byref(actual))
+                if actual.value != value:
+                    raise ValueError('credential_type_raw_value_not_preserved')
+                symbols.update(self.abi.called)
+                credential_type_values_checked += 1
+        result = {'tree_sha256': state.hexdigest(), 'invoked_symbols': symbols, 'sample_count': sample_count,
+                  'known_values_checked': len(known), 'unknown_value_preserved': True,
+                  'combination_count': count, 'tag': tag}
+        if type_name == 'Credential Type':
+            result['credential_type_values_checked'] = credential_type_values_checked
+        return result
