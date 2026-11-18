@@ -332,18 +332,36 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
         if key in observed:
             raise ValueError(f"duplicate route execution cell: {key}")
         status = event.get("status")
-        if status not in {"passed", "failed", "not_run"}:
+        if status not in {"passed", "failed", "not_run", "not_applicable"}:
             raise ValueError(f"route execution status is invalid for {key}")
         count = event.get("invocation_count")
         if not isinstance(count, int) or isinstance(count, bool) or count < 0:
             raise ValueError(f"route execution invocation_count is invalid for {key}")
-        if status == "not_run" or count == 0:
-            raise ValueError(f"route execution cell was not actually invoked: {key}")
-        if count != 1:
-            raise ValueError(f"route execution invocation_count is invalid for {key}")
+        planned = expected[key]
+        if planned.get("execution_status") == "not_applicable":
+            if status != "not_applicable" or count != 0:
+                raise ValueError(f"not-applicable route cell must not claim an invocation: {key}")
+            if event.get("not_applicable_reason") != planned.get("not_applicable_reason"):
+                raise ValueError(f"not-applicable route reason does not match the planned cell: {key}")
+            forbidden_evidence = {
+                "invocation_id", "request_tree_sha256", "response_tree_sha256",
+                "decode_outcome", "decode_rejection_code", "decode_input_sha256",
+                "wire_bytes_sha256", "wire_bytes_deterministic", "request_delivery_state",
+                "transport_invocation_count", "failure_code", "not_run_reason",
+            }
+            if forbidden_evidence.intersection(event):
+                raise ValueError(f"not-applicable route cell cannot claim invocation evidence: {key}")
+        else:
+            if status == "not_applicable":
+                raise ValueError(f"required route cell cannot be marked not applicable: {key}")
+            if status == "not_run" or count == 0:
+                raise ValueError(f"route execution cell was not actually invoked: {key}")
+            if count != 1:
+                raise ValueError(f"route execution invocation_count is invalid for {key}")
+            if event.get("invocation_id") is None or not isinstance(event["invocation_id"], str) or not event["invocation_id"]:
+                raise ValueError(f"route execution event requires an invocation_id: {key}")
         if status == "failed" and (not isinstance(event.get("failure_code"), str) or not event["failure_code"]):
             raise ValueError(f"failed route execution requires a sanitized failure_code: {key}")
-        planned = expected[key]
         if event.get("target_id") != planned["target_id"]:
             raise ValueError(f"normative target does not match the planned route cell: {key}")
         for field in ("workflow_step_index", "workflow_operation", "workflow_item_index"):
@@ -353,8 +371,6 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
             raise ValueError(f"public API symbol does not match the planned route: {key}")
         if event.get("execution_api_symbol") != planned.get("execution_api_symbol"):
             raise ValueError(f"execution API symbol does not match the public executor: {key}")
-        if event.get("invocation_id") is None or not isinstance(event["invocation_id"], str) or not event["invocation_id"]:
-            raise ValueError(f"route execution event requires an invocation_id: {key}")
         if status == "passed":
             case = case_by_id[event["case_id"]]
             if event["action"] == "decode":
@@ -462,6 +478,7 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
         "language": language,
         "expected_cells": len(expected),
         "invoked_cells": sum(event["invocation_count"] > 0 for event in observed.values()),
+        "not_applicable_cells": sum(event["status"] == "not_applicable" for event in observed.values()),
         "failed_cells": failed,
         "selected_scope_complete": True,
         "complete_matrix": complete_matrix,
