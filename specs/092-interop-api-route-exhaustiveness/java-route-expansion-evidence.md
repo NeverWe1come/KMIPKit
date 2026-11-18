@@ -4224,3 +4224,26 @@ validation across scalar and structure attributes. The Gradle suite passes
 evidence validates 42,612/42,612 cells with zero failures. The ledger records
 71,641 planned, 42,612 executed, and 29,029 pending cells; generated ledger
 comparison passes. Full matrix closure remains open, so the stack stays WIP.
+
+## Java controlled asynchronous lifecycle Query — 2026-11-19
+
+The Java controlled-peer recipe now performs the Query Asynchronous Requests
+step after its pending Create, using the captured correlation value and
+filtering for Create. It verifies the typed response and response payload over
+TTLV, JSON, and XML on both raw TLS and HTTPS under KMIP 2.1. The same run
+records the Query request builder and `Operations` member Enumeration through
+the installed TTLV Item constructor, view, and decoder. Correlation-filter
+construction and the Query response-payload accessor remain recorded by their
+existing normative structure cases to avoid duplicate route cells. References:
+OASIS KMIP 2.1 §§6.1.41, 7.1–7.2, and 7.25.
+
+Red `374c5270d` requires the Query route cells and demonstrates their absence.
+Green `31e9d3fda` runs the controlled exchanges and route assertions. The
+full Gradle suite passes 111/111, shared contracts 202/202, and requirement /
+feature traceability 2/2 and 31/31. The generated report matches its schema,
+the route-capability audit accepts 1,511 routes, and `git diff --check` passes.
+Selected validation reports 43,941/43,941 expected cells, 43,925 invocations,
+16 not-applicable cells, and zero failures. The ledger has 71,583 planned
+cells, 43,941 executed, and 27,642 pending; its generated reference comparison
+passes. Full-matrix validation remains incomplete, so the Java stack stays
+WIP.

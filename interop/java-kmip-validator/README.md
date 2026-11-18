@@ -782,6 +782,28 @@ validates 42,865/42,865 cells with zero failures. The ledger records 71,641
 planned, 42,865 executed, and 28,776 pending cells; comparison passes. The
 full Java matrix remains incomplete, so the PR stack stays WIP.
 
+### Java asynchronous lifecycle Query route — 2026-11-19
+
+The controlled Java lifecycle now executes Query Asynchronous Requests after
+an asynchronous Create, using the correlation value captured from the
+fixture. It exchanges the typed Query under KMIP 2.1 over TTLV, JSON, and XML
+on raw TLS and HTTPS, validates the response payload and its asynchronous
+request fields, and records the Query builder and Operation Enumeration Item
+routes. The correlation-filter builder and typed response-payload accessor
+are already covered by their normative structure cases. References: OASIS
+KMIP 2.1 §§6.1.41, 7.1, 7.2, and 7.25. The controlled fixture establishes
+client-side route execution, not interoperability with an external KMS.
+
+Red `374c5270d` requires the lifecycle Query network route cells. Green
+`31e9d3fda` executes and validates all six encoding/transport exchanges and
+the remaining local builder and TTLV routes. The full Gradle suite passes
+111/111, and shared contracts pass 202/202. Requirement/feature traceability
+passes 2/2 and 31/31, the generated report matches its schema, and the
+route-capability audit accepts 1,511 routes. Selected evidence validates
+43,941/43,941 cells with 0 failed cells. The global ledger records 71,583
+planned, 43,941 executed, and 27,642 pending cells; its comparison passes.
+The full matrix remains incomplete, so #187 and its dependents stay WIP.
+
 ### KMIP 2.0 asynchronous operation boundaries — 2026-11-18
 
 Process (§6.1.39) and Query Asynchronous Requests (§6.1.41) now invoke their
