@@ -2760,6 +2760,22 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(result['credential_model_roundtrips'], 7)
         self.assertTrue(result['unknown_value_preserved'])
 
+    def test_batch_enum_cases_execute_their_installed_c_builders(self):
+        """OASIS KMIP 2.0/2.1 §§11.3 and 11.5: exercise each raw-preserving batch enum setter."""
+        from artifact_support import ROOT
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        cases = {
+            'test-enum-asynchronous-indicator': 'kmipkit_client_batch_set_asynchronous_indicator',
+            'test-enum-batch-error-continuation-option':
+                'kmipkit_client_batch_add_error_continuation_value',
+        }
+        for case_id, symbol in cases.items():
+            with self.subTest(case_id=case_id):
+                case = next(item for item in catalog['test_cases'] if item['case_id'] == case_id)
+                result = self.value_executor().execute(case, '2.1')
+                self.assertIn(symbol, result['invoked_symbols'])
+                self.assertEqual(result['batch_option_values_checked'], 4)
+
     def test_bitmask_case_executes_every_flag_combination(self):
         result = self.value_executor().execute({'requires': {'bitmask_type': 'Cryptographic Usage Mask',
             'exhaustive_bitmask_combinations': {'flag_wire_values': ['00000001', '00000002', '00000004'],
