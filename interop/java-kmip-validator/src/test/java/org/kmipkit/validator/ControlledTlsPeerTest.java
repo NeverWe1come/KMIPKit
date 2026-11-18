@@ -9562,6 +9562,12 @@ class ControlledTlsPeerTest {
                         + ".withcorrelationvalues", queryFilterFixture.targetId(),
                 "org.kmipkit.extensions.QueryAsyncRequestsRequest.withCorrelationValues", null, null,
                 "construct", "2.1", null, typedPayloadHash, null);
+        assertRouteEventRecorded(events,
+                "test-norm-operation-structure-operation-structure-7-1-asynchronous-correlation-values",
+                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-1-ASYNCHRONOUS-CORRELATION-VALUES",
+                "java.typed-protocol.model.org.kmipkit.extensions.queryasyncrequestsrequest"
+                        + ".withcorrelationvalues",
+                "construct", "2.1");
     }
 
     // OASIS KMIP 2.1 §7.2 Table 353: these required Asynchronous Request fields use their §11.56 tags.
