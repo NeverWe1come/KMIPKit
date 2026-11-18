@@ -501,3 +501,10 @@ The #216 Usage Limits stack tip includes the six KMIP 2.0 version-boundary
 Operation fixtures from #187. They exercise local TTLV Item creation, view, and
 decode for the 2.1-only operation values without sending requests. The combined
 report validates 34,850/34,850 cells; 36,791 of 71,641 Java cells remain pending.
+
+The #216 tip also inherits generic TTLV construction, view, and decode evidence
+for every catalogued batch-workflow Request Batch Item and Response Batch Item
+target in KMIP 2.0/2.1 (§§8.3, 8.6). These fixtures validate the generic
+representation only. The full Java suite passes 92/92; the selected report
+validates 35,000/35,000 cells with zero failures and leaves 36,641 of 71,641
+full Java route cells pending.
