@@ -2377,7 +2377,26 @@ class ControlledTlsPeerTest {
                 {"test-norm-payload-client-revoke-request-20-003",
                         "KMIPKIT-PAYLOAD-CLIENT-REVOKE-REQUEST-20-003", "KMIPKIT-ELEM-OP-C2S-REVOKE"},
                 {"test-norm-payload-client-validate-request-20-003",
-                        "KMIPKIT-PAYLOAD-CLIENT-VALIDATE-REQUEST-20-003", "KMIPKIT-ELEM-OP-C2S-VALIDATE"}
+                        "KMIPKIT-PAYLOAD-CLIENT-VALIDATE-REQUEST-20-003", "KMIPKIT-ELEM-OP-C2S-VALIDATE"},
+                {"test-norm-payload-client-export-request-20-002",
+                        "KMIPKIT-PAYLOAD-CLIENT-EXPORT-REQUEST-20-002", "KMIPKIT-ELEM-OP-C2S-EXPORT"},
+                {"test-norm-payload-client-export-request-20-004",
+                        "KMIPKIT-PAYLOAD-CLIENT-EXPORT-REQUEST-20-004", "KMIPKIT-ELEM-OP-C2S-EXPORT"},
+                {"test-norm-payload-client-join-split-key-request-20-003",
+                        "KMIPKIT-PAYLOAD-CLIENT-JOIN-SPLIT-KEY-REQUEST-20-003",
+                        "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY"},
+                {"test-norm-payload-client-create-split-key-request-20-003",
+                        "KMIPKIT-PAYLOAD-CLIENT-CREATE-SPLIT-KEY-REQUEST-20-003",
+                        "KMIPKIT-ELEM-OP-C2S-CREATE-SPLIT-KEY"},
+                {"test-norm-payload-client-create-split-key-request-20-004",
+                        "KMIPKIT-PAYLOAD-CLIENT-CREATE-SPLIT-KEY-REQUEST-20-004",
+                        "KMIPKIT-ELEM-OP-C2S-CREATE-SPLIT-KEY"},
+                {"test-norm-payload-client-create-split-key-request-20-005",
+                        "KMIPKIT-PAYLOAD-CLIENT-CREATE-SPLIT-KEY-REQUEST-20-005",
+                        "KMIPKIT-ELEM-OP-C2S-CREATE-SPLIT-KEY"},
+                {"test-norm-payload-client-create-split-key-request-20-006",
+                        "KMIPKIT-PAYLOAD-CLIENT-CREATE-SPLIT-KEY-REQUEST-20-006",
+                        "KMIPKIT-ELEM-OP-C2S-CREATE-SPLIT-KEY"}
         };
         for (String[] payload : additionalClientPayloadCases) {
             int routeEventCount = 0;
