@@ -1577,35 +1577,38 @@ final class LocalCatalogRouteChecks {
             }
             List<String> typedRoutes = scalarAttributeTypedRoutes();
             if (routeEvidenceCount(existingEvents, caseId, targetId, version, typedRoutes) == 0) {
-                StandardAttribute attribute = standardAttributeForTag(attributeTag);
-                if (attribute == null) {
-                    throw new IllegalArgumentException("Selected scalar Attribute has no StandardAttribute: "
-                            + attributeName);
-                }
-                switch (valueType) {
-                    case "Integer" -> {
-                        int value = integerAttributeFixture(attributeName);
-                        executeTypedAttributeRoutes(caseId, targetId, attributeTag, attribute,
-                                TtlvValue.Integer(value), TtlvItemType.Integer, wire,
-                                typedValue -> assertEquals(value, typedValue.integer()), sink);
-                    }
-                    case "Interval" -> executeTypedAttributeRoutes(caseId, targetId, attributeTag, attribute,
-                            TtlvValue.Interval(60), TtlvItemType.Interval, wire,
-                            typedValue -> assertEquals(60L, typedValue.interval()), sink);
-                    case "Byte String" -> {
-                        byte[] value = new byte[] {0x01, 0x23, 0x45, 0x67};
-                        executeTypedAttributeRoutes(caseId, targetId, attributeTag, attribute,
-                                TtlvValue.ByteString(value, CodecLimits.defaults()), TtlvItemType.ByteString, wire,
-                                typedValue -> assertArrayEquals(value, typedValue.bytes()), sink);
-                    }
-                    default -> throw new IllegalArgumentException(
-                            "Selected attribute case is not scalar-valued: " + caseId);
-                }
+                executeTypedScalarAttributeRoutes(caseId, targetId, attributeName, attributeTag, valueType, wire, sink);
             }
             emitted.add(caseId);
         }
         if (!emitted.equals(applicable)) {
             throw new IllegalArgumentException("Selected scalar Attribute cases were not executed for " + version);
+        }
+    }
+
+    private static void executeTypedScalarAttributeRoutes(String caseId, String targetId, String attributeName,
+            int attributeTag, String valueType, byte[] wire, EvidenceSink sink) throws Exception {
+        StandardAttribute attribute = standardAttributeForTag(attributeTag);
+        if (attribute == null) {
+            throw new IllegalArgumentException("Selected scalar Attribute has no StandardAttribute: " + attributeName);
+        }
+        switch (valueType) {
+            case "Integer" -> {
+                int value = integerAttributeFixture(attributeName);
+                executeTypedAttributeRoutes(caseId, targetId, attributeTag, attribute,
+                        TtlvValue.Integer(value), TtlvItemType.Integer, wire,
+                        typedValue -> assertEquals(value, typedValue.integer()), sink);
+            }
+            case "Interval" -> executeTypedAttributeRoutes(caseId, targetId, attributeTag, attribute,
+                    TtlvValue.Interval(60), TtlvItemType.Interval, wire,
+                    typedValue -> assertEquals(60L, typedValue.interval()), sink);
+            case "Byte String" -> {
+                byte[] value = new byte[] {0x01, 0x23, 0x45, 0x67};
+                executeTypedAttributeRoutes(caseId, targetId, attributeTag, attribute,
+                        TtlvValue.ByteString(value, CodecLimits.defaults()), TtlvItemType.ByteString, wire,
+                        typedValue -> assertArrayEquals(value, typedValue.bytes()), sink);
+            }
+            default -> throw new IllegalArgumentException("Selected attribute case is not scalar-valued: " + caseId);
         }
     }
 
