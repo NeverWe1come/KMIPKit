@@ -156,8 +156,13 @@ final class LocalCatalogRouteChecks {
             "test-norm-structure-member-structure-member-3-9-key-material-p",
             "test-norm-structure-member-structure-member-3-9-key-material-q",
             "test-norm-structure-member-structure-member-3-9-key-material-x");
-    static final Set<String> TRANSPARENT_KEY_MATERIAL_CASE_IDS = BIG_INTEGER_TARGET_CASE_IDS.stream()
-            .filter(caseId -> caseId.contains("-key-material-"))
+    private static final Set<String> NON_INTEGER_TRANSPARENT_KEY_MATERIAL_CASE_IDS = Set.of(
+            "test-norm-structure-member-structure-member-3-11-key-material-recommended-curve",
+            "test-norm-structure-member-structure-member-3-12-key-material-q-string",
+            "test-norm-structure-member-structure-member-3-12-key-material-recommended-curve");
+    static final Set<String> TRANSPARENT_KEY_MATERIAL_CASE_IDS = java.util.stream.Stream.concat(
+            BIG_INTEGER_TARGET_CASE_IDS.stream().filter(caseId -> caseId.contains("-key-material-")),
+            NON_INTEGER_TRANSPARENT_KEY_MATERIAL_CASE_IDS.stream())
             .collect(java.util.stream.Collectors.toUnmodifiableSet());
     static final Set<String> REMAINING_ENUMERATION_FIELD_CASE_IDS = Set.of(
             "test-norm-operation-structure-operation-structure-7-15-interop-function",
@@ -1453,8 +1458,10 @@ final class LocalCatalogRouteChecks {
             JsonNode requires = testCase.path("requires");
             String targetId = requires.path("normative_target_id").asText();
             JsonNode target = findTarget(catalog, targetId);
+            String sourceEncoding = target.path("source_encoding").asText();
             if (!"structure_member".equals(requires.path("target_kind").asText())
-                    || !"Big Integer".equals(target.path("source_encoding").asText())
+                    || !("Big Integer".equals(sourceEncoding) || "Byte String".equals(sourceEncoding)
+                            || "Enumeration".equals(sourceEncoding))
                     || !TRANSPARENT_KEY_MATERIAL_CASE_IDS.contains(caseId)) {
                 throw new IllegalArgumentException("Selected case does not identify a transparent Key Material field: "
                         + caseId);
@@ -1464,9 +1471,8 @@ final class LocalCatalogRouteChecks {
             byte[] keyMaterialWire = keyMaterialWire(catalog, version, keyMaterialTag, fixture);
             List<TtlvItem> fields = createKeyMaterialFieldItems(catalog, version, fixture, limits);
             List<TtlvItem> itemFields = createKeyMaterialFieldItems(catalog, version, fixture, limits);
-            byte[] expected = fixture.stream()
+            KeyFieldFixture expected = fixture.stream()
                     .filter(field -> field.name().equals(target.path("name").asText()))
-                    .map(KeyFieldFixture::valueBytes)
                     .findFirst()
                     .orElseThrow(() -> new IllegalArgumentException("Key Material fixture omits target field: "
                             + target.path("name").asText()));
@@ -1477,8 +1483,8 @@ final class LocalCatalogRouteChecks {
                         KeyMaterial fromItem = KeyMaterial.fromItem(formatRaw, keyMaterialItem)) {
                     assertEquals(formatRaw, fromFields.formatRaw());
                     assertEquals(formatRaw, fromItem.formatRaw());
-                    assertArrayEquals(expected, fromFields.fieldBytes(targetTag));
-                    assertArrayEquals(expected, fromItem.fieldBytes(targetTag));
+                    assertKeyMaterialTarget(fromFields, formatRaw, targetTag, expected);
+                    assertKeyMaterialTarget(fromItem, formatRaw, targetTag, expected);
                 }
             } finally {
                 closeItems(fields);
@@ -1549,16 +1555,34 @@ final class LocalCatalogRouteChecks {
         }
     }
 
-    private static void assertKeyValueTarget(KeyValue keyValue, int formatRaw, int targetTag, byte[] expected) {
+    private static void assertKeyMaterialTarget(KeyMaterial keyMaterial, int formatRaw, int targetTag,
+            KeyFieldFixture expected) {
+        assertEquals(formatRaw, keyMaterial.formatRaw());
+        if (expected.itemType() == TtlvItemType.Enumeration.code()) {
+            try (TtlvItem item = keyMaterial.fieldItem(targetTag);
+                    TtlvItemView view = item.view();
+                    TtlvValueView value = view.value()) {
+                assertEquals(TtlvItemType.Enumeration, view.itemType());
+                assertEquals(Integer.toUnsignedLong(ByteBuffer.wrap(expected.valueBytes()).getInt()),
+                        value.enumeration());
+            }
+        } else {
+            assertArrayEquals(expected.valueBytes(), keyMaterial.fieldBytes(targetTag));
+        }
+    }
+
+    private static void assertKeyValueTarget(KeyValue keyValue, int formatRaw, int targetTag,
+            KeyFieldFixture expected) {
         assertEquals(formatRaw, keyValue.formatRaw());
         assertEquals(TtlvItemType.Structure, keyValue.keyMaterialType());
         try (TtlvItem keyMaterialItem = keyValue.keyMaterialItem();
                 KeyMaterial keyMaterial = KeyMaterial.fromItem(formatRaw, keyMaterialItem)) {
-            assertArrayEquals(expected, keyMaterial.fieldBytes(targetTag));
+            assertKeyMaterialTarget(keyMaterial, formatRaw, targetTag, expected);
         }
     }
 
-    private static void assertKeyBlockTarget(KeyBlock keyBlock, int formatRaw, int targetTag, byte[] expected) {
+    private static void assertKeyBlockTarget(KeyBlock keyBlock, int formatRaw, int targetTag,
+            KeyFieldFixture expected) {
         assertEquals(formatRaw, keyBlock.keyFormatType());
         assertEquals(TtlvItemType.Structure, keyBlock.keyValueType());
         try (TtlvItem keyValueItem = keyBlock.keyValueItem();
@@ -1589,6 +1613,7 @@ final class LocalCatalogRouteChecks {
                 case "9" -> 12;  // Transparent DH Private Key.
                 case "10" -> 13; // Transparent DH Public Key.
                 case "11" -> 0x14; // Transparent EC Private Key.
+                case "12" -> 0x15; // Transparent EC Public Key.
                 default -> throw new IllegalArgumentException("No transparent key format for " + parentId);
             };
         }
@@ -1606,6 +1631,7 @@ final class LocalCatalogRouteChecks {
             case 12 -> List.of("P", "Q", "G", "J", "X");
             case 13 -> List.of("P", "Q", "G", "J", "Y");
             case 0x14 -> List.of("Recommended Curve", "D");
+            case 0x15 -> List.of("Recommended Curve", "Q String");
             default -> throw new IllegalArgumentException("No transparent Key Material fixture for " + formatRaw);
         };
         List<KeyFieldFixture> fields = new ArrayList<>();
@@ -1613,7 +1639,12 @@ final class LocalCatalogRouteChecks {
             String name = names.get(index);
             if ("Recommended Curve".equals(name)) {
                 fields.add(new KeyFieldFixture(name, TtlvItemType.Enumeration.code(),
-                        ByteBuffer.allocate(Integer.BYTES).putInt(0x80000014).array()));
+                        ByteBuffer.allocate(Integer.BYTES).putInt(3).array()));
+            } else if ("Q String".equals(name)) {
+                byte[] point = new byte[65];
+                point[0] = 0x04;
+                java.util.Arrays.fill(point, 1, point.length, (byte) 1);
+                fields.add(new KeyFieldFixture(name, TtlvItemType.ByteString.code(), point));
             } else {
                 int value = "Public Exponent".equals(name) ? 3 : index + 17;
                 fields.add(new KeyFieldFixture(name, TtlvItemType.BigInteger.code(), new byte[] {(byte) value}));
@@ -1638,9 +1669,7 @@ final class LocalCatalogRouteChecks {
         try {
             for (KeyFieldFixture field : fields) {
                 int tagCode = tagCodeNamed(catalog, field.name(), version);
-                try (TtlvValue value = field.itemType() == TtlvItemType.Enumeration.code()
-                        ? TtlvValue.Enumeration(Integer.toUnsignedLong(ByteBuffer.wrap(field.valueBytes()).getInt()))
-                        : TtlvValue.BigInteger(field.valueBytes(), limits);
+                try (TtlvValue value = createKeyFieldValue(field, limits);
                         RawTag raw = RawTag.fromRaw(tagCode); Tag tag = raw.checked()) {
                     items.add(TtlvItem.create(tag, value, limits));
                 }
@@ -1650,6 +1679,16 @@ final class LocalCatalogRouteChecks {
             closeItems(items);
             throw error;
         }
+    }
+
+    private static TtlvValue createKeyFieldValue(KeyFieldFixture field, CodecLimits limits) {
+        if (field.itemType() == TtlvItemType.Enumeration.code()) {
+            return TtlvValue.Enumeration(Integer.toUnsignedLong(ByteBuffer.wrap(field.valueBytes()).getInt()));
+        }
+        if (field.itemType() == TtlvItemType.ByteString.code()) {
+            return TtlvValue.ByteString(field.valueBytes(), limits);
+        }
+        return TtlvValue.BigInteger(field.valueBytes(), limits);
     }
 
     private static TtlvItem createStructureItem(int tagCode, List<TtlvItem> fields, CodecLimits limits) {

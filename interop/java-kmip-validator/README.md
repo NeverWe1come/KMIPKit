@@ -101,8 +101,8 @@ baseline, regenerate the checked-in ledger with
 rejects generated ledgers that do not record successful invocations.
 The generated ledger retains the artifact
 SHA-256 for each build; that build-specific digest is not used as a coverage
-baseline. These recipes execute 33,994 of 71,641 planned Java route cells, with
-no failed cells; the ledger records the other 37,647 as pending and does not imply
+baseline. These recipes execute 34,262 of 71,641 planned Java route cells, with
+no failed cells; the ledger records the other 37,379 as pending and does not imply
 vendor interoperability or full-matrix completion. Local TTLV recipes exercise 51
 enumeration families, all six bitmask aggregate cases, and all 44 individual
 bitmask value cases through the applicable
@@ -117,6 +117,9 @@ transparent DSA, RSA, and DH private/public plus EC private Key Material
 formats (KMIP 2.0/2.1 §§3.5–3.11). The deterministic fixtures include each
 format's source-defined required fields and applicable optional fields; they
 are local model checks, not cryptographic key validation.
+EC public Key Material also exercises the `Recommended Curve` and `Q String`
+members from §§3.11–3.12 through the six installed typed `KeyMaterial`,
+`KeyValue`, and `KeyBlock` routes in both KMIP versions.
 They also cover the optional and repeatable Object Group member in KMIP 2.1
 §7.23 with all three applicable generic Item routes; §4.35 Tables 99–100
 define its Text String attribute representation.
@@ -435,9 +438,9 @@ The transparent key-material cases now exercise the installed typed
 `KeyBlock.fromItem` routes in addition to the two `KeyMaterial` constructors.
 The 29 catalogued Big Integer members run in both KMIP versions, with the
 nested member checked after each typed conversion. The selected Java report
-validates 34,210/34,210 cells with zero failures; 37,431 of the full 71,641
+validates 34,246/34,246 cells with zero failures; 37,395 of the full 71,641
 cells remain pending, so the Java matrix and stack remain WIP.
 
 After synchronizing these routes into the #216 Usage Limits branch, the full
-Java suite passes 84 tests and the selected report validates 34,226/34,226
-cells, with 37,415 of 71,641 cells still pending. The PR stack remains WIP.
+Java suite passes 84 tests and the selected report validates 34,262/34,262
+cells, with 37,379 of 71,641 cells still pending. The PR stack remains WIP.

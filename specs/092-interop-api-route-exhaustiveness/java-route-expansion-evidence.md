@@ -3607,6 +3607,20 @@ The #216 branch contains the 232 typed Key Value and Key Block cells from
 #187 and retains its Usage Limits routes. Its installed Java consumer suite
 passes 84/84 tests with zero failures, errors, or skips. The shared evidence,
 schema, and capability suites pass 108 tests; the capability audit reports
-1,507 routes. The selected report validates 34,226/34,226 cells with zero
-failures and leaves 37,415 of 71,641 planned cells pending. Ledger comparison
+1,507 routes. The selected report validates 34,262/34,262 cells with zero
+failures and leaves 37,379 of 71,641 planned cells pending. Ledger comparison
 and `git diff --check` pass. The full Java matrix and stack remain WIP.
+
+## #216 stack-tip verification after EC public typed routes — 2026-11-18
+
+The #216 branch includes Red commit `f89bac645` and Green commit `12e24aeb7`
+from #187. They add typed-model routes for the EC public `Recommended Curve`
+and `Q String` fields across `KeyMaterial`, `KeyValue`, and `KeyBlock`. The
+ordered fixture uses synthetic curve and point values and is not a cryptographic
+validity test.
+
+The full Java suite passes 84 tests, the shared evidence/schema/capability suites
+pass 108 tests, and the capability audit reports 1,507 routes. The selected
+report validates 34,262/34,262 cells with zero failures and leaves 37,379 of
+71,641 planned Java cells pending. The generated ledger matches its checked-in
+reference; `git diff --check` passes. The PR stack remains WIP.
