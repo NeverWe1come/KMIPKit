@@ -742,6 +742,27 @@ report validates 40,962/40,962 cells with zero failures. The ledger records
 71,641 planned, 40,962 executed, and 30,679 pending cells. The matrix remains
 incomplete, so the PR stack stays WIP.
 
+### Typed Create and Get Attributes response accessors — 2026-11-18
+
+The controlled TLS fixtures now record the local typed `CreateResponse` and
+`GetAttributesResponse` accessor routes for the catalogued KMIP 2.0 and 2.1
+cases. Assertions inspect the Create object type and identifier, and the Get
+Attributes identifier and returned Attribute structure before emitting the
+local TTLV response-accessor evidence. Sources: OASIS KMIP 2.0/2.1 §6.1.8
+Tables 171/186 and §6.1.20 Tables 209/224. The peers are test fixtures and do
+not establish external KMS interoperability.
+
+Red `3f693875f` requires both response-accessor families and fails when their
+catalogued evidence is absent. Green `ac70df877` emits the events only after
+the installed typed accessors return and their response fields are asserted;
+Refactor `72e695c22` shares the local-accessor evidence helper. The full
+Gradle suite passes 95/95 tests, shared route/schema/capability tests pass
+109/109, ledger validation accepts 42,869 selected cells with zero failures,
+ledger comparison passes, and the route-capability audit accepts 1,507 routes.
+The global Java ledger has 71,641 planned cells, 42,869 executed, and 28,772
+pending. Full matrix closure and exact-head CI remain open; the stack stays
+WIP.
+
 ### Query Async Correlation Values operation-structure route — 2026-11-18
 
 The catalogued KMIP 2.1 §7.1 Asynchronous Correlation Values operation

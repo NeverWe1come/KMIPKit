@@ -579,3 +579,20 @@ branches, and the common CI therefore reports a planned matrix only.
   with zero failures; ledger comparison and the 1,507-route capability audit
   pass. The full ledger has 71,641 planned, 34,834 executed, and 36,807 pending.
 - Full matrix closure and exact-head CI remain open; #187 stays WIP.
+
+## 2026-11-18 Java typed response accessor cells
+
+- Added regression assertions for Create `createResponse` and Get Attributes
+  `getAttributesResponse` against the exact catalog case/target/version IDs.
+  The Red test failed because the Get Attributes response payload cell had no
+  event. Existing controlled peers invoked both typed accessors and checked
+  their response fields; Green records their local response-accessor routes
+  only after those assertions.
+- Red `3f693875f`, Green `ac70df877`, Refactor `72e695c22`. Full Java suite:
+  95 passed, 0 failures/errors/skips. Selected scope: 42,869/42,869, 0 failed;
+  ledger comparison passes. Route capability audit: 1,507. Generated ledger:
+  71,641 planned, 42,869 executed, 28,772 pending.
+- The matrix checker and current CI still use selected-scope completeness.
+  This does not meet the active objective's full-matrix requirement. Keep the
+  Java stack WIP and continue implementing pending case recipes; later change
+  the exact-head CI gate to require full-matrix completeness.

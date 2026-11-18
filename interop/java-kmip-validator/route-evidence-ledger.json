@@ -2673,7 +2673,7 @@
     "test-v20-reject-set-constraints",
     "test-v20-reject-set-defaults"
   ],
-  "executed_cells": 42865,
+  "executed_cells": 42869,
   "language": "java",
   "library_commit": "12496d646d11d4069b58bcc88fc76cc619211ec6",
   "pending_case_ids": [
@@ -2868,10 +2868,8 @@
     "test-norm-payload-client-create-key-pair-response-20-002",
     "test-norm-payload-client-create-key-pair-response-21-001",
     "test-norm-payload-client-create-key-pair-response-21-002",
-    "test-norm-payload-client-create-request-20-001",
     "test-norm-payload-client-create-request-20-002",
     "test-norm-payload-client-create-request-20-003",
-    "test-norm-payload-client-create-request-21-001",
     "test-norm-payload-client-create-request-21-002",
     "test-norm-payload-client-create-request-21-003",
     "test-norm-payload-client-create-response-20-001",
@@ -3010,9 +3008,7 @@
     "test-norm-payload-client-export-response-21-002",
     "test-norm-payload-client-export-response-21-003",
     "test-norm-payload-client-export-response-21-004",
-    "test-norm-payload-client-get-attributes-response-20-001",
     "test-norm-payload-client-get-attributes-response-20-002",
-    "test-norm-payload-client-get-attributes-response-21-001",
     "test-norm-payload-client-get-attributes-response-21-002",
     "test-norm-payload-client-get-constraints-response-21-001",
     "test-norm-payload-client-get-request-20-001",
@@ -4454,20 +4450,12 @@
       "pending_cells": 20
     },
     {
-      "case_id": "test-norm-payload-client-create-request-20-001",
-      "pending_cells": 1
-    },
-    {
       "case_id": "test-norm-payload-client-create-request-20-002",
       "pending_cells": 4
     },
     {
       "case_id": "test-norm-payload-client-create-request-20-003",
       "pending_cells": 4
-    },
-    {
-      "case_id": "test-norm-payload-client-create-request-21-001",
-      "pending_cells": 1
     },
     {
       "case_id": "test-norm-payload-client-create-request-21-002",
@@ -5022,16 +5010,8 @@
       "pending_cells": 23
     },
     {
-      "case_id": "test-norm-payload-client-get-attributes-response-20-001",
-      "pending_cells": 1
-    },
-    {
       "case_id": "test-norm-payload-client-get-attributes-response-20-002",
       "pending_cells": 4
-    },
-    {
-      "case_id": "test-norm-payload-client-get-attributes-response-21-001",
-      "pending_cells": 1
     },
     {
       "case_id": "test-norm-payload-client-get-attributes-response-21-002",
@@ -7730,7 +7710,7 @@
       "pending_cells": 2
     }
   ],
-  "pending_cells": 28776,
+  "pending_cells": 28772,
   "pending_reason": "No validated per-cell route execution evidence is recorded for this cell.",
   "pending_reason_code": "route_evidence_not_emitted",
   "planned_cells": 71641,
@@ -30808,8 +30788,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 26,
+      "executed_cells": 1,
+      "pending_cells": 25,
       "protocol_version": "2.0",
       "required_cells": 26,
       "route_id": "java.typed-protocol.function.client_batch_item_response_create",
@@ -30818,8 +30798,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 30,
+      "executed_cells": 1,
+      "pending_cells": 29,
       "protocol_version": "2.1",
       "required_cells": 30,
       "route_id": "java.typed-protocol.function.client_batch_item_response_create",
@@ -31108,8 +31088,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 61,
-      "pending_cells": 2,
+      "executed_cells": 62,
+      "pending_cells": 1,
       "protocol_version": "2.0",
       "required_cells": 63,
       "route_id": "java.typed-protocol.function.client_batch_item_response_get_attributes",
@@ -31118,8 +31098,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 68,
-      "pending_cells": 2,
+      "executed_cells": 69,
+      "pending_cells": 1,
       "protocol_version": "2.1",
       "required_cells": 70,
       "route_id": "java.typed-protocol.function.client_batch_item_response_get_attributes",
@@ -34915,8 +34895,8 @@
       "route_id": "java.typed-protocol.function.client_batch_item_response_check"
     },
     {
-      "executed_cells": 0,
-      "pending_cells": 56,
+      "executed_cells": 2,
+      "pending_cells": 54,
       "required_cells": 56,
       "route_id": "java.typed-protocol.function.client_batch_item_response_create"
     },
@@ -35005,8 +34985,8 @@
       "route_id": "java.typed-protocol.function.client_batch_item_response_get_attribute_list_payload_ttlv"
     },
     {
-      "executed_cells": 129,
-      "pending_cells": 4,
+      "executed_cells": 131,
+      "pending_cells": 2,
       "required_cells": 133,
       "route_id": "java.typed-protocol.function.client_batch_item_response_get_attributes"
     },
@@ -35780,7 +35760,7 @@
     }
   ],
   "schema_version": "1.0",
-  "selected_scope_cells": 42865,
+  "selected_scope_cells": 42869,
   "selected_scope_complete": true,
   "vendor_interoperability_claim": false
 }
