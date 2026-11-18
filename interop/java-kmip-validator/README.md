@@ -494,3 +494,9 @@ The #217 Right Usage Limits stack tip inherits these Key Block member routes
 from #187 through #216 and retains its Right Usage Limits, PGP Key, and Secret
 Data evidence. On the combined tip, 34,832/34,832 selected cells pass, with
 36,809 of 71,641 Java route cells still pending; the stack remains WIP.
+
+The #217 Right Usage Limits stack tip also includes the six KMIP 2.0 version
+boundary Operation fixtures inherited through #216. They exercise local TTLV
+Item construction, view, and decode for the 2.1-only operation values without
+sending requests. The combined report validates 34,850/34,850 cells; 36,791 of
+71,641 Java cells remain pending.

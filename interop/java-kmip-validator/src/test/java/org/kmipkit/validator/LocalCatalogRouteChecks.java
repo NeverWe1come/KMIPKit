@@ -2980,6 +2980,9 @@ final class LocalCatalogRouteChecks {
         String caseOperation = testCase.path("operation").asText();
         if (scenarioOperations.isEmpty() && !localValueCase && !caseOperation.isBlank()) {
             JsonNode target = operationTargetByName(catalog, caseOperation, version);
+            if (target == null && isUnsupportedVersionBoundary(testCase, version)) {
+                target = unsupportedVersionBoundaryOperationTarget(catalog, caseOperation, version);
+            }
             if (target != null) {
                 String targetId = target.path("target_id").asText();
                 boolean explicitlyTargeted = plainTargetIds.stream()
@@ -2992,6 +2995,28 @@ final class LocalCatalogRouteChecks {
             }
         }
         return obligations;
+    }
+
+    private static boolean isUnsupportedVersionBoundary(JsonNode testCase, String version) {
+        return "version_boundaries".equals(testCase.path("category").asText())
+                && "notsent".equals(testCase.path("requires").path("expected_status").asText()
+                        .replace("_", "").toLowerCase(java.util.Locale.ROOT))
+                && "2.0".equals(version);
+    }
+
+    private static JsonNode unsupportedVersionBoundaryOperationTarget(
+            JsonNode catalog, String operation, String rejectedVersion) {
+        for (JsonNode candidate : catalog.path("normative_targets")) {
+            if (!"operation".equals(candidate.path("kind").asText())
+                    || !operation.equals(candidate.path("name").asText())
+                    || !candidate.path("target_id").asText().startsWith("KMIPKIT-ELEM-OP-C2S-")) continue;
+            for (JsonNode supportedVersion : candidate.path("protocol_versions")) {
+                if (supportedVersion.isTextual() && !rejectedVersion.equals(supportedVersion.asText())) {
+                    return candidate;
+                }
+            }
+        }
+        return null;
     }
 
     private static List<String> textValues(JsonNode values) {

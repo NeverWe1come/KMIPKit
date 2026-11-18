@@ -3747,3 +3747,17 @@ the generated ledger matches its reference, and the capability audit accepts
 1,507 routes. The full ledger records 71,641 planned, 34,832 executed, and
 36,809 pending cells. Full closure and exact-head CI remain open; #217 stays
 WIP.
+
+## #217 generic Operation routes for KMIP 2.0 version boundaries — 2026-11-18
+
+The #217 tip inherits the six generic Operation route fixtures through #216 and
+retains the Right Usage Limits member case. These tests construct, view, and
+decode local TTLV Operation items for Get Constraints, Ping, Process, Query
+Asynchronous Requests, Set Constraints, and Set Defaults in the KMIP 2.0
+rejection cases; the values are assigned by KMIP 2.1. They do not send
+unsupported requests. Red `7288a8643` and Green `2843cdfe3` are in #187's parent
+history. On the #217 tip, Java passes 91/91 tests, shared suites pass 109/109,
+selected evidence validates 34,850/34,850 cells with zero failures, the ledger
+matches its reference, and the capability audit accepts 1,507 routes. The full
+ledger records 71,641 planned, 34,850 executed, and 36,791 pending cells. Full
+closure and exact-head CI remain open; #217 stays WIP.

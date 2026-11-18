@@ -697,3 +697,14 @@ branches, and the common CI therefore reports a planned matrix only.
   34,832 executed, and 36,809 pending cells.
 - Full matrix closure and exact-head CI remain open. #187, #216, and #217 stay
   WIP.
+
+## #217 generic Operation version-boundary routes — 2026-11-18
+
+- #217 now inherits the six KMIP 2.0 Operation TTLV route fixtures through
+  #216 while preserving Right Usage Limits, PGP Key, Secret Data, and Key Block
+  evidence. They are local fixtures for the 2.1-only values, with no request
+  sent to the peer.
+- The Java suite passes 91/91; shared suites pass 109/109; selected evidence
+  validates 34,850/34,850 cells with zero failures; ledger comparison and the
+  1,507-route capability audit pass. The full ledger has 36,791 pending of
+  71,641. Full closure and exact-head CI remain open; #217 stays WIP.
