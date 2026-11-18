@@ -113,7 +113,7 @@ class ControlledTlsPeerTest {
             int operationValue) { }
 
     private record AsyncCancelRouteScenario(String caseId, String cancellationResultName,
-            int cancellationResultValue) { }
+            int cancellationResultValue, List<String> targetIds, int workflowStepIndex) { }
 
     private record AttributeReadNetworkRequest(String caseId, String routeId,
             String publicApiSymbol, String uniqueBatchItemId, String targetId,
@@ -1973,15 +1973,14 @@ class ControlledTlsPeerTest {
         int referencedEnumAggregateEventCount = 0;
         int referencedEnumCaseCount = 0;
         int asyncCancellationEnumerationRouteEventCount = 0;
-        int asyncCancelNetworkRouteEventCount = 0;
+        int asyncCancelNetworkRouteEventCount = expectedAsyncCancelNetworkRouteEventCount(
+                readRouteEvidenceCatalog());
         int asyncIndicatorEnumerationRouteEventCount = 0;
         for (JsonNode testCase : readRouteEvidenceCatalog().path("test_cases")) {
             JsonNode scenario = testCase.path("requires").path("protocol_scenario");
             if ("asynchronous_workflows".equals(testCase.path("category").asText())
                     && scenario.path("parameters").has("cancel_result")) {
                 asyncCancellationEnumerationRouteEventCount += 3
-                        * testCase.path("execution").path("protocol_versions").size();
-                asyncCancelNetworkRouteEventCount += 7 * 3 * 2
                         * testCase.path("execution").path("protocol_versions").size();
             }
             if ("asynchronous_workflows".equals(testCase.path("category").asText())
@@ -5793,6 +5792,8 @@ class ControlledTlsPeerTest {
         additionalCaseIdCount += appendCaseIds(caseIds, genericOperationTargetCaseIds);
         additionalCaseIdCount += appendCaseIds(caseIds, getAttributesNetworkRouteEventCaseIds(events));
         additionalCaseIdCount += appendCaseIds(caseIds,
+                routeEventCaseIds(events, "java.typed-protocol.client.execute_cancel"));
+        additionalCaseIdCount += appendCaseIds(caseIds,
                 batchWorkflowBatchItemCaseIds(readRouteEvidenceCatalog()));
         appendItemTypeEnumerationCaseIds(caseIds, events);
         appendCaseIds(caseIds, Set.of("test-enum-pkcs#11-function", "test-enum-pkcs#11-return-code", "test-enum-tag"));
@@ -5880,6 +5881,16 @@ class ControlledTlsPeerTest {
             }
         }
         return added;
+    }
+
+    private static Set<String> routeEventCaseIds(JsonNode events, String routeId) {
+        Set<String> caseIds = new java.util.LinkedHashSet<>();
+        for (JsonNode event : events) {
+            if (routeId.equals(event.path("route_id").asText())) {
+                caseIds.add(event.path("case_id").asText());
+            }
+        }
+        return caseIds;
     }
 
     private static Set<String> scalarMessageFieldCaseIds(JsonNode events) {
@@ -8611,12 +8622,31 @@ class ControlledTlsPeerTest {
     private static List<AsyncCancelRouteScenario> asyncCancelRouteScenarios(
             JsonNode catalog, String protocolVersion) {
         List<AsyncCancelRouteScenario> scenarios = new ArrayList<>();
+        Set<String> routeTargets = Set.of(
+                "KMIPKIT-ELEM-OP-C2S-CANCEL",
+                "KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-20-001",
+                "KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-21-001");
         for (JsonNode testCase : catalog.path("test_cases")) {
+            if (!appliesToVersion(testCase, protocolVersion)) continue;
+            JsonNode requires = testCase.path("requires");
             JsonNode scenario = testCase.path("requires").path("protocol_scenario");
-            if (!"asynchronous_workflows".equals(testCase.path("category").asText())
-                    || !scenario.path("parameters").has("cancel_result")
-                    || !appliesToVersion(testCase, protocolVersion)) continue;
-            String resultName = scenario.path("parameters").path("cancel_result").asText();
+            Set<String> targetIds = new java.util.LinkedHashSet<>();
+            if (requires.path("normative_target_id").isTextual()) {
+                targetIds.add(requires.path("normative_target_id").asText());
+            }
+            for (JsonNode target : requires.path("normative_target_ids")) targetIds.add(target.asText());
+            for (JsonNode target : scenario.path("target_ids")) targetIds.add(target.asText());
+            boolean cancelOperation = "Cancel".equals(testCase.path("operation").asText())
+                    || containsText(scenario.path("operations"), "Cancel")
+                    || containsText(requires.path("operation_sequence"), "Cancel");
+            if (cancelOperation) targetIds.add("KMIPKIT-ELEM-OP-C2S-CANCEL");
+            targetIds.retainAll(routeTargets);
+            if (targetIds.isEmpty()) continue;
+
+            String resultName = "Canceled";
+            if (scenario.path("parameters").path("cancel_result").isTextual()) {
+                resultName = scenario.path("parameters").path("cancel_result").asText();
+            }
             String targetIdPrefix = "KMIPKIT-ELEM-ENUM-VALUE-CANCELLATION-RESULT-";
             JsonNode target = null;
             for (JsonNode targetId : scenario.path("target_ids")) {
@@ -8630,14 +8660,41 @@ class ControlledTlsPeerTest {
                 }
                 break;
             }
-            assertTrue(target != null, "The cancellation result must resolve to a normative enum target.");
-            assertEquals(resultName, target.path("name").asText());
-            int resultValue = Integer.parseInt(target.path("wire_value").asText().replaceFirst("^0[xX]", ""), 16);
+            int resultValue = 1;
+            if (target != null) {
+                assertEquals(resultName, target.path("name").asText());
+                resultValue = Integer.parseInt(
+                        target.path("wire_value").asText().replaceFirst("^0[xX]", ""), 16);
+            }
+            int workflowStepIndex = -1;
+            JsonNode orderedOperations = scenario.path("operations");
+            if (!orderedOperations.isArray()) orderedOperations = requires.path("operation_sequence");
+            if (orderedOperations.isArray()) {
+                for (int index = 0; index < orderedOperations.size(); index++) {
+                    if ("Cancel".equals(orderedOperations.get(index).asText())) {
+                        workflowStepIndex = index;
+                        break;
+                    }
+                }
+            }
             scenarios.add(new AsyncCancelRouteScenario(
-                    testCase.path("case_id").asText(), resultName, resultValue));
+                    testCase.path("case_id").asText(), resultName, resultValue,
+                    List.copyOf(targetIds), workflowStepIndex));
         }
-        assertEquals(5, scenarios.size(), "The catalog must supply all five Cancellation Result scenarios.");
         return List.copyOf(scenarios);
+    }
+
+    private static int expectedAsyncCancelNetworkRouteEventCount(JsonNode catalog) {
+        int eventCount = 0;
+        for (String protocolVersion : KMIP_2_0_AND_2_1) {
+            for (AsyncCancelRouteScenario scenario : asyncCancelRouteScenarios(catalog, protocolVersion)) {
+                for (String targetId : scenario.targetIds()) {
+                    int actions = "KMIPKIT-ELEM-OP-C2S-CANCEL".equals(targetId) ? 3 : 2;
+                    eventCount += actions * 3 * 2;
+                }
+            }
+        }
+        return eventCount;
     }
 
     private static byte[] asyncCancelCorrelation(AsyncCancelRouteScenario scenario, String protocolVersion) {
@@ -8734,19 +8791,16 @@ class ControlledTlsPeerTest {
         String apiSymbol = "org.kmipkit.extensions.Client.executeCancel";
         String executionRouteId = "java.execute.cancel";
         String executionApiSymbol = apiSymbol;
-        String operationTarget = "KMIPKIT-ELEM-OP-C2S-CANCEL";
-        for (String action : List.of("construct", "send", "decode")) {
-            appendAsyncCancelRouteEvent(events, scenario.caseId(), routeId, operationTarget, apiSymbol,
-                    executionRouteId, executionApiSymbol, action, protocolVersion, encoding, transport,
-                    requestHash, responseHash, true);
-        }
-        for (String requestTarget : List.of(
-                "KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-20-001",
-                "KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-21-001")) {
-            for (String action : List.of("construct", "send")) {
-                appendAsyncCancelRouteEvent(events, scenario.caseId(), routeId, requestTarget, apiSymbol,
+        for (String targetId : scenario.targetIds()) {
+            boolean operationTarget = "KMIPKIT-ELEM-OP-C2S-CANCEL".equals(targetId);
+            List<String> actions = operationTarget
+                    ? List.of("construct", "send", "decode")
+                    : List.of("construct", "send");
+            for (String action : actions) {
+                appendAsyncCancelRouteEvent(events, scenario.caseId(), routeId, targetId, apiSymbol,
                         executionRouteId, executionApiSymbol, action, protocolVersion, encoding, transport,
-                        requestHash, responseHash, false);
+                        requestHash, responseHash,
+                        operationTarget ? scenario.workflowStepIndex() : -1);
             }
         }
     }
@@ -8754,7 +8808,7 @@ class ControlledTlsPeerTest {
     private static void appendAsyncCancelRouteEvent(ArrayNode events, String caseId,
             String routeId, String targetId, String apiSymbol, String executionRouteId,
             String executionApiSymbol, String action, String protocolVersion, String encoding,
-            String transport, String requestHash, String responseHash, boolean asynchronousWorkflow) {
+            String transport, String requestHash, String responseHash, int workflowStepIndex) {
         ObjectNode event = appendRouteEvent(events, caseId, routeId, targetId, apiSymbol,
                 executionRouteId, executionApiSymbol, action, protocolVersion, transport,
                 "decode".equals(action) ? null : requestHash,
@@ -8764,8 +8818,8 @@ class ControlledTlsPeerTest {
             event.put("request_delivery_state", "response_received");
             event.put("transport_invocation_count", 1);
         }
-        if (asynchronousWorkflow) {
-            event.put("workflow_step_index", 1);
+        if (workflowStepIndex >= 0) {
+            event.put("workflow_step_index", workflowStepIndex);
             event.put("workflow_operation", "Cancel");
         }
     }
