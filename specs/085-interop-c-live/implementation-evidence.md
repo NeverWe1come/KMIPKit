@@ -1513,3 +1513,32 @@ returned structure.
   2.0/2.1 and have no pending cells. `test-op-poll` still has 42 pending cells
   for its catalog-specific recipe described above; the global C matrix gate
   remains open.
+
+## PKCS#11 operation route
+
+The installed C consumer now builds an isolated five-item Create/Activate/PKCS#11/
+Revoke/Destroy batch. It uses the typed PKCS#11 request constructor and provides
+Interface, Function, Correlation Value, and Input Parameters in the catalogued
+order. After a successful synthetic response, it reads the typed Function,
+Correlation Value, Output Parameters, and Return Code accessors, checks the
+expected unknown numeric return code, confirms the optional Interface is absent,
+and calls the complete PKCS#11 response-TTLV accessor. The test input and output
+parameter bytes and correlation values are redacted from tree digests. The
+controlled peer also checks the extension field and exact request/response
+structure. This establishes route behavior against a controlled fixture only;
+it does not claim compatibility with a vendor PKCS#11 service.
+
+- Red commit `3c51ae86c` adds the installed-consumer contract and fails because
+  the PKCS#11 C route has no recipe or driver.
+- Green commit `154b3e59a` implements the typed batch route and controlled peer
+  request/response checks.
+- Normative scope: OASIS KMIP 2.0 §6.1.35 and KMIP 2.1 §6.1.37. Isolated
+  object setup and cleanup use the catalogued Create, Activate, Revoke, and
+  Destroy routes; batch structure follows §8.
+- Verification: the focused installed C route passed; CTest passed 7/7,
+  including the route-matrix contract suite and both controlled TLS peer tests.
+  The exhaustive C report passes the shared JSON Schema and records 42,687 of
+  66,736 cells invoked, zero failed, and 24,049 pending. All 52 report events
+  for `test-op-pkcs#11` passed, covering both protocol versions and all 12
+  encoding/transport combinations. The completeness gate remains open for the
+  other pending recipes; no vendor interoperability is claimed.
