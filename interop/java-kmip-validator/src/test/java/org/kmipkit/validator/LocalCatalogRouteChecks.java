@@ -86,6 +86,16 @@ final class LocalCatalogRouteChecks {
             "test-attr-process-start-date",
             "test-attr-protect-stop-date",
             "test-attr-rotate-date");
+    static final Set<String> ENUMERATION_ATTRIBUTE_VALUE_CASE_IDS = Set.of(
+            "test-attr-certificate-type",
+            "test-attr-cryptographic-algorithm",
+            "test-attr-digital-signature-algorithm",
+            "test-attr-key-format-type",
+            "test-attr-nist-key-type",
+            "test-attr-object-type",
+            "test-attr-opaque-data-type",
+            "test-attr-protection-level",
+            "test-attr-state");
 
     private LocalCatalogRouteChecks() { }
 
@@ -868,6 +878,84 @@ final class LocalCatalogRouteChecks {
         return missing;
     }
 
+    /** Exercises generic TTLV construction and decoding for catalogued Enumeration Attributes. */
+    static void executeEnumerationAttributeValues(JsonNode catalog, String version, Set<String> selectedCaseIds,
+            EvidenceSink sink) throws Exception {
+        Set<String> applicable = new java.util.LinkedHashSet<>();
+        Set<String> emitted = new java.util.LinkedHashSet<>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String caseId = testCase.path("case_id").asText();
+            if (!selectedCaseIds.contains(caseId) || !applies(testCase, version)) continue;
+            applicable.add(caseId);
+            JsonNode requires = testCase.path("requires");
+            if (!"Enumeration".equals(requires.path("attribute_policy").path("value_type").asText())) {
+                throw new IllegalArgumentException("Selected attribute case is not Enumeration-valued: " + caseId);
+            }
+            String targetId = requires.path("normative_target_id").asText();
+            String attributeName = requires.path("attribute").asText();
+            int attributeTag = tagCodeNamed(catalog, attributeName, version);
+            long enumeration = representativeEnumerationValue(catalog, attributeName, version);
+            byte[] valueBytes = ByteBuffer.allocate(Integer.BYTES).putInt((int) enumeration).array();
+            byte[] wire = itemWire(attributeTag, TtlvItemType.Enumeration.code(), valueBytes);
+            try (TtlvValue value = TtlvValue.Enumeration(enumeration);
+                    RawTag raw = RawTag.fromRaw(attributeTag); Tag tag = raw.checked();
+                    TtlvItem item = TtlvItem.create(tag, value, CodecLimits.defaults())) {
+                assertEnumerationAttributeItem(item, attributeTag, enumeration);
+            }
+            try (TtlvItem decoded = TtlvCodec.decode(wire)) {
+                assertEnumerationAttributeItem(decoded, attributeTag, enumeration);
+            }
+            emitRoute(sink, caseId, targetId,
+                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
+                    "org.kmipkit.ttlv.TtlvValue.Enumeration", "construct", wire);
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_item.create",
+                    "org.kmipkit.ttlv.TtlvItem.create", "construct", wire);
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.function.ttlv_item_view_from_item",
+                    "org.kmipkit.ttlv.TtlvItem.view", "decode", wire);
+            emitRoute(sink, caseId, targetId, "java.generic-ttlv.ttlv_codec.decode",
+                    "org.kmipkit.ttlv.TtlvCodec.decode", "decode", wire);
+            emitted.add(caseId);
+        }
+        if (!emitted.equals(applicable)) {
+            throw new IllegalArgumentException("Selected Enumeration Attribute cases were not executed for "
+                    + version);
+        }
+    }
+
+    static Set<String> missingEnumerationAttributeCaseIds(JsonNode catalog, JsonNode events, String version) {
+        List<String> requiredRoutes = List.of(
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode");
+        Set<String> missing = new java.util.LinkedHashSet<>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String caseId = testCase.path("case_id").asText();
+            if (!ENUMERATION_ATTRIBUTE_VALUE_CASE_IDS.contains(caseId) || !applies(testCase, version)) continue;
+            String targetId = testCase.path("requires").path("normative_target_id").asText();
+            int present = 0;
+            for (String route : requiredRoutes) {
+                boolean found = false;
+                for (JsonNode event : events) {
+                    if (caseId.equals(event.path("case_id").asText())
+                            && targetId.equals(event.path("target_id").asText())
+                            && route.equals(event.path("route_id").asText())
+                            && version.equals(event.path("protocol_version").asText())
+                            && "TTLV".equals(event.path("encoding").asText())
+                            && event.path("transport").isNull()) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (found) present++;
+            }
+            if (present == 0) missing.add(caseId);
+            else assertEquals(requiredRoutes.size(), present,
+                    "Enumeration Attribute route evidence must be complete before reuse for " + caseId);
+        }
+        return missing;
+    }
+
     private static String textAttributeFixture(String attributeName) {
         return switch (attributeName) {
             case "Comment" -> "KMIPKit generic TTLV fixture";
@@ -971,6 +1059,14 @@ final class LocalCatalogRouteChecks {
             assertEquals(attributeTag, tag.raw());
             assertEquals(TtlvItemType.DateTime, view.itemType());
             assertEquals(expected, value.dateTime());
+        }
+    }
+
+    private static void assertEnumerationAttributeItem(TtlvItem item, int attributeTag, long expected) {
+        try (TtlvItemView view = item.view(); Tag tag = view.tag(); TtlvValueView value = view.value()) {
+            assertEquals(attributeTag, tag.raw());
+            assertEquals(TtlvItemType.Enumeration, view.itemType());
+            assertEquals(expected, value.enumeration());
         }
     }
 
