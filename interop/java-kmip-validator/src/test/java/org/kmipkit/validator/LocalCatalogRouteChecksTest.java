@@ -648,11 +648,10 @@ class LocalCatalogRouteChecksTest {
     }
 
     @Test
+    // KMIP 2.0/2.1 §§3.5–3.11 define these transparent Key Material structures and field types.
     void executesEveryTransparentKeyMaterialFormatThroughTypedModelRoutes() throws Exception {
         JsonNode catalog = new ObjectMapper().readTree(CATALOG.toFile());
-        Set<String> caseIds = LocalCatalogRouteChecks.BIG_INTEGER_TARGET_CASE_IDS.stream()
-                .filter(caseId -> caseId.contains("-key-material-"))
-                .collect(java.util.stream.Collectors.toSet());
+        Set<String> caseIds = LocalCatalogRouteChecks.TRANSPARENT_KEY_MATERIAL_CASE_IDS;
         List<LocalCatalogRouteChecks.Invocation> invocations = new ArrayList<>();
 
         for (String version : List.of("2.0", "2.1")) {
