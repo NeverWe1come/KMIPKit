@@ -1168,6 +1168,7 @@ class ControlledTlsPeerTest {
                     serverPrivateKeyPem, clientCertificatePem, clientPrivateKeyPem);
             appendCancelResponsePayloadEvidence(events, protocolVersion, serverCertificatePem,
                     serverPrivateKeyPem, clientCertificatePem, clientPrivateKeyPem);
+            assertAsyncCancelNetworkRouteCoverage(events, protocolVersion);
             appendNewAttributeMutationEvents(events, protocolVersion, serverCertificatePem,
                     serverPrivateKeyPem, clientCertificatePem, clientPrivateKeyPem);
             if ("2.1".equals(protocolVersion)) {
@@ -8426,6 +8427,56 @@ class ControlledTlsPeerTest {
         byte[] requestBytes = peer.get(15, TimeUnit.SECONDS);
         assertEquals(0x19L, requestOperation(requestBytes));
         assertEquals(protocolMinorVersion, requestProtocolMinorVersion(requestBytes));
+    }
+
+    private static void assertAsyncCancelNetworkRouteCoverage(ArrayNode events, String protocolVersion) {
+        String routeId = "java.typed-protocol.client.execute_cancel";
+        List<String> caseIds = List.of(
+                "test-async-cancel-result-canceled",
+                "test-async-cancel-result-completed",
+                "test-async-cancel-result-failed",
+                "test-async-cancel-result-unable-to-cancel",
+                "test-async-cancel-result-unavailable");
+        List<String> encodings = List.of("TTLV", "JSON", "XML");
+        List<String> transports = List.of("raw_tls", "https");
+        List<String> requestTargets = List.of(
+                "KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-20-001",
+                "KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-21-001");
+        String operationTarget = "KMIPKIT-ELEM-OP-C2S-CANCEL";
+        for (String caseId : caseIds) {
+            for (String encoding : encodings) {
+                for (String transport : transports) {
+                    for (String action : List.of("construct", "send", "decode")) {
+                        assertAsyncCancelNetworkRouteEvent(events, caseId, routeId, operationTarget,
+                                action, protocolVersion, encoding, transport, true);
+                    }
+                    for (String requestTarget : requestTargets) {
+                        for (String action : List.of("construct", "send")) {
+                            assertAsyncCancelNetworkRouteEvent(events, caseId, routeId, requestTarget,
+                                    action, protocolVersion, encoding, transport, false);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static void assertAsyncCancelNetworkRouteEvent(ArrayNode events, String caseId,
+            String routeId, String targetId, String action, String protocolVersion,
+            String encoding, String transport, boolean asynchronousWorkflow) {
+        for (JsonNode event : events) {
+            if (!routeEventMatches(event, caseId, routeId, protocolVersion, targetId)
+                    || !action.equals(event.path("action").asText())
+                    || !encoding.equals(event.path("encoding").asText())
+                    || !transport.equals(event.path("transport").asText())) continue;
+            if (asynchronousWorkflow) {
+                assertEquals(1, event.path("workflow_step_index").asInt(-1));
+                assertEquals("Cancel", event.path("workflow_operation").asText());
+            }
+            return;
+        }
+        throw new AssertionError("Missing asynchronous Cancel route event: " + caseId + " / " + targetId
+                + " / " + action + " / " + protocolVersion + " / " + encoding + " / " + transport);
     }
 
     private static TtlvValue structureMemberValue(StructureMemberValueFixture fixture) {
