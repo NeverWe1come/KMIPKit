@@ -4100,3 +4100,24 @@ and the capability audit accepts 1,507 routes. The selected report validates
 42,333/42,333 cells with zero failures. The ledger records 71,641 planned,
 42,333 executed, and 29,308 pending cells, and the ledger comparison passes.
 The Java matrix remains incomplete, so the stack remains WIP.
+
+## Java typed Boolean Attribute routes — 2026-11-18
+
+The installed Java runner now executes all nine catalogued Boolean Attribute
+cases through `TypedAttribute.create`, `TypedAttribute.fromItem`, and
+`AttributeSet.tryNew`, in addition to the existing generic TTLV routes. It
+checks the standard tag, Boolean value, and resulting Attribute Set. Seven
+attributes apply in KMIP 2.0 and 2.1; Rotate Automatic and Rotate Latest apply
+in KMIP 2.1 only, for 16 case/version pairs and 48 additional local route
+cells. Sources: OASIS KMIP 2.0/2.1 §§4.3, 4.23, 4.24, 4.28, 4.33, 4.45,
+4.48, 4.52, 4.55, and 11.56. These checks do not claim server acceptance.
+
+Red `5f619e9ac` requires all seven routes for each applicable pair; Green
+`dfa28b4e5` adds the installed typed API calls and assertions; Refactor
+`4d4abf496` extracts the typed route execution. Gradle passes 95/95 tests;
+shared route/schema/capability tests pass 109/109; requirement and feature
+traceability tests pass 2/2 and 31/31; the route capability audit accepts
+1,507 routes. The selected matrix validates 42,381/42,381 cells with zero
+failures. The ledger records 71,641 planned, 42,381 executed, and 29,260
+pending cells and matches the checked-in reference. Full Java matrix closure
+remains outstanding, so the PR stack stays WIP.
