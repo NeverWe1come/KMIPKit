@@ -647,3 +647,22 @@ branches, and the common CI therefore reports a planned matrix only.
   §6.1.12/§6.1.30 describe Lease Time as an Interval or Date Time. Current
   evidence exercises only the Interval form for those fields; Date Time must
   not be inferred from the current cell count. The full stack remains WIP.
+
+## 2026-11-18 Java Create and Lease Time Date Time routes
+
+- Create client-batch-item routes now exercise the catalogued Create workflows
+  for 1,200/1,200 cells. Login and Delegated Login Lease Time Date Time
+  alternatives now exercise all four operation/version targets across 24
+  controlled exchanges; the matrix comparison found 48/48 construct/send
+  cells with no missing or extra events.
+- Red `648f7f420`, Green `687132735`, and Refactor `3b1f2ebef` cover the Date
+  Time request fields. The Java suite passes 109/109 tests; selected-scope
+  evidence validates 43,903 cells with zero failures, including 16 explicit
+  not-applicable cells. The ledger records 71,945 planned, 43,903 executed,
+  and 28,042 pending cells; the full matrix remains incomplete.
+- Regenerated `route-capabilities.json` adds four Rust Lease Time model routes
+  discovered when the shared catalog added its Date Time and Interval targets.
+  `route_capabilities.py --check` passes with 1,511 routes, and its focused
+  shared suite passes 68 tests plus 503 subtests. The ledger comparison passes.
+- These controlled TLS runs establish fixture-level route evidence, not
+  external KMS interoperability. Keep #187, #216, and #217 WIP.
