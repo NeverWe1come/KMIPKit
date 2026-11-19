@@ -1700,6 +1700,12 @@ class ControlledTlsPeerTest {
             for (LocalCatalogRouteChecks.Invocation invocation : domainParameterAttributeInvocations) {
                 appendLocalCatalogInvocation(events, protocolVersion, invocation);
             }
+            List<LocalCatalogRouteChecks.Invocation> uniqueIdentifierAttributeInvocations = new ArrayList<>();
+            LocalCatalogRouteChecks.executeUniqueIdentifierTypedRoutes(readRouteEvidenceCatalog(), protocolVersion,
+                    uniqueIdentifierAttributeInvocations::add);
+            for (LocalCatalogRouteChecks.Invocation invocation : uniqueIdentifierAttributeInvocations) {
+                appendLocalCatalogInvocation(events, protocolVersion, invocation);
+            }
         }
         assertRouteEventRecorded(events, "test-attr-certificate-attributes",
                 "KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES",
@@ -1734,6 +1740,18 @@ class ControlledTlsPeerTest {
                     "construct", protocolVersion);
             assertRouteEventRecorded(events, "test-attr-cryptographic-domain-parameters",
                     "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-DOMAIN-PARAMETERS",
+                    "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
+                    "construct", protocolVersion);
+            assertRouteEventRecorded(events, "test-attr-unique-identifier",
+                    "KMIPKIT-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER",
+                    "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
+                    "construct", protocolVersion);
+            assertRouteEventRecorded(events, "test-attr-unique-identifier",
+                    "KMIPKIT-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER",
+                    "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
+                    "construct", protocolVersion);
+            assertRouteEventRecorded(events, "test-attr-unique-identifier",
+                    "KMIPKIT-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER",
                     "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
                     "construct", protocolVersion);
         }
@@ -2266,6 +2284,7 @@ class ControlledTlsPeerTest {
         int certificateAttributeTtlvViewRouteEventCount = KMIP_2_0_AND_2_1.size();
         int cryptographicParameterAttributeBuilderRouteEventCount = KMIP_2_0_AND_2_1.size() * 2;
         int domainParametersTypedRouteEventCount = KMIP_2_0_AND_2_1.size() * 3;
+        int uniqueIdentifierTypedRouteEventCount = KMIP_2_0_AND_2_1.size() * 3;
         int objectTypeMemberRouteEventCount = 4;
         int constraintStructureRouteEventCount = 2 * GENERIC_STRUCTURE_ROUTE_IDS.size();
         int pendingCorrelationAccessorEventCount = KMIP_2_0_AND_2_1.size();
@@ -2350,6 +2369,7 @@ class ControlledTlsPeerTest {
                         + certificateAttributeTtlvViewRouteEventCount
                         + cryptographicParameterAttributeBuilderRouteEventCount
                         + domainParametersTypedRouteEventCount
+                        + uniqueIdentifierTypedRouteEventCount
                         + objectTypeMemberRouteEventCount
                         + constraintStructureRouteEventCount
                         + pendingCorrelationAccessorEventCount
