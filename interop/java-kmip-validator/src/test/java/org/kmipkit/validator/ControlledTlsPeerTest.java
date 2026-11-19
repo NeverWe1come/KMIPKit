@@ -2230,6 +2230,7 @@ class ControlledTlsPeerTest {
                 readRouteEvidenceCatalog());
         int asyncLifecyclePollRouteEventCount = 3 * 3 * 2 + 3;
         int asyncLifecycleQueryRouteEventCount = 3 * 3 * 2 + 3 + 4;
+        int asyncNoRecursivePollRouteEventCount = 3 * 3 * 2 + 3;
         int asyncIndicatorEnumerationRouteEventCount = 0;
         for (JsonNode testCase : readRouteEvidenceCatalog().path("test_cases")) {
             JsonNode scenario = testCase.path("requires").path("protocol_scenario");
@@ -2314,6 +2315,7 @@ class ControlledTlsPeerTest {
                         + asyncCancelNetworkRouteEventCount
                         + asyncLifecyclePollRouteEventCount
                         + asyncLifecycleQueryRouteEventCount
+                        + asyncNoRecursivePollRouteEventCount
                         + expectedAsyncCancelLocalRouteEventCount(readRouteEvidenceCatalog())
                         + CREATE_OPERATION_ROUTE_FIXTURES.stream()
                                 .filter(CreateOperationRouteFixture::pendingResponse)
@@ -14283,6 +14285,7 @@ class ControlledTlsPeerTest {
         assertAsyncPollRaceRouteCoverage(events, protocolVersion);
         assertAsyncLifecyclePollRouteCoverage(events, protocolVersion);
         assertAsyncLifecycleQueryRouteCoverage(events, protocolVersion);
+        assertAsyncNoRecursivePollRouteCoverage(events, protocolVersion);
     }
 
 
@@ -15314,6 +15317,40 @@ class ControlledTlsPeerTest {
                 }
             }
         }
+    }
+
+    private static void assertAsyncNoRecursivePollRouteCoverage(ArrayNode events, String protocolVersion)
+            throws Exception {
+        if (!"2.1".equals(protocolVersion)) return;
+        String caseId = "test-async-no-recursive-async-poll-cancel";
+        String targetId = "KMIPKIT-ELEM-OP-C2S-POLL";
+        String routeId = "java.typed-protocol.client.execute_poll";
+        int workflowStepIndex = asyncWorkflowStepIndex(readRouteEvidenceCatalog(), caseId, "Poll");
+        for (String encoding : List.of("TTLV", "JSON", "XML")) {
+            for (String transport : List.of("raw_tls", "https")) {
+                for (String action : List.of("construct", "send", "decode")) {
+                    int matches = 0;
+                    for (JsonNode event : events) {
+                        if (!routeEventMatches(event, caseId, routeId, protocolVersion, targetId)
+                                || !action.equals(event.path("action").asText())
+                                || !encoding.equals(event.path("encoding").asText())
+                                || !transport.equals(event.path("transport").asText())) continue;
+                        assertEquals(workflowStepIndex, event.path("workflow_step_index").asInt(-1));
+                        assertEquals("Poll", event.path("workflow_operation").asText());
+                        matches++;
+                    }
+                    assertEquals(1, matches,
+                            "The non-recursive async Poll route must run once for each wire combination.");
+                }
+            }
+        }
+        assertRouteEventRecorded(events, caseId, targetId,
+                "java.typed-protocol.poll_request.create", "construct", protocolVersion);
+        assertRouteEventRecorded(events, caseId, targetId,
+                "java.typed-protocol.function.async_poll_request_to_ttlv_payload", "encode", protocolVersion);
+        assertRouteEventRecorded(events, caseId, targetId,
+                "java.typed-protocol.function.kmipkit_client_async_operation_outcome_poll_response_v1",
+                "decode", protocolVersion);
     }
 
     private static int asyncWorkflowStepIndex(JsonNode catalog, String caseId, String operation) {
