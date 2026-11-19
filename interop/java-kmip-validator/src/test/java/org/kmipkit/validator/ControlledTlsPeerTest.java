@@ -1961,6 +1961,28 @@ class ControlledTlsPeerTest {
                     GENERIC_CREDENTIAL_FROM_TTLV_ROUTE,
                     "construct", protocolVersion);
             assertRouteEventRecorded(events,
+                    "test-norm-structure-member-structure-member-9-11-credential-credential-value",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-CREDENTIAL-CREDENTIAL-VALUE",
+                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
+                    "construct", protocolVersion);
+            assertRouteEventRecorded(events,
+                    "test-norm-structure-member-structure-member-9-11-credential-credential-value",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-CREDENTIAL-CREDENTIAL-VALUE",
+                    "java.generic-ttlv.ttlv_item.create", "construct", protocolVersion);
+            assertRouteEventRecorded(events,
+                    "test-norm-structure-member-structure-member-9-11-credential-credential-value",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-CREDENTIAL-CREDENTIAL-VALUE",
+                    "java.generic-ttlv.function.ttlv_item_view_from_item", "decode", protocolVersion);
+            assertRouteEventRecorded(events,
+                    "test-norm-structure-member-structure-member-9-11-credential-credential-value",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-CREDENTIAL-CREDENTIAL-VALUE",
+                    "java.generic-ttlv.ttlv_codec.decode", "decode", protocolVersion);
+            assertRouteEventRecorded(events,
+                    "test-norm-structure-member-structure-member-9-11-credential-credential-value",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-CREDENTIAL-CREDENTIAL-VALUE",
+                    "java.typed-protocol.model.org.kmipkit.credentials.credentialvalue.fromttlv",
+                    "construct", protocolVersion);
+            assertRouteEventRecorded(events,
                     "test-norm-structure-member-structure-member-9-11-one-time-password-username",
                     "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-ONE-TIME-PASSWORD-USERNAME",
                     GENERIC_CREDENTIAL_FROM_TTLV_ROUTE, "construct", protocolVersion);
