@@ -4423,9 +4423,53 @@ class RouteMatrixTests(unittest.TestCase):
                             ['Create Key Pair', 'Activate', 'Signature Verify',
                              'Revoke', 'Destroy', 'Destroy'] and
                             event['peer_observed_effects'] ==
-                            ['key_pair_created', 'activated', 'signature_verified', 'revoked',
+                            ['key_pair_created', 'activated', 'signature_invalid', 'revoked',
                              'destroyed', 'destroyed']
                             for event in send_events))
+
+    def test_signature_verify_fixture_reports_invalid_for_zero_rsa_signature(self):
+        """OASIS KMIP 2.0 §6.1.50/Table 451 and 2.1 §6.1.56/Table 492 define validity."""
+        from route_peer import numbers, parse, response
+
+        tree = parse(response((2, 18, 34, 19, 20, 20), 1))
+        items = [child for child in tree[2] if child[0] == 0x42000F and child[1] == 1]
+
+        self.assertEqual(6, len(items))
+        self.assertEqual([2], numbers(items[2], 0x42009B),
+                         'the all-zero RSA signature fixture must produce Invalid')
+
+    def test_rsa_pkcs1_signature_verify_route_reports_invalid_signature(self):
+        """OASIS KMIP 2.0 §6.1.50 and 2.1 §6.1.56 define Signature Verify."""
+        from artifact_support import ROOT
+        from route_peer import RECIPES, execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_id = 'test-crypto-signature-verify-rsa-2048-pkcs1_v1_5'
+        self.assertIn(case_id, RECIPES, 'RSA PKCS#1 Signature Verify has no controlled-peer route recipe')
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(12, len(checks), 'RSA Signature Verify must pass both versions and all six wire routes')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertEqual(44, len(events), 'the case must include 40 new cells and four prior TTLV cells')
+        send_events = [event for event in events if event['action'] == 'send']
+        self.assertEqual(12, len(send_events))
+        self.assertTrue(all(event['peer_observed_effects'] ==
+                            ['key_pair_created', 'activated', 'signature_invalid', 'revoked',
+                             'destroyed', 'destroyed']
+                            for event in send_events))
+        local_decodes = [event for event in events if event['action'] == 'decode' and
+                         event['transport'] is None]
+        self.assertEqual(6, len(local_decodes))
+        self.assertEqual(
+            {'kmipkit_client_batch_item_response_signature_verify',
+             'kmipkit_client_batch_item_response_signature_verify_ttlv',
+             'kmipkit_ttlv_decode'},
+            {event['public_api_symbol'] for event in local_decodes})
 
     def test_create_key_pair_operation_checks_both_identifiers_and_cleanup(self):
         """OASIS KMIP 2.0/2.1 §6.1.9 returns distinct private and public key identifiers."""
