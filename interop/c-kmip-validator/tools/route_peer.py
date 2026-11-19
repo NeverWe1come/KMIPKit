@@ -569,8 +569,8 @@ RECIPES = {
     'test-attr-cryptographic-algorithm': ((1, 11, 20), 'get_attributes'),
     'test-attr-cryptographic-length': ((1, 11, 20), 'get_attributes'),
     'test-obj-symmetric-key': ((1, 20), 'create'),
-    'test-obj-private-key': ((1, 20), 'create'),
-    'test-obj-public-key': ((1, 20), 'create'),
+    'test-obj-private-key': ((2, 20, 20), 'create_key_pair'),
+    'test-obj-public-key': ((2, 20, 20), 'create_key_pair'),
     'test-neg-destroy-active-without-revoke': ((1, 18, 20, 19, 20), 'destroy'),
 }
 
