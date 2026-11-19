@@ -14337,6 +14337,8 @@ class ControlledTlsPeerTest {
         }
         appendControlledAsyncProcessNetworkRouteEvents(events, protocolVersion, serverCertificatePem,
                 serverPrivateKeyPem, clientCertificatePem, clientPrivateKeyPem);
+        appendControlledAsyncQueryOperationRouteEvents(events, protocolVersion, serverCertificatePem,
+                serverPrivateKeyPem, clientCertificatePem, clientPrivateKeyPem);
         assertAsyncPollRaceRouteCoverage(events, protocolVersion);
         assertAsyncLifecyclePollRouteCoverage(events, protocolVersion);
         assertAsyncLifecycleQueryRouteCoverage(events, protocolVersion);
@@ -14466,6 +14468,37 @@ class ControlledTlsPeerTest {
             socket.getOutputStream().write(response);
             socket.getOutputStream().flush();
             return request;
+        }
+    }
+
+    private void appendControlledAsyncQueryOperationRouteEvents(ArrayNode events, String protocolVersion,
+            byte[] serverCertificatePem, byte[] serverPrivateKeyPem,
+            byte[] clientCertificatePem, byte[] clientPrivateKeyPem) throws Exception {
+        if (!"2.1".equals(protocolVersion)) return;
+        AsyncCancelRouteScenario scenario = new AsyncCancelRouteScenario(
+                "test-op-query-asynchronous-requests", "Canceled", 1,
+                List.of("KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS"), -1);
+        byte[] correlation = asyncCancelCorrelation(scenario, protocolVersion);
+        byte[] canonicalResponse = queryAsyncRequestsResponse(correlation, 0x18, 1_800_000_000L, 2);
+        String responseHash = normalizedTreeSha256(canonicalResponse);
+        String canonicalRequestHash = null;
+        for (String encoding : List.of("TTLV", "JSON", "XML")) {
+            for (String transport : List.of("raw_tls", "https")) {
+                byte[] request = executeAsyncLifecycleQueryCombination(correlation,
+                        encoding, transport, serverCertificatePem, serverPrivateKeyPem,
+                        clientCertificatePem, clientPrivateKeyPem);
+                if ("TTLV".equals(encoding) && "raw_tls".equals(transport)) {
+                    canonicalRequestHash = normalizedTreeSha256(request);
+                }
+                assertTrue(canonicalRequestHash != null,
+                        "The TTLV/raw-TLS catalogued Query must establish its request tree hash.");
+                appendAsyncQueryOperationRouteEvents(events, scenario.caseId(), protocolVersion,
+                        encoding, transport, canonicalRequestHash, responseHash);
+                if ("TTLV".equals(encoding) && "raw_tls".equals(transport)) {
+                    appendAsyncQueryOperationLocalRouteEvents(events, scenario, correlation,
+                            canonicalRequestHash, responseHash);
+                }
+            }
         }
     }
 
@@ -15456,6 +15489,50 @@ class ControlledTlsPeerTest {
                 "java.typed-protocol.function.kmipkit_client_async_operation_outcome_process_response_v1",
                 targetId, "org.kmipkit.extensions.AsyncOperationOutcome.processResponse", null, null,
                 "decode", protocolVersion, null, null, responseHash);
+    }
+
+    private static void appendAsyncQueryOperationRouteEvents(ArrayNode events, String caseId,
+            String protocolVersion, String encoding, String transport,
+            String requestHash, String responseHash) {
+        String routeId = "java.typed-protocol.client.execute_query_async_requests";
+        String targetId = "KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS";
+        String apiSymbol = "org.kmipkit.extensions.Client.executeQueryAsyncRequests";
+        for (String action : List.of("construct", "send", "decode")) {
+            ObjectNode event = appendRouteEvent(events, caseId, routeId, targetId, apiSymbol,
+                    "java.execute.queryasyncrequests", apiSymbol, action, protocolVersion, transport,
+                    "decode".equals(action) ? null : requestHash,
+                    "decode".equals(action) ? responseHash : null);
+            event.put("encoding", encoding);
+            if ("send".equals(action)) {
+                event.put("request_delivery_state", "response_received");
+                event.put("transport_invocation_count", 1);
+            }
+        }
+    }
+
+    private static void appendAsyncQueryOperationLocalRouteEvents(ArrayNode events,
+            AsyncCancelRouteScenario scenario, byte[] correlation,
+            String requestHash, String responseHash) throws Exception {
+        String caseId = scenario.caseId();
+        String targetId = "KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS";
+        try (QueryAsyncRequestsRequest created = QueryAsyncRequestsRequest.create();
+                QueryAsyncRequestsRequest filtered = created.withCorrelationValues(List.of(correlation.clone()));
+                QueryAsyncRequestsRequest withOperation = filtered.withOperations(List.of(0x18L));
+                TtlvStructure payload = withOperation.toTtlvPayload();
+                TtlvStructureView payloadView = payload.view()) {
+            assertEquals(2, payloadView.itemCount());
+        }
+        appendRouteEvent(events, caseId, "java.typed-protocol.query_async_requests_request.create", targetId,
+                "org.kmipkit.extensions.QueryAsyncRequestsRequest.create", null, null,
+                "construct", "2.1", null, requestHash, null);
+        appendRouteEvent(events, caseId,
+                "java.typed-protocol.function.async_query_async_requests_request_to_ttlv_payload", targetId,
+                "org.kmipkit.extensions.QueryAsyncRequestsRequest.toTtlvPayload", null, null,
+                "encode", "2.1", null, requestHash, null);
+        appendRouteEvent(events, caseId,
+                "java.typed-protocol.function.kmipkit_client_async_operation_outcome_query_async_requests_response_v1",
+                targetId, "org.kmipkit.extensions.AsyncOperationOutcome.queryAsyncRequestsResponse", null, null,
+                "decode", "2.1", null, null, responseHash);
     }
 
     private static void assertAsyncPollRaceRouteCoverage(ArrayNode events, String protocolVersion)
