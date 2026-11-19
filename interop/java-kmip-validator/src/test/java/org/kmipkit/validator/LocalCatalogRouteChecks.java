@@ -1296,6 +1296,74 @@ final class LocalCatalogRouteChecks {
                 value -> assertArrayEquals(identifier, value.bytes()), sink);
     }
 
+    /** Exercises typed wrappers for the source-defined Usage Limits structure. */
+    static void executeUsageLimitsTypedRoutes(JsonNode catalog, String version,
+            EvidenceSink sink) throws Exception {
+        String caseId = "test-attr-usage-limits";
+        JsonNode testCase = null;
+        for (JsonNode candidate : catalog.path("test_cases")) {
+            if (caseId.equals(candidate.path("case_id").asText())) {
+                testCase = candidate;
+                break;
+            }
+        }
+        if (testCase == null || !applies(testCase, version)) {
+            throw new IllegalArgumentException("Usage Limits case is absent for " + version);
+        }
+        String targetId = testCase.path("requires").path("normative_target_id").asText();
+        if (!"KMIPKIT-ELEM-ATTRIBUTE-USAGE-LIMITS".equals(targetId)) {
+            throw new IllegalArgumentException("Usage Limits target is invalid");
+        }
+        int attributeTag = tagCodeNamed(catalog, "Usage Limits", version);
+        int totalTag = tagCodeNamed(catalog, "Usage Limits Total", version);
+        int countTag = tagCodeNamed(catalog, "Usage Limits Count", version);
+        int unitTag = tagCodeNamed(catalog, "Usage Limits Unit", version);
+        long total = 100;
+        long count = total;
+        long unit = representativeEnumerationValue(catalog, "Usage Limits Unit", version);
+        byte[] totalBytes = ByteBuffer.allocate(Long.BYTES).putLong(total).array();
+        byte[] countBytes = ByteBuffer.allocate(Long.BYTES).putLong(count).array();
+        byte[] unitBytes = ByteBuffer.allocate(Integer.BYTES).putInt(Math.toIntExact(unit)).array();
+        byte[] wire = structureWire(attributeTag, concat(
+                itemWire(totalTag, TtlvItemType.LongInteger.code(), totalBytes),
+                itemWire(countTag, TtlvItemType.LongInteger.code(), countBytes),
+                itemWire(unitTag, TtlvItemType.Enumeration.code(), unitBytes)));
+        TtlvStructure usageLimits = TtlvStructure.create();
+        usageLimits = append(usageLimits, totalTag, TtlvValue.LongInteger(total));
+        usageLimits = append(usageLimits, countTag, TtlvValue.LongInteger(count));
+        usageLimits = append(usageLimits, unitTag, TtlvValue.Enumeration(unit));
+        StandardAttribute attribute = standardAttributeForTag(attributeTag);
+        if (attribute == null) {
+            usageLimits.close();
+            throw new IllegalArgumentException("Usage Limits has no Java StandardAttribute");
+        }
+        executeTypedAttributeRoutes(caseId, targetId, attributeTag, attribute,
+                TtlvValue.structure(usageLimits, CodecLimits.defaults()), TtlvItemType.Structure, wire,
+                value -> assertUsageLimitsValue(value, totalTag, total, countTag, count, unitTag, unit), sink);
+    }
+
+    private static void assertUsageLimitsValue(TtlvValueView value, int totalTag, long total,
+            int countTag, long count, int unitTag, long unit) {
+        try (TtlvStructureView structure = value.structure();
+                TtlvItemView totalItem = structure.itemAt(0); Tag viewedTotalTag = totalItem.tag();
+                TtlvValueView viewedTotal = totalItem.value();
+                TtlvItemView countItem = structure.itemAt(1); Tag viewedCountTag = countItem.tag();
+                TtlvValueView viewedCount = countItem.value();
+                TtlvItemView unitItem = structure.itemAt(2); Tag viewedUnitTag = unitItem.tag();
+                TtlvValueView viewedUnit = unitItem.value()) {
+            assertEquals(3, structure.itemCount());
+            assertEquals(totalTag, viewedTotalTag.raw());
+            assertEquals(TtlvItemType.LongInteger, totalItem.itemType());
+            assertEquals(total, viewedTotal.longInteger());
+            assertEquals(countTag, viewedCountTag.raw());
+            assertEquals(TtlvItemType.LongInteger, countItem.itemType());
+            assertEquals(count, viewedCount.longInteger());
+            assertEquals(unitTag, viewedUnitTag.raw());
+            assertEquals(TtlvItemType.Enumeration, unitItem.itemType());
+            assertEquals(unit, viewedUnit.enumeration());
+        }
+    }
+
     private static void assertStructureAttributeValue(TtlvValueView value, List<Integer> memberTags,
             List<TtlvItemType> memberTypes, List<byte[]> memberValues) {
         try (TtlvStructureView structure = value.structure()) {
