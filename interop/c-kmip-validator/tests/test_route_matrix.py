@@ -1356,6 +1356,45 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(all(event['request_delivery_state'] == 'not_sent' and
                             event['transport_invocation_count'] == 0 for event in send_events))
 
+    def test_set_constraints_v20_boundary_has_a_typed_pre_send_recipe(self):
+        """OASIS KMIP 2.1 §6.1.52 Set Constraints is unavailable in KMIP 2.0."""
+        import route_peer
+        from artifact_support import ROOT
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        case = next(item for item in catalog['test_cases']
+                    if item['case_id'] == 'test-v20-reject-set-constraints')
+
+        self.assertEqual(route_peer.recipe_for_case(case, None), ((56,), 'set_constraints_v20_boundary'))
+
+    def test_set_constraints_v20_boundary_records_zero_transport_calls(self):
+        """The installed C Set Constraints route must report NotSent for KMIP 2.0."""
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case = next(item for item in catalog['test_cases']
+                    if item['case_id'] == 'test-v20-reject-set-constraints')
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c',
+            {**catalog, 'test_cases': [case]}, manifest, protocol_versions=('2.0',))
+
+        self.assertEqual(len(events), 12)
+        self.assertEqual(len(checks), 6)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertTrue(all(check['consumer_server_compatibility'] == 'unknown' for check in checks))
+        self.assertTrue(all('kmipkit_client_batch_item_set_constraints' in check['public_api_trace_symbols'] and
+                            'kmipkit_client_execute' in check['public_api_trace_symbols'] for check in checks))
+        send_events = [event for event in events if event['action'] == 'send']
+        construct_events = [event for event in events if event['action'] == 'construct']
+        self.assertEqual(len(send_events), 6)
+        self.assertEqual(len(construct_events), 6)
+        self.assertTrue(all(event['status'] == 'passed' for event in construct_events))
+        self.assertTrue(all(event['request_delivery_state'] == 'not_sent' and
+                            event['transport_invocation_count'] == 0 for event in send_events))
+
     def test_get_usage_allocation_recipe_validates_present_then_omitted_identifier(self):
         from route_peer import assert_recipe
 
