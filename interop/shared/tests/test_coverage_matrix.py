@@ -229,8 +229,14 @@ class CoverageMatrixTests(unittest.TestCase):
     def test_empty_batch_rejection_has_construction_but_no_transport_or_decode_cells(self):
         cells = [cell for cell in iter_cells(self.catalog, self.manifest)
                  if cell["case_id"] == "test-batch-count-zero-rejected"]
+        case = next(case for case in self.catalog["test_cases"]
+                    if case["case_id"] == "test-batch-count-zero-rejected")
+        obligations = _case_obligations(case, _operation_ids(self.catalog),
+                                        self.catalog["normative_targets"])
 
         self.assertTrue(cells)
+        self.assertEqual(["KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-COUNT"],
+                         [item["target_id"] for item in obligations])
         self.assertEqual({"construct"}, {cell["action"] for cell in cells})
         for language in ("rust", "c", "java", "python"):
             self.assertTrue(any(cell["language"] == language for cell in cells), language)

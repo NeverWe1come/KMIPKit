@@ -733,7 +733,12 @@ class NormativeInventoryTests(unittest.TestCase):
             self.assertEqual(case_id, scenario["scenario_id"], case_id)
             self.assertTrue(scenario["target_ids"], case_id)
             self.assertTrue(set(scenario["target_ids"]) <= target_ids, case_id)
-            self.assertTrue(scenario["operations"], case_id)
+            if case_id == "test-batch-count-zero-rejected":
+                self.assertEqual([], scenario["operations"])
+                self.assertEqual(["KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-COUNT"], scenario["target_ids"])
+                self.assertEqual("rejected_before_transport", scenario["expected"]["construction"])
+            else:
+                self.assertTrue(scenario["operations"], case_id)
             self.assertTrue(scenario["steps"], case_id)
             self.assertTrue(scenario["assertions"], case_id)
             self.assertTrue(case["normative_refs"], case_id)
