@@ -129,9 +129,9 @@ python3 -m pip install --only-binary ':all:' jsonschema==4.23.0
 python3 interop/c-kmip-validator/tests/test_route_matrix.py
 python3 interop/c-kmip-validator/tools/route_matrix.py \
   --binary interop/c-kmip-validator/build/kmip_validator_c \
-  --output interop/c-kmip-validator/build/route-execution-evidence-set-defaults-v20-boundary.json
+  --output interop/c-kmip-validator/build/route-execution-evidence-set-constraints-v20-boundary.json
 python3 interop/shared/tools/validate_route_evidence.py \
-  --report interop/c-kmip-validator/build/route-execution-evidence-set-defaults-v20-boundary.json \
+  --report interop/c-kmip-validator/build/route-execution-evidence-set-constraints-v20-boundary.json \
   --artifact-sha256 "$(sha256sum interop/.local/c-live/install/489fafc79ef89db2524eafa7a6c6482f5cf75d97/lib/libkmipkit_ffi.so | cut -d ' ' -f 1)"
 ```
 
@@ -148,7 +148,7 @@ from pathlib import Path
 sys.path.insert(0, "interop/shared/tools")
 from validate_route_evidence import validate_report
 
-report = json.loads(Path("interop/c-kmip-validator/build/route-execution-evidence-set-defaults-v20-boundary.json").read_text())
+report = json.loads(Path("interop/c-kmip-validator/build/route-execution-evidence-set-constraints-v20-boundary.json").read_text())
 catalog_bytes = Path("interop/shared/catalog/kmipkit-1.0-test-catalog.json").read_bytes()
 manifest_bytes = Path("interop/shared/coverage/route-capabilities.json").read_bytes()
 artifact_bytes = Path(
@@ -615,3 +615,17 @@ scoped shared validation with `selected_scope_complete=true`,
 140.15 seconds; the global matrix remains incomplete, with the Re-Provision
 response decoder still the first pending cell because its source recipe is
 unresolved.
+
+The latest full report is `c-route-917bd7e5-e9ba-4b6b-bfe2-accebacb5f60`
+(`route-execution-evidence-set-constraints-v20-boundary.json`) with JSON
+SHA-256 `2743642fd600f85179cc9cba8c16cfb1cca2dd0d879d225e29275d7ff11bfc14`.
+It has 66,288 planned cells: 43,800 invoked, 52 explicitly not applicable,
+zero failed, and 22,436 pending. It preserves all 43,840 previous emitted
+identities and adds 12 for `test-v20-reject-set-constraints`: construct and
+send across TTLV, JSON, and XML over raw TLS and HTTPS. The installed typed C
+route rejects KMIP 2.1-only Set Constraints under KMIP 2.0 before transport;
+all six send events report `NotSent` and zero transport calls. Schema and scoped
+shared validation pass with `selected_scope_complete=true`,
+`all_invocations_passed=true`, and zero failures. Full CTest passed 7/7 in
+142.35 seconds. The full matrix remains incomplete; the first pending cell is
+still the Re-Provision response decoder, whose recipe is unresolved.
