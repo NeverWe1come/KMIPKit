@@ -2343,7 +2343,7 @@ class ControlledTlsPeerTest {
                         + asyncIndicatorEnumerationRouteEventCount
                         + 12 // KMIP 2.0 Ping construction and NotSent execution over six encoding/transport pairs.
                         + 36 // Get/Set Constraints and Set Defaults construction and NotSent execution routes.
-                        + 24 // Process and Query Asynchronous Requests construction and NotSent execution routes.
+                        + 28 // Async version-boundary models plus construction and NotSent execution routes.
                         + 94 // BEC, batch IDs, async payload, Endpoint Role, Object Defaults, derivation, and Extension Information member cells.
                         + 18 // Ping construction, send, and response decode over six encoding/transport pairs.
                         + CREATE_OPERATION_ROUTE_FIXTURES.size()
@@ -8211,7 +8211,50 @@ class ControlledTlsPeerTest {
                     sent.put("transport_invocation_count", 0);
                 }
             }
+            appendAsyncVersionBoundaryModelRouteEvents(events, caseId, operationName,
+                    targetId, correlation, requestHash);
         }
+    }
+
+    private static void appendAsyncVersionBoundaryModelRouteEvents(ArrayNode events, String caseId,
+            String operationName, String targetId, byte[] correlation, String requestHash) throws Exception {
+        if ("Process".equals(operationName)) {
+            try (ProcessRequest request = ProcessRequest.create(correlation.clone());
+                    TtlvStructure payload = request.toTtlvPayload();
+                    TtlvStructureView payloadView = payload.view();
+                    TtlvItemView correlationField = payloadView.itemAt(0);
+                    Tag tag = correlationField.tag();
+                    var value = correlationField.value()) {
+                assertEquals(1, payloadView.itemCount());
+                assertEquals(0x420006, tag.raw());
+                assertArrayEquals(correlation, value.bytes());
+            }
+            appendRouteEvent(events, caseId, "java.typed-protocol.process_request.create", targetId,
+                    "org.kmipkit.extensions.ProcessRequest.create", null, null,
+                    "construct", "2.0", null, requestHash, null);
+            appendRouteEvent(events, caseId,
+                    "java.typed-protocol.function.async_process_request_to_ttlv_payload", targetId,
+                    "org.kmipkit.extensions.ProcessRequest.toTtlvPayload", null, null,
+                    "encode", "2.0", null, requestHash, null);
+            return;
+        }
+
+        try (QueryAsyncRequestsRequest request = QueryAsyncRequestsRequest.create();
+                QueryAsyncRequestsRequest withCorrelation = request.withCorrelationValues(
+                        List.of(correlation.clone()));
+                QueryAsyncRequestsRequest withOperation = withCorrelation.withOperations(List.of(0x18L));
+                TtlvStructure payload = withOperation.toTtlvPayload();
+                TtlvStructureView payloadView = payload.view()) {
+            assertEquals(2, payloadView.itemCount());
+        }
+        appendRouteEvent(events, caseId,
+                "java.typed-protocol.query_async_requests_request.create", targetId,
+                "org.kmipkit.extensions.QueryAsyncRequestsRequest.create", null, null,
+                "construct", "2.0", null, requestHash, null);
+        appendRouteEvent(events, caseId,
+                "java.typed-protocol.function.async_query_async_requests_request_to_ttlv_payload", targetId,
+                "org.kmipkit.extensions.QueryAsyncRequestsRequest.toTtlvPayload", null, null,
+                "encode", "2.0", null, requestHash, null);
     }
 
     private static void executeAsyncBoundaryRequest(Path connectionFile,
