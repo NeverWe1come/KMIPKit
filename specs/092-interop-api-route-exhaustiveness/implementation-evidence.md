@@ -97,3 +97,20 @@ claiming that an accessor ran for an item the server did not return.
   SHA-256 `55fcd64afba189ab7d04978fafb841fc73c9e5afc1ef25c93cb2eb04f4fba4a9`,
   and route-manifest SHA-256
   `3fe892f7b2804e8c1b03f9dc01c8cc71038829f7ed5aaf38d546fea90ddc980a`.
+
+## Follow-up: Java Certificate Attributes generic TTLV view
+
+- **Red — `b8d4ed715`** requires the public `TtlvItem.view()` route for the
+  Certificate Attributes case in KMIP 2.0 and 2.1. The controlled-peer test
+  failed because neither version had an invocation recorded.
+- **Green — `4d14fd7fd`** builds the `Attribute` structure using the
+  Certificate Subject CN Text String fixture, invokes `TtlvItem.view()` on
+  the constructed and decoded items, and verifies their nested tags, types,
+  and values. The focused Java controlled-peer route test passes both version
+  cells and updates the event-count assertion to include them.
+- **Refactor** records the fixture's source: OASIS KMIP 2.1 §4.6, Table 39
+  defines Certificate Subject CN as Text String; §4.60 defines the Attribute
+  structure and §11.56 defines its TTLV tags. The controlled-peer test passed
+  in 2m15s. This adds local generic-TTLV evidence only; it does not claim that
+  every Certificate Attributes policy branch or the complete Java matrix is
+  covered.
