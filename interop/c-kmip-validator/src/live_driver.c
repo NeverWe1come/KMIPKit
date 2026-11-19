@@ -7958,6 +7958,9 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                "test-async-process-then-poll-state") == 0) {
         return execute_async_process_then_poll_route(client);
     }
+    if (strcmp(test_case->case_id, "test-op-process") == 0) {
+        return execute_async_process_then_poll_route(client);
+    }
     if (strcmp(test_case->case_id, "test-async-cancel-vs-poll-race") == 0) {
         return execute_cancel_poll_race_route(client);
     }

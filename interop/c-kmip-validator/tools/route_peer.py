@@ -386,6 +386,7 @@ RECIPES = {
     'test-async-poll-repeated-pending-to-success': ((1, 26), 'async_poll_repeated_pending_to_success'),
     'test-op-poll': ((1, 26, 26, 26, 20), 'async_poll_repeated_pending_to_success'),
     'test-async-process-then-poll-state': ((1, 58, 26), 'async_process_then_poll_state'),
+    'test-op-process': ((1, 58, 26, 20), 'async_process_then_poll_state'),
     'test-op-query-asynchronous-requests': ((1, 57, 19, 20), 'query_async_empty'),
     'test-async-query-outstanding-filter': ((1, 57), 'async_query_outstanding_filter'),
     'test-async-unknown-correlation-rejected': ((26,), 'async_unknown_correlation_rejected'),
@@ -3166,8 +3167,11 @@ def read_back_attribute_fixture(case, catalog, version, attributes):
     }
 
 
-def target_operation_exchange_index(recipe):
+def target_operation_exchange_index(recipe, case=None):
     """Select the request/response that belongs to the catalog operation under test."""
+    if (recipe is not None and recipe[1] == 'async_process_then_poll_state' and
+            case is not None and case.get('operation') == 'Process'):
+        return 1
     if recipe is not None and recipe[1] == 'cancel_poll_race':
         return 2
     if recipe is not None and recipe[1] == 'async_poll_cancel_no_recursion':
@@ -4542,7 +4546,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         export_response_negative = (
                                             case_id.startswith('test-norm-payload-client-export-response-') and
                                             variant == 'missing_rejected' and
-                                            exchange_index == target_operation_exchange_index(recipe))
+                                            exchange_index == target_operation_exchange_index(recipe, case))
                                         if export_response_negative:
                                             response_wire = omit_export_response_field(
                                                 response_wire, case['requires']['field_name'])
@@ -4938,7 +4942,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                 observation.append((attempted, None, {}))
                             code = errors[0] if errors else 'consumer_check_failed' if not case_passed else 'public_api_trace_missing' if not called_symbols else None
                             mutation_index = mutation_exchange_index if attribute_mutation_recipe else \
-                                target_operation_exchange_index(recipe)
+                                target_operation_exchange_index(recipe, case)
                             attribute_check = {}
                             if observation and attribute_fixture:
                                 request_item = next(item for item in observation[0][0][2]
