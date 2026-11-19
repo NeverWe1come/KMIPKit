@@ -5416,6 +5416,34 @@ class RouteMatrixTests(unittest.TestCase):
                             event.get('peer_observed_response_count') == 1
                             for event in send_events), send_events)
 
+    def test_single_item_default_stop_builder_route_is_exercised_separately(self):
+        """OASIS KMIP 2.0/2.1 §9.6 permits explicit Stop while the scenario omits it."""
+        from artifact_support import ROOT
+        from unittest.mock import patch
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        cells = [cell for cell in self.runner.iter_cells(catalog, manifest, languages=('c',))
+                 if cell['case_id'] == 'test-batch-single-item-default-continuation'
+                 and cell['target_id'] ==
+                 'KMIPKIT-ELEM-ENUM-VALUE-BATCH-ERROR-CONTINUATION-OPTION-STOP-00000002'
+                 and cell['route_id'] ==
+                 'c.typed-protocol.function.client_batch_add_error_continuation_value']
+        self.assertEqual(len(cells), 2)
+        with tempfile.TemporaryDirectory(dir=self.runner.OUTPUT_ROOT) as directory:
+            output = Path(directory) / 'evidence.json'
+            with patch.object(self.runner, 'iter_cells', return_value=cells):
+                self.assertEqual(self.runner.run(output), 1,
+                                 'the two-cell selected scope cannot satisfy the full gate')
+            events = json.loads(output.read_text())['events']
+            branches = json.loads(output.with_suffix('.branches.json').read_text())
+
+        self.assertEqual(len(events), 2)
+        self.assertTrue(all(event['status'] == 'passed' and event['invocation_count'] == 1
+                            for event in events))
+        self.assertTrue(all(event.get('batch_option_values_checked') == 4
+                            for event in branches))
+
     def test_hash_and_rng_cases_call_their_public_routes_and_check_responses(self):
         from artifact_support import ROOT
         from route_peer import RECIPES, execute_network_cells
