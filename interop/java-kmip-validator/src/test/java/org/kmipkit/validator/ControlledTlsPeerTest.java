@@ -2230,7 +2230,7 @@ class ControlledTlsPeerTest {
         int asyncCancelNetworkRouteEventCount = expectedAsyncCancelNetworkRouteEventCount(
                 readRouteEvidenceCatalog());
         int asyncLifecyclePollRouteEventCount = 3 * 3 * 2 + 3;
-        int asyncLifecycleQueryRouteEventCount = 3 * 3 * 2 + 3 + 4;
+        int asyncLifecycleQueryRouteEventCount = 3 * 3 * 2 + 3 + 5;
         int asyncNoRecursivePollRouteEventCount = 3 * 3 * 2 + 3;
         int asyncOperationPollRouteEventCount = KMIP_2_0_AND_2_1.size() * (3 * 3 * 2 + 3);
         int asyncOperationProcessRouteEventCount = 3 * 3 * 2 + 3;
@@ -15664,6 +15664,12 @@ class ControlledTlsPeerTest {
                         stepIndex, "Query Asynchronous Requests", null));
             }
         }
+        ObjectNode responseAccessor = appendRouteEvent(events, caseId,
+                "java.typed-protocol.function.kmipkit_client_async_operation_outcome_query_async_requests_response_v1",
+                targetId, "org.kmipkit.extensions.AsyncOperationOutcome.queryAsyncRequestsResponse", null, null,
+                "decode", "2.1", null, null, responseHash);
+        appendWorkflowIdentity(responseAccessor,
+                new CreateWorkflowIdentity(stepIndex, "Query Asynchronous Requests", null));
 
         byte[] operationWire = item(0x42005c, TtlvItemType.Enumeration.code(), intBytes(0x39));
         String operationHash = normalizedTreeSha256(operationWire);
