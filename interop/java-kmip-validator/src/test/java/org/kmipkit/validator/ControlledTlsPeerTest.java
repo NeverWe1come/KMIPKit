@@ -14344,6 +14344,7 @@ class ControlledTlsPeerTest {
         assertAsyncLifecycleQueryRouteCoverage(events, protocolVersion);
         assertAsyncNoRecursivePollRouteCoverage(events, protocolVersion);
         assertAsyncOperationPollRouteCoverage(events, protocolVersion);
+        assertAsyncPollFinalFailureRouteCoverage(events, protocolVersion);
         assertAsyncOperationProcessRouteCoverage(events, protocolVersion);
         assertAsyncOperationQueryRouteCoverage(events, protocolVersion);
     }
@@ -15804,6 +15805,32 @@ class ControlledTlsPeerTest {
         assertRouteEventRecorded(events, caseId, targetId,
                 "java.typed-protocol.function.kmipkit_client_async_operation_outcome_poll_response_v1",
                 "decode", protocolVersion);
+    }
+
+    private static void assertAsyncPollFinalFailureRouteCoverage(ArrayNode events, String protocolVersion)
+            throws Exception {
+        String caseId = "test-async-poll-final-operation-failure";
+        String targetId = "KMIPKIT-ELEM-OP-C2S-POLL";
+        String routeId = "java.typed-protocol.client.execute_poll";
+        int workflowStepIndex = asyncWorkflowStepIndex(readRouteEvidenceCatalog(), caseId, "Poll");
+        for (String encoding : List.of("TTLV", "JSON", "XML")) {
+            for (String transport : List.of("raw_tls", "https")) {
+                for (String action : List.of("construct", "send", "decode")) {
+                    int matches = 0;
+                    for (JsonNode event : events) {
+                        if (!routeEventMatches(event, caseId, routeId, protocolVersion, targetId)
+                                || !action.equals(event.path("action").asText())
+                                || !encoding.equals(event.path("encoding").asText())
+                                || !transport.equals(event.path("transport").asText())) continue;
+                        assertEquals(workflowStepIndex, event.path("workflow_step_index").asInt(-1));
+                        assertEquals("Poll", event.path("workflow_operation").asText());
+                        matches++;
+                    }
+                    assertEquals(1, matches,
+                            "The final-failure Poll route must execute once for each wire combination.");
+                }
+            }
+        }
     }
 
     private static void assertAsyncOperationProcessRouteCoverage(ArrayNode events, String protocolVersion)
