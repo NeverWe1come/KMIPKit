@@ -1087,10 +1087,11 @@ def _protocol_scenario_cases(
         assertions=["each_response_echoes_its_request_id", "response_is_associated_with_correct_operation"],
         sections=batch_base, mutation="read_only")
     add("test-batch-count-zero-rejected", "batch_workflows", ["Get"],
-        [batch_count, request_item, get], parameters={"batch_count": 0, "request_item_count": 0},
-        expected={"construction": "rejected_before_transport"},
-        steps=["attempt_empty_batch_construction", "count_transport_calls"],
-        assertions=["empty_batch_is_rejected_or_cannot_be_constructed", "transport_call_count_is_zero"],
+        [batch_count, get], parameters={"batch_count": 0, "request_item_count": 0},
+        expected={"construction": "rejected_before_transport", "parser_error": "invalid_batch_count",
+                  "transport_call_count": 0},
+        steps=["parse_empty_request_message", "count_transport_calls"],
+        assertions=["request_message_parser_rejects_zero_batch_count", "transport_call_count_is_zero"],
         sections=batch_base, mode="local_model", mutation="read_only")
     add("test-batch-count-mismatch-rejected", "batch_workflows", ["Get", "Get Attribute List"],
         [batch_count, request_item, get, get_attribute_list], parameters={"declared_batch_count": 1, "request_item_count": 2},
