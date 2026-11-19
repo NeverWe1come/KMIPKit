@@ -782,6 +782,50 @@ validates 42,865/42,865 cells with zero failures. The ledger records 71,641
 planned, 42,865 executed, and 28,776 pending cells; comparison passes. The
 full Java matrix remains incomplete, so the PR stack stays WIP.
 
+### Java asynchronous lifecycle Query route — 2026-11-19
+
+The controlled Java lifecycle now executes Query Asynchronous Requests after
+an asynchronous Create, using the correlation value captured from the
+fixture. It exchanges the typed Query under KMIP 2.1 over TTLV, JSON, and XML
+on raw TLS and HTTPS, validates the response payload and its asynchronous
+request fields, and records the Query builder and Operation Enumeration Item
+routes. The correlation-filter builder and typed response-payload accessor
+are already covered by their normative structure cases. References: OASIS
+KMIP 2.1 §§6.1.41, 7.1, 7.2, and 7.25. The controlled fixture establishes
+client-side route execution, not interoperability with an external KMS.
+
+Red `374c5270d` requires the lifecycle Query network route cells. Green
+`31e9d3fda` executes and validates all six encoding/transport exchanges and
+the remaining local builder and TTLV routes. The full Gradle suite passes
+111/111, and shared contracts pass 202/202. Requirement/feature traceability
+passes 2/2 and 31/31, the generated report matches its schema, and the
+route-capability audit accepts 1,511 routes. Selected evidence validates
+43,941/43,941 cells with 0 failed cells. The global ledger records 71,583
+planned, 43,941 executed, and 27,642 pending cells; its comparison passes.
+The full matrix remains incomplete, so #187 and its dependents stay WIP.
+
+### Java terminal Poll without asynchronous correlation — 2026-11-19
+
+The controlled Java client now executes the Poll step in
+`test-async-no-recursive-async-poll-cancel` for KMIP 2.1. A terminal Success
+response includes the original operation response payload and omits the
+Asynchronous Correlation Value, as required by this catalog scenario. The
+test validates the typed Poll result across TTLV, JSON, and XML over raw TLS
+and HTTPS, and records the Poll request construction, TTLV payload, and typed
+response routes. References: OASIS KMIP 2.1 §§6.1.38 and 8.6, Table 399.
+
+Red `fdce18b1a` requires the 18 network and three local route cells. Green
+`82f2bf06e` executes the controlled exchanges and verifies the terminal
+response shape. Refactor updates the checked-in ledger and evidence record.
+The full Gradle suite passes 111/111; the shared route,
+schema, and capability tests pass 112/112; requirement and feature traceability
+pass 2/2 and 31/31. The generated report matches its schema, the route audit
+accepts 1,511 routes, and the ledger comparison passes. Selected evidence
+validates 43,962/43,962 cells: 43,946 invocations, 16 not-applicable cells,
+and zero failures. The ledger records 71,583 planned, 43,962 executed, and
+27,621 pending cells. The global matrix remains incomplete, so #187 and its
+dependents stay WIP.
+
 ### KMIP 2.0 asynchronous operation boundaries — 2026-11-18
 
 Process (§6.1.39) and Query Asynchronous Requests (§6.1.41) now invoke their
@@ -1290,3 +1334,177 @@ Login/Delegated Login variant cells are 48/48; 28,042 cells remain pending
 across the full matrix. The generated ledger comparison passes. These
 controlled TLS fixtures do not establish interoperability with an external
 KMS. The stack remains WIP while applicable matrix cells remain.
+
+### Java catalogued Poll operation — 2026-11-19
+
+The controlled Java peer now executes the `test-op-poll` route for KMIP 2.0
+and 2.1. It checks Poll request construction and typed response handling over
+TTLV, JSON, and XML on raw TLS and HTTPS, and records the three local
+`PollRequest`/`AsyncOperationOutcome` routes once per version. The fixture
+returns a valid Pending response with the matching correlation value. This
+proves route execution against the controlled peer; it does not claim KMS
+interoperability or complete the catalog isolation recipe's key lifecycle.
+References: OASIS KMIP 2.0 §6.1.36 and KMIP 2.1 §6.1.38.
+
+Red `f47fdc12d` requires all 42 network and local route cells. Green
+`ef9aa55c9` adds controlled exchanges and route evidence. The full Gradle
+suite passes 111/111; shared route, schema, and capability tests pass 112/112;
+requirement and feature traceability pass 2/2 and 31/31. The report validates,
+the route audit accepts 1,511 routes, and the generated ledger comparison
+passes. Selected evidence validates 44,004/44,004 cells: 43,988 invocations,
+16 not-applicable cells, and zero failures. The ledger records 71,583 planned,
+44,004 executed, and 27,579 pending cells. The full matrix remains incomplete,
+so #187 and its dependents stay WIP.
+
+### Java final-failure Poll routes — 2026-11-19
+
+The controlled Poll fixture now completes the `test-async-poll-final-operation-failure`
+case for KMIP 2.0 and 2.1. It reuses the correlation value from the Pending
+Create fixture and returns the original Create failure as a terminal Poll
+result: `OperationFailed` with `Invalid Object Type`, no success payload, and
+the same correlation value. The client verifies the typed Poll metadata and
+payload absence across TTLV, JSON, and XML over raw TLS and HTTPS. Route
+evidence includes `Client.executePoll`, `PollRequest.create`,
+`PollRequest.toTtlvPayload`, and `AsyncOperationOutcome.pollResponse`.
+References: OASIS KMIP 2.0 §6.1.36 and KMIP 2.1 §6.1.38 (Poll), with §§8.2,
+8.3, 8.6, 9.1, and 9.2 for the result and original-operation response shape.
+The controlled peer proves client route behavior, not external KMS
+interoperability.
+
+Red `9cd609ff2` requires all 36 network route cells and three local TTLV route
+cells. Green `73ef2ae3d` sends the real Poll requests to a controlled TLS/HTTPS
+peer and checks status, reason, correlation, and payload shape. The full Gradle
+suite passes 111/111; shared route, schema, and capability tests pass 112/112;
+requirement and feature traceability pass 2/2 and 31/31. The capability audit
+accepts 1,511 routes and ledger comparison passes. Selected evidence validates
+44,089/44,089 cells: 44,073 invocations, 16 not-applicable cells, and zero
+failures. The ledger records 71,583 planned, 44,089 executed, and 27,494
+pending cells. The full matrix remains incomplete, so the Java stack stays
+WIP.
+
+### Java repeated Pending-to-Success Poll routes — 2026-11-19
+
+The controlled Java peer now runs the `test-async-poll-repeated-pending-to-success`
+workflow against KMIP 2.0 and 2.1. For each TTLV, JSON, and XML encoding over
+raw TLS and HTTPS, the client sends three explicit Poll requests with the same
+server-issued correlation value. The peer returns Pending twice and then
+Success with the original Create response payload. The installed Java client
+checks both Pending results have no payload, the terminal response has the
+Create Object Type and Unique Identifier fields, and the Poll response keeps
+the correlation value. The peer receives exactly three requests, with no
+automatic Poll retry. References: OASIS KMIP 2.0 §§6.1.8, 6.1.36, and 6.1.38;
+KMIP 2.1 §§6.1.8 and 6.1.38. The controlled peer proves client route behavior,
+not external KMS interoperability.
+
+Red `75d8d9315` increased the expected route count and failed on the missing
+42 Poll cells. Green `e17d1ce9b` adds the three-request exchange and typed
+response assertions. The focused controlled-peer test passes; shared route,
+schema, and capability tests pass 112/112. The capability audit accepts 1,511
+routes and the ledger comparison passes. Selected evidence validates
+44,131/44,131 cells: 44,115 invocations, 16 not-applicable cells, and zero
+failures. The ledger records 71,583 planned, 44,131 executed, and 27,452
+pending cells. The full matrix remains incomplete, so the Java stack stays
+WIP.
+
+### Java catalogued Process operation — 2026-11-19
+
+The controlled Java peer now executes the `test-op-process` route for KMIP
+2.1. It checks the typed Process request and Pending response with matching
+correlation over TTLV, JSON, and XML on raw TLS and HTTPS, and records the
+local `ProcessRequest` creation/encoding and `AsyncOperationOutcome` response
+routes. This proves client route execution against the controlled peer; it
+does not claim external KMS interoperability or complete the catalog's key
+lifecycle recipe. Reference: OASIS KMIP 2.1 §6.1.39.
+
+Red `b36e1020c` requires the 18 network cells and three local Process route
+cells. Green `0e160493a` executes the controlled exchanges and records their
+evidence. The full Gradle suite passes 111/111; shared route, schema, and
+capability tests pass 112/112; requirement and feature traceability pass 2/2
+and 31/31. The report validates, the route audit accepts 1,511 routes, and
+the generated ledger comparison passes. Selected evidence validates
+44,025/44,025 cells: 44,009 invocations, 16 not-applicable cells, and zero
+failures. The ledger records 71,583 planned, 44,025 executed, and 27,558
+pending cells. The full matrix remains incomplete, so #187 and its dependents
+stay WIP.
+
+### Java lifecycle Query response accessor route — 2026-11-19
+
+The controlled `test-async-lifecycle-poll` workflow now records its installed
+`AsyncOperationOutcome.queryAsyncRequestsResponse` decoder invocation as a
+separate KMIP 2.1 TTLV route cell. The accessor is called on the typed Query
+outcome from the existing lifecycle exchange; the event is tied to the
+“Query Asynchronous Requests” workflow step. This adds local response-route
+evidence and does not change the exchange or claim external KMS
+interoperability. Reference: OASIS KMIP 2.1 §6.1.41.
+
+Red `c04f34393` requires the missing response-accessor event for the lifecycle
+case. Green `324ced21e` records the invocation. The full Gradle suite passes
+111/111; shared route, schema, and capability tests pass 112/112; requirement
+and feature traceability pass 2/2 and 31/31. The capability audit accepts
+1,511 routes and the generated-ledger comparison passes. Selected evidence
+validates 44,047/44,047 cells: 44,031 invocations, 16 not-applicable cells,
+and zero failures. The ledger records 71,583 planned, 44,047 executed, and
+27,536 pending cells. The full matrix remains incomplete, so the Java stack
+stays WIP.
+
+### Java catalogued asynchronous Query operation — 2026-11-19
+
+The controlled Java peer now executes `test-op-query-asynchronous-requests`
+for KMIP 2.1. It sends a Query Asynchronous Requests request filtered to a
+correlation and Create operation, receives one controlled outstanding request,
+and verifies the typed response over TTLV, JSON, and XML on raw TLS and HTTPS.
+It also records the local request creation/encoding and response accessor.
+This establishes client route behavior with a controlled peer; the catalog's
+Create/Revoke/Destroy isolation recipe is not exercised here. Reference:
+OASIS KMIP 2.1 §6.1.41.
+
+Red `f1f789986` requires the 18 network and three local route cells. Green
+`0bb569367` executes the six exchanges and records the response routes. The
+full Gradle suite passes 111/111; shared route, schema, and capability tests
+pass 112/112; requirement and feature traceability pass 2/2 and 31/31. The
+report validates, the route audit accepts 1,511 routes, and ledger comparison
+passes. Selected evidence validates 44,046/44,046 cells: 44,030 invocations,
+16 not-applicable cells, and zero failures. The ledger records 71,583 planned,
+44,046 executed, and 27,537 pending cells. The full matrix remains incomplete,
+so #187 and its dependents stay WIP.
+
+### Java unknown-correlation Poll routes — 2026-11-19
+
+The controlled Java peer now executes `test-async-unknown-correlation-rejected`
+for KMIP 2.0 and 2.1. Each Poll uses an unissued correlation value and receives
+`OperationFailed` with `Invalid Asynchronous Correlation Value`; the driver
+checks that the typed failure and correlation value are preserved and that no
+success payload is returned. The route runs over TTLV, JSON, and XML on raw TLS
+and HTTPS, with local Poll construction, encoding, and typed outcome routes
+recorded for each KMIP version. References: OASIS KMIP 2.0 §§6.1.36, 6.1.38,
+8.2, 8.3, 8.6, 9.1, and 9.2; KMIP 2.1 §§6.1.38, 8.2, 8.3, 8.6, 9.1, and 9.2.
+The controlled peer proves client route behavior, not external KMS
+interoperability.
+
+Red `5675b351c` requires 18 wire and three local route cells per version (42
+cells across both versions). Green `013d30dc6` executes the exchanges and
+validates the typed error.
+The focused controlled-peer test passes; shared route, schema, and capability
+tests pass 112/112; the capability audit accepts 1,511 routes; and ledger
+comparison passes. Selected evidence validates 44,236/44,236 cells: 44,220
+invocations, 16 not-applicable cells, and zero failures. The ledger records
+71,583 planned, 44,236 executed, and 27,347 pending cells. The full matrix
+remains incomplete, so the Java stack stays WIP.
+
+### Java KMIP 2.0 asynchronous model boundary routes — 2026-11-19
+
+The KMIP 2.0 version-boundary checks now invoke the local Java
+`ProcessRequest.create`/`toTtlvPayload` and
+`QueryAsyncRequestsRequest.create`/`toTtlvPayload` routes before checking the
+public client calls. The existing controlled listeners still confirm the
+KMIP 2.1-only operations fail before opening raw TLS or sending HTTPS, with
+`NotSent` and zero transport invocations. This adds four local TTLV cells; it
+does not add a wire exchange. References: OASIS KMIP 2.1 §§6.1.39 and 6.1.41,
+and KMIP 2.0 §6.1 for the unsupported-version boundary.
+
+Red `c70c494bd` requires the four missing local model cells. Green `cd99c8dae`
+executes both request models and checks the constructed Process correlation
+field and Query payload shape. The focused controlled-peer test passes;
+selected evidence validates 44,240/44,240 cells: 44,224 invocations, 16
+not-applicable cells, and zero failures. The ledger records 71,583 planned,
+44,240 executed, and 27,343 pending cells; the full matrix remains WIP.
