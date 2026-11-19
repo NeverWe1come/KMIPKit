@@ -643,6 +643,8 @@ def main() -> int:
     expected_cases += ("test-async-indicator-prohibited-synchronous",)
     expected_operations += (1, 26, 26, 26, 20)
     expected_cases += ("test-async-poll-repeated-pending-to-success",)
+    expected_operations += (1, 26, 26, 26, 20)
+    expected_cases += ("test-op-poll",)
     expected_operations += (1, 26, 26)
     expected_cases += (ASYNC_POLL_FINAL_FAILURE_CASE,)
     if protocol_version == "2.1":
