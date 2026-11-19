@@ -4455,7 +4455,7 @@ class RouteMatrixTests(unittest.TestCase):
 
         self.assertEqual(12, len(checks), 'RSA Signature Verify must pass both versions and all six wire routes')
         self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
-        self.assertEqual(44, len(events), 'the case must include 40 new cells and four prior TTLV cells')
+        self.assertEqual(40, len(events), 'the case must cover 36 wire and four local response cells')
         send_events = [event for event in events if event['action'] == 'send']
         self.assertEqual(12, len(send_events))
         self.assertTrue(all(event['peer_observed_effects'] ==
@@ -4464,11 +4464,10 @@ class RouteMatrixTests(unittest.TestCase):
                             for event in send_events))
         local_decodes = [event for event in events if event['action'] == 'decode' and
                          event['transport'] is None]
-        self.assertEqual(6, len(local_decodes))
+        self.assertEqual(4, len(local_decodes))
         self.assertEqual(
             {'kmipkit_client_batch_item_response_signature_verify',
-             'kmipkit_client_batch_item_response_signature_verify_ttlv',
-             'kmipkit_ttlv_decode'},
+             'kmipkit_client_batch_item_response_signature_verify_ttlv'},
             {event['public_api_symbol'] for event in local_decodes})
 
     def test_create_key_pair_operation_checks_both_identifiers_and_cleanup(self):

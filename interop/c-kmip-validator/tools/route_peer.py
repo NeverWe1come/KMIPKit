@@ -462,6 +462,8 @@ RECIPES = {
     'test-sign-missing-managed-object-cryptographic-parameters': (
         (2, 18, 33, 19, 20, 20), 'sign_missing_parameters'),
     'test-op-signature-verify': ((2, 18, 34, 19, 20, 20), 'signature_verify'),
+    'test-crypto-signature-verify-rsa-2048-pkcs1_v1_5':
+        ((2, 18, 34, 19, 20, 20), 'signature_verify'),
     'test-batch-undo-rolls-back-prior-success': ((1, 10), 'batch_undo_rollback'),
     'test-op-create-key-pair': ((2, 20, 20), 'create_key_pair'),
     'test-op-create-split-key': ((40, 20, 20), 'create_split_key'),
@@ -1085,7 +1087,7 @@ def verify_signature_response(response_tree, verify):
     fields = target_payloads[0][2]
     if verify:
         if (len(fields) != 2 or text_values(items[2], UNIQUE_IDENTIFIER_TAG) != [target_identifier.decode()] or
-                numbers(items[2], 0x42009B) != [1]):
+                numbers(items[2], 0x42009B) != [2]):
             raise ValueError('fixture_signature_verify_response_fields_mismatch')
     else:
         signature = [field for field in fields if field[0] == 0x4200C3 and field[1] == 8]
@@ -3847,7 +3849,7 @@ class PeerState:
                     if state != 'active':
                         raise ValueError('fixture_registered_crypto_key_not_active')
                     effect = {31: 'encrypted', 32: 'decrypted', 33: 'signed',
-                              34: 'signature_verified', 35: 'mac_generated',
+                              34: 'signature_invalid', 35: 'mac_generated',
                               36: 'mac_verified'}[operation]
                 elif operation == 51:
                     if state != 'active':

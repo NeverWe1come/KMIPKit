@@ -5879,8 +5879,10 @@ static bool created_key_signature_response_matches(
         item, &present, &result_identifier, &validity_present, &validity_indicator,
         &recovered_data_present, &output, &correlation_present, &correlation);
     *out_status = status;
+    /* OASIS KMIP 2.0 §6.1.50/Table 451 and 2.1 §6.1.56/Table 492: the
+     * all-zero RSA signature fixture is invalid although the operation succeeds. */
     bool valid = status == 0 && present && same_text_identifier(identifier, &result_identifier) &&
-        validity_present && validity_indicator == KMIPKIT_ENUMERATION_VALIDITY_INDICATOR_VALID &&
+        validity_present && validity_indicator == KMIPKIT_ENUMERATION_VALIDITY_INDICATOR_INVALID &&
         !recovered_data_present && !correlation_present;
     if (valid) {
         valid = response_ttlv_matches_field_count(
@@ -8723,6 +8725,10 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                "test-sign-missing-managed-object-cryptographic-parameters") == 0)
         return execute_created_key_signature(client, KMIPKIT_ENUMERATION_OPERATION_SIGN, true);
     if (strcmp(test_case->case_id, "test-op-signature-verify") == 0)
+        return execute_created_key_signature(
+            client, KMIPKIT_ENUMERATION_OPERATION_SIGNATURE_VERIFY, false);
+    if (strcmp(test_case->case_id,
+               "test-crypto-signature-verify-rsa-2048-pkcs1_v1_5") == 0)
         return execute_created_key_signature(
             client, KMIPKIT_ENUMERATION_OPERATION_SIGNATURE_VERIFY, false);
     const char *const allow_v20_discover_versions_decode =

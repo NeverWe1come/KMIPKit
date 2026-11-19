@@ -168,7 +168,7 @@ def response(operations: tuple[int, ...], protocol_minor: int,
                 payload_value = tlv(0x420066, 7, b"fixture-private-key-1") + \
                     tlv(0x42006F, 7, b"fixture-public-key-1")
             elif item_index == 2 and verify:
-                payload_value = tlv(0x420094, 7, target_identifier) + enumeration(0x42009B, 1)
+                payload_value = tlv(0x420094, 7, target_identifier) + enumeration(0x42009B, 2)
             elif item_index == 2:
                 payload_value = tlv(0x420094, 7, target_identifier) + \
                     tlv(0x4200C3, 8, bytes(256))
@@ -658,6 +658,7 @@ def main() -> int:
     expected_operations += (2, 18, 33, 19, 20, 20)
     expected_operations += (2, 18, 33, 19, 20, 20)
     expected_operations += (2, 18, 34, 19, 20, 20)
+    expected_operations += (2, 18, 34, 19, 20, 20)
     expected_operations += (2, 20, 20)
     expected_operations += (40, 20, 20)
     expected_operations += (40, 20, 20)
@@ -728,6 +729,7 @@ def main() -> int:
     expected_cases += ("test-op-sign", "test-sign-missing-managed-object-cryptographic-parameters",
                        "test-op-signature-verify")
     expected_cases += ("test-crypto-sign-rsa-2048-pkcs1_v1_5",)
+    expected_cases += ("test-crypto-signature-verify-rsa-2048-pkcs1_v1_5",)
     expected_cases += ("test-op-create-key-pair",)
     expected_cases += ("test-op-create-split-key",)
     expected_cases += ("test-op-join-split-key",)
