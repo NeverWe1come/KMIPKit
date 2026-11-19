@@ -129,9 +129,9 @@ python3 -m pip install --only-binary ':all:' jsonschema==4.23.0
 python3 interop/c-kmip-validator/tests/test_route_matrix.py
 python3 interop/c-kmip-validator/tools/route_matrix.py \
   --binary interop/c-kmip-validator/build/kmip_validator_c \
-  --output interop/c-kmip-validator/build/route-execution-evidence-split-key.json
+  --output interop/c-kmip-validator/build/route-execution-evidence-batch-correlation.json
 python3 interop/shared/tools/validate_route_evidence.py \
-  --report interop/c-kmip-validator/build/route-execution-evidence-split-key.json \
+  --report interop/c-kmip-validator/build/route-execution-evidence-batch-correlation.json \
   --artifact-sha256 "$(sha256sum interop/.local/c-live/install/489fafc79ef89db2524eafa7a6c6482f5cf75d97/lib/libkmipkit_ffi.so | cut -d ' ' -f 1)"
 ```
 
@@ -148,7 +148,7 @@ from pathlib import Path
 sys.path.insert(0, "interop/shared/tools")
 from validate_route_evidence import validate_report
 
-report = json.loads(Path("interop/c-kmip-validator/build/route-execution-evidence-split-key.json").read_text())
+report = json.loads(Path("interop/c-kmip-validator/build/route-execution-evidence-batch-correlation.json").read_text())
 catalog_bytes = Path("interop/shared/catalog/kmipkit-1.0-test-catalog.json").read_bytes()
 manifest_bytes = Path("interop/shared/coverage/route-capabilities.json").read_bytes()
 artifact_bytes = Path(
@@ -176,7 +176,7 @@ The `*.gaps.json` sidecar identifies every unexecuted matrix obligation rather
 than misclassifying it as an unavailable library route. Other sidecars retain
 installed-artifact availability checks and sanitized controlled-peer outcomes.
 The evidence JSON passes the shared schema independently of completeness.
-The latest full local C matrix report (`c-route-b193e0e8-202a-487f-8b9b-f3ee0ec48bb9`)
+The preceding full local C matrix report (`c-route-b193e0e8-202a-487f-8b9b-f3ee0ec48bb9`)
 has 66,288 expected cells, 43,480 invoked, 40 explicitly not applicable, zero
 failed, and 22,768 pending. Its JSON SHA-256 is
 `2b8cd3d5b44f23f07ba0a11b51885bf6ce7241e91e62b73fee3b90e84ac214f9`; it uses
@@ -506,7 +506,24 @@ include the fixture's current timestamp. Cell identities are unchanged for
 those rows. The previous report added the KMIP 2.0 Discover Versions local
 decoder cell using a 2.0 response header and the fixed 2.1 request offer; it
 validates the returned 2.1 version without claiming 2.0 offer construction.
-The latest report retains all previous identities and adds 40 for the
+The previous report retained all previous identities and added 40 for the
 `test-obj-split-key` object case after the 42 Poll-route cells and 21 Process
-identities. It passes the evidence schema and scoped shared validation, while
-22,768 matrix cells remain pending.
+identities. It passed the evidence schema and scoped shared validation, while
+22,768 matrix cells remained pending.
+
+The latest full C report is `c-route-4657eef3-12ec-4fe0-bb88-b78746886234`
+with JSON SHA-256
+`4f44724969f655433306a03491336577a787beb698a5c198cac9f9b538cff1dc`. It has
+66,288 expected cells: 43,518 invoked, 40 explicitly not applicable, zero
+failed, and 22,730 pending. It retains all 43,520 identities from the previous
+report and adds 38 passing cells for
+`test-batch-unique-item-id-response-correlation`: 12 construction, 12 send,
+12 response decode, and two local request encodes. Across both KMIP versions
+and all six encoding/transport combinations, the controlled peer checks that
+the two request items (`Get`/`item-a` and `Get Attribute List`/`item-b`) each
+receive a response with the matching ID and operation. The full matrix remains
+incomplete; scoped shared validation of this 168-cell case reports
+`selected_scope_complete=true`, `all_invocations_passed=true`, and zero
+failures. The first pending cells remain the local response decoder for
+`test-op-re-provision`; that recipe is unresolved against the approved source
+contract and is not represented as implemented.
