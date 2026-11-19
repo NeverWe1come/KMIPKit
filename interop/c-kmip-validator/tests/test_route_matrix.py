@@ -4106,6 +4106,37 @@ class RouteMatrixTests(unittest.TestCase):
                             ['created', 'activated', 'encrypted', 'revoked', 'destroyed']
                             for event in send_events))
 
+    def test_encrypt_on_pre_active_key_records_expected_operation_failure(self):
+        """OASIS KMIP 2.0/2.1 §6.1.17: preserve the server's failure result."""
+        from artifact_support import ROOT
+        from route_peer import RECIPES, execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_id = 'test-neg-encrypt-preactive-key'
+        self.assertEqual(RECIPES.get(case_id), ((1, 31, 19, 20), 'encrypt_preactive_rejection'))
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest,
+            peer_rejection={'case_id': case_id, 'exchange_index': 0,
+                            'operation': 31, 'result_status': 1, 'result_reason': 7})
+
+        self.assertEqual(len(checks), 12)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertTrue(all(check['consumer_result_status_code'] == 1 and
+                            check['consumer_result_reason_code'] == 7 for check in checks), checks)
+        send_events = [event for event in events if event['action'] == 'send']
+        self.assertEqual(len(send_events), 12)
+        self.assertTrue(all(event['peer_observed_operation_sequence'] ==
+                            ['Create', 'Encrypt', 'Revoke', 'Destroy'] and
+                            event['peer_observed_result_status_codes'] == [0, 1, 0, 0] and
+                            event['peer_observed_result_reason_codes'] == [0, 7, 0, 0] and
+                            event['peer_observed_effects'] ==
+                            ['created', 'operation_rejected', 'revoked', 'destroyed']
+                            for event in send_events))
+
     def test_decrypt_operation_executes_installed_request_and_response_routes(self):
         """OASIS KMIP 2.0/2.1 §6.1.11 requires a typed Decrypt exchange."""
         from artifact_support import ROOT
