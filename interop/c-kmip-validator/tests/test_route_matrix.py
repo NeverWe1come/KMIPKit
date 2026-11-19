@@ -1426,6 +1426,49 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(all(event['action'] == 'decode' and event['status'] == 'passed'
                             for event in local_events))
 
+    def test_recertify_recipe_renews_a_certificate_for_both_protocol_versions(self):
+        """OASIS KMIP 2.0 §6.1.41 and 2.1 §6.1.45 renew an existing certificate."""
+        import route_peer
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case = next(item for item in catalog['test_cases'] if item['case_id'] == 'test-op-re-certify')
+
+        self.assertEqual(route_peer.recipe_for_case(case, None),
+                         ((2, 18, 6, 7, 19, 20, 20, 20, 20), 'recertify'))
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c',
+            {**catalog, 'test_cases': [case]}, manifest,
+            protocol_versions=('2.0', '2.1'))
+
+        self.assertEqual(len(events), 40)
+        self.assertEqual(len(checks), 12)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertTrue(all(check['consumer_library_correctness'] == 'passed' for check in checks))
+
+    def test_validate_recipe_uses_a_valid_certificate_chain_for_both_versions(self):
+        """OASIS KMIP 2.0 §6.1.51 Tables 308–309 and 2.1 §6.1.57 Tables 340–341."""
+        import route_peer
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case = next(item for item in catalog['test_cases'] if item['case_id'] == 'test-op-validate')
+
+        self.assertEqual(route_peer.recipe_for_case(case, None), ((23,), 'validate_certificate_chain'))
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c',
+            {**catalog, 'test_cases': [case]}, manifest,
+            protocol_versions=('2.0', '2.1'))
+
+        self.assertEqual(len(events), 40)
+        self.assertEqual(len(checks), 12)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertTrue(all(check['consumer_library_correctness'] == 'passed' for check in checks))
+
     def test_get_usage_allocation_recipe_validates_present_then_omitted_identifier(self):
         from route_peer import assert_recipe
 
