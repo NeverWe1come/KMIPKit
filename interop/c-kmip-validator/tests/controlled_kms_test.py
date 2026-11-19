@@ -28,6 +28,7 @@ ASYNC_CANCEL_POLL_RACE_CASE = "test-async-cancel-vs-poll-race"
 ASYNC_NO_RECURSIVE_POLL_CANCEL_CASE = "test-async-no-recursive-async-poll-cancel"
 ASYNC_POLL_FINAL_FAILURE_CASE = "test-async-poll-final-operation-failure"
 SECRET_DATA_MATERIAL = b"synthetic-secret-material"
+BATCH_CRYPTO_AES256_CBC_CIPHERTEXT = bytes.fromhex("78e16b06817a4453abef8a235fa9fa51")
 
 
 def tlv(tag: int, item_type: int, value: bytes) -> bytes:
@@ -41,6 +42,14 @@ def integer(tag: int, value: int, item_type: int = 2) -> bytes:
 
 def enumeration(tag: int, value: int) -> bytes:
     return tlv(tag, 5, struct.pack(">I", value))
+
+
+def crypto_output_for_request(operations: tuple[int, ...], request: bytes) -> bytes | None:
+    """Choose the deterministic Encrypt output from the request's cipher mode."""
+    if (operations == (1, 18, 31, 19, 20) and
+            enumeration(0x420011, 1) in request):
+        return BATCH_CRYPTO_AES256_CBC_CIPHERTEXT
+    return None
 
 
 def top_level_batch_operations(message: bytes) -> tuple[int, ...]:
@@ -710,6 +719,7 @@ def main() -> int:
     expected_cases += ("test-batch-register-encrypt-decrypt-destroy",)
     expected_cases += ("test-op-encrypt",)
     expected_cases += ("test-crypto-encrypt-aes-256-cbc",)
+    expected_operations += (1, 18, 32, 19, 20)
     expected_cases += ("test-crypto-decrypt-aes-256-cbc",)
     expected_cases += ("test-op-decrypt",)
     expected_cases += ("test-op-mac",)
@@ -1556,7 +1566,8 @@ def main() -> int:
                                         if operations == (5, 19, 20, 20) else
                                         (b"fixture-rekeyed-key", b"fixture-rekeyed-key",
                                          b"fixture-rekeyed-key", b"fixture-key-1", b"fixture-key-1")
-                                        if operations == (4, 19, 20, 19, 20) else None)))
+                                        if operations == (4, 19, 20, 19, 20) else None),
+                                    crypto_output=crypto_output_for_request(operations, request)))
                                 if operations == (25,):
                                     async_request_pending = False
                                     async_poll_mode = "none"
