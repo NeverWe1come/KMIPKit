@@ -179,6 +179,25 @@ class ExecutableContractTests(unittest.TestCase):
         self.assertIn("Certificate", setup)
         self.assertNotIn("SymmetricKey", setup)
 
+    def test_rekey_key_pair_recipe_seeds_a_key_pair_for_both_versions(self) -> None:
+        generator_path = ROOT / "interop/shared/catalog/generate_test_catalog.py"
+        spec = importlib.util.spec_from_file_location("generate_test_catalog", generator_path)
+        self.assertIsNotNone(spec)
+        assert spec is not None and spec.loader is not None
+        generator = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(generator)
+        generated = generator.generate_catalog(ROOT / "specification/catalog/kmip-2.1.json")
+        case = next(item for item in generated["test_cases"]
+                    if item["case_id"] == "test-op-re-key-key-pair")
+
+        self.assertEqual(["2.0", "2.1"], case["execution"]["protocol_versions"])
+        setup = " ".join(case["isolation_recipe"]["setup_steps"])
+        teardown = " ".join(case["isolation_recipe"]["teardown_steps"])
+        self.assertIn("Key Pair", setup)
+        self.assertNotIn("SymmetricKey", setup)
+        self.assertIn("Private Key", teardown)
+        self.assertIn("Public Key", teardown)
+
     def test_zero_batch_catalog_is_generated_as_pre_transport_parse_rejection(self) -> None:
         generator_path = ROOT / "interop/shared/catalog/generate_test_catalog.py"
         spec = importlib.util.spec_from_file_location("generate_test_catalog", generator_path)
