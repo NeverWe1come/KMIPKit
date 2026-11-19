@@ -82,8 +82,13 @@ public final class JavaKmipDriver implements AutoCloseable {
 
     AsyncOperationOutcome executeQueryAsyncRequestsForResponsePayloadEvidence(byte[] correlation)
             throws ClientOperationException {
+        return executeQueryAsyncRequestsForResponsePayloadEvidence(correlation, 0x18L);
+    }
+
+    AsyncOperationOutcome executeQueryAsyncRequestsForResponsePayloadEvidence(byte[] correlation,
+            long operationFilter) throws ClientOperationException {
         return client.executeQueryAsyncRequests(CODEC_LIMITS, List.of(correlation.clone()),
-                List.of(0x18L), java.util.OptionalLong.of(2));
+                List.of(operationFilter), java.util.OptionalLong.of(2));
     }
 
     AsyncOperationOutcome executeCancelForResponsePayloadEvidence(byte[] correlation)
