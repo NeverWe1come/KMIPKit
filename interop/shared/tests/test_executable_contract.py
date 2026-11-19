@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import importlib.util
 import re
 import tempfile
 import unittest
@@ -148,6 +149,39 @@ class ExecutableContractTests(unittest.TestCase):
         sample["cases"][0]["result_reason_code"] = 4294967296
         with self.assertRaises(jsonschema.ValidationError):
             jsonschema.validate(sample, result_schema)
+
+    def test_zero_batch_catalog_is_generated_as_pre_transport_parse_rejection(self) -> None:
+        generator_path = ROOT / "interop/shared/catalog/generate_test_catalog.py"
+        spec = importlib.util.spec_from_file_location("generate_test_catalog", generator_path)
+        self.assertIsNotNone(spec)
+        assert spec is not None and spec.loader is not None
+        generator = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(generator)
+        generated = generator.generate_catalog(ROOT / "specification/catalog/kmip-2.1.json")
+        generated_case = next(
+            case for case in generated["test_cases"]
+            if case["case_id"] == "test-batch-count-zero-rejected"
+        )
+        checked_in_case = next(
+            case for case in json.loads(CATALOG.read_text(encoding="utf-8"))["test_cases"]
+            if case["case_id"] == "test-batch-count-zero-rejected"
+        )
+        scenario = generated_case["requires"]["protocol_scenario"]
+
+        self.assertEqual(
+            ["KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-COUNT", "KMIPKIT-ELEM-OP-C2S-GET"],
+            scenario["target_ids"],
+        )
+        self.assertEqual(
+            {"construction": "rejected_before_transport", "parser_error": "invalid_batch_count", "transport_call_count": 0},
+            scenario["expected"],
+        )
+        self.assertEqual(["parse_empty_request_message", "count_transport_calls"], scenario["steps"])
+        self.assertEqual(
+            ["request_message_parser_rejects_zero_batch_count", "transport_call_count_is_zero"],
+            scenario["assertions"],
+        )
+        self.assertEqual(checked_in_case, generated_case)
 
     def test_live_configuration_requires_isolation_and_mutation_opt_in(self) -> None:
         try:
