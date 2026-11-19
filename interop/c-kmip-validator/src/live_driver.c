@@ -5917,7 +5917,7 @@ static bool created_key_signature_response_matches(
         &recovered_data_present, &output, &correlation_present, &correlation);
     *out_status = status;
     /* OASIS KMIP 2.0 §6.1.50/Table 451 and 2.1 §6.1.56/Table 492: the
-     * all-zero RSA signature fixture is invalid although the operation succeeds. */
+     * all-zero signature fixture is invalid although the operation succeeds. */
     bool valid = status == 0 && present && same_text_identifier(identifier, &result_identifier) &&
         validity_present && validity_indicator == KMIPKIT_ENUMERATION_VALIDITY_INDICATOR_INVALID &&
         !recovered_data_present && !correlation_present;

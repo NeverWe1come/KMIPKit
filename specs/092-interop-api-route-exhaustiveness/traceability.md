@@ -4,13 +4,13 @@
 |---|---|---|
 | KMIPKIT-0092-FR-001 | `interop/shared/coverage/route-capabilities.json`, route capability schema, `route_models.py`, and `coverage_matrix.py` | Source-backed route inventory binds typed attribute markers to exact elements, maps Register/Revoke request and batch-item constructors for every language, covers the Batch Error Continuation Option builder across four languages (§§8.2, 9.6, 11.5), limits batch result readers to KMIP 2.0/2.1 response Batch Count and Batch Item fields (§§8.5–8.6, 9.5, 9.7), keeps §11.34 Object Type Enumeration targets separate from §4.36 Object Type Attribute routes, prevents attribute wrappers from claiming managed-object structures, scopes Secret Data constructor/parser routes to their own object tree and excludes Cryptographic Algorithm and Cryptographic Length as required by KMIP 2.0/2.1 §3.1 Table 11, scopes Key Wrapping Data setters to their exact §3.3 Tables 14–17 member and prevents Encryption Key Information and MAC/Signature Key Information Cryptographic Parameters routes from crossing sibling structures, limits Rust `KeyMaterial::byte_string` to the generic Key Material tag because KMIP 2.0/2.1 §11.25 distinguishes ByteString and Structure formats, excludes checked-`Tag` constructors and Item-view accessors only when reserved/unused allocations cannot yield an Item, retains RawTag construction and decoder-rejection rows, and binds async operations to exact public executors; installed artifact probes for all four languages |
 | KMIPKIT-0092-FR-002 | `coverage_matrix.py`, `validate_route_evidence.py`, and language CI follow-ups | Negative tests reject missing target/version/route/action cells, duplicate or unplanned evidence, and incorrect scenario axes; expected NotSent cases require zero transport calls and omit impossible response decoding. The zero-count batch case records only the Batch Count target (no operation or Batch Item), retains applicable construction cells, and emits no send/decode cells because construction is rejected before transport. Async request cells use per-operation senders; full language CI remains pending |
-| KMIPKIT-0092-FR-003 | Per-language recipe and local TTLV suites; C `route_matrix.py` and `test_route_matrix.py`; Rust language recipe evidence | C installed-ABI coverage parses complete Request and Response Messages for KMIP 2.0/2.1. The latest full C report (`c-route-ef0cbe1a-c819-446f-9e58-45775e433be6`, SHA-256 `be1d15ccdafa3ea73500b9404f12803b350d0e2433c20e69809e344fa9f3f4c8`) records 66,280 planned cells: 44,146 invoked, 52 N/A, 0 failed, and 22,082 pending. Recover adds 38 network route cells; the full matrix remains incomplete. Rust directly exercises the listed KeyBlock, KeyValue, KeyMaterial, and Key Wrapping Data constructors/setters with local TTLV roundtrips; the full Rust matrix and remaining language matrices remain pending |
+| KMIPKIT-0092-FR-003 | Per-language recipe and local TTLV suites; C `route_matrix.py` and `test_route_matrix.py`; Rust language recipe evidence | C installed-ABI coverage parses complete Request and Response Messages for KMIP 2.0/2.1. The latest full C report (`c-route-2a50f57d-1549-4aac-ac07-8829e6a9b26b`, SHA-256 `531569efa1d64f2637fac8b9315495c00daae9bb0ee8acb6f249f8e9bf7eaf81`) records 66,280 planned cells: 44,186 invoked, 52 N/A, 0 failed, and 22,042 pending. Recover adds 38 network route cells; ECDSA Sign and Signature Verify each add 40 invocations; the full matrix remains incomplete. Rust directly exercises the listed KeyBlock, KeyValue, KeyMaterial, and Key Wrapping Data constructors/setters with local TTLV roundtrips; the full Rust matrix and remaining language matrices remain pending |
 | KMIPKIT-0092-FR-004 | `validate_report()`, `validate_parity_collection()`, route evidence schema, language peer fixtures | Constructed and sent request trees must match; tree hashes are compared across routes and languages; batch events retain ordered operation names and peer-observed response counts; full language events are pending |
 | KMIPKIT-0092-FR-005 | Controlled KMIP peer contracts in each language validator | The C controlled peer checks Mandatory asynchronous Create as Pending with a server-issued correlation and required Response Payload, omitted-indicator Create as synchronous Success with no correlation, and Optional- and Prohibited-indicator Create as synchronous Success without an unnecessary Poll, across all six encoding/transport pairs and both versions; exercises all five catalogued Cancel results; verifies Create(Pending) → Poll(Pending) → Cancel(Canceled) with one terminal result; verifies Create(Pending) → Query(exact correlation) → Poll(Success with Create payload) → authenticated Destroy cleanup; verifies KMIP 2.1 Create(Pending) → Process(exact correlation, Prohibited indicator) → Poll(Success with Create payload) → authenticated Destroy cleanup; verifies a KMIP 2.1 Query that intersects Create-operation and correlation filters to return only the matching outstanding Create; and verifies Create → Archive → Recover → Destroy with ID Placeholder and typed Recover Unique Identifier for both versions and all six encoding/transport pairs. Process Success has an empty Response Payload per §6.1.39 Table 279. The Optional Pending branch and other supported network rows and lifecycle branches remain pending. |
 | KMIPKIT-0092-FR-006 | Language artifact installers, route manifest, and evidence validator | Exact `release/1.0.0` commit and per-language installed artifact digest are checked for all four artifacts; comparable runtime reports are pending |
 | KMIPKIT-0092-FR-007 | `validation-results.schema.json`, route evidence schema, aggregator, parity validator | Per-run output retains transport, encoding, API, construction route, execution route, and artifact axes; tests cover same-server/config comparisons |
 | KMIPKIT-0092-FR-008 | Report writers and redaction helpers | Secret and raw-message negative fixtures |
-| KMIPKIT-0092-FR-009 | Capability manifest and per-language validator route registries | The common matrix rejects missing target routes unless the exact public API limitation is source-backed. Secret Data constructor/parser targets are limited to their own object subtree and omit Key Block fields excluded by KMIP 2.0/2.1 §3.1 Table 11. The zero-count batch case plans only the Batch Count target and rejects before transport, with no send or response-decode cells. The current full C report records 66,280 planned cells, 44,146 invoked, 52 N/A, 0 failed, and 22,082 pending; the complete route matrix remains open |
+| KMIPKIT-0092-FR-009 | Capability manifest and per-language validator route registries | The common matrix rejects missing target routes unless the exact public API limitation is source-backed. Secret Data constructor/parser targets are limited to their own object subtree and omit Key Block fields excluded by KMIP 2.0/2.1 §3.1 Table 11. The zero-count batch case plans only the Batch Count target and rejects before transport, with no send or response-decode cells. The current full C report records 66,280 planned cells, 44,186 invoked, 52 N/A, 0 failed, and 22,042 pending; the complete route matrix remains open |
 | KMIPKIT-0092-FR-010 | Pinned OASIS inventory, catalog generator, and normative inventory tests | Source-backed inventory tests cover versioned operations, objects, attributes, TTLV types, enum values, flags, field branches, and boundary/error classes. The Recover lifecycle fixture creates and archives its SymmetricKey before Recover, destroys the recovered object, and cites KMIP 2.0 §6.1.4/§6.1.38 and KMIP 2.1 §6.1.4/§6.1.42 |
 | KMIPKIT-0092-FR-011 | `coverage_matrix.py`, route/evidence schemas, `validate_route_evidence.py`, and C `route_matrix.py` | Tests prove that only the unreturned response-decode cell in the catalogued KMIPKIT-0007-FR-018 Stop scenario is `not_applicable`; its event has zero invocations, no invocation ID, and no response evidence. Returned items remain required. OASIS KMIP 2.0 §11.5/Table 396 and KMIP 2.1 §11.5/Table 434 are cited as context, while omission is explicitly identified as the approved KMIPKit policy |
 
@@ -258,7 +258,7 @@ both operations and versions, and CTest passes 7/7. The matrix at
 `01b12cbb7` has 66,736 expected, 42,067 invoked, zero failed, and 24,669
 pending cells; the global requirements remain incomplete.
 
-### C Recover and ECDSA Sign routes with refreshed full-matrix evidence
+### C Recover and ECDSA signature routes with refreshed full-matrix evidence
 
 For FR-003, FR-005, and FR-009, the installed C consumer now covers the
 catalogued Create → Archive → Recover → Destroy lifecycle using ID Placeholder
@@ -273,17 +273,27 @@ signature data without assuming a signature encoding. This follows OASIS KMIP
 2.0 §6.1.49 and KMIP 2.1 §6.1.55 and is controlled-fixture evidence, not an
 external KMS result. Its 44-cell event scope adds 36 network cells and four
 typed response-accessor decodes; four generic TTLV construct/decode events were
-already present in the previous ledger.
+already present in the previous ledger. The Signature Verify case covers
+Create Key Pair → Activate → Signature Verify → Revoke → Destroy for both
+versions and all six encoding/transport combinations. It sends a controlled
+all-zero
+64-byte ECDSA signature and checks a successful operation result with
+Validity Indicator `Invalid`, as defined by OASIS KMIP 2.0
+§6.1.50/Table 451 and KMIP 2.1 §6.1.56/Table 492. The 44-cell scope adds
+36 network cells and four typed response-accessor decodes; four generic
+TTLV cells were already counted. This remains controlled-fixture evidence.
 
-The full report `c-route-ef0cbe1a-c819-446f-9e58-45775e433be6` has SHA-256
-`be1d15ccdafa3ea73500b9404f12803b350d0e2433c20e69809e344fa9f3f4c8`, 66,280
-planned cells, 44,146 invocations, 52 N/A, zero failures, and 22,082 pending.
-The shared validator accepts all 44,198 emitted events with
+The full report `c-route-2a50f57d-1549-4aac-ac07-8829e6a9b26b` has SHA-256
+`531569efa1d64f2637fac8b9315495c00daae9bb0ee8acb6f249f8e9bf7eaf81`, 66,280
+planned cells, 44,186 invocations, 52 N/A, zero failures, and 22,042 pending.
+The shared validator accepts all 44,238 emitted events with
 `selected_scope_complete=true` and `all_invocations_passed=true`, while
 `complete_matrix=false`. The shared zero Batch Count correction removes
 operation, Batch Item, send, and response-decode obligations from the rejected
 construction scenario. Recover Red `2bb36d6f5`, Green `3a4d5ab32`, and fixture follow-up
 `464f033a1` are separate commits. ECDSA Sign Red `ce5e9eb7f`, Green
 `d071328ed`, controlled-peer plan fix `6d3572cde`, and Refactor `6b7b68701`
-are separate commits. The focused TLS checks pass for both KMIP versions; full
-CTest passes 7/7. The C matrix remains incomplete; 22,082 cells are pending.
+are separate commits. ECDSA Verify Red `c3aed782a`, Green `a137f36c2`, and
+Refactor `802ae6ee1` are separate commits. Focused Sign/Verify checks and both
+controlled TLS protocol peers pass; full CTest passes 7/7. The C matrix remains
+incomplete; 22,042 cells are pending.

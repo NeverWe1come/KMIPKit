@@ -773,20 +773,20 @@ responses). All previous cell identities remain. The first pending cells
 remain the Re-Provision response decoders, so the global matrix is still
 incomplete.
 
-### C full-matrix report after Recover and ECDSA Sign
+### C full-matrix report after Recover and ECDSA signatures
 
-The latest full C report is `c-route-ef0cbe1a-c819-446f-9e58-45775e433be6`
+The latest full C report is `c-route-2a50f57d-1549-4aac-ac07-8829e6a9b26b`
 (`build/route-execution-evidence-c-current.json`), SHA-256
-`be1d15ccdafa3ea73500b9404f12803b350d0e2433c20e69809e344fa9f3f4c8`. It
+`531569efa1d64f2637fac8b9315495c00daae9bb0ee8acb6f249f8e9bf7eaf81`. It
 uses catalog SHA-256
 `511468935d55435681bec13fb66d1d9327e91a5a92fb781e9450edb043951fba`, route
 manifest SHA-256
 `28b381ebca85752ba8eb3c41c003f02b2d1d8ad8180f0e8908a7e716724732f5`, and
 pinned artifact SHA-256
 `c93eb8f7daa60d3b6832d297887e99cd2101e4f9baf2d04f55ce4042ba4bb7a2`. The
-ledger has 66,280 planned cells: 44,146 invoked, 52 explicitly not
-applicable, zero failed, and 22,082 pending. The shared validator confirms all
-44,198 emitted cells, with `selected_scope_complete=true`,
+ledger has 66,280 planned cells: 44,186 invoked, 52 explicitly not
+applicable, zero failed, and 22,042 pending. The shared validator confirms all
+44,238 emitted cells, with `selected_scope_complete=true`,
 `all_invocations_passed=true`, and `complete_matrix=false`.
 
 The Recover route adds 38 network cells. The controlled consumer creates a
@@ -804,8 +804,19 @@ response check only requires nonempty signature data and does not assume its
 encoding. This is fixture evidence for OASIS KMIP 2.0 §6.1.49 and KMIP 2.1
 §6.1.55, not an external KMS result.
 
+The ECDSA Signature Verify case covers Create Key Pair → Activate →
+Signature Verify → Revoke → Destroy across the same versions and six
+encoding/transport combinations. Its request carries an all-zero
+64-byte ECDSA signature; the peer returns Operation Status `Success`
+with Validity Indicator `Invalid` (2), as defined by OASIS KMIP 2.0
+§6.1.50/Table 451 and KMIP 2.1 §6.1.56/Table 492. The C client validates
+the typed result and response TTLV. Its 44-event scope adds 36 network
+cells and four typed response-accessor decodes; four generic TTLV cells
+were already counted. This is controlled-fixture evidence, not an
+external KMS result.
+
 The catalog's zero-count batch case contains only the Batch Count target and
 does not plan operation, Batch Item, send, or response-decode cells. The full
 report's scoped validation passes for all emitted cells; full-matrix validation
-remains incomplete. Full CTest passes 7/7 in 151.07 seconds. The complete C
-route matrix remains open with 22,082 pending cells, so this PR remains WIP.
+remains incomplete. Full CTest passes 7/7 in 152.30 seconds. The complete C route matrix
+remains open with 22,042 pending cells, so this PR remains WIP.
