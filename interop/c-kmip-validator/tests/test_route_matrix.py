@@ -6191,6 +6191,30 @@ class RouteMatrixTests(unittest.TestCase):
             'kmipkit_client_batch_item_response_hash_ttlv',
         })
 
+    def test_key_format_vendor_enum_survives_raw_get_response_accessor(self):
+        """OASIS KMIP 2.0/2.1 §11.25 requires preserving vendor enum values."""
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        case_id = 'test-enum-key-format-type'
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertTrue(all(check['peer_key_format_type'] == 0xF1234567 for check in checks), checks)
+        local_decodes = [event for event in events if event['case_id'] == case_id and
+                         event['transport'] is None and event['action'] == 'decode']
+        self.assertEqual(len(local_decodes), 2, local_decodes)
+        self.assertEqual({event['protocol_version'] for event in local_decodes}, {'2.0', '2.1'})
+        self.assertEqual({event['public_api_symbol'] for event in local_decodes}, {
+            'kmipkit_client_batch_item_response_raw_ttlv',
+        })
+
 
     def attribute_executor(self):
         self.assertIsNotNone(importlib.util.find_spec('route_attributes'), 'typed attribute route executor is missing')
