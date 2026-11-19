@@ -5164,6 +5164,16 @@ class RouteMatrixTests(unittest.TestCase):
                             for event in send_events), send_events)
         self.assertTrue(all(event['execution_api_symbol'] == 'kmipkit_client_execute'
                             for event in send_events))
+        response_decode_events = [event for event in events
+                                  if event['action'] == 'decode' and
+                                  event['transport'] in {'raw_tls', 'https'}]
+        self.assertEqual(len(response_decode_events), 12)
+        self.assertTrue(all(event['status'] == 'not_applicable' and
+                            event['invocation_count'] == 0 and
+                            event['not_applicable_reason'] == 'local_rejection_no_response' and
+                            'invocation_id' not in event and
+                            'response_tree_sha256' not in event
+                            for event in response_decode_events), response_decode_events)
 
     def test_local_rejection_event_uses_only_schema_approved_fields(self):
         from artifact_support import ROOT
