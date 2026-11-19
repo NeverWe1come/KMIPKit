@@ -1509,3 +1509,21 @@ test passes; selected evidence validates 44,306/44,306 cells (44,290 invoked,
 27,277 cells are pending, so #187 and its dependents stay WIP. This increment
 proves local typed TTLV behavior, not server acceptance, attribute mutation,
 or external KMS interoperability.
+
+### Java Revoke routes — 2026-11-19
+
+The controlled Java peer now exercises the typed Revoke request under KMIP 2.0
+and 2.1, using TTLV, JSON, and XML over raw TLS and HTTPS. It verifies the
+Revoke operation, request identifier, batch-item identifier, successful typed
+response identifier, and retained response TTLV. The installed consumer invokes
+both `RevokeRequest.create` and `ClientBatchItem.revoke`, then reads the typed
+`RevokeResponse` and its TTLV view. References: OASIS KMIP 2.0 §6.1.40 and
+KMIP 2.1 §§4.47 and 6.1.44.
+
+Red `5e16fd1a8` requires the missing Revoke route and response-accessor evidence.
+Green `7d543a73e` executes the 12 controlled exchanges and records all 76
+planned cells. The focused controlled-peer test passes; selected evidence
+validates 44,382/44,382 cells (44,366 invoked, 16 not applicable, zero failed).
+The complete Java matrix remains incomplete: 27,201 cells are pending, so #187
+and its dependents stay WIP. This fixture proves client route behavior; it does
+not establish object state at a KMS or claim external interoperability.
