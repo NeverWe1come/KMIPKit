@@ -4379,3 +4379,27 @@ accepts 1,511 routes and ledger comparison passes. Selected evidence validates
 failures. The ledger records 71,583 planned, 44,089 executed, and 27,494
 pending cells. The full matrix remains incomplete, so the Java stack stays
 WIP.
+
+## Java repeated Pending-to-Success Poll routes — 2026-11-19
+
+The controlled Java peer now runs the `test-async-poll-repeated-pending-to-success`
+workflow against KMIP 2.0 and 2.1. For each TTLV, JSON, and XML encoding over
+raw TLS and HTTPS, the client sends three explicit Poll requests with the same
+server-issued correlation value. The peer returns Pending twice and then
+Success with the original Create response payload. The installed Java client
+checks both Pending results have no payload, the terminal response has the
+Create Object Type and Unique Identifier fields, and the Poll response keeps
+the correlation value. The peer receives exactly three requests, with no
+automatic Poll retry. References: OASIS KMIP 2.0 §§6.1.8, 6.1.36, and 6.1.38;
+KMIP 2.1 §§6.1.8 and 6.1.38. The controlled peer proves client route behavior,
+not external KMS interoperability.
+
+Red `75d8d9315` increased the expected route count and failed on the missing
+42 Poll cells. Green `e17d1ce9b` adds the three-request exchange and typed
+response assertions. The focused controlled-peer test passes; shared route,
+schema, and capability tests pass 112/112. The capability audit accepts 1,511
+routes and the ledger comparison passes. Selected evidence validates
+44,131/44,131 cells: 44,115 invocations, 16 not-applicable cells, and zero
+failures. The ledger records 71,583 planned, 44,131 executed, and 27,452
+pending cells. The full matrix remains incomplete, so the Java stack stays
+WIP.
