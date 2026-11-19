@@ -1654,8 +1654,9 @@ incomplete, so #255 and its parent stack remain WIP. Artifact SHA-256:
 
 The controlled fixture now invokes `Credential.fromTtlv` for the One Time
 Password and Ticket Credential Value cases in KMIP 2.0 and 2.1. The OTP fixture
-uses the required Username and One Time Password fields and omits the optional
-Password field. The Ticket fixture contains the required Ticket Structure with
+uses the required Username and One Time Password fields plus the optional
+Password field, and checks that the generic Credential view preserves all
+three members. The Ticket fixture contains the required Ticket Structure with
 Ticket Type and Ticket Value. These are deterministic TTLV model fixtures; the
 Ticket Value is test data and does not represent an issued authentication
 ticket. References: OASIS KMIP 2.0 and 2.1 §9.11, Tables 353, 376, and 378.
@@ -1669,6 +1670,16 @@ cells (44,442 invocations, 16 not applicable, zero failed) out of 71,513
 planned; 27,055 remain pending. The selected scope is complete but the full
 Java matrix remains incomplete, so #255 and its parent stack stay WIP. Artifact
 SHA-256: `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+
+Red `6df2f93b5` verifies that the optional Password member is present in the
+OTP Credential Value; it fails when the fixture contains only the required
+members. Green `fdc696759` adds that member and verifies all three OTP members
+through the generic Credential TTLV view. The final selected report is
+`java-controlled-query-a0a6c4bd-80a2-4e52-bbce-2dd421ee3e99` and validates
+44,458 cells (44,442 invocations, 16 not applicable, zero failed) out of 71,513
+planned; 27,055 remain pending. The complete Java suite passed 111/111 tests,
+and the shared tests passed 112/112. `route_capabilities.py --check` reported
+1,511 routes and the Java ledger comparison passed.
 
 Verification for this increment:
 
