@@ -1769,6 +1769,15 @@ class ControlledTlsPeerTest {
                     "KMIPKIT-ELEM-ATTRIBUTE-RANDOM-NUMBER-GENERATOR",
                     "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
                     "construct", protocolVersion);
+            assertRouteEventRecorded(events, "test-attr-random-number-generator",
+                    "KMIPKIT-ELEM-ATTRIBUTE-RANDOM-NUMBER-GENERATOR",
+                    "java.generic-ttlv.ttlv_item.create", "construct", protocolVersion);
+            assertRouteEventRecorded(events, "test-attr-random-number-generator",
+                    "KMIPKIT-ELEM-ATTRIBUTE-RANDOM-NUMBER-GENERATOR",
+                    "java.generic-ttlv.function.ttlv_item_view_from_item", "decode", protocolVersion);
+            assertRouteEventRecorded(events, "test-attr-random-number-generator",
+                    "KMIPKIT-ELEM-ATTRIBUTE-RANDOM-NUMBER-GENERATOR",
+                    "java.generic-ttlv.ttlv_codec.decode", "decode", protocolVersion);
             assertRouteEventRecorded(events, "test-attr-digest", "KMIPKIT-ELEM-ATTRIBUTE-DIGEST",
                     "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
                     "construct", protocolVersion);
@@ -1790,6 +1799,19 @@ class ControlledTlsPeerTest {
                     "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-PARAMETERS",
                     "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
                     "construct", protocolVersion);
+            assertRouteEventRecorded(events, "test-attr-cryptographic-parameters",
+                    "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-PARAMETERS",
+                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
+                    "construct", protocolVersion);
+            assertRouteEventRecorded(events, "test-attr-cryptographic-parameters",
+                    "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-PARAMETERS",
+                    "java.generic-ttlv.ttlv_item.create", "construct", protocolVersion);
+            assertRouteEventRecorded(events, "test-attr-cryptographic-parameters",
+                    "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-PARAMETERS",
+                    "java.generic-ttlv.function.ttlv_item_view_from_item", "decode", protocolVersion);
+            assertRouteEventRecorded(events, "test-attr-cryptographic-parameters",
+                    "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-PARAMETERS",
+                    "java.generic-ttlv.ttlv_codec.decode", "decode", protocolVersion);
             assertRouteEventRecorded(events, "test-attr-cryptographic-domain-parameters",
                     "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-DOMAIN-PARAMETERS",
                     "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
