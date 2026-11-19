@@ -1504,12 +1504,20 @@ def generate_catalog(normative_catalog_path: Path) -> dict:
         elif name in {"Create", "Create Key Pair", "Create Split Key", "Register", "Import"}:
             teardown = ["Destroy object"]
 
+        description = f"Execute {name} operation ensuring state isolation and equivalence across API levels."
+        target_step = f"Execute {name}"
+        if name == "Recover":
+            setup = ["Create unique SymmetricKey", "Archive SymmetricKey before recovery"]
+            teardown = ["Destroy recovered SymmetricKey"]
+            description = "Recover a previously archived SymmetricKey and destroy the recovered object."
+            target_step = "Recover the archived SymmetricKey"
+
         test_cases.append({
             "case_id": case_id,
             "category": "object_lifecycle",
             "operation": name,
             "oasis_section": sec,
-            "description": f"Execute {name} operation ensuring state isolation and equivalence across API levels.",
+            "description": description,
             "requires": {
                 "operation": name,
                 "requires_async": is_async
@@ -1517,7 +1525,7 @@ def generate_catalog(normative_catalog_path: Path) -> dict:
             "isolation_recipe": {
                 "unique_name_prefix": f"kmipkit-{name.lower().replace(' ', '-')}",
                 "setup_steps": setup,
-                "target_step": f"Execute {name}",
+                "target_step": target_step,
                 "teardown_steps": teardown,
                 "normalized_fields": ["TimeStamp", "UniqueIdentifier", "InitialDate", "ActivationDate", "LastChangeDate", "DestroyDate"]
             }
@@ -1896,6 +1904,15 @@ def generate_catalog(normative_catalog_path: Path) -> dict:
     test_cases.extend(_protocol_scenario_cases(normative_targets, section_indexes))
     _add_legacy_lifecycle_scenarios(test_cases, normative_targets, section_indexes)
     test_cases = [add_execution_contract(case, elements, section_indexes) for case in test_cases]
+
+    recover_case = next(case for case in test_cases if case["case_id"] == "test-op-recover")
+    archive_operation = next(operation for operation in c2s_ops if operation["name"] == "Archive")
+    for version, section in _element_sections(archive_operation, section_indexes).items():
+        if version not in recover_case["execution"]["protocol_versions"]:
+            continue
+        reference = {"document": f"OASIS KMIP {version} Specification", "section": section}
+        if reference not in recover_case["normative_refs"]:
+            recover_case["normative_refs"].append(reference)
 
     catalog_output = {
         "version": "2.0.0",

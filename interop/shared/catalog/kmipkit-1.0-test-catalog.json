@@ -59127,7 +59127,7 @@
       "category": "object_lifecycle",
       "operation": "Recover",
       "oasis_section": "6.1.42",
-      "description": "Execute Recover operation ensuring state isolation and equivalence across API levels.",
+      "description": "Recover a previously archived SymmetricKey and destroy the recovered object.",
       "requires": {
         "operation": "Recover",
         "requires_async": false,
@@ -59140,12 +59140,12 @@
       "isolation_recipe": {
         "unique_name_prefix": "kmipkit-recover",
         "setup_steps": [
-          "Create unique SymmetricKey"
+          "Create unique SymmetricKey",
+          "Archive SymmetricKey before recovery"
         ],
-        "target_step": "Execute Recover",
+        "target_step": "Recover the archived SymmetricKey",
         "teardown_steps": [
-          "Revoke SymmetricKey",
-          "Destroy SymmetricKey"
+          "Destroy recovered SymmetricKey"
         ],
         "normalized_fields": [
           "TimeStamp",
@@ -59164,6 +59164,14 @@
         {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.42"
+        },
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.4"
+        },
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.4"
         }
       ],
       "execution": {
