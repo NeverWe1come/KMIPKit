@@ -5394,6 +5394,14 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                     'kmipkit_client_async_operation_outcome_poll_response_v1' or
                                     cell['public_api_symbol'] ==
                                     'kmipkit_client_async_operation_outcome_process_response_v1')
+                                if (cell['action'] == 'decode'
+                                        and cell['transport'] in {'raw_tls', 'https'}
+                                        and local_placeholder_rejection_observed):
+                                    event = cell_fields(cell)
+                                    event.update(status='not_applicable', invocation_count=0,
+                                                 not_applicable_reason='local_rejection_no_response')
+                                    events.append(event)
+                                    continue
                                 if response_accessor_route:
                                     source_sections = {reference.get('section')
                                                       for reference in target.get('source_refs', [])}
