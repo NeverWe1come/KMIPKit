@@ -230,49 +230,69 @@ class ControlledTlsPeerTest {
             int operationValue) { }
 
     private record CredentialStructureMemberFixture(String caseId, String targetId, String modelRoute,
-            long credentialTypeRaw, int memberTag) { }
+            long credentialTypeRaw, int memberTag, TtlvItemType expectedMemberType) { }
 
     private static final List<CredentialStructureMemberFixture> TYPED_CREDENTIAL_STRUCTURE_MEMBER_FIXTURES = List.of(
             new CredentialStructureMemberFixture(
                     "test-norm-structure-member-structure-member-9-11-username-and-password-username",
                     "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-USERNAME-AND-PASSWORD-USERNAME",
                     "java.typed-protocol.model.org.kmipkit.credentials.usernameandpasswordcredential.fromttlv",
-                    1, 0x420099),
+                    1, 0x420099, TtlvItemType.TextString),
             new CredentialStructureMemberFixture(
                     "test-norm-structure-member-structure-member-9-11-username-and-password-password",
                     "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-USERNAME-AND-PASSWORD-PASSWORD",
                     "java.typed-protocol.model.org.kmipkit.credentials.usernameandpasswordcredential.fromttlv",
-                    1, 0x4200a1),
+                    1, 0x4200a1, TtlvItemType.TextString),
             new CredentialStructureMemberFixture(
                     "test-norm-structure-member-structure-member-9-11-device-device-identifier",
                     "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-DEVICE-IDENTIFIER",
                     "java.typed-protocol.model.org.kmipkit.credentials.devicecredential.fromttlv",
-                    2, 0x4200a2),
+                    2, 0x4200a2, TtlvItemType.TextString),
             new CredentialStructureMemberFixture(
                     "test-norm-structure-member-structure-member-9-11-device-password",
                     "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-PASSWORD",
                     "java.typed-protocol.model.org.kmipkit.credentials.devicecredential.fromttlv",
-                    2, 0x4200a1),
+                    2, 0x4200a1, TtlvItemType.TextString),
             new CredentialStructureMemberFixture(
                     "test-norm-structure-member-structure-member-9-11-device-device-serial-number",
                     "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-DEVICE-SERIAL-NUMBER",
                     "java.typed-protocol.model.org.kmipkit.credentials.devicecredential.fromttlv",
-                    2, 0x4200b0),
+                    2, 0x4200b0, TtlvItemType.TextString),
             new CredentialStructureMemberFixture(
                     "test-norm-structure-member-structure-member-9-11-device-machine-identifier",
                     "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-MACHINE-IDENTIFIER",
                     "java.typed-protocol.model.org.kmipkit.credentials.devicecredential.fromttlv",
-                    2, 0x4200a9),
+                    2, 0x4200a9, TtlvItemType.TextString),
             new CredentialStructureMemberFixture(
                     "test-norm-structure-member-structure-member-9-11-device-media-identifier",
                     "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-MEDIA-IDENTIFIER",
                     "java.typed-protocol.model.org.kmipkit.credentials.devicecredential.fromttlv",
-                    2, 0x4200aa),
+                    2, 0x4200aa, TtlvItemType.TextString),
             new CredentialStructureMemberFixture(
                     "test-norm-structure-member-structure-member-9-11-device-network-identifier",
                     "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-NETWORK-IDENTIFIER",
                     "java.typed-protocol.model.org.kmipkit.credentials.devicecredential.fromttlv",
-                    2, 0x4200ab));
+                    2, 0x4200ab, TtlvItemType.TextString),
+            new CredentialStructureMemberFixture(
+                    "test-norm-structure-member-structure-member-9-11-hashed-password-username",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-USERNAME",
+                    "java.typed-protocol.model.org.kmipkit.credentials.hashedpasswordcredential.fromttlv",
+                    5, 0x420099, TtlvItemType.TextString),
+            new CredentialStructureMemberFixture(
+                    "test-norm-structure-member-structure-member-9-11-hashed-password-timestamp",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-TIMESTAMP",
+                    "java.typed-protocol.model.org.kmipkit.credentials.hashedpasswordcredential.fromttlv",
+                    5, 0x420092, TtlvItemType.DateTimeExtended),
+            new CredentialStructureMemberFixture(
+                    "test-norm-structure-member-structure-member-9-11-hashed-password-hashing-algorithm",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-HASHING-ALGORITHM",
+                    "java.typed-protocol.model.org.kmipkit.credentials.hashedpasswordcredential.fromttlv",
+                    5, 0x420038, TtlvItemType.Enumeration),
+            new CredentialStructureMemberFixture(
+                    "test-norm-structure-member-structure-member-9-11-hashed-password-hashed-password",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-HASHED-PASSWORD",
+                    "java.typed-protocol.model.org.kmipkit.credentials.hashedpasswordcredential.fromttlv",
+                    5, 0x420157, TtlvItemType.ByteString));
 
     private record CreateRequestPayloadFixture(String caseId, String targetId, String protocolVersion,
             boolean protectionStorageMasksPresent) { }
@@ -2576,6 +2596,7 @@ class ControlledTlsPeerTest {
                 * (4 + TYPED_CREDENTIAL_STRUCTURE_MEMBER_FIXTURES.size());
         int typedCredentialStructureMemberRouteEventCount = KMIP_2_0_AND_2_1.size()
                 * TYPED_CREDENTIAL_STRUCTURE_MEMBER_FIXTURES.size();
+        int hashedPasswordHashingAlgorithmBuilderRouteEventCount = KMIP_2_0_AND_2_1.size();
         int credentialTypeMemberRouteEventCount = KMIP_2_0_AND_2_1.size() * 2;
         int batchErrorContinuationEventCount = enumerationFixtures.stream()
                 .filter(fixture -> "BATCH-ERROR-CONTINUATION-OPTION".equals(fixture.parentName()))
@@ -2641,6 +2662,7 @@ class ControlledTlsPeerTest {
                         + credentialEnvelopeEventCount + credentialRootEnvelopeEventCount
                         + credentialStructureMemberRouteEventCount
                         + typedCredentialStructureMemberRouteEventCount
+                        + hashedPasswordHashingAlgorithmBuilderRouteEventCount
                         + credentialTypeMemberRouteEventCount
                         + objectGroupLocalRouteEventCount
                         + asynchronousRequestOperationStructureRouteEventCount
@@ -4567,7 +4589,8 @@ class ControlledTlsPeerTest {
         }
         for (CredentialStructureMemberFixture fixture : TYPED_CREDENTIAL_STRUCTURE_MEMBER_FIXTURES) {
             appendTypedCredentialMemberRouteEvent(events, fixture.caseId(), fixture.targetId(),
-                    fixture.modelRoute(), fixture.credentialTypeRaw(), fixture.memberTag(), protocolVersion);
+                    fixture.modelRoute(), fixture.credentialTypeRaw(), fixture.memberTag(),
+                    fixture.expectedMemberType(), protocolVersion);
         }
     }
 
@@ -4588,11 +4611,12 @@ class ControlledTlsPeerTest {
     }
 
     private static void appendTypedCredentialMemberRouteEvent(ArrayNode events, String caseId, String targetId,
-            String modelRoute, long credentialTypeRaw, int memberTag, String protocolVersion) throws Exception {
+            String modelRoute, long credentialTypeRaw, int memberTag,
+            TtlvItemType expectedMemberType, String protocolVersion) throws Exception {
         byte[] credentialValueWire = credentialValueWire(modelRoute);
         try (TtlvStructure credentialValue = credentialValueStructure(modelRoute)) {
             appendCredentialMemberRouteEvent(events, caseId, targetId, credentialTypeRaw,
-                    credentialValueWire, credentialValue, memberTag, TtlvItemType.TextString, protocolVersion);
+                    credentialValueWire, credentialValue, memberTag, expectedMemberType, protocolVersion);
         }
         String modelSymbol;
         try (TtlvStructure credentialValue = credentialValueStructure(modelRoute)) {
@@ -4612,6 +4636,13 @@ class ControlledTlsPeerTest {
                                 "The Device credential decoder must preserve all six members.");
                     }
                 }
+                case "java.typed-protocol.model.org.kmipkit.credentials.hashedpasswordcredential.fromttlv" -> {
+                    modelSymbol = "org.kmipkit.credentials.HashedPasswordCredential.fromTtlv";
+                    try (HashedPasswordCredential credential = HashedPasswordCredential.fromTtlv(credentialValue)) {
+                        assertTrue(Boolean.TRUE.equals(credential.withTtlv(view -> view.itemCount() == 4)),
+                                "The Hashed Password credential decoder must preserve all four members.");
+                    }
+                }
                 default -> throw new IllegalArgumentException("Unsupported Credential Value model route: "
                         + modelRoute);
             }
@@ -4619,6 +4650,13 @@ class ControlledTlsPeerTest {
         appendRouteEvent(events, caseId, modelRoute, targetId,
                 modelSymbol, null, null, "construct", protocolVersion, null,
                 normalizedTreeSha256(credentialValueWire), null);
+        if ("java.typed-protocol.model.org.kmipkit.credentials.hashedpasswordcredential.fromttlv".equals(modelRoute)
+                && memberTag == 0x420038) {
+            EnumerationFixture hashingAlgorithmFixture = new EnumerationFixture(caseId, targetId,
+                    "HASHING-ALGORITHM", memberTag, 6, null, List.of(protocolVersion));
+            appendCryptographicParameterBuilderRouteEvent(events, hashingAlgorithmFixture, protocolVersion,
+                    normalizedTreeSha256(item(memberTag, TtlvItemType.Enumeration.code(), intBytes(6))));
+        }
     }
 
     private static boolean credentialValueHasMember(TtlvStructureView envelope, int memberTag,
