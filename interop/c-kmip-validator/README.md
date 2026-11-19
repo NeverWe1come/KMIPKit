@@ -142,15 +142,15 @@ The `*.gaps.json` sidecar identifies every unexecuted matrix obligation rather
 than misclassifying it as an unavailable library route. Other sidecars retain
 installed-artifact availability checks and sanitized controlled-peer outcomes.
 The evidence JSON passes the shared schema independently of completeness.
-The latest full local C matrix report (`c-route-d684636a-fa6c-44d2-b003-d54d2514c418`)
-has 66,288 expected cells, 43,377 invoked, 40 explicitly not applicable, zero
-failed, and 22,871 pending. Its JSON SHA-256 is
-`61e342e089285a4c041b69cd021def83ecd74809d9539a1d338b9efcf92c4306`; it uses
+The latest full local C matrix report (`c-route-6a0c11d5-0ab1-4928-aecf-34cac0a76391`)
+has 66,288 expected cells, 43,419 invoked, 40 explicitly not applicable, zero
+failed, and 22,829 pending. Its JSON SHA-256 is
+`2680de01d5150a853e32bb287a082538863159ac35e235f9c99fd50d724c6c20`; it uses
 the pinned C artifact SHA-256
 `c93eb8f7daa60d3b6832d297887e99cd2101e4f9baf2d04f55ce4042ba4bb7a2`. The
 shared validator accepts all emitted cells with
 `selected_scope_complete=true` and `all_invocations_passed=true`; the full
-matrix remains incomplete. The first pending cell is the KMIP 2.0 local Poll
+matrix remains incomplete. The first pending cell is the KMIP 2.1 local Process
 request-to-TTLV encoder.
 The MAC and Sign response TTLV accessors and the Continue batch-option
 constructor contribute four local cells each across KMIP 2.0/2.1. The
@@ -232,9 +232,13 @@ its covered targets. Its controlled network journeys pass across all 12
 combinations; the response-TTLV accessor is exercised for both protocol
 versions.
 
-The `test-op-poll` controlled route remains pending: the approved catalog does
-not yet provide a complete request, response, correlation, and cleanup recipe
-for it. No Poll recipe is inferred from the catalog's operation name alone.
+The `test-op-poll` route now uses a controlled asynchronous Create followed by
+Pending, Pending, and successful Poll responses, then destroys the created
+object. Its request encoder and typed response decoder pass under KMIP 2.0 and
+2.1. The route adds 42 passed cells across the six encoding/transport pairs and
+the two protocol versions; the response carries the exact correlation issued
+by the fixture Create. This is controlled-peer evidence, not external KMS
+interoperability.
 
 A generic TTLV wire encoder, generic-TTLV request dispatcher, and high-level
 C client are absent from the exact installed public artifact. The harness's
@@ -445,6 +449,6 @@ include the fixture's current timestamp. Cell identities are unchanged for
 those rows. The previous report added the KMIP 2.0 Discover Versions local
 decoder cell using a 2.0 response header and the fixed 2.1 request offer; it
 validates the returned 2.1 version without claiming 2.0 offer construction.
-The latest report retains all previous cells and adds 39 for KMIP 2.0 Login and
-Logout routes. It passes the evidence schema and scoped shared validation,
-while 22,871 matrix cells remain pending.
+The latest report retains all previous cells and adds 42 cells for the Poll
+route after the 39 cells for KMIP 2.0 Login and Logout. It passes the evidence
+schema and scoped shared validation, while 22,829 matrix cells remain pending.
