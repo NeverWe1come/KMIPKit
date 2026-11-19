@@ -26,8 +26,11 @@ import org.kmipkit.ttlv.CodecLimits;
 import org.kmipkit.ttlv.RawTag;
 import org.kmipkit.ttlv.Tag;
 import org.kmipkit.ttlv.TtlvItem;
+import org.kmipkit.ttlv.TtlvItemType;
 import org.kmipkit.ttlv.TtlvStructure;
+import org.kmipkit.ttlv.TtlvStructureView;
 import org.kmipkit.ttlv.TtlvValue;
+import org.kmipkit.ttlv.TtlvItemView;
 
 import java.nio.file.Path;
 import java.time.Duration;
@@ -79,8 +82,13 @@ public final class JavaKmipDriver implements AutoCloseable {
 
     AsyncOperationOutcome executeQueryAsyncRequestsForResponsePayloadEvidence(byte[] correlation)
             throws ClientOperationException {
+        return executeQueryAsyncRequestsForResponsePayloadEvidence(correlation, 0x18L);
+    }
+
+    AsyncOperationOutcome executeQueryAsyncRequestsForResponsePayloadEvidence(byte[] correlation,
+            long operationFilter) throws ClientOperationException {
         return client.executeQueryAsyncRequests(CODEC_LIMITS, List.of(correlation.clone()),
-                List.of(0x18L), java.util.OptionalLong.of(2));
+                List.of(operationFilter), java.util.OptionalLong.of(2));
     }
 
     AsyncOperationOutcome executeCancelForResponsePayloadEvidence(byte[] correlation)
@@ -122,6 +130,275 @@ public final class JavaKmipDriver implements AutoCloseable {
                 return CaseOutcome.passed(elapsedMillis(start), statusCode, optionalCode(reasonCode));
             }
             return nonSuccessOutcome(testCase, statusCode, reasonCode, start);
+        } catch (Exception exception) {
+            return exchangeFailure(exception, start);
+        }
+    }
+
+    /** Executes the catalogued Poll response case whose successful result omits asynchronous correlation. */
+    CaseOutcome executePollWithoutCorrelation(CatalogLoader.CatalogCase testCase, byte[] correlation) {
+        long start = System.nanoTime();
+        if (testCase == null || correlation == null || correlation.length == 0
+                || !"test-async-no-recursive-async-poll-cancel".equals(testCase.caseId())) {
+            return CaseOutcome.notRun("The non-recursive asynchronous Poll fixture is invalid.",
+                    elapsedMillis(start));
+        }
+        if (!testCase.execution().protocolVersions().contains(connection.protocolVersion())) {
+            return CaseOutcome.notRun("The asynchronous Poll case is not defined for this KMIP version.",
+                    elapsedMillis(start));
+        }
+
+        try (AsyncOperationOutcome outcome = client.executePoll(correlation.clone(), CODEC_LIMITS)) {
+            var metadata = outcome.metadataV1();
+            if (metadata.operation() != 0x1a || metadata.resultStatus() != 0) {
+                return CaseOutcome.failed("The non-recursive Poll response did not complete successfully.",
+                        elapsedMillis(start), metadata.resultStatus(),
+                        optionalCode(metadata.resultReason().orElse(-1)));
+            }
+            var pollResponse = outcome.pollResponse();
+            if (pollResponse.isEmpty() || pollResponse.orElseThrow().isPending()
+                    || pollResponse.orElseThrow().withAsynchronousCorrelationValue(ignored -> { })) {
+                return CaseOutcome.failed("The terminal Poll response retained asynchronous state.",
+                        elapsedMillis(start), metadata.resultStatus(),
+                        optionalCode(metadata.resultReason().orElse(-1)));
+            }
+            var responsePayload = outcome.responsePayloadTtlv();
+            if (responsePayload.isEmpty()) {
+                return CaseOutcome.failed("The terminal Poll response omitted the original response payload.",
+                        elapsedMillis(start), metadata.resultStatus(),
+                        optionalCode(metadata.resultReason().orElse(-1)));
+            }
+            try (var payload = responsePayload.orElseThrow(); var payloadView = payload.view()) {
+                if (payloadView.itemCount() == 0) {
+                    return CaseOutcome.failed("The terminal Poll response payload was empty.",
+                            elapsedMillis(start), metadata.resultStatus(),
+                            optionalCode(metadata.resultReason().orElse(-1)));
+                }
+            }
+            return CaseOutcome.passed(elapsedMillis(start), metadata.resultStatus(),
+                    optionalCode(metadata.resultReason().orElse(-1)));
+        } catch (org.kmipkit.ClientOperationException exception) {
+            return CaseOutcome.failed("ClientOperationException category=" + exception.categoryCode()
+                    + " cause=" + exception.causeCode() + " delivery=" + exception.deliveryStateCode(),
+                    elapsedMillis(start), null, null);
+        } catch (Exception exception) {
+            return CaseOutcome.failed(exception.getClass().getSimpleName(), elapsedMillis(start), null, null);
+        }
+    }
+
+    CaseOutcome executePollRepeatedPendingToSuccess(byte[] correlation) {
+        long start = System.nanoTime();
+        if (correlation == null || correlation.length == 0) {
+            return CaseOutcome.notRun("The repeated Poll fixture requires a non-empty correlation value.",
+                    elapsedMillis(start));
+        }
+
+        try {
+            for (int pollIndex = 0; pollIndex < 2; pollIndex++) {
+                try (AsyncOperationOutcome outcome = client.executePoll(correlation.clone(), CODEC_LIMITS)) {
+                    var metadata = outcome.metadataV1();
+                    if (metadata.operation() != 0x1a || metadata.resultStatus() != 2) {
+                        return CaseOutcome.failed("A repeated Poll response was not Pending.",
+                                elapsedMillis(start), metadata.resultStatus(),
+                                optionalCode(metadata.resultReason().orElse(-1)));
+                    }
+                    var pollResponse = outcome.pollResponse();
+                    if (pollResponse.isEmpty() || !pollResponse.orElseThrow().isPending()
+                            || !hasCorrelation(correlation,
+                                    pollResponse.orElseThrow()::withAsynchronousCorrelationValue)) {
+                        return CaseOutcome.failed("A Pending Poll response lost its correlation value.",
+                                elapsedMillis(start), metadata.resultStatus(), null);
+                    }
+                    var responsePayload = outcome.responsePayloadTtlv();
+                    if (responsePayload.isPresent()) {
+                        responsePayload.orElseThrow().close();
+                        return CaseOutcome.failed("A Pending Poll response contained a final payload.",
+                                elapsedMillis(start), metadata.resultStatus(), null);
+                    }
+                }
+            }
+
+            try (AsyncOperationOutcome outcome = client.executePoll(correlation.clone(), CODEC_LIMITS)) {
+                var metadata = outcome.metadataV1();
+                if (metadata.operation() != 0x1a || metadata.resultStatus() != 0) {
+                    return CaseOutcome.failed("The terminal Poll response did not succeed.", elapsedMillis(start),
+                            metadata.resultStatus(), optionalCode(metadata.resultReason().orElse(-1)));
+                }
+                var pollResponse = outcome.pollResponse();
+                if (pollResponse.isEmpty() || pollResponse.orElseThrow().isPending()
+                        || !hasCorrelation(correlation,
+                                pollResponse.orElseThrow()::withAsynchronousCorrelationValue)) {
+                    return CaseOutcome.failed("The successful Poll response changed its correlation value.",
+                            elapsedMillis(start), metadata.resultStatus(), null);
+                }
+                var responsePayload = outcome.responsePayloadTtlv();
+                if (responsePayload.isEmpty()) {
+                    return CaseOutcome.failed("The successful Poll response omitted the original Create payload.",
+                            elapsedMillis(start), metadata.resultStatus(), null);
+                }
+                try (var payload = responsePayload.orElseThrow()) {
+                    if (!createResponsePayloadMatches(payload)) {
+                        return CaseOutcome.failed("The terminal Poll payload did not match the Create response.",
+                                elapsedMillis(start), metadata.resultStatus(), null);
+                    }
+                }
+                return CaseOutcome.passed(elapsedMillis(start), metadata.resultStatus(), null);
+            }
+        } catch (Exception exception) {
+            return exchangeFailure(exception, start);
+        }
+    }
+
+    CaseOutcome executeProcessThenPoll(byte[] correlation) {
+        long start = System.nanoTime();
+        if (correlation == null || correlation.length == 0) {
+            return CaseOutcome.notRun("The Process-to-Poll fixture requires a non-empty correlation value.",
+                    elapsedMillis(start));
+        }
+
+        try (AsyncOperationOutcome processOutcome = client.executeProcess(
+                correlation.clone(), CODEC_LIMITS, java.util.OptionalLong.of(1))) {
+            var processMetadata = processOutcome.metadataV1();
+            if (processMetadata.operation() != 0x3a || processMetadata.resultStatus() != 0) {
+                return CaseOutcome.failed("The Process response did not complete synchronously.",
+                        elapsedMillis(start), processMetadata.resultStatus(),
+                        optionalCode(processMetadata.resultReason().orElse(-1)));
+            }
+            var processResponse = processOutcome.processResponse();
+            if (processResponse.isEmpty() || processResponse.orElseThrow().isPending()
+                    || processResponse.orElseThrow()
+                            .withAsynchronousCorrelationValue(ignored -> { })
+                    || processResponse.orElseThrow().payloadMemberCount().isEmpty()
+                    || processResponse.orElseThrow().payloadMemberCount().getAsLong() != 0) {
+                return CaseOutcome.failed("The Process response incorrectly retained asynchronous state.",
+                        elapsedMillis(start), processMetadata.resultStatus(), null);
+            }
+            var processPayload = processOutcome.responsePayloadTtlv();
+            if (processPayload.isEmpty()) {
+                return CaseOutcome.failed("The Process response omitted its required empty operation payload.",
+                        elapsedMillis(start), processMetadata.resultStatus(), null);
+            }
+            try (var payload = processPayload.orElseThrow(); var fields = payload.view()) {
+                if (fields.itemCount() != 0) {
+                    return CaseOutcome.failed("The Process response payload was not empty.",
+                            elapsedMillis(start), processMetadata.resultStatus(), null);
+                }
+            }
+        } catch (Exception exception) {
+            return exchangeFailure(exception, start);
+        }
+
+        try (AsyncOperationOutcome pollOutcome = client.executePoll(correlation.clone(), CODEC_LIMITS)) {
+            var pollMetadata = pollOutcome.metadataV1();
+            if (pollMetadata.operation() != 0x1a || pollMetadata.resultStatus() != 0) {
+                return CaseOutcome.failed("The Poll response did not reflect Process completion.",
+                        elapsedMillis(start), pollMetadata.resultStatus(),
+                        optionalCode(pollMetadata.resultReason().orElse(-1)));
+            }
+            var pollResponse = pollOutcome.pollResponse();
+            if (pollResponse.isEmpty() || pollResponse.orElseThrow().isPending()
+                    || pollResponse.orElseThrow()
+                            .withAsynchronousCorrelationValue(ignored -> { })) {
+                return CaseOutcome.failed("The terminal Poll response retained asynchronous state.",
+                        elapsedMillis(start), pollMetadata.resultStatus(), null);
+            }
+            var responsePayload = pollOutcome.responsePayloadTtlv();
+            if (responsePayload.isEmpty()) {
+                return CaseOutcome.failed("The terminal Poll response omitted the original Create payload.",
+                        elapsedMillis(start), pollMetadata.resultStatus(), null);
+            }
+            try (var payload = responsePayload.orElseThrow()) {
+                if (!createResponsePayloadMatches(payload)) {
+                    return CaseOutcome.failed("The terminal Poll payload did not match the Create response.",
+                            elapsedMillis(start), pollMetadata.resultStatus(), null);
+                }
+            }
+            return CaseOutcome.passed(elapsedMillis(start), pollMetadata.resultStatus(), null);
+        } catch (Exception exception) {
+            return exchangeFailure(exception, start);
+        }
+    }
+
+    private static boolean createResponsePayloadMatches(TtlvStructure payload) {
+        try (TtlvStructureView fields = payload.view()) {
+            if (fields.itemCount() != 2) return false;
+            try (TtlvItemView objectType = fields.itemAt(0);
+                    Tag tag = objectType.tag();
+                    var value = objectType.value()) {
+                if (tag.raw() != 0x420057 || objectType.itemType() != TtlvItemType.Enumeration
+                        || value.enumeration() != 2) return false;
+            }
+            try (TtlvItemView uniqueIdentifier = fields.itemAt(1);
+                    Tag tag = uniqueIdentifier.tag();
+                    var value = uniqueIdentifier.value()) {
+                return tag.raw() == 0x420094 && uniqueIdentifier.itemType() == TtlvItemType.TextString
+                        && value.byteLength() > 0;
+            }
+        }
+    }
+
+    CaseOutcome executePollForFinalCreateFailure(byte[] correlation) {
+        long start = System.nanoTime();
+        if (correlation == null || correlation.length == 0) {
+            return CaseOutcome.notRun("The final-failure Poll fixture requires a non-empty correlation value.",
+                    elapsedMillis(start));
+        }
+
+        try (AsyncOperationOutcome outcome = client.executePoll(correlation.clone(), CODEC_LIMITS)) {
+            var metadata = outcome.metadataV1();
+            long reason = metadata.resultReason().orElse(-1);
+            if (metadata.operation() != 0x1a || metadata.resultStatus() != 1
+                    || reason != KmipValues.ResultReason.INVALID_OBJECT_TYPE) {
+                return CaseOutcome.failed("The final Poll response did not preserve the Create failure status.",
+                        elapsedMillis(start), metadata.resultStatus(), optionalCode(reason));
+            }
+            var pollResponse = outcome.pollResponse();
+            if (pollResponse.isEmpty() || pollResponse.orElseThrow().isPending()
+                    || !hasCorrelation(correlation, pollResponse.orElseThrow()::withAsynchronousCorrelationValue)) {
+                return CaseOutcome.failed("The final Poll response did not preserve its terminal correlation value.",
+                        elapsedMillis(start), metadata.resultStatus(), optionalCode(reason));
+            }
+            var responsePayload = outcome.responsePayloadTtlv();
+            if (responsePayload.isPresent()) {
+                responsePayload.orElseThrow().close();
+                return CaseOutcome.failed("The failed Create response unexpectedly contained a success payload.",
+                        elapsedMillis(start), metadata.resultStatus(), optionalCode(reason));
+            }
+            return CaseOutcome.passed(elapsedMillis(start), metadata.resultStatus(), optionalCode(reason));
+        } catch (Exception exception) {
+            return exchangeFailure(exception, start);
+        }
+    }
+
+    CaseOutcome executePollForUnknownCorrelation(byte[] correlation) {
+        long start = System.nanoTime();
+        if (correlation == null || correlation.length == 0) {
+            return CaseOutcome.notRun("The unknown-correlation Poll fixture requires a non-empty value.",
+                    elapsedMillis(start));
+        }
+
+        try (AsyncOperationOutcome outcome = client.executePoll(correlation.clone(), CODEC_LIMITS)) {
+            var metadata = outcome.metadataV1();
+            long reason = metadata.resultReason().orElse(-1);
+            if (metadata.operation() != 0x1a || metadata.resultStatus() != 1
+                    || reason != KmipValues.ResultReason.INVALID_ASYNCHRONOUS_CORRELATION_VALUE) {
+                return CaseOutcome.failed("The unknown-correlation Poll did not preserve its typed failure.",
+                        elapsedMillis(start), metadata.resultStatus(), optionalCode(reason));
+            }
+            var pollResponse = outcome.pollResponse();
+            if (pollResponse.isEmpty() || pollResponse.orElseThrow().isPending()
+                    || !hasCorrelation(correlation,
+                            pollResponse.orElseThrow()::withAsynchronousCorrelationValue)) {
+                return CaseOutcome.failed("The unknown-correlation Poll response did not preserve its correlation.",
+                        elapsedMillis(start), metadata.resultStatus(), optionalCode(reason));
+            }
+            var responsePayload = outcome.responsePayloadTtlv();
+            if (responsePayload.isPresent()) {
+                responsePayload.orElseThrow().close();
+                return CaseOutcome.failed("The failed unknown-correlation Poll unexpectedly returned a payload.",
+                        elapsedMillis(start), metadata.resultStatus(), optionalCode(reason));
+            }
+            return CaseOutcome.passed(elapsedMillis(start), metadata.resultStatus(), optionalCode(reason));
         } catch (Exception exception) {
             return exchangeFailure(exception, start);
         }

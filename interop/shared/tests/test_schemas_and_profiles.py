@@ -99,8 +99,8 @@ class InteropSharedTests(unittest.TestCase):
         self.assertEqual(17, stats.get("batch_scenarios"))
         self.assertEqual(17, stats.get("asynchronous_scenarios"))
         self.assertEqual(3, stats.get("exhaustive_bitmask_families"))
-        self.assertEqual(2560, stats.get("normative_targets"))
-        self.assertEqual(2689, stats.get("total_cases"))
+        self.assertEqual(2568, stats.get("normative_targets"))
+        self.assertEqual(2697, stats.get("total_cases"))
 
         categories = {tc.get("category") for tc in catalog.get("test_cases", [])}
         self.assertIn("protocol_and_session", categories)

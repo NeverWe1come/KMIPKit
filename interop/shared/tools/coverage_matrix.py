@@ -122,6 +122,14 @@ def _route_excludes_target(case: dict, route: dict, target: dict | None) -> bool
     )
 
 
+def _target_applies_to_version(target: dict | None, version: str) -> bool:
+    """Keep version-specific payload fields in their protocol version only."""
+    if (target or {}).get("kind") != "operation_payload_field":
+        return True
+    versions = (target or {}).get("protocol_versions")
+    return not isinstance(versions, list) or version in versions
+
+
 def _is_generic_tag_inventory_case(case: dict) -> bool:
     return (case.get("execution", {}).get("mode") == "local_model"
             and _norm(case.get("requires", {}).get("enum_type", "")) == "tag")
@@ -347,6 +355,8 @@ def iter_cells(catalog: dict, manifest: dict, *, languages: tuple[str, ...] = LA
                 for obligation in obligations:
                     target_id = obligation["target_id"]
                     target = normative_targets.get(target_id)
+                    if not _target_applies_to_version(target, version):
+                        continue
                     target_routes = [route for route in routes
                                      if version in route["protocol_versions"]
                                      and not _route_excludes_target(case, route, target)
@@ -362,7 +372,9 @@ def iter_cells(catalog: dict, manifest: dict, *, languages: tuple[str, ...] = LA
                     if version not in route["protocol_versions"]:
                         continue
                     route_obligations = [obligation for obligation in obligations
-                                         if not _route_excludes_target(
+                                         if _target_applies_to_version(
+                                             normative_targets.get(obligation["target_id"]), version)
+                                         and not _route_excludes_target(
                                              case, route, normative_targets.get(obligation["target_id"]))
                                          and ("*" in route["normative_target_ids"]
                                               or obligation["target_id"] in route["normative_target_ids"])]

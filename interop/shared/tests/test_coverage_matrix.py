@@ -318,6 +318,51 @@ class CoverageMatrixTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, r"two-version-case target PING \(rust, KMIP 2.1\)"):
             list(iter_cells(catalog, manifest, languages=("rust",)))
 
+    def test_target_protocol_versions_limit_case_route_cells(self):
+        case = {
+            "case_id": "versioned-payload-case",
+            "category": "normative_inventory",
+            "operation": "Ping",
+            "requires": {
+                "normative_target_id": "PING",
+                "normative_target_ids": ["PAYLOAD_20", "PAYLOAD_21"],
+            },
+            "execution": {"protocol_versions": ["2.0", "2.1"]},
+        }
+        catalog = {
+            "test_cases": [case],
+            "normative_targets": [
+                {"kind": "operation", "name": "Ping", "target_id": "PING",
+                 "protocol_versions": ["2.0", "2.1"]},
+                {"kind": "operation_payload_field", "name": "Payload 2.0", "target_id": "PAYLOAD_20",
+                 "protocol_versions": ["2.0"]},
+                {"kind": "operation_payload_field", "name": "Payload 2.1", "target_id": "PAYLOAD_21",
+                 "protocol_versions": ["2.1"]},
+            ],
+        }
+        manifest = {
+            "routes": [{
+                "route_id": "rust.ping",
+                "language": "rust",
+                "case_categories": ["normative_inventory"],
+                "protocol_versions": ["2.0", "2.1"],
+                "normative_target_ids": ["PING", "PAYLOAD_20", "PAYLOAD_21"],
+                "mode": "local",
+                "actions": ["construct"],
+                "combinations": [{"encoding": "TTLV", "transport": None}],
+                "public_api_symbol": "PingRequest::new",
+                "artifact_commit": "a" * 40,
+                "execution_route_id": None,
+            }],
+            "execution_routes": [],
+            "unavailable": [],
+        }
+
+        cells = list(iter_cells(catalog, manifest, languages=("rust",)))
+        payload_cells = {(cell["target_id"], cell["protocol_version"]) for cell in cells
+                         if cell["target_id"].startswith("PAYLOAD_")}
+        self.assertEqual({("PAYLOAD_20", "2.0"), ("PAYLOAD_21", "2.1")}, payload_cells)
+
     def test_multistep_scenario_requires_every_operation_route_for_each_version(self):
         case = {
             "case_id": "two-operation-case",
