@@ -118,3 +118,22 @@ claiming that an accessor ran for an item the server did not return.
   report: 44,226 invoked, 16 not applicable, zero failed, and 27,341 pending.
   The selected scope is complete; global matrix validation remains incomplete.
   Report run ID: `java-controlled-query-cd6c8317-2b8d-4df2-b3af-3153117e617c`.
+
+## Follow-up: Java Cryptographic Parameters algorithm setters
+
+- **Red — `3cc4f7c0f`** requires construction evidence for
+  `CryptographicParameters.Builder.cryptographicAlgorithm` and
+  `.digitalSignatureAlgorithm` under the corresponding Attribute cases for
+  KMIP 2.0 and 2.1. The controlled-peer test failed on the missing
+  Cryptographic Algorithm builder event.
+- **Green — `406a3016b`** selects source-catalogued Enumeration values, invokes
+  each public builder setter, builds the typed model, and verifies that its
+  TTLV structure retains the selected tag and raw value. All four
+  version-specific route assertions pass.
+- **Refactor** documents that the Attribute cases are sourced from OASIS KMIP
+  2.0/2.1 §§4.13 and 4.22, while the corresponding typed structure fields are
+  defined in §4.16, Table 59. The focused Java controlled-peer test passed in
+  2m23s. Selected report validation is 44,246/71,583 cells: 44,230 invoked,
+  16 not applicable, zero failed, and 27,337 pending. Run ID:
+  `java-controlled-query-b952d296-6108-40d7-afbd-f8284fcb5004`. The global
+  Java matrix remains incomplete.
