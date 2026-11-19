@@ -154,3 +154,19 @@ claiming that an accessor ran for an item the server did not return.
   16 not applicable, zero failed, and 27,331 pending. Run ID:
   `java-controlled-query-0c0feceb-966b-454d-a88b-5429617d1941`. The full Java
   matrix remains incomplete.
+
+## Follow-up: Java Unique Identifier typed wrappers
+
+- **Red — `cfe896055`** requires `TypedAttribute.create`,
+  `TypedAttribute.fromItem`, and `AttributeSet.tryNew` evidence for the Unique
+  Identifier case in KMIP 2.0 and 2.1. The controlled-peer test failed because
+  those six wrapper cells were absent.
+- **Green — `dec6d784f`** exercises the Text String form through all three
+  public typed routes and verifies the preserved identifier bytes.
+- **Refactor** records the selected source-defined form: OASIS KMIP 2.1 §4.58,
+  Table 145 permits a Text String as the unique identifier of a Managed
+  Object. The focused Java controlled-peer test passed in 2m19s. Selected
+  report validation is 44,258/71,583 cells: 44,242 invoked, 16 not applicable,
+  zero failed, and 27,325 pending. Run ID:
+  `java-controlled-query-d141043b-595a-4283-9ff4-f01b4365dcde`. The full Java
+  matrix remains incomplete.
