@@ -4403,3 +4403,25 @@ routes and the ledger comparison passes. Selected evidence validates
 failures. The ledger records 71,583 planned, 44,131 executed, and 27,452
 pending cells. The full matrix remains incomplete, so the Java stack stays
 WIP.
+
+## Java unknown-correlation Poll routes — 2026-11-19
+
+The controlled Java peer now executes `test-async-unknown-correlation-rejected`
+for KMIP 2.0 and 2.1. Each Poll uses the catalogued unissued correlation value
+and receives `OperationFailed` with `Invalid Asynchronous Correlation Value`.
+The driver checks the typed result status and reason, confirms the response
+correlation matches the request, and rejects a success payload. This route runs
+over TTLV, JSON, and XML on raw TLS and HTTPS; the fixture records local Poll
+construction, encoding, and typed outcome routes. References: OASIS KMIP 2.0
+§§6.1.36, 6.1.38, 8.2, 8.3, 8.6, 9.1, and 9.2; KMIP 2.1 §§6.1.38, 8.2, 8.3,
+8.6, 9.1, and 9.2. The controlled peer establishes Java route behavior, not
+external KMS interoperability.
+
+Red `5675b351c` requires 18 wire and three local route cells per version (42
+cells across both versions). Green `013d30dc6` executes the exchanges and
+verifies the typed failure. The focused controlled-peer test passes; shared route, schema, and
+capability tests pass 112/112; the capability audit accepts 1,511 routes; and
+ledger comparison passes. Selected evidence validates 44,236/44,236 cells:
+44,220 invocations, 16 not-applicable cells, and zero failures. The ledger
+records 71,583 planned, 44,236 executed, and 27,347 pending cells. The full
+matrix remains incomplete, so the Java stack remains WIP.
