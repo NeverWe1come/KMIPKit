@@ -343,3 +343,21 @@ Full report `c-route-4060b6ed-3d36-4391-90f5-996495a217d5` (SHA-256
 66,280 planned cells, 44,342 invoked, 52 not applicable, zero failed, and
 21,886 pending. The schema and scoped shared validator pass; the complete C
 route matrix remains open.
+
+
+### C Encrypt rejection on a Pre-Active key
+
+KMIPKIT-0092-FR-003/FR-005: C executes the catalogued
+`test-neg-encrypt-preactive-key` through Create → Encrypt (expected
+OperationFailed / CryptographicFailure) → Revoke → Destroy. The client preserves
+the typed failure result and confirms the failed Encrypt response accessor
+exposes no output data. The controlled peer validates both protocol versions
+and all six encoding/transport combinations; the focused test passes 12/12 and
+CTest passes 7/7. Red `52a8261ec`, Green `ec4639896`, generator-contract Red
+`b70158937`, and Green `4b45e1d09` record the TDD cycle.
+
+Full report `c-route-93080d73-9f3e-4d43-9d96-8b93b958df48` (SHA-256
+`91f3ce3cc0c0a8b143bfa4cc8c16a4ec6a8f6411c9b142977bb074b22c8b9a55`) records
+66,280 planned cells, 44,380 invoked, 52 not applicable, zero failed, and
+21,848 pending. The schema and scoped shared validator pass; the C route matrix
+remains incomplete.

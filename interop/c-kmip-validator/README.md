@@ -904,3 +904,34 @@ The full report is `c-route-4060b6ed-3d36-4391-90f5-996495a217d5` at
 `all_invocations_passed=true`. Full-matrix validation remains incomplete. The
 two object cases contribute 96 report events, including their prior local
 construction/decode events, and close 76 previously pending cells.
+
+
+### C Encrypt on a Pre-Active key
+
+The installed C consumer now executes catalog case
+`test-neg-encrypt-preactive-key` as Create → Encrypt → Revoke → Destroy. It
+leaves the key Pre-Active, requires the controlled peer to return
+OperationFailed / CryptographicFailure (10), checks cleanup responses, and
+confirms the typed Encrypt response accessor returns no output fields on the
+failed result. The catalog permits CryptographicFailure or InvalidField; this
+fixture uses the former. All 12 combinations across KMIP 2.0/2.1, TTLV/JSON/XML,
+and raw TLS/HTTPS pass. This is controlled-fixture evidence, not an external
+KMS result.
+
+Red `52a8261ec` requires the negative route without a test-only peer override;
+Green `ec4639896` implements the C request/result handling and the controlled
+peer scenario. A second Red `b70158937` established that full-matrix generation
+must derive this expected rejection from the catalog; Green `4b45e1d09` wires
+that catalog-backed expectation into the route runner. Full CTest passes 7/7
+in 155.52 seconds.
+
+Full report `c-route-93080d73-9f3e-4d43-9d96-8b93b958df48`
+(`build/route-execution-evidence-c-current.json`), SHA-256
+`91f3ce3cc0c0a8b143bfa4cc8c16a4ec6a8f6411c9b142977bb074b22c8b9a55`, records
+66,280 planned cells: 44,380 invoked, 52 not applicable, zero failed, and
+21,848 pending. Schema validation passes. The shared validator accepts all
+44,432 emitted events with `selected_scope_complete=true` and
+`all_invocations_passed=true`; the full matrix remains incomplete. This route
+closes 38 pending cells: 36 network cells and two typed Encrypt response
+accessor decodes; the 42-event case scope also contains four local construction
+and generic TTLV decode events already counted in the earlier report.
