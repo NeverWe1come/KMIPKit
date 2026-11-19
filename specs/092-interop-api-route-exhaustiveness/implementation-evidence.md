@@ -53,6 +53,27 @@ No Cosmian KMS, CipherTrust, or ESKM endpoint was available. Cross-language
 parity is also pending the joint matrix using identical release artifacts and
 fixtures. Those results are not inferred from this Python-only run.
 
+## Follow-up: Stop omitted typed response accessors
+
+The Batch Stop route matrix now treats the second `GetResponse` accessor as
+not applicable when the controlled server correctly omits the unprocessed
+second response. It records no invocation for that accessor and retains the
+explicit `stop_unprocessed_response_omitted` reason. All returned response
+items still require successful accessor execution.
+
+Red `480809b27` adds a focused check for the omitted typed accessor; the
+existing broad accessor test failed because it required those two versioned
+cells to be invoked. Green `629cb19ad` requires exactly those two cells to be
+not applicable and verifies zero invocation count and no invocation ID. The
+two focused tests pass, and the complete Python consumer suite passes 135
+tests in 278.391 seconds with the pinned wheel installed in an isolated
+Python 3.12 environment (artifact SHA-256
+`18043fee5e92893bf4d3ac495552121ac8edc7cbc7f6e77472143e2b6ccb7d78`).
+
+References: OASIS KMIP 2.0 §11.5, Table 396; KMIP 2.1 §11.5, Table 434; and
+KMIPKIT-0092-FR-007. This test adjustment records the omitted response without
+claiming that an accessor ran for an item the server did not return.
+
 ## Follow-up: strict peer-state evidence
 
 - **Red — `76cdb53f7`** adds assertions that Python Stop and Continue events
