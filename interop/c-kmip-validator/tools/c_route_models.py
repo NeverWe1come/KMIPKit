@@ -462,7 +462,6 @@ class ModelCases:
                                           public_api_symbol: str, case: dict) -> dict | None:
         target_ids = {
             'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-COUNT',
-            'KMIPKIT-ELEM-OP-C2S-GET',
         }
         if (case.get('case_id') != 'test-batch-count-zero-rejected'
                 or target.get('target_id') not in target_ids

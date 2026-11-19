@@ -641,6 +641,21 @@ static bool archive_response_matches_key(
         same_text_identifier(created_identifier, &archived_identifier);
 }
 
+static bool recover_response_matches_key(
+    kmipkit_client_batch_item_response_t *response_item,
+    const kmipkit_unique_identifier_v1_t *created_identifier,
+    int32_t *out_status) {
+    uint8_t present = 0;
+    kmipkit_unique_identifier_v1_t recovered_identifier = {
+        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
+        .abi_version = 1
+    };
+    *out_status = kmipkit_client_batch_item_response_recover(
+        response_item, &present, &recovered_identifier);
+    return *out_status == 0 && present &&
+        same_text_identifier(created_identifier, &recovered_identifier);
+}
+
 static bool structure_view_find_value(kmipkit_ttlv_structure_view_t *structure,
                                       uint32_t expected_tag,
                                       uint8_t expected_type,
@@ -5621,6 +5636,8 @@ static kmip_execution_outcome_t execute_created_key_action(kmip_live_client_t *c
     /* Archive follows KMIP 2.0/2.1 §6.1.4; crypto fixtures follow §§6.1.11,
      * 6.1.17, and 6.1.31–6.1.33. Each fixture isolates and cleans up its key. */
     bool archive = operation == KMIPKIT_ENUMERATION_OPERATION_ARCHIVE;
+    bool recover = operation == KMIPKIT_ENUMERATION_OPERATION_RECOVER;
+    bool archived_lifecycle = archive || recover;
     bool decrypt = operation == KMIPKIT_ENUMERATION_OPERATION_DECRYPT;
     bool mac_verify = operation == KMIPKIT_ENUMERATION_OPERATION_MAC_VERIFY;
     bool mac = operation == KMIPKIT_ENUMERATION_OPERATION_MAC || mac_verify;
@@ -5633,6 +5650,10 @@ static kmip_execution_outcome_t execute_created_key_action(kmip_live_client_t *c
     const uint32_t archive_operations[] = {
         KMIPKIT_ENUMERATION_OPERATION_CREATE, KMIPKIT_ENUMERATION_OPERATION_ARCHIVE,
         KMIPKIT_ENUMERATION_OPERATION_REVOKE, KMIPKIT_ENUMERATION_OPERATION_DESTROY
+    };
+    const uint32_t recover_operations[] = {
+        KMIPKIT_ENUMERATION_OPERATION_CREATE, KMIPKIT_ENUMERATION_OPERATION_ARCHIVE,
+        KMIPKIT_ENUMERATION_OPERATION_RECOVER, KMIPKIT_ENUMERATION_OPERATION_DESTROY
     };
     static const char *const encrypt_item_ids[] = {
         "encrypt-create", "encrypt-activate", "encrypt-target", "encrypt-revoke", "encrypt-destroy"
@@ -5650,15 +5671,21 @@ static kmip_execution_outcome_t execute_created_key_action(kmip_live_client_t *c
     static const char *const archive_item_ids[] = {
         "archive-create", "archive-target", "archive-revoke", "archive-destroy"
     };
-    const uint32_t *operations = archive ? archive_operations : active_key_operations;
-    size_t operation_count = archive ? 4U : 5U;
-    size_t target_index = archive ? 1U : 2U;
+    static const char *const recover_item_ids[] = {
+        "recover-create", "recover-archive", "recover-target", "recover-destroy"
+    };
+    const uint32_t *operations = recover ? recover_operations :
+        archive ? archive_operations : active_key_operations;
+    size_t operation_count = (archive || recover) ? 4U : 5U;
+    size_t target_index = recover ? 2U : archive ? 1U : 2U;
     size_t revoke_index = archive ? 2U : 3U;
-    size_t destroy_index = archive ? 3U : 4U;
+    size_t destroy_index = (archive || recover) ? 3U : 4U;
     const char *const *item_ids = mac_verify ? mac_verify_item_ids :
+        recover ? recover_item_ids :
         archive ? archive_item_ids :
         mac ? mac_item_ids : decrypt ? decrypt_item_ids : encrypt_item_ids;
     const char *operation_name = mac_verify ? "MAC Verify" :
+        recover ? "Recover" :
         archive ? "Archive" : mac ? "MAC" : decrypt ? "Decrypt" : "Encrypt";
     kmip_execution_outcome_t outcome = {.executed = true};
     kmipkit_client_batch_t *batch = NULL;
@@ -5697,21 +5724,22 @@ static kmip_execution_outcome_t execute_created_key_action(kmip_live_client_t *c
     if (status == 0 && !append_ttlv_value(client, &attributes, UINT32_C(0x42002C), &value)) status = -1;
     if (status == 0) status = kmipkit_client_batch_item_create(
         KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY, attributes, NULL, &items[0]);
-    /* Archive has no Active-state precondition in KMIP §6.1.4 or this catalog. */
-    if (status == 0 && !archive)
+    /* Archive/Recover use the archived-key lifecycle from KMIP §6.1.4 and
+     * §6.1.38 (2.0) / §6.1.42 (2.1); neither requires Activate first. */
+    if (status == 0 && !archived_lifecycle)
         status = kmipkit_client_batch_item_activate(&placeholder, &items[1]);
     if (status == 0) status = kmipkit_ttlv_structure_create(&parameters);
-    if (status == 0 && !mac && !archive) status = kmipkit_ttlv_value_enumeration(
+    if (status == 0 && !mac && !archived_lifecycle) status = kmipkit_ttlv_value_enumeration(
         aes256_cbc ? KMIPKIT_ENUMERATION_BLOCK_CIPHER_MODE_CBC :
                      KMIPKIT_ENUMERATION_BLOCK_CIPHER_MODE_ECB, &value);
-    if (status == 0 && !mac && !archive && !append_ttlv_value(
+    if (status == 0 && !mac && !archived_lifecycle && !append_ttlv_value(
             client, &parameters, UINT32_C(0x420011), &value)) status = -1;
-    if (status == 0 && !mac && !archive) status = kmipkit_ttlv_value_enumeration(
+    if (status == 0 && !mac && !archived_lifecycle) status = kmipkit_ttlv_value_enumeration(
         KMIPKIT_ENUMERATION_PADDING_METHOD_NONE, &value);
-    if (status == 0 && !mac && !archive && !append_ttlv_value(
+    if (status == 0 && !mac && !archived_lifecycle && !append_ttlv_value(
             client, &parameters, UINT32_C(0x42005F), &value)) status = -1;
-    if (status == 0 && !archive) status = kmipkit_ttlv_value_enumeration(key_algorithm, &value);
-    if (status == 0 && !archive &&
+    if (status == 0 && !archived_lifecycle) status = kmipkit_ttlv_value_enumeration(key_algorithm, &value);
+    if (status == 0 && !archived_lifecycle &&
         !append_ttlv_value(client, &parameters, UINT32_C(0x420028), &value)) status = -1;
     const uint8_t *input = decrypt ?
         (aes256_cbc ? BATCH_CRYPTO_AES256_CBC_CIPHERTEXT : BATCH_CRYPTO_CIPHERTEXT) :
@@ -5724,7 +5752,7 @@ static kmip_execution_outcome_t execute_created_key_action(kmip_live_client_t *c
         .data = cbc_iv_bytes,
         .length = sizeof(cbc_iv_bytes),
     };
-    if (status == 0 && !archive) status = batch_crypto_secret_value(
+    if (status == 0 && !archived_lifecycle) status = batch_crypto_secret_value(
         input, sizeof(BATCH_CRYPTO_PLAINTEXT), &plaintext);
     if (status == 0 && mac_verify) status = kmipkit_client_batch_item_mac_verify(
         &placeholder, parameters, plaintext, &mac_data, NULL, 0, 0, &items[target_index]);
@@ -5735,12 +5763,16 @@ static kmip_execution_outcome_t execute_created_key_action(kmip_live_client_t *c
         NULL, NULL, 0, 0, NULL, &items[target_index]);
     else if (status == 0 && archive) status = kmipkit_client_batch_item_archive(
         &placeholder, &items[target_index]);
-    else if (status == 0) {
+    else if (status == 0 && recover) {
+        status = kmipkit_client_batch_item_archive(&placeholder, &items[1]);
+        if (status == 0) status = kmipkit_client_batch_item_recover(
+            &placeholder, &items[target_index]);
+    } else if (status == 0) {
         status = kmipkit_client_batch_item_encrypt(
             &placeholder, parameters, plaintext, aes256_cbc ? &cbc_iv : NULL,
             NULL, 0, 0, NULL, &items[target_index]);
     }
-    if (status == 0) status = create_revocation_item(&placeholder, &items[revoke_index]);
+    if (status == 0 && !recover) status = create_revocation_item(&placeholder, &items[revoke_index]);
     if (status == 0) status = kmipkit_client_batch_item_destroy(&placeholder, &items[destroy_index]);
     char validation_diagnostic[256] = {0};
     for (size_t index = 0; status == 0 && index < operation_count; ++index) {
@@ -5815,13 +5847,15 @@ static kmip_execution_outcome_t execute_created_key_action(kmip_live_client_t *c
         object_type == KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY &&
         identifier.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING &&
         identifier.text_data && identifier.text_length &&
-        (archive ? archive_response_matches_key(responses[1], &identifier, &status) :
+        (recover ? (archive_response_matches_key(responses[1], &identifier, &status) &&
+                    recover_response_matches_key(responses[target_index], &identifier, &status)) :
+         archive ? archive_response_matches_key(responses[1], &identifier, &status) :
           (activate_response_matches_created_key(responses[1], &identifier, &status) &&
           created_key_crypto_response_matches(responses[2], &identifier, operation,
                                               aes256_cbc, &status))) &&
-        revoke_response_matches_created_key(responses[revoke_index], &identifier, &status) &&
+        (recover || (revoke_response_matches_created_key(responses[revoke_index], &identifier, &status) &&
         response_ttlv_matches_identifier(responses[revoke_index], kmipkit_client_batch_item_response_revoke_ttlv,
-                                         &identifier, &status) &&
+                                         &identifier, &status))) &&
         destroy_response_matches_key(responses[destroy_index], &identifier, &status);
     outcome.success = valid;
     outcome.library_failed = status != 0;
@@ -8684,6 +8718,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         return execute_created_key_action(client, KMIPKIT_ENUMERATION_OPERATION_ENCRYPT, false);
     if (strcmp(test_case->case_id, "test-op-archive") == 0)
         return execute_created_key_action(client, KMIPKIT_ENUMERATION_OPERATION_ARCHIVE, false);
+    if (strcmp(test_case->case_id, "test-op-recover") == 0)
+        return execute_created_key_action(client, KMIPKIT_ENUMERATION_OPERATION_RECOVER, false);
     if (strcmp(test_case->case_id, "test-op-decrypt") == 0)
         return execute_created_key_action(client, KMIPKIT_ENUMERATION_OPERATION_DECRYPT, false);
     if (strcmp(test_case->case_id, "test-crypto-decrypt-aes-256-cbc") == 0)

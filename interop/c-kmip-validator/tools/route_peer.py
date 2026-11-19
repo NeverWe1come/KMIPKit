@@ -64,6 +64,7 @@ MODIFY_ATTRIBUTE_CURRENT_MISMATCH_CASE = 'test-neg-modify-attribute-current-mism
 MODIFY_ATTRIBUTE_CURRENT_MISMATCH_REASON = 32
 ENCRYPT_ITEM_IDS = (b'encrypt-create', b'encrypt-activate', b'encrypt-target',
                     b'encrypt-revoke', b'encrypt-destroy')
+RECOVER_ITEM_IDS = (b'recover-create', b'recover-archive', b'recover-target', b'recover-destroy')
 DECRYPT_ITEM_IDS = (b'decrypt-create', b'decrypt-activate', b'decrypt-target',
                     b'decrypt-revoke', b'decrypt-destroy')
 MAC_ITEM_IDS = (b'mac-create', b'mac-activate', b'mac-target', b'mac-revoke', b'mac-destroy')
@@ -430,6 +431,7 @@ RECIPES = {
     'test-v20-reject-set-constraints': ((55,), 'set_constraints_v20_boundary'),
     'test-op-create': ((1, 20), 'create'),
     'test-op-archive': ((1, 21, 19, 20), 'archive'),
+    'test-op-recover': ((1, 21, 22, 20), 'recover'),
     'test-op-export': ((1, 43, 19, 20), 'export'),
     'test-norm-payload-client-export-request-20-001': ((1, 43, 19, 20), 'export'),
     'test-norm-payload-client-export-request-20-002': ((1, 43, 19, 20), 'export'),
@@ -1906,6 +1908,17 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
                        if child[0] == UNIQUE_IDENTIFIER_TAG] if len(payloads) == 1 else []
         if len(identifiers) != 1 or not is_id_placeholder_identifier(identifiers[0]):
             raise ValueError('fixture_archive_identifier_mismatch')
+    if selected_recipe[1] == 'recover':
+        for operation in (21, 22):
+            matching_items = [item for item in node[2]
+                              if item[0] == BATCH_ITEM_TAG and numbers(item, 0x42005C) == [operation]]
+            payloads = [child for child in matching_items[0][2]
+                        if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1] \
+                if len(matching_items) == 1 else []
+            identifiers = [child for child in payloads[0][2]
+                           if child[0] == UNIQUE_IDENTIFIER_TAG] if len(payloads) == 1 else []
+            if len(identifiers) != 1 or not is_id_placeholder_identifier(identifiers[0]):
+                raise ValueError('fixture_recover_identifier_mismatch')
     if selected_recipe[1] == 'encrypt_aes256_cbc':
         assert_crypto_request(node, False, aes256_cbc=True)
     if selected_recipe[1] == 'decrypt_aes256_cbc':
@@ -2423,7 +2436,7 @@ def assert_placeholder_usage(node, case_id):
                        'test-batch-order-omitted-defaults-true', 'test-op-encrypt',
                        'test-crypto-encrypt-aes-256-cbc', 'test-crypto-decrypt-aes-256-cbc',
                        'test-op-decrypt', 'test-op-mac', 'test-op-mac-verify',
-                       'test-op-archive', 'test-op-pkcs#11', 'test-op-obtain-lease'):
+                       'test-op-archive', 'test-op-recover', 'test-op-pkcs#11', 'test-op-obtain-lease'):
         return
     batch_items = [child for child in node[2]
                    if child[0] == BATCH_ITEM_TAG and child[1] == 1]
@@ -3812,7 +3825,7 @@ class PeerState:
                 identifier = matching_identifiers[0]
                 placeholder = identifier
                 effect = 'located'
-            elif operation in (9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 31, 32, 33, 34, 35, 36, 43, 48, 49, 51, 56):
+            elif operation in (9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 31, 32, 33, 34, 35, 36, 43, 48, 49, 51, 56):
                 state = self.objects.get(identifier)
                 if state is None:
                     status, reason, effect = 1, 55, 'object_not_found'
@@ -3820,7 +3833,14 @@ class PeerState:
                     # KMIP §6.1.4 defines Archive as a client's indication;
                     # the KMS policy decides whether and when archival occurs.
                     self.archive_requests.append(identifier)
+                    self.objects[identifier] = 'archived'
                     effect = 'archive_requested'
+                elif operation == 22:
+                    if state != 'archived' or identifier not in self.archive_requests:
+                        raise ValueError('fixture_recover_without_archive_mismatch')
+                    self.objects[identifier] = 'pre_active'
+                    self.archive_requests.remove(identifier)
+                    effect = 'recovered'
                 elif operation == 17 and self.usage_allocation_ready:
                     payloads = [child for child in item[2]
                                 if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
@@ -3986,7 +4006,13 @@ def verify_lifecycle(operations, response_tree):
             effects.append('activated')
         elif operation == 21:
             # KMIP §6.1.4 leaves whether and when archival occurs to KMS policy.
+            state = 'archived'
             effects.append('archive_requested')
+        elif operation == 22:
+            if state != 'archived':
+                raise ValueError('fixture_recover_without_archive_mismatch')
+            state = 'pre_active'
+            effects.append('recovered')
         elif operation in (31, 32, 35, 36):
             if state != 'active':
                 raise ValueError('fixture_registered_crypto_key_not_active')
@@ -4061,6 +4087,20 @@ def verify_archive_response(response_tree):
     if (len(identifiers) != 1 or identifiers[0][1] != 7 or
             identifiers[0][2] != b'fixture-key-1'):
         raise ValueError('fixture_archive_response_identifier_mismatch')
+
+
+def verify_recover_response(response_tree):
+    """Check the required KMIP v2.0 §6.1.38/v2.1 §6.1.42 Recover identifier."""
+    items = [child for child in response_tree[2]
+             if child[0] == BATCH_ITEM_TAG and child[1] == 1 and
+             numbers(child, 0x42005C) == [22]]
+    payloads = [child for child in items[0][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+    identifiers = [child for child in payloads[0][2]
+                    if child[0] == UNIQUE_IDENTIFIER_TAG] if len(payloads) == 1 else []
+    if (len(identifiers) != 1 or identifiers[0][1] != 7 or
+            identifiers[0][2] != b'fixture-key-1'):
+        raise ValueError('fixture_recover_response_identifier_mismatch')
 
 
 
@@ -4682,6 +4722,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             response_item_ids = (
                                                 b'archive-create', b'archive-target',
                                                 b'archive-revoke', b'archive-destroy')
+                                        elif recipe[1] == 'recover':
+                                            response_item_ids = RECOVER_ITEM_IDS
                                         elif recipe[1] == 'certify':
                                             response_item_ids = CERTIFY_ITEM_IDS
                                         elif recipe[1] == 'recertify':
@@ -5087,6 +5129,10 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             verify_lifecycle(recipe[0], response_tree)
                                         elif recipe[1] == 'archive':
                                             verify_archive_response(response_tree)
+                                            verify_lifecycle(recipe[0], response_tree)
+                                        elif recipe[1] == 'recover':
+                                            verify_archive_response(response_tree)
+                                            verify_recover_response(response_tree)
                                             verify_lifecycle(recipe[0], response_tree)
                                         elif recipe[1] == 'sign_missing_parameters':
                                             verify_signature_missing_parameters_response(response_tree)

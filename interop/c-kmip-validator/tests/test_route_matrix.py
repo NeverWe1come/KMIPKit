@@ -4376,16 +4376,16 @@ class RouteMatrixTests(unittest.TestCase):
                  if cell['case_id'] == case['case_id']]
 
         self.assertEqual('local_model', case['requires']['protocol_scenario']['mode'])
-        self.assertEqual({'Batch Count', 'Get'}, {
+        self.assertEqual({'Batch Count'}, {
             item['name'] for item in catalog['normative_targets']
             if item['target_id'] in case['requires']['protocol_scenario']['target_ids']
         })
         self.assertTrue(cells)
         self.assertTrue(all(cell['mode'] == 'local' and cell['transport'] is None for cell in cells),
                         cells)
-        self.assertFalse(any(cell['action'] == 'send' for cell in cells), cells)
-        self.assertTrue(any(cell['public_api_symbol'] == 'kmipkit_request_message_from_ttlv'
-                            and cell['target_id'] == 'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-COUNT'
+        self.assertEqual({'construct'}, {cell['action'] for cell in cells}, cells)
+        self.assertFalse(any(cell['action'] in {'send', 'decode'} for cell in cells), cells)
+        self.assertTrue(all(cell['target_id'] == 'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-COUNT'
                             for cell in cells), cells)
 
     def test_zero_batch_count_request_parser_reports_expected_local_rejection(self):
@@ -4414,7 +4414,7 @@ class RouteMatrixTests(unittest.TestCase):
         event = {
             'case_id': 'test-batch-count-zero-rejected',
             'route_id': 'c.typed-protocol.model.kmipkit.request.message.from.ttlv',
-            'target_id': 'KMIPKIT-ELEM-OP-C2S-GET',
+            'target_id': 'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-COUNT',
             'public_api_symbol': 'kmipkit_request_message_from_ttlv',
             'execution_route_id': None,
             'execution_api_symbol': None,
