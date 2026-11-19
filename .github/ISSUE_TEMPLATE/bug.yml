@@ -1,0 +1,42 @@
+name: Bug report
+description: Report a reproducible KMIPKit defect without sensitive data.
+title: "bug: "
+labels: [bug, triage]
+body:
+  - type: markdown
+    attributes:
+      value: Do not include credentials, key material, raw secret-bearing TTLV, or vulnerability details.
+  - type: input
+    id: version
+    attributes:
+      label: KMIPKit version or commit
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Language, operating system, and architecture
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Minimal sanitized reproduction
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Sanitized logs or test output

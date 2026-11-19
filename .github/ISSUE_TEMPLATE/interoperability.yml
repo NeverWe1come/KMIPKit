@@ -1,0 +1,45 @@
+name: Server interoperability report
+description: Report sanitized behavior with a KMIP server implementation.
+title: "interop: "
+labels: [interoperability, triage]
+body:
+  - type: markdown
+    attributes:
+      value: Do not disclose credentials, keys, customer data, proprietary documentation, or raw secret-bearing messages.
+  - type: input
+    id: server
+    attributes:
+      label: Server product/project and exact version
+    validations:
+      required: true
+  - type: input
+    id: client
+    attributes:
+      label: KMIPKit version, language, OS, and architecture
+    validations:
+      required: true
+  - type: dropdown
+    id: transport
+    attributes:
+      label: Transport
+      options:
+        - Raw TTLV over TLS
+        - TTLV over HTTPS
+    validations:
+      required: true
+  - type: textarea
+    id: operation
+    attributes:
+      label: Operation, profile, and sanitized configuration
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Expected and observed behavior
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Sanitized reproduction or test case

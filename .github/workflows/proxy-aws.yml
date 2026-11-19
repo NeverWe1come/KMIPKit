@@ -1,0 +1,63 @@
+name: Proxy AWS CI
+
+on:
+  pull_request:
+    paths:
+      - 'proxy/**'
+      - '.github/workflows/proxy-aws.yml'
+  push:
+    branches:
+      - release/1.0.0
+    paths:
+      - 'proxy/**'
+      - '.github/workflows/proxy-aws.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate-proxy-aws:
+    name: KMIP Proxy AWS Provider Integration
+    runs-on: ubuntu-latest
+    services:
+      localstack:
+        image: localstack/localstack:3.8
+        ports:
+          - 4566:4566
+        env:
+          SERVICES: kms,secretsmanager
+          DEBUG: 0
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install Rust toolchain
+        run: rustup toolchain install stable --profile minimal --component rustfmt --component clippy
+
+      - name: Wait for LocalStack
+        run: |
+          for i in {1..30}; do
+            if curl -s http://127.0.0.1:4566/_localstack/health | grep -q '"kms"'; then
+              echo "LocalStack is ready"
+              break
+            fi
+            echo "Waiting for LocalStack..."
+            sleep 1
+          done
+
+      - name: Check code formatting
+        run: cargo fmt --manifest-path proxy/kmipkit-proxy/Cargo.toml --check
+
+      - name: Lint with Clippy (AWS feature)
+        run: cargo clippy --manifest-path proxy/kmipkit-proxy/Cargo.toml --all-targets --features aws -- -D warnings
+
+      - name: Run unit and integration tests (AWS feature)
+        env:
+          AWS_ENDPOINT_URL: http://127.0.0.1:4566
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+          AWS_DEFAULT_REGION: us-east-1
+          REQUIRE_AWS_LOCALSTACK: 1
+        run: cargo test --manifest-path proxy/kmipkit-proxy/Cargo.toml --features aws

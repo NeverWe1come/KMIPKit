@@ -1,0 +1,29 @@
+name: Feature proposal
+description: Propose a scoped improvement for discussion and specification.
+title: "proposal: "
+labels: [proposal, triage]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired observable outcome
+    validations:
+      required: true
+  - type: textarea
+    id: standards
+    attributes:
+      label: Relevant OASIS documents and sections
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: textarea
+    id: compatibility
+    attributes:
+      label: API, ABI, security, and interoperability effects
