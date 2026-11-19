@@ -1580,3 +1580,17 @@ cells. The full matrix remains incomplete, so #187 and its dependents stay
 WIP. The fixture validates client routes and response handling; it does not
 establish persisted attribute state at an external KMS or claim vendor
 interoperability.
+
+### Java Usage Limits stack verification — 2026-11-19
+
+After merging the refreshed #187 base, #216 retains its Usage Limits structure
+assertions. The selected report is `java-controlled-query-2dff43ea-8694-4a95-8b7f-71e99de0613f` and validates 44,446 cells (44,430 invocations, 16 not applicable,
+zero failures) out of 71,513 planned; 27,067 remain pending. Java Gradle passes
+111/111, shared tests pass 204/204, and the generated ledger matches its
+reference. This branch and its dependent stack remain WIP because the full
+matrix is incomplete. The report uses installed artifact SHA-256
+`d684b2d9f5b54767d544aa96b380dade027c534ff7155c337867a1ed07c10b4e`.
+
+Add Attribute's 2.0 applicability remains unresolved against the pinned OASIS
+source; the current evidence retains the existing 2.0/2.1 catalog pending that
+decision.
