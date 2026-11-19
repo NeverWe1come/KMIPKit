@@ -1962,6 +1962,47 @@ class ControlledTlsPeerTest {
                 assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(),
                         fixture.modelRoute(), "construct", protocolVersion);
             }
+            assertRouteEventRecorded(events,
+                    "test-norm-structure-member-structure-member-9-11-hashed-password-username",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-USERNAME",
+                    GENERIC_CREDENTIAL_FROM_TTLV_ROUTE, "construct", protocolVersion);
+            assertRouteEventRecorded(events,
+                    "test-norm-structure-member-structure-member-9-11-hashed-password-username",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-USERNAME",
+                    "java.typed-protocol.model.org.kmipkit.credentials.hashedpasswordcredential.fromttlv",
+                    "construct", protocolVersion);
+            assertRouteEventRecorded(events,
+                    "test-norm-structure-member-structure-member-9-11-hashed-password-timestamp",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-TIMESTAMP",
+                    GENERIC_CREDENTIAL_FROM_TTLV_ROUTE, "construct", protocolVersion);
+            assertRouteEventRecorded(events,
+                    "test-norm-structure-member-structure-member-9-11-hashed-password-timestamp",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-TIMESTAMP",
+                    "java.typed-protocol.model.org.kmipkit.credentials.hashedpasswordcredential.fromttlv",
+                    "construct", protocolVersion);
+            assertRouteEventRecorded(events,
+                    "test-norm-structure-member-structure-member-9-11-hashed-password-hashing-algorithm",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-HASHING-ALGORITHM",
+                    GENERIC_CREDENTIAL_FROM_TTLV_ROUTE, "construct", protocolVersion);
+            assertRouteEventRecorded(events,
+                    "test-norm-structure-member-structure-member-9-11-hashed-password-hashing-algorithm",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-HASHING-ALGORITHM",
+                    "java.typed-protocol.model.org.kmipkit.credentials.hashedpasswordcredential.fromttlv",
+                    "construct", protocolVersion);
+            assertRouteEventRecorded(events,
+                    "test-norm-structure-member-structure-member-9-11-hashed-password-hashing-algorithm",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-HASHING-ALGORITHM",
+                    "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.hashingalgorithm",
+                    "construct", protocolVersion);
+            assertRouteEventRecorded(events,
+                    "test-norm-structure-member-structure-member-9-11-hashed-password-hashed-password",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-HASHED-PASSWORD",
+                    GENERIC_CREDENTIAL_FROM_TTLV_ROUTE, "construct", protocolVersion);
+            assertRouteEventRecorded(events,
+                    "test-norm-structure-member-structure-member-9-11-hashed-password-hashed-password",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-HASHED-PASSWORD",
+                    "java.typed-protocol.model.org.kmipkit.credentials.hashedpasswordcredential.fromttlv",
+                    "construct", protocolVersion);
             assertRouteEventRecorded(events, "test-op-revoke", "KMIPKIT-ELEM-OP-C2S-REVOKE",
                     "java.typed-protocol.revoke_request.create", "construct", protocolVersion);
             assertRouteEventRecorded(events, "test-op-revoke", "KMIPKIT-ELEM-OP-C2S-REVOKE",
