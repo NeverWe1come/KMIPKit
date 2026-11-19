@@ -174,7 +174,7 @@
       "properties": {
         "scenario_id": { "type": "string", "minLength": 1 },
         "target_ids": { "type": "array", "items": { "type": "string", "pattern": "^KMIPKIT-(?:ELEM-[A-Z0-9-]+|RANGE-[0-9]+|PAYLOAD-[A-Z0-9-]+|PKCS11-[A-Z0-9-]+)$" }, "minItems": 1, "uniqueItems": true },
-        "operations": { "type": "array", "items": { "type": "string", "minLength": 1 }, "minItems": 1, "uniqueItems": true },
+        "operations": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
         "protocol_versions": { "type": "array", "items": { "enum": ["2.0", "2.1"] }, "minItems": 1, "uniqueItems": true },
         "parameters": { "type": "object" },
         "expected": { "type": "object" },

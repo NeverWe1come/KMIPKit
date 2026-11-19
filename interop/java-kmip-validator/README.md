@@ -1361,6 +1361,29 @@ References: OASIS KMIP 2.0 §6.1.36 and KMIP 2.1 §6.1.38 (Poll), with §§8.2,
 The controlled peer proves client route behavior, not external KMS
 interoperability.
 
+### Java shared-contract refresh — 2026-11-19
+
+The Java branch now includes the refreshed shared catalog contract: a zero-count
+batch has only Batch Count as its target and no send/decode cells, and the
+Recover lifecycle fixture archives the created SymmetricKey before recovery.
+The generated Java ledger was rebuilt from the controlled TLS report after
+those catalog changes. It validates 44,446 selected-scope cells (44,430
+invocations, 16 not applicable, zero failed) out of 71,513 planned cells, with
+27,067 still pending. `selected_scope_complete` and
+`all_invocations_passed` are true; the full matrix is incomplete, so #187 and
+its dependents remain WIP. The Java Gradle suite passes 111/111, the shared
+suite passes 204/204, the catalog and route capability checks pass (1,511
+routes), and the generated-ledger comparison passes. The selected report is
+`java-controlled-query-ad59b1af-3b59-46f8-b144-6600d0440afe` for installed
+artifact SHA-256
+`504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+
+The Add Attribute version applicability question remains unresolved because
+the requested KMIP 2.1-only boundary conflicts with the pinned KMIP 2.0 source;
+the current report still reflects the existing 2.0/2.1 catalog until that
+decision is clarified. The controlled peer verifies client behavior and does
+not establish external KMS interoperability.
+
 Red `9cd609ff2` requires all 36 network route cells and three local TTLV route
 cells. Green `73ef2ae3d` sends the real Poll requests to a controlled TLS/HTTPS
 peer and checks status, reason, correlation, and payload shape. The full Gradle

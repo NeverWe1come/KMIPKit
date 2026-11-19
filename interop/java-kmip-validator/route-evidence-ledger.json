@@ -1,7 +1,7 @@
 {
   "all_invocations_passed": true,
   "artifact_sha256": "37d7eeae9e64644fd7cdde4bfd64b7da5ccbb0bf2be53a949826eb62dc3aaf86",
-  "catalog_sha256": "d01467ec5e7fbdf4a852f0314f1092bc1ab296a2217815ed4345c2493b4c9956",
+  "catalog_sha256": "fd1ecdf095db572cc80a1dd073597fe8f47f077d028d9457019f1b61f7c6a58e",
   "complete_matrix": false,
   "controlled_peer_cells": 2510,
   "evidence_case_ids": [
@@ -88,7 +88,6 @@
     "test-batch-continue-after-failure",
     "test-batch-count-matches-items",
     "test-batch-count-mismatch-rejected",
-    "test-batch-count-zero-rejected",
     "test-batch-create-activate-destroy",
     "test-batch-order-false-correlates-response-items",
     "test-batch-order-omitted-defaults-true",
@@ -2681,7 +2680,7 @@
     "test-v20-reject-set-constraints",
     "test-v20-reject-set-defaults"
   ],
-  "executed_cells": 44458,
+  "executed_cells": 44446,
   "language": "java",
   "library_commit": "12496d646d11d4069b58bcc88fc76cc619211ec6",
   "pending_case_ids": [
@@ -3687,7 +3686,7 @@
     },
     {
       "case_id": "test-batch-count-zero-rejected",
-      "pending_cells": 60
+      "pending_cells": 2
     },
     {
       "case_id": "test-batch-create-activate-destroy",
@@ -7578,28 +7577,28 @@
       "pending_cells": 84
     }
   ],
-  "pending_cells": 27125,
+  "pending_cells": 27067,
   "pending_reason": "No validated per-cell route execution evidence is recorded for this cell.",
   "pending_reason_code": "route_evidence_not_emitted",
-  "planned_cells": 71583,
+  "planned_cells": 71513,
   "route_action_axis_summary": [
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 3896,
-      "pending_cells": 181,
+      "executed_cells": 3894,
+      "pending_cells": 180,
       "protocol_version": "2.0",
-      "required_cells": 4077,
+      "required_cells": 4074,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item",
       "transport": null
     },
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 3984,
-      "pending_cells": 188,
+      "executed_cells": 3982,
+      "pending_cells": 187,
       "protocol_version": "2.1",
-      "required_cells": 4172,
+      "required_cells": 4169,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item",
       "transport": null
     },
@@ -7906,40 +7905,40 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 3943,
-      "pending_cells": 181,
+      "executed_cells": 3941,
+      "pending_cells": 180,
       "protocol_version": "2.0",
-      "required_cells": 4124,
+      "required_cells": 4121,
       "route_id": "java.generic-ttlv.ttlv_codec.decode",
       "transport": null
     },
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 4031,
-      "pending_cells": 188,
+      "executed_cells": 4029,
+      "pending_cells": 187,
       "protocol_version": "2.1",
-      "required_cells": 4219,
+      "required_cells": 4216,
       "route_id": "java.generic-ttlv.ttlv_codec.decode",
       "transport": null
     },
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 3895,
+      "executed_cells": 3893,
       "pending_cells": 181,
       "protocol_version": "2.0",
-      "required_cells": 4076,
+      "required_cells": 4074,
       "route_id": "java.generic-ttlv.ttlv_item.create",
       "transport": null
     },
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 3983,
+      "executed_cells": 3981,
       "pending_cells": 188,
       "protocol_version": "2.1",
-      "required_cells": 4171,
+      "required_cells": 4169,
       "route_id": "java.generic-ttlv.ttlv_item.create",
       "transport": null
     },
@@ -15407,9 +15406,9 @@
       "action": "construct",
       "encoding": "JSON",
       "executed_cells": 0,
-      "pending_cells": 26,
+      "pending_cells": 25,
       "protocol_version": "2.0",
-      "required_cells": 26,
+      "required_cells": 25,
       "route_id": "java.typed-protocol.client_batch_item.get",
       "transport": "https"
     },
@@ -15417,9 +15416,9 @@
       "action": "construct",
       "encoding": "JSON",
       "executed_cells": 0,
-      "pending_cells": 26,
+      "pending_cells": 25,
       "protocol_version": "2.0",
-      "required_cells": 26,
+      "required_cells": 25,
       "route_id": "java.typed-protocol.client_batch_item.get",
       "transport": "raw_tls"
     },
@@ -15427,9 +15426,9 @@
       "action": "construct",
       "encoding": "TTLV",
       "executed_cells": 0,
-      "pending_cells": 26,
+      "pending_cells": 25,
       "protocol_version": "2.0",
-      "required_cells": 26,
+      "required_cells": 25,
       "route_id": "java.typed-protocol.client_batch_item.get",
       "transport": "https"
     },
@@ -15437,9 +15436,9 @@
       "action": "construct",
       "encoding": "TTLV",
       "executed_cells": 0,
-      "pending_cells": 26,
+      "pending_cells": 25,
       "protocol_version": "2.0",
-      "required_cells": 26,
+      "required_cells": 25,
       "route_id": "java.typed-protocol.client_batch_item.get",
       "transport": "raw_tls"
     },
@@ -15447,9 +15446,9 @@
       "action": "construct",
       "encoding": "XML",
       "executed_cells": 0,
-      "pending_cells": 26,
+      "pending_cells": 25,
       "protocol_version": "2.0",
-      "required_cells": 26,
+      "required_cells": 25,
       "route_id": "java.typed-protocol.client_batch_item.get",
       "transport": "https"
     },
@@ -15457,9 +15456,9 @@
       "action": "construct",
       "encoding": "XML",
       "executed_cells": 0,
-      "pending_cells": 26,
+      "pending_cells": 25,
       "protocol_version": "2.0",
-      "required_cells": 26,
+      "required_cells": 25,
       "route_id": "java.typed-protocol.client_batch_item.get",
       "transport": "raw_tls"
     },
@@ -15467,9 +15466,9 @@
       "action": "construct",
       "encoding": "JSON",
       "executed_cells": 0,
-      "pending_cells": 26,
+      "pending_cells": 25,
       "protocol_version": "2.1",
-      "required_cells": 26,
+      "required_cells": 25,
       "route_id": "java.typed-protocol.client_batch_item.get",
       "transport": "https"
     },
@@ -15477,9 +15476,9 @@
       "action": "construct",
       "encoding": "JSON",
       "executed_cells": 0,
-      "pending_cells": 26,
+      "pending_cells": 25,
       "protocol_version": "2.1",
-      "required_cells": 26,
+      "required_cells": 25,
       "route_id": "java.typed-protocol.client_batch_item.get",
       "transport": "raw_tls"
     },
@@ -15487,9 +15486,9 @@
       "action": "construct",
       "encoding": "TTLV",
       "executed_cells": 0,
-      "pending_cells": 26,
+      "pending_cells": 25,
       "protocol_version": "2.1",
-      "required_cells": 26,
+      "required_cells": 25,
       "route_id": "java.typed-protocol.client_batch_item.get",
       "transport": "https"
     },
@@ -15497,9 +15496,9 @@
       "action": "construct",
       "encoding": "TTLV",
       "executed_cells": 0,
-      "pending_cells": 26,
+      "pending_cells": 25,
       "protocol_version": "2.1",
-      "required_cells": 26,
+      "required_cells": 25,
       "route_id": "java.typed-protocol.client_batch_item.get",
       "transport": "raw_tls"
     },
@@ -15507,9 +15506,9 @@
       "action": "construct",
       "encoding": "XML",
       "executed_cells": 0,
-      "pending_cells": 26,
+      "pending_cells": 25,
       "protocol_version": "2.1",
-      "required_cells": 26,
+      "required_cells": 25,
       "route_id": "java.typed-protocol.client_batch_item.get",
       "transport": "https"
     },
@@ -15517,9 +15516,9 @@
       "action": "construct",
       "encoding": "XML",
       "executed_cells": 0,
-      "pending_cells": 26,
+      "pending_cells": 25,
       "protocol_version": "2.1",
-      "required_cells": 26,
+      "required_cells": 25,
       "route_id": "java.typed-protocol.client_batch_item.get",
       "transport": "raw_tls"
     },
@@ -15527,9 +15526,9 @@
       "action": "decode",
       "encoding": "JSON",
       "executed_cells": 0,
-      "pending_cells": 21,
+      "pending_cells": 20,
       "protocol_version": "2.0",
-      "required_cells": 21,
+      "required_cells": 20,
       "route_id": "java.typed-protocol.client_batch_item.get",
       "transport": "https"
     },
@@ -15537,9 +15536,9 @@
       "action": "decode",
       "encoding": "JSON",
       "executed_cells": 0,
-      "pending_cells": 21,
+      "pending_cells": 20,
       "protocol_version": "2.0",
-      "required_cells": 21,
+      "required_cells": 20,
       "route_id": "java.typed-protocol.client_batch_item.get",
       "transport": "raw_tls"
     },
@@ -15547,9 +15546,9 @@
       "action": "decode",
       "encoding": "TTLV",
       "executed_cells": 0,
-      "pending_cells": 21,
+      "pending_cells": 20,
       "protocol_version": "2.0",
-      "required_cells": 21,
+      "required_cells": 20,
       "route_id": "java.typed-protocol.client_batch_item.get",
       "transport": "https"
     },
@@ -15557,9 +15556,9 @@
       "action": "decode",
       "encoding": "TTLV",
       "executed_cells": 0,
-      "pending_cells": 21,
+      "pending_cells": 20,
       "protocol_version": "2.0",
-      "required_cells": 21,
+      "required_cells": 20,
       "route_id": "java.typed-protocol.client_batch_item.get",
       "transport": "raw_tls"
     },
@@ -15567,9 +15566,9 @@
       "action": "decode",
       "encoding": "XML",
       "executed_cells": 0,
-      "pending_cells": 21,
+      "pending_cells": 20,
       "protocol_version": "2.0",
-      "required_cells": 21,
+      "required_cells": 20,
       "route_id": "java.typed-protocol.client_batch_item.get",
       "transport": "https"
     },
@@ -15577,9 +15576,9 @@
       "action": "decode",
       "encoding": "XML",
       "executed_cells": 0,
-      "pending_cells": 21,
+      "pending_cells": 20,
       "protocol_version": "2.0",
-      "required_cells": 21,
+      "required_cells": 20,
       "route_id": "java.typed-protocol.client_batch_item.get",
       "transport": "raw_tls"
     },
@@ -15587,9 +15586,9 @@
       "action": "decode",
       "encoding": "JSON",
       "executed_cells": 0,
-      "pending_cells": 21,
+      "pending_cells": 20,
       "protocol_version": "2.1",
-      "required_cells": 21,
+      "required_cells": 20,
       "route_id": "java.typed-protocol.client_batch_item.get",
       "transport": "https"
     },
@@ -15597,9 +15596,9 @@
       "action": "decode",
       "encoding": "JSON",
       "executed_cells": 0,
-      "pending_cells": 21,
+      "pending_cells": 20,
       "protocol_version": "2.1",
-      "required_cells": 21,
+      "required_cells": 20,
       "route_id": "java.typed-protocol.client_batch_item.get",
       "transport": "raw_tls"
     },
@@ -15607,9 +15606,9 @@
       "action": "decode",
       "encoding": "TTLV",
       "executed_cells": 0,
-      "pending_cells": 21,
+      "pending_cells": 20,
       "protocol_version": "2.1",
-      "required_cells": 21,
+      "required_cells": 20,
       "route_id": "java.typed-protocol.client_batch_item.get",
       "transport": "https"
     },
@@ -15617,9 +15616,9 @@
       "action": "decode",
       "encoding": "TTLV",
       "executed_cells": 0,
-      "pending_cells": 21,
+      "pending_cells": 20,
       "protocol_version": "2.1",
-      "required_cells": 21,
+      "required_cells": 20,
       "route_id": "java.typed-protocol.client_batch_item.get",
       "transport": "raw_tls"
     },
@@ -15627,9 +15626,9 @@
       "action": "decode",
       "encoding": "XML",
       "executed_cells": 0,
-      "pending_cells": 21,
+      "pending_cells": 20,
       "protocol_version": "2.1",
-      "required_cells": 21,
+      "required_cells": 20,
       "route_id": "java.typed-protocol.client_batch_item.get",
       "transport": "https"
     },
@@ -15637,9 +15636,9 @@
       "action": "decode",
       "encoding": "XML",
       "executed_cells": 0,
-      "pending_cells": 21,
+      "pending_cells": 20,
       "protocol_version": "2.1",
-      "required_cells": 21,
+      "required_cells": 20,
       "route_id": "java.typed-protocol.client_batch_item.get",
       "transport": "raw_tls"
     },
@@ -15647,9 +15646,9 @@
       "action": "send",
       "encoding": "JSON",
       "executed_cells": 0,
-      "pending_cells": 26,
+      "pending_cells": 25,
       "protocol_version": "2.0",
-      "required_cells": 26,
+      "required_cells": 25,
       "route_id": "java.typed-protocol.client_batch_item.get",
       "transport": "https"
     },
@@ -15657,9 +15656,9 @@
       "action": "send",
       "encoding": "JSON",
       "executed_cells": 0,
-      "pending_cells": 26,
+      "pending_cells": 25,
       "protocol_version": "2.0",
-      "required_cells": 26,
+      "required_cells": 25,
       "route_id": "java.typed-protocol.client_batch_item.get",
       "transport": "raw_tls"
     },
@@ -15667,9 +15666,9 @@
       "action": "send",
       "encoding": "TTLV",
       "executed_cells": 0,
-      "pending_cells": 26,
+      "pending_cells": 25,
       "protocol_version": "2.0",
-      "required_cells": 26,
+      "required_cells": 25,
       "route_id": "java.typed-protocol.client_batch_item.get",
       "transport": "https"
     },
@@ -15677,9 +15676,9 @@
       "action": "send",
       "encoding": "TTLV",
       "executed_cells": 0,
-      "pending_cells": 26,
+      "pending_cells": 25,
       "protocol_version": "2.0",
-      "required_cells": 26,
+      "required_cells": 25,
       "route_id": "java.typed-protocol.client_batch_item.get",
       "transport": "raw_tls"
     },
@@ -15687,9 +15686,9 @@
       "action": "send",
       "encoding": "XML",
       "executed_cells": 0,
-      "pending_cells": 26,
+      "pending_cells": 25,
       "protocol_version": "2.0",
-      "required_cells": 26,
+      "required_cells": 25,
       "route_id": "java.typed-protocol.client_batch_item.get",
       "transport": "https"
     },
@@ -15697,9 +15696,9 @@
       "action": "send",
       "encoding": "XML",
       "executed_cells": 0,
-      "pending_cells": 26,
+      "pending_cells": 25,
       "protocol_version": "2.0",
-      "required_cells": 26,
+      "required_cells": 25,
       "route_id": "java.typed-protocol.client_batch_item.get",
       "transport": "raw_tls"
     },
@@ -15707,9 +15706,9 @@
       "action": "send",
       "encoding": "JSON",
       "executed_cells": 0,
-      "pending_cells": 26,
+      "pending_cells": 25,
       "protocol_version": "2.1",
-      "required_cells": 26,
+      "required_cells": 25,
       "route_id": "java.typed-protocol.client_batch_item.get",
       "transport": "https"
     },
@@ -15717,9 +15716,9 @@
       "action": "send",
       "encoding": "JSON",
       "executed_cells": 0,
-      "pending_cells": 26,
+      "pending_cells": 25,
       "protocol_version": "2.1",
-      "required_cells": 26,
+      "required_cells": 25,
       "route_id": "java.typed-protocol.client_batch_item.get",
       "transport": "raw_tls"
     },
@@ -15727,9 +15726,9 @@
       "action": "send",
       "encoding": "TTLV",
       "executed_cells": 0,
-      "pending_cells": 26,
+      "pending_cells": 25,
       "protocol_version": "2.1",
-      "required_cells": 26,
+      "required_cells": 25,
       "route_id": "java.typed-protocol.client_batch_item.get",
       "transport": "https"
     },
@@ -15737,9 +15736,9 @@
       "action": "send",
       "encoding": "TTLV",
       "executed_cells": 0,
-      "pending_cells": 26,
+      "pending_cells": 25,
       "protocol_version": "2.1",
-      "required_cells": 26,
+      "required_cells": 25,
       "route_id": "java.typed-protocol.client_batch_item.get",
       "transport": "raw_tls"
     },
@@ -15747,9 +15746,9 @@
       "action": "send",
       "encoding": "XML",
       "executed_cells": 0,
-      "pending_cells": 26,
+      "pending_cells": 25,
       "protocol_version": "2.1",
-      "required_cells": 26,
+      "required_cells": 25,
       "route_id": "java.typed-protocol.client_batch_item.get",
       "transport": "https"
     },
@@ -15757,9 +15756,9 @@
       "action": "send",
       "encoding": "XML",
       "executed_cells": 0,
-      "pending_cells": 26,
+      "pending_cells": 25,
       "protocol_version": "2.1",
-      "required_cells": 26,
+      "required_cells": 25,
       "route_id": "java.typed-protocol.client_batch_item.get",
       "transport": "raw_tls"
     },
@@ -30917,9 +30916,9 @@
       "action": "decode",
       "encoding": "TTLV",
       "executed_cells": 0,
-      "pending_cells": 24,
+      "pending_cells": 23,
       "protocol_version": "2.0",
-      "required_cells": 24,
+      "required_cells": 23,
       "route_id": "java.typed-protocol.function.client_batch_item_response_get",
       "transport": null
     },
@@ -30927,9 +30926,9 @@
       "action": "decode",
       "encoding": "TTLV",
       "executed_cells": 0,
-      "pending_cells": 24,
+      "pending_cells": 23,
       "protocol_version": "2.1",
-      "required_cells": 24,
+      "required_cells": 23,
       "route_id": "java.typed-protocol.function.client_batch_item_response_get",
       "transport": null
     },
@@ -31047,9 +31046,9 @@
       "action": "decode",
       "encoding": "TTLV",
       "executed_cells": 3,
-      "pending_cells": 31,
+      "pending_cells": 30,
       "protocol_version": "2.0",
-      "required_cells": 34,
+      "required_cells": 33,
       "route_id": "java.typed-protocol.function.client_batch_item_response_header_ttlv",
       "transport": null
     },
@@ -31057,9 +31056,9 @@
       "action": "decode",
       "encoding": "TTLV",
       "executed_cells": 3,
-      "pending_cells": 31,
+      "pending_cells": 30,
       "protocol_version": "2.1",
-      "required_cells": 34,
+      "required_cells": 33,
       "route_id": "java.typed-protocol.function.client_batch_item_response_header_ttlv",
       "transport": null
     },
@@ -31127,9 +31126,9 @@
       "action": "decode",
       "encoding": "TTLV",
       "executed_cells": 3,
-      "pending_cells": 28,
+      "pending_cells": 27,
       "protocol_version": "2.0",
-      "required_cells": 31,
+      "required_cells": 30,
       "route_id": "java.typed-protocol.function.client_batch_item_response_json",
       "transport": null
     },
@@ -31137,9 +31136,9 @@
       "action": "decode",
       "encoding": "TTLV",
       "executed_cells": 3,
-      "pending_cells": 28,
+      "pending_cells": 27,
       "protocol_version": "2.1",
-      "required_cells": 31,
+      "required_cells": 30,
       "route_id": "java.typed-protocol.function.client_batch_item_response_json",
       "transport": null
     },
@@ -31327,9 +31326,9 @@
       "action": "decode",
       "encoding": "TTLV",
       "executed_cells": 3,
-      "pending_cells": 28,
+      "pending_cells": 27,
       "protocol_version": "2.0",
-      "required_cells": 31,
+      "required_cells": 30,
       "route_id": "java.typed-protocol.function.client_batch_item_response_metadata_v1",
       "transport": null
     },
@@ -31337,9 +31336,9 @@
       "action": "decode",
       "encoding": "TTLV",
       "executed_cells": 3,
-      "pending_cells": 28,
+      "pending_cells": 27,
       "protocol_version": "2.1",
-      "required_cells": 31,
+      "required_cells": 30,
       "route_id": "java.typed-protocol.function.client_batch_item_response_metadata_v1",
       "transport": null
     },
@@ -31347,9 +31346,9 @@
       "action": "decode",
       "encoding": "TTLV",
       "executed_cells": 3,
-      "pending_cells": 28,
+      "pending_cells": 27,
       "protocol_version": "2.0",
-      "required_cells": 31,
+      "required_cells": 30,
       "route_id": "java.typed-protocol.function.client_batch_item_response_metadata_v2",
       "transport": null
     },
@@ -31357,9 +31356,9 @@
       "action": "decode",
       "encoding": "TTLV",
       "executed_cells": 3,
-      "pending_cells": 28,
+      "pending_cells": 27,
       "protocol_version": "2.1",
-      "required_cells": 31,
+      "required_cells": 30,
       "route_id": "java.typed-protocol.function.client_batch_item_response_metadata_v2",
       "transport": null
     },
@@ -31427,9 +31426,9 @@
       "action": "decode",
       "encoding": "TTLV",
       "executed_cells": 4,
-      "pending_cells": 45,
+      "pending_cells": 44,
       "protocol_version": "2.0",
-      "required_cells": 49,
+      "required_cells": 48,
       "route_id": "java.typed-protocol.function.client_batch_item_response_pending_correlation_value",
       "transport": null
     },
@@ -31437,9 +31436,9 @@
       "action": "decode",
       "encoding": "TTLV",
       "executed_cells": 4,
-      "pending_cells": 45,
+      "pending_cells": 44,
       "protocol_version": "2.1",
-      "required_cells": 49,
+      "required_cells": 48,
       "route_id": "java.typed-protocol.function.client_batch_item_response_pending_correlation_value",
       "transport": null
     },
@@ -31937,9 +31936,9 @@
       "action": "decode",
       "encoding": "TTLV",
       "executed_cells": 3,
-      "pending_cells": 28,
+      "pending_cells": 27,
       "protocol_version": "2.0",
-      "required_cells": 31,
+      "required_cells": 30,
       "route_id": "java.typed-protocol.function.client_batch_item_response_ttlv_hex",
       "transport": null
     },
@@ -31947,9 +31946,9 @@
       "action": "decode",
       "encoding": "TTLV",
       "executed_cells": 3,
-      "pending_cells": 28,
+      "pending_cells": 27,
       "protocol_version": "2.1",
-      "required_cells": 31,
+      "required_cells": 30,
       "route_id": "java.typed-protocol.function.client_batch_item_response_ttlv_hex",
       "transport": null
     },
@@ -31957,9 +31956,9 @@
       "action": "decode",
       "encoding": "TTLV",
       "executed_cells": 4,
-      "pending_cells": 35,
+      "pending_cells": 34,
       "protocol_version": "2.0",
-      "required_cells": 39,
+      "required_cells": 38,
       "route_id": "java.typed-protocol.function.client_batch_item_response_unique_batch_item_id",
       "transport": null
     },
@@ -31967,9 +31966,9 @@
       "action": "decode",
       "encoding": "TTLV",
       "executed_cells": 4,
-      "pending_cells": 35,
+      "pending_cells": 34,
       "protocol_version": "2.1",
-      "required_cells": 39,
+      "required_cells": 38,
       "route_id": "java.typed-protocol.function.client_batch_item_response_unique_batch_item_id",
       "transport": null
     },
@@ -31997,9 +31996,9 @@
       "action": "decode",
       "encoding": "TTLV",
       "executed_cells": 3,
-      "pending_cells": 28,
+      "pending_cells": 27,
       "protocol_version": "2.0",
-      "required_cells": 31,
+      "required_cells": 30,
       "route_id": "java.typed-protocol.function.client_batch_item_response_xml",
       "transport": null
     },
@@ -32007,9 +32006,9 @@
       "action": "decode",
       "encoding": "TTLV",
       "executed_cells": 3,
-      "pending_cells": 28,
+      "pending_cells": 27,
       "protocol_version": "2.1",
-      "required_cells": 31,
+      "required_cells": 30,
       "route_id": "java.typed-protocol.function.client_batch_item_response_xml",
       "transport": null
     },
@@ -34157,9 +34156,9 @@
   "route_manifest_sha256": "7ee7fe0cd4d0a3ef8a292fc5f0ef1329361c1cb66e03dce175e9d69e8dcd41f4",
   "route_summary": [
     {
-      "executed_cells": 7880,
-      "pending_cells": 369,
-      "required_cells": 8249,
+      "executed_cells": 7876,
+      "pending_cells": 367,
+      "required_cells": 8243,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item"
     },
     {
@@ -34253,15 +34252,15 @@
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring"
     },
     {
-      "executed_cells": 7974,
-      "pending_cells": 369,
-      "required_cells": 8343,
+      "executed_cells": 7970,
+      "pending_cells": 367,
+      "required_cells": 8337,
       "route_id": "java.generic-ttlv.ttlv_codec.decode"
     },
     {
-      "executed_cells": 7878,
+      "executed_cells": 7874,
       "pending_cells": 369,
-      "required_cells": 8247,
+      "required_cells": 8243,
       "route_id": "java.generic-ttlv.ttlv_item.create"
     },
     {
@@ -34398,8 +34397,8 @@
     },
     {
       "executed_cells": 0,
-      "pending_cells": 876,
-      "required_cells": 876,
+      "pending_cells": 840,
+      "required_cells": 840,
       "route_id": "java.typed-protocol.client_batch_item.get"
     },
     {
@@ -34842,8 +34841,8 @@
     },
     {
       "executed_cells": 0,
-      "pending_cells": 48,
-      "required_cells": 48,
+      "pending_cells": 46,
+      "required_cells": 46,
       "route_id": "java.typed-protocol.function.client_batch_item_response_get"
     },
     {
@@ -34884,8 +34883,8 @@
     },
     {
       "executed_cells": 6,
-      "pending_cells": 62,
-      "required_cells": 68,
+      "pending_cells": 60,
+      "required_cells": 66,
       "route_id": "java.typed-protocol.function.client_batch_item_response_header_ttlv"
     },
     {
@@ -34908,8 +34907,8 @@
     },
     {
       "executed_cells": 6,
-      "pending_cells": 56,
-      "required_cells": 62,
+      "pending_cells": 54,
+      "required_cells": 60,
       "route_id": "java.typed-protocol.function.client_batch_item_response_json"
     },
     {
@@ -34968,14 +34967,14 @@
     },
     {
       "executed_cells": 6,
-      "pending_cells": 56,
-      "required_cells": 62,
+      "pending_cells": 54,
+      "required_cells": 60,
       "route_id": "java.typed-protocol.function.client_batch_item_response_metadata_v1"
     },
     {
       "executed_cells": 6,
-      "pending_cells": 56,
-      "required_cells": 62,
+      "pending_cells": 54,
+      "required_cells": 60,
       "route_id": "java.typed-protocol.function.client_batch_item_response_metadata_v2"
     },
     {
@@ -34998,8 +34997,8 @@
     },
     {
       "executed_cells": 8,
-      "pending_cells": 90,
-      "required_cells": 98,
+      "pending_cells": 88,
+      "required_cells": 96,
       "route_id": "java.typed-protocol.function.client_batch_item_response_pending_correlation_value"
     },
     {
@@ -35160,14 +35159,14 @@
     },
     {
       "executed_cells": 6,
-      "pending_cells": 56,
-      "required_cells": 62,
+      "pending_cells": 54,
+      "required_cells": 60,
       "route_id": "java.typed-protocol.function.client_batch_item_response_ttlv_hex"
     },
     {
       "executed_cells": 8,
-      "pending_cells": 70,
-      "required_cells": 78,
+      "pending_cells": 68,
+      "required_cells": 76,
       "route_id": "java.typed-protocol.function.client_batch_item_response_unique_batch_item_id"
     },
     {
@@ -35178,8 +35177,8 @@
     },
     {
       "executed_cells": 6,
-      "pending_cells": 56,
-      "required_cells": 62,
+      "pending_cells": 54,
+      "required_cells": 60,
       "route_id": "java.typed-protocol.function.client_batch_item_response_xml"
     },
     {
@@ -35628,7 +35627,7 @@
     }
   ],
   "schema_version": "1.0",
-  "selected_scope_cells": 44458,
+  "selected_scope_cells": 44446,
   "selected_scope_complete": true,
   "vendor_interoperability_claim": false
 }
