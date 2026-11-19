@@ -83,6 +83,26 @@ pub struct kmipkit_profile_validation_result_t {
     _private: [u8; 0],
 }
 #[repr(C)]
+pub struct kmipkit_client_listener_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
+pub struct kmipkit_client_listener_connection_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
+pub struct kmipkit_role_reversed_session_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
+pub struct kmipkit_incoming_server_batch_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
+pub struct kmipkit_server_request_dispatcher_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
 pub struct kmipkit_profile_readiness_t {
     _private: [u8; 0],
 }
@@ -895,4 +915,88 @@ pub struct kmipkit_transport_config_v1_t {
     pub read_timeout: kmipkit_timeout_limit_v1_t,
     pub total_timeout: kmipkit_timeout_limit_v1_t,
     pub max_request_bytes: u64,
+}
+
+pub const KMIPKIT_TRANSPORT_CONFIG_FLAG_TLS12_COMPAT: u32 = 0x0000_0004;
+
+/// Versioned configuration for a TLS 1.3/1.2 server listener.
+#[repr(C)]
+pub struct kmipkit_listener_transport_config_v1_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    pub flags: u32,
+    pub bind_port: u16,
+    pub reserved: u16,
+    pub bind_host: kmipkit_byte_span_v1_t,
+    pub server_certificates: *const kmipkit_transport_input_v1_t,
+    pub server_certificate_count: u64,
+    pub server_private_key: kmipkit_transport_input_v1_t,
+    pub trust_certificates: *const kmipkit_transport_input_v1_t,
+    pub trust_certificate_count: u64,
+    pub read_timeout: kmipkit_timeout_limit_v1_t,
+    pub write_timeout: kmipkit_timeout_limit_v1_t,
+    pub max_request_bytes: u64,
+}
+
+/// Metadata view of one incoming Server-to-Client request item.
+#[derive(Clone, Copy)]
+#[repr(C)]
+pub struct kmipkit_server_request_item_view_v1_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    pub operation: u32,
+    pub unique_batch_item_id_data: *const u8,
+    pub unique_batch_item_id_length: u64,
+}
+
+/// C callback dispatch table for Server-to-Client operations.
+#[derive(Clone, Copy)]
+#[repr(C)]
+pub struct kmipkit_server_request_handler_v1_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    pub user_data: *mut core::ffi::c_void,
+    pub handle_discover_versions: Option<
+        unsafe extern "C" fn(
+            user_data: *mut core::ffi::c_void,
+            item_view: *const kmipkit_server_request_item_view_v1_t,
+            protocol_version_major: u32,
+            protocol_version_minor: u32,
+            supported_versions_out: *mut u32,
+            supported_versions_capacity: u32,
+            supported_versions_count_out: *mut u32,
+        ) -> u32,
+    >,
+    pub handle_notify: Option<
+        unsafe extern "C" fn(
+            user_data: *mut core::ffi::c_void,
+            item_view: *const kmipkit_server_request_item_view_v1_t,
+            unique_identifier_data: *const u8,
+            unique_identifier_length: u64,
+        ) -> u32,
+    >,
+    pub handle_put: Option<
+        unsafe extern "C" fn(
+            user_data: *mut core::ffi::c_void,
+            item_view: *const kmipkit_server_request_item_view_v1_t,
+            unique_identifier_data: *const u8,
+            unique_identifier_length: u64,
+            payload_ttlv_data: *const u8,
+            payload_ttlv_length: u64,
+        ) -> u32,
+    >,
+    pub handle_query: Option<
+        unsafe extern "C" fn(
+            user_data: *mut core::ffi::c_void,
+            item_view: *const kmipkit_server_request_item_view_v1_t,
+            query_function_flags: u32,
+        ) -> u32,
+    >,
+    pub handle_set_endpoint_role: Option<
+        unsafe extern "C" fn(
+            user_data: *mut core::ffi::c_void,
+            item_view: *const kmipkit_server_request_item_view_v1_t,
+            target_role: u32,
+        ) -> u32,
+    >,
 }

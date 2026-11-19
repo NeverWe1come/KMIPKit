@@ -1424,6 +1424,8 @@ typedef uint32_t kmipkit_wire_encoding_t;
 #define KMIPKIT_TRANSPORT_CONFIG_FLAG_TLS_SERVER_NAME ((uint32_t)1)
 /* C ABI record input for kmipkit_transport_config_v1_t.flags: bit set when target_uri is present. */
 #define KMIPKIT_TRANSPORT_CONFIG_FLAG_TARGET_URI ((uint32_t)2)
+/* C ABI record input for kmipkit_listener_transport_config_v1_t.flags: bit set when TLS 1.2 compatibility is enabled. */
+#define KMIPKIT_TRANSPORT_CONFIG_FLAG_TLS12_COMPAT ((uint32_t)4)
 
 typedef struct kmipkit_add_attribute_request_t kmipkit_add_attribute_request_t;
 typedef struct kmipkit_adjust_attribute_request_t kmipkit_adjust_attribute_request_t;
@@ -1435,6 +1437,14 @@ typedef struct kmipkit_attribute_set_t kmipkit_attribute_set_t;
 typedef struct kmipkit_authentication_t kmipkit_authentication_t;
 typedef struct kmipkit_cancel_request_t kmipkit_cancel_request_t;
 typedef struct kmipkit_client_t kmipkit_client_t;
+typedef struct kmipkit_client_listener_t kmipkit_client_listener_t;
+typedef struct kmipkit_client_listener_connection_t kmipkit_client_listener_connection_t;
+typedef struct kmipkit_role_reversed_session_t kmipkit_role_reversed_session_t;
+typedef struct kmipkit_incoming_server_batch_t kmipkit_incoming_server_batch_t;
+typedef struct kmipkit_server_request_dispatcher_t kmipkit_server_request_dispatcher_t;
+typedef struct kmipkit_listener_transport_config_v1_t kmipkit_listener_transport_config_v1_t;
+typedef struct kmipkit_server_request_item_view_v1_t kmipkit_server_request_item_view_v1_t;
+typedef struct kmipkit_server_request_handler_v1_t kmipkit_server_request_handler_v1_t;
 typedef struct kmipkit_client_async_operation_outcome_t kmipkit_client_async_operation_outcome_t;
 typedef struct kmipkit_client_batch_t kmipkit_client_batch_t;
 typedef struct kmipkit_client_batch_item_t kmipkit_client_batch_item_t;
@@ -1982,6 +1992,42 @@ struct kmipkit_transport_config_v1_t {
     kmipkit_timeout_limit_v1_t read_timeout;
     kmipkit_timeout_limit_v1_t total_timeout;
     uint64_t max_request_bytes;
+};
+
+struct kmipkit_listener_transport_config_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint32_t flags;
+    uint16_t bind_port;
+    uint16_t reserved;
+    kmipkit_byte_span_v1_t bind_host;
+    const kmipkit_transport_input_v1_t * server_certificates;
+    uint64_t server_certificate_count;
+    kmipkit_transport_input_v1_t server_private_key;
+    const kmipkit_transport_input_v1_t * trust_certificates;
+    uint64_t trust_certificate_count;
+    kmipkit_timeout_limit_v1_t read_timeout;
+    kmipkit_timeout_limit_v1_t write_timeout;
+    uint64_t max_request_bytes;
+};
+
+struct kmipkit_server_request_item_view_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint32_t operation;
+    const uint8_t * unique_batch_item_id_data;
+    uint64_t unique_batch_item_id_length;
+};
+
+struct kmipkit_server_request_handler_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    void * user_data;
+    uint32_t (*handle_discover_versions)(void * user_data, const kmipkit_server_request_item_view_v1_t * item_view, uint32_t protocol_version_major, uint32_t protocol_version_minor, uint32_t * supported_versions_out, uint32_t supported_versions_capacity, uint32_t * supported_versions_count_out);
+    uint32_t (*handle_notify)(void * user_data, const kmipkit_server_request_item_view_v1_t * item_view, const uint8_t * unique_identifier_data, uint64_t unique_identifier_length);
+    uint32_t (*handle_put)(void * user_data, const kmipkit_server_request_item_view_v1_t * item_view, const uint8_t * unique_identifier_data, uint64_t unique_identifier_length, const uint8_t * payload_ttlv_data, uint64_t payload_ttlv_length);
+    uint32_t (*handle_query)(void * user_data, const kmipkit_server_request_item_view_v1_t * item_view, uint32_t query_function_flags);
+    uint32_t (*handle_set_endpoint_role)(void * user_data, const kmipkit_server_request_item_view_v1_t * item_view, uint32_t target_role);
 };
 
 void kmipkit_add_attribute_request_release(kmipkit_add_attribute_request_t *handle);
@@ -4462,6 +4508,59 @@ int32_t kmipkit_nist_key_lifecycle_can_process(uint32_t state_enum, uint8_t * ou
 /* Cryptographic parameters v2 */
 int32_t kmipkit_cryptographic_parameters_from_fields_v2(const kmipkit_cryptographic_parameters_fields_v2_t * fields, kmipkit_cryptographic_parameters_t ** out_parameters);
 int32_t kmipkit_cryptographic_parameters_read_fields_v2(kmipkit_cryptographic_parameters_t * parameters, kmipkit_cryptographic_parameters_fields_v2_t * out_fields);
+
+/* Client Listener (S2C & Role Reversal) */
+int32_t kmipkit_client_listener_bind_raw_tls(const kmipkit_listener_transport_config_v1_t * config, kmipkit_client_listener_t ** out_listener);
+int32_t kmipkit_client_listener_bind_https(const kmipkit_listener_transport_config_v1_t * config, kmipkit_client_listener_t ** out_listener);
+int32_t kmipkit_client_listener_get_port(kmipkit_client_listener_t * listener, uint16_t * out_port);
+int32_t kmipkit_client_listener_accept(kmipkit_client_listener_t * listener, uint64_t timeout_ms, kmipkit_client_listener_connection_t ** out_connection);
+void kmipkit_client_listener_release(kmipkit_client_listener_t * listener);
+
+/* Client Listener Connection */
+int32_t kmipkit_client_listener_connection_recv_batch(kmipkit_client_listener_connection_t * connection, kmipkit_codec_limits_t * limits, uint64_t timeout_ms, kmipkit_incoming_server_batch_t ** out_batch);
+int32_t kmipkit_client_listener_connection_send_response(kmipkit_client_listener_connection_t * connection, kmipkit_response_message_t * response, uint64_t timeout_ms);
+int32_t kmipkit_client_listener_connection_into_role_reversed(kmipkit_client_listener_connection_t * connection, kmipkit_role_reversed_session_t ** out_session);
+int32_t kmipkit_client_listener_connection_close(kmipkit_client_listener_connection_t * connection);
+void kmipkit_client_listener_connection_release(kmipkit_client_listener_connection_t * connection);
+
+/* Role-Reversed Session */
+int32_t kmipkit_role_reversed_session_recv_batch(kmipkit_role_reversed_session_t * session, kmipkit_codec_limits_t * limits, uint64_t timeout_ms, kmipkit_incoming_server_batch_t ** out_batch);
+int32_t kmipkit_role_reversed_session_send_response(kmipkit_role_reversed_session_t * session, kmipkit_response_message_t * response, uint64_t timeout_ms);
+int32_t kmipkit_role_reversed_session_close(kmipkit_role_reversed_session_t * session);
+void kmipkit_role_reversed_session_release(kmipkit_role_reversed_session_t * session);
+
+/* Incoming Server Batch */
+int32_t kmipkit_incoming_server_batch_decode(const uint8_t * data, uint64_t length, uint32_t encoding, kmipkit_codec_limits_t * limits, kmipkit_incoming_server_batch_t ** out_batch);
+int32_t kmipkit_incoming_server_batch_decode_ttlv(const uint8_t * data, uint64_t length, kmipkit_codec_limits_t * limits, kmipkit_incoming_server_batch_t ** out_batch);
+int32_t kmipkit_incoming_server_batch_protocol_version(kmipkit_incoming_server_batch_t * batch, uint32_t * out_major, uint32_t * out_minor);
+int32_t kmipkit_incoming_server_batch_item_count(kmipkit_incoming_server_batch_t * batch, uint32_t * out_count);
+int32_t kmipkit_incoming_server_batch_item_operation(kmipkit_incoming_server_batch_t * batch, uint32_t item_index, uint32_t * out_operation);
+int32_t kmipkit_incoming_server_batch_item_unique_batch_item_id(kmipkit_incoming_server_batch_t * batch, uint32_t item_index, uint8_t * out_buffer, uint64_t buffer_capacity, uint64_t * out_written_len);
+int32_t kmipkit_incoming_server_batch_item_discover_versions(kmipkit_incoming_server_batch_t * batch, uint32_t item_index, uint32_t * out_versions, uint32_t versions_capacity, uint32_t * out_versions_count);
+int32_t kmipkit_incoming_server_batch_item_notify(kmipkit_incoming_server_batch_t * batch, uint32_t item_index, uint8_t * out_uid_buffer, uint64_t uid_capacity, uint64_t * out_uid_len);
+int32_t kmipkit_incoming_server_batch_item_put(kmipkit_incoming_server_batch_t * batch, uint32_t item_index, uint8_t * out_uid_buffer, uint64_t uid_capacity, uint64_t * out_uid_len, uint32_t * out_put_function);
+int32_t kmipkit_incoming_server_batch_item_query(kmipkit_incoming_server_batch_t * batch, uint32_t item_index, uint32_t * out_query_function_flags);
+int32_t kmipkit_incoming_server_batch_item_set_endpoint_role(kmipkit_incoming_server_batch_t * batch, uint32_t item_index, uint32_t * out_endpoint_role);
+void kmipkit_incoming_server_batch_release(kmipkit_incoming_server_batch_t * batch);
+
+/* Server Request Dispatcher */
+int32_t kmipkit_server_request_dispatcher_create(kmipkit_server_request_dispatcher_t ** out_dispatcher);
+int32_t kmipkit_server_request_dispatcher_dispatch_v1(kmipkit_server_request_dispatcher_t * dispatcher, kmipkit_incoming_server_batch_t * batch, const kmipkit_server_request_handler_v1_t * handler, kmipkit_response_message_t ** out_response);
+void kmipkit_server_request_dispatcher_release(kmipkit_server_request_dispatcher_t * dispatcher);
+
+/* Server-to-Client helpers */
+int32_t kmipkit_s2c_discover_versions_negotiate(uint32_t requested_major, uint32_t requested_minor, const uint32_t * supported_versions, uint32_t supported_count, uint32_t * out_negotiated_major, uint32_t * out_negotiated_minor);
+int32_t kmipkit_s2c_put_effective_function(uint32_t requested_put_function, uint8_t replaced_object_exists_locally, uint32_t * out_effective_put_function);
+int32_t kmipkit_s2c_query_respond_ttlv(uint32_t query_function_flags, const uint8_t * vendor_id_data, uint64_t vendor_id_len, kmipkit_ttlv_structure_t ** out_structure);
+
+/* Client SetEndpointRole execution */
+int32_t kmipkit_client_set_endpoint_role(kmipkit_client_t * client, uint32_t endpoint_role, const uint8_t * vendor_identification, uint64_t vendor_identification_length, kmipkit_codec_limits_t * limits, kmipkit_client_batch_item_response_t ** out_response);
+int32_t kmipkit_client_set_endpoint_role_with_options_v1(kmipkit_client_t * client, uint32_t endpoint_role, const uint8_t * vendor_identification, uint64_t vendor_identification_length, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_item_response_t ** out_response);
+
+/* Extended Version Gating spans */
+int32_t kmipkit_version_gate_operation_span(uint32_t operation, uint32_t * out_introduced_major, uint32_t * out_introduced_minor, uint32_t * out_deprecated_major, uint32_t * out_deprecated_minor, uint32_t * out_removed_major, uint32_t * out_removed_minor);
+int32_t kmipkit_version_gate_tag_span(uint32_t tag, uint32_t * out_introduced_major, uint32_t * out_introduced_minor, uint32_t * out_deprecated_major, uint32_t * out_deprecated_minor, uint32_t * out_removed_major, uint32_t * out_removed_minor);
+int32_t kmipkit_version_gate_validate_attribute_mutation(uint32_t protocol_version_major, uint32_t protocol_version_minor, uint32_t attribute_tag);
 
 
 #ifdef __cplusplus

@@ -263,3 +263,87 @@ fn test_set_endpoint_role_item_ffi() {
     assert!(!item.is_null());
     kmipkit_client_batch_item_release(item);
 }
+
+#[test]
+fn test_s2c_listener_dispatcher_and_helpers_ffi() {
+    let mut intro_maj = 0;
+    let mut intro_min = 0;
+    let mut depr_maj = 0;
+    let mut depr_min = 0;
+    let mut rem_maj = 0;
+    let mut rem_min = 0;
+    assert_eq!(
+        client_abi::kmipkit_version_gate_operation_span(
+            0x0000_001E,
+            &mut intro_maj,
+            &mut intro_min,
+            &mut depr_maj,
+            &mut depr_min,
+            &mut rem_maj,
+            &mut rem_min,
+        ),
+        SUCCESS
+    );
+    assert_eq!(intro_maj, 2);
+    assert_eq!(intro_min, 0);
+
+    let supported = [((2u32) << 16) | 1, ((2u32) << 16) | 0];
+    let mut neg_maj = 0;
+    let mut neg_min = 0;
+    assert_eq!(
+        client_abi::kmipkit_s2c_discover_versions_negotiate(
+            2,
+            1,
+            supported.as_ptr(),
+            supported.len() as u32,
+            &mut neg_maj,
+            &mut neg_min,
+        ),
+        SUCCESS
+    );
+    assert_eq!(neg_maj, 2);
+    assert_eq!(neg_min, 1);
+
+    let mut eff = 0;
+    assert_eq!(
+        client_abi::kmipkit_s2c_put_effective_function(
+            2,
+            0,
+            &mut eff,
+        ),
+        SUCCESS
+    );
+    assert_eq!(eff, 1);
+
+    assert_eq!(
+        client_abi::kmipkit_s2c_put_effective_function(
+            2,
+            1,
+            &mut eff,
+        ),
+        SUCCESS
+    );
+    assert_eq!(eff, 2);
+
+    let mut query_ttlv = ptr::null_mut();
+    let vendor = b"TestVendor";
+    assert_eq!(
+        client_abi::kmipkit_s2c_query_respond_ttlv(
+            0x01 | 0x02 | 0x04,
+            vendor.as_ptr(),
+            vendor.len() as u64,
+            &mut query_ttlv,
+        ),
+        SUCCESS
+    );
+    assert!(!query_ttlv.is_null());
+    kmipkit_ttlv_structure_release(query_ttlv);
+
+    let mut dispatcher = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_server_request_dispatcher_create(&mut dispatcher),
+        SUCCESS
+    );
+    assert!(!dispatcher.is_null());
+    client_abi::kmipkit_server_request_dispatcher_release(dispatcher);
+}

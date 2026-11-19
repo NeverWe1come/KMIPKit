@@ -180,9 +180,11 @@ impl ServerResponseBuilder {
         header
             .try_push(item(TIME_STAMP_TAG, Value::date_time(self.timestamp))?)
             .map_err(protocol_model_error)?;
-        header
-            .try_push(item(BATCH_COUNT_TAG, Value::integer(count))?)
-            .map_err(protocol_model_error)?;
+        if self.version != ProtocolVersion::V3_0 {
+            header
+                .try_push(item(BATCH_COUNT_TAG, Value::integer(count))?)
+                .map_err(protocol_model_error)?;
+        }
 
         let mut root = Structure::new();
         root.try_push(item(RESPONSE_HEADER_TAG, Value::structure(header))?)

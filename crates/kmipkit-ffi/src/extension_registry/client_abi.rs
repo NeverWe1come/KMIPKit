@@ -837,7 +837,11 @@ fn transport_config_from_v1(
         || input.struct_size < required_size
         || input.reserved != 0
         || input.reserved2 != 0
-        || input.flags & !(TRANSPORT_FLAG_TLS_SERVER_NAME | TRANSPORT_FLAG_TARGET_URI) != 0
+        || input.flags
+            & !(TRANSPORT_FLAG_TLS_SERVER_NAME
+                | TRANSPORT_FLAG_TARGET_URI
+                | TRANSPORT_FLAG_TLS12_COMPAT)
+            != 0
     {
         return Err(ERROR_INVALID_INPUT);
     }
@@ -915,6 +919,9 @@ fn transport_config_from_v1(
         builder = builder.target_uri(transport_text(input.target_uri)?);
     } else if input.target_uri.length != 0 || !input.target_uri.data.is_null() {
         return Err(ERROR_INVALID_INPUT);
+    }
+    if input.flags & TRANSPORT_FLAG_TLS12_COMPAT != 0 {
+        builder = builder.tls_version_policy(kmipkit_transport::TlsVersionPolicy::Tls12And13Compat);
     }
     builder.build().map_err(|_| ERROR_INVALID_INPUT)
 }
@@ -9201,5 +9208,1284 @@ pub extern "C" fn kmipkit_client_batch_item_response_xml(
             out_rendered,
             kmipkit_client::ClientBatchItemResponse::xml,
         )
+    })
+}
+
+fn listener_transport_config_from_v1(
+    input: *const kmipkit_listener_transport_config_v1_t,
+) -> FfiResult<kmipkit_transport::ListenerTransportConfig> {
+    if input.is_null() {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    // SAFETY: caller guarantees non-null pointer references valid record.
+    let input = unsafe { &*input };
+    let required_size = u32::try_from(std::mem::size_of::<kmipkit_listener_transport_config_v1_t>())
+        .map_err(|_| ERROR_INVALID_INPUT)?;
+    if input.abi_version != 1
+        || input.struct_size < required_size
+        || input.reserved != 0
+        || input.flags & !KMIPKIT_TRANSPORT_CONFIG_FLAG_TLS12_COMPAT != 0
+    {
+        return Err(ERROR_INVALID_INPUT);
+    }
+
+    let bind_host = if input.bind_host.length == 0 || input.bind_host.data.is_null() {
+        "127.0.0.1".to_string()
+    } else {
+        transport_text(input.bind_host)?
+    };
+
+    let server_certificates =
+        transport_input_slice(input.server_certificates, input.server_certificate_count)?;
+    if server_certificates.is_empty() {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    let identity = ClientIdentity::new(
+        client_certificate_chain(server_certificates)?,
+        private_key_input(&input.server_private_key)?,
+    );
+
+    let mut builder =
+        kmipkit_transport::ListenerTransportConfig::builder(bind_host, input.bind_port)
+            .listener_identity(identity);
+
+    let trust_certificates =
+        transport_input_slice(input.trust_certificates, input.trust_certificate_count)?;
+    let trust = if !trust_certificates.is_empty() {
+        let materials = certificate_input_materials(trust_certificates)?;
+        let authorities = trust_certificates
+            .iter()
+            .zip(materials)
+            .map(|(input, bytes)| match transport_input_encoding(input)? {
+                TRANSPORT_ENCODING_PEM => Ok(CertificateInput::from_pem(bytes)),
+                TRANSPORT_ENCODING_DER => Ok(CertificateInput::from_der(vec![bytes])),
+                _ => Err(ERROR_INVALID_INPUT),
+            })
+            .collect::<FfiResult<Vec<_>>>()?;
+        TrustSource::certificate_authorities(authorities)
+    } else {
+        TrustSource::platform()
+    };
+    builder = builder.trust_source(trust);
+
+    let defaults = TimeoutPolicy::default();
+    let timeouts = defaults
+        .with_write(timeout_limit_v1(&input.write_timeout, defaults.write())?)
+        .with_read(timeout_limit_v1(&input.read_timeout, defaults.read())?);
+    builder = builder.timeout_policy(timeouts);
+
+    if input.max_request_bytes > 0 {
+        let max_bytes = usize::try_from(input.max_request_bytes).map_err(|_| ERROR_RESOURCE_LIMIT)?;
+        builder = builder.max_request_bytes(max_bytes);
+    }
+
+    builder.build().map_err(|_| ERROR_INVALID_INPUT)
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_listener_bind_raw_tls(
+    config: *const kmipkit_listener_transport_config_v1_t,
+    out_listener: *mut *mut kmipkit_client_listener_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_listener);
+        let transport_config = try_ffi!(listener_transport_config_from_v1(config));
+        match kmipkit_client::ClientListener::bind_raw_tls(transport_config) {
+            Ok(listener) => {
+                *out = try_ffi!(try_make_handle(
+                    Kind::ClientListener,
+                    HandleValue::ClientListener(Arc::new(Mutex::new(listener))),
+                ));
+                SUCCESS
+            }
+            Err(err) => record_client_error(&err),
+        }
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_listener_bind_https(
+    config: *const kmipkit_listener_transport_config_v1_t,
+    out_listener: *mut *mut kmipkit_client_listener_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_listener);
+        let transport_config = try_ffi!(listener_transport_config_from_v1(config));
+        match kmipkit_client::ClientListener::bind_https(transport_config) {
+            Ok(listener) => {
+                *out = try_ffi!(try_make_handle(
+                    Kind::ClientListener,
+                    HandleValue::ClientListener(Arc::new(Mutex::new(listener))),
+                ));
+                SUCCESS
+            }
+            Err(err) => record_client_error(&err),
+        }
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_listener_get_port(
+    listener: *mut kmipkit_client_listener_t,
+    out_port: *mut u16,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_port);
+        let listener_handle = read_handle!(listener, ClientListener);
+        let HandleValue::ClientListener(listener) = &listener_handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(listener) = listener.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        match listener.port() {
+            Ok(port) => {
+                *out = port;
+                SUCCESS
+            }
+            Err(_) => record_ffi_error(ERROR_INTERNAL),
+        }
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_listener_accept(
+    listener: *mut kmipkit_client_listener_t,
+    timeout_ms: u64,
+    out_connection: *mut *mut kmipkit_client_listener_connection_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_connection);
+        let listener_handle = read_handle!(listener, ClientListener);
+        let HandleValue::ClientListener(listener) = &listener_handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(mut listener) = listener.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let timeout = if timeout_ms == 0 {
+            None
+        } else {
+            Some(std::time::Duration::from_millis(timeout_ms))
+        };
+        match listener.accept(timeout) {
+            Ok(conn) => {
+                *out = try_ffi!(try_make_handle(
+                    Kind::ClientListenerConnection,
+                    HandleValue::ClientListenerConnection(Arc::new(Mutex::new(Some(conn)))),
+                ));
+                SUCCESS
+            }
+            Err(err) => record_client_error(&err),
+        }
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_listener_release(listener: *mut kmipkit_client_listener_t) {
+    ffi_entrypoint(|| release(listener, Kind::ClientListener));
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_listener_connection_recv_batch(
+    connection: *mut kmipkit_client_listener_connection_t,
+    limits: *mut kmipkit_codec_limits_t,
+    timeout_ms: u64,
+    out_batch: *mut *mut kmipkit_incoming_server_batch_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_batch);
+        let conn_handle = read_handle!(connection, ClientListenerConnection);
+        let HandleValue::ClientListenerConnection(conn_arc) = &conn_handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(mut guard) = conn_arc.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let conn = match guard.as_mut() {
+            Some(c) => c,
+            None => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        let limits_handle = read_handle!(limits, CodecLimits);
+        let HandleValue::CodecLimits(limits_val) = &limits_handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let timeout = if timeout_ms == 0 {
+            None
+        } else {
+            Some(std::time::Duration::from_millis(timeout_ms))
+        };
+        match conn.recv_batch(limits_val, timeout) {
+            Ok(batch) => {
+                *out = try_ffi!(try_make_handle(
+                    Kind::IncomingServerBatch,
+                    HandleValue::IncomingServerBatch(Arc::new(batch)),
+                ));
+                SUCCESS
+            }
+            Err(err) => record_client_error(&err),
+        }
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_listener_connection_send_response(
+    connection: *mut kmipkit_client_listener_connection_t,
+    response: *mut kmipkit_response_message_t,
+    timeout_ms: u64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let conn_handle = read_handle!(connection, ClientListenerConnection);
+        let HandleValue::ClientListenerConnection(conn_arc) = &conn_handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(mut guard) = conn_arc.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let conn = match guard.as_mut() {
+            Some(c) => c,
+            None => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        let resp_handle = read_handle!(response, ResponseMessage);
+        let HandleValue::ResponseMessage(resp) = &resp_handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let timeout = if timeout_ms == 0 {
+            None
+        } else {
+            Some(std::time::Duration::from_millis(timeout_ms))
+        };
+        match conn.send_response(resp, timeout) {
+            Ok(()) => SUCCESS,
+            Err(err) => record_client_error(&err),
+        }
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_listener_connection_into_role_reversed(
+    connection: *mut kmipkit_client_listener_connection_t,
+    out_session: *mut *mut kmipkit_role_reversed_session_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_session);
+        let conn_handle = read_handle!(connection, ClientListenerConnection);
+        let HandleValue::ClientListenerConnection(conn_arc) = &conn_handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(mut guard) = conn_arc.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let conn = match guard.take() {
+            Some(c) => c,
+            None => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        match conn.into_role_reversed() {
+            Ok(session) => {
+                *out = try_ffi!(try_make_handle(
+                    Kind::RoleReversedSession,
+                    HandleValue::RoleReversedSession(Arc::new(Mutex::new(session))),
+                ));
+                SUCCESS
+            }
+            Err(err) => record_client_error(&err),
+        }
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_listener_connection_close(
+    connection: *mut kmipkit_client_listener_connection_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let conn_handle = read_handle!(connection, ClientListenerConnection);
+        let HandleValue::ClientListenerConnection(conn_arc) = &conn_handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(mut guard) = conn_arc.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if let Some(conn) = guard.as_mut() {
+            match conn.close() {
+                Ok(()) => SUCCESS,
+                Err(err) => record_client_error(&err),
+            }
+        } else {
+            SUCCESS
+        }
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_listener_connection_release(
+    connection: *mut kmipkit_client_listener_connection_t,
+) {
+    ffi_entrypoint(|| release(connection, Kind::ClientListenerConnection));
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_role_reversed_session_recv_batch(
+    session: *mut kmipkit_role_reversed_session_t,
+    limits: *mut kmipkit_codec_limits_t,
+    timeout_ms: u64,
+    out_batch: *mut *mut kmipkit_incoming_server_batch_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_batch);
+        let session_handle = read_handle!(session, RoleReversedSession);
+        let HandleValue::RoleReversedSession(session_arc) = &session_handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(mut session) = session_arc.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let limits_handle = read_handle!(limits, CodecLimits);
+        let HandleValue::CodecLimits(limits_val) = &limits_handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let timeout = if timeout_ms == 0 {
+            None
+        } else {
+            Some(std::time::Duration::from_millis(timeout_ms))
+        };
+        match session.recv_batch(limits_val, timeout) {
+            Ok(batch) => {
+                *out = try_ffi!(try_make_handle(
+                    Kind::IncomingServerBatch,
+                    HandleValue::IncomingServerBatch(Arc::new(batch)),
+                ));
+                SUCCESS
+            }
+            Err(err) => record_client_error(&err),
+        }
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_role_reversed_session_send_response(
+    session: *mut kmipkit_role_reversed_session_t,
+    response: *mut kmipkit_response_message_t,
+    timeout_ms: u64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let session_handle = read_handle!(session, RoleReversedSession);
+        let HandleValue::RoleReversedSession(session_arc) = &session_handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(mut session) = session_arc.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let resp_handle = read_handle!(response, ResponseMessage);
+        let HandleValue::ResponseMessage(resp) = &resp_handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let timeout = if timeout_ms == 0 {
+            None
+        } else {
+            Some(std::time::Duration::from_millis(timeout_ms))
+        };
+        match session.send_response(resp, timeout) {
+            Ok(()) => SUCCESS,
+            Err(err) => record_client_error(&err),
+        }
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_role_reversed_session_close(
+    session: *mut kmipkit_role_reversed_session_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let session_handle = read_handle!(session, RoleReversedSession);
+        let HandleValue::RoleReversedSession(session_arc) = &session_handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(mut session) = session_arc.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        match session.close() {
+            Ok(()) => SUCCESS,
+            Err(err) => record_client_error(&err),
+        }
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_role_reversed_session_release(
+    session: *mut kmipkit_role_reversed_session_t,
+) {
+    ffi_entrypoint(|| release(session, Kind::RoleReversedSession));
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_incoming_server_batch_decode(
+    data: *const u8,
+    length: u64,
+    encoding: u32,
+    limits: *mut kmipkit_codec_limits_t,
+    out_batch: *mut *mut kmipkit_incoming_server_batch_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_batch);
+        let span = try_ffi!(input_span(data, length, MAX_FFI_INPUT_BYTES));
+        let limits_handle = read_handle!(limits, CodecLimits);
+        let HandleValue::CodecLimits(limits_val) = &limits_handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let wire_enc = match encoding {
+            0 => WireEncoding::Ttlv,
+            1 => WireEncoding::Json,
+            2 => WireEncoding::Xml,
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        match kmipkit_client::IncomingServerBatch::from_encoded_bytes(span, wire_enc, limits_val) {
+            Ok(batch) => {
+                *out = try_ffi!(try_make_handle(
+                    Kind::IncomingServerBatch,
+                    HandleValue::IncomingServerBatch(Arc::new(batch)),
+                ));
+                SUCCESS
+            }
+            Err(err) => record_client_error(&err),
+        }
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_incoming_server_batch_decode_ttlv(
+    data: *const u8,
+    length: u64,
+    limits: *mut kmipkit_codec_limits_t,
+    out_batch: *mut *mut kmipkit_incoming_server_batch_t,
+) -> i32 {
+    kmipkit_incoming_server_batch_decode(data, length, 0, limits, out_batch)
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_incoming_server_batch_protocol_version(
+    batch: *mut kmipkit_incoming_server_batch_t,
+    out_major: *mut u32,
+    out_minor: *mut u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let major = scalar_out!(out_major);
+        let minor = scalar_out!(out_minor);
+        let batch_handle = read_handle!(batch, IncomingServerBatch);
+        let HandleValue::IncomingServerBatch(batch) = &batch_handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let pv = batch.protocol_version();
+        *major = pv.major() as u32;
+        *minor = pv.minor() as u32;
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_incoming_server_batch_item_count(
+    batch: *mut kmipkit_incoming_server_batch_t,
+    out_count: *mut u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let count = scalar_out!(out_count);
+        let batch_handle = read_handle!(batch, IncomingServerBatch);
+        let HandleValue::IncomingServerBatch(batch) = &batch_handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *count = batch.batch_count();
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_incoming_server_batch_item_operation(
+    batch: *mut kmipkit_incoming_server_batch_t,
+    item_index: u32,
+    out_operation: *mut u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let operation = scalar_out!(out_operation);
+        let batch_handle = read_handle!(batch, IncomingServerBatch);
+        let HandleValue::IncomingServerBatch(batch) = &batch_handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let items = batch.items();
+        let idx = item_index as usize;
+        if idx >= items.len() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        *operation = items[idx].operation();
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_incoming_server_batch_item_unique_batch_item_id(
+    batch: *mut kmipkit_incoming_server_batch_t,
+    item_index: u32,
+    out_buffer: *mut u8,
+    buffer_capacity: u64,
+    out_written_len: *mut u64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let written_len = scalar_out!(out_written_len);
+        let batch_handle = read_handle!(batch, IncomingServerBatch);
+        let HandleValue::IncomingServerBatch(batch) = &batch_handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let items = batch.items();
+        let idx = item_index as usize;
+        if idx >= items.len() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        match items[idx].unique_batch_item_id() {
+            Some(id) => {
+                if buffer_capacity < id.len() as u64 || out_buffer.is_null() {
+                    *written_len = id.len() as u64;
+                    return record_ffi_error(ERROR_INVALID_INPUT);
+                }
+                unsafe {
+                    ptr::copy_nonoverlapping(id.as_ptr(), out_buffer, id.len());
+                }
+                *written_len = id.len() as u64;
+                SUCCESS
+            }
+            None => {
+                *written_len = 0;
+                SUCCESS
+            }
+        }
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_incoming_server_batch_item_discover_versions(
+    batch: *mut kmipkit_incoming_server_batch_t,
+    item_index: u32,
+    out_versions: *mut u32,
+    versions_capacity: u32,
+    out_versions_count: *mut u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out_count = scalar_out!(out_versions_count);
+        let batch_handle = read_handle!(batch, IncomingServerBatch);
+        let HandleValue::IncomingServerBatch(batch) = &batch_handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let items = batch.items();
+        let idx = item_index as usize;
+        if idx >= items.len() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        if let Some(req) = items[idx].as_discover_versions() {
+            let versions = req.protocol_versions();
+            let count = versions.len() as u32;
+            *out_count = count;
+            if versions_capacity < count || out_versions.is_null() {
+                return if versions_capacity == 0 {
+                    SUCCESS
+                } else {
+                    record_ffi_error(ERROR_INVALID_INPUT)
+                };
+            }
+            for (i, v) in versions.iter().enumerate() {
+                let packed = ((v.major() as u32) << 16) | (v.minor() as u32);
+                unsafe {
+                    *out_versions.add(i) = packed;
+                }
+            }
+            SUCCESS
+        } else {
+            record_ffi_error(ERROR_INVALID_INPUT)
+        }
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_incoming_server_batch_item_notify(
+    batch: *mut kmipkit_incoming_server_batch_t,
+    item_index: u32,
+    out_uid_buffer: *mut u8,
+    uid_capacity: u64,
+    out_uid_len: *mut u64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out_len = scalar_out!(out_uid_len);
+        let batch_handle = read_handle!(batch, IncomingServerBatch);
+        let HandleValue::IncomingServerBatch(batch) = &batch_handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let items = batch.items();
+        let idx = item_index as usize;
+        if idx >= items.len() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        if let Some(req) = items[idx].as_notify() {
+            let uid = req.unique_identifier().as_bytes();
+            let len = uid.len() as u64;
+            *out_len = len;
+            if uid_capacity < len || out_uid_buffer.is_null() {
+                return if uid_capacity == 0 {
+                    SUCCESS
+                } else {
+                    record_ffi_error(ERROR_INVALID_INPUT)
+                };
+            }
+            unsafe {
+                ptr::copy_nonoverlapping(uid.as_ptr(), out_uid_buffer, uid.len());
+            }
+            SUCCESS
+        } else {
+            record_ffi_error(ERROR_INVALID_INPUT)
+        }
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_incoming_server_batch_item_put(
+    batch: *mut kmipkit_incoming_server_batch_t,
+    item_index: u32,
+    out_uid_buffer: *mut u8,
+    uid_capacity: u64,
+    out_uid_len: *mut u64,
+    out_put_function: *mut u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out_len = scalar_out!(out_uid_len);
+        let out_func = scalar_out!(out_put_function);
+        let batch_handle = read_handle!(batch, IncomingServerBatch);
+        let HandleValue::IncomingServerBatch(batch) = &batch_handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let items = batch.items();
+        let idx = item_index as usize;
+        if idx >= items.len() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        if let Some(req) = items[idx].as_put() {
+            let uid = req.unique_identifier().as_bytes();
+            let len = uid.len() as u64;
+            *out_len = len;
+            *out_func = req.put_function().raw();
+            if uid_capacity < len || out_uid_buffer.is_null() {
+                return if uid_capacity == 0 {
+                    SUCCESS
+                } else {
+                    record_ffi_error(ERROR_INVALID_INPUT)
+                };
+            }
+            unsafe {
+                ptr::copy_nonoverlapping(uid.as_ptr(), out_uid_buffer, uid.len());
+            }
+            SUCCESS
+        } else {
+            record_ffi_error(ERROR_INVALID_INPUT)
+        }
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_incoming_server_batch_item_query(
+    batch: *mut kmipkit_incoming_server_batch_t,
+    item_index: u32,
+    out_query_function_flags: *mut u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out_flags = scalar_out!(out_query_function_flags);
+        let batch_handle = read_handle!(batch, IncomingServerBatch);
+        let HandleValue::IncomingServerBatch(batch) = &batch_handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let items = batch.items();
+        let idx = item_index as usize;
+        if idx >= items.len() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        if let Some(req) = items[idx].as_query() {
+            let mut flags: u32 = 0;
+            for qf in req.query_functions() {
+                flags |= 1u32 << (qf.raw().min(31));
+            }
+            *out_flags = flags;
+            SUCCESS
+        } else {
+            record_ffi_error(ERROR_INVALID_INPUT)
+        }
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_incoming_server_batch_item_set_endpoint_role(
+    batch: *mut kmipkit_incoming_server_batch_t,
+    item_index: u32,
+    out_endpoint_role: *mut u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out_role = scalar_out!(out_endpoint_role);
+        let batch_handle = read_handle!(batch, IncomingServerBatch);
+        let HandleValue::IncomingServerBatch(batch) = &batch_handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let items = batch.items();
+        let idx = item_index as usize;
+        if idx >= items.len() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        if let Some(req) = items[idx].as_set_endpoint_role() {
+            *out_role = req.endpoint_role().raw();
+            SUCCESS
+        } else {
+            record_ffi_error(ERROR_INVALID_INPUT)
+        }
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_incoming_server_batch_release(
+    batch: *mut kmipkit_incoming_server_batch_t,
+) {
+    ffi_entrypoint(|| release(batch, Kind::IncomingServerBatch));
+}
+
+fn s2c_failure_result() -> kmipkit_protocol::KmipOperationResult {
+    kmipkit_protocol::KmipOperationResult::new(
+        kmipkit_protocol::ResultStatus::from_raw(1),
+        Some(kmipkit_protocol::ResultReason::from_raw(0x05)),
+        Some(kmipkit_protocol::ResultMessage::new("operation not supported".to_string())),
+    ).expect("valid failure result")
+}
+
+struct CServerRequestHandlerAdapter {
+    handler: kmipkit_server_request_handler_v1_t,
+}
+
+impl kmipkit_client::ServerRequestHandler for CServerRequestHandlerAdapter {
+    fn handle_discover_versions(
+        &mut self,
+        request: &kmipkit_protocol::ServerDiscoverVersionsRequest,
+    ) -> Result<kmipkit_protocol::ServerDiscoverVersionsResponse, kmipkit_protocol::KmipOperationResult> {
+        let callback = match self.handler.handle_discover_versions {
+            Some(cb) => cb,
+            None => return Err(s2c_failure_result()),
+        };
+        let view = kmipkit_server_request_item_view_v1_t {
+            struct_size: std::mem::size_of::<kmipkit_server_request_item_view_v1_t>() as u32,
+            abi_version: 1,
+            operation: 0x0000_001E,
+            unique_batch_item_id_data: ptr::null(),
+            unique_batch_item_id_length: 0,
+        };
+        let mut supported: [u32; 16] = [0; 16];
+        let mut supported_count: u32 = 0;
+        let requested = request.protocol_versions();
+        let (req_maj, req_min) = if let Some(pv) = requested.first() {
+            (pv.major() as u32, pv.minor() as u32)
+        } else {
+            (2, 1)
+        };
+        let code = unsafe {
+            callback(
+                self.handler.user_data,
+                &view,
+                req_maj,
+                req_min,
+                supported.as_mut_ptr(),
+                16,
+                &mut supported_count,
+            )
+        };
+        if code != 0 {
+            return Err(s2c_failure_result());
+        }
+        let count = (supported_count as usize).min(16);
+        let mut versions = Vec::new();
+        for &packed in &supported[..count] {
+            let maj = (packed >> 16) as i32;
+            let min = (packed & 0xFFFF) as i32;
+            versions.push(kmipkit_protocol::ProtocolVersion::from_raw(maj, min));
+        }
+        if versions.is_empty() {
+            versions.push(kmipkit_protocol::ProtocolVersion::V2_1);
+        }
+        Ok(kmipkit_protocol::ServerDiscoverVersionsResponse::new(versions))
+    }
+
+    fn handle_notify(
+        &mut self,
+        request: &kmipkit_protocol::ServerNotifyRequest,
+    ) -> Result<kmipkit_protocol::ServerNotifyResponse, kmipkit_protocol::KmipOperationResult> {
+        let callback = match self.handler.handle_notify {
+            Some(cb) => cb,
+            None => return Err(s2c_failure_result()),
+        };
+        let uid = request.unique_identifier();
+        let view = kmipkit_server_request_item_view_v1_t {
+            struct_size: std::mem::size_of::<kmipkit_server_request_item_view_v1_t>() as u32,
+            abi_version: 1,
+            operation: 0x0000_001F,
+            unique_batch_item_id_data: ptr::null(),
+            unique_batch_item_id_length: 0,
+        };
+        let code = unsafe {
+            callback(
+                self.handler.user_data,
+                &view,
+                uid.as_ptr(),
+                uid.len() as u64,
+            )
+        };
+        if code != 0 {
+            return Err(s2c_failure_result());
+        }
+        Ok(kmipkit_protocol::ServerNotifyResponse::new())
+    }
+
+    fn handle_put(
+        &mut self,
+        request: &kmipkit_protocol::ServerPutRequest,
+    ) -> Result<kmipkit_protocol::ServerPutResponse, kmipkit_protocol::KmipOperationResult> {
+        let callback = match self.handler.handle_put {
+            Some(cb) => cb,
+            None => return Err(s2c_failure_result()),
+        };
+        let uid = request.unique_identifier();
+        let view = kmipkit_server_request_item_view_v1_t {
+            struct_size: std::mem::size_of::<kmipkit_server_request_item_view_v1_t>() as u32,
+            abi_version: 1,
+            operation: 0x0000_0020,
+            unique_batch_item_id_data: ptr::null(),
+            unique_batch_item_id_length: 0,
+        };
+        let code = unsafe {
+            callback(
+                self.handler.user_data,
+                &view,
+                uid.as_ptr(),
+                uid.len() as u64,
+                ptr::null(),
+                0,
+            )
+        };
+        if code != 0 {
+            return Err(s2c_failure_result());
+        }
+        Ok(kmipkit_protocol::ServerPutResponse::new())
+    }
+
+    fn handle_query(
+        &mut self,
+        request: &kmipkit_protocol::ServerQueryRequest,
+    ) -> Result<kmipkit_protocol::ServerQueryResponse, kmipkit_protocol::KmipOperationResult> {
+        let callback = match self.handler.handle_query {
+            Some(cb) => cb,
+            None => return Err(s2c_failure_result()),
+        };
+        let view = kmipkit_server_request_item_view_v1_t {
+            struct_size: std::mem::size_of::<kmipkit_server_request_item_view_v1_t>() as u32,
+            abi_version: 1,
+            operation: 0x0000_0021,
+            unique_batch_item_id_data: ptr::null(),
+            unique_batch_item_id_length: 0,
+        };
+        let mut flags: u32 = 0;
+        for qf in request.query_functions() {
+            flags |= 1u32 << (qf.raw().min(31));
+        }
+        let code = unsafe {
+            callback(
+                self.handler.user_data,
+                &view,
+                flags,
+            )
+        };
+        if code != 0 {
+            return Err(s2c_failure_result());
+        }
+        let mut caps = kmipkit_protocol::ServerCapabilities::new();
+        caps.set_operations(vec![
+            0x0000_001E,
+            0x0000_001F,
+            0x0000_0020,
+            0x0000_0021,
+        ]);
+        caps.set_object_types(vec![0x01, 0x02, 0x07]);
+        caps.set_vendor_identification("KMIPKit");
+        Ok(kmipkit_protocol::ServerQueryResponse::respond(request, &caps))
+    }
+
+    fn handle_set_endpoint_role(
+        &mut self,
+        request: &kmipkit_protocol::SetEndpointRoleRequest,
+    ) -> Result<kmipkit_protocol::SetEndpointRoleResponse, kmipkit_protocol::KmipOperationResult> {
+        let callback = match self.handler.handle_set_endpoint_role {
+            Some(cb) => cb,
+            None => return Err(s2c_failure_result()),
+        };
+        let view = kmipkit_server_request_item_view_v1_t {
+            struct_size: std::mem::size_of::<kmipkit_server_request_item_view_v1_t>() as u32,
+            abi_version: 1,
+            operation: 0x0000_0032,
+            unique_batch_item_id_data: ptr::null(),
+            unique_batch_item_id_length: 0,
+        };
+        let code = unsafe {
+            callback(
+                self.handler.user_data,
+                &view,
+                request.endpoint_role().raw(),
+            )
+        };
+        if code != 0 {
+            return Err(s2c_failure_result());
+        }
+        Ok(kmipkit_protocol::SetEndpointRoleResponse::success(request.endpoint_role(), None))
+    }
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_server_request_dispatcher_create(
+    out_dispatcher: *mut *mut kmipkit_server_request_dispatcher_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_dispatcher);
+        *out = try_ffi!(try_make_handle(
+            Kind::ServerRequestDispatcher,
+            HandleValue::ServerRequestDispatcher(Arc::new(Mutex::new(
+                kmipkit_client::ServerRequestDispatcher::new(),
+            ))),
+        ));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_server_request_dispatcher_dispatch_v1(
+    dispatcher: *mut kmipkit_server_request_dispatcher_t,
+    batch: *mut kmipkit_incoming_server_batch_t,
+    handler: *const kmipkit_server_request_handler_v1_t,
+    out_response: *mut *mut kmipkit_response_message_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_response);
+        if handler.is_null() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let handler_ref = unsafe { &*handler };
+        let req_size = std::mem::size_of::<kmipkit_server_request_handler_v1_t>() as u32;
+        if handler_ref.abi_version != 1 || handler_ref.struct_size < req_size {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let disp_handle = read_handle!(dispatcher, ServerRequestDispatcher);
+        let HandleValue::ServerRequestDispatcher(disp) = &disp_handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let batch_handle = read_handle!(batch, IncomingServerBatch);
+        let HandleValue::IncomingServerBatch(batch_val) = &batch_handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(mut disp) = disp.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let mut adapter = CServerRequestHandlerAdapter {
+            handler: *handler_ref,
+        };
+        match disp.dispatch(batch_val, &mut adapter) {
+            Ok(resp) => {
+                *out = try_ffi!(try_make_handle(
+                    Kind::ResponseMessage,
+                    HandleValue::ResponseMessage(Arc::new(resp)),
+                ));
+                SUCCESS
+            }
+            Err(err) => record_client_error(&err),
+        }
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_server_request_dispatcher_release(
+    dispatcher: *mut kmipkit_server_request_dispatcher_t,
+) {
+    ffi_entrypoint(|| release(dispatcher, Kind::ServerRequestDispatcher));
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_s2c_discover_versions_negotiate(
+    requested_major: u32,
+    requested_minor: u32,
+    supported_versions: *const u32,
+    supported_count: u32,
+    out_negotiated_major: *mut u32,
+    out_negotiated_minor: *mut u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let neg_maj = scalar_out!(out_negotiated_major);
+        let neg_min = scalar_out!(out_negotiated_minor);
+        if supported_versions.is_null() && supported_count > 0 {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let mut supported = Vec::new();
+        for i in 0..(supported_count as usize) {
+            let packed = unsafe { *supported_versions.add(i) };
+            let maj = (packed >> 16) as i32;
+            let min = (packed & 0xFFFF) as i32;
+            supported.push(kmipkit_protocol::ProtocolVersion::from_raw(maj, min));
+        }
+        let req_version = kmipkit_protocol::ProtocolVersion::from_raw(
+            requested_major as i32,
+            requested_minor as i32,
+        );
+        let req = kmipkit_protocol::ServerDiscoverVersionsRequest::new(vec![req_version]);
+        let resp = kmipkit_protocol::ServerDiscoverVersionsResponse::negotiate(&req, &supported);
+        if let Some(best) = resp.protocol_versions().first() {
+            *neg_maj = best.major() as u32;
+            *neg_min = best.minor() as u32;
+            SUCCESS
+        } else {
+            record_ffi_error(ERROR_COMPATIBILITY_MISMATCH)
+        }
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_s2c_put_effective_function(
+    requested_put_function: u32,
+    replaced_object_exists_locally: u8,
+    out_effective_put_function: *mut u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let eff = scalar_out!(out_effective_put_function);
+        let pf = kmipkit_protocol::PutFunction::from_raw(requested_put_function);
+        let exists = replaced_object_exists_locally != 0;
+        let effective = if pf == kmipkit_protocol::PutFunction::REPLACE && !exists {
+            kmipkit_protocol::PutFunction::NEW
+        } else {
+            pf
+        };
+        *eff = effective.raw();
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_s2c_query_respond_ttlv(
+    query_function_flags: u32,
+    vendor_id_data: *const u8,
+    vendor_id_len: u64,
+    out_structure: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_structure);
+        let mut functions = Vec::new();
+        if query_function_flags & 0x01 != 0 {
+            functions.push(kmipkit_protocol::QueryFunction::OPERATIONS);
+        }
+        if query_function_flags & 0x02 != 0 {
+            functions.push(kmipkit_protocol::QueryFunction::OBJECTS);
+        }
+        if query_function_flags & 0x04 != 0 {
+            functions.push(kmipkit_protocol::QueryFunction::SERVER_INFORMATION);
+        }
+        if query_function_flags & 0x08 != 0 {
+            functions.push(kmipkit_protocol::QueryFunction::EXTENSION_LIST);
+        }
+        if query_function_flags & 0x10 != 0 {
+            functions.push(kmipkit_protocol::QueryFunction::EXTENSION_MAP);
+        }
+        let req = kmipkit_protocol::ServerQueryRequest::new(functions);
+        let mut caps = kmipkit_protocol::ServerCapabilities::new();
+        caps.set_operations(vec![
+            0x0000_001E,
+            0x0000_001F,
+            0x0000_0020,
+            0x0000_0021,
+        ]);
+        caps.set_object_types(vec![0x01, 0x02, 0x07]);
+        if !vendor_id_data.is_null() && vendor_id_len > 0 {
+            let span = try_ffi!(input_span(vendor_id_data, vendor_id_len, MAX_FFI_INPUT_BYTES));
+            if let Ok(text) = std::str::from_utf8(span) {
+                caps.set_vendor_identification(text);
+            }
+        }
+        let resp = kmipkit_protocol::ServerQueryResponse::respond(&req, &caps);
+        match resp.to_ttlv_payload() {
+            Ok(structure) => {
+                *out = try_ffi!(try_make_handle(
+                    Kind::Structure,
+                    HandleValue::Structure(structure),
+                ));
+                SUCCESS
+            }
+            Err(_) => record_ffi_error(ERROR_INTERNAL),
+        }
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_set_endpoint_role(
+    client: *mut kmipkit_client_t,
+    endpoint_role: u32,
+    vendor_identification: *const u8,
+    vendor_identification_length: u64,
+    limits: *mut kmipkit_codec_limits_t,
+    out_response: *mut *mut kmipkit_client_batch_item_response_t,
+) -> i32 {
+    kmipkit_client_set_endpoint_role_with_options_v1(
+        client,
+        endpoint_role,
+        vendor_identification,
+        vendor_identification_length,
+        limits,
+        ptr::null(),
+        out_response,
+    )
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_set_endpoint_role_with_options_v1(
+    client: *mut kmipkit_client_t,
+    endpoint_role: u32,
+    vendor_identification: *const u8,
+    vendor_identification_length: u64,
+    limits: *mut kmipkit_codec_limits_t,
+    options: *const kmipkit_request_options_v1_t,
+    out_response: *mut *mut kmipkit_client_batch_item_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_response);
+        let client_handle = read_handle!(client, Client);
+        let HandleValue::Client(client) = &client_handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let limits_handle = read_handle!(limits, CodecLimits);
+        let HandleValue::CodecLimits(limits) = &limits_handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let request_options = if options.is_null() {
+            RequestOptions::default()
+        } else {
+            match request_options_from_v1(unsafe { &*options }) {
+                Ok(opt) => opt,
+                Err(status) => return record_ffi_error(status),
+            }
+        };
+        let role = kmipkit_protocol::EndpointRole::from_raw(endpoint_role);
+        let mut request = kmipkit_protocol::SetEndpointRoleRequest::new(role);
+        if !vendor_identification.is_null() && vendor_identification_length > 0 {
+            let span = try_ffi!(input_span(
+                vendor_identification,
+                vendor_identification_length,
+                MAX_FFI_INPUT_BYTES,
+            ));
+            let text = match std::str::from_utf8(span) {
+                Ok(t) => t,
+                Err(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+            };
+            request = request.with_vendor_identification(text);
+        } else if !vendor_identification.is_null() || vendor_identification_length != 0 {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let Ok(mut client) = client.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let batch = ClientBatch::new(ClientBatchItem::set_endpoint_role(request));
+        match client.execute_with_options(batch, limits, &request_options) {
+            Ok(batch_resp) => {
+                let arc_resp = Arc::new(batch_resp);
+                *out = try_ffi!(try_make_handle(
+                    Kind::ClientBatchItemResponse,
+                    HandleValue::ClientBatchItemResponse {
+                        response: arc_resp,
+                        index: 0,
+                    },
+                ));
+                SUCCESS
+            }
+            Err(error) => record_client_error(&error),
+        }
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_version_gate_operation_span(
+    operation: u32,
+    out_introduced_major: *mut u32,
+    out_introduced_minor: *mut u32,
+    out_deprecated_major: *mut u32,
+    out_deprecated_minor: *mut u32,
+    out_removed_major: *mut u32,
+    out_removed_minor: *mut u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let intro_maj = scalar_out!(out_introduced_major);
+        let intro_min = scalar_out!(out_introduced_minor);
+        let depr_maj = scalar_out!(out_deprecated_major);
+        let depr_min = scalar_out!(out_deprecated_minor);
+        let rem_maj = scalar_out!(out_removed_major);
+        let rem_min = scalar_out!(out_removed_minor);
+
+        match kmipkit_protocol::VersionGate::operation_span(operation) {
+            Some(span) => {
+                *intro_maj = span.introduced.major() as u32;
+                *intro_min = span.introduced.minor() as u32;
+                *depr_maj = span.deprecated.map(|v| v.major() as u32).unwrap_or(0);
+                *depr_min = span.deprecated.map(|v| v.minor() as u32).unwrap_or(0);
+                *rem_maj = span.removed.map(|v| v.major() as u32).unwrap_or(0);
+                *rem_min = span.removed.map(|v| v.minor() as u32).unwrap_or(0);
+                SUCCESS
+            }
+            None => record_ffi_error(ERROR_INVALID_INPUT),
+        }
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_version_gate_tag_span(
+    tag: u32,
+    out_introduced_major: *mut u32,
+    out_introduced_minor: *mut u32,
+    out_deprecated_major: *mut u32,
+    out_deprecated_minor: *mut u32,
+    out_removed_major: *mut u32,
+    out_removed_minor: *mut u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let intro_maj = scalar_out!(out_introduced_major);
+        let intro_min = scalar_out!(out_introduced_minor);
+        let depr_maj = scalar_out!(out_deprecated_major);
+        let depr_min = scalar_out!(out_deprecated_minor);
+        let rem_maj = scalar_out!(out_removed_major);
+        let rem_min = scalar_out!(out_removed_minor);
+
+        match kmipkit_protocol::VersionGate::tag_span(tag) {
+            Some(span) => {
+                *intro_maj = span.introduced.major() as u32;
+                *intro_min = span.introduced.minor() as u32;
+                *depr_maj = span.deprecated.map(|v| v.major() as u32).unwrap_or(0);
+                *depr_min = span.deprecated.map(|v| v.minor() as u32).unwrap_or(0);
+                *rem_maj = span.removed.map(|v| v.major() as u32).unwrap_or(0);
+                *rem_min = span.removed.map(|v| v.minor() as u32).unwrap_or(0);
+                SUCCESS
+            }
+            None => record_ffi_error(ERROR_INVALID_INPUT),
+        }
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_version_gate_validate_attribute_mutation(
+    protocol_version_major: u32,
+    protocol_version_minor: u32,
+    attribute_tag: u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let pv = kmipkit_protocol::ProtocolVersion::from_raw(
+            protocol_version_major as i32,
+            protocol_version_minor as i32,
+        );
+        match kmipkit_protocol::VersionGate::validate_attribute_mutation(pv, attribute_tag) {
+            Ok(()) => SUCCESS,
+            Err(_) => record_ffi_error(ERROR_INVALID_INPUT),
+        }
     })
 }

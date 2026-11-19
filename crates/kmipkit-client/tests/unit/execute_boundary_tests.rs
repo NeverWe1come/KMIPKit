@@ -1041,6 +1041,8 @@ impl BoundaryAudit {
         let s2c_root_scope = self.is_source_root(Path::new("server_to_client.rs"));
         let server_request_dispatcher =
             is_exact_server_request_dispatch(s2c_root_scope, impl_type, signature);
+        let incoming_server_batch_decode =
+            is_exact_incoming_server_batch_decode(s2c_root_scope, impl_type, signature);
         let approved_generic_signature = extension_view_callback
             || error_response_ttlv_callback
             || async_outcome_callback
@@ -1067,6 +1069,7 @@ impl BoundaryAudit {
                     || registry_value_validation && index == 2
                     || registry_inspect && index == 2
                     || server_request_dispatcher && index == 2
+                    || incoming_server_batch_decode && index == 0
                     || fluent_explicit_attribute_item
                         && is_exact_fluent_explicit_attribute_argument(signature, index)
                     || fluent_explicit_value && index == 1
@@ -3181,6 +3184,23 @@ fn is_exact_server_request_dispatch(
         && signature.abi.is_none()
         && signature.variadic.is_none()
         && signature.inputs.len() == 3
+}
+
+fn is_exact_incoming_server_batch_decode(
+    s2c_root_scope: bool,
+    impl_type: Option<&str>,
+    signature: &syn::Signature,
+) -> bool {
+    s2c_root_scope
+        && impl_type == Some("IncomingServerBatch")
+        && (signature.ident == "from_encoded_bytes" || signature.ident == "from_ttlv_bytes")
+        && signature.generics.params.is_empty()
+        && signature.generics.where_clause.is_none()
+        && signature.asyncness.is_none()
+        && signature.constness.is_none()
+        && signature.unsafety.is_none()
+        && signature.abi.is_none()
+        && signature.variadic.is_none()
 }
 
 fn is_result_with_types(output: &syn::ReturnType, ok_type: &str, error_type: &str) -> bool {

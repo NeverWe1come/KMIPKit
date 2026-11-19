@@ -56,7 +56,8 @@ use crate::{
     kmipkit_client_batch_item_metadata_v1_t, kmipkit_client_batch_item_metadata_v2_t,
     kmipkit_client_batch_item_response_t, kmipkit_client_batch_item_t,
     kmipkit_client_batch_response_t, kmipkit_client_batch_t, kmipkit_client_configuration_t,
-    kmipkit_client_extension_registry_t, kmipkit_client_request_message_extension_t,
+    kmipkit_client_extension_registry_t, kmipkit_client_listener_connection_t,
+    kmipkit_client_listener_t, kmipkit_client_request_message_extension_t,
     kmipkit_client_t, kmipkit_codec_limits_t, kmipkit_create_key_pair_builder_t,
     kmipkit_credential_t, kmipkit_credential_validation_error_v1_t, kmipkit_credential_value_t,
     kmipkit_credential_view_t, kmipkit_crypto_operation_builder_t,
@@ -70,6 +71,7 @@ use crate::{
     kmipkit_extension_registry_limits_v1_t, kmipkit_extension_schema_t,
     kmipkit_get_attribute_list_request_t, kmipkit_get_attributes_request_t,
     kmipkit_hashed_password_credential_t, kmipkit_hashed_password_timestamp_sequence_t,
+    kmipkit_incoming_server_batch_t, kmipkit_listener_transport_config_v1_t,
     kmipkit_locate_builder_t, kmipkit_message_extension_view_t, kmipkit_message_validation_error_t,
     kmipkit_modify_attribute_request_t, kmipkit_mtls_client_config_v1_t, kmipkit_nonce_t,
     kmipkit_poll_request_t, kmipkit_process_request_t, kmipkit_profile_object_state_v1_t,
@@ -81,10 +83,13 @@ use crate::{
     kmipkit_request_header_view_t, kmipkit_request_message_t, kmipkit_request_options_v1_t,
     kmipkit_response_batch_item_view_t, kmipkit_response_header_view_t, kmipkit_response_message_t,
     kmipkit_revocation_reason_t, kmipkit_revoke_builder_t, kmipkit_revoke_request_t,
-    kmipkit_secret_bytes_t, kmipkit_secret_text_t, kmipkit_set_attribute_builder_t,
+    kmipkit_role_reversed_session_t, kmipkit_secret_bytes_t, kmipkit_secret_text_t,
+    kmipkit_server_request_dispatcher_t, kmipkit_server_request_handler_v1_t,
+    kmipkit_server_request_item_view_v1_t, kmipkit_set_attribute_builder_t,
     kmipkit_set_attribute_request_t, kmipkit_split_key_reference_t,
     kmipkit_symmetric_key_builder_t, kmipkit_symmetric_key_request_v1_t, kmipkit_tag_t,
     kmipkit_timeout_limit_v1_t, kmipkit_transport_config_t, kmipkit_transport_config_v1_t,
+    KMIPKIT_TRANSPORT_CONFIG_FLAG_TLS12_COMPAT,
     kmipkit_transport_input_v1_t, kmipkit_ttlv_decode_error_v1_t, kmipkit_ttlv_item_t,
     kmipkit_ttlv_item_view_t, kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t,
     kmipkit_ttlv_structure_view_t, kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t,
@@ -294,6 +299,7 @@ const TRANSPORT_TIMEOUT_BOUNDED: u32 = 1;
 const TRANSPORT_TIMEOUT_UNBOUNDED: u32 = 2;
 const TRANSPORT_FLAG_TLS_SERVER_NAME: u32 = 1;
 const TRANSPORT_FLAG_TARGET_URI: u32 = 2;
+const TRANSPORT_FLAG_TLS12_COMPAT: u32 = KMIPKIT_TRANSPORT_CONFIG_FLAG_TLS12_COMPAT;
 const BATCH_OUTCOME_COMPLETED: u32 = 1;
 const BATCH_OUTCOME_PENDING: u32 = 2;
 const PROFILE_ERROR_SOURCE_NONE: u32 = 0;
@@ -586,6 +592,11 @@ enum Kind {
     LocateBuilder,
     RevokeBuilder,
     CryptoOperationBuilder,
+    ClientListener,
+    ClientListenerConnection,
+    RoleReversedSession,
+    IncomingServerBatch,
+    ServerRequestDispatcher,
 }
 
 #[derive(Clone, Copy, Eq, PartialEq)]
@@ -788,6 +799,11 @@ enum HandleValue {
     UsageAllocationContext(Mutex<UsageAllocationContext>),
     LeaseContext(Mutex<LeaseContext>),
     SplitKeyReference(SplitKeyReference),
+    ClientListener(Arc<Mutex<kmipkit_client::ClientListener>>),
+    ClientListenerConnection(Arc<Mutex<Option<kmipkit_client::ClientListenerConnection>>>),
+    RoleReversedSession(Arc<Mutex<kmipkit_client::RoleReversedSession>>),
+    IncomingServerBatch(Arc<kmipkit_client::IncomingServerBatch>),
+    ServerRequestDispatcher(Arc<Mutex<kmipkit_client::ServerRequestDispatcher>>),
 }
 
 struct ValidationReportSnapshot {

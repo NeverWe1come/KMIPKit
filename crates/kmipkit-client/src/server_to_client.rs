@@ -163,7 +163,7 @@ impl IncomingServerBatch {
     ///
     /// Returns [`ClientError`] if decoding or validation fails.
     #[allow(clippy::too_many_lines)]
-    pub(crate) fn from_encoded_bytes(
+    pub fn from_encoded_bytes(
         bytes: &[u8],
         encoding: WireEncoding,
         limits: &CodecLimits,
@@ -298,7 +298,7 @@ impl IncomingServerBatch {
     /// # Errors
     ///
     /// Returns [`ClientError`] if decoding or validation fails.
-    pub(crate) fn from_ttlv_bytes(bytes: &[u8], limits: &CodecLimits) -> Result<Self, ClientError> {
+    pub fn from_ttlv_bytes(bytes: &[u8], limits: &CodecLimits) -> Result<Self, ClientError> {
         Self::from_encoded_bytes(bytes, WireEncoding::Ttlv, limits)
     }
 
@@ -849,6 +849,28 @@ fn encode_ttlv_item(item: &Item, out: &mut Vec<u8>) {
             write_ttlv_header(out, tag_bytes, 0x0A, 4);
             out.extend_from_slice(&val.to_be_bytes());
             out.extend_from_slice(&[0u8; 4]);
+        }
+        kmipkit_ttlv::ValueView::DateTimeExtended(dt) => {
+            write_ttlv_header(out, tag_bytes, 0x0B, 8);
+            out.extend_from_slice(&dt.to_be_bytes());
+        }
+        kmipkit_ttlv::ValueView::Identifier(s) => {
+            let bytes = s.as_bytes();
+            write_ttlv_header(out, tag_bytes, 0x0C, bytes.len());
+            out.extend_from_slice(bytes);
+            write_ttlv_padding(out, bytes.len());
+        }
+        kmipkit_ttlv::ValueView::Reference(s) => {
+            let bytes = s.as_bytes();
+            write_ttlv_header(out, tag_bytes, 0x0D, bytes.len());
+            out.extend_from_slice(bytes);
+            write_ttlv_padding(out, bytes.len());
+        }
+        kmipkit_ttlv::ValueView::NameReference(s) => {
+            let bytes = s.as_bytes();
+            write_ttlv_header(out, tag_bytes, 0x0E, bytes.len());
+            out.extend_from_slice(bytes);
+            write_ttlv_padding(out, bytes.len());
         }
         _ => {}
     });

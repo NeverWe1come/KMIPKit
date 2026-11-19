@@ -7828,6 +7828,60 @@ failure:
     return 0;
 }
 
+static int s2c_abi_is_callable_from_c(void) {
+    uint32_t intro_maj = 0, intro_min = 0, depr_maj = 0, depr_min = 0, rem_maj = 0, rem_min = 0;
+    if (kmipkit_version_gate_operation_span(0x0000001EU, &intro_maj, &intro_min, &depr_maj, &depr_min, &rem_maj, &rem_min) != 0) {
+        return 0;
+    }
+    if (intro_maj != 2 || intro_min != 0) {
+        return 0;
+    }
+
+    if (kmipkit_version_gate_validate_attribute_mutation(2, 1, 0x420008U) != 0) {
+        return 0;
+    }
+
+    uint32_t supported[2] = { ((uint32_t)2 << 16) | 1, ((uint32_t)2 << 16) | 0 };
+    uint32_t neg_maj = 0, neg_min = 0;
+    if (kmipkit_s2c_discover_versions_negotiate(2, 1, supported, 2, &neg_maj, &neg_min) != 0) {
+        return 0;
+    }
+    if (neg_maj != 2 || neg_min != 1) {
+        return 0;
+    }
+
+    uint32_t eff = 0;
+    if (kmipkit_s2c_put_effective_function(2, 0, &eff) != 0 || eff != 1) {
+        return 0;
+    }
+    if (kmipkit_s2c_put_effective_function(2, 1, &eff) != 0 || eff != 2) {
+        return 0;
+    }
+
+    kmipkit_ttlv_structure_t *query_ttlv = NULL;
+    const uint8_t vendor[] = "KMIPKit";
+    if (kmipkit_s2c_query_respond_ttlv(0x01 | 0x02, vendor, sizeof(vendor) - 1U, &query_ttlv) != 0 || query_ttlv == NULL) {
+        return 0;
+    }
+    kmipkit_ttlv_structure_release(query_ttlv);
+
+    kmipkit_server_request_dispatcher_t *dispatcher = NULL;
+    if (kmipkit_server_request_dispatcher_create(&dispatcher) != 0 || dispatcher == NULL) {
+        return 0;
+    }
+    kmipkit_server_request_dispatcher_release(dispatcher);
+
+    kmipkit_client_listener_t *listener = NULL;
+    if (kmipkit_client_listener_bind_raw_tls(NULL, &listener) == 0) {
+        return 0;
+    }
+    if (kmipkit_client_listener_bind_https(NULL, &listener) == 0) {
+        return 0;
+    }
+
+    return 1;
+}
+
 static int set_endpoint_role_abi_is_callable_from_c(void) {
     kmipkit_client_batch_item_t *item = NULL;
 
@@ -7863,6 +7917,9 @@ static int set_endpoint_role_abi_is_callable_from_c(void) {
 }
 
 int main(int argc, char **argv) {
+    if (!s2c_abi_is_callable_from_c()) {
+        return 28;
+    }
     if (!set_endpoint_role_abi_is_callable_from_c()) {
         return 27;
     }
