@@ -150,6 +150,35 @@ class ExecutableContractTests(unittest.TestCase):
         with self.assertRaises(jsonschema.ValidationError):
             jsonschema.validate(sample, result_schema)
 
+    def test_recertify_recipe_uses_an_existing_certificate_for_both_versions(self) -> None:
+        generator_path = ROOT / "interop/shared/catalog/generate_test_catalog.py"
+        spec = importlib.util.spec_from_file_location("generate_test_catalog", generator_path)
+        self.assertIsNotNone(spec)
+        assert spec is not None and spec.loader is not None
+        generator = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(generator)
+        generated = generator.generate_catalog(ROOT / "specification/catalog/kmip-2.1.json")
+        case = next(item for item in generated["test_cases"] if item["case_id"] == "test-op-re-certify")
+
+        self.assertEqual(["2.0", "2.1"], case["execution"]["protocol_versions"])
+        self.assertIn("Certificate", " ".join(case["isolation_recipe"]["setup_steps"]))
+        self.assertNotIn("SymmetricKey", " ".join(case["isolation_recipe"]["setup_steps"]))
+
+    def test_validate_recipe_uses_a_certificate_object_chain_for_both_versions(self) -> None:
+        generator_path = ROOT / "interop/shared/catalog/generate_test_catalog.py"
+        spec = importlib.util.spec_from_file_location("generate_test_catalog", generator_path)
+        self.assertIsNotNone(spec)
+        assert spec is not None and spec.loader is not None
+        generator = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(generator)
+        generated = generator.generate_catalog(ROOT / "specification/catalog/kmip-2.1.json")
+        case = next(item for item in generated["test_cases"] if item["case_id"] == "test-op-validate")
+
+        self.assertEqual(["2.0", "2.1"], case["execution"]["protocol_versions"])
+        setup = " ".join(case["isolation_recipe"]["setup_steps"])
+        self.assertIn("Certificate", setup)
+        self.assertNotIn("SymmetricKey", setup)
+
     def test_zero_batch_catalog_is_generated_as_pre_transport_parse_rejection(self) -> None:
         generator_path = ROOT / "interop/shared/catalog/generate_test_catalog.py"
         spec = importlib.util.spec_from_file_location("generate_test_catalog", generator_path)
