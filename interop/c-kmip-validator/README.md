@@ -949,7 +949,7 @@ combinations. Its 16-event scope includes the four local construction/TTLV
 events and 12 network-configuration construction/send events; the latter all
 prove zero transport calls. Red `f074f10d9` records the missing route as a
 failing test; Green `75251a888` adds the typed C path and controlled consumer
-assertions. Full CTest passes 7/7 in 157.16 seconds.
+assertions. Full CTest passes 7/7 in 156.62 seconds.
 
 The full report is `c-route-5d720d8a-8117-4fe6-9b31-6adcbe492f56`
 (`build/route-execution-evidence-c-current.json`), SHA-256
