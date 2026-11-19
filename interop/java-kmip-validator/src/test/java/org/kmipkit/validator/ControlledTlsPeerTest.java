@@ -2235,6 +2235,7 @@ class ControlledTlsPeerTest {
         int asyncOperationPollRouteEventCount = KMIP_2_0_AND_2_1.size() * (3 * 3 * 2 + 3);
         int asyncPollRepeatedPendingToSuccessRouteEventCount = KMIP_2_0_AND_2_1.size() * (3 * 3 * 2 + 3);
         int asyncPollFinalFailureRouteEventCount = KMIP_2_0_AND_2_1.size() * (3 * 3 * 2 + 3);
+        int asyncProcessThenPollRouteEventCount = 2 * (3 * 3 * 2 + 3);
         int asyncOperationProcessRouteEventCount = 3 * 3 * 2 + 3;
         int asyncOperationQueryRouteEventCount = 3 * 3 * 2 + 3;
         int asyncIndicatorEnumerationRouteEventCount = 0;
@@ -2325,6 +2326,7 @@ class ControlledTlsPeerTest {
                         + asyncOperationPollRouteEventCount
                         + asyncPollRepeatedPendingToSuccessRouteEventCount
                         + asyncPollFinalFailureRouteEventCount
+                        + asyncProcessThenPollRouteEventCount
                         + asyncOperationProcessRouteEventCount
                         + asyncOperationQueryRouteEventCount
                         + expectedAsyncCancelLocalRouteEventCount(readRouteEvidenceCatalog())
