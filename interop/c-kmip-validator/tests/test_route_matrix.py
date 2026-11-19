@@ -2502,6 +2502,41 @@ class RouteMatrixTests(unittest.TestCase):
                 ('decode', 'kmipkit_client_batch_item_response_archive'): 2,
             })
 
+    def test_recover_executes_archived_key_lifecycle_and_reads_typed_response(self):
+        """Exercise Recover after Archive per KMIP 2.0 §6.1.38 and 2.1 §6.1.42."""
+        from artifact_support import ROOT
+        from route_peer import RECIPES, execute_network_cells
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        self.assertEqual(RECIPES['test-op-recover'][0], (1, 21, 22, 20),
+                         'Recover fixture must match Create/Archive/Recover/Destroy')
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                                if case['case_id'] == 'test-op-recover']}
+        network_combinations = tuple((encoding, transport)
+                                     for encoding in ('TTLV', 'JSON', 'XML')
+                                     for transport in ('raw_tls', 'https'))
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest,
+            network_combinations=network_combinations)
+        self.assertEqual(len(checks), 12)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        required_symbols = {
+            'kmipkit_client_batch_item_archive',
+            'kmipkit_client_batch_item_recover',
+            'kmipkit_client_batch_item_response_recover',
+        }
+        self.assertTrue(all(required_symbols <= set(check['public_api_trace_symbols'])
+                            for check in checks), checks)
+        recover_events = [event for event in events
+                          if event['target_id'] == 'KMIPKIT-ELEM-OP-C2S-RECOVER']
+        self.assertEqual(collections.Counter(
+            (event['action'], event['public_api_symbol']) for event in recover_events), {
+                ('construct', 'kmipkit_client_batch_item_recover'): 12,
+                ('send', 'kmipkit_client_batch_item_recover'): 12,
+                ('decode', 'kmipkit_client_batch_item_recover'): 12,
+                ('decode', 'kmipkit_client_batch_item_response_recover'): 2,
+            })
+
     def test_lifecycle_peer_requires_cleanup_and_checks_illegal_destroy(self):
         import route_peer
         self.assertTrue(hasattr(route_peer, 'verify_lifecycle'), 'stateful lifecycle verification is missing')
