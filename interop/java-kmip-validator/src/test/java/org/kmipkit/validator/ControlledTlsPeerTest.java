@@ -14247,6 +14247,10 @@ class ControlledTlsPeerTest {
                 "test-async-poll-final-operation-failure", "Canceled", 1,
                 List.of("KMIPKIT-ELEM-OP-C2S-POLL"), 1);
         String canonicalFinalFailurePollRequestHash = null;
+        AsyncCancelRouteScenario repeatedPoll = new AsyncCancelRouteScenario(
+                "test-async-poll-repeated-pending-to-success", "Canceled", 1,
+                List.of("KMIPKIT-ELEM-OP-C2S-POLL"), 1);
+        String canonicalRepeatedPollRequestHash = null;
         int minor = "2.0".equals(protocolVersion) ? 0 : 1;
 
         for (String encoding : List.of("TTLV", "JSON", "XML")) {
@@ -14368,6 +14372,28 @@ class ControlledTlsPeerTest {
                             finalFailureCorrelation, canonicalFinalFailurePollRequestHash,
                             finalFailureResponseHash);
                 }
+
+                byte[] repeatedCorrelation = asyncCancelCorrelation(repeatedPoll, protocolVersion);
+                List<byte[]> repeatedPollRequests = executeAsyncPollRepeatedPendingToSuccessCombination(
+                        repeatedPoll, repeatedCorrelation, protocolVersion, encoding, transport,
+                        serverCertificatePem, serverPrivateKeyPem, clientCertificatePem, clientPrivateKeyPem);
+                assertEquals(3, repeatedPollRequests.size(),
+                        "The controlled peer must receive exactly three explicit Poll requests.");
+                if ("TTLV".equals(encoding) && "raw_tls".equals(transport)) {
+                    canonicalRepeatedPollRequestHash = normalizedTreeSha256(repeatedPollRequests.get(0));
+                }
+                assertTrue(canonicalRepeatedPollRequestHash != null,
+                        "The TTLV/raw-TLS repeated Poll peer must establish a request tree hash.");
+                String repeatedPollResponseHash = normalizedTreeSha256(
+                        asynchronousPollResponse(repeatedCorrelation, minor, 0));
+                appendAsyncPollRepeatedPendingToSuccessRouteEvents(events, repeatedPoll,
+                        protocolVersion, encoding, transport, canonicalRepeatedPollRequestHash,
+                        repeatedPollResponseHash);
+                if ("TTLV".equals(encoding) && "raw_tls".equals(transport)) {
+                    appendAsyncPollLocalRouteEvents(events, repeatedPoll, protocolVersion,
+                            repeatedCorrelation, canonicalRepeatedPollRequestHash,
+                            repeatedPollResponseHash);
+                }
             }
         }
         if (lifecyclePoll != null && "2.1".equals(protocolVersion)) {
@@ -14383,6 +14409,7 @@ class ControlledTlsPeerTest {
         assertAsyncLifecycleQueryRouteCoverage(events, protocolVersion);
         assertAsyncNoRecursivePollRouteCoverage(events, protocolVersion);
         assertAsyncOperationPollRouteCoverage(events, protocolVersion);
+        assertAsyncPollRepeatedPendingToSuccessRouteCoverage(events, protocolVersion);
         assertAsyncPollFinalFailureRouteCoverage(events, protocolVersion);
         assertAsyncOperationProcessRouteCoverage(events, protocolVersion);
         assertAsyncOperationQueryRouteCoverage(events, protocolVersion);
@@ -14819,6 +14846,88 @@ class ControlledTlsPeerTest {
                 false, false, true);
     }
 
+    private List<byte[]> executeAsyncPollRepeatedPendingToSuccessCombination(
+            AsyncCancelRouteScenario scenario, byte[] correlation, String protocolVersion,
+            String encoding, String transport, byte[] serverCertificatePem,
+            byte[] serverPrivateKeyPem, byte[] clientCertificatePem,
+            byte[] clientPrivateKeyPem) throws Exception {
+        int minor = "2.0".equals(protocolVersion) ? 0 : 1;
+        Path connectionFile = temporaryDirectory.resolve(
+                "async-poll-repeated-" + protocolVersion + "-" + encoding + "-" + transport + ".json");
+        if ("raw_tls".equals(transport)) {
+            SSLServerSocket listener = listener(certificate(serverCertificatePem),
+                    privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+            FutureTask<List<byte[]>> peer = new FutureTask<>(() -> serveAsyncPollRepeatedPendingToSuccess(
+                    listener, correlation, protocolVersion, encoding));
+            Thread peerThread = new Thread(peer, "java-validator-async-poll-sequence-peer-" + protocolVersion);
+            peerThread.setDaemon(true);
+            peerThread.start();
+            Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
+                    clientCertificatePem, clientPrivateKeyPem, true, protocolVersion, encoding, transport));
+            try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile))) {
+                var outcome = driver.executePollRepeatedPendingToSuccess(correlation.clone());
+                assertEquals("passed", outcome.status(),
+                        "The repeated Poll sequence must preserve its typed response contract: " + outcome);
+            } finally {
+                listener.close();
+            }
+            return peer.get(30, TimeUnit.SECONDS);
+        }
+
+        CompletableFuture<List<byte[]>> peer = new CompletableFuture<>();
+        List<byte[]> observedRequests = Collections.synchronizedList(new ArrayList<>());
+        AtomicInteger requestIndex = new AtomicInteger();
+        HttpsServer listener = httpsListener(certificate(serverCertificatePem),
+                privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+        listener.createContext("/kmip", exchange -> {
+            try {
+                if (!"POST".equals(exchange.getRequestMethod())) {
+                    throw new IllegalStateException("The controlled HTTP peer requires POST.");
+                }
+                int pollIndex = requestIndex.getAndIncrement();
+                if (pollIndex >= 3) {
+                    throw new IllegalStateException("The repeated Poll fixture observed an unexpected retry.");
+                }
+                byte[] request = exchange.getRequestBody().readAllBytes();
+                assertAsyncPollWireRequest(request, encoding, protocolVersion, correlation);
+                observedRequests.add(request);
+                byte[] response = asynchronousPollResponseBytes(
+                        encoding, correlation, minor, pollIndex == 2);
+                exchange.getResponseHeaders().set("Content-Type", contentTypeForEncoding(encoding));
+                exchange.sendResponseHeaders(200, response.length);
+                try (OutputStream output = exchange.getResponseBody()) {
+                    output.write(response);
+                }
+                if (pollIndex == 2) {
+                    synchronized (observedRequests) {
+                        peer.complete(List.copyOf(observedRequests));
+                    }
+                }
+            } catch (Exception exception) {
+                peer.completeExceptionally(exception);
+                try {
+                    exchange.sendResponseHeaders(500, -1);
+                } catch (Exception ignored) {
+                    // The peer future carries the controlled-fixture failure to the test thread.
+                }
+            } finally {
+                exchange.close();
+            }
+        });
+        listener.start();
+        Files.writeString(connectionFile, connectionJson(listener.getAddress().getPort(),
+                serverCertificatePem, clientCertificatePem, clientPrivateKeyPem, true,
+                protocolVersion, encoding, transport));
+        try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile))) {
+            var outcome = driver.executePollRepeatedPendingToSuccess(correlation.clone());
+            assertEquals("passed", outcome.status(),
+                    "The repeated Poll sequence must preserve its typed response contract: " + outcome);
+        } finally {
+            listener.stop(0);
+        }
+        return peer.get(30, TimeUnit.SECONDS);
+    }
+
     private byte[] executeAsyncPollCombination(AsyncCancelRouteScenario scenario,
             String protocolVersion, String encoding, String transport,
             byte[] serverCertificatePem, byte[] serverPrivateKeyPem,
@@ -14906,6 +15015,33 @@ class ControlledTlsPeerTest {
             listener.stop(0);
         }
         return peer.get(30, TimeUnit.SECONDS);
+    }
+
+    private static List<byte[]> serveAsyncPollRepeatedPendingToSuccess(
+            SSLServerSocket listener, byte[] correlation, String protocolVersion, String encoding)
+            throws Exception {
+        List<byte[]> requests = new ArrayList<>();
+        int minor = "2.0".equals(protocolVersion) ? 0 : 1;
+        for (int pollIndex = 0; pollIndex < 3; pollIndex++) {
+            try (SSLSocket socket = (SSLSocket) listener.accept()) {
+                socket.setEnabledProtocols(new String[] {"TLSv1.3"});
+                socket.setSoTimeout(10_000);
+                socket.startHandshake();
+                byte[] request = switch (encoding) {
+                    case "TTLV" -> readTtlv(socket.getInputStream());
+                    case "JSON" -> readJsonDocument(socket.getInputStream());
+                    case "XML" -> readXmlDocument(socket.getInputStream());
+                    default -> throw new IllegalArgumentException("Unsupported fixture encoding.");
+                };
+                assertAsyncPollWireRequest(request, encoding, protocolVersion, correlation);
+                byte[] response = asynchronousPollResponseBytes(
+                        encoding, correlation, minor, pollIndex == 2);
+                socket.getOutputStream().write(response);
+                socket.getOutputStream().flush();
+                requests.add(request);
+            }
+        }
+        return List.copyOf(requests);
     }
 
     private static byte[] serveAsyncPollRequest(SSLServerSocket listener, byte[] correlation,
@@ -15367,7 +15503,8 @@ class ControlledTlsPeerTest {
 
 
     private static byte[] asyncCancelCorrelation(AsyncCancelRouteScenario scenario, String protocolVersion) {
-        if ("test-async-poll-final-operation-failure".equals(scenario.caseId())) {
+        if ("test-async-poll-final-operation-failure".equals(scenario.caseId())
+                || "test-async-poll-repeated-pending-to-success".equals(scenario.caseId())) {
             return CREATE_PENDING_CORRELATION_VALUE.clone();
         }
         return ("kmipkit-" + scenario.caseId() + "-" + protocolVersion).getBytes(StandardCharsets.US_ASCII);
@@ -15511,6 +15648,20 @@ class ControlledTlsPeerTest {
             if ("send".equals(action)) {
                 event.put("request_delivery_state", "response_received");
                 event.put("transport_invocation_count", 1);
+            }
+        }
+    }
+
+    private static void appendAsyncPollRepeatedPendingToSuccessRouteEvents(
+            ArrayNode events, AsyncCancelRouteScenario scenario, String protocolVersion,
+            String encoding, String transport, String requestHash, String responseHash) throws Exception {
+        int firstEventIndex = events.size();
+        appendAsyncPollRouteEvents(events, scenario, protocolVersion, encoding, transport,
+                requestHash, responseHash);
+        for (int index = firstEventIndex; index < events.size(); index++) {
+            JsonNode event = events.get(index);
+            if ("send".equals(event.path("action").asText())) {
+                ((ObjectNode) event).put("transport_invocation_count", 3);
             }
         }
     }
@@ -15900,6 +16051,43 @@ class ControlledTlsPeerTest {
                     }
                     assertEquals(1, matches,
                             "The catalogued Poll operation route must execute once per encoding/transport cell.");
+                }
+            }
+        }
+        assertRouteEventRecorded(events, caseId, targetId,
+                "java.typed-protocol.poll_request.create", "construct", protocolVersion);
+        assertRouteEventRecorded(events, caseId, targetId,
+                "java.typed-protocol.function.async_poll_request_to_ttlv_payload", "encode", protocolVersion);
+        assertRouteEventRecorded(events, caseId, targetId,
+                "java.typed-protocol.function.kmipkit_client_async_operation_outcome_poll_response_v1",
+                "decode", protocolVersion);
+    }
+
+    private static void assertAsyncPollRepeatedPendingToSuccessRouteCoverage(
+            ArrayNode events, String protocolVersion) throws Exception {
+        String caseId = "test-async-poll-repeated-pending-to-success";
+        String targetId = "KMIPKIT-ELEM-OP-C2S-POLL";
+        String routeId = "java.typed-protocol.client.execute_poll";
+        int workflowStepIndex = asyncWorkflowStepIndex(readRouteEvidenceCatalog(), caseId, "Poll");
+        for (String encoding : List.of("TTLV", "JSON", "XML")) {
+            for (String transport : List.of("raw_tls", "https")) {
+                for (String action : List.of("construct", "send", "decode")) {
+                    int matches = 0;
+                    for (JsonNode event : events) {
+                        if (!routeEventMatches(event, caseId, routeId, protocolVersion, targetId)
+                                || !action.equals(event.path("action").asText())
+                                || !encoding.equals(event.path("encoding").asText())
+                                || !transport.equals(event.path("transport").asText())) continue;
+                        assertEquals(workflowStepIndex, event.path("workflow_step_index").asInt(-1));
+                        assertEquals("Poll", event.path("workflow_operation").asText());
+                        if ("send".equals(action)) {
+                            assertEquals(3, event.path("transport_invocation_count").asInt(-1),
+                                    "The repeated-Pending workflow must send exactly three Poll requests.");
+                        }
+                        matches++;
+                    }
+                    assertEquals(1, matches,
+                            "The repeated Pending-to-Success Poll route must run once per wire combination.");
                 }
             }
         }
