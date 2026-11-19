@@ -2629,7 +2629,7 @@ class ControlledTlsPeerTest {
                         + enumerationFixtures.size() + localEnumerationCaseCount + bitmaskCaseCount
                         + dataTypeCaseCount
                         + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + genericTagCaseIds.size()
-                        + 12
+                        + 13 // Includes the new Add Attribute operation-route case.
                         + typedTagIdentityCaseIds().size() + referencedEnumCaseCount
                         + anyObjectAttributeCaseIds.size()
                         + 11 + itemTypeValueCaseIds.size() + STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size()
@@ -6632,6 +6632,7 @@ class ControlledTlsPeerTest {
         caseIds.add("test-attr-x.509-certificate-issuer");
         caseIds.add("test-attr-x.509-certificate-subject");
         caseIds.add("test-op-revoke");
+        caseIds.add("test-op-add-attribute");
         genericEnumerationFixtures().forEach(fixture -> caseIds.add(fixture.caseId()));
         genericLocalEnumerationFixtures().stream().map(EnumerationFixture::caseId).distinct()
                 .forEach(caseIds::add);
