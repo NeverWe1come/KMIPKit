@@ -931,7 +931,11 @@ def _protocol_scenario_cases(
         parameters: dict, expected: dict, steps: list[str], assertions: list[str],
         sections: list[str], mode: str = "server_exchange", mutation: str = "mutating",
         versions: list[str] | None = None, setup: list[str] | None = None,
+        operation_label: str | None = None, description: str | None = None,
     ) -> None:
+        case_operation = operation_label or (operations[0] if operations else None)
+        if not case_operation:
+            raise ValueError(f"A display operation label is required when a scenario has no operations: {case_id}")
         target_ids = list(dict.fromkeys([*target_ids, *(operation(name) for name in operations)]))
         target_versions = {
             version for target_id in target_ids
@@ -995,10 +999,10 @@ def _protocol_scenario_cases(
         cases.append({
             "case_id": case_id,
             "category": category,
-            "operation": operations[0],
-            "description": f"Exercise the normative {category.replace('_', ' ')} branch {case_id}.",
+            "operation": case_operation,
+            "description": description or f"Exercise the normative {category.replace('_', ' ')} branch {case_id}.",
             "requires": {
-                "operation": operations[0],
+                "operation": case_operation,
                 "protocol_scenario": scenario,
             },
             "isolation_recipe": {
@@ -1090,13 +1094,13 @@ def _protocol_scenario_cases(
         steps=["attach_unique_id_to_each_request_item", "execute_batch", "compare_request_and_response_ids"],
         assertions=["each_response_echoes_its_request_id", "response_is_associated_with_correct_operation"],
         sections=batch_base, mutation="read_only")
-    add("test-batch-count-zero-rejected", "batch_workflows", ["Get"],
-        [batch_count, get], parameters={"batch_count": 0, "request_item_count": 0},
-        expected={"construction": "rejected_before_transport", "parser_error": "invalid_batch_count",
-                  "transport_call_count": 0},
-        steps=["parse_empty_request_message", "count_transport_calls"],
-        assertions=["request_message_parser_rejects_zero_batch_count", "transport_call_count_is_zero"],
-        sections=batch_base, mode="local_model", mutation="read_only")
+    add("test-batch-count-zero-rejected", "batch_workflows", [],
+        [batch_count], parameters={"batch_count": 0, "request_item_count": 0},
+        expected={"construction": "rejected_before_transport"},
+        steps=["attempt_empty_batch_construction", "count_transport_calls"],
+        assertions=["empty_batch_is_rejected_or_cannot_be_constructed", "transport_call_count_is_zero"],
+        sections=batch_base, mode="local_model", mutation="read_only", operation_label="Batch Count",
+        description="Reject a zero-count batch before transport; no operation request or Batch Item is constructed.")
     add("test-batch-count-mismatch-rejected", "batch_workflows", ["Get", "Get Attribute List"],
         [batch_count, request_item, get, get_attribute_list], parameters={"declared_batch_count": 1, "request_item_count": 2},
         expected={"construction": "rejected_or_count_recomputed_before_transport"},
@@ -1558,12 +1562,20 @@ def generate_catalog(normative_catalog_path: Path) -> dict:
         elif name in {"Create", "Create Key Pair", "Create Split Key", "Register", "Import"}:
             teardown = ["Destroy object"]
 
+        description = f"Execute {name} operation ensuring state isolation and equivalence across API levels."
+        target_step = f"Execute {name}"
+        if name == "Recover":
+            setup = ["Create unique SymmetricKey", "Archive SymmetricKey before recovery"]
+            teardown = ["Destroy recovered SymmetricKey"]
+            description = "Recover a previously archived SymmetricKey and destroy the recovered object."
+            target_step = "Recover the archived SymmetricKey"
+
         test_cases.append({
             "case_id": case_id,
             "category": "object_lifecycle",
             "operation": name,
             "oasis_section": sec,
-            "description": f"Execute {name} operation ensuring state isolation and equivalence across API levels.",
+            "description": description,
             "requires": {
                 "operation": name,
                 "requires_async": is_async
@@ -1571,9 +1583,9 @@ def generate_catalog(normative_catalog_path: Path) -> dict:
             "isolation_recipe": {
                 "unique_name_prefix": f"kmipkit-{name.lower().replace(' ', '-')}",
                 "setup_steps": setup,
-            "target_step": "Certify Public Key with Certificate Type X.509" if name == "Certify"
-            else "Re-key the existing Private/Public Key pair" if name == "Re-key Key Pair"
-            else f"Execute {name}",
+                "target_step": "Certify Public Key with Certificate Type X.509" if name == "Certify"
+                else "Re-key the existing Private/Public Key pair" if name == "Re-key Key Pair"
+                else target_step,
                 "teardown_steps": teardown,
                 "normalized_fields": ["TimeStamp", "UniqueIdentifier", "InitialDate", "ActivationDate", "LastChangeDate", "DestroyDate"]
             }
@@ -1952,6 +1964,15 @@ def generate_catalog(normative_catalog_path: Path) -> dict:
     test_cases.extend(_protocol_scenario_cases(normative_targets, section_indexes))
     _add_legacy_lifecycle_scenarios(test_cases, normative_targets, section_indexes)
     test_cases = [add_execution_contract(case, elements, section_indexes) for case in test_cases]
+
+    recover_case = next(case for case in test_cases if case["case_id"] == "test-op-recover")
+    archive_operation = next(operation for operation in c2s_ops if operation["name"] == "Archive")
+    for version, section in _element_sections(archive_operation, section_indexes).items():
+        if version not in recover_case["execution"]["protocol_versions"]:
+            continue
+        reference = {"document": f"OASIS KMIP {version} Specification", "section": section}
+        if reference not in recover_case["normative_refs"]:
+            recover_case["normative_refs"].append(reference)
 
     catalog_output = {
         "version": "2.0.0",

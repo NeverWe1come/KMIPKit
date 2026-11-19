@@ -112,10 +112,14 @@ class ExecutableContractTests(unittest.TestCase):
             element["name"] for element in json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))["elements"]
             if element.get("kind") == "operation" and element.get("direction") == "client_to_server" and element.get("scope_state") in {"client_1_0", "client_1_1"}
         }
-        catalog_operations = {
-            case["operation"] for case in catalog["test_cases"]
-            if case["category"] not in {"version_boundaries", "server_initiated_operations", "normative_inventory"}
-        }
+        catalog_operations = set()
+        for case in catalog["test_cases"]:
+            if case["category"] in {"version_boundaries", "server_initiated_operations", "normative_inventory"}:
+                continue
+            scenario = case.get("requires", {}).get("protocol_scenario")
+            if isinstance(scenario, dict) and not scenario["operations"]:
+                continue
+            catalog_operations.add(case["operation"])
         self.assertEqual(source_operations, catalog_operations)
 
     def test_catalog_and_result_schemas_validate_generated_evidence(self) -> None:
@@ -198,7 +202,7 @@ class ExecutableContractTests(unittest.TestCase):
         self.assertIn("Private Key", teardown)
         self.assertIn("Public Key", teardown)
 
-    def test_zero_batch_catalog_is_generated_as_pre_transport_parse_rejection(self) -> None:
+    def test_zero_batch_catalog_is_generated_as_pre_transport_construction_rejection(self) -> None:
         generator_path = ROOT / "interop/shared/catalog/generate_test_catalog.py"
         spec = importlib.util.spec_from_file_location("generate_test_catalog", generator_path)
         self.assertIsNotNone(spec)
@@ -217,18 +221,17 @@ class ExecutableContractTests(unittest.TestCase):
         scenario = generated_case["requires"]["protocol_scenario"]
 
         self.assertEqual(
-            ["KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-COUNT", "KMIPKIT-ELEM-OP-C2S-GET"],
+            ["KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-COUNT"],
             scenario["target_ids"],
         )
+        self.assertEqual({"construction": "rejected_before_transport"}, scenario["expected"])
+        self.assertEqual(["attempt_empty_batch_construction", "count_transport_calls"], scenario["steps"])
         self.assertEqual(
-            {"construction": "rejected_before_transport", "parser_error": "invalid_batch_count", "transport_call_count": 0},
-            scenario["expected"],
-        )
-        self.assertEqual(["parse_empty_request_message", "count_transport_calls"], scenario["steps"])
-        self.assertEqual(
-            ["request_message_parser_rejects_zero_batch_count", "transport_call_count_is_zero"],
+            ["empty_batch_is_rejected_or_cannot_be_constructed", "transport_call_count_is_zero"],
             scenario["assertions"],
         )
+        self.assertEqual("Batch Count", generated_case["requires"]["operation"])
+        self.assertEqual([], scenario["operations"])
         self.assertEqual(checked_in_case, generated_case)
 
     def test_live_configuration_requires_isolation_and_mutation_opt_in(self) -> None:

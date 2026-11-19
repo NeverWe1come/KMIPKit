@@ -154,6 +154,8 @@ class VersionedContractTests(unittest.TestCase):
                 continue
             scenario = case.get("requires", {}).get("protocol_scenario")
             operations = scenario["operations"] if scenario else [operation]
+            if scenario and not operations:
+                continue
             section_prefix = "6.2." if case.get("requires", {}).get("workflow_type") == "server_to_client" else "6.1."
             case_versions = set(case["execution"]["protocol_versions"])
             for version in ("2.0", "2.1"):

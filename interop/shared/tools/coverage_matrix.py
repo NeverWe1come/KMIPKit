@@ -152,6 +152,14 @@ def _is_generic_tag_inventory_case(case: dict) -> bool:
             and _norm(case.get("requires", {}).get("enum_type", "")) == "tag")
 
 
+def _rejected_before_transport(case: dict) -> bool:
+    scenario = case.get("requires", {}).get("protocol_scenario", {})
+    if not isinstance(scenario, dict):
+        return False
+    expected = scenario.get("expected", {})
+    return isinstance(expected, dict) and expected.get("construction") == "rejected_before_transport"
+
+
 def _case_obligations(
     case: dict,
     operation_ids: dict[str, str],
@@ -182,6 +190,7 @@ def _case_obligations(
         if isinstance(value, str):
             plain_targets.append(value)
     protocol_scenario = requires.get("protocol_scenario", {})
+    has_protocol_scenario = isinstance(protocol_scenario, dict) and "protocol_scenario" in requires
     if isinstance(protocol_scenario, dict):
         scenario_targets = [value for value in protocol_scenario.get("target_ids", []) if isinstance(value, str)]
         plain_targets.extend(scenario_targets)
@@ -280,7 +289,8 @@ def _case_obligations(
     }
     local_value_case = (case.get("execution", {}).get("mode") == "local_model"
                         and any(field in requires for field in ("enum_type", "bitmask_type")))
-    if (not operation_names
+    if (not has_protocol_scenario
+            and not operation_names
             and not local_value_case
             and operation_id and operation_id not in item_targets
             and operation_id not in scenario_step_targets
@@ -329,7 +339,7 @@ def applicable_routes(
     case_version = set(case["execution"]["protocol_versions"])
     expected_status = str(case.get("requires", {}).get("expected_status", "")).casefold()
     request_must_not_be_sent = expected_status.replace("_", "") == "notsent"
-    requires = case.get("requires", {})
+    rejected_before_transport = _rejected_before_transport(case)
     local_tag_case = _is_generic_tag_inventory_case(case)
     candidates = []
     for route in manifest["routes"]:
@@ -373,6 +383,7 @@ def iter_cells(catalog: dict, manifest: dict, *, languages: tuple[str, ...] = LA
     execution_routes = {route["execution_route_id"]: route for route in manifest.get("execution_routes", [])}
     for case in catalog["test_cases"]:
         versions = case["execution"]["protocol_versions"]
+        rejected_before_transport = _rejected_before_transport(case)
         for language in languages:
             routes = applicable_routes(case, manifest, language, operation_ids, all_normative_targets)
             obligations = _case_obligations(case, operation_ids, all_normative_targets)
@@ -426,7 +437,10 @@ def iter_cells(catalog: dict, manifest: dict, *, languages: tuple[str, ...] = LA
                                 "evidence_collected": False,
                             }
                             if route["mode"] == "local":
-                                for action in route["actions"]:
+                                actions = route["actions"]
+                                if rejected_before_transport:
+                                    actions = tuple(action for action in actions if action == "construct")
+                                for action in actions:
                                     yield _with_applicability({
                                         **base, "action": action, "execution_route_id": None,
                                         "execution_api_symbol": None,
@@ -447,6 +461,8 @@ def iter_cells(catalog: dict, manifest: dict, *, languages: tuple[str, ...] = LA
                                     "execution_route_id": execution_route_id,
                                     "execution_api_symbol": execution["public_api_symbol"],
                                 }, case)
+                            if rejected_before_transport:
+                                continue
                             for action in _network_response_actions(case, obligation["target_id"], normative_targets):
                                 yield _with_applicability({
                                     **base, "action": action, "execution_route_id": execution_route_id,
