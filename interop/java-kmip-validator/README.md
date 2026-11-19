@@ -1336,3 +1336,24 @@ passes. Selected evidence validates 44,004/44,004 cells: 43,988 invocations,
 16 not-applicable cells, and zero failures. The ledger records 71,583 planned,
 44,004 executed, and 27,579 pending cells. The full matrix remains incomplete,
 so #187 and its dependents stay WIP.
+
+### Java catalogued Process operation — 2026-11-19
+
+The controlled Java peer now executes the `test-op-process` route for KMIP
+2.1. It checks the typed Process request and Pending response with matching
+correlation over TTLV, JSON, and XML on raw TLS and HTTPS, and records the
+local `ProcessRequest` creation/encoding and `AsyncOperationOutcome` response
+routes. This proves client route execution against the controlled peer; it
+does not claim external KMS interoperability or complete the catalog's key
+lifecycle recipe. Reference: OASIS KMIP 2.1 §6.1.39.
+
+Red `b36e1020c` requires the 18 network cells and three local Process route
+cells. Green `0e160493a` executes the controlled exchanges and records their
+evidence. The full Gradle suite passes 111/111; shared route, schema, and
+capability tests pass 112/112; requirement and feature traceability pass 2/2
+and 31/31. The report validates, the route audit accepts 1,511 routes, and
+the generated ledger comparison passes. Selected evidence validates
+44,025/44,025 cells: 44,009 invocations, 16 not-applicable cells, and zero
+failures. The ledger records 71,583 planned, 44,025 executed, and 27,558
+pending cells. The full matrix remains incomplete, so #187 and its dependents
+stay WIP.

@@ -3,7 +3,7 @@
   "artifact_sha256": "37d7eeae9e64644fd7cdde4bfd64b7da5ccbb0bf2be53a949826eb62dc3aaf86",
   "catalog_sha256": "d01467ec5e7fbdf4a852f0314f1092bc1ab296a2217815ed4345c2493b4c9956",
   "complete_matrix": false,
-  "controlled_peer_cells": 2396,
+  "controlled_peer_cells": 2402,
   "evidence_case_ids": [
     "test-async-cancel-result-canceled",
     "test-async-cancel-result-completed",
@@ -2681,7 +2681,7 @@
     "test-v20-reject-set-constraints",
     "test-v20-reject-set-defaults"
   ],
-  "executed_cells": 44004,
+  "executed_cells": 44025,
   "language": "java",
   "library_commit": "12496d646d11d4069b58bcc88fc76cc619211ec6",
   "pending_case_ids": [
@@ -3665,7 +3665,6 @@
     "test-op-modify-attribute",
     "test-op-obtain-lease",
     "test-op-pkcs#11",
-    "test-op-process",
     "test-op-query",
     "test-op-query-asynchronous-requests",
     "test-op-re-certify",
@@ -7609,10 +7608,6 @@
       "pending_cells": 48
     },
     {
-      "case_id": "test-op-process",
-      "pending_cells": 21
-    },
-    {
       "case_id": "test-op-query",
       "pending_cells": 30
     },
@@ -7693,7 +7688,7 @@
       "pending_cells": 2
     }
   ],
-  "pending_cells": 27579,
+  "pending_cells": 27558,
   "pending_reason": "No validated per-cell route execution evidence is recorded for this cell.",
   "pending_reason_code": "route_evidence_not_emitted",
   "planned_cells": 71583,
@@ -8861,8 +8856,8 @@
     {
       "action": "construct",
       "encoding": "JSON",
-      "executed_cells": 0,
-      "pending_cells": 4,
+      "executed_cells": 1,
+      "pending_cells": 3,
       "protocol_version": "2.1",
       "required_cells": 4,
       "route_id": "java.typed-protocol.client.execute_process",
@@ -8871,8 +8866,8 @@
     {
       "action": "construct",
       "encoding": "JSON",
-      "executed_cells": 0,
-      "pending_cells": 4,
+      "executed_cells": 1,
+      "pending_cells": 3,
       "protocol_version": "2.1",
       "required_cells": 4,
       "route_id": "java.typed-protocol.client.execute_process",
@@ -8881,8 +8876,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 4,
+      "executed_cells": 1,
+      "pending_cells": 3,
       "protocol_version": "2.1",
       "required_cells": 4,
       "route_id": "java.typed-protocol.client.execute_process",
@@ -8891,8 +8886,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 4,
+      "executed_cells": 1,
+      "pending_cells": 3,
       "protocol_version": "2.1",
       "required_cells": 4,
       "route_id": "java.typed-protocol.client.execute_process",
@@ -8901,8 +8896,8 @@
     {
       "action": "construct",
       "encoding": "XML",
-      "executed_cells": 0,
-      "pending_cells": 4,
+      "executed_cells": 1,
+      "pending_cells": 3,
       "protocol_version": "2.1",
       "required_cells": 4,
       "route_id": "java.typed-protocol.client.execute_process",
@@ -8911,8 +8906,8 @@
     {
       "action": "construct",
       "encoding": "XML",
-      "executed_cells": 0,
-      "pending_cells": 4,
+      "executed_cells": 1,
+      "pending_cells": 3,
       "protocol_version": "2.1",
       "required_cells": 4,
       "route_id": "java.typed-protocol.client.execute_process",
@@ -8921,8 +8916,8 @@
     {
       "action": "decode",
       "encoding": "JSON",
-      "executed_cells": 0,
-      "pending_cells": 3,
+      "executed_cells": 1,
+      "pending_cells": 2,
       "protocol_version": "2.1",
       "required_cells": 3,
       "route_id": "java.typed-protocol.client.execute_process",
@@ -8930,63 +8925,53 @@
     },
     {
       "action": "decode",
-      "encoding": "JSON",
-      "executed_cells": 0,
-      "pending_cells": 3,
-      "protocol_version": "2.1",
-      "required_cells": 3,
-      "route_id": "java.typed-protocol.client.execute_process",
-      "transport": "raw_tls"
-    },
-    {
-      "action": "decode",
-      "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 3,
-      "protocol_version": "2.1",
-      "required_cells": 3,
-      "route_id": "java.typed-protocol.client.execute_process",
-      "transport": "https"
-    },
-    {
-      "action": "decode",
-      "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 3,
-      "protocol_version": "2.1",
-      "required_cells": 3,
-      "route_id": "java.typed-protocol.client.execute_process",
-      "transport": "raw_tls"
-    },
-    {
-      "action": "decode",
-      "encoding": "XML",
-      "executed_cells": 0,
-      "pending_cells": 3,
-      "protocol_version": "2.1",
-      "required_cells": 3,
-      "route_id": "java.typed-protocol.client.execute_process",
-      "transport": "https"
-    },
-    {
-      "action": "decode",
-      "encoding": "XML",
-      "executed_cells": 0,
-      "pending_cells": 3,
-      "protocol_version": "2.1",
-      "required_cells": 3,
-      "route_id": "java.typed-protocol.client.execute_process",
-      "transport": "raw_tls"
-    },
-    {
-      "action": "send",
       "encoding": "JSON",
       "executed_cells": 1,
-      "pending_cells": 0,
-      "protocol_version": "2.0",
-      "required_cells": 1,
+      "pending_cells": 2,
+      "protocol_version": "2.1",
+      "required_cells": 3,
+      "route_id": "java.typed-protocol.client.execute_process",
+      "transport": "raw_tls"
+    },
+    {
+      "action": "decode",
+      "encoding": "TTLV",
+      "executed_cells": 1,
+      "pending_cells": 2,
+      "protocol_version": "2.1",
+      "required_cells": 3,
       "route_id": "java.typed-protocol.client.execute_process",
       "transport": "https"
+    },
+    {
+      "action": "decode",
+      "encoding": "TTLV",
+      "executed_cells": 1,
+      "pending_cells": 2,
+      "protocol_version": "2.1",
+      "required_cells": 3,
+      "route_id": "java.typed-protocol.client.execute_process",
+      "transport": "raw_tls"
+    },
+    {
+      "action": "decode",
+      "encoding": "XML",
+      "executed_cells": 1,
+      "pending_cells": 2,
+      "protocol_version": "2.1",
+      "required_cells": 3,
+      "route_id": "java.typed-protocol.client.execute_process",
+      "transport": "https"
+    },
+    {
+      "action": "decode",
+      "encoding": "XML",
+      "executed_cells": 1,
+      "pending_cells": 2,
+      "protocol_version": "2.1",
+      "required_cells": 3,
+      "route_id": "java.typed-protocol.client.execute_process",
+      "transport": "raw_tls"
     },
     {
       "action": "send",
@@ -8996,6 +8981,16 @@
       "protocol_version": "2.0",
       "required_cells": 1,
       "route_id": "java.typed-protocol.client.execute_process",
+      "transport": "https"
+    },
+    {
+      "action": "send",
+      "encoding": "JSON",
+      "executed_cells": 1,
+      "pending_cells": 0,
+      "protocol_version": "2.0",
+      "required_cells": 1,
+      "route_id": "java.typed-protocol.client.execute_process",
       "transport": "raw_tls"
     },
     {
@@ -9041,8 +9036,8 @@
     {
       "action": "send",
       "encoding": "JSON",
-      "executed_cells": 0,
-      "pending_cells": 4,
+      "executed_cells": 1,
+      "pending_cells": 3,
       "protocol_version": "2.1",
       "required_cells": 4,
       "route_id": "java.typed-protocol.client.execute_process",
@@ -9051,8 +9046,8 @@
     {
       "action": "send",
       "encoding": "JSON",
-      "executed_cells": 0,
-      "pending_cells": 4,
+      "executed_cells": 1,
+      "pending_cells": 3,
       "protocol_version": "2.1",
       "required_cells": 4,
       "route_id": "java.typed-protocol.client.execute_process",
@@ -9061,8 +9056,8 @@
     {
       "action": "send",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 4,
+      "executed_cells": 1,
+      "pending_cells": 3,
       "protocol_version": "2.1",
       "required_cells": 4,
       "route_id": "java.typed-protocol.client.execute_process",
@@ -9071,8 +9066,8 @@
     {
       "action": "send",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 4,
+      "executed_cells": 1,
+      "pending_cells": 3,
       "protocol_version": "2.1",
       "required_cells": 4,
       "route_id": "java.typed-protocol.client.execute_process",
@@ -9081,8 +9076,8 @@
     {
       "action": "send",
       "encoding": "XML",
-      "executed_cells": 0,
-      "pending_cells": 4,
+      "executed_cells": 1,
+      "pending_cells": 3,
       "protocol_version": "2.1",
       "required_cells": 4,
       "route_id": "java.typed-protocol.client.execute_process",
@@ -9091,8 +9086,8 @@
     {
       "action": "send",
       "encoding": "XML",
-      "executed_cells": 0,
-      "pending_cells": 4,
+      "executed_cells": 1,
+      "pending_cells": 3,
       "protocol_version": "2.1",
       "required_cells": 4,
       "route_id": "java.typed-protocol.client.execute_process",
@@ -27931,8 +27926,8 @@
     {
       "action": "encode",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 4,
+      "executed_cells": 1,
+      "pending_cells": 3,
       "protocol_version": "2.1",
       "required_cells": 4,
       "route_id": "java.typed-protocol.function.async_process_request_to_ttlv_payload",
@@ -32251,8 +32246,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 3,
+      "executed_cells": 1,
+      "pending_cells": 2,
       "protocol_version": "2.1",
       "required_cells": 3,
       "route_id": "java.typed-protocol.function.kmipkit_client_async_operation_outcome_process_response_v1",
@@ -33521,8 +33516,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 4,
+      "executed_cells": 1,
+      "pending_cells": 3,
       "protocol_version": "2.1",
       "required_cells": 4,
       "route_id": "java.typed-protocol.process_request.create",
@@ -34398,8 +34393,8 @@
       "route_id": "java.typed-protocol.client.execute_poll"
     },
     {
-      "executed_cells": 12,
-      "pending_cells": 66,
+      "executed_cells": 30,
+      "pending_cells": 48,
       "required_cells": 78,
       "route_id": "java.typed-protocol.client.execute_process"
     },
@@ -34734,8 +34729,8 @@
       "route_id": "java.typed-protocol.function.async_poll_request_to_ttlv_payload"
     },
     {
-      "executed_cells": 0,
-      "pending_cells": 5,
+      "executed_cells": 1,
+      "pending_cells": 4,
       "required_cells": 5,
       "route_id": "java.typed-protocol.function.async_process_request_to_ttlv_payload"
     },
@@ -35334,8 +35329,8 @@
       "route_id": "java.typed-protocol.function.kmipkit_client_async_operation_outcome_poll_response_v1"
     },
     {
-      "executed_cells": 0,
-      "pending_cells": 3,
+      "executed_cells": 1,
+      "pending_cells": 2,
       "required_cells": 3,
       "route_id": "java.typed-protocol.function.kmipkit_client_async_operation_outcome_process_response_v1"
     },
@@ -35718,8 +35713,8 @@
       "route_id": "java.typed-protocol.poll_request.create"
     },
     {
-      "executed_cells": 0,
-      "pending_cells": 5,
+      "executed_cells": 1,
+      "pending_cells": 4,
       "required_cells": 5,
       "route_id": "java.typed-protocol.process_request.create"
     },
@@ -35743,7 +35738,7 @@
     }
   ],
   "schema_version": "1.0",
-  "selected_scope_cells": 44004,
+  "selected_scope_cells": 44025,
   "selected_scope_complete": true,
   "vendor_interoperability_claim": false
 }
