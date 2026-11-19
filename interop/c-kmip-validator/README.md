@@ -129,9 +129,9 @@ python3 -m pip install --only-binary ':all:' jsonschema==4.23.0
 python3 interop/c-kmip-validator/tests/test_route_matrix.py
 python3 interop/c-kmip-validator/tools/route_matrix.py \
   --binary interop/c-kmip-validator/build/kmip_validator_c \
-  --output interop/c-kmip-validator/build/route-execution-evidence-process-v20-boundary.json
+  --output interop/c-kmip-validator/build/route-execution-evidence-set-defaults-v20-boundary.json
 python3 interop/shared/tools/validate_route_evidence.py \
-  --report interop/c-kmip-validator/build/route-execution-evidence-process-v20-boundary.json \
+  --report interop/c-kmip-validator/build/route-execution-evidence-set-defaults-v20-boundary.json \
   --artifact-sha256 "$(sha256sum interop/.local/c-live/install/489fafc79ef89db2524eafa7a6c6482f5cf75d97/lib/libkmipkit_ffi.so | cut -d ' ' -f 1)"
 ```
 
@@ -148,7 +148,7 @@ from pathlib import Path
 sys.path.insert(0, "interop/shared/tools")
 from validate_route_evidence import validate_report
 
-report = json.loads(Path("interop/c-kmip-validator/build/route-execution-evidence-process-v20-boundary.json").read_text())
+report = json.loads(Path("interop/c-kmip-validator/build/route-execution-evidence-set-defaults-v20-boundary.json").read_text())
 catalog_bytes = Path("interop/shared/catalog/kmipkit-1.0-test-catalog.json").read_bytes()
 manifest_bytes = Path("interop/shared/coverage/route-capabilities.json").read_bytes()
 artifact_bytes = Path(
@@ -600,3 +600,18 @@ JSON, and XML over raw TLS and HTTPS, while the separate request model preserves
 its Asynchronous Correlation Value. The shared validator accepts the emitted
 report with `selected_scope_complete=true`, `all_invocations_passed=true`, and
 zero failures; the full matrix remains incomplete.
+
+The latest full report is `c-route-bb9575c1-4edf-44d8-94ba-0d95f23df59b`
+(`route-execution-evidence-set-defaults-v20-boundary.json`) with JSON SHA-256
+`2b09dcfdbf16caa932d7edf6bccd85c041e477481e9b7cfcb2818b3c8a9a0abd`. It has
+66,288 expected cells: 43,788 invoked, 52 explicitly not applicable, zero
+failed, and 22,448 pending. It preserves all 43,828 previous emitted cell
+identities and adds 12 for `test-v20-reject-set-defaults`: construct and send
+across TTLV, JSON, and XML over raw TLS and HTTPS. The installed typed C route
+rejects KMIP 2.1-only Set Defaults under KMIP 2.0 before transport; all six send
+events report `NotSent` and zero transport calls. The report passes schema and
+scoped shared validation with `selected_scope_complete=true`,
+`all_invocations_passed=true`, and zero failures. Full CTest passed 7/7 in
+140.15 seconds; the global matrix remains incomplete, with the Re-Provision
+response decoder still the first pending cell because its source recipe is
+unresolved.
