@@ -721,6 +721,7 @@ def main() -> int:
         expected_cases += (
             "test-v20-reject-get-constraints", "test-v20-reject-ping",
             "test-v20-reject-process", "test-v20-reject-set-defaults",
+            "test-v20-reject-set-constraints",
         )
     shared = repository / "interop/shared"
     catalog = shared / "catalog/kmipkit-1.0-test-catalog.json"
@@ -1624,6 +1625,17 @@ def main() -> int:
                 raise AssertionError(
                     "KMIP 2.1-only Set Defaults must be rejected before transport under KMIP 2.0: "
                     f"{set_defaults_boundary!r}"
+                )
+            set_constraints_boundary = next(
+                case for case in result["cases"]
+                if case["case_id"] == "test-v20-reject-set-constraints"
+            )
+            if set_constraints_boundary["status"] != "passed" or \
+                    set_constraints_boundary["server_compatibility"] != "unknown" or \
+                    set_constraints_boundary["library_correctness"] != "passed":
+                raise AssertionError(
+                    "KMIP 2.1-only Set Constraints must be rejected before transport under KMIP 2.0: "
+                    f"{set_constraints_boundary!r}"
                 )
             discovery = next(case for case in result["cases"]
                              if case["case_id"] == "test-op-discover-versions")
