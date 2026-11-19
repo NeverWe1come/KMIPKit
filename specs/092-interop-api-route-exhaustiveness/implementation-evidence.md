@@ -114,3 +114,7 @@ claiming that an accessor ran for an item the server did not return.
   in 2m15s. This adds local generic-TTLV evidence only; it does not claim that
   every Certificate Attributes policy branch or the complete Java matrix is
   covered.
+- The shared evidence validator confirms 44,242/71,583 Java cells in this
+  report: 44,226 invoked, 16 not applicable, zero failed, and 27,341 pending.
+  The selected scope is complete; global matrix validation remains incomplete.
+  Report run ID: `java-controlled-query-cd6c8317-2b8d-4df2-b3af-3153117e617c`.
