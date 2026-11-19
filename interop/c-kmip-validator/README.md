@@ -664,3 +664,26 @@ scoped shared validation pass with `selected_scope_complete=true`,
 22,318 pending. Full CTest passed 7/7 in 144.84 seconds. The first pending
 cells remain the Re-Provision response decoders; the global matrix is still
 incomplete.
+
+The latest full C report is `c-route-0b591607-5597-496a-9169-92ef08abaa58`
+(`route-execution-evidence-rekey-key-pair.json`) with JSON SHA-256
+`1f3a2165f133459275a5219cce2788f04305b75057dd225de574b83b3e9a78b2` and
+catalog SHA-256 `11d002765d807ba4232625ed19e44649db0fcdd33f0b43911ea18f18a7fe4651`.
+It has 66,288 planned cells: 43,958 invoked, 52 explicitly not applicable,
+zero failed, and 22,278 pending. It preserves all 43,970 prior cell identities
+and adds 40 passed cells for `test-op-re-key-key-pair`; its 44-cell total also
+includes four previously reported generic TTLV construction/decode cells. The
+new routes cover both protocol versions, TTLV/JSON/XML, raw TLS/HTTPS, and the
+typed response and response-TTLV accessors. The controlled client creates and
+activates an RSA key pair, reads both original identifiers, executes Re-key Key
+Pair, checks both distinct replacement identifiers, then revokes and destroys
+both key pairs. Scoped shared validation passes with
+`selected_scope_complete=true`, `all_invocations_passed=true`, and zero
+failures. The 199 changed hashes on existing events affect only request/response
+tree digests: 192 for certificate fixtures generated afresh per run and seven
+for time-bearing asynchronous responses; all prior event identities remain.
+The pinned artifact SHA-256 remains
+`c93eb8f7daa60d3b6832d297887e99cd2101e4f9baf2d04f55ce4042ba4bb7a2`. Full
+CTest passed 7/7 in 145.45 seconds and the C matrix contract suite passed
+226/226. The first pending cells remain the Re-Provision response decoders; the
+global matrix is still incomplete.
