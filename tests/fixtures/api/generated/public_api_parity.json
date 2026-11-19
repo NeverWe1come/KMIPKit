@@ -333548,9 +333548,11 @@
           "kmipkit_s2c_query_respond_with_capabilities_v1",
           "kmipkit_server_request_dispatcher_create",
           "kmipkit_server_request_dispatcher_dispatch_v1",
+          "kmipkit_server_request_dispatcher_dispatch_v2",
           "kmipkit_server_request_dispatcher_release",
           "kmipkit_server_request_dispatcher_t",
           "kmipkit_server_request_handler_v1_t",
+          "kmipkit_server_request_handler_v2_t",
           "kmipkit_server_request_item_view_v1_t"
         ],
         "java": [

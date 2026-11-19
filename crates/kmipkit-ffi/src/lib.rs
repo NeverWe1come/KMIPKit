@@ -966,10 +966,62 @@ pub struct kmipkit_s2c_capabilities_v1_t {
     pub reserved: u32,
 }
 
-/// C callback dispatch table for Server-to-Client operations.
+/// C callback dispatch table for Server-to-Client operations (ABI version 1).
 #[derive(Clone, Copy)]
 #[repr(C)]
 pub struct kmipkit_server_request_handler_v1_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    pub user_data: *mut core::ffi::c_void,
+    pub handle_discover_versions: Option<
+        unsafe extern "C" fn(
+            user_data: *mut core::ffi::c_void,
+            item_view: *const kmipkit_server_request_item_view_v1_t,
+            protocol_version_major: u32,
+            protocol_version_minor: u32,
+            supported_versions_out: *mut u32,
+            supported_versions_capacity: u32,
+            supported_versions_count_out: *mut u32,
+        ) -> u32,
+    >,
+    pub handle_notify: Option<
+        unsafe extern "C" fn(
+            user_data: *mut core::ffi::c_void,
+            item_view: *const kmipkit_server_request_item_view_v1_t,
+            unique_identifier_data: *const u8,
+            unique_identifier_length: u64,
+        ) -> u32,
+    >,
+    pub handle_put: Option<
+        unsafe extern "C" fn(
+            user_data: *mut core::ffi::c_void,
+            item_view: *const kmipkit_server_request_item_view_v1_t,
+            unique_identifier_data: *const u8,
+            unique_identifier_length: u64,
+            object_ttlv_data: *const u8,
+            object_ttlv_length: u64,
+        ) -> u32,
+    >,
+    pub handle_query: Option<
+        unsafe extern "C" fn(
+            user_data: *mut core::ffi::c_void,
+            item_view: *const kmipkit_server_request_item_view_v1_t,
+            query_function_flags: u32,
+        ) -> u32,
+    >,
+    pub handle_set_endpoint_role: Option<
+        unsafe extern "C" fn(
+            user_data: *mut core::ffi::c_void,
+            item_view: *const kmipkit_server_request_item_view_v1_t,
+            target_role: u32,
+        ) -> u32,
+    >,
+}
+
+/// C callback dispatch table for Server-to-Client operations (ABI version 2).
+#[derive(Clone, Copy)]
+#[repr(C)]
+pub struct kmipkit_server_request_handler_v2_t {
     pub struct_size: u32,
     pub abi_version: u32,
     pub user_data: *mut core::ffi::c_void,

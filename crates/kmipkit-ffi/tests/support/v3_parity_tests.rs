@@ -1,6 +1,10 @@
 use super::*;
 use std::ptr;
-use crate::{KMIPKIT_UNIQUE_IDENTIFIER_KIND_IDENTIFIER, KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING, kmipkit_s2c_capabilities_v1_t};
+use crate::{
+    kmipkit_s2c_capabilities_v1_t, kmipkit_server_request_handler_v1_t,
+    kmipkit_server_request_handler_v2_t, KMIPKIT_UNIQUE_IDENTIFIER_KIND_IDENTIFIER,
+    KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
+};
 
 #[test]
 fn test_unique_identifier_v1_identifier_roundtrip() {
@@ -364,6 +368,8 @@ fn ttlv_test_item(tag: u32, item_type: u8, value: &[u8]) -> Vec<u8> {
 
 static PUT_CALLED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 static QUERY_CALLED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+static PUT_V1_CALLED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+static QUERY_V1_CALLED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 
 unsafe extern "C" fn test_put_callback(
     _user_data: *mut core::ffi::c_void,
@@ -392,6 +398,23 @@ unsafe extern "C" fn test_put_callback(
     0
 }
 
+unsafe extern "C" fn test_put_callback_v1(
+    _user_data: *mut core::ffi::c_void,
+    _item_view: *const kmipkit_server_request_item_view_v1_t,
+    unique_identifier_data: *const u8,
+    unique_identifier_length: u64,
+    object_ttlv_data: *const u8,
+    object_ttlv_length: u64,
+) -> u32 {
+    let uid = unsafe { std::slice::from_raw_parts(unique_identifier_data, unique_identifier_length as usize) };
+    assert_eq!(uid, b"sym-key-uid");
+    assert!(!object_ttlv_data.is_null());
+    assert!(object_ttlv_length > 0);
+
+    PUT_V1_CALLED.store(true, std::sync::atomic::Ordering::SeqCst);
+    0
+}
+
 static CUSTOM_QUERY_OPS: [u32; 3] = [0x0000_001E, 0x0000_001B, 0x0000_001C];
 static CUSTOM_QUERY_OTS: [u32; 2] = [1, 2];
 static CUSTOM_QUERY_VENDOR: &[u8] = b"CustomVendorFromC";
@@ -414,6 +437,18 @@ unsafe extern "C" fn test_query_callback(
     caps.vendor_identification_length = CUSTOM_QUERY_VENDOR.len() as u64;
 
     QUERY_CALLED.store(true, std::sync::atomic::Ordering::SeqCst);
+    0
+}
+
+unsafe extern "C" fn test_query_callback_v1(
+    _user_data: *mut core::ffi::c_void,
+    _item_view: *const kmipkit_server_request_item_view_v1_t,
+    query_function_flags: u32,
+) -> u32 {
+    assert!(query_function_flags & 0x01 != 0); // Operations
+    assert!(query_function_flags & 0x04 != 0); // ServerInformation
+
+    QUERY_V1_CALLED.store(true, std::sync::atomic::Ordering::SeqCst);
     0
 }
 
@@ -511,10 +546,46 @@ fn test_s2c_put_and_query_callbacks_with_real_payloads() {
     kmipkit_ttlv_item_release(obj_item);
     kmipkit_ttlv_structure_release(attr_st);
 
-    // Setup handler with callbacks
-    let handler = kmipkit_server_request_handler_v1_t {
+    let mut dispatcher = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_server_request_dispatcher_create(&mut dispatcher),
+        SUCCESS
+    );
+
+    // 1. Test dispatch_v1 with kmipkit_server_request_handler_v1_t
+    let handler_v1 = kmipkit_server_request_handler_v1_t {
         struct_size: std::mem::size_of::<kmipkit_server_request_handler_v1_t>() as u32,
         abi_version: 1,
+        user_data: ptr::null_mut(),
+        handle_discover_versions: None,
+        handle_notify: None,
+        handle_put: Some(test_put_callback_v1),
+        handle_query: Some(test_query_callback_v1),
+        handle_set_endpoint_role: None,
+    };
+
+    let mut response_v1 = ptr::null_mut();
+    PUT_V1_CALLED.store(false, std::sync::atomic::Ordering::SeqCst);
+    QUERY_V1_CALLED.store(false, std::sync::atomic::Ordering::SeqCst);
+
+    assert_eq!(
+        client_abi::kmipkit_server_request_dispatcher_dispatch_v1(
+            dispatcher,
+            batch,
+            &handler_v1,
+            &mut response_v1,
+        ),
+        SUCCESS
+    );
+    assert!(PUT_V1_CALLED.load(std::sync::atomic::Ordering::SeqCst));
+    assert!(QUERY_V1_CALLED.load(std::sync::atomic::Ordering::SeqCst));
+    assert!(!response_v1.is_null());
+    kmipkit_response_message_release(response_v1);
+
+    // 2. Test dispatch_v2 with kmipkit_server_request_handler_v2_t
+    let handler_v2 = kmipkit_server_request_handler_v2_t {
+        struct_size: std::mem::size_of::<kmipkit_server_request_handler_v2_t>() as u32,
+        abi_version: 2,
         user_data: ptr::null_mut(),
         handle_discover_versions: None,
         handle_notify: None,
@@ -523,32 +594,197 @@ fn test_s2c_put_and_query_callbacks_with_real_payloads() {
         handle_set_endpoint_role: None,
     };
 
-    let mut dispatcher = ptr::null_mut();
-    assert_eq!(
-        client_abi::kmipkit_server_request_dispatcher_create(&mut dispatcher),
-        SUCCESS
-    );
-
-    let mut response = ptr::null_mut();
+    let mut response_v2 = ptr::null_mut();
     PUT_CALLED.store(false, std::sync::atomic::Ordering::SeqCst);
     QUERY_CALLED.store(false, std::sync::atomic::Ordering::SeqCst);
 
     assert_eq!(
-        client_abi::kmipkit_server_request_dispatcher_dispatch_v1(
+        client_abi::kmipkit_server_request_dispatcher_dispatch_v2(
             dispatcher,
             batch,
-            &handler,
-            &mut response,
+            &handler_v2,
+            &mut response_v2,
         ),
         SUCCESS
     );
-
     assert!(PUT_CALLED.load(std::sync::atomic::Ordering::SeqCst));
     assert!(QUERY_CALLED.load(std::sync::atomic::Ordering::SeqCst));
-    assert!(!response.is_null());
+    assert!(!response_v2.is_null());
+    kmipkit_response_message_release(response_v2);
 
-    kmipkit_response_message_release(response);
+    // 3. Test ABI validation and version mismatch
+    let mut invalid_handler_v1 = handler_v1;
+    invalid_handler_v1.abi_version = 2;
+    let mut resp = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_server_request_dispatcher_dispatch_v1(
+            dispatcher,
+            batch,
+            &invalid_handler_v1,
+            &mut resp,
+        ),
+        ERROR_INVALID_INPUT
+    );
+
+    let mut invalid_handler_v2 = handler_v2;
+    invalid_handler_v2.abi_version = 1;
+    assert_eq!(
+        client_abi::kmipkit_server_request_dispatcher_dispatch_v2(
+            dispatcher,
+            batch,
+            &invalid_handler_v2,
+            &mut resp,
+        ),
+        ERROR_INVALID_INPUT
+    );
+
     client_abi::kmipkit_server_request_dispatcher_release(dispatcher);
     client_abi::kmipkit_incoming_server_batch_release(batch);
     kmipkit_codec_limits_release(limits);
+}
+
+#[test]
+fn test_s2c_capabilities_contract_validation() {
+    let mut st = ptr::null_mut();
+
+    // 1. NULL capabilities
+    assert_eq!(
+        client_abi::kmipkit_s2c_query_respond_with_capabilities_v1(0x01, ptr::null(), &mut st),
+        ERROR_INVALID_INPUT
+    );
+
+    // 2. struct_size = 0
+    let mut caps = kmipkit_s2c_capabilities_v1_t {
+        struct_size: 0,
+        abi_version: 1,
+        operations: ptr::null(),
+        operations_count: 0,
+        object_types: ptr::null(),
+        object_types_count: 0,
+        vendor_identification_data: ptr::null(),
+        vendor_identification_length: 0,
+        extension_tags: ptr::null(),
+        extension_tags_count: 0,
+        reserved: 0,
+    };
+    assert_eq!(
+        client_abi::kmipkit_s2c_query_respond_with_capabilities_v1(0x01, &caps, &mut st),
+        ERROR_INVALID_INPUT
+    );
+
+    // 3. struct_size != sizeof
+    caps.struct_size = 99;
+    assert_eq!(
+        client_abi::kmipkit_s2c_query_respond_with_capabilities_v1(0x01, &caps, &mut st),
+        ERROR_INVALID_INPUT
+    );
+
+    // 4. abi_version != 1
+    caps.struct_size = std::mem::size_of::<kmipkit_s2c_capabilities_v1_t>() as u32;
+    caps.abi_version = 99;
+    assert_eq!(
+        client_abi::kmipkit_s2c_query_respond_with_capabilities_v1(0x01, &caps, &mut st),
+        ERROR_INVALID_INPUT
+    );
+
+    // 5. reserved != 0
+    caps.abi_version = 1;
+    caps.reserved = 1;
+    assert_eq!(
+        client_abi::kmipkit_s2c_query_respond_with_capabilities_v1(0x01, &caps, &mut st),
+        ERROR_INVALID_INPUT
+    );
+    caps.reserved = 0;
+
+    // 6. operations_count > 0 with NULL operations
+    caps.operations_count = 5;
+    caps.operations = ptr::null();
+    assert_eq!(
+        client_abi::kmipkit_s2c_query_respond_with_capabilities_v1(0x01, &caps, &mut st),
+        ERROR_INVALID_INPUT
+    );
+    caps.operations_count = 0;
+
+    // 7. object_types_count > 0 with NULL object_types
+    caps.object_types_count = 5;
+    caps.object_types = ptr::null();
+    assert_eq!(
+        client_abi::kmipkit_s2c_query_respond_with_capabilities_v1(0x02, &caps, &mut st),
+        ERROR_INVALID_INPUT
+    );
+    caps.object_types_count = 0;
+
+    // 8. extension_tags_count > 0 with NULL extension_tags
+    caps.extension_tags_count = 5;
+    caps.extension_tags = ptr::null();
+    assert_eq!(
+        client_abi::kmipkit_s2c_query_respond_with_capabilities_v1(0x08, &caps, &mut st),
+        ERROR_INVALID_INPUT
+    );
+    caps.extension_tags_count = 0;
+
+    // 9. vendor_identification_length > 0 with NULL data
+    caps.vendor_identification_length = 10;
+    caps.vendor_identification_data = ptr::null();
+    assert_eq!(
+        client_abi::kmipkit_s2c_query_respond_with_capabilities_v1(0x04, &caps, &mut st),
+        ERROR_INVALID_INPUT
+    );
+    caps.vendor_identification_length = 0;
+
+    // 10. Invalid UTF-8 in vendor_identification
+    let bad_utf8 = [0xFFu8, 0xFEu8];
+    caps.vendor_identification_data = bad_utf8.as_ptr();
+    caps.vendor_identification_length = bad_utf8.len() as u64;
+    assert_eq!(
+        client_abi::kmipkit_s2c_query_respond_with_capabilities_v1(0x04, &caps, &mut st),
+        ERROR_INVALID_INPUT
+    );
+    caps.vendor_identification_data = ptr::null();
+    caps.vendor_identification_length = 0;
+
+    // 11. Count > MAX_S2C_CAPABILITY_ITEMS (1024)
+    caps.operations_count = 1025;
+    let dummy_op = 1u32;
+    caps.operations = &dummy_op;
+    assert_eq!(
+        client_abi::kmipkit_s2c_query_respond_with_capabilities_v1(0x01, &caps, &mut st),
+        ERROR_RESOURCE_LIMIT
+    );
+}
+
+#[test]
+fn test_s2c_query_deliberately_empty_capabilities() {
+    let caps = kmipkit_s2c_capabilities_v1_t {
+        struct_size: std::mem::size_of::<kmipkit_s2c_capabilities_v1_t>() as u32,
+        abi_version: 1,
+        operations: ptr::null(),
+        operations_count: 0,
+        object_types: ptr::null(),
+        object_types_count: 0,
+        vendor_identification_data: ptr::null(),
+        vendor_identification_length: 0,
+        extension_tags: ptr::null(),
+        extension_tags_count: 0,
+        reserved: 0,
+    };
+
+    let mut st = ptr::null_mut();
+    // Request Operations (0x01) and Objects (0x02)
+    assert_eq!(
+        client_abi::kmipkit_s2c_query_respond_with_capabilities_v1(0x03, &caps, &mut st),
+        SUCCESS
+    );
+    assert!(!st.is_null());
+
+    let mut view = ptr::null_mut();
+    assert_eq!(kmipkit_ttlv_structure_view(st, &mut view), SUCCESS);
+    let mut count = 0u64;
+    assert_eq!(kmipkit_ttlv_structure_view_item_count(view, &mut count), SUCCESS);
+    // Deliberately empty: structure should have exactly 0 items, not injected fallbacks!
+    assert_eq!(count, 0);
+
+    kmipkit_ttlv_structure_view_release(view);
+
+    kmipkit_ttlv_structure_release(st);
 }

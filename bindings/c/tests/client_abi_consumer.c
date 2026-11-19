@@ -7886,6 +7886,23 @@ static int s2c_abi_is_callable_from_c(void) {
     }
     kmipkit_ttlv_structure_release(query_ttlv);
 
+    /* Test contract validation in kmipkit_s2c_query_respond_with_capabilities_v1 */
+    custom_caps.struct_size = 0;
+    if (kmipkit_s2c_query_respond_with_capabilities_v1(0x01, &custom_caps, &query_ttlv) == 0) {
+        return 0;
+    }
+    custom_caps.struct_size = (uint32_t)sizeof(custom_caps);
+    custom_caps.abi_version = 99;
+    if (kmipkit_s2c_query_respond_with_capabilities_v1(0x01, &custom_caps, &query_ttlv) == 0) {
+        return 0;
+    }
+    custom_caps.abi_version = 1;
+    custom_caps.reserved = 1;
+    if (kmipkit_s2c_query_respond_with_capabilities_v1(0x01, &custom_caps, &query_ttlv) == 0) {
+        return 0;
+    }
+    custom_caps.reserved = 0;
+
     /* Test kmipkit_incoming_server_batch_item_put_v2 null/safety path */
     uint32_t put_fn = 0;
     uint64_t uid_len = 0;
@@ -7897,6 +7914,23 @@ static int s2c_abi_is_callable_from_c(void) {
     if (kmipkit_server_request_dispatcher_create(&dispatcher) != 0 || dispatcher == NULL) {
         return 0;
     }
+
+    kmipkit_server_request_handler_v1_t handler_v1;
+    memset(&handler_v1, 0, sizeof(handler_v1));
+    handler_v1.struct_size = (uint32_t)sizeof(handler_v1);
+    handler_v1.abi_version = 1;
+    if (kmipkit_server_request_dispatcher_dispatch_v1(dispatcher, NULL, &handler_v1, NULL) == 0) {
+        return 0;
+    }
+
+    kmipkit_server_request_handler_v2_t handler_v2;
+    memset(&handler_v2, 0, sizeof(handler_v2));
+    handler_v2.struct_size = (uint32_t)sizeof(handler_v2);
+    handler_v2.abi_version = 2;
+    if (kmipkit_server_request_dispatcher_dispatch_v2(dispatcher, NULL, &handler_v2, NULL) == 0) {
+        return 0;
+    }
+
     kmipkit_server_request_dispatcher_release(dispatcher);
 
     kmipkit_client_listener_t *listener = NULL;
