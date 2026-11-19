@@ -735,6 +735,8 @@ def main() -> int:
         "test-crypto-rng-retrieve-rng-32",
         "test-crypto-rng-seed-rng-32",
     )
+    expected_cases += ("test-multipart-hash-sha256",)
+    expected_operations += (39, 39, 39)
     expected_cases += ("test-batch-register-encrypt-decrypt-destroy",)
     expected_cases += ("test-op-encrypt",)
     expected_cases += ("test-crypto-encrypt-aes-256-cbc",)
@@ -864,6 +866,7 @@ def main() -> int:
             async_process_route_finished = False
             async_process_standalone_seed = False
             async_query_route_stage = 0
+            multipart_hash_exchange_count = 0
             batch_order_placeholder_seen = 0
             async_query_correlations = (
                 b"fixture-query-create-completed",
@@ -1389,9 +1392,15 @@ def main() -> int:
                                 )
                             # Dedicated asynchronous C executors have no authentication input;
                             # every ordinary batch in this peer still proves configured credentials.
-                            if operations not in ((25,), (26,), (57,), (58,)) and (
-                                    tlv(0x420099, 7, b"interop-user") not in request or
-                                    tlv(0x4200A1, 7, b"interop-password") not in request):
+                            configured_credentials_present = (
+                                tlv(0x420099, 7, b"interop-user") in request and
+                                tlv(0x4200A1, 7, b"interop-password") in request
+                            )
+                            if operations == (39,) and not configured_credentials_present:
+                                raise AssertionError(
+                                    "Hash request is missing configured KMIP credentials"
+                                )
+                            if operations not in ((25,), (26,), (57,), (58,)) and not configured_credentials_present:
                                 raise AssertionError("request is missing configured KMIP credentials")
                             if (async_query_route_stage == 0 and async_process_route_finished and
                                     operations == (1,) and enumeration(0x420007, 1) in request):
@@ -1607,6 +1616,17 @@ def main() -> int:
                                         response_item_ids = (b"split-destroy-part-1" if
                                             split_cleanup_id == split_identifiers[0] else
                                             b"split-destroy-part-2",)
+                                multipart_hash = operations == (39,) and any(
+                                    marker in request for marker in (
+                                        tlv(0x4200D6, 8, b"fixture-hash-correlation"),
+                                        tlv(0x4200D7, 6, b"\x00" * 7 + b"\x01"),
+                                        tlv(0x4200D8, 6, b"\x00" * 7 + b"\x01"),
+                                    )
+                                )
+                                hash_correlation_value = (
+                                    b"fixture-hash-correlation"
+                                    if multipart_hash and multipart_hash_exchange_count == 0 else None
+                                )
                                 stream.sendall(response(
                                     response_operations, protocol_minor, selected_attribute_tag,
                                     4 if private_key_create else 3 if public_key_create else 2,
@@ -1634,7 +1654,11 @@ def main() -> int:
                                         (b"fixture-rekeyed-key", b"fixture-rekeyed-key",
                                          b"fixture-rekeyed-key", b"fixture-key-1", b"fixture-key-1")
                                         if operations == (4, 19, 20, 19, 20) else None),
-                                    crypto_output=crypto_output_for_request(operations, request)))
+                                    crypto_output=crypto_output_for_request(operations, request),
+                                    multipart_hash=multipart_hash,
+                                    hash_correlation_value=hash_correlation_value))
+                                if multipart_hash:
+                                    multipart_hash_exchange_count += 1
                                 if operations == (25,):
                                     async_request_pending = False
                                     async_poll_mode = "none"
@@ -1728,8 +1752,9 @@ def main() -> int:
                 or registered_key_batch not in handled_batches
                 or not split_key_created or split_key_destroyed != {b"fixture-split-part-1", b"fixture-split-part-2"}):
             raise AssertionError(
-                f"controlled peer observed batches {handled_batches!r}, "
-                f"expected {expected_operations!r}"
+                f"controlled peer observed {handled} operation calls (expected {len(expected_operations)}); "
+                f"Hash calls={handled_operations.count(39)} (expected {expected_operations.count(39)}); "
+                f"batch_count={len(handled_batches)}"
             )
         result = json.loads(result_path.read_text(encoding="utf-8"))
         try:
