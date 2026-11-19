@@ -687,3 +687,29 @@ The pinned artifact SHA-256 remains
 CTest passed 7/7 in 145.45 seconds and the C matrix contract suite passed
 226/226. The first pending cells remain the Re-Provision response decoders; the
 global matrix is still incomplete.
+
+The latest full C report is `c-route-5d37985d-a4f0-4913-a343-55a33faec466`
+(`route-execution-evidence-decrypt-aes-256-cbc.json`) with JSON SHA-256
+`e13355c803ae78295334b7dce6a8cfd90e516f1145289426b0616cfd33feaed9`, catalog
+SHA-256 `11d002765d807ba4232625ed19e44649db0fcdd33f0b43911ea18f18a7fe4651`,
+route manifest SHA-256
+`28b381ebca85752ba8eb3c41c003f02b2d1d8ad8180f0e8908a7e716724732f5`, and
+pinned artifact SHA-256
+`c93eb8f7daa60d3b6832d297887e99cd2101e4f9baf2d04f55ce4042ba4bb7a2`. It has
+66,288 planned cells: 43,996 invoked, 52 explicitly not applicable, zero
+failed, and 22,240 pending. It preserves all 44,010 prior cell identities and
+adds 38 passed cells for `test-crypto-decrypt-aes-256-cbc`; its 42-cell total
+also includes four previously reported generic TTLV construction/decode cells.
+The new cells cover KMIP 2.0/2.1, TTLV/JSON/XML over raw TLS/HTTPS, and both
+local and network response decoders. The controlled request specifies AES-256,
+Decrypt usage, CBC mode, no padding, the 16-byte IV, and the fixed CBC
+ciphertext; the peer checks those fields and returns the matching plaintext
+response. The client validates the returned identifier, plaintext, and cleanup
+responses. Schema validation and scoped shared validation pass with
+`selected_scope_complete=true`, `all_invocations_passed=true`, and zero
+failures. Full CTest passed 7/7 in 145.71 seconds. The first pending cells
+remain the Re-Provision response decoders; the global matrix is still
+incomplete. The shared Python test suite passed 210/210 tests. Of the preserved
+prior events, 199 changed only their tree digests: 192 request hashes from
+regenerated certificate fixtures and seven response hashes from time-bearing
+asynchronous responses; no other prior outcome fields changed.
