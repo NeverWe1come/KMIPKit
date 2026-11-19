@@ -142,16 +142,27 @@ The `*.gaps.json` sidecar identifies every unexecuted matrix obligation rather
 than misclassifying it as an unavailable library route. Other sidecars retain
 installed-artifact availability checks and sanitized controlled-peer outcomes.
 The evidence JSON passes the shared schema independently of completeness.
-The latest full local C matrix report (`c-route-6a0c11d5-0ab1-4928-aecf-34cac0a76391`)
-has 66,288 expected cells, 43,419 invoked, 40 explicitly not applicable, zero
-failed, and 22,829 pending. Its JSON SHA-256 is
-`2680de01d5150a853e32bb287a082538863159ac35e235f9c99fd50d724c6c20`; it uses
+The latest full local C matrix report (`c-route-56b0ea4e-dcd3-4332-97bc-2f265c3abc00`)
+has 66,288 expected cells, 43,440 invoked, 40 explicitly not applicable, zero
+failed, and 22,808 pending. Its JSON SHA-256 is
+`b1b5e56345d5b060e80483428da6454a9253444701d7036ee3055f1cb753d46b`; it uses
 the pinned C artifact SHA-256
 `c93eb8f7daa60d3b6832d297887e99cd2101e4f9baf2d04f55ce4042ba4bb7a2`. The
 shared validator accepts all emitted cells with
 `selected_scope_complete=true` and `all_invocations_passed=true`; the full
-matrix remains incomplete. The first pending cell is the KMIP 2.1 local Process
-request-to-TTLV encoder.
+matrix remains incomplete. The first pending cell is the KMIP 2.0 local
+`kmipkit_client_batch_item_response_reprovision` decoder for `test-op-re-provision`.
+The `test-op-process` route adds 23 validated cells for KMIP 2.1: one local
+Process request encoder, its typed constructor and response decoder, six
+encoding/transport executions, and their local request/response construction
+and decode routes. The controlled TLS peer returns Create Pending with a fixed
+correlation, a synchronous successful Process response for that correlation,
+a terminal Poll response containing the created identifier, then successful
+Revoke and Destroy responses. It verifies the five-request order and empty
+final fixture state. These are controlled fixture results, not evidence from
+an external KMS. Compared with the preceding full report, this run adds 21
+event identities for `test-op-process`; two of its applicable cells already
+had matching identities in the previous report.
 The MAC and Sign response TTLV accessors and the Continue batch-option
 constructor contribute four local cells each across KMIP 2.0/2.1. The
 Query Async Requests correlation builder contributes two KMIP 2.1 model cells.
@@ -450,5 +461,6 @@ those rows. The previous report added the KMIP 2.0 Discover Versions local
 decoder cell using a 2.0 response header and the fixed 2.1 request offer; it
 validates the returned 2.1 version without claiming 2.0 offer construction.
 The latest report retains all previous cells and adds 42 cells for the Poll
-route after the 39 cells for KMIP 2.0 Login and Logout. It passes the evidence
-schema and scoped shared validation, while 22,829 matrix cells remain pending.
+route and 21 new identities for the Process route, after the 39 cells for
+KMIP 2.0 Login and Logout. It passes the evidence schema and scoped shared
+validation, while 22,808 matrix cells remain pending.
