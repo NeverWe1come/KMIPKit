@@ -1,11 +1,7 @@
-#[cfg(any())]
 use kmipkit::{api_levels, capability_is_available};
-#[cfg(any())]
 use serde_json::Value;
 
 #[test]
-// Requires repository assets absent from this review branch.
-#[cfg(any())]
 fn api_levels_match_the_shared_fixture_without_network_calls() {
     let fixture: Value = serde_json::from_str(include_str!(
         "../../../bindings/shared/fixtures/api/shared-capability-parity.json"

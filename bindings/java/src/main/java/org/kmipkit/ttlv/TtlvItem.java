@@ -16,6 +16,10 @@ public final class TtlvItem implements AutoCloseable {
         return new TtlvItem(nativeHandle);
     }
 
+    public static TtlvItem fromNativeHandle(long nativeHandle) {
+        return new TtlvItem(nativeHandle);
+    }
+
     public static TtlvItem create(Tag tag, TtlvValue value, CodecLimits limits) {
         if (tag == null || value == null || limits == null) {
             throw new InvalidInputException("TTLV item inputs are invalid");

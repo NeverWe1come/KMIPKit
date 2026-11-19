@@ -1183,8 +1183,14 @@ jlong make_bytes_value(JNIEnv* env, jbyteArray raw_value, jlongArray raw_limits)
                 return kmipkit_ttlv_value_big_integer(limits.get(), bytes.data(), bytes.size(), output);
             } else if constexpr (Kind == 1) {
                 return kmipkit_ttlv_value_text_string(limits.get(), bytes.data(), bytes.size(), output);
-            } else {
+            } else if constexpr (Kind == 2) {
                 return kmipkit_ttlv_value_byte_string(limits.get(), bytes.data(), bytes.size(), output);
+            } else if constexpr (Kind == 3) {
+                return kmipkit_ttlv_value_identifier(limits.get(), bytes.data(), bytes.size(), output);
+            } else if constexpr (Kind == 4) {
+                return kmipkit_ttlv_value_reference(limits.get(), bytes.data(), bytes.size(), output);
+            } else {
+                return kmipkit_ttlv_value_name_reference(limits.get(), bytes.data(), bytes.size(), output);
             }
         });
     });
@@ -6775,6 +6781,12 @@ JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_release(
                 from_java_handle<kmipkit_add_attribute_builder_t>(raw_handle)); break;
         case 76: kmipkit_delete_attribute_builder_release(
                 from_java_handle<kmipkit_delete_attribute_builder_t>(raw_handle)); break;
+        case 77: kmipkit_lease_context_release(from_java_handle<kmipkit_lease_context_t>(raw_handle)); break;
+        case 78: kmipkit_client_listener_release(from_java_handle<kmipkit_client_listener_t>(raw_handle)); break;
+        case 79: kmipkit_client_listener_connection_release(from_java_handle<kmipkit_client_listener_connection_t>(raw_handle)); break;
+        case 80: kmipkit_role_reversed_session_release(from_java_handle<kmipkit_role_reversed_session_t>(raw_handle)); break;
+        case 81: kmipkit_incoming_server_batch_release(from_java_handle<kmipkit_incoming_server_batch_t>(raw_handle)); break;
+        case 82: kmipkit_server_request_dispatcher_release(from_java_handle<kmipkit_server_request_dispatcher_t>(raw_handle)); break;
         default: throw_invalid_input(env); break;
         }
         return 0;
@@ -7567,6 +7579,21 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_ttlvValueTextSt
 JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_ttlvValueByteString(
         JNIEnv* env, jclass, jbyteArray value, jlongArray limits) {
     return make_bytes_value<2>(env, value, limits);
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_ttlvValueIdentifier(
+        JNIEnv* env, jclass, jbyteArray value, jlongArray limits) {
+    return make_bytes_value<3>(env, value, limits);
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_ttlvValueReference(
+        JNIEnv* env, jclass, jbyteArray value, jlongArray limits) {
+    return make_bytes_value<4>(env, value, limits);
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_ttlvValueNameReference(
+        JNIEnv* env, jclass, jbyteArray value, jlongArray limits) {
+    return make_bytes_value<5>(env, value, limits);
 }
 
 JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_ttlvValueStructure(
@@ -14558,6 +14585,1324 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_validati
             return static_cast<jobjectArray>(nullptr);
         }
         return result;
+    });
+}
+
+JNIEXPORT jint JNICALL Java_org_kmipkit_NativeExtensionRegistry_requestHeaderViewWireBatchCount(
+        JNIEnv* env, jclass, jlong raw_header) {
+    return guarded<jint>(env, 0, [&] {
+        uint32_t count = 0;
+        if (!check_status(env, [&] {
+            return kmipkit_request_header_view_wire_batch_count(
+                    from_java_handle<kmipkit_request_header_view_t>(raw_header), &count);
+        })) return static_cast<jint>(0);
+        return static_cast<jint>(count);
+    });
+}
+
+JNIEXPORT jint JNICALL Java_org_kmipkit_NativeExtensionRegistry_responseHeaderViewWireBatchCount(
+        JNIEnv* env, jclass, jlong raw_header) {
+    return guarded<jint>(env, 0, [&] {
+        uint32_t count = 0;
+        if (!check_status(env, [&] {
+            return kmipkit_response_header_view_wire_batch_count(
+                    from_java_handle<kmipkit_response_header_view_t>(raw_header), &count);
+        })) return static_cast<jint>(0);
+        return static_cast<jint>(count);
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_requestBatchItemViewEphemeralMode(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return guarded<jlong>(env, -1, [&] {
+        uint8_t present = 0;
+        uint32_t mode = 0;
+        if (!check_status(env, [&] {
+            return kmipkit_request_batch_item_view_ephemeral_mode(
+                    from_java_handle<kmipkit_request_batch_item_view_t>(raw_item), &present, &mode);
+        })) return static_cast<jlong>(-1);
+        return present != 0 ? static_cast<jlong>(mode) : static_cast<jlong>(-1);
+    });
+}
+
+JNIEXPORT jboolean JNICALL Java_org_kmipkit_NativeExtensionRegistry_requestBatchItemViewIsEphemeral(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return guarded<jboolean>(env, JNI_FALSE, [&] {
+        uint8_t is_ephemeral = 0;
+        if (!check_status(env, [&] {
+            return kmipkit_request_batch_item_view_is_ephemeral(
+                    from_java_handle<kmipkit_request_batch_item_view_t>(raw_item), &is_ephemeral);
+        })) return static_cast<jboolean>(JNI_FALSE);
+        return static_cast<jboolean>(is_ephemeral != 0 ? JNI_TRUE : JNI_FALSE);
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_cryptographicParametersFromFieldsV2(
+        JNIEnv* env, jclass, jbooleanArray raw_present, jlongArray raw_values,
+        jbyteArray raw_p_source, jbyteArray raw_context_string,
+        jbyteArray raw_seed, jbyteArray raw_input_key_material) {
+    return guarded<jlong>(env, 0, [&] {
+        constexpr jsize kFieldCount = 23;
+        if (raw_present == nullptr || raw_values == nullptr
+                || env->GetArrayLength(raw_present) != kFieldCount
+                || env->GetArrayLength(raw_values) != kFieldCount) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        std::array<jboolean, kFieldCount> present{};
+        std::array<jlong, kFieldCount> values{};
+        env->GetBooleanArrayRegion(raw_present, 0, kFieldCount, present.data());
+        env->GetLongArrayRegion(raw_values, 0, kFieldCount, values.data());
+        if (env->ExceptionCheck()) return static_cast<jlong>(0);
+
+        kmipkit_cryptographic_parameters_fields_v2_t fields{};
+        fields.struct_size = static_cast<uint32_t>(sizeof(fields));
+        fields.abi_version = 2;
+        if (!cryptographic_parameter_enumeration(env, present.data(), values.data(), 0,
+                    &fields.block_cipher_mode_present, &fields.block_cipher_mode)
+                || !cryptographic_parameter_enumeration(env, present.data(), values.data(), 1,
+                    &fields.padding_method_present, &fields.padding_method)
+                || !cryptographic_parameter_enumeration(env, present.data(), values.data(), 2,
+                    &fields.hashing_algorithm_present, &fields.hashing_algorithm)
+                || !cryptographic_parameter_enumeration(env, present.data(), values.data(), 3,
+                    &fields.key_role_type_present, &fields.key_role_type)
+                || !cryptographic_parameter_enumeration(env, present.data(), values.data(), 4,
+                    &fields.digital_signature_algorithm_present,
+                    &fields.digital_signature_algorithm)
+                || !cryptographic_parameter_enumeration(env, present.data(), values.data(), 5,
+                    &fields.cryptographic_algorithm_present,
+                    &fields.cryptographic_algorithm)
+                || !cryptographic_parameter_presence(env, present.data(), 6,
+                    &fields.random_iv_present)
+                || values[6] < 0 || values[6] > 1
+                || !cryptographic_parameter_integer(env, present.data(), values.data(), 7,
+                    &fields.iv_length_present, &fields.iv_length)
+                || !cryptographic_parameter_integer(env, present.data(), values.data(), 8,
+                    &fields.tag_length_present, &fields.tag_length)
+                || !cryptographic_parameter_integer(env, present.data(), values.data(), 9,
+                    &fields.fixed_field_length_present, &fields.fixed_field_length)
+                || !cryptographic_parameter_integer(env, present.data(), values.data(), 10,
+                    &fields.invocation_field_length_present,
+                    &fields.invocation_field_length)
+                || !cryptographic_parameter_integer(env, present.data(), values.data(), 11,
+                    &fields.counter_length_present, &fields.counter_length)
+                || !cryptographic_parameter_integer(env, present.data(), values.data(), 12,
+                    &fields.initial_counter_value_present,
+                    &fields.initial_counter_value)
+                || !cryptographic_parameter_integer(env, present.data(), values.data(), 13,
+                    &fields.salt_length_present, &fields.salt_length)
+                || !cryptographic_parameter_enumeration(env, present.data(), values.data(), 14,
+                    &fields.mask_generator_present, &fields.mask_generator)
+                || !cryptographic_parameter_enumeration(env, present.data(), values.data(), 15,
+                    &fields.mask_generator_hashing_algorithm_present,
+                    &fields.mask_generator_hashing_algorithm)
+                || !cryptographic_parameter_presence(env, present.data(), 16,
+                    &fields.p_source_present)
+                || !cryptographic_parameter_integer(env, present.data(), values.data(), 17,
+                    &fields.trailer_field_present, &fields.trailer_field)
+                || !cryptographic_parameter_enumeration(env, present.data(), values.data(), 18,
+                    &fields.kem_algorithm_present, &fields.kem_algorithm)
+                || !cryptographic_parameter_presence(env, present.data(), 19,
+                    &fields.deterministic_present)
+                || values[19] < 0 || values[19] > 1
+                || !cryptographic_parameter_presence(env, present.data(), 20,
+                    &fields.context_string_present)
+                || !cryptographic_parameter_presence(env, present.data(), 21,
+                    &fields.seed_present)
+                || !cryptographic_parameter_presence(env, present.data(), 22,
+                    &fields.input_key_material_present)) {
+            if (!env->ExceptionCheck()) throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        fields.random_iv = static_cast<uint8_t>(values[6]);
+        fields.deterministic = static_cast<uint8_t>(values[19]);
+
+        auto copy_byte_array = [&](jbyteArray arr, uint8_t flag, std::vector<uint8_t>& buf,
+                                   const uint8_t*& out_ptr, uint64_t& out_len) -> bool {
+            if (flag) {
+                if (arr == nullptr) {
+                    out_ptr = nullptr;
+                    out_len = 0;
+                    return true;
+                }
+                const jsize len = env->GetArrayLength(arr);
+                if (len < 0 || static_cast<uint64_t>(len) > kMaximumTransportInputBytes) {
+                    throw_invalid_input(env);
+                    return false;
+                }
+                buf.resize(static_cast<size_t>(len));
+                if (len > 0) {
+                    env->GetByteArrayRegion(arr, 0, len, reinterpret_cast<jbyte*>(buf.data()));
+                    if (env->ExceptionCheck()) return false;
+                }
+                out_ptr = buf.empty() ? nullptr : buf.data();
+                out_len = static_cast<uint64_t>(buf.size());
+            } else {
+                out_ptr = nullptr;
+                out_len = 0;
+            }
+            return true;
+        };
+
+        std::vector<uint8_t> p_source, context_string, seed, input_key_material;
+        kmipkit::secure::VectorWiper w1(p_source), w2(context_string), w3(seed), w4(input_key_material);
+
+        if (!copy_byte_array(raw_p_source, fields.p_source_present, p_source, fields.p_source, fields.p_source_length)
+                || !copy_byte_array(raw_context_string, fields.context_string_present, context_string, fields.context_string, fields.context_string_length)
+                || !copy_byte_array(raw_seed, fields.seed_present, seed, fields.seed, fields.seed_length)
+                || !copy_byte_array(raw_input_key_material, fields.input_key_material_present, input_key_material, fields.input_key_material, fields.input_key_material_length)) {
+            return static_cast<jlong>(0);
+        }
+
+        return return_handle<kmipkit_cryptographic_parameters_t>(env, [&](auto output) {
+            return kmipkit_cryptographic_parameters_from_fields_v2(&fields, output);
+        });
+    });
+}
+
+JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_cryptographicParametersReadFieldsV2(
+        JNIEnv* env, jclass, jlong raw_parameters, jbooleanArray out_present, jlongArray out_values) {
+    return guarded<jobjectArray>(env, nullptr, [&] {
+        constexpr jsize kFieldCount = 23;
+        if (raw_parameters == 0 || out_present == nullptr || out_values == nullptr
+                || env->GetArrayLength(out_present) != kFieldCount
+                || env->GetArrayLength(out_values) != kFieldCount) {
+            throw_invalid_input(env);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        kmipkit_cryptographic_parameters_fields_v2_t fields{};
+        fields.struct_size = static_cast<uint32_t>(sizeof(fields));
+        fields.abi_version = UINT32_C(2);
+        const int32_t status = kmipkit_cryptographic_parameters_read_fields_v2(
+                from_java_handle<kmipkit_cryptographic_parameters_t>(raw_parameters), &fields);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jobjectArray>(nullptr);
+        }
+
+        const std::array<jboolean, kFieldCount> present = {
+            static_cast<jboolean>(fields.block_cipher_mode_present),
+            static_cast<jboolean>(fields.padding_method_present),
+            static_cast<jboolean>(fields.hashing_algorithm_present),
+            static_cast<jboolean>(fields.key_role_type_present),
+            static_cast<jboolean>(fields.digital_signature_algorithm_present),
+            static_cast<jboolean>(fields.cryptographic_algorithm_present),
+            static_cast<jboolean>(fields.random_iv_present),
+            static_cast<jboolean>(fields.iv_length_present),
+            static_cast<jboolean>(fields.tag_length_present),
+            static_cast<jboolean>(fields.fixed_field_length_present),
+            static_cast<jboolean>(fields.invocation_field_length_present),
+            static_cast<jboolean>(fields.counter_length_present),
+            static_cast<jboolean>(fields.initial_counter_value_present),
+            static_cast<jboolean>(fields.salt_length_present),
+            static_cast<jboolean>(fields.mask_generator_present),
+            static_cast<jboolean>(fields.mask_generator_hashing_algorithm_present),
+            static_cast<jboolean>(fields.p_source_present),
+            static_cast<jboolean>(fields.trailer_field_present),
+            static_cast<jboolean>(fields.kem_algorithm_present),
+            static_cast<jboolean>(fields.deterministic_present),
+            static_cast<jboolean>(fields.context_string_present),
+            static_cast<jboolean>(fields.seed_present),
+            static_cast<jboolean>(fields.input_key_material_present),
+        };
+        const std::array<jlong, kFieldCount> values = {
+            static_cast<jlong>(fields.block_cipher_mode),
+            static_cast<jlong>(fields.padding_method),
+            static_cast<jlong>(fields.hashing_algorithm),
+            static_cast<jlong>(fields.key_role_type),
+            static_cast<jlong>(fields.digital_signature_algorithm),
+            static_cast<jlong>(fields.cryptographic_algorithm),
+            static_cast<jlong>(fields.random_iv),
+            static_cast<jlong>(fields.iv_length),
+            static_cast<jlong>(fields.tag_length),
+            static_cast<jlong>(fields.fixed_field_length),
+            static_cast<jlong>(fields.invocation_field_length),
+            static_cast<jlong>(fields.counter_length),
+            static_cast<jlong>(fields.initial_counter_value),
+            static_cast<jlong>(fields.salt_length),
+            static_cast<jlong>(fields.mask_generator),
+            static_cast<jlong>(fields.mask_generator_hashing_algorithm),
+            static_cast<jlong>(0),
+            static_cast<jlong>(fields.trailer_field),
+            static_cast<jlong>(fields.kem_algorithm),
+            static_cast<jlong>(fields.deterministic),
+            static_cast<jlong>(0),
+            static_cast<jlong>(0),
+            static_cast<jlong>(0),
+        };
+
+        env->SetBooleanArrayRegion(out_present, 0, kFieldCount, present.data());
+        env->SetLongArrayRegion(out_values, 0, kFieldCount, values.data());
+        if (env->ExceptionCheck()) return static_cast<jobjectArray>(nullptr);
+
+        jclass byte_array_class = env->FindClass("[B");
+        if (byte_array_class == nullptr) return static_cast<jobjectArray>(nullptr);
+        jobjectArray result = env->NewObjectArray(4, byte_array_class, nullptr);
+        env->DeleteLocalRef(byte_array_class);
+        if (result == nullptr) return static_cast<jobjectArray>(nullptr);
+
+        auto set_elem = [&](jsize idx, uint8_t flag, const uint8_t* ptr, uint64_t len) {
+            if (flag && ptr != nullptr) {
+                jbyteArray arr = env->NewByteArray(static_cast<jsize>(len));
+                if (arr != nullptr && len > 0) {
+                    env->SetByteArrayRegion(arr, 0, static_cast<jsize>(len), reinterpret_cast<const jbyte*>(ptr));
+                }
+                env->SetObjectArrayElement(result, idx, arr);
+                if (arr != nullptr) env->DeleteLocalRef(arr);
+            }
+        };
+        set_elem(0, fields.p_source_present, fields.p_source, fields.p_source_length);
+        set_elem(1, fields.context_string_present, fields.context_string, fields.context_string_length);
+        set_elem(2, fields.seed_present, fields.seed, fields.seed_length);
+        set_elem(3, fields.input_key_material_present, fields.input_key_material, fields.input_key_material_length);
+
+        return result;
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_linkNormalizerV2ToV3(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_ttlv_item_t>(env, [&](auto output) {
+            return kmipkit_link_normalizer_v2_to_v3(
+                    from_java_handle<kmipkit_ttlv_item_t>(raw_item), output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_linkNormalizerV3ToV2(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_ttlv_item_t>(env, [&](auto output) {
+            return kmipkit_link_normalizer_v3_to_v2(
+                    from_java_handle<kmipkit_ttlv_item_t>(raw_item), output);
+        });
+    });
+}
+
+JNIEXPORT jboolean JNICALL Java_org_kmipkit_NativeExtensionRegistry_versionGateValidateOperation(
+        JNIEnv* env, jclass, jint major, jint minor, jlong operation) {
+    return guarded<jboolean>(env, JNI_FALSE, [&] {
+        const int32_t status = kmipkit_version_gate_validate_operation(
+                static_cast<int32_t>(major), static_cast<int32_t>(minor), static_cast<uint32_t>(operation));
+        return status == 0 ? JNI_TRUE : JNI_FALSE;
+    });
+}
+
+JNIEXPORT jboolean JNICALL Java_org_kmipkit_NativeExtensionRegistry_versionGateValidateTag(
+        JNIEnv* env, jclass, jint major, jint minor, jlong tag) {
+    return guarded<jboolean>(env, JNI_FALSE, [&] {
+        const int32_t status = kmipkit_version_gate_validate_tag(
+                static_cast<int32_t>(major), static_cast<int32_t>(minor), static_cast<uint32_t>(tag));
+        return status == 0 ? JNI_TRUE : JNI_FALSE;
+    });
+}
+
+JNIEXPORT jboolean JNICALL Java_org_kmipkit_NativeExtensionRegistry_versionGateValidateAttributeMutation(
+        JNIEnv* env, jclass, jint major, jint minor, jlong attribute_tag) {
+    return guarded<jboolean>(env, JNI_FALSE, [&] {
+        const int32_t status = kmipkit_version_gate_validate_attribute_mutation(
+                static_cast<uint32_t>(major), static_cast<uint32_t>(minor), static_cast<uint32_t>(attribute_tag));
+        return status == 0 ? JNI_TRUE : JNI_FALSE;
+    });
+}
+
+JNIEXPORT jintArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_versionGateOperationSpan(
+        JNIEnv* env, jclass, jlong operation) {
+    return guarded<jintArray>(env, nullptr, [&] {
+        uint32_t intro_maj = 0, intro_min = 0, depr_maj = 0, depr_min = 0, rem_maj = 0, rem_min = 0;
+        const int32_t status = kmipkit_version_gate_operation_span(
+                static_cast<uint32_t>(operation), &intro_maj, &intro_min, &depr_maj, &depr_min, &rem_maj, &rem_min);
+        if (status != 0) return static_cast<jintArray>(nullptr);
+        jintArray res = env->NewIntArray(6);
+        if (res == nullptr) return static_cast<jintArray>(nullptr);
+        const jint elements[] = {
+            static_cast<jint>(intro_maj), static_cast<jint>(intro_min),
+            static_cast<jint>(depr_maj), static_cast<jint>(depr_min),
+            static_cast<jint>(rem_maj), static_cast<jint>(rem_min)
+        };
+        env->SetIntArrayRegion(res, 0, 6, elements);
+        return res;
+    });
+}
+
+JNIEXPORT jintArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_versionGateTagSpan(
+        JNIEnv* env, jclass, jlong tag) {
+    return guarded<jintArray>(env, nullptr, [&] {
+        uint32_t intro_maj = 0, intro_min = 0, depr_maj = 0, depr_min = 0, rem_maj = 0, rem_min = 0;
+        const int32_t status = kmipkit_version_gate_tag_span(
+                static_cast<uint32_t>(tag), &intro_maj, &intro_min, &depr_maj, &depr_min, &rem_maj, &rem_min);
+        if (status != 0) return static_cast<jintArray>(nullptr);
+        jintArray res = env->NewIntArray(6);
+        if (res == nullptr) return static_cast<jintArray>(nullptr);
+        const jint elements[] = {
+            static_cast<jint>(intro_maj), static_cast<jint>(intro_min),
+            static_cast<jint>(depr_maj), static_cast<jint>(depr_min),
+            static_cast<jint>(rem_maj), static_cast<jint>(rem_min)
+        };
+        env->SetIntArrayRegion(res, 0, 6, elements);
+        return res;
+    });
+}
+
+JNIEXPORT jboolean JNICALL Java_org_kmipkit_NativeExtensionRegistry_nistKeyLifecycleCanOriginate(
+        JNIEnv* env, jclass, jlong state_enum) {
+    return guarded<jboolean>(env, JNI_FALSE, [&] {
+        uint8_t can_originate = 0;
+        if (!check_status(env, [&] {
+            return kmipkit_nist_key_lifecycle_can_originate(static_cast<uint32_t>(state_enum), &can_originate);
+        })) return static_cast<jboolean>(JNI_FALSE);
+        return static_cast<jboolean>(can_originate != 0 ? JNI_TRUE : JNI_FALSE);
+    });
+}
+
+JNIEXPORT jboolean JNICALL Java_org_kmipkit_NativeExtensionRegistry_nistKeyLifecycleCanProcess(
+        JNIEnv* env, jclass, jlong state_enum) {
+    return guarded<jboolean>(env, JNI_FALSE, [&] {
+        uint8_t can_process = 0;
+        if (!check_status(env, [&] {
+            return kmipkit_nist_key_lifecycle_can_process(static_cast<uint32_t>(state_enum), &can_process);
+        })) return static_cast<jboolean>(JNI_FALSE);
+        return static_cast<jboolean>(can_process != 0 ? JNI_TRUE : JNI_FALSE);
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_leaseContextCreate(
+        JNIEnv* env, jclass, jint uid_kind, jbyteArray uid_text, jlong uid_number,
+        jlong obtained_at_unix_secs, jlong lease_time_secs) {
+    return guarded<jlong>(env, 0, [&] {
+        std::vector<uint8_t> text_buf;
+        kmipkit_unique_identifier_v1_t uid{};
+        uid.struct_size = static_cast<uint32_t>(sizeof(uid));
+        uid.abi_version = 1;
+        uid.kind = static_cast<uint32_t>(uid_kind);
+        if (uid.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING || uid.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_IDENTIFIER) {
+            if (uid_text == nullptr || !read_bytes(env, uid_text, kMaximumTransportInputBytes, text_buf)) {
+                throw_invalid_input(env);
+                return static_cast<jlong>(0);
+            }
+            uid.text_data = text_buf.data();
+            uid.text_length = static_cast<uint64_t>(text_buf.size());
+        } else if (uid.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION) {
+            uid.enumeration_value = static_cast<uint32_t>(uid_number);
+        } else if (uid.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER) {
+            uid.integer_value = static_cast<int32_t>(uid_number);
+        }
+        return return_handle<kmipkit_lease_context_t>(env, [&](auto output) {
+            return kmipkit_lease_context_create(&uid, obtained_at_unix_secs, lease_time_secs, output);
+        });
+    });
+}
+
+JNIEXPORT jobject JNICALL Java_org_kmipkit_NativeExtensionRegistry_leaseContextUniqueIdentifier(
+        JNIEnv* env, jclass, jlong raw_context) {
+    return guarded<jobject>(env, nullptr, [&] {
+        kmipkit_unique_identifier_v1_t uid{};
+        uid.struct_size = static_cast<uint32_t>(sizeof(uid));
+        uid.abi_version = 1;
+        if (!check_status(env, [&] {
+            return kmipkit_lease_context_unique_identifier(
+                    from_java_handle<kmipkit_lease_context_t>(raw_context), &uid);
+        })) return static_cast<jobject>(nullptr);
+
+        jclass uid_class = env->FindClass("org/kmipkit/extensions/UniqueIdentifier");
+        if (uid_class == nullptr) return static_cast<jobject>(nullptr);
+        jmethodID from_native = env->GetStaticMethodID(
+                uid_class, "fromNative", "(J[BJJ)Lorg/kmipkit/extensions/UniqueIdentifier;");
+        if (from_native == nullptr) return static_cast<jobject>(nullptr);
+
+        jbyteArray text_arr = nullptr;
+        if (uid.text_data != nullptr) {
+            text_arr = env->NewByteArray(static_cast<jsize>(uid.text_length));
+            if (text_arr != nullptr && uid.text_length > 0) {
+                env->SetByteArrayRegion(text_arr, 0, static_cast<jsize>(uid.text_length),
+                                        reinterpret_cast<const jbyte*>(uid.text_data));
+            }
+        }
+        jobject res = env->CallStaticObjectMethod(
+                uid_class, from_native, static_cast<jlong>(uid.kind), text_arr,
+                static_cast<jlong>(uid.enumeration_value), static_cast<jlong>(uid.integer_value));
+        if (text_arr != nullptr) env->DeleteLocalRef(text_arr);
+        env->DeleteLocalRef(uid_class);
+        return res;
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_leaseContextExpiresAt(
+        JNIEnv* env, jclass, jlong raw_context) {
+    return guarded<jlong>(env, 0, [&] {
+        int64_t expires_at = 0;
+        if (!check_status(env, [&] {
+            return kmipkit_lease_context_expires_at(
+                    from_java_handle<kmipkit_lease_context_t>(raw_context), &expires_at);
+        })) return static_cast<jlong>(0);
+        return static_cast<jlong>(expires_at);
+    });
+}
+
+JNIEXPORT jboolean JNICALL Java_org_kmipkit_NativeExtensionRegistry_leaseContextIsExpired(
+        JNIEnv* env, jclass, jlong raw_context, jlong current_time_unix_secs) {
+    return guarded<jboolean>(env, JNI_FALSE, [&] {
+        uint8_t is_expired = 0;
+        if (!check_status(env, [&] {
+            return kmipkit_lease_context_is_expired(
+                    from_java_handle<kmipkit_lease_context_t>(raw_context), current_time_unix_secs, &is_expired);
+        })) return static_cast<jboolean>(JNI_FALSE);
+        return static_cast<jboolean>(is_expired != 0 ? JNI_TRUE : JNI_FALSE);
+    });
+}
+
+JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_leaseContextCheckValid(
+        JNIEnv* env, jclass, jlong raw_context, jlong current_time_unix_secs) {
+    guarded<int>(env, 0, [&] {
+        check_status(env, [&] {
+            return kmipkit_lease_context_check_valid(
+                    from_java_handle<kmipkit_lease_context_t>(raw_context), current_time_unix_secs);
+        });
+        return 0;
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemSetEndpointRole(
+        JNIEnv* env, jclass, jlong endpoint_role, jbyteArray vendor_id) {
+    return guarded<jlong>(env, 0, [&] {
+        std::vector<uint8_t> vendor_buf;
+        if (vendor_id != nullptr && !read_bytes(env, vendor_id, kMaximumTransportInputBytes, vendor_buf)) {
+            return static_cast<jlong>(0);
+        }
+        return return_handle<kmipkit_client_batch_item_t>(env, [&](auto output) {
+            return kmipkit_client_batch_item_set_endpoint_role(
+                    static_cast<uint32_t>(endpoint_role),
+                    vendor_buf.empty() ? nullptr : vendor_buf.data(),
+                    static_cast<uint64_t>(vendor_buf.size()), output);
+        });
+    });
+}
+
+JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseSetEndpointRole(
+        JNIEnv* env, jclass, jlong raw_response) {
+    return guarded<jobjectArray>(env, nullptr, [&] {
+        uint8_t present = 0;
+        uint32_t role = 0;
+        kmipkit_byte_span_v1_t vendor_id{};
+        if (!check_status(env, [&] {
+            return kmipkit_client_batch_item_response_set_endpoint_role(
+                    from_java_handle<kmipkit_client_batch_item_response_t>(raw_response),
+                    &present, &role, &vendor_id);
+        })) return static_cast<jobjectArray>(nullptr);
+        if (present == 0) return static_cast<jobjectArray>(nullptr);
+
+        jclass obj_class = env->FindClass("java/lang/Object");
+        if (obj_class == nullptr) return static_cast<jobjectArray>(nullptr);
+        jobjectArray res = env->NewObjectArray(2, obj_class, nullptr);
+        env->DeleteLocalRef(obj_class);
+        if (res == nullptr) return static_cast<jobjectArray>(nullptr);
+
+        jclass long_class = env->FindClass("java/lang/Long");
+        jmethodID long_init = env->GetMethodID(long_class, "<init>", "(J)V");
+        jobject role_obj = env->NewObject(long_class, long_init, static_cast<jlong>(role));
+        env->DeleteLocalRef(long_class);
+        env->SetObjectArrayElement(res, 0, role_obj);
+        env->DeleteLocalRef(role_obj);
+
+        if (vendor_id.data != nullptr) {
+            jbyteArray bytes = env->NewByteArray(static_cast<jsize>(vendor_id.length));
+            if (bytes != nullptr && vendor_id.length > 0) {
+                env->SetByteArrayRegion(bytes, 0, static_cast<jsize>(vendor_id.length),
+                                        reinterpret_cast<const jbyte*>(vendor_id.data));
+            }
+            env->SetObjectArrayElement(res, 1, bytes);
+            if (bytes != nullptr) env->DeleteLocalRef(bytes);
+        }
+        return res;
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientSetEndpointRole(
+        JNIEnv* env, jclass, jlong raw_client, jlong endpoint_role, jbyteArray vendor_id, jlongArray raw_limits) {
+    return guarded<jlong>(env, 0, [&] {
+        CodecLimits limits;
+        if (!limits.initialize(env, raw_limits)) return static_cast<jlong>(0);
+        std::vector<uint8_t> vendor_buf;
+        if (vendor_id != nullptr && !read_bytes(env, vendor_id, kMaximumTransportInputBytes, vendor_buf)) {
+            return static_cast<jlong>(0);
+        }
+        return return_handle<kmipkit_client_batch_item_response_t>(env, [&](auto output) {
+            return kmipkit_client_set_endpoint_role(
+                    from_java_handle<kmipkit_client_t>(raw_client),
+                    static_cast<uint32_t>(endpoint_role),
+                    vendor_buf.empty() ? nullptr : vendor_buf.data(),
+                    static_cast<uint64_t>(vendor_buf.size()),
+                    limits.get(), output);
+        });
+    });
+}
+
+static bool populate_listener_config(
+        JNIEnv* env,
+        jstring bind_host, jint bind_port, jint flags,
+        jobjectArray server_certs, jint server_certs_encoding,
+        jbyteArray server_private_key, jint server_private_key_encoding,
+        jobjectArray trust_certs, jint trust_certs_encoding,
+        jlong read_timeout_ms, jlong write_timeout_ms, jlong max_request_bytes,
+        std::vector<uint8_t>& host_buf,
+        std::vector<OwnedTransportInput>& cert_inputs,
+        OwnedTransportInput& key_input,
+        std::vector<OwnedTransportInput>& trust_inputs,
+        std::vector<kmipkit_transport_input_v1_t>& cert_views,
+        std::vector<kmipkit_transport_input_v1_t>& trust_views,
+        kmipkit_listener_transport_config_v1_t& config) {
+
+    if (!optional_java_string(env, bind_host, host_buf)) return false;
+
+    TransportBridgeByteBudget budget;
+
+    if (server_certs != nullptr) {
+        jsize count = env->GetArrayLength(server_certs);
+        for (jsize i = 0; i < count; ++i) {
+            auto arr = static_cast<jbyteArray>(env->GetObjectArrayElement(server_certs, i));
+            if (arr == nullptr) continue;
+            OwnedTransportInput item{1, static_cast<uint32_t>(server_certs_encoding), {}};
+            const bool ok = read_transport_material_bytes(env, arr, budget, item.bytes);
+            env->DeleteLocalRef(arr);
+            if (!ok) return false;
+            cert_inputs.push_back(std::move(item));
+        }
+    }
+    cert_views = transport_input_views(cert_inputs);
+
+    key_input.source = 1;
+    key_input.encoding = static_cast<uint32_t>(server_private_key_encoding);
+    if (server_private_key != nullptr) {
+        if (!read_transport_material_bytes(env, server_private_key, budget, key_input.bytes)) return false;
+    }
+
+    if (trust_certs != nullptr) {
+        jsize count = env->GetArrayLength(trust_certs);
+        for (jsize i = 0; i < count; ++i) {
+            auto arr = static_cast<jbyteArray>(env->GetObjectArrayElement(trust_certs, i));
+            if (arr == nullptr) continue;
+            OwnedTransportInput item{1, static_cast<uint32_t>(trust_certs_encoding), {}};
+            const bool ok = read_transport_material_bytes(env, arr, budget, item.bytes);
+            env->DeleteLocalRef(arr);
+            if (!ok) return false;
+            trust_inputs.push_back(std::move(item));
+        }
+    }
+    trust_views = transport_input_views(trust_inputs);
+
+    config.struct_size = static_cast<uint32_t>(sizeof(config));
+    config.abi_version = 1;
+    config.flags = static_cast<uint32_t>(flags);
+    config.bind_port = static_cast<uint16_t>(bind_port);
+    config.reserved = 0;
+    config.bind_host = {host_buf.empty() ? nullptr : host_buf.data(), static_cast<uint64_t>(host_buf.size())};
+    config.server_certificates = cert_views.empty() ? nullptr : cert_views.data();
+    config.server_certificate_count = static_cast<uint64_t>(cert_views.size());
+    config.server_private_key = {key_input.source, key_input.encoding,
+                                {key_input.bytes.empty() ? nullptr : key_input.bytes.data(),
+                                 static_cast<uint64_t>(key_input.bytes.size())}};
+    config.trust_certificates = trust_views.empty() ? nullptr : trust_views.data();
+    config.trust_certificate_count = static_cast<uint64_t>(trust_views.size());
+    config.read_timeout = {1, 0, static_cast<uint64_t>(read_timeout_ms / 1000), static_cast<uint32_t>((read_timeout_ms % 1000) * 1000000), 0};
+    config.write_timeout = {1, 0, static_cast<uint64_t>(write_timeout_ms / 1000), static_cast<uint32_t>((write_timeout_ms % 1000) * 1000000), 0};
+    config.max_request_bytes = static_cast<uint64_t>(max_request_bytes);
+
+    return true;
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientListenerBindRawTls(
+        JNIEnv* env, jclass,
+        jstring bind_host, jint bind_port, jint flags,
+        jobjectArray server_certs, jint server_certs_encoding,
+        jbyteArray server_private_key, jint server_private_key_encoding,
+        jobjectArray trust_certs, jint trust_certs_encoding,
+        jlong read_timeout_ms, jlong write_timeout_ms, jlong max_request_bytes) {
+    return guarded<jlong>(env, 0, [&] {
+        std::vector<uint8_t> host_buf;
+        std::vector<OwnedTransportInput> cert_inputs, trust_inputs;
+        OwnedTransportInput key_input{1, 1, {}};
+        std::vector<kmipkit_transport_input_v1_t> cert_views, trust_views;
+        kmipkit_listener_transport_config_v1_t config{};
+
+        if (!populate_listener_config(env, bind_host, bind_port, flags,
+                server_certs, server_certs_encoding,
+                server_private_key, server_private_key_encoding,
+                trust_certs, trust_certs_encoding,
+                read_timeout_ms, write_timeout_ms, max_request_bytes,
+                host_buf, cert_inputs, key_input, trust_inputs,
+                cert_views, trust_views, config)) {
+            return static_cast<jlong>(0);
+        }
+
+        return return_handle<kmipkit_client_listener_t>(env, [&](auto output) {
+            return kmipkit_client_listener_bind_raw_tls(&config, output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientListenerBindHttps(
+        JNIEnv* env, jclass,
+        jstring bind_host, jint bind_port, jint flags,
+        jobjectArray server_certs, jint server_certs_encoding,
+        jbyteArray server_private_key, jint server_private_key_encoding,
+        jobjectArray trust_certs, jint trust_certs_encoding,
+        jlong read_timeout_ms, jlong write_timeout_ms, jlong max_request_bytes) {
+    return guarded<jlong>(env, 0, [&] {
+        std::vector<uint8_t> host_buf;
+        std::vector<OwnedTransportInput> cert_inputs, trust_inputs;
+        OwnedTransportInput key_input{1, 1, {}};
+        std::vector<kmipkit_transport_input_v1_t> cert_views, trust_views;
+        kmipkit_listener_transport_config_v1_t config{};
+
+        if (!populate_listener_config(env, bind_host, bind_port, flags,
+                server_certs, server_certs_encoding,
+                server_private_key, server_private_key_encoding,
+                trust_certs, trust_certs_encoding,
+                read_timeout_ms, write_timeout_ms, max_request_bytes,
+                host_buf, cert_inputs, key_input, trust_inputs,
+                cert_views, trust_views, config)) {
+            return static_cast<jlong>(0);
+        }
+
+        return return_handle<kmipkit_client_listener_t>(env, [&](auto output) {
+            return kmipkit_client_listener_bind_https(&config, output);
+        });
+    });
+}
+
+JNIEXPORT jint JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientListenerGetPort(
+        JNIEnv* env, jclass, jlong raw_listener) {
+    return guarded<jint>(env, 0, [&] {
+        uint16_t port = 0;
+        if (!check_status(env, [&] {
+            return kmipkit_client_listener_get_port(
+                    from_java_handle<kmipkit_client_listener_t>(raw_listener), &port);
+        })) return static_cast<jint>(0);
+        return static_cast<jint>(port);
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientListenerAccept(
+        JNIEnv* env, jclass, jlong raw_listener, jlong timeout_ms) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_client_listener_connection_t>(env, [&](auto output) {
+            return kmipkit_client_listener_accept(
+                    from_java_handle<kmipkit_client_listener_t>(raw_listener),
+                    static_cast<uint64_t>(timeout_ms), output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientListenerConnectionRecvBatch(
+        JNIEnv* env, jclass, jlong raw_conn, jlongArray raw_limits, jlong timeout_ms) {
+    return guarded<jlong>(env, 0, [&] {
+        CodecLimits limits;
+        if (!limits.initialize(env, raw_limits)) return static_cast<jlong>(0);
+        return return_handle<kmipkit_incoming_server_batch_t>(env, [&](auto output) {
+            return kmipkit_client_listener_connection_recv_batch(
+                    from_java_handle<kmipkit_client_listener_connection_t>(raw_conn),
+                    limits.get(), static_cast<uint64_t>(timeout_ms), output);
+        });
+    });
+}
+
+JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientListenerConnectionSendResponse(
+        JNIEnv* env, jclass, jlong raw_conn, jlong raw_response, jlong timeout_ms) {
+    guarded<int>(env, 0, [&] {
+        check_status(env, [&] {
+            return kmipkit_client_listener_connection_send_response(
+                    from_java_handle<kmipkit_client_listener_connection_t>(raw_conn),
+                    from_java_handle<kmipkit_response_message_t>(raw_response),
+                    static_cast<uint64_t>(timeout_ms));
+        });
+        return 0;
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientListenerConnectionIntoRoleReversed(
+        JNIEnv* env, jclass, jlong raw_conn) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_role_reversed_session_t>(env, [&](auto output) {
+            return kmipkit_client_listener_connection_into_role_reversed(
+                    from_java_handle<kmipkit_client_listener_connection_t>(raw_conn), output);
+        });
+    });
+}
+
+JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientListenerConnectionClose(
+        JNIEnv* env, jclass, jlong raw_conn) {
+    guarded<int>(env, 0, [&] {
+        check_status(env, [&] {
+            return kmipkit_client_listener_connection_close(
+                    from_java_handle<kmipkit_client_listener_connection_t>(raw_conn));
+        });
+        return 0;
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_roleReversedSessionRecvBatch(
+        JNIEnv* env, jclass, jlong raw_session, jlongArray raw_limits, jlong timeout_ms) {
+    return guarded<jlong>(env, 0, [&] {
+        CodecLimits limits;
+        if (!limits.initialize(env, raw_limits)) return static_cast<jlong>(0);
+        return return_handle<kmipkit_incoming_server_batch_t>(env, [&](auto output) {
+            return kmipkit_role_reversed_session_recv_batch(
+                    from_java_handle<kmipkit_role_reversed_session_t>(raw_session),
+                    limits.get(), static_cast<uint64_t>(timeout_ms), output);
+        });
+    });
+}
+
+JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_roleReversedSessionSendResponse(
+        JNIEnv* env, jclass, jlong raw_session, jlong raw_response, jlong timeout_ms) {
+    guarded<int>(env, 0, [&] {
+        check_status(env, [&] {
+            return kmipkit_role_reversed_session_send_response(
+                    from_java_handle<kmipkit_role_reversed_session_t>(raw_session),
+                    from_java_handle<kmipkit_response_message_t>(raw_response),
+                    static_cast<uint64_t>(timeout_ms));
+        });
+        return 0;
+    });
+}
+
+JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_roleReversedSessionClose(
+        JNIEnv* env, jclass, jlong raw_session) {
+    guarded<int>(env, 0, [&] {
+        check_status(env, [&] {
+            return kmipkit_role_reversed_session_close(
+                    from_java_handle<kmipkit_role_reversed_session_t>(raw_session));
+        });
+        return 0;
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_incomingServerBatchDecode(
+        JNIEnv* env, jclass, jbyteArray data, jint encoding, jlongArray raw_limits) {
+    return guarded<jlong>(env, 0, [&] {
+        CodecLimits limits;
+        if (!limits.initialize(env, raw_limits)) return static_cast<jlong>(0);
+        std::vector<uint8_t> bytes;
+        if (!read_bytes(env, data, limits.max_message_bytes(), bytes)) return static_cast<jlong>(0);
+        return return_handle<kmipkit_incoming_server_batch_t>(env, [&](auto output) {
+            return kmipkit_incoming_server_batch_decode(
+                    bytes.data(), static_cast<uint64_t>(bytes.size()),
+                    static_cast<uint32_t>(encoding), limits.get(), output);
+        });
+    });
+}
+
+JNIEXPORT jintArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_incomingServerBatchProtocolVersion(
+        JNIEnv* env, jclass, jlong raw_batch) {
+    return guarded<jintArray>(env, nullptr, [&] {
+        uint32_t major = 0, minor = 0;
+        if (!check_status(env, [&] {
+            return kmipkit_incoming_server_batch_protocol_version(
+                    from_java_handle<kmipkit_incoming_server_batch_t>(raw_batch), &major, &minor);
+        })) return static_cast<jintArray>(nullptr);
+        jintArray res = env->NewIntArray(2);
+        if (res == nullptr) return static_cast<jintArray>(nullptr);
+        const jint elements[] = {static_cast<jint>(major), static_cast<jint>(minor)};
+        env->SetIntArrayRegion(res, 0, 2, elements);
+        return res;
+    });
+}
+
+JNIEXPORT jint JNICALL Java_org_kmipkit_NativeExtensionRegistry_incomingServerBatchItemCount(
+        JNIEnv* env, jclass, jlong raw_batch) {
+    return guarded<jint>(env, 0, [&] {
+        uint32_t count = 0;
+        if (!check_status(env, [&] {
+            return kmipkit_incoming_server_batch_item_count(
+                    from_java_handle<kmipkit_incoming_server_batch_t>(raw_batch), &count);
+        })) return static_cast<jint>(0);
+        return static_cast<jint>(count);
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_incomingServerBatchItemOperation(
+        JNIEnv* env, jclass, jlong raw_batch, jint index) {
+    return guarded<jlong>(env, 0, [&] {
+        uint32_t op = 0;
+        if (!check_status(env, [&] {
+            return kmipkit_incoming_server_batch_item_operation(
+                    from_java_handle<kmipkit_incoming_server_batch_t>(raw_batch),
+                    static_cast<uint32_t>(index), &op);
+        })) return static_cast<jlong>(0);
+        return static_cast<jlong>(op);
+    });
+}
+
+JNIEXPORT jbyteArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_incomingServerBatchItemUniqueBatchItemId(
+        JNIEnv* env, jclass, jlong raw_batch, jint index) {
+    return guarded<jbyteArray>(env, nullptr, [&] {
+        std::vector<uint8_t> buffer(256);
+        uint64_t written_len = 0;
+        if (!check_status(env, [&] {
+            return kmipkit_incoming_server_batch_item_unique_batch_item_id(
+                    from_java_handle<kmipkit_incoming_server_batch_t>(raw_batch),
+                    static_cast<uint32_t>(index), buffer.data(), buffer.size(), &written_len);
+        })) return static_cast<jbyteArray>(nullptr);
+        jbyteArray res = env->NewByteArray(static_cast<jsize>(written_len));
+        if (res != nullptr && written_len > 0) {
+            env->SetByteArrayRegion(res, 0, static_cast<jsize>(written_len),
+                                    reinterpret_cast<const jbyte*>(buffer.data()));
+        }
+        return res;
+    });
+}
+
+JNIEXPORT jintArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_incomingServerBatchItemDiscoverVersions(
+        JNIEnv* env, jclass, jlong raw_batch, jint index) {
+    return guarded<jintArray>(env, nullptr, [&] {
+        std::vector<uint32_t> versions(64);
+        uint32_t count = 0;
+        if (!check_status(env, [&] {
+            return kmipkit_incoming_server_batch_item_discover_versions(
+                    from_java_handle<kmipkit_incoming_server_batch_t>(raw_batch),
+                    static_cast<uint32_t>(index), versions.data(), versions.size(), &count);
+        })) return static_cast<jintArray>(nullptr);
+        jintArray res = env->NewIntArray(static_cast<jsize>(count * 2));
+        if (res == nullptr) return static_cast<jintArray>(nullptr);
+        std::vector<jint> elements(count * 2);
+        for (uint32_t i = 0; i < count; ++i) {
+            elements[i * 2] = static_cast<jint>(versions[i] >> 16);
+            elements[i * 2 + 1] = static_cast<jint>(versions[i] & 0xffff);
+        }
+        env->SetIntArrayRegion(res, 0, static_cast<jsize>(count * 2), elements.data());
+        return res;
+    });
+}
+
+JNIEXPORT jbyteArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_incomingServerBatchItemNotify(
+        JNIEnv* env, jclass, jlong raw_batch, jint index) {
+    return guarded<jbyteArray>(env, nullptr, [&] {
+        std::vector<uint8_t> buffer(512);
+        uint64_t written_len = 0;
+        if (!check_status(env, [&] {
+            return kmipkit_incoming_server_batch_item_notify(
+                    from_java_handle<kmipkit_incoming_server_batch_t>(raw_batch),
+                    static_cast<uint32_t>(index), buffer.data(), buffer.size(), &written_len);
+        })) return static_cast<jbyteArray>(nullptr);
+        jbyteArray res = env->NewByteArray(static_cast<jsize>(written_len));
+        if (res != nullptr && written_len > 0) {
+            env->SetByteArrayRegion(res, 0, static_cast<jsize>(written_len),
+                                    reinterpret_cast<const jbyte*>(buffer.data()));
+        }
+        return res;
+    });
+}
+
+JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_incomingServerBatchItemPutV2(
+        JNIEnv* env, jclass, jlong raw_batch, jint index) {
+    return guarded<jobjectArray>(env, nullptr, [&] {
+        uint32_t put_fn = 0;
+        std::vector<uint8_t> uid(512), rep_uid(512);
+        uint64_t uid_len = 0, rep_uid_len = 0;
+        kmipkit_ttlv_item_t* obj_item = nullptr;
+        kmipkit_ttlv_structure_t* attrs = nullptr;
+
+        if (!check_status(env, [&] {
+            return kmipkit_incoming_server_batch_item_put_v2(
+                    from_java_handle<kmipkit_incoming_server_batch_t>(raw_batch),
+                    static_cast<uint32_t>(index), &put_fn,
+                    uid.data(), uid.size(), &uid_len,
+                    rep_uid.data(), rep_uid.size(), &rep_uid_len,
+                    &obj_item, &attrs);
+        })) return static_cast<jobjectArray>(nullptr);
+
+        jclass obj_class = env->FindClass("java/lang/Object");
+        if (obj_class == nullptr) return static_cast<jobjectArray>(nullptr);
+        jobjectArray res = env->NewObjectArray(5, obj_class, nullptr);
+        env->DeleteLocalRef(obj_class);
+        if (res == nullptr) return static_cast<jobjectArray>(nullptr);
+
+        jclass long_class = env->FindClass("java/lang/Long");
+        jmethodID long_init = env->GetMethodID(long_class, "<init>", "(J)V");
+        jobject fn_obj = env->NewObject(long_class, long_init, static_cast<jlong>(put_fn));
+        env->SetObjectArrayElement(res, 0, fn_obj);
+        env->DeleteLocalRef(fn_obj);
+
+        if (uid_len > 0) {
+            jbyteArray uid_arr = env->NewByteArray(static_cast<jsize>(uid_len));
+            env->SetByteArrayRegion(uid_arr, 0, static_cast<jsize>(uid_len), reinterpret_cast<const jbyte*>(uid.data()));
+            env->SetObjectArrayElement(res, 1, uid_arr);
+            env->DeleteLocalRef(uid_arr);
+        }
+        if (rep_uid_len > 0) {
+            jbyteArray rep_arr = env->NewByteArray(static_cast<jsize>(rep_uid_len));
+            env->SetByteArrayRegion(rep_arr, 0, static_cast<jsize>(rep_uid_len), reinterpret_cast<const jbyte*>(rep_uid.data()));
+            env->SetObjectArrayElement(res, 2, rep_arr);
+            env->DeleteLocalRef(rep_arr);
+        }
+        jobject item_handle = env->NewObject(long_class, long_init, to_java_handle(obj_item));
+        env->SetObjectArrayElement(res, 3, item_handle);
+        env->DeleteLocalRef(item_handle);
+
+        jobject struct_handle = env->NewObject(long_class, long_init, to_java_handle(attrs));
+        env->SetObjectArrayElement(res, 4, struct_handle);
+        env->DeleteLocalRef(struct_handle);
+        env->DeleteLocalRef(long_class);
+
+        return res;
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_incomingServerBatchItemQuery(
+        JNIEnv* env, jclass, jlong raw_batch, jint index) {
+    return guarded<jlong>(env, 0, [&] {
+        uint32_t flags = 0;
+        if (!check_status(env, [&] {
+            return kmipkit_incoming_server_batch_item_query(
+                    from_java_handle<kmipkit_incoming_server_batch_t>(raw_batch),
+                    static_cast<uint32_t>(index), &flags);
+        })) return static_cast<jlong>(0);
+        return static_cast<jlong>(flags);
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_incomingServerBatchItemSetEndpointRole(
+        JNIEnv* env, jclass, jlong raw_batch, jint index) {
+    return guarded<jlong>(env, 0, [&] {
+        uint32_t role = 0;
+        if (!check_status(env, [&] {
+            return kmipkit_incoming_server_batch_item_set_endpoint_role(
+                    from_java_handle<kmipkit_incoming_server_batch_t>(raw_batch),
+                    static_cast<uint32_t>(index), &role);
+        })) return static_cast<jlong>(0);
+        return static_cast<jlong>(role);
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_serverRequestDispatcherCreate(
+        JNIEnv* env, jclass) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_server_request_dispatcher_t>(env, [&](auto output) {
+            return kmipkit_server_request_dispatcher_create(output);
+        });
+    });
+}
+
+struct S2cCallbackContext {
+    JNIEnv* env;
+    jobject handler;
+    std::vector<uint32_t> custom_ops;
+    std::vector<uint32_t> custom_ots;
+    std::vector<uint32_t> custom_exts;
+    std::vector<uint8_t> custom_vendor;
+};
+
+static uint32_t s2c_handle_discover_versions(
+        void* user_data,
+        const kmipkit_server_request_item_view_v1_t* item_view,
+        uint32_t protocol_version_major, uint32_t protocol_version_minor,
+        uint32_t* supported_versions_out, uint32_t supported_versions_capacity,
+        uint32_t* supported_versions_count_out) {
+    auto* ctx = static_cast<S2cCallbackContext*>(user_data);
+    JNIEnv* env = ctx->env;
+    jclass handler_class = env->GetObjectClass(ctx->handler);
+    if (handler_class == nullptr) return 1;
+
+    jclass item_view_class = env->FindClass("org/kmipkit/extensions/ServerRequestHandler$ItemView");
+    jmethodID item_view_init = env->GetMethodID(item_view_class, "<init>", "(J[B)V");
+    jbyteArray item_id_arr = nullptr;
+    if (item_view != nullptr && item_view->unique_batch_item_id_data != nullptr) {
+        item_id_arr = env->NewByteArray(static_cast<jsize>(item_view->unique_batch_item_id_length));
+        env->SetByteArrayRegion(item_id_arr, 0, static_cast<jsize>(item_view->unique_batch_item_id_length),
+                                reinterpret_cast<const jbyte*>(item_view->unique_batch_item_id_data));
+    }
+    jobject item_obj = env->NewObject(item_view_class, item_view_init,
+            item_view ? static_cast<jlong>(item_view->operation) : 0, item_id_arr);
+    if (item_id_arr != nullptr) env->DeleteLocalRef(item_id_arr);
+
+    jclass pv_class = env->FindClass("org/kmipkit/protocol/VersionGate$ProtocolVersion");
+    jmethodID pv_init = env->GetMethodID(pv_class, "<init>", "(II)V");
+    jobject client_pv = env->NewObject(pv_class, pv_init, static_cast<jint>(protocol_version_major), static_cast<jint>(protocol_version_minor));
+
+    jclass list_class = env->FindClass("java/util/ArrayList");
+    jmethodID list_init = env->GetMethodID(list_class, "<init>", "()V");
+    jobject list_obj = env->NewObject(list_class, list_init);
+
+    jmethodID handle_method = env->GetMethodID(handler_class, "handleDiscoverVersions",
+            "(Lorg/kmipkit/extensions/ServerRequestHandler$ItemView;Lorg/kmipkit/protocol/VersionGate$ProtocolVersion;Ljava/util/List;)J");
+    jlong result = env->CallLongMethod(ctx->handler, handle_method, item_obj, client_pv, list_obj);
+
+    jmethodID list_size = env->GetMethodID(list_class, "size", "()I");
+    jmethodID list_get = env->GetMethodID(list_class, "get", "(I)Ljava/lang/Object;");
+    jmethodID pv_maj = env->GetMethodID(pv_class, "major", "()I");
+    jmethodID pv_min = env->GetMethodID(pv_class, "minor", "()I");
+
+    jint size = env->CallIntMethod(list_obj, list_size);
+    uint32_t count = 0;
+    for (jint i = 0; i < size && count < supported_versions_capacity; ++i) {
+        jobject elem = env->CallObjectMethod(list_obj, list_get, i);
+        if (elem != nullptr) {
+            jint maj = env->CallIntMethod(elem, pv_maj);
+            jint min = env->CallIntMethod(elem, pv_min);
+            supported_versions_out[count++] = (static_cast<uint32_t>(maj) << 16) | static_cast<uint32_t>(min);
+            env->DeleteLocalRef(elem);
+        }
+    }
+    *supported_versions_count_out = count;
+
+    env->DeleteLocalRef(list_obj);
+    env->DeleteLocalRef(list_class);
+    env->DeleteLocalRef(client_pv);
+    env->DeleteLocalRef(pv_class);
+    env->DeleteLocalRef(item_obj);
+    env->DeleteLocalRef(item_view_class);
+    env->DeleteLocalRef(handler_class);
+
+    return static_cast<uint32_t>(result);
+}
+
+static uint32_t s2c_handle_notify(
+        void* user_data,
+        const kmipkit_server_request_item_view_v1_t* item_view,
+        const uint8_t* unique_identifier_data, uint64_t unique_identifier_length,
+        const uint8_t* attributes_ttlv_data, uint64_t attributes_ttlv_length) {
+    auto* ctx = static_cast<S2cCallbackContext*>(user_data);
+    JNIEnv* env = ctx->env;
+    jclass handler_class = env->GetObjectClass(ctx->handler);
+    if (handler_class == nullptr) return 1;
+
+    jclass item_view_class = env->FindClass("org/kmipkit/extensions/ServerRequestHandler$ItemView");
+    jmethodID item_view_init = env->GetMethodID(item_view_class, "<init>", "(J[B)V");
+    jbyteArray item_id_arr = nullptr;
+    if (item_view != nullptr && item_view->unique_batch_item_id_data != nullptr) {
+        item_id_arr = env->NewByteArray(static_cast<jsize>(item_view->unique_batch_item_id_length));
+        env->SetByteArrayRegion(item_id_arr, 0, static_cast<jsize>(item_view->unique_batch_item_id_length),
+                                reinterpret_cast<const jbyte*>(item_view->unique_batch_item_id_data));
+    }
+    jobject item_obj = env->NewObject(item_view_class, item_view_init,
+            item_view ? static_cast<jlong>(item_view->operation) : 0, item_id_arr);
+    if (item_id_arr != nullptr) env->DeleteLocalRef(item_id_arr);
+
+    jbyteArray uid_arr = nullptr;
+    if (unique_identifier_data != nullptr) {
+        uid_arr = env->NewByteArray(static_cast<jsize>(unique_identifier_length));
+        env->SetByteArrayRegion(uid_arr, 0, static_cast<jsize>(unique_identifier_length),
+                                reinterpret_cast<const jbyte*>(unique_identifier_data));
+    }
+    jbyteArray attr_arr = nullptr;
+    if (attributes_ttlv_data != nullptr) {
+        attr_arr = env->NewByteArray(static_cast<jsize>(attributes_ttlv_length));
+        env->SetByteArrayRegion(attr_arr, 0, static_cast<jsize>(attributes_ttlv_length),
+                                reinterpret_cast<const jbyte*>(attributes_ttlv_data));
+    }
+
+    jmethodID handle_method = env->GetMethodID(handler_class, "handleNotify",
+            "(Lorg/kmipkit/extensions/ServerRequestHandler$ItemView;[B[B)J");
+    jlong result = env->CallLongMethod(ctx->handler, handle_method, item_obj, uid_arr, attr_arr);
+
+    if (uid_arr != nullptr) env->DeleteLocalRef(uid_arr);
+    if (attr_arr != nullptr) env->DeleteLocalRef(attr_arr);
+    env->DeleteLocalRef(item_obj);
+    env->DeleteLocalRef(item_view_class);
+    env->DeleteLocalRef(handler_class);
+
+    return static_cast<uint32_t>(result);
+}
+
+static uint32_t s2c_handle_put(
+        void* user_data,
+        const kmipkit_server_request_item_view_v1_t* item_view,
+        uint32_t put_function,
+        const uint8_t* unique_identifier_data, uint64_t unique_identifier_length,
+        const uint8_t* replaced_unique_identifier_data, uint64_t replaced_unique_identifier_length,
+        const uint8_t* object_ttlv_data, uint64_t object_ttlv_length,
+        const uint8_t* attributes_ttlv_data, uint64_t attributes_ttlv_length) {
+    auto* ctx = static_cast<S2cCallbackContext*>(user_data);
+    JNIEnv* env = ctx->env;
+    jclass handler_class = env->GetObjectClass(ctx->handler);
+    if (handler_class == nullptr) return 1;
+
+    jclass item_view_class = env->FindClass("org/kmipkit/extensions/ServerRequestHandler$ItemView");
+    jmethodID item_view_init = env->GetMethodID(item_view_class, "<init>", "(J[B)V");
+    jbyteArray item_id_arr = nullptr;
+    if (item_view != nullptr && item_view->unique_batch_item_id_data != nullptr) {
+        item_id_arr = env->NewByteArray(static_cast<jsize>(item_view->unique_batch_item_id_length));
+        env->SetByteArrayRegion(item_id_arr, 0, static_cast<jsize>(item_view->unique_batch_item_id_length),
+                                reinterpret_cast<const jbyte*>(item_view->unique_batch_item_id_data));
+    }
+    jobject item_obj = env->NewObject(item_view_class, item_view_init,
+            item_view ? static_cast<jlong>(item_view->operation) : 0, item_id_arr);
+    if (item_id_arr != nullptr) env->DeleteLocalRef(item_id_arr);
+
+    auto make_arr = [&](const uint8_t* p, uint64_t len) -> jbyteArray {
+        if (p == nullptr) return nullptr;
+        jbyteArray a = env->NewByteArray(static_cast<jsize>(len));
+        env->SetByteArrayRegion(a, 0, static_cast<jsize>(len), reinterpret_cast<const jbyte*>(p));
+        return a;
+    };
+    jbyteArray uid_arr = make_arr(unique_identifier_data, unique_identifier_length);
+    jbyteArray rep_arr = make_arr(replaced_unique_identifier_data, replaced_unique_identifier_length);
+    jbyteArray obj_arr = make_arr(object_ttlv_data, object_ttlv_length);
+    jbyteArray attr_arr = make_arr(attributes_ttlv_data, attributes_ttlv_length);
+
+    jmethodID handle_method = env->GetMethodID(handler_class, "handlePut",
+            "(Lorg/kmipkit/extensions/ServerRequestHandler$ItemView;J[B[B[B[B)J");
+    jlong result = env->CallLongMethod(ctx->handler, handle_method, item_obj,
+            static_cast<jlong>(put_function), uid_arr, rep_arr, obj_arr, attr_arr);
+
+    if (uid_arr != nullptr) env->DeleteLocalRef(uid_arr);
+    if (rep_arr != nullptr) env->DeleteLocalRef(rep_arr);
+    if (obj_arr != nullptr) env->DeleteLocalRef(obj_arr);
+    if (attr_arr != nullptr) env->DeleteLocalRef(attr_arr);
+    env->DeleteLocalRef(item_obj);
+    env->DeleteLocalRef(item_view_class);
+    env->DeleteLocalRef(handler_class);
+
+    return static_cast<uint32_t>(result);
+}
+
+static uint32_t s2c_handle_query(
+        void* user_data,
+        const kmipkit_server_request_item_view_v1_t* item_view,
+        uint32_t query_function_flags,
+        kmipkit_s2c_capabilities_v1_t* out_capabilities) {
+    auto* ctx = static_cast<S2cCallbackContext*>(user_data);
+    JNIEnv* env = ctx->env;
+    jclass handler_class = env->GetObjectClass(ctx->handler);
+    if (handler_class == nullptr) return 1;
+
+    jclass item_view_class = env->FindClass("org/kmipkit/extensions/ServerRequestHandler$ItemView");
+    jmethodID item_view_init = env->GetMethodID(item_view_class, "<init>", "(J[B)V");
+    jbyteArray item_id_arr = nullptr;
+    if (item_view != nullptr && item_view->unique_batch_item_id_data != nullptr) {
+        item_id_arr = env->NewByteArray(static_cast<jsize>(item_view->unique_batch_item_id_length));
+        env->SetByteArrayRegion(item_id_arr, 0, static_cast<jsize>(item_view->unique_batch_item_id_length),
+                                reinterpret_cast<const jbyte*>(item_view->unique_batch_item_id_data));
+    }
+    jobject item_obj = env->NewObject(item_view_class, item_view_init,
+            item_view ? static_cast<jlong>(item_view->operation) : 0, item_id_arr);
+    if (item_id_arr != nullptr) env->DeleteLocalRef(item_id_arr);
+
+    jclass caps_class = env->FindClass("org/kmipkit/extensions/S2cCapabilities");
+    jmethodID caps_init = env->GetMethodID(caps_class, "<init>", "()V");
+    jobject caps_obj = env->NewObject(caps_class, caps_init);
+
+    jmethodID handle_method = env->GetMethodID(handler_class, "handleQuery",
+            "(Lorg/kmipkit/extensions/ServerRequestHandler$ItemView;JLorg/kmipkit/extensions/S2cCapabilities;)J");
+    jlong result = env->CallLongMethod(ctx->handler, handle_method, item_obj,
+            static_cast<jlong>(query_function_flags), caps_obj);
+
+    jclass list_class = env->FindClass("java/util/List");
+    jmethodID list_size = env->GetMethodID(list_class, "size", "()I");
+    jmethodID list_get = env->GetMethodID(list_class, "get", "(I)Ljava/lang/Object;");
+    jclass num_class = env->FindClass("java/lang/Number");
+    jmethodID num_long = env->GetMethodID(num_class, "longValue", "()J");
+
+    auto extract_list = [&](const char* method_name, std::vector<uint32_t>& out_vec) {
+        jmethodID m = env->GetMethodID(caps_class, method_name, "()Ljava/util/List;");
+        jobject l = env->CallObjectMethod(caps_obj, m);
+        out_vec.clear();
+        if (l != nullptr) {
+            jint s = env->CallIntMethod(l, list_size);
+            out_vec.reserve(s);
+            for (jint i = 0; i < s; ++i) {
+                jobject val = env->CallObjectMethod(l, list_get, i);
+                if (val != nullptr) {
+                    out_vec.push_back(static_cast<uint32_t>(env->CallLongMethod(val, num_long)));
+                    env->DeleteLocalRef(val);
+                }
+            }
+            env->DeleteLocalRef(l);
+        }
+    };
+
+    extract_list("operations", ctx->custom_ops);
+    extract_list("objectTypes", ctx->custom_ots);
+    extract_list("extensionTags", ctx->custom_exts);
+
+    jmethodID get_vendor = env->GetMethodID(caps_class, "vendorIdentification", "()Ljava/lang/String;");
+    auto vendor_str = static_cast<jstring>(env->CallObjectMethod(caps_obj, get_vendor));
+    ctx->custom_vendor.clear();
+    if (vendor_str != nullptr) {
+        optional_java_string(env, vendor_str, ctx->custom_vendor);
+        env->DeleteLocalRef(vendor_str);
+    }
+
+    if (out_capabilities != nullptr) {
+        out_capabilities->operations = ctx->custom_ops.empty() ? nullptr : ctx->custom_ops.data();
+        out_capabilities->operations_count = static_cast<uint32_t>(ctx->custom_ops.size());
+        out_capabilities->object_types = ctx->custom_ots.empty() ? nullptr : ctx->custom_ots.data();
+        out_capabilities->object_types_count = static_cast<uint32_t>(ctx->custom_ots.size());
+        out_capabilities->extension_tags = ctx->custom_exts.empty() ? nullptr : ctx->custom_exts.data();
+        out_capabilities->extension_tags_count = static_cast<uint32_t>(ctx->custom_exts.size());
+        out_capabilities->vendor_identification_data = ctx->custom_vendor.empty() ? nullptr : ctx->custom_vendor.data();
+        out_capabilities->vendor_identification_length = static_cast<uint64_t>(ctx->custom_vendor.size());
+    }
+
+    env->DeleteLocalRef(num_class);
+    env->DeleteLocalRef(list_class);
+    env->DeleteLocalRef(caps_obj);
+    env->DeleteLocalRef(caps_class);
+    env->DeleteLocalRef(item_obj);
+    env->DeleteLocalRef(item_view_class);
+    env->DeleteLocalRef(handler_class);
+
+    return static_cast<uint32_t>(result);
+}
+
+static uint32_t s2c_handle_set_endpoint_role(
+        void* user_data,
+        const kmipkit_server_request_item_view_v1_t* item_view,
+        uint32_t target_role) {
+    auto* ctx = static_cast<S2cCallbackContext*>(user_data);
+    JNIEnv* env = ctx->env;
+    jclass handler_class = env->GetObjectClass(ctx->handler);
+    if (handler_class == nullptr) return 1;
+
+    jclass item_view_class = env->FindClass("org/kmipkit/extensions/ServerRequestHandler$ItemView");
+    jmethodID item_view_init = env->GetMethodID(item_view_class, "<init>", "(J[B)V");
+    jbyteArray item_id_arr = nullptr;
+    if (item_view != nullptr && item_view->unique_batch_item_id_data != nullptr) {
+        item_id_arr = env->NewByteArray(static_cast<jsize>(item_view->unique_batch_item_id_length));
+        env->SetByteArrayRegion(item_id_arr, 0, static_cast<jsize>(item_view->unique_batch_item_id_length),
+                                reinterpret_cast<const jbyte*>(item_view->unique_batch_item_id_data));
+    }
+    jobject item_obj = env->NewObject(item_view_class, item_view_init,
+            item_view ? static_cast<jlong>(item_view->operation) : 0, item_id_arr);
+    if (item_id_arr != nullptr) env->DeleteLocalRef(item_id_arr);
+
+    jmethodID handle_method = env->GetMethodID(handler_class, "handleSetEndpointRole",
+            "(Lorg/kmipkit/extensions/ServerRequestHandler$ItemView;J)J");
+    jlong result = env->CallLongMethod(ctx->handler, handle_method, item_obj,
+            static_cast<jlong>(target_role));
+
+    env->DeleteLocalRef(item_obj);
+    env->DeleteLocalRef(item_view_class);
+    env->DeleteLocalRef(handler_class);
+
+    return static_cast<uint32_t>(result);
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_serverRequestDispatcherDispatchV2(
+        JNIEnv* env, jclass, jlong raw_dispatcher, jlong raw_batch, jobject handler) {
+    return guarded<jlong>(env, 0, [&] {
+        if (raw_dispatcher == 0 || raw_batch == 0 || handler == nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        S2cCallbackContext ctx{env, handler, {}, {}, {}, {}};
+        kmipkit_server_request_handler_v2_t handler_v2{};
+        handler_v2.struct_size = static_cast<uint32_t>(sizeof(handler_v2));
+        handler_v2.abi_version = 2;
+        handler_v2.user_data = &ctx;
+        handler_v2.handle_discover_versions = s2c_handle_discover_versions;
+        handler_v2.handle_notify = s2c_handle_notify;
+        handler_v2.handle_put = s2c_handle_put;
+        handler_v2.handle_query = s2c_handle_query;
+        handler_v2.handle_set_endpoint_role = s2c_handle_set_endpoint_role;
+
+        return return_handle<kmipkit_response_message_t>(env, [&](auto output) {
+            return kmipkit_server_request_dispatcher_dispatch_v2(
+                    from_java_handle<kmipkit_server_request_dispatcher_t>(raw_dispatcher),
+                    from_java_handle<kmipkit_incoming_server_batch_t>(raw_batch),
+                    &handler_v2, output);
+        });
     });
 }
 

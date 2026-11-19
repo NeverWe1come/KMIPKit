@@ -45,6 +45,16 @@ public final class RequestHeaderView implements AutoCloseable {
         return handle.withValue(NativeExtensionRegistry::requestHeaderViewBatchCount);
     }
 
+    /** Returns the effective validated batch count. */
+    public int effectiveBatchCount() {
+        return batchCount();
+    }
+
+    /** Returns the raw wire Batch Count integer before any normalisation. */
+    public int wireBatchCount() {
+        return handle.withValue(NativeExtensionRegistry::requestHeaderViewWireBatchCount);
+    }
+
     /** Returns the optional Maximum Response Size Integer. */
     public OptionalInt maximumResponseSize() {
         try (TtlvStructure value = ttlv()) {

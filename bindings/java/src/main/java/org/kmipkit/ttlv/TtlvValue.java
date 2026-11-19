@@ -72,6 +72,48 @@ public final class TtlvValue implements AutoCloseable {
                 NativeExtensionRegistry.ttlvValueByteString(copy, nativeLimits)));
     }
 
+    public static TtlvValue Identifier(byte[] value, CodecLimits limits) {
+        requireWithinMessageLimit(value, limits);
+        long[] nativeLimits = NativeExtensionRegistry.codecLimitValues(limits);
+        return withZeroizedCopy(value, copy -> new TtlvValue(
+                NativeExtensionRegistry.ttlvValueIdentifier(copy, nativeLimits)));
+    }
+
+    public static TtlvValue Identifier(String value, CodecLimits limits) {
+        if (value == null) {
+            throw new InvalidInputException("Identifier string is invalid");
+        }
+        return Identifier(value.getBytes(java.nio.charset.StandardCharsets.UTF_8), limits);
+    }
+
+    public static TtlvValue Reference(byte[] value, CodecLimits limits) {
+        requireWithinMessageLimit(value, limits);
+        long[] nativeLimits = NativeExtensionRegistry.codecLimitValues(limits);
+        return withZeroizedCopy(value, copy -> new TtlvValue(
+                NativeExtensionRegistry.ttlvValueReference(copy, nativeLimits)));
+    }
+
+    public static TtlvValue Reference(String value, CodecLimits limits) {
+        if (value == null) {
+            throw new InvalidInputException("Reference string is invalid");
+        }
+        return Reference(value.getBytes(java.nio.charset.StandardCharsets.UTF_8), limits);
+    }
+
+    public static TtlvValue NameReference(byte[] value, CodecLimits limits) {
+        requireWithinMessageLimit(value, limits);
+        long[] nativeLimits = NativeExtensionRegistry.codecLimitValues(limits);
+        return withZeroizedCopy(value, copy -> new TtlvValue(
+                NativeExtensionRegistry.ttlvValueNameReference(copy, nativeLimits)));
+    }
+
+    public static TtlvValue NameReference(String value, CodecLimits limits) {
+        if (value == null) {
+            throw new InvalidInputException("NameReference string is invalid");
+        }
+        return NameReference(value.getBytes(java.nio.charset.StandardCharsets.UTF_8), limits);
+    }
+
     static <T> T withZeroizedCopy(byte[] value, Function<byte[], T> nativeCall) {
         byte[] copy = value.clone();
         try {

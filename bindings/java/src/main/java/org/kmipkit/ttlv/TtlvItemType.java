@@ -12,7 +12,10 @@ public enum TtlvItemType {
     ByteString(8),
     DateTime(9),
     Interval(10),
-    DateTimeExtended(11);
+    DateTimeExtended(11),
+    Identifier(12),
+    Reference(13),
+    NameReference(14);
 
     private final int code;
 

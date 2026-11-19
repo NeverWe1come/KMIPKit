@@ -4386,8 +4386,8 @@ int32_t kmipkit_request_header_view_wire_batch_count(kmipkit_request_header_view
 int32_t kmipkit_response_header_view_wire_batch_count(kmipkit_response_header_view_t * view, uint32_t * out_wire_batch_count);
 
 /* Ephemeral batch item inspection */
-int32_t kmipkit_request_batch_item_view_ephemeral(kmipkit_request_batch_item_view_t * view, uint8_t * out_ephemeral);
-int32_t kmipkit_request_batch_item_view_ephemeral_mode(kmipkit_request_batch_item_view_t * view, uint32_t * out_ephemeral_mode);
+int32_t kmipkit_request_batch_item_view_ephemeral(kmipkit_request_batch_item_view_t * view, uint8_t * out_present, uint8_t * out_ephemeral);
+int32_t kmipkit_request_batch_item_view_ephemeral_mode(kmipkit_request_batch_item_view_t * view, uint8_t * out_present, uint32_t * out_ephemeral_mode);
 int32_t kmipkit_request_batch_item_view_is_ephemeral(kmipkit_request_batch_item_view_t * view, uint8_t * out_is_ephemeral);
 
 /* Link normalizer */

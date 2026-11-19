@@ -108,6 +108,22 @@ int main() {
             KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER, nullptr, 1, 0, 0)));
     assert(rejects(1, identifier(
             KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER, nullptr, 0, 1, 0)));
+    const auto identifier_v3 = identifier(
+            KMIPKIT_UNIQUE_IDENTIFIER_KIND_IDENTIFIER, text, sizeof(text), 0, 0);
+    assert(normalize_response_identifier(1, identifier_v3, &output));
+    assert(output.present == 1);
+    assert(output.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_IDENTIFIER);
+    assert(output.text_data == text);
+    assert(output.text_length == sizeof(text));
+    assert(output.enumeration_value == 0);
+    assert(output.integer_value == 0);
+
+    assert(rejects(1, identifier(
+            KMIPKIT_UNIQUE_IDENTIFIER_KIND_IDENTIFIER, nullptr, 1, 0, 0)));
+    assert(rejects(1, identifier(
+            KMIPKIT_UNIQUE_IDENTIFIER_KIND_IDENTIFIER, text, sizeof(text), 1, 0)));
+    assert(rejects(1, identifier(
+            KMIPKIT_UNIQUE_IDENTIFIER_KIND_IDENTIFIER, text, sizeof(text), 0, 1)));
     assert(rejects(1, identifier(77, nullptr, 0, 0, 0)));
     assert(!normalize_response_identifier(1, absent, nullptr));
 

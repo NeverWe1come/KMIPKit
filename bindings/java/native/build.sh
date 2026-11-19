@@ -1,6 +1,10 @@
 #!/usr/bin/env sh
 set -eu
 
+if [ -d "$HOME/.cargo/bin" ]; then
+    export PATH="$HOME/.cargo/bin:$PATH"
+fi
+
 script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 repository_root=$(CDPATH= cd -- "$script_dir/../../.." && pwd)
 java_compiler=$(command -v javac)

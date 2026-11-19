@@ -1,5 +1,3 @@
-// Requires repository assets intentionally absent from the code-only review branch.
-#![cfg(any())]
 use kmipkit_ttlv::codec::{CodecLimits, DecodeErrorKind, LimitsError, decode, decode_with_limits};
 use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Value, ValueView};
 use serde_json::Value as JsonValue;

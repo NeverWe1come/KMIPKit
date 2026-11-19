@@ -358,6 +358,20 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return parseLogoutResponse(values);
     }
 
+    /** Returns the typed SetEndpointRole response if successful. */
+    public Optional<SetEndpointRoleResponse> setEndpointRoleResponse() {
+        if (resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(
+                NativeExtensionRegistry::clientBatchItemResponseSetEndpointRole);
+        if (values == null || values.length != 2 || !(values[0] instanceof Long)) {
+            return Optional.empty();
+        }
+        long role = (Long) values[0];
+        String vendorId = values[1] instanceof byte[] b ? ExtensionText.decodeUtf8(b) : null;
+        return Optional.of(new SetEndpointRoleResponse(role, vendorId));
+    }
+
     /**
      * Returns the complete generic TTLV payload from a Query response. The returned structure
      * owns its native handle independently; callers must close it when finished.
@@ -761,6 +775,25 @@ public final class ClientBatchItemResult implements AutoCloseable {
         NativeExtensionRegistry.ensureLoaded();
         Object[] values = handle.withValue(NativeExtensionRegistry::clientBatchItemResponseCreateSplitKey);
         return parseCreateSplitKeyUniqueIdentifiers(values);
+    }
+
+    /** Successful SetEndpointRole response fields. */
+    public static final class SetEndpointRoleResponse {
+        private final long endpointRole;
+        private final @Nullable String vendorIdentification;
+
+        SetEndpointRoleResponse(long endpointRole, @Nullable String vendorIdentification) {
+            this.endpointRole = endpointRole;
+            this.vendorIdentification = vendorIdentification;
+        }
+
+        public long endpointRole() {
+            return endpointRole;
+        }
+
+        public Optional<String> vendorIdentification() {
+            return Optional.ofNullable(vendorIdentification);
+        }
     }
 
     /** Successful Create response fields. */

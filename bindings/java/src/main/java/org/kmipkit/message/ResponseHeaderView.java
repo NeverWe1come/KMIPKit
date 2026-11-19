@@ -44,6 +44,16 @@ public final class ResponseHeaderView implements AutoCloseable {
         return handle.withValue(NativeExtensionRegistry::responseHeaderViewBatchCount);
     }
 
+    /** Returns the effective validated batch count. */
+    public int effectiveBatchCount() {
+        return batchCount();
+    }
+
+    /** Returns the raw wire Batch Count integer before any normalisation. */
+    public int wireBatchCount() {
+        return handle.withValue(NativeExtensionRegistry::responseHeaderViewWireBatchCount);
+    }
+
     /** Invokes the callback with the optional Nonce Structure. */
     public <T> Optional<T> withNonce(Function<TtlvStructureView, T> callback) {
         try (TtlvStructure value = ttlv()) {

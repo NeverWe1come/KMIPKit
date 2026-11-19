@@ -22,6 +22,11 @@ final class ExtensionText {
         return value.getBytes(StandardCharsets.UTF_8);
     }
 
+    static String decodeUtf8(byte[] bytes) {
+        if (bytes == null) return null;
+        return new String(bytes, StandardCharsets.UTF_8);
+    }
+
     static int checkedUtf8Length(String value, int maximumBytes, String description) {
         if (value.length() > maximumBytes) {
             throw new ResourceLimitException(description + " exceeds its configured limit");

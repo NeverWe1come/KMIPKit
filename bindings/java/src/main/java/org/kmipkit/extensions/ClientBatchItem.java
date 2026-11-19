@@ -1858,6 +1858,17 @@ public final class ClientBatchItem implements AutoCloseable {
                 NativeExtensionRegistry.validationRequest(value)));
     }
 
+    /** Creates a typed batch item for SetEndpointRole. */
+    public static ClientBatchItem setEndpointRole(long endpointRole, @Nullable String vendorIdentification) {
+        NativeExtensionRegistry.ensureLoaded();
+        byte[] vendorBytes = vendorIdentification == null
+                ? null
+                : ExtensionText.encodeUtf8(vendorIdentification, MAX_OPERATION_INPUT_BYTES, "vendor identification");
+        return new ClientBatchItem(
+                NativeExtensionRegistry.clientBatchItemSetEndpointRole(endpointRole, vendorBytes),
+                List.of());
+    }
+
     @Override
     public void close() {
         handle.close();

@@ -36,7 +36,8 @@ inline bool normalize_response_identifier(
         return false;
     }
 
-    if (value.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING) {
+    if (value.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING
+            || value.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_IDENTIFIER) {
         if (value.enumeration_value != 0 || value.integer_value != 0
                 || (value.text_data == nullptr && value.text_length != 0)) {
             return false;

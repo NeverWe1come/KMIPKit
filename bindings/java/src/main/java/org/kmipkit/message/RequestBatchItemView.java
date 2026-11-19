@@ -36,6 +36,17 @@ public final class RequestBatchItemView implements AutoCloseable {
         }
     }
 
+    /** Returns the KMIP 3.0 Ephemeral Mode enumeration value when present. */
+    public OptionalLong ephemeralMode() {
+        long value = handle.withValue(NativeExtensionRegistry::requestBatchItemViewEphemeralMode);
+        return value == -1 ? OptionalLong.empty() : OptionalLong.of(value);
+    }
+
+    /** Returns true if this batch item is marked ephemeral in either KMIP 2.x or KMIP 3.0. */
+    public boolean isEphemeral() {
+        return handle.withValue(NativeExtensionRegistry::requestBatchItemViewIsEphemeral);
+    }
+
     /** Returns the optional per-item Unique Batch Item ID as an owned byte copy. */
     public Optional<byte[]> uniqueBatchItemId() {
         try (TtlvStructure value = ttlv()) {

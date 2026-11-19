@@ -12,6 +12,14 @@ public final class ResponseMessage implements AutoCloseable {
         handle = NativeHandle.owned(nativeHandle, NativeExtensionRegistry.RESPONSE_MESSAGE);
     }
 
+    public static ResponseMessage fromNative(long nativeHandle) {
+        return new ResponseMessage(nativeHandle);
+    }
+
+    public NativeHandle nativeHandleOwner() {
+        return handle;
+    }
+
     /** Consumes and validates an owned generic TTLV Structure as a response message. */
     public static ResponseMessage fromTtlv(TtlvStructure structure) {
         return new ResponseMessage(MessageNative.parse(structure, false));

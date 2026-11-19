@@ -93,6 +93,12 @@ public final class NativeExtensionRegistry {
     public static final int CRYPTOGRAPHIC_PARAMETERS = 69;
     public static final int VALIDATION_REPORT = 70;
     public static final int SYMMETRIC_KEY_BUILDER = 71;
+    public static final int LEASE_CONTEXT = 77;
+    public static final int CLIENT_LISTENER = 78;
+    public static final int CLIENT_LISTENER_CONNECTION = 79;
+    public static final int ROLE_REVERSED_SESSION = 80;
+    public static final int INCOMING_SERVER_BATCH = 81;
+    public static final int SERVER_REQUEST_DISPATCHER = 82;
 
     public static final int ATTRIBUTE_OPERATION_ADD = 0;
     public static final int ATTRIBUTE_OPERATION_ADJUST = 1;
@@ -763,4 +769,90 @@ public final class NativeExtensionRegistry {
             String[] uniqueIdentifiers, int[] knownFields, int[] booleanValues,
             long[] usageLimitsTotals, long[] usageLimitsCounts);
     public static native void profileValidationResultRelease(long result);
+
+    // TTLV 3.0 primitive constructors
+    public static native long ttlvValueIdentifier(byte[] value, long[] limits);
+    public static native long ttlvValueReference(byte[] value, long[] limits);
+    public static native long ttlvValueNameReference(byte[] value, long[] limits);
+
+    // Framing batch counts and ephemeral
+    public static native int requestHeaderViewWireBatchCount(long rawHeader);
+    public static native int responseHeaderViewWireBatchCount(long rawHeader);
+    public static native long requestBatchItemViewEphemeralMode(long rawItem);
+    public static native boolean requestBatchItemViewIsEphemeral(long rawItem);
+
+    // CryptographicParameters v2
+    public static native long cryptographicParametersFromFieldsV2(
+            boolean[] present, long[] values, byte[] pSource,
+            byte[] contextString, byte[] seed, byte[] inputKeyMaterial);
+    public static native byte[][] cryptographicParametersReadFieldsV2(
+            long rawParameters, boolean[] outPresent, long[] outValues);
+
+    // Link Normalizer
+    public static native long linkNormalizerV2ToV3(long rawItem);
+    public static native long linkNormalizerV3ToV2(long rawItem);
+
+    // Version Gate
+    public static native boolean versionGateValidateOperation(int major, int minor, long operation);
+    public static native boolean versionGateValidateTag(int major, int minor, long tag);
+    public static native boolean versionGateValidateAttributeMutation(int major, int minor, long attributeTag);
+    public static native int[] versionGateOperationSpan(long operation);
+    public static native int[] versionGateTagSpan(long tag);
+
+    // NIST Key Lifecycle
+    public static native boolean nistKeyLifecycleCanOriginate(long stateEnum);
+    public static native boolean nistKeyLifecycleCanProcess(long stateEnum);
+
+    // Lease Context
+    public static native long leaseContextCreate(
+            int uidKind, byte[] uidText, long uidNumber, long obtainedAtUnixSecs, long leaseTimeSecs);
+    public static native org.kmipkit.extensions.UniqueIdentifier leaseContextUniqueIdentifier(long rawContext);
+    public static native long leaseContextExpiresAt(long rawContext);
+    public static native boolean leaseContextIsExpired(long rawContext, long currentTimeUnixSecs);
+    public static native void leaseContextCheckValid(long rawContext, long currentTimeUnixSecs);
+
+    // Client SetEndpointRole
+    public static native long clientBatchItemSetEndpointRole(long endpointRole, byte[] vendorIdentification);
+    public static native Object[] clientBatchItemResponseSetEndpointRole(long rawResponse);
+    public static native long clientSetEndpointRole(long rawClient, long endpointRole, byte[] vendorIdentification, long[] limits);
+
+    // S2C Listener, Connection, Session, Batch, Dispatcher
+    public static native long clientListenerBindRawTls(
+            String bindHost, int bindPort, int flags,
+            byte[][] serverCerts, int serverCertsEncoding,
+            byte[] serverPrivateKey, int serverPrivateKeyEncoding,
+            byte[][] trustCerts, int trustCertsEncoding,
+            long readTimeoutMs, long writeTimeoutMs, long maxRequestBytes);
+    public static native long clientListenerBindHttps(
+            String bindHost, int bindPort, int flags,
+            byte[][] serverCerts, int serverCertsEncoding,
+            byte[] serverPrivateKey, int serverPrivateKeyEncoding,
+            byte[][] trustCerts, int trustCertsEncoding,
+            long readTimeoutMs, long writeTimeoutMs, long maxRequestBytes);
+    public static native int clientListenerGetPort(long rawListener);
+    public static native long clientListenerAccept(long rawListener, long timeoutMs);
+
+    public static native long clientListenerConnectionRecvBatch(long rawConnection, long[] limits, long timeoutMs);
+    public static native void clientListenerConnectionSendResponse(long rawConnection, long rawResponse, long timeoutMs);
+    public static native long clientListenerConnectionIntoRoleReversed(long rawConnection);
+    public static native void clientListenerConnectionClose(long rawConnection);
+
+    public static native long roleReversedSessionRecvBatch(long rawSession, long[] limits, long timeoutMs);
+    public static native void roleReversedSessionSendResponse(long rawSession, long rawResponse, long timeoutMs);
+    public static native void roleReversedSessionClose(long rawSession);
+
+    public static native long incomingServerBatchDecode(byte[] data, int encoding, long[] limits);
+    public static native int[] incomingServerBatchProtocolVersion(long rawBatch);
+    public static native int incomingServerBatchItemCount(long rawBatch);
+    public static native long incomingServerBatchItemOperation(long rawBatch, int index);
+    public static native byte[] incomingServerBatchItemUniqueBatchItemId(long rawBatch, int index);
+    public static native int[] incomingServerBatchItemDiscoverVersions(long rawBatch, int index);
+    public static native byte[] incomingServerBatchItemNotify(long rawBatch, int index);
+    public static native Object[] incomingServerBatchItemPutV2(long rawBatch, int index);
+    public static native long incomingServerBatchItemQuery(long rawBatch, int index);
+    public static native long incomingServerBatchItemSetEndpointRole(long rawBatch, int index);
+
+    public static native long serverRequestDispatcherCreate();
+    public static native long serverRequestDispatcherDispatchV2(
+            long rawDispatcher, long rawBatch, org.kmipkit.extensions.ServerRequestHandler handler);
 }

@@ -9,9 +9,9 @@ import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.internal.NativeHandle;
 import org.kmipkit.ttlv.TtlvStructure;
 
-/** Typed KMIP 2.1 Cryptographic Parameters with raw-preserving enumerations. */
+/** Typed KMIP 2.1 / 3.0 Cryptographic Parameters with raw-preserving enumerations. */
 public final class CryptographicParameters implements AutoCloseable {
-    private static final int FIELD_COUNT = 18;
+    private static final int FIELD_COUNT = 23;
     private final NativeHandle handle;
 
     private CryptographicParameters(long nativeHandle) {
@@ -90,6 +90,33 @@ public final class CryptographicParameters implements AutoCloseable {
     /** Returns Trailer Field when present. */
     public OptionalInt trailerField() { return integer(17); }
 
+    /** Returns the raw KEM Algorithm Enumeration (KMIP 3.0), including future values, when present. */
+    public OptionalLong kemAlgorithm() { return enumeration(18); }
+
+    /** Returns Deterministic (KMIP 3.0) when present. */
+    public Optional<Boolean> deterministic() {
+        Fields fields = readFields();
+        return fields.present()[19] ? Optional.of(fields.values()[19] != 0) : Optional.empty();
+    }
+
+    /** Returns a caller-owned Context String copy (KMIP 3.0) when present. */
+    public Optional<byte[]> contextString() {
+        Fields fields = readFields();
+        return fields.present()[20] ? Optional.of(fields.contextString()) : Optional.empty();
+    }
+
+    /** Returns a caller-owned Seed copy (KMIP 3.0) when present. */
+    public Optional<byte[]> seed() {
+        Fields fields = readFields();
+        return fields.present()[21] ? Optional.of(fields.seed()) : Optional.empty();
+    }
+
+    /** Returns a caller-owned Input Key Material copy (KMIP 3.0) when present. */
+    public Optional<byte[]> inputKeyMaterial() {
+        Fields fields = readFields();
+        return fields.present()[22] ? Optional.of(fields.inputKeyMaterial()) : Optional.empty();
+    }
+
     private OptionalLong enumeration(int index) {
         Fields fields = readFields();
         return fields.present()[index]
@@ -108,9 +135,13 @@ public final class CryptographicParameters implements AutoCloseable {
         return handle.withValue(raw -> {
             boolean[] present = new boolean[FIELD_COUNT];
             long[] values = new long[FIELD_COUNT];
-            byte[] pSource = NativeExtensionRegistry.cryptographicParametersReadFields(
+            byte[][] byteArrays = NativeExtensionRegistry.cryptographicParametersReadFieldsV2(
                     raw, present, values);
-            return new Fields(present, values, pSource == null ? new byte[0] : pSource);
+            byte[] pSource = byteArrays[0] == null ? new byte[0] : byteArrays[0];
+            byte[] contextString = byteArrays[1] == null ? new byte[0] : byteArrays[1];
+            byte[] seed = byteArrays[2] == null ? new byte[0] : byteArrays[2];
+            byte[] inputKeyMaterial = byteArrays[3] == null ? new byte[0] : byteArrays[3];
+            return new Fields(present, values, pSource, contextString, seed, inputKeyMaterial);
         });
     }
 
@@ -119,7 +150,13 @@ public final class CryptographicParameters implements AutoCloseable {
         return handle;
     }
 
-    private record Fields(boolean[] present, long[] values, byte[] pSource) {}
+    private record Fields(
+            boolean[] present,
+            long[] values,
+            byte[] pSource,
+            byte[] contextString,
+            byte[] seed,
+            byte[] inputKeyMaterial) {}
 
     @Override
     public void close() {
@@ -136,6 +173,9 @@ public final class CryptographicParameters implements AutoCloseable {
         private final boolean[] present = new boolean[FIELD_COUNT];
         private final long[] values = new long[FIELD_COUNT];
         private byte[] pSource;
+        private byte[] contextString;
+        private byte[] seed;
+        private byte[] inputKeyMaterial;
         private boolean built;
 
         private Builder() {}
@@ -157,6 +197,8 @@ public final class CryptographicParameters implements AutoCloseable {
         public Builder maskGenerator(long raw) { return enumeration(14, raw); }
         public Builder maskGeneratorHashingAlgorithm(long raw) { return enumeration(15, raw); }
         public Builder trailerField(int value) { return set(17, value); }
+        public Builder kemAlgorithm(long raw) { return enumeration(18, raw); }
+        public Builder deterministic(boolean value) { return set(19, value ? 1 : 0); }
 
         /** Copies P Source bytes into builder-owned storage, cleared after build or close. */
         public Builder pSource(byte[] value) {
@@ -170,18 +212,58 @@ public final class CryptographicParameters implements AutoCloseable {
             return this;
         }
 
+        public Builder contextString(byte[] value) {
+            ensureOpen();
+            if (value == null || value.length > 16 * 1024 * 1024) {
+                throw new InvalidInputException("Context String is invalid");
+            }
+            wipe(contextString);
+            contextString = value.clone();
+            present[20] = true;
+            return this;
+        }
+
+        public Builder seed(byte[] value) {
+            ensureOpen();
+            if (value == null || value.length > 16 * 1024 * 1024) {
+                throw new InvalidInputException("Seed is invalid");
+            }
+            wipe(seed);
+            seed = value.clone();
+            present[21] = true;
+            return this;
+        }
+
+        public Builder inputKeyMaterial(byte[] value) {
+            ensureOpen();
+            if (value == null || value.length > 16 * 1024 * 1024) {
+                throw new InvalidInputException("Input Key Material is invalid");
+            }
+            wipe(inputKeyMaterial);
+            inputKeyMaterial = value.clone();
+            present[22] = true;
+            return this;
+        }
+
         /** Builds a typed model; Rust validates values and emits Table 59 order. */
         public CryptographicParameters build() {
             ensureOpen();
             NativeExtensionRegistry.ensureLoaded();
             try {
                 return new CryptographicParameters(
-                        NativeExtensionRegistry.cryptographicParametersFromFields(
-                                present.clone(), values.clone(), pSource));
+                        NativeExtensionRegistry.cryptographicParametersFromFieldsV2(
+                                present.clone(), values.clone(), pSource,
+                                contextString, seed, inputKeyMaterial));
             } finally {
                 built = true;
                 wipe(pSource);
                 pSource = null;
+                wipe(contextString);
+                contextString = null;
+                wipe(seed);
+                seed = null;
+                wipe(inputKeyMaterial);
+                inputKeyMaterial = null;
             }
         }
 
@@ -190,6 +272,12 @@ public final class CryptographicParameters implements AutoCloseable {
             built = true;
             wipe(pSource);
             pSource = null;
+            wipe(contextString);
+            contextString = null;
+            wipe(seed);
+            seed = null;
+            wipe(inputKeyMaterial);
+            inputKeyMaterial = null;
         }
 
         private Builder enumeration(int index, long raw) {

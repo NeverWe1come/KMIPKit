@@ -135,9 +135,15 @@ public final class TransportConfiguration implements AutoCloseable {
     }
 
     private final NativeHandle handle;
+    private final boolean tls12Compat;
 
-    private TransportConfiguration(long nativeHandle) {
+    private TransportConfiguration(long nativeHandle, boolean tls12Compat) {
         handle = NativeHandle.owned(nativeHandle, NativeExtensionRegistry.TRANSPORT_CONFIGURATION);
+        this.tls12Compat = tls12Compat;
+    }
+
+    public boolean isTls12Compat() {
+        return tls12Compat;
     }
 
     /** Starts a builder for a mutually authenticated raw TTLV-over-TLS endpoint. */
@@ -171,9 +177,20 @@ public final class TransportConfiguration implements AutoCloseable {
         private Timeout readTimeout = Timeout.defaultValue();
         private Timeout totalTimeout = Timeout.defaultValue();
         private long maxRequestBytes = 16 * 1024 * 1024L;
+        private boolean tls12Compat;
         private boolean built;
 
         private Builder() {}
+
+        public Builder tls12Compat(boolean enabled) {
+            ensureMutable();
+            this.tls12Compat = enabled;
+            return this;
+        }
+
+        public boolean isTls12Compat() {
+            return tls12Compat;
+        }
 
         /** Zeroizes the copied private key and consumes this builder.
          *
@@ -375,7 +392,7 @@ public final class TransportConfiguration implements AutoCloseable {
                         sources(trustCertificates), encodings(trustCertificates), trustData,
                         sources(revocationLists), encodings(revocationLists), revocationData,
                         tlsServerName, targetUri, timeoutValues(), maxRequestBytes);
-                return new TransportConfiguration(nativeHandle);
+                return new TransportConfiguration(nativeHandle, tls12Compat);
             } finally {
                 wipeSecretInputReferences();
             }

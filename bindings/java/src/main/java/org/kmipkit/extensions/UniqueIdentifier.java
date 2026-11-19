@@ -15,7 +15,8 @@ public final class UniqueIdentifier {
     public enum Kind {
         TEXT_STRING(1),
         ENUMERATION(2),
-        INTEGER(3);
+        INTEGER(3),
+        IDENTIFIER(4);
 
         private final int raw;
 
@@ -66,52 +67,64 @@ public final class UniqueIdentifier {
         return new UniqueIdentifier(Kind.INTEGER, null, value);
     }
 
+    public static UniqueIdentifier identifier(String value) {
+        Objects.requireNonNull(value, "value");
+        if (!StandardCharsets.UTF_8.newEncoder().canEncode(value)) {
+            throw new InvalidInputException("Unique Identifier is not valid UTF-8 text");
+        }
+        return new UniqueIdentifier(Kind.IDENTIFIER, value, 0);
+    }
+
     /** Returns this identifier's exact KMIP TTLV wire type. */
     public Kind kind() {
         return kind;
     }
 
-    /** Returns the Text String value when this identifier uses that wire type. */
+    /** Returns the Text String or Identifier value when this identifier uses that wire type. */
     public String text() {
-        if (kind != Kind.TEXT_STRING) {
-            throw new InvalidInputException("Unique Identifier is not a Text String");
+        if (kind != Kind.TEXT_STRING && kind != Kind.IDENTIFIER) {
+            throw new InvalidInputException("Unique Identifier is not a Text String or Identifier");
         }
         return text;
     }
 
     /** Returns the unsigned Enumeration value or signed Integer value. */
     public long number() {
-        if (kind == Kind.TEXT_STRING) {
-            throw new InvalidInputException("Unique Identifier is a Text String");
+        if (kind == Kind.TEXT_STRING || kind == Kind.IDENTIFIER) {
+            throw new InvalidInputException("Unique Identifier is a Text String or Identifier");
         }
         return number;
     }
 
-    int nativeKind() {
+    public int nativeKind() {
         return kind.raw();
     }
 
-    byte[] nativeText() {
-        if (kind != Kind.TEXT_STRING) {
+    public byte[] nativeText() {
+        if (kind != Kind.TEXT_STRING && kind != Kind.IDENTIFIER) {
             return null;
         }
         return ExtensionText.encodeUtf8(text, MAX_NATIVE_TEXT_BYTES, "Unique Identifier");
     }
 
-    long nativeNumber() {
+    public long nativeNumber() {
         return number;
     }
 
     static UniqueIdentifier fromNative(long kind, byte[] text, long enumeration, long integer) {
         Kind valueKind = Kind.fromRaw(kind);
         return switch (valueKind) {
-            case TEXT_STRING -> textString(decodeUtf8(Objects.requireNonNull(text)));
+            case TEXT_STRING -> textString(decodeUtf8(text));
             case ENUMERATION -> enumeration(enumeration);
             case INTEGER -> integer(Math.toIntExact(integer));
+            case IDENTIFIER -> identifier(decodeUtf8(text));
         };
     }
 
     private static String decodeUtf8(byte[] bytes) {
+        if (bytes == null) {
+            throw new InvalidInputException("native Unique Identifier bytes are missing");
+        }
         try {
             return StandardCharsets.UTF_8.newDecoder()
                     .onMalformedInput(CodingErrorAction.REPORT)
