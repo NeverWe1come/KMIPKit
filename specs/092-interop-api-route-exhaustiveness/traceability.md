@@ -415,6 +415,12 @@ tags, Long Integer/Enumeration types, and values (KMIP 2.0 §7.34 Table 354;
 KMIP 2.1 §7.40 Table 392). This is local route evidence and does not claim
 vendor KMS interoperability.
 
+Java FR-003 also includes the #217 Right Usage Limits structure-member routes:
+eight local generic route/action cells across KMIP 2.0 and 2.1, with absent and
+present optional-member checks and nested field validation (OASIS KMIP 2.0
+§7.28 Table 348; KMIP 2.1 §7.34 Table 386). This evidence does not claim vendor
+interoperability.
+
 ## Java typed Alternative Name routes — 2026-11-18
 
 - **FR-003/FR-009:** The catalogued Alternative Name Structure now exercises

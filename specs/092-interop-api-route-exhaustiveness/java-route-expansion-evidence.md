@@ -4088,6 +4088,23 @@ interoperability evidence.
   catalog cells already covered on #187, so the combined ledger does not count
   them twice. Full matrix closure and exact-head CI remain open; #216 stays WIP.
 
+## Java Right Usage Limits member routes on #217 — 2026-11-18
+
+The installed Java consumer executes all eight generic route/action cells for
+the Right Usage Limits Structure member across KMIP 2.0 and 2.1. Its fixture
+checks the optional member both absent and present, then validates the nested
+Usage Limits Total, Count, and Unit values, tags, types, and order. References:
+OASIS KMIP 2.0 §7.28 Table 348 and KMIP 2.1 §7.34 Table 386. This is local
+TTLV evidence and does not claim a vendor KMS exchange.
+
+- Red `d7a25e1a6` requires the Right Usage Limits route evidence. Green
+  `c49cde5bc` emits and checks the catalogued cells; Refactor
+  `2784b3a4a` records the selected-scope result and evidence.
+- The combined report validates 42,204/42,204 cells with zero failures; the
+  ledger records 71,641 planned, 42,204 executed, and 29,437 pending. These
+  eight cells are already part of the selected catalog scope. The full matrix
+  remains open and #217 stays WIP.
+
 ## Java typed Alternative Name and Get Attributes payload routes — 2026-11-18
 
 For the catalogued Alternative Name case, the Java local runner builds the
@@ -4527,3 +4544,21 @@ installed artifact SHA-256
 `d684b2d9f5b54767d544aa96b380dade027c534ff7155c337867a1ed07c10b4e`.
 Add Attribute's version applicability remains unresolved; evidence currently
 reflects the existing KMIP 2.0/2.1 catalog pending clarification.
+
+## Java Right Usage Limits stack verification after base refresh — 2026-11-19
+
+#217 now includes #216 at its refreshed base. The Right Usage Limits optional
+Structure-member checks and the required Usage Limits member assertions remain
+in the stack; their cells are already part of the selected catalog scope. The
+controlled-TLS report
+`java-controlled-query-0b04efec-fd0c-4d74-b3c8-eb91ecb95603` validates 44,446
+selected-scope cells: 44,430 invocations, 16 not applicable, zero failures.
+The ledger records 71,513 planned, 44,446 executed, and 27,067 pending cells.
+
+Verification on the combined stack: Java Gradle 111/111; shared tests 204/204;
+catalog check; route capability audit (1,511); generated-ledger comparison;
+and `git diff --check`. The matrix remains incomplete, so #217 remains WIP.
+Installed artifact SHA-256:
+`504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+Add Attribute applicability remains unresolved against the pinned KMIP 2.0
+source; the current evidence uses the existing 2.0/2.1 catalog.

@@ -316,55 +316,67 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
   regenerated ledger matches its reference and reports 36,923 pending cells
   out of 71,641. T006, T007, T009, and full Java matrix closure remain open.
 
-## Java Split Key managed-object root routes on #216
+## Development evidence: #217 Right Usage Limits stack tip
 
-- #216 contains the #187 Split Key implementation in addition to its Usage
-  Limits routes. Red `45b9ab5c5`, Green `e3b1bdfe7`, and Refactor `e8fdeb63d`
-  preserve the TDD evidence and use the exact KMIP 2.0/2.1 §2.8 Table 9 member
-  order.
-- Verification on the combined #216 head: Java suite 87/87, shared route
-  suites 109/109, selected evidence 34,718/34,718 with zero failures, ledger
-  comparison, and the 1,507-route capability audit all pass. The full Java
-  matrix remains incomplete at 36,923 pending cells of 71,641; keep #216 WIP.
+- The #217 branch retains the Right Usage Limits member case through generic
+  Structure construction, Item creation, Item view, and TTLV decode in KMIP
+  2.0 and 2.1. All eight versioned route/action cells appear in the selected
+  report under the exact catalog target.
+- Verification: the Java suite passes 87/87 tests; the selected report
+  validates 34,718/34,718 cells with zero failures; ledger comparison passes;
+  36,923 of 71,641 full Java cells remain pending. T006, T007, T009 and full
+  Java matrix closure remain open.
 
-## Java Split Key member routes on #216
+## Java Split Key managed-object root routes on #217
 
-- #216 now includes the six §2.8 Table 9 member cases and Split Key tag from
-  #187, while preserving Usage Limits routes. Red `3601224ff`, Green
-  `adbcd43d0`, Refactor `af53d1b39`, and the duplicate-ID correction
-  `5138855e4` are present in the parent history.
+- #217 inherits the #187 Split Key route implementation through #216 while
+  retaining its Right Usage Limits recipe. The route evidence records
+  `ManagedObject.splitKey`, `fromFields`, and `fromItem` in both KMIP versions
+  with §2.8 Table 9 field order.
+- Verification on #217: Java suite 87/87, shared route suites 109/109,
+  selected evidence 34,718/34,718 with zero failures, generated ledger
+  comparison, and the 1,507-route capability audit all pass. Full matrix
+  closure remains open at 36,923 pending cells of 71,641; keep #217 WIP.
+
+## Java Split Key member routes on #217
+
+- #217 inherits the six §2.8 Table 9 member cases and Split Key tag from #187
+  through #216, retaining its Right Usage Limits routes. Red `3601224ff`,
+  Green `adbcd43d0`, Refactor `af53d1b39`, and the duplicate-ID correction
+  `5138855e4` are present in the stack history.
 - Verification: full Java suite 87/87; shared route suites 109/109; selected
   report 34,756/34,756 with zero failures; ledger comparison and the 1,507-route
   capability audit pass. The full Java ledger has 36,885 pending of 71,641;
-  full matrix closure and exact-head CI remain open, so #216 stays WIP.
+  full matrix closure and exact-head CI remain open, so #217 stays WIP.
 
-## Java PGP Key and Secret Data routes on #216
+## Java PGP Key and Secret Data routes on synchronized #217
 
-- #216 preserves Usage Limits evidence and incorporates the PGP Key/Secret
-  Data route increment from #187. Red `7b1f65d3b`, Green `6c7820757`, and
-  Refactor `1c67d3647` are in the parent history.
+- #217 now includes the PGP Key and Secret Data routes from #187 via #216,
+  while retaining Right Usage Limits and Split Key evidence. Red `7b1f65d3b`,
+  Green `6c7820757`, and Refactor `1c67d3647` are in the parent history.
 - Verification: Java suite 89/89; shared route suites 109/109; selected report
-  34,796/34,796 with zero failures; ledger comparison and 1,507-route audit
-  pass. The full ledger has 36,845 pending of 71,641, so #216 remains WIP.
+  34,796/34,796 with zero failures; ledger comparison and the 1,507-route
+  capability audit pass. The full ledger has 36,845 pending of 71,641, so the
+  matrix and stack remain open and WIP.
 
-## Java generic TTLV routes for Key Block members on #216
+## Java generic TTLV routes for Key Block members on synchronized #217
 
-- #216 inherits the Key Block member route increment from #187 while
-  preserving Usage Limits and PGP Key / Secret Data evidence. The route runner
-  selects `TtlvValue.structure` cells only when the shared manifest declares
-  them for the target.
+- #217 inherits the Key Block structure-member increment from #187 through
+  #216 while retaining Right Usage Limits, PGP Key, and Secret Data evidence.
+  The runner records generic Item creation, view, and decode only where the
+  route manifest declares the target.
 - Verification: Java suite 90/90; shared suites 109/109; selected report
   34,832/34,832 with zero failures; ledger comparison and the 1,507-route
-  capability audit pass. The full matrix has 36,809 pending of 71,641 cells;
-  #216 remains WIP.
+  capability audit pass. The full matrix has 36,809 pending of 71,641 cells.
+  Full closure and exact-head CI remain open, so #217 stays WIP.
 
-## Java generic Operation version-boundary routes on #216
+## Java generic Operation version-boundary routes on #217
 
-- #216 inherits Red `7288a8643` and Green `2843cdfe3` from #187 while
-  preserving Usage Limits coverage. Generic Operation Item construction, view,
-  and decode cover the six 2.1-only Operation targets in the local 2.0 rejection
+- #217 inherits Red `7288a8643` and Green `2843cdfe3` from #187 through #216,
+  preserving Right Usage Limits and prior object routes. The six 2.1-only
+  Operation values are constructed and decoded locally in the 2.0 rejection
   cases; no unsupported request is sent.
 - Verification: Java suite 91/91; shared suites 109/109; selected report
   34,850/34,850 with zero failures; ledger comparison and the 1,507-route
   capability audit pass. The full matrix has 36,791 pending cells of 71,641;
-  #216 stays WIP.
+  #217 stays WIP.
