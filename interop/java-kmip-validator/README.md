@@ -1634,3 +1634,18 @@ but the full Java matrix is not, so the stack remains WIP. Artifact SHA-256:
 The pinned OASIS specifications define Add Attribute in both KMIP 2.0 and 2.1
 §6.1.2. The catalog and route evidence therefore retain both versions; the
 KMIP 2.0 rejection proposed during review was not added.
+
+### Java generic Credential envelope route — 2026-11-19
+
+The controlled Java fixture now invokes `Credential.fromTtlv` for the generic
+Credential envelope target in KMIP 2.0 and 2.1, using a valid Username and
+Password Credential Value. It checks the Credential Type and confirms both
+envelope members remain accessible. Reference: OASIS KMIP 2.0 and 2.1 §9.11.
+
+Red `97c2d5380` fails when the generic Credential route is missing. Green
+`a03c60e08` exercises the decoder and records its route evidence. The selected
+report `java-controlled-query-1b9c9ef4-67dc-42b7-8912-417311af8de1` validates
+44,454 cells (44,438 invocations, 16 not applicable, zero failed) out of
+71,513 planned; 27,059 remain pending. The full Java matrix remains
+incomplete, so #255 and its parent stack remain WIP. Artifact SHA-256:
+`504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
