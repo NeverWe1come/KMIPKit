@@ -3104,8 +3104,8 @@ static kmip_execution_outcome_t execute_async_process_then_poll_route(
         (void)kmipkit_last_error_get(&status, &category, &cause, &delivery);
         outcome.library_failed = true;
         snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                 "KMIPKit asynchronous Process/Poll route failed at %s (category=%u cause=%u delivery=%u)",
-                 failed_stage, category, cause, delivery);
+                 "KMIPKit asynchronous Process/Poll route failed at %s (status=%d category=%u cause=%u delivery=%u)",
+                 failed_stage, status, category, cause, delivery);
     }
     if (destroy_response_item) kmipkit_client_batch_item_response_release(destroy_response_item);
     if (revoke_response_item) kmipkit_client_batch_item_response_release(revoke_response_item);

@@ -4555,6 +4555,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 response_item_ids = (b'process-operation-revoke',)
                                             elif case_id == 'test-op-process' and exchange_index == 4:
                                                 response_item_ids = (b'process-operation-destroy',)
+                                            elif exchange_index == 3:
+                                                response_item_ids = (None,)
                                             response_wire = (
                                                 pending_create_response(CANCEL_CORRELATION_VALUE,
                                                                         int(version[-1]),
