@@ -310,5 +310,19 @@ and all six TTLV/JSON/XML plus raw TLS/HTTPS combinations. Red
 installed C route and controlled peer. The focused test passes 12/12 and CTest
 passes 7/7. Full report `c-route-05cdfd23-39b2-41ad-b043-ea5bcc78a068` records
 66,280 planned cells, 44,226 invoked, 52 not applicable, zero failed, and
-22,002 pending. Scoped evidence validation passes; the complete matrix remains
-open.
+22,002 pending at that report snapshot. Scoped evidence validation passed.
+
+### C HMAC-SHA256 MAC Verify route
+
+For KMIPKIT-0092-FR-003 and FR-005, the C installed-consumer matrix exercises
+`test-crypto-mac-verify-hmac_sha256-256` through Create → Activate → MAC Verify
+→ Revoke → Destroy. It validates the typed request and response routes for a
+256-bit HMAC-SHA256 key and fixed fixture MAC under OASIS KMIP 2.0 §6.1.32 and
+KMIP 2.1 §6.1.33. The controlled peer checks a valid result, ordered batch,
+and teardown for both protocol versions and all six TTLV/JSON/XML plus raw
+TLS/HTTPS combinations. Red `45f5f7556` exposed the missing case recipe; Green
+`faea4d20f` connected the installed C route and controlled peer. The focused
+test passes 12/12 and CTest passes 7/7. Full report
+`c-route-dd284ae0-21e3-467a-83bd-56d6e25d51a4` records 66,280 planned cells,
+44,266 invoked, 52 not applicable, zero failed, and 21,962 pending. Scoped
+evidence validation passes; the complete matrix remains open.

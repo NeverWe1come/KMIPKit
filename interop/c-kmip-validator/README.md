@@ -843,7 +843,36 @@ The full report is `c-route-05cdfd23-39b2-41ad-b043-ea5bcc78a068`
 66,280 planned cells: 44,226 invoked, 52 not applicable, zero failed, and
 22,002 pending. The scoped shared validator accepts all 44,278 emitted events
 with `selected_scope_complete=true` and `all_invocations_passed=true`; the
-full matrix remains incomplete. This slice closes 40 cells: 36 network cells
+full matrix remained incomplete with 22,002 pending at that report snapshot.
+This slice closed 40 cells: 36 network cells
 and four typed MAC response-accessor decodes. The 44-event case scope also
 contains four generic TTLV construction/decode cells already present in the
 prior ledger. The PR remains `[WIP]` while other route cells are pending.
+
+### C HMAC-SHA256 MAC Verify route and refreshed full-matrix evidence
+
+For KMIPKIT-0092-FR-003 and FR-005, the installed C consumer now executes the
+catalogued `test-crypto-mac-verify-hmac_sha256-256` case through the typed MAC
+Verify builder and response accessors. The controlled lifecycle is Create →
+Activate → MAC Verify → Revoke → Destroy with a 256-bit HMAC-SHA256 key and a
+fixed fixture MAC. The peer validates request parameters, the valid result,
+ordered item identifiers, and cleanup under OASIS KMIP 2.0 §6.1.32 and KMIP
+2.1 §6.1.33 for both protocol versions and all six TTLV/JSON/XML plus raw
+TLS/HTTPS routes. This is controlled-fixture evidence, not an external KMS
+result.
+
+Red `45f5f7556` added a failing route test because the catalog case had no peer
+recipe. Green `faea4d20f` routes the case through the installed C MAC Verify
+path and adds it to the controlled TLS consumer plan. The focused route test
+passes all 12 combinations; full CTest passes 7/7 in 151.64 seconds.
+
+The full report is `c-route-dd284ae0-21e3-467a-83bd-56d6e25d51a4`
+(`build/route-execution-evidence-c-current.json`), SHA-256
+`eaa569d78697c850ab19fc98997b1d9eaff45ddca5fbbf895f8b4346ba90c894`. It has
+66,280 planned cells: 44,266 invoked, 52 not applicable, zero failed, and
+21,962 pending. The scoped shared validator accepts all 44,318 emitted events
+with `selected_scope_complete=true` and `all_invocations_passed=true`; the
+full matrix remains incomplete. This slice closes 40 cells: 36 network cells
+and four typed MAC Verify response-accessor decodes. The 44-event case scope
+also includes four generic TTLV construction/decode cells already counted in
+the previous ledger.
