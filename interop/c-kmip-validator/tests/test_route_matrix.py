@@ -1463,6 +1463,24 @@ class RouteMatrixTests(unittest.TestCase):
                             ['created', 'activated', 'decrypted', 'revoked', 'destroyed']
                             for event in send_events))
 
+    def test_controlled_kms_selects_cbc_encrypt_response_from_request_parameters(self):
+        """The controlled KMIP peer returns the deterministic CBC fixture only for CBC Encrypt."""
+        from controlled_kms_test import (
+            BATCH_CRYPTO_AES256_CBC_CIPHERTEXT,
+            crypto_output_for_request,
+            enumeration,
+            tlv,
+        )
+
+        cbc_parameters = tlv(0x42002B, 1, enumeration(0x420011, 1))
+
+        self.assertEqual(
+            crypto_output_for_request((1, 18, 31, 19, 20), cbc_parameters),
+            BATCH_CRYPTO_AES256_CBC_CIPHERTEXT,
+        )
+        self.assertIsNone(crypto_output_for_request((1, 18, 32, 19, 20), cbc_parameters))
+        self.assertIsNone(crypto_output_for_request((1, 18, 31, 19, 20), b''))
+
     def test_recertify_recipe_renews_a_certificate_for_both_protocol_versions(self):
         """OASIS KMIP 2.0 §6.1.41 and 2.1 §6.1.45 renew an existing certificate."""
         import route_peer
