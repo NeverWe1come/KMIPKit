@@ -1,0 +1,3 @@
+# Case: positive 128 represented as an eight-octet, positive-sign-extended Big Integer.
+# Attribution: OASIS Key Management Interoperability Protocol Specification Version 2.1, Sections 10.1.1, 10.1.2, 10.1.3, 11.23, and 11.56; KMIPKIT-0005-NR-001, NR-002, NR-003, NR-004, and NR-006.
+42 00 2c 04 00 00 00 08 00 00 00 00 00 00 00 80

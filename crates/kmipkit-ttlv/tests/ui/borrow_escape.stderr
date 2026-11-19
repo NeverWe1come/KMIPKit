@@ -1,0 +1,9 @@
+error: lifetime may not live long enough
+ --> tests/ui/borrow_escape.rs:7:40
+  |
+6 |     item.with_value(|view| match view {
+  |                      ----- return type of closure is Option<&'2 str>
+  |                      |
+  |                      has type `ValueView<'1>`
+7 |         ValueView::TextString(text) => Some(text),
+  |                                        ^^^^^^^^^^ returning this value requires that `'1` must outlive `'2`

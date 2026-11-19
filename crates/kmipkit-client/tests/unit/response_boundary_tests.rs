@@ -1,0 +1,298 @@
+//! Derived client-boundary tests for bounded response handling.
+//! These are not official OASIS test vectors.
+//!
+//! OASIS KMIP Specification v2.1 §9.12 and Table 417; ADR-0014. The transport
+//! crate tests the response wrapper's current initialized allocation cleanup.
+//! This module verifies that the client checks a deliberately non-compliant
+//! response wrapper before entering its decoder.
+//!
+//! Traceability: `KMIPKIT-0007-FR-005`, `-FR-009`, `-FR-013`, `-SC-003`,
+//! `KMIPKIT-REQ-SPEC-9.12-001-002`, `-001-003`, and ADR-0014.
+
+use std::cell::Cell;
+use std::fmt::Write as _;
+use std::rc::Rc;
+
+use kmipkit_transport::{RequestDeliveryState, Transport, TransportError, TransportResponse};
+use kmipkit_ttlv::codec::CodecLimits;
+
+use crate::execute::{
+    Client, ClientBatch, ClientBatchItem, ClientRequest, LimitsIdentityObserver,
+    ResponseEncodingError, request_message_for_test,
+};
+use crate::execute_test_support::{ResponseItemFixture, response_bytes};
+const RESPONSE_DEBUG_SENTINEL: &[u8] = b"KMIP_RESPONSE_DEBUG_SENTINEL";
+
+struct OversizedTransport {
+    exchange_count: Rc<Cell<usize>>,
+    last_response_cap: Rc<Cell<Option<usize>>>,
+}
+
+impl Default for OversizedTransport {
+    fn default() -> Self {
+        Self {
+            exchange_count: Rc::new(Cell::new(0)),
+            last_response_cap: Rc::new(Cell::new(None)),
+        }
+    }
+}
+
+impl Transport for OversizedTransport {
+    fn exchange(
+        &mut self,
+        _request: &[u8],
+        max_response_bytes: usize,
+    ) -> Result<TransportResponse, TransportError> {
+        self.exchange_count.set(self.exchange_count.get() + 1);
+        self.last_response_cap.set(Some(max_response_bytes));
+        Ok(TransportResponse::new(vec![0xA5; max_response_bytes + 1]))
+    }
+}
+
+struct ExactLimitTransport {
+    response: Vec<u8>,
+    exchange_count: Rc<Cell<usize>>,
+    last_response_cap: Rc<Cell<Option<usize>>>,
+}
+
+impl Transport for ExactLimitTransport {
+    fn exchange(
+        &mut self,
+        _request: &[u8],
+        max_response_bytes: usize,
+    ) -> Result<TransportResponse, TransportError> {
+        self.exchange_count.set(self.exchange_count.get() + 1);
+        self.last_response_cap.set(Some(max_response_bytes));
+        Ok(TransportResponse::new(self.response.clone()))
+    }
+}
+
+fn limits_with_response_cap(cap: usize) -> CodecLimits {
+    CodecLimits::new(
+        cap,
+        CodecLimits::DEFAULT_MAX_STRUCTURE_DEPTH,
+        CodecLimits::DEFAULT_MAX_ELEMENTS,
+    )
+    .expect("the fixture uses supported decoder limits")
+}
+
+#[test]
+fn client_rejects_oversized_transport_response_before_decoder_entry() {
+    let limits = limits_with_response_cap(256);
+    let observer = LimitsIdentityObserver::new(&limits);
+    let transport = OversizedTransport::default();
+    let exchange_count = Rc::clone(&transport.exchange_count);
+    let last_response_cap = Rc::clone(&transport.last_response_cap);
+    let mut client = Client::for_test_with_limits_observer(transport, observer.clone());
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::discover_versions()));
+
+    let error = client
+        .execute(batch, &limits)
+        .expect_err("client rejects a non-compliant oversized response wrapper");
+
+    assert_eq!(exchange_count.get(), 1);
+    assert_eq!(last_response_cap.get(), Some(limits.max_message_bytes()));
+    assert_eq!(observer.decode_calls(), 0);
+    assert_eq!(
+        error.delivery_state(),
+        Some(RequestDeliveryState::ResponseStarted)
+    );
+}
+
+#[test]
+fn client_accepts_a_valid_transport_response_exactly_at_the_limit() {
+    let response = response_bytes((2, 1), &[ResponseItemFixture::success(None)]);
+    let cap = response.len();
+    let limits = limits_with_response_cap(cap);
+    let exchange_count = Rc::new(Cell::new(0));
+    let last_response_cap = Rc::new(Cell::new(None));
+    let transport = ExactLimitTransport {
+        response,
+        exchange_count: Rc::clone(&exchange_count),
+        last_response_cap: Rc::clone(&last_response_cap),
+    };
+    let mut client = Client::for_test(transport);
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::discover_versions()));
+
+    let result = client
+        .execute(batch, &limits)
+        .expect("a valid response at the exact configured cap is accepted");
+
+    assert_eq!(exchange_count.get(), 1);
+    assert_eq!(last_response_cap.get(), Some(cap));
+    assert_eq!(result.len(), 1);
+}
+
+#[test]
+fn response_item_renders_the_retained_full_message_in_all_three_encodings() {
+    let mut fixture = ResponseItemFixture::success(None);
+    fixture.extension_criticality = Some(false);
+    let response = response_bytes((2, 1), &[fixture]);
+    let mut expected_ttlv = response.clone();
+    expected_ttlv[..3].copy_from_slice(&[0x42, 0x00, 0x7B]);
+    let mut expected_ttlv_hex = String::new();
+    for byte in &expected_ttlv {
+        write!(&mut expected_ttlv_hex, "{byte:02X}")
+            .expect("writing fixture hex to String cannot fail");
+    }
+    let limits = CodecLimits::defaults();
+    let transport = ExactLimitTransport {
+        response,
+        exchange_count: Rc::new(Cell::new(0)),
+        last_response_cap: Rc::new(Cell::new(None)),
+    };
+    let mut client = Client::for_test(transport);
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::discover_versions()));
+    let response = client
+        .execute(batch, &limits)
+        .expect("fixture response is a validated KMIP message");
+    let item = response.get(0).expect("fixture has one response item");
+
+    let ttlv = item
+        .ttlv_hex(&limits)
+        .expect("retained response can render as TTLV");
+    let json = item
+        .json(&limits)
+        .expect("retained response can render as KMIP JSON");
+    let xml = item
+        .xml(&limits)
+        .expect("retained response can render as KMIP XML");
+
+    assert_eq!(ttlv.as_str(), expected_ttlv_hex);
+    assert!(json.contains("ResponseMessage"));
+    assert!(xml.contains("ResponseMessage"));
+    assert!(json.contains("FixtureVendor"));
+    assert!(xml.contains("FixtureVendor"));
+    assert!(json.find("ResponseHeader").expect("header") < json.find("BatchItem").expect("batch"));
+    assert!(xml.find("ResponseHeader").expect("header") < xml.find("BatchItem").expect("batch"));
+
+    let restrictive_limits = CodecLimits::new(
+        32,
+        CodecLimits::DEFAULT_MAX_STRUCTURE_DEPTH,
+        CodecLimits::DEFAULT_MAX_ELEMENTS,
+    )
+    .expect("fixture limits are supported");
+    let Err(error) = item.xml(&restrictive_limits) else {
+        panic!("small output limit must reject the rendered document");
+    };
+    assert_eq!(error, ResponseEncodingError::LimitExceeded);
+    assert!(!error.to_string().contains("FixtureVendor"));
+
+    let Err(error) = item.ttlv_hex(&restrictive_limits) else {
+        panic!("small TTLV output limit must reject the retained response");
+    };
+    assert_eq!(error, ResponseEncodingError::LimitExceeded);
+}
+
+#[test]
+fn ttlv_hex_limits_bound_the_rendered_output_not_only_binary_ttlv() {
+    // KMIPKIT-0095-FR-005; KMIP 2.1 §§8.4–8.6. Inspection uses the requested output cap.
+    let bytes = response_bytes((2, 1), &[ResponseItemFixture::success(None)]);
+    let binary_length = bytes.len();
+    let hex_length = binary_length.checked_mul(2).expect("fixture size fits");
+    let exchange_count = Rc::new(Cell::new(0));
+    let transport = ExactLimitTransport {
+        response: bytes,
+        exchange_count: Rc::clone(&exchange_count),
+        last_response_cap: Rc::new(Cell::new(None)),
+    };
+    let mut client = Client::for_test(transport);
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::discover_versions()));
+    let response = client
+        .execute(batch, &CodecLimits::defaults())
+        .expect("valid fixture");
+    let item = response.get(0).expect("one response item");
+    for maximum in [binary_length, hex_length - 1] {
+        let limits = CodecLimits::new(maximum, 64, 100_000).expect("supported output limit");
+        let result = item.ttlv_hex(&limits);
+        assert!(
+            matches!(result, Err(ResponseEncodingError::LimitExceeded)),
+            "binary TTLV fitting the cap must not permit oversized hexadecimal output"
+        );
+    }
+    let limits = CodecLimits::new(hex_length, 64, 100_000).expect("exact output limit");
+    let rendered = item
+        .ttlv_hex(&limits)
+        .expect("exact final-output boundary is allowed");
+    assert_eq!(rendered.len(), hex_length);
+    assert_eq!(exchange_count.get(), 1, "inspection does not send again");
+}
+
+#[test]
+fn response_encoding_error_display_is_payload_free() {
+    let display_cases = [
+        (
+            ResponseEncodingError::InvalidResponseTree,
+            "retained response tree is invalid",
+        ),
+        (
+            ResponseEncodingError::LimitExceeded,
+            "response representation exceeds configured limits",
+        ),
+        (
+            ResponseEncodingError::AllocationFailed,
+            "unable to allocate response representation",
+        ),
+        (
+            ResponseEncodingError::EncodingFailed,
+            "retained response cannot be represented by this encoding",
+        ),
+    ];
+    for (error, message) in display_cases {
+        assert_eq!(error.to_string(), message);
+        assert!(!format!("{error:?} {error}").contains("FixtureVendor"));
+    }
+}
+
+#[test]
+fn empty_successful_transport_response_preserves_possibly_sent_state() {
+    let limits = limits_with_response_cap(256);
+    let exchange_count = Rc::new(Cell::new(0));
+    let transport = ExactLimitTransport {
+        response: Vec::new(),
+        exchange_count: Rc::clone(&exchange_count),
+        last_response_cap: Rc::new(Cell::new(None)),
+    };
+    let mut client = Client::for_test(transport);
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::discover_versions()));
+
+    let error = client
+        .execute(batch, &limits)
+        .expect_err("an empty response cannot decode as a KMIP message");
+
+    assert_eq!(exchange_count.get(), 1);
+    assert_eq!(
+        error.delivery_state(),
+        Some(RequestDeliveryState::PossiblySent)
+    );
+}
+
+#[test]
+fn response_wrapper_debug_redacts_initialized_response_bytes() {
+    let response = TransportResponse::new(RESPONSE_DEBUG_SENTINEL.to_vec());
+
+    assert_eq!(response.as_bytes(), RESPONSE_DEBUG_SENTINEL);
+    assert!(!format!("{response:?}").contains("KMIP_RESPONSE_DEBUG_SENTINEL"));
+}
+
+#[test]
+fn discover_versions_omits_peer_response_cap_and_server_correlation_fields() {
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::discover_versions()));
+    let request = request_message_for_test(batch, &CodecLimits::defaults())
+        .expect("typed Discover Versions request is valid");
+
+    assert_eq!(request.header().maximum_response_size(), None);
+    let has_server_correlation_value = request.with_ttlv(|root| {
+        root.children().iter().any(|item| {
+            item.tag().raw() == 0x0042_0077
+                && item.with_value(|value| match value {
+                    kmipkit_ttlv::ValueView::Structure(header) => header
+                        .children()
+                        .iter()
+                        .any(|field| field.tag().raw() == 0x0042_0106),
+                    _ => false,
+                })
+        })
+    });
+    assert!(!has_server_correlation_value);
+}

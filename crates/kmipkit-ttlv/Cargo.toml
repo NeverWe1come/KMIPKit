@@ -1,0 +1,19 @@
+[package]
+name = "kmipkit-ttlv"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Generic TTLV value types and bounded decoding for KMIPKit"
+
+[dependencies]
+zeroize.workspace = true
+
+[dev-dependencies]
+serde = "=1.0.228"
+serde_json.workspace = true
+trybuild = "=1.0.121"
+
+[lints]
+workspace = true

@@ -1,0 +1,34 @@
+[package]
+name = "kmipkit-test-server"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Lightweight standalone KMIP 1.0-2.1 test server with file-based JSON storage"
+publish = false
+
+[[bin]]
+name = "kmipkit-test-server"
+path = "src/main.rs"
+
+[dependencies]
+aws-lc-rs = { workspace = true, features = ["prebuilt-nasm"] }
+bytes = { workspace = true, features = ["std"] }
+hyper = { workspace = true, features = ["client", "http1"] }
+kmipkit-protocol.workspace = true
+kmipkit-ttlv.workspace = true
+rcgen = { workspace = true, features = ["aws_lc_rs"] }
+roxmltree.workspace = true
+rustls = { workspace = true, features = ["aws_lc_rs", "std"] }
+serde_json.workspace = true
+tokio = { workspace = true, features = ["io-util", "macros", "net", "rt", "sync", "time"] }
+tokio-rustls = { workspace = true, features = ["aws_lc_rs"] }
+zeroize = { workspace = true, features = ["alloc"] }
+
+[dev-dependencies]
+kmipkit-client.workspace = true
+kmipkit-transport.workspace = true
+
+[lints]
+workspace = true

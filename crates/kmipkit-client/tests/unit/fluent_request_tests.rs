@@ -1,0 +1,1369 @@
+use kmipkit_protocol::attribute::typed;
+use kmipkit_protocol::{
+    Attribute, AttributeDefinition, AttributeReference, CreateRequest, UniqueIdentifier,
+};
+use kmipkit_test_support::ExchangeScript;
+use kmipkit_transport::RequestOptions;
+use kmipkit_ttlv::codec::CodecLimits;
+use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Value, ValueView};
+
+use crate::asynchronous_execution_test_support::client_for;
+use crate::execute::{ClientBatchOutcome, ClientOperation, ClientRequest, encode_message_for_test};
+use crate::execute_test_support::{test_item, test_structure};
+use crate::fluent::{
+    AddAttributeBuilder, CreateSymmetricKeyBuilder, CryptographicUsageMask, DeleteAttributeBuilder,
+    FluentAttributePosition, FluentBuildError, SetAttributeBuilder,
+};
+
+#[test]
+fn delete_attribute_builder_constructs_the_existing_typed_request() {
+    let mut client = failed_request_client();
+    let request = client
+        .request()
+        .delete_attribute()
+        .unique_identifier("key-42")
+        .current_attribute(
+            Attribute::<typed::Description>::new("legacy label".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        )
+        .attribute_reference(AttributeReference::tag(typed::Description::TAG))
+        .build_request()
+        .expect("the fluent Delete Attribute request is valid");
+
+    assert_eq!(request.unique_identifier(), Some("key-42"));
+    let current_attribute = request
+        .current_attribute()
+        .expect("the selected attribute is retained");
+    assert_eq!(
+        current_attribute.item().tag().raw(),
+        typed::Description::TAG
+    );
+    assert!(current_attribute.item().with_value(|value| matches!(
+        value,
+        ValueView::TextString(text) if text == "legacy label"
+    )));
+    assert_eq!(
+        request
+            .attribute_reference()
+            .and_then(AttributeReference::tag_value),
+        Some(typed::Description::TAG)
+    );
+}
+
+#[test]
+fn detached_delete_attribute_builder_builds_without_a_client_and_refuses_execution() {
+    let request = DeleteAttributeBuilder::detached()
+        .unique_identifier("key-42")
+        .attribute_reference(AttributeReference::tag(typed::Description::TAG))
+        .build_request()
+        .expect("a detached builder returns the existing typed request");
+    assert_eq!(request.unique_identifier(), Some("key-42"));
+    assert_eq!(
+        request
+            .attribute_reference()
+            .and_then(AttributeReference::tag_value),
+        Some(typed::Description::TAG)
+    );
+
+    let error = DeleteAttributeBuilder::detached()
+        .execute(&CodecLimits::defaults())
+        .expect_err("a detached builder cannot send without an explicit client");
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+}
+
+#[test]
+fn delete_attribute_builder_executes_once_and_converts_to_the_typed_batch_item() {
+    let mut batch_client = failed_request_client();
+    let batch_item = batch_client
+        .request()
+        .delete_attribute()
+        .unique_identifier("key-42")
+        .attribute_reference(AttributeReference::tag(typed::Description::TAG))
+        .to_batch_item()
+        .expect("valid Delete Attribute request converts to a typed batch item");
+    assert_eq!(batch_item.operation(), 0x0000_000F);
+    assert!(matches!(
+        batch_item.request(),
+        ClientRequest::DeleteAttribute(_)
+    ));
+
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response: delete_attribute_response_bytes(),
+        request_write_chunks: Vec::new(),
+    });
+    let response = client
+        .request()
+        .delete_attribute()
+        .unique_identifier("key-42")
+        .attribute_reference(AttributeReference::tag(typed::Description::TAG))
+        .with_options(RequestOptions::default())
+        .with_asynchronous_indicator(3)
+        .execute(&CodecLimits::defaults())
+        .expect("Delete Attribute executes through one existing typed exchange");
+
+    assert_eq!(
+        response
+            .outcome()
+            .response()
+            .delete_attribute()
+            .and_then(|result| result.unique_identifier()),
+        Some("server-key-42")
+    );
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn delete_attribute_builder_preserves_explicit_items_and_vendor_selectors() {
+    let unknown = item(
+        0x0042_00FC,
+        Value::text_string("opaque selector".to_owned()),
+    );
+    let explicit = DeleteAttributeBuilder::detached()
+        .current_attribute_item(unknown)
+        .build_request()
+        .expect("an explicitly typed unknown attribute remains generic TTLV");
+    assert_eq!(
+        explicit
+            .current_attribute()
+            .expect("the selector is preserved")
+            .item()
+            .tag()
+            .raw(),
+        0x0042_00FC
+    );
+
+    let value = item(
+        typed::Description::TAG,
+        Value::text_string("north".to_owned()),
+    );
+    let vendor = DeleteAttributeBuilder::detached()
+        .current_vendor_attribute("Vendor_Name.1", "region", &value)
+        .build_request()
+        .expect("the vendor helper constructs the complete KMIP Vendor Attribute");
+    let item = vendor
+        .current_attribute()
+        .expect("the vendor selector is present")
+        .item();
+    assert_eq!(item.tag().raw(), 0x0042_0008);
+    let children = item
+        .as_structure()
+        .expect("Vendor Attribute is a Structure")
+        .children();
+    assert_eq!(children.len(), 3);
+    assert_eq!(children[0].tag().raw(), 0x0042_009D);
+    assert_eq!(children[1].tag().raw(), 0x0042_000A);
+    assert_eq!(children[2].tag().raw(), 0x0042_000B);
+}
+
+#[test]
+fn delete_attribute_builder_rejects_duplicate_and_malformed_current_attributes() {
+    let first = item(0x0042_00FC, Value::text_string("first".to_owned()));
+    let second = item(0x0042_00FD, Value::text_string("second".to_owned()));
+    let duplicate = DeleteAttributeBuilder::detached()
+        .current_attribute_item(first)
+        .current_attribute_item(second);
+    assert_eq!(
+        duplicate.validate(),
+        Err(FluentBuildError::InvalidAttributeValue)
+    );
+    assert_eq!(
+        duplicate.build_request().err(),
+        Some(FluentBuildError::InvalidAttributeValue)
+    );
+    assert_eq!(
+        duplicate.build().err(),
+        Some(FluentBuildError::InvalidAttributeValue)
+    );
+
+    let mut value = item(
+        typed::Description::TAG,
+        Value::text_string("vendor value".to_owned()),
+    );
+    for _ in 0..64 {
+        let mut structure = Structure::new();
+        structure
+            .try_push(value)
+            .expect("each nested structure remains within the model's maximum depth");
+        value = item(typed::Description::TAG, Value::structure(structure));
+    }
+    let malformed_vendor =
+        DeleteAttributeBuilder::detached().current_vendor_attribute("", "region", &value);
+    assert!(malformed_vendor.validate().is_err());
+    assert!(malformed_vendor.build_request().is_err());
+}
+
+#[test]
+fn add_attribute_builder_constructs_the_existing_typed_request() {
+    let mut client = failed_request_client();
+    let request = client
+        .request()
+        .add_attribute()
+        .unique_identifier("key-42")
+        .attribute(
+            Attribute::<typed::Description>::new("managed by fluent".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        )
+        .build_request()
+        .expect("the fluent Add Attribute request is valid");
+
+    assert_eq!(request.unique_identifier(), Some("key-42"));
+    assert_eq!(
+        request.new_attribute().item().tag().raw(),
+        typed::Description::TAG
+    );
+    assert!(request.new_attribute().item().with_value(|value| matches!(
+        value,
+        ValueView::TextString(text) if text == "managed by fluent"
+    )));
+}
+
+#[test]
+fn add_attribute_builder_rejects_a_missing_required_new_attribute() {
+    let mut client = failed_request_client();
+    assert_eq!(
+        client.request().add_attribute().validate(),
+        Err(FluentBuildError::MissingAddAttributeAttribute)
+    );
+}
+
+fn item(raw_tag: u32, value: Value) -> Item {
+    Item::new(
+        RawTag::new(raw_tag)
+            .expect("test tag fits")
+            .try_checked()
+            .expect("test tag is allocated"),
+        value,
+    )
+    .expect("test item construction succeeds")
+}
+
+fn failed_request_client() -> crate::execute::Client {
+    client_for(ExchangeScript::FailBeforeWrite).0
+}
+
+fn read_integer(item: &Item) -> Option<i32> {
+    item.with_value(|value| match value {
+        ValueView::Integer(value) => Some(*value),
+        _ => None,
+    })
+}
+
+fn read_enumeration(item: &Item) -> Option<u32> {
+    item.with_value(|value| match value {
+        ValueView::Enumeration(value) => Some(*value),
+        _ => None,
+    })
+}
+
+#[test]
+fn set_attribute_builder_constructs_the_existing_typed_request() {
+    let mut client = failed_request_client();
+    let request = client
+        .request()
+        .set_attribute()
+        .unique_identifier("key-42")
+        .attribute(
+            Attribute::<typed::Description>::new("managed by fluent".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        )
+        .build_request()
+        .expect("the fluent Set Attribute request is valid");
+
+    assert_eq!(request.unique_identifier(), Some("key-42"));
+    assert_eq!(
+        request.new_attribute().item().tag().raw(),
+        typed::Description::TAG
+    );
+    assert!(request.new_attribute().item().with_value(|value| matches!(
+        value,
+        ValueView::TextString(text) if text == "managed by fluent"
+    )));
+}
+
+#[test]
+fn set_attribute_builder_builds_the_existing_typed_request() {
+    let mut client = failed_request_client();
+    let request = client
+        .request()
+        .set_attribute()
+        .attribute(
+            Attribute::<typed::Description>::new("managed by fluent".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        )
+        .build()
+        .expect("the fluent builder returns the typed request without sending it");
+
+    assert_eq!(request.unique_identifier(), None);
+    assert_eq!(
+        request.new_attribute().item().tag().raw(),
+        typed::Description::TAG
+    );
+}
+
+#[test]
+fn detached_set_attribute_builder_builds_without_a_client_and_refuses_execution() {
+    let builder = SetAttributeBuilder::detached()
+        .unique_identifier("key-42")
+        .attribute(
+            Attribute::<typed::Description>::new("managed by C, Java, and Python".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        );
+    let request = builder
+        .build_request()
+        .expect("detached builders construct the existing typed request");
+    assert_eq!(request.unique_identifier(), Some("key-42"));
+    assert_eq!(
+        request.new_attribute().item().tag().raw(),
+        typed::Description::TAG
+    );
+
+    let error = SetAttributeBuilder::detached()
+        .unique_identifier("key-42")
+        .attribute(
+            Attribute::<typed::Description>::new("managed by C, Java, and Python".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        )
+        .execute(&CodecLimits::defaults())
+        .expect_err("a detached builder cannot send without an explicit client");
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+}
+
+#[test]
+fn set_attribute_builder_rejects_missing_and_wrong_type_attributes_before_exchange() {
+    let mut client = failed_request_client();
+    assert_eq!(
+        client.request().set_attribute().validate(),
+        Err(FluentBuildError::MissingSetAttributeAttribute)
+    );
+
+    let duplicate = client
+        .request()
+        .set_attribute()
+        .attribute(
+            Attribute::<typed::Description>::new("first".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        )
+        .attribute(
+            Attribute::<typed::Description>::new("second".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        )
+        .validate();
+    assert_eq!(duplicate, Err(FluentBuildError::InvalidAttributeValue));
+
+    let (mut client, fake, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let error = client
+        .request()
+        .set_attribute()
+        .unique_identifier("key-42")
+        .attribute_item(item(typed::Description::TAG, Value::integer(17)))
+        .execute(&CodecLimits::defaults())
+        .expect_err("a catalogued attribute with the wrong TTLV type is rejected locally");
+
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert_eq!(fake.borrow().exchange_count(), 0);
+}
+
+#[test]
+fn set_attribute_builder_executes_one_typed_exchange_and_converts_to_batch() {
+    let mut batch_client = failed_request_client();
+    let batch_item = batch_client
+        .request()
+        .set_attribute()
+        .unique_identifier("key-42")
+        .attribute(
+            Attribute::<typed::Description>::new("managed by fluent".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        )
+        .to_batch_item()
+        .expect("valid Set Attribute request converts to a typed batch item");
+    assert_eq!(batch_item.operation(), 0x0000_0031);
+    assert!(matches!(
+        batch_item.request(),
+        ClientRequest::SetAttribute(_)
+    ));
+
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response: set_attribute_response_bytes(),
+        request_write_chunks: Vec::new(),
+    });
+    let response = client
+        .request()
+        .set_attribute()
+        .unique_identifier("key-42")
+        .attribute(
+            Attribute::<typed::Description>::new("managed by fluent".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        )
+        .with_options(RequestOptions::default())
+        .with_asynchronous_indicator(3)
+        .execute(&CodecLimits::defaults())
+        .expect("Set Attribute executes through one existing typed exchange");
+
+    assert_eq!(
+        response
+            .outcome()
+            .response()
+            .set_attribute()
+            .and_then(|result| result.unique_identifier()),
+        Some("key-42")
+    );
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn set_attribute_builder_constructs_a_vendor_attribute_and_rejects_non_attribute_tags() {
+    let mut client = failed_request_client();
+    let value = item(typed::Description::TAG, Value::text_string("eu".to_owned()));
+    let request = client
+        .request()
+        .set_attribute()
+        .vendor_attribute("Vendor_Name.1", "region", &value)
+        .build_request()
+        .expect("Vendor Attribute helper constructs the required KMIP structure");
+    let vendor = request.new_attribute().item();
+    assert_eq!(vendor.tag().raw(), 0x0042_0008);
+    assert_eq!(
+        vendor
+            .as_structure()
+            .expect("Vendor Attribute is a Structure")
+            .children()
+            .len(),
+        3
+    );
+
+    let mut client = failed_request_client();
+    assert_eq!(
+        client
+            .request()
+            .set_attribute()
+            .attribute_item(item(0x0042_005C, Value::enumeration(1)))
+            .validate(),
+        Err(FluentBuildError::InvalidAttributeValue)
+    );
+}
+
+fn response_bytes(operation: u32, status: u32, correlation: Option<&[u8]>) -> Vec<u8> {
+    let mut item_fields = vec![
+        test_item(0x0042_005C, Value::enumeration(operation)),
+        test_item(0x0042_007F, Value::enumeration(status)),
+    ];
+    if let Some(correlation) = correlation {
+        item_fields.push(test_item(
+            0x0042_0006,
+            Value::byte_string(correlation.to_vec()),
+        ));
+        item_fields.push(test_item(0x0042_007C, Value::structure(Structure::new())));
+    } else {
+        let mut payload = Structure::new();
+        payload
+            .try_push(test_item(0x0042_0057, Value::enumeration(2)))
+            .expect("response Object Type fits");
+        payload
+            .try_push(test_item(
+                0x0042_0094,
+                Value::text_string("key-42".to_owned()),
+            ))
+            .expect("response identifier fits");
+        item_fields.push(test_item(0x0042_007C, Value::structure(payload)));
+    }
+    let mut message = vec![test_item(
+        0x0042_007A,
+        Value::structure(test_structure([
+            test_item(
+                0x0042_0069,
+                Value::structure(test_structure([
+                    test_item(0x0042_006A, Value::integer(2)),
+                    test_item(0x0042_006B, Value::integer(1)),
+                ])),
+            ),
+            test_item(0x0042_0092, Value::date_time(1)),
+            test_item(0x0042_000D, Value::integer(1)),
+        ])),
+    )];
+    message.push(test_item(
+        0x0042_000F,
+        Value::structure(test_structure(item_fields)),
+    ));
+    encode_message_for_test(test_structure(message), &CodecLimits::defaults())
+        .expect("fixture response is valid TTLV")
+}
+
+fn set_attribute_response_bytes() -> Vec<u8> {
+    let payload = test_structure([test_item(
+        0x0042_0094,
+        Value::text_string("key-42".to_owned()),
+    )]);
+    let batch_item = test_structure([
+        test_item(0x0042_005C, Value::enumeration(0x0000_0031)),
+        test_item(0x0042_007F, Value::enumeration(0)),
+        test_item(0x0042_007C, Value::structure(payload)),
+    ]);
+    let header = test_structure([
+        test_item(
+            0x0042_0069,
+            Value::structure(test_structure([
+                test_item(0x0042_006A, Value::integer(2)),
+                test_item(0x0042_006B, Value::integer(1)),
+            ])),
+        ),
+        test_item(0x0042_0092, Value::date_time(1)),
+        test_item(0x0042_000D, Value::integer(1)),
+    ]);
+    encode_message_for_test(
+        test_structure([
+            test_item(0x0042_007A, Value::structure(header)),
+            test_item(0x0042_000F, Value::structure(batch_item)),
+        ]),
+        &CodecLimits::defaults(),
+    )
+    .expect("Set Attribute response fixture is valid TTLV")
+}
+
+fn add_attribute_response_bytes() -> Vec<u8> {
+    let payload = test_structure([test_item(
+        0x0042_0094,
+        Value::text_string("server-key-42".to_owned()),
+    )]);
+    let batch_item = test_structure([
+        test_item(0x0042_005C, Value::enumeration(0x0000_000D)),
+        test_item(0x0042_007F, Value::enumeration(0)),
+        test_item(0x0042_007C, Value::structure(payload)),
+    ]);
+    let header = test_structure([
+        test_item(
+            0x0042_0069,
+            Value::structure(test_structure([
+                test_item(0x0042_006A, Value::integer(2)),
+                test_item(0x0042_006B, Value::integer(1)),
+            ])),
+        ),
+        test_item(0x0042_0092, Value::date_time(1)),
+        test_item(0x0042_000D, Value::integer(1)),
+    ]);
+    encode_message_for_test(
+        test_structure([
+            test_item(0x0042_007A, Value::structure(header)),
+            test_item(0x0042_000F, Value::structure(batch_item)),
+        ]),
+        &CodecLimits::defaults(),
+    )
+    .expect("Add Attribute response fixture is valid TTLV")
+}
+
+fn delete_attribute_response_bytes() -> Vec<u8> {
+    let payload = test_structure([test_item(
+        0x0042_0094,
+        Value::text_string("server-key-42".to_owned()),
+    )]);
+    let batch_item = test_structure([
+        test_item(0x0042_005C, Value::enumeration(0x0000_000F)),
+        test_item(0x0042_007F, Value::enumeration(0)),
+        test_item(0x0042_007C, Value::structure(payload)),
+    ]);
+    let header = test_structure([
+        test_item(
+            0x0042_0069,
+            Value::structure(test_structure([
+                test_item(0x0042_006A, Value::integer(2)),
+                test_item(0x0042_006B, Value::integer(1)),
+            ])),
+        ),
+        test_item(0x0042_0092, Value::date_time(1)),
+        test_item(0x0042_000D, Value::integer(1)),
+    ]);
+    encode_message_for_test(
+        test_structure([
+            test_item(0x0042_007A, Value::structure(header)),
+            test_item(0x0042_000F, Value::structure(batch_item)),
+        ]),
+        &CodecLimits::defaults(),
+    )
+    .expect("Delete Attribute response fixture is valid TTLV")
+}
+
+#[test]
+fn add_attribute_builder_preserves_explicit_and_vendor_attribute_items() {
+    let mut client = failed_request_client();
+    let extension = client
+        .request()
+        .add_attribute()
+        .attribute_item(item(
+            0x0042_00FC,
+            Value::text_string("extension".to_owned()),
+        ))
+        .build_request()
+        .expect("an explicit allocated TTLV Item is preserved");
+    assert_eq!(extension.new_attribute().item().tag().raw(), 0x0042_00FC);
+
+    let value = item(0x0042_00FD, Value::text_string("west".to_owned()));
+    let vendor = client
+        .request()
+        .add_attribute()
+        .vendor_attribute("Vendor_Name.1", "region", &value)
+        .build_request()
+        .expect("the vendor helper constructs a KMIP Vendor Attribute");
+    assert_eq!(vendor.new_attribute().item().tag().raw(), 0x0042_0008);
+
+    let invalid_vendor = client
+        .request()
+        .add_attribute()
+        .vendor_attribute("Vendor Name", "region", &value)
+        .vendor_attribute("Vendor_Name.1", "", &value)
+        .validate();
+    assert_eq!(invalid_vendor, Err(FluentBuildError::InvalidAttributeValue));
+}
+
+#[test]
+fn detached_add_attribute_builder_builds_without_a_client_and_refuses_execution() {
+    let request = AddAttributeBuilder::detached()
+        .attribute(
+            Attribute::<typed::Description>::new("managed by fluent".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        )
+        .build()
+        .expect("a detached builder builds the existing typed request");
+    assert_eq!(request.unique_identifier(), None);
+
+    let error = AddAttributeBuilder::detached()
+        .attribute(
+            Attribute::<typed::Description>::new("managed by fluent".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        )
+        .execute(&CodecLimits::defaults())
+        .expect_err("a detached builder cannot execute without an explicit client");
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+}
+
+#[test]
+fn add_attribute_builder_executes_once_and_returns_the_typed_result() {
+    let mut batch_client = failed_request_client();
+    let batch_item = batch_client
+        .request()
+        .add_attribute()
+        .attribute(
+            Attribute::<typed::Description>::new("managed by fluent".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        )
+        .to_batch_item()
+        .expect("valid Add Attribute requests convert to typed batch items");
+    assert_eq!(batch_item.operation(), 0x0000_000D);
+    assert!(matches!(
+        batch_item.request(),
+        ClientRequest::AddAttribute(_)
+    ));
+
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response: add_attribute_response_bytes(),
+        request_write_chunks: Vec::new(),
+    });
+    let response = client
+        .request()
+        .add_attribute()
+        .unique_identifier("key-42")
+        .attribute(
+            Attribute::<typed::Description>::new("managed by fluent".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        )
+        .with_options(RequestOptions::default())
+        .with_asynchronous_indicator(3)
+        .execute(&CodecLimits::defaults())
+        .expect("Add Attribute uses one existing typed exchange");
+
+    assert_eq!(
+        response
+            .outcome()
+            .response()
+            .add_attribute()
+            .and_then(|result| result.unique_identifier()),
+        Some("server-key-42")
+    );
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn add_attribute_builder_rejects_wrong_type_and_duplicate_new_attributes_before_send() {
+    let (mut client, fake, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let error = client
+        .request()
+        .add_attribute()
+        .attribute_item(item(typed::Description::TAG, Value::integer(17)))
+        .execute(&CodecLimits::defaults())
+        .expect_err("a catalogued attribute with the wrong TTLV type is rejected locally");
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert_eq!(fake.borrow().exchange_count(), 0);
+
+    let mut client = failed_request_client();
+    assert!(
+        client
+            .request()
+            .add_attribute()
+            .attribute(
+                Attribute::<typed::Description>::new("first".to_owned())
+                    .expect("Description uses a catalogued Text String value"),
+            )
+            .attribute(
+                Attribute::<typed::Description>::new("second".to_owned())
+                    .expect("Description uses a catalogued Text String value"),
+            )
+            .validate()
+            .is_err()
+    );
+}
+
+#[test]
+fn symmetric_key_builder_requires_algorithm_length_and_usage_mask() {
+    let mut client = failed_request_client();
+    let error = client
+        .request()
+        .create_symmetric_key()
+        .build()
+        .err()
+        .expect("all security-relevant key properties are required");
+    assert_eq!(error, FluentBuildError::MissingCryptographicAlgorithm);
+
+    let mut client = failed_request_client();
+    let error = client
+        .request()
+        .create_symmetric_key()
+        .aes_256()
+        .build()
+        .err()
+        .expect("a preset does not silently choose key usage");
+    assert_eq!(error, FluentBuildError::MissingCryptographicUsageMask);
+
+    let error = CreateSymmetricKeyBuilder::detached()
+        .algorithm(kmipkit_protocol::CryptographicAlgorithm::from_raw(3))
+        .build()
+        .err()
+        .expect("algorithm alone does not select a key length or usage policy");
+    assert_eq!(error, FluentBuildError::MissingCryptographicLength);
+}
+
+#[test]
+fn fluent_build_errors_have_stable_user_facing_messages() {
+    let cases = [
+        (
+            FluentBuildError::MissingCryptographicAlgorithm,
+            "Create Symmetric Key requires Cryptographic Algorithm",
+        ),
+        (
+            FluentBuildError::MissingCryptographicLength,
+            "Create Symmetric Key requires Cryptographic Length",
+        ),
+        (
+            FluentBuildError::MissingCryptographicUsageMask,
+            "Create Symmetric Key requires Cryptographic Usage Mask",
+        ),
+        (
+            FluentBuildError::InvalidAttributeValue,
+            "fluent Object Attribute value is invalid",
+        ),
+        (
+            FluentBuildError::MissingSetAttributeAttribute,
+            "Set Attribute requires one New Attribute",
+        ),
+        (
+            FluentBuildError::MissingAddAttributeAttribute,
+            "Add Attribute requires one New Attribute",
+        ),
+        (
+            FluentBuildError::MessageExtensionTagNotObjectAttribute,
+            "KMIP message extension tags are not Object Attributes",
+        ),
+        (
+            FluentBuildError::DuplicateAttributePosition,
+            "fluent Object Attribute positions must be unique",
+        ),
+        (
+            FluentBuildError::AttributePositionOutOfBounds,
+            "fluent Object Attribute position is outside the final attribute list",
+        ),
+        (
+            FluentBuildError::InvalidRequest,
+            "fluent request failed typed request validation",
+        ),
+        (
+            FluentBuildError::InvalidTtlvValue,
+            "fluent TTLV value could not be represented",
+        ),
+        (
+            FluentBuildError::MissingClientForExecution,
+            "detached fluent builder has no client for execution",
+        ),
+    ];
+    for (error, message) in cases {
+        assert_eq!(error.to_string(), message);
+    }
+}
+
+#[test]
+fn aes_256_builder_emits_typed_attributes_and_interpreted_text_name() {
+    let mut client = failed_request_client();
+    let request = client
+        .request()
+        .create_symmetric_key()
+        .aes_256()
+        .usage_mask(CryptographicUsageMask::ENCRYPT | CryptographicUsageMask::DECRYPT)
+        .name("payments-key")
+        .build()
+        .expect("the required typed values are present");
+
+    let attributes = request.attributes().as_items();
+    assert_eq!(attributes.len(), 4);
+    assert_eq!(
+        attributes[0].tag().raw(),
+        typed::CryptographicAlgorithm::TAG
+    );
+    assert_eq!(attributes[0].item_type(), ItemType::Enumeration);
+    assert_eq!(read_enumeration(&attributes[0]), Some(3));
+    assert_eq!(attributes[1].tag().raw(), typed::CryptographicLength::TAG);
+    assert_eq!(read_integer(&attributes[1]), Some(256));
+    assert_eq!(
+        attributes[2].tag().raw(),
+        typed::CryptographicUsageMask::TAG
+    );
+    assert_eq!(read_integer(&attributes[2]), Some(12));
+    assert_eq!(attributes[3].tag().raw(), typed::Name::TAG);
+    let name = attributes[3]
+        .as_structure()
+        .expect("Name is a Structure")
+        .children()
+        .iter()
+        .collect::<Vec<_>>();
+    assert_eq!(name.len(), 2);
+    assert_eq!(name[0].tag().raw(), 0x0042_0097);
+    assert_eq!(read_enumeration(name[0]), Some(1));
+    assert_eq!(name[1].tag().raw(), 0x0042_0098);
+    assert!(name[1].with_value(|value| matches!(
+        value,
+        ValueView::TextString(name) if name == "payments-key"
+    )));
+}
+
+#[test]
+fn explicit_extension_tag_attribute_item_is_preserved_without_reinterpretation() {
+    let unknown = item(0x0054_0ABC, Value::integer(7));
+    let mut client = failed_request_client();
+    let request = client
+        .request()
+        .create_symmetric_key()
+        .aes_256()
+        .usage_mask(CryptographicUsageMask::ENCRYPT)
+        .attribute_item(unknown)
+        .build_request()
+        .expect("an explicitly typed unknown tag is retained as a raw Item");
+
+    let extension = request
+        .attributes()
+        .as_items()
+        .iter()
+        .find(|attribute| attribute.tag().raw() == 0x0054_0ABC)
+        .expect("the extension tag remains present");
+    assert!(extension.with_value(|value| matches!(value, ValueView::Integer(7))));
+}
+
+#[test]
+fn vendor_attribute_copies_every_supported_ttlv_value_kind() {
+    let mut nested = Structure::new();
+    nested
+        .try_push(item(0x0042_005C, Value::text_string("nested".to_owned())))
+        .expect("nested structure item is valid");
+    let values = [
+        Value::structure(nested),
+        Value::integer(-7),
+        Value::long_integer(-9),
+        Value::big_integer(vec![0x01, 0x02]),
+        Value::enumeration(3),
+        Value::boolean(true),
+        Value::text_string("text".to_owned()),
+        Value::byte_string(vec![0x00, 0xFF]),
+        Value::date_time(1),
+        Value::interval(2),
+        Value::date_time_extended(3),
+    ];
+    let mut builder = CreateSymmetricKeyBuilder::detached()
+        .aes_256()
+        .usage_mask(CryptographicUsageMask::ENCRYPT);
+    for value in values {
+        let source = item(0x0042_005C, value);
+        builder = builder.vendor_attribute("Vendor_Name.1", "sample", &source);
+    }
+    let request = builder
+        .build_request()
+        .expect("vendor value cloning preserves all supported TTLV value kinds");
+    assert_eq!(request.attributes().len(), 14);
+}
+
+#[test]
+fn catalogued_attribute_item_rejects_a_wrong_ttlv_type() {
+    let wrong_type = item(typed::CryptographicAlgorithm::TAG, Value::integer(3));
+    let mut client = failed_request_client();
+    let builder = client
+        .request()
+        .create_symmetric_key()
+        .aes_256()
+        .usage_mask(CryptographicUsageMask::ENCRYPT)
+        .attribute_item(wrong_type);
+    assert_eq!(
+        builder
+            .build()
+            .err()
+            .expect("catalogued tags keep their assigned TTLV type"),
+        FluentBuildError::InvalidAttributeValue
+    );
+}
+
+#[test]
+fn explicit_generic_attribute_and_vendor_attribute_are_retained() {
+    let explicit = item(
+        typed::ContactInformation::TAG,
+        Value::text_string("expert-value".to_owned()),
+    );
+    let catalogued = Attribute::<typed::Description>::new("managed by fluent".to_owned())
+        .expect("catalogued Text String attribute");
+    let mut client = failed_request_client();
+    let request = client
+        .request()
+        .create_symmetric_key()
+        .aes_256()
+        .usage_mask(CryptographicUsageMask::ENCRYPT)
+        .attribute(catalogued)
+        .attribute_item(explicit)
+        .vendor_attribute(
+            "Vendor_Name.1",
+            "region",
+            &item(0x0042_005C, Value::text_string("eu".to_owned())),
+        )
+        .build()
+        .expect("valid expert attributes are preserved");
+
+    let attributes = request.attributes().as_items();
+    assert_eq!(attributes.len(), 6);
+    assert_eq!(attributes[3].tag().raw(), typed::Description::TAG);
+    assert_eq!(attributes[4].tag().raw(), typed::ContactInformation::TAG);
+    assert_eq!(attributes[5].tag().raw(), typed::VendorAttribute::TAG);
+    let vendor_fields = attributes[5]
+        .as_structure()
+        .expect("Vendor Attribute is a Structure")
+        .children()
+        .iter()
+        .collect::<Vec<_>>();
+    assert_eq!(vendor_fields.len(), 3);
+    assert_eq!(vendor_fields[0].tag().raw(), 0x0042_009D);
+    assert_eq!(vendor_fields[1].tag().raw(), 0x0042_000A);
+    assert_eq!(vendor_fields[2].tag().raw(), 0x0042_000B);
+    assert!(vendor_fields[2].with_value(|value| matches!(
+        value,
+        ValueView::TextString(value) if value == "eu"
+    )));
+}
+
+#[test]
+fn expert_attribute_positions_apply_to_the_final_ordered_attribute_sequence() {
+    let request = CreateSymmetricKeyBuilder::detached()
+        .aes_256()
+        .usage_mask(CryptographicUsageMask::ENCRYPT)
+        .name("ordered-key")
+        .attribute_at(
+            FluentAttributePosition::ObjectAttributes { index: 0 },
+            item(
+                typed::ContactInformation::TAG,
+                Value::text_string("first".to_owned()),
+            ),
+        )
+        .attribute_at(
+            FluentAttributePosition::ObjectAttributes { index: 2 },
+            item(
+                typed::Description::TAG,
+                Value::text_string("middle".to_owned()),
+            ),
+        )
+        .attribute_at(
+            FluentAttributePosition::ObjectAttributes { index: 6 },
+            item(typed::Comment::TAG, Value::text_string("last".to_owned())),
+        )
+        .build_request()
+        .expect("explicit positions fit the final attribute sequence");
+
+    let attributes = request.attributes().as_items();
+    assert_eq!(attributes.len(), 7);
+    assert_eq!(attributes[0].tag().raw(), typed::ContactInformation::TAG);
+    assert_eq!(
+        attributes[1].tag().raw(),
+        typed::CryptographicAlgorithm::TAG
+    );
+    assert_eq!(attributes[2].tag().raw(), typed::Description::TAG);
+    assert_eq!(attributes[3].tag().raw(), typed::CryptographicLength::TAG);
+    assert_eq!(
+        attributes[4].tag().raw(),
+        typed::CryptographicUsageMask::TAG
+    );
+    assert_eq!(attributes[5].tag().raw(), typed::Name::TAG);
+    assert_eq!(attributes[6].tag().raw(), typed::Comment::TAG);
+    for (position, expected) in [(0, "first"), (2, "middle"), (6, "last")] {
+        assert!(attributes[position].with_value(|value| matches!(
+            value,
+            ValueView::TextString(actual) if actual == expected
+        )));
+    }
+}
+
+#[test]
+fn expert_attribute_positions_reject_duplicate_and_out_of_range_indices() {
+    let duplicate = CreateSymmetricKeyBuilder::detached()
+        .aes_256()
+        .usage_mask(CryptographicUsageMask::ENCRYPT)
+        .attribute_at(
+            FluentAttributePosition::ObjectAttributes { index: 0 },
+            item(
+                typed::ContactInformation::TAG,
+                Value::text_string("one".to_owned()),
+            ),
+        )
+        .attribute_at(
+            FluentAttributePosition::ObjectAttributes { index: 0 },
+            item(
+                typed::ContactInformation::TAG,
+                Value::text_string("two".to_owned()),
+            ),
+        )
+        .build_request();
+    assert_eq!(
+        duplicate.err(),
+        Some(FluentBuildError::DuplicateAttributePosition)
+    );
+
+    let out_of_range = CreateSymmetricKeyBuilder::detached()
+        .aes_256()
+        .usage_mask(CryptographicUsageMask::ENCRYPT)
+        .attribute_at(
+            FluentAttributePosition::ObjectAttributes { index: 4 },
+            item(
+                typed::ContactInformation::TAG,
+                Value::text_string("too late".to_owned()),
+            ),
+        )
+        .build_request();
+    assert_eq!(
+        out_of_range.err(),
+        Some(FluentBuildError::AttributePositionOutOfBounds)
+    );
+}
+
+#[test]
+fn expert_attribute_positions_keep_type_validation_and_extension_tags_raw() {
+    let wrong_type = CreateSymmetricKeyBuilder::detached()
+        .aes_256()
+        .usage_mask(CryptographicUsageMask::ENCRYPT)
+        .attribute_at(
+            FluentAttributePosition::ObjectAttributes { index: 0 },
+            item(typed::CryptographicAlgorithm::TAG, Value::integer(3)),
+        )
+        .build_request();
+    assert_eq!(
+        wrong_type.err(),
+        Some(FluentBuildError::InvalidAttributeValue)
+    );
+
+    let extension = CreateSymmetricKeyBuilder::detached()
+        .aes_256()
+        .usage_mask(CryptographicUsageMask::ENCRYPT)
+        .attribute_at(
+            FluentAttributePosition::ObjectAttributes { index: 0 },
+            item(0x0054_0001, Value::integer(7)),
+        )
+        .build_request()
+        .expect("a positioned explicit extension Item remains unchanged");
+    assert_eq!(
+        extension.attributes().as_items()[0].tag().raw(),
+        0x0054_0001
+    );
+}
+
+#[test]
+fn rejected_expert_attribute_position_is_not_sent() {
+    let mut client = failed_request_client();
+    let error = client
+        .request()
+        .create_symmetric_key()
+        .aes_256()
+        .usage_mask(CryptographicUsageMask::ENCRYPT)
+        .attribute_at(
+            FluentAttributePosition::ObjectAttributes { index: 0 },
+            item(
+                typed::ContactInformation::TAG,
+                Value::text_string("one".to_owned()),
+            ),
+        )
+        .attribute_at(
+            FluentAttributePosition::ObjectAttributes { index: 0 },
+            item(
+                typed::ContactInformation::TAG,
+                Value::text_string("two".to_owned()),
+            ),
+        )
+        .execute(&CodecLimits::defaults())
+        .expect_err("duplicate positions fail before exchange");
+
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert!(!error.to_string().contains("one"));
+    assert!(!error.to_string().contains("two"));
+}
+
+#[test]
+fn get_and_destroy_builders_require_a_typed_unique_identifier() {
+    let mut client = failed_request_client();
+    let get = client
+        .request()
+        .get(UniqueIdentifier::from("key-42"))
+        .build();
+    assert_eq!(
+        get.unique_identifier(),
+        Some(&UniqueIdentifier::from("key-42"))
+    );
+
+    let mut client = failed_request_client();
+    let destroy = client
+        .request()
+        .destroy(UniqueIdentifier::from("key-42"))
+        .build();
+    assert_eq!(
+        destroy.unique_identifier(),
+        Some(&UniqueIdentifier::from("key-42"))
+    );
+}
+
+#[test]
+fn builder_request_is_the_existing_typed_create_request() {
+    let mut client = failed_request_client();
+    let request: CreateRequest = client
+        .request()
+        .create_symmetric_key()
+        .aes_256()
+        .usage_mask(CryptographicUsageMask::ENCRYPT)
+        .build()
+        .expect("the fluent API returns the existing request type");
+    assert_eq!(request.object_type().raw(), 2);
+}
+
+#[test]
+fn detached_create_builder_can_build_reusable_typed_requests_without_a_client() {
+    let builder = CreateSymmetricKeyBuilder::detached()
+        .aes_256()
+        .usage_mask(CryptographicUsageMask::ENCRYPT)
+        .name("detached-key");
+
+    let first = builder
+        .build_request()
+        .expect("detached builders construct a typed request");
+    let second = builder
+        .build_request()
+        .expect("building a batch item does not consume the builder state");
+
+    assert_eq!(first.attributes().len(), second.attributes().len());
+
+    let detached = CreateSymmetricKeyBuilder::detached()
+        .aes_256()
+        .usage_mask(CryptographicUsageMask::ENCRYPT);
+    let error = detached
+        .execute(&CodecLimits::defaults())
+        .expect_err("a detached builder cannot execute without a client");
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+}
+
+#[test]
+fn execute_uses_typed_create_and_returns_the_existing_create_outcome() {
+    let response = response_bytes(1, 0, None);
+    let (mut client, _, captured_request) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+    let response = client
+        .request()
+        .create_symmetric_key()
+        .aes_256()
+        .usage_mask(CryptographicUsageMask::ENCRYPT | CryptographicUsageMask::DECRYPT)
+        .name("payments-key")
+        .execute(&CodecLimits::defaults())
+        .expect("the existing typed Create route completes the exchange");
+
+    assert_eq!(response.outcome().operation(), ClientOperation::Create);
+    match response.outcome() {
+        ClientBatchOutcome::CreateCompleted(create) => assert!(matches!(
+            create.unique_identifier(),
+            Some(UniqueIdentifier::TextString(identifier)) if identifier == "key-42"
+        )),
+        outcome => panic!("expected typed Create response, got {outcome:?}"),
+    }
+    assert!(
+        crate::asynchronous_execution_test_support::request_contains(
+            &captured_request,
+            b"payments-key"
+        )
+    );
+}
+
+#[test]
+fn execute_exposes_pending_correlation_without_polling() {
+    let response = response_bytes(1, 2, Some(b"pending-correlation"));
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+    let response = client
+        .request()
+        .create_symmetric_key()
+        .aes_256()
+        .usage_mask(CryptographicUsageMask::ENCRYPT)
+        .with_asynchronous_indicator(1)
+        .execute(&CodecLimits::defaults())
+        .expect("Pending remains an explicit typed outcome");
+
+    assert_eq!(response.outcome().operation(), ClientOperation::Create);
+    match response.outcome() {
+        ClientBatchOutcome::Pending(pending) => {
+            assert_eq!(
+                pending.asynchronous_correlation_value(),
+                b"pending-correlation"
+            );
+        }
+        outcome => panic!("expected Pending, got {outcome:?}"),
+    }
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn invalid_fluent_create_execution_keeps_not_sent_delivery_state() {
+    let (mut client, fake, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let error = client
+        .request()
+        .create_symmetric_key()
+        .execute(&CodecLimits::defaults())
+        .expect_err("required fluent fields are validated before transport");
+
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert_eq!(fake.borrow().exchange_count(), 0);
+}
+
+#[test]
+fn every_key_preset_builds_a_typed_request_and_batch_item() {
+    for (builder, expected_algorithm, expected_length) in [
+        (
+            CreateSymmetricKeyBuilder::detached().aes_128(),
+            kmipkit_protocol::named_values_generated::values::enumeration::cryptographic_algorithm::AES,
+            128,
+        ),
+        (
+            CreateSymmetricKeyBuilder::detached().aes_192(),
+            kmipkit_protocol::named_values_generated::values::enumeration::cryptographic_algorithm::AES,
+            192,
+        ),
+        (
+            CreateSymmetricKeyBuilder::detached().hmac_sha256_256(),
+            kmipkit_protocol::named_values_generated::values::enumeration::cryptographic_algorithm::HMAC_SHA256,
+            256,
+        ),
+    ] {
+        let request = builder
+            .usage_mask(CryptographicUsageMask::MAC_GENERATE)
+            .build_request()
+            .expect("presets fill only algorithm and length");
+        let attributes = request.attributes().as_items();
+        assert_eq!(read_enumeration(&attributes[0]), Some(expected_algorithm));
+        assert_eq!(read_integer(&attributes[1]), Some(expected_length));
+    }
+
+    let item = CreateSymmetricKeyBuilder::detached()
+        .aes_256()
+        .usage_mask(CryptographicUsageMask::ENCRYPT)
+        .to_batch_item()
+        .expect("a valid fluent request converts to a batch item");
+    assert_eq!(item.operation(), 1);
+
+    let mut client = failed_request_client();
+    assert_eq!(
+        client
+            .request()
+            .get(UniqueIdentifier::from("key-42"))
+            .to_batch_item()
+            .operation(),
+        10
+    );
+    let mut client = failed_request_client();
+    assert_eq!(
+        client
+            .request()
+            .destroy(UniqueIdentifier::from("key-42"))
+            .to_batch_item()
+            .operation(),
+        20
+    );
+}
+
+#[test]
+fn create_get_and_destroy_execute_with_exchange_options() {
+    let (mut client, _, _) = client_for(ExchangeScript::Success {
+        response: response_bytes(1, 0, None),
+        request_write_chunks: Vec::new(),
+    });
+    let create = client
+        .request()
+        .create_symmetric_key()
+        .aes_256()
+        .usage_mask(CryptographicUsageMask::ENCRYPT)
+        .with_options(RequestOptions::default())
+        .execute(&CodecLimits::defaults())
+        .expect("Create accepts exchange-local options");
+    assert_eq!(create.outcome().operation(), ClientOperation::Create);
+
+    let mut client = failed_request_client();
+    let get = client
+        .request()
+        .get(UniqueIdentifier::from("key-42"))
+        .with_options(RequestOptions::default())
+        .with_asynchronous_indicator(0)
+        .execute(&CodecLimits::defaults());
+    assert_eq!(
+        get.expect_err("Get reaches the scripted transport")
+            .delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+
+    let mut client = failed_request_client();
+    let destroy = client
+        .request()
+        .destroy(UniqueIdentifier::from("key-42"))
+        .with_options(RequestOptions::default())
+        .with_asynchronous_indicator(1)
+        .execute(&CodecLimits::defaults());
+    assert_eq!(
+        destroy
+            .expect_err("Destroy reaches the scripted transport")
+            .delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+}

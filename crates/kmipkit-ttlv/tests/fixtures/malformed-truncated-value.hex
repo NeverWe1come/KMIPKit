@@ -1,0 +1,3 @@
+# Case: the Item Length declares four Integer value octets but only three are present.
+# Attribution: OASIS Key Management Interoperability Protocol Specification Version 2.1, Sections 10.1.2 and 10.1.3; KMIPKIT-0005-NR-002 and NR-004.
+42 00 2c 02 00 00 00 04 01 02 03

@@ -1,0 +1,5 @@
+error[E0425]: cannot find function `with_callback` in module `extension`
+ --> tests/ui/extension_boundary/executable_plugin.rs:6:41
+  |
+6 |     let _: ExtensionSchema = extension::with_callback(schema, |_| true)
+  |                                         ^^^^^^^^^^^^^ not found in `extension`

@@ -1,0 +1,59 @@
+error[E0277]: the trait bound `Value: Copy` is not satisfied
+ --> tests/ui/no_copy.rs:8:21
+  |
+8 |     requires_copy::<Value>();
+  |                     ^^^^^ the trait `Copy` is not implemented for `Value`
+  |
+note: required by a bound in `requires_copy`
+ --> tests/ui/no_copy.rs:5:21
+  |
+5 | fn requires_copy<T: Copy>() {}
+  |                     ^^^^ required by this bound in `requires_copy`
+
+error[E0277]: the trait bound `ValueView<'static>: Copy` is not satisfied
+ --> tests/ui/no_copy.rs:9:21
+  |
+9 |     requires_copy::<ValueView<'static>>();
+  |                     ^^^^^^^^^^^^^^^^^^ the trait `Copy` is not implemented for `ValueView<'static>`
+  |
+note: required by a bound in `requires_copy`
+ --> tests/ui/no_copy.rs:5:21
+  |
+5 | fn requires_copy<T: Copy>() {}
+  |                     ^^^^ required by this bound in `requires_copy`
+
+error[E0277]: the trait bound `StructureView<'static>: Copy` is not satisfied
+  --> tests/ui/no_copy.rs:10:21
+   |
+10 |     requires_copy::<StructureView<'static>>();
+   |                     ^^^^^^^^^^^^^^^^^^^^^^ the trait `Copy` is not implemented for `StructureView<'static>`
+   |
+note: required by a bound in `requires_copy`
+  --> tests/ui/no_copy.rs:5:21
+   |
+ 5 | fn requires_copy<T: Copy>() {}
+   |                     ^^^^ required by this bound in `requires_copy`
+
+error[E0277]: the trait bound `Item: Copy` is not satisfied
+  --> tests/ui/no_copy.rs:11:21
+   |
+11 |     requires_copy::<Item>();
+   |                     ^^^^ the trait `Copy` is not implemented for `Item`
+   |
+note: required by a bound in `requires_copy`
+  --> tests/ui/no_copy.rs:5:21
+   |
+ 5 | fn requires_copy<T: Copy>() {}
+   |                     ^^^^ required by this bound in `requires_copy`
+
+error[E0277]: the trait bound `kmipkit_ttlv::Structure: Copy` is not satisfied
+  --> tests/ui/no_copy.rs:12:21
+   |
+12 |     requires_copy::<Structure>();
+   |                     ^^^^^^^^^ the trait `Copy` is not implemented for `kmipkit_ttlv::Structure`
+   |
+note: required by a bound in `requires_copy`
+  --> tests/ui/no_copy.rs:5:21
+   |
+ 5 | fn requires_copy<T: Copy>() {}
+   |                     ^^^^ required by this bound in `requires_copy`
