@@ -386,14 +386,18 @@ def response(operations: tuple[int, ...], protocol_minor: int,
     return tlv(0x42007B, 1, header + b"".join(batch_items))
 
 
-def pending_create_response(protocol_minor: int, correlation: bytes) -> bytes:
+def pending_create_response(protocol_minor: int, correlation: bytes,
+                            unique_batch_item_id: bytes | None = None) -> bytes:
     version = tlv(0x420069, 1,
                   integer(0x42006A, 2) + integer(0x42006B, protocol_minor))
     header = tlv(0x42007A, 1,
                  version + tlv(0x420092, 9, struct.pack(">q", int(time.time()))) +
                  integer(0x42000D, 1))
-    item = tlv(0x42000F, 1,
-               enumeration(0x42005C, 1) + enumeration(0x42007F, 2) +
+    item_fields = enumeration(0x42005C, 1)
+    if unique_batch_item_id is not None:
+        item_fields += tlv(0x420093, 8, unique_batch_item_id)
+    item_fields += enumeration(0x42007F, 2)
+    item = tlv(0x42000F, 1, item_fields +
                tlv(0x420006, 8, correlation) + tlv(0x42007C, 1, b""))
     return tlv(0x42007B, 1, header + item)
 
@@ -772,6 +776,7 @@ def main() -> int:
             async_repeated_pending_success_runs = 0
             async_process_completed = False
             async_process_route_finished = False
+            async_process_standalone_seed = False
             async_query_route_stage = 0
             batch_order_placeholder_seen = 0
             async_query_correlations = (
@@ -791,6 +796,9 @@ def main() -> int:
                             operations = top_level_batch_operations(request)
                             if not operations:
                                 raise AssertionError("request has no KMIP Operation field")
+                            if (operations == (1,) and
+                                    tlv(0x420093, 8, b"process-operation-seed") in request):
+                                async_process_standalone_seed = True
                             if operations == (1, 9, 20):
                                 raise AssertionError("Check fixture must revoke the created key before destroying it")
                             split_identifiers = (b"fixture-split-part-1", b"fixture-split-part-2")
@@ -1316,7 +1324,9 @@ def main() -> int:
                                     "repeated_pending_success"
                                     if async_repeated_pending_success_runs < 2 else
                                     "final_failure")
-                                stream.sendall(pending_create_response(protocol_minor, cancel_correlation))
+                                stream.sendall(pending_create_response(
+                                    protocol_minor, cancel_correlation,
+                                    b"process-operation-seed" if async_process_standalone_seed else None))
                             elif operations == (57,):
                                 cancel_correlation = b"fixture-cancel-correlation"
                                 if request.count(tlv(0x420006, 8, cancel_correlation)) == 1:
@@ -1389,8 +1399,10 @@ def main() -> int:
                                     response_item_ids = (None,)
                                 elif operations == (20,) and async_process_completed:
                                     response_item_ids = (None,)
-                                    async_process_route_finished = True
+                                    if not async_process_standalone_seed:
+                                        async_process_route_finished = True
                                     async_process_completed = False
+                                    async_process_standalone_seed = False
                                 cancellation_result = 1
                                 if operations == (25,) and async_request_pending:
                                     if cancel_result_index >= len(cancel_result_values):

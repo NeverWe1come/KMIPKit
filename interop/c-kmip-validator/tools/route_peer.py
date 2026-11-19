@@ -2243,7 +2243,8 @@ def terminal_cancel_response_with_correlation(protocol_minor: int) -> bytes:
     return tlv(0x42007B, 1, header + item)
 
 
-def pending_create_response(correlation: bytes, protocol_minor: int) -> bytes:
+def pending_create_response(correlation: bytes, protocol_minor: int,
+                            unique_batch_item_id: bytes | None = None) -> bytes:
     """Build a Pending Create response with its required empty payload and correlation value."""
     version = tlv(0x420069, 1,
                   tlv(0x42006A, 2, (2).to_bytes(4, 'big')) +
@@ -2251,9 +2252,11 @@ def pending_create_response(correlation: bytes, protocol_minor: int) -> bytes:
     timestamp = int(dt.datetime.now(dt.timezone.utc).timestamp()).to_bytes(8, 'big', signed=True)
     header = tlv(0x42007A, 1, version + tlv(0x420092, 9, timestamp) +
                  tlv(0x42000D, 2, (1).to_bytes(4, 'big')))
-    item = tlv(0x42000F, 1,
-               tlv(0x42005C, 5, (1).to_bytes(4, 'big')) +
-               tlv(0x42007F, 5, (2).to_bytes(4, 'big')) +
+    item_fields = tlv(0x42005C, 5, (1).to_bytes(4, 'big'))
+    if unique_batch_item_id is not None:
+        item_fields += tlv(0x420093, 8, unique_batch_item_id)
+    item_fields += tlv(0x42007F, 5, (2).to_bytes(4, 'big'))
+    item = tlv(0x42000F, 1, item_fields +
                tlv(0x420006, 8, correlation) + tlv(0x42007C, 1, b''))
     return tlv(0x42007B, 1, header + item)
 
@@ -4505,7 +4508,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 response_item_ids = (None,)
                                             response_wire = (
                                                 pending_create_response(CANCEL_CORRELATION_VALUE,
-                                                                        int(version[-1]))
+                                                                        int(version[-1]),
+                                                                        b'process-operation-seed'
+                                                                        if case_id == 'test-op-process' else None)
                                                 if exchange_index == 0 else
                                                 response((58,), int(version[-1]))
                                                 if exchange_index == 1 else

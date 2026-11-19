@@ -2878,7 +2878,8 @@ static kmip_execution_outcome_t execute_async_poll_repeated_pending_route(
 }
 
 static kmip_execution_outcome_t execute_async_process_then_poll_route(
-    kmip_live_client_t *client) {
+    kmip_live_client_t *client,
+    const char *create_batch_item_id) {
     static const uint8_t expected_correlation[] = "fixture-cancel-correlation";
     static const uint8_t expected_identifier[] = "fixture-key-1";
     kmipkit_ttlv_structure_t *attributes = NULL;
@@ -2925,6 +2926,9 @@ static kmip_execution_outcome_t execute_async_process_then_poll_route(
     int32_t status = create_symmetric_key_attributes(client, &attributes) ? 0 : -1;
     if (status == 0) status = kmipkit_client_batch_item_create(
         KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY, attributes, NULL, &create_item);
+    if (status == 0 && create_batch_item_id) {
+        status = set_batch_item_id(&create_item, create_batch_item_id);
+    }
     if (status == 0) status = kmipkit_client_batch_create(&create_batch);
     if (status == 0) status = kmipkit_client_batch_set_asynchronous_indicator(
         create_batch, KMIPKIT_ENUMERATION_ASYNCHRONOUS_INDICATOR_MANDATORY);
@@ -7956,10 +7960,10 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     }
     if (strcmp(test_case->case_id,
                "test-async-process-then-poll-state") == 0) {
-        return execute_async_process_then_poll_route(client);
+        return execute_async_process_then_poll_route(client, NULL);
     }
     if (strcmp(test_case->case_id, "test-op-process") == 0) {
-        return execute_async_process_then_poll_route(client);
+        return execute_async_process_then_poll_route(client, "process-operation-seed");
     }
     if (strcmp(test_case->case_id, "test-async-cancel-vs-poll-race") == 0) {
         return execute_cancel_poll_race_route(client);
