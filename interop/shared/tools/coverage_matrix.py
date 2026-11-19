@@ -129,6 +129,7 @@ def _case_obligations(
         if isinstance(value, str):
             plain_targets.append(value)
     protocol_scenario = requires.get("protocol_scenario", {})
+    has_protocol_scenario = isinstance(protocol_scenario, dict) and "protocol_scenario" in requires
     if isinstance(protocol_scenario, dict):
         scenario_targets = [value for value in protocol_scenario.get("target_ids", []) if isinstance(value, str)]
         plain_targets.extend(scenario_targets)
@@ -227,7 +228,8 @@ def _case_obligations(
     }
     local_value_case = (case.get("execution", {}).get("mode") == "local_model"
                         and any(field in requires for field in ("enum_type", "bitmask_type")))
-    if (not operation_names
+    if (not has_protocol_scenario
+            and not operation_names
             and not local_value_case
             and operation_id and operation_id not in item_targets
             and operation_id not in scenario_step_targets

@@ -737,6 +737,7 @@ class NormativeInventoryTests(unittest.TestCase):
                 self.assertEqual([], scenario["operations"])
                 self.assertEqual(["KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-COUNT"], scenario["target_ids"])
                 self.assertEqual("rejected_before_transport", scenario["expected"]["construction"])
+                self.assertEqual("Batch Count", case["operation"])
             else:
                 self.assertTrue(scenario["operations"], case_id)
             self.assertTrue(scenario["steps"], case_id)

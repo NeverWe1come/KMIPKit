@@ -915,7 +915,11 @@ def _protocol_scenario_cases(
         parameters: dict, expected: dict, steps: list[str], assertions: list[str],
         sections: list[str], mode: str = "server_exchange", mutation: str = "mutating",
         versions: list[str] | None = None, setup: list[str] | None = None,
+        operation_label: str | None = None, description: str | None = None,
     ) -> None:
+        case_operation = operation_label or (operations[0] if operations else None)
+        if not case_operation:
+            raise ValueError(f"A display operation label is required when a scenario has no operations: {case_id}")
         target_ids = list(dict.fromkeys([*target_ids, *(operation(name) for name in operations)]))
         target_versions = {
             version for target_id in target_ids
@@ -979,10 +983,10 @@ def _protocol_scenario_cases(
         cases.append({
             "case_id": case_id,
             "category": category,
-            "operation": operations[0],
-            "description": f"Exercise the normative {category.replace('_', ' ')} branch {case_id}.",
+            "operation": case_operation,
+            "description": description or f"Exercise the normative {category.replace('_', ' ')} branch {case_id}.",
             "requires": {
-                "operation": operations[0],
+                "operation": case_operation,
                 "protocol_scenario": scenario,
             },
             "isolation_recipe": {
@@ -1074,12 +1078,13 @@ def _protocol_scenario_cases(
         steps=["attach_unique_id_to_each_request_item", "execute_batch", "compare_request_and_response_ids"],
         assertions=["each_response_echoes_its_request_id", "response_is_associated_with_correct_operation"],
         sections=batch_base, mutation="read_only")
-    add("test-batch-count-zero-rejected", "batch_workflows", ["Get"],
-        [batch_count, request_item, get], parameters={"batch_count": 0, "request_item_count": 0},
+    add("test-batch-count-zero-rejected", "batch_workflows", [],
+        [batch_count], parameters={"batch_count": 0, "request_item_count": 0},
         expected={"construction": "rejected_before_transport"},
         steps=["attempt_empty_batch_construction", "count_transport_calls"],
         assertions=["empty_batch_is_rejected_or_cannot_be_constructed", "transport_call_count_is_zero"],
-        sections=batch_base, mode="local_model", mutation="read_only")
+        sections=batch_base, mode="local_model", mutation="read_only", operation_label="Batch Count",
+        description="Reject a zero-count batch before transport; no operation request or Batch Item is constructed.")
     add("test-batch-count-mismatch-rejected", "batch_workflows", ["Get", "Get Attribute List"],
         [batch_count, request_item, get, get_attribute_list], parameters={"declared_batch_count": 1, "request_item_count": 2},
         expected={"construction": "rejected_or_count_recomputed_before_transport"},

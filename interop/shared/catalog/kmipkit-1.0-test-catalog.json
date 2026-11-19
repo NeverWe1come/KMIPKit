@@ -201477,20 +201477,16 @@
     {
       "case_id": "test-batch-count-zero-rejected",
       "category": "batch_workflows",
-      "operation": "Get",
-      "description": "Exercise the normative batch workflows branch test-batch-count-zero-rejected.",
+      "operation": "Batch Count",
+      "description": "Reject a zero-count batch before transport; no operation request or Batch Item is constructed.",
       "requires": {
-        "operation": "Get",
+        "operation": "Batch Count",
         "protocol_scenario": {
           "scenario_id": "test-batch-count-zero-rejected",
           "target_ids": [
-            "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-COUNT",
-            "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-BATCH-ITEM",
-            "KMIPKIT-ELEM-OP-C2S-GET"
+            "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-COUNT"
           ],
-          "operations": [
-            "Get"
-          ],
+          "operations": [],
           "protocol_versions": [
             "2.0",
             "2.1"
@@ -201558,10 +201554,6 @@
               "section": "9.21"
             },
             {
-              "document": "OASIS KMIP 2.0 Specification",
-              "section": "6.1.19"
-            },
-            {
               "document": "OASIS KMIP 2.1 Specification",
               "section": "8.1"
             },
@@ -201604,10 +201596,6 @@
             {
               "document": "OASIS KMIP 2.1 Specification",
               "section": "9.21"
-            },
-            {
-              "document": "OASIS KMIP 2.1 Specification",
-              "section": "6.1.19"
             }
           ]
         }
@@ -201670,10 +201658,6 @@
           "section": "9.21"
         },
         {
-          "document": "OASIS KMIP 2.0 Specification",
-          "section": "6.1.19"
-        },
-        {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "8.1"
         },
@@ -201716,10 +201700,6 @@
         {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "9.21"
-        },
-        {
-          "document": "OASIS KMIP 2.1 Specification",
-          "section": "6.1.19"
         }
       ],
       "execution": {
