@@ -1715,6 +1715,7 @@ class ControlledTlsPeerTest {
             appendCryptographicParametersAttributeTypedRoutes(events, protocolVersion);
             appendDigestAttributeTypedRoutes(events, protocolVersion);
             appendRandomNumberGeneratorTypedAttributeRoutes(events, protocolVersion);
+            appendVendorAttributeTypedRoutes(events, protocolVersion);
         }
         assertRouteEventRecorded(events, "test-attr-certificate-attributes",
                 "KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES",
@@ -2355,6 +2356,7 @@ class ControlledTlsPeerTest {
         int cryptographicParametersTypedAttributeRouteEventCount = KMIP_2_0_AND_2_1.size() * 3;
         int digestTypedAttributeRouteEventCount = KMIP_2_0_AND_2_1.size() * 3;
         int randomNumberGeneratorTypedAttributeRouteEventCount = KMIP_2_0_AND_2_1.size() * 3;
+        int vendorAttributeTypedAttributeRouteEventCount = KMIP_2_0_AND_2_1.size() * 3;
         int objectTypeMemberRouteEventCount = 4;
         int constraintStructureRouteEventCount = 2 * GENERIC_STRUCTURE_ROUTE_IDS.size();
         int pendingCorrelationAccessorEventCount = KMIP_2_0_AND_2_1.size();
@@ -2444,6 +2446,7 @@ class ControlledTlsPeerTest {
                         + cryptographicParametersTypedAttributeRouteEventCount
                         + digestTypedAttributeRouteEventCount
                         + randomNumberGeneratorTypedAttributeRouteEventCount
+                        + vendorAttributeTypedAttributeRouteEventCount
                         + objectTypeMemberRouteEventCount
                         + constraintStructureRouteEventCount
                         + pendingCorrelationAccessorEventCount
@@ -2578,6 +2581,7 @@ class ControlledTlsPeerTest {
                         + 1 // KMIP 2.0/2.1 §4.16 Cryptographic Parameters typed Attribute routes.
                         + 1 // KMIP 2.0/2.1 §4.21 Digest typed Attribute routes.
                         + 1 // KMIP 2.0/2.1 §4.46 Random Number Generator typed Attribute routes.
+                        + 1 // KMIP 2.0/2.1 §4.60 Vendor Attribute typed Attribute routes.
                         + LocalCatalogRouteChecks.TRANSPARENT_KEY_MATERIAL_CASE_IDS.size()
                         + LocalCatalogRouteChecks.SPLIT_KEY_MANAGED_OBJECT_MEMBER_CASE_IDS.size() - 1
                         + LocalCatalogRouteChecks.PGP_KEY_AND_SECRET_DATA_CASE_IDS.size() - 2
@@ -6557,6 +6561,7 @@ class ControlledTlsPeerTest {
         caseIds.add("test-attr-cryptographic-parameters");
         caseIds.add("test-attr-digest");
         caseIds.add("test-attr-random-number-generator");
+        caseIds.add("test-attr-vendor-attribute");
         genericEnumerationFixtures().forEach(fixture -> caseIds.add(fixture.caseId()));
         genericLocalEnumerationFixtures().stream().map(EnumerationFixture::caseId).distinct()
                 .forEach(caseIds::add);
@@ -17210,6 +17215,71 @@ class ControlledTlsPeerTest {
                 appendRouteEvent(events, "test-attr-random-number-generator",
                         "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
                         "KMIPKIT-ELEM-ATTRIBUTE-RANDOM-NUMBER-GENERATOR",
+                        "org.kmipkit.extensions.AttributeSet.tryNew", null, null,
+                        "construct", protocolVersion, null, treeHash, null);
+            }
+        }
+    }
+
+    private static void appendVendorAttributeTypedRoutes(ArrayNode events, String protocolVersion)
+            throws Exception {
+        CodecLimits limits = CodecLimits.defaults();
+        byte[] vendor = "KMIPKit.Test".getBytes(StandardCharsets.US_ASCII);
+        byte[] name = "example_field".getBytes(StandardCharsets.US_ASCII);
+        byte[] attributeValue = "fixture-value".getBytes(StandardCharsets.US_ASCII);
+        // OASIS KMIP 2.1 §4.60 defines the required identification, name, and value fields;
+        // §11.56 Table 487 assigns their tags and the Vendor Attribute tag.
+        byte[] wire = structure(0x420008,
+                item(0x42009d, 7, vendor), item(0x42000a, 7, name), item(0x42000b, 7, attributeValue));
+        String treeHash = normalizedTreeSha256(wire);
+        TtlvStructure fields = appendTtlvItem(TtlvStructure.create(), 0x42009d,
+                TtlvValue.TextString(vendor, limits), limits);
+        fields = appendTtlvItem(fields, 0x42000a, TtlvValue.TextString(name, limits), limits);
+        fields = appendTtlvItem(fields, 0x42000b, TtlvValue.TextString(attributeValue, limits), limits);
+        TtlvStructure completeFields = fields;
+        try (completeFields;
+                TtlvValue value = TtlvValue.structure(completeFields, limits);
+                TypedAttribute typed = TypedAttribute.create(StandardAttribute.VENDOR_ATTRIBUTE, value);
+                TtlvItem item = typed.asItem();
+                TypedAttribute decoded = TypedAttribute.fromItem(StandardAttribute.VENDOR_ATTRIBUTE, item);
+                TtlvItem decodedItem = decoded.asItem();
+                TtlvItemView view = decodedItem.view();
+                Tag tag = view.tag();
+                var decodedValue = view.value();
+                TtlvStructureView structure = decodedValue.structure();
+                TtlvItemView vendorItem = structure.itemAt(0);
+                Tag vendorTag = vendorItem.tag();
+                var vendorValue = vendorItem.value();
+                TtlvItemView nameItem = structure.itemAt(1);
+                Tag nameTag = nameItem.tag();
+                var nameValue = nameItem.value();
+                TtlvItemView attributeValueItem = structure.itemAt(2);
+                Tag valueTag = attributeValueItem.tag();
+                var valueView = attributeValueItem.value()) {
+            assertEquals(StandardAttribute.VENDOR_ATTRIBUTE.tag(), tag.raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertEquals(3, structure.itemCount());
+            assertEquals(0x42009d, vendorTag.raw());
+            assertArrayEquals(vendor, vendorValue.bytes());
+            assertEquals(0x42000a, nameTag.raw());
+            assertArrayEquals(name, nameValue.bytes());
+            assertEquals(0x42000b, valueTag.raw());
+            assertArrayEquals(attributeValue, valueView.bytes());
+            appendRouteEvent(events, "test-attr-vendor-attribute",
+                    "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
+                    "KMIPKIT-ELEM-ATTRIBUTE-VENDOR-ATTRIBUTE", "org.kmipkit.ttlv.TypedAttribute.create",
+                    null, null, "construct", protocolVersion, null, treeHash, null);
+            appendRouteEvent(events, "test-attr-vendor-attribute",
+                    "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
+                    "KMIPKIT-ELEM-ATTRIBUTE-VENDOR-ATTRIBUTE", "org.kmipkit.ttlv.TypedAttribute.fromItem",
+                    null, null, "construct", protocolVersion, null, treeHash, null);
+            try (TtlvStructure empty = TtlvStructure.create();
+                    TtlvStructure attributeItems = TtlvStructure.withItem(empty, item, limits);
+                    AttributeSet attributes = AttributeSet.tryNew(attributeItems)) {
+                assertEquals(1, attributes.len());
+                appendRouteEvent(events, "test-attr-vendor-attribute",
+                        "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
+                        "KMIPKIT-ELEM-ATTRIBUTE-VENDOR-ATTRIBUTE",
                         "org.kmipkit.extensions.AttributeSet.tryNew", null, null,
                         "construct", protocolVersion, null, treeHash, null);
             }
