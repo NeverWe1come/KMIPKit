@@ -1719,23 +1719,26 @@ matrix remains incomplete, so #255 stays WIP. The full Java Gradle suite passed
 The controlled Java route fixture now records `CredentialType.fromRaw` and
 `Credential.fromTtlv` for the Credential Type member in KMIP 2.0 and 2.1. It
 also checks Username and Password members through both `Credential.fromTtlv`
-and `UsernameAndPasswordCredential.fromTtlv`, and Device Identifier and
-Password members through both `Credential.fromTtlv` and
-`DeviceCredential.fromTtlv`. Each route runs against a fresh TTLV structure
-under both protocol versions. The credential strings are deterministic local
-fixture values and are not sent to an external KMS.
+and `UsernameAndPasswordCredential.fromTtlv`, and all six Device Value members
+through both `Credential.fromTtlv` and `DeviceCredential.fromTtlv`. Each route
+runs against a fresh TTLV structure under both protocol versions. The
+credential strings are deterministic local fixture values and are not sent to
+an external KMS.
 
 References: OASIS KMIP 2.0 §9.11 and Tables 373, 374; §11.11, Table 404;
 OASIS KMIP 2.1 §9.11 and Tables 411, 412; §11.11, Table 442.
 
 Red `0803a79ba` and `007424325` require the Credential Type and specialized
 Credential Value member routes. Green `32593d608` and `1e3e553cb` invoke and
-validate each typed and generic route. Refactor `8ee4855b4` consolidates the
-four member cases in one fixture table used by the assertions, calls, report
-case IDs, and event counts. The final selected report
-`java-controlled-query-ce490ea7-b66c-4916-967e-c2ae3d4593ee` validates 44,486
-cells (44,470 invocations, 16 not applicable, zero failed) out of 71,513
-planned; 27,027 remain pending. The selected scope is complete, while the full
+validate each typed and generic route. Red `083c9c48a` requires the four
+remaining Device member routes and fails on Device Serial Number. Green
+`1354075ca` adds those fields to the typed and generic execution path. Refactors
+`8ee4855b4` and `c6074b455` consolidate all eight member cases in one fixture
+table used by the assertions, calls, report case IDs, and event counts. The
+final selected report
+`java-controlled-query-b393054b-f449-4191-b192-d5608d6ba9ea` validates 44,502
+cells (44,486 invocations, 16 not applicable, zero failed) out of 71,513
+planned; 27,011 remain pending. The selected scope is complete, while the full
 Java matrix remains incomplete and PR #255 stays WIP. The full Java suite
 passed 111/111 tests; all 112 shared evidence/schema tests and the 1,511-route
 manifest check passed, and the ledger comparison matched.

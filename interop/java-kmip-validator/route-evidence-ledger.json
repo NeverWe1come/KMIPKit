@@ -2680,7 +2680,7 @@
     "test-v20-reject-set-constraints",
     "test-v20-reject-set-defaults"
   ],
-  "executed_cells": 44486,
+  "executed_cells": 44502,
   "language": "java",
   "library_commit": "12496d646d11d4069b58bcc88fc76cc619211ec6",
   "pending_case_ids": [
@@ -3543,10 +3543,6 @@
     "test-norm-structure-member-structure-member-9-11-attestation-attestation-type",
     "test-norm-structure-member-structure-member-9-11-attestation-nonce",
     "test-norm-structure-member-structure-member-9-11-credential-credential-value",
-    "test-norm-structure-member-structure-member-9-11-device-device-serial-number",
-    "test-norm-structure-member-structure-member-9-11-device-machine-identifier",
-    "test-norm-structure-member-structure-member-9-11-device-media-identifier",
-    "test-norm-structure-member-structure-member-9-11-device-network-identifier",
     "test-norm-structure-member-structure-member-9-11-hashed-password-hashed-password",
     "test-norm-structure-member-structure-member-9-11-hashed-password-hashing-algorithm",
     "test-norm-structure-member-structure-member-9-11-hashed-password-timestamp",
@@ -7088,22 +7084,6 @@
       "pending_cells": 10
     },
     {
-      "case_id": "test-norm-structure-member-structure-member-9-11-device-device-serial-number",
-      "pending_cells": 4
-    },
-    {
-      "case_id": "test-norm-structure-member-structure-member-9-11-device-machine-identifier",
-      "pending_cells": 4
-    },
-    {
-      "case_id": "test-norm-structure-member-structure-member-9-11-device-media-identifier",
-      "pending_cells": 4
-    },
-    {
-      "case_id": "test-norm-structure-member-structure-member-9-11-device-network-identifier",
-      "pending_cells": 4
-    },
-    {
       "case_id": "test-norm-structure-member-structure-member-9-11-hashed-password-hashed-password",
       "pending_cells": 4
     },
@@ -7512,7 +7492,7 @@
       "pending_cells": 84
     }
   ],
-  "pending_cells": 27027,
+  "pending_cells": 27011,
   "pending_reason": "No validated per-cell route execution evidence is recorded for this cell.",
   "pending_reason_code": "route_evidence_not_emitted",
   "planned_cells": 71513,
@@ -32230,8 +32210,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 16,
-      "pending_cells": 14,
+      "executed_cells": 20,
+      "pending_cells": 10,
       "protocol_version": "2.0",
       "required_cells": 30,
       "route_id": "java.typed-protocol.model.org.kmipkit.credentials.credential.fromttlv",
@@ -32240,8 +32220,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 16,
-      "pending_cells": 14,
+      "executed_cells": 20,
+      "pending_cells": 10,
       "protocol_version": "2.1",
       "required_cells": 30,
       "route_id": "java.typed-protocol.model.org.kmipkit.credentials.credential.fromttlv",
@@ -32290,8 +32270,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 3,
-      "pending_cells": 4,
+      "executed_cells": 7,
+      "pending_cells": 0,
       "protocol_version": "2.0",
       "required_cells": 7,
       "route_id": "java.typed-protocol.model.org.kmipkit.credentials.devicecredential.fromttlv",
@@ -32300,8 +32280,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 3,
-      "pending_cells": 4,
+      "executed_cells": 7,
+      "pending_cells": 0,
       "protocol_version": "2.1",
       "required_cells": 7,
       "route_id": "java.typed-protocol.model.org.kmipkit.credentials.devicecredential.fromttlv",
@@ -35207,8 +35187,8 @@
       "route_id": "java.typed-protocol.model.org.kmipkit.credentials.authentication.fromttlv"
     },
     {
-      "executed_cells": 32,
-      "pending_cells": 28,
+      "executed_cells": 40,
+      "pending_cells": 20,
       "required_cells": 60,
       "route_id": "java.typed-protocol.model.org.kmipkit.credentials.credential.fromttlv"
     },
@@ -35225,8 +35205,8 @@
       "route_id": "java.typed-protocol.model.org.kmipkit.credentials.credentialvalue.fromttlv"
     },
     {
-      "executed_cells": 6,
-      "pending_cells": 8,
+      "executed_cells": 14,
+      "pending_cells": 0,
       "required_cells": 14,
       "route_id": "java.typed-protocol.model.org.kmipkit.credentials.devicecredential.fromttlv"
     },
@@ -35562,7 +35542,7 @@
     }
   ],
   "schema_version": "1.0",
-  "selected_scope_cells": 44486,
+  "selected_scope_cells": 44502,
   "selected_scope_complete": true,
   "vendor_interoperability_claim": false
 }
