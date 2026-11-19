@@ -2481,6 +2481,7 @@ class ControlledTlsPeerTest {
                 * KMIP_2_0_AND_2_1.size();
         int credentialRootEnvelopeEventCount = KMIP_2_0_AND_2_1.size() * 3;
         int credentialStructureMemberRouteEventCount = KMIP_2_0_AND_2_1.size() * 4;
+        int credentialTypeMemberRouteEventCount = KMIP_2_0_AND_2_1.size() * 2;
         int batchErrorContinuationEventCount = enumerationFixtures.stream()
                 .filter(fixture -> "BATCH-ERROR-CONTINUATION-OPTION".equals(fixture.parentName()))
                 .mapToInt(fixture -> fixture.protocolVersions().size()).sum();
@@ -2544,6 +2545,7 @@ class ControlledTlsPeerTest {
                         + localTypedResponseAccessorEventCount
                         + credentialEnvelopeEventCount + credentialRootEnvelopeEventCount
                         + credentialStructureMemberRouteEventCount
+                        + credentialTypeMemberRouteEventCount
                         + objectGroupLocalRouteEventCount
                         + asynchronousRequestOperationStructureRouteEventCount
                         + operationStructureRouteEventCount
@@ -2683,7 +2685,7 @@ class ControlledTlsPeerTest {
         assertEquals(17 + OPERATION_STRUCTURE_FIXTURES.size() + SCALAR_OPERATION_STRUCTURE_FIXTURES.size()
                         + enumerationFixtures.size() + localEnumerationCaseCount + bitmaskCaseCount
                         + dataTypeCaseCount
-                        + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + 6 // OTP/Ticket envelopes and member cases.
+                        + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + 7 // Credential Type, OTP, and Ticket cases.
                         + genericTagCaseIds.size()
                         + 13 // Includes the new Add Attribute operation-route case.
                         + typedTagIdentityCaseIds().size() + referencedEnumCaseCount
@@ -4416,6 +4418,17 @@ class ControlledTlsPeerTest {
         }
         appendRouteEvent(events, caseId, route, targetId,
                 GENERIC_CREDENTIAL_FROM_TTLV_SYMBOL, null, null,
+                "construct", protocolVersion, null, treeHash, null);
+
+        String credentialTypeCaseId =
+                "test-norm-structure-member-structure-member-9-11-credential-credential-type";
+        String credentialTypeTargetId = "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-CREDENTIAL-CREDENTIAL-TYPE";
+        appendCredentialEnvelopeRouteEvent(events, credentialTypeCaseId, credentialTypeTargetId,
+                modelRoute, 1, protocolVersion);
+        CredentialType credentialType = CredentialType.fromRaw(1);
+        assertEquals(1L, credentialType.raw());
+        appendRouteEvent(events, credentialTypeCaseId, CREDENTIAL_TYPE_FROM_RAW_ROUTE,
+                credentialTypeTargetId, "org.kmipkit.credentials.CredentialType.fromRaw", null, null,
                 "construct", protocolVersion, null, treeHash, null);
 
         byte[] otpCredentialValueWire = oneTimePasswordCredentialValueWire();
@@ -6848,6 +6861,7 @@ class ControlledTlsPeerTest {
         caseIds.add("test-attr-x.509-certificate-subject");
         caseIds.add("test-op-revoke");
         caseIds.add("test-op-add-attribute");
+        caseIds.add("test-norm-structure-member-structure-member-9-11-credential-credential-type");
         caseIds.add("test-norm-credential-credential-one-time-password");
         caseIds.add("test-norm-credential-credential-ticket");
         caseIds.add("test-norm-structure-member-structure-member-9-11-one-time-password-username");
