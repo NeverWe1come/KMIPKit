@@ -111,10 +111,14 @@ class ExecutableContractTests(unittest.TestCase):
             element["name"] for element in json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))["elements"]
             if element.get("kind") == "operation" and element.get("direction") == "client_to_server" and element.get("scope_state") in {"client_1_0", "client_1_1"}
         }
-        catalog_operations = {
-            case["operation"] for case in catalog["test_cases"]
-            if case["category"] not in {"version_boundaries", "server_initiated_operations", "normative_inventory"}
-        }
+        catalog_operations = set()
+        for case in catalog["test_cases"]:
+            if case["category"] in {"version_boundaries", "server_initiated_operations", "normative_inventory"}:
+                continue
+            scenario = case.get("requires", {}).get("protocol_scenario")
+            if isinstance(scenario, dict) and not scenario["operations"]:
+                continue
+            catalog_operations.add(case["operation"])
         self.assertEqual(source_operations, catalog_operations)
 
     def test_catalog_and_result_schemas_validate_generated_evidence(self) -> None:

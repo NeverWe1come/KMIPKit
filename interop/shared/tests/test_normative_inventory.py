@@ -707,6 +707,20 @@ class NormativeInventoryTests(unittest.TestCase):
         self.assertEqual("Create Key Pair", cases["Public Key"]["operation"])
         self.assertEqual("Create Split Key", cases["Split Key"]["operation"])
 
+    def test_recover_recipe_archives_the_object_before_recovery(self) -> None:
+        case = next(case for case in self.catalog["test_cases"]
+                    if case["case_id"] == "test-op-recover")
+
+        self.assertEqual(["Create unique SymmetricKey", "Archive SymmetricKey before recovery"],
+                         case["isolation_recipe"]["setup_steps"])
+        self.assertEqual("Recover the archived SymmetricKey", case["isolation_recipe"]["target_step"])
+        self.assertEqual(["Destroy recovered SymmetricKey"],
+                         case["isolation_recipe"]["teardown_steps"])
+        references = {(reference["document"], reference["section"])
+                      for reference in case["normative_refs"]}
+        self.assertIn(("OASIS KMIP 2.0 Specification", "6.1.4"), references)
+        self.assertIn(("OASIS KMIP 2.1 Specification", "6.1.4"), references)
+
     def test_version_rejection_cases_assert_the_request_was_never_sent(self) -> None:
         for case in self.catalog["test_cases"]:
             if case["category"] != "version_boundaries":
@@ -762,7 +776,13 @@ class NormativeInventoryTests(unittest.TestCase):
             self.assertEqual(case_id, scenario["scenario_id"], case_id)
             self.assertTrue(scenario["target_ids"], case_id)
             self.assertTrue(set(scenario["target_ids"]) <= target_ids, case_id)
-            self.assertTrue(scenario["operations"], case_id)
+            if case_id == "test-batch-count-zero-rejected":
+                self.assertEqual([], scenario["operations"])
+                self.assertEqual(["KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-COUNT"], scenario["target_ids"])
+                self.assertEqual("rejected_before_transport", scenario["expected"]["construction"])
+                self.assertEqual("Batch Count", case["operation"])
+            else:
+                self.assertTrue(scenario["operations"], case_id)
             self.assertTrue(scenario["steps"], case_id)
             self.assertTrue(scenario["assertions"], case_id)
             self.assertTrue(case["normative_refs"], case_id)
