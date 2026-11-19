@@ -876,3 +876,31 @@ full matrix remains incomplete. This slice closes 40 cells: 36 network cells
 and four typed MAC Verify response-accessor decodes. The 44-event case scope
 also includes four generic TTLV construction/decode cells already counted in
 the previous ledger.
+
+
+### C private and public key object routes
+
+The installed C consumer now exercises `test-obj-private-key` and
+`test-obj-public-key` through Create Key Pair, then destroys both returned key
+objects. The controlled peer checks the returned object type, key-pair lifecycle,
+and cleanup across KMIP 2.0 and 2.1, TTLV/JSON/XML, and raw TLS/HTTPS. The
+focused route test passed all 12 combinations for each case. These controlled
+fixtures are not external KMS interoperability results. The test cites OASIS
+KMIP 2.0/2.1 §§6.1.9 and 11.34.
+
+Red `658087e74` exposed that the private/public object recipes incorrectly used
+Create and Destroy rather than Create Key Pair. Green `1bb52b7f5` routes both
+cases through the installed Create Key Pair consumer. The controlled-peer
+expectations were then updated in `d552d3a48` to account for the two-object
+creation and teardown sequence. The KMIP 2.0 and 2.1 controlled-peer checks
+pass, and full CTest passes 7/7 in 154.25 seconds.
+
+The full report is `c-route-4060b6ed-3d36-4391-90f5-996495a217d5` at
+`build/route-execution-evidence-c-current.json`, SHA-256
+`4161cdcb1a3540c14bf053d604c38f530ee49a94689163c2ded56ec34419831c`. It has
+66,280 planned cells: 44,342 invoked, 52 not applicable, zero failed, and
+21,886 pending. The report schema passes; the shared validator accepts all
+44,394 emitted events with `selected_scope_complete=true` and
+`all_invocations_passed=true`. Full-matrix validation remains incomplete. The
+two object cases contribute 96 report events, including their prior local
+construction/decode events, and close 76 previously pending cells.

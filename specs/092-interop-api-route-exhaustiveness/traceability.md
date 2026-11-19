@@ -326,3 +326,20 @@ test passes 12/12 and CTest passes 7/7. Full report
 `c-route-dd284ae0-21e3-467a-83bd-56d6e25d51a4` records 66,280 planned cells,
 44,266 invoked, 52 not applicable, zero failed, and 21,962 pending. Scoped
 evidence validation passes; the complete matrix remains open.
+
+
+### C private and public key object routes
+
+KMIPKIT-0092-FR-003/FR-005: the installed C route matrix executes
+`test-obj-private-key` and `test-obj-public-key` through Create Key Pair and
+destroys both returned key objects. The controlled peer verifies the object
+types and lifecycle under KMIP 2.0/2.1 and all six TTLV/JSON/XML plus raw
+TLS/HTTPS combinations. The focused test passes 12 combinations per case;
+CTest passes 7/7. Red `658087e74`, Green `1bb52b7f5`, and controlled-peer
+expectation update `d552d3a48` record the implementation cycle.
+
+Full report `c-route-4060b6ed-3d36-4391-90f5-996495a217d5` (SHA-256
+`4161cdcb1a3540c14bf053d604c38f530ee49a94689163c2ded56ec34419831c`) records
+66,280 planned cells, 44,342 invoked, 52 not applicable, zero failed, and
+21,886 pending. The schema and scoped shared validator pass; the complete C
+route matrix remains open.
