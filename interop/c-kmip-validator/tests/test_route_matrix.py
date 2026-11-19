@@ -1395,6 +1395,37 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(all(event['request_delivery_state'] == 'not_sent' and
                             event['transport_invocation_count'] == 0 for event in send_events))
 
+    def test_aes256_cbc_encrypt_recipe_covers_typed_request_and_response_routes(self):
+        """OASIS KMIP 2.0/2.1 §6.1.17 Table 200/215 covers AES-256-CBC Encrypt payloads."""
+        import route_peer
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case = next(item for item in catalog['test_cases']
+                    if item['case_id'] == 'test-crypto-encrypt-aes-256-cbc')
+
+        self.assertEqual(route_peer.recipe_for_case(case, None),
+                         ((1, 18, 31, 19, 20), 'encrypt_aes256_cbc'))
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c',
+            {**catalog, 'test_cases': [case]}, manifest,
+            protocol_versions=('2.0', '2.1'))
+
+        self.assertEqual(len(events), 38)
+        self.assertEqual(len(checks), 12)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertTrue(all(check['consumer_library_correctness'] == 'passed' for check in checks))
+        network_events = [event for event in events if event['transport'] is not None]
+        self.assertEqual(len(network_events), 36)
+        self.assertEqual({event['action'] for event in network_events}, {'construct', 'send', 'decode'})
+        local_events = [event for event in events if event['transport'] is None]
+        self.assertEqual(len(local_events), 2)
+        self.assertEqual({event['protocol_version'] for event in local_events}, {'2.0', '2.1'})
+        self.assertTrue(all(event['action'] == 'decode' and event['status'] == 'passed'
+                            for event in local_events))
+
     def test_get_usage_allocation_recipe_validates_present_then_omitted_identifier(self):
         from route_peer import assert_recipe
 
