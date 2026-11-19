@@ -1253,6 +1253,70 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(all(event['request_delivery_state'] == 'not_sent'
                             and event['transport_invocation_count'] == 0 for event in send_events))
 
+    def test_process_v20_boundary_has_a_typed_pre_send_recipe(self):
+        """OASIS KMIP 2.1 §6.1.39 Process is unavailable in KMIP 2.0."""
+        import route_peer
+        from artifact_support import ROOT
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        case = next(item for item in catalog['test_cases']
+                    if item['case_id'] == 'test-v20-reject-process')
+
+        self.assertEqual(route_peer.recipe_for_case(case, None), ((58,), 'process_v20_boundary'))
+
+    def test_process_request_constructor_and_encoder_preserve_correlation(self):
+        """OASIS KMIP 2.1 §6.1.39 Process requires its Asynchronous Correlation Value."""
+        from artifact_support import INSTALL, ROOT
+        from c_route_models import ModelCases
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        target = next(item for item in catalog['normative_targets']
+                      if item['target_id'] == 'KMIPKIT-ELEM-OP-C2S-PROCESS')
+        models = ModelCases(INSTALL / 'lib/libkmipkit_ffi.so', catalog)
+        expected = {
+            'kmipkit_process_request_create',
+            'kmipkit_process_request_to_ttlv_payload',
+        }
+
+        result = models.execute(target, '2.0', 'kmipkit_process_request_to_ttlv_payload')
+
+        self.assertIsNotNone(result)
+        self.assertTrue(expected <= result['invoked_symbols'])
+        self.assertEqual(result['normalized_tree'], [[
+            0x420006, 8, b'fixture-process-v20-boundary'.hex(),
+        ]])
+
+    def test_process_v20_boundary_records_typed_construction_and_zero_transport_calls(self):
+        """The installed C Process route must report NotSent for KMIP 2.0."""
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case = next(item for item in catalog['test_cases']
+                    if item['case_id'] == 'test-v20-reject-process')
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c',
+            {**catalog, 'test_cases': [case]}, manifest, protocol_versions=('2.0',))
+
+        self.assertEqual(len(events), 14)
+        self.assertEqual(len(checks), 6)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertTrue(all(check['consumer_server_compatibility'] == 'unknown' for check in checks))
+        self.assertTrue(all('kmipkit_client_execute_process' in check['public_api_trace_symbols'] and
+                            'kmipkit_process_request_to_ttlv_payload'
+                            in check['public_api_trace_symbols'] for check in checks))
+        send_events = [event for event in events if event['action'] == 'send']
+        self.assertEqual(len(send_events), 6)
+        self.assertTrue(all(event['request_delivery_state'] == 'not_sent'
+                            and event['transport_invocation_count'] == 0 for event in send_events))
+        local_events = [event for event in events if event['transport'] is None]
+        self.assertEqual({(event['public_api_symbol'], event['action']) for event in local_events}, {
+            ('kmipkit_process_request_create', 'construct'),
+            ('kmipkit_process_request_to_ttlv_payload', 'encode'),
+        })
+
     def test_get_usage_allocation_recipe_validates_present_then_omitted_identifier(self):
         from route_peer import assert_recipe
 
