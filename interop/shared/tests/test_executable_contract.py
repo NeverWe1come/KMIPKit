@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import importlib.util
 import re
 import tempfile
 import unittest
@@ -152,6 +153,86 @@ class ExecutableContractTests(unittest.TestCase):
         sample["cases"][0]["result_reason_code"] = 4294967296
         with self.assertRaises(jsonschema.ValidationError):
             jsonschema.validate(sample, result_schema)
+
+    def test_recertify_recipe_uses_an_existing_certificate_for_both_versions(self) -> None:
+        generator_path = ROOT / "interop/shared/catalog/generate_test_catalog.py"
+        spec = importlib.util.spec_from_file_location("generate_test_catalog", generator_path)
+        self.assertIsNotNone(spec)
+        assert spec is not None and spec.loader is not None
+        generator = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(generator)
+        generated = generator.generate_catalog(ROOT / "specification/catalog/kmip-2.1.json")
+        case = next(item for item in generated["test_cases"] if item["case_id"] == "test-op-re-certify")
+
+        self.assertEqual(["2.0", "2.1"], case["execution"]["protocol_versions"])
+        self.assertIn("Certificate", " ".join(case["isolation_recipe"]["setup_steps"]))
+        self.assertNotIn("SymmetricKey", " ".join(case["isolation_recipe"]["setup_steps"]))
+
+    def test_validate_recipe_uses_a_certificate_object_chain_for_both_versions(self) -> None:
+        generator_path = ROOT / "interop/shared/catalog/generate_test_catalog.py"
+        spec = importlib.util.spec_from_file_location("generate_test_catalog", generator_path)
+        self.assertIsNotNone(spec)
+        assert spec is not None and spec.loader is not None
+        generator = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(generator)
+        generated = generator.generate_catalog(ROOT / "specification/catalog/kmip-2.1.json")
+        case = next(item for item in generated["test_cases"] if item["case_id"] == "test-op-validate")
+
+        self.assertEqual(["2.0", "2.1"], case["execution"]["protocol_versions"])
+        setup = " ".join(case["isolation_recipe"]["setup_steps"])
+        self.assertIn("Certificate", setup)
+        self.assertNotIn("SymmetricKey", setup)
+
+    def test_rekey_key_pair_recipe_seeds_a_key_pair_for_both_versions(self) -> None:
+        generator_path = ROOT / "interop/shared/catalog/generate_test_catalog.py"
+        spec = importlib.util.spec_from_file_location("generate_test_catalog", generator_path)
+        self.assertIsNotNone(spec)
+        assert spec is not None and spec.loader is not None
+        generator = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(generator)
+        generated = generator.generate_catalog(ROOT / "specification/catalog/kmip-2.1.json")
+        case = next(item for item in generated["test_cases"]
+                    if item["case_id"] == "test-op-re-key-key-pair")
+
+        self.assertEqual(["2.0", "2.1"], case["execution"]["protocol_versions"])
+        setup = " ".join(case["isolation_recipe"]["setup_steps"])
+        teardown = " ".join(case["isolation_recipe"]["teardown_steps"])
+        self.assertIn("Key Pair", setup)
+        self.assertNotIn("SymmetricKey", setup)
+        self.assertIn("Private Key", teardown)
+        self.assertIn("Public Key", teardown)
+
+    def test_zero_batch_catalog_is_generated_as_pre_transport_construction_rejection(self) -> None:
+        generator_path = ROOT / "interop/shared/catalog/generate_test_catalog.py"
+        spec = importlib.util.spec_from_file_location("generate_test_catalog", generator_path)
+        self.assertIsNotNone(spec)
+        assert spec is not None and spec.loader is not None
+        generator = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(generator)
+        generated = generator.generate_catalog(ROOT / "specification/catalog/kmip-2.1.json")
+        generated_case = next(
+            case for case in generated["test_cases"]
+            if case["case_id"] == "test-batch-count-zero-rejected"
+        )
+        checked_in_case = next(
+            case for case in json.loads(CATALOG.read_text(encoding="utf-8"))["test_cases"]
+            if case["case_id"] == "test-batch-count-zero-rejected"
+        )
+        scenario = generated_case["requires"]["protocol_scenario"]
+
+        self.assertEqual(
+            ["KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-COUNT"],
+            scenario["target_ids"],
+        )
+        self.assertEqual({"construction": "rejected_before_transport"}, scenario["expected"])
+        self.assertEqual(["attempt_empty_batch_construction", "count_transport_calls"], scenario["steps"])
+        self.assertEqual(
+            ["empty_batch_is_rejected_or_cannot_be_constructed", "transport_call_count_is_zero"],
+            scenario["assertions"],
+        )
+        self.assertEqual("Batch Count", generated_case["requires"]["operation"])
+        self.assertEqual([], scenario["operations"])
+        self.assertEqual(checked_in_case, generated_case)
 
     def test_live_configuration_requires_isolation_and_mutation_opt_in(self) -> None:
         try:

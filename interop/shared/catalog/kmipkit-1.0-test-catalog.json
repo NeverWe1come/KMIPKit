@@ -56999,12 +56999,15 @@
       "isolation_recipe": {
         "unique_name_prefix": "kmipkit-certify",
         "setup_steps": [
-          "Create unique SymmetricKey"
+          "Create Key Pair with Certificate Sign usage on Private Key",
+          "Activate Private Key"
         ],
-        "target_step": "Execute Certify",
+        "target_step": "Certify Public Key with Certificate Type X.509",
         "teardown_steps": [
-          "Revoke SymmetricKey",
-          "Destroy SymmetricKey"
+          "Revoke Private Key",
+          "Destroy Certificate",
+          "Destroy Private Key",
+          "Destroy Public Key"
         ],
         "normalized_fields": [
           "TimeStamp",
@@ -57023,6 +57026,14 @@
         {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.6"
+        },
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "12.1"
+        },
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "12.1"
         }
       ],
       "execution": {
@@ -57190,7 +57201,8 @@
         "setup_steps": [],
         "target_step": "Execute Create Key Pair",
         "teardown_steps": [
-          "Destroy object"
+          "Destroy Private Key",
+          "Destroy Public Key"
         ],
         "normalized_fields": [
           "TimeStamp",
@@ -58948,12 +58960,17 @@
       "isolation_recipe": {
         "unique_name_prefix": "kmipkit-re-certify",
         "setup_steps": [
-          "Create unique SymmetricKey"
+          "Create Key Pair with Certificate Sign usage on Private Key",
+          "Activate Private Key",
+          "Certify Public Key to create the existing X.509 Certificate"
         ],
         "target_step": "Execute Re-certify",
         "teardown_steps": [
-          "Revoke SymmetricKey",
-          "Destroy SymmetricKey"
+          "Revoke Private Key",
+          "Destroy replacement Certificate",
+          "Destroy existing Certificate",
+          "Destroy Private Key",
+          "Destroy Public Key"
         ],
         "normalized_fields": [
           "TimeStamp",
@@ -59076,12 +59093,17 @@
       "isolation_recipe": {
         "unique_name_prefix": "kmipkit-re-key-key-pair",
         "setup_steps": [
-          "Create unique SymmetricKey"
+          "Create Key Pair with explicit algorithm and usage attributes",
+          "Activate existing Private Key"
         ],
-        "target_step": "Execute Re-key Key Pair",
+        "target_step": "Re-key the existing Private/Public Key pair",
         "teardown_steps": [
-          "Revoke SymmetricKey",
-          "Destroy SymmetricKey"
+          "Revoke existing Private Key",
+          "Revoke replacement Private Key",
+          "Destroy existing Private Key",
+          "Destroy existing Public Key",
+          "Destroy replacement Private Key",
+          "Destroy replacement Public Key"
         ],
         "normalized_fields": [
           "TimeStamp",
@@ -59581,12 +59603,14 @@
       "isolation_recipe": {
         "unique_name_prefix": "kmipkit-sign",
         "setup_steps": [
-          "Create unique SymmetricKey"
+          "Create Key Pair with Sign usage on Private Key",
+          "Activate Private Key"
         ],
         "target_step": "Execute Sign",
         "teardown_steps": [
-          "Revoke SymmetricKey",
-          "Destroy SymmetricKey"
+          "Revoke Private Key",
+          "Destroy Private Key",
+          "Destroy Public Key"
         ],
         "normalized_fields": [
           "TimeStamp",
@@ -59605,6 +59629,14 @@
         {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.55"
+        },
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "12.1"
+        },
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "12.1"
         }
       ],
       "execution": {
@@ -59645,12 +59677,14 @@
       "isolation_recipe": {
         "unique_name_prefix": "kmipkit-signature-verify",
         "setup_steps": [
-          "Create unique SymmetricKey"
+          "Create Key Pair with Verify usage on Public Key",
+          "Activate Public Key"
         ],
         "target_step": "Execute Signature Verify",
         "teardown_steps": [
-          "Revoke SymmetricKey",
-          "Destroy SymmetricKey"
+          "Revoke Public Key",
+          "Destroy Public Key",
+          "Destroy Private Key"
         ],
         "normalized_fields": [
           "TimeStamp",
@@ -59669,6 +59703,14 @@
         {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.56"
+        },
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "12.1"
+        },
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "12.1"
         }
       ],
       "execution": {
@@ -59709,13 +59751,10 @@
       "isolation_recipe": {
         "unique_name_prefix": "kmipkit-validate",
         "setup_steps": [
-          "Create unique SymmetricKey"
+          "Provide a valid X.509 Certificate chain fixture"
         ],
         "target_step": "Execute Validate",
-        "teardown_steps": [
-          "Revoke SymmetricKey",
-          "Destroy SymmetricKey"
-        ],
+        "teardown_steps": [],
         "normalized_fields": [
           "TimeStamp",
           "UniqueIdentifier",
@@ -59742,16 +59781,15 @@
           "2.1"
         ],
         "steps": [
-          "prepare_isolated_fixture",
-          "execute_operation",
-          "verify_response",
-          "cleanup_fixture"
+          "prepare_valid_certificate_chain",
+          "execute_validate",
+          "verify_validity_indicator"
         ],
         "assertions": [
-          "response_matches_operation_contract",
-          "state_effect_matches_expectation"
+          "request_contains_only_certificate_chain_inputs",
+          "validity_indicator_matches_fixture"
         ],
-        "mutation": "mutating",
+        "mutation": "read_only",
         "status": "planned"
       }
     },
@@ -206305,10 +206343,12 @@
               "Cancel",
               "Poll"
             ],
-            "asynchronous_indicator": "omitted"
+            "asynchronous_indicator": "omitted",
+            "cancel_result": "Canceled"
           },
           "expected": {
-            "poll_or_cancel_response": "not Pending and contains no async correlation"
+            "poll_response": "terminal and contains no async correlation",
+            "cancel_response": "not Pending and echoes the request correlation"
           },
           "mode": "server_exchange",
           "mutation": "read_only",
@@ -206317,8 +206357,8 @@
             "inspect_response_headers_and_payloads"
           ],
           "assertions": [
-            "poll_and_cancel_are_not_returned_as_pending",
-            "poll_and_cancel_responses_do_not_create_async_correlations"
+            "poll_response_is_terminal_without_async_correlation",
+            "cancel_success_echoes_request_correlation_without_pending_status"
           ],
           "normative_refs": [
             {
@@ -206425,8 +206465,8 @@
           "inspect_response_headers_and_payloads"
         ],
         "assertions": [
-          "poll_and_cancel_are_not_returned_as_pending",
-          "poll_and_cancel_responses_do_not_create_async_correlations"
+          "poll_response_is_terminal_without_async_correlation",
+          "cancel_success_echoes_request_correlation_without_pending_status"
         ],
         "mutation": "read_only",
         "status": "planned"

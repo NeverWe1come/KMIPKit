@@ -72,6 +72,7 @@ never be described as vendor interoperability evidence.
 | KMIPKIT-0092-FR-008 | Results and diagnostics SHALL exclude credentials, private keys, secret key material, raw KMIP bodies, remote error text, and unredacted cryptographic values. Controlled fixture results SHALL NOT imply vendor support or certification. |
 | KMIPKIT-0092-FR-009 | Public API limitations SHALL be explicit and source-backed. A limitation is valid only when the exact installed public artifact lacks the required constructor, encoder, decoder, or send route; an unfinished validator recipe is pending coverage and SHALL fail the completeness gate. |
 | KMIPKIT-0092-FR-010 | The normative inventory SHALL enumerate every in-scope operation, managed object, attribute, TTLV data type, assigned and reserved enumeration/bit-mask value, extension allocation, tag and tag-allocation range, request/response field branch, and defined boundary/error class from the pinned OASIS KMIP 2.0/2.1 sources. Values incorporated by normative reference (including PKCS#11 values in KMIP §§11.38–11.39) SHALL have their referenced source version pinned and inventoried. The generator and tests SHALL fail when a source-backed item is absent from the catalog. |
+| KMIPKIT-0092-FR-011 | When an approved response-cardinality policy means a request item has no response item, the generated route matrix SHALL mark only that item's response-decode obligations `not_applicable` with the policy-specific reason. Evidence SHALL record this disposition with zero invocations and no invocation identifier or fabricated response data. The approved KMIPKIT-0007-FR-018 Stop case is `stop_unprocessed_response_omitted`; OASIS KMIP 2.0 §11.5/Table 396 and KMIP 2.1 §11.5/Table 434 inform Stop behavior but do not explicitly require omission. |
 
 ## Acceptance criteria
 
@@ -88,6 +89,10 @@ never be described as vendor interoperability evidence.
   cannot satisfy another case solely because the operation name matches.
 - Each catalog enum and mask case checks its own named type and values,
   including preservation of unknown values and bits.
+- For the approved KMIPKIT-0007-FR-018 Stop case, an omitted response item is
+  represented as an explicit non-applicability disposition, not a missing
+  invocation or synthetic API call; every returned item's decoder remains a
+  required executable cell.
 - The parity workflow compares the same release artifact, case, protocol
   version, configuration, route, encoding, transport, and fixture across
   languages. Incomparable runs remain explicitly un-compared.

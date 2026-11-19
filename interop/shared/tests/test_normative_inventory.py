@@ -22,6 +22,73 @@ class NormativeInventoryTests(unittest.TestCase):
         cls.source = json.loads(SOURCE_PATH.read_text(encoding="utf-8"))
         cls.targets = cls.catalog.get("normative_targets", [])
 
+    def test_signature_operation_fixtures_use_key_types_allowed_by_usage_masks(self) -> None:
+        """OASIS KMIP 2.0/2.1 §12.1 restrict Sign and Verify key types."""
+        expected = {
+            "test-op-sign": (
+                ["Create Key Pair with Sign usage on Private Key", "Activate Private Key"],
+                ["Revoke Private Key", "Destroy Private Key", "Destroy Public Key"],
+            ),
+            "test-op-signature-verify": (
+                ["Create Key Pair with Verify usage on Public Key", "Activate Public Key"],
+                ["Revoke Public Key", "Destroy Public Key", "Destroy Private Key"],
+            ),
+        }
+        for case_id, (setup_steps, teardown_steps) in expected.items():
+            with self.subTest(case_id=case_id):
+                case = next(item for item in self.catalog["test_cases"]
+                            if item["case_id"] == case_id)
+                self.assertEqual(case["isolation_recipe"]["setup_steps"], setup_steps)
+                self.assertEqual(case["isolation_recipe"]["teardown_steps"], teardown_steps)
+                self.assertIn(
+                    {"document": "OASIS KMIP 2.0 Specification", "section": "12.1"},
+                    case["normative_refs"],
+                )
+                self.assertIn(
+                    {"document": "OASIS KMIP 2.1 Specification", "section": "12.1"},
+                    case["normative_refs"],
+                )
+
+    def test_create_key_pair_fixture_cleans_up_both_returned_objects(self) -> None:
+        """OASIS KMIP 2.0/2.1 §6.1.9 creates a private and public key object."""
+        case = next(item for item in self.catalog["test_cases"]
+                    if item["case_id"] == "test-op-create-key-pair")
+        self.assertEqual([], case["isolation_recipe"]["setup_steps"])
+        self.assertEqual(
+            ["Destroy Private Key", "Destroy Public Key"],
+            case["isolation_recipe"]["teardown_steps"],
+        )
+        self.assertIn(
+            {"document": "OASIS KMIP 2.0 Specification", "section": "6.1.9"},
+            case["normative_refs"],
+        )
+        self.assertIn(
+            {"document": "OASIS KMIP 2.1 Specification", "section": "6.1.9"},
+            case["normative_refs"],
+        )
+
+    def test_certify_fixture_uses_public_key_and_cleans_up_certificate_and_pair(self) -> None:
+        """OASIS KMIP 2.0/2.1 §§6.1.6 and 12.1 define Certify and Certificate Sign use."""
+        case = next(item for item in self.catalog["test_cases"]
+                    if item["case_id"] == "test-op-certify")
+        self.assertEqual(
+            ["Create Key Pair with Certificate Sign usage on Private Key", "Activate Private Key"],
+            case["isolation_recipe"]["setup_steps"],
+        )
+        self.assertEqual(
+            ["Revoke Private Key", "Destroy Certificate", "Destroy Private Key", "Destroy Public Key"],
+            case["isolation_recipe"]["teardown_steps"],
+        )
+        self.assertEqual(
+            "Certify Public Key with Certificate Type X.509",
+            case["isolation_recipe"]["target_step"],
+        )
+        for version in ("2.0", "2.1"):
+            self.assertIn(
+                {"document": f"OASIS KMIP {version} Specification", "section": "12.1"},
+                case["normative_refs"],
+            )
+
     def test_ephemeral_message_field_preserves_its_boolean_source_encoding(self) -> None:
         """KMIP 2.0 §8.3 Table 358 and KMIP 2.1 §8.3 Table 396 identify Ephemeral as Boolean."""
         target_id = "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-EPHEMERAL"

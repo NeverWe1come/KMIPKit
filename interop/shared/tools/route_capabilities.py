@@ -102,10 +102,72 @@ _SECRET_DATA_KEY_PROPERTY_TARGETS = [
     'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-LENGTH',
 ]
 _SECRET_DATA_FACTORY = ('python', 'kmipkit.managed_objects.ManagedObject.secret_data')
+_ZERO_BATCH_COUNT_GET_ROUTES = {
+    ('c', 'kmipkit_client_batch_item_get'): 'bindings/c/include/kmipkit.h',
+    ('c', 'kmipkit_client_batch_item_response_get'): 'specification/api/public-api.json',
+    ('java', 'org.kmipkit.extensions.ClientBatchItem.get'):
+        'bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItem.java',
+    ('java', 'org.kmipkit.extensions.ClientBatchItemResult.getResponse'):
+        'specification/api/public-api.json',
+    ('python', 'kmipkit.extensions.client_batch_item_get'):
+        'bindings/python/src/kmipkit/extensions.py',
+    ('python', 'kmipkit.client.BatchItemResult.get_response'):
+        'specification/api/public-api.json',
+    ('rust', 'kmipkit_client::ClientBatchItem::new'):
+        'crates/kmipkit-client/src/execute.rs',
+    ('rust', 'kmipkit_protocol::GetRequest::new'):
+        'crates/kmipkit-protocol/src/get.rs',
+}
+_ZERO_BATCH_COUNT_REQUEST_PARSERS = {
+    ('c', 'kmipkit_request_message_from_ttlv'): 'bindings/c/include/kmipkit.h',
+    ('java', 'org.kmipkit.message.RequestMessage.fromTtlv'):
+        'bindings/java/src/main/java/org/kmipkit/message/RequestMessage.java',
+    ('python', 'kmipkit.messages.RequestMessage.from_ttlv'):
+        'bindings/python/src/kmipkit/messages.py',
+    ('rust', 'kmipkit_protocol::RequestMessage::try_from_ttlv'):
+        'crates/kmipkit-protocol/src/message/mod.rs',
+}
+_ROUTE_PROTOCOL_VERSION_LIMITS = {
+    ('c', 'kmipkit_client_batch_item_discover_versions'): {
+        'bindings/c/include/kmipkit.h':
+            'kmipkit_client_batch_item_discover_versions(kmipkit_client_batch_item_t ** out_item);',
+        'crates/kmipkit-ffi/src/extension_registry.rs':
+            'HandleValue::BatchItem(Box::new(ClientBatchItem::discover_versions()))',
+        'crates/kmipkit-client/src/execute.rs':
+            'Self::DiscoverVersions(DiscoverVersionsRequest::new())',
+        'crates/kmipkit-protocol/src/discover_versions.rs':
+            'static DEFAULT_OFFER: [ProtocolVersion; 1] = [ProtocolVersion::from_raw(2, 1)];',
+    },
+}
+
+
+def _route_protocol_support(root, commit, language, symbol, declaration_path):
+    source_markers = _ROUTE_PROTOCOL_VERSION_LIMITS.get((language, symbol))
+    if source_markers is None:
+        return ['2.0', '2.1'], [declaration_path]
+
+    source_paths = [declaration_path]
+    for path, marker in source_markers.items():
+        if marker not in source(root, commit, path):
+            raise ValueError(f'pinned protocol-version limit source changed: {path}')
+        if path not in source_paths:
+            source_paths.append(path)
+    return ['2.1'], source_paths
 
 
 def _case_exclusions(root, commit, language, symbol):
     exclusions = []
+    path = _ZERO_BATCH_COUNT_GET_ROUTES.get((language, symbol))
+    if path is not None:
+        source_paths = [path, 'interop/shared/catalog/kmipkit-1.0-test-catalog.json']
+        for source_path in source_paths:
+            source(root, commit, source_path)
+        exclusions.append({
+            'case_ids': ['test-batch-count-zero-rejected'],
+            'target_ids': ['KMIPKIT-ELEM-OP-C2S-GET'],
+            'reason': 'The zero Batch Count case is rejected while parsing the local Request Message; it has no Get Batch Item to construct, send, or decode.',
+            'source_paths': source_paths,
+        })
     path = CHECKED_TAG_INPUTS.get((language, symbol))
     if path is not None:
         # Checked constructors cannot represent these tags; RawTag routes can.
@@ -210,6 +272,20 @@ def _case_exclusions(root, commit, language, symbol):
             'source_paths': source_paths,
         })
     return exclusions
+
+
+def _case_inclusions(root, commit, language, symbol):
+    path = _ZERO_BATCH_COUNT_REQUEST_PARSERS.get((language, symbol))
+    if path is None:
+        return []
+    source_paths = [path, 'interop/shared/catalog/kmipkit-1.0-test-catalog.json']
+    for source_path in source_paths:
+        source(root, commit, source_path)
+    return [{
+        'case_ids': ['test-batch-count-zero-rejected'],
+        'reason': 'The zero Batch Count case exercises the typed Request Message parser locally; this is the case-specific parser route for an empty Request Header with no Batch Items.',
+        'source_paths': source_paths,
+    }]
 
 
 def _decode_source(path, content):
@@ -561,6 +637,9 @@ def validate(data, root=ROOT):
         for exclusion in route.get('case_exclusions', []):
             for path in exclusion['source_paths']:
                 source(root, commit, path)
+        for inclusion in route.get('case_inclusions', []):
+            for path in inclusion['source_paths']:
+                source(root, commit, path)
     missing = expected - constructors
     if missing:
         raise ValueError('missing public API route: ' + repr(sorted(missing)))
@@ -574,7 +653,7 @@ def validate(data, root=ROOT):
             raise ValueError('constructor operation mapping differs from public source')
         if route['combinations'] != expected_route['combinations']:
             raise ValueError('supported encoding/transport pairs differ from public source')
-        for field in ('public_api_symbol', 'api_level', 'mode', 'actions', 'execution_route_id', 'source_paths', 'normative_target_ids', 'case_categories', 'protocol_versions', 'case_exclusions'):
+        for field in ('public_api_symbol', 'api_level', 'mode', 'actions', 'execution_route_id', 'source_paths', 'normative_target_ids', 'case_categories', 'protocol_versions', 'case_exclusions', 'case_inclusions'):
             if route.get(field) != expected_route.get(field):
                 raise ValueError('public API route mapping differs: ' + field)
     if data['execution_routes'] != canonical['execution_routes']:
@@ -673,14 +752,16 @@ def build_manifest(root=ROOT, commit=PINNED_SOURCE_COMMIT):
         combinations = ([{'encoding': 'TTLV', 'transport': None}] if mode == 'local' else
             [{'encoding': encoding, 'transport': transport}
              for encoding in ('TTLV', 'JSON', 'XML') for transport in ('raw_tls', 'https')])
+        protocol_versions, route_source_paths = _route_protocol_support(
+            root, commit, language, symbol, path)
         data['routes'].append({'route_id': route_id, 'language': language, 'api_level': family,
             'mode': mode, 'public_api_symbol': symbol,
             'operation_ids': [operation_id] if operation_id else [],
             'normative_target_ids': (_request_operation_targets(operation_id, targets) if operation_id else
                 _client_request_targets(targets) if symbol == 'kmipkit_client::ClientBatchItem::new' else ['*']),
-            'case_categories': categories + ['normative_inventory'], 'protocol_versions': ['2.0', '2.1'],
+            'case_categories': categories + ['normative_inventory'], 'protocol_versions': protocol_versions,
             'combinations': combinations, 'actions': ['decode'] if generic and 'decode' in symbol else ['construct'],
-            'source_paths': [path], 'artifact_commit': commit,
+            'source_paths': route_source_paths, 'artifact_commit': commit,
             'execution_route_id': execution_id, 'artifact_verification': 'required'})
     request_symbols = {(route['language'], route['public_api_symbol']) for route in data['routes']}
     for model in _models(root, commit, json.dumps(targets, sort_keys=True)):
@@ -776,6 +857,9 @@ def build_manifest(root=ROOT, commit=PINNED_SOURCE_COMMIT):
         exclusions = _case_exclusions(root, commit, route['language'], route['public_api_symbol'])
         if exclusions:
             route['case_exclusions'] = exclusions
+        inclusions = _case_inclusions(root, commit, route['language'], route['public_api_symbol'])
+        if inclusions:
+            route['case_inclusions'] = inclusions
     data['routes'].sort(key=lambda route: route['route_id'])
     return data
 

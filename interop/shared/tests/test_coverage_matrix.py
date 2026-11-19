@@ -31,6 +31,7 @@ class CoverageMatrixTests(unittest.TestCase):
         self.assertEqual(len(self.manifest["execution_routes"]), matrix["execution_route_count"])
         self.assertEqual(4 * len(self.catalog["test_cases"]), matrix["case_language_count"])
         self.assertGreater(matrix["cell_count"], matrix["case_language_count"])
+        self.assertGreater(matrix["not_applicable_cell_count"], 0)
         self.assertRegex(matrix["matrix_sha256"], r"^[0-9a-f]{64}$")
         self.assertEqual([], matrix["public_api_routes_without_cells"])
         self.assertEqual([], matrix["execution_routes_without_cells"])
@@ -95,6 +96,44 @@ class CoverageMatrixTests(unittest.TestCase):
             self.assertEqual({(index, operation, target) for index, (operation, target)
                               in enumerate(zip(case["requires"]["protocol_scenario"]["operations"], target_ids))},
                              steps)
+
+    def test_stop_omitted_response_cells_are_explicitly_not_applicable(self):
+        case_id = 'test-batch-stop-on-first-failure'
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('c',))
+                 if cell['case_id'] == case_id and cell['action'] == 'decode'
+                 and cell.get('workflow_item_index') == 1]
+
+        self.assertTrue(cells)
+        self.assertTrue(all(cell['execution_status'] == 'not_applicable' for cell in cells), cells)
+        self.assertTrue(all(cell['not_applicable_reason'] ==
+                            'stop_unprocessed_response_omitted' for cell in cells), cells)
+        self.assertEqual({'local', 'network'}, {cell['mode'] for cell in cells})
+        first_response = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('c',))
+                          if cell['case_id'] == case_id and cell['action'] == 'decode'
+                          and cell.get('workflow_item_index') == 0]
+        self.assertTrue(first_response)
+        self.assertTrue(all(cell['execution_status'] == 'required'
+                            and 'not_applicable_reason' not in cell for cell in first_response))
+
+    def test_forward_placeholder_local_rejection_only_exempts_network_response_decoders(self):
+        case_id = 'test-batch-placeholder-forward-reference-rejected'
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('c',))
+                 if cell['case_id'] == case_id and cell['action'] == 'decode']
+        network_cells = [cell for cell in cells if cell['mode'] == 'network']
+        local_cells = [cell for cell in cells if cell['mode'] == 'local']
+
+        self.assertTrue(network_cells)
+        self.assertTrue(all(cell['execution_status'] == 'not_applicable' and
+                            cell['not_applicable_reason'] == 'local_rejection_no_response'
+                            for cell in network_cells), network_cells)
+        self.assertTrue(local_cells)
+        self.assertTrue(all(cell['execution_status'] == 'required' and
+                            'not_applicable_reason' not in cell for cell in local_cells), local_cells)
+        request_cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('c',))
+                         if cell['case_id'] == case_id and cell['action'] in {'construct', 'send'}]
+        self.assertTrue(request_cells)
+        self.assertTrue(all(cell['execution_status'] == 'required' and
+                            'not_applicable_reason' not in cell for cell in request_cells), request_cells)
 
     def test_explicit_batch_recipe_does_not_inherit_unrelated_primary_operation(self):
         case = next(case for case in self.catalog["test_cases"]
@@ -162,6 +201,80 @@ class CoverageMatrixTests(unittest.TestCase):
         self.assertNotIn('rust.generic-ttlv.function.ttlv_item_view_from_item', route_ids)
         self.assertIn('rust.generic-ttlv.model.kmipkit.ttlv.rawtag.new', route_ids)
         self.assertIn('rust.generic-ttlv.codec.decode', route_ids)
+
+    def test_zero_batch_count_case_excludes_only_get_item_routes_for_that_case(self):
+        get_item_route = 'c.typed-protocol.kmipkit_client_batch_item_get'
+        zero_count_cells = [cell for cell in iter_cells(
+            self.catalog, self.manifest, languages=('c',))
+            if cell['case_id'] == 'test-batch-count-zero-rejected'
+            and cell['route_id'] == get_item_route]
+        get_cells = [cell for cell in iter_cells(
+            self.catalog, self.manifest, languages=('c',))
+            if cell['case_id'] == 'test-op-get' and cell['route_id'] == get_item_route]
+
+        self.assertFalse(zero_count_cells)
+        self.assertTrue(get_cells)
+
+    def test_zero_batch_count_case_includes_local_request_message_parsers(self):
+        from coverage_matrix import applicable_routes, _operation_ids
+
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] == 'test-batch-count-zero-rejected')
+        for language, symbol in (
+            ('rust', 'kmipkit_protocol::RequestMessage::try_from_ttlv'),
+            ('c', 'kmipkit_request_message_from_ttlv'),
+            ('java', 'org.kmipkit.message.RequestMessage.fromTtlv'),
+            ('python', 'kmipkit.messages.RequestMessage.from_ttlv'),
+        ):
+            routes = applicable_routes(case, self.manifest, language, _operation_ids(self.catalog),
+                                       self.catalog['normative_targets'])
+            self.assertTrue(any(route['public_api_symbol'] == symbol for route in routes),
+                            f'{language} Request Message parser must reject zero Batch Count locally')
+
+    def test_c_discover_versions_builder_is_limited_to_its_fixed_21_offer(self):
+        route_id = 'c.typed-protocol.kmipkit_client_batch_item_discover_versions'
+        route = next(route for route in self.manifest['routes'] if route['route_id'] == route_id)
+        self.assertEqual(route['protocol_versions'], ['2.1'])
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('c',))
+                 if cell['route_id'] == route_id and cell['case_id'] == 'test-op-discover-versions']
+        self.assertTrue(cells)
+        self.assertEqual({cell['protocol_version'] for cell in cells}, {'2.1'})
+
+        decoder_id = 'c.typed-protocol.function.client_batch_item_response_discover_versions_supported_versions'
+        decoder = next(route for route in self.manifest['routes'] if route['route_id'] == decoder_id)
+        self.assertEqual(decoder['protocol_versions'], ['2.0', '2.1'])
+
+    def test_versioned_operation_payload_fields_only_expand_for_their_target_versions(self):
+        case_id = 'test-async-indicator-omitted-default'
+        payload_versions = {
+            'KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-20-001': {'2.0'},
+            'KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-21-001': {'2.1'},
+        }
+        for language in ('rust', 'c', 'java', 'python'):
+            for target_id, expected_versions in payload_versions.items():
+                observed_versions = {
+                    cell['protocol_version']
+                    for cell in iter_cells(self.catalog, self.manifest, languages=(language,))
+                    if cell['case_id'] == case_id and cell['target_id'] == target_id
+                }
+                self.assertEqual(expected_versions, observed_versions,
+                                 f'{language} {target_id} must not cross target protocol versions')
+
+    def test_generic_ttlv_keeps_future_operation_and_enum_boundary_cells(self):
+        cells = list(iter_cells(self.catalog, self.manifest, languages=('c',)))
+        for case_id, target_id, expected_versions in (
+            ('test-v20-reject-ping', 'KMIPKIT-ELEM-OP-C2S-PING', {'2.0'}),
+            ('test-enum-operation', 'KMIPKIT-ELEM-ENUM-VALUE-OPERATION-PING-0000003B', {'2.0', '2.1'}),
+        ):
+            versions = {
+                cell['protocol_version']
+                for cell in cells
+                if cell['case_id'] == case_id
+                and cell['target_id'] == target_id
+                and cell['route_id'].startswith('c.generic-ttlv.')
+            }
+            self.assertEqual(expected_versions, versions,
+                             f'generic TTLV must preserve valid boundary cells for {case_id}')
 
     def test_source_backed_target_id_exclusions_apply_to_generic_routes(self):
         target_id = 'KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES'
@@ -399,7 +512,8 @@ class CoverageMatrixTests(unittest.TestCase):
         cells = list(iter_cells(self.catalog, self.manifest))
         selected = [next(cell for cell in cells if cell["mode"] == "local"),
                     next(cell for cell in cells if cell["mode"] == "network"),
-                    next(cell for cell in cells if "workflow_step_index" in cell)]
+                    next(cell for cell in cells if "workflow_step_index" in cell),
+                    next(cell for cell in cells if cell["execution_status"] == "not_applicable")]
         for cell in selected:
             with self.subTest(cell=cell):
                 jsonschema.validate(cell, schema)
@@ -407,11 +521,18 @@ class CoverageMatrixTests(unittest.TestCase):
         invalid.pop("workflow_operation")
         with self.assertRaises(jsonschema.ValidationError):
             jsonschema.validate(invalid, schema)
+        invalid = dict(selected[3])
+        invalid.pop("not_applicable_reason")
+        with self.assertRaises(jsonschema.ValidationError):
+            jsonschema.validate(invalid, schema)
 
     def test_cells_preserve_each_supported_version_encoding_and_transport(self):
         cells = list(iter_cells(self.catalog, self.manifest))
-        self.assertTrue(all(cell["execution_status"] == "required" for cell in cells))
+        self.assertTrue(all(cell["execution_status"] in {"required", "not_applicable"}
+                            for cell in cells))
         self.assertTrue(all(cell["evidence_collected"] is False for cell in cells))
+        self.assertEqual(sum(cell["execution_status"] == "not_applicable" for cell in cells),
+                         build_matrix(self.catalog, self.manifest)["not_applicable_cell_count"])
         identities = [(cell["case_id"], cell["language"], cell["route_id"], cell.get("target_id"),
                        cell.get("workflow_step_index"), cell.get("workflow_item_index"),
                        cell["execution_route_id"], cell["action"], cell["protocol_version"],

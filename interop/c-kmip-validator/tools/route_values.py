@@ -1,0 +1,206 @@
+"""Execute named enum/mask cases without substituting another KMIP type."""
+from __future__ import annotations
+
+import ctypes as C
+import hashlib
+import json
+from pathlib import Path
+import re
+
+from artifact_support import ROOT
+from route_ttlv import TreeAbi, digest, encode
+
+
+def norm(value):
+    return re.sub('[^a-z0-9]', '', value.lower())
+
+
+class ValueCases:
+    def __init__(self, library: Path, catalog):
+        self.abi = TreeAbi(library)
+        self.abi.bind('kmipkit_credential_from_ttlv', [C.c_void_p, C.POINTER(C.c_void_p)])
+        self.abi.bind('kmipkit_credential_into_ttlv', [C.c_void_p, C.POINTER(C.c_void_p)])
+        self.abi.library.kmipkit_credential_release.argtypes = [C.c_void_p]
+        self.abi.library.kmipkit_credential_release.restype = None
+        self.abi.bind('kmipkit_client_batch_create', [C.POINTER(C.c_void_p)])
+        self.abi.bind('kmipkit_client_batch_set_asynchronous_indicator', [C.c_void_p, C.c_uint32])
+        self.abi.bind('kmipkit_client_batch_add_error_continuation_value', [C.c_void_p, C.c_uint32])
+        self.abi.library.kmipkit_client_batch_release.argtypes = [C.c_void_p]
+        self.abi.library.kmipkit_client_batch_release.restype = None
+        self.catalog = catalog
+        self.tags = {norm(target['name']): int(target['wire_value'], 16)
+                     for target in catalog['normative_targets'] if target['kind'] == 'tag'}
+
+    def credential_model_roundtrip(self, raw_type):
+        type_tag = self.tags.get(norm('Credential Type'))
+        value_tag = self.tags.get(norm('Credential Value'))
+        if type_tag is None or value_tag is None:
+            raise ValueError('credential_outer_tags_missing')
+        limits, source, credential, encoded = (C.c_void_p() for _ in range(4))
+        try:
+            self.abi.call('kmipkit_codec_limits_defaults', C.byref(limits))
+            source = self.abi.construct_structure([
+                (type_tag, 5, raw_type.to_bytes(4, 'big')),
+                (value_tag, 1, []),
+            ], limits)
+            expected = self.abi.read_structure(source)
+            self.abi.call('kmipkit_credential_from_ttlv', source, C.byref(credential))
+            source = C.c_void_p()
+            self.abi.call('kmipkit_credential_into_ttlv', credential, C.byref(encoded))
+            credential = C.c_void_p()
+            actual = self.abi.read_structure(encoded)
+            if actual != expected:
+                raise ValueError('credential_ttlv_tree_not_preserved')
+            return actual
+        finally:
+            self.abi.release('ttlv_structure', encoded)
+            self.abi.release('credential', credential)
+            self.abi.release('ttlv_structure', source)
+            self.abi.release('codec_limits', limits)
+
+    def exercise_batch_enum_values(self, symbol, values):
+        self.abi.called.clear()
+        for value in values:
+            batch = C.c_void_p()
+            try:
+                self.abi.call('kmipkit_client_batch_create', C.byref(batch))
+                self.abi.call(symbol, batch, value)
+            finally:
+                self.abi.release('client_batch', batch)
+        return set(self.abi.called)
+
+    def item_type_values(self, version):
+        return sorted(int(target['wire_value'], 16) for target in self.catalog['normative_targets']
+            if target['kind'] == 'enumeration_value'
+            and target.get('parent_element_ids') == ['KMIPKIT-ELEM-ENUMERATION-ITEM-TYPE']
+            and version in target['protocol_versions'])
+
+    def execute(self, case, version, target=None):
+        requires = case['requires']
+        type_name = requires.get('enum_type') or requires.get('bitmask_type')
+        if (type_name is None and target is not None
+                and 'KMIPKIT-ELEM-ENUMERATION-ITEM-TYPE'
+                in target.get('parent_element_ids', [])):
+            type_name = 'Item Type'
+        if not type_name:
+            return None
+        if type_name == 'Item Type':
+            vectors = json.loads((ROOT / 'interop/shared/vectors/ttlv-boundaries.json').read_text())
+            results, symbols, count = [], set(), 0
+            for vector in vectors['vectors']:
+                result = self.abi.boundary_case(vector)
+                results.append([vector['type_code'], result['tree_sha256']])
+                symbols.update(result['invoked_symbols'])
+                count += result['sample_count']
+            values = self.item_type_values(version)
+            tag = self.tags.get(norm('Operation'))
+            if tag is None or not values:
+                return None
+            for value in [*values, 0xFFFFFFFF]:
+                result = self.abi.roundtrip(encode((tag, 5, value.to_bytes(4, 'big'))))
+                results.append([value, result['normalized_tree']])
+                symbols.update(result['invoked_symbols'])
+                count += 1
+            return {'tree_sha256': digest(results), 'invoked_symbols': symbols,
+                    'sample_count': count, 'known_values_checked': len(values),
+                    'unknown_value_preserved': True, 'values_checked': values, 'tag': tag}
+        tag = self.tags.get(norm(type_name))
+        if tag is None:
+            return None
+        mask = 'bitmask_type' in requires
+        parents = ('BITMASK' if mask else 'ENUMERATION')
+        known = []
+        for target in self.catalog['normative_targets']:
+            kinds = {'bitmask_value'} if mask else {'enumeration_value'}
+            if type_name == 'Tag':
+                kinds.add('tag')
+            if type_name in ('PKCS#11 Function', 'PKCS#11 Return Code'):
+                kinds.add('referenced_enum_value')
+            if target['kind'] not in kinds:
+                continue
+            if version not in target['protocol_versions']:
+                continue
+            if not (target.get('parent_name') == type_name or any(norm(re.sub('^KMIPKIT-ELEM-' + parents + '-', '', parent)) == norm(type_name)
+                       for parent in target.get('parent_element_ids', []))):
+                continue
+            raw = target.get('wire_value', '')
+            if re.fullmatch('[0-9a-fA-F]{1,8}', raw):
+                known.append(int(raw, 16))
+            elif re.fullmatch('[0-9a-fA-F]{8} - [0-9a-fA-F]{8}', raw):
+                known.extend(int(boundary, 16) for boundary in raw.split(' - '))
+        known = sorted(set(known))
+        if not known:
+            return None
+        specification = requires.get('exhaustive_bitmask_combinations')
+        if specification:
+            flags = [int(value, 16) for value in specification['flag_wire_values']]
+            count = 1 << len(flags)
+            if specification['combination_count'] != count:
+                raise ValueError('catalog_mask_combination_count_mismatch')
+            values = (sum(flag for index, flag in enumerate(flags) if pattern & (1 << index))
+                      for pattern in range(count))
+        else:
+            count = 0
+            values = iter(known)
+        state, symbols, sample_count = hashlib.sha256(), set(), 0
+        for value in values:
+            result = self.abi.roundtrip(encode((tag, 2 if mask else 5, value.to_bytes(4, 'big'))))
+            state.update(json.dumps(result['normalized_tree'], separators=(',', ':')).encode())
+            state.update(b'\n')
+            symbols.update(result['invoked_symbols'])
+            sample_count += 1
+        if mask:
+            all_known = 0
+            for flag in known:
+                all_known |= flag
+            unknown = next((1 << bit for bit in reversed(range(32)) if not all_known & (1 << bit)), None)
+            if unknown is None:
+                raise ValueError('no_unknown_bit_available_for_mask')
+            unknown_values = [unknown, unknown | all_known]
+        else:
+            unknown_values = [next(value for value in (0xFFFFFFFF, 0xF1234567, 0x80000000) if value not in known)]
+        for value in unknown_values:
+            result = self.abi.roundtrip(encode((tag, 2 if mask else 5, value.to_bytes(4, 'big'))))
+            state.update(json.dumps(result['normalized_tree'], separators=(',', ':')).encode())
+            state.update(b'\n')
+            symbols.update(result['invoked_symbols'])
+            sample_count += 1
+        credential_type_values_checked = 0
+        credential_model_roundtrips = 0
+        batch_option_values_checked = 0
+        if type_name == 'Credential Type':
+            self.abi.bind('kmipkit_credential_type_from_raw', [C.c_uint32, C.POINTER(C.c_uint32)])
+            for value in [*known, *unknown_values]:
+                actual = C.c_uint32()
+                self.abi.call('kmipkit_credential_type_from_raw', value, C.byref(actual))
+                if actual.value != value:
+                    raise ValueError('credential_type_raw_value_not_preserved')
+                symbols.update(self.abi.called)
+                credential_type_values_checked += 1
+                credential_tree = self.credential_model_roundtrip(value)
+                normalized_credential = [
+                    [child_tag, item_type,
+                     child_value.hex() if isinstance(child_value, bytes) else child_value]
+                    for child_tag, item_type, child_value in credential_tree
+                ]
+                state.update(json.dumps(normalized_credential, separators=(',', ':')).encode())
+                state.update(b'\n')
+                symbols.update(self.abi.called)
+                credential_model_roundtrips += 1
+        batch_option_symbol = {
+            'Asynchronous Indicator': 'kmipkit_client_batch_set_asynchronous_indicator',
+            'Batch Error Continuation Option': 'kmipkit_client_batch_add_error_continuation_value',
+        }.get(type_name)
+        if batch_option_symbol:
+            batch_option_values = [*known, *unknown_values]
+            symbols.update(self.exercise_batch_enum_values(batch_option_symbol, batch_option_values))
+            batch_option_values_checked = len(batch_option_values)
+        result = {'tree_sha256': state.hexdigest(), 'invoked_symbols': symbols, 'sample_count': sample_count,
+                  'known_values_checked': len(known), 'unknown_value_preserved': True,
+                  'combination_count': count, 'tag': tag, 'values_checked': known}
+        if type_name == 'Credential Type':
+            result['credential_type_values_checked'] = credential_type_values_checked
+            result['credential_model_roundtrips'] = credential_model_roundtrips
+        if batch_option_symbol:
+            result['batch_option_values_checked'] = batch_option_values_checked
+        return result
