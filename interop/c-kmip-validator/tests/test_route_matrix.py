@@ -1022,6 +1022,38 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(sum(event['public_api_symbol'] == 'kmipkit_client_execute_poll' and
                              event['action'] == 'send' for event in events), 12)
 
+    def test_poll_operation_has_controlled_create_poll_cleanup_recipe(self):
+        """OASIS KMIP 2.0 §6.1.36 and KMIP 2.1 §6.1.38 require a real Poll request."""
+        from artifact_support import ROOT
+        import route_peer
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        case = next(item for item in catalog['test_cases']
+                    if item['case_id'] == 'test-op-poll')
+
+        self.assertEqual(
+            route_peer.recipe_for_case(case, None),
+            ((1, 26, 26, 26, 20), 'async_poll_repeated_pending_to_success'))
+
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        selected = {**catalog, 'test_cases': [case]}
+        events, _, checks = route_peer.execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertTrue(all(check.get('peer_async_interleaving_operations') == [1, 26, 26, 26, 20] and
+                            check.get('peer_async_response_statuses') == [2, 2, 2, 0, 0] and
+                            check.get('peer_async_poll_correlations_match') is True and
+                            check.get('peer_async_final_poll_create_shape') is True and
+                            check.get('peer_final_state_matches_setup') is True
+                            for check in checks), checks)
+        poll_encode = [event for event in events
+                       if event['public_api_symbol'] ==
+                       'kmipkit_poll_request_to_ttlv_payload' and event['action'] == 'encode']
+        self.assertEqual({event['protocol_version'] for event in poll_encode}, {'2.0', '2.1'})
+        self.assertEqual(len(poll_encode), 2)
+
     def test_async_process_changes_state_seen_by_correlated_poll(self):
         """OASIS KMIP 2.1 §6.1.39 Tables 278–279 require correlated Process and Poll."""
         from artifact_support import ROOT
