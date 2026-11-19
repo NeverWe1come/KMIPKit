@@ -226,6 +226,15 @@ class CoverageMatrixTests(unittest.TestCase):
         self.assertEqual({"construct", "send"}, {cell["action"] for cell in network_cells})
         self.assertFalse(any("response" in cell["route_id"] for cell in cells))
 
+    def test_empty_batch_rejection_has_construction_but_no_transport_or_decode_cells(self):
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest)
+                 if cell["case_id"] == "test-batch-count-zero-rejected"]
+
+        self.assertTrue(cells)
+        self.assertEqual({"construct"}, {cell["action"] for cell in cells})
+        for language in ("rust", "c", "java", "python"):
+            self.assertTrue(any(cell["language"] == language for cell in cells), language)
+
     def test_network_request_field_targets_do_not_create_response_decode_cells(self):
         cells = [cell for cell in iter_cells(self.catalog, self.manifest)
                  if cell["case_id"] == "test-norm-payload-client-query-request-21-001"
