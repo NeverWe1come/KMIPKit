@@ -4247,3 +4247,24 @@ Selected validation reports 43,941/43,941 expected cells, 43,925 invocations,
 cells, 43,941 executed, and 27,642 pending; its generated reference comparison
 passes. Full-matrix validation remains incomplete, so the Java stack stays
 WIP.
+
+## Java terminal Poll without asynchronous correlation — 2026-11-19
+
+The controlled Java consumer now executes the Poll step in
+`test-async-no-recursive-async-poll-cancel` for KMIP 2.1. The fixture returns a
+terminal Success with the original operation response payload and no
+Asynchronous Correlation Value, matching the catalog scenario. It exercises the
+typed Poll request over TTLV, JSON, and XML on raw TLS and HTTPS, and verifies
+the Poll response, its payload, and the absence of asynchronous state.
+References: OASIS KMIP 2.1 §§6.1.38 and 8.6, Table 399.
+
+Red `fdce18b1a` requires the 18 network route cells and three local Poll route
+cells. Green `82f2bf06e` executes the controlled exchanges and verifies the
+terminal response shape. Refactor updates the checked-in route ledger and
+records this evidence. The full Gradle suite passes 111/111; shared route,
+schema, and capability tests pass 112/112; requirement and feature traceability
+pass 2/2 and 31/31. The report matches its schema, the route-capability audit
+accepts 1,511 routes, and ledger comparison passes. Selected validation reports
+43,962 expected cells, 43,946 invocations, 16 not-applicable cells, and zero
+failures. The ledger records 71,583 planned, 43,962 executed, and 27,621
+pending cells. Full matrix closure remains open, so the Java stack stays WIP.
