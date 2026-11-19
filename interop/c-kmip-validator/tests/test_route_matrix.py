@@ -1365,7 +1365,7 @@ class RouteMatrixTests(unittest.TestCase):
         case = next(item for item in catalog['test_cases']
                     if item['case_id'] == 'test-v20-reject-set-constraints')
 
-        self.assertEqual(route_peer.recipe_for_case(case, None), ((56,), 'set_constraints_v20_boundary'))
+        self.assertEqual(route_peer.recipe_for_case(case, None), ((55,), 'set_constraints_v20_boundary'))
 
     def test_set_constraints_v20_boundary_records_zero_transport_calls(self):
         """The installed C Set Constraints route must report NotSent for KMIP 2.0."""

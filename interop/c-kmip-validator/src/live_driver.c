@@ -7978,7 +7978,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         strcmp(test_case->case_id, "test-v20-reject-get-constraints") == 0 ||
         strcmp(test_case->case_id, "test-v20-reject-ping") == 0 ||
         strcmp(test_case->case_id, "test-v20-reject-process") == 0 ||
-        strcmp(test_case->case_id, "test-v20-reject-set-defaults") == 0;
+        strcmp(test_case->case_id, "test-v20-reject-set-defaults") == 0 ||
+        strcmp(test_case->case_id, "test-v20-reject-set-constraints") == 0;
     bool process_v20_boundary_workflow =
         strcmp(test_case->case_id, "test-v20-reject-process") == 0;
     bool batch_forward_placeholder_workflow =
@@ -8003,6 +8004,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         strcmp(usage_allocation_identifier_form, "omitted") == 0;
     bool set_constraints_workflow =
         strcmp(test_case->case_id, "test-op-set-constraints") == 0;
+    bool set_constraints_v20_boundary_workflow =
+        strcmp(test_case->case_id, "test-v20-reject-set-constraints") == 0;
     bool set_defaults_workflow =
         strcmp(test_case->case_id, "test-op-set-defaults") == 0;
     bool set_defaults_v20_boundary_workflow =
@@ -8427,6 +8430,12 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     char request_validation_diagnostic[256] = {0};
     if (ping_boundary_workflow) {
         status = kmipkit_client_batch_item_ping(&item);
+    } else if (set_constraints_v20_boundary_workflow) {
+        request_construction_step = "Set Constraints structure";
+        status = kmipkit_ttlv_structure_create(&request_attributes);
+        if (status == 0) status = kmipkit_client_batch_item_set_constraints(
+            request_attributes, &item);
+        if (status == 0) status = set_batch_item_id(&item, "interop-set-constraints-v20-boundary");
     } else if (set_defaults_v20_boundary_workflow) {
         request_construction_step = "Set Defaults optional payload";
         status = kmipkit_client_batch_item_set_defaults(NULL, &item);
