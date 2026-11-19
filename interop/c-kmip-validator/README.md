@@ -129,9 +129,9 @@ python3 -m pip install --only-binary ':all:' jsonschema==4.23.0
 python3 interop/c-kmip-validator/tests/test_route_matrix.py
 python3 interop/c-kmip-validator/tools/route_matrix.py \
   --binary interop/c-kmip-validator/build/kmip_validator_c \
-  --output interop/c-kmip-validator/build/route-execution-evidence-batch-correlation.json
+  --output interop/c-kmip-validator/build/route-execution-evidence-default-stop.json
 python3 interop/shared/tools/validate_route_evidence.py \
-  --report interop/c-kmip-validator/build/route-execution-evidence-batch-correlation.json \
+  --report interop/c-kmip-validator/build/route-execution-evidence-default-stop.json \
   --artifact-sha256 "$(sha256sum interop/.local/c-live/install/489fafc79ef89db2524eafa7a6c6482f5cf75d97/lib/libkmipkit_ffi.so | cut -d ' ' -f 1)"
 ```
 
@@ -148,7 +148,7 @@ from pathlib import Path
 sys.path.insert(0, "interop/shared/tools")
 from validate_route_evidence import validate_report
 
-report = json.loads(Path("interop/c-kmip-validator/build/route-execution-evidence-batch-correlation.json").read_text())
+report = json.loads(Path("interop/c-kmip-validator/build/route-execution-evidence-default-stop.json").read_text())
 catalog_bytes = Path("interop/shared/catalog/kmipkit-1.0-test-catalog.json").read_bytes()
 manifest_bytes = Path("interop/shared/coverage/route-capabilities.json").read_bytes()
 artifact_bytes = Path(
@@ -511,7 +511,7 @@ The previous report retained all previous identities and added 40 for the
 identities. It passed the evidence schema and scoped shared validation, while
 22,768 matrix cells remained pending.
 
-The latest full C report is `c-route-4657eef3-12ec-4fe0-bb88-b78746886234`
+The preceding full C report is `c-route-4657eef3-12ec-4fe0-bb88-b78746886234`
 with JSON SHA-256
 `4f44724969f655433306a03491336577a787beb698a5c198cac9f9b538cff1dc`. It has
 66,288 expected cells: 43,518 invoked, 40 explicitly not applicable, zero
@@ -527,3 +527,19 @@ incomplete; scoped shared validation of this 168-cell case reports
 failures. The first pending cells remain the local response decoder for
 `test-op-re-provision`; that recipe is unresolved against the approved source
 contract and is not represented as implemented.
+
+The latest full C report is `c-route-a857f6db-06ed-4041-b7c5-fd119d492875`
+with JSON SHA-256
+`34b5003d7cad4c40cfcb35231d136bb6bfceebe24d8fa29bb9d6d6fabf961b58`. It has
+66,288 expected cells: 43,520 invoked, 40 explicitly not applicable, zero
+failed, and 22,728 pending. It retains all 43,558 identities from the prior
+report and adds two passing local constructor cells for the explicit Stop
+continuation-option builder, one per KMIP version. That API call is tested
+separately from `test-batch-single-item-default-continuation`'s wire recipe:
+the controlled peer still confirms the request omits the option and therefore
+uses the §9.6 default. Scoped validation of the two-cell delta reports
+`selected_scope_complete=true`, `all_invocations_passed=true`, and zero
+failures. Full CTest passes 7/7, including the route-matrix contracts and both
+controlled TLS peer suites. The first pending cells remain the local response
+decoder for `test-op-re-provision`; its recipe is unresolved against the
+approved source contract and remains unimplemented.
