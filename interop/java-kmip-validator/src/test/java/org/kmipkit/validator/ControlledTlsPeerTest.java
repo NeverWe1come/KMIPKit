@@ -35,6 +35,7 @@ import org.kmipkit.extensions.RevokeRequest;
 import org.kmipkit.credentials.AttestationCredential;
 import org.kmipkit.credentials.Credential;
 import org.kmipkit.credentials.CredentialType;
+import org.kmipkit.credentials.CredentialValue;
 import org.kmipkit.credentials.DeviceCredential;
 import org.kmipkit.credentials.HashedPasswordCredential;
 import org.kmipkit.credentials.Nonce;
@@ -2578,6 +2579,7 @@ class ControlledTlsPeerTest {
         int typedCredentialStructureMemberRouteEventCount = KMIP_2_0_AND_2_1.size()
                 * TYPED_CREDENTIAL_STRUCTURE_MEMBER_FIXTURES.size();
         int hashedPasswordHashingAlgorithmBuilderRouteEventCount = KMIP_2_0_AND_2_1.size();
+        int credentialValueStructureMemberRouteEventCount = KMIP_2_0_AND_2_1.size() * 5;
         int credentialTypeMemberRouteEventCount = KMIP_2_0_AND_2_1.size() * 2;
         int batchErrorContinuationEventCount = enumerationFixtures.stream()
                 .filter(fixture -> "BATCH-ERROR-CONTINUATION-OPTION".equals(fixture.parentName()))
@@ -2644,6 +2646,7 @@ class ControlledTlsPeerTest {
                         + credentialStructureMemberRouteEventCount
                         + typedCredentialStructureMemberRouteEventCount
                         + hashedPasswordHashingAlgorithmBuilderRouteEventCount
+                        + credentialValueStructureMemberRouteEventCount
                         + credentialTypeMemberRouteEventCount
                         + objectGroupLocalRouteEventCount
                         + asynchronousRequestOperationStructureRouteEventCount
@@ -2785,6 +2788,7 @@ class ControlledTlsPeerTest {
                         + enumerationFixtures.size() + localEnumerationCaseCount + bitmaskCaseCount
                         + dataTypeCaseCount
                         + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + 7
+                        + 1 // KMIP 2.0/2.1 §9.11 Credential Value member case.
                         + TYPED_CREDENTIAL_STRUCTURE_MEMBER_FIXTURES.size() // Credential and structure-member cases.
                         + genericTagCaseIds.size()
                         + 13 // Includes the new Add Attribute operation-route case.
@@ -4530,6 +4534,7 @@ class ControlledTlsPeerTest {
         appendRouteEvent(events, credentialTypeCaseId, CREDENTIAL_TYPE_FROM_RAW_ROUTE,
                 credentialTypeTargetId, "org.kmipkit.credentials.CredentialType.fromRaw", null, null,
                 "construct", protocolVersion, null, treeHash, null);
+        appendCredentialValueStructureMemberRouteEvent(events, protocolVersion);
 
         byte[] otpCredentialValueWire = oneTimePasswordCredentialValueWire();
         try (TtlvStructure credentialValue = oneTimePasswordCredentialValueStructure()) {
@@ -4573,6 +4578,28 @@ class ControlledTlsPeerTest {
                     fixture.modelRoute(), fixture.credentialTypeRaw(), fixture.memberTag(),
                     fixture.expectedMemberType(), protocolVersion);
         }
+    }
+
+    private static void appendCredentialValueStructureMemberRouteEvent(ArrayNode events,
+            String protocolVersion) throws Exception {
+        String caseId = "test-norm-structure-member-structure-member-9-11-credential-credential-value";
+        String targetId = "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-CREDENTIAL-CREDENTIAL-VALUE";
+        String modelRoute = "java.typed-protocol.model.org.kmipkit.credentials.credentialvalue.fromttlv";
+        String modelSymbol = "org.kmipkit.credentials.CredentialValue.fromTtlv";
+        String credentialModelRoute =
+                "java.typed-protocol.model.org.kmipkit.credentials.usernameandpasswordcredential.fromttlv";
+        byte[] wire = credentialValueWire(credentialModelRoute);
+        String treeHash = normalizedTreeSha256(wire);
+        try (TtlvStructure structure = credentialValueStructure(credentialModelRoute);
+                CredentialValue credentialValue = CredentialValue.fromTtlv(1, structure)) {
+            assertEquals(1L, credentialValue.credentialTypeRaw());
+            assertTrue(Boolean.TRUE.equals(credentialValue.withTtlv(view -> view.itemCount() == 2)),
+                    "CredentialValue.fromTtlv must preserve both Username and Password fields.");
+        }
+        appendRouteEvent(events, caseId, modelRoute, targetId, modelSymbol, null, null,
+                "construct", protocolVersion, null, treeHash, null);
+        appendCredentialGenericStructureRouteEvents(events, caseId, targetId,
+                credentialModelRoute, protocolVersion, treeHash);
     }
 
     private static void appendCredentialMemberRouteEvent(ArrayNode events, String caseId, String targetId,
@@ -7124,6 +7151,7 @@ class ControlledTlsPeerTest {
         appendAnyObjectAttributeCaseIds(caseIds, events);
         additionalCaseIdCount += appendCaseIds(caseIds, managedObjectTypeCaseIds);
         additionalCaseIdCount += appendCaseIds(caseIds, usageLimitsRouteEventCaseIds(events));
+        caseIds.add("test-norm-structure-member-structure-member-9-11-credential-credential-value");
         CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().forEach(caseIds::add);
         report.putArray("protocol_versions").add("2.0").add("2.1");
         appendNetworkCombinations(report, events);
