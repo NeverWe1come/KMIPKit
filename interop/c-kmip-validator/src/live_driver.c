@@ -8717,6 +8717,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         return execute_obtain_lease(client);
     if (strcmp(test_case->case_id, "test-op-sign") == 0)
         return execute_created_key_signature(client, KMIPKIT_ENUMERATION_OPERATION_SIGN, false);
+    if (strcmp(test_case->case_id, "test-crypto-sign-rsa-2048-pkcs1_v1_5") == 0)
+        return execute_created_key_signature(client, KMIPKIT_ENUMERATION_OPERATION_SIGN, false);
     if (strcmp(test_case->case_id,
                "test-sign-missing-managed-object-cryptographic-parameters") == 0)
         return execute_created_key_signature(client, KMIPKIT_ENUMERATION_OPERATION_SIGN, true);

@@ -656,6 +656,7 @@ def main() -> int:
     expected_operations += (1, 18, 36, 19, 20)
     expected_operations += (2, 18, 33, 19, 20, 20)
     expected_operations += (2, 18, 33, 19, 20, 20)
+    expected_operations += (2, 18, 33, 19, 20, 20)
     expected_operations += (2, 18, 34, 19, 20, 20)
     expected_operations += (2, 20, 20)
     expected_operations += (40, 20, 20)
@@ -726,6 +727,7 @@ def main() -> int:
     expected_cases += ("test-op-mac-verify",)
     expected_cases += ("test-op-sign", "test-sign-missing-managed-object-cryptographic-parameters",
                        "test-op-signature-verify")
+    expected_cases += ("test-crypto-sign-rsa-2048-pkcs1_v1_5",)
     expected_cases += ("test-op-create-key-pair",)
     expected_cases += ("test-op-create-split-key",)
     expected_cases += ("test-op-join-split-key",)

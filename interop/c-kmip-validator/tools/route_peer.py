@@ -458,6 +458,7 @@ RECIPES = {
     'test-op-mac': ((1, 18, 35, 19, 20), 'mac'),
     'test-op-mac-verify': ((1, 18, 36, 19, 20), 'mac_verify'),
     'test-op-sign': ((2, 18, 33, 19, 20, 20), 'sign'),
+    'test-crypto-sign-rsa-2048-pkcs1_v1_5': ((2, 18, 33, 19, 20, 20), 'sign'),
     'test-sign-missing-managed-object-cryptographic-parameters': (
         (2, 18, 33, 19, 20, 20), 'sign_missing_parameters'),
     'test-op-signature-verify': ((2, 18, 34, 19, 20, 20), 'signature_verify'),
