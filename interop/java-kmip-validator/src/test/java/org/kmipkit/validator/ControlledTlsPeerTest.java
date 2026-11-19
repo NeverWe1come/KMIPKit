@@ -1754,6 +1754,18 @@ class ControlledTlsPeerTest {
                     "KMIPKIT-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER",
                     "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
                     "construct", protocolVersion);
+            assertRouteEventRecorded(events, "test-attr-usage-limits",
+                    "KMIPKIT-ELEM-ATTRIBUTE-USAGE-LIMITS",
+                    "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
+                    "construct", protocolVersion);
+            assertRouteEventRecorded(events, "test-attr-usage-limits",
+                    "KMIPKIT-ELEM-ATTRIBUTE-USAGE-LIMITS",
+                    "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
+                    "construct", protocolVersion);
+            assertRouteEventRecorded(events, "test-attr-usage-limits",
+                    "KMIPKIT-ELEM-ATTRIBUTE-USAGE-LIMITS",
+                    "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
+                    "construct", protocolVersion);
         }
         int tagAggregateEventCount = appendTagAggregateRouteEvents(events);
         assertEquals(expectedTagAggregateEventCount(), tagAggregateEventCount,
