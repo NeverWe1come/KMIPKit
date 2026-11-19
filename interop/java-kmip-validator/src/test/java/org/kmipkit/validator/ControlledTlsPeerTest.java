@@ -1876,6 +1876,14 @@ class ControlledTlsPeerTest {
                     "KMIPKIT-ELEM-CREDENTIAL-CREDENTIAL",
                     "java.typed-protocol.model.org.kmipkit.credentials.credential.fromttlv",
                     "construct", protocolVersion);
+            assertRouteEventRecorded(events, "test-norm-credential-credential-one-time-password",
+                    "KMIPKIT-ELEM-CREDENTIAL-ONE-TIME-PASSWORD",
+                    "java.typed-protocol.model.org.kmipkit.credentials.credential.fromttlv",
+                    "construct", protocolVersion);
+            assertRouteEventRecorded(events, "test-norm-credential-credential-ticket",
+                    "KMIPKIT-ELEM-CREDENTIAL-TICKET",
+                    "java.typed-protocol.model.org.kmipkit.credentials.credential.fromttlv",
+                    "construct", protocolVersion);
             assertRouteEventRecorded(events, "test-op-revoke", "KMIPKIT-ELEM-OP-C2S-REVOKE",
                     "java.typed-protocol.revoke_request.create", "construct", protocolVersion);
             assertRouteEventRecorded(events, "test-op-revoke", "KMIPKIT-ELEM-OP-C2S-REVOKE",
