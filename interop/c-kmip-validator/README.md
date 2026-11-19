@@ -935,3 +935,28 @@ Full report `c-route-93080d73-9f3e-4d43-9d96-8b93b958df48`
 closes 38 pending cells: 36 network cells and two typed Encrypt response
 accessor decodes; the 42-event case scope also contains four local construction
 and generic TTLV decode events already counted in the earlier report.
+
+### C Query Asynchronous Requests KMIP 2.0 pre-send boundary
+
+The installed C consumer now covers catalog case
+`test-v20-reject-query-asynchronous-requests`. It creates and encodes the empty
+typed request, invokes `kmipkit_client_execute_query_async_requests` with KMIP
+2.0 selected, and requires the client to reject the KMIP 2.1-only operation as
+`NotSent` with zero transport connections. This follows OASIS KMIP 2.1
+§6.1.41 and the KMIP 2.0 operation/version boundary; no server behavior is
+claimed. The focused route test passes the six TTLV/JSON/XML and raw TLS/HTTPS
+combinations. Its 16-event scope includes the four local construction/TTLV
+events and 12 network-configuration construction/send events; the latter all
+prove zero transport calls. Red `f074f10d9` records the missing route as a
+failing test; Green `75251a888` adds the typed C path and controlled consumer
+assertions. Full CTest passes 7/7 in 157.16 seconds.
+
+The full report is `c-route-5d720d8a-8117-4fe6-9b31-6adcbe492f56`
+(`build/route-execution-evidence-c-current.json`), SHA-256
+`d773429bad1abf3a872b19ce588ab7d005e450b23e1def20d5f495b8f0a4f5d2`. It
+records 66,280 planned cells: 44,392 invoked, 52 not applicable, zero failed,
+and 21,836 pending. The schema and scoped shared validator pass for all 44,444
+emitted events with `selected_scope_complete=true` and
+`all_invocations_passed=true`; the full matrix remains incomplete. This slice
+closes the 12 pending construct/send cells for the KMIP 2.0 boundary; its four
+local events were already present in the previous ledger.

@@ -361,3 +361,24 @@ Full report `c-route-93080d73-9f3e-4d43-9d96-8b93b958df48` (SHA-256
 66,280 planned cells, 44,380 invoked, 52 not applicable, zero failed, and
 21,848 pending. The schema and scoped shared validator pass; the C route matrix
 remains incomplete.
+
+### C Query Asynchronous Requests KMIP 2.0 version boundary
+
+KMIPKIT-0092-FR-003/FR-007: the C installed-consumer matrix now executes
+`test-v20-reject-query-asynchronous-requests` through the public typed
+`kmipkit_client_execute_query_async_requests` route with KMIP 2.0 selected.
+The empty request model encodes successfully, then the operation is rejected
+as `NotSent` with zero observed transport connections across TTLV/JSON/XML and
+raw TLS/HTTPS. OASIS KMIP 2.1 §6.1.41 defines Query Asynchronous Requests; the
+catalog and KMIP 2.0 version boundary require rejection before sending. Red
+`f074f10d9` adds the failing matrix assertion; Green `75251a888` implements
+and checks the typed route. The focused test passes all six encoding/transport
+combinations, and CTest passes 7/7 in 157.16 seconds.
+
+The refreshed full report `c-route-5d720d8a-8117-4fe6-9b31-6adcbe492f56`
+has SHA-256 `d773429bad1abf3a872b19ce588ab7d005e450b23e1def20d5f495b8f0a4f5d2`:
+66,280 planned, 44,392 invoked, 52 not applicable, zero failed, and 21,836
+pending. Schema and scoped validation pass with all 44,444 emitted events
+accepted; the full matrix remains incomplete. The boundary removes 12 pending
+network-configuration cells. Its four local model/TTLV events were already
+represented in the prior ledger.
