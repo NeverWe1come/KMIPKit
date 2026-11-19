@@ -170,3 +170,20 @@ claiming that an accessor ran for an item the server did not return.
   zero failed, and 27,325 pending. Run ID:
   `java-controlled-query-d141043b-595a-4283-9ff4-f01b4365dcde`. The full Java
   matrix remains incomplete.
+
+## Follow-up: Java Usage Limits typed wrappers
+
+- **Red — `419c18372`** requires `TypedAttribute.create`,
+  `TypedAttribute.fromItem`, and `AttributeSet.tryNew` evidence for Usage
+  Limits in both protocol versions. The controlled-peer test failed at the
+  absent `TypedAttribute.create` route.
+- **Green — `48ae76e10`** constructs Usage Limits with Total and Count as Long
+  Integer values and Unit as an Enumeration, then checks all three through
+  the typed attribute and set APIs. All six versioned wrapper cells pass.
+- **Refactor** cites OASIS KMIP 2.0/2.1 §4.59, Table 148 for the Usage Limits
+  field meanings and §7.40 for the Structure and field encodings. The focused
+  Java controlled-peer test passed in 2m19s. Selected report validation is
+  44,264/71,583 cells: 44,248 invoked, 16 not applicable, zero failed, and
+  27,319 pending. Run ID:
+  `java-controlled-query-c0602e3f-9e3b-4109-a42e-1d773fbb1ca3`. The complete
+  Java matrix remains incomplete.
