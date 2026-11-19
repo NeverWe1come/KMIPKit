@@ -7977,7 +7977,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     bool unsupported_version_boundary_workflow =
         strcmp(test_case->case_id, "test-v20-reject-get-constraints") == 0 ||
         strcmp(test_case->case_id, "test-v20-reject-ping") == 0 ||
-        strcmp(test_case->case_id, "test-v20-reject-process") == 0;
+        strcmp(test_case->case_id, "test-v20-reject-process") == 0 ||
+        strcmp(test_case->case_id, "test-v20-reject-set-defaults") == 0;
     bool process_v20_boundary_workflow =
         strcmp(test_case->case_id, "test-v20-reject-process") == 0;
     bool batch_forward_placeholder_workflow =
@@ -8004,6 +8005,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         strcmp(test_case->case_id, "test-op-set-constraints") == 0;
     bool set_defaults_workflow =
         strcmp(test_case->case_id, "test-op-set-defaults") == 0;
+    bool set_defaults_v20_boundary_workflow =
+        strcmp(test_case->case_id, "test-v20-reject-set-defaults") == 0;
     bool interop_workflow = strcmp(test_case->case_id, "test-op-interop") == 0;
     bool batch_count_mismatch_workflow =
         strcmp(test_case->case_id, "test-batch-count-mismatch-rejected") == 0;
@@ -8424,6 +8427,9 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     char request_validation_diagnostic[256] = {0};
     if (ping_boundary_workflow) {
         status = kmipkit_client_batch_item_ping(&item);
+    } else if (set_defaults_v20_boundary_workflow) {
+        request_construction_step = "Set Defaults optional payload";
+        status = kmipkit_client_batch_item_set_defaults(NULL, &item);
     } else if (unsupported_version_boundary_workflow) {
         status = kmipkit_client_batch_item_get_constraints(&item);
     } else if (set_constraints_workflow) {
@@ -8432,7 +8438,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         if (status == 0) status = kmipkit_client_batch_item_set_constraints(
             request_attributes, &item);
         if (status == 0) status = set_batch_item_id(&item, "interop-set-constraints");
-    } else if (set_defaults_workflow) {
+    } else if (set_defaults_workflow || set_defaults_v20_boundary_workflow) {
         request_construction_step = "Set Defaults optional payload";
         status = kmipkit_client_batch_item_set_defaults(NULL, &item);
         if (status == 0) status = set_batch_item_id(&item, "interop-set-defaults");

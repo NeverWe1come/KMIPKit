@@ -1348,10 +1348,13 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(all(check['consumer_server_compatibility'] == 'unknown' for check in checks))
         self.assertTrue(all('kmipkit_client_batch_item_set_defaults' in check['public_api_trace_symbols'] and
                             'kmipkit_client_execute' in check['public_api_trace_symbols'] for check in checks))
-        for event in events:
-            self.assertIn(event['action'], {'construct', 'send'})
-            self.assertEqual(event['request_delivery_state'], 'not_sent')
-            self.assertEqual(event['transport_invocation_count'], 0)
+        send_events = [event for event in events if event['action'] == 'send']
+        construct_events = [event for event in events if event['action'] == 'construct']
+        self.assertEqual(len(send_events), 6)
+        self.assertEqual(len(construct_events), 6)
+        self.assertTrue(all(event['status'] == 'passed' for event in construct_events))
+        self.assertTrue(all(event['request_delivery_state'] == 'not_sent' and
+                            event['transport_invocation_count'] == 0 for event in send_events))
 
     def test_get_usage_allocation_recipe_validates_present_then_omitted_identifier(self):
         from route_peer import assert_recipe

@@ -406,6 +406,7 @@ RECIPES = {
     'test-v20-reject-get-constraints': ((56,), 'get_constraints'),
     'test-v20-reject-ping': ((59,), 'ping'),
     'test-v20-reject-process': ((58,), 'process_v20_boundary'),
+    'test-v20-reject-set-defaults': ((54,), 'set_defaults_v20_boundary'),
     'test-op-create': ((1, 20), 'create'),
     'test-op-archive': ((1, 21, 19, 20), 'archive'),
     'test-op-export': ((1, 43, 19, 20), 'export'),
@@ -4033,7 +4034,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                             case_id == 'test-batch-placeholder-without-producer-rejected')
                         boundary = local_placeholder_rejection or case_id in (
                             'test-v20-reject-get-constraints', 'test-v20-reject-ping',
-                            'test-v20-reject-process')
+                            'test-v20-reject-process', 'test-v20-reject-set-defaults')
                         with socket.socket() as server:
                             server.bind(('127.0.0.1', 0))
                             server.listen(1)
