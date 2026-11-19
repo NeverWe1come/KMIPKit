@@ -14218,6 +14218,9 @@ class ControlledTlsPeerTest {
                         List.of("KMIPKIT-ELEM-OP-C2S-POLL"), 1)
                 : null;
         String canonicalNonRecursivePollRequestHash = null;
+        AsyncCancelRouteScenario operationPoll = new AsyncCancelRouteScenario(
+                "test-op-poll", "Canceled", 1, List.of("KMIPKIT-ELEM-OP-C2S-POLL"), -1);
+        String canonicalOperationPollRequestHash = null;
         int minor = "2.0".equals(protocolVersion) ? 0 : 1;
 
         for (String encoding : List.of("TTLV", "JSON", "XML")) {
@@ -14302,6 +14305,24 @@ class ControlledTlsPeerTest {
                                 asyncCancelCorrelation(nonRecursivePoll, protocolVersion),
                                 canonicalNonRecursivePollRequestHash, responseHash);
                     }
+                }
+                byte[] operationPollRequest = executeAsyncPollCombination(operationPoll,
+                        protocolVersion, encoding, transport, serverCertificatePem, serverPrivateKeyPem,
+                        clientCertificatePem, clientPrivateKeyPem);
+                if ("TTLV".equals(encoding) && "raw_tls".equals(transport)) {
+                    canonicalOperationPollRequestHash = normalizedTreeSha256(operationPollRequest);
+                }
+                assertTrue(canonicalOperationPollRequestHash != null,
+                        "The TTLV/raw-TLS Poll operation must establish its request tree hash.");
+                byte[] operationPollCorrelation = asyncCancelCorrelation(operationPoll, protocolVersion);
+                byte[] operationPollResponse = asynchronousPollResponse(operationPollCorrelation, minor, 2);
+                String operationPollResponseHash = normalizedTreeSha256(operationPollResponse);
+                appendAsyncPollRouteEvents(events, operationPoll, protocolVersion, encoding, transport,
+                        canonicalOperationPollRequestHash, operationPollResponseHash);
+                if ("TTLV".equals(encoding) && "raw_tls".equals(transport)) {
+                    appendAsyncPollLocalRouteEvents(events, operationPoll, protocolVersion,
+                            operationPollCorrelation, canonicalOperationPollRequestHash,
+                            operationPollResponseHash);
                 }
             }
         }
@@ -15152,7 +15173,9 @@ class ControlledTlsPeerTest {
                     "decode".equals(action) ? null : requestHash,
                     "decode".equals(action) ? responseHash : null);
             event.put("encoding", encoding);
-            appendWorkflowIdentity(event, new CreateWorkflowIdentity(workflowStepIndex, "Poll", null));
+            if (workflowStepIndex >= 0) {
+                appendWorkflowIdentity(event, new CreateWorkflowIdentity(workflowStepIndex, "Poll", null));
+            }
             if ("send".equals(action)) {
                 event.put("request_delivery_state", "response_received");
                 event.put("transport_invocation_count", 1);
@@ -15187,10 +15210,12 @@ class ControlledTlsPeerTest {
                 "java.typed-protocol.function.kmipkit_client_async_operation_outcome_poll_response_v1", targetId,
                 "org.kmipkit.extensions.AsyncOperationOutcome.pollResponse", null, null,
                 "decode", protocolVersion, null, null, responseHash);
-        CreateWorkflowIdentity identity = new CreateWorkflowIdentity(workflowStepIndex, "Poll", null);
-        appendWorkflowIdentity(created, identity);
-        appendWorkflowIdentity(encoded, identity);
-        appendWorkflowIdentity(decoded, identity);
+        if (workflowStepIndex >= 0) {
+            CreateWorkflowIdentity identity = new CreateWorkflowIdentity(workflowStepIndex, "Poll", null);
+            appendWorkflowIdentity(created, identity);
+            appendWorkflowIdentity(encoded, identity);
+            appendWorkflowIdentity(decoded, identity);
+        }
     }
 
     private static void assertAsyncPollRaceRouteCoverage(ArrayNode events, String protocolVersion)
@@ -15462,6 +15487,7 @@ class ControlledTlsPeerTest {
             for (int index = 0; index < operations.size(); index++) {
                 if (operation.equals(operations.get(index).asText())) return index;
             }
+            if (operation.equals(testCase.path("operation").asText())) return -1;
         }
         throw new AssertionError("Asynchronous catalog scenario must declare operation " + operation + ".");
     }
