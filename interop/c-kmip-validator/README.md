@@ -740,3 +740,34 @@ digests: 192 request hashes from regenerated certificate fixtures and seven
 response hashes from time-bearing asynchronous responses; no other prior
 outcome fields changed. The first pending cells remain the Re-Provision
 response decoders, so the global matrix is still incomplete.
+
+The next full C report is `c-route-cd3bb527-f2e0-49c1-9b1c-536a15030e64`
+(`route-execution-evidence-rsa-pkcs1-signature-verify.json`) with JSON SHA-256
+`17d6502ad9bc5dc2cb538e13dfd7e38b567ba81fead3205e7c814621c0f6dda0`, catalog
+SHA-256 `11d002765d807ba4232625ed19e44649db0fcdd33f0b43911ea18f18a7fe4651`,
+route manifest SHA-256
+`28b381ebca85752ba8eb3c41c003f02b2d1d8ad8180f0e8908a7e716724732f5`, and
+pinned artifact SHA-256
+`c93eb8f7daa60d3b6832d297887e99cd2101e4f9baf2d04f55ce4042ba4bb7a2`. It has
+66,288 planned cells: 44,076 invoked, 52 explicitly not applicable, zero
+failed, and 22,160 pending. It preserves all 44,088 prior cell identities and
+adds 40 passed cells for
+`test-crypto-signature-verify-rsa-2048-pkcs1_v1_5`; its 44-cell scope also
+includes four previously reported generic TTLV construction/decode cells.
+The new cells cover 36 request/send/response routes across KMIP 2.0/2.1,
+TTLV/JSON/XML, and raw TLS/HTTPS, plus both typed response accessors for each
+protocol version. The controlled request supplies an all-zero 256-byte RSA
+signature, so the controlled peer now reports Validity Indicator `Invalid`
+(2) while the Signature Verify Result Status remains `Success`, as defined by
+OASIS KMIP 2.0 §6.1.50/Table 451 and KMIP 2.1 §6.1.56/Table 492. The client
+checks the typed invalid indicator, response TTLV, and key cleanup. This is
+controlled route evidence, not an external KMS run. Schema and scoped shared
+validation pass with `selected_scope_complete=true`,
+`all_invocations_passed=true`, and zero failures. Full CTest passed 7/7 in
+151.83 seconds. The peer effect and response digest for the existing generic
+Signature Verify case changed to reflect the invalid fixture; 199 other
+preserved events changed only tree digests (192 request hashes from fresh
+certificate fixtures and seven response hashes from time-bearing asynchronous
+responses). All previous cell identities remain. The first pending cells
+remain the Re-Provision response decoders, so the global matrix is still
+incomplete.
