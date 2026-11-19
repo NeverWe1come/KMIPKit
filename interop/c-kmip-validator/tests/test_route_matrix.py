@@ -4435,6 +4435,12 @@ class RouteMatrixTests(unittest.TestCase):
         ]
         self.assertTrue(all(event['peer_observed_operation_sequence'] == expected_operations
                             for event in send_events))
+        expected_effects = [
+            'key_pair_created', 'activated', 'key_pair_rekeyed', 'revoked', 'revoked',
+            'destroyed', 'destroyed', 'destroyed', 'destroyed',
+        ]
+        self.assertTrue(all(event['peer_observed_effects'] == expected_effects
+                            for event in send_events))
         required_symbols = {
             'kmipkit_client_batch_item_create_key_pair',
             'kmipkit_client_batch_item_response_create_key_pair',

@@ -95,6 +95,15 @@ REKEY_ITEM_IDS = (b'rekey-create', b'rekey-target', b'rekey-revoke-replacement',
                   b'rekey-destroy-replacement', b'rekey-revoke-original', b'rekey-destroy-original')
 REKEY_ORIGINAL_IDENTIFIER = b'fixture-key-1'
 REKEY_REPLACEMENT_IDENTIFIER = b'fixture-rekeyed-key'
+REKEY_KEY_PAIR_ITEM_IDS = (
+    b'rekey-pair-create', b'rekey-pair-activate', b'rekey-pair-target',
+    b'rekey-pair-revoke-original', b'rekey-pair-revoke-replacement',
+    b'rekey-pair-destroy-original-private', b'rekey-pair-destroy-original-public',
+    b'rekey-pair-destroy-replacement-private', b'rekey-pair-destroy-replacement-public')
+REKEY_KEY_PAIR_ORIGINAL_PRIVATE = b'fixture-private-key-1'
+REKEY_KEY_PAIR_ORIGINAL_PUBLIC = b'fixture-public-key-1'
+REKEY_KEY_PAIR_REPLACEMENT_PRIVATE = b'fixture-rekeyed-private-key-1'
+REKEY_KEY_PAIR_REPLACEMENT_PUBLIC = b'fixture-rekeyed-public-key-1'
 DERIVE_KEY_ITEM_IDS = (b'derive-create', b'derive-activate', b'derive-target',
                        b'derive-revoke-source', b'derive-destroy-derived', b'derive-destroy-source')
 DERIVE_KEY_SOURCE_IDENTIFIER = b'fixture-key-1'
@@ -457,6 +466,7 @@ RECIPES = {
     'test-obj-split-key': ((40, 20, 20), 'create_split_key'),
     'test-op-join-split-key': ((40, 41, 20, 20, 20), 'join_split_key'),
     'test-op-re-key': ((1, 4, 19, 20, 19, 20), 'rekey'),
+    'test-op-re-key-key-pair': ((2, 18, 29, 19, 19, 20, 20, 20, 20), 'rekey_key_pair'),
     'test-op-derive-key': ((1, 18, 5, 19, 20, 20), 'derive_key'),
     'test-op-certify': ((2, 18, 6, 19, 20, 20, 20), 'certify'),
     'test-op-re-certify': ((2, 18, 6, 7, 19, 20, 20, 20, 20), 'recertify'),
@@ -1372,6 +1382,118 @@ def verify_rekey_response(response_tree):
         payload_values.append(identifiers[0][2])
     if payload_values != [REKEY_REPLACEMENT_IDENTIFIER] * 3 + [REKEY_ORIGINAL_IDENTIFIER] * 2:
         raise ValueError('fixture_rekey_response_identifiers_mismatch')
+
+
+def assert_rekey_key_pair_setup_request(node):
+    """Check an explicit RSA key pair setup and activation for Re-key Key Pair."""
+    items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if ([numbers(item, 0x42005C) for item in items] != [[2], [18]] or
+            [byte_string_values(item, 0x420093) for item in items] !=
+            [[REKEY_KEY_PAIR_ITEM_IDS[0]], [REKEY_KEY_PAIR_ITEM_IDS[1]]] or
+            numbers(node, 0x42000D) != [2] or numbers(node, BATCH_ORDER_OPTION_TAG) != [1]):
+        raise ValueError('fixture_rekey_key_pair_setup_batch_mismatch')
+    payloads = [child for child in items[0][2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+    if len(payloads) != 1:
+        raise ValueError('fixture_rekey_key_pair_setup_payload_missing')
+    fields = payloads[0][2]
+    if [field[0] for field in fields] != [0x420126, 0x420127, 0x420128]:
+        raise ValueError('fixture_rekey_key_pair_setup_attributes_missing')
+    common, private, public = fields
+    if (numbers(common, 0x420028) != [4] or numbers(common, 0x42002A) != [2048] or
+            numbers(private, 0x42002C) != [1] or numbers(public, 0x42002C) != [2] or
+            numbers(items[1], UNIQUE_IDENTIFIER_TAG) != [5]):
+        raise ValueError('fixture_rekey_key_pair_setup_attributes_mismatch')
+
+
+def verify_rekey_key_pair_setup_response(response_tree):
+    """Check both created key identifiers and activation correlation."""
+    items = [child for child in response_tree[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if ([numbers(item, 0x42005C) for item in items] != [[2], [18]] or
+            [byte_string_values(item, 0x420093) for item in items] !=
+            [[REKEY_KEY_PAIR_ITEM_IDS[0]], [REKEY_KEY_PAIR_ITEM_IDS[1]]] or
+            [numbers(item, 0x42007F) for item in items] != [[0], [0]]):
+        raise ValueError('fixture_rekey_key_pair_setup_response_lifecycle_mismatch')
+    created_payloads = [child for child in items[0][2]
+                        if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1]
+    created_fields = created_payloads[0][2] if len(created_payloads) == 1 else []
+    private_ids = [field for field in created_fields if field[0] == 0x420066 and field[1] == 7]
+    public_ids = [field for field in created_fields if field[0] == 0x42006F and field[1] == 7]
+    if (len(private_ids) != 1 or private_ids[0][2] != REKEY_KEY_PAIR_ORIGINAL_PRIVATE or
+            len(public_ids) != 1 or public_ids[0][2] != REKEY_KEY_PAIR_ORIGINAL_PUBLIC or
+            text_values(items[1], UNIQUE_IDENTIFIER_TAG) !=
+            [REKEY_KEY_PAIR_ORIGINAL_PRIVATE.decode('ascii')]):
+        raise ValueError('fixture_rekey_key_pair_setup_identifiers_mismatch')
+
+
+def assert_rekey_key_pair_request(node):
+    """Check that Re-key Key Pair targets the existing private-key identifier."""
+    items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if (len(items) != 1 or numbers(node, 0x42000D) != [1] or
+            numbers(items[0], 0x42005C) != [29] or
+            byte_string_values(items[0], 0x420093) != [REKEY_KEY_PAIR_ITEM_IDS[2]] or
+            text_values(items[0], 0x420066) !=
+            [REKEY_KEY_PAIR_ORIGINAL_PRIVATE.decode('ascii')] or
+            numbers(node, BATCH_ORDER_OPTION_TAG)):
+        raise ValueError('fixture_rekey_key_pair_request_mismatch')
+
+
+def verify_rekey_key_pair_response(response_tree):
+    """Check distinct replacement private/public identifiers in the typed result."""
+    items = [child for child in response_tree[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if (len(items) != 1 or numbers(items[0], 0x42005C) != [29] or
+            numbers(items[0], 0x42007F) != [0] or
+            byte_string_values(items[0], 0x420093) != [REKEY_KEY_PAIR_ITEM_IDS[2]]):
+        raise ValueError('fixture_rekey_key_pair_response_lifecycle_mismatch')
+    payloads = [child for child in items[0][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1]
+    fields = payloads[0][2] if len(payloads) == 1 else []
+    private_ids = [field for field in fields if field[0] == 0x420066 and field[1] == 7]
+    public_ids = [field for field in fields if field[0] == 0x42006F and field[1] == 7]
+    if (len(fields) != 2 or len(private_ids) != 1 or len(public_ids) != 1 or
+            private_ids[0][2] != REKEY_KEY_PAIR_REPLACEMENT_PRIVATE or
+            public_ids[0][2] != REKEY_KEY_PAIR_REPLACEMENT_PUBLIC):
+        raise ValueError('fixture_rekey_key_pair_response_identifiers_mismatch')
+
+
+def assert_rekey_key_pair_cleanup_request(node):
+    """Check cleanup of both old and replacement private/public key objects."""
+    items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    expected_identifiers = (
+        REKEY_KEY_PAIR_ORIGINAL_PRIVATE.decode('ascii'),
+        REKEY_KEY_PAIR_REPLACEMENT_PRIVATE.decode('ascii'),
+        REKEY_KEY_PAIR_ORIGINAL_PRIVATE.decode('ascii'),
+        REKEY_KEY_PAIR_ORIGINAL_PUBLIC.decode('ascii'),
+        REKEY_KEY_PAIR_REPLACEMENT_PRIVATE.decode('ascii'),
+        REKEY_KEY_PAIR_REPLACEMENT_PUBLIC.decode('ascii'))
+    if ([numbers(item, 0x42005C) for item in items] != [[19], [19], [20], [20], [20], [20]] or
+            [byte_string_values(item, 0x420093) for item in items] !=
+            [[item_id] for item_id in REKEY_KEY_PAIR_ITEM_IDS[3:]] or
+            [text_values(item, UNIQUE_IDENTIFIER_TAG) for item in items] !=
+            [[identifier] for identifier in expected_identifiers] or
+            numbers(node, 0x42000D) != [6] or numbers(node, BATCH_ORDER_OPTION_TAG) != [1] or
+            numbers(node, BATCH_ERROR_CONTINUATION_OPTION_TAG) != [1]):
+        raise ValueError('fixture_rekey_key_pair_cleanup_request_mismatch')
+
+
+def verify_rekey_key_pair_cleanup_response(response_tree):
+    """Check every cleanup response refers to the matching key-pair object."""
+    items = [child for child in response_tree[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    expected_operations = [[19], [19], [20], [20], [20], [20]]
+    expected_identifiers = [
+        REKEY_KEY_PAIR_ORIGINAL_PRIVATE.decode('ascii'),
+        REKEY_KEY_PAIR_REPLACEMENT_PRIVATE.decode('ascii'),
+        REKEY_KEY_PAIR_ORIGINAL_PRIVATE.decode('ascii'),
+        REKEY_KEY_PAIR_ORIGINAL_PUBLIC.decode('ascii'),
+        REKEY_KEY_PAIR_REPLACEMENT_PRIVATE.decode('ascii'),
+        REKEY_KEY_PAIR_REPLACEMENT_PUBLIC.decode('ascii')]
+    if ([numbers(item, 0x42005C) for item in items] != expected_operations or
+            [numbers(item, 0x42007F) for item in items] != [[0]] * 6 or
+            [byte_string_values(item, 0x420093) for item in items] !=
+            [[item_id] for item_id in REKEY_KEY_PAIR_ITEM_IDS[3:]] or
+            [text_values(item, UNIQUE_IDENTIFIER_TAG) for item in items] !=
+            [[identifier] for identifier in expected_identifiers]):
+        raise ValueError('fixture_rekey_key_pair_cleanup_response_mismatch')
 
 
 def assert_derive_key_create_request(node, version):
@@ -3348,6 +3470,8 @@ def target_operation_exchange_index(recipe, case=None):
         return 3
     if recipe is not None and recipe[1] == 'async_process_then_poll_state':
         return 0
+    if recipe is not None and recipe[1] == 'rekey_key_pair':
+        return 1
     if recipe is not None and recipe[1] in ('join_split_key', 'rekey', 'derive_key'):
         return 1
     return 1 if recipe is not None and recipe[1] in ('login_logout', 'cancel_async') else 0
@@ -3384,6 +3508,14 @@ def observation_for_cell(observations, cell, recipe, fallback_index):
             cell.get('workflow_operation'), fallback_index)
     elif recipe[1] == 'rekey':
         index = 0 if cell.get('workflow_operation') == 'Create' else 1
+    elif recipe[1] == 'rekey_key_pair':
+        index = {
+            'Create Key Pair': 0,
+            'Activate': 0,
+            'Re-key Key Pair': 1,
+            'Revoke': 2,
+            'Destroy': 2,
+        }.get(cell.get('workflow_operation'), fallback_index)
     elif recipe[1] == 'derive_key':
         index = 0 if cell.get('workflow_operation') in ('Create', 'Activate') else 1
     if index < 0 or index >= len(observations):
@@ -3486,6 +3618,9 @@ class PeerState:
             identifier_fields = [child for child in request_payloads[0][2]
                                  if child[0] == UNIQUE_IDENTIFIER_TAG] \
                 if len(request_payloads) == 1 else []
+            private_identifier_fields = [child for child in request_payloads[0][2]
+                                         if child[0] == 0x420066] \
+                if operation == 29 and len(request_payloads) == 1 else []
             text_identifiers = [child[2].decode('utf-8') for child in identifier_fields
                                 if child[1] == 7]
             enum_identifiers = [int.from_bytes(child[2], 'big') for child in identifier_fields
@@ -3577,6 +3712,28 @@ class PeerState:
                 self.adjustable_attribute_values[replacement_identifier] = {}
                 placeholder = replacement_identifier
                 effect = 'rekeyed'
+            elif operation == 29:
+                requested_private_identifiers = [field[2].decode('utf-8')
+                                                 for field in private_identifier_fields
+                                                 if field[1] == 7]
+                original_private = self.key_pair_identifiers.get(5)
+                original_public = self.key_pair_identifiers.get(6)
+                replacement_private = REKEY_KEY_PAIR_REPLACEMENT_PRIVATE.decode('ascii')
+                replacement_public = REKEY_KEY_PAIR_REPLACEMENT_PUBLIC.decode('ascii')
+                if (requested_private_identifiers != [original_private] or
+                        self.objects.get(original_private) != 'active' or
+                        self.objects.get(original_public) != 'pre_active' or
+                        replacement_private in self.objects or replacement_public in self.objects):
+                    raise ValueError('fixture_rekey_key_pair_source_or_replacement_mismatch')
+                for identifier, state in ((replacement_private, 'active'),
+                                          (replacement_public, 'pre_active')):
+                    self.objects[identifier] = state
+                    self.attributes[identifier] = set()
+                    self.attribute_values[identifier] = {}
+                    self.adjustable_attribute_values[identifier] = {}
+                self.key_pair_identifiers = {5: replacement_private, 6: replacement_public}
+                placeholder = replacement_private
+                effect = 'key_pair_rekeyed'
             elif operation == 5:
                 derived_identifier = DERIVE_KEY_RESULT_IDENTIFIER.decode('ascii')
                 if (identifier not in self.objects or self.objects[identifier] != 'active' or
@@ -4186,6 +4343,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         3 if attribute_mutation_recipe or
                                         recipe[1] in ('cancel_poll_race', 'async_poll_final_failure') else
                                         3 if recipe[1] == 'create_split_key' else
+                                        3 if recipe[1] == 'rekey_key_pair' else
                                         2 if recipe[1] in ('join_split_key', 'rekey', 'derive_key') else
                                         5 if recipe[1] == 'async_poll_repeated_pending_to_success' else
                                         (5 if case_id == 'test-op-process' else 4)
@@ -4407,6 +4565,27 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                     REKEY_REPLACEMENT_IDENTIFIER,
                                                     REKEY_ORIGINAL_IDENTIFIER,
                                                     REKEY_ORIGINAL_IDENTIFIER)
+                                        elif recipe[1] == 'rekey_key_pair':
+                                            if exchange_index == 0:
+                                                assert_rekey_key_pair_setup_request(request_tree)
+                                                response_operations = (2, 18)
+                                                response_item_ids = REKEY_KEY_PAIR_ITEM_IDS[:2]
+                                                returned_unique_identifier = REKEY_KEY_PAIR_ORIGINAL_PRIVATE
+                                            elif exchange_index == 1:
+                                                assert_rekey_key_pair_request(request_tree)
+                                                response_operations = (29,)
+                                                response_item_ids = REKEY_KEY_PAIR_ITEM_IDS[2:3]
+                                            else:
+                                                assert_rekey_key_pair_cleanup_request(request_tree)
+                                                response_operations = (19, 19, 20, 20, 20, 20)
+                                                response_item_ids = REKEY_KEY_PAIR_ITEM_IDS[3:]
+                                                returned_unique_identifiers = (
+                                                    REKEY_KEY_PAIR_ORIGINAL_PRIVATE,
+                                                    REKEY_KEY_PAIR_REPLACEMENT_PRIVATE,
+                                                    REKEY_KEY_PAIR_ORIGINAL_PRIVATE,
+                                                    REKEY_KEY_PAIR_ORIGINAL_PUBLIC,
+                                                    REKEY_KEY_PAIR_REPLACEMENT_PRIVATE,
+                                                    REKEY_KEY_PAIR_REPLACEMENT_PUBLIC)
                                         elif recipe[1] == 'derive_key':
                                             if exchange_index == 0:
                                                 assert_derive_key_create_request(request_tree, version)
@@ -4920,6 +5099,13 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             verify_rekey_create_response(response_tree)
                                         elif recipe[1] == 'rekey':
                                             verify_rekey_response(response_tree)
+                                        elif recipe[1] == 'rekey_key_pair':
+                                            if exchange_index == 0:
+                                                verify_rekey_key_pair_setup_response(response_tree)
+                                            elif exchange_index == 1:
+                                                verify_rekey_key_pair_response(response_tree)
+                                            else:
+                                                verify_rekey_key_pair_cleanup_response(response_tree)
                                         elif recipe[1] == 'derive_key':
                                             if exchange_index == 0:
                                                 verify_derive_key_create_response(response_tree)
@@ -4976,7 +5162,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 'async_poll_cancel_no_recursion',
                                                 'async_poll_final_failure',
                                                 'async_poll_repeated_pending_to_success',
-                                                'async_process_then_poll_state'):
+                                                'async_process_then_poll_state',
+                                                'rekey_key_pair'):
                                             verify_lifecycle(recipe[0], response_tree)
                                         encoded_response = codec.encode(response_wire, encoding)
                                         if transport == 'https':
@@ -5094,6 +5281,20 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                     for reason in evidence['reasons']]
                                 observation[1][2]['peer_observed_state_before_sha256'] = \
                                     observation[0][2]['peer_observed_state_before_sha256']
+                            if recipe[1] == 'rekey_key_pair' and len(observation) == 3:
+                                observation[1][2]['effects'] = [
+                                    effect for _, _, evidence in observation
+                                    for effect in evidence['effects']]
+                                observation[1][2]['statuses'] = [
+                                    status for _, _, evidence in observation
+                                    for status in evidence['statuses']]
+                                observation[1][2]['reasons'] = [
+                                    reason for _, _, evidence in observation
+                                    for reason in evidence['reasons']]
+                                observation[1][2]['peer_observed_state_before_sha256'] = \
+                                    observation[0][2]['peer_observed_state_before_sha256']
+                                observation[1][2]['peer_observed_state_after_sha256'] = \
+                                    observation[-1][2]['peer_observed_state_after_sha256']
                             result = json.loads(result_path.read_text()) if result_path.exists() else {}
                             verify_consumer_provenance(result, artifact_sha256, catalog_sha256)
                             result_case = (result.get('cases') or [{}])[0]

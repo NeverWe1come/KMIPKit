@@ -141,7 +141,17 @@ def response(operations: tuple[int, ...], protocol_minor: int,
         if result_statuses is not None:
             result_status = result_statuses[item_index]
             result_reason = result_reasons[item_index] if result_reasons is not None else None
-        if operations in ((2, 18, 33, 19, 20, 20), (2, 18, 34, 19, 20, 20)):
+        if operations == (2, 18):
+            if item_index == 0:
+                payload_value = tlv(0x420066, 7, b"fixture-private-key-1") + \
+                    tlv(0x42006F, 7, b"fixture-public-key-1")
+            else:
+                payload_value = tlv(
+                    0x420094, 7, returned_unique_identifier or b"fixture-private-key-1")
+        elif operations == (29,):
+            payload_value = tlv(0x420066, 7, b"fixture-rekeyed-private-key-1") + \
+                tlv(0x42006F, 7, b"fixture-rekeyed-public-key-1")
+        elif operations in ((2, 18, 33, 19, 20, 20), (2, 18, 34, 19, 20, 20)):
             verify = operations[2] == 34
             target_identifier = b"fixture-public-key-1" if verify else b"fixture-private-key-1"
             other_identifier = b"fixture-private-key-1" if verify else b"fixture-public-key-1"
@@ -709,6 +719,8 @@ def main() -> int:
     expected_cases += ("test-op-create-split-key",)
     expected_cases += ("test-op-join-split-key",)
     expected_cases += ("test-op-re-key",)
+    expected_operations += (2, 18, 29, 19, 19, 20, 20, 20, 20)
+    expected_cases += ("test-op-re-key-key-pair",)
     expected_cases += ("test-op-certify",)
     expected_cases += ("test-op-re-certify", "test-op-validate")
     expected_cases += ("test-batch-stop-on-first-failure",)
@@ -1486,6 +1498,19 @@ def main() -> int:
                                 elif operations == (41, 20, 20, 20):
                                     response_item_ids = (b"join-split-target", b"join-split-destroy-joined",
                                         b"join-split-destroy-part-1", b"join-split-destroy-part-2")
+                                elif operations == (2, 18):
+                                    response_item_ids = (b"rekey-pair-create", b"rekey-pair-activate")
+                                elif operations == (29,):
+                                    response_item_ids = (b"rekey-pair-target",)
+                                elif operations == (19, 19, 20, 20, 20, 20):
+                                    response_item_ids = (
+                                        b"rekey-pair-revoke-original",
+                                        b"rekey-pair-revoke-replacement",
+                                        b"rekey-pair-destroy-original-private",
+                                        b"rekey-pair-destroy-original-public",
+                                        b"rekey-pair-destroy-replacement-private",
+                                        b"rekey-pair-destroy-replacement-public",
+                                    )
                                 elif operations == (1,) and tlv(0x420093, 8, b"rekey-create") in request:
                                     response_item_ids = (b"rekey-create",)
                                 elif operations == (4, 19, 20, 19, 20):
@@ -1519,14 +1544,18 @@ def main() -> int:
                                         next((identifier for identifier in split_identifiers
                                             if operations == (20,) and tlv(0x420094, 7, identifier) in request), None)),
                                     returned_unique_identifiers=(
-                                        b"fixture-joined-key", b"fixture-joined-key",
-                                        *split_identifiers) if operations == (41, 20, 20, 20) else
+                                        (b"fixture-private-key-1", b"fixture-rekeyed-private-key-1",
+                                         b"fixture-private-key-1", b"fixture-public-key-1",
+                                         b"fixture-rekeyed-private-key-1", b"fixture-rekeyed-public-key-1")
+                                        if operations == (19, 19, 20, 20, 20, 20) else
+                                        (b"fixture-joined-key", b"fixture-joined-key",
+                                         *split_identifiers) if operations == (41, 20, 20, 20) else
                                         (b"fixture-derived-key", b"fixture-key-1",
                                          b"fixture-derived-key", b"fixture-key-1")
                                         if operations == (5, 19, 20, 20) else
                                         (b"fixture-rekeyed-key", b"fixture-rekeyed-key",
                                          b"fixture-rekeyed-key", b"fixture-key-1", b"fixture-key-1")
-                                        if operations == (4, 19, 20, 19, 20) else None))
+                                        if operations == (4, 19, 20, 19, 20) else None)))
                                 if operations == (25,):
                                     async_request_pending = False
                                     async_poll_mode = "none"
@@ -1603,6 +1632,16 @@ def main() -> int:
                 f"batches={handled_batches!r}; cases={failing_cases!r}; "
                 f"stdout={run.stdout[:1200]!r}; stderr={run.stderr[-1200:]!r}"
             ) from server_errors[0]
+        if run.returncode != 0:
+            result = json.loads(result_path.read_text(encoding="utf-8")) if result_path.is_file() else {}
+            failed_cases = [
+                (case.get("case_id"), case.get("status"), case.get("diagnostic"))
+                for case in result.get("cases", []) if case.get("status") == "failed"
+            ]
+            raise AssertionError(
+                f"C validator exited {run.returncode}; failed_cases={failed_cases!r}; "
+                f"batches={handled_batches!r}; stdout={run.stdout[:1200]!r}; stderr={run.stderr[-1200:]!r}"
+            )
         if (handled != len(expected_operations) or sorted(handled_operations) != sorted(expected_operations)
                 or (1, 11, 20) not in handled_batches
                 or (1, 12, 20) not in handled_batches
@@ -1696,15 +1735,6 @@ def main() -> int:
             logout = next(case for case in result["cases"] if case["case_id"] == "test-op-logout")
             if logout["status"] != "passed":
                 raise AssertionError("KMIP 2.0 Logout must use its server-issued Ticket")
-        if run.returncode != 0:
-            failed_cases = [
-                (case["case_id"], case["status"])
-                for case in result["cases"] if case["status"] == "failed"
-            ]
-            raise AssertionError(
-                f"C validator exited {run.returncode}; stderr={run.stderr[-400:]!r}; "
-                f"failed_cases={failed_cases!r}; summary={run.stdout[:1800]!r}"
-            )
         correctness = {case["case_id"]: case["library_correctness"] for case in result["cases"]}
         if any(correctness.get(case_id) != "passed" for case_id in expected_cases):
             raise AssertionError("successful exchanges must report the client library as validated")
