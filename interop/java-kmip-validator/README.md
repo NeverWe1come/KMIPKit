@@ -1733,7 +1733,7 @@ Credential Value member routes. Green `32593d608` and `1e3e553cb` invoke and
 validate each typed and generic route. Refactor `8ee4855b4` consolidates the
 four member cases in one fixture table used by the assertions, calls, report
 case IDs, and event counts. The final selected report
-`java-controlled-query-073dadfb-d16a-4475-b415-a22ef5722812` validates 44,486
+`java-controlled-query-ce490ea7-b66c-4916-967e-c2ae3d4593ee` validates 44,486
 cells (44,470 invocations, 16 not applicable, zero failed) out of 71,513
 planned; 27,027 remain pending. The selected scope is complete, while the full
 Java matrix remains incomplete and PR #255 stays WIP. The full Java suite
