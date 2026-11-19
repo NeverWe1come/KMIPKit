@@ -1686,6 +1686,14 @@ class ControlledTlsPeerTest {
             for (LocalCatalogRouteChecks.Invocation invocation : certificateAttributeInvocations) {
                 appendLocalCatalogInvocation(events, protocolVersion, invocation);
             }
+            List<LocalCatalogRouteChecks.Invocation> cryptographicParameterBuilderInvocations = new ArrayList<>();
+            LocalCatalogRouteChecks.executeCryptographicParameterAttributeBuilders(readRouteEvidenceCatalog(),
+                    protocolVersion, Set.of("test-attr-cryptographic-algorithm",
+                            "test-attr-digital-signature-algorithm"),
+                    cryptographicParameterBuilderInvocations::add);
+            for (LocalCatalogRouteChecks.Invocation invocation : cryptographicParameterBuilderInvocations) {
+                appendLocalCatalogInvocation(events, protocolVersion, invocation);
+            }
         }
         assertRouteEventRecorded(events, "test-attr-certificate-attributes",
                 "KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES",
@@ -1693,6 +1701,22 @@ class ControlledTlsPeerTest {
         assertRouteEventRecorded(events, "test-attr-certificate-attributes",
                 "KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES",
                 "java.generic-ttlv.function.ttlv_item_view_from_item", "decode", "2.1");
+        assertRouteEventRecorded(events, "test-attr-cryptographic-algorithm",
+                "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-ALGORITHM",
+                "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.cryptographicalgorithm",
+                "construct", "2.0");
+        assertRouteEventRecorded(events, "test-attr-cryptographic-algorithm",
+                "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-ALGORITHM",
+                "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.cryptographicalgorithm",
+                "construct", "2.1");
+        assertRouteEventRecorded(events, "test-attr-digital-signature-algorithm",
+                "KMIPKIT-ELEM-ATTRIBUTE-DIGITAL-SIGNATURE-ALGORITHM",
+                "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.digitalsignaturealgorithm",
+                "construct", "2.0");
+        assertRouteEventRecorded(events, "test-attr-digital-signature-algorithm",
+                "KMIPKIT-ELEM-ATTRIBUTE-DIGITAL-SIGNATURE-ALGORITHM",
+                "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.digitalsignaturealgorithm",
+                "construct", "2.1");
         int tagAggregateEventCount = appendTagAggregateRouteEvents(events);
         assertEquals(expectedTagAggregateEventCount(), tagAggregateEventCount,
                 "The Tag aggregate must represent every catalogued tag and tag-allocation range cell.");
@@ -2220,6 +2244,7 @@ class ControlledTlsPeerTest {
                 * (GENERIC_STRUCTURE_ROUTE_IDS.size() + 4 * USAGE_LIMITS_MEMBER_FIXTURES.size());
         int rightUsageLimitsRouteEventCount = KMIP_2_0_AND_2_1.size() * 4;
         int certificateAttributeTtlvViewRouteEventCount = KMIP_2_0_AND_2_1.size();
+        int cryptographicParameterAttributeBuilderRouteEventCount = KMIP_2_0_AND_2_1.size() * 2;
         int objectTypeMemberRouteEventCount = 4;
         int constraintStructureRouteEventCount = 2 * GENERIC_STRUCTURE_ROUTE_IDS.size();
         int pendingCorrelationAccessorEventCount = KMIP_2_0_AND_2_1.size();
@@ -2302,6 +2327,7 @@ class ControlledTlsPeerTest {
                         + usageLimitsRouteEventCount
                         + rightUsageLimitsRouteEventCount
                         + certificateAttributeTtlvViewRouteEventCount
+                        + cryptographicParameterAttributeBuilderRouteEventCount
                         + objectTypeMemberRouteEventCount
                         + constraintStructureRouteEventCount
                         + pendingCorrelationAccessorEventCount

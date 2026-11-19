@@ -37,6 +37,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** Executes source-backed local catalog obligations through the installed public package. */
 final class LocalCatalogRouteChecks {
@@ -1562,6 +1563,75 @@ final class LocalCatalogRouteChecks {
         }
         if (!emitted.equals(applicable)) {
             throw new IllegalArgumentException("Selected Enumeration Attribute cases were not executed for "
+                    + version);
+        }
+    }
+
+    /** Exercises Cryptographic Parameters builder setters required by the corresponding Attribute cases. */
+    static void executeCryptographicParameterAttributeBuilders(JsonNode catalog, String version,
+            Set<String> selectedCaseIds, EvidenceSink sink) throws Exception {
+        Set<String> emitted = new java.util.LinkedHashSet<>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String caseId = testCase.path("case_id").asText();
+            if (!selectedCaseIds.contains(caseId) || !applies(testCase, version)) continue;
+            JsonNode requires = testCase.path("requires");
+            String targetId = requires.path("normative_target_id").asText();
+            String attributeName = requires.path("attribute").asText();
+            String fieldName;
+            String routeId;
+            String symbol;
+            if ("test-attr-cryptographic-algorithm".equals(caseId)
+                    && "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-ALGORITHM".equals(targetId)) {
+                fieldName = "Cryptographic Algorithm";
+                routeId = "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.cryptographicalgorithm";
+                symbol = "org.kmipkit.protocol.CryptographicParameters.Builder.cryptographicAlgorithm";
+            } else if ("test-attr-digital-signature-algorithm".equals(caseId)
+                    && "KMIPKIT-ELEM-ATTRIBUTE-DIGITAL-SIGNATURE-ALGORITHM".equals(targetId)) {
+                fieldName = "Digital Signature Algorithm";
+                routeId = "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.digitalsignaturealgorithm";
+                symbol = "org.kmipkit.protocol.CryptographicParameters.Builder.digitalSignatureAlgorithm";
+            } else {
+                throw new IllegalArgumentException("Selected case is not a Cryptographic Parameters field: "
+                        + caseId);
+            }
+            if (!attributeName.equals(fieldName)
+                    || !"Enumeration".equals(requires.path("attribute_policy").path("value_type").asText())) {
+                throw new IllegalArgumentException("Selected case does not define the expected Enumeration: "
+                        + caseId);
+            }
+
+            long enumeration = representativeEnumerationValue(catalog, fieldName, version);
+            int fieldTag = tagCodeNamed(catalog, fieldName, version);
+            int parametersTag = tagCodeNamed(catalog, "Cryptographic Parameters", version);
+            byte[] valueBytes = ByteBuffer.allocate(Integer.BYTES).putInt(Math.toIntExact(enumeration)).array();
+            byte[] wire = structureWire(parametersTag,
+                    itemWire(fieldTag, TtlvItemType.Enumeration.code(), valueBytes));
+            try (CryptographicParameters.Builder builder = CryptographicParameters.builder()) {
+                CryptographicParameters.Builder returned = "Cryptographic Algorithm".equals(fieldName)
+                        ? builder.cryptographicAlgorithm(enumeration)
+                        : builder.digitalSignatureAlgorithm(enumeration);
+                assertTrue(returned == builder, "The installed fluent setter must return its builder instance.");
+                try (CryptographicParameters parameters = builder.build()) {
+                    long actual = "Cryptographic Algorithm".equals(fieldName)
+                            ? parameters.cryptographicAlgorithm().orElseThrow()
+                            : parameters.digitalSignatureAlgorithm().orElseThrow();
+                    assertEquals(enumeration, actual);
+                    try (TtlvStructure structure = parameters.intoTtlv();
+                            TtlvStructureView view = structure.view();
+                            TtlvItemView item = view.itemAt(0); Tag tag = item.tag();
+                            TtlvValueView value = item.value()) {
+                        assertEquals(1, view.itemCount());
+                        assertEquals(fieldTag, tag.raw());
+                        assertEquals(TtlvItemType.Enumeration, item.itemType());
+                        assertEquals(enumeration, value.enumeration());
+                    }
+                }
+            }
+            emitRoute(sink, caseId, targetId, routeId, symbol, "construct", wire);
+            emitted.add(caseId);
+        }
+        if (!emitted.equals(selectedCaseIds)) {
+            throw new IllegalArgumentException("Selected Cryptographic Parameters fields were not executed for "
                     + version);
         }
     }
