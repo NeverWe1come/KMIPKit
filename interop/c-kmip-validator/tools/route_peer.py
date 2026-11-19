@@ -572,6 +572,14 @@ RECIPES = {
     'test-neg-destroy-active-without-revoke': ((1, 18, 20, 19, 20), 'destroy'),
 }
 
+SIGNATURE_RECIPE_PROPERTIES = {
+    'sign': (False, False),
+    'sign_missing_parameters': (False, False),
+    'sign_ecdsa': (False, True),
+    'signature_verify': (True, False),
+    'signature_verify_ecdsa': (True, True),
+}
+
 CONTROLLED_PEER_LOCAL_MODEL_CASES = frozenset({
     'test-batch-single-item-options-omitted',
     'test-batch-placeholder-without-producer-rejected',
@@ -1942,12 +1950,13 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
         assert_mac_request(node)
     if selected_recipe[1] == 'mac_verify':
         assert_mac_verify_request(node)
-    if selected_recipe[1] in ('sign', 'signature_verify', 'sign_missing_parameters',
-                              'sign_ecdsa', 'signature_verify_ecdsa'):
+    signature_properties = SIGNATURE_RECIPE_PROPERTIES.get(selected_recipe[1])
+    if signature_properties is not None:
+        verify, ecdsa = signature_properties
         assert_signature_request(
-            node, selected_recipe[1] in ('signature_verify', 'signature_verify_ecdsa'),
+            node, verify,
             require_parameters=selected_recipe[1] != 'sign_missing_parameters',
-            ecdsa=selected_recipe[1] in ('sign_ecdsa', 'signature_verify_ecdsa'))
+            ecdsa=ecdsa)
     if selected_recipe[1] == 'create_key_pair':
         assert_create_key_pair_request(node)
     if selected_recipe[1] == 'certify':
@@ -4723,10 +4732,12 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             response_item_ids = MAC_ITEM_IDS
                                         elif recipe[1] == 'mac_verify':
                                             response_item_ids = MAC_VERIFY_ITEM_IDS
-                                        elif recipe[1] in ('sign', 'sign_missing_parameters', 'sign_ecdsa'):
-                                            response_item_ids = SIGN_ITEM_IDS
-                                        elif recipe[1] in ('signature_verify', 'signature_verify_ecdsa'):
-                                            response_item_ids = SIGNATURE_VERIFY_ITEM_IDS
+                                        elif recipe[1] in SIGNATURE_RECIPE_PROPERTIES:
+                                            response_item_ids = (
+                                                SIGNATURE_VERIFY_ITEM_IDS
+                                                if SIGNATURE_RECIPE_PROPERTIES[recipe[1]][0]
+                                                else SIGN_ITEM_IDS
+                                            )
                                         elif recipe[1] == 'batch_undo_rollback':
                                             response_item_ids = (b'undo-create', b'undo-get')
                                         elif recipe[1] == 'create_key_pair':
@@ -5153,12 +5164,13 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             verify_signature_missing_parameters_response(response_tree)
                                         elif recipe[1] == 'batch_undo_rollback':
                                             verify_undo_rollback_response(response_tree)
-                                        elif recipe[1] in ('sign', 'signature_verify', 'sign_ecdsa',
-                                                           'signature_verify_ecdsa'):
+                                        elif recipe[1] in SIGNATURE_RECIPE_PROPERTIES:
+                                            verify, ecdsa = SIGNATURE_RECIPE_PROPERTIES[recipe[1]]
                                             verify_signature_response(
                                                 response_tree,
-                                                recipe[1] in ('signature_verify', 'signature_verify_ecdsa'),
-                                                ecdsa=recipe[1] in ('sign_ecdsa', 'signature_verify_ecdsa'))
+                                                verify,
+                                                ecdsa=ecdsa,
+                                            )
                                         elif recipe[1] == 'create_key_pair':
                                             verify_create_key_pair_response(response_tree)
                                         elif recipe[1] == 'create_split_key' and exchange_index == 0:
