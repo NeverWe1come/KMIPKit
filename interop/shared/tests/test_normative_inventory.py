@@ -678,6 +678,16 @@ class NormativeInventoryTests(unittest.TestCase):
         self.assertEqual("Create Key Pair", cases["Public Key"]["operation"])
         self.assertEqual("Create Split Key", cases["Split Key"]["operation"])
 
+    def test_recover_recipe_archives_the_object_before_recovery(self) -> None:
+        case = next(case for case in self.catalog["test_cases"]
+                    if case["case_id"] == "test-op-recover")
+
+        self.assertEqual(["Create unique SymmetricKey", "Archive SymmetricKey before recovery"],
+                         case["isolation_recipe"]["setup_steps"])
+        self.assertEqual("Recover the archived SymmetricKey", case["isolation_recipe"]["target_step"])
+        self.assertEqual(["Destroy recovered SymmetricKey"],
+                         case["isolation_recipe"]["teardown_steps"])
+
     def test_version_rejection_cases_assert_the_request_was_never_sent(self) -> None:
         for case in self.catalog["test_cases"]:
             if case["category"] != "version_boundaries":
