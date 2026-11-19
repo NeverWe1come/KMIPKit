@@ -8,7 +8,7 @@ use serde_json::Value;
 #[cfg(any())]
 fn api_levels_match_the_shared_fixture_without_network_calls() {
     let fixture: Value = serde_json::from_str(include_str!(
-        "../../../tests/fixtures/api/shared-capability-parity.json"
+        "../../../bindings/shared/fixtures/api/shared-capability-parity.json"
     ))
     .expect("the shared API fixture is valid JSON");
     let case = fixture["cases"]

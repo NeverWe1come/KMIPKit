@@ -7945,7 +7945,7 @@ fn ffi_usage_allocation_context_survives_source_item_release_in_c() {
 #[allow(clippy::too_many_lines)]
 fn ffi_c_consumer_executes_guarded_encrypt_over_mtls_and_reserves_cost() {
     let fixture: serde_json::Value = serde_json::from_str(include_str!(
-        "../../../../tests/fixtures/api/shared-capability-parity.json"
+        "../../../../bindings/shared/fixtures/api/shared-capability-parity.json"
     ))
     .expect("shared API parity fixture is valid JSON");
     let case = fixture["cases"]

@@ -9,7 +9,7 @@ use kmipkit_ttlv::{Item, RawTag, Structure, Value, ValueView};
 use serde_json::Value as JsonValue;
 
 const SHARED_FIXTURE: &str =
-    include_str!("../../../tests/fixtures/api/shared-capability-parity.json");
+    include_str!("../../../bindings/shared/fixtures/api/shared-capability-parity.json");
 
 fn fixture_case(id: &str) -> JsonValue {
     let fixture: JsonValue =

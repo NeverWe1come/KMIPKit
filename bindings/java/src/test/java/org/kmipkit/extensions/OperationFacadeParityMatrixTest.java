@@ -504,7 +504,7 @@ final class OperationFacadeParityMatrixTest {
     }
 
     private static Map<String, Long> operationFixture() {
-        Path fixture = Path.of("..", "..", "tests", "fixtures", "api",
+        Path fixture = Path.of("..", "..", "bindings", "shared", "fixtures", "api",
                 "operation_catalog_parity.tsv");
         try {
             List<String> lines = Files.readAllLines(fixture, StandardCharsets.UTF_8);

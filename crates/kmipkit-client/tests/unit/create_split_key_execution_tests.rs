@@ -768,7 +768,7 @@ fn create_split_key_pending_retains_operation_result_and_exact_correlation_witho
 #[cfg(any())]
 fn create_split_key_maps_shared_fixture_success_and_pending_outcomes() {
     let fixture: serde_json::Value = serde_json::from_str(include_str!(
-        "../../../../tests/fixtures/api/shared-capability-parity.json"
+        "../../../../bindings/shared/fixtures/api/shared-capability-parity.json"
     ))
     .expect("shared capability fixture is valid JSON");
     let case = fixture["cases"]

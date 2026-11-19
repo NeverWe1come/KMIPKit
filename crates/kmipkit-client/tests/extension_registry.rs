@@ -22,7 +22,7 @@ struct FixtureDefinition {
 }
 
 // T010 uses minimal typed Rust schemas with identity and discriminator values
-// shared with tests/fixtures/extensions/cases.json. These are not the full
+// shared with bindings/shared/fixtures/extensions/cases.json. These are not the full
 // schemas in that corpus; T008 remains the full cross-adapter parity corpus.
 const FIXTURES: &[FixtureDefinition] = &[
     FixtureDefinition {
@@ -342,7 +342,7 @@ fn registry_rejects_duplicate_exact_discriminator_keys() {
 #[cfg(any())]
 fn client_configurations_own_isolated_immutable_registries() {
     let fixture: JsonValue = serde_json::from_str(include_str!(
-        "../../../tests/fixtures/api/shared-capability-parity.json"
+        "../../../bindings/shared/fixtures/api/shared-capability-parity.json"
     ))
     .expect("shared API fixture is valid JSON");
     let case = fixture["cases"]

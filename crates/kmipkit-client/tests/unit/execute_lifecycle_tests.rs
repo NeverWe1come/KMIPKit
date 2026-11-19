@@ -911,7 +911,7 @@ fn mixed_completed_and_pending_results_preserve_exact_pending_correlation_value(
 #[cfg(any())]
 fn ordered_mixed_batch_outcomes_preserve_ids_and_use_one_exchange() {
     let fixture: JsonValue = serde_json::from_str(include_str!(
-        "../../../../tests/fixtures/api/shared-capability-parity.json"
+        "../../../../bindings/shared/fixtures/api/shared-capability-parity.json"
     ))
     .expect("shared API parity fixture is valid JSON");
     let case = fixture["cases"]

@@ -121,7 +121,7 @@ fn compile_consumer(workspace_root: &Path, public_header: &Path, consumer: &Cons
         .flag_if_supported("/std:c11")
         .flag_if_supported("-std=c11");
     if consumer.include_generated_header {
-        build.include(workspace_root.join("tests/fixtures/api/generated"));
+        build.include(workspace_root.join("bindings/shared/fixtures/api/generated"));
     }
     if let Some(entry_point) = consumer.entry_point {
         build.define("main", Some(entry_point));
@@ -140,7 +140,7 @@ fn main() {
     );
     let workspace_root = manifest_dir.join("../..");
     let public_header = workspace_root.join("bindings/c/include");
-    let internal_header = workspace_root.join("tests/fixtures/api/generated");
+    let internal_header = workspace_root.join("bindings/shared/fixtures/api/generated");
 
     if !public_header.exists() {
         return;

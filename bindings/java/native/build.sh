@@ -45,12 +45,12 @@ set -- -std=c++17 -Wall -Wextra -Werror
 if [ "${KMIPKIT_JNI_COVERAGE:-}" = "llvm" ]; then
     set -- "$@" -fprofile-instr-generate -fcoverage-mapping
 fi
-"${CXX:-c++}" "$@" -I"$repository_root/tests/fixtures/api/generated" \
+"${CXX:-c++}" "$@" -I"$repository_root/bindings/shared/fixtures/api/generated" \
     "$script_dir/tests/response_identifier_validation_test.cpp" -o "$response_identifier_test"
 "$response_identifier_test"
 
 response_bridge_test="$native_output/response_bridge_test"
-"${CXX:-c++}" "$@" -I"$repository_root/tests/fixtures/api/generated" \
+"${CXX:-c++}" "$@" -I"$repository_root/bindings/shared/fixtures/api/generated" \
     "$script_dir/tests/response_bridge_test.cpp" -o "$response_bridge_test"
 "$response_bridge_test"
 
@@ -67,7 +67,7 @@ case "$(uname -s)" in
         "${CXX:-c++}" "$@" \
             -I"$java_home/include" -I"$java_home/include/linux" \
             -I"$repository_root/bindings/c/include" \
-            -I"$repository_root/tests/fixtures/api/generated" \
+            -I"$repository_root/bindings/shared/fixtures/api/generated" \
             "$script_dir/kmipkit_jni.cpp" "$rust_library" \
             -ldl -lpthread -lm -o "$native_output/libkmipkit_jni.so"
         ;;
@@ -76,7 +76,7 @@ case "$(uname -s)" in
         "${CXX:-c++}" -std=c++17 -dynamiclib \
             -I"$java_home/include" -I"$java_home/include/darwin" \
             -I"$repository_root/bindings/c/include" \
-            -I"$repository_root/tests/fixtures/api/generated" \
+            -I"$repository_root/bindings/shared/fixtures/api/generated" \
             "$script_dir/kmipkit_jni.cpp" "$rust_library" \
             -framework Security -framework CoreFoundation -framework SystemConfiguration \
             -o "$native_output/libkmipkit_jni.dylib"

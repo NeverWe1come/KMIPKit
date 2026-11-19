@@ -19,7 +19,7 @@ import org.kmipkit.InvalidInputException;
 final class CreationResultValueTest {
     @Test
     void failureResultMessageMatchesTheSharedFixture() throws Exception {
-        Path fixture = Path.of("..").resolve("..").resolve("tests/fixtures/api/shared-capability-parity.json");
+        Path fixture = Path.of("..").resolve("..").resolve("bindings/shared/fixtures/api/shared-capability-parity.json");
         String json = Files.readString(fixture.normalize());
         assertTrue(json.contains("\"id\": \"creation.result-message-on-failure.v1\""));
         assertTrue(json.contains("\"resultMessage\": \"création refusée ✓\""));

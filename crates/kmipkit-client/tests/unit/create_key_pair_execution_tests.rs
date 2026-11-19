@@ -60,7 +60,7 @@ const EXTENSION_VENDOR: &str = "CreateKeyPairFixtureVendor";
 const EXTENSION_DISCRIMINATOR: &[u8] = b"create_key_pair-fixture-v1";
 #[cfg(any())]
 const SHARED_FIXTURE: &str =
-    include_str!("../../../../tests/fixtures/api/shared-capability-parity.json");
+    include_str!("../../../../bindings/shared/fixtures/api/shared-capability-parity.json");
 const DISCRIMINATOR_TAG: u32 = 0x0054_0173;
 
 fn tag(raw: u32) -> Tag {

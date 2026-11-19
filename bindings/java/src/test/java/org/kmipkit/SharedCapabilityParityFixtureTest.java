@@ -842,11 +842,11 @@ final class SharedCapabilityParityFixtureTest {
 
     static Path sharedFixturePath() {
         Path workingDirectory = Path.of("").toAbsolutePath();
-        Path direct = workingDirectory.resolve("tests/fixtures/api/shared-capability-parity.json");
+        Path direct = workingDirectory.resolve("bindings/shared/fixtures/api/shared-capability-parity.json");
         if (Files.isRegularFile(direct)) {
             return direct;
         }
-        return workingDirectory.resolve("../../tests/fixtures/api/shared-capability-parity.json")
+        return workingDirectory.resolve("../../bindings/shared/fixtures/api/shared-capability-parity.json")
                 .normalize();
     }
 }

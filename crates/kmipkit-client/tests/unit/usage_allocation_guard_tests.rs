@@ -283,7 +283,7 @@ fn fixture_usage_allocation_guard_matches_shared_accounting_contract() {
     // KMIP 2.1 §6.1.23 is the normative protocol source. The local reservation
     // behavior and accounting scope are project policy traced by this fixture.
     let fixture: JsonValue = serde_json::from_str(include_str!(
-        "../../../../tests/fixtures/api/shared-capability-parity.json"
+        "../../../../bindings/shared/fixtures/api/shared-capability-parity.json"
     ))
     .expect("shared API parity fixture is valid JSON");
     let case = fixture["cases"]

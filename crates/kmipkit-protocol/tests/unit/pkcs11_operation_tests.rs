@@ -220,7 +220,7 @@ fn table_274_absence_remains_absent() {
 #[cfg(any())]
 fn table_274_distinguishes_absent_from_present_empty_correlation_value() {
     let fixture: serde_json::Value = serde_json::from_str(include_str!(
-        "../../../../tests/fixtures/api/pkcs11-parity.json"
+        "../../../../bindings/shared/fixtures/api/pkcs11-parity.json"
     ))
     .unwrap();
     let typed = &fixture["expectedOutput"]["typedResponse"];

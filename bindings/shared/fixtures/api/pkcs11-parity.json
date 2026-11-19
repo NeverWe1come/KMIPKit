@@ -128,7 +128,7 @@
     "python": "bindings/python/tests/test_pkcs11_operation.py"
   },
   "parityEvidence": [
-    "tests/fixtures/api/pkcs11-parity.json",
+    "bindings/shared/fixtures/api/pkcs11-parity.json",
     "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs",
     "crates/kmipkit-ffi/tests/support/pkcs11_abi_tests.rs",
     "crates/kmipkit-ffi/tests/c_api_coverage.rs",

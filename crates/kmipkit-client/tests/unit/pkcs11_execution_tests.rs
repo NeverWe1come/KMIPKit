@@ -18,7 +18,7 @@ const RETURN: u32 = 0x0042_015D;
 const SENTINEL: &[u8] = b"pkcs11-client-secret-sentinel";
 fn parity_fixture() -> serde_json::Value {
     serde_json::from_str(include_str!(
-        "../../../../tests/fixtures/api/pkcs11-parity.json"
+        "../../../../bindings/shared/fixtures/api/pkcs11-parity.json"
     ))
     .expect("the shared PKCS#11 parity fixture is valid JSON")
 }

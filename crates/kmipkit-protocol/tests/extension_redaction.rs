@@ -112,7 +112,7 @@ fn validated_extension_debug_and_display_redact_discriminator_and_payload_secret
 #[cfg(any())]
 fn schema_error_debug_display_and_source_chain_redact_payload_secrets() {
     let fixture: JsonValue = serde_json::from_str(include_str!(
-        "../../../tests/fixtures/api/shared-capability-parity.json"
+        "../../../bindings/shared/fixtures/api/shared-capability-parity.json"
     ))
     .expect("shared API parity fixture is valid JSON");
     let case = fixture["cases"]

@@ -5839,7 +5839,7 @@ final class ClientFacadeTlsIntegrationTest {
     private static Path pkcs11ParityFixturePath() throws Exception {
         Path directory = Path.of("").toAbsolutePath();
         while (directory != null) {
-            Path candidate = directory.resolve("tests/fixtures/api/pkcs11-parity.json");
+            Path candidate = directory.resolve("bindings/shared/fixtures/api/pkcs11-parity.json");
             if (Files.isRegularFile(candidate)) return candidate;
             directory = directory.getParent();
         }

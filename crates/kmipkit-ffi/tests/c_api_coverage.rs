@@ -800,7 +800,7 @@ fn compiled_c_consumer_preserves_hashed_password_algorithm_and_ttlv() {
 #[test]
 fn compiled_c_consumer_matches_hashed_password_timestamp_sequence_fixture() {
     let fixture: serde_json::Value = serde_json::from_str(include_str!(
-        "../../../tests/fixtures/api/shared-capability-parity.json"
+        "../../../bindings/shared/fixtures/api/shared-capability-parity.json"
     ))
     .expect("shared API parity fixture is valid JSON");
     let case = fixture["cases"]
@@ -1166,7 +1166,7 @@ fn compiled_c_consumer_encodes_check_get_export_rekey_and_allocation_builders_ov
 #[test]
 fn c_abi_consumer_preserves_shared_ttlv_fixture_values_and_order() {
     let fixture: serde_json::Value = serde_json::from_str(include_str!(
-        "../../../tests/fixtures/api/shared-capability-parity.json"
+        "../../../bindings/shared/fixtures/api/shared-capability-parity.json"
     ))
     .expect("the shared API fixture is valid JSON");
     let case = fixture["cases"]
@@ -1275,7 +1275,7 @@ fn decode_fixture_hex(value: &str) -> Vec<u8> {
 #[test]
 fn c_abi_consumer_matches_the_shared_codec_limits_fixture() {
     let fixture: serde_json::Value = serde_json::from_str(include_str!(
-        "../../../tests/fixtures/api/shared-capability-parity.json"
+        "../../../bindings/shared/fixtures/api/shared-capability-parity.json"
     ))
     .expect("the shared API fixture is valid JSON");
     let case = fixture["cases"]
@@ -1326,7 +1326,7 @@ fn c_abi_consumer_matches_the_shared_codec_limits_fixture() {
 #[test]
 fn c_abi_consumer_decodes_ttlv_and_reports_safe_errors() {
     let fixture: serde_json::Value = serde_json::from_str(include_str!(
-        "../../../tests/fixtures/api/shared-capability-parity.json"
+        "../../../bindings/shared/fixtures/api/shared-capability-parity.json"
     ))
     .expect("the shared API fixture is valid JSON");
     let case = fixture["cases"]
@@ -1412,7 +1412,7 @@ fn assert_ttlv_decode_protocol_error(wire: &[u8], expected_kind: u32, expected_o
 #[test]
 fn c_abi_consumer_redacts_shared_fixture_diagnostic_marker() {
     let fixture: serde_json::Value = serde_json::from_str(include_str!(
-        "../../../tests/fixtures/api/shared-capability-parity.json"
+        "../../../bindings/shared/fixtures/api/shared-capability-parity.json"
     ))
     .expect("the shared API fixture is valid JSON");
     let case = fixture["cases"]
@@ -1457,7 +1457,7 @@ fn c_abi_consumer_redacts_shared_fixture_diagnostic_marker() {
 #[test]
 fn c_abi_consumer_matches_shared_registry_cleanup_fixture() {
     let fixture: serde_json::Value = serde_json::from_str(include_str!(
-        "../../../tests/fixtures/api/shared-capability-parity.json"
+        "../../../bindings/shared/fixtures/api/shared-capability-parity.json"
     ))
     .expect("the shared API fixture is valid JSON");
     let case = fixture["cases"]
@@ -1560,7 +1560,7 @@ fn existing_c_consumer_exercises_the_exported_abi_in_the_coverage_process() {
     kmipkit_ffi::__coverage_consumer_test_link_anchor();
 
     let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../tests/fixtures/extensions/cases.json")
+        .join("../../bindings/shared/fixtures/extensions/cases.json")
         .canonicalize()
         .expect("shared C consumer fixture exists");
     let executable = CString::new("kmipkit_extension_registry_consumer")
@@ -1633,7 +1633,7 @@ fn existing_c_consumer_exercises_the_exported_abi_in_the_coverage_process() {
 #[test]
 fn generated_public_client_abi_consumer_compiles_and_runs() {
     let fixture: serde_json::Value = serde_json::from_str(include_str!(
-        "../../../tests/fixtures/api/shared-capability-parity.json"
+        "../../../bindings/shared/fixtures/api/shared-capability-parity.json"
     ))
     .expect("the shared API fixture is valid JSON");
     let case = fixture["cases"]
@@ -1698,7 +1698,7 @@ fn generated_public_async_client_abi_consumer_compiles_and_runs() {
 #[test]
 fn compiled_c_pkcs11_consumer_matches_shared_response_fixture_over_mtls() {
     let fixture: serde_json::Value = serde_json::from_str(include_str!(
-        "../../../tests/fixtures/api/pkcs11-parity.json"
+        "../../../bindings/shared/fixtures/api/pkcs11-parity.json"
     ))
     .expect("the shared PKCS#11 parity fixture is valid JSON");
     let expected = &fixture["expectedOutput"];
@@ -1718,7 +1718,7 @@ fn compiled_c_pkcs11_consumer_matches_shared_response_fixture_over_mtls() {
 #[allow(clippy::too_many_lines)]
 fn compiled_c_pkcs11_consumer_matches_correlation_case(correlation_case: &str) {
     let fixture: serde_json::Value = serde_json::from_str(include_str!(
-        "../../../tests/fixtures/api/pkcs11-parity.json"
+        "../../../bindings/shared/fixtures/api/pkcs11-parity.json"
     ))
     .expect("the shared PKCS#11 parity fixture is valid JSON");
     let expected = &fixture["expectedOutput"];
@@ -2120,7 +2120,7 @@ fn generated_public_c_consumer_reads_cancel_echo_from_response_payload_over_mtls
 #[allow(clippy::too_many_lines)]
 fn generated_public_client_abi_consumer_maps_split_key_fixture_success_and_pending_over_mtls() {
     let fixture: serde_json::Value = serde_json::from_str(include_str!(
-        "../../../tests/fixtures/api/shared-capability-parity.json"
+        "../../../bindings/shared/fixtures/api/shared-capability-parity.json"
     ))
     .expect("the shared API fixture is valid JSON");
     let case = fixture["cases"]
@@ -2455,7 +2455,7 @@ fn generated_public_client_abi_consumer_maps_split_key_fixture_success_and_pendi
 #[test]
 fn generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls() {
     let fixture: serde_json::Value = serde_json::from_str(include_str!(
-        "../../../tests/fixtures/api/shared-capability-parity.json"
+        "../../../bindings/shared/fixtures/api/shared-capability-parity.json"
     ))
     .expect("shared API parity fixture is valid JSON");
     let create_case = fixture["cases"]
@@ -2512,7 +2512,7 @@ struct CreateKeyPairParityFixture {
 
 fn creation_result_message_fixture_case() -> serde_json::Value {
     let fixture: serde_json::Value = serde_json::from_str(include_str!(
-        "../../../tests/fixtures/api/shared-capability-parity.json"
+        "../../../bindings/shared/fixtures/api/shared-capability-parity.json"
     ))
     .expect("the shared API fixture is valid JSON");
     fixture["cases"]
@@ -2531,7 +2531,7 @@ fn run_generated_public_client_abi_consumer(
     message_expectation: CreationResultMessageExpectation,
 ) {
     let fixture: serde_json::Value = serde_json::from_str(include_str!(
-        "../../../tests/fixtures/api/shared-capability-parity.json"
+        "../../../bindings/shared/fixtures/api/shared-capability-parity.json"
     ))
     .expect("the shared API fixture is valid JSON");
     let case = fixture["cases"]

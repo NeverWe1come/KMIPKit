@@ -79,7 +79,7 @@ tasks.register<org.gradle.api.tasks.Exec>("buildNativeLibrary") {
         exclude("**/target/**")
     })
     inputs.files(fileTree("../c/include") { include("**/*.h") })
-    inputs.files(fileTree("../../tests/fixtures/api/generated") { include("**/*.h") })
+    inputs.files(fileTree("../shared/fixtures/api/generated") { include("**/*.h") })
     inputs.files(file("../../Cargo.toml"), file("../../Cargo.lock"))
     workingDir(projectDir)
     if (windows) {

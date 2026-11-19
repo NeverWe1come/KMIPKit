@@ -6,7 +6,7 @@ use kmipkit_ttlv::{StructureView, ValueView};
 use serde_json::Value as JsonValue;
 
 const SHARED_PARITY_FIXTURE: &str =
-    include_str!("../../../../tests/fixtures/api/shared-capability-parity.json");
+    include_str!("../../../../bindings/shared/fixtures/api/shared-capability-parity.json");
 
 #[link(name = "kmipkit_message_model_abi_c_consumer", kind = "static")]
 unsafe extern "C" {

@@ -538,7 +538,7 @@
         "KMIPKIT-0012-FR-010"
       ],
       "input": {
-        "sourceFixture": "tests/fixtures/extensions/cases.json",
+        "sourceFixture": "bindings/shared/fixtures/extensions/cases.json",
         "caseIds": [
           "valid-recognized",
           "unknown-preserved"

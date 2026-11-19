@@ -788,7 +788,7 @@ fn hashed_password_timestamp_sequence_debug_redacts_the_recorded_value() {
 #[cfg(any())]
 fn hashed_password_timestamp_sequence_matches_shared_fixture() {
     let fixture: serde_json::Value = serde_json::from_str(include_str!(
-        "../../../tests/fixtures/api/shared-capability-parity.json"
+        "../../../bindings/shared/fixtures/api/shared-capability-parity.json"
     ))
     .expect("shared API parity fixture is valid JSON");
     let case = fixture["cases"]
