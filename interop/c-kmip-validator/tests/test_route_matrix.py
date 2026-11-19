@@ -1087,6 +1087,42 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(sum(event['public_api_symbol'] == 'kmipkit_client_execute_poll' and
                              event['action'] == 'send' for event in events), 6)
 
+    def test_process_operation_has_controlled_pending_create_recipe(self):
+        """OASIS KMIP 2.1 §6.1.39 processes a pending request by its correlation value."""
+        from artifact_support import ROOT
+        import route_peer
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        case = next(item for item in catalog['test_cases']
+                    if item['case_id'] == 'test-op-process')
+
+        self.assertEqual(
+            route_peer.recipe_for_case(case, None),
+            ((1, 58, 26, 20), 'async_process_then_poll_state'))
+
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        selected = {**catalog, 'test_cases': [case]}
+        events, _, checks = route_peer.execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 6)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertTrue(all(check.get('peer_async_interleaving_operations') == [1, 58, 26, 20] and
+                            check.get('peer_async_process_correlation_match') is True and
+                            check.get('peer_async_poll_correlation_match') is True and
+                            check.get('peer_async_process_is_synchronous') is True and
+                            check.get('peer_async_final_poll_create_shape') is True and
+                            check.get('peer_final_state_matches_setup') is True
+                            for check in checks), checks)
+        process_encode = [event for event in events
+                          if event['public_api_symbol'] ==
+                          'kmipkit_process_request_to_ttlv_payload' and event['action'] == 'encode']
+        self.assertEqual(len(process_encode), 1)
+        self.assertEqual(process_encode[0]['protocol_version'], '2.1')
+        self.assertEqual(sum(event['public_api_symbol'] ==
+                             'kmipkit_client_async_operation_outcome_process_response_v1' and
+                             event['action'] == 'decode' for event in events), 1)
+
     def test_stop_on_first_failure_case_has_a_controlled_peer_recipe(self):
         import route_peer
         from artifact_support import ROOT
