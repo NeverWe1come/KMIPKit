@@ -467,6 +467,8 @@ RECIPES = {
     'test-op-signature-verify': ((2, 18, 34, 19, 20, 20), 'signature_verify'),
     'test-crypto-signature-verify-rsa-2048-pkcs1_v1_5':
         ((2, 18, 34, 19, 20, 20), 'signature_verify'),
+    'test-crypto-signature-verify-ecdsa-256-p_256':
+        ((2, 18, 34, 19, 20, 20), 'signature_verify_ecdsa'),
     'test-batch-undo-rolls-back-prior-success': ((1, 10), 'batch_undo_rollback'),
     'test-op-create-key-pair': ((2, 20, 20), 'create_key_pair'),
     'test-op-create-split-key': ((40, 20, 20), 'create_split_key'),
@@ -1940,11 +1942,12 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
         assert_mac_request(node)
     if selected_recipe[1] == 'mac_verify':
         assert_mac_verify_request(node)
-    if selected_recipe[1] in ('sign', 'signature_verify', 'sign_missing_parameters', 'sign_ecdsa'):
+    if selected_recipe[1] in ('sign', 'signature_verify', 'sign_missing_parameters',
+                              'sign_ecdsa', 'signature_verify_ecdsa'):
         assert_signature_request(
-            node, selected_recipe[1] == 'signature_verify',
+            node, selected_recipe[1] in ('signature_verify', 'signature_verify_ecdsa'),
             require_parameters=selected_recipe[1] != 'sign_missing_parameters',
-            ecdsa=selected_recipe[1] == 'sign_ecdsa')
+            ecdsa=selected_recipe[1] in ('sign_ecdsa', 'signature_verify_ecdsa'))
     if selected_recipe[1] == 'create_key_pair':
         assert_create_key_pair_request(node)
     if selected_recipe[1] == 'certify':
@@ -4722,7 +4725,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             response_item_ids = MAC_VERIFY_ITEM_IDS
                                         elif recipe[1] in ('sign', 'sign_missing_parameters', 'sign_ecdsa'):
                                             response_item_ids = SIGN_ITEM_IDS
-                                        elif recipe[1] == 'signature_verify':
+                                        elif recipe[1] in ('signature_verify', 'signature_verify_ecdsa'):
                                             response_item_ids = SIGNATURE_VERIFY_ITEM_IDS
                                         elif recipe[1] == 'batch_undo_rollback':
                                             response_item_ids = (b'undo-create', b'undo-get')
@@ -5150,10 +5153,12 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             verify_signature_missing_parameters_response(response_tree)
                                         elif recipe[1] == 'batch_undo_rollback':
                                             verify_undo_rollback_response(response_tree)
-                                        elif recipe[1] in ('sign', 'signature_verify', 'sign_ecdsa'):
+                                        elif recipe[1] in ('sign', 'signature_verify', 'sign_ecdsa',
+                                                           'signature_verify_ecdsa'):
                                             verify_signature_response(
-                                                response_tree, recipe[1] == 'signature_verify',
-                                                ecdsa=recipe[1] == 'sign_ecdsa')
+                                                response_tree,
+                                                recipe[1] in ('signature_verify', 'signature_verify_ecdsa'),
+                                                ecdsa=recipe[1] in ('sign_ecdsa', 'signature_verify_ecdsa'))
                                         elif recipe[1] == 'create_key_pair':
                                             verify_create_key_pair_response(response_tree)
                                         elif recipe[1] == 'create_split_key' and exchange_index == 0:

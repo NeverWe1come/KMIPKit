@@ -8786,6 +8786,9 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     if (strcmp(test_case->case_id, "test-op-signature-verify") == 0)
         return execute_created_key_signature(
             client, KMIPKIT_ENUMERATION_OPERATION_SIGNATURE_VERIFY, false, false);
+    if (strcmp(test_case->case_id, "test-crypto-signature-verify-ecdsa-256-p_256") == 0)
+        return execute_created_key_signature(
+            client, KMIPKIT_ENUMERATION_OPERATION_SIGNATURE_VERIFY, false, true);
     if (strcmp(test_case->case_id,
                "test-crypto-signature-verify-rsa-2048-pkcs1_v1_5") == 0)
         return execute_created_key_signature(
