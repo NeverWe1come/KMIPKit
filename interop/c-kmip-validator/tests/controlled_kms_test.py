@@ -767,7 +767,7 @@ def main() -> int:
             async_request_pending = False
             async_pending_poll_count = 0
             async_poll_mode = "none"
-            async_repeated_pending_seen = False
+            async_repeated_pending_success_runs = 0
             async_process_completed = False
             async_process_route_finished = False
             async_query_route_stage = 0
@@ -1311,7 +1311,8 @@ def main() -> int:
                                 async_request_pending = True
                                 async_pending_poll_count = 0
                                 async_poll_mode = (
-                                    "repeated_pending_success" if not async_repeated_pending_seen else
+                                    "repeated_pending_success"
+                                    if async_repeated_pending_success_runs < 2 else
                                     "final_failure")
                                 stream.sendall(pending_create_response(protocol_minor, cancel_correlation))
                             elif operations == (57,):
@@ -1366,7 +1367,7 @@ def main() -> int:
                                             async_pending_poll_count == 3):
                                         stream.sendall(completed_poll_create_response(protocol_minor))
                                         async_request_pending = False
-                                        async_repeated_pending_seen = True
+                                        async_repeated_pending_success_runs += 1
                                     elif async_pending_poll_count == 1 or (
                                             async_poll_mode == "repeated_pending_success" and
                                             async_pending_poll_count == 2):
