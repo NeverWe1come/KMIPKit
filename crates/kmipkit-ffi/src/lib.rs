@@ -128,6 +128,10 @@ pub struct kmipkit_usage_allocation_context_t {
     _private: [u8; 0],
 }
 #[repr(C)]
+pub struct kmipkit_lease_context_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
 pub struct kmipkit_split_key_reference_t {
     _private: [u8; 0],
 }
@@ -673,6 +677,7 @@ pub const KMIPKIT_ATTRIBUTE_REFERENCE_KIND_NAME: u32 = 2;
 pub const KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING: u32 = 1;
 pub const KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION: u32 = 2;
 pub const KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER: u32 = 3;
+pub const KMIPKIT_UNIQUE_IDENTIFIER_KIND_IDENTIFIER: u32 = 4;
 
 /// One explicitly encoded transport certificate, key, or revocation input.
 #[repr(C)]
@@ -759,6 +764,65 @@ pub struct kmipkit_cryptographic_parameters_fields_v1_t {
     pub p_source_length: u64,
     pub trailer_field_present: u8,
     pub trailer_field: i32,
+}
+
+/// Versioned input for constructing KMIP 2.1 / 3.0 Cryptographic Parameters.
+/// Appends KMIP 3.0 PQC / KEM parameters without altering the v1 prefix.
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct kmipkit_cryptographic_parameters_fields_v2_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    pub block_cipher_mode_present: u8,
+    pub block_cipher_mode: u32,
+    pub padding_method_present: u8,
+    pub padding_method: u32,
+    pub hashing_algorithm_present: u8,
+    pub hashing_algorithm: u32,
+    pub key_role_type_present: u8,
+    pub key_role_type: u32,
+    pub digital_signature_algorithm_present: u8,
+    pub digital_signature_algorithm: u32,
+    pub cryptographic_algorithm_present: u8,
+    pub cryptographic_algorithm: u32,
+    pub random_iv_present: u8,
+    pub random_iv: u8,
+    pub iv_length_present: u8,
+    pub iv_length: i32,
+    pub tag_length_present: u8,
+    pub tag_length: i32,
+    pub fixed_field_length_present: u8,
+    pub fixed_field_length: i32,
+    pub invocation_field_length_present: u8,
+    pub invocation_field_length: i32,
+    pub counter_length_present: u8,
+    pub counter_length: i32,
+    pub initial_counter_value_present: u8,
+    pub initial_counter_value: i32,
+    pub salt_length_present: u8,
+    pub salt_length: i32,
+    pub mask_generator_present: u8,
+    pub mask_generator: u32,
+    pub mask_generator_hashing_algorithm_present: u8,
+    pub mask_generator_hashing_algorithm: u32,
+    pub p_source_present: u8,
+    pub p_source: *const u8,
+    pub p_source_length: u64,
+    pub trailer_field_present: u8,
+    pub trailer_field: i32,
+    pub kem_algorithm_present: u8,
+    pub kem_algorithm: u32,
+    pub deterministic_present: u8,
+    pub deterministic: u8,
+    pub context_string_present: u8,
+    pub context_string: *const u8,
+    pub context_string_length: u64,
+    pub seed_present: u8,
+    pub seed: *const u8,
+    pub seed_length: u64,
+    pub input_key_material_present: u8,
+    pub input_key_material: *const u8,
+    pub input_key_material_length: u64,
 }
 
 /// Caller-owned object state for one request batch item.

@@ -471,6 +471,7 @@ impl SecretBuffer {
         )
     }
 
+    #[allow(dead_code)]
     #[cfg(test)]
     fn read_from_with_observer_for_test<R: Read>(
         reader: R,
@@ -547,10 +548,12 @@ impl Drop for SecretBuffer {
     }
 }
 
+#[allow(dead_code)]
 #[cfg(test)]
 #[derive(Clone, Default)]
 struct SecretBufferObserver(std::sync::Arc<std::sync::Mutex<Vec<bool>>>);
 
+#[allow(dead_code)]
 #[cfg(test)]
 impl SecretBufferObserver {
     fn new() -> Self {
@@ -645,6 +648,7 @@ fn transport_input_path(input: &kmipkit_transport_input_v1_t) -> FfiResult<Strin
     Ok(path.to_owned())
 }
 
+#[allow(dead_code)]
 #[cfg(test)]
 fn certificate_input_bytes(input: &kmipkit_transport_input_v1_t) -> FfiResult<Vec<u8>> {
     certificate_input_bytes_with_budget(input, MAX_TRANSPORT_MATERIAL_BYTES)
@@ -3045,6 +3049,37 @@ pub extern "C" fn kmipkit_client_batch_item_decapsulate_from_fields(
     })
 }
 
+/// Creates a typed KMIP 2.1 Set Endpoint Role batch item.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_set_endpoint_role(
+    endpoint_role: u32,
+    vendor_identification: *const u8,
+    vendor_identification_length: u64,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let role = kmipkit_protocol::EndpointRole::from_raw(endpoint_role);
+        let mut request = kmipkit_protocol::SetEndpointRoleRequest::new(role);
+        if !vendor_identification.is_null() && vendor_identification_length > 0 {
+            let span = try_ffi!(input_span(
+                vendor_identification,
+                vendor_identification_length,
+                MAX_FFI_INPUT_BYTES,
+            ));
+            let text = match std::str::from_utf8(span) {
+                Ok(t) => t,
+                Err(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+            };
+            request = request.with_vendor_identification(text);
+        } else if !vendor_identification.is_null() || vendor_identification_length != 0 {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        *out = try_ffi!(batch_item_handle(ClientRequest::set_endpoint_role(request)));
+        SUCCESS
+    })
+}
+
 /// Executes exactly one KMIP 2.1 Poll request with the caller's opaque correlation bytes.
 ///
 /// The outcome is caller-owned and must be released with
@@ -5196,7 +5231,7 @@ fn empty_unique_identifier_v1(
     })
 }
 
-fn write_unique_identifier_v1(
+pub(super) fn write_unique_identifier_v1(
     out_identifier: *mut kmipkit_unique_identifier_v1_t,
     identifier: Option<&kmipkit_protocol::UniqueIdentifier>,
 ) -> FfiResult<()> {
@@ -5216,7 +5251,12 @@ fn write_unique_identifier_v1(
                 output.kind = crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER;
                 output.integer_value = *value;
             }
-            _ => return Err(ERROR_INVALID_INPUT), // COVERAGE-EXCLUDE: the current UniqueIdentifier model has only text, enumeration, and integer variants.
+            kmipkit_protocol::UniqueIdentifier::Identifier(text) => {
+                output.kind = crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_IDENTIFIER;
+                output.text_data = text.as_ptr();
+                output.text_length = u64::try_from(text.len()).unwrap_or(u64::MAX);
+            }
+            _ => return Err(ERROR_INVALID_INPUT),
         }
     }
     // SAFETY: the caller supplied a writable record with the checked v1 size.
@@ -5350,6 +5390,76 @@ pub extern "C" fn kmipkit_client_batch_item_response_obliterate(
         if outcome.obliterate_response().is_some() {
             *present = 1;
         }
+        SUCCESS
+    })
+}
+
+/// Copies the successful Set Endpoint Role response fields.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_set_endpoint_role(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_role: *mut u32,
+    out_vendor_identification: *mut crate::kmipkit_byte_span_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if out_present.is_null() || out_role.is_null() || out_vendor_identification.is_null() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let present = scalar_out!(out_present);
+        let role = scalar_out!(out_role);
+        let vendor_id = scalar_out!(out_vendor_identification);
+        *present = 0;
+        *role = 0;
+        *vendor_id = crate::kmipkit_byte_span_v1_t::default();
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
+        let outcome = item.outcome();
+        if outcome.result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        if let Some(resp) = outcome.set_endpoint_role_response() {
+            *present = 1;
+            if let Some(r) = resp.endpoint_role() {
+                *role = r.raw();
+            }
+            if let Some(vid) = resp.vendor_identification() {
+                vendor_id.data = vid.as_ptr();
+                vendor_id.length = u64::try_from(vid.len()).unwrap_or(u64::MAX);
+            }
+        }
+        SUCCESS
+    })
+}
+
+/// Validates whether an originating operation is permitted under NIST SP 800-57 Part 1 Rev 5.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_nist_key_lifecycle_can_originate(
+    state_enum: u32,
+    out_can_originate: *mut u8,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_can_originate);
+        let Some(state) = kmipkit_protocol::KeyLifecycleState::from_u32(state_enum) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = u8::from(kmipkit_protocol::NistKeyLifecycleGuard::can_originate(state));
+        SUCCESS
+    })
+}
+
+/// Validates whether a recipient or processing operation is permitted under NIST SP 800-57 Part 1 Rev 5.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_nist_key_lifecycle_can_process(
+    state_enum: u32,
+    out_can_process: *mut u8,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_can_process);
+        let Some(state) = kmipkit_protocol::KeyLifecycleState::from_u32(state_enum) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = u8::from(kmipkit_protocol::NistKeyLifecycleGuard::can_process(state));
         SUCCESS
     })
 }

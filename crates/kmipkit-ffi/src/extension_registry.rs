@@ -60,7 +60,8 @@ use crate::{
     kmipkit_client_t, kmipkit_codec_limits_t, kmipkit_create_key_pair_builder_t,
     kmipkit_credential_t, kmipkit_credential_validation_error_v1_t, kmipkit_credential_value_t,
     kmipkit_credential_view_t, kmipkit_crypto_operation_builder_t,
-    kmipkit_cryptographic_parameters_fields_v1_t, kmipkit_cryptographic_parameters_t,
+    kmipkit_cryptographic_parameters_fields_v1_t, kmipkit_cryptographic_parameters_fields_v2_t,
+    kmipkit_cryptographic_parameters_t,
     kmipkit_delete_attribute_builder_t, kmipkit_delete_attribute_request_t,
     kmipkit_device_credential_t, kmipkit_extension_child_rule_t, kmipkit_extension_compatibility_t,
     kmipkit_extension_definition_t, kmipkit_extension_discriminator_t,
@@ -88,10 +89,12 @@ use crate::{
     kmipkit_ttlv_item_view_t, kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t,
     kmipkit_ttlv_structure_view_t, kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t,
     kmipkit_unique_identifier_v1_t, kmipkit_usage_allocation_context_t,
+    kmipkit_lease_context_t,
     kmipkit_username_and_password_credential_t, kmipkit_validated_extension_value_t,
     kmipkit_validation_issue_view_v1_t, kmipkit_validation_report_t,
 };
 use kmipkit_client::UsageAllocationContext;
+use kmipkit_client::LeaseContext;
 use kmipkit_client::extension_registry as client_extension;
 use kmipkit_client::{
     Client, ClientBatch, ClientBatchItem, ClientBatchResponse, ClientCauseCategory, ClientError,
@@ -211,6 +214,9 @@ mod ffi_error_kind_mapping_tests;
 #[cfg(test)]
 #[path = "../tests/support/view_ownership_tests.rs"]
 mod view_ownership_tests;
+#[cfg(test)]
+#[path = "../tests/support/v3_parity_tests.rs"]
+mod v3_parity_tests;
 #[cfg(test)]
 use self::test_handle_helpers::make_handle;
 
@@ -550,6 +556,7 @@ enum Kind {
     ClientBatchItemResponse,
     ClientAsyncOperationOutcome,
     UsageAllocationContext,
+    LeaseContext,
     SplitKeyReference,
     RevocationReason,
     RevokeRequest,
@@ -779,6 +786,7 @@ enum HandleValue {
     },
     ClientAsyncOperationOutcome(Mutex<kmipkit_client::ClientOperationOutcome>),
     UsageAllocationContext(Mutex<UsageAllocationContext>),
+    LeaseContext(Mutex<LeaseContext>),
     SplitKeyReference(SplitKeyReference),
 }
 
@@ -1752,6 +1760,9 @@ fn item_type_from_u32(value: u32) -> FfiResult<ItemType> {
         9 => Ok(ItemType::DateTime),
         10 => Ok(ItemType::Interval),
         11 => Ok(ItemType::DateTimeExtended),
+        12 => Ok(ItemType::Identifier),
+        13 => Ok(ItemType::Reference),
+        14 => Ok(ItemType::NameReference),
         _ => Err(ERROR_INVALID_SCHEMA),
     }
 }
@@ -1769,6 +1780,9 @@ fn item_type_code(value: ItemType) -> u8 {
         ItemType::DateTime => 9,
         ItemType::Interval => 10,
         ItemType::DateTimeExtended => 11,
+        ItemType::Identifier => 12,
+        ItemType::Reference => 13,
+        ItemType::NameReference => 14,
         _ => 0,
     }
 }
@@ -1786,6 +1800,9 @@ fn value_view_type_code(value: &ValueView<'_>) -> u8 {
         ValueView::DateTime(_) => 9,
         ValueView::Interval(_) => 10,
         ValueView::DateTimeExtended(_) => 11,
+        ValueView::Identifier(_) => 12,
+        ValueView::Reference(_) => 13,
+        ValueView::NameReference(_) => 14,
         _ => 0,
     }
 }
@@ -1803,6 +1820,9 @@ fn clone_value(value: ValueView<'_>) -> FfiResult<Value> {
         ValueView::DateTime(value) => Ok(Value::date_time(*value)),
         ValueView::Interval(value) => Ok(Value::interval(*value)),
         ValueView::DateTimeExtended(value) => Ok(Value::date_time_extended(*value)),
+        ValueView::Identifier(value) => Ok(Value::identifier((*value).to_owned())),
+        ValueView::Reference(value) => Ok(Value::reference((*value).to_owned())),
+        ValueView::NameReference(value) => Ok(Value::name_reference((*value).to_owned())),
         _ => Err(ERROR_INVALID_SCHEMA),
     }
 }
@@ -5199,6 +5219,16 @@ fn copy_unique_identifier(
         crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER => {
             UniqueIdentifier::Integer(value.integer_value)
         }
+        crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_IDENTIFIER => {
+            let text = input_span(value.text_data, value.text_length, MAX_FFI_INPUT_BYTES)?;
+            let text = std::str::from_utf8(text).map_err(|_| ERROR_INVALID_INPUT)?;
+            let mut owned = String::new();
+            owned
+                .try_reserve_exact(text.len())
+                .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+            owned.push_str(text);
+            UniqueIdentifier::Identifier(owned)
+        }
         _ => return Err(ERROR_INVALID_INPUT),
     };
     Ok(Some(identifier))
@@ -8008,7 +8038,10 @@ fn measure_value(value: ValueView<'_>) -> FfiResult<(u64, u64, u64)> {
             0,
             0,
         )),
-        ValueView::TextString(text) => Ok((
+        ValueView::TextString(text)
+        | ValueView::Identifier(text)
+        | ValueView::Reference(text)
+        | ValueView::NameReference(text) => Ok((
             u64::try_from(text.len()).map_err(|_| ERROR_RESOURCE_LIMIT)?,
             0,
             0,
@@ -8480,6 +8513,51 @@ pub extern "C" fn kmipkit_ttlv_value_text_string(
 }
 
 #[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_ttlv_value_identifier(
+    limits: *mut kmipkit_codec_limits_t,
+    value: *const u8,
+    value_length: u64,
+    out_value: *mut *mut kmipkit_ttlv_value_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        variable_value(limits, value, value_length, out_value, |bytes| {
+            let text = std::str::from_utf8(bytes).map_err(|_| ERROR_INVALID_INPUT)?;
+            Ok(Value::identifier(text.to_owned()))
+        })
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_ttlv_value_reference(
+    limits: *mut kmipkit_codec_limits_t,
+    value: *const u8,
+    value_length: u64,
+    out_value: *mut *mut kmipkit_ttlv_value_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        variable_value(limits, value, value_length, out_value, |bytes| {
+            let text = std::str::from_utf8(bytes).map_err(|_| ERROR_INVALID_INPUT)?;
+            Ok(Value::reference(text.to_owned()))
+        })
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_ttlv_value_name_reference(
+    limits: *mut kmipkit_codec_limits_t,
+    value: *const u8,
+    value_length: u64,
+    out_value: *mut *mut kmipkit_ttlv_value_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        variable_value(limits, value, value_length, out_value, |bytes| {
+            let text = std::str::from_utf8(bytes).map_err(|_| ERROR_INVALID_INPUT)?;
+            Ok(Value::name_reference(text.to_owned()))
+        })
+    })
+}
+
+#[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_ttlv_value_byte_string(
     limits: *mut kmipkit_codec_limits_t,
     value: *const u8,
@@ -8680,6 +8758,31 @@ pub extern "C" fn kmipkit_request_header_view_batch_count(
     })
 }
 
+/// Returns the on-the-wire Batch Count if present (KMIP 2.x), or reports absent (KMIP 3.0 Option A).
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_request_header_view_wire_batch_count(
+    header: *mut kmipkit_request_header_view_t,
+    out_has_count: *mut u8,
+    out_count: *mut i32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let has_count = scalar_out!(out_has_count);
+        let out = scalar_out!(out_count);
+        let header = read_handle!(header, RequestHeaderView);
+        let HandleValue::RequestHeaderView(message) = &header.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        if let Some(count) = message.header().batch_count() {
+            *has_count = 1;
+            *out = count;
+        } else {
+            *has_count = 0;
+            *out = 0;
+        }
+        SUCCESS
+    })
+}
+
 /// Returns the effective Asynchronous Indicator, using KMIP 2.1 §9.2's Prohibited value (`3`) when absent.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_request_header_view_effective_asynchronous_indicator(
@@ -8851,6 +8954,91 @@ pub extern "C" fn kmipkit_request_batch_item_view_operation(
     })
 }
 
+/// Returns the boolean Ephemeral flag (KMIP 2.x), if present.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_request_batch_item_view_ephemeral(
+    item: *mut kmipkit_request_batch_item_view_t,
+    out_present: *mut u8,
+    out_ephemeral: *mut u8,
+) -> i32 {
+    ffi_entrypoint(|| {
+        try_ffi!(validate_output_regions(&[
+            (out_present.cast(), std::mem::size_of::<u8>()),
+            (out_ephemeral.cast(), std::mem::size_of::<u8>()),
+        ]));
+        let present = scalar_out!(out_present);
+        let ephemeral_out = scalar_out!(out_ephemeral);
+        *present = 0;
+        *ephemeral_out = 0;
+        let item = read_handle!(item, RequestBatchItemView);
+        let HandleValue::RequestBatchItemView { message, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let ephemeral = message
+            .batch_items()
+            .nth(*index)
+            .and_then(kmipkit_protocol::RequestBatchItemView::ephemeral);
+        if let Some(ephemeral) = ephemeral {
+            *present = 1;
+            *ephemeral_out = u8::from(ephemeral);
+        }
+        SUCCESS
+    })
+}
+
+/// Returns the raw Ephemeral Mode Enumeration (KMIP 3.0), if present.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_request_batch_item_view_ephemeral_mode(
+    item: *mut kmipkit_request_batch_item_view_t,
+    out_present: *mut u8,
+    out_mode: *mut u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        try_ffi!(validate_output_regions(&[
+            (out_present.cast(), std::mem::size_of::<u8>()),
+            (out_mode.cast(), std::mem::size_of::<u32>()),
+        ]));
+        let present = scalar_out!(out_present);
+        let mode_out = scalar_out!(out_mode);
+        *present = 0;
+        *mode_out = 0;
+        let item = read_handle!(item, RequestBatchItemView);
+        let HandleValue::RequestBatchItemView { message, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let mode = message
+            .batch_items()
+            .nth(*index)
+            .and_then(kmipkit_protocol::RequestBatchItemView::ephemeral_mode);
+        if let Some(mode) = mode {
+            *present = 1;
+            *mode_out = mode;
+        }
+        SUCCESS
+    })
+}
+
+/// Returns whether the request batch item is ephemeral in either KMIP 2.x or KMIP 3.0.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_request_batch_item_view_is_ephemeral(
+    item: *mut kmipkit_request_batch_item_view_t,
+    out_is_ephemeral: *mut u8,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_is_ephemeral);
+        let item = read_handle!(item, RequestBatchItemView);
+        let HandleValue::RequestBatchItemView { message, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let is_ephemeral = message
+            .batch_items()
+            .nth(*index)
+            .is_some_and(kmipkit_protocol::RequestBatchItemView::is_ephemeral);
+        *out = u8::from(is_ephemeral);
+        SUCCESS
+    })
+}
+
 /// Consumes a generic TTLV structure and validates it as a KMIP Response Message.
 ///
 /// The original ordered TTLV tree is retained. On structural validation failure,
@@ -9016,6 +9204,31 @@ pub extern "C" fn kmipkit_response_header_view_batch_count(
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
         *out = message.header().effective_batch_count();
+        SUCCESS
+    })
+}
+
+/// Returns the on-the-wire Batch Count if present (KMIP 2.x), or reports absent (KMIP 3.0 Option A).
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_response_header_view_wire_batch_count(
+    header: *mut kmipkit_response_header_view_t,
+    out_has_count: *mut u8,
+    out_count: *mut i32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let has_count = scalar_out!(out_has_count);
+        let out = scalar_out!(out_count);
+        let header = read_handle!(header, ResponseHeaderView);
+        let HandleValue::ResponseHeaderView(message) = &header.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        if let Some(count) = message.header().batch_count() {
+            *has_count = 1;
+            *out = count;
+        } else {
+            *has_count = 0;
+            *out = 0;
+        }
         SUCCESS
     })
 }
@@ -10762,7 +10975,10 @@ pub extern "C" fn kmipkit_ttlv_value_view_byte_length(
         *out = try_ffi!(extract_value(value, |value| match value {
             ValueView::BigInteger(bytes) | ValueView::ByteString(bytes) =>
                 u64::try_from(bytes.len()).ok(),
-            ValueView::TextString(text) => u64::try_from(text.len()).ok(),
+            ValueView::TextString(text)
+            | ValueView::Identifier(text)
+            | ValueView::Reference(text)
+            | ValueView::NameReference(text) => u64::try_from(text.len()).ok(),
             _ => None,
         }));
         SUCCESS
@@ -10792,7 +11008,10 @@ pub extern "C" fn kmipkit_ttlv_value_view_copy_bytes(
         let length = try_ffi!(extract_value(value, |value| match value {
             ValueView::BigInteger(bytes) | ValueView::ByteString(bytes) =>
                 u64::try_from(bytes.len()).ok(),
-            ValueView::TextString(text) => u64::try_from(text.len()).ok(),
+            ValueView::TextString(text)
+            | ValueView::Identifier(text)
+            | ValueView::Reference(text)
+            | ValueView::NameReference(text) => u64::try_from(text.len()).ok(),
             _ => None,
         }));
         if capacity < length || (length != 0 && buffer.is_null()) {
@@ -10802,7 +11021,10 @@ pub extern "C" fn kmipkit_ttlv_value_view_copy_bytes(
             try_ffi!(value.with_value(|value| {
                 let bytes = match value {
                     ValueView::BigInteger(bytes) | ValueView::ByteString(bytes) => bytes,
-                    ValueView::TextString(text) => text.as_bytes(),
+                    ValueView::TextString(text)
+                    | ValueView::Identifier(text)
+                    | ValueView::Reference(text)
+                    | ValueView::NameReference(text) => text.as_bytes(),
                     _ => return Err(ERROR_INVALID_INPUT),
                 };
                 // SAFETY: For non-empty values, the C contract requires `buffer` to point to
@@ -10834,10 +11056,310 @@ pub extern "C" fn kmipkit_ttlv_value_view_byte_at(
         *out = try_ffi!(extract_value(value, |value| match value {
             ValueView::BigInteger(bytes) | ValueView::ByteString(bytes) =>
                 bytes.get(index).copied(),
-            ValueView::TextString(text) => text.as_bytes().get(index).copied(),
+            ValueView::TextString(text)
+            | ValueView::Identifier(text)
+            | ValueView::Reference(text)
+            | ValueView::NameReference(text) => text.as_bytes().get(index).copied(),
             _ => None,
         }));
         SUCCESS
+    })
+}
+
+// ---------------------------------------------------------------------------
+// Link Normalizer (KMIP 2.x generic link <-> KMIP 3.0 typed link)
+// ---------------------------------------------------------------------------
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_link_normalizer_v2_to_v3(
+    item: *mut kmipkit_ttlv_item_t,
+    out_item: *mut *mut kmipkit_ttlv_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let input_item = try_ffi!(copy_required_item_handle(item));
+        let normalized = match kmipkit_protocol::LinkNormalizer::normalize_to_v3(&input_item) {
+            Ok(item) => item,
+            Err(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        *out = try_ffi!(try_make_handle(Kind::Item, HandleValue::Item(normalized)));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_link_normalizer_v3_to_v2(
+    item: *mut kmipkit_ttlv_item_t,
+    out_item: *mut *mut kmipkit_ttlv_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let input_item = try_ffi!(copy_required_item_handle(item));
+        let normalized = match kmipkit_protocol::LinkNormalizer::normalize_to_v2(&input_item) {
+            Ok(item) => item,
+            Err(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        *out = try_ffi!(try_make_handle(Kind::Item, HandleValue::Item(normalized)));
+        SUCCESS
+    })
+}
+
+// ---------------------------------------------------------------------------
+// Version Gate (KMIP 2.0 / 2.1 / 3.0 operation & tag validation)
+// ---------------------------------------------------------------------------
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_version_gate_validate_operation(
+    major: i32,
+    minor: i32,
+    operation: u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let version = kmipkit_protocol::ProtocolVersion::from_raw(major, minor);
+        match kmipkit_protocol::VersionGate::validate_operation(version, operation) {
+            Ok(()) => SUCCESS,
+            Err(_) => ERROR_INVALID_INPUT,
+        }
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_version_gate_validate_tag(
+    major: i32,
+    minor: i32,
+    tag: u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let version = kmipkit_protocol::ProtocolVersion::from_raw(major, minor);
+        match kmipkit_protocol::VersionGate::validate_tag(version, tag) {
+            Ok(()) => SUCCESS,
+            Err(_) => ERROR_INVALID_INPUT,
+        }
+    })
+}
+
+// ---------------------------------------------------------------------------
+// Server-to-Client (S2C) Operations & Response Builder
+// ---------------------------------------------------------------------------
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_s2c_notify_request_validate(
+    item: *mut kmipkit_request_batch_item_view_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let item = read_handle!(item, RequestBatchItemView);
+        let HandleValue::RequestBatchItemView { message, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(view) = message.batch_items().nth(*index) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        match kmipkit_protocol::server_to_client::ServerNotifyRequest::try_from_request_item(view) {
+            Ok(_) => SUCCESS,
+            Err(_) => ERROR_INVALID_INPUT,
+        }
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_s2c_put_request_validate(
+    item: *mut kmipkit_request_batch_item_view_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let item = read_handle!(item, RequestBatchItemView);
+        let HandleValue::RequestBatchItemView { message, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(view) = message.batch_items().nth(*index) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        match kmipkit_protocol::server_to_client::ServerPutRequest::try_from_request_item(view) {
+            Ok(_) => SUCCESS,
+            Err(_) => ERROR_INVALID_INPUT,
+        }
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_s2c_query_request_validate(
+    item: *mut kmipkit_request_batch_item_view_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let item = read_handle!(item, RequestBatchItemView);
+        let HandleValue::RequestBatchItemView { message, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(view) = message.batch_items().nth(*index) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        match kmipkit_protocol::server_to_client::ServerQueryRequest::try_from_request_item(view) {
+            Ok(_) => SUCCESS,
+            Err(_) => ERROR_INVALID_INPUT,
+        }
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_s2c_discover_versions_request_validate(
+    item: *mut kmipkit_request_batch_item_view_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let item = read_handle!(item, RequestBatchItemView);
+        let HandleValue::RequestBatchItemView { message, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(view) = message.batch_items().nth(*index) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        match kmipkit_protocol::server_to_client::ServerDiscoverVersionsRequest::try_from_request_item(view) {
+            Ok(_) => SUCCESS,
+            Err(_) => ERROR_INVALID_INPUT,
+        }
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_s2c_build_response_ttlv(
+    major: i32,
+    minor: i32,
+    items: *const *mut kmipkit_ttlv_structure_t,
+    item_count: u64,
+    out_structure: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_structure);
+        let count = match usize::try_from(item_count) {
+            Ok(c) => c,
+            Err(_) => return record_ffi_error(ERROR_RESOURCE_LIMIT),
+        };
+        if count != 0 && items.is_null() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let version = kmipkit_protocol::ProtocolVersion::from_raw(major, minor);
+        let mut builder = kmipkit_protocol::server_to_client::ServerResponseBuilder::with_version(version);
+        for i in 0..count {
+            // SAFETY: items is non-null and valid for `count` pointers.
+            let ptr = unsafe { items.add(i).read() };
+            let structure = try_ffi!(copy_required_structure_handle(ptr));
+            builder.add_item(structure);
+        }
+        let response_msg = match builder.build() {
+            Ok(msg) => msg,
+            Err(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        *out = try_ffi!(try_make_handle(Kind::Structure, HandleValue::Structure(response_msg.into_ttlv())));
+        SUCCESS
+    })
+}
+
+// ---------------------------------------------------------------------------
+// LeaseContext (KMIP 2.1 / 3.0 Lease Tracking)
+// ---------------------------------------------------------------------------
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_lease_context_create(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    obtained_at_unix_secs: i64,
+    lease_time_secs: i64,
+    out_context: *mut *mut kmipkit_lease_context_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_context);
+        let identifier =
+            try_ffi!(copy_unique_identifier(unique_identifier)).ok_or(ERROR_INVALID_INPUT);
+        let identifier = try_ffi!(identifier);
+        let context = LeaseContext::new(identifier, obtained_at_unix_secs, lease_time_secs);
+        *out = try_ffi!(try_make_handle(
+            Kind::LeaseContext,
+            HandleValue::LeaseContext(Mutex::new(context)),
+        ));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_lease_context_release(context: *mut kmipkit_lease_context_t) {
+    ffi_entrypoint(|| release(context, Kind::LeaseContext));
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_lease_context_unique_identifier(
+    context: *mut kmipkit_lease_context_t,
+    out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let context = read_handle!(context, LeaseContext);
+        let HandleValue::LeaseContext(context) = &context.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let context = match context.lock() {
+            Ok(guard) => guard,
+            Err(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        try_ffi!(client_abi::write_unique_identifier_v1(out_unique_identifier, Some(context.unique_identifier())));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_lease_context_expires_at(
+    context: *mut kmipkit_lease_context_t,
+    out_expires_at: *mut i64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_expires_at);
+        let context = read_handle!(context, LeaseContext);
+        let HandleValue::LeaseContext(context) = &context.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let context = match context.lock() {
+            Ok(guard) => guard,
+            Err(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        *out = context.expires_at_unix_secs();
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_lease_context_is_expired(
+    context: *mut kmipkit_lease_context_t,
+    current_time_unix_secs: i64,
+    out_is_expired: *mut u8,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_is_expired);
+        let context = read_handle!(context, LeaseContext);
+        let HandleValue::LeaseContext(context) = &context.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let context = match context.lock() {
+            Ok(guard) => guard,
+            Err(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        *out = u8::from(context.is_expired(current_time_unix_secs));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_lease_context_check_valid(
+    context: *mut kmipkit_lease_context_t,
+    current_time_unix_secs: i64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let context = read_handle!(context, LeaseContext);
+        let HandleValue::LeaseContext(context) = &context.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let context = match context.lock() {
+            Ok(guard) => guard,
+            Err(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        match context.check_valid(current_time_unix_secs) {
+            Ok(()) => SUCCESS,
+            Err(_) => ERROR_INVALID_INPUT,
+        }
     })
 }
 

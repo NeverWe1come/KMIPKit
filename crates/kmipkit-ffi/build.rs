@@ -134,9 +134,6 @@ fn compile_consumer(workspace_root: &Path, public_header: &Path, consumer: &Cons
 
 fn main() {
     println!("cargo:rerun-if-env-changed=CARGO_FEATURE_COVERAGE_C_CONSUMER");
-    if env::var_os("CARGO_FEATURE_COVERAGE_C_CONSUMER").is_none() {
-        return;
-    }
 
     let manifest_dir = PathBuf::from(
         env::var_os("CARGO_MANIFEST_DIR").expect("Cargo provides the package manifest directory"),
@@ -144,13 +141,19 @@ fn main() {
     let workspace_root = manifest_dir.join("../..");
     let public_header = workspace_root.join("bindings/c/include");
     let internal_header = workspace_root.join("tests/fixtures/api/generated");
-    let target_deps = PathBuf::from(
+
+    if !public_header.exists() {
+        return;
+    }
+
+    let out_dir = PathBuf::from(
         env::var_os("OUT_DIR").expect("Cargo provides the build-script output directory"),
-    )
-    .join("../../../deps");
+    );
+    let target_deps = out_dir.join("../../../deps");
 
     println!("cargo:rerun-if-changed={}", public_header.display());
     println!("cargo:rerun-if-changed={}", internal_header.display());
+    println!("cargo:rustc-link-search=native={}", out_dir.display());
     println!("cargo:rustc-link-search=native={}", target_deps.display());
 
     for consumer in &CONSUMERS {

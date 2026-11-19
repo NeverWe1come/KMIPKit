@@ -3461,6 +3461,172 @@ static bool test_register_opaque_context_binding_contract(void)
     return true;
 }
 
+static bool test_kmip_v3_and_lifecycle_parity(void)
+{
+    /* 1. TTLV KMIP 3.0 primitive constructors */
+    kmipkit_codec_limits_t *limits = NULL;
+    REQUIRE_STATUS(kmipkit_codec_limits_defaults(&limits), KMIPKIT_SUCCESS);
+    REQUIRE(limits != NULL);
+
+    kmipkit_ttlv_value_t *v = NULL;
+    const uint8_t id_bytes[] = "id-123";
+    REQUIRE_STATUS(kmipkit_ttlv_value_identifier(limits, id_bytes, 6, &v), KMIPKIT_SUCCESS);
+    REQUIRE(v != NULL);
+    kmipkit_ttlv_value_release(v);
+    v = NULL;
+
+    REQUIRE_STATUS(kmipkit_ttlv_value_reference(limits, id_bytes, 6, &v), KMIPKIT_SUCCESS);
+    REQUIRE(v != NULL);
+    kmipkit_ttlv_value_release(v);
+    v = NULL;
+
+    REQUIRE_STATUS(kmipkit_ttlv_value_name_reference(limits, id_bytes, 6, &v), KMIPKIT_SUCCESS);
+    REQUIRE(v != NULL);
+    kmipkit_ttlv_value_release(v);
+    v = NULL;
+
+    /* 2. Link Normalizer */
+    kmipkit_raw_tag_t *raw_tag = NULL;
+    kmipkit_tag_t *tag = NULL;
+
+    REQUIRE_STATUS(kmipkit_ttlv_raw_tag_create(UINT32_C(0x42004B), &raw_tag), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag), KMIPKIT_SUCCESS);
+    kmipkit_raw_tag_release(raw_tag);
+    raw_tag = NULL;
+    kmipkit_ttlv_value_t *link_type_val = NULL;
+    REQUIRE_STATUS(kmipkit_ttlv_value_enumeration(UINT32_C(0x00000101), &link_type_val), KMIPKIT_SUCCESS);
+    kmipkit_ttlv_item_t *link_type_item = NULL;
+    REQUIRE_STATUS(kmipkit_ttlv_item_create(tag, link_type_val, limits, &link_type_item), KMIPKIT_SUCCESS);
+    kmipkit_tag_release(tag);
+    tag = NULL;
+
+    REQUIRE_STATUS(kmipkit_ttlv_raw_tag_create(UINT32_C(0x42004C), &raw_tag), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag), KMIPKIT_SUCCESS);
+    kmipkit_raw_tag_release(raw_tag);
+    raw_tag = NULL;
+    kmipkit_ttlv_value_t *linked_id_val = NULL;
+    REQUIRE_STATUS(kmipkit_ttlv_value_enumeration(UINT32_C(0xCAFEBABE), &linked_id_val), KMIPKIT_SUCCESS);
+    kmipkit_ttlv_item_t *linked_id_item = NULL;
+    REQUIRE_STATUS(kmipkit_ttlv_item_create(tag, linked_id_val, limits, &linked_id_item), KMIPKIT_SUCCESS);
+    kmipkit_tag_release(tag);
+    tag = NULL;
+
+    kmipkit_ttlv_structure_t *link_struct = NULL;
+    REQUIRE_STATUS(kmipkit_ttlv_structure_create(&link_struct), KMIPKIT_SUCCESS);
+    kmipkit_ttlv_structure_t *s1 = NULL;
+    REQUIRE_STATUS(kmipkit_ttlv_structure_with_item(link_struct, link_type_item, limits, &s1), KMIPKIT_SUCCESS);
+    kmipkit_ttlv_structure_release(link_struct);
+    kmipkit_ttlv_item_release(link_type_item);
+
+    kmipkit_ttlv_structure_t *s2 = NULL;
+    REQUIRE_STATUS(kmipkit_ttlv_structure_with_item(s1, linked_id_item, limits, &s2), KMIPKIT_SUCCESS);
+    kmipkit_ttlv_structure_release(s1);
+    kmipkit_ttlv_item_release(linked_id_item);
+
+    kmipkit_ttlv_value_t *link_val = NULL;
+    REQUIRE_STATUS(kmipkit_ttlv_value_structure(s2, limits, &link_val), KMIPKIT_SUCCESS);
+    kmipkit_ttlv_structure_release(s2);
+
+    REQUIRE_STATUS(kmipkit_ttlv_raw_tag_create(UINT32_C(0x42004A), &raw_tag), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag), KMIPKIT_SUCCESS);
+    kmipkit_raw_tag_release(raw_tag);
+    raw_tag = NULL;
+    kmipkit_ttlv_item_t *generic_link = NULL;
+    REQUIRE_STATUS(kmipkit_ttlv_item_create(tag, link_val, limits, &generic_link), KMIPKIT_SUCCESS);
+    kmipkit_tag_release(tag);
+    tag = NULL;
+
+    kmipkit_ttlv_item_t *v3_link = NULL;
+    REQUIRE_STATUS(kmipkit_link_normalizer_v2_to_v3(generic_link, &v3_link), KMIPKIT_SUCCESS);
+    REQUIRE(v3_link != NULL);
+    kmipkit_ttlv_item_release(generic_link);
+
+    kmipkit_ttlv_item_t *restored_link = NULL;
+    REQUIRE_STATUS(kmipkit_link_normalizer_v3_to_v2(v3_link, &restored_link), KMIPKIT_SUCCESS);
+    REQUIRE(restored_link != NULL);
+    kmipkit_ttlv_item_release(v3_link);
+    kmipkit_ttlv_item_release(restored_link);
+
+    kmipkit_codec_limits_release(limits);
+
+    /* 3. Version Gate */
+    REQUIRE_STATUS(kmipkit_version_gate_validate_operation(3, 0, 60), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_version_gate_validate_operation(2, 0, 60), KMIPKIT_ERROR_INVALID_INPUT);
+
+    REQUIRE_STATUS(kmipkit_version_gate_validate_tag(3, 0, UINT32_C(0x4201BF)), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_version_gate_validate_tag(2, 0, UINT32_C(0x4201BF)), KMIPKIT_ERROR_INVALID_INPUT);
+
+    /* 4. NIST Key Lifecycle Guards */
+    uint8_t can_orig = 0;
+    uint8_t can_proc = 0;
+    REQUIRE_STATUS(kmipkit_nist_key_lifecycle_can_originate(KMIPKIT_ENUMERATION_STATE_ACTIVE, &can_orig), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_nist_key_lifecycle_can_process(KMIPKIT_ENUMERATION_STATE_ACTIVE, &can_proc), KMIPKIT_SUCCESS);
+    REQUIRE(can_orig == 1 && can_proc == 1);
+
+    REQUIRE_STATUS(kmipkit_nist_key_lifecycle_can_originate(KMIPKIT_ENUMERATION_STATE_DEACTIVATED, &can_orig), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_nist_key_lifecycle_can_process(KMIPKIT_ENUMERATION_STATE_DEACTIVATED, &can_proc), KMIPKIT_SUCCESS);
+    REQUIRE(can_orig == 0 && can_proc == 1);
+
+    REQUIRE_STATUS(kmipkit_nist_key_lifecycle_can_originate(KMIPKIT_ENUMERATION_STATE_DESTROYED, &can_orig), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_nist_key_lifecycle_can_process(KMIPKIT_ENUMERATION_STATE_DESTROYED, &can_proc), KMIPKIT_SUCCESS);
+    REQUIRE(can_orig == 0 && can_proc == 0);
+
+    /* 5. Lease Context */
+    kmipkit_unique_identifier_v1_t uid;
+    memset(&uid, 0, sizeof(uid));
+    uid.struct_size = sizeof(uid);
+    uid.abi_version = 1;
+    uid.kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING;
+    uid.text_data = (const uint8_t *)"lease-target-key";
+    uid.text_length = 16;
+    kmipkit_lease_context_t *lease = NULL;
+    REQUIRE_STATUS(kmipkit_lease_context_create(&uid, 1000, 300, &lease), KMIPKIT_SUCCESS);
+    REQUIRE(lease != NULL);
+
+    int64_t exp = 0;
+    REQUIRE_STATUS(kmipkit_lease_context_expires_at(lease, &exp), KMIPKIT_SUCCESS);
+    REQUIRE(exp == 1300);
+
+    uint8_t expired = 1;
+    REQUIRE_STATUS(kmipkit_lease_context_is_expired(lease, 1200, &expired), KMIPKIT_SUCCESS);
+    REQUIRE(expired == 0);
+    REQUIRE_STATUS(kmipkit_lease_context_check_valid(lease, 1200), KMIPKIT_SUCCESS);
+
+    REQUIRE_STATUS(kmipkit_lease_context_is_expired(lease, 1301, &expired), KMIPKIT_SUCCESS);
+    REQUIRE(expired == 1);
+    REQUIRE_STATUS(kmipkit_lease_context_check_valid(lease, 1301), KMIPKIT_ERROR_INVALID_INPUT);
+
+    kmipkit_lease_context_release(lease);
+
+    /* 6. Cryptographic Parameters v2 (KMIP 3.0 PQC/KEM fields) */
+    kmipkit_cryptographic_parameters_fields_v2_t params_in;
+    memset(&params_in, 0, sizeof(params_in));
+    params_in.struct_size = sizeof(params_in);
+    params_in.abi_version = 2;
+    params_in.kem_algorithm_present = 1;
+    params_in.kem_algorithm = 3;
+    params_in.deterministic_present = 1;
+    params_in.deterministic = 1;
+
+    kmipkit_cryptographic_parameters_t *params = NULL;
+    REQUIRE_STATUS(kmipkit_cryptographic_parameters_from_fields_v2(&params_in, &params), KMIPKIT_SUCCESS);
+    REQUIRE(params != NULL);
+
+    kmipkit_cryptographic_parameters_fields_v2_t params_out;
+    memset(&params_out, 0, sizeof(params_out));
+    params_out.struct_size = sizeof(params_out);
+    params_out.abi_version = 2;
+    REQUIRE_STATUS(kmipkit_cryptographic_parameters_read_fields_v2(params, &params_out), KMIPKIT_SUCCESS);
+    REQUIRE(params_out.kem_algorithm_present == 1);
+    REQUIRE(params_out.kem_algorithm == 3);
+    REQUIRE(params_out.deterministic_present == 1);
+    REQUIRE(params_out.deterministic == 1);
+
+    kmipkit_cryptographic_parameters_release(params);
+
+    return true;
+}
+
 #undef REQUIRE_STATUS_CLEANUP
 #undef REQUIRE_CLEANUP
 
@@ -3494,7 +3660,8 @@ int main(int argc, char **argv)
         {"TTLV scalar views and limits", test_ttlv_scalar_views_and_limits},
         {"schema path and order builders", test_schema_path_and_order_builders},
         {"extension information and definition accessors", test_extension_information_and_definition_accessors},
-        {"definition validation and TTLV identity readback", test_definition_validation_and_ttlv_identity_readback}
+        {"definition validation and TTLV identity readback", test_definition_validation_and_ttlv_identity_readback},
+        {"KMIP 3.0 and lifecycle parity", test_kmip_v3_and_lifecycle_parity}
     };
     size_t index;
     size_t failures = 0U;

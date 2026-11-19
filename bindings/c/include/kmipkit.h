@@ -70,11 +70,15 @@ typedef uint8_t kmipkit_ttlv_item_type_t;
 #define KMIPKIT_TTLV_ITEM_TYPE_DATE_TIME ((kmipkit_ttlv_item_type_t)9)
 #define KMIPKIT_TTLV_ITEM_TYPE_INTERVAL ((kmipkit_ttlv_item_type_t)10)
 #define KMIPKIT_TTLV_ITEM_TYPE_DATE_TIME_EXTENDED ((kmipkit_ttlv_item_type_t)11)
+#define KMIPKIT_TTLV_ITEM_TYPE_IDENTIFIER ((kmipkit_ttlv_item_type_t)12)
+#define KMIPKIT_TTLV_ITEM_TYPE_REFERENCE ((kmipkit_ttlv_item_type_t)13)
+#define KMIPKIT_TTLV_ITEM_TYPE_NAME_REFERENCE ((kmipkit_ttlv_item_type_t)14)
 
 typedef uint32_t kmipkit_unique_identifier_kind_t;
 #define KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ((kmipkit_unique_identifier_kind_t)1)
 #define KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION ((kmipkit_unique_identifier_kind_t)2)
 #define KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER ((kmipkit_unique_identifier_kind_t)3)
+#define KMIPKIT_UNIQUE_IDENTIFIER_KIND_IDENTIFIER ((kmipkit_unique_identifier_kind_t)4)
 
 typedef uint32_t kmipkit_wire_encoding_t;
 #define KMIPKIT_WIRE_ENCODING_TTLV ((kmipkit_wire_encoding_t)0)
@@ -833,6 +837,9 @@ typedef uint32_t kmipkit_wire_encoding_t;
 #define KMIPKIT_V3_0_DEACTIVATION_REASON_CODE_PROTECT_STOP_DATE ((uint32_t)3)
 #define KMIPKIT_V3_0_DEACTIVATION_REASON_CODE_UNSPECIFIED ((uint32_t)1)
 #define KMIPKIT_V3_0_DEACTIVATION_REASON_CODE_USAGE_LIMIT ((uint32_t)4)
+#define KMIPKIT_V3_0_EPHEMERAL_MODE_NO ((uint32_t)1)
+#define KMIPKIT_V3_0_EPHEMERAL_MODE_IMMEDIATE ((uint32_t)2)
+#define KMIPKIT_V3_0_EPHEMERAL_MODE_RETAIN_ON_FAILURE ((uint32_t)3)
 #define KMIPKIT_V3_0_ITEM_TYPE_IDENTIFIER ((uint32_t)12)
 #define KMIPKIT_V3_0_ITEM_TYPE_NAME_REFERENCE ((uint32_t)14)
 #define KMIPKIT_V3_0_ITEM_TYPE_REFERENCE ((uint32_t)13)
@@ -1349,6 +1356,8 @@ typedef struct kmipkit_credential_view_t kmipkit_credential_view_t;
 typedef struct kmipkit_crypto_operation_builder_t kmipkit_crypto_operation_builder_t;
 typedef struct kmipkit_cryptographic_parameters_t kmipkit_cryptographic_parameters_t;
 typedef struct kmipkit_cryptographic_parameters_fields_v1_t kmipkit_cryptographic_parameters_fields_v1_t;
+typedef struct kmipkit_cryptographic_parameters_fields_v2_t kmipkit_cryptographic_parameters_fields_v2_t;
+typedef struct kmipkit_lease_context_t kmipkit_lease_context_t;
 typedef struct kmipkit_delete_attribute_request_t kmipkit_delete_attribute_request_t;
 typedef struct kmipkit_device_credential_t kmipkit_device_credential_t;
 typedef struct kmipkit_extension_discriminator_t kmipkit_extension_discriminator_t;
@@ -1558,6 +1567,62 @@ struct kmipkit_cryptographic_parameters_fields_v1_t {
     uint64_t p_source_length;
     uint8_t trailer_field_present;
     int32_t trailer_field;
+};
+
+struct kmipkit_cryptographic_parameters_fields_v2_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint8_t block_cipher_mode_present;
+    uint32_t block_cipher_mode;
+    uint8_t padding_method_present;
+    uint32_t padding_method;
+    uint8_t hashing_algorithm_present;
+    uint32_t hashing_algorithm;
+    uint8_t key_role_type_present;
+    uint32_t key_role_type;
+    uint8_t digital_signature_algorithm_present;
+    uint32_t digital_signature_algorithm;
+    uint8_t cryptographic_algorithm_present;
+    uint32_t cryptographic_algorithm;
+    uint8_t random_iv_present;
+    uint8_t random_iv;
+    uint8_t iv_length_present;
+    int32_t iv_length;
+    uint8_t tag_length_present;
+    int32_t tag_length;
+    uint8_t fixed_field_length_present;
+    int32_t fixed_field_length;
+    uint8_t invocation_field_length_present;
+    int32_t invocation_field_length;
+    uint8_t counter_length_present;
+    int32_t counter_length;
+    uint8_t initial_counter_value_present;
+    int32_t initial_counter_value;
+    uint8_t salt_length_present;
+    int32_t salt_length;
+    uint8_t mask_generator_present;
+    uint32_t mask_generator;
+    uint8_t mask_generator_hashing_algorithm_present;
+    uint32_t mask_generator_hashing_algorithm;
+    uint8_t p_source_present;
+    const uint8_t * p_source;
+    uint64_t p_source_length;
+    uint8_t trailer_field_present;
+    int32_t trailer_field;
+    /* KMIP 3.0 fields */
+    uint8_t kem_algorithm_present;
+    uint32_t kem_algorithm;
+    uint8_t deterministic_present;
+    uint8_t deterministic;
+    uint8_t context_string_present;
+    const uint8_t * context_string;
+    uint64_t context_string_length;
+    uint8_t seed_present;
+    const uint8_t * seed;
+    uint64_t seed_length;
+    uint8_t input_key_material_present;
+    const uint8_t * input_key_material;
+    uint64_t input_key_material_length;
 };
 
 struct kmipkit_mtls_client_config_v1_t {
@@ -4237,6 +4302,56 @@ int32_t kmipkit_symmetric_key_builder_insert_attribute_item(kmipkit_symmetric_ke
  */
 /* Approved exact C-only exclusion: kmipkit_client_execute_with_options_and_error_ttlv_v1 */
 int32_t kmipkit_client_execute_with_options_and_error_ttlv_v1(kmipkit_client_t * client, kmipkit_client_batch_t ** batch, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response, kmipkit_ttlv_structure_t ** out_error_response_ttlv);
+
+/* TTLV KMIP 3.0 primitive constructors */
+int32_t kmipkit_ttlv_value_identifier(kmipkit_codec_limits_t * limits, const uint8_t * value, uint64_t len, kmipkit_ttlv_value_t ** out_value);
+int32_t kmipkit_ttlv_value_reference(kmipkit_codec_limits_t * limits, const uint8_t * value, uint64_t len, kmipkit_ttlv_value_t ** out_value);
+int32_t kmipkit_ttlv_value_name_reference(kmipkit_codec_limits_t * limits, const uint8_t * value, uint64_t len, kmipkit_ttlv_value_t ** out_value);
+
+/* Wire framing batch count */
+int32_t kmipkit_request_header_view_wire_batch_count(kmipkit_request_header_view_t * view, uint32_t * out_wire_batch_count);
+int32_t kmipkit_response_header_view_wire_batch_count(kmipkit_response_header_view_t * view, uint32_t * out_wire_batch_count);
+
+/* Ephemeral batch item inspection */
+int32_t kmipkit_request_batch_item_view_ephemeral(kmipkit_request_batch_item_view_t * view, uint8_t * out_ephemeral);
+int32_t kmipkit_request_batch_item_view_ephemeral_mode(kmipkit_request_batch_item_view_t * view, uint32_t * out_ephemeral_mode);
+int32_t kmipkit_request_batch_item_view_is_ephemeral(kmipkit_request_batch_item_view_t * view, uint8_t * out_is_ephemeral);
+
+/* Link normalizer */
+int32_t kmipkit_link_normalizer_v2_to_v3(kmipkit_ttlv_item_t * item, kmipkit_ttlv_item_t ** out_item);
+int32_t kmipkit_link_normalizer_v3_to_v2(kmipkit_ttlv_item_t * item, kmipkit_ttlv_item_t ** out_item);
+
+/* Version gating */
+int32_t kmipkit_version_gate_validate_operation(int32_t protocol_version_major, int32_t protocol_version_minor, uint32_t operation);
+int32_t kmipkit_version_gate_validate_tag(int32_t protocol_version_major, int32_t protocol_version_minor, uint32_t tag);
+
+/* Server-to-Client (S2C) request validation and response building */
+int32_t kmipkit_s2c_notify_request_validate(kmipkit_request_batch_item_view_t * item);
+int32_t kmipkit_s2c_put_request_validate(kmipkit_request_batch_item_view_t * item);
+int32_t kmipkit_s2c_query_request_validate(kmipkit_request_batch_item_view_t * item);
+int32_t kmipkit_s2c_discover_versions_request_validate(kmipkit_request_batch_item_view_t * item);
+int32_t kmipkit_s2c_build_response_ttlv(int32_t major, int32_t minor, kmipkit_ttlv_structure_t * const * items, uint64_t item_count, kmipkit_ttlv_structure_t ** out_structure);
+
+/* Lease Context */
+int32_t kmipkit_lease_context_create(const kmipkit_unique_identifier_v1_t * unique_identifier, int64_t obtained_at_unix_secs, int64_t lease_time_secs, kmipkit_lease_context_t ** out_context);
+void kmipkit_lease_context_release(kmipkit_lease_context_t * context);
+int32_t kmipkit_lease_context_unique_identifier(kmipkit_lease_context_t * context, kmipkit_unique_identifier_v1_t * out_unique_identifier);
+int32_t kmipkit_lease_context_expires_at(kmipkit_lease_context_t * context, int64_t * out_expires_at);
+int32_t kmipkit_lease_context_is_expired(kmipkit_lease_context_t * context, int64_t current_time_unix_secs, uint8_t * out_is_expired);
+int32_t kmipkit_lease_context_check_valid(kmipkit_lease_context_t * context, int64_t current_time_unix_secs);
+
+/* Client SetEndpointRole operation */
+int32_t kmipkit_client_batch_item_set_endpoint_role(uint32_t endpoint_role, const uint8_t * vendor_identification, uint64_t vendor_identification_length, kmipkit_client_batch_item_t ** out_item);
+int32_t kmipkit_client_batch_item_response_set_endpoint_role(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, uint32_t * out_role, kmipkit_byte_span_v1_t * out_vendor_identification);
+
+/* NIST key lifecycle operational guards */
+int32_t kmipkit_nist_key_lifecycle_can_originate(uint32_t state_enum, uint8_t * out_can_originate);
+int32_t kmipkit_nist_key_lifecycle_can_process(uint32_t state_enum, uint8_t * out_can_process);
+
+/* Cryptographic parameters v2 */
+int32_t kmipkit_cryptographic_parameters_from_fields_v2(const kmipkit_cryptographic_parameters_fields_v2_t * fields, kmipkit_cryptographic_parameters_t ** out_parameters);
+int32_t kmipkit_cryptographic_parameters_read_fields_v2(kmipkit_cryptographic_parameters_t * parameters, kmipkit_cryptographic_parameters_fields_v2_t * out_fields);
+
 #include "kmipkit_named_value_helpers_generated.h"
 
 #ifdef __cplusplus

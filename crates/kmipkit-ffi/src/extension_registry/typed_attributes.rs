@@ -61,6 +61,9 @@ pub(super) fn clone_scalar_value_view(
         ValueView::DateTime(value) => Ok(Value::date_time(**value)),
         ValueView::Interval(value) => Ok(Value::interval(**value)),
         ValueView::DateTimeExtended(value) => Ok(Value::date_time_extended(**value)),
+        ValueView::Identifier(value) => Ok(Value::identifier((**value).to_owned())),
+        ValueView::Reference(value) => Ok(Value::reference((**value).to_owned())),
+        ValueView::NameReference(value) => Ok(Value::name_reference((**value).to_owned())),
         _ => Err(kmipkit_ttlv::ModelError::UnsupportedValue),
     }
 }

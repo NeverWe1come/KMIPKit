@@ -7828,7 +7828,44 @@ failure:
     return 0;
 }
 
+static int set_endpoint_role_abi_is_callable_from_c(void) {
+    kmipkit_client_batch_item_t *item = NULL;
+
+    /* Null out_item rejection */
+    if (kmipkit_client_batch_item_set_endpoint_role(1, NULL, 0, NULL) == 0) {
+        return 0;
+    }
+
+    /* Valid constructor call without vendor ID */
+    if (kmipkit_client_batch_item_set_endpoint_role(1, NULL, 0, &item) != 0 || item == NULL) {
+        return 0;
+    }
+    kmipkit_client_batch_item_release(item);
+    item = NULL;
+
+    /* Valid constructor call with vendor ID */
+    const uint8_t vendor[] = "AcmeCorp";
+    if (kmipkit_client_batch_item_set_endpoint_role(1, vendor, sizeof(vendor) - 1U, &item) != 0 || item == NULL) {
+        return 0;
+    }
+    kmipkit_client_batch_item_release(item);
+    item = NULL;
+
+    /* Response accessor null checks */
+    uint8_t present = 0;
+    uint32_t role = 0;
+    kmipkit_byte_span_v1_t vendor_id = {0};
+    if (kmipkit_client_batch_item_response_set_endpoint_role(NULL, &present, &role, &vendor_id) == 0) {
+        return 0;
+    }
+
+    return 1;
+}
+
 int main(int argc, char **argv) {
+    if (!set_endpoint_role_abi_is_callable_from_c()) {
+        return 27;
+    }
     if (KMIPKIT_PROFILE_TRANSPORT_RAW_TTLV_TLS != UINT32_C(1) ||
         KMIPKIT_PROFILE_TRANSPORT_HTTPS != UINT32_C(2)) {
         return 26;
