@@ -1799,19 +1799,6 @@ class ControlledTlsPeerTest {
                     "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-PARAMETERS",
                     "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
                     "construct", protocolVersion);
-            assertRouteEventRecorded(events, "test-attr-cryptographic-parameters",
-                    "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-PARAMETERS",
-                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
-                    "construct", protocolVersion);
-            assertRouteEventRecorded(events, "test-attr-cryptographic-parameters",
-                    "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-PARAMETERS",
-                    "java.generic-ttlv.ttlv_item.create", "construct", protocolVersion);
-            assertRouteEventRecorded(events, "test-attr-cryptographic-parameters",
-                    "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-PARAMETERS",
-                    "java.generic-ttlv.function.ttlv_item_view_from_item", "decode", protocolVersion);
-            assertRouteEventRecorded(events, "test-attr-cryptographic-parameters",
-                    "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-PARAMETERS",
-                    "java.generic-ttlv.ttlv_codec.decode", "decode", protocolVersion);
             assertRouteEventRecorded(events, "test-attr-cryptographic-domain-parameters",
                     "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-DOMAIN-PARAMETERS",
                     "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
@@ -2435,6 +2422,7 @@ class ControlledTlsPeerTest {
         int cryptographicParametersTypedAttributeRouteEventCount = KMIP_2_0_AND_2_1.size() * 3;
         int digestTypedAttributeRouteEventCount = KMIP_2_0_AND_2_1.size() * 3;
         int randomNumberGeneratorTypedAttributeRouteEventCount = KMIP_2_0_AND_2_1.size() * 3;
+        int randomNumberGeneratorGenericAttributeRouteEventCount = KMIP_2_0_AND_2_1.size() * 3;
         int vendorAttributeTypedAttributeRouteEventCount = KMIP_2_0_AND_2_1.size() * 3;
         int x509CertificateTypedAttributeRouteEventCount = KMIP_2_0_AND_2_1.size() * 3 * 3;
         int revokeNetworkRouteEventCount = KMIP_2_0_AND_2_1.size() * (2 * 3 * 3 * 2 + 2);
@@ -2529,6 +2517,7 @@ class ControlledTlsPeerTest {
                         + cryptographicParametersTypedAttributeRouteEventCount
                         + digestTypedAttributeRouteEventCount
                         + randomNumberGeneratorTypedAttributeRouteEventCount
+                        + randomNumberGeneratorGenericAttributeRouteEventCount
                         + vendorAttributeTypedAttributeRouteEventCount
                         + x509CertificateTypedAttributeRouteEventCount
                         + revokeNetworkRouteEventCount
@@ -17702,6 +17691,40 @@ class ControlledTlsPeerTest {
         }
     }
 
+    private static void appendGenericAttributeItemRoutes(ArrayNode events, String caseId, String targetId,
+            String protocolVersion, int rawTag, byte[] wire, TtlvValue value, CodecLimits limits)
+            throws Exception {
+        String treeHash = normalizedTreeSha256(wire);
+        try (RawTag rawTagValue = RawTag.fromRaw(rawTag);
+                Tag tag = rawTagValue.checked();
+                TtlvItem created = TtlvItem.create(tag, value, limits);
+                var view = created.view();
+                Tag viewedTag = view.tag();
+                var viewedValue = view.value();
+                TtlvStructureView viewedFields = viewedValue.structure();
+                TtlvItem decoded = TtlvCodec.decode(wire);
+                var decodedView = decoded.view();
+                Tag decodedTag = decodedView.tag();
+                var decodedValue = decodedView.value();
+                TtlvStructureView decodedFields = decodedValue.structure()) {
+            assertEquals(rawTag, viewedTag.raw());
+            assertEquals(rawTag, decodedTag.raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertEquals(TtlvItemType.Structure, decodedView.itemType());
+            assertEquals(1, viewedFields.itemCount());
+            assertEquals(1, decodedFields.itemCount());
+            appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_item.create", targetId,
+                    "org.kmipkit.ttlv.TtlvItem.create", null, null,
+                    "construct", protocolVersion, null, treeHash, null);
+            appendRouteEvent(events, caseId, "java.generic-ttlv.function.ttlv_item_view_from_item", targetId,
+                    "org.kmipkit.ttlv.TtlvItem.view", null, null,
+                    "decode", protocolVersion, null, null, treeHash);
+            appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_codec.decode", targetId,
+                    "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
+                    "decode", protocolVersion, null, null, treeHash);
+        }
+    }
+
     private static void appendDigestAttributeTypedRoutes(ArrayNode events, String protocolVersion)
             throws Exception {
         CodecLimits limits = CodecLimits.defaults();
@@ -17807,6 +17830,15 @@ class ControlledTlsPeerTest {
                         "org.kmipkit.extensions.AttributeSet.tryNew", null, null,
                         "construct", protocolVersion, null, treeHash, null);
             }
+        }
+        TtlvStructure genericFields = appendTtlvItem(TtlvStructure.create(), 0x4200da,
+                TtlvValue.Enumeration(1), limits);
+        TtlvStructure completeGenericFields = genericFields;
+        try (completeGenericFields;
+                TtlvValue genericValue = TtlvValue.structure(completeGenericFields, limits)) {
+            appendGenericAttributeItemRoutes(events, "test-attr-random-number-generator",
+                    "KMIPKIT-ELEM-ATTRIBUTE-RANDOM-NUMBER-GENERATOR", protocolVersion,
+                    StandardAttribute.RANDOM_NUMBER_GENERATOR.tag(), wire, genericValue, limits);
         }
     }
 
