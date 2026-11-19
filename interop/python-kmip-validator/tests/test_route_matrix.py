@@ -1024,7 +1024,28 @@ class RouteMatrixTests(unittest.TestCase):
                   and route['public_api_symbol'].startswith('kmipkit.client.BatchItemResult.')
                   and (route['public_api_symbol'].rsplit('.', 1)[1].endswith('_response')
                        or route['public_api_symbol'].rsplit('.', 1)[1] in suffixes)}
-        self.assert_route_cells_pass(symbols)
+        cases = {case['case_id']: case for case in self.catalog['test_cases']}
+        targets = {target['target_id']: target for target in self.catalog['normative_targets']}
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
+                 if cell['public_api_symbol'] in symbols]
+        outcomes = [self.runner._execute_matrix_cell(cell, cases[cell['case_id']],
+                                                     targets[cell['target_id']])
+                    for cell in cells]
+
+        gaps = [value for kind, value in outcomes if kind == 'gap']
+        events = [value for kind, value in outcomes if kind == 'event']
+        self.assertEqual([], gaps)
+        self.assertTrue(events)
+        not_applicable = [event for event in events if event['status'] == 'not_applicable']
+        self.assertEqual(2, len(not_applicable))
+        self.assertTrue(all(event['not_applicable_reason'] ==
+                            'stop_unprocessed_response_omitted' for event in not_applicable))
+        self.assertTrue(all(event['status'] == 'passed' or event in not_applicable
+                            for event in events))
+        self.assertTrue(all(event['invocation_count'] == 1 for event in events
+                            if event['status'] == 'passed'))
+        self.assertTrue(all(event['invocation_count'] == 0 and 'invocation_id' not in event
+                            for event in not_applicable))
 
     def test_batch_stop_omitted_typed_response_accessor_is_not_invoked(self):
         case = next(case for case in self.catalog['test_cases']
