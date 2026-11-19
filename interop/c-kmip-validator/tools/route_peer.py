@@ -439,6 +439,7 @@ RECIPES = {
     'test-batch-undo-rolls-back-prior-success': ((1, 10), 'batch_undo_rollback'),
     'test-op-create-key-pair': ((2, 20, 20), 'create_key_pair'),
     'test-op-create-split-key': ((40, 20, 20), 'create_split_key'),
+    'test-obj-split-key': ((40, 20, 20), 'create_split_key'),
     'test-op-join-split-key': ((40, 41, 20, 20, 20), 'join_split_key'),
     'test-op-re-key': ((1, 4, 19, 20, 19, 20), 'rekey'),
     'test-op-derive-key': ((1, 18, 5, 19, 20, 20), 'derive_key'),

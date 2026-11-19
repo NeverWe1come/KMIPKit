@@ -4364,7 +4364,7 @@ class RouteMatrixTests(unittest.TestCase):
                          'Split Key object must pass both versions and all six wire routes')
         self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
         self.assertEqual({event['target_id'] for event in events},
-                         {'KMIPKIT-ELEM-OBJECT-TYPE-SPLIT-KEY'})
+                         {'KMIPKIT-ELEM-OP-C2S-CREATE-SPLIT-KEY'})
         send_events = [event for event in events if event['action'] == 'send']
         self.assertEqual(len(send_events), 12)
         self.assertTrue(all(event['peer_observed_operation_sequence'] ==

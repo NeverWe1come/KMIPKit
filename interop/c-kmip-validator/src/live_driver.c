@@ -8087,7 +8087,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         return execute_created_key_action(client, KMIPKIT_ENUMERATION_OPERATION_MAC_VERIFY);
     if (strcmp(test_case->case_id, "test-op-create-key-pair") == 0)
         return execute_create_key_pair(client);
-    if (strcmp(test_case->case_id, "test-op-create-split-key") == 0)
+    if (strcmp(test_case->case_id, "test-op-create-split-key") == 0 ||
+        strcmp(test_case->case_id, "test-obj-split-key") == 0)
         return execute_create_split_key(client);
     if (strcmp(test_case->case_id, "test-op-join-split-key") == 0)
         return execute_join_split_key(client);
