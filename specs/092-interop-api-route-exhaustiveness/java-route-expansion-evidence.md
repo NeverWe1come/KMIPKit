@@ -4312,3 +4312,24 @@ routes, and ledger comparison passes. Selected evidence validates 44,025/44,025
 cells: 44,009 invocations, 16 not-applicable cells, and zero failures. The
 ledger records 71,583 planned, 44,025 executed, and 27,558 pending cells. The
 full matrix remains incomplete, so the Java stack stays WIP.
+
+## Java catalogued asynchronous Query operation — 2026-11-19
+
+The controlled Java consumer now executes `test-op-query-asynchronous-requests`
+for KMIP 2.1. The request filters for a correlation and Create operation; the
+controlled response contains one outstanding request. The installed client
+route is exercised over TTLV, JSON, and XML on raw TLS and HTTPS, along with
+local request creation/encoding and typed response access. This proves local
+client route execution, not external KMS interoperability; the catalog's
+Create/Revoke/Destroy isolation recipe is not exercised. Reference: OASIS KMIP
+2.1 §6.1.41.
+
+Red `f1f789986` requires the 18 network and three local route cells. Green
+`0bb569367` executes the six exchanges and records the response routes. The
+full Gradle suite passes 111/111; shared route, schema, and capability tests
+pass 112/112; requirement and feature traceability pass 2/2 and 31/31. The
+generated report validates, the route audit accepts 1,511 routes, and ledger
+comparison passes. Selected evidence validates 44,046/44,046 cells: 44,030
+invocations, 16 not-applicable cells, and zero failures. The ledger records
+71,583 planned, 44,046 executed, and 27,537 pending cells. The full matrix
+remains incomplete, so the Java stack stays WIP.

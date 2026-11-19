@@ -1357,3 +1357,24 @@ the generated ledger comparison passes. Selected evidence validates
 failures. The ledger records 71,583 planned, 44,025 executed, and 27,558
 pending cells. The full matrix remains incomplete, so #187 and its dependents
 stay WIP.
+
+### Java catalogued asynchronous Query operation — 2026-11-19
+
+The controlled Java peer now executes `test-op-query-asynchronous-requests`
+for KMIP 2.1. It sends a Query Asynchronous Requests request filtered to a
+correlation and Create operation, receives one controlled outstanding request,
+and verifies the typed response over TTLV, JSON, and XML on raw TLS and HTTPS.
+It also records the local request creation/encoding and response accessor.
+This establishes client route behavior with a controlled peer; the catalog's
+Create/Revoke/Destroy isolation recipe is not exercised here. Reference:
+OASIS KMIP 2.1 §6.1.41.
+
+Red `f1f789986` requires the 18 network and three local route cells. Green
+`0bb569367` executes the six exchanges and records the response routes. The
+full Gradle suite passes 111/111; shared route, schema, and capability tests
+pass 112/112; requirement and feature traceability pass 2/2 and 31/31. The
+report validates, the route audit accepts 1,511 routes, and ledger comparison
+passes. Selected evidence validates 44,046/44,046 cells: 44,030 invocations,
+16 not-applicable cells, and zero failures. The ledger records 71,583 planned,
+44,046 executed, and 27,537 pending cells. The full matrix remains incomplete,
+so #187 and its dependents stay WIP.
