@@ -405,6 +405,7 @@ RECIPES = {
     'test-crypto-rng-seed-rng-32': ((38,), 'rng_seed'),
     'test-v20-reject-get-constraints': ((56,), 'get_constraints'),
     'test-v20-reject-ping': ((59,), 'ping'),
+    'test-v20-reject-process': ((58,), 'process_v20_boundary'),
     'test-op-create': ((1, 20), 'create'),
     'test-op-archive': ((1, 21, 19, 20), 'archive'),
     'test-op-export': ((1, 43, 19, 20), 'export'),
@@ -4031,7 +4032,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                         local_placeholder_rejection = local_placeholder_forward_reference or (
                             case_id == 'test-batch-placeholder-without-producer-rejected')
                         boundary = local_placeholder_rejection or case_id in (
-                            'test-v20-reject-get-constraints', 'test-v20-reject-ping')
+                            'test-v20-reject-get-constraints', 'test-v20-reject-ping',
+                            'test-v20-reject-process')
                         with socket.socket() as server:
                             server.bind(('127.0.0.1', 0))
                             server.listen(1)
@@ -5000,9 +5002,12 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                     ])
                                     batch_items = [activate_item, create_item]
                                 else:
+                                    payload_fields = (
+                                        [(0x420006, 8, b'fixture-process-v20-boundary')]
+                                        if case_id == 'test-v20-reject-process' else [])
                                     batch_item_fields = [
                                         (0x42005C, 5, operation_code.to_bytes(4, 'big')),
-                                        (0x420079, 1, []),
+                                        (0x420079, 1, payload_fields),
                                     ]
                                     if local_placeholder_rejection:
                                         batch_item_fields.insert(1, (0x420093, 8, b'orphan-activate'))
@@ -5303,7 +5308,11 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                     continue
                                 if _key(cell) in keys:
                                     continue
-                                if cell['protocol_version'] != version or cell['public_api_symbol'] not in called_symbols:
+                                boundary_route_invoked = (
+                                    boundary and cell['public_api_symbol'] in invoked_symbols)
+                                if (cell['protocol_version'] != version or
+                                        (cell['public_api_symbol'] not in called_symbols and
+                                         not boundary_route_invoked)):
                                     continue
                                 selected_observation = observation_for_cell(
                                     observation, cell, recipe, mutation_index)
@@ -5341,7 +5350,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             'kmipkit_poll_request_create',
                                             'kmipkit_cancel_request_create'})
                                     async_process_constructor = (
-                                        recipe[1] == 'async_process_then_poll_state' and
+                                        recipe[1] in ('async_process_then_poll_state',
+                                                      'process_v20_boundary') and
                                         cell['action'] == 'construct' and
                                         cell['public_api_symbol'] ==
                                         'kmipkit_process_request_create')
@@ -5433,6 +5443,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                 elif target['kind'] == 'operation':
                                     operation_value = codec.values.get(
                                         (codec.tag('Operation'), normalize(target['name'])))
+                                    if (operation_value is None and
+                                            case_id == 'test-v20-reject-process'):
+                                        operation_value = recipe[0][0]
                                     operation_tree = response_tree if response_accessor_route else request_tree
                                     if operation_value is None or operation_value not in numbers(
                                             operation_tree, 0x42005C):

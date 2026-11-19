@@ -29,6 +29,14 @@ _CANCEL_REQUEST_SYMBOLS = {
     'kmipkit_cancel_request_create',
     'kmipkit_cancel_request_to_ttlv_payload',
 }
+_PROCESS_REQUEST_TARGETS = {
+    'KMIPKIT-ELEM-OP-C2S-PROCESS',
+    'KMIPKIT-PAYLOAD-CLIENT-PROCESS-REQUEST-21-001',
+}
+_PROCESS_REQUEST_SYMBOLS = {
+    'kmipkit_process_request_create',
+    'kmipkit_process_request_to_ttlv_payload',
+}
 _QUERY_ASYNC_CORRELATION_TARGETS = {
     'KMIPKIT-ELEM-OPERATION-STRUCTURE-7-1-ASYNCHRONOUS-CORRELATION-VALUES',
     'KMIPKIT-ELEM-STRUCTURE-MEMBER-7-1-ASYNCHRONOUS-CORRELATION-VALUE',
@@ -246,6 +254,37 @@ class ModelCases:
             self.abi.release('ttlv_structure', payload)
             if request.value:
                 self.abi.library.kmipkit_cancel_request_release(request)
+
+    def _execute_process_request(self, target: dict, public_api_symbol: str) -> dict | None:
+        if (target.get('target_id') not in _PROCESS_REQUEST_TARGETS
+                or public_api_symbol not in _PROCESS_REQUEST_SYMBOLS):
+            return None
+
+        correlation = b'fixture-process-v20-boundary'
+        buffer = C.create_string_buffer(correlation)
+        self.abi.bind('kmipkit_process_request_create', [
+            C.c_void_p, C.c_uint64, C.POINTER(C.c_void_p)])
+        self.abi.bind('kmipkit_process_request_to_ttlv_payload', [
+            C.c_void_p, C.POINTER(C.c_void_p)])
+        self.abi.library.kmipkit_process_request_release.argtypes = [C.c_void_p]
+        self.abi.library.kmipkit_process_request_release.restype = None
+
+        self.abi.called.clear()
+        request, payload = C.c_void_p(), C.c_void_p()
+        try:
+            self.abi.call('kmipkit_process_request_create', C.cast(buffer, C.c_void_p),
+                          len(correlation), C.byref(request))
+            self.abi.call('kmipkit_process_request_to_ttlv_payload', request, C.byref(payload))
+            normalized_tree = [normalized(item) for item in self.abi.read_structure(payload)]
+            expected = [[self._tag('Asynchronous Correlation Value'), 8, correlation.hex()]]
+            if normalized_tree != expected:
+                raise ValueError('process_request_payload_mismatch')
+            return {'sample_count': 1, 'normalized_tree': normalized_tree,
+                    'tree_sha256': digest(normalized_tree), 'invoked_symbols': set(self.abi.called)}
+        finally:
+            self.abi.release('ttlv_structure', payload)
+            if request.value:
+                self.abi.library.kmipkit_process_request_release(request)
 
     def _execute_query_async_correlation_values(self, target: dict,
                                                 public_api_symbol: str) -> dict | None:
@@ -1212,6 +1251,8 @@ class ModelCases:
             return self._execute_modify_attribute_payload(target)
         if public_api_symbol in _CANCEL_REQUEST_SYMBOLS:
             return self._execute_cancel_request(target, public_api_symbol)
+        if public_api_symbol in _PROCESS_REQUEST_SYMBOLS:
+            return self._execute_process_request(target, public_api_symbol)
         if public_api_symbol == 'kmipkit_query_async_requests_request_with_correlation_values':
             result = self._execute_query_async_correlation_values(target, public_api_symbol)
             if result is not None:

@@ -1851,6 +1851,57 @@ static bool async_request_payload_preserves_correlation(kmipkit_ttlv_structure_t
     return valid;
 }
 
+static kmip_execution_outcome_t execute_v20_process_boundary_route(
+    kmip_live_client_t *client) {
+    static const uint8_t correlation_data[] = "fixture-process-v20-boundary";
+    const kmipkit_byte_span_v1_t correlation = {
+        .data = correlation_data,
+        .length = sizeof(correlation_data) - 1,
+    };
+    kmipkit_process_request_t *request = NULL;
+    kmipkit_ttlv_structure_t *payload = NULL;
+    kmipkit_client_async_operation_outcome_t *process_outcome = NULL;
+    kmip_execution_outcome_t outcome = { .executed = true };
+    int32_t status = kmipkit_process_request_create(
+        correlation.data, correlation.length, &request);
+    if (status == 0) {
+        status = kmipkit_process_request_to_ttlv_payload(request, &payload);
+    }
+    if (status == 0 && !async_request_payload_preserves_correlation(payload, &correlation)) {
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    }
+    if (status == 0) {
+        status = kmipkit_client_execute_process(
+            client->client, correlation.data, correlation.length, 0, 0,
+            client->limits, &process_outcome);
+    }
+    if (status != 0) {
+        int32_t last_status = 0;
+        uint32_t category = 0;
+        uint32_t cause = 0;
+        uint32_t delivery = 0;
+        (void)kmipkit_last_error_get(&last_status, &category, &cause, &delivery);
+        if (last_status != 0 && delivery == 1) {
+            outcome.success = true;
+            outcome.library_validated = true;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit rejected Process before sending under KMIP 2.0");
+        } else {
+            outcome.library_failed = true;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit did not report a pre-send Process rejection under KMIP 2.0");
+        }
+    } else {
+        outcome.library_failed = true;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "KMIPKit accepted Process under KMIP 2.0");
+    }
+    if (process_outcome) kmipkit_client_async_operation_outcome_release(process_outcome);
+    if (payload) kmipkit_ttlv_structure_release(payload);
+    if (request) kmipkit_process_request_release(request);
+    return outcome;
+}
+
 static bool async_response_correlation_matches(
     const kmipkit_client_async_operation_response_v1_t *response,
     const kmipkit_byte_span_v1_t *correlation) {
@@ -7925,7 +7976,10 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     }
     bool unsupported_version_boundary_workflow =
         strcmp(test_case->case_id, "test-v20-reject-get-constraints") == 0 ||
-        strcmp(test_case->case_id, "test-v20-reject-ping") == 0;
+        strcmp(test_case->case_id, "test-v20-reject-ping") == 0 ||
+        strcmp(test_case->case_id, "test-v20-reject-process") == 0;
+    bool process_v20_boundary_workflow =
+        strcmp(test_case->case_id, "test-v20-reject-process") == 0;
     bool batch_forward_placeholder_workflow =
         strcmp(test_case->case_id,
                "test-batch-placeholder-forward-reference-rejected") == 0;
@@ -7974,6 +8028,9 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         !unsupported_version_boundary_workflow && !get_usage_allocation_uid_variant &&
         !batch_count_mismatch_workflow && !batch_forward_placeholder_workflow) {
         return outcome_not_run("catalog mode is not supported by the C validator");
+    }
+    if (process_v20_boundary_workflow) {
+        return execute_v20_process_boundary_route(client);
     }
     if (strcmp(test_case->case_id, "test-op-cancel") == 0 ||
         strncmp(test_case->case_id, "test-async-cancel-result-", 25) == 0) {
