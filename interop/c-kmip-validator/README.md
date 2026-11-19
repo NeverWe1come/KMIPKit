@@ -713,3 +713,30 @@ incomplete. The shared Python test suite passed 210/210 tests. Of the preserved
 prior events, 199 changed only their tree digests: 192 request hashes from
 regenerated certificate fixtures and seven response hashes from time-bearing
 asynchronous responses; no other prior outcome fields changed.
+
+The latest full C report is `c-route-154bc70f-8cf3-47ff-9513-345d8247eeeb`
+(`route-execution-evidence-rsa-pkcs1-sign.json`) with JSON SHA-256
+`e0afe302b09216abe5622bf4c17d672a24815e4f6fc78fee3f2695f96194fb01`, catalog
+SHA-256 `11d002765d807ba4232625ed19e44649db0fcdd33f0b43911ea18f18a7fe4651`,
+route manifest SHA-256
+`28b381ebca85752ba8eb3c41c003f02b2d1d8ad8180f0e8908a7e716724732f5`, and
+pinned artifact SHA-256
+`c93eb8f7daa60d3b6832d297887e99cd2101e4f9baf2d04f55ce4042ba4bb7a2`. It has
+66,288 planned cells: 44,036 invoked, 52 explicitly not applicable, zero
+failed, and 22,200 pending. It preserves all 44,048 previous cell identities
+and adds 40 passed cells for `test-crypto-sign-rsa-2048-pkcs1_v1_5`; its 44-cell
+case scope also includes four previously reported generic TTLV construction
+and decode cells. The new cells cover 36 request/send/response routes across
+KMIP 2.0/2.1, TTLV/JSON/XML, and raw TLS/HTTPS, plus both typed response
+accessors for each protocol version. The controlled request creates and
+activates an RSA-2048 key pair with Sign/Verify usage, applies the SHA-256 with
+RSA signature algorithm, checks Sign output shape, revokes the private key,
+and destroys both keys. The peer validates the request parameters and returns
+a controlled response; this does not represent an external KMS run. Schema and
+scoped shared validation pass with `selected_scope_complete=true`,
+`all_invocations_passed=true`, and zero failures. Full CTest passed 7/7 in
+148.47 seconds. Of the preserved prior events, 199 changed only their tree
+digests: 192 request hashes from regenerated certificate fixtures and seven
+response hashes from time-bearing asynchronous responses; no other prior
+outcome fields changed. The first pending cells remain the Re-Provision
+response decoders, so the global matrix is still incomplete.
