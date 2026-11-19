@@ -4463,3 +4463,27 @@ evidence validates 44,240/44,240 cells: 44,224 invocations, 16 not-applicable
 cells, and zero failures. The ledger records 71,583 planned, 44,240 executed,
 and 27,343 pending cells. The full matrix remains incomplete, so the stack
 stays WIP.
+
+## Java Add Attribute routes — 2026-11-19
+
+The installed Java client now executes `test-op-add-attribute` through both
+`ClientBatchItem.addAttribute` and `AddAttributeRequest.toBatchItem`, using two
+correlated items per request. A controlled mutual-TLS peer checks the operation,
+protocol version, object identifier, New Attribute, and item identifiers, then
+returns successful typed results matching both items. The 12 exchanges cover
+KMIP 2.0/2.1, TTLV/JSON/XML, and raw TLS/HTTPS. The local generic TTLV routes
+construct, view, and decode New Attribute, and `AddAttributeRequest.toTtlvPayload`
+is invoked and checked. References: OASIS KMIP 2.0/2.1 §6.1.2.
+
+Red `ae27cab27` adds required route assertions and fails on the missing
+Add Attribute execution. Green `e2905f3e8` adds the controlled exchanges and
+typed response checks. Refactor documentation, report case inventory, and the
+generated ledger/reference were refreshed. Verification: Java Gradle suite
+111/111; shared route, schema, and capability tests 112/112; requirement
+traceability 2/2; feature traceability 31/31; capability audit 1,511 routes;
+ledger comparison passes. Selected evidence validates 44,458/44,458 cells
+(44,442 invoked, 16 not applicable, zero failed). The Java ledger has 71,583
+planned, 44,458 executed, and 27,125 pending cells. The full matrix remains
+incomplete; keep #187 and dependents WIP. The controlled peer validates client
+route and response behavior but does not establish persisted attribute state
+at an external KMS or claim vendor interoperability.

@@ -1536,3 +1536,24 @@ validates 44,382/44,382 cells (44,366 invoked, 16 not applicable, zero failed).
 The complete Java matrix remains incomplete: 27,201 cells are pending, so #187
 and its dependents stay WIP. This fixture proves client route behavior; it does
 not establish object state at a KMS or claim external interoperability.
+
+### Java Add Attribute routes — 2026-11-19
+
+The installed Java client now executes `test-op-add-attribute` through both
+`ClientBatchItem.addAttribute` and `AddAttributeRequest.toBatchItem`, using two
+correlated items in each request. A controlled mutual-TLS peer checks the
+operation, protocol version, object identifier, New Attribute, and batch item
+identifiers and returns matching successful typed outcomes. The 12 exchanges
+cover KMIP 2.0/2.1, TTLV/JSON/XML, and raw TLS/HTTPS. Local generic TTLV
+construction, view, decoding, and `AddAttributeRequest.toTtlvPayload` routes
+are also exercised. References: OASIS KMIP 2.0 and 2.1 §6.1.2.
+
+Red `ae27cab27` adds required route assertions and fails on the missing
+Add Attribute execution. Green `e2905f3e8` adds the controlled exchanges and
+typed response checks. The focused controlled-peer test passes; selected
+evidence validates 44,458/44,458 cells (44,442 invoked, 16 not applicable, zero
+failed). The ledger has 71,583 planned, 44,458 executed, and 27,125 pending
+cells. The full matrix remains incomplete, so #187 and its dependents stay
+WIP. The fixture validates client routes and response handling; it does not
+establish persisted attribute state at an external KMS or claim vendor
+interoperability.
