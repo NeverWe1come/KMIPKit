@@ -4214,6 +4214,34 @@ class RouteMatrixTests(unittest.TestCase):
                             ['created', 'activated', 'mac_verified', 'revoked', 'destroyed']
                             for event in send_events))
 
+    def test_hmac_sha256_mac_verify_catalog_case_uses_installed_route(self):
+        """OASIS KMIP 2.0 §6.1.32 and 2.1 §6.1.33 define HMAC-SHA256 MAC Verify."""
+        from artifact_support import ROOT
+        from route_peer import RECIPES, execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_id = 'test-crypto-mac-verify-hmac_sha256-256'
+        self.assertIn(case_id, RECIPES, 'HMAC-SHA256 MAC Verify has no controlled-peer route recipe')
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12,
+                         'HMAC-SHA256 MAC Verify must pass both versions and all six wire routes')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertEqual({event['target_id'] for event in events},
+                         {'KMIPKIT-ELEM-OP-C2S-MAC-VERIFY'})
+        send_events = [event for event in events if event['action'] == 'send']
+        self.assertEqual(len(send_events), 12)
+        self.assertTrue(all(event['peer_observed_operation_sequence'] ==
+                            ['Create', 'Activate', 'MAC Verify', 'Revoke', 'Destroy'] and
+                            event['peer_observed_effects'] ==
+                            ['created', 'activated', 'mac_verified', 'revoked', 'destroyed']
+                            for event in send_events))
+
     def test_sign_operation_uses_private_key_pair_and_installed_request_route(self):
         """OASIS KMIP 2.0 §6.1.49 and 2.1 §6.1.55 define Sign."""
         from artifact_support import ROOT
