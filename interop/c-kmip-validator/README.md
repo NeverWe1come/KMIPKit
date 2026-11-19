@@ -646,3 +646,21 @@ pass with `selected_scope_complete=true`, `all_invocations_passed=true`, and
 zero failures. Full CTest passed 7/7 in 142.57 seconds. The matrix remains
 incomplete; the first pending cells are still the Re-Provision response
 decoders, whose recipe is unresolved against the approved source contract.
+
+The next full run is `c-route-8ee3fe83-886d-4aa1-b22b-253428dc842d` (report
+SHA-256 `de38693a5a1d69e910e4e8dfa31c55bd8a59dd9317381593ded62b60ab0e688b`,
+pinned artifact SHA-256 `c93eb8f7daa60d3b6832d297887e99cd2101e4f9baf2d04f55ce4042ba4bb7a2`).
+It preserves all 43,890 identities from the AES-256-CBC run and adds 40 new
+passed cells per case; each complete case scope now has 44 passed cells for
+`test-op-re-certify` and `test-op-validate`. Re-certify renews
+the fixture X.509 certificate by its explicit identifier, consistent with
+KMIPKIT-DEC-019 and KMIP 2.0 §6.1.41 / 2.1 §6.1.45; Validate sends the actual
+DER certificate fixture in a Table 308/340 Certificate structure under KMIP
+2.0 §6.1.51 / 2.1 §6.1.57. Both scopes cover local construction/decode and
+all six encoding/transport combinations per protocol version. Schema and
+scoped shared validation pass with `selected_scope_complete=true`,
+`all_invocations_passed=true`, and zero failures. The full ledger now records
+66,288 planned cells: 43,918 invoked, 52 not applicable, zero failed, and
+22,318 pending. Full CTest passed 7/7 in 144.84 seconds. The first pending
+cells remain the Re-Provision response decoders; the global matrix is still
+incomplete.
