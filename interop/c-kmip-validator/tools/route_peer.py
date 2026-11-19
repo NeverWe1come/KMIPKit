@@ -4144,6 +4144,11 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         elif recipe[1] == 'async_process_then_poll_state':
                                             if exchange_index == 0:
                                                 assert_async_create_seed_request(request_tree, version)
+                                                if (case_id == 'test-op-process' and
+                                                        byte_string_values(request_tree, 0x420093) !=
+                                                        [b'process-operation-seed']):
+                                                    raise ValueError(
+                                                        'fixture_process_operation_seed_id_mismatch')
                                                 response_operations = (1,)
                                             elif exchange_index == 1:
                                                 assert_async_process_request(request_tree, version)
