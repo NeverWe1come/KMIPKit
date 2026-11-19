@@ -655,6 +655,7 @@ def main() -> int:
     expected_operations += (1, 18, 31, 19, 20)
     expected_operations += (1, 18, 32, 19, 20)
     expected_operations += (1, 18, 35, 19, 20)
+    expected_operations += (1, 18, 35, 19, 20)
     expected_operations += (1, 18, 36, 19, 20)
     expected_operations += (2, 18, 33, 19, 20, 20)
     expected_operations += (2, 18, 33, 19, 20, 20)
@@ -731,6 +732,7 @@ def main() -> int:
     expected_cases += ("test-crypto-decrypt-aes-256-cbc",)
     expected_cases += ("test-op-decrypt",)
     expected_cases += ("test-op-mac",)
+    expected_cases += ("test-crypto-mac-hmac_sha256-256",)
     expected_cases += ("test-op-mac-verify",)
     expected_cases += ("test-op-sign", "test-sign-missing-managed-object-cryptographic-parameters",
                        "test-op-signature-verify")

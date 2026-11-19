@@ -458,6 +458,7 @@ RECIPES = {
     'test-op-decrypt': ((1, 18, 32, 19, 20), 'decrypt'),
     'test-crypto-decrypt-aes-256-cbc': ((1, 18, 32, 19, 20), 'decrypt_aes256_cbc'),
     'test-op-mac': ((1, 18, 35, 19, 20), 'mac'),
+    'test-crypto-mac-hmac_sha256-256': ((1, 18, 35, 19, 20), 'mac'),
     'test-op-mac-verify': ((1, 18, 36, 19, 20), 'mac_verify'),
     'test-op-sign': ((2, 18, 33, 19, 20, 20), 'sign'),
     'test-crypto-sign-rsa-2048-pkcs1_v1_5': ((2, 18, 33, 19, 20, 20), 'sign'),
