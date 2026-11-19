@@ -130,7 +130,8 @@ def response(operations: tuple[int, ...], protocol_minor: int,
              crypto_output: bytes | None = None,
              signature_data: bytes | None = None,
              multipart_hash: bool = False,
-             hash_correlation_value: bytes | None = None) -> bytes:
+             hash_correlation_value: bytes | None = None,
+             unknown_key_format: bool = False) -> bytes:
     version = tlv(0x420069, 1,
                   integer(0x42006A, 2) + integer(0x42006B, protocol_minor))
     header = tlv(
@@ -237,17 +238,28 @@ def response(operations: tuple[int, ...], protocol_minor: int,
                 payload_value += enumeration(0x420094, 0xF1234567)
                 payload_value += integer(0x420094, -12345)
         elif operation == 10:
-            key_material = tlv(0x420043, 8, b"KMIPKIT-SECRET!!")
-            key_value = tlv(0x420045, 1, key_material)
-            key_block = (
-                enumeration(0x420042, 1) + key_value + enumeration(0x420028, 3)
-            )
-            symmetric_key = tlv(0x42008F, 1, tlv(0x420040, 1, key_block))
-            payload_value = (
-                enumeration(0x420057, 2)
-                + tlv(0x420094, 7, b"fixture-key-1")
-                + symmetric_key
-            )
+            if unknown_key_format:
+                key_material = tlv(0x420043, 8, b"\x01\x02\x03")
+                key_value = tlv(0x420045, 1, key_material)
+                key_block = enumeration(0x420042, 0xF1234567) + key_value
+                public_key = tlv(0x42006D, 1, tlv(0x420040, 1, key_block))
+                payload_value = (
+                    enumeration(0x420057, 3)
+                    + tlv(0x420094, 7, b"fixture-unknown-key-format")
+                    + public_key
+                )
+            else:
+                key_material = tlv(0x420043, 8, b"KMIPKIT-SECRET!!")
+                key_value = tlv(0x420045, 1, key_material)
+                key_block = (
+                    enumeration(0x420042, 1) + key_value + enumeration(0x420028, 3)
+                )
+                symmetric_key = tlv(0x42008F, 1, tlv(0x420040, 1, key_block))
+                payload_value = (
+                    enumeration(0x420057, 2)
+                    + tlv(0x420094, 7, b"fixture-key-1")
+                    + symmetric_key
+                )
         elif operation == 43:
             key_material = tlv(0x420043, 8, b"KMIPKIT-SECRET!!")
             key_value = tlv(0x420045, 1, key_material)

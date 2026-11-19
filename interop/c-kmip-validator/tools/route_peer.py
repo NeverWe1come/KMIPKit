@@ -430,6 +430,7 @@ RECIPES = {
     'test-op-hash': ((39,), 'hash'),
     'test-crypto-hash-sha_256-0': ((39,), 'hash'),
     'test-multipart-hash-sha256': ((39,), 'multipart_hash_sha256'),
+    'test-enum-key-format-type': ((10,), 'raw_get_key_format'),
     'test-op-rng-retrieve': ((37,), 'rng_retrieve'),
     'test-crypto-rng-retrieve-rng-32': ((37,), 'rng_retrieve'),
     'test-op-rng-seed': ((38,), 'rng_seed'),
@@ -595,6 +596,7 @@ SIGNATURE_RECIPE_PROPERTIES = {
 }
 
 CONTROLLED_PEER_LOCAL_MODEL_CASES = frozenset({
+    'test-enum-key-format-type',
     'test-batch-single-item-options-omitted',
     'test-batch-placeholder-without-producer-rejected',
     'test-norm-payload-client-get-request-20-001',
@@ -1977,6 +1979,20 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
         assert_cancel_request(node)
     if selected_recipe[1] == 'batch_undo_rollback':
         assert_undo_rollback_request(node)
+    if selected_recipe[1] == 'raw_get_key_format':
+        get_items = [item for item in node[2]
+                     if item[0] == BATCH_ITEM_TAG and item[1] == 1 and
+                     numbers(item, 0x42005C) == [10]]
+        identifiers = [child for child in get_items[0][2]
+                       if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1] \
+            if len(get_items) == 1 else []
+        identifier_values = [child for child in identifiers[0][2]
+                             if child[0] == UNIQUE_IDENTIFIER_TAG] \
+            if len(identifiers) == 1 else []
+        if (len(get_items) != 1 or len(identifiers) != 1 or
+                len(identifier_values) != 1 or identifier_values[0][1] != 7 or
+                identifier_values[0][2] != b'fixture-unknown-key-format'):
+            raise ValueError('fixture_key_format_get_identifier_mismatch')
     if selected_recipe[1] == 'archive':
         archive_items = [item for item in node[2]
                          if item[0] == BATCH_ITEM_TAG and numbers(item, 0x42005C) == [21]]
@@ -2784,6 +2800,45 @@ def multipart_hash_peer_check(observation):
         'peer_multipart_hash_final_indicator':
             boolean_values(observation[-1][0], 0x4200D8) == [True],
         'peer_multipart_hash_response_tree_sha256': tree_digest(observation[0][1]),
+    }
+
+
+def key_format_peer_check(observation):
+    """Record preservation of an unknown Key Format Type in a Get response."""
+    if len(observation) != 1:
+        raise ValueError('fixture_key_format_exchange_count_mismatch')
+    request_tree, response_tree, _ = observation[0]
+    items = [item for item in response_tree[2]
+             if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1] \
+        if len(items) == 1 else []
+    public_keys = [child for child in payloads[0][2]
+                   if child[0] == 0x42006D and child[1] == 1] \
+        if len(payloads) == 1 else []
+    key_blocks = [child for child in public_keys[0][2]
+                  if child[0] == 0x420040 and child[1] == 1] \
+        if len(public_keys) == 1 else []
+    key_format_types = [child for child in key_blocks[0][2]
+                        if child[0] == 0x420042 and child[1] == 5] \
+        if len(key_blocks) == 1 else []
+    actual_values = numbers(key_blocks[0], 0x420042) if len(key_blocks) == 1 else []
+    if (len(items) != 1 or numbers(items[0], 0x42005C) != [10] or
+            numbers(items[0], 0x42007F) != [0] or len(payloads) != 1 or
+            byte_string_values(request_tree, 0x420093) or
+            byte_string_values(response_tree, 0x420093) or
+            numbers(payloads[0], 0x420057) != [3] or
+            text_values(payloads[0], UNIQUE_IDENTIFIER_TAG) !=
+            ['fixture-unknown-key-format'] or len(public_keys) != 1 or
+            len(key_blocks) != 1 or len(key_format_types) != 1 or
+            actual_values != [0xF1234567]):
+        raise ValueError('fixture_key_format_response_mismatch')
+    return {
+        'peer_key_format_type': actual_values[0],
+        'peer_batch_item_id_absent_on_both_sides':
+            not byte_string_values(request_tree, 0x420093) and
+            not byte_string_values(response_tree, 0x420093),
+        'peer_key_format_response_tree_sha256': tree_digest(response_tree),
     }
 
 
@@ -4492,6 +4547,12 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 'create_split_key', 'join_split_key') and
                                             recipe[0][0] not in (1, 2, 3))),
                             usage_allocation_ready=recipe[1] == 'get_usage_allocation_uid_variants')
+                        if recipe[1] == 'raw_get_key_format':
+                            identifier = 'fixture-unknown-key-format'
+                            peer_state.objects[identifier] = 'pre_active'
+                            peer_state.attributes[identifier] = set()
+                            peer_state.attribute_values[identifier] = {}
+                            peer_state.adjustable_attribute_values[identifier] = {}
                         local_placeholder_forward_reference = (
                             case_id == 'test-batch-placeholder-forward-reference-rejected')
                         local_placeholder_rejection = local_placeholder_forward_reference or (
@@ -4822,6 +4883,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                                 'attribute_response_tag', '000000'), 16)
                                                             if attribute_fixture else 0)
                                         object_type = 4 if case_id == 'test-obj-private-key' else 3 if case_id == 'test-obj-public-key' else 2
+                                        if recipe[1] == 'raw_get_key_format':
+                                            response_item_ids = (None,)
                                         if recipe[1] == 'get_usage_allocation_uid_variant':
                                             response_item_ids = (
                                                 b'interop-create',
@@ -5122,7 +5185,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 multipart_hash=recipe[1] == 'multipart_hash_sha256',
                                                 hash_correlation_value=(MULTIPART_HASH_CORRELATION
                                                                         if recipe[1] == 'multipart_hash_sha256' and
-                                                                        exchange_index == 0 else None))
+                                                                        exchange_index == 0 else None),
+                                                unknown_key_format=recipe[1] == 'raw_get_key_format')
                                         export_response_negative = (
                                             case_id.startswith('test-norm-payload-client-export-response-') and
                                             variant == 'missing_rejected' and
@@ -5135,6 +5199,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             assert_discover_versions_response(response_tree, version)
                                         if recipe[1] == 'multipart_hash_sha256':
                                             verify_multipart_hash_response(response_tree, exchange_index)
+                                        if recipe[1] == 'raw_get_key_format':
+                                            key_format_peer_check([(request_tree, response_tree, {})])
                                         if logout_recipe:
                                             verify_login_logout_response(response_tree, exchange_index)
                                         elif recipe[1] == 'async_poll_cancel_no_recursion':
@@ -5715,6 +5781,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                            **(multipart_hash_peer_check(observation)
                                               if recipe[1] == 'multipart_hash_sha256' and
                                               len(observation) == 3 else {}),
+                                           **(key_format_peer_check(observation)
+                                              if recipe[1] == 'raw_get_key_format' and
+                                              len(observation) == 1 else {}),
                                            **(batch_single_item_default_continuation_peer_check(observation)
                                               if recipe[1] == 'batch_single_item_default_continuation' and
                                               len(observation) == 1 else {}),
@@ -6124,6 +6193,29 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                    f"{cell['public_api_symbol'].rsplit('_', 1)[-1]}",
                      response_tree_sha256=
                      successful_check['peer_multipart_hash_response_tree_sha256'])
+        events.append(event)
+        keys.add(_key(cell))
+    for cell in all_cells:
+        if (cell['case_id'] != 'test-enum-key-format-type' or cell['mode'] != 'local' or
+                cell['action'] != 'decode' or cell['transport'] is not None or
+                cell['public_api_symbol'] != 'kmipkit_client_batch_item_response_raw_ttlv' or
+                _key(cell) in keys):
+            continue
+        successful_check = next((check for check in checks
+                                 if check['case_id'] == cell['case_id'] and
+                                 check['protocol_version'] == cell['protocol_version'] and
+                                 check['status'] == 'passed' and
+                                 check['peer_key_format_type'] == 0xF1234567 and
+                                 cell['public_api_symbol'] in check['public_api_success_symbols'] and
+                                 check.get('peer_key_format_response_tree_sha256')),
+                                None)
+        if successful_check is None:
+            continue
+        event = cell_fields(cell)
+        event.update(status='passed', invocation_count=1,
+                     invocation_id=f"c-key-format-{cell['protocol_version']}-raw-ttlv",
+                     response_tree_sha256=
+                     successful_check['peer_key_format_response_tree_sha256'])
         events.append(event)
         keys.add(_key(cell))
     return events, keys, checks
