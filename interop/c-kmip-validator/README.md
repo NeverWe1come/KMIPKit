@@ -401,12 +401,13 @@ successful response. This is supplemental C exchange evidence for the
 catalog's local construction case: it proves no inconsistent count reaches
 this controlled peer and does not claim external KMS behavior.
 
-The `test-batch-count-zero-rejected` contract parses an empty Request Message
-with `Batch Count = 0` and no Batch Item. The request-message parser reports
-`invalid_batch_count` before transport, and the contract requires zero
-transport calls. The C report contains two passing typed parser decodes, one
-per protocol version; this local case does not use a network fixture or
-construct an empty Get Batch Item.
+The `test-batch-count-zero-rejected` contract contains only the Batch Count
+target, with no operation or Batch Item, and records rejection before
+transport. Its matrix rows are local construction checks; it creates no send
+or response-decode obligation. A separate C parser test confirms that an
+encoded empty Request Message with `Batch Count = 0` is rejected locally as
+`invalid_batch_count`; that supplemental parser check is not counted as a
+catalogued decode cell.
 
 The negative `test-neg-modify-attribute-current-mismatch` route seeds the
 Comment attribute, requests a Current Attribute value that is not present, and
@@ -771,3 +772,34 @@ certificate fixtures and seven response hashes from time-bearing asynchronous
 responses). All previous cell identities remain. The first pending cells
 remain the Re-Provision response decoders, so the global matrix is still
 incomplete.
+
+### C full-matrix report after the shared contract update
+
+The latest full C report is `c-route-cdf7fa74-f5b0-451d-a6d5-2b6742b885d3`
+(`build/route-execution-evidence-c-current.json`), SHA-256
+`ce27130640dc6548520750b45c7808865532e8414d77dec758d1a746108df60c`. It
+uses catalog SHA-256
+`511468935d55435681bec13fb66d1d9327e91a5a92fb781e9450edb043951fba`, route
+manifest SHA-256
+`28b381ebca85752ba8eb3c41c003f02b2d1d8ad8180f0e8908a7e716724732f5`, and
+pinned artifact SHA-256
+`c93eb8f7daa60d3b6832d297887e99cd2101e4f9baf2d04f55ce4042ba4bb7a2`. The
+ledger has 66,280 planned cells: 44,106 invoked, 52 explicitly not
+applicable, zero failed, and 22,122 pending. The shared validator confirms all
+44,158 emitted cells, with `selected_scope_complete=true`,
+`all_invocations_passed=true`, and `complete_matrix=false`.
+
+This run adds 38 Recover route cells while preserving its four existing
+generic TTLV cells. The controlled consumer creates a SymmetricKey, archives
+it, recovers it by the ID Placeholder, checks the typed Recover response
+Unique Identifier, and destroys the recovered key. It passes both KMIP
+versions and all six TTLV/JSON/XML plus raw TLS/HTTPS combinations. The
+catalog's zero-count batch case now contains only the Batch Count target and
+does not plan operation, Batch Item, send, or response-decode cells; eight C
+cells from the previous ledger are therefore removed. A direct comparison
+with the previous full report preserves all other 44,120 event identities;
+199 existing tree hashes changed only because certificate fixtures are
+regenerated per run (192 request hashes) and asynchronous responses contain
+time values (seven response hashes). Full CTest passes 7/7 in 148.45 seconds,
+and the shared Python contract suite passes 212/212. The complete C route
+matrix remains open with 22,122 pending cells, so this PR remains WIP.
