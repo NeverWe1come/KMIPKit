@@ -384,6 +384,7 @@ RECIPES = {
     'test-async-no-recursive-async-poll-cancel': ((26, 25), 'async_poll_cancel_no_recursion'),
     'test-async-poll-final-operation-failure': ((1, 26), 'async_poll_final_failure'),
     'test-async-poll-repeated-pending-to-success': ((1, 26), 'async_poll_repeated_pending_to_success'),
+    'test-op-poll': ((1, 26, 26, 26, 20), 'async_poll_repeated_pending_to_success'),
     'test-async-process-then-poll-state': ((1, 58, 26), 'async_process_then_poll_state'),
     'test-op-query-asynchronous-requests': ((1, 57, 19, 20), 'query_async_empty'),
     'test-async-query-outstanding-filter': ((1, 57), 'async_query_outstanding_filter'),
