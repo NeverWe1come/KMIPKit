@@ -129,9 +129,9 @@ python3 -m pip install --only-binary ':all:' jsonschema==4.23.0
 python3 interop/c-kmip-validator/tests/test_route_matrix.py
 python3 interop/c-kmip-validator/tools/route_matrix.py \
   --binary interop/c-kmip-validator/build/kmip_validator_c \
-  --output interop/c-kmip-validator/build/route-execution-evidence-single-item-decode.json
+  --output interop/c-kmip-validator/build/route-execution-evidence-placeholder-na-accounted.json
 python3 interop/shared/tools/validate_route_evidence.py \
-  --report interop/c-kmip-validator/build/route-execution-evidence-single-item-decode.json \
+  --report interop/c-kmip-validator/build/route-execution-evidence-placeholder-na-accounted.json \
   --artifact-sha256 "$(sha256sum interop/.local/c-live/install/489fafc79ef89db2524eafa7a6c6482f5cf75d97/lib/libkmipkit_ffi.so | cut -d ' ' -f 1)"
 ```
 
@@ -148,7 +148,7 @@ from pathlib import Path
 sys.path.insert(0, "interop/shared/tools")
 from validate_route_evidence import validate_report
 
-report = json.loads(Path("interop/c-kmip-validator/build/route-execution-evidence-single-item-decode.json").read_text())
+report = json.loads(Path("interop/c-kmip-validator/build/route-execution-evidence-placeholder-na-accounted.json").read_text())
 catalog_bytes = Path("interop/shared/catalog/kmipkit-1.0-test-catalog.json").read_bytes()
 manifest_bytes = Path("interop/shared/coverage/route-capabilities.json").read_bytes()
 artifact_bytes = Path(
@@ -544,7 +544,7 @@ controlled TLS peer suites. The first pending cells remained the local response
 decoder for `test-op-re-provision`; its recipe is unresolved against the
 approved source contract.
 
-The latest full C report is `c-route-bd097850-6359-4f42-b138-9f1f44f3a168`
+The preceding full C report is `c-route-bd097850-6359-4f42-b138-9f1f44f3a168`
 with JSON SHA-256
 `64d08004a8c3b34589fce047e8e7f692287473fa36a45fea2b6120556c9d81b6`. It has
 66,288 expected cells: 43,530 invoked, 40 explicitly not applicable, zero
@@ -558,3 +558,19 @@ new ten-cell scope passes shared validation with
 `selected_scope_complete=true` and `all_invocations_passed=true`. The first
 pending cells are still the local response decoder for `test-op-re-provision`;
 its recipe is unresolved against the approved source contract.
+
+The latest full C report is `c-route-7c34d7a2-6fe8-423d-888f-d5ec9deeac1f`
+with JSON SHA-256
+`70a0dabd711701c476cb76df64ba864f8051241b31d90b2b8b6e05ee615937ce`. It has
+66,288 expected cells: 43,518 invoked, 52 explicitly not applicable, zero
+failed, and 22,718 pending. It preserves all 43,570 prior cell identities.
+Twelve previous `passed` decode events for
+`test-batch-placeholder-without-producer-rejected` are corrected to
+`not_applicable` with reason `local_rejection_no_response`: the client rejected
+each matching Activate request before transport, so no response was available
+to decode. The shared validator checks their matching `not_sent` calls; the
+44-cell case scope is complete with 32 invocations, 12 N/A, zero failures, and
+`all_invocations_passed=true`. The full CTest suite passed 7/7 in 144.99 s
+after the evidence correction. The first pending cells remain the local
+response decoder for `test-op-re-provision`, whose recipe is unresolved against
+the approved source contract.
