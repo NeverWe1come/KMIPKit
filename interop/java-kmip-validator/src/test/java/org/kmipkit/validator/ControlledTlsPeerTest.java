@@ -1879,6 +1879,14 @@ class ControlledTlsPeerTest {
                     "KMIPKIT-ELEM-CREDENTIAL-CREDENTIAL",
                     GENERIC_CREDENTIAL_FROM_TTLV_ROUTE,
                     "construct", protocolVersion);
+            assertRouteEventRecorded(events,
+                    "test-norm-structure-member-structure-member-9-11-credential-credential-type",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-CREDENTIAL-CREDENTIAL-TYPE",
+                    GENERIC_CREDENTIAL_FROM_TTLV_ROUTE, "construct", protocolVersion);
+            assertRouteEventRecorded(events,
+                    "test-norm-structure-member-structure-member-9-11-credential-credential-type",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-CREDENTIAL-CREDENTIAL-TYPE",
+                    CREDENTIAL_TYPE_FROM_RAW_ROUTE, "construct", protocolVersion);
             assertRouteEventRecorded(events, "test-norm-credential-credential-one-time-password",
                     "KMIPKIT-ELEM-CREDENTIAL-ONE-TIME-PASSWORD",
                     GENERIC_CREDENTIAL_FROM_TTLV_ROUTE,
