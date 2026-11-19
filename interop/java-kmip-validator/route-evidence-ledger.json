@@ -2681,23 +2681,12 @@
     "test-v20-reject-set-constraints",
     "test-v20-reject-set-defaults"
   ],
-  "executed_cells": 44240,
+  "executed_cells": 44306,
   "language": "java",
   "library_commit": "12496d646d11d4069b58bcc88fc76cc619211ec6",
   "pending_case_ids": [
-    "test-attr-certificate-attributes",
-    "test-attr-cryptographic-algorithm",
-    "test-attr-cryptographic-domain-parameters",
     "test-attr-cryptographic-parameters",
-    "test-attr-digest",
-    "test-attr-digital-signature-algorithm",
     "test-attr-random-number-generator",
-    "test-attr-unique-identifier",
-    "test-attr-usage-limits",
-    "test-attr-vendor-attribute",
-    "test-attr-x.509-certificate-identifier",
-    "test-attr-x.509-certificate-issuer",
-    "test-attr-x.509-certificate-subject",
     "test-batch-continue-after-failure",
     "test-batch-count-matches-items",
     "test-batch-count-mismatch-rejected",
@@ -3679,55 +3668,11 @@
   ],
   "pending_cases": [
     {
-      "case_id": "test-attr-certificate-attributes",
-      "pending_cells": 2
-    },
-    {
-      "case_id": "test-attr-cryptographic-algorithm",
-      "pending_cells": 2
-    },
-    {
-      "case_id": "test-attr-cryptographic-domain-parameters",
-      "pending_cells": 6
-    },
-    {
       "case_id": "test-attr-cryptographic-parameters",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-attr-digest",
-      "pending_cells": 6
-    },
-    {
-      "case_id": "test-attr-digital-signature-algorithm",
-      "pending_cells": 2
+      "pending_cells": 8
     },
     {
       "case_id": "test-attr-random-number-generator",
-      "pending_cells": 12
-    },
-    {
-      "case_id": "test-attr-unique-identifier",
-      "pending_cells": 6
-    },
-    {
-      "case_id": "test-attr-usage-limits",
-      "pending_cells": 6
-    },
-    {
-      "case_id": "test-attr-vendor-attribute",
-      "pending_cells": 6
-    },
-    {
-      "case_id": "test-attr-x.509-certificate-identifier",
-      "pending_cells": 6
-    },
-    {
-      "case_id": "test-attr-x.509-certificate-issuer",
-      "pending_cells": 6
-    },
-    {
-      "case_id": "test-attr-x.509-certificate-subject",
       "pending_cells": 6
     },
     {
@@ -7643,7 +7588,7 @@
       "pending_cells": 84
     }
   ],
-  "pending_cells": 27343,
+  "pending_cells": 27277,
   "pending_reason": "No validated per-cell route execution evidence is recorded for this cell.",
   "pending_reason_code": "route_evidence_not_emitted",
   "planned_cells": 71583,
@@ -7651,8 +7596,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 3895,
-      "pending_cells": 182,
+      "executed_cells": 3896,
+      "pending_cells": 181,
       "protocol_version": "2.0",
       "required_cells": 4077,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item",
@@ -7661,8 +7606,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 3983,
-      "pending_cells": 189,
+      "executed_cells": 3984,
+      "pending_cells": 188,
       "protocol_version": "2.1",
       "required_cells": 4172,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item",
@@ -32501,8 +32446,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 531,
-      "pending_cells": 56,
+      "executed_cells": 541,
+      "pending_cells": 46,
       "protocol_version": "2.0",
       "required_cells": 587,
       "route_id": "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
@@ -32511,8 +32456,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 540,
-      "pending_cells": 56,
+      "executed_cells": 550,
+      "pending_cells": 46,
       "protocol_version": "2.1",
       "required_cells": 596,
       "route_id": "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
@@ -32681,8 +32626,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 114,
-      "pending_cells": 5,
+      "executed_cells": 115,
+      "pending_cells": 4,
       "protocol_version": "2.0",
       "required_cells": 119,
       "route_id": "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.cryptographicalgorithm",
@@ -32691,8 +32636,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 114,
-      "pending_cells": 5,
+      "executed_cells": 115,
+      "pending_cells": 4,
       "protocol_version": "2.1",
       "required_cells": 119,
       "route_id": "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.cryptographicalgorithm",
@@ -32701,8 +32646,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 40,
-      "pending_cells": 3,
+      "executed_cells": 41,
+      "pending_cells": 2,
       "protocol_version": "2.0",
       "required_cells": 43,
       "route_id": "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.digitalsignaturealgorithm",
@@ -32711,8 +32656,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 40,
-      "pending_cells": 3,
+      "executed_cells": 41,
+      "pending_cells": 2,
       "protocol_version": "2.1",
       "required_cells": 43,
       "route_id": "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.digitalsignaturealgorithm",
@@ -33401,8 +33346,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 531,
-      "pending_cells": 56,
+      "executed_cells": 541,
+      "pending_cells": 46,
       "protocol_version": "2.0",
       "required_cells": 587,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
@@ -33411,8 +33356,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 540,
-      "pending_cells": 56,
+      "executed_cells": 550,
+      "pending_cells": 46,
       "protocol_version": "2.1",
       "required_cells": 596,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
@@ -33421,8 +33366,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 531,
-      "pending_cells": 56,
+      "executed_cells": 541,
+      "pending_cells": 46,
       "protocol_version": "2.0",
       "required_cells": 587,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
@@ -33431,8 +33376,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 540,
-      "pending_cells": 56,
+      "executed_cells": 550,
+      "pending_cells": 46,
       "protocol_version": "2.1",
       "required_cells": 596,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
@@ -34222,8 +34167,8 @@
   "route_manifest_sha256": "7ee7fe0cd4d0a3ef8a292fc5f0ef1329361c1cb66e03dce175e9d69e8dcd41f4",
   "route_summary": [
     {
-      "executed_cells": 7878,
-      "pending_cells": 371,
+      "executed_cells": 7880,
+      "pending_cells": 369,
       "required_cells": 8249,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item"
     },
@@ -35380,8 +35325,8 @@
       "route_id": "java.typed-protocol.model.org.kmipkit.credentials.usernameandpasswordcredential.fromttlv"
     },
     {
-      "executed_cells": 1071,
-      "pending_cells": 112,
+      "executed_cells": 1091,
+      "pending_cells": 92,
       "required_cells": 1183,
       "route_id": "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew"
     },
@@ -35434,14 +35379,14 @@
       "route_id": "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.counterlength"
     },
     {
-      "executed_cells": 228,
-      "pending_cells": 10,
+      "executed_cells": 230,
+      "pending_cells": 8,
       "required_cells": 238,
       "route_id": "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.cryptographicalgorithm"
     },
     {
-      "executed_cells": 80,
-      "pending_cells": 6,
+      "executed_cells": 82,
+      "pending_cells": 4,
       "required_cells": 86,
       "route_id": "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.digitalsignaturealgorithm"
     },
@@ -35650,14 +35595,14 @@
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.symmetrickey"
     },
     {
-      "executed_cells": 1071,
-      "pending_cells": 112,
+      "executed_cells": 1091,
+      "pending_cells": 92,
       "required_cells": 1183,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create"
     },
     {
-      "executed_cells": 1071,
-      "pending_cells": 112,
+      "executed_cells": 1091,
+      "pending_cells": 92,
       "required_cells": 1183,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem"
     },
@@ -35693,7 +35638,7 @@
     }
   ],
   "schema_version": "1.0",
-  "selected_scope_cells": 44240,
+  "selected_scope_cells": 44306,
   "selected_scope_complete": true,
   "vendor_interoperability_claim": false
 }

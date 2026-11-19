@@ -1716,6 +1716,7 @@ class ControlledTlsPeerTest {
             appendDigestAttributeTypedRoutes(events, protocolVersion);
             appendRandomNumberGeneratorTypedAttributeRoutes(events, protocolVersion);
             appendVendorAttributeTypedRoutes(events, protocolVersion);
+            appendX509CertificateTypedAttributeRoutes(events, protocolVersion);
         }
         assertRouteEventRecorded(events, "test-attr-certificate-attributes",
                 "KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES",
@@ -2393,6 +2394,7 @@ class ControlledTlsPeerTest {
         int digestTypedAttributeRouteEventCount = KMIP_2_0_AND_2_1.size() * 3;
         int randomNumberGeneratorTypedAttributeRouteEventCount = KMIP_2_0_AND_2_1.size() * 3;
         int vendorAttributeTypedAttributeRouteEventCount = KMIP_2_0_AND_2_1.size() * 3;
+        int x509CertificateTypedAttributeRouteEventCount = KMIP_2_0_AND_2_1.size() * 3 * 3;
         int objectTypeMemberRouteEventCount = 4;
         int constraintStructureRouteEventCount = 2 * GENERIC_STRUCTURE_ROUTE_IDS.size();
         int pendingCorrelationAccessorEventCount = KMIP_2_0_AND_2_1.size();
@@ -2483,6 +2485,7 @@ class ControlledTlsPeerTest {
                         + digestTypedAttributeRouteEventCount
                         + randomNumberGeneratorTypedAttributeRouteEventCount
                         + vendorAttributeTypedAttributeRouteEventCount
+                        + x509CertificateTypedAttributeRouteEventCount
                         + objectTypeMemberRouteEventCount
                         + constraintStructureRouteEventCount
                         + pendingCorrelationAccessorEventCount
@@ -2618,6 +2621,7 @@ class ControlledTlsPeerTest {
                         + 1 // KMIP 2.0/2.1 §4.21 Digest typed Attribute routes.
                         + 1 // KMIP 2.0/2.1 §4.46 Random Number Generator typed Attribute routes.
                         + 1 // KMIP 2.0/2.1 §4.60 Vendor Attribute typed Attribute routes.
+                        + 3 // KMIP 2.0/2.1 §§4.61–4.63 X.509 certificate typed Attribute routes.
                         + LocalCatalogRouteChecks.TRANSPARENT_KEY_MATERIAL_CASE_IDS.size()
                         + LocalCatalogRouteChecks.SPLIT_KEY_MANAGED_OBJECT_MEMBER_CASE_IDS.size() - 1
                         + LocalCatalogRouteChecks.PGP_KEY_AND_SECRET_DATA_CASE_IDS.size() - 2
@@ -6598,6 +6602,9 @@ class ControlledTlsPeerTest {
         caseIds.add("test-attr-digest");
         caseIds.add("test-attr-random-number-generator");
         caseIds.add("test-attr-vendor-attribute");
+        caseIds.add("test-attr-x.509-certificate-identifier");
+        caseIds.add("test-attr-x.509-certificate-issuer");
+        caseIds.add("test-attr-x.509-certificate-subject");
         genericEnumerationFixtures().forEach(fixture -> caseIds.add(fixture.caseId()));
         genericLocalEnumerationFixtures().stream().map(EnumerationFixture::caseId).distinct()
                 .forEach(caseIds::add);
@@ -17316,6 +17323,86 @@ class ControlledTlsPeerTest {
                 appendRouteEvent(events, "test-attr-vendor-attribute",
                         "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
                         "KMIPKIT-ELEM-ATTRIBUTE-VENDOR-ATTRIBUTE",
+                        "org.kmipkit.extensions.AttributeSet.tryNew", null, null,
+                        "construct", protocolVersion, null, treeHash, null);
+            }
+        }
+    }
+
+    private static void appendX509CertificateTypedAttributeRoutes(ArrayNode events, String protocolVersion)
+            throws Exception {
+        X509Certificate certificate = certificate(fixture("server-cert.pem"));
+        byte[] issuerDistinguishedName = certificate.getIssuerX500Principal().getEncoded();
+        byte[] certificateSerialNumber = certificate.getSerialNumber().toByteArray();
+        byte[] subjectDistinguishedName = certificate.getSubjectX500Principal().getEncoded();
+
+        // OASIS KMIP 2.1 §§4.61–4.63 define the required X.509 attribute structures and their Byte String
+        // members; §11.56 Table 487 assigns the member and outer attribute tags.
+        appendX509TypedAttributeRoute(events, protocolVersion,
+                "test-attr-x.509-certificate-identifier", "KMIPKIT-ELEM-ATTRIBUTE-X-509-CERTIFICATE-IDENTIFIER",
+                StandardAttribute.X509_CERTIFICATE_IDENTIFIER, 0x4200b5,
+                new int[] {0x4200b2, 0x4200af},
+                new byte[][] {issuerDistinguishedName, certificateSerialNumber});
+        appendX509TypedAttributeRoute(events, protocolVersion,
+                "test-attr-x.509-certificate-issuer", "KMIPKIT-ELEM-ATTRIBUTE-X-509-CERTIFICATE-ISSUER",
+                StandardAttribute.X509_CERTIFICATE_ISSUER, 0x4200b6,
+                new int[] {0x4200b2}, new byte[][] {issuerDistinguishedName});
+        appendX509TypedAttributeRoute(events, protocolVersion,
+                "test-attr-x.509-certificate-subject", "KMIPKIT-ELEM-ATTRIBUTE-X-509-CERTIFICATE-SUBJECT",
+                StandardAttribute.X509_CERTIFICATE_SUBJECT, 0x4200b7,
+                new int[] {0x4200b4}, new byte[][] {subjectDistinguishedName});
+    }
+
+    private static void appendX509TypedAttributeRoute(ArrayNode events, String protocolVersion, String caseId,
+            String targetId, StandardAttribute attribute, int outerTag, int[] fieldTags, byte[][] fieldValues)
+            throws Exception {
+        CodecLimits limits = CodecLimits.defaults();
+        byte[][] wireChildren = new byte[fieldTags.length][];
+        for (int index = 0; index < fieldTags.length; index++) {
+            wireChildren[index] = item(fieldTags[index], 8, fieldValues[index]);
+        }
+        byte[] wire = structure(outerTag, wireChildren);
+        String treeHash = normalizedTreeSha256(wire);
+        TtlvStructure fields = TtlvStructure.create();
+        for (int index = 0; index < fieldTags.length; index++) {
+            fields = appendTtlvItem(fields, fieldTags[index], TtlvValue.ByteString(fieldValues[index], limits), limits);
+        }
+        TtlvStructure completeFields = fields;
+        try (completeFields;
+                TtlvValue value = TtlvValue.structure(completeFields, limits);
+                TypedAttribute typed = TypedAttribute.create(attribute, value);
+                TtlvItem item = typed.asItem();
+                TypedAttribute decoded = TypedAttribute.fromItem(attribute, item);
+                TtlvItem decodedItem = decoded.asItem();
+                TtlvItemView view = decodedItem.view();
+                Tag tag = view.tag();
+                var decodedValue = view.value();
+                TtlvStructureView structure = decodedValue.structure()) {
+            assertEquals(outerTag, tag.raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertEquals(fieldTags.length, structure.itemCount());
+            for (int index = 0; index < fieldTags.length; index++) {
+                try (TtlvItemView field = structure.itemAt(index);
+                        Tag fieldTag = field.tag();
+                        var fieldValue = field.value()) {
+                    assertEquals(fieldTags[index], fieldTag.raw());
+                    assertArrayEquals(fieldValues[index], fieldValue.bytes());
+                }
+            }
+            appendRouteEvent(events, caseId,
+                    "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create", targetId,
+                    "org.kmipkit.ttlv.TypedAttribute.create", null, null,
+                    "construct", protocolVersion, null, treeHash, null);
+            appendRouteEvent(events, caseId,
+                    "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem", targetId,
+                    "org.kmipkit.ttlv.TypedAttribute.fromItem", null, null,
+                    "construct", protocolVersion, null, treeHash, null);
+            try (TtlvStructure empty = TtlvStructure.create();
+                    TtlvStructure attributeItems = TtlvStructure.withItem(empty, item, limits);
+                    AttributeSet attributes = AttributeSet.tryNew(attributeItems)) {
+                assertEquals(1, attributes.len());
+                appendRouteEvent(events, caseId,
+                        "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew", targetId,
                         "org.kmipkit.extensions.AttributeSet.tryNew", null, null,
                         "construct", protocolVersion, null, treeHash, null);
             }
