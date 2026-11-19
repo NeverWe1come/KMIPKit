@@ -1579,6 +1579,8 @@ static kmip_execution_outcome_t execute_multipart_hash_route(kmip_live_client_t 
     bool correlation_available = false;
     kmip_execution_outcome_t outcome = {.executed = true};
     int32_t status = 0;
+    uint32_t failed_exchange = 0;
+    uint32_t failure_details = 0;
     const char *failed_stage = "request construction";
 
     if (!client || !client->client || !client->limits ||
@@ -1590,6 +1592,7 @@ static kmip_execution_outcome_t execute_multipart_hash_route(kmip_live_client_t 
     }
 
     for (uint32_t exchange_index = 0; exchange_index < 3 && status == 0; ++exchange_index) {
+        failed_exchange = exchange_index;
         kmipkit_ttlv_structure_t *parameters = NULL;
         kmipkit_ttlv_value_t *algorithm = NULL;
         kmipkit_ttlv_value_t *data = NULL;
@@ -1633,41 +1636,74 @@ static kmip_execution_outcome_t execute_multipart_hash_route(kmip_live_client_t 
         if (parameters) kmipkit_ttlv_structure_release(parameters);
         if (status == 0) status = kmipkit_client_batch_create(&batch);
         if (status == 0) status = kmipkit_client_batch_add_item(batch, &item);
+        if (status == 0 && client->username_env[0] != '\0') {
+            kmipkit_authentication_t *authentication = NULL;
+            if (!create_authentication(client, &authentication)) {
+                status = KMIPKIT_ERROR_INVALID_INPUT;
+            } else {
+                status = kmipkit_client_batch_set_authentication(batch, authentication);
+                if (status != 0) kmipkit_authentication_release(authentication);
+            }
+        }
         if (status == 0) {
             failed_stage = "request execution";
             status = kmipkit_client_execute(client->client, &batch, client->limits, &response);
         }
-        if (status == 0) status = kmipkit_client_batch_response_item_count(response, &response_count);
+        if (status == 0) {
+            failed_stage = "response count";
+            status = kmipkit_client_batch_response_item_count(response, &response_count);
+        }
         if (status == 0 && response_count == 1)
             status = kmipkit_client_batch_response_item_at(response, 0, &response_item);
         else if (status == 0)
             status = KMIPKIT_ERROR_INVALID_INPUT;
-        if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
-            response_item, &metadata);
-        if (status == 0) status = kmipkit_client_batch_item_response_hash(
-            response_item, &present, &data_present, &response_data,
-            &correlation_present, &response_correlation);
         if (status == 0) {
+            failed_stage = "response metadata";
+            status = kmipkit_client_batch_item_response_metadata_v2(response_item, &metadata);
+        }
+        if (status == 0) {
+            failed_stage = "typed response accessor";
+            status = kmipkit_client_batch_item_response_hash(
+                response_item, &present, &data_present, &response_data,
+                &correlation_present, &response_correlation);
+        }
+        if (status == 0) {
+            failed_stage = "typed response validation";
+            uint32_t response_shape_mismatch = 0;
+            if (metadata.operation != KMIPKIT_ENUMERATION_OPERATION_HASH) response_shape_mismatch |= 1U;
+            if (metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) response_shape_mismatch |= 2U;
+            if (metadata.has_result_reason != 0) response_shape_mismatch |= 4U;
+            if (present != 1) response_shape_mismatch |= 8U;
+            if (data_present != 0 || response_data.data != NULL || response_data.length != 0)
+                response_shape_mismatch |= 16U;
+            if (correlation_present != (first_response ? 1 : 0)) response_shape_mismatch |= 32U;
             bool expected_response_shape = metadata.operation == KMIPKIT_ENUMERATION_OPERATION_HASH &&
                 metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS &&
                 metadata.has_result_reason == 0 && present == 1 && data_present == 0 &&
                 response_data.data == NULL && response_data.length == 0 &&
                 correlation_present == (first_response ? 1 : 0);
             if (first_response) {
-                expected_response_shape = expected_response_shape && response_correlation.data &&
+                bool correlation_matches = response_correlation.data &&
                     response_correlation.length == sizeof(expected_correlation) - 1 &&
                     memcmp(response_correlation.data, expected_correlation,
                            sizeof(expected_correlation) - 1) == 0;
+                if (!correlation_matches) response_shape_mismatch |= 64U;
+                expected_response_shape = expected_response_shape && correlation_matches;
                 if (expected_response_shape) {
                     memcpy(correlation_storage, response_correlation.data,
                            sizeof(correlation_storage));
                     correlation_available = true;
                 }
             } else {
-                expected_response_shape = expected_response_shape &&
-                    response_correlation.data == NULL && response_correlation.length == 0;
+                bool correlation_absent = response_correlation.data == NULL &&
+                    response_correlation.length == 0;
+                if (!correlation_absent) response_shape_mismatch |= 128U;
+                expected_response_shape = expected_response_shape && correlation_absent;
             }
-            if (!expected_response_shape) status = KMIPKIT_ERROR_INVALID_INPUT;
+            if (!expected_response_shape) {
+                status = KMIPKIT_ERROR_INVALID_INPUT;
+                failure_details = response_shape_mismatch;
+            }
         }
         if (status == 0) {
             failed_stage = "response TTLV accessor";
@@ -1689,14 +1725,17 @@ static kmip_execution_outcome_t execute_multipart_hash_route(kmip_live_client_t 
         outcome.has_result_status_code = true;
         outcome.result_status_code = KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS;
     } else {
+        int32_t failure_status = status;
         uint32_t category = 0;
         uint32_t cause = 0;
         uint32_t delivery = 0;
         if (status != 0) (void)kmipkit_last_error_get(&status, &category, &cause, &delivery);
         outcome.library_failed = true;
         snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                 "KMIPKit multipart Hash route failed at %s (category=%u cause=%u delivery=%u)",
-                 failed_stage, category, cause, delivery);
+                 "KMIPKit multipart Hash route failed at %s exchange %u (details=%u auth_configured=%u status=%d category=%u cause=%u delivery=%u)",
+                 failed_stage, failed_exchange, failure_details,
+                 client->username_env[0] != '\0', failure_status,
+                 category, cause, delivery);
     }
     return outcome;
 }
