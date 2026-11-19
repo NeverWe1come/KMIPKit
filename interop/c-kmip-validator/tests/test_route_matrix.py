@@ -1098,7 +1098,7 @@ class RouteMatrixTests(unittest.TestCase):
 
         self.assertEqual(
             route_peer.recipe_for_case(case, None),
-            ((1, 58, 26, 20), 'async_process_then_poll_state'))
+            ((1, 58, 26, 19, 20), 'async_process_then_poll_state'))
 
         manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
         selected = {**catalog, 'test_cases': [case]}
@@ -1107,7 +1107,7 @@ class RouteMatrixTests(unittest.TestCase):
 
         self.assertEqual(len(checks), 6)
         self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
-        self.assertTrue(all(check.get('peer_async_interleaving_operations') == [1, 58, 26, 20] and
+        self.assertTrue(all(check.get('peer_async_interleaving_operations') == [1, 58, 26, 19, 20] and
                             check.get('peer_async_process_correlation_match') is True and
                             check.get('peer_async_poll_correlation_match') is True and
                             check.get('peer_async_process_is_synchronous') is True and
