@@ -386,7 +386,7 @@ RECIPES = {
     'test-async-poll-repeated-pending-to-success': ((1, 26), 'async_poll_repeated_pending_to_success'),
     'test-op-poll': ((1, 26, 26, 26, 20), 'async_poll_repeated_pending_to_success'),
     'test-async-process-then-poll-state': ((1, 58, 26), 'async_process_then_poll_state'),
-    'test-op-process': ((1, 58, 26, 20), 'async_process_then_poll_state'),
+    'test-op-process': ((1, 58, 26, 19, 20), 'async_process_then_poll_state'),
     'test-op-query-asynchronous-requests': ((1, 57, 19, 20), 'query_async_empty'),
     'test-async-query-outstanding-filter': ((1, 57), 'async_query_outstanding_filter'),
     'test-async-unknown-correlation-rejected': ((26,), 'async_unknown_correlation_rejected'),
@@ -2654,6 +2654,9 @@ def async_process_then_poll_peer_check(observation):
     """Report shared Process/Poll correlation, synchronous Process, and cleanup."""
     return {
         **async_interleaving_peer_evidence(observation),
+        'peer_async_interleaving_operations': [
+            operation for request, _, _ in observation
+            for operation in numbers(request, 0x42005C)],
         'peer_async_process_correlation_match':
             byte_string_values(observation[1][0], 0x420006) == [CANCEL_CORRELATION_VALUE],
         'peer_async_poll_correlation_match':
@@ -3004,13 +3007,47 @@ def verify_completed_poll_create_response(response_tree):
         raise ValueError('fixture_async_poll_completed_response_mismatch')
 
 
-def assert_async_create_cleanup_request(node, version):
+def assert_async_create_cleanup_request(node, version, unique_batch_item_id=None):
     items = [item for item in node[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
     payloads = [child for child in items[0][2]
                 if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
     if (version not in ('2.0', '2.1') or len(items) != 1 or numbers(items[0], 0x42005C) != [20] or
+            byte_string_values(items[0], 0x420093) != (
+                [unique_batch_item_id] if unique_batch_item_id is not None else []) or
             len(payloads) != 1 or text_values(payloads[0], UNIQUE_IDENTIFIER_TAG) != ['fixture-key-1']):
         raise ValueError('fixture_async_create_cleanup_mismatch')
+
+
+def assert_revoke_seed_request(node, version):
+    """Require standalone Process cleanup to Revoke its completed Create result."""
+    items = [item for item in node[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+    if (version not in ('2.0', '2.1') or len(items) != 1 or
+            numbers(items[0], 0x42005C) != [19] or len(payloads) != 1 or
+            byte_string_values(items[0], 0x420093) != [b'process-operation-revoke'] or
+            text_values(payloads[0], UNIQUE_IDENTIFIER_TAG) != ['fixture-key-1']):
+        safe_shape = {
+            'operations': [numbers(item, 0x42005C) for item in items],
+            'payload_tags': [[f'{child[0]:06X}' for child in payload[2]]
+                             for payload in payloads],
+            'identifiers': [text_values(payload, UNIQUE_IDENTIFIER_TAG) for payload in payloads],
+        }
+        raise ValueError(f'fixture_process_revoke_cleanup_mismatch:{safe_shape}')
+
+
+def verify_process_cleanup_response(response_tree, operation):
+    """Require one successful Process-recipe Revoke or Destroy response."""
+    items = [item for item in response_tree[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+    if (operation not in (19, 20) or len(items) != 1 or
+            numbers(items[0], 0x42005C) != [operation] or
+            numbers(items[0], 0x42007F) != [0] or len(payloads) != 1 or
+            byte_string_values(items[0], 0x420093) != [
+                b'process-operation-revoke' if operation == 19 else b'process-operation-destroy'] or
+            text_values(payloads[0], UNIQUE_IDENTIFIER_TAG) != ['fixture-key-1']):
+        raise ValueError('fixture_process_cleanup_response_mismatch')
 
 
 def assert_async_lifecycle_exchange(node, version, exchange_index):
@@ -3223,7 +3260,7 @@ def observation_for_cell(observations, cell, recipe, fallback_index):
     elif recipe[1] == 'async_poll_repeated_pending_to_success':
         index = {'Create': 0, 'Poll': 3}.get(cell.get('workflow_operation'), fallback_index)
     elif recipe[1] == 'async_process_then_poll_state':
-        index = {'Create': 0, 'Process': 1, 'Poll': 2}.get(
+        index = {'Create': 0, 'Process': 1, 'Poll': 2, 'Revoke': 3, 'Destroy': 4}.get(
             cell.get('workflow_operation'), fallback_index)
     elif recipe[1] == 'rekey':
         index = 0 if cell.get('workflow_operation') == 'Create' else 1
@@ -4012,7 +4049,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         3 if recipe[1] == 'create_split_key' else
                                         2 if recipe[1] in ('join_split_key', 'rekey', 'derive_key') else
                                         5 if recipe[1] == 'async_poll_repeated_pending_to_success' else
-                                        4 if recipe[1] == 'async_process_then_poll_state' else
+                                        (5 if case_id == 'test-op-process' else 4)
+                                        if recipe[1] == 'async_process_then_poll_state' else
                                         2 if placeholder_chain_recipe or batch_order_placeholder_recipe or
                                         recipe[1] in ('login_logout', 'cancel_async',
                                                        'async_poll_cancel_no_recursion') else 1)
@@ -4159,6 +4197,15 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             elif exchange_index == 2:
                                                 assert_async_failure_poll_request(request_tree, version)
                                                 response_operations = (26,)
+                                            elif case_id == 'test-op-process' and exchange_index == 3:
+                                                assert_revoke_seed_request(request_tree, version)
+                                                response_operations = (19,)
+                                                response_item_ids = (None,)
+                                            elif case_id == 'test-op-process' and exchange_index == 4:
+                                                assert_async_create_cleanup_request(
+                                                    request_tree, version, b'process-operation-destroy')
+                                                response_operations = (20,)
+                                                response_item_ids = (None,)
                                             else:
                                                 assert_async_create_cleanup_request(request_tree, version)
                                                 response_operations = (20,)
@@ -4504,8 +4551,10 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                          created_object_type=2,
                                                          unique_batch_item_ids=response_item_ids))
                                         elif recipe[1] == 'async_process_then_poll_state':
-                                            if exchange_index == 3:
-                                                response_item_ids = (None,)
+                                            if case_id == 'test-op-process' and exchange_index == 3:
+                                                response_item_ids = (b'process-operation-revoke',)
+                                            elif case_id == 'test-op-process' and exchange_index == 4:
+                                                response_item_ids = (b'process-operation-destroy',)
                                             response_wire = (
                                                 pending_create_response(CANCEL_CORRELATION_VALUE,
                                                                         int(version[-1]),
@@ -4516,6 +4565,13 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 if exchange_index == 1 else
                                                 completed_poll_create_response(int(version[-1]))
                                                 if exchange_index == 2 else
+                                                response((19,), int(version[-1]),
+                                                         unique_batch_item_ids=response_item_ids)
+                                                if case_id == 'test-op-process' and exchange_index == 3 else
+                                                response((20,), int(version[-1]),
+                                                         created_object_type=2,
+                                                         unique_batch_item_ids=response_item_ids)
+                                                if case_id == 'test-op-process' and exchange_index == 4 else
                                                 response((20,), int(version[-1]),
                                                          created_object_type=2,
                                                          unique_batch_item_ids=response_item_ids))
@@ -4597,6 +4653,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 verify_process_success_response(response_tree)
                                             elif exchange_index == 2:
                                                 verify_completed_poll_create_response(response_tree)
+                                            elif case_id == 'test-op-process' and exchange_index in (3, 4):
+                                                verify_process_cleanup_response(
+                                                    response_tree, 19 if exchange_index == 3 else 20)
                                             else:
                                                 verify_lifecycle((20,), response_tree)
                                         elif recipe[1] == 'async_create_poll_lifecycle' and exchange_index == 1:
@@ -5076,7 +5135,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                               len(observation) == 5 else {}),
                                            **(async_process_then_poll_peer_check(observation)
                                               if recipe[1] == 'async_process_then_poll_state' and
-                                              len(observation) == 4 else {}),
+                                              len(observation) == (5 if case_id == 'test-op-process' else 4)
+                                              else {}),
                                            **(async_query_outstanding_peer_check(observation)
                                               if recipe[1] == 'async_query_outstanding_filter' and
                                               len(observation) == 9 else {}),

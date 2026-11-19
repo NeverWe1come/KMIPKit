@@ -2902,10 +2902,18 @@ static kmip_execution_outcome_t execute_async_process_then_poll_route(
         .abi_version = 1
     };
     kmipkit_ttlv_structure_t *completed_payload = NULL;
+    kmipkit_client_batch_item_t *revoke_item = NULL;
+    kmipkit_client_batch_t *revoke_batch = NULL;
+    kmipkit_client_batch_response_t *revoke_response = NULL;
     kmipkit_client_batch_item_t *destroy_item = NULL;
     kmipkit_client_batch_t *destroy_batch = NULL;
     kmipkit_client_batch_response_t *destroy_response = NULL;
+    kmipkit_client_batch_item_response_t *revoke_response_item = NULL;
     kmipkit_client_batch_item_response_t *destroy_response_item = NULL;
+    kmipkit_client_batch_item_metadata_v2_t revoke_metadata = {
+        .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t),
+        .abi_version = 2
+    };
     kmipkit_unique_identifier_v1_t destroy_identifier = {
         .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
         .abi_version = 1,
@@ -2921,6 +2929,7 @@ static kmip_execution_outcome_t execute_async_process_then_poll_route(
     uint8_t process_present = 0;
     uint8_t poll_present = 0;
     uint64_t destroy_response_count = 0;
+    const bool revoke_created_key = create_batch_item_id != NULL;
     kmip_execution_outcome_t outcome = { .executed = true };
     const char *failed_stage = "asynchronous Create setup";
     int32_t status = create_symmetric_key_attributes(client, &attributes) ? 0 : -1;
@@ -3002,8 +3011,60 @@ static kmip_execution_outcome_t execute_async_process_then_poll_route(
 
     if (status == 0) {
         failed_stage = "Create cleanup setup";
+        if (create_batch_item_id) {
+            status = create_revocation_item(&destroy_identifier, &revoke_item);
+        }
+    }
+    if (status == 0 && revoke_item) status = set_batch_item_id(
+        &revoke_item, "process-operation-revoke");
+    if (status == 0 && revoke_created_key) status = kmipkit_client_batch_create(&revoke_batch);
+    if (status == 0 && revoke_created_key) status = set_async_seed_authentication(client, revoke_batch);
+    if (status == 0 && revoke_created_key) status = kmipkit_client_batch_add_item(
+        revoke_batch, &revoke_item);
+    if (status == 0 && revoke_created_key) {
+        failed_stage = "Create revoke cleanup execution";
+        status = kmipkit_client_execute(
+            client->client, &revoke_batch, client->limits, &revoke_response);
+    }
+    if (status == 0 && revoke_created_key) {
+        failed_stage = "Create revoke cleanup response inspection";
+    }
+    if (status == 0 && revoke_created_key) status = kmipkit_client_batch_response_item_count(
+        revoke_response, &destroy_response_count);
+    if (status == 0 && revoke_created_key && destroy_response_count == 1) {
+        status = kmipkit_client_batch_response_item_at(
+            revoke_response, 0, &revoke_response_item);
+    } else if (status == 0 && revoke_created_key) {
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    }
+    if (status == 0 && revoke_created_key) status = kmipkit_client_batch_item_response_metadata_v2(
+        revoke_response_item, &revoke_metadata);
+    if (status == 0 && revoke_created_key &&
+        (revoke_metadata.operation != KMIPKIT_ENUMERATION_OPERATION_REVOKE ||
+         revoke_metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS)) {
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    }
+    if (status == 0 && revoke_created_key && !revoke_response_matches_created_key(
+        revoke_response_item, &destroy_identifier, &status) && status == 0) {
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    }
+    if (revoke_response_item) {
+        kmipkit_client_batch_item_response_release(revoke_response_item);
+        revoke_response_item = NULL;
+    }
+    if (revoke_response) {
+        kmipkit_client_batch_response_release(revoke_response);
+        revoke_response = NULL;
+    }
+    if (revoke_batch) {
+        kmipkit_client_batch_release(revoke_batch);
+        revoke_batch = NULL;
+    }
+    if (status == 0) {
         status = kmipkit_client_batch_item_destroy(&destroy_identifier, &destroy_item);
     }
+    if (status == 0 && create_batch_item_id) status = set_batch_item_id(
+        &destroy_item, "process-operation-destroy");
     if (status == 0) status = kmipkit_client_batch_create(&destroy_batch);
     if (status == 0) status = set_async_seed_authentication(client, destroy_batch);
     if (status == 0) status = kmipkit_client_batch_add_item(destroy_batch, &destroy_item);
@@ -3047,9 +3108,13 @@ static kmip_execution_outcome_t execute_async_process_then_poll_route(
                  failed_stage, category, cause, delivery);
     }
     if (destroy_response_item) kmipkit_client_batch_item_response_release(destroy_response_item);
+    if (revoke_response_item) kmipkit_client_batch_item_response_release(revoke_response_item);
     if (destroy_response) kmipkit_client_batch_response_release(destroy_response);
     if (destroy_batch) kmipkit_client_batch_release(destroy_batch);
     if (destroy_item) kmipkit_client_batch_item_release(destroy_item);
+    if (revoke_response) kmipkit_client_batch_response_release(revoke_response);
+    if (revoke_batch) kmipkit_client_batch_release(revoke_batch);
+    if (revoke_item) kmipkit_client_batch_item_release(revoke_item);
     if (completed_payload) kmipkit_ttlv_structure_release(completed_payload);
     if (poll_outcome) kmipkit_client_async_operation_outcome_release(poll_outcome);
     if (poll_request_payload) kmipkit_ttlv_structure_release(poll_request_payload);

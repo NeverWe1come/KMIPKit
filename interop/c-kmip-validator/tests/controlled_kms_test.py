@@ -662,7 +662,7 @@ def main() -> int:
         expected_cases += (ASYNC_CANCEL_POLL_RACE_CASE,)
         expected_operations += (1, 58, 26, 20)
         expected_cases += ("test-async-process-then-poll-state",)
-        expected_operations += (1, 58, 26, 20)
+        expected_operations += (1, 58, 26, 19, 20)
         expected_cases += ("test-op-process",)
         expected_operations += (1, 1, 10, 26, 57, 26, 26, 20, 20)
         expected_cases += ("test-async-query-outstanding-filter",)
@@ -1389,6 +1389,20 @@ def main() -> int:
                                         async_request_pending = False
                                 else:
                                     stream.sendall(completed_poll_create_response(protocol_minor))
+                            elif (operations == (19, 20) and async_process_completed and
+                                  async_process_standalone_seed):
+                                async_request_pending = False
+                                async_poll_mode = "none"
+                                async_process_completed = False
+                                async_process_standalone_seed = False
+                                stream.sendall(response(
+                                    (19, 20), protocol_minor,
+                                    unique_batch_item_ids=(None, None)))
+                            elif (operations == (19,) and async_process_completed and
+                                  async_process_standalone_seed):
+                                stream.sendall(response(
+                                    (19,), protocol_minor,
+                                    unique_batch_item_ids=(b"process-operation-revoke",)))
                             else:
                                 if operations == (1,) and tlv(0x420093, 8, b"interop-create") not in request:
                                     response_item_ids = (None,)
@@ -1398,7 +1412,8 @@ def main() -> int:
                                 elif operations == (20,) and async_poll_mode == "repeated_pending_success":
                                     response_item_ids = (None,)
                                 elif operations == (20,) and async_process_completed:
-                                    response_item_ids = (None,)
+                                    response_item_ids = (
+                                        b"process-operation-destroy" if async_process_standalone_seed else None,)
                                     if not async_process_standalone_seed:
                                         async_process_route_finished = True
                                     async_process_completed = False
