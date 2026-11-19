@@ -826,6 +826,12 @@ class ControlledTlsPeerTest {
     private static final String GENERIC_CREDENTIAL_FROM_TTLV_ROUTE =
             "java.typed-protocol.model.org.kmipkit.credentials.credential.fromttlv";
     private static final String GENERIC_CREDENTIAL_FROM_TTLV_SYMBOL = "org.kmipkit.credentials.Credential.fromTtlv";
+    private static final String CREDENTIAL_VALUE_STRUCTURE_MEMBER_CASE_ID =
+            "test-norm-structure-member-structure-member-9-11-credential-credential-value";
+    private static final String CREDENTIAL_VALUE_STRUCTURE_MEMBER_TARGET_ID =
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-CREDENTIAL-CREDENTIAL-VALUE";
+    private static final String CREDENTIAL_VALUE_FROM_TTLV_ROUTE =
+            "java.typed-protocol.model.org.kmipkit.credentials.credentialvalue.fromttlv";
     private static final Map<String, String> CREDENTIAL_TYPE_MODEL_CASE_IDS = Map.of(
             "KMIPKIT-ELEM-ENUM-VALUE-CREDENTIAL-TYPE-USERNAME-AND-PASSWORD-00000001",
             "test-norm-credential-credential-username-and-password",
@@ -1962,27 +1968,26 @@ class ControlledTlsPeerTest {
                     GENERIC_CREDENTIAL_FROM_TTLV_ROUTE,
                     "construct", protocolVersion);
             assertRouteEventRecorded(events,
-                    "test-norm-structure-member-structure-member-9-11-credential-credential-value",
-                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-CREDENTIAL-CREDENTIAL-VALUE",
+                    CREDENTIAL_VALUE_STRUCTURE_MEMBER_CASE_ID,
+                    CREDENTIAL_VALUE_STRUCTURE_MEMBER_TARGET_ID,
                     "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
                     "construct", protocolVersion);
             assertRouteEventRecorded(events,
-                    "test-norm-structure-member-structure-member-9-11-credential-credential-value",
-                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-CREDENTIAL-CREDENTIAL-VALUE",
+                    CREDENTIAL_VALUE_STRUCTURE_MEMBER_CASE_ID,
+                    CREDENTIAL_VALUE_STRUCTURE_MEMBER_TARGET_ID,
                     "java.generic-ttlv.ttlv_item.create", "construct", protocolVersion);
             assertRouteEventRecorded(events,
-                    "test-norm-structure-member-structure-member-9-11-credential-credential-value",
-                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-CREDENTIAL-CREDENTIAL-VALUE",
+                    CREDENTIAL_VALUE_STRUCTURE_MEMBER_CASE_ID,
+                    CREDENTIAL_VALUE_STRUCTURE_MEMBER_TARGET_ID,
                     "java.generic-ttlv.function.ttlv_item_view_from_item", "decode", protocolVersion);
             assertRouteEventRecorded(events,
-                    "test-norm-structure-member-structure-member-9-11-credential-credential-value",
-                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-CREDENTIAL-CREDENTIAL-VALUE",
+                    CREDENTIAL_VALUE_STRUCTURE_MEMBER_CASE_ID,
+                    CREDENTIAL_VALUE_STRUCTURE_MEMBER_TARGET_ID,
                     "java.generic-ttlv.ttlv_codec.decode", "decode", protocolVersion);
             assertRouteEventRecorded(events,
-                    "test-norm-structure-member-structure-member-9-11-credential-credential-value",
-                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-CREDENTIAL-CREDENTIAL-VALUE",
-                    "java.typed-protocol.model.org.kmipkit.credentials.credentialvalue.fromttlv",
-                    "construct", protocolVersion);
+                    CREDENTIAL_VALUE_STRUCTURE_MEMBER_CASE_ID,
+                    CREDENTIAL_VALUE_STRUCTURE_MEMBER_TARGET_ID,
+                    CREDENTIAL_VALUE_FROM_TTLV_ROUTE, "construct", protocolVersion);
             assertRouteEventRecorded(events,
                     "test-norm-structure-member-structure-member-9-11-one-time-password-username",
                     "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-ONE-TIME-PASSWORD-USERNAME",
@@ -4582,9 +4587,9 @@ class ControlledTlsPeerTest {
 
     private static void appendCredentialValueStructureMemberRouteEvent(ArrayNode events,
             String protocolVersion) throws Exception {
-        String caseId = "test-norm-structure-member-structure-member-9-11-credential-credential-value";
-        String targetId = "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-CREDENTIAL-CREDENTIAL-VALUE";
-        String modelRoute = "java.typed-protocol.model.org.kmipkit.credentials.credentialvalue.fromttlv";
+        String caseId = CREDENTIAL_VALUE_STRUCTURE_MEMBER_CASE_ID;
+        String targetId = CREDENTIAL_VALUE_STRUCTURE_MEMBER_TARGET_ID;
+        String modelRoute = CREDENTIAL_VALUE_FROM_TTLV_ROUTE;
         String modelSymbol = "org.kmipkit.credentials.CredentialValue.fromTtlv";
         String credentialModelRoute =
                 "java.typed-protocol.model.org.kmipkit.credentials.usernameandpasswordcredential.fromttlv";
@@ -7151,7 +7156,7 @@ class ControlledTlsPeerTest {
         appendAnyObjectAttributeCaseIds(caseIds, events);
         additionalCaseIdCount += appendCaseIds(caseIds, managedObjectTypeCaseIds);
         additionalCaseIdCount += appendCaseIds(caseIds, usageLimitsRouteEventCaseIds(events));
-        caseIds.add("test-norm-structure-member-structure-member-9-11-credential-credential-value");
+        caseIds.add(CREDENTIAL_VALUE_STRUCTURE_MEMBER_CASE_ID);
         CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().forEach(caseIds::add);
         report.putArray("protocol_versions").add("2.0").add("2.1");
         appendNetworkCombinations(report, events);
