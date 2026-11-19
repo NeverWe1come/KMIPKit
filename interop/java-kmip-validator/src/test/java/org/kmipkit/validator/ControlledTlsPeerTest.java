@@ -35,6 +35,7 @@ import org.kmipkit.extensions.RevokeRequest;
 import org.kmipkit.credentials.AttestationCredential;
 import org.kmipkit.credentials.Credential;
 import org.kmipkit.credentials.CredentialType;
+import org.kmipkit.credentials.CredentialValue;
 import org.kmipkit.credentials.DeviceCredential;
 import org.kmipkit.credentials.HashedPasswordCredential;
 import org.kmipkit.credentials.Nonce;
@@ -228,6 +229,73 @@ class ControlledTlsPeerTest {
 
     private record NewAttributeMutationFixture(String methodName, String title, String ordinal,
             int operationValue) { }
+
+    private record CredentialStructureMemberFixture(String caseId, String targetId, String modelRoute,
+            long credentialTypeRaw, int memberTag, TtlvItemType expectedMemberType) { }
+
+    private record CredentialValueGenericRouteFixture(String routeId, String publicApiSymbol, String action) { }
+
+    private static final List<CredentialStructureMemberFixture> TYPED_CREDENTIAL_STRUCTURE_MEMBER_FIXTURES = List.of(
+            new CredentialStructureMemberFixture(
+                    "test-norm-structure-member-structure-member-9-11-username-and-password-username",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-USERNAME-AND-PASSWORD-USERNAME",
+                    "java.typed-protocol.model.org.kmipkit.credentials.usernameandpasswordcredential.fromttlv",
+                    1, 0x420099, TtlvItemType.TextString),
+            new CredentialStructureMemberFixture(
+                    "test-norm-structure-member-structure-member-9-11-username-and-password-password",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-USERNAME-AND-PASSWORD-PASSWORD",
+                    "java.typed-protocol.model.org.kmipkit.credentials.usernameandpasswordcredential.fromttlv",
+                    1, 0x4200a1, TtlvItemType.TextString),
+            new CredentialStructureMemberFixture(
+                    "test-norm-structure-member-structure-member-9-11-device-device-identifier",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-DEVICE-IDENTIFIER",
+                    "java.typed-protocol.model.org.kmipkit.credentials.devicecredential.fromttlv",
+                    2, 0x4200a2, TtlvItemType.TextString),
+            new CredentialStructureMemberFixture(
+                    "test-norm-structure-member-structure-member-9-11-device-password",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-PASSWORD",
+                    "java.typed-protocol.model.org.kmipkit.credentials.devicecredential.fromttlv",
+                    2, 0x4200a1, TtlvItemType.TextString),
+            new CredentialStructureMemberFixture(
+                    "test-norm-structure-member-structure-member-9-11-device-device-serial-number",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-DEVICE-SERIAL-NUMBER",
+                    "java.typed-protocol.model.org.kmipkit.credentials.devicecredential.fromttlv",
+                    2, 0x4200b0, TtlvItemType.TextString),
+            new CredentialStructureMemberFixture(
+                    "test-norm-structure-member-structure-member-9-11-device-machine-identifier",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-MACHINE-IDENTIFIER",
+                    "java.typed-protocol.model.org.kmipkit.credentials.devicecredential.fromttlv",
+                    2, 0x4200a9, TtlvItemType.TextString),
+            new CredentialStructureMemberFixture(
+                    "test-norm-structure-member-structure-member-9-11-device-media-identifier",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-MEDIA-IDENTIFIER",
+                    "java.typed-protocol.model.org.kmipkit.credentials.devicecredential.fromttlv",
+                    2, 0x4200aa, TtlvItemType.TextString),
+            new CredentialStructureMemberFixture(
+                    "test-norm-structure-member-structure-member-9-11-device-network-identifier",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-NETWORK-IDENTIFIER",
+                    "java.typed-protocol.model.org.kmipkit.credentials.devicecredential.fromttlv",
+                    2, 0x4200ab, TtlvItemType.TextString),
+            new CredentialStructureMemberFixture(
+                    "test-norm-structure-member-structure-member-9-11-hashed-password-username",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-USERNAME",
+                    "java.typed-protocol.model.org.kmipkit.credentials.hashedpasswordcredential.fromttlv",
+                    5, 0x420099, TtlvItemType.TextString),
+            new CredentialStructureMemberFixture(
+                    "test-norm-structure-member-structure-member-9-11-hashed-password-timestamp",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-TIMESTAMP",
+                    "java.typed-protocol.model.org.kmipkit.credentials.hashedpasswordcredential.fromttlv",
+                    5, 0x420092, TtlvItemType.DateTimeExtended),
+            new CredentialStructureMemberFixture(
+                    "test-norm-structure-member-structure-member-9-11-hashed-password-hashing-algorithm",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-HASHING-ALGORITHM",
+                    "java.typed-protocol.model.org.kmipkit.credentials.hashedpasswordcredential.fromttlv",
+                    5, 0x420038, TtlvItemType.Enumeration),
+            new CredentialStructureMemberFixture(
+                    "test-norm-structure-member-structure-member-9-11-hashed-password-hashed-password",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-HASHED-PASSWORD",
+                    "java.typed-protocol.model.org.kmipkit.credentials.hashedpasswordcredential.fromttlv",
+                    5, 0x420157, TtlvItemType.ByteString));
 
     private record CreateRequestPayloadFixture(String caseId, String targetId, String protocolVersion,
             boolean protectionStorageMasksPresent) { }
@@ -757,6 +825,22 @@ class ControlledTlsPeerTest {
             "java.typed-protocol.model.org.kmipkit.credentials.attestationcredential.fromttlv",
             "KMIPKIT-ELEM-ENUM-VALUE-CREDENTIAL-TYPE-HASHED-PASSWORD-00000005",
             "java.typed-protocol.model.org.kmipkit.credentials.hashedpasswordcredential.fromttlv");
+    private static final String GENERIC_CREDENTIAL_FROM_TTLV_ROUTE =
+            "java.typed-protocol.model.org.kmipkit.credentials.credential.fromttlv";
+    private static final String GENERIC_CREDENTIAL_FROM_TTLV_SYMBOL = "org.kmipkit.credentials.Credential.fromTtlv";
+    private static final String CREDENTIAL_VALUE_STRUCTURE_MEMBER_CASE_ID =
+            "test-norm-structure-member-structure-member-9-11-credential-credential-value";
+    private static final String CREDENTIAL_VALUE_STRUCTURE_MEMBER_TARGET_ID =
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-CREDENTIAL-CREDENTIAL-VALUE";
+    private static final String CREDENTIAL_VALUE_FROM_TTLV_ROUTE =
+            "java.typed-protocol.model.org.kmipkit.credentials.credentialvalue.fromttlv";
+    private static final List<CredentialValueGenericRouteFixture> CREDENTIAL_VALUE_GENERIC_TTLV_ROUTES = List.of(
+            new CredentialValueGenericRouteFixture("java.generic-ttlv.ttlv_item.create",
+                    "org.kmipkit.ttlv.TtlvItem.create", "construct"),
+            new CredentialValueGenericRouteFixture("java.generic-ttlv.function.ttlv_item_view_from_item",
+                    "org.kmipkit.ttlv.TtlvItem.view", "decode"),
+            new CredentialValueGenericRouteFixture("java.generic-ttlv.ttlv_codec.decode",
+                    "org.kmipkit.ttlv.TtlvCodec.decode", "decode"));
     private static final Map<String, String> CREDENTIAL_TYPE_MODEL_CASE_IDS = Map.of(
             "KMIPKIT-ELEM-ENUM-VALUE-CREDENTIAL-TYPE-USERNAME-AND-PASSWORD-00000001",
             "test-norm-credential-credential-username-and-password",
@@ -1145,6 +1229,7 @@ class ControlledTlsPeerTest {
             }
             managedObjectTypeRouteEventCount += managedObjectTypeInvocations.size();
             appendGenericEnumerationRouteEvents(events, enumerationFixtures, protocolVersion);
+            appendCredentialRootEnvelopeRouteEvent(events, protocolVersion);
             appendAsyncIndicatorEnumerationTtlvRoutes(events, protocolVersion);
             if ("2.1".equals(protocolVersion)) {
                 List<LocalCatalogRouteChecks.Invocation> rotateNameTypeInvocations = new ArrayList<>();
@@ -1769,6 +1854,15 @@ class ControlledTlsPeerTest {
                     "KMIPKIT-ELEM-ATTRIBUTE-RANDOM-NUMBER-GENERATOR",
                     "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
                     "construct", protocolVersion);
+            assertRouteEventRecorded(events, "test-attr-random-number-generator",
+                    "KMIPKIT-ELEM-ATTRIBUTE-RANDOM-NUMBER-GENERATOR",
+                    "java.generic-ttlv.ttlv_item.create", "construct", protocolVersion);
+            assertRouteEventRecorded(events, "test-attr-random-number-generator",
+                    "KMIPKIT-ELEM-ATTRIBUTE-RANDOM-NUMBER-GENERATOR",
+                    "java.generic-ttlv.function.ttlv_item_view_from_item", "decode", protocolVersion);
+            assertRouteEventRecorded(events, "test-attr-random-number-generator",
+                    "KMIPKIT-ELEM-ATTRIBUTE-RANDOM-NUMBER-GENERATOR",
+                    "java.generic-ttlv.ttlv_codec.decode", "decode", protocolVersion);
             assertRouteEventRecorded(events, "test-attr-digest", "KMIPKIT-ELEM-ATTRIBUTE-DIGEST",
                     "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
                     "construct", protocolVersion);
@@ -1862,6 +1956,61 @@ class ControlledTlsPeerTest {
                     "KMIPKIT-ELEM-ATTRIBUTE-X-509-CERTIFICATE-SUBJECT",
                     "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
                     "construct", protocolVersion);
+            assertRouteEventRecorded(events, "test-norm-credential-credential-credential",
+                    "KMIPKIT-ELEM-CREDENTIAL-CREDENTIAL",
+                    GENERIC_CREDENTIAL_FROM_TTLV_ROUTE,
+                    "construct", protocolVersion);
+            assertRouteEventRecorded(events,
+                    "test-norm-structure-member-structure-member-9-11-credential-credential-type",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-CREDENTIAL-CREDENTIAL-TYPE",
+                    GENERIC_CREDENTIAL_FROM_TTLV_ROUTE, "construct", protocolVersion);
+            assertRouteEventRecorded(events,
+                    "test-norm-structure-member-structure-member-9-11-credential-credential-type",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-CREDENTIAL-CREDENTIAL-TYPE",
+                    CREDENTIAL_TYPE_FROM_RAW_ROUTE, "construct", protocolVersion);
+            assertRouteEventRecorded(events, "test-norm-credential-credential-one-time-password",
+                    "KMIPKIT-ELEM-CREDENTIAL-ONE-TIME-PASSWORD",
+                    GENERIC_CREDENTIAL_FROM_TTLV_ROUTE,
+                    "construct", protocolVersion);
+            assertRouteEventRecorded(events, "test-norm-credential-credential-ticket",
+                    "KMIPKIT-ELEM-CREDENTIAL-TICKET",
+                    GENERIC_CREDENTIAL_FROM_TTLV_ROUTE,
+                    "construct", protocolVersion);
+            assertRouteEventRecorded(events,
+                    CREDENTIAL_VALUE_STRUCTURE_MEMBER_CASE_ID,
+                    CREDENTIAL_VALUE_STRUCTURE_MEMBER_TARGET_ID,
+                    GENERIC_CREDENTIAL_FROM_TTLV_ROUTE, "construct", protocolVersion);
+            for (CredentialValueGenericRouteFixture fixture : CREDENTIAL_VALUE_GENERIC_TTLV_ROUTES) {
+                assertRouteEventRecorded(events, CREDENTIAL_VALUE_STRUCTURE_MEMBER_CASE_ID,
+                        CREDENTIAL_VALUE_STRUCTURE_MEMBER_TARGET_ID,
+                        fixture.routeId(), fixture.action(), protocolVersion);
+            }
+            assertRouteEventRecorded(events,
+                    CREDENTIAL_VALUE_STRUCTURE_MEMBER_CASE_ID,
+                    CREDENTIAL_VALUE_STRUCTURE_MEMBER_TARGET_ID,
+                    CREDENTIAL_VALUE_FROM_TTLV_ROUTE, "construct", protocolVersion);
+            assertRouteEventRecorded(events,
+                    "test-norm-structure-member-structure-member-9-11-one-time-password-username",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-ONE-TIME-PASSWORD-USERNAME",
+                    GENERIC_CREDENTIAL_FROM_TTLV_ROUTE, "construct", protocolVersion);
+            assertRouteEventRecorded(events,
+                    "test-norm-structure-member-structure-member-9-11-one-time-password-password",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-ONE-TIME-PASSWORD-PASSWORD",
+                    GENERIC_CREDENTIAL_FROM_TTLV_ROUTE, "construct", protocolVersion);
+            assertRouteEventRecorded(events,
+                    "test-norm-structure-member-structure-member-9-11-one-time-password-one-time-password",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-ONE-TIME-PASSWORD-ONE-TIME-PASSWORD",
+                    GENERIC_CREDENTIAL_FROM_TTLV_ROUTE, "construct", protocolVersion);
+            assertRouteEventRecorded(events,
+                    "test-norm-structure-member-structure-member-9-11-ticket-ticket",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-TICKET-TICKET",
+                    GENERIC_CREDENTIAL_FROM_TTLV_ROUTE, "construct", protocolVersion);
+            for (CredentialStructureMemberFixture fixture : TYPED_CREDENTIAL_STRUCTURE_MEMBER_FIXTURES) {
+                assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(),
+                        GENERIC_CREDENTIAL_FROM_TTLV_ROUTE, "construct", protocolVersion);
+                assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(),
+                        fixture.modelRoute(), "construct", protocolVersion);
+            }
             assertRouteEventRecorded(events, "test-op-revoke", "KMIPKIT-ELEM-OP-C2S-REVOKE",
                     "java.typed-protocol.revoke_request.create", "construct", protocolVersion);
             assertRouteEventRecorded(events, "test-op-revoke", "KMIPKIT-ELEM-OP-C2S-REVOKE",
@@ -2346,9 +2495,9 @@ class ControlledTlsPeerTest {
                     String credentialTargetId = CREDENTIAL_TYPE_MODEL_TARGET_IDS.get(fixture.targetId());
                     for (String version : fixture.protocolVersions()) {
                         JsonNode envelopeEvent = findRouteEvent(report.path("events"), credentialCaseId,
-                                "java.typed-protocol.model.org.kmipkit.credentials.credential.fromttlv",
+                                GENERIC_CREDENTIAL_FROM_TTLV_ROUTE,
                                 version, credentialTargetId);
-                        assertEquals("org.kmipkit.credentials.Credential.fromTtlv",
+                        assertEquals(GENERIC_CREDENTIAL_FROM_TTLV_SYMBOL,
                                 envelopeEvent.path("public_api_symbol").asText());
                         assertEquals(credentialTargetId,
                                 findRouteEvent(report.path("events"), credentialCaseId,
@@ -2413,6 +2562,7 @@ class ControlledTlsPeerTest {
         int cryptographicParametersTypedAttributeRouteEventCount = KMIP_2_0_AND_2_1.size() * 3;
         int digestTypedAttributeRouteEventCount = KMIP_2_0_AND_2_1.size() * 3;
         int randomNumberGeneratorTypedAttributeRouteEventCount = KMIP_2_0_AND_2_1.size() * 3;
+        int randomNumberGeneratorGenericAttributeRouteEventCount = KMIP_2_0_AND_2_1.size() * 3;
         int vendorAttributeTypedAttributeRouteEventCount = KMIP_2_0_AND_2_1.size() * 3;
         int x509CertificateTypedAttributeRouteEventCount = KMIP_2_0_AND_2_1.size() * 3 * 3;
         int revokeNetworkRouteEventCount = KMIP_2_0_AND_2_1.size() * (2 * 3 * 3 * 2 + 2);
@@ -2429,6 +2579,14 @@ class ControlledTlsPeerTest {
                 * KMIP_2_0_AND_2_1.size() * 4;
         int credentialEnvelopeEventCount = CREDENTIAL_TYPE_MODEL_CASE_IDS.size()
                 * KMIP_2_0_AND_2_1.size();
+        int credentialRootEnvelopeEventCount = KMIP_2_0_AND_2_1.size() * 3;
+        int credentialStructureMemberRouteEventCount = KMIP_2_0_AND_2_1.size()
+                * (4 + TYPED_CREDENTIAL_STRUCTURE_MEMBER_FIXTURES.size());
+        int typedCredentialStructureMemberRouteEventCount = KMIP_2_0_AND_2_1.size()
+                * TYPED_CREDENTIAL_STRUCTURE_MEMBER_FIXTURES.size();
+        int hashedPasswordHashingAlgorithmBuilderRouteEventCount = KMIP_2_0_AND_2_1.size();
+        int credentialValueStructureMemberRouteEventCount = KMIP_2_0_AND_2_1.size() * 5;
+        int credentialTypeMemberRouteEventCount = KMIP_2_0_AND_2_1.size() * 2;
         int batchErrorContinuationEventCount = enumerationFixtures.stream()
                 .filter(fixture -> "BATCH-ERROR-CONTINUATION-OPTION".equals(fixture.parentName()))
                 .mapToInt(fixture -> fixture.protocolVersions().size()).sum();
@@ -2490,7 +2648,13 @@ class ControlledTlsPeerTest {
                         + normativeMessageFieldGenericRouteEventCount + normativeMessageFieldParserRouteEventCount
                         + normativeBatchItemAccessorRouteEventCount + newAttributePayloadRouteEventCount
                         + localTypedResponseAccessorEventCount
-                        + credentialEnvelopeEventCount + objectGroupLocalRouteEventCount
+                        + credentialEnvelopeEventCount + credentialRootEnvelopeEventCount
+                        + credentialStructureMemberRouteEventCount
+                        + typedCredentialStructureMemberRouteEventCount
+                        + hashedPasswordHashingAlgorithmBuilderRouteEventCount
+                        + credentialValueStructureMemberRouteEventCount
+                        + credentialTypeMemberRouteEventCount
+                        + objectGroupLocalRouteEventCount
                         + asynchronousRequestOperationStructureRouteEventCount
                         + operationStructureRouteEventCount
                         + scalarOperationStructureRouteEventCount
@@ -2507,6 +2671,7 @@ class ControlledTlsPeerTest {
                         + cryptographicParametersTypedAttributeRouteEventCount
                         + digestTypedAttributeRouteEventCount
                         + randomNumberGeneratorTypedAttributeRouteEventCount
+                        + randomNumberGeneratorGenericAttributeRouteEventCount
                         + vendorAttributeTypedAttributeRouteEventCount
                         + x509CertificateTypedAttributeRouteEventCount
                         + revokeNetworkRouteEventCount
@@ -2628,7 +2793,10 @@ class ControlledTlsPeerTest {
         assertEquals(17 + OPERATION_STRUCTURE_FIXTURES.size() + SCALAR_OPERATION_STRUCTURE_FIXTURES.size()
                         + enumerationFixtures.size() + localEnumerationCaseCount + bitmaskCaseCount
                         + dataTypeCaseCount
-                        + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + genericTagCaseIds.size()
+                        + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + 7
+                        + 1 // KMIP 2.0/2.1 §9.11 Credential Value member case.
+                        + TYPED_CREDENTIAL_STRUCTURE_MEMBER_FIXTURES.size() // Credential and structure-member cases.
+                        + genericTagCaseIds.size()
                         + 13 // Includes the new Add Attribute operation-route case.
                         + typedTagIdentityCaseIds().size() + referencedEnumCaseCount
                         + anyObjectAttributeCaseIds.size()
@@ -4304,21 +4472,257 @@ class ControlledTlsPeerTest {
 
     private static void appendCredentialEnvelopeRouteEvent(ArrayNode events, String caseId,
             String targetId, String modelRoute, long credentialTypeRaw, String protocolVersion) throws Exception {
-        String route = "java.typed-protocol.model.org.kmipkit.credentials.credential.fromttlv";
-        String treeHash = normalizedTreeSha256(credentialEnvelopeWire(modelRoute, credentialTypeRaw));
-        try (TtlvStructure structure = credentialEnvelopeStructure(modelRoute, credentialTypeRaw);
+        try (TtlvStructure credentialValue = credentialValueStructure(modelRoute)) {
+            appendCredentialEnvelopeRouteEvent(events, caseId, targetId, credentialTypeRaw,
+                    credentialValueWire(modelRoute), credentialValue, protocolVersion);
+        }
+    }
+
+    private static void appendCredentialEnvelopeRouteEvent(ArrayNode events, String caseId,
+            String targetId, long credentialTypeRaw, byte[] credentialValueWire,
+            TtlvStructure credentialValue, String protocolVersion) throws Exception {
+        String route = GENERIC_CREDENTIAL_FROM_TTLV_ROUTE;
+        String treeHash = normalizedTreeSha256(credentialEnvelopeWire(credentialTypeRaw, credentialValueWire));
+        try (TtlvStructure structure = credentialEnvelopeStructure(credentialValue, credentialTypeRaw);
                 Credential credential = Credential.fromTtlv(structure)) {
             assertEquals(credentialTypeRaw, credential.credentialTypeRaw());
             assertTrue(Boolean.TRUE.equals(credential.withTtlv(view -> view.itemCount() == 2)),
                     "The generic Credential decoder must retain both envelope fields.");
+            if (caseId.endsWith("one-time-password")) {
+                assertEquals(3L, credentialValueMemberCount(credential),
+                        "The One Time Password fixture must include its optional Password member.");
+            }
+            if (caseId.endsWith("credential-ticket")) {
+                assertEquals(1L, credentialValueMemberCount(credential),
+                        "The Ticket Credential Value must retain its required Ticket member.");
+            }
         }
         appendRouteEvent(events, caseId, route, targetId,
-                "org.kmipkit.credentials.Credential.fromTtlv", null, null, "construct", protocolVersion,
+                GENERIC_CREDENTIAL_FROM_TTLV_SYMBOL, null, null, "construct", protocolVersion,
                 null, treeHash, null);
+    }
+
+    private static long credentialValueMemberCount(Credential credential) {
+        return credential.withTtlv(envelope -> {
+            try (var valueItem = envelope.itemAt(1);
+                    var value = valueItem.value();
+                    var structure = value.structure()) {
+                return structure.itemCount();
+            }
+        });
+    }
+
+    private static void appendCredentialRootEnvelopeRouteEvent(ArrayNode events, String protocolVersion)
+            throws Exception {
+        String caseId = "test-norm-credential-credential-credential";
+        String targetId = "KMIPKIT-ELEM-CREDENTIAL-CREDENTIAL";
+        String modelRoute = "java.typed-protocol.model.org.kmipkit.credentials.usernameandpasswordcredential.fromttlv";
+        String route = GENERIC_CREDENTIAL_FROM_TTLV_ROUTE;
+        byte[] wire = credentialEnvelopeWire(modelRoute, 1);
+        String treeHash = normalizedTreeSha256(wire);
+        try (TtlvStructure structure = credentialEnvelopeStructure(modelRoute, 1);
+                Credential credential = Credential.fromTtlv(structure)) {
+            assertEquals(1L, credential.credentialTypeRaw());
+            assertTrue(Boolean.TRUE.equals(credential.withTtlv(view -> view.itemCount() == 2)),
+                    "Credential.fromTtlv must retain the Credential Type and Credential Value members.");
+        }
+        appendRouteEvent(events, caseId, route, targetId,
+                GENERIC_CREDENTIAL_FROM_TTLV_SYMBOL, null, null,
+                "construct", protocolVersion, null, treeHash, null);
+
+        String credentialTypeCaseId =
+                "test-norm-structure-member-structure-member-9-11-credential-credential-type";
+        String credentialTypeTargetId = "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-CREDENTIAL-CREDENTIAL-TYPE";
+        appendCredentialEnvelopeRouteEvent(events, credentialTypeCaseId, credentialTypeTargetId,
+                modelRoute, 1, protocolVersion);
+        CredentialType credentialType = CredentialType.fromRaw(1);
+        assertEquals(1L, credentialType.raw());
+        appendRouteEvent(events, credentialTypeCaseId, CREDENTIAL_TYPE_FROM_RAW_ROUTE,
+                credentialTypeTargetId, "org.kmipkit.credentials.CredentialType.fromRaw", null, null,
+                "construct", protocolVersion, null, treeHash, null);
+        appendCredentialValueStructureMemberRouteEvent(events, protocolVersion);
+
+        byte[] otpCredentialValueWire = oneTimePasswordCredentialValueWire();
+        try (TtlvStructure credentialValue = oneTimePasswordCredentialValueStructure()) {
+            appendCredentialEnvelopeRouteEvent(events,
+                    "test-norm-credential-credential-one-time-password",
+                    "KMIPKIT-ELEM-CREDENTIAL-ONE-TIME-PASSWORD", 4,
+                    otpCredentialValueWire, credentialValue, protocolVersion);
+        }
+        try (TtlvStructure credentialValue = oneTimePasswordCredentialValueStructure()) {
+            appendCredentialMemberRouteEvent(events,
+                    "test-norm-structure-member-structure-member-9-11-one-time-password-username",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-ONE-TIME-PASSWORD-USERNAME", 4,
+                    otpCredentialValueWire, credentialValue, 0x420099, TtlvItemType.TextString, protocolVersion);
+        }
+        try (TtlvStructure credentialValue = oneTimePasswordCredentialValueStructure()) {
+            appendCredentialMemberRouteEvent(events,
+                    "test-norm-structure-member-structure-member-9-11-one-time-password-password",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-ONE-TIME-PASSWORD-PASSWORD", 4,
+                    otpCredentialValueWire, credentialValue, 0x4200a1, TtlvItemType.TextString, protocolVersion);
+        }
+        try (TtlvStructure credentialValue = oneTimePasswordCredentialValueStructure()) {
+            appendCredentialMemberRouteEvent(events,
+                    "test-norm-structure-member-structure-member-9-11-one-time-password-one-time-password",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-ONE-TIME-PASSWORD-ONE-TIME-PASSWORD", 4,
+                    otpCredentialValueWire, credentialValue, 0x420156, TtlvItemType.TextString, protocolVersion);
+        }
+        byte[] ticketCredentialValueWire = ticketCredentialValueWire();
+        try (TtlvStructure credentialValue = ticketCredentialValueStructure()) {
+            appendCredentialEnvelopeRouteEvent(events,
+                    "test-norm-credential-credential-ticket", "KMIPKIT-ELEM-CREDENTIAL-TICKET", 6,
+                    ticketCredentialValueWire, credentialValue, protocolVersion);
+        }
+        try (TtlvStructure credentialValue = ticketCredentialValueStructure()) {
+            appendCredentialMemberRouteEvent(events,
+                    "test-norm-structure-member-structure-member-9-11-ticket-ticket",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-TICKET-TICKET", 6,
+                    ticketCredentialValueWire, credentialValue, 0x420149, TtlvItemType.Structure, protocolVersion);
+        }
+        for (CredentialStructureMemberFixture fixture : TYPED_CREDENTIAL_STRUCTURE_MEMBER_FIXTURES) {
+            appendTypedCredentialMemberRouteEvent(events, fixture.caseId(), fixture.targetId(),
+                    fixture.modelRoute(), fixture.credentialTypeRaw(), fixture.memberTag(),
+                    fixture.expectedMemberType(), protocolVersion);
+        }
+    }
+
+    private static void appendCredentialValueStructureMemberRouteEvent(ArrayNode events,
+            String protocolVersion) throws Exception {
+        String caseId = CREDENTIAL_VALUE_STRUCTURE_MEMBER_CASE_ID;
+        String targetId = CREDENTIAL_VALUE_STRUCTURE_MEMBER_TARGET_ID;
+        String modelRoute = CREDENTIAL_VALUE_FROM_TTLV_ROUTE;
+        String modelSymbol = "org.kmipkit.credentials.CredentialValue.fromTtlv";
+        String credentialModelRoute =
+                "java.typed-protocol.model.org.kmipkit.credentials.usernameandpasswordcredential.fromttlv";
+        byte[] wire = credentialValueWire(credentialModelRoute);
+        String treeHash = normalizedTreeSha256(wire);
+        appendCredentialEnvelopeRouteEvent(events, caseId, targetId,
+                credentialModelRoute, 1, protocolVersion);
+        try (TtlvStructure structure = credentialValueStructure(credentialModelRoute);
+                CredentialValue credentialValue = CredentialValue.fromTtlv(1, structure)) {
+            assertEquals(1L, credentialValue.credentialTypeRaw());
+            assertTrue(Boolean.TRUE.equals(credentialValue.withTtlv(view -> view.itemCount() == 2)),
+                    "CredentialValue.fromTtlv must preserve both Username and Password fields.");
+        }
+        appendRouteEvent(events, caseId, modelRoute, targetId, modelSymbol, null, null,
+                "construct", protocolVersion, null, treeHash, null);
+        appendCredentialValueGenericTtlvRoutes(events, caseId, targetId,
+                credentialModelRoute, protocolVersion, treeHash);
+    }
+
+    private static void appendCredentialValueGenericTtlvRoutes(ArrayNode events, String caseId,
+            String targetId, String modelRoute, String protocolVersion, String treeHash) throws Exception {
+        byte[] wire = credentialValueWire(modelRoute);
+        try (TtlvStructure structure = credentialValueStructure(modelRoute);
+                TtlvValue value = TtlvValue.structure(structure, CodecLimits.defaults());
+                RawTag rawTag = RawTag.fromRaw(0x420025);
+                Tag tag = rawTag.checked();
+                TtlvItem item = TtlvItem.create(tag, value, CodecLimits.defaults());
+                var view = item.view()) {
+            assertEquals(0x420025, view.tag().raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+        }
+        for (CredentialValueGenericRouteFixture fixture : CREDENTIAL_VALUE_GENERIC_TTLV_ROUTES) {
+            boolean encoding = "construct".equals(fixture.action());
+            appendRouteEvent(events, caseId, fixture.routeId(), targetId,
+                    fixture.publicApiSymbol(), null, null, fixture.action(), protocolVersion,
+                    null, encoding ? treeHash : null, encoding ? null : treeHash);
+        }
+        try (TtlvItem decoded = TtlvCodec.decode(wire);
+                var view = decoded.view()) {
+            assertEquals(0x420025, view.tag().raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+        }
+    }
+
+    private static void appendCredentialMemberRouteEvent(ArrayNode events, String caseId, String targetId,
+            long credentialTypeRaw, byte[] credentialValueWire, TtlvStructure credentialValue, int memberTag,
+            TtlvItemType expectedMemberType, String protocolVersion) throws Exception {
+        String treeHash = normalizedTreeSha256(credentialEnvelopeWire(credentialTypeRaw, credentialValueWire));
+        try (TtlvStructure envelope = credentialEnvelopeStructure(credentialValue, credentialTypeRaw);
+                Credential credential = Credential.fromTtlv(envelope)) {
+            assertEquals(credentialTypeRaw, credential.credentialTypeRaw());
+            assertTrue(Boolean.TRUE.equals(credential.withTtlv(view -> credentialValueHasMember(
+                    view, memberTag, expectedMemberType))),
+                    "The generic Credential view must preserve the catalogued Credential Value member.");
+        }
+        appendRouteEvent(events, caseId, GENERIC_CREDENTIAL_FROM_TTLV_ROUTE, targetId,
+                GENERIC_CREDENTIAL_FROM_TTLV_SYMBOL, null, null, "construct", protocolVersion,
+                null, treeHash, null);
+    }
+
+    private static void appendTypedCredentialMemberRouteEvent(ArrayNode events, String caseId, String targetId,
+            String modelRoute, long credentialTypeRaw, int memberTag,
+            TtlvItemType expectedMemberType, String protocolVersion) throws Exception {
+        byte[] credentialValueWire = credentialValueWire(modelRoute);
+        try (TtlvStructure credentialValue = credentialValueStructure(modelRoute)) {
+            appendCredentialMemberRouteEvent(events, caseId, targetId, credentialTypeRaw,
+                    credentialValueWire, credentialValue, memberTag, expectedMemberType, protocolVersion);
+        }
+        String modelSymbol;
+        try (TtlvStructure credentialValue = credentialValueStructure(modelRoute)) {
+            switch (modelRoute) {
+                case "java.typed-protocol.model.org.kmipkit.credentials.usernameandpasswordcredential.fromttlv" -> {
+                    modelSymbol = "org.kmipkit.credentials.UsernameAndPasswordCredential.fromTtlv";
+                    try (UsernameAndPasswordCredential credential =
+                            UsernameAndPasswordCredential.fromTtlv(credentialValue)) {
+                        assertTrue(Boolean.TRUE.equals(credential.withTtlv(view -> view.itemCount() == 2)),
+                                "The Username and Password credential decoder must preserve both members.");
+                    }
+                }
+                case "java.typed-protocol.model.org.kmipkit.credentials.devicecredential.fromttlv" -> {
+                    modelSymbol = "org.kmipkit.credentials.DeviceCredential.fromTtlv";
+                    try (DeviceCredential credential = DeviceCredential.fromTtlv(credentialValue)) {
+                        assertTrue(Boolean.TRUE.equals(credential.withTtlv(view -> view.itemCount() == 6)),
+                                "The Device credential decoder must preserve all six members.");
+                    }
+                }
+                case "java.typed-protocol.model.org.kmipkit.credentials.hashedpasswordcredential.fromttlv" -> {
+                    modelSymbol = "org.kmipkit.credentials.HashedPasswordCredential.fromTtlv";
+                    try (HashedPasswordCredential credential = HashedPasswordCredential.fromTtlv(credentialValue)) {
+                        assertTrue(Boolean.TRUE.equals(credential.withTtlv(view -> view.itemCount() == 4)),
+                                "The Hashed Password credential decoder must preserve all four members.");
+                    }
+                }
+                default -> throw new IllegalArgumentException("Unsupported Credential Value model route: "
+                        + modelRoute);
+            }
+        }
+        appendRouteEvent(events, caseId, modelRoute, targetId,
+                modelSymbol, null, null, "construct", protocolVersion, null,
+                normalizedTreeSha256(credentialValueWire), null);
+        if ("java.typed-protocol.model.org.kmipkit.credentials.hashedpasswordcredential.fromttlv".equals(modelRoute)
+                && memberTag == 0x420038) {
+            EnumerationFixture hashingAlgorithmFixture = new EnumerationFixture(caseId, targetId,
+                    "HASHING-ALGORITHM", memberTag, 6, null, List.of(protocolVersion));
+            appendCryptographicParameterBuilderRouteEvent(events, hashingAlgorithmFixture, protocolVersion,
+                    normalizedTreeSha256(item(memberTag, TtlvItemType.Enumeration.code(), intBytes(6))));
+        }
+    }
+
+    private static boolean credentialValueHasMember(TtlvStructureView envelope, int memberTag,
+            TtlvItemType expectedMemberType) {
+        try (var valueItem = envelope.itemAt(1);
+                var value = valueItem.value();
+                var credentialValue = value.structure()) {
+            for (long index = 0; index < credentialValue.itemCount(); index++) {
+                try (var member = credentialValue.itemAt(index)) {
+                    if (member.tag().raw() == memberTag) return member.itemType() == expectedMemberType;
+                }
+            }
+            return false;
+        }
     }
 
     private static TtlvStructure credentialEnvelopeStructure(String modelRoute, long credentialTypeRaw)
             throws Exception {
+        try (TtlvStructure credentialValue = credentialValueStructure(modelRoute)) {
+            return credentialEnvelopeStructure(credentialValue, credentialTypeRaw);
+        }
+    }
+
+    private static TtlvStructure credentialEnvelopeStructure(TtlvStructure credentialValue,
+            long credentialTypeRaw) throws Exception {
         CodecLimits limits = CodecLimits.defaults();
         TtlvStructure envelope = TtlvStructure.create();
         try (RawTag rawTag = RawTag.fromRaw(0x420024);
@@ -4327,8 +4731,7 @@ class ControlledTlsPeerTest {
                 TtlvItem item = TtlvItem.create(tag, value, limits)) {
             envelope = TtlvStructure.withItem(envelope, item, limits);
         }
-        try (TtlvStructure credentialValue = credentialValueStructure(modelRoute);
-                TtlvValue value = TtlvValue.structure(credentialValue, limits);
+        try (TtlvValue value = TtlvValue.structure(credentialValue, limits);
                 RawTag rawTag = RawTag.fromRaw(0x420025);
                 Tag tag = rawTag.checked();
                 TtlvItem item = TtlvItem.create(tag, value, limits)) {
@@ -4338,8 +4741,12 @@ class ControlledTlsPeerTest {
     }
 
     private static byte[] credentialEnvelopeWire(String modelRoute, long credentialTypeRaw) throws Exception {
-        return structure(0x420023,
-                item(0x420024, 5, intBytes((int) credentialTypeRaw)), credentialValueWire(modelRoute));
+        return credentialEnvelopeWire(credentialTypeRaw, credentialValueWire(modelRoute));
+    }
+
+    private static byte[] credentialEnvelopeWire(long credentialTypeRaw, byte[] credentialValueWire)
+            throws Exception {
+        return structure(0x420023, item(0x420024, 5, intBytes((int) credentialTypeRaw)), credentialValueWire);
     }
 
     private static void appendCredentialGenericStructureRouteEvents(ArrayNode events, String caseId,
@@ -4422,6 +4829,20 @@ class ControlledTlsPeerTest {
         throw new IllegalArgumentException("No Credential Value wire fixture for the selected API route");
     }
 
+    private static byte[] oneTimePasswordCredentialValueWire() throws Exception {
+        return structure(0x420025,
+                textItem(0x420099, "validator-user"),
+                textItem(0x4200a1, "validator-password-fixture"),
+                textItem(0x420156, "one-time-password-fixture"));
+    }
+
+    private static byte[] ticketCredentialValueWire() throws Exception {
+        return structure(0x420025,
+                structure(0x420149,
+                        item(0x42014a, 5, intBytes(1)),
+                        item(0x42014b, 8, new byte[] {0x01, 0x02, 0x03})));
+    }
+
     private static byte[] textItem(int tag, String value) throws Exception {
         return item(tag, 7, value.getBytes(StandardCharsets.UTF_8));
     }
@@ -4464,6 +4885,27 @@ class ControlledTlsPeerTest {
                     TtlvValue.ByteString(new byte[] {0x11, 0x22, 0x33, 0x44}, limits), limits);
         }
         throw new IllegalArgumentException("No Credential Value fixture for the selected API route");
+    }
+
+    private static TtlvStructure oneTimePasswordCredentialValueStructure() throws Exception {
+        CodecLimits limits = CodecLimits.defaults();
+        TtlvStructure structure = TtlvStructure.create();
+        structure = appendCredentialText(structure, 0x420099, "validator-user", limits);
+        structure = appendCredentialText(structure, 0x4200a1, "validator-password-fixture", limits);
+        return appendCredentialText(structure, 0x420156, "one-time-password-fixture", limits);
+    }
+
+    private static TtlvStructure ticketCredentialValueStructure() throws Exception {
+        CodecLimits limits = CodecLimits.defaults();
+        TtlvStructure ticket = TtlvStructure.create();
+        ticket = appendCredentialValue(ticket, 0x42014a, TtlvValue.Enumeration(1), limits);
+        ticket = appendCredentialValue(ticket, 0x42014b,
+                TtlvValue.ByteString(new byte[] {0x01, 0x02, 0x03}, limits), limits);
+        TtlvStructure credentialValue = TtlvStructure.create();
+        try (TtlvStructure ticketStructure = ticket) {
+            return appendCredentialValue(credentialValue, 0x420149,
+                    TtlvValue.structure(ticketStructure, limits), limits);
+        }
     }
 
     private static TtlvStructure appendCredentialText(TtlvStructure structure, int rawTag,
@@ -6633,6 +7075,14 @@ class ControlledTlsPeerTest {
         caseIds.add("test-attr-x.509-certificate-subject");
         caseIds.add("test-op-revoke");
         caseIds.add("test-op-add-attribute");
+        caseIds.add("test-norm-structure-member-structure-member-9-11-credential-credential-type");
+        caseIds.add("test-norm-credential-credential-one-time-password");
+        caseIds.add("test-norm-credential-credential-ticket");
+        TYPED_CREDENTIAL_STRUCTURE_MEMBER_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
+        caseIds.add("test-norm-structure-member-structure-member-9-11-one-time-password-username");
+        caseIds.add("test-norm-structure-member-structure-member-9-11-one-time-password-password");
+        caseIds.add("test-norm-structure-member-structure-member-9-11-one-time-password-one-time-password");
+        caseIds.add("test-norm-structure-member-structure-member-9-11-ticket-ticket");
         genericEnumerationFixtures().forEach(fixture -> caseIds.add(fixture.caseId()));
         genericLocalEnumerationFixtures().stream().map(EnumerationFixture::caseId).distinct()
                 .forEach(caseIds::add);
@@ -6734,6 +7184,7 @@ class ControlledTlsPeerTest {
         appendAnyObjectAttributeCaseIds(caseIds, events);
         additionalCaseIdCount += appendCaseIds(caseIds, managedObjectTypeCaseIds);
         additionalCaseIdCount += appendCaseIds(caseIds, usageLimitsRouteEventCaseIds(events));
+        caseIds.add(CREDENTIAL_VALUE_STRUCTURE_MEMBER_CASE_ID);
         CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().forEach(caseIds::add);
         report.putArray("protocol_versions").add("2.0").add("2.1");
         appendNetworkCombinations(report, events);
@@ -17680,6 +18131,40 @@ class ControlledTlsPeerTest {
         }
     }
 
+    private static void appendGenericAttributeItemRoutes(ArrayNode events, String caseId, String targetId,
+            String protocolVersion, int rawTag, byte[] wire, TtlvValue value, CodecLimits limits)
+            throws Exception {
+        String treeHash = normalizedTreeSha256(wire);
+        try (RawTag rawTagValue = RawTag.fromRaw(rawTag);
+                Tag tag = rawTagValue.checked();
+                TtlvItem created = TtlvItem.create(tag, value, limits);
+                var view = created.view();
+                Tag viewedTag = view.tag();
+                var viewedValue = view.value();
+                TtlvStructureView viewedFields = viewedValue.structure();
+                TtlvItem decoded = TtlvCodec.decode(wire);
+                var decodedView = decoded.view();
+                Tag decodedTag = decodedView.tag();
+                var decodedValue = decodedView.value();
+                TtlvStructureView decodedFields = decodedValue.structure()) {
+            assertEquals(rawTag, viewedTag.raw());
+            assertEquals(rawTag, decodedTag.raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertEquals(TtlvItemType.Structure, decodedView.itemType());
+            assertEquals(1, viewedFields.itemCount());
+            assertEquals(1, decodedFields.itemCount());
+            appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_item.create", targetId,
+                    "org.kmipkit.ttlv.TtlvItem.create", null, null,
+                    "construct", protocolVersion, null, treeHash, null);
+            appendRouteEvent(events, caseId, "java.generic-ttlv.function.ttlv_item_view_from_item", targetId,
+                    "org.kmipkit.ttlv.TtlvItem.view", null, null,
+                    "decode", protocolVersion, null, null, treeHash);
+            appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_codec.decode", targetId,
+                    "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
+                    "decode", protocolVersion, null, null, treeHash);
+        }
+    }
+
     private static void appendDigestAttributeTypedRoutes(ArrayNode events, String protocolVersion)
             throws Exception {
         CodecLimits limits = CodecLimits.defaults();
@@ -17785,6 +18270,15 @@ class ControlledTlsPeerTest {
                         "org.kmipkit.extensions.AttributeSet.tryNew", null, null,
                         "construct", protocolVersion, null, treeHash, null);
             }
+        }
+        TtlvStructure genericFields = appendTtlvItem(TtlvStructure.create(), 0x4200da,
+                TtlvValue.Enumeration(1), limits);
+        TtlvStructure completeGenericFields = genericFields;
+        try (completeGenericFields;
+                TtlvValue genericValue = TtlvValue.structure(completeGenericFields, limits)) {
+            appendGenericAttributeItemRoutes(events, "test-attr-random-number-generator",
+                    "KMIPKIT-ELEM-ATTRIBUTE-RANDOM-NUMBER-GENERATOR", protocolVersion,
+                    StandardAttribute.RANDOM_NUMBER_GENERATOR.tag(), wire, genericValue, limits);
         }
     }
 

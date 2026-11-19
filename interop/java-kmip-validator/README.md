@@ -1601,10 +1601,6 @@ reference. This branch and its dependent stack remain WIP because the full
 matrix is incomplete. The report uses installed artifact SHA-256
 `d684b2d9f5b54767d544aa96b380dade027c534ff7155c337867a1ed07c10b4e`.
 
-Add Attribute's 2.0 applicability remains unresolved against the pinned OASIS
-source; the current evidence retains the existing 2.0/2.1 catalog pending that
-decision.
-
 ### Java Right Usage Limits stack verification — 2026-11-19
 
 After updating #217 with #216's refreshed base, the selected report
@@ -1616,5 +1612,181 @@ Gradle passes 111/111, shared tests pass 204/204, and catalog, route audit, and
 ledger comparison pass. The matrix remains incomplete, so #217 stays WIP.
 Artifact SHA-256: `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
 
-Add Attribute applicability remains open pending resolution of the pinned
-KMIP 2.0 source conflict; current evidence follows the existing catalog.
+
+### Java generic Random Number Generator Attribute TTLV routes — 2026-11-19
+
+The controlled Java fixture now invokes generic `TtlvItem.create`, item view,
+and `TtlvCodec.decode` for the `RANDOM_NUMBER_GENERATOR` Attribute in KMIP 2.0
+and 2.1. Each fixture checks the outer Attribute Structure and its
+Random Number Generator Algorithm member. The catalog does not require a
+separate `TtlvValue.structure` route for this target. Generic TTLV routes for
+Cryptographic Parameters were already present, so this change avoids recording
+duplicate cells. References: OASIS KMIP 2.0 and 2.1 §4.46, §6.1, and §11.56.
+
+Red `b3357cd4a` exposed the missing Random Number Generator generic Item cells.
+Green `1a245ce65` adds the generic Item construction, view, and decode routes.
+The selected evidence report `java-controlled-query-e0caeb84-9855-4e14-82c0-5c1670ab01ec`
+validates 44,452 cells (44,436 invocations, 16 not applicable, zero failed)
+out of 71,513 planned; 27,061 remain pending. The selected scope is complete,
+but the full Java matrix is not, so the stack remains WIP. Artifact SHA-256:
+`504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+
+The pinned OASIS specifications define Add Attribute in both KMIP 2.0 and 2.1
+§6.1.2. The catalog and route evidence therefore retain both versions; the
+KMIP 2.0 rejection proposed during review was not added.
+
+### Java generic Credential envelope route — 2026-11-19
+
+The controlled Java fixture now invokes `Credential.fromTtlv` for the generic
+Credential envelope target in KMIP 2.0 and 2.1, using a valid Username and
+Password Credential Value. It checks the Credential Type and confirms both
+envelope members remain accessible. Reference: OASIS KMIP 2.0 and 2.1 §9.11.
+
+Red `97c2d5380` fails when the generic Credential route is missing. Green
+`a03c60e08` exercises the decoder and records its route evidence. The selected
+report `java-controlled-query-1b9c9ef4-67dc-42b7-8912-417311af8de1` validates
+44,454 cells (44,438 invocations, 16 not applicable, zero failed) out of
+71,513 planned; 27,059 remain pending. The full Java matrix remains
+incomplete, so #255 and its parent stack remain WIP. Artifact SHA-256:
+`504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+
+### Java generic One Time Password and Ticket Credential routes — 2026-11-19
+
+The controlled fixture now invokes `Credential.fromTtlv` for the One Time
+Password and Ticket Credential Value cases in KMIP 2.0 and 2.1. The OTP fixture
+uses the required Username and One Time Password fields plus the optional
+Password field, and checks that the generic Credential view preserves all
+three members. The Ticket fixture contains the required Ticket Structure with
+Ticket Type and Ticket Value. These are deterministic TTLV model fixtures; the
+Ticket Value is test data and does not represent an issued authentication
+ticket. References: OASIS KMIP 2.0 and 2.1 §9.11, Tables 353, 376, and 378.
+
+Red `f58338fe4` fails while the two generic Credential routes are absent.
+Green `96c8d55d7` exercises the Credential envelope decoder for both cases and
+protocol versions. Refactor `0565c0047` shares the route identifiers and adds
+both cases to the selected report scope. The selected report
+`java-controlled-query-2410f0e6-9970-416a-82d2-728830111e57` validates 44,458
+cells (44,442 invocations, 16 not applicable, zero failed) out of 71,513
+planned; 27,055 remain pending. The selected scope is complete but the full
+Java matrix remains incomplete, so #255 and its parent stack stay WIP. Artifact
+SHA-256: `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+
+Red `6df2f93b5` verifies that the optional Password member is present in the
+OTP Credential Value; it fails when the fixture contains only the required
+members. Green `fdc696759` adds that member and verifies all three OTP members
+through the generic Credential TTLV view. The final selected report is
+`java-controlled-query-a0a6c4bd-80a2-4e52-bbce-2dd421ee3e99` and validates
+44,458 cells (44,442 invocations, 16 not applicable, zero failed) out of 71,513
+planned; 27,055 remain pending. The complete Java suite passed 111/111 tests,
+and the shared tests passed 112/112. `route_capabilities.py --check` reported
+1,511 routes and the Java ledger comparison passed.
+
+Verification for this increment:
+
+```sh
+bash bindings/java/gradlew -p interop/java-kmip-validator test --no-daemon --max-workers=1
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+python3 -m unittest interop.shared.tests.test_route_execution_evidence \
+  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+```
+
+### Java Credential Value structure-member routes — 2026-11-19
+
+The Java consumer also exercises `Credential.fromTtlv` against the individual
+Username, Password, One Time Password, and Ticket structure-member targets in
+KMIP 2.0 and 2.1. Each invocation creates a fresh TTLV structure, verifies the
+Credential Type, and checks the expected member tag and TTLV type through the
+generic Credential view. References: OASIS KMIP 2.0 and 2.1 §9.11, Tables 353
+and 376. This proves generic container preservation, not specialized Java
+Credential model APIs or validity of an issued Ticket.
+
+Red `363d90ddd` requires route evidence for all four members and fails on the
+first missing Username route. Green `883c3651e` invokes the generic decoder for
+each member and records the matching case and target IDs. The selected report
+`java-controlled-query-caed23fb-e8d0-448d-9bc7-33fdc3bbf365` validates 44,466
+cells (44,450 invocations, 16 not applicable, zero failed) out of 71,513
+planned; 27,047 remain pending. The selected scope is complete; the full Java
+matrix remains incomplete, so #255 stays WIP. The full Java Gradle suite passed
+111/111 tests, and the Java ledger comparison passed.
+
+### Java Credential Type and typed Credential Value members — 2026-11-19
+
+The controlled Java route fixture now records `CredentialType.fromRaw` and
+`Credential.fromTtlv` for the Credential Type member in KMIP 2.0 and 2.1. It
+also checks Username and Password members through both `Credential.fromTtlv`
+and `UsernameAndPasswordCredential.fromTtlv`, and all six Device Value members
+through both `Credential.fromTtlv` and `DeviceCredential.fromTtlv`. Each route
+runs against a fresh TTLV structure under both protocol versions. The
+credential strings are deterministic local fixture values and are not sent to
+an external KMS.
+
+References: OASIS KMIP 2.0 §9.11 and Tables 373, 374; §11.11, Table 404;
+OASIS KMIP 2.1 §9.11 and Tables 411, 412; §11.11, Table 442.
+
+Red `0803a79ba` and `007424325` require the Credential Type and specialized
+Credential Value member routes. Green `32593d608` and `1e3e553cb` invoke and
+validate each typed and generic route. Red `083c9c48a` requires the four
+remaining Device member routes and fails on Device Serial Number. Green
+`1354075ca` adds those fields to the typed and generic execution path. Refactors
+`8ee4855b4` and `c6074b455` consolidate all eight member cases in one fixture
+table used by the assertions, calls, report case IDs, and event counts. The
+final selected report
+`java-controlled-query-b393054b-f449-4191-b192-d5608d6ba9ea` validates 44,502
+cells (44,486 invocations, 16 not applicable, zero failed) out of 71,513
+planned; 27,011 remain pending. The selected scope is complete, while the full
+Java matrix remains incomplete and PR #255 stays WIP. The full Java suite
+passed 111/111 tests; all 112 shared evidence/schema tests and the 1,511-route
+manifest check passed, and the ledger comparison matched.
+
+### Java Hashed Password Credential Value member routes — 2026-11-19
+
+The Java consumer now exercises the four Hashed Password Credential Value
+members—Username, Timestamp, Hashing Algorithm, and Hashed Password—through
+both the generic `Credential.fromTtlv` envelope and the typed
+`HashedPasswordCredential.fromTtlv` model in KMIP 2.0 and 2.1. The Hashing
+Algorithm member also invokes `CryptographicParameters.Builder.hashingAlgorithm`
+with the fixture's SHA-256 value. The typed decoder is checked for preservation
+of all four members, and each generic envelope checks the member's catalogued
+TTLV item type. References: OASIS KMIP 2.0 §9.11, Table 377; KMIP 2.1 §9.11,
+Table 415.
+
+Red `bc1c4237c` fails on the missing generic Credential route for the Username
+member. Green `791efd588` adds the typed and generic routes, validates the
+member item types, and exercises the Hashing Algorithm builder. Refactor
+`a3b00a4a7` removes duplicate route assertions in favor of the shared fixture
+table. The final selected report
+`java-controlled-query-88e518f4-4108-4889-83c8-c67c39b88770` validates 44,520
+cells (44,504 invocations, 16 not applicable, zero failed) out of 71,513
+planned; 26,993 remain pending. The selected scope is complete; the full Java
+matrix remains incomplete, so PR #255 stays WIP. The Java Gradle suite passed
+111/111 tests, the shared evidence/schema/capability suite passed 112/112, the
+1,511-route manifest check passed, and the Java ledger comparison matched.
+
+### Java Credential Value TTLV routes — 2026-11-19
+
+The controlled Java consumer now exercises the Credential Value structure
+member for KMIP 2.0 and 2.1. It invokes `Credential.fromTtlv` on an envelope
+containing a valid Username and Password value, invokes
+`CredentialValue.fromTtlv` on that value with Credential Type 1, and checks
+that the typed view retains both members. It also invokes the catalogued
+generic TTLV Item creation, view, and decode routes. Reference: OASIS KMIP 2.0
+and 2.1 §9.11. Fixture values are deterministic local test data.
+
+Red `63e3ee101` adds the Credential Value route assertions and fails on its
+first missing generic event. Its initial assertion set also included a
+generic Structure constructor route outside this case's declared manifest
+scope; Green `6c7196729` limits the evidence to the five planned cells and
+adds the generic Item, Credential, and CredentialValue routes. Refactor
+`bcd6e696a` centralizes the case and route metadata used by evidence
+generation and assertions. The final selected report
+`java-controlled-query-833e28c3-7f9b-4763-b6fc-cda70d09c78d` validates 44,530
+cells (44,514 invocations, 16 not applicable, zero failed) out of 71,513
+planned; 26,983 remain pending. The selected scope is complete, but the full
+Java matrix remains incomplete and PR #255 stays WIP. The Java Gradle suite
+passed 111/111 tests; all 112 shared evidence/schema/capability tests and the
+1,511-route manifest check passed, and the ledger comparison matched.
