@@ -142,16 +142,16 @@ The `*.gaps.json` sidecar identifies every unexecuted matrix obligation rather
 than misclassifying it as an unavailable library route. Other sidecars retain
 installed-artifact availability checks and sanitized controlled-peer outcomes.
 The evidence JSON passes the shared schema independently of completeness.
-The latest full local C matrix report (`c-route-8f6408fd-3733-4858-a8a0-5a58cdfe2992`)
-has 66,288 expected cells, 43,338 invoked, 40 explicitly not applicable, zero
-failed, and 22,910 pending. Its JSON SHA-256 is
-`471bed6b082955d82191884ceb911c35532836c7ef186667566597116bde5e4e`; it uses
+The latest full local C matrix report (`c-route-d684636a-fa6c-44d2-b003-d54d2514c418`)
+has 66,288 expected cells, 43,377 invoked, 40 explicitly not applicable, zero
+failed, and 22,871 pending. Its JSON SHA-256 is
+`61e342e089285a4c041b69cd021def83ecd74809d9539a1d338b9efcf92c4306`; it uses
 the pinned C artifact SHA-256
 `c93eb8f7daa60d3b6832d297887e99cd2101e4f9baf2d04f55ce4042ba4bb7a2`. The
 shared validator accepts all emitted cells with
 `selected_scope_complete=true` and `all_invocations_passed=true`; the full
-matrix remains incomplete. The first pending cell is the KMIP 2.0 local Login
-response decoder.
+matrix remains incomplete. The first pending cell is the KMIP 2.0 local Poll
+request-to-TTLV encoder.
 The MAC and Sign response TTLV accessors and the Continue batch-option
 constructor contribute four local cells each across KMIP 2.0/2.1. The
 Query Async Requests correlation builder contributes two KMIP 2.1 model cells.
@@ -442,8 +442,9 @@ constructed fixtures. Of the cells shared with the previous run, 199 tree
 hashes differ: 192 request hashes contain regenerated public certificate or
 certificate-request bytes and seven Query Async Requests response hashes
 include the fixture's current timestamp. Cell identities are unchanged for
-those rows. The latest report adds the KMIP 2.0 Discover Versions local decoder
-cell using a 2.0 response header and the fixed 2.1 request offer; it validates
-the returned 2.1 version without claiming 2.0 offer construction. The current
-report passes the evidence schema and scoped shared validation, while 22,910
-matrix cells remain pending.
+those rows. The previous report added the KMIP 2.0 Discover Versions local
+decoder cell using a 2.0 response header and the fixed 2.1 request offer; it
+validates the returned 2.1 version without claiming 2.0 offer construction.
+The latest report retains all previous cells and adds 39 for KMIP 2.0 Login and
+Logout routes. It passes the evidence schema and scoped shared validation,
+while 22,871 matrix cells remain pending.
