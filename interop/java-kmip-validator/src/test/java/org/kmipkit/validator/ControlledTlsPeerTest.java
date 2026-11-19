@@ -2234,6 +2234,7 @@ class ControlledTlsPeerTest {
         int asyncNoRecursivePollRouteEventCount = 3 * 3 * 2 + 3;
         int asyncOperationPollRouteEventCount = KMIP_2_0_AND_2_1.size() * (3 * 3 * 2 + 3);
         int asyncOperationProcessRouteEventCount = 3 * 3 * 2 + 3;
+        int asyncOperationQueryRouteEventCount = 3 * 3 * 2 + 3;
         int asyncIndicatorEnumerationRouteEventCount = 0;
         for (JsonNode testCase : readRouteEvidenceCatalog().path("test_cases")) {
             JsonNode scenario = testCase.path("requires").path("protocol_scenario");
@@ -2321,6 +2322,7 @@ class ControlledTlsPeerTest {
                         + asyncNoRecursivePollRouteEventCount
                         + asyncOperationPollRouteEventCount
                         + asyncOperationProcessRouteEventCount
+                        + asyncOperationQueryRouteEventCount
                         + expectedAsyncCancelLocalRouteEventCount(readRouteEvidenceCatalog())
                         + CREATE_OPERATION_ROUTE_FIXTURES.stream()
                                 .filter(CreateOperationRouteFixture::pendingResponse)
@@ -14341,6 +14343,7 @@ class ControlledTlsPeerTest {
         assertAsyncNoRecursivePollRouteCoverage(events, protocolVersion);
         assertAsyncOperationPollRouteCoverage(events, protocolVersion);
         assertAsyncOperationProcessRouteCoverage(events, protocolVersion);
+        assertAsyncOperationQueryRouteCoverage(events, protocolVersion);
     }
 
     private void appendControlledAsyncProcessNetworkRouteEvents(ArrayNode events, String protocolVersion,
@@ -15746,6 +15749,39 @@ class ControlledTlsPeerTest {
                 "java.typed-protocol.function.async_process_request_to_ttlv_payload", "encode", protocolVersion);
         assertRouteEventRecorded(events, caseId, targetId,
                 "java.typed-protocol.function.kmipkit_client_async_operation_outcome_process_response_v1",
+                "decode", protocolVersion);
+    }
+
+    private static void assertAsyncOperationQueryRouteCoverage(ArrayNode events, String protocolVersion)
+            throws Exception {
+        if (!"2.1".equals(protocolVersion)) return;
+        String caseId = "test-op-query-asynchronous-requests";
+        String targetId = "KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS";
+        String routeId = "java.typed-protocol.client.execute_query_async_requests";
+        for (String encoding : List.of("TTLV", "JSON", "XML")) {
+            for (String transport : List.of("raw_tls", "https")) {
+                for (String action : List.of("construct", "send", "decode")) {
+                    int matches = 0;
+                    for (JsonNode event : events) {
+                        if (routeEventMatches(event, caseId, routeId, protocolVersion, targetId)
+                                && action.equals(event.path("action").asText())
+                                && encoding.equals(event.path("encoding").asText())
+                                && transport.equals(event.path("transport").asText())) {
+                            matches++;
+                        }
+                    }
+                    assertEquals(1, matches,
+                            "The catalogued asynchronous Query route must execute once per wire combination.");
+                }
+            }
+        }
+        assertRouteEventRecorded(events, caseId, targetId,
+                "java.typed-protocol.query_async_requests_request.create", "construct", protocolVersion);
+        assertRouteEventRecorded(events, caseId, targetId,
+                "java.typed-protocol.function.async_query_async_requests_request_to_ttlv_payload",
+                "encode", protocolVersion);
+        assertRouteEventRecorded(events, caseId, targetId,
+                "java.typed-protocol.function.kmipkit_client_async_operation_outcome_query_async_requests_response_v1",
                 "decode", protocolVersion);
     }
 
