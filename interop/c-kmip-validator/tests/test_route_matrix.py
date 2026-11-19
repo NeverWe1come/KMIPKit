@@ -6141,6 +6141,15 @@ class RouteMatrixTests(unittest.TestCase):
         for name in ('hash', 'rng_retrieve', 'rng_seed'):
             self.assertTrue(any(event['public_api_symbol'] == 'kmipkit_client_batch_item_' + name and event['action'] == 'decode' for event in events))
 
+    def test_multipart_hash_case_has_a_controlled_peer_recipe(self):
+        from route_peer import RECIPES
+
+        self.assertEqual(
+            RECIPES.get('test-multipart-hash-sha256'),
+            ((39,), 'multipart_hash_sha256'),
+            'multipart SHA-256 must run through the installed Hash route',
+        )
+
 
     def attribute_executor(self):
         self.assertIsNotNone(importlib.util.find_spec('route_attributes'), 'typed attribute route executor is missing')
