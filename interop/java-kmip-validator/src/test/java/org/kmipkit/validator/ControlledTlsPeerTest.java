@@ -1868,6 +1868,14 @@ class ControlledTlsPeerTest {
                     "java.typed-protocol.function.client_batch_item_response_revoke", "decode", protocolVersion);
             assertRouteEventRecorded(events, "test-op-revoke", "KMIPKIT-ELEM-OP-C2S-REVOKE",
                     "java.typed-protocol.function.client_batch_item_response_revoke_ttlv", "decode", protocolVersion);
+            assertRouteEventRecorded(events, "test-op-add-attribute", "KMIPKIT-ELEM-OP-C2S-ADD-ATTRIBUTE",
+                    "java.typed-protocol.client_batch_item.add_attribute", "send", protocolVersion);
+            assertRouteEventRecorded(events, "test-op-add-attribute", "KMIPKIT-ELEM-OP-C2S-ADD-ATTRIBUTE",
+                    "java.typed-protocol.function.attribute_request_add_attribute_to_batch_item",
+                    "send", protocolVersion);
+            assertRouteEventRecorded(events, "test-op-add-attribute", "KMIPKIT-ELEM-OP-C2S-ADD-ATTRIBUTE",
+                    "java.typed-protocol.function.client_batch_item_response_add_attribute",
+                    "decode", protocolVersion);
         }
         int tagAggregateEventCount = appendTagAggregateRouteEvents(events);
         assertEquals(expectedTagAggregateEventCount(), tagAggregateEventCount,
