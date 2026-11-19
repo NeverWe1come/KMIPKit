@@ -666,6 +666,8 @@ def main() -> int:
     expected_operations += (2, 18, 34, 19, 20, 20)
     expected_operations += (2, 18, 34, 19, 20, 20)
     expected_operations += (2, 20, 20)
+    expected_operations += (2, 20, 20)  # test-obj-private-key
+    expected_operations += (2, 20, 20)  # test-obj-public-key
     expected_operations += (40, 20, 20)
     expected_operations += (40, 20, 20)
     expected_cases += ("test-obj-split-key",)
@@ -817,6 +819,12 @@ def main() -> int:
     with tempfile.TemporaryDirectory(prefix="kmipkit-c-live-") as raw_directory:
         directory = Path(raw_directory)
         ca_cert, server_cert, server_key, client_cert, client_key = certificate_files(openssl, directory)
+        # Private and public key object cases now create a key pair and destroy
+        # both components instead of creating and destroying one object each.
+        expected_operations = list(expected_operations)
+        for operation in (1, 1, 20, 20):
+            expected_operations.remove(operation)
+
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         server.bind(("127.0.0.1", 0))
