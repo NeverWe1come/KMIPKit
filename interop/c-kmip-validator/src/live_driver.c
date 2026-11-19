@@ -8748,7 +8748,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     if (strcmp(test_case->case_id, "test-op-mac") == 0 ||
         strcmp(test_case->case_id, "test-crypto-mac-hmac_sha256-256") == 0)
         return execute_created_key_action(client, KMIPKIT_ENUMERATION_OPERATION_MAC, false);
-    if (strcmp(test_case->case_id, "test-op-mac-verify") == 0)
+    if (strcmp(test_case->case_id, "test-op-mac-verify") == 0 ||
+        strcmp(test_case->case_id, "test-crypto-mac-verify-hmac_sha256-256") == 0)
         return execute_created_key_action(client, KMIPKIT_ENUMERATION_OPERATION_MAC_VERIFY, false);
     if (strcmp(test_case->case_id, "test-op-create-key-pair") == 0)
         return execute_create_key_pair(client);
