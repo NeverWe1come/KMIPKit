@@ -5139,7 +5139,7 @@ class RouteMatrixTests(unittest.TestCase):
             ((18,), 'batch_placeholder_without_producer'))
 
         selected = {**catalog, 'test_cases': [case]}
-        events, _, checks = route_peer.execute_network_cells(
+        events, invoked_keys, checks = route_peer.execute_network_cells(
             ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
 
         self.assertEqual(len(checks), 12)
@@ -5174,6 +5174,15 @@ class RouteMatrixTests(unittest.TestCase):
                             'invocation_id' not in event and
                             'response_tree_sha256' not in event
                             for event in response_decode_events), response_decode_events)
+        not_applicable_keys = {
+            (event['case_id'], event['route_id'], event['target_id'],
+             event.get('workflow_step_index'), event.get('workflow_item_index'),
+             event.get('execution_route_id'), event['action'], event['protocol_version'],
+             event['encoding'], event['transport'])
+            for event in response_decode_events
+        }
+        self.assertEqual(not_applicable_keys, not_applicable_keys & invoked_keys,
+                         'a valid no-response decode N/A must satisfy its planned matrix cell')
 
     def test_local_rejection_event_uses_only_schema_approved_fields(self):
         from artifact_support import ROOT
