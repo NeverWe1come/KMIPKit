@@ -8263,6 +8263,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         placeholder_without_producer_workflow;
     bool single_item_default_continuation_workflow =
         strcmp(test_case->case_id, "test-batch-single-item-default-continuation") == 0;
+    bool single_item_response_workflow = single_item_default_continuation_workflow ||
+        strcmp(test_case->case_id, "test-batch-single-item-options-omitted") == 0;
     bool check_workflow = strcmp(test_case->case_id, "test-op-check") == 0;
     bool private_key_workflow = strcmp(test_case->case_id, "test-obj-private-key") == 0;
     bool public_key_workflow = strcmp(test_case->case_id, "test-obj-public-key") == 0;
@@ -8869,8 +8871,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     };
     uint8_t created_identifier_present = 0;
     kmip_execution_outcome_t outcome = { .executed = true };
-    if (strcmp(test_case->case_id,
-               "test-batch-single-item-default-continuation") == 0) {
+    if (single_item_response_workflow) {
         static const uint8_t fixture_identifier[] = "fixture-key-1";
         created_identifier.kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING;
         created_identifier.text_data = fixture_identifier;
@@ -9842,8 +9843,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                      "KMIPKit Check did not return the created object's identifier");
             goto cleanup;
         }
-    } else if (get_workflow) {
-        if (single_item_default_continuation_workflow) {
+    } else if (get_workflow || single_item_response_workflow) {
+        if (single_item_response_workflow) {
             static const uint8_t expected_batch_item_id[] = "interop-get";
             uint8_t id_present = 0;
             kmipkit_byte_span_v1_t id = {0};
