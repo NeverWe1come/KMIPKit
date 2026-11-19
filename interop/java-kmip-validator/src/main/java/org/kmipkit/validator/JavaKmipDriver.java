@@ -178,6 +178,39 @@ public final class JavaKmipDriver implements AutoCloseable {
         }
     }
 
+    CaseOutcome executePollForFinalCreateFailure(byte[] correlation) {
+        long start = System.nanoTime();
+        if (correlation == null || correlation.length == 0) {
+            return CaseOutcome.notRun("The final-failure Poll fixture requires a non-empty correlation value.",
+                    elapsedMillis(start));
+        }
+
+        try (AsyncOperationOutcome outcome = client.executePoll(correlation.clone(), CODEC_LIMITS)) {
+            var metadata = outcome.metadataV1();
+            long reason = metadata.resultReason().orElse(-1);
+            if (metadata.operation() != 0x1a || metadata.resultStatus() != 1
+                    || reason != KmipValues.ResultReason.INVALID_OBJECT_TYPE) {
+                return CaseOutcome.failed("The final Poll response did not preserve the Create failure status.",
+                        elapsedMillis(start), metadata.resultStatus(), optionalCode(reason));
+            }
+            var pollResponse = outcome.pollResponse();
+            if (pollResponse.isEmpty() || pollResponse.orElseThrow().isPending()
+                    || !hasCorrelation(correlation, pollResponse.orElseThrow()::withAsynchronousCorrelationValue)) {
+                return CaseOutcome.failed("The final Poll response did not preserve its terminal correlation value.",
+                        elapsedMillis(start), metadata.resultStatus(), optionalCode(reason));
+            }
+            var responsePayload = outcome.responsePayloadTtlv();
+            if (responsePayload.isPresent()) {
+                responsePayload.orElseThrow().close();
+                return CaseOutcome.failed("The failed Create response unexpectedly contained a success payload.",
+                        elapsedMillis(start), metadata.resultStatus(), optionalCode(reason));
+            }
+            return CaseOutcome.passed(elapsedMillis(start), metadata.resultStatus(), optionalCode(reason));
+        } catch (Exception exception) {
+            return exchangeFailure(exception, start);
+        }
+    }
+
     private AsyncOperationOutcome executeAsynchronousRoute(String operation, byte[] correlation) throws Exception {
         return switch (operation) {
             case "Cancel" -> {
