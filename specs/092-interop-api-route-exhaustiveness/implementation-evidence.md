@@ -137,3 +137,20 @@ claiming that an accessor ran for an item the server did not return.
   16 not applicable, zero failed, and 27,337 pending. Run ID:
   `java-controlled-query-b952d296-6108-40d7-afbd-f8284fcb5004`. The global
   Java matrix remains incomplete.
+
+## Follow-up: Java Cryptographic Domain Parameters typed wrappers
+
+- **Red — `0faf2b37a`** requires `TypedAttribute.create`,
+  `TypedAttribute.fromItem`, and `AttributeSet.tryNew` evidence for
+  Cryptographic Domain Parameters in KMIP 2.0 and 2.1. The controlled-peer
+  test failed on the first missing typed wrapper.
+- **Green — `2a1bdef9e`** constructs a source-shaped Structure containing
+  Qlength as Integer and Recommended Curve as Enumeration, then verifies both
+  fields through the installed typed attribute and AttributeSet APIs. All six
+  versioned wrapper assertions pass.
+- **Refactor** records OASIS KMIP 2.0/2.1 §4.14, Table 55 as the source for
+  the structure and encodings. The focused Java controlled-peer test passed
+  in 2m22s. Selected report validation is 44,252/71,583 cells: 44,236 invoked,
+  16 not applicable, zero failed, and 27,331 pending. Run ID:
+  `java-controlled-query-0c0feceb-966b-454d-a88b-5429617d1941`. The full Java
+  matrix remains incomplete.

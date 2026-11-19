@@ -1207,6 +1207,67 @@ final class LocalCatalogRouteChecks {
                 decoded -> assertStructureAttributeValue(decoded, memberTags, memberTypes, memberValues), sink);
     }
 
+    /** Exercises typed wrappers for the source-defined Cryptographic Domain Parameters structure. */
+    static void executeCryptographicDomainParametersTypedRoutes(JsonNode catalog, String version,
+            EvidenceSink sink) throws Exception {
+        String caseId = "test-attr-cryptographic-domain-parameters";
+        JsonNode testCase = null;
+        for (JsonNode candidate : catalog.path("test_cases")) {
+            if (caseId.equals(candidate.path("case_id").asText())) {
+                testCase = candidate;
+                break;
+            }
+        }
+        if (testCase == null || !applies(testCase, version)) {
+            throw new IllegalArgumentException("Cryptographic Domain Parameters case is absent for " + version);
+        }
+        String targetId = testCase.path("requires").path("normative_target_id").asText();
+        if (!"KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-DOMAIN-PARAMETERS".equals(targetId)) {
+            throw new IllegalArgumentException("Cryptographic Domain Parameters target is invalid");
+        }
+        int attributeTag = tagCodeNamed(catalog, "Cryptographic Domain Parameters", version);
+        int qLengthTag = tagCodeNamed(catalog, "Qlength", version);
+        int recommendedCurveTag = tagCodeNamed(catalog, "Recommended Curve", version);
+        long qLength = 256;
+        long recommendedCurve = representativeEnumerationValue(catalog, "Recommended Curve", version);
+        byte[] qLengthBytes = ByteBuffer.allocate(Integer.BYTES).putInt(Math.toIntExact(qLength)).array();
+        byte[] recommendedCurveBytes = ByteBuffer.allocate(Integer.BYTES)
+                .putInt(Math.toIntExact(recommendedCurve)).array();
+        byte[] wire = structureWire(attributeTag, concat(
+                itemWire(qLengthTag, TtlvItemType.Integer.code(), qLengthBytes),
+                itemWire(recommendedCurveTag, TtlvItemType.Enumeration.code(), recommendedCurveBytes)));
+        TtlvStructure domainParameters = TtlvStructure.create();
+        domainParameters = append(domainParameters, qLengthTag, TtlvValue.Integer(Math.toIntExact(qLength)));
+        domainParameters = append(domainParameters, recommendedCurveTag,
+                TtlvValue.Enumeration(recommendedCurve));
+        TtlvValue value = TtlvValue.structure(domainParameters, CodecLimits.defaults());
+        StandardAttribute attribute = standardAttributeForTag(attributeTag);
+        if (attribute == null) {
+            value.close();
+            throw new IllegalArgumentException("Cryptographic Domain Parameters has no Java StandardAttribute");
+        }
+        executeTypedAttributeRoutes(caseId, targetId, attributeTag, attribute, value, TtlvItemType.Structure, wire,
+                decoded -> assertCryptographicDomainParametersValue(decoded, qLengthTag, qLength,
+                        recommendedCurveTag, recommendedCurve), sink);
+    }
+
+    private static void assertCryptographicDomainParametersValue(TtlvValueView value, int qLengthTag,
+            long qLength, int recommendedCurveTag, long recommendedCurve) {
+        try (TtlvStructureView structure = value.structure();
+                TtlvItemView qLengthItem = structure.itemAt(0); Tag viewedQLengthTag = qLengthItem.tag();
+                TtlvValueView viewedQLength = qLengthItem.value();
+                TtlvItemView curveItem = structure.itemAt(1); Tag viewedCurveTag = curveItem.tag();
+                TtlvValueView viewedCurve = curveItem.value()) {
+            assertEquals(2, structure.itemCount());
+            assertEquals(qLengthTag, viewedQLengthTag.raw());
+            assertEquals(TtlvItemType.Integer, qLengthItem.itemType());
+            assertEquals(qLength, viewedQLength.integer());
+            assertEquals(recommendedCurveTag, viewedCurveTag.raw());
+            assertEquals(TtlvItemType.Enumeration, curveItem.itemType());
+            assertEquals(recommendedCurve, viewedCurve.enumeration());
+        }
+    }
+
     private static void assertStructureAttributeValue(TtlvValueView value, List<Integer> memberTags,
             List<TtlvItemType> memberTypes, List<byte[]> memberValues) {
         try (TtlvStructureView structure = value.structure()) {
