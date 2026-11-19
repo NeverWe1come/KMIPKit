@@ -4350,10 +4350,28 @@ class ControlledTlsPeerTest {
             assertEquals(credentialTypeRaw, credential.credentialTypeRaw());
             assertTrue(Boolean.TRUE.equals(credential.withTtlv(view -> view.itemCount() == 2)),
                     "The generic Credential decoder must retain both envelope fields.");
+            if (caseId.endsWith("one-time-password")) {
+                assertEquals(3L, credentialValueMemberCount(credential),
+                        "The One Time Password fixture must include its optional Password member.");
+            }
+            if (caseId.endsWith("credential-ticket")) {
+                assertEquals(1L, credentialValueMemberCount(credential),
+                        "The Ticket Credential Value must retain its required Ticket member.");
+            }
         }
         appendRouteEvent(events, caseId, route, targetId,
                 GENERIC_CREDENTIAL_FROM_TTLV_SYMBOL, null, null, "construct", protocolVersion,
                 null, treeHash, null);
+    }
+
+    private static long credentialValueMemberCount(Credential credential) {
+        return credential.withTtlv(envelope -> {
+            try (var valueItem = envelope.itemAt(1);
+                    var value = valueItem.value();
+                    var structure = value.structure()) {
+                return structure.itemCount();
+            }
+        });
     }
 
     private static void appendCredentialRootEnvelopeRouteEvent(ArrayNode events, String protocolVersion)
