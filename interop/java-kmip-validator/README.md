@@ -1694,3 +1694,22 @@ python3 -m unittest interop.shared.tests.test_route_execution_evidence \
   interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
 python3 interop/shared/tools/route_capabilities.py --check
 ```
+
+### Java Credential Value structure-member routes — 2026-11-19
+
+The Java consumer also exercises `Credential.fromTtlv` against the individual
+Username, Password, One Time Password, and Ticket structure-member targets in
+KMIP 2.0 and 2.1. Each invocation creates a fresh TTLV structure, verifies the
+Credential Type, and checks the expected member tag and TTLV type through the
+generic Credential view. References: OASIS KMIP 2.0 and 2.1 §9.11, Tables 353
+and 376. This proves generic container preservation, not specialized Java
+Credential model APIs or validity of an issued Ticket.
+
+Red `363d90ddd` requires route evidence for all four members and fails on the
+first missing Username route. Green `883c3651e` invokes the generic decoder for
+each member and records the matching case and target IDs. The selected report
+`java-controlled-query-caed23fb-e8d0-448d-9bc7-33fdc3bbf365` validates 44,466
+cells (44,450 invocations, 16 not applicable, zero failed) out of 71,513
+planned; 27,047 remain pending. The selected scope is complete; the full Java
+matrix remains incomplete, so #255 stays WIP. The full Java Gradle suite passed
+111/111 tests, and the Java ledger comparison passed.
