@@ -224,3 +224,23 @@ claiming that an accessor ran for an item the server did not return.
   cells: 44,260 invoked, 16 not applicable, zero failed, and 27,307 pending.
   Run ID: `java-controlled-query-48b90274-ff9d-4b9c-9644-e9b9236714ca`. The
   complete Java matrix remains incomplete.
+
+## Follow-up: Java Random Number Generator typed Attribute wrappers
+
+- **Red — `d8dd65ffc`** requires `TypedAttribute.create`,
+  `TypedAttribute.fromItem`, and `AttributeSet.tryNew` evidence for Random
+  Number Generator in KMIP 2.0 and 2.1. The controlled-peer test failed on
+  the missing `TypedAttribute.create` event.
+- **Green — `59f44e30a`** constructs the installed typed Attribute directly
+  from the RNG Parameters Structure, uses the required `RNG Algorithm =
+  Unspecified` value, round-trips the Attribute, and validates its tag,
+  structure, field, value, and AttributeSet. All six versioned wrapper cells
+  pass. The focused Java controlled-peer test passed in 2m15s.
+- **Refactor** cites OASIS KMIP 2.1 §4.46 Table 121 for the Attribute encoding
+  and its no-nested-structure rule, §7.36 Table 388 for the required RNG
+  Algorithm member, §11.49 for Unspecified value 1, and §11.56 Table 487 for
+  the tags. This is local typed-model evidence, not an Attribute update or
+  server acceptance claim. The selected report validates 44,282/71,583 cells:
+  44,266 invoked, 16 not applicable, zero failed, and 27,301 pending. Run ID:
+  `java-controlled-query-e268804a-ed1c-4068-87db-145e106e9574`. The complete
+  Java matrix remains incomplete.
