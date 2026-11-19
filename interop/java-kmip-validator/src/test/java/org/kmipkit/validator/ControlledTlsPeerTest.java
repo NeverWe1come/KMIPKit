@@ -233,6 +233,8 @@ class ControlledTlsPeerTest {
     private record CredentialStructureMemberFixture(String caseId, String targetId, String modelRoute,
             long credentialTypeRaw, int memberTag, TtlvItemType expectedMemberType) { }
 
+    private record CredentialValueGenericRouteFixture(String routeId, String publicApiSymbol, String action) { }
+
     private static final List<CredentialStructureMemberFixture> TYPED_CREDENTIAL_STRUCTURE_MEMBER_FIXTURES = List.of(
             new CredentialStructureMemberFixture(
                     "test-norm-structure-member-structure-member-9-11-username-and-password-username",
@@ -832,6 +834,13 @@ class ControlledTlsPeerTest {
             "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-CREDENTIAL-CREDENTIAL-VALUE";
     private static final String CREDENTIAL_VALUE_FROM_TTLV_ROUTE =
             "java.typed-protocol.model.org.kmipkit.credentials.credentialvalue.fromttlv";
+    private static final List<CredentialValueGenericRouteFixture> CREDENTIAL_VALUE_GENERIC_TTLV_ROUTES = List.of(
+            new CredentialValueGenericRouteFixture("java.generic-ttlv.ttlv_item.create",
+                    "org.kmipkit.ttlv.TtlvItem.create", "construct"),
+            new CredentialValueGenericRouteFixture("java.generic-ttlv.function.ttlv_item_view_from_item",
+                    "org.kmipkit.ttlv.TtlvItem.view", "decode"),
+            new CredentialValueGenericRouteFixture("java.generic-ttlv.ttlv_codec.decode",
+                    "org.kmipkit.ttlv.TtlvCodec.decode", "decode"));
     private static final Map<String, String> CREDENTIAL_TYPE_MODEL_CASE_IDS = Map.of(
             "KMIPKIT-ELEM-ENUM-VALUE-CREDENTIAL-TYPE-USERNAME-AND-PASSWORD-00000001",
             "test-norm-credential-credential-username-and-password",
@@ -1971,18 +1980,11 @@ class ControlledTlsPeerTest {
                     CREDENTIAL_VALUE_STRUCTURE_MEMBER_CASE_ID,
                     CREDENTIAL_VALUE_STRUCTURE_MEMBER_TARGET_ID,
                     GENERIC_CREDENTIAL_FROM_TTLV_ROUTE, "construct", protocolVersion);
-            assertRouteEventRecorded(events,
-                    CREDENTIAL_VALUE_STRUCTURE_MEMBER_CASE_ID,
-                    CREDENTIAL_VALUE_STRUCTURE_MEMBER_TARGET_ID,
-                    "java.generic-ttlv.ttlv_item.create", "construct", protocolVersion);
-            assertRouteEventRecorded(events,
-                    CREDENTIAL_VALUE_STRUCTURE_MEMBER_CASE_ID,
-                    CREDENTIAL_VALUE_STRUCTURE_MEMBER_TARGET_ID,
-                    "java.generic-ttlv.function.ttlv_item_view_from_item", "decode", protocolVersion);
-            assertRouteEventRecorded(events,
-                    CREDENTIAL_VALUE_STRUCTURE_MEMBER_CASE_ID,
-                    CREDENTIAL_VALUE_STRUCTURE_MEMBER_TARGET_ID,
-                    "java.generic-ttlv.ttlv_codec.decode", "decode", protocolVersion);
+            for (CredentialValueGenericRouteFixture fixture : CREDENTIAL_VALUE_GENERIC_TTLV_ROUTES) {
+                assertRouteEventRecorded(events, CREDENTIAL_VALUE_STRUCTURE_MEMBER_CASE_ID,
+                        CREDENTIAL_VALUE_STRUCTURE_MEMBER_TARGET_ID,
+                        fixture.routeId(), fixture.action(), protocolVersion);
+            }
             assertRouteEventRecorded(events,
                     CREDENTIAL_VALUE_STRUCTURE_MEMBER_CASE_ID,
                     CREDENTIAL_VALUE_STRUCTURE_MEMBER_TARGET_ID,
@@ -4620,20 +4622,17 @@ class ControlledTlsPeerTest {
             assertEquals(0x420025, view.tag().raw());
             assertEquals(TtlvItemType.Structure, view.itemType());
         }
-        appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_item.create", targetId,
-                "org.kmipkit.ttlv.TtlvItem.create", null, null, "construct", protocolVersion,
-                null, treeHash, null);
-        appendRouteEvent(events, caseId, "java.generic-ttlv.function.ttlv_item_view_from_item", targetId,
-                "org.kmipkit.ttlv.TtlvItem.view", null, null, "decode", protocolVersion,
-                null, null, treeHash);
+        for (CredentialValueGenericRouteFixture fixture : CREDENTIAL_VALUE_GENERIC_TTLV_ROUTES) {
+            boolean encoding = "construct".equals(fixture.action());
+            appendRouteEvent(events, caseId, fixture.routeId(), targetId,
+                    fixture.publicApiSymbol(), null, null, fixture.action(), protocolVersion,
+                    null, encoding ? treeHash : null, encoding ? null : treeHash);
+        }
         try (TtlvItem decoded = TtlvCodec.decode(wire);
                 var view = decoded.view()) {
             assertEquals(0x420025, view.tag().raw());
             assertEquals(TtlvItemType.Structure, view.itemType());
         }
-        appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_codec.decode", targetId,
-                "org.kmipkit.ttlv.TtlvCodec.decode", null, null, "decode", protocolVersion,
-                null, null, treeHash);
     }
 
     private static void appendCredentialMemberRouteEvent(ArrayNode events, String caseId, String targetId,
