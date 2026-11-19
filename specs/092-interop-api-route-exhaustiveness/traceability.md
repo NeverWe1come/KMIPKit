@@ -296,4 +296,19 @@ construction scenario. Recover Red `2bb36d6f5`, Green `3a4d5ab32`, and fixture f
 are separate commits. ECDSA Verify Red `c3aed782a`, Green `a137f36c2`, and
 Refactor `802ae6ee1` are separate commits. Focused Sign/Verify checks and both
 controlled TLS protocol peers pass; full CTest passes 7/7. The C matrix remains
-incomplete; 22,042 cells are pending.
+incomplete with 22,042 pending cells at this report snapshot.
+
+### C HMAC-SHA256 MAC route
+
+For KMIPKIT-0092-FR-003 and FR-005, the C installed-consumer matrix exercises
+`test-crypto-mac-hmac_sha256-256` through Create → Activate → MAC → Revoke →
+Destroy. It validates the typed request and response routes for a 256-bit
+HMAC-SHA256 key under OASIS KMIP 2.0 §6.1.31 and KMIP 2.1 §6.1.32. The
+controlled peer checks the ordered batch and result for both protocol versions
+and all six TTLV/JSON/XML plus raw TLS/HTTPS combinations. Red
+`4f31f9d48` exposed the missing case recipe; Green `f18374eb5` connected the
+installed C route and controlled peer. The focused test passes 12/12 and CTest
+passes 7/7. Full report `c-route-05cdfd23-39b2-41ad-b043-ea5bcc78a068` records
+66,280 planned cells, 44,226 invoked, 52 not applicable, zero failed, and
+22,002 pending. Scoped evidence validation passes; the complete matrix remains
+open.

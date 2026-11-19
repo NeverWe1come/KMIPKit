@@ -818,5 +818,32 @@ external KMS result.
 The catalog's zero-count batch case contains only the Batch Count target and
 does not plan operation, Batch Item, send, or response-decode cells. The full
 report's scoped validation passes for all emitted cells; full-matrix validation
-remains incomplete. Full CTest passes 7/7 in 152.30 seconds. The complete C route matrix
-remains open with 22,042 pending cells, so this PR remains WIP.
+remains incomplete. Full CTest passes 7/7 in 152.30 seconds. At this report
+snapshot, the complete C route matrix remained open with 22,042 pending cells.
+
+### C HMAC-SHA256 MAC route and refreshed full-matrix evidence
+
+For KMIPKIT-0092-FR-003 and FR-005, the installed C consumer now executes the
+catalogued `test-crypto-mac-hmac_sha256-256` case through the typed MAC builder
+and response accessors. The controlled lifecycle is Create → Activate → MAC →
+Revoke → Destroy, with a 256-bit HMAC-SHA256 key and fixture data. The peer
+checks the operation parameters, ordered item identifiers, result, and cleanup
+for KMIP 2.0 §6.1.31 and KMIP 2.1 §6.1.32, over TTLV, JSON, and XML on raw TLS
+and HTTPS. This is controlled-fixture evidence, not an external KMS result.
+
+Red `4f31f9d48` added a failing route test because the catalog case had no peer
+recipe. Green `f18374eb5` routes the case through the installed C MAC execution
+path and adds it to the controlled TLS consumer plan. The focused test passes
+all 12 protocol/encoding/transport combinations. Full CTest passes 7/7 in
+151.49 seconds.
+
+The full report is `c-route-05cdfd23-39b2-41ad-b043-ea5bcc78a068`
+(`build/route-execution-evidence-c-current.json`), SHA-256
+`639e435378cfaa4583fbfe4ac26ac788c83fe4176b9b1e6170aa74d75ad92bac`. It has
+66,280 planned cells: 44,226 invoked, 52 not applicable, zero failed, and
+22,002 pending. The scoped shared validator accepts all 44,278 emitted events
+with `selected_scope_complete=true` and `all_invocations_passed=true`; the
+full matrix remains incomplete. This slice closes 40 cells: 36 network cells
+and four typed MAC response-accessor decodes. The 44-event case scope also
+contains four generic TTLV construction/decode cells already present in the
+prior ledger. The PR remains `[WIP]` while other route cells are pending.
