@@ -244,3 +244,23 @@ claiming that an accessor ran for an item the server did not return.
   44,266 invoked, 16 not applicable, zero failed, and 27,301 pending. Run ID:
   `java-controlled-query-e268804a-ed1c-4068-87db-145e106e9574`. The complete
   Java matrix remains incomplete.
+
+## Follow-up: Java Vendor Attribute typed wrappers
+
+- **Red — `54a2a77f4`** requires `TypedAttribute.create`,
+  `TypedAttribute.fromItem`, and `AttributeSet.tryNew` evidence for Vendor
+  Attribute in KMIP 2.0 and 2.1. The focused test failed on the missing
+  `TypedAttribute.create` route.
+- **Green — `bc5726eca`** builds the source-defined Structure with readable
+  Vendor Identification and Attribute Name strings plus a Text String
+  Attribute Value, then round-trips and verifies all tags, types, and values
+  through the typed wrapper and AttributeSet. All six versioned wrapper cells
+  pass. The focused Java controlled-peer test passed in 2m23s.
+- **Refactor** cites OASIS KMIP 2.1 §4.60 for the required fields and
+  Vendor Identification character constraint, and §11.56 Table 487 for the
+  assigned tags. This is local structural evidence only; it does not exercise
+  vendor mutation policy or server acceptance. The selected report validates
+  44,288/71,583 cells: 44,272 invoked, 16 not applicable, zero failed, and
+  27,295 pending. Run ID:
+  `java-controlled-query-3a265680-8bf4-43a7-804e-bb25505b13a2`. The complete
+  Java matrix remains incomplete.
