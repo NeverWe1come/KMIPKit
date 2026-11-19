@@ -2452,7 +2452,7 @@ class ControlledTlsPeerTest {
                 * KMIP_2_0_AND_2_1.size() * 4;
         int credentialEnvelopeEventCount = CREDENTIAL_TYPE_MODEL_CASE_IDS.size()
                 * KMIP_2_0_AND_2_1.size();
-        int credentialRootEnvelopeEventCount = KMIP_2_0_AND_2_1.size();
+        int credentialRootEnvelopeEventCount = KMIP_2_0_AND_2_1.size() * 3;
         int batchErrorContinuationEventCount = enumerationFixtures.stream()
                 .filter(fixture -> "BATCH-ERROR-CONTINUATION-OPTION".equals(fixture.parentName()))
                 .mapToInt(fixture -> fixture.protocolVersions().size()).sum();
@@ -4330,9 +4330,18 @@ class ControlledTlsPeerTest {
 
     private static void appendCredentialEnvelopeRouteEvent(ArrayNode events, String caseId,
             String targetId, String modelRoute, long credentialTypeRaw, String protocolVersion) throws Exception {
+        try (TtlvStructure credentialValue = credentialValueStructure(modelRoute)) {
+            appendCredentialEnvelopeRouteEvent(events, caseId, targetId, credentialTypeRaw,
+                    credentialValueWire(modelRoute), credentialValue, protocolVersion);
+        }
+    }
+
+    private static void appendCredentialEnvelopeRouteEvent(ArrayNode events, String caseId,
+            String targetId, long credentialTypeRaw, byte[] credentialValueWire,
+            TtlvStructure credentialValue, String protocolVersion) throws Exception {
         String route = "java.typed-protocol.model.org.kmipkit.credentials.credential.fromttlv";
-        String treeHash = normalizedTreeSha256(credentialEnvelopeWire(modelRoute, credentialTypeRaw));
-        try (TtlvStructure structure = credentialEnvelopeStructure(modelRoute, credentialTypeRaw);
+        String treeHash = normalizedTreeSha256(credentialEnvelopeWire(credentialTypeRaw, credentialValueWire));
+        try (TtlvStructure structure = credentialEnvelopeStructure(credentialValue, credentialTypeRaw);
                 Credential credential = Credential.fromTtlv(structure)) {
             assertEquals(credentialTypeRaw, credential.credentialTypeRaw());
             assertTrue(Boolean.TRUE.equals(credential.withTtlv(view -> view.itemCount() == 2)),
@@ -4360,10 +4369,29 @@ class ControlledTlsPeerTest {
         appendRouteEvent(events, caseId, route, targetId,
                 "org.kmipkit.credentials.Credential.fromTtlv", null, null,
                 "construct", protocolVersion, null, treeHash, null);
+
+        try (TtlvStructure credentialValue = oneTimePasswordCredentialValueStructure()) {
+            appendCredentialEnvelopeRouteEvent(events,
+                    "test-norm-credential-credential-one-time-password",
+                    "KMIPKIT-ELEM-CREDENTIAL-ONE-TIME-PASSWORD", 4,
+                    oneTimePasswordCredentialValueWire(), credentialValue, protocolVersion);
+        }
+        try (TtlvStructure credentialValue = ticketCredentialValueStructure()) {
+            appendCredentialEnvelopeRouteEvent(events,
+                    "test-norm-credential-credential-ticket", "KMIPKIT-ELEM-CREDENTIAL-TICKET", 6,
+                    ticketCredentialValueWire(), credentialValue, protocolVersion);
+        }
     }
 
     private static TtlvStructure credentialEnvelopeStructure(String modelRoute, long credentialTypeRaw)
             throws Exception {
+        try (TtlvStructure credentialValue = credentialValueStructure(modelRoute)) {
+            return credentialEnvelopeStructure(credentialValue, credentialTypeRaw);
+        }
+    }
+
+    private static TtlvStructure credentialEnvelopeStructure(TtlvStructure credentialValue,
+            long credentialTypeRaw) throws Exception {
         CodecLimits limits = CodecLimits.defaults();
         TtlvStructure envelope = TtlvStructure.create();
         try (RawTag rawTag = RawTag.fromRaw(0x420024);
@@ -4372,8 +4400,7 @@ class ControlledTlsPeerTest {
                 TtlvItem item = TtlvItem.create(tag, value, limits)) {
             envelope = TtlvStructure.withItem(envelope, item, limits);
         }
-        try (TtlvStructure credentialValue = credentialValueStructure(modelRoute);
-                TtlvValue value = TtlvValue.structure(credentialValue, limits);
+        try (TtlvValue value = TtlvValue.structure(credentialValue, limits);
                 RawTag rawTag = RawTag.fromRaw(0x420025);
                 Tag tag = rawTag.checked();
                 TtlvItem item = TtlvItem.create(tag, value, limits)) {
@@ -4383,8 +4410,12 @@ class ControlledTlsPeerTest {
     }
 
     private static byte[] credentialEnvelopeWire(String modelRoute, long credentialTypeRaw) throws Exception {
-        return structure(0x420023,
-                item(0x420024, 5, intBytes((int) credentialTypeRaw)), credentialValueWire(modelRoute));
+        return credentialEnvelopeWire(credentialTypeRaw, credentialValueWire(modelRoute));
+    }
+
+    private static byte[] credentialEnvelopeWire(long credentialTypeRaw, byte[] credentialValueWire)
+            throws Exception {
+        return structure(0x420023, item(0x420024, 5, intBytes((int) credentialTypeRaw)), credentialValueWire);
     }
 
     private static void appendCredentialGenericStructureRouteEvents(ArrayNode events, String caseId,
@@ -4467,6 +4498,19 @@ class ControlledTlsPeerTest {
         throw new IllegalArgumentException("No Credential Value wire fixture for the selected API route");
     }
 
+    private static byte[] oneTimePasswordCredentialValueWire() throws Exception {
+        return structure(0x420025,
+                textItem(0x420099, "validator-user"),
+                textItem(0x420156, "one-time-password-fixture"));
+    }
+
+    private static byte[] ticketCredentialValueWire() throws Exception {
+        return structure(0x420025,
+                structure(0x420149,
+                        item(0x42014a, 5, intBytes(1)),
+                        item(0x42014b, 8, new byte[] {0x01, 0x02, 0x03})));
+    }
+
     private static byte[] textItem(int tag, String value) throws Exception {
         return item(tag, 7, value.getBytes(StandardCharsets.UTF_8));
     }
@@ -4509,6 +4553,26 @@ class ControlledTlsPeerTest {
                     TtlvValue.ByteString(new byte[] {0x11, 0x22, 0x33, 0x44}, limits), limits);
         }
         throw new IllegalArgumentException("No Credential Value fixture for the selected API route");
+    }
+
+    private static TtlvStructure oneTimePasswordCredentialValueStructure() throws Exception {
+        CodecLimits limits = CodecLimits.defaults();
+        TtlvStructure structure = TtlvStructure.create();
+        structure = appendCredentialText(structure, 0x420099, "validator-user", limits);
+        return appendCredentialText(structure, 0x420156, "one-time-password-fixture", limits);
+    }
+
+    private static TtlvStructure ticketCredentialValueStructure() throws Exception {
+        CodecLimits limits = CodecLimits.defaults();
+        TtlvStructure ticket = TtlvStructure.create();
+        ticket = appendCredentialValue(ticket, 0x42014a, TtlvValue.Enumeration(1), limits);
+        ticket = appendCredentialValue(ticket, 0x42014b,
+                TtlvValue.ByteString(new byte[] {0x01, 0x02, 0x03}, limits), limits);
+        TtlvStructure credentialValue = TtlvStructure.create();
+        try (TtlvStructure ticketStructure = ticket) {
+            return appendCredentialValue(credentialValue, 0x420149,
+                    TtlvValue.structure(ticketStructure, limits), limits);
+        }
     }
 
     private static TtlvStructure appendCredentialText(TtlvStructure structure, int rawTag,
