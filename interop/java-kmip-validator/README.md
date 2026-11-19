@@ -1649,3 +1649,37 @@ report `java-controlled-query-1b9c9ef4-67dc-42b7-8912-417311af8de1` validates
 71,513 planned; 27,059 remain pending. The full Java matrix remains
 incomplete, so #255 and its parent stack remain WIP. Artifact SHA-256:
 `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+
+### Java generic One Time Password and Ticket Credential routes — 2026-11-19
+
+The controlled fixture now invokes `Credential.fromTtlv` for the One Time
+Password and Ticket Credential Value cases in KMIP 2.0 and 2.1. The OTP fixture
+uses the required Username and One Time Password fields and omits the optional
+Password field. The Ticket fixture contains the required Ticket Structure with
+Ticket Type and Ticket Value. These are deterministic TTLV model fixtures; the
+Ticket Value is test data and does not represent an issued authentication
+ticket. References: OASIS KMIP 2.0 and 2.1 §9.11, Tables 353, 376, and 378.
+
+Red `f58338fe4` fails while the two generic Credential routes are absent.
+Green `96c8d55d7` exercises the Credential envelope decoder for both cases and
+protocol versions. Refactor `0565c0047` shares the route identifiers and adds
+both cases to the selected report scope. The selected report
+`java-controlled-query-2410f0e6-9970-416a-82d2-728830111e57` validates 44,458
+cells (44,442 invocations, 16 not applicable, zero failed) out of 71,513
+planned; 27,055 remain pending. The selected scope is complete but the full
+Java matrix remains incomplete, so #255 and its parent stack stay WIP. Artifact
+SHA-256: `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+
+Verification for this increment:
+
+```sh
+bash bindings/java/gradlew -p interop/java-kmip-validator test --no-daemon --max-workers=1
+python3 interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report interop/java-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+  --write-ledger
+python3 interop/java-kmip-validator/tools/compare_route_ledger.py
+python3 -m unittest interop.shared.tests.test_route_execution_evidence \
+  interop.shared.tests.test_schemas_and_profiles interop.shared.tests.test_route_capabilities
+python3 interop/shared/tools/route_capabilities.py --check
+```
