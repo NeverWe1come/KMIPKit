@@ -127,7 +127,8 @@ def response(operations: tuple[int, ...], protocol_minor: int,
              returned_unique_identifier: bytes | None = None,
              returned_unique_identifiers: tuple[bytes, ...] | None = None,
              discover_versions_minors: tuple[int, ...] | None = None,
-             crypto_output: bytes | None = None) -> bytes:
+             crypto_output: bytes | None = None,
+             signature_data: bytes | None = None) -> bytes:
     version = tlv(0x420069, 1,
                   integer(0x42006A, 2) + integer(0x42006B, protocol_minor))
     header = tlv(
@@ -171,7 +172,7 @@ def response(operations: tuple[int, ...], protocol_minor: int,
                 payload_value = tlv(0x420094, 7, target_identifier) + enumeration(0x42009B, 2)
             elif item_index == 2:
                 payload_value = tlv(0x420094, 7, target_identifier) + \
-                    tlv(0x4200C3, 8, bytes(256))
+                    tlv(0x4200C3, 8, signature_data if signature_data is not None else bytes(256))
             else:
                 response_identifier = other_identifier if item_index == 5 else target_identifier
                 payload_value = tlv(0x420094, 7, response_identifier)

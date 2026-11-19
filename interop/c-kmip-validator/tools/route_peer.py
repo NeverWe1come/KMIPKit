@@ -461,6 +461,7 @@ RECIPES = {
     'test-op-mac-verify': ((1, 18, 36, 19, 20), 'mac_verify'),
     'test-op-sign': ((2, 18, 33, 19, 20, 20), 'sign'),
     'test-crypto-sign-rsa-2048-pkcs1_v1_5': ((2, 18, 33, 19, 20, 20), 'sign'),
+    'test-crypto-sign-ecdsa-256-p_256': ((2, 18, 33, 19, 20, 20), 'sign_ecdsa'),
     'test-sign-missing-managed-object-cryptographic-parameters': (
         (2, 18, 33, 19, 20, 20), 'sign_missing_parameters'),
     'test-op-signature-verify': ((2, 18, 34, 19, 20, 20), 'signature_verify'),
@@ -994,8 +995,8 @@ def verify_mac_verify_response(response_tree):
         raise ValueError('fixture_mac_verify_response_fields_mismatch')
 
 
-def assert_signature_request(node, verify, require_parameters=True):
-    """Check a key-pair-backed RSA Sign or Signature Verify batch."""
+def assert_signature_request(node, verify, require_parameters=True, ecdsa=False):
+    """Check a key-pair-backed RSA or P-256 ECDSA signature operation batch."""
     operation = 34 if verify else 33
     item_ids = SIGNATURE_VERIFY_ITEM_IDS if verify else SIGN_ITEM_IDS
     items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
@@ -1010,7 +1011,13 @@ def assert_signature_request(node, verify, require_parameters=True):
     if [field[0] for field in fields] != [0x420126, 0x420127, 0x420128]:
         raise ValueError('fixture_signature_create_pair_fields_mismatch')
     common, private, public = fields
-    if (numbers(common, 0x420028) != [4] or numbers(common, 0x42002A) != [2048] or
+    expected_algorithm, expected_length = (6, 256) if ecdsa else (4, 2048)
+    domain_parameters = [field for field in common[2]
+                         if field[0] == 0x420029 and field[1] == 1]
+    domain_curve_matches = (len(domain_parameters) == 1 and
+                            numbers(domain_parameters[0], 0x420075) == [7]) if ecdsa else not domain_parameters
+    if (numbers(common, 0x420028) != [expected_algorithm] or
+            numbers(common, 0x42002A) != [expected_length] or not domain_curve_matches or
             numbers(private, 0x42002C) != [1] or numbers(public, 0x42002C) != [2]):
         raise ValueError('fixture_signature_key_usage_mismatch')
     target_uid = 6 if verify else 5
@@ -1034,13 +1041,13 @@ def assert_signature_request(node, verify, require_parameters=True):
             len([field for field in fields if field[0] == UNIQUE_IDENTIFIER_TAG and field[1] == 5]) != 1 or
             (require_parameters and (len(parameter_fields) != 1 or
                                      [field[0] for field in parameter_fields[0][2]] != [0x42004E] or
-                                     numbers(parameter_fields[0], 0x42004E) != [5])) or
+                                     numbers(parameter_fields[0], 0x42004E) != [14 if ecdsa else 5])) or
             len([field for field in fields if field[0] == 0x4200C2 and field[1] == 8]) != 1 or
             [field[2] for field in fields if field[0] == 0x4200C2] != [BATCH_CRYPTO_PLAINTEXT]):
         raise ValueError('fixture_signature_request_fields_mismatch')
     if verify:
         signature = [field for field in fields if field[0] == 0x4200C3 and field[1] == 8]
-        if len(signature) != 1 or signature[0][2] != bytes(256):
+        if len(signature) != 1 or signature[0][2] != bytes(64 if ecdsa else 256):
             raise ValueError('fixture_signature_verify_input_mismatch')
 
 
@@ -1053,7 +1060,7 @@ def sign_cryptographic_parameters_present(node):
     return any(child[0] == 0x42002B for payload in payloads for child in payload[2])
 
 
-def verify_signature_response(response_tree, verify):
+def verify_signature_response(response_tree, verify, ecdsa=False):
     """Check typed key-pair outputs and a shape-only signature result."""
     operation = 34 if verify else 33
     item_ids = SIGNATURE_VERIFY_ITEM_IDS if verify else SIGN_ITEM_IDS
@@ -1094,7 +1101,7 @@ def verify_signature_response(response_tree, verify):
     else:
         signature = [field for field in fields if field[0] == 0x4200C3 and field[1] == 8]
         if (len(fields) != 2 or text_values(items[2], UNIQUE_IDENTIFIER_TAG) != [target_identifier.decode()] or
-                len(signature) != 1 or len(signature[0][2]) != 256):
+                len(signature) != 1 or len(signature[0][2]) != (64 if ecdsa else 256)):
             raise ValueError('fixture_sign_response_fields_mismatch')
 
 
@@ -1931,10 +1938,11 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
         assert_mac_request(node)
     if selected_recipe[1] == 'mac_verify':
         assert_mac_verify_request(node)
-    if selected_recipe[1] in ('sign', 'signature_verify', 'sign_missing_parameters'):
+    if selected_recipe[1] in ('sign', 'signature_verify', 'sign_missing_parameters', 'sign_ecdsa'):
         assert_signature_request(
             node, selected_recipe[1] == 'signature_verify',
-            require_parameters=selected_recipe[1] != 'sign_missing_parameters')
+            require_parameters=selected_recipe[1] != 'sign_missing_parameters',
+            ecdsa=selected_recipe[1] == 'sign_ecdsa')
     if selected_recipe[1] == 'create_key_pair':
         assert_create_key_pair_request(node)
     if selected_recipe[1] == 'certify':
@@ -4710,7 +4718,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             response_item_ids = MAC_ITEM_IDS
                                         elif recipe[1] == 'mac_verify':
                                             response_item_ids = MAC_VERIFY_ITEM_IDS
-                                        elif recipe[1] in ('sign', 'sign_missing_parameters'):
+                                        elif recipe[1] in ('sign', 'sign_missing_parameters', 'sign_ecdsa'):
                                             response_item_ids = SIGN_ITEM_IDS
                                         elif recipe[1] == 'signature_verify':
                                             response_item_ids = SIGNATURE_VERIFY_ITEM_IDS
@@ -4983,7 +4991,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 returned_unique_identifiers=returned_unique_identifiers,
                                                 crypto_output=(BATCH_CRYPTO_AES256_CBC_CIPHERTEXT
                                                                if recipe[1] == 'encrypt_aes256_cbc'
-                                                               else None))
+                                                               else None),
+                                                signature_data=(bytes(64)
+                                                                if recipe[1] == 'sign_ecdsa' else None))
                                         export_response_negative = (
                                             case_id.startswith('test-norm-payload-client-export-response-') and
                                             variant == 'missing_rejected' and
@@ -5138,9 +5148,10 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             verify_signature_missing_parameters_response(response_tree)
                                         elif recipe[1] == 'batch_undo_rollback':
                                             verify_undo_rollback_response(response_tree)
-                                        elif recipe[1] in ('sign', 'signature_verify'):
+                                        elif recipe[1] in ('sign', 'signature_verify', 'sign_ecdsa'):
                                             verify_signature_response(
-                                                response_tree, recipe[1] == 'signature_verify')
+                                                response_tree, recipe[1] == 'signature_verify',
+                                                ecdsa=recipe[1] == 'sign_ecdsa')
                                         elif recipe[1] == 'create_key_pair':
                                             verify_create_key_pair_response(response_tree)
                                         elif recipe[1] == 'create_split_key' and exchange_index == 0:

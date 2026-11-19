@@ -5885,6 +5885,7 @@ static bool created_key_signature_response_matches(
     kmipkit_client_batch_item_response_t *item,
     const kmipkit_unique_identifier_v1_t *identifier,
     uint32_t operation,
+    uint64_t expected_signature_length,
     int32_t *out_status) {
     uint8_t present = 0, output_present = 0, correlation_present = 0;
     kmipkit_unique_identifier_v1_t result_identifier = {
@@ -5897,8 +5898,10 @@ static bool created_key_signature_response_matches(
             item, &present, &result_identifier, &output_present, &output,
             &correlation_present, &correlation);
         *out_status = status;
+        bool signature_length_matches = expected_signature_length == 0U ?
+            output.length > 0U : output.length == expected_signature_length;
         bool valid = status == 0 && present && same_text_identifier(identifier, &result_identifier) &&
-            output_present && output.data && output.length == 256U && !correlation_present;
+            output_present && output.data && signature_length_matches && !correlation_present;
         if (valid) {
             valid = response_ttlv_matches_field_count(
                 item, kmipkit_client_batch_item_response_sign_ttlv,
@@ -8125,7 +8128,8 @@ cleanup:
 
 static kmip_execution_outcome_t execute_created_key_signature(kmip_live_client_t *client,
                                                                uint32_t operation,
-                                                               bool expect_missing_parameters) {
+                                                               bool expect_missing_parameters,
+                                                               bool ecdsa) {
     /* OASIS KMIP 2.0 §§6.1.49–6.1.50, 2.1 §§6.1.55–6.1.56, and §12.1. */
     bool verify = operation == KMIPKIT_ENUMERATION_OPERATION_SIGNATURE_VERIFY;
     static const uint32_t sign_operations[] = {
@@ -8164,12 +8168,13 @@ static kmip_execution_outcome_t execute_created_key_signature(kmip_live_client_t
     kmipkit_ttlv_structure_t *private_attributes = NULL;
     kmipkit_ttlv_structure_t *public_attributes = NULL;
     kmipkit_ttlv_structure_t *parameters = NULL;
+    kmipkit_ttlv_structure_t *domain_parameters = NULL;
     kmipkit_ttlv_value_t *value = NULL;
     kmipkit_ttlv_value_t *data = NULL;
     kmipkit_authentication_t *authentication = NULL;
     static const uint8_t signature_bytes[256] = {0};
     const kmipkit_byte_span_v1_t signature_data = {
-        .data = signature_bytes, .length = sizeof(signature_bytes)
+        .data = signature_bytes, .length = ecdsa ? 64U : sizeof(signature_bytes)
     };
     const kmipkit_unique_identifier_v1_t target_identifier = {
         .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1,
@@ -8183,13 +8188,30 @@ static kmip_execution_outcome_t execute_created_key_signature(kmip_live_client_t
     };
     int32_t status = kmipkit_ttlv_structure_create(&common_attributes);
     if (status == 0) status = kmipkit_ttlv_value_enumeration(
-        KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_RSA, &value);
+        ecdsa ? KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_ECDSA :
+                KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_RSA, &value);
     if (status == 0 && !append_ttlv_value(
             client, &common_attributes, UINT32_C(0x420028), &value))
         status = KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0) status = kmipkit_ttlv_value_integer(2048, &value);
+    if (ecdsa && status == 0) {
+        kmipkit_ttlv_value_release(value);
+        value = NULL;
+        status = kmipkit_ttlv_value_integer(256, &value);
+    }
     if (status == 0 && !append_ttlv_value(
             client, &common_attributes, UINT32_C(0x42002A), &value))
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    if (ecdsa && status == 0) status = kmipkit_ttlv_structure_create(&domain_parameters);
+    if (ecdsa && status == 0) status = kmipkit_ttlv_value_enumeration(
+        KMIPKIT_ENUMERATION_RECOMMENDED_CURVE_P_256, &value);
+    if (ecdsa && status == 0 && !append_ttlv_value(
+            client, &domain_parameters, UINT32_C(0x420075), &value))
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    if (ecdsa && status == 0 && !structure_into_value(client, &domain_parameters, &value))
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    if (ecdsa && status == 0 && !append_ttlv_value(
+            client, &common_attributes, UINT32_C(0x420029), &value))
         status = KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0) status = kmipkit_ttlv_structure_create(&private_attributes);
     if (status == 0) status = kmipkit_ttlv_value_integer(
@@ -8209,7 +8231,9 @@ static kmip_execution_outcome_t execute_created_key_signature(kmip_live_client_t
     if (status == 0 && !expect_missing_parameters)
         status = kmipkit_ttlv_structure_create(&parameters);
     if (status == 0 && !expect_missing_parameters) status = kmipkit_ttlv_value_enumeration(
-        KMIPKIT_ENUMERATION_DIGITAL_SIGNATURE_ALGORITHM_SHA_256_WITH_RSA_ENCRYPTION, &value);
+        ecdsa ? KMIPKIT_ENUMERATION_DIGITAL_SIGNATURE_ALGORITHM_ECDSA_WITH_SHA256 :
+                KMIPKIT_ENUMERATION_DIGITAL_SIGNATURE_ALGORITHM_SHA_256_WITH_RSA_ENCRYPTION,
+        &value);
     if (status == 0 && !expect_missing_parameters && !append_ttlv_value(
             client, &parameters, UINT32_C(0x42004E), &value))
         status = KMIPKIT_ERROR_INVALID_INPUT;
@@ -8309,7 +8333,8 @@ static kmip_execution_outcome_t execute_created_key_signature(kmip_live_client_t
         activate_response_matches_created_key(responses[1], target, &status) &&
         (expect_missing_parameters ?
             created_key_sign_failure_response_is_empty(responses[2], &status) :
-            created_key_signature_response_matches(responses[2], target, operation, &status)) &&
+            created_key_signature_response_matches(
+                responses[2], target, operation, ecdsa ? 0U : 256U, &status)) &&
         revoke_response_matches_created_key(responses[3], target, &status) &&
         response_ttlv_matches_identifier(responses[3], kmipkit_client_batch_item_response_revoke_ttlv,
                                          target, &status) &&
@@ -8341,6 +8366,7 @@ cleanup:
     if (private_attributes) kmipkit_ttlv_structure_release(private_attributes);
     if (public_attributes) kmipkit_ttlv_structure_release(public_attributes);
     if (parameters) kmipkit_ttlv_structure_release(parameters);
+    if (domain_parameters) kmipkit_ttlv_structure_release(domain_parameters);
     if (data) kmipkit_ttlv_value_release(data);
     if (value) kmipkit_ttlv_value_release(value);
     return outcome;
@@ -8754,19 +8780,21 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     if (strcmp(test_case->case_id, "test-op-obtain-lease") == 0)
         return execute_obtain_lease(client);
     if (strcmp(test_case->case_id, "test-op-sign") == 0)
-        return execute_created_key_signature(client, KMIPKIT_ENUMERATION_OPERATION_SIGN, false);
+        return execute_created_key_signature(client, KMIPKIT_ENUMERATION_OPERATION_SIGN, false, false);
     if (strcmp(test_case->case_id, "test-crypto-sign-rsa-2048-pkcs1_v1_5") == 0)
-        return execute_created_key_signature(client, KMIPKIT_ENUMERATION_OPERATION_SIGN, false);
+        return execute_created_key_signature(client, KMIPKIT_ENUMERATION_OPERATION_SIGN, false, false);
+    if (strcmp(test_case->case_id, "test-crypto-sign-ecdsa-256-p_256") == 0)
+        return execute_created_key_signature(client, KMIPKIT_ENUMERATION_OPERATION_SIGN, false, true);
     if (strcmp(test_case->case_id,
                "test-sign-missing-managed-object-cryptographic-parameters") == 0)
-        return execute_created_key_signature(client, KMIPKIT_ENUMERATION_OPERATION_SIGN, true);
+        return execute_created_key_signature(client, KMIPKIT_ENUMERATION_OPERATION_SIGN, true, false);
     if (strcmp(test_case->case_id, "test-op-signature-verify") == 0)
         return execute_created_key_signature(
-            client, KMIPKIT_ENUMERATION_OPERATION_SIGNATURE_VERIFY, false);
+            client, KMIPKIT_ENUMERATION_OPERATION_SIGNATURE_VERIFY, false, false);
     if (strcmp(test_case->case_id,
                "test-crypto-signature-verify-rsa-2048-pkcs1_v1_5") == 0)
         return execute_created_key_signature(
-            client, KMIPKIT_ENUMERATION_OPERATION_SIGNATURE_VERIFY, false);
+            client, KMIPKIT_ENUMERATION_OPERATION_SIGNATURE_VERIFY, false, false);
     const char *const allow_v20_discover_versions_decode =
         getenv("KMIPKIT_C_ROUTE_DISCOVER_VERSIONS_V20_DECODE");
     if (strcmp(test_case->operation, "Discover Versions") == 0 &&
