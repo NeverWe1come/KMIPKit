@@ -271,6 +271,10 @@ def add_execution_contract(test_case: dict, elements: list[dict], indexes: dict[
         steps = ["prepare_isolated_fixture", "execute_operation", "verify_response", "cleanup_fixture"]
         assertions = ["response_matches_operation_contract", "state_effect_matches_expectation"]
         mutation = "mutating"
+        if test_case.get("operation") == "Validate":
+            steps = ["prepare_valid_certificate_chain", "execute_validate", "verify_validity_indicator"]
+            assertions = ["request_contains_only_certificate_chain_inputs", "validity_indicator_matches_fixture"]
+            mutation = "read_only"
     else:
         mode = "server_exchange"
         steps = ["execute_operation", "verify_response"]
@@ -1518,6 +1522,18 @@ def generate_catalog(normative_catalog_path: Path) -> dict:
                 "Revoke Private Key", "Destroy Certificate",
                 "Destroy Private Key", "Destroy Public Key",
             ]
+        elif name == "Re-certify":
+            setup = [
+                "Create Key Pair with Certificate Sign usage on Private Key",
+                "Activate Private Key",
+                "Certify Public Key to create the existing X.509 Certificate",
+            ]
+            teardown = [
+                "Revoke Private Key", "Destroy replacement Certificate",
+                "Destroy existing Certificate", "Destroy Private Key", "Destroy Public Key",
+            ]
+        elif name == "Validate":
+            setup = ["Provide a valid X.509 Certificate chain fixture"]
         elif name == "Sign":
             setup = ["Create Key Pair with Sign usage on Private Key", "Activate Private Key"]
             teardown = ["Revoke Private Key", "Destroy Private Key", "Destroy Public Key"]

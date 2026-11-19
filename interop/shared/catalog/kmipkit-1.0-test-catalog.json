@@ -58960,12 +58960,17 @@
       "isolation_recipe": {
         "unique_name_prefix": "kmipkit-re-certify",
         "setup_steps": [
-          "Create unique SymmetricKey"
+          "Create Key Pair with Certificate Sign usage on Private Key",
+          "Activate Private Key",
+          "Certify Public Key to create the existing X.509 Certificate"
         ],
         "target_step": "Execute Re-certify",
         "teardown_steps": [
-          "Revoke SymmetricKey",
-          "Destroy SymmetricKey"
+          "Revoke Private Key",
+          "Destroy replacement Certificate",
+          "Destroy existing Certificate",
+          "Destroy Private Key",
+          "Destroy Public Key"
         ],
         "normalized_fields": [
           "TimeStamp",
@@ -59733,13 +59738,10 @@
       "isolation_recipe": {
         "unique_name_prefix": "kmipkit-validate",
         "setup_steps": [
-          "Create unique SymmetricKey"
+          "Provide a valid X.509 Certificate chain fixture"
         ],
         "target_step": "Execute Validate",
-        "teardown_steps": [
-          "Revoke SymmetricKey",
-          "Destroy SymmetricKey"
-        ],
+        "teardown_steps": [],
         "normalized_fields": [
           "TimeStamp",
           "UniqueIdentifier",
@@ -59766,16 +59768,15 @@
           "2.1"
         ],
         "steps": [
-          "prepare_isolated_fixture",
-          "execute_operation",
-          "verify_response",
-          "cleanup_fixture"
+          "prepare_valid_certificate_chain",
+          "execute_validate",
+          "verify_validity_indicator"
         ],
         "assertions": [
-          "response_matches_operation_contract",
-          "state_effect_matches_expectation"
+          "request_contains_only_certificate_chain_inputs",
+          "validity_indicator_matches_fixture"
         ],
-        "mutation": "mutating",
+        "mutation": "read_only",
         "status": "planned"
       }
     },
