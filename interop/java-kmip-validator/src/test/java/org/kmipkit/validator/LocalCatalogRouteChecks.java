@@ -937,6 +937,90 @@ final class LocalCatalogRouteChecks {
         }
     }
 
+    /** Executes generic item-view access for the source-defined Certificate Attributes value shape. */
+    static void executeCertificateAttributesTtlvView(JsonNode catalog, String version,
+            Set<String> selectedCaseIds, EvidenceSink sink) throws Exception {
+        Set<String> emitted = new java.util.LinkedHashSet<>();
+        CodecLimits limits = CodecLimits.defaults();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String caseId = testCase.path("case_id").asText();
+            if (!selectedCaseIds.contains(caseId) || !applies(testCase, version)) continue;
+            JsonNode requires = testCase.path("requires");
+            String targetId = requires.path("normative_target_id").asText();
+            if (!"test-attr-certificate-attributes".equals(caseId)
+                    || !"KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES".equals(targetId)) {
+                throw new IllegalArgumentException("Selected case is not Certificate Attributes: " + caseId);
+            }
+
+            int attributeTag = tagCodeNamed(catalog, "Attribute", version);
+            int nameTag = tagCodeNamed(catalog, "Attribute Name", version);
+            int valueTag = tagCodeNamed(catalog, "Attribute Value", version);
+            int subjectCommonNameTag = tagCodeNamed(catalog, "Certificate Subject CN", version);
+            byte[] attributeName = "Certificate Attributes".getBytes(StandardCharsets.UTF_8);
+            byte[] commonName = "kmipkit-route-certificate-subject".getBytes(StandardCharsets.UTF_8);
+            byte[] wire = structureWire(attributeTag, concat(
+                    itemWire(nameTag, TtlvItemType.TextString.code(), attributeName),
+                    structureWire(valueTag,
+                            itemWire(subjectCommonNameTag, TtlvItemType.TextString.code(), commonName))));
+
+            TtlvStructure certificateAttributes = appendText(TtlvStructure.create(),
+                    subjectCommonNameTag, commonName, limits);
+            TtlvValue certificateAttributesValue = TtlvValue.structure(certificateAttributes, limits);
+            TtlvStructure attribute = appendText(TtlvStructure.create(), nameTag, attributeName, limits);
+            TtlvItem valueItem;
+            try (RawTag raw = RawTag.fromRaw(valueTag); Tag tag = raw.checked()) {
+                valueItem = TtlvItem.create(tag, certificateAttributesValue, limits);
+            }
+            attribute = TtlvStructure.withItem(attribute, valueItem, limits);
+            TtlvValue attributeValue = TtlvValue.structure(attribute, limits);
+            TtlvItem item;
+            try (RawTag raw = RawTag.fromRaw(attributeTag); Tag tag = raw.checked()) {
+                item = TtlvItem.create(tag, attributeValue, limits);
+            }
+            try (item) {
+                assertCertificateAttributesItem(item, attributeTag, nameTag, valueTag,
+                        subjectCommonNameTag, attributeName, commonName);
+            }
+            try (TtlvItem decoded = TtlvCodec.decode(wire)) {
+                assertCertificateAttributesItem(decoded, attributeTag, nameTag, valueTag,
+                        subjectCommonNameTag, attributeName, commonName);
+            }
+            emitRoute(sink, caseId, targetId,
+                    "java.generic-ttlv.function.ttlv_item_view_from_item",
+                    "org.kmipkit.ttlv.TtlvItem.view", "decode", wire);
+            emitted.add(caseId);
+        }
+        if (!emitted.equals(selectedCaseIds)) {
+            throw new IllegalArgumentException("Selected Certificate Attributes cases were not executed for "
+                    + version);
+        }
+    }
+
+    private static void assertCertificateAttributesItem(TtlvItem item, int attributeTag, int nameTag,
+            int valueTag, int subjectCommonNameTag, byte[] attributeName, byte[] commonName) {
+        try (var view = item.view(); var tag = view.tag(); var value = view.value();
+                TtlvStructureView attribute = value.structure();
+                var nameView = attribute.itemAt(0); var viewedNameTag = nameView.tag();
+                var viewedName = nameView.value();
+                var valueView = attribute.itemAt(1); var viewedValueTag = valueView.tag();
+                var viewedValue = valueView.value(); TtlvStructureView certificateAttributes = viewedValue.structure();
+                var subjectView = certificateAttributes.itemAt(0); var subjectTag = subjectView.tag();
+                var subjectValue = subjectView.value()) {
+            assertEquals(attributeTag, tag.raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertEquals(2, attribute.itemCount());
+            assertEquals(nameTag, viewedNameTag.raw());
+            assertEquals(TtlvItemType.TextString, nameView.itemType());
+            assertArrayEquals(attributeName, viewedName.bytes());
+            assertEquals(valueTag, viewedValueTag.raw());
+            assertEquals(TtlvItemType.Structure, valueView.itemType());
+            assertEquals(1, certificateAttributes.itemCount());
+            assertEquals(subjectCommonNameTag, subjectTag.raw());
+            assertEquals(TtlvItemType.TextString, subjectView.itemType());
+            assertArrayEquals(commonName, subjectValue.bytes());
+        }
+    }
+
     /** Exercises generic TTLV routes for the source-defined scalar children of selected Structure attributes. */
     static void executeStructureAttributeValues(JsonNode catalog, String version, Set<String> selectedCaseIds,
             EvidenceSink sink) throws Exception {
