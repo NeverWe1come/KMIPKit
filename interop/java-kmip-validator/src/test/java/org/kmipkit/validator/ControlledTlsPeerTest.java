@@ -1738,6 +1738,18 @@ class ControlledTlsPeerTest {
                 "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.digitalsignaturealgorithm",
                 "construct", "2.1");
         for (String protocolVersion : KMIP_2_0_AND_2_1) {
+            assertRouteEventRecorded(events, "test-attr-random-number-generator",
+                    "KMIPKIT-ELEM-ATTRIBUTE-RANDOM-NUMBER-GENERATOR",
+                    "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
+                    "construct", protocolVersion);
+            assertRouteEventRecorded(events, "test-attr-random-number-generator",
+                    "KMIPKIT-ELEM-ATTRIBUTE-RANDOM-NUMBER-GENERATOR",
+                    "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
+                    "construct", protocolVersion);
+            assertRouteEventRecorded(events, "test-attr-random-number-generator",
+                    "KMIPKIT-ELEM-ATTRIBUTE-RANDOM-NUMBER-GENERATOR",
+                    "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
+                    "construct", protocolVersion);
             assertRouteEventRecorded(events, "test-attr-digest", "KMIPKIT-ELEM-ATTRIBUTE-DIGEST",
                     "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
                     "construct", protocolVersion);
