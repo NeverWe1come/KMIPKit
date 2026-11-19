@@ -1358,6 +1358,26 @@ failures. The ledger records 71,583 planned, 44,025 executed, and 27,558
 pending cells. The full matrix remains incomplete, so #187 and its dependents
 stay WIP.
 
+### Java lifecycle Query response accessor route — 2026-11-19
+
+The controlled `test-async-lifecycle-poll` workflow now records its installed
+`AsyncOperationOutcome.queryAsyncRequestsResponse` decoder invocation as a
+separate KMIP 2.1 TTLV route cell. The accessor is called on the typed Query
+outcome from the existing lifecycle exchange; the event is tied to the
+“Query Asynchronous Requests” workflow step. This adds local response-route
+evidence and does not change the exchange or claim external KMS
+interoperability. Reference: OASIS KMIP 2.1 §6.1.41.
+
+Red `c04f34393` requires the missing response-accessor event for the lifecycle
+case. Green `324ced21e` records the invocation. The full Gradle suite passes
+111/111; shared route, schema, and capability tests pass 112/112; requirement
+and feature traceability pass 2/2 and 31/31. The capability audit accepts
+1,511 routes and the generated-ledger comparison passes. Selected evidence
+validates 44,047/44,047 cells: 44,031 invocations, 16 not-applicable cells,
+and zero failures. The ledger records 71,583 planned, 44,047 executed, and
+27,536 pending cells. The full matrix remains incomplete, so the Java stack
+stays WIP.
+
 ### Java catalogued asynchronous Query operation — 2026-11-19
 
 The controlled Java peer now executes `test-op-query-asynchronous-requests`
