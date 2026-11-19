@@ -4243,6 +4243,33 @@ class RouteMatrixTests(unittest.TestCase):
              'kmipkit_client_batch_item_response_sign_ttlv'},
             {event['public_api_symbol'] for event in local_decodes})
 
+    def test_ecdsa_sign_case_uses_installed_request_and_response_routes(self):
+        """OASIS KMIP 2.0 §6.1.49 and 2.1 §6.1.55 define ECDSA Sign."""
+        from artifact_support import ROOT
+        from route_peer import RECIPES, execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_id = 'test-crypto-sign-ecdsa-256-p_256'
+        self.assertIn(case_id, RECIPES, 'ECDSA Sign has no controlled-peer route recipe')
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(12, len(checks), 'ECDSA Sign must pass both versions and all six wire routes')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertEqual(40, len(events), 'ECDSA Sign must evidence 36 wire and four local response routes')
+        send_events = [event for event in events if event['action'] == 'send']
+        self.assertEqual(12, len(send_events))
+        self.assertTrue(all(event['peer_observed_operation_sequence'] ==
+                            ['Create Key Pair', 'Activate', 'Sign', 'Revoke', 'Destroy', 'Destroy']
+                            for event in send_events))
+        local_decodes = [event for event in events if event['action'] == 'decode' and
+                         event['transport'] is None]
+        self.assertEqual(4, len(local_decodes))
+
     def test_sign_without_required_managed_object_parameters_decodes_failure(self):
         """OASIS KMIP 2.0 §6.1.49.1 and 2.1 §6.1.55.1 require the failed Sign result."""
         from artifact_support import ROOT
