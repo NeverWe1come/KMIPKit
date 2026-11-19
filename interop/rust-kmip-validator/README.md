@@ -1,7 +1,7 @@
 # Rust interoperability consumer
 
 The independent Rust 1.94 workspace consumes installed `.crate` packages built
-from release commit `489fafc79ef89db2524eafa7a6c6482f5cf75d97`, targeting KMIP
+from release commit `12496d646d11d4069b58bcc88fc76cc619211ec6`, targeting KMIP
 2.0 and 2.1. No deployed vendor KMS or vendor compatibility claim is included.
 
 From the repository root:
@@ -101,7 +101,7 @@ boundary probe. CI uploads only redacted results and package provenance.
 The full controlled inventory and all five incoming operations are verified in
 both 2.0 and 2.1. The current package pin includes the KMIP 2.0 session-tag
 correction and partial Stop/Undo batch-response handling merged in
-`489fafc79ef89db2524eafa7a6c6482f5cf75d97`. Login, Logout
+`12496d646d11d4069b58bcc88fc76cc619211ec6`. Login, Logout
 and Delegated Login run through the controlled peer in 2.0 as well as 2.1;
 older evidence from the pre-fix pin is superseded by the current controlled
 run. Ping, Process, Query Asynchronous Requests and Set Defaults remain

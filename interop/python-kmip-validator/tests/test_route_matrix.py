@@ -1024,7 +1024,48 @@ class RouteMatrixTests(unittest.TestCase):
                   and route['public_api_symbol'].startswith('kmipkit.client.BatchItemResult.')
                   and (route['public_api_symbol'].rsplit('.', 1)[1].endswith('_response')
                        or route['public_api_symbol'].rsplit('.', 1)[1] in suffixes)}
-        self.assert_route_cells_pass(symbols)
+        cases = {case['case_id']: case for case in self.catalog['test_cases']}
+        targets = {target['target_id']: target for target in self.catalog['normative_targets']}
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
+                 if cell['public_api_symbol'] in symbols]
+        outcomes = [self.runner._execute_matrix_cell(cell, cases[cell['case_id']],
+                                                     targets[cell['target_id']])
+                    for cell in cells]
+
+        gaps = [value for kind, value in outcomes if kind == 'gap']
+        events = [value for kind, value in outcomes if kind == 'event']
+        self.assertEqual([], gaps)
+        self.assertTrue(events)
+        not_applicable = [event for event in events if event['status'] == 'not_applicable']
+        self.assertEqual(2, len(not_applicable))
+        self.assertTrue(all(event['not_applicable_reason'] ==
+                            'stop_unprocessed_response_omitted' for event in not_applicable))
+        self.assertTrue(all(event['status'] == 'passed' or event in not_applicable
+                            for event in events))
+        self.assertTrue(all(event['invocation_count'] == 1 for event in events
+                            if event['status'] == 'passed'))
+        self.assertTrue(all(event['invocation_count'] == 0 and 'invocation_id' not in event
+                            for event in not_applicable))
+
+    def test_batch_stop_omitted_typed_response_accessor_is_not_invoked(self):
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] == 'test-batch-stop-on-first-failure')
+        target = next(target for target in self.catalog['normative_targets']
+                      if target['target_id'] == 'KMIPKIT-ELEM-OP-C2S-GET')
+        cell = next(cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
+                    if cell['case_id'] == case['case_id']
+                    and cell['target_id'] == target['target_id']
+                    and cell['public_api_symbol'] == 'kmipkit.client.BatchItemResult.get_response'
+                    and cell.get('workflow_item_index') == 1
+                    and cell['action'] == 'decode')
+
+        outcome, event = self.runner._execute_matrix_cell(cell, case, target)
+
+        self.assertEqual('event', outcome)
+        self.assertEqual('not_applicable', event['status'])
+        self.assertEqual(0, event['invocation_count'])
+        self.assertEqual('stop_unprocessed_response_omitted', event['not_applicable_reason'])
+        self.assertNotIn('invocation_id', event)
 
     def test_typed_response_ttlv_accessors_preserve_complete_structures(self):
         suffixes = {'.response_ttlv', '.response_payload_ttlv'}
@@ -1035,6 +1076,26 @@ class RouteMatrixTests(unittest.TestCase):
                    and not route['public_api_symbol'].startswith(
                        'kmipkit.client.AsyncOperationOutcome.')}
         self.assert_route_cells_pass(symbols)
+
+    def test_batch_item_complete_response_views_execute_with_controlled_tls(self):
+        symbols = {
+            'kmipkit.client.BatchItemResult.ttlv_hex',
+            'kmipkit.client.BatchItemResult.json',
+            'kmipkit.client.BatchItemResult.xml',
+        }
+        cases = {case['case_id']: case for case in self.catalog['test_cases']}
+        targets = {target['target_id']: target for target in self.catalog['normative_targets']}
+        for symbol in sorted(symbols):
+            cell = next(cell for cell in iter_cells(
+                self.catalog, self.manifest, languages=('python',))
+                if cell['public_api_symbol'] == symbol
+                and cell['protocol_version'] == '2.1')
+            kind, event = self.runner._execute_matrix_cell(
+                cell, cases[cell['case_id']], targets[cell['target_id']])
+            self.assertEqual('event', kind)
+            self.assertEqual('passed', event['status'])
+            self.assertEqual('response_received', event['request_delivery_state'])
+            self.assertEqual(1, event['peer_observed_response_count'])
 
     def test_query_response_field_accessors_preserve_wire_order(self):
         symbols = {
@@ -1108,6 +1169,27 @@ class RouteMatrixTests(unittest.TestCase):
                 self.assertIsNone(peers[0].request_observation['batch_error_continuation_option'])
                 self.assertEqual(2, event['peer_observed_response_count'])
                 _validate_batch_event(event, case, self.catalog, ('batch-count',))
+
+    def test_batch_stop_omitted_response_decoder_is_not_invoked(self):
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] == 'test-batch-stop-on-first-failure')
+        target = next(target for target in self.catalog['normative_targets']
+                      if target['target_id'] == 'KMIPKIT-ELEM-OP-C2S-GET')
+        cell = next(cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
+                    if cell['case_id'] == case['case_id']
+                    and cell['target_id'] == target['target_id']
+                    and cell['public_api_symbol'] == 'kmipkit.ttlv.ttlv_item_view_from_item'
+                    and cell.get('workflow_item_index') == 1
+                    and cell['action'] == 'decode'
+                    and cell['execution_status'] == 'not_applicable')
+
+        outcome, event = self.runner._execute_matrix_cell(cell, case, target)
+
+        self.assertEqual('event', outcome)
+        self.assertEqual('not_applicable', event['status'])
+        self.assertEqual(0, event['invocation_count'])
+        self.assertEqual('stop_unprocessed_response_omitted', event['not_applicable_reason'])
+        self.assertNotIn('invocation_id', event)
 
     def test_batch_stop_route_obeys_catalogued_response_count(self):
         case = next(case for case in self.catalog['test_cases']

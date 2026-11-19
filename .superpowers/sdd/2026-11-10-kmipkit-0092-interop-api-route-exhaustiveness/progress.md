@@ -269,3 +269,429 @@ branches, and the common CI therefore reports a planned matrix only.
   reports 287 uninvoked response-accessor cells out of 49,079 local cells;
   network execution evidence for the 26,376 required network cells remains
   incomplete. The PR stays WIP and no vendor KMS run has been performed.
+
+## 2026-11-17 Java KMIP 2.1 Rotate Name Type structure-member routes
+
+- The Java matrix had seven pending cells for
+  `test-norm-structure-member-structure-member-4-53-rotate-name-type`: four
+  generic TTLV routes on the member and three typed attribute routes through
+  the enclosing `Rotate Name` Attribute. OASIS KMIP 2.1 §4.53 Table 135
+  requires both `Rotate Name Value` and `Rotate Name Type`; §11.51 Table 482
+  defines URI as value `0x00000002`.
+- Red: `8c342bde8` added a report assertion for all seven exact route cells.
+  The focused test failed as intended (`expected 1 route event, got 0`).
+- Green: `6029ef004` constructs the required two-member Rotate Name structure,
+  verifies the enumeration and nested field values through installed Java
+  generic and typed APIs, and records all seven per-cell events. The first
+  attempt exposed the native owner-transfer rule: a view retains its owner and
+  that owner cannot then be consumed by `TtlvStructure.withItem`. The fixture
+  uses separate copies for view and transfer routes. The focused test passes.
+- Refactor: `476ac865e` shares the case and target identifiers between the
+  fixture and its assertions; the focused test still passes.
+- The route-evidence validator requires declared case IDs as well as events.
+  The report now declares this structure-member case explicitly. The complete
+  Java suite passes 57/57 tests with `--rerun-tasks`; selected-scope validation
+  passes 27,247/27,247 cells with zero failed cells. Regenerated ledger
+  comparison passes; the full matrix remains at 44,394 pending cells in 1,221
+  case IDs. These results use artifact commit
+  `12496d646d11d4069b58bcc88fc76cc619211ec6` with SHA-256
+  `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+- This is local-model evidence for the installed pinned artifact. It does not
+  complete the Java matrix or establish interoperability with a vendor KMS;
+  the Java PR remains WIP.
+
+## 2026-11-17 Java KMIP 2.1 Rotate Name Value structure-member routes
+
+- The separate case
+  `test-norm-structure-member-structure-member-4-53-rotate-name-value` now
+  completes four generic TTLV routes for the `Text String` member and three
+  typed Attribute routes through `Rotate Name`. OASIS KMIP 2.1 §4.53 Table 135
+  requires both Rotate Name Value and Rotate Name Type; the fixture includes
+  both members and uses URI value `0x00000002` from §11.51 Table 482.
+- Red: `b0576cd07` added exact event assertions for all seven cells. The
+  controlled-peer test failed as intended (`expected 1 route event, got 0`).
+- Green: `de16f5d1c` constructs the Text String member and enclosing typed
+  Attribute through the installed Java package, checks both members, and emits
+  all seven per-cell events. The focused controlled-peer test passed.
+- Refactor: `52d7c14d4` shares the enclosing Rotate Name TTLV fixture between
+  the Value and Type member cases; the focused test still passes.
+- The complete Java suite passes 57/57 tests, with no failures or skips, under
+  `--rerun-tasks`. Selected-scope validation passes 27,254/27,254 cells with
+  zero failures. The regenerated ledger comparison passes; the global matrix
+  has 44,387 pending cells across 1,220 case IDs. Results use pinned artifact
+  commit `12496d646d11d4069b58bcc88fc76cc619211ec6` with SHA-256
+  `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+- Verification commands: `bash ../../bindings/java/gradlew --no-daemon
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks`;
+  `python3 ../shared/tools/validate_route_evidence.py --selected-scope --report
+  build/route-execution-evidence.json --artifact-sha256
+  504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545
+  --write-ledger`; `python3 tools/compare_route_ledger.py --refresh-reference`;
+  `python3 tools/compare_route_ledger.py`.
+- This adds local-model evidence and does not establish interoperability with
+  a vendor KMS; the Java PR remains WIP.
+
+## 2026-11-17 Java KMIP 2.0/2.1 Batch Order Option routes
+
+- `test-norm-message-field-message-field-8-2-batch-order-option` now completes
+  three generic TTLV routes and the typed `RequestMessage.fromTtlv` route in both
+  protocol versions. OASIS KMIP 2.0 §9.8 Table 369 and KMIP 2.1 §9.8 Table 407
+  define the field as Boolean; §8.2 identifies the request-header field. The
+  existing parser fixture confirms the field value is true.
+- Red: `234626a25` requires all eight exact route/version cells. The focused
+  controlled-peer test failed as intended (`expected 2 route events, got 0`).
+- Green: `4741dad52` emits the three generic route events per version and adds
+  the normative field to the existing typed RequestMessage parse evidence. The
+  focused test passes for both versions.
+- Refactor: `bd9cc43a5` reuses the stable case and target IDs between fixture
+  and assertions; the focused test still passes.
+- The full Java suite passes 57/57 tests, with no failures or skips, under
+  `--rerun-tasks`. Selected-scope validation passes 27,262/27,262 cells with
+  zero failures. The regenerated ledger comparison passes; the global matrix
+  has 44,379 pending cells across 1,219 case IDs. These results use pinned
+  artifact commit `12496d646d11d4069b58bcc88fc76cc619211ec6` with SHA-256
+  `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+- Verification commands: `bash ../../bindings/java/gradlew --no-daemon
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks`;
+  `python3 ../shared/tools/validate_route_evidence.py --selected-scope --report
+  build/route-execution-evidence.json --artifact-sha256
+  504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545
+  --write-ledger`; `python3 tools/compare_route_ledger.py --refresh-reference`;
+  `python3 tools/compare_route_ledger.py`.
+- This adds local-model evidence and does not complete the Java matrix or
+  establish vendor interoperability; the Java PR remains WIP.
+
+## 2026-11-17 Java KMIP 2.0/2.1 Attestation Capable Indicator routes
+
+- `test-norm-message-field-message-field-8-2-attestation-capable-indicator`
+  now completes three generic TTLV routes and the typed
+  `RequestMessage.fromTtlv` route in both protocol versions. OASIS KMIP 2.0
+  §8.2 and §9.3 Table 364 and KMIP 2.1 §8.2 and §9.3 Table 402 define the
+  request-header Boolean; the existing controlled request fixture carries
+  `true` and the typed parser asserts that value.
+- Red: `c40efe3d8` requires all eight exact route/version cells. The focused
+  test failed as intended (`expected 2 route events, got 0`). Its first run
+  exposed a stale installed-artifact manifest pointing to the #217 worktree;
+  reinstalling via `tools/install_artifact.py` restored the pinned artifact
+  before the conclusive Red result.
+- Green: `3271bd8f1` emits the generic Item create, Item view, and decoder
+  events for each version and includes this catalog target in typed request
+  parsing. The focused controlled-peer test passes for both versions.
+- Refactor: `60f4eb8e1` shares the Boolean message-field fixture between this
+  case and Batch Order Option; the focused test passes after the refactor.
+- The full Java suite passes 57/57 tests, with no failures, errors, or skips.
+  Selected-scope validation passes 27,270/27,270 cells with zero failed cells.
+  The regenerated ledger comparison passes; 44,371 cells remain pending across
+  1,218 case IDs in the 71,641-cell matrix. Evidence uses pinned artifact
+  commit `12496d646d11d4069b58bcc88fc76cc619211ec6` with SHA-256
+  `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+- Verification commands:
+
+  ```sh
+  JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+    bash ../../bindings/java/gradlew --no-daemon \
+    -PkmipkitMavenRepo="$PWD/build/maven-repository" test \
+    --tests org.kmipkit.validator.ControlledTlsPeerTest.controlledQueryProducesPerRouteEvidenceForBothProtocolVersions --rerun-tasks
+  JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-temp" \
+    bash ../../bindings/java/gradlew --no-daemon \
+    -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks
+  python3 ../shared/tools/validate_route_evidence.py \
+    --selected-scope --report build/route-execution-evidence.json \
+    --artifact-sha256 504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545 \
+    --write-ledger
+  python3 tools/compare_route_ledger.py --refresh-reference
+  python3 tools/compare_route_ledger.py
+  ```
+- This adds local-model evidence; it does not complete the Java matrix or
+  establish interoperability with a vendor KMS. The Java PR remains WIP.
+
+## 2026-11-17 Java KMIP 2.0/2.1 shared Request Header scalar routes
+
+- The seven scalar targets under the shared §8.2 Request Header now complete
+  three generic TTLV Item routes and typed `RequestMessage.fromTtlv` for KMIP
+  2.0 and 2.1: Asynchronous Indicator, Batch Count, Batch Error Continuation
+  Option, Client Correlation Value, Maximum Response Size, Server Correlation
+  Value, and Time Stamp. Their version-specific scalar definitions are OASIS
+  KMIP 2.0/2.1 §§9.2, 9.5, 9.6, 9.9, 9.10, 9.12, and 9.20. The parser
+  fixture asserts each typed header value; Server Correlation Value is asserted
+  by tag and bytes through the public generic header TTLV view.
+- Red: `661d07efa` adds exact route/version assertions and fails because the
+  §8.2 targets have no emitted generic or typed route evidence. Green:
+  `d8a64d9ed` resolves the shared targets through their version-specific
+  scalar definitions, emits their three generic TTLV routes, validates the
+  request header values via `RequestMessage.fromTtlv`, and records the explicit
+  `ClientBatch.addErrorContinuationValue` setter for Stop. Refactor:
+  `50d4b494d` centralizes the shared §8.2 case-ID prefix. Focused tests pass
+  after Green and Refactor.
+- Full Java suite: 57/57 tests passed with no failures, errors, or skips.
+  Shared route-capability tests: 68/68 passed. Route generator check: 1,507
+  routes. Selected-scope validation: 27,328/27,328 cells, zero failed. The
+  generated ledger records 71,641 planned, 27,328 executed, 44,313 pending
+  across 1,211 pending case IDs; the ledger comparison passes. Artifact commit
+  `12496d646d11d4069b58bcc88fc76cc619211ec6`, SHA-256
+  `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+- This is local-model evidence and does not complete the Java matrix or claim
+  vendor interoperability. The PR remains WIP.
+- Verification commands are recorded in
+  `specs/092-interop-api-route-exhaustiveness/java-route-expansion-evidence.md`.
+
+## 2026-11-17 Java KMIP 2.0/2.1 repeatable Response Header Attestation Type
+
+- OASIS KMIP 2.0/2.1 §8.5 identifies Response Header Attestation Type as
+  optional and repeatable. The Java route fixture now completes generic Item
+  create/view/decode and typed `ResponseMessage.fromTtlv` routes under both
+  versions; the typed response view preserves two Enumeration values in wire
+  order.
+- Red: `855778c41` added exact route assertions and failed because the
+  controlled report had zero events for the target. Green: `d0471de8c` emits
+  the generic routes and parses a response header containing two Attestation
+  Type values. Refactor: `31f5fb590` shares the enumeration values between the
+  request and response fixtures. The selected-scope validator then exposed
+  that the report's explicit case list omitted this target. `4e1a6866a` adds
+  the case to that selection and updates its count assertion.
+- Verification: the focal route test passes; the full Java suite passes
+  57/57 tests with no failures, errors, or skips. All 68 shared route-capability
+  tests pass, and the generated route check confirms 1,507 routes. Selected
+  scope validation accepts 27,344/27,344 cells with zero failures. The
+  generated ledger records 71,641 planned, 27,344 executed, and 44,297 pending
+  cells across 1,209 pending case IDs; ledger comparison passes. Evidence uses
+  artifact commit `12496d646d11d4069b58bcc88fc76cc619211ec6`, SHA-256
+  `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+- This completes eight local-model route cells. It does not establish vendor
+  interoperability or complete the Java matrix; the PR remains WIP.
+
+## 2026-11-17 Java KMIP 2.0/2.1 repeatable Request Header Attestation Type
+
+- OASIS KMIP 2.0/2.1 §8.2 marks Request Header Attestation Type optional and
+  repeatable. The Java consumer now exercises generic Item create/view/decode
+  and typed `RequestMessage.fromTtlv`; the typed view preserves two Enumeration
+  values in source order. The fixture follows the Request Header field order.
+- Red: `2c869bcab` adds exact route assertions and fails because all eight
+  route/version cells are missing. Green: `5b985bfd0` constructs, decodes, and
+  parses repeated Attestation Type values in the pinned artifact. Refactor:
+  `d0766d376` shares route IDs and fixture values. The focused controlled-peer
+  class passes 19/19 tests.
+- Full Java suite: 57/57 tests pass, no skips or failures. Selected-scope
+  validation passes 27,336/27,336 cells with zero failed cells. The generated
+  ledger records 71,641 planned, 27,336 executed, and 44,305 pending across
+  1,210 case IDs; ledger comparison passes. Artifact commit
+  `12496d646d11d4069b58bcc88fc76cc619211ec6`, SHA-256
+  `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+- This closes eight local-model route cells. It does not establish vendor
+  interoperability or complete the Java matrix. The Java PR remains WIP.
+- Verification commands are recorded in
+  `specs/092-interop-api-route-exhaustiveness/java-route-expansion-evidence.md`.
+
+## 2026-11-17 Java KMIP 2.0/2.1 Response Header Client Correlation Value
+
+- OASIS KMIP 2.0/2.1 §8.5 defines Client Correlation Value as an optional
+  Response Header Text String. The controlled response fixture exercises the
+  generic Item create/view/decode routes and typed
+  `ResponseMessage.fromTtlv`; `ResponseHeaderView.clientCorrelationValue()`
+  returns the configured text.
+- Red: `6e85b8b63` adds exact per-version assertions; after refreshing the
+  installed artifact manifest to the pinned package in this worktree, the
+  focused test fails because the target has zero events. Green: `220eeec3f`
+  emits generic TTLV and typed parser evidence and asserts the response value.
+  Refactor: `06d74f08b` shares the fixture text between construction and
+  assertion.
+- The full Java suite passes 57/57 tests with no failures, errors, or skips.
+  Shared route-capability tests pass 68/68; the generated route check reports
+  1,507 routes. Selected-scope validation accepts 27,352/27,352 cells with zero
+  failures. The generated ledger records 71,641 planned, 27,352 executed, and
+  44,289 pending cells across 1,208 pending case IDs; the ledger comparison
+  passes. Evidence uses artifact commit
+  `12496d646d11d4069b58bcc88fc76cc619211ec6`, SHA-256
+  `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+- This adds eight local-model cells. It does not establish server
+  interoperability or complete the Java matrix; the Java PR remains WIP.
+
+## 2026-11-18 Java Split Key managed-object root routes
+
+- Red commit `45b9ab5c5` fails because the Split Key root route recipe is
+  missing. Green commit `e3b1bdfe7` adds the `ManagedObject.splitKey`,
+  `fromFields`, and `fromItem` calls in KMIP 2.0/2.1 with the §2.8 Table 9
+  field order; Refactor commit `e8fdeb63d` reuses canonical scalar wire
+  encoding and checks that all route events have identical bytes.
+- Ruling: keep the fixture member order identical to §2.8 Table 9 because the
+  installed native `fromItem` validator rejects a noncanonical order; if this
+  is wrong, the cost is incorrect route evidence for an invalid KMIP object.
+- Verification: Java suite 87/87; shared route suites 109/109; selected scope
+  34,702/34,702 with no failures; ledger comparison, 1,507-route capability
+  audit, and `git diff --check` pass. Full matrix: 71,641 planned, 34,702
+  executed, 36,939 pending. Exact-head hosted CI and full matrix closure remain
+  outstanding; keep all three stack PRs WIP.
+
+## 2026-11-18 Java Split Key managed-object member routes
+
+- Red `3601224ff` adds tests requiring six Split Key Table 9 members plus the
+  tag to run through the applicable named and generic factories. Green
+  `adbcd43d0` adds those recipes and evidence events. Refactor `af53d1b39`
+  shares report-event matching. The first ledger validation found the Split Key
+  tag duplicated in `case_ids`; the report now omits only that redundant list
+  entry while preserving its new named-factory events.
+- The fixtures use Table 9 order, XOR except for Polynomial Sharing Prime
+  Field with Prime Field Size 257, and a deterministic Raw Key Block. They
+  test local model construction, not cryptographic splitting or server
+  interoperability.
+- Verification: Java suite 87/87 before the case-ID list correction; focused
+  TLS report test passes after correction; selected evidence validates
+  34,740/34,740 cells with zero failures; ledger comparison and 1,507-route
+  capability audit pass. Full Java matrix remains incomplete: 36,901/71,641
+  pending. Exact-head CI and full closure remain open; stack stays WIP.
+
+## 2026-11-18 Java PGP Key and Secret Data managed-object routes
+
+- Red `7b1f65d3b` requires both object structures, their required members, and
+  assigned tags to invoke the matching named/generic Java factories. Green
+  `6c7820757` adds valid §2.4/§2.7 Table-field fixtures and emits 40 route
+  cells. Refactor `1c67d3647` shares PGP target identification.
+- Fixtures include PGP Key Version 4 or Secret Data Type Password plus a Raw
+  Key Block; they test local model construction only, not key validity.
+- Verification: Java suite 89/89, shared suites 109/109, selected evidence
+  34,780/34,780 with zero failures, ledger comparison and 1,507-route audit
+  pass. The full matrix has 71,641 planned, 34,780 executed, 36,861 pending.
+  Exact-head CI and full closure remain open; all stack PRs remain WIP.
+
+## 2026-11-18 Java generic routes for Key Block structure members
+
+- Red `738a80069` requires the catalogued PGP, Private, Public, Secret Data,
+  and Split Key Key Block member cases to use the generic TTLV routes. Green
+  `473f57a70` recognizes the catalog's `Object Data Structure` encoding, and
+  Refactor `14210bf1a` separates source structure classification. Follow-up
+  Red `13e375785` catches route evidence that is not declared for a target;
+  Green `f46295a92` uses the manifest's exact target sets for `TtlvValue.structure`
+  and emits only applicable cells.
+- Verification: full Java suite 90/90 with zero failures, errors, or skips;
+  shared suites 109/109; selected evidence 34,816/34,816 with zero failures;
+  ledger comparison and 1,507-route capability audit pass. The full Java
+  ledger has 71,641 planned, 34,816 executed, and 36,825 pending cells.
+- The full route matrix and exact-head CI remain open, so #187, #216, and #217
+  stay WIP.
+
+## 2026-11-18 Java generic Operation routes for KMIP 2.0 version boundaries
+
+- Red `7288a8643` requires all six version-boundary cases to execute the
+  generic Operation Item construction, view, and decode routes. Green
+  `2843cdfe3` resolves the 2.1 operation target for the local TTLV fixture
+  while retaining the case's 2.0 context; the unsupported requests are not sent.
+- The Java suite passes 91/91; selected evidence validates 34,834/34,834 cells
+  with zero failures; ledger comparison and the 1,507-route capability audit
+  pass. The full ledger has 71,641 planned, 34,834 executed, and 36,807 pending.
+- Full matrix closure and exact-head CI remain open; #187 stays WIP.
+
+## 2026-11-18 Java typed response accessor cells
+
+- Added regression assertions for Create `createResponse` and Get Attributes
+  `getAttributesResponse` against the exact catalog case/target/version IDs.
+  The Red test failed because the Get Attributes response payload cell had no
+  event. Existing controlled peers invoked both typed accessors and checked
+  their response fields; Green records their local response-accessor routes
+  only after those assertions.
+- Red `3f693875f`, Green `ac70df877`, Refactor `72e695c22`. Full Java suite:
+  95 passed, 0 failures/errors/skips. Selected scope: 42,869/42,869, 0 failed;
+  ledger comparison passes. Route capability audit: 1,507. Generated ledger:
+  71,641 planned, 42,869 executed, 28,772 pending.
+- The matrix checker and current CI still use selected-scope completeness.
+  This does not meet the active objective's full-matrix requirement. Keep the
+  Java stack WIP and continue implementing pending case recipes; later change
+  the exact-head CI gate to require full-matrix completeness.
+
+## 2026-11-18 Java full-matrix CI gate
+
+- Red `91aa2652c` proves the Java workflow incorrectly invokes the
+  `--selected-scope` mode. Green `73e399806` removes it and permits full-mode
+  ledger output only after `validate_collection` checks every Java matrix
+  cell. Refactor `103ca958a` shares ledger-writing summary construction.
+- 49 targeted Python tests pass across route evidence, Java workflow contracts,
+  and ledger comparison. Running the actual full-mode CLI against the current
+  report fails on missing async, TTLV, and transport route cells as expected;
+  this confirms the new gate exposes the remaining work. Keep the PR WIP and
+  continue until the full report passes, then verify exact-head hosted CI.
+
+## Audit of previously emitted Java local evidence
+
+- Independent audit found potentially invalid executed cells that must be
+  corrected before treating prior counts as trustworthy: KMIP 2.1 Object
+  Groups/Object Types operation-structure fixtures use tags 0x420126/0x420125
+  instead of 0x420166/0x420167; Locate Object Group Member is Text String
+  instead of Enumeration; Offset and Lease Time are Integer instead of
+  Interval; Create Split Key Prime Field Size is Integer 8 instead of a
+  Big Integer prime; Check Lease Time is Integer instead of Interval.
+- The Protocol Version Minor scalar fixture also uses value 1 in a KMIP 2.0
+  context, where the wire value is 0. Structure-valued tag-only fixtures use
+  empty values, which does not invalidate tag identity but does not prove a
+  semantically valid complete Attribute.
+- Manual Big Integer wires for Split Key Prime Field Size and transparent key
+  material use item Length values not divisible by eight, contrary to the
+  pinned TTLV rule.
+
+## 2026-11-18 Java fixture integrity corrections
+
+- Red `9ef316a30`, Green `0fa84b23c`, and Refactor `48ee087f7` corrected the
+  KMIP 2.1 Object Groups/Object Types tags, Protocol Version Minor for KMIP
+  2.0, scalar TTLV types, Big Integer item-length alignment/sign extension,
+  and the Split Key Prime Field Size fixture. Separate Split Key bound cycle:
+  Red `73e71a69c`, Green `95eef8546`, Refactor `48ee087f7`; Prime Field Size is
+  `2^127 - 1`, a prime greater than `2^L` for the 32-bit synthetic secret
+  required by KMIP 2.1 §2.8.
+- The full Java suite passes 106/106 tests. Fresh evidence validates all
+  42,875 selected-scope cells with zero failures; the generated ledger reports
+  42,875/71,641 overall, 28,766 pending, and `complete_matrix=false`. The
+  reference ledger was refreshed through `compare_route_ledger.py` and matches
+  the generated ledger.
+- The regenerated artifact changes 814 existing evidence hashes after the
+  invalid wire fixtures were corrected. This improves the integrity of the
+  recorded events; it does not complete the pending route matrix.
+- For Login and Delegated Login, KMIP 2.0 §6.1.12/§6.1.29 and KMIP 2.1
+  §6.1.12/§6.1.30 describe Lease Time as an Interval or Date Time. Current
+  evidence exercises only the Interval form for those fields; Date Time must
+  not be inferred from the current cell count. The full stack remains WIP.
+
+## 2026-11-18 Java Create and Lease Time Date Time routes
+
+- Create client-batch-item routes now exercise the catalogued Create workflows
+  for 1,200/1,200 cells. Login and Delegated Login Lease Time Date Time
+  alternatives now exercise all four operation/version targets across 24
+  controlled exchanges; the matrix comparison found 48/48 construct/send
+  cells with no missing or extra events.
+- Red `648f7f420`, Green `687132735`, and Refactor `3b1f2ebef` cover the Date
+  Time request fields. The Java suite passes 109/109 tests; selected-scope
+  evidence validates 43,903 cells with zero failures, including 16 explicit
+  not-applicable cells. The ledger records 71,945 planned, 43,903 executed,
+  and 28,042 pending cells; the full matrix remains incomplete.
+- Regenerated `route-capabilities.json` adds four Rust Lease Time model routes
+  discovered when the shared catalog added its Date Time and Interval targets.
+  `route_capabilities.py --check` passes with 1,511 routes, and its focused
+  shared suite passes 68 tests plus 503 subtests. The ledger comparison passes.
+- These controlled TLS runs establish fixture-level route evidence, not
+  external KMS interoperability. Keep #187, #216, and #217 WIP.
+
+## 2026-11-18 Python omitted Batch Stop response evidence
+
+- The exact-head Python installed consumer exposed an invalid invocation for
+  `ttlv_item_view_from_item` on Get response item 1, which the catalog marks
+  omitted after Batch Stop. Red `a2f025e40` asserts the cell is recorded as
+  `not_applicable` with zero invocations and no invocation ID; it failed
+  because the runner returned a gap. Green `6214f2156` emits the planned
+  not-applicable event before entering the route trace. Refactor `660c007e5`
+  extracts the sanitized planned-cell event builder.
+- The focused Python route-matrix regression passes after Green and Refactor.
+  The earlier CI run had zero failed cells but was rejected for this evidence
+  mismatch; the full installed Python matrix must pass again on the new head.
+- Batch Stop semantics follow OASIS KMIP 2.0 §11.5 Table 396 and KMIP 2.1
+  §11.5 Table 434. Keep the Java stack WIP until the exact-head CI and full
+  matrix contract pass.
+
+## 2026-11-18 Rust Login Lease Time route dispatch
+
+- Red `401ff9d31` added Login and Delegated Login Interval/Date Time setter
+  routes to the Rust validator test and failed because the route dispatch was
+  missing. Green `246f4605c` adds the typed request construction and regenerates
+  `local_cases_generated.rs` from the catalog. Refactor `ec87e0715` shares the
+  fixture construction while retaining the concrete public setter calls.
+- The focused route test passes, as do all 70 Rust validator unit tests and 3
+  CLI tests; `cargo fmt --check` passes. The previously observed CI failure
+  also identified missing Cancel response decoder cells in Java. This change
+  resolves Rust Login Lease Time dispatch locally; exact-head hosted CI and
+  the complete cross-language matrix remain pending.

@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 import re
 import tempfile
+from collections import defaultdict
 
 from cli_paths import resolve_within
 from coverage_matrix import iter_cells
@@ -17,6 +18,18 @@ LANGUAGES = ("rust", "c", "java", "python")
 VERSIONS = {"2.0", "2.1"}
 ENCODINGS = {"TTLV", "JSON", "XML"}
 TRANSPORTS = {"raw_tls", "https"}
+LOCAL_BATCH_REJECTION_CONTRACTS = {
+    "test-batch-placeholder-without-producer-rejected": (
+        "rejected_or_operation_failed",
+        ["Activate"],
+        ["Activate(IDPlaceholder)"],
+    ),
+    "test-batch-placeholder-forward-reference-rejected": (
+        "rejected_or_server_reports_protocol_error",
+        ["Activate", "Create"],
+        ["Activate(IDPlaceholder from item 2)", "Create(unique-key)"],
+    ),
+}
 
 
 def _key(record: dict) -> tuple:
@@ -72,6 +85,8 @@ def _expected_batch_operations(case: dict) -> list[str] | None:
         return None
     parameters = scenario.get("parameters", {})
     items = parameters.get("items", []) if isinstance(parameters, dict) else []
+    if not items and case.get("category") != "batch_workflows":
+        return None
     if items:
         operations = []
         for item in items:
@@ -89,6 +104,99 @@ def _expected_batch_operations(case: dict) -> list[str] | None:
     if not ordered and len(scenario.get("operations", [])) > 1:
         ordered = scenario["operations"]
     return list(ordered) if len(ordered) > 1 else None
+
+
+def _validate_local_batch_rejection(event: dict, case: dict, key: tuple) -> None:
+    """Validate catalogued local Placeholder rejection boundaries."""
+    contract = LOCAL_BATCH_REJECTION_CONTRACTS.get(case.get("case_id"))
+    if contract is None:
+        raise ValueError(f"local batch rejection is not defined by the catalog: {key}")
+    expected_construction, operations, expected_items = contract
+    scenario = case.get("requires", {}).get("protocol_scenario", {})
+    expected = scenario.get("expected", {}) if isinstance(scenario, dict) else {}
+    parameters = scenario.get("parameters", {}) if isinstance(scenario, dict) else {}
+    if (not isinstance(scenario, dict)
+            or scenario.get("mode") != "local_model"
+            or not isinstance(expected, dict)
+            or expected.get("construction") != expected_construction
+            or scenario.get("operations") != operations
+            or not isinstance(parameters, dict)
+            or parameters.get("items") != expected_items):
+        raise ValueError(f"local batch rejection is not defined by the catalog: {key}")
+    if event.get("action") != "send" or event.get("status") != "passed":
+        raise ValueError(f"local batch rejection must be a passed send event: {key}")
+    if event.get("batch_operation_sequence") != operations:
+        raise ValueError(f"local rejection operation order does not match the catalog: {key}")
+    if event.get("batch_item_count") != len(operations):
+        raise ValueError(f"local rejection item count does not match the catalog: {key}")
+    if event.get("local_rejection_code") != "batch_placeholder_forward_reference":
+        raise ValueError(f"local Placeholder rejection code is invalid: {key}")
+    if (event.get("request_delivery_state") != "not_sent"
+            or event.get("transport_invocation_count") != 0):
+        raise ValueError(f"local Placeholder rejection must prove the request was not sent: {key}")
+    if (event.get("client_error_category") != "validation"
+            or event.get("client_error_cause") != "invalid_input"):
+        raise ValueError(f"local Placeholder rejection must report validation invalid_input: {key}")
+    forbidden_evidence = {
+        "request_tree_sha256",
+        "response_tree_sha256",
+        "peer_observed_operation_sequence",
+        "peer_observed_response_count",
+        "peer_observed_result_status_codes",
+        "peer_observed_result_reason_codes",
+        "peer_observed_effects",
+    }
+    if forbidden_evidence.intersection(event):
+        raise ValueError(f"not-sent local rejection cannot claim request or peer evidence: {key}")
+
+
+def _validate_local_batch_construction(event: dict, case: dict, key: tuple) -> None:
+    """Validate typed-item evidence where a complete batch tree is not public."""
+    contract = LOCAL_BATCH_REJECTION_CONTRACTS.get(case.get("case_id"))
+    if contract is None:
+        raise ValueError(f"typed-item construction evidence is not defined by the catalog: {key}")
+    expected_construction, operations, expected_items = contract
+    scenario = case.get("requires", {}).get("protocol_scenario", {})
+    expected = scenario.get("expected", {}) if isinstance(scenario, dict) else {}
+    parameters = scenario.get("parameters", {}) if isinstance(scenario, dict) else {}
+    if (not isinstance(scenario, dict)
+            or scenario.get("mode") != "local_model"
+            or not isinstance(expected, dict)
+            or expected.get("construction") != expected_construction
+            or scenario.get("operations") != operations
+            or not isinstance(parameters, dict)
+            or parameters.get("items") != expected_items):
+        raise ValueError(f"typed-item construction is not defined by the catalog: {key}")
+    if (event.get("action") != "construct" or event.get("status") != "passed"
+            or event.get("construction_evidence_kind") != "typed_item_returned"):
+        raise ValueError(f"local batch construction must prove a typed item was returned: {key}")
+    if event.get("constructed_operation") != event.get("workflow_operation"):
+        raise ValueError(f"constructed operation does not match workflow identity: {key}")
+    if (event.get("batch_operation_sequence") != operations
+            or event.get("batch_item_count") != len(operations)):
+        raise ValueError(f"constructed batch identity does not match the catalog: {key}")
+    forbidden_evidence = {
+        "request_tree_sha256", "response_tree_sha256", "peer_observed_operation_sequence",
+        "peer_observed_response_count", "peer_observed_result_status_codes",
+        "peer_observed_result_reason_codes", "peer_observed_effects",
+    }
+    if forbidden_evidence.intersection(event):
+        raise ValueError(f"typed-item evidence cannot claim an unavailable batch tree: {key}")
+
+
+def _same_local_rejection_workflow(decode: dict, send: dict) -> bool:
+    """Match a response decode cell to its request send cell after local rejection."""
+    fields = (
+        "case_id", "route_id", "workflow_step_index", "workflow_operation",
+        "workflow_item_index", "execution_route_id", "protocol_version", "encoding", "transport",
+    )
+    if any(decode.get(field) != send.get(field) for field in fields):
+        return False
+    if decode.get("target_id") == send.get("target_id"):
+        return True
+    decode_match = re.fullmatch(r"KMIPKIT-ELEM-OP-S2C-(.+)", decode.get("target_id", ""))
+    send_match = re.fullmatch(r"KMIPKIT-ELEM-OP-C2S-(.+)", send.get("target_id", ""))
+    return bool(decode_match and send_match and decode_match.group(1) == send_match.group(1))
 
 
 def _ordinal(index: int) -> str:
@@ -140,6 +248,9 @@ def _validate_batch_event(event: dict, case: dict, catalog: dict, key: tuple) ->
     expected_operations = _expected_batch_operations(case)
     if expected_operations is None:
         return
+    if event.get("request_delivery_state") == "not_sent":
+        _validate_local_batch_rejection(event, case, key)
+        return
     if event.get("batch_operation_sequence") != expected_operations:
         raise ValueError(f"batch request operation order does not match the catalog: {key}")
     if event.get("batch_item_count") != len(expected_operations):
@@ -165,15 +276,34 @@ def _validate_batch_event(event: dict, case: dict, catalog: dict, key: tuple) ->
         raise ValueError(f"controlled peer per-item effects do not match the catalog: {key}")
 
 
+def _selected_case_ids(report: dict, catalog: dict) -> set[str] | None:
+    selected_case_ids = report.get("case_ids")
+    if selected_case_ids is None:
+        return None
+    if not isinstance(selected_case_ids, list) or not selected_case_ids or any(
+            not isinstance(case_id, str) or not case_id for case_id in selected_case_ids):
+        raise ValueError("route evidence case_ids must be a non-empty array of case IDs")
+    if len(set(selected_case_ids)) != len(selected_case_ids):
+        raise ValueError("route evidence case_ids contains duplicates")
+    all_case_ids = {case["case_id"] for case in catalog.get("test_cases", [])}
+    unknown_case_ids = set(selected_case_ids) - all_case_ids
+    if unknown_case_ids:
+        raise ValueError(f"route evidence contains unknown case_ids: {sorted(unknown_case_ids)!r}")
+    return set(selected_case_ids)
+
+
 def _expected_cells(report: dict, catalog: dict, manifest: dict) -> dict[tuple, dict]:
     language = report["language"]
     selected_versions = set(report["protocol_versions"])
+    selected_case_ids = _selected_case_ids(report, catalog)
     network_combinations = {
         (item["encoding"], item["transport"]) for item in report["network_combinations"]
     }
     cells = {}
     for cell in iter_cells(catalog, manifest, languages=(language,)):
         if cell["language"] != language or cell["protocol_version"] not in selected_versions:
+            continue
+        if selected_case_ids is not None and cell["case_id"] not in selected_case_ids:
             continue
         if cell["transport"] is not None and (cell["encoding"], cell["transport"]) not in network_combinations:
             continue
@@ -209,6 +339,9 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
     if report.get("route_manifest_sha256") != route_manifest_sha256:
         raise ValueError("route evidence manifest SHA-256 does not match the route manifest")
 
+    all_case_ids = {case["case_id"] for case in catalog.get("test_cases", [])}
+    selected_case_ids = _selected_case_ids(report, catalog)
+
     selected_versions = report.get("protocol_versions")
     if not isinstance(selected_versions, list) or not selected_versions or not set(selected_versions) <= VERSIONS:
         raise ValueError("route evidence protocol_versions must select KMIP 2.0 and/or 2.1")
@@ -238,6 +371,11 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
     }
     if not seen_combinations <= supported_combinations:
         raise ValueError("route evidence selects an encoding/transport pair absent from the public API")
+
+    if scope_cells is None:
+        scope_cells = report.get("scope_cells")
+    elif report.get("scope_cells") is not None and report["scope_cells"] != scope_cells:
+        raise ValueError("report route scope differs from the supplied route scope")
 
     expected = _expected_cells(report, catalog, manifest)
     if not expected:
@@ -287,18 +425,40 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
         if key in observed:
             raise ValueError(f"duplicate route execution cell: {key}")
         status = event.get("status")
-        if status not in {"passed", "failed", "not_run"}:
+        if status not in {"passed", "failed", "not_run", "not_applicable"}:
             raise ValueError(f"route execution status is invalid for {key}")
         count = event.get("invocation_count")
         if not isinstance(count, int) or isinstance(count, bool) or count < 0:
             raise ValueError(f"route execution invocation_count is invalid for {key}")
-        if status == "not_run" or count == 0:
-            raise ValueError(f"route execution cell was not actually invoked: {key}")
-        if count != 1:
-            raise ValueError(f"route execution invocation_count is invalid for {key}")
+        planned = expected[key]
+        if planned.get("execution_status") == "not_applicable":
+            if status != "not_applicable" or count != 0:
+                raise ValueError(f"not-applicable route cell must not claim an invocation: {key}")
+            if event.get("not_applicable_reason") != planned.get("not_applicable_reason"):
+                raise ValueError(f"not-applicable route reason does not match the planned cell: {key}")
+        elif status == "not_applicable":
+            if (event.get("action") != "decode"
+                    or event.get("not_applicable_reason") != "local_rejection_no_response"
+                    or count != 0):
+                raise ValueError(f"required route cell cannot be marked not applicable: {key}")
+        else:
+            if status == "not_run" or count == 0:
+                raise ValueError(f"route execution cell was not actually invoked: {key}")
+            if count != 1:
+                raise ValueError(f"route execution invocation_count is invalid for {key}")
+            if event.get("invocation_id") is None or not isinstance(event["invocation_id"], str) or not event["invocation_id"]:
+                raise ValueError(f"route execution event requires an invocation_id: {key}")
+        if status == "not_applicable":
+            forbidden_evidence = {
+                "invocation_id", "request_tree_sha256", "response_tree_sha256",
+                "decode_outcome", "decode_rejection_code", "decode_input_sha256",
+                "wire_bytes_sha256", "wire_bytes_deterministic", "request_delivery_state",
+                "transport_invocation_count", "failure_code", "not_run_reason",
+            }
+            if forbidden_evidence.intersection(event):
+                raise ValueError(f"not-applicable route cell cannot claim invocation evidence: {key}")
         if status == "failed" and (not isinstance(event.get("failure_code"), str) or not event["failure_code"]):
             raise ValueError(f"failed route execution requires a sanitized failure_code: {key}")
-        planned = expected[key]
         if event.get("target_id") != planned["target_id"]:
             raise ValueError(f"normative target does not match the planned route cell: {key}")
         for field in ("workflow_step_index", "workflow_operation", "workflow_item_index"):
@@ -308,8 +468,6 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
             raise ValueError(f"public API symbol does not match the planned route: {key}")
         if event.get("execution_api_symbol") != planned.get("execution_api_symbol"):
             raise ValueError(f"execution API symbol does not match the public executor: {key}")
-        if event.get("invocation_id") is None or not isinstance(event["invocation_id"], str) or not event["invocation_id"]:
-            raise ValueError(f"route execution event requires an invocation_id: {key}")
         if status == "passed":
             case = case_by_id[event["case_id"]]
             if event["action"] == "decode":
@@ -354,6 +512,9 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
                         raise ValueError(f"not-sent route invocation must prove transport count zero: {key}")
                 elif local_batch_rejection:
                     _validate_local_batch_rejection(event, case, key)
+                elif (event["action"] == "construct"
+                      and event.get("construction_evidence_kind") == "typed_item_returned"):
+                    _validate_local_batch_construction(event, case, key)
                 elif not isinstance(tree_hash, str) or not re.fullmatch(r"[0-9a-f]{64}", tree_hash):
                     raise ValueError(f"passed {event['action']} event requires a valid request tree hash: {key}")
         if "wire_bytes_deterministic" in event and not isinstance(event["wire_bytes_deterministic"], bool):
@@ -374,6 +535,23 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
                 _validate_local_batch_rejection(event, case, key)
             _validate_batch_event(event, case, catalog, key)
         observed[key] = event
+
+    for event in observed.values():
+        if (event.get("status") != "not_applicable"
+                or event.get("not_applicable_reason") != "local_rejection_no_response"):
+            continue
+        case = case_by_id[event["case_id"]]
+        if case.get("case_id") not in LOCAL_BATCH_REJECTION_CONTRACTS:
+            raise ValueError(f"local-rejection N/A is not defined by the catalog: {_key(event)}")
+        matching_send = any(
+            candidate.get("action") == "send"
+            and candidate.get("status") == "passed"
+            and candidate.get("request_delivery_state") == "not_sent"
+            and _same_local_rejection_workflow(event, candidate)
+            for candidate in observed.values()
+        )
+        if not matching_send:
+            raise ValueError(f"local-rejection response N/A lacks a matching not-sent request: {_key(event)}")
 
     constructed = {
         _request_identity(event): event["request_tree_sha256"]
@@ -411,16 +589,121 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
     full_expected = _expected_cells(full_selection, catalog, manifest)
     complete_matrix = (set(selected_versions) == all_versions
                        and seen_combinations == all_network_combinations
-                       and set(expected) == set(full_expected))
+                       and set(expected) == set(full_expected)
+                       and (selected_case_ids is None or selected_case_ids == all_case_ids))
     return {
         "run_id": report["run_id"],
         "language": language,
         "expected_cells": len(expected),
         "invoked_cells": sum(event["invocation_count"] > 0 for event in observed.values()),
+        "not_applicable_cells": sum(event["status"] == "not_applicable" for event in observed.values()),
         "failed_cells": failed,
         "selected_scope_complete": True,
         "complete_matrix": complete_matrix,
         "all_invocations_passed": failed == 0,
+    }
+
+
+def build_evidence_ledger(report: dict, catalog: dict, manifest: dict, *, catalog_sha256: str,
+                          route_manifest_sha256: str, expected_artifact_sha256: str) -> dict:
+    """Validate one selected run and summarize all planned cells as executed or pending."""
+    summary = validate_report(
+        report, catalog, manifest, catalog_sha256=catalog_sha256,
+        route_manifest_sha256=route_manifest_sha256,
+        expected_artifact_sha256=expected_artifact_sha256,
+    )
+    language = report["language"]
+    expected = list(iter_cells(catalog, manifest, languages=(language,)))
+    expected_by_key = {_key(cell): cell for cell in expected}
+    observed_by_key = {_key(event): event for event in report["events"]}
+    unexpected = set(observed_by_key) - set(expected_by_key)
+    if unexpected:
+        raise ValueError(f"route evidence ledger contains unplanned cells: {sorted(unexpected)[:10]!r}")
+
+    route_counts: dict[str, dict[str, int]] = defaultdict(lambda: {"required_cells": 0, "executed_cells": 0})
+    shape_counts: dict[tuple, dict[str, int]] = defaultdict(lambda: {"required_cells": 0, "executed_cells": 0})
+    pending_by_case: dict[str, int] = defaultdict(int)
+    for key, cell in expected_by_key.items():
+        route_counts[cell["route_id"]]["required_cells"] += 1
+        shape = (cell["route_id"], cell["action"], cell["protocol_version"],
+                 cell["encoding"], cell["transport"])
+        shape_counts[shape]["required_cells"] += 1
+        if key in observed_by_key:
+            route_counts[cell["route_id"]]["executed_cells"] += 1
+            shape_counts[shape]["executed_cells"] += 1
+        else:
+            pending_by_case[cell["case_id"]] += 1
+
+    route_summary = []
+    for route_id, counts in sorted(route_counts.items()):
+        route_summary.append({**counts, "route_id": route_id,
+                              "pending_cells": counts["required_cells"] - counts["executed_cells"]})
+    shape_summary = []
+    for (route_id, action, version, encoding, transport), counts in sorted(
+            shape_counts.items(), key=lambda item: tuple("" if value is None else str(value)
+                                                         for value in item[0])):
+        shape_summary.append({
+            "route_id": route_id, "action": action, "protocol_version": version,
+            "encoding": encoding, "transport": transport, **counts,
+            "pending_cells": counts["required_cells"] - counts["executed_cells"],
+        })
+
+    pending_case_ids = sorted(pending_by_case)
+    executed = len(observed_by_key)
+    pending = len(expected_by_key) - executed
+    evidence_case_ids = report.get("case_ids")
+    if evidence_case_ids is None:
+        evidence_case_ids = {event["case_id"] for event in report["events"]}
+    return {
+        "schema_version": "1.0",
+        "language": language,
+        "library_commit": report["library_commit"],
+        "artifact_sha256": report["artifact_sha256"],
+        "catalog_sha256": catalog_sha256,
+        "route_manifest_sha256": route_manifest_sha256,
+        "evidence_case_ids": sorted(evidence_case_ids),
+        "selected_scope_cells": summary["expected_cells"],
+        "selected_scope_complete": summary["selected_scope_complete"],
+        "all_invocations_passed": summary["all_invocations_passed"],
+        "planned_cells": len(expected_by_key),
+        "executed_cells": executed,
+        "pending_cells": pending,
+        "complete_matrix": pending == 0 and summary["all_invocations_passed"],
+        "pending_reason_code": "route_evidence_not_emitted",
+        "pending_reason": "No validated per-cell route execution evidence is recorded for this cell.",
+        "pending_case_ids": pending_case_ids,
+        "pending_cases": [{"case_id": case_id, "pending_cells": pending_by_case[case_id]}
+                           for case_id in pending_case_ids],
+        "route_summary": route_summary,
+        "route_action_axis_summary": shape_summary,
+        "controlled_peer_cells": sum(event["action"] == "send" for event in observed_by_key.values()),
+        "vendor_interoperability_claim": False,
+    }
+
+
+def write_java_route_evidence_ledger(ledger: dict) -> Path:
+    """Write the Java route ledger to its fixed, repository-owned build path."""
+    repository = Path(__file__).resolve(strict=True).parents[3]
+    output_path = repository / "interop/java-kmip-validator/build/route-evidence-ledger.json"
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(json.dumps(ledger, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return output_path
+
+
+def write_ledger_summary(summary: dict, report: dict, catalog: dict, manifest: dict, *,
+                         catalog_sha256: str, route_manifest_sha256: str,
+                         expected_artifact_sha256: str) -> None:
+    """Write a validated single-language ledger and attach its counts to a summary."""
+    ledger = build_evidence_ledger(
+        report, catalog, manifest, catalog_sha256=catalog_sha256,
+        route_manifest_sha256=route_manifest_sha256,
+        expected_artifact_sha256=expected_artifact_sha256,
+    )
+    ledger_path = write_java_route_evidence_ledger(ledger)
+    summary["ledger"] = {
+        "path": str(ledger_path), "planned_cells": ledger["planned_cells"],
+        "executed_cells": ledger["executed_cells"], "pending_cells": ledger["pending_cells"],
+        "complete_matrix": ledger["complete_matrix"],
     }
 
 
@@ -658,20 +941,39 @@ def main() -> None:
                         help="installed package digest; use language=SHA256 pairs with --parity")
     parser.add_argument("--parity", action="store_true",
                         help="validate all four full language matrices and compare normalized trees")
+    parser.add_argument("--selected-scope", action="store_true",
+                        help="validate one complete report scope and retain global pending cells separately")
+    parser.add_argument("--write-ledger", action="store_true",
+                        help="write the deterministic ledger to the Java validator's fixed build path")
     args = parser.parse_args()
     root = args.root.resolve(strict=True)
+    allowed_file_roots = (root, Path(tempfile.gettempdir()))
     catalog_path = root / "interop/shared/catalog/kmipkit-1.0-test-catalog.json"
     manifest_path = root / "interop/shared/coverage/route-capabilities.json"
     catalog_bytes = catalog_path.read_bytes()
     manifest_bytes = manifest_path.read_bytes()
-    report_paths = [resolve_within(path, (root, Path(tempfile.gettempdir())), must_exist=True)
-                    for path in args.report]
+    report_paths = [resolve_within(path, allowed_file_roots, must_exist=True) for path in args.report]
     reports = [json.loads(path.read_text(encoding="utf-8")) for path in report_paths]  # NOSONAR: report paths are resolved under the repository or system temp directory
     catalog = json.loads(catalog_bytes)
     manifest = json.loads(manifest_bytes)
     catalog_sha = hashlib.sha256(catalog_bytes).hexdigest()
     route_sha = hashlib.sha256(manifest_bytes).hexdigest()
-    if args.parity:
+    if args.selected_scope:
+        if args.parity or len(reports) != 1 or len(args.artifact_sha256) != 1 or "=" in args.artifact_sha256[0]:
+            parser.error("--selected-scope requires one report and one non-parity artifact digest")
+        summary = validate_report(
+            reports[0], catalog, manifest, catalog_sha256=catalog_sha,
+            route_manifest_sha256=route_sha, expected_artifact_sha256=args.artifact_sha256[0],
+        )
+        if args.write_ledger:
+            write_ledger_summary(
+                summary, reports[0], catalog, manifest, catalog_sha256=catalog_sha,
+                route_manifest_sha256=route_sha,
+                expected_artifact_sha256=args.artifact_sha256[0],
+            )
+    elif args.parity:
+        if args.write_ledger:
+            parser.error("--write-ledger does not support cross-language parity reports")
         artifacts = {}
         for value in args.artifact_sha256:
             if "=" not in value:
@@ -687,11 +989,19 @@ def main() -> None:
     else:
         if len(args.artifact_sha256) != 1 or "=" in args.artifact_sha256[0]:
             parser.error("single-language validation requires one --artifact-sha256 SHA256 value")
+        if args.write_ledger and len(reports) != 1:
+            parser.error("full-matrix ledger writing requires exactly one report")
         summary = validate_collection(
             reports, catalog, manifest, catalog_sha256=catalog_sha,
             route_manifest_sha256=route_sha,
             expected_artifact_sha256=args.artifact_sha256[0],
         )
+        if args.write_ledger:
+            write_ledger_summary(
+                summary, reports[0], catalog, manifest, catalog_sha256=catalog_sha,
+                route_manifest_sha256=route_sha,
+                expected_artifact_sha256=args.artifact_sha256[0],
+            )
     print(json.dumps(summary, sort_keys=True))
     if (not summary["all_invocations_passed"]
             or (args.parity and not summary["parity_coverage_complete"])):

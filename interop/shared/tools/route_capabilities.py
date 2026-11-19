@@ -25,7 +25,7 @@ ROOT = Path(__file__).resolve().parents[3]
 COVERAGE = ROOT / 'interop/shared/coverage'
 LANGUAGES = ('rust', 'c', 'java', 'python')
 ASYNC = {'cancel', 'poll', 'process', 'queryasyncrequests'}
-PINNED_SOURCE_COMMIT = '489fafc79ef89db2524eafa7a6c6482f5cf75d97'
+PINNED_SOURCE_COMMIT = '12496d646d11d4069b58bcc88fc76cc619211ec6'
 _RESPONSE_MESSAGE_EXTENSION_TARGETS = [
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION',
     'KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION',
@@ -62,6 +62,13 @@ _FUNCTION_TARGET_OVERRIDES = {
         'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION',
         'KMIPKIT-ELEM-MESSAGE-FIELD-9-6-BATCH-ERROR-CONTINUATION-OPTION',
         'KMIPKIT-ELEM-TAG-42000E',
+    ],
+    # OASIS KMIP 2.1 §7.2 Table 353: this generic response-payload accessor
+    # is demonstrated with the Query Asynchronous Requests response's
+    # Asynchronous Request structure. Do not conflate its Operation member
+    # with Message Field 9.15 Operation.
+    'client_async_operation_outcome_response_payload_ttlv': [
+        'KMIPKIT-ELEM-OPERATION-STRUCTURE-7-2-ASYNCHRONOUS-REQUEST',
     ],
 }
 _FUNCTION_ROUTE_KIND_OVERRIDES = {'client_batch_add_error_continuation_value': 'construct'}

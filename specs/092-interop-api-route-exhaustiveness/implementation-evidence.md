@@ -4,7 +4,7 @@
 
 - Python feature branch: `feature/KMIPKIT-0087-interop-python-live`.
 - Common contract merge: `9632f116c`, merging contract head `4f157e50e`.
-- Private Python package pin: `489fafc79ef89db2524eafa7a6c6482f5cf75d97`.
+- Historical private Python package pin for this recorded run: `489fafc79ef89db2524eafa7a6c6482f5cf75d97`.
 - Wheel SHA-256: `399a9de433a460bd95237e9142c6b19ca082bdc2a94c2d31fe93765cf508a369`.
 - Shared catalog SHA-256: `e4a542bab4831a04e51f5bf04c9019da3f38845bc85839ae9b632dcc610a7d7f`.
 - Shared route manifest SHA-256: `b3867835e3f1f69308a3030f83be87e2728af852da3a82414a78a4ea91482ac5`.
@@ -53,6 +53,27 @@ No Cosmian KMS, CipherTrust, or ESKM endpoint was available. Cross-language
 parity is also pending the joint matrix using identical release artifacts and
 fixtures. Those results are not inferred from this Python-only run.
 
+## Follow-up: Stop omitted typed response accessors
+
+The Batch Stop route matrix now treats the second `GetResponse` accessor as
+not applicable when the controlled server correctly omits the unprocessed
+second response. It records no invocation for that accessor and retains the
+explicit `stop_unprocessed_response_omitted` reason. All returned response
+items still require successful accessor execution.
+
+Red `480809b27` adds a focused check for the omitted typed accessor; the
+existing broad accessor test failed because it required those two versioned
+cells to be invoked. Green `629cb19ad` requires exactly those two cells to be
+not applicable and verifies zero invocation count and no invocation ID. The
+two focused tests pass, and the complete Python consumer suite passes 135
+tests in 278.391 seconds with the pinned wheel installed in an isolated
+Python 3.12 environment (artifact SHA-256
+`18043fee5e92893bf4d3ac495552121ac8edc7cbc7f6e77472143e2b6ccb7d78`).
+
+References: OASIS KMIP 2.0 §11.5, Table 396; KMIP 2.1 §11.5, Table 434; and
+KMIPKIT-0092-FR-007. This test adjustment records the omitted response without
+claiming that an accessor ran for an item the server did not return.
+
 ## Follow-up: strict peer-state evidence
 
 - **Red — `76cdb53f7`** adds assertions that Python Stop and Continue events
@@ -76,3 +97,170 @@ fixtures. Those results are not inferred from this Python-only run.
   SHA-256 `55fcd64afba189ab7d04978fafb841fc73c9e5afc1ef25c93cb2eb04f4fba4a9`,
   and route-manifest SHA-256
   `3fe892f7b2804e8c1b03f9dc01c8cc71038829f7ed5aaf38d546fea90ddc980a`.
+
+## Follow-up: Java Certificate Attributes generic TTLV view
+
+- **Red — `b8d4ed715`** requires the public `TtlvItem.view()` route for the
+  Certificate Attributes case in KMIP 2.0 and 2.1. The controlled-peer test
+  failed because neither version had an invocation recorded.
+- **Green — `4d14fd7fd`** builds the `Attribute` structure using the
+  Certificate Subject CN Text String fixture, invokes `TtlvItem.view()` on
+  the constructed and decoded items, and verifies their nested tags, types,
+  and values. The focused Java controlled-peer route test passes both version
+  cells and updates the event-count assertion to include them.
+- **Refactor** records the fixture's source: OASIS KMIP 2.1 §4.6, Table 39
+  defines Certificate Subject CN as Text String; §4.60 defines the Attribute
+  structure and §11.56 defines its TTLV tags. The controlled-peer test passed
+  in 2m15s. This adds local generic-TTLV evidence only; it does not claim that
+  every Certificate Attributes policy branch or the complete Java matrix is
+  covered.
+- The shared evidence validator confirms 44,242/71,583 Java cells in this
+  report: 44,226 invoked, 16 not applicable, zero failed, and 27,341 pending.
+  The selected scope is complete; global matrix validation remains incomplete.
+  Report run ID: `java-controlled-query-cd6c8317-2b8d-4df2-b3af-3153117e617c`.
+
+## Follow-up: Java Cryptographic Parameters algorithm setters
+
+- **Red — `3cc4f7c0f`** requires construction evidence for
+  `CryptographicParameters.Builder.cryptographicAlgorithm` and
+  `.digitalSignatureAlgorithm` under the corresponding Attribute cases for
+  KMIP 2.0 and 2.1. The controlled-peer test failed on the missing
+  Cryptographic Algorithm builder event.
+- **Green — `406a3016b`** selects source-catalogued Enumeration values, invokes
+  each public builder setter, builds the typed model, and verifies that its
+  TTLV structure retains the selected tag and raw value. All four
+  version-specific route assertions pass.
+- **Refactor** documents that the Attribute cases are sourced from OASIS KMIP
+  2.0/2.1 §§4.13 and 4.22, while the corresponding typed structure fields are
+  defined in §4.16, Table 59. The focused Java controlled-peer test passed in
+  2m23s. Selected report validation is 44,246/71,583 cells: 44,230 invoked,
+  16 not applicable, zero failed, and 27,337 pending. Run ID:
+  `java-controlled-query-b952d296-6108-40d7-afbd-f8284fcb5004`. The global
+  Java matrix remains incomplete.
+
+## Follow-up: Java Cryptographic Domain Parameters typed wrappers
+
+- **Red — `0faf2b37a`** requires `TypedAttribute.create`,
+  `TypedAttribute.fromItem`, and `AttributeSet.tryNew` evidence for
+  Cryptographic Domain Parameters in KMIP 2.0 and 2.1. The controlled-peer
+  test failed on the first missing typed wrapper.
+- **Green — `2a1bdef9e`** constructs a source-shaped Structure containing
+  Qlength as Integer and Recommended Curve as Enumeration, then verifies both
+  fields through the installed typed attribute and AttributeSet APIs. All six
+  versioned wrapper assertions pass.
+- **Refactor** records OASIS KMIP 2.0/2.1 §4.14, Table 55 as the source for
+  the structure and encodings. The focused Java controlled-peer test passed
+  in 2m22s. Selected report validation is 44,252/71,583 cells: 44,236 invoked,
+  16 not applicable, zero failed, and 27,331 pending. Run ID:
+  `java-controlled-query-0c0feceb-966b-454d-a88b-5429617d1941`. The full Java
+  matrix remains incomplete.
+
+## Follow-up: Java Unique Identifier typed wrappers
+
+- **Red — `cfe896055`** requires `TypedAttribute.create`,
+  `TypedAttribute.fromItem`, and `AttributeSet.tryNew` evidence for the Unique
+  Identifier case in KMIP 2.0 and 2.1. The controlled-peer test failed because
+  those six wrapper cells were absent.
+- **Green — `dec6d784f`** exercises the Text String form through all three
+  public typed routes and verifies the preserved identifier bytes.
+- **Refactor** records the selected source-defined form: OASIS KMIP 2.1 §4.58,
+  Table 145 permits a Text String as the unique identifier of a Managed
+  Object. The focused Java controlled-peer test passed in 2m19s. Selected
+  report validation is 44,258/71,583 cells: 44,242 invoked, 16 not applicable,
+  zero failed, and 27,325 pending. Run ID:
+  `java-controlled-query-d141043b-595a-4283-9ff4-f01b4365dcde`. The full Java
+  matrix remains incomplete.
+
+## Follow-up: Java Usage Limits typed wrappers
+
+- **Red — `419c18372`** requires `TypedAttribute.create`,
+  `TypedAttribute.fromItem`, and `AttributeSet.tryNew` evidence for Usage
+  Limits in both protocol versions. The controlled-peer test failed at the
+  absent `TypedAttribute.create` route.
+- **Green — `48ae76e10`** constructs Usage Limits with Total and Count as Long
+  Integer values and Unit as an Enumeration, then checks all three through
+  the typed attribute and set APIs. All six versioned wrapper cells pass.
+- **Refactor** cites OASIS KMIP 2.0/2.1 §4.59, Table 148 for the Usage Limits
+  field meanings and §7.40 for the Structure and field encodings. The focused
+  Java controlled-peer test passed in 2m19s. Selected report validation is
+  44,264/71,583 cells: 44,248 invoked, 16 not applicable, zero failed, and
+  27,319 pending. Run ID:
+  `java-controlled-query-c0602e3f-9e3b-4109-a42e-1d773fbb1ca3`. The complete
+  Java matrix remains incomplete.
+
+## Follow-up: Java Cryptographic Parameters typed Attribute wrappers
+
+- **Red — `2614c14e0`** requires `TypedAttribute.create`,
+  `TypedAttribute.fromItem`, and `AttributeSet.tryNew` evidence for the
+  Cryptographic Parameters Attribute in KMIP 2.0 and 2.1. The focused
+  controlled-peer test failed on the missing `TypedAttribute.create` event.
+- **Green — `d8fa1cace`** builds Cryptographic Parameters through the installed
+  typed builder, wraps its structure as the standard Attribute, round-trips it
+  through `TypedAttribute.fromItem`, and validates the tag, nested Algorithm
+  field, AES value, and one-item AttributeSet. All six versioned wrapper cells
+  pass. The focused Java controlled-peer test passed in 2m20s.
+- **Refactor** cites OASIS KMIP 2.1 §4.16 Table 59 for the Cryptographic
+  Parameters structure, §4.13 Table 443 for AES value 3, and §11.56 Table 487
+  for the assigned Attribute tag. The selected report validates 44,270/71,583
+  cells: 44,254 invoked, 16 not applicable, zero failed, and 27,313 pending.
+  Run ID: `java-controlled-query-98e186e8-5531-432e-b241-e109f4ae6b3d`. The
+  complete Java matrix remains incomplete.
+
+## Follow-up: Java Digest typed Attribute wrappers
+
+- **Red — `b9a86a422`** requires `TypedAttribute.create`,
+  `TypedAttribute.fromItem`, and `AttributeSet.tryNew` evidence for Digest in
+  KMIP 2.0 and 2.1. The focused controlled-peer test failed on the missing
+  `TypedAttribute.create` event.
+- **Green — `80420d920`** creates a deterministic SHA-256 digest fixture,
+  wraps the source-shaped Digest Structure in the installed typed Attribute,
+  decodes it, checks both nested fields and values, and inserts the item into
+  an `AttributeSet`. All six versioned wrapper cells pass. The focused Java
+  controlled-peer test passed in 2m17s.
+- **Refactor** cites OASIS KMIP 2.1 §4.21 Table 69 for the Digest Structure,
+  §11.21 Table 454 for SHA-256 value 6, and §11.56 Table 487 for the assigned
+  Attribute tag. This is local TTLV model evidence only; no Digest mutation or
+  server acceptance is claimed. The selected report validates 44,276/71,583
+  cells: 44,260 invoked, 16 not applicable, zero failed, and 27,307 pending.
+  Run ID: `java-controlled-query-48b90274-ff9d-4b9c-9644-e9b9236714ca`. The
+  complete Java matrix remains incomplete.
+
+## Follow-up: Java Random Number Generator typed Attribute wrappers
+
+- **Red — `d8dd65ffc`** requires `TypedAttribute.create`,
+  `TypedAttribute.fromItem`, and `AttributeSet.tryNew` evidence for Random
+  Number Generator in KMIP 2.0 and 2.1. The controlled-peer test failed on
+  the missing `TypedAttribute.create` event.
+- **Green — `59f44e30a`** constructs the installed typed Attribute directly
+  from the RNG Parameters Structure, uses the required `RNG Algorithm =
+  Unspecified` value, round-trips the Attribute, and validates its tag,
+  structure, field, value, and AttributeSet. All six versioned wrapper cells
+  pass. The focused Java controlled-peer test passed in 2m15s.
+- **Refactor** cites OASIS KMIP 2.1 §4.46 Table 121 for the Attribute encoding
+  and its no-nested-structure rule, §7.36 Table 388 for the required RNG
+  Algorithm member, §11.49 for Unspecified value 1, and §11.56 Table 487 for
+  the tags. This is local typed-model evidence, not an Attribute update or
+  server acceptance claim. The selected report validates 44,282/71,583 cells:
+  44,266 invoked, 16 not applicable, zero failed, and 27,301 pending. Run ID:
+  `java-controlled-query-e268804a-ed1c-4068-87db-145e106e9574`. The complete
+  Java matrix remains incomplete.
+
+## Follow-up: Java Vendor Attribute typed wrappers
+
+- **Red — `54a2a77f4`** requires `TypedAttribute.create`,
+  `TypedAttribute.fromItem`, and `AttributeSet.tryNew` evidence for Vendor
+  Attribute in KMIP 2.0 and 2.1. The focused test failed on the missing
+  `TypedAttribute.create` route.
+- **Green — `bc5726eca`** builds the source-defined Structure with readable
+  Vendor Identification and Attribute Name strings plus a Text String
+  Attribute Value, then round-trips and verifies all tags, types, and values
+  through the typed wrapper and AttributeSet. All six versioned wrapper cells
+  pass. The focused Java controlled-peer test passed in 2m23s.
+- **Refactor** cites OASIS KMIP 2.1 §4.60 for the required fields and
+  Vendor Identification character constraint, and §11.56 Table 487 for the
+  assigned tags. This is local structural evidence only; it does not exercise
+  vendor mutation policy or server acceptance. The selected report validates
+  44,288/71,583 cells: 44,272 invoked, 16 not applicable, zero failed, and
+  27,295 pending. Run ID:
+  `java-controlled-query-3a265680-8bf4-43a7-804e-bb25505b13a2`. The complete
+  Java matrix remains incomplete.

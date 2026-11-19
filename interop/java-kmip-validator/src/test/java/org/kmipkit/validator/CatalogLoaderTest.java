@@ -18,7 +18,9 @@ class CatalogLoaderTest {
         var catalog = CatalogLoader.load(CATALOG);
 
         assertEquals(Set.of("2.0", "2.1"), new HashSet<>(catalog.targetVersions()));
-        assertEquals(218, catalog.cases().size());
+        assertEquals(catalog.totalCases(), catalog.cases().size());
+        assertTrue(catalog.cases().size() > 218);
+        assertTrue(catalog.normativeTargets().size() > 2_000);
         assertEquals(catalog.cases().size(), catalog.cases().stream().map(c -> c.caseId()).distinct().count());
         assertTrue(catalog.cases().stream().allMatch(c -> !c.normativeRefs().isEmpty()));
         assertTrue(catalog.cases().stream().allMatch(c -> !c.execution().protocolVersions().isEmpty()));
@@ -38,5 +40,16 @@ class CatalogLoaderTest {
         java.nio.file.Files.writeString(malformed, "{\"target_versions\":[\"2.1\"],\"test_cases\":[]}");
 
         assertThrows(IllegalArgumentException.class, () -> CatalogLoader.load(malformed));
+    }
+
+    @Test
+    void resolvesAttributeCasesToTheirNormativeAttributeTags() throws Exception {
+        var catalog = CatalogLoader.load(CATALOG);
+        var byId = catalog.cases().stream().collect(java.util.stream.Collectors.toMap(
+                CatalogLoader.CatalogCase::caseId, testCase -> testCase));
+
+        assertEquals(0x420028L, byId.get("test-attr-cryptographic-algorithm").attributeTag());
+        assertEquals(0x420053L, byId.get("test-attr-name").attributeTag());
+        assertEquals(0L, byId.get("test-op-get-attributes").attributeTag());
     }
 }

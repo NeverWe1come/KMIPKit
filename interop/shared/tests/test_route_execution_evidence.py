@@ -15,10 +15,12 @@ from validate_route_evidence import (
     _expected_batch_operations,
     _expected_tag_decode_rejection_code,
     _validate_batch_event,
+    build_evidence_ledger,
     validate_collection,
     validate_parity_collection,
     validate_report,
 )  # noqa: E402
+from coverage_matrix import iter_cells  # noqa: E402
 
 
 class RouteExecutionEvidenceTests(unittest.TestCase):
@@ -165,6 +167,57 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         self.assertEqual(2, summary["expected_cells"])
         self.assertEqual(2, summary["invoked_cells"])
 
+    def test_ledger_sorts_declared_evidence_case_ids(self):
+        second_case = copy.deepcopy(self.catalog["test_cases"][0])
+        second_case["case_id"] = "case-two"
+        self.catalog["test_cases"].append(second_case)
+        report = copy.deepcopy(self.report)
+        report["case_ids"] = ["case-two", "case-one"]
+        scope_fields = ("case_id", "route_id", "target_id", "workflow_step_index", "workflow_operation",
+                        "workflow_item_index", "execution_route_id", "action", "protocol_version", "encoding",
+                        "transport")
+        report["scope_cells"] = [
+            {field: event[field] for field in scope_fields if field in event}
+            for event in report["events"]
+        ]
+
+        ledger = build_evidence_ledger(
+            report, self.catalog, self.manifest, catalog_sha256="c" * 64,
+            route_manifest_sha256="d" * 64, expected_artifact_sha256="b" * 64,
+        )
+
+        self.assertEqual(["case-one", "case-two"], ledger["evidence_case_ids"])
+
+    def test_report_declared_scope_validates_exact_cells_without_claiming_full_matrix(self):
+        fields = ("case_id", "route_id", "target_id", "workflow_step_index", "workflow_operation",
+                  "workflow_item_index", "execution_route_id", "action", "protocol_version", "encoding",
+                  "transport")
+        scope = [{field: event[field] for field in fields if field in event} for event in self.report["events"][:2]]
+        report = copy.deepcopy(self.report)
+        report["events"] = copy.deepcopy(self.report["events"][:2])
+        report["scope_cells"] = copy.deepcopy(scope)
+
+        summary = self.validate(report)
+
+        self.assertTrue(summary["selected_scope_complete"])
+        self.assertFalse(summary["complete_matrix"])
+        self.assertEqual(2, summary["expected_cells"])
+        self.assertEqual(2, summary["invoked_cells"])
+        ledger = build_evidence_ledger(
+            report, self.catalog, self.manifest, catalog_sha256="c" * 64,
+            route_manifest_sha256="d" * 64, expected_artifact_sha256="b" * 64,
+        )
+        self.assertFalse(ledger["complete_matrix"])
+        self.assertEqual(5, ledger["planned_cells"])
+        self.assertEqual(2, ledger["executed_cells"])
+        self.assertEqual(3, ledger["pending_cells"])
+        try:
+            import jsonschema
+        except ImportError:
+            return
+        schema = json.loads((SHARED / "schemas/route-execution-evidence.schema.json").read_text())
+        jsonschema.validate(report, schema)
+
     def test_scoped_report_rejects_missing_or_out_of_scope_events(self):
         scope = self.report["events"][:2]
         report = copy.deepcopy(self.report)
@@ -217,6 +270,290 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         })
         schema = json.loads((SHARED / "schemas/route-execution-evidence.schema.json").read_text())
         jsonschema.validate(report, schema)
+
+    def test_local_placeholder_rejection_is_validated_without_peer_response(self):
+        target_id = "KMIPKIT-ELEM-OP-C2S-ACTIVATE"
+        case_id = "test-batch-placeholder-without-producer-rejected"
+        catalog = {
+            "version": "2.0.0",
+            "target_versions": ["2.0"],
+            "test_cases": [{
+                "case_id": case_id,
+                "category": "batch_workflows",
+                "operation": "Activate",
+                "requires": {"protocol_scenario": {
+                    "operations": ["Activate"],
+                    "target_ids": [target_id],
+                    "protocol_versions": ["2.0"],
+                    "mode": "local_model",
+                    "parameters": {"items": ["Activate(IDPlaceholder)"]},
+                    "expected": {"construction": "rejected_or_operation_failed"},
+                }},
+                "execution": {"protocol_versions": ["2.0"]},
+            }],
+            "normative_targets": [{
+                "target_id": target_id,
+                "kind": "operation",
+                "name": "Activate",
+                "role": "request",
+            }],
+        }
+        manifest = {
+            "library_commit": "a" * 40,
+            "routes": [{
+                "route_id": "c.typed-protocol.kmipkit_client_batch_item_activate",
+                "language": "c",
+                "api_level": "typed-protocol",
+                "mode": "network",
+                "public_api_symbol": "kmipkit_client_batch_item_activate",
+                "operation_ids": ["Activate"],
+                "normative_target_ids": ["*"],
+                "case_categories": ["batch_workflows"],
+                "protocol_versions": ["2.0"],
+                "combinations": [{"encoding": "TTLV", "transport": "raw_tls"}],
+                "actions": ["construct"],
+                "execution_route_id": "c.execute.typed-batch",
+                "artifact_commit": "a" * 40,
+            }],
+            "execution_routes": [{
+                "execution_route_id": "c.execute.typed-batch",
+                "language": "c",
+                "public_api_symbol": "kmipkit_client_execute",
+                "source_paths": ["bindings/c/include/kmipkit.h"],
+            }],
+            "unavailable": [],
+        }
+        scope = next(cell for cell in iter_cells(catalog, manifest, languages=("c",))
+                     if cell["action"] == "send")
+        event = {
+            "case_id": case_id,
+            "route_id": scope["route_id"],
+            "target_id": target_id,
+            "workflow_operation": "Activate",
+            "workflow_item_index": 0,
+            "public_api_symbol": "kmipkit_client_batch_item_activate",
+            "execution_route_id": "c.execute.typed-batch",
+            "execution_api_symbol": "kmipkit_client_execute",
+            "action": "send",
+            "protocol_version": "2.0",
+            "encoding": "TTLV",
+            "transport": "raw_tls",
+            "status": "passed",
+            "invocation_count": 1,
+            "invocation_id": "placeholder-local-validation",
+            "request_delivery_state": "not_sent",
+            "transport_invocation_count": 0,
+            "batch_operation_sequence": ["Activate"],
+            "batch_item_count": 1,
+            "local_rejection_code": "batch_placeholder_forward_reference",
+            "client_error_category": "validation",
+            "client_error_cause": "invalid_input",
+        }
+        report = {
+            "schema_version": "1.0",
+            "run_id": "placeholder-local-run",
+            "language": "c",
+            "server": {"id": "test-kms", "product": "controlled-peer", "version": "2.1",
+                       "configuration_fingerprint": "f" * 64},
+            "library_commit": "a" * 40,
+            "artifact_sha256": "b" * 64,
+            "catalog_sha256": "c" * 64,
+            "route_manifest_sha256": "d" * 64,
+            "protocol_versions": ["2.0"],
+            "network_combinations": [{"encoding": "TTLV", "transport": "raw_tls"}],
+            "events": [event],
+        }
+
+        summary = validate_report(
+            report, catalog, manifest,
+            catalog_sha256="c" * 64,
+            route_manifest_sha256="d" * 64,
+            expected_artifact_sha256="b" * 64,
+            scope_cells=[scope],
+        )
+
+        self.assertTrue(summary["selected_scope_complete"])
+        self.assertTrue(summary["all_invocations_passed"])
+
+    def test_local_forward_placeholder_rejection_matches_catalogued_sequence(self):
+        target_id = "KMIPKIT-ELEM-OP-C2S-ACTIVATE"
+        case_id = "test-batch-placeholder-forward-reference-rejected"
+        operations = ["Activate", "Create"]
+        items = ["Activate(IDPlaceholder from item 2)", "Create(unique-key)"]
+        catalog = {
+            "version": "2.0.0",
+            "target_versions": ["2.0"],
+            "test_cases": [{
+                "case_id": case_id,
+                "category": "batch_workflows",
+                "operation": "Activate",
+                "requires": {"protocol_scenario": {
+                    "operations": operations,
+                    "target_ids": [
+                        "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-BATCH-ITEM",
+                        target_id,
+                        "KMIPKIT-ELEM-OP-C2S-CREATE",
+                    ],
+                    "protocol_versions": ["2.0"],
+                    "mode": "local_model",
+                    "parameters": {"items": items},
+                    "expected": {"construction": "rejected_or_server_reports_protocol_error"},
+                }},
+                "execution": {"protocol_versions": ["2.0"]},
+            }],
+            "normative_targets": [{
+                "target_id": target_id,
+                "kind": "operation",
+                "name": "Activate",
+            }, {
+                "target_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-BATCH-ITEM",
+                "kind": "message_field",
+                "name": "Batch Item",
+                "role": "request",
+            }, {
+                "target_id": "KMIPKIT-ELEM-OP-C2S-CREATE",
+                "kind": "operation",
+                "name": "Create",
+                "role": "request",
+            }],
+        }
+        route = copy.deepcopy(self.manifest["routes"][2])
+        route.update({
+            "public_api_symbol": "kmipkit_client_batch_item_activate",
+            "operation_ids": ["Activate"],
+            "case_categories": ["batch_workflows"],
+            "actions": ["construct"],
+        })
+        manifest = copy.deepcopy(self.manifest)
+        manifest["routes"] = [route]
+        scope = [cell for cell in iter_cells(catalog, manifest, languages=("c",))
+                 if cell["target_id"] == target_id and cell["protocol_version"] == "2.0"
+                 and cell["encoding"] == "TTLV" and cell["transport"] == "raw_tls"]
+        self.assertEqual({"construct", "send", "decode"}, {cell["action"] for cell in scope})
+        common_event = {
+            "case_id": case_id,
+            "route_id": scope[0]["route_id"],
+            "target_id": target_id,
+            "workflow_operation": "Activate",
+            "workflow_item_index": 0,
+            "public_api_symbol": "kmipkit_client_batch_item_activate",
+            "execution_route_id": "c.execute",
+            "execution_api_symbol": "kmipkit_client_execute",
+            "action": "send",
+            "protocol_version": "2.0",
+            "encoding": "TTLV",
+            "transport": "raw_tls",
+        }
+        construct_event = {
+            **common_event,
+            "action": "construct",
+            "status": "passed",
+            "invocation_count": 1,
+            "invocation_id": "forward-placeholder-construct",
+            "constructed_operation": "Activate",
+            "construction_evidence_kind": "typed_item_returned",
+            "batch_operation_sequence": operations,
+            "batch_item_count": len(operations),
+        }
+        send_event = {
+            **common_event,
+            "action": "send",
+            "status": "passed",
+            "invocation_count": 1,
+            "invocation_id": "forward-placeholder-local-validation",
+            "request_delivery_state": "not_sent",
+            "transport_invocation_count": 0,
+            "batch_operation_sequence": operations,
+            "batch_item_count": len(operations),
+            "local_rejection_code": "batch_placeholder_forward_reference",
+            "client_error_category": "validation",
+            "client_error_cause": "invalid_input",
+        }
+        decode_event = {
+            **common_event,
+            "action": "decode",
+            "status": "not_applicable",
+            "invocation_count": 0,
+            "not_applicable_reason": "local_rejection_no_response",
+        }
+        report = copy.deepcopy(self.report)
+        report["events"] = [construct_event, send_event, decode_event]
+
+        summary = validate_report(
+            report, catalog, manifest,
+            catalog_sha256="c" * 64,
+            route_manifest_sha256="d" * 64,
+            expected_artifact_sha256="b" * 64,
+            scope_cells=scope,
+        )
+
+        self.assertTrue(summary["selected_scope_complete"])
+        self.assertEqual(2, summary["invoked_cells"])
+        self.assertEqual(1, summary["not_applicable_cells"])
+        self.assertTrue(summary["all_invocations_passed"])
+
+        orphan_report = copy.deepcopy(report)
+        orphan_report["events"] = [event for event in orphan_report["events"]
+                                    if event["action"] != "send"]
+        with self.assertRaisesRegex(ValueError, "lacks a matching not-sent request"):
+            validate_report(
+                orphan_report, catalog, manifest,
+                catalog_sha256="c" * 64,
+                route_manifest_sha256="d" * 64,
+                expected_artifact_sha256="b" * 64,
+                scope_cells=scope,
+            )
+
+        try:
+            import jsonschema
+        except ImportError:
+            return
+        schema = json.loads((SHARED / "schemas/route-execution-evidence.schema.json").read_text())
+        jsonschema.validate(report, schema)
+
+    def test_explicitly_omitted_stop_response_is_resolved_without_fake_invocation(self):
+        catalog_path = ROOT / "interop/shared/catalog/kmipkit-1.0-test-catalog.json"
+        manifest_path = ROOT / "interop/shared/coverage/route-capabilities.json"
+        installed_catalog = json.loads(catalog_path.read_text())
+        manifest = json.loads(manifest_path.read_text())
+        stop_case = next(case for case in installed_catalog["test_cases"]
+                         if case["case_id"] == "test-batch-stop-on-first-failure")
+        catalog = {**installed_catalog, "test_cases": [stop_case]}
+        omitted = next(cell for cell in iter_cells(catalog, manifest, languages=("c",))
+                       if cell["action"] == "decode" and cell["mode"] == "network"
+                       and cell.get("workflow_item_index") == 1
+                       and cell["protocol_version"] == "2.0"
+                       and cell["encoding"] == "TTLV" and cell["transport"] == "raw_tls")
+        event = {
+            **{field: omitted[field] for field in (
+                "case_id", "route_id", "target_id", "workflow_operation",
+                "workflow_item_index", "public_api_symbol", "execution_route_id",
+                "execution_api_symbol", "action", "protocol_version", "encoding", "transport",
+            ) if field in omitted},
+            "status": "not_applicable",
+            "invocation_count": 0,
+            "not_applicable_reason": "stop_unprocessed_response_omitted",
+        }
+        report = {
+            **self.report,
+            "protocol_versions": ["2.0", "2.1"],
+            "network_combinations": [{"encoding": "TTLV", "transport": "raw_tls"}],
+            "events": [event],
+            "library_commit": manifest["library_commit"],
+        }
+
+        summary = validate_report(
+            report, catalog, manifest,
+            catalog_sha256="c" * 64,
+            route_manifest_sha256="d" * 64,
+            expected_artifact_sha256="b" * 64,
+            scope_cells=[omitted],
+        )
+
+        self.assertTrue(summary["selected_scope_complete"])
+        self.assertEqual(0, summary["invoked_cells"])
+        self.assertEqual(1, summary["not_applicable_cells"])
+        self.assertTrue(summary["all_invocations_passed"])
 
     def test_missing_action_fails_coverage_even_when_the_route_was_called(self):
         report = copy.deepcopy(self.report)
@@ -575,6 +912,55 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
 
         _validate_batch_event(event, case, {}, ("async-poll",))
 
+    def test_async_workflow_order_is_not_mistaken_for_a_single_batch(self):
+        operations = ["Create", "Query Asynchronous Requests", "Poll"]
+        case = {
+            "case_id": "test-async-lifecycle-poll",
+            "category": "asynchronous_workflows",
+            "requires": {
+                "protocol_scenario": {
+                    "parameters": {"operations_in_request_order": operations},
+                    "expected": {"operation_order": operations},
+                },
+            },
+        }
+
+        self.assertIsNone(
+            _validate_batch_event(
+                {"workflow_operation": "Poll", "workflow_step_index": 2},
+                case,
+                {"normative_targets": []},
+                ("test-async-lifecycle-poll", "python.execute_poll"),
+            )
+        )
+
+    def test_batch_workflow_request_order_remains_batch_validated(self):
+        operations = ["Create", "Activate", "Get Attribute List", "Revoke", "Destroy"]
+        case = {
+            "case_id": "test-batch-create-activate-destroy",
+            "category": "batch_workflows",
+            "requires": {
+                "protocol_scenario": {
+                    "parameters": {"operations_in_request_order": operations},
+                    "expected": {"operation_order": operations, "response_count": len(operations)},
+                },
+            },
+        }
+        event = {
+            "batch_operation_sequence": operations,
+            "peer_observed_operation_sequence": operations,
+            "batch_item_count": len(operations),
+            "peer_observed_response_count": len(operations),
+        }
+
+        self.assertIsNone(
+            _validate_batch_event(
+                event,
+                case,
+                {"normative_targets": []},
+                ("test-batch-create-activate-destroy", "batch"),
+            )
+        )
     def test_async_lifecycle_is_not_misclassified_as_one_batch(self):
         case = {
             "case_id": "async-create-query-poll",

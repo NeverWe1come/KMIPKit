@@ -17,7 +17,7 @@ from artifact_paths import test_server_binary, test_server_target_dir
 LOCAL = ROOT / "interop/.local/rust-test-server"
 SOURCE = LOCAL / "release-source"
 HARNESS = LOCAL / "harness"
-PIN = "489fafc79ef89db2524eafa7a6c6482f5cf75d97"
+PIN = "12496d646d11d4069b58bcc88fc76cc619211ec6"
 LOCAL.mkdir(parents=True, exist_ok=True)
 pin_marker = SOURCE / "library-commit"
 if not pin_marker.is_file() or pin_marker.read_text().strip() != PIN:
@@ -41,7 +41,16 @@ tokio = { version = "=1.53.3", features = ["macros", "rt", "sync"] }
 [patch.crates-io]
 aws-lc-sys = { path = "../release-source/vendor/aws-lc-sys-0.45.0" }
 ''')
+shutil.copyfile(SOURCE / "Cargo.lock", HARNESS / "Cargo.lock")
+subprocess.run(["cargo", "+1.94", "fetch", "--manifest-path",
+                str(HARNESS / "Cargo.toml")], check=True)
+subprocess.run(["cargo", "+1.94", "metadata", "--offline", "--manifest-path",
+                str(HARNESS / "Cargo.toml"), "--format-version", "1"],
+               check=True, stdout=subprocess.DEVNULL)
 target = test_server_target_dir(ROOT)
-subprocess.run(["cargo", "+1.94", "build", "--manifest-path", str(HARNESS / "Cargo.toml"),
-                "--target-dir", str(target)], check=True)
+subprocess.run(
+    ["cargo", "+1.94", "build", "--locked", "--offline", "--manifest-path",
+     str(HARNESS / "Cargo.toml"), "--target-dir", str(target)],
+    check=True,
+)
 print(test_server_binary(ROOT))

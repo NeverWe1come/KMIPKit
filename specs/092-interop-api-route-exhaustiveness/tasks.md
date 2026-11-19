@@ -208,3 +208,176 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
 - Verification: route-manifest validation passed; focused route tests passed
   65/65; shared interop tests passed 189/189; workflow contract tests passed
   96/96; Rust 1.94 validator tests passed 72/72; and `git diff --check` passed.
+
+## Development evidence: Java Boolean field route execution
+
+- Red commit `4651a7c4c` required Java generic TTLV evidence for the catalogued
+  Boolean message-field case; Red commit `a62eda031` added a focused fixture
+  that failed because the controlled peer emitted no per-route Boolean
+  construction or decode evidence.
+- Green commit `98a4dabc9` executes all 12 selected Boolean message-field and
+  structure-member cases through their applicable generic routes. It also
+  invokes the typed Request/Response Message parsers for Criticality Indicator,
+  checks Attestation Capable Indicator and Batch Order Option in a valid
+  two-item request, and exercises Random IV through the Cryptographic
+  Parameters builder, typed attribute converters, and AttributeSet.
+- Refactor documentation updates the Java consumer README, FR-003 traceability,
+  and the current ledger snapshot while leaving T006, T007, and T009 open.
+- The route ledger was regenerated with the repository validator using
+  `--selected-scope --write-ledger`, then checked with
+  `tools/compare_route_ledger.py --refresh-reference` and the normal comparer;
+  no generated file was edited by hand.
+- Verification: the focused `LocalCatalogRouteChecksTest` and controlled TLS
+  evidence test pass. `validate_route_evidence.py` accepts 26,745/26,745
+  selected cells with zero failed cells, and the ledger comparison passes.
+  The full Java matrix remains incomplete at 26,745/71,649 executed and 44,904
+  pending cells across 1,266 case IDs; T006, T007, and T009 remain open and
+  this work does not make the PR ready for review.
+- The complete Java validator suite passes 56/56 tests with zero failures,
+  errors, or skips. Temporary JVM files were placed under the validator's
+  ignored `build/java-temp` directory because `/tmp` was nearly full.
+
+## Development evidence: Java Item Type enum routes
+
+- Red commit `8534357d6` requires every catalogued Item Type enum value to
+  execute the four applicable generic TTLV routes; the focused test failed to
+  compile because the dedicated recipe was absent. The general enum fixture
+  correctly does not handle this family because it has no same-named Tag.
+- Green commit `86887bae4` reads all 11 values from the approved catalog,
+  verifies each code with `TtlvItemType.fromCode`, round-trips the value as a
+  generic Enumeration Item, and emits the constructor, Item create, Item view,
+  and codec decode route evidence for KMIP 2.0 and 2.1.
+- The generated ledger was refreshed only after `validate_route_evidence.py`
+  accepted the selected report; both the reference refresh and normal ledger
+  comparison passed.
+- Verification: `LocalCatalogRouteChecksTest` and the controlled TLS evidence
+  test pass; the selected scope accepts 26,833/26,833 cells with zero failed
+  cells. The full Java matrix remains incomplete at 26,833/71,649 executed and
+  44,816 pending cells across 1,265 case IDs. T006, T007, and T009 remain open.
+- Full-suite verification: the Java validator Gradle suite passes 57/57 tests
+  with zero failures, errors, or skips. The selected-scope validator and both
+  ledger comparison commands pass; `git diff --check` passes.
+
+## Development evidence: Java Item Type individual value cases
+
+- Red commit `875ccfa80` requires the 11 catalogued Item Type values to emit
+  generic TTLV route evidence under their individual normative case IDs as
+  well as the aggregate. The focused local test fails because only the
+  aggregate has evidence.
+- Green commit `57c6b2160` associates each catalog value with its unique
+  normative test case, emits the four applicable routes for both case levels,
+  and includes the individual IDs in the controlled report scope. The generated
+  route ledger is refreshed from the accepted report, not edited by hand.
+- Verification: the focused local and controlled-TLS tests pass; the
+  selected-scope validator accepts 26,921/26,921 cells with zero failures and
+  both ledger comparisons pass. The full Java validator suite passes 57/57
+  tests with zero failures, errors, or skips; `git diff --check` passes.
+- The matrix remains incomplete at 26,921/71,649 executed and 44,728 pending
+  cells across 1,254 case IDs. T006, T007, and T009 remain open; the PR stays
+  WIP.
+
+## Development evidence: Java key-bearing managed-object root routes
+
+- Red commit `a76832637` added the required test for the Symmetric Key,
+  Private Key, and Public Key root structures; it failed to compile because
+  the focused route recipe did not exist.
+- Green commit `10afa5ac8` exercises each matching named factory plus
+  `ManagedObject.fromFields` and `ManagedObject.fromItem` with a Key Block
+  containing Raw Key Material. Report Red commit `f1552eebe` then proved that
+  the selected evidence omitted those exact installed-package routes; Green
+  commit `2457ade76` added them to the report and generated ledger. Refactor
+  commit `178686b75` binds fixture identities to the exact catalog target.
+- Verification: both focused Java route tests passed; the controlled report
+  validates 34,696/34,696 selected cells with zero failures. The full ledger
+  now has 71,641 planned, 34,696 executed, and 36,945 pending cells. Full
+  Java matrix closure and exact-head CI remain open; T006, T007, and T009
+  remain incomplete.
+
+## Development evidence: deterministic Java evidence ledger
+
+- Red commit `c5e78d52d` added a regression proving that unordered declared
+  case IDs made otherwise equivalent evidence ledgers differ.
+- Green commit `7d478fe82` sorts the case IDs when building the ledger;
+  Refactor commit `0fb31cfa6` names the normalized input before assembling the
+  output. The focused regression and all 109 shared route tests pass, and the
+  capability audit accepts 1,507 routes.
+- The selected Java report validates 34,696/34,696 cells with zero failures.
+  Refreshing and rechecking the generated ledger now succeeds reproducibly;
+  36,945 of 71,641 Java cells remain pending. T006, T007, and T009 remain
+  open.
+
+## Java Split Key managed-object root routes
+
+- Red commit `45b9ab5c5` requires the Split Key root case to emit the specific
+  factory and both generic `ManagedObject` factory routes; it fails to compile
+  because the route recipe is absent.
+- Green commit `e3b1bdfe7` constructs the Split Key with KMIP 2.0/2.1 §2.8
+  Table 9 field order, the XOR method, two parts, threshold two, and a Raw Key
+  Block. It invokes `ManagedObject.splitKey`, `fromFields`, and `fromItem`,
+  checks the parsed fields, and records each route in the controlled report.
+- Refactor commit `e8fdeb63d` uses the existing canonical scalar TTLV encoder
+  and verifies that all emitted routes carry identical bytes.
+- Verification: full Java validator suite 87/87, shared route suites 109/109,
+  selected route evidence 34,702/34,702 with zero failures, generated ledger
+  comparison, 1,507-route capability audit, and `git diff --check` pass. The
+  full Java ledger remains incomplete at 36,939 pending of 71,641; the stack
+  remains WIP and T006, T007, and T009 remain open.
+
+## Java Split Key managed-object member routes
+
+- Red commit `3601224ff` requires all six §2.8 Table 9 structure members and
+  the Split Key tag to execute through the applicable named and generic Java
+  managed-object factories in KMIP 2.0/2.1.
+- Green commit `adbcd43d0` adds the member fixtures and controlled-report
+  events. It validates the conditional Prime Field Size path with Polynomial
+  Sharing Prime Field and Big Integer 257, and uses XOR without that optional
+  field for the other members.
+- Refactor commit `af53d1b39` shares exact route-event matching between report
+  lookup and cardinality checks. A subsequent validator run exposed a duplicate
+  `case_id` because the tag was already included by generic tag evidence; the
+  selected-case list now adds only the six new member IDs.
+- Verification: full Java suite 87/87 before the case-ID correction; the
+  focused controlled TLS report test passes after it. Selected evidence
+  validates 34,740/34,740 cells with zero failures; ledger comparison and the
+  1,507-route capability audit pass. The ledger has 71,641 planned, 34,740
+  executed, and 36,901 pending cells. Full matrix closure and exact-head CI
+  remain outstanding; keep the stack WIP.
+
+## Java PGP Key and Secret Data managed-object routes
+
+- Red commit `7b1f65d3b` requires both objects' root structures, required
+  members, and assigned tags to run through the applicable Java factories in
+  KMIP 2.0/2.1.
+- Green commit `6c7820757` constructs PGP Key Version 4 or Secret Data Type
+  Password followed by a Raw Key Block, exercises each named factory, and
+  applies `fromFields`/`fromItem` to object structures and members. Refactor
+  commit `1c67d3647` shares the PGP target identity check with report assertions.
+- Verification: Java suite 89/89 with zero failures, errors, or skips; selected
+  evidence 34,780/34,780 with zero failed cells; 109 shared tests pass; ledger
+  comparison and 1,507-route capability audit pass. The full Java ledger has
+  36,861 pending of 71,641. Full matrix closure and exact-head CI remain open;
+  keep the stack WIP.
+
+## Java generic TTLV routes for Key Block structure members
+
+- Red `738a80069` covers five Object Data Structure member cases; Green
+  `473f57a70` recognizes that catalog encoding; Refactor `14210bf1a` clarifies
+  the selection. Red `13e375785` then proves that evidence must not include
+  undeclared routes; Green `f46295a92` filters `TtlvValue.structure` through
+  the route manifest's exact target list.
+- Verification: Java suite 90/90; shared suites 109/109; selected report
+  34,816/34,816 with zero failures; ledger comparison and the 1,507-route
+  capability audit pass. The matrix remains incomplete with 36,825 pending of
+  71,641 cells; the stack remains WIP.
+
+## Java generic Operation routes for KMIP 2.0 version boundaries
+
+- Red `7288a8643` adds assertions for the six 2.1-only operations rejected in
+  KMIP 2.0; the focused test fails because no catalogued operation target is
+  selected for the 2.0 cases.
+- Green `2843cdfe3` selects the source-defined 2.1 Operation value for local
+  generic TTLV construction, Item view, and decode while keeping protocol
+  context 2.0. This path does not send unsupported requests.
+- Verification: Java suite 91/91; selected report 34,834/34,834 with zero
+  failures; ledger comparison and the 1,507-route capability audit pass. The
+  full Java matrix has 36,807 pending cells of 71,641; #187 remains WIP.
