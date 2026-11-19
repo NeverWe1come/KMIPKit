@@ -2231,6 +2231,7 @@ class ControlledTlsPeerTest {
         int asyncLifecyclePollRouteEventCount = 3 * 3 * 2 + 3;
         int asyncLifecycleQueryRouteEventCount = 3 * 3 * 2 + 3 + 4;
         int asyncNoRecursivePollRouteEventCount = 3 * 3 * 2 + 3;
+        int asyncOperationPollRouteEventCount = KMIP_2_0_AND_2_1.size() * (3 * 3 * 2 + 3);
         int asyncIndicatorEnumerationRouteEventCount = 0;
         for (JsonNode testCase : readRouteEvidenceCatalog().path("test_cases")) {
             JsonNode scenario = testCase.path("requires").path("protocol_scenario");
@@ -2316,6 +2317,7 @@ class ControlledTlsPeerTest {
                         + asyncLifecyclePollRouteEventCount
                         + asyncLifecycleQueryRouteEventCount
                         + asyncNoRecursivePollRouteEventCount
+                        + asyncOperationPollRouteEventCount
                         + expectedAsyncCancelLocalRouteEventCount(readRouteEvidenceCatalog())
                         + CREATE_OPERATION_ROUTE_FIXTURES.stream()
                                 .filter(CreateOperationRouteFixture::pendingResponse)
@@ -14311,6 +14313,7 @@ class ControlledTlsPeerTest {
         assertAsyncLifecyclePollRouteCoverage(events, protocolVersion);
         assertAsyncLifecycleQueryRouteCoverage(events, protocolVersion);
         assertAsyncNoRecursivePollRouteCoverage(events, protocolVersion);
+        assertAsyncOperationPollRouteCoverage(events, protocolVersion);
     }
 
 
@@ -15409,6 +15412,37 @@ class ControlledTlsPeerTest {
                     }
                     assertEquals(1, matches,
                             "The non-recursive async Poll route must run once for each wire combination.");
+                }
+            }
+        }
+        assertRouteEventRecorded(events, caseId, targetId,
+                "java.typed-protocol.poll_request.create", "construct", protocolVersion);
+        assertRouteEventRecorded(events, caseId, targetId,
+                "java.typed-protocol.function.async_poll_request_to_ttlv_payload", "encode", protocolVersion);
+        assertRouteEventRecorded(events, caseId, targetId,
+                "java.typed-protocol.function.kmipkit_client_async_operation_outcome_poll_response_v1",
+                "decode", protocolVersion);
+    }
+
+    private static void assertAsyncOperationPollRouteCoverage(ArrayNode events, String protocolVersion)
+            throws Exception {
+        String caseId = "test-op-poll";
+        String targetId = "KMIPKIT-ELEM-OP-C2S-POLL";
+        String routeId = "java.typed-protocol.client.execute_poll";
+        for (String encoding : List.of("TTLV", "JSON", "XML")) {
+            for (String transport : List.of("raw_tls", "https")) {
+                for (String action : List.of("construct", "send", "decode")) {
+                    int matches = 0;
+                    for (JsonNode event : events) {
+                        if (routeEventMatches(event, caseId, routeId, protocolVersion, targetId)
+                                && action.equals(event.path("action").asText())
+                                && encoding.equals(event.path("encoding").asText())
+                                && transport.equals(event.path("transport").asText())) {
+                            matches++;
+                        }
+                    }
+                    assertEquals(1, matches,
+                            "The catalogued Poll operation route must execute once per encoding/transport cell.");
                 }
             }
         }
