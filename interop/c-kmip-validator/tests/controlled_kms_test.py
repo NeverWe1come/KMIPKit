@@ -619,6 +619,8 @@ def main() -> int:
     expected_operations += (2, 18, 34, 19, 20, 20)
     expected_operations += (2, 20, 20)
     expected_operations += (40, 20, 20)
+    expected_operations += (40, 20, 20)
+    expected_cases += ("test-obj-split-key",)
     expected_operations += (40, 41, 20, 20, 20)
     expected_operations += (1, 4, 19, 20, 19, 20)
     expected_operations += (1, 18, 5, 19, 20, 20)
