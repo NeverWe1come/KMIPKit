@@ -59093,12 +59093,17 @@
       "isolation_recipe": {
         "unique_name_prefix": "kmipkit-re-key-key-pair",
         "setup_steps": [
-          "Create unique SymmetricKey"
+          "Create Key Pair with explicit algorithm and usage attributes",
+          "Activate existing Private Key"
         ],
-        "target_step": "Execute Re-key Key Pair",
+        "target_step": "Re-key the existing Private/Public Key pair",
         "teardown_steps": [
-          "Revoke SymmetricKey",
-          "Destroy SymmetricKey"
+          "Revoke existing Private Key",
+          "Revoke replacement Private Key",
+          "Destroy existing Private Key",
+          "Destroy existing Public Key",
+          "Destroy replacement Private Key",
+          "Destroy replacement Public Key"
         ],
         "normalized_fields": [
           "TimeStamp",

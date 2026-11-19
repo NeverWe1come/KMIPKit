@@ -1532,6 +1532,16 @@ def generate_catalog(normative_catalog_path: Path) -> dict:
                 "Revoke Private Key", "Destroy replacement Certificate",
                 "Destroy existing Certificate", "Destroy Private Key", "Destroy Public Key",
             ]
+        elif name == "Re-key Key Pair":
+            setup = [
+                "Create Key Pair with explicit algorithm and usage attributes",
+                "Activate existing Private Key",
+            ]
+            teardown = [
+                "Revoke existing Private Key", "Revoke replacement Private Key",
+                "Destroy existing Private Key", "Destroy existing Public Key",
+                "Destroy replacement Private Key", "Destroy replacement Public Key",
+            ]
         elif name == "Validate":
             setup = ["Provide a valid X.509 Certificate chain fixture"]
         elif name == "Sign":
@@ -1562,6 +1572,7 @@ def generate_catalog(normative_catalog_path: Path) -> dict:
                 "unique_name_prefix": f"kmipkit-{name.lower().replace(' ', '-')}",
                 "setup_steps": setup,
             "target_step": "Certify Public Key with Certificate Type X.509" if name == "Certify"
+            else "Re-key the existing Private/Public Key pair" if name == "Re-key Key Pair"
             else f"Execute {name}",
                 "teardown_steps": teardown,
                 "normalized_fields": ["TimeStamp", "UniqueIdentifier", "InitialDate", "ActivationDate", "LastChangeDate", "DestroyDate"]
