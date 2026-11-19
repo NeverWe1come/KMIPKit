@@ -129,11 +129,45 @@ python3 -m pip install --only-binary ':all:' jsonschema==4.23.0
 python3 interop/c-kmip-validator/tests/test_route_matrix.py
 python3 interop/c-kmip-validator/tools/route_matrix.py \
   --binary interop/c-kmip-validator/build/kmip_validator_c \
-  --output interop/c-kmip-validator/build/route-execution-evidence.json
+  --output interop/c-kmip-validator/build/route-execution-evidence-split-key.json
 python3 interop/shared/tools/validate_route_evidence.py \
-  --report interop/c-kmip-validator/build/route-execution-evidence.json \
+  --report interop/c-kmip-validator/build/route-execution-evidence-split-key.json \
   --artifact-sha256 "$(sha256sum interop/.local/c-live/install/489fafc79ef89db2524eafa7a6c6482f5cf75d97/lib/libkmipkit_ffi.so | cut -d ' ' -f 1)"
 ```
+
+For an incomplete matrix, validate the exact emitted scope (rather than
+claiming the full planned matrix is complete) with the shared validator API:
+
+```sh
+python3 - <<'PY'
+import hashlib
+import json
+import sys
+from pathlib import Path
+
+sys.path.insert(0, "interop/shared/tools")
+from validate_route_evidence import validate_report
+
+report = json.loads(Path("interop/c-kmip-validator/build/route-execution-evidence-split-key.json").read_text())
+catalog_bytes = Path("interop/shared/catalog/kmipkit-1.0-test-catalog.json").read_bytes()
+manifest_bytes = Path("interop/shared/coverage/route-capabilities.json").read_bytes()
+artifact_bytes = Path(
+    "interop/.local/c-live/install/489fafc79ef89db2524eafa7a6c6482f5cf75d97/lib/libkmipkit_ffi.so"
+).read_bytes()
+summary = validate_report(
+    report, json.loads(catalog_bytes), json.loads(manifest_bytes),
+    catalog_sha256=hashlib.sha256(catalog_bytes).hexdigest(),
+    route_manifest_sha256=hashlib.sha256(manifest_bytes).hexdigest(),
+    expected_artifact_sha256=hashlib.sha256(artifact_bytes).hexdigest(),
+    scope_cells=report["events"],
+)
+print(json.dumps(summary, sort_keys=True))
+PY
+```
+
+This scoped call validates every emitted event and its provenance. The regular
+CLI command above is the full-completeness gate and reports missing planned
+cells until the pending recipes below are implemented.
 
 Both completeness commands currently exit nonzero because semantic branch,
 auxiliary model/accessor, cryptographic, asynchronous, and additional typed
@@ -142,10 +176,10 @@ The `*.gaps.json` sidecar identifies every unexecuted matrix obligation rather
 than misclassifying it as an unavailable library route. Other sidecars retain
 installed-artifact availability checks and sanitized controlled-peer outcomes.
 The evidence JSON passes the shared schema independently of completeness.
-The latest full local C matrix report (`c-route-56b0ea4e-dcd3-4332-97bc-2f265c3abc00`)
-has 66,288 expected cells, 43,440 invoked, 40 explicitly not applicable, zero
-failed, and 22,808 pending. Its JSON SHA-256 is
-`b1b5e56345d5b060e80483428da6454a9253444701d7036ee3055f1cb753d46b`; it uses
+The latest full local C matrix report (`c-route-b193e0e8-202a-487f-8b9b-f3ee0ec48bb9`)
+has 66,288 expected cells, 43,480 invoked, 40 explicitly not applicable, zero
+failed, and 22,768 pending. Its JSON SHA-256 is
+`2b8cd3d5b44f23f07ba0a11b51885bf6ce7241e91e62b73fee3b90e84ac214f9`; it uses
 the pinned C artifact SHA-256
 `c93eb8f7daa60d3b6832d297887e99cd2101e4f9baf2d04f55ce4042ba4bb7a2`. The
 shared validator accepts all emitted cells with
@@ -201,6 +235,10 @@ by its returned identifier. All three operations are checked against the
 controlled peer across KMIP 2.0 and 2.1, TTLV/JSON/XML, and raw TLS/HTTPS. These
 recipes use synthetic controlled-peer values and do not claim vendor
 interoperability.
+The companion `test-obj-split-key` case records 50 passing cells for the same
+Create Split Key and cleanup workflow: 18 construction, 12 network send, and
+20 decode cells. The peer verifies both returned identifiers are destroyed
+exactly once; the report adds 40 new matrix identities for this object case.
 The Join Split Key route creates the same isolated pair, joins the two returned
 identifiers, then destroys the joined object through the batch ID Placeholder
 and both source parts through their exact identifiers. It verifies the typed
@@ -363,6 +401,13 @@ successful response. This is supplemental C exchange evidence for the
 catalog's local construction case: it proves no inconsistent count reaches
 this controlled peer and does not claim external KMS behavior.
 
+The `test-batch-count-zero-rejected` contract parses an empty Request Message
+with `Batch Count = 0` and no Batch Item. The request-message parser reports
+`invalid_batch_count` before transport, and the contract requires zero
+transport calls. The C report contains two passing typed parser decodes, one
+per protocol version; this local case does not use a network fixture or
+construct an empty Get Batch Item.
+
 The negative `test-neg-modify-attribute-current-mismatch` route seeds the
 Comment attribute, requests a Current Attribute value that is not present, and
 expects `OperationFailed` with `Attribute Instance Not Found` (32). It exercises
@@ -415,12 +460,13 @@ Input with delivery state Not Sent before opening a transport connection. The
 matrix records all 12 version/encoding/transport combinations as local
 rejections; it does not claim a KMS response or response-accessor coverage.
 
-Comparing the full report with the previous 43,035-event run by matrix cell
-identity retained every prior cell and added exactly 62 cells for the single-
-item default-Stop route. Catalog, route-manifest, installed-artifact, and
-library-commit fingerprints match the baseline. That run's CTest passed 7/7,
-including 191 route-matrix contract tests and both controlled TLS peers. The
-global route-completeness gate remains open for the pending recipes.
+The preceding full report (`c-route-56b0ea4e-dcd3-4332-97bc-2f265c3abc00`),
+compared with its 43,035-event predecessor, retained every prior cell identity
+and added exactly 62 cells for the single-item default-Stop route. Catalog,
+route-manifest, installed-artifact, and library-commit fingerprints matched
+that run's baseline. Its CTest passed 7/7, including 191 route-matrix contract
+tests and both controlled TLS peers. The global route-completeness gate
+remains open for the pending recipes.
 
 For `test-batch-stop-on-first-failure`, the approved KMIPKIT-0007-FR-018
 response policy expects one `Operation Failed` result and omits the later
@@ -460,7 +506,7 @@ include the fixture's current timestamp. Cell identities are unchanged for
 those rows. The previous report added the KMIP 2.0 Discover Versions local
 decoder cell using a 2.0 response header and the fixed 2.1 request offer; it
 validates the returned 2.1 version without claiming 2.0 offer construction.
-The latest report retains all previous cells and adds 42 cells for the Poll
-route and 21 new identities for the Process route, after the 39 cells for
-KMIP 2.0 Login and Logout. It passes the evidence schema and scoped shared
-validation, while 22,808 matrix cells remain pending.
+The latest report retains all previous identities and adds 40 for the
+`test-obj-split-key` object case after the 42 Poll-route cells and 21 Process
+identities. It passes the evidence schema and scoped shared validation, while
+22,768 matrix cells remain pending.
