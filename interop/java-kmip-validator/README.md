@@ -1742,3 +1742,27 @@ planned; 27,011 remain pending. The selected scope is complete, while the full
 Java matrix remains incomplete and PR #255 stays WIP. The full Java suite
 passed 111/111 tests; all 112 shared evidence/schema tests and the 1,511-route
 manifest check passed, and the ledger comparison matched.
+
+### Java Hashed Password Credential Value member routes — 2026-11-19
+
+The Java consumer now exercises the four Hashed Password Credential Value
+members—Username, Timestamp, Hashing Algorithm, and Hashed Password—through
+both the generic `Credential.fromTtlv` envelope and the typed
+`HashedPasswordCredential.fromTtlv` model in KMIP 2.0 and 2.1. The Hashing
+Algorithm member also invokes `CryptographicParameters.Builder.hashingAlgorithm`
+with the fixture's SHA-256 value. The typed decoder is checked for preservation
+of all four members, and each generic envelope checks the member's catalogued
+TTLV item type. References: OASIS KMIP 2.0 §9.11, Table 377; KMIP 2.1 §9.11,
+Table 415.
+
+Red `bc1c4237c` fails on the missing generic Credential route for the Username
+member. Green `791efd588` adds the typed and generic routes, validates the
+member item types, and exercises the Hashing Algorithm builder. Refactor
+`a3b00a4a7` removes duplicate route assertions in favor of the shared fixture
+table. The final selected report
+`java-controlled-query-88e518f4-4108-4889-83c8-c67c39b88770` validates 44,520
+cells (44,504 invocations, 16 not applicable, zero failed) out of 71,513
+planned; 26,993 remain pending. The selected scope is complete; the full Java
+matrix remains incomplete, so PR #255 stays WIP. The Java Gradle suite passed
+111/111 tests, the shared evidence/schema/capability suite passed 112/112, the
+1,511-route manifest check passed, and the Java ledger comparison matched.
