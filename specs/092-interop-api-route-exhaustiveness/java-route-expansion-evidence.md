@@ -4504,3 +4504,43 @@ planned, 44,458 executed, and 27,125 pending cells. The full matrix remains
 incomplete; keep #187 and dependents WIP. The controlled peer validates client
 route and response behavior but does not establish persisted attribute state
 at an external KMS or claim vendor interoperability.
+
+## Java ledger refresh after shared catalog corrections — 2026-11-19
+
+The Java branch now includes the shared zero-count batch contract and the
+corrected Recover setup that archives its created SymmetricKey before
+recovery. The selected controlled-TLS report was revalidated against the
+updated catalog and the generated ledger/reference was refreshed. Report
+`java-controlled-query-ad59b1af-3b59-46f8-b144-6600d0440afe` validates
+44,446 selected-scope cells: 44,430 invocations, 16 not applicable, and zero
+failures. The ledger records 71,513 planned, 44,446 executed, and 27,067
+pending cells. `selected_scope_complete` and `all_invocations_passed` are true;
+the full matrix is incomplete, so #187 and its dependents remain WIP.
+
+Verification: Java Gradle suite 111/111, shared suite 204/204, catalog check,
+route capability check (1,511 routes), and generated-ledger comparison all
+pass. The planned shared matrix contains 2,689 cases and 312,118 cells with no
+declared routes lacking cells. The selected report uses installed artifact
+SHA-256 `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+
+The Add Attribute version applicability question remains open: the current
+report reflects the existing 2.0/2.1 catalog, while the request to limit it to
+2.1 conflicts with the pinned KMIP 2.0 source. This report proves the existing
+Java client routes against a controlled peer, not external KMS interoperability.
+
+## Java Usage Limits stack verification after base refresh — 2026-11-19
+
+#216 was merged with the refreshed #187 base. Its Usage Limits structure
+assertions remain included, and the selected controlled-TLS report was checked
+against the regenerated catalog and ledger. Report
+`java-controlled-query-2dff43ea-8694-4a95-8b7f-71e99de0613f` validates 44,446
+selected-scope cells (44,430 invocations, 16 not applicable, zero failures).
+The ledger has 71,513 planned, 44,446 executed, and 27,067 pending cells.
+
+Verification: Java Gradle suite 111/111; shared suite 204/204; catalog and
+route capability checks; and generated-ledger comparison pass. The full Java
+matrix remains incomplete, so #216 and #217 remain WIP. This report uses the
+installed artifact SHA-256
+`d684b2d9f5b54767d544aa96b380dade027c534ff7155c337867a1ed07c10b4e`.
+Add Attribute's version applicability remains unresolved; evidence currently
+reflects the existing KMIP 2.0/2.1 catalog pending clarification.

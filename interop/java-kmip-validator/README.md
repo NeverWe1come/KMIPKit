@@ -1371,6 +1371,29 @@ References: OASIS KMIP 2.0 §6.1.36 and KMIP 2.1 §6.1.38 (Poll), with §§8.2,
 The controlled peer proves client route behavior, not external KMS
 interoperability.
 
+### Java shared-contract refresh — 2026-11-19
+
+The Java branch now includes the refreshed shared catalog contract: a zero-count
+batch has only Batch Count as its target and no send/decode cells, and the
+Recover lifecycle fixture archives the created SymmetricKey before recovery.
+The generated Java ledger was rebuilt from the controlled TLS report after
+those catalog changes. It validates 44,446 selected-scope cells (44,430
+invocations, 16 not applicable, zero failed) out of 71,513 planned cells, with
+27,067 still pending. `selected_scope_complete` and
+`all_invocations_passed` are true; the full matrix is incomplete, so #187 and
+its dependents remain WIP. The Java Gradle suite passes 111/111, the shared
+suite passes 204/204, the catalog and route capability checks pass (1,511
+routes), and the generated-ledger comparison passes. The selected report is
+`java-controlled-query-ad59b1af-3b59-46f8-b144-6600d0440afe` for installed
+artifact SHA-256
+`504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+
+The Add Attribute version applicability question remains unresolved because
+the requested KMIP 2.1-only boundary conflicts with the pinned KMIP 2.0 source;
+the current report still reflects the existing 2.0/2.1 catalog until that
+decision is clarified. The controlled peer verifies client behavior and does
+not establish external KMS interoperability.
+
 Red `9cd609ff2` requires all 36 network route cells and three local TTLV route
 cells. Green `73ef2ae3d` sends the real Poll requests to a controlled TLS/HTTPS
 peer and checks status, reason, correlation, and payload shape. The full Gradle
@@ -1567,3 +1590,17 @@ cells. The full matrix remains incomplete, so #187 and its dependents stay
 WIP. The fixture validates client routes and response handling; it does not
 establish persisted attribute state at an external KMS or claim vendor
 interoperability.
+
+### Java Usage Limits stack verification — 2026-11-19
+
+After merging the refreshed #187 base, #216 retains its Usage Limits structure
+assertions. The selected report is `java-controlled-query-2dff43ea-8694-4a95-8b7f-71e99de0613f` and validates 44,446 cells (44,430 invocations, 16 not applicable,
+zero failures) out of 71,513 planned; 27,067 remain pending. Java Gradle passes
+111/111, shared tests pass 204/204, and the generated ledger matches its
+reference. This branch and its dependent stack remain WIP because the full
+matrix is incomplete. The report uses installed artifact SHA-256
+`d684b2d9f5b54767d544aa96b380dade027c534ff7155c337867a1ed07c10b4e`.
+
+Add Attribute's 2.0 applicability remains unresolved against the pinned OASIS
+source; the current evidence retains the existing 2.0/2.1 catalog pending that
+decision.
