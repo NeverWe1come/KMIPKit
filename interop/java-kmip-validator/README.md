@@ -1315,3 +1315,24 @@ Login/Delegated Login variant cells are 48/48; 28,042 cells remain pending
 across the full matrix. The generated ledger comparison passes. These
 controlled TLS fixtures do not establish interoperability with an external
 KMS. The stack remains WIP while applicable matrix cells remain.
+
+### Java catalogued Poll operation — 2026-11-19
+
+The controlled Java peer now executes the `test-op-poll` route for KMIP 2.0
+and 2.1. It checks Poll request construction and typed response handling over
+TTLV, JSON, and XML on raw TLS and HTTPS, and records the three local
+`PollRequest`/`AsyncOperationOutcome` routes once per version. The fixture
+returns a valid Pending response with the matching correlation value. This
+proves route execution against the controlled peer; it does not claim KMS
+interoperability or complete the catalog isolation recipe's key lifecycle.
+References: OASIS KMIP 2.0 §6.1.36 and KMIP 2.1 §6.1.38.
+
+Red `f47fdc12d` requires all 42 network and local route cells. Green
+`ef9aa55c9` adds controlled exchanges and route evidence. The full Gradle
+suite passes 111/111; shared route, schema, and capability tests pass 112/112;
+requirement and feature traceability pass 2/2 and 31/31. The report validates,
+the route audit accepts 1,511 routes, and the generated ledger comparison
+passes. Selected evidence validates 44,004/44,004 cells: 43,988 invocations,
+16 not-applicable cells, and zero failures. The ledger records 71,583 planned,
+44,004 executed, and 27,579 pending cells. The full matrix remains incomplete,
+so #187 and its dependents stay WIP.
