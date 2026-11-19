@@ -229,6 +229,31 @@ class ControlledTlsPeerTest {
     private record NewAttributeMutationFixture(String methodName, String title, String ordinal,
             int operationValue) { }
 
+    private record CredentialStructureMemberFixture(String caseId, String targetId, String modelRoute,
+            long credentialTypeRaw, int memberTag) { }
+
+    private static final List<CredentialStructureMemberFixture> TYPED_CREDENTIAL_STRUCTURE_MEMBER_FIXTURES = List.of(
+            new CredentialStructureMemberFixture(
+                    "test-norm-structure-member-structure-member-9-11-username-and-password-username",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-USERNAME-AND-PASSWORD-USERNAME",
+                    "java.typed-protocol.model.org.kmipkit.credentials.usernameandpasswordcredential.fromttlv",
+                    1, 0x420099),
+            new CredentialStructureMemberFixture(
+                    "test-norm-structure-member-structure-member-9-11-username-and-password-password",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-USERNAME-AND-PASSWORD-PASSWORD",
+                    "java.typed-protocol.model.org.kmipkit.credentials.usernameandpasswordcredential.fromttlv",
+                    1, 0x4200a1),
+            new CredentialStructureMemberFixture(
+                    "test-norm-structure-member-structure-member-9-11-device-device-identifier",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-DEVICE-IDENTIFIER",
+                    "java.typed-protocol.model.org.kmipkit.credentials.devicecredential.fromttlv",
+                    2, 0x4200a2),
+            new CredentialStructureMemberFixture(
+                    "test-norm-structure-member-structure-member-9-11-device-password",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-PASSWORD",
+                    "java.typed-protocol.model.org.kmipkit.credentials.devicecredential.fromttlv",
+                    2, 0x4200a1));
+
     private record CreateRequestPayloadFixture(String caseId, String targetId, String protocolVersion,
             boolean protectionStorageMasksPresent) { }
 
@@ -1911,42 +1936,12 @@ class ControlledTlsPeerTest {
                     "test-norm-structure-member-structure-member-9-11-ticket-ticket",
                     "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-TICKET-TICKET",
                     GENERIC_CREDENTIAL_FROM_TTLV_ROUTE, "construct", protocolVersion);
-            assertRouteEventRecorded(events,
-                    "test-norm-structure-member-structure-member-9-11-username-and-password-username",
-                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-USERNAME-AND-PASSWORD-USERNAME",
-                    GENERIC_CREDENTIAL_FROM_TTLV_ROUTE, "construct", protocolVersion);
-            assertRouteEventRecorded(events,
-                    "test-norm-structure-member-structure-member-9-11-username-and-password-username",
-                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-USERNAME-AND-PASSWORD-USERNAME",
-                    "java.typed-protocol.model.org.kmipkit.credentials.usernameandpasswordcredential.fromttlv",
-                    "construct", protocolVersion);
-            assertRouteEventRecorded(events,
-                    "test-norm-structure-member-structure-member-9-11-username-and-password-password",
-                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-USERNAME-AND-PASSWORD-PASSWORD",
-                    GENERIC_CREDENTIAL_FROM_TTLV_ROUTE, "construct", protocolVersion);
-            assertRouteEventRecorded(events,
-                    "test-norm-structure-member-structure-member-9-11-username-and-password-password",
-                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-USERNAME-AND-PASSWORD-PASSWORD",
-                    "java.typed-protocol.model.org.kmipkit.credentials.usernameandpasswordcredential.fromttlv",
-                    "construct", protocolVersion);
-            assertRouteEventRecorded(events,
-                    "test-norm-structure-member-structure-member-9-11-device-device-identifier",
-                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-DEVICE-IDENTIFIER",
-                    GENERIC_CREDENTIAL_FROM_TTLV_ROUTE, "construct", protocolVersion);
-            assertRouteEventRecorded(events,
-                    "test-norm-structure-member-structure-member-9-11-device-device-identifier",
-                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-DEVICE-IDENTIFIER",
-                    "java.typed-protocol.model.org.kmipkit.credentials.devicecredential.fromttlv",
-                    "construct", protocolVersion);
-            assertRouteEventRecorded(events,
-                    "test-norm-structure-member-structure-member-9-11-device-password",
-                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-PASSWORD",
-                    GENERIC_CREDENTIAL_FROM_TTLV_ROUTE, "construct", protocolVersion);
-            assertRouteEventRecorded(events,
-                    "test-norm-structure-member-structure-member-9-11-device-password",
-                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-PASSWORD",
-                    "java.typed-protocol.model.org.kmipkit.credentials.devicecredential.fromttlv",
-                    "construct", protocolVersion);
+            for (CredentialStructureMemberFixture fixture : TYPED_CREDENTIAL_STRUCTURE_MEMBER_FIXTURES) {
+                assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(),
+                        GENERIC_CREDENTIAL_FROM_TTLV_ROUTE, "construct", protocolVersion);
+                assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(),
+                        fixture.modelRoute(), "construct", protocolVersion);
+            }
             assertRouteEventRecorded(events, "test-op-revoke", "KMIPKIT-ELEM-OP-C2S-REVOKE",
                     "java.typed-protocol.revoke_request.create", "construct", protocolVersion);
             assertRouteEventRecorded(events, "test-op-revoke", "KMIPKIT-ELEM-OP-C2S-REVOKE",
@@ -2516,8 +2511,10 @@ class ControlledTlsPeerTest {
         int credentialEnvelopeEventCount = CREDENTIAL_TYPE_MODEL_CASE_IDS.size()
                 * KMIP_2_0_AND_2_1.size();
         int credentialRootEnvelopeEventCount = KMIP_2_0_AND_2_1.size() * 3;
-        int credentialStructureMemberRouteEventCount = KMIP_2_0_AND_2_1.size() * 8;
-        int typedCredentialStructureMemberRouteEventCount = KMIP_2_0_AND_2_1.size() * 4;
+        int credentialStructureMemberRouteEventCount = KMIP_2_0_AND_2_1.size()
+                * (4 + TYPED_CREDENTIAL_STRUCTURE_MEMBER_FIXTURES.size());
+        int typedCredentialStructureMemberRouteEventCount = KMIP_2_0_AND_2_1.size()
+                * TYPED_CREDENTIAL_STRUCTURE_MEMBER_FIXTURES.size();
         int credentialTypeMemberRouteEventCount = KMIP_2_0_AND_2_1.size() * 2;
         int batchErrorContinuationEventCount = enumerationFixtures.stream()
                 .filter(fixture -> "BATCH-ERROR-CONTINUATION-OPTION".equals(fixture.parentName()))
@@ -2723,7 +2720,8 @@ class ControlledTlsPeerTest {
         assertEquals(17 + OPERATION_STRUCTURE_FIXTURES.size() + SCALAR_OPERATION_STRUCTURE_FIXTURES.size()
                         + enumerationFixtures.size() + localEnumerationCaseCount + bitmaskCaseCount
                         + dataTypeCaseCount
-                        + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + 11 // Credential, OTP/Ticket, and member cases.
+                        + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + 7
+                        + TYPED_CREDENTIAL_STRUCTURE_MEMBER_FIXTURES.size() // Credential and structure-member cases.
                         + genericTagCaseIds.size()
                         + 13 // Includes the new Add Attribute operation-route case.
                         + typedTagIdentityCaseIds().size() + referencedEnumCaseCount
@@ -4506,26 +4504,10 @@ class ControlledTlsPeerTest {
                     "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-TICKET-TICKET", 6,
                     ticketCredentialValueWire, credentialValue, 0x420149, TtlvItemType.Structure, protocolVersion);
         }
-        appendTypedCredentialMemberRouteEvent(events,
-                "test-norm-structure-member-structure-member-9-11-username-and-password-username",
-                "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-USERNAME-AND-PASSWORD-USERNAME",
-                "java.typed-protocol.model.org.kmipkit.credentials.usernameandpasswordcredential.fromttlv",
-                1, 0x420099, protocolVersion);
-        appendTypedCredentialMemberRouteEvent(events,
-                "test-norm-structure-member-structure-member-9-11-username-and-password-password",
-                "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-USERNAME-AND-PASSWORD-PASSWORD",
-                "java.typed-protocol.model.org.kmipkit.credentials.usernameandpasswordcredential.fromttlv",
-                1, 0x4200a1, protocolVersion);
-        appendTypedCredentialMemberRouteEvent(events,
-                "test-norm-structure-member-structure-member-9-11-device-device-identifier",
-                "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-DEVICE-IDENTIFIER",
-                "java.typed-protocol.model.org.kmipkit.credentials.devicecredential.fromttlv",
-                2, 0x4200a2, protocolVersion);
-        appendTypedCredentialMemberRouteEvent(events,
-                "test-norm-structure-member-structure-member-9-11-device-password",
-                "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-PASSWORD",
-                "java.typed-protocol.model.org.kmipkit.credentials.devicecredential.fromttlv",
-                2, 0x4200a1, protocolVersion);
+        for (CredentialStructureMemberFixture fixture : TYPED_CREDENTIAL_STRUCTURE_MEMBER_FIXTURES) {
+            appendTypedCredentialMemberRouteEvent(events, fixture.caseId(), fixture.targetId(),
+                    fixture.modelRoute(), fixture.credentialTypeRaw(), fixture.memberTag(), protocolVersion);
+        }
     }
 
     private static void appendCredentialMemberRouteEvent(ArrayNode events, String caseId, String targetId,
@@ -6956,10 +6938,7 @@ class ControlledTlsPeerTest {
         caseIds.add("test-norm-structure-member-structure-member-9-11-credential-credential-type");
         caseIds.add("test-norm-credential-credential-one-time-password");
         caseIds.add("test-norm-credential-credential-ticket");
-        caseIds.add("test-norm-structure-member-structure-member-9-11-username-and-password-username");
-        caseIds.add("test-norm-structure-member-structure-member-9-11-username-and-password-password");
-        caseIds.add("test-norm-structure-member-structure-member-9-11-device-device-identifier");
-        caseIds.add("test-norm-structure-member-structure-member-9-11-device-password");
+        TYPED_CREDENTIAL_STRUCTURE_MEMBER_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         caseIds.add("test-norm-structure-member-structure-member-9-11-one-time-password-username");
         caseIds.add("test-norm-structure-member-structure-member-9-11-one-time-password-password");
         caseIds.add("test-norm-structure-member-structure-member-9-11-one-time-password-one-time-password");
