@@ -14211,6 +14211,11 @@ class ControlledTlsPeerTest {
                 ? new AsyncCancelRouteScenario("test-async-lifecycle-poll", "Canceled", 1,
                         List.of("KMIPKIT-ELEM-OP-C2S-POLL"), 2)
                 : null;
+        AsyncCancelRouteScenario nonRecursivePoll = "2.1".equals(protocolVersion)
+                ? new AsyncCancelRouteScenario("test-async-no-recursive-async-poll-cancel", "Canceled", 1,
+                        List.of("KMIPKIT-ELEM-OP-C2S-POLL"), 1)
+                : null;
+        String canonicalNonRecursivePollRequestHash = null;
         int minor = "2.0".equals(protocolVersion) ? 0 : 1;
 
         for (String encoding : List.of("TTLV", "JSON", "XML")) {
@@ -14274,6 +14279,26 @@ class ControlledTlsPeerTest {
                     if ("TTLV".equals(encoding) && "raw_tls".equals(transport)) {
                         appendAsyncPollLocalRouteEvents(events, lifecyclePoll, protocolVersion, correlation,
                                 canonicalLifecyclePollRequestHash, responseHash);
+                    }
+                }
+                if (nonRecursivePoll != null) {
+                    byte[] nonRecursiveRequest = executeAsyncPollCombination(nonRecursivePoll,
+                            protocolVersion, encoding, transport, serverCertificatePem, serverPrivateKeyPem,
+                            clientCertificatePem, clientPrivateKeyPem, true, true);
+                    if ("TTLV".equals(encoding) && "raw_tls".equals(transport)) {
+                        canonicalNonRecursivePollRequestHash = normalizedTreeSha256(nonRecursiveRequest);
+                    }
+                    assertTrue(canonicalNonRecursivePollRequestHash != null,
+                            "The TTLV/raw-TLS non-recursive Poll must establish its request tree hash.");
+                    byte[] responseWire = asynchronousPollResponseBytes("TTLV",
+                            asyncCancelCorrelation(nonRecursivePoll, protocolVersion), minor, true, true);
+                    String responseHash = normalizedTreeSha256(responseWire);
+                    appendAsyncPollRouteEvents(events, nonRecursivePoll, protocolVersion, encoding, transport,
+                            canonicalNonRecursivePollRequestHash, responseHash);
+                    if ("TTLV".equals(encoding) && "raw_tls".equals(transport)) {
+                        appendAsyncPollLocalRouteEvents(events, nonRecursivePoll, protocolVersion,
+                                asyncCancelCorrelation(nonRecursivePoll, protocolVersion),
+                                canonicalNonRecursivePollRequestHash, responseHash);
                     }
                 }
             }
@@ -14541,30 +14566,46 @@ class ControlledTlsPeerTest {
             String protocolVersion, String encoding, String transport,
             byte[] serverCertificatePem, byte[] serverPrivateKeyPem,
             byte[] clientCertificatePem, byte[] clientPrivateKeyPem, boolean completed) throws Exception {
+        return executeAsyncPollCombination(scenario, protocolVersion, encoding, transport,
+                serverCertificatePem, serverPrivateKeyPem, clientCertificatePem, clientPrivateKeyPem,
+                completed, false);
+    }
+
+    private byte[] executeAsyncPollCombination(AsyncCancelRouteScenario scenario,
+            String protocolVersion, String encoding, String transport,
+            byte[] serverCertificatePem, byte[] serverPrivateKeyPem,
+            byte[] clientCertificatePem, byte[] clientPrivateKeyPem,
+            boolean completed, boolean omitResponseCorrelation) throws Exception {
         byte[] correlation = asyncCancelCorrelation(scenario, protocolVersion);
         int minor = "2.0".equals(protocolVersion) ? 0 : 1;
         var pollCase = casesById(CatalogLoader.load(
-                Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json")), "test-op-poll").get(0);
+                Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json")),
+                omitResponseCorrelation ? "test-async-no-recursive-async-poll-cancel" : "test-op-poll").get(0);
         Path connectionFile = temporaryDirectory.resolve(
                 "async-poll-race-" + protocolVersion + "-" + encoding + "-" + transport + ".json");
         if ("raw_tls".equals(transport)) {
             SSLServerSocket listener = listener(certificate(serverCertificatePem),
                     privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
             FutureTask<byte[]> peer = new FutureTask<>(() -> serveAsyncPollRequest(
-                    listener, correlation, protocolVersion, encoding, completed));
+                    listener, correlation, protocolVersion, encoding, completed, omitResponseCorrelation));
             Thread peerThread = new Thread(peer,
                     "java-validator-async-poll-race-peer-" + protocolVersion + "-" + encoding);
             peerThread.setDaemon(true);
             peerThread.start();
             Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
                     clientCertificatePem, clientPrivateKeyPem, true, protocolVersion, encoding, transport));
+            byte[] observedRequest;
             try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile))) {
-                var outcome = driver.executeAsynchronousRequest(pollCase, correlation.clone());
-                assertEquals("passed", outcome.status(), "The controlled Poll result must be valid: " + outcome);
+                var outcome = omitResponseCorrelation
+                        ? driver.executePollWithoutCorrelation(pollCase, correlation.clone())
+                        : driver.executeAsynchronousRequest(pollCase, correlation.clone());
+                observedRequest = peer.get(30, TimeUnit.SECONDS);
+                assertEquals("passed", outcome.status(), "The controlled Poll result must be valid for "
+                        + protocolVersion + "/" + encoding + "/" + transport + ": " + outcome);
             } finally {
                 listener.close();
             }
-            return peer.get(30, TimeUnit.SECONDS);
+            return observedRequest;
         }
 
         CompletableFuture<byte[]> peer = new CompletableFuture<>();
@@ -14577,7 +14618,8 @@ class ControlledTlsPeerTest {
                 }
                 byte[] request = exchange.getRequestBody().readAllBytes();
                 assertAsyncPollWireRequest(request, encoding, protocolVersion, correlation);
-                byte[] response = asynchronousPollResponseBytes(encoding, correlation, minor, completed);
+                byte[] response = asynchronousPollResponseBytes(
+                        encoding, correlation, minor, completed, omitResponseCorrelation);
                 exchange.getResponseHeaders().set("Content-Type", contentTypeForEncoding(encoding));
                 exchange.sendResponseHeaders(200, response.length);
                 try (OutputStream output = exchange.getResponseBody()) {
@@ -14600,8 +14642,11 @@ class ControlledTlsPeerTest {
                 serverCertificatePem, clientCertificatePem, clientPrivateKeyPem, true,
                 protocolVersion, encoding, transport));
         try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile))) {
-            var outcome = driver.executeAsynchronousRequest(pollCase, correlation.clone());
-            assertEquals("passed", outcome.status(), "The controlled Poll result must be valid: " + outcome);
+            var outcome = omitResponseCorrelation
+                    ? driver.executePollWithoutCorrelation(pollCase, correlation.clone())
+                    : driver.executeAsynchronousRequest(pollCase, correlation.clone());
+            assertEquals("passed", outcome.status(), "The controlled Poll result must be valid for "
+                    + protocolVersion + "/" + encoding + "/" + transport + ": " + outcome);
         } finally {
             listener.stop(0);
         }
@@ -14609,7 +14654,8 @@ class ControlledTlsPeerTest {
     }
 
     private static byte[] serveAsyncPollRequest(SSLServerSocket listener, byte[] correlation,
-            String protocolVersion, String encoding, boolean completed) throws Exception {
+            String protocolVersion, String encoding, boolean completed,
+            boolean omitResponseCorrelation) throws Exception {
         try (SSLSocket socket = (SSLSocket) listener.accept()) {
             socket.setEnabledProtocols(new String[] {"TLSv1.3"});
             socket.setSoTimeout(10_000);
@@ -14622,7 +14668,7 @@ class ControlledTlsPeerTest {
             };
             assertAsyncPollWireRequest(request, encoding, protocolVersion, correlation);
             socket.getOutputStream().write(asynchronousPollResponseBytes(encoding, correlation,
-                    "2.0".equals(protocolVersion) ? 0 : 1, completed));
+                    "2.0".equals(protocolVersion) ? 0 : 1, completed, omitResponseCorrelation));
             socket.getOutputStream().flush();
             return request;
         }
@@ -14679,8 +14725,15 @@ class ControlledTlsPeerTest {
 
     private static byte[] asynchronousPollResponseBytes(String encoding, byte[] correlation, int minor,
             boolean completed) throws Exception {
+        return asynchronousPollResponseBytes(encoding, correlation, minor, completed, false);
+    }
+
+    private static byte[] asynchronousPollResponseBytes(String encoding, byte[] correlation, int minor,
+            boolean completed, boolean omitCorrelation) throws Exception {
         if ("TTLV".equals(encoding)) {
-            return asynchronousPollResponse(correlation, minor, completed ? 0 : 2);
+            return omitCorrelation
+                    ? asynchronousPollResponseWithoutCorrelation(minor)
+                    : asynchronousPollResponse(correlation, minor, completed ? 0 : 2);
         }
         String resultStatus = completed ? "Success" : "OperationPending";
         String jsonResponsePayload = completed
@@ -14693,6 +14746,9 @@ class ControlledTlsPeerTest {
         String correlationHex = "JSON".equals(encoding)
                 ? HexFormat.of().formatHex(correlation)
                 : HexFormat.of().withUpperCase().formatHex(correlation);
+        String correlationField = omitCorrelation ? ""
+                : "{\"tag\":\"AsynchronousCorrelationValue\",\"type\":\"ByteString\",\"value\":\""
+                        + correlationHex + "\"}";
         if ("JSON".equals(encoding)) {
             return ("{\"tag\":\"ResponseMessage\",\"value\":["
                     + "{\"tag\":\"ResponseHeader\",\"value\":["
@@ -14704,9 +14760,9 @@ class ControlledTlsPeerTest {
                     + "{\"tag\":\"BatchItem\",\"value\":["
                     + "{\"tag\":\"Operation\",\"type\":\"Enumeration\",\"value\":\"Poll\"},"
                     + "{\"tag\":\"ResultStatus\",\"type\":\"Enumeration\",\"value\":\""
-                    + resultStatus + "\"},"
-                    + "{\"tag\":\"AsynchronousCorrelationValue\",\"type\":\"ByteString\",\"value\":\""
-                    + correlationHex + "\"}" + jsonResponsePayload + "]}]}").getBytes(StandardCharsets.UTF_8);
+                    + resultStatus + "\"}"
+                    + (omitCorrelation ? "" : "," + correlationField)
+                    + jsonResponsePayload + "]}]}").getBytes(StandardCharsets.UTF_8);
         }
         return ("<ResponseMessage><ResponseHeader><ProtocolVersion>"
                 + "<ProtocolVersionMajor type=\"Integer\" value=\"2\"/>"
@@ -14715,9 +14771,21 @@ class ControlledTlsPeerTest {
                 + "<BatchCount type=\"Integer\" value=\"1\"/></ResponseHeader><BatchItem>"
                 + "<Operation type=\"Enumeration\" value=\"Poll\"/>"
                 + "<ResultStatus type=\"Enumeration\" value=\"" + resultStatus + "\"/>"
-                + "<AsynchronousCorrelationValue type=\"ByteString\" value=\"" + correlationHex
-                + "\"/>" + xmlResponsePayload + "</BatchItem></ResponseMessage>")
+                + (omitCorrelation ? "" : "<AsynchronousCorrelationValue type=\"ByteString\" value=\""
+                        + correlationHex + "\"/>")
+                + xmlResponsePayload + "</BatchItem></ResponseMessage>")
                 .getBytes(StandardCharsets.UTF_8);
+    }
+
+    private static byte[] asynchronousPollResponseWithoutCorrelation(int protocolMinorVersion)
+            throws Exception {
+        byte[] version = structure(0x420069,
+                item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(protocolMinorVersion)));
+        byte[] header = structure(0x42007a, version,
+                item(0x420092, 9, longBytes(1)), item(0x42000d, 2, intBytes(1)));
+        return structure(0x42007b, header, structure(0x42000f,
+                item(0x42005c, 5, intBytes(0x1a)), item(0x42007f, 5, intBytes(0)),
+                createBatchWorkflowPayload("Create")));
     }
 
     private static void assertAsyncPollWireRequest(byte[] request, String encoding,

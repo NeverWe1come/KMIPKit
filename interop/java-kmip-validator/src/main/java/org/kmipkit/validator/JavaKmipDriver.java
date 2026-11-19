@@ -127,6 +127,57 @@ public final class JavaKmipDriver implements AutoCloseable {
         }
     }
 
+    /** Executes the catalogued Poll response case whose successful result omits asynchronous correlation. */
+    CaseOutcome executePollWithoutCorrelation(CatalogLoader.CatalogCase testCase, byte[] correlation) {
+        long start = System.nanoTime();
+        if (testCase == null || correlation == null || correlation.length == 0
+                || !"test-async-no-recursive-async-poll-cancel".equals(testCase.caseId())) {
+            return CaseOutcome.notRun("The non-recursive asynchronous Poll fixture is invalid.",
+                    elapsedMillis(start));
+        }
+        if (!testCase.execution().protocolVersions().contains(connection.protocolVersion())) {
+            return CaseOutcome.notRun("The asynchronous Poll case is not defined for this KMIP version.",
+                    elapsedMillis(start));
+        }
+
+        try (AsyncOperationOutcome outcome = client.executePoll(correlation.clone(), CODEC_LIMITS)) {
+            var metadata = outcome.metadataV1();
+            if (metadata.operation() != 0x1a || metadata.resultStatus() != 0) {
+                return CaseOutcome.failed("The non-recursive Poll response did not complete successfully.",
+                        elapsedMillis(start), metadata.resultStatus(),
+                        optionalCode(metadata.resultReason().orElse(-1)));
+            }
+            var pollResponse = outcome.pollResponse();
+            if (pollResponse.isEmpty() || pollResponse.orElseThrow().isPending()
+                    || pollResponse.orElseThrow().withAsynchronousCorrelationValue(ignored -> { })) {
+                return CaseOutcome.failed("The terminal Poll response retained asynchronous state.",
+                        elapsedMillis(start), metadata.resultStatus(),
+                        optionalCode(metadata.resultReason().orElse(-1)));
+            }
+            var responsePayload = outcome.responsePayloadTtlv();
+            if (responsePayload.isEmpty()) {
+                return CaseOutcome.failed("The terminal Poll response omitted the original response payload.",
+                        elapsedMillis(start), metadata.resultStatus(),
+                        optionalCode(metadata.resultReason().orElse(-1)));
+            }
+            try (var payload = responsePayload.orElseThrow(); var payloadView = payload.view()) {
+                if (payloadView.itemCount() == 0) {
+                    return CaseOutcome.failed("The terminal Poll response payload was empty.",
+                            elapsedMillis(start), metadata.resultStatus(),
+                            optionalCode(metadata.resultReason().orElse(-1)));
+                }
+            }
+            return CaseOutcome.passed(elapsedMillis(start), metadata.resultStatus(),
+                    optionalCode(metadata.resultReason().orElse(-1)));
+        } catch (org.kmipkit.ClientOperationException exception) {
+            return CaseOutcome.failed("ClientOperationException category=" + exception.categoryCode()
+                    + " cause=" + exception.causeCode() + " delivery=" + exception.deliveryStateCode(),
+                    elapsedMillis(start), null, null);
+        } catch (Exception exception) {
+            return CaseOutcome.failed(exception.getClass().getSimpleName(), elapsedMillis(start), null, null);
+        }
+    }
+
     private AsyncOperationOutcome executeAsynchronousRoute(String operation, byte[] correlation) throws Exception {
         return switch (operation) {
             case "Cancel" -> {
