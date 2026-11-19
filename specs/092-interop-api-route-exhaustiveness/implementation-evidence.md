@@ -205,3 +205,22 @@ claiming that an accessor ran for an item the server did not return.
   cells: 44,254 invoked, 16 not applicable, zero failed, and 27,313 pending.
   Run ID: `java-controlled-query-98e186e8-5531-432e-b241-e109f4ae6b3d`. The
   complete Java matrix remains incomplete.
+
+## Follow-up: Java Digest typed Attribute wrappers
+
+- **Red — `b9a86a422`** requires `TypedAttribute.create`,
+  `TypedAttribute.fromItem`, and `AttributeSet.tryNew` evidence for Digest in
+  KMIP 2.0 and 2.1. The focused controlled-peer test failed on the missing
+  `TypedAttribute.create` event.
+- **Green — `80420d920`** creates a deterministic SHA-256 digest fixture,
+  wraps the source-shaped Digest Structure in the installed typed Attribute,
+  decodes it, checks both nested fields and values, and inserts the item into
+  an `AttributeSet`. All six versioned wrapper cells pass. The focused Java
+  controlled-peer test passed in 2m17s.
+- **Refactor** cites OASIS KMIP 2.1 §4.21 Table 69 for the Digest Structure,
+  §11.21 Table 454 for SHA-256 value 6, and §11.56 Table 487 for the assigned
+  Attribute tag. This is local TTLV model evidence only; no Digest mutation or
+  server acceptance is claimed. The selected report validates 44,276/71,583
+  cells: 44,260 invoked, 16 not applicable, zero failed, and 27,307 pending.
+  Run ID: `java-controlled-query-48b90274-ff9d-4b9c-9644-e9b9236714ca`. The
+  complete Java matrix remains incomplete.
