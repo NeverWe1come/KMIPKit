@@ -129,9 +129,9 @@ python3 -m pip install --only-binary ':all:' jsonschema==4.23.0
 python3 interop/c-kmip-validator/tests/test_route_matrix.py
 python3 interop/c-kmip-validator/tools/route_matrix.py \
   --binary interop/c-kmip-validator/build/kmip_validator_c \
-  --output interop/c-kmip-validator/build/route-execution-evidence-certificate-type-extension.json
+  --output interop/c-kmip-validator/build/route-execution-evidence-process-v20-boundary.json
 python3 interop/shared/tools/validate_route_evidence.py \
-  --report interop/c-kmip-validator/build/route-execution-evidence-certificate-type-extension.json \
+  --report interop/c-kmip-validator/build/route-execution-evidence-process-v20-boundary.json \
   --artifact-sha256 "$(sha256sum interop/.local/c-live/install/489fafc79ef89db2524eafa7a6c6482f5cf75d97/lib/libkmipkit_ffi.so | cut -d ' ' -f 1)"
 ```
 
@@ -148,7 +148,7 @@ from pathlib import Path
 sys.path.insert(0, "interop/shared/tools")
 from validate_route_evidence import validate_report
 
-report = json.loads(Path("interop/c-kmip-validator/build/route-execution-evidence-certificate-type-extension.json").read_text())
+report = json.loads(Path("interop/c-kmip-validator/build/route-execution-evidence-process-v20-boundary.json").read_text())
 catalog_bytes = Path("interop/shared/catalog/kmipkit-1.0-test-catalog.json").read_bytes()
 manifest_bytes = Path("interop/shared/coverage/route-capabilities.json").read_bytes()
 artifact_bytes = Path(
@@ -587,3 +587,16 @@ constructors, decoders, and AttributeSet paths against that value. The shared
 validator accepts the emitted report with `selected_scope_complete=true`,
 `all_invocations_passed=true`, and zero failures; the full matrix remains
 incomplete.
+
+The latest full report is `c-route-88bb9dfc-7337-4112-98b1-c2cc05f106fb`
+(`route-execution-evidence-process-v20-boundary.json`) with JSON SHA-256
+`70bc94bfbf781ceecf02aead80093e241a50993c2b72cb267cfff0e4d3bae85d`. It has
+66,288 expected cells: 43,776 invoked, 52 explicitly not applicable, zero
+failed, and 22,460 pending. It preserves all 43,810 previous cell identities
+and adds 18: 14 cells for `test-v20-reject-process` and four local constructor
+and encoder cells for the KMIP 2.1 Process payload. The controlled C driver
+confirms that Process under KMIP 2.0 is rejected before transport across TTLV,
+JSON, and XML over raw TLS and HTTPS, while the separate request model preserves
+its Asynchronous Correlation Value. The shared validator accepts the emitted
+report with `selected_scope_complete=true`, `all_invocations_passed=true`, and
+zero failures; the full matrix remains incomplete.
