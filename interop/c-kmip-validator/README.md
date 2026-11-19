@@ -991,3 +991,34 @@ and four typed Hash response-accessor decodes. The 44-event case scope also
 contains four generic TTLV construction/decode events already counted in the
 previous ledger. The first pending cell remains the KMIP 2.0 local
 Re-Provision response decoder.
+
+### C raw Get response preserves vendor Key Format Type
+
+The installed C consumer now executes catalog case `test-enum-key-format-type`
+through a typed Get and reads the returned Public Key's Key Format Type from
+`kmipkit_client_batch_item_response_raw_ttlv`. The controlled peer returns the
+vendor value `0xF1234567`; the C TTLV view confirms that the exact value survives
+the response path. The route cites OASIS KMIP 2.0 §11.25 and KMIP 2.1 §11.25.
+The peer seeds only a fixture object and uses no private or secret key
+material. Its response omits Unique Batch Item ID because the request omitted
+it, so the client validates the actual response rather than an invented
+correlation.
+
+Red `b0023b7a8` added a failing check requiring both KMIP versions to execute a
+controlled Get and to record the raw response accessor. Green `256a6ad4c` adds
+the C route, versioned controlled-peer recipe, and preserved vendor value
+assertion. The focused test passes all 12 protocol/encoding/transport
+combinations and records exactly two local decoder events, one for each
+protocol version, with no network cells credited to this local route. Full
+CTest passes 7/7 in 153.23 seconds; the route-capability audit reports 1,491
+routes.
+
+The full report is `c-route-ca7a8413-48ee-4eb9-8801-b2422398eae0`
+(`build/route-execution-evidence-key-format-vendor-enum.json`), SHA-256
+`2e97c0572dac908920ee72821be2e75849c3157f2f949383388ff95d55c22acd`. It
+records 66,280 planned cells: 44,434 invoked, 52 not applicable, zero failed,
+and 21,794 pending. Schema validation passes; the shared validator accepts all
+44,486 emitted events with `selected_scope_complete=true` and
+`all_invocations_passed=true`. The full matrix remains incomplete. This slice
+closes two previously pending local raw-response decoder cells. The first
+pending cell remains the KMIP 2.0 local Re-Provision response decoder.
