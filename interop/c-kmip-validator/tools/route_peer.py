@@ -5401,6 +5401,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                     event.update(status='not_applicable', invocation_count=0,
                                                  not_applicable_reason='local_rejection_no_response')
                                     events.append(event)
+                                    keys.add(_key(cell))
                                     continue
                                 if response_accessor_route:
                                     source_sections = {reference.get('section')
