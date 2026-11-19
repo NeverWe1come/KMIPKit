@@ -4345,6 +4345,43 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(all(required_symbols <= set(check['public_api_trace_symbols'])
                             for check in checks), 'Create Split Key API route trace is incomplete')
 
+    def test_split_key_object_case_creates_and_cleans_both_split_objects(self):
+        """OASIS KMIP 2.0/2.1 §6.1.10 defines each returned Split Key object."""
+        from artifact_support import ROOT
+        from route_peer import RECIPES, execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_id = 'test-obj-split-key'
+        self.assertIn(case_id, RECIPES, 'Split Key object has no controlled-peer route recipe')
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12,
+                         'Split Key object must pass both versions and all six wire routes')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertEqual({event['target_id'] for event in events},
+                         {'KMIPKIT-ELEM-OBJECT-TYPE-SPLIT-KEY'})
+        send_events = [event for event in events if event['action'] == 'send']
+        self.assertEqual(len(send_events), 12)
+        self.assertTrue(all(event['peer_observed_operation_sequence'] ==
+                            ['Create Split Key', 'Destroy', 'Destroy'] and
+                            event['peer_observed_effects'] ==
+                            ['split_key_created', 'destroyed', 'destroyed']
+                            for event in send_events))
+        required_symbols = {
+            'kmipkit_client_batch_item_create_split_key',
+            'kmipkit_client_batch_item_response_create_split_key_count',
+            'kmipkit_client_batch_item_response_create_split_key_unique_identifier_at',
+            'kmipkit_client_batch_item_destroy',
+            'kmipkit_client_execute',
+        }
+        self.assertTrue(all(required_symbols <= set(check['public_api_trace_symbols'])
+                            for check in checks), 'Split Key object API route trace is incomplete')
+
     def test_join_split_key_uses_both_parts_and_cleans_joined_and_source_objects(self):
         """OASIS KMIP 2.0 §6.1.26 Tables 226–228 and 2.1 §6.1.27 Tables 244–246 define Join Split Key."""
         from artifact_support import ROOT
