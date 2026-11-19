@@ -1033,21 +1033,41 @@ def run(output: Path, binary: Path | None = None) -> int:
             and 'KMIPKIT-ELEM-ENUMERATION-ITEM-TYPE'
             in target.get('parent_element_ids', [])
         )
+        explicit_default_stop_case = (
+            case['case_id'] == 'test-batch-single-item-default-continuation'
+            and target['target_id'] ==
+            'KMIPKIT-ELEM-ENUM-VALUE-BATCH-ERROR-CONTINUATION-OPTION-STOP-00000002'
+            and cell['public_api_symbol'] ==
+            'kmipkit_client_batch_add_error_continuation_value'
+        )
         if (cell['transport'] is None and not tag_target_case
                 and (any(key in case.get('requires', {}) for key in ('enum_type', 'bitmask_type'))
-                     or item_type_target_case)):
+                     or item_type_target_case or explicit_default_stop_case)):
             value_key = (case['case_id'], cell['protocol_version'])
             if value_key not in value_cache:
+                value_case = case
+                if explicit_default_stop_case:
+                    value_case = {
+                        **case,
+                        'requires': {
+                            **case.get('requires', {}),
+                            'enum_type': 'Batch Error Continuation Option',
+                        },
+                    }
                 value_cache[value_key] = value_cases.execute(
-                    case, cell['protocol_version'], target if item_type_target_case else None)
+                    value_case, cell['protocol_version'], target if item_type_target_case else None)
             result = value_cache[value_key]
-            if result is not None and cell['public_api_symbol'] in result['invoked_symbols']:
+            target_value = int(target['wire_value'], 16) if explicit_default_stop_case else None
+            if (result is not None
+                    and cell['public_api_symbol'] in result['invoked_symbols']
+                    and (target_value is None or target_value in result.get('values_checked', []))):
                 event = cell_fields(cell)
                 event.update(status='passed', invocation_count=1, invocation_id=f'c-values-{index}')
                 event['response_tree_sha256' if cell['action'] == 'decode' else 'request_tree_sha256'] = result['tree_sha256']
                 events.append(event)
                 branch_evidence.append({**cell_fields(cell), **{key: result[key] for key in
-                    ('sample_count', 'known_values_checked', 'unknown_value_preserved', 'combination_count', 'tree_sha256') if key in result}})
+                    ('sample_count', 'known_values_checked', 'unknown_value_preserved', 'combination_count',
+                     'values_checked', 'batch_option_values_checked', 'tree_sha256') if key in result}})
                 continue
         if not tag_target_case and should_execute_attribute_case(cell, case, target):
             attribute_key = (case['case_id'], cell['target_id'], cell['protocol_version'])

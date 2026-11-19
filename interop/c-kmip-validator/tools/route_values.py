@@ -197,7 +197,7 @@ class ValueCases:
             batch_option_values_checked = len(batch_option_values)
         result = {'tree_sha256': state.hexdigest(), 'invoked_symbols': symbols, 'sample_count': sample_count,
                   'known_values_checked': len(known), 'unknown_value_preserved': True,
-                  'combination_count': count, 'tag': tag}
+                  'combination_count': count, 'tag': tag, 'values_checked': known}
         if type_name == 'Credential Type':
             result['credential_type_values_checked'] = credential_type_values_checked
             result['credential_model_roundtrips'] = credential_model_roundtrips
