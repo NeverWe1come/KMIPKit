@@ -629,3 +629,20 @@ shared validation pass with `selected_scope_complete=true`,
 `all_invocations_passed=true`, and zero failures. Full CTest passed 7/7 in
 142.35 seconds. The full matrix remains incomplete; the first pending cell is
 still the Re-Provision response decoder, whose recipe is unresolved.
+
+The latest full report is `c-route-b33618df-f4d1-48f9-bcda-fd360c1baea7`
+(`route-execution-evidence-aes256-cbc-encrypt.json`) with JSON SHA-256
+`fefb35e842d539b66c782ebc11f30166760b0fa65c649124affea458d48826b1`. It has
+66,288 planned cells: 43,838 invoked, 52 explicitly not applicable, zero
+failed, and 22,398 pending. It preserves all 43,852 prior cell identities and
+adds 38 for `test-crypto-encrypt-aes-256-cbc`: 36 controlled TLS request/send/
+response routes across KMIP 2.0/2.1, TTLV/JSON/XML, and raw TLS/HTTPS, plus two
+local response decoders. The complete 42-cell scope also retains four prior
+local construction/decode cells. Its builder creates an AES-256 key and sends
+an explicit CBC mode, no-padding parameter, and 16-byte IV; the controlled peer
+checks those fields and the deterministic ciphertext response. It keeps the
+existing ECB recipe unchanged. Schema validation and scoped shared validation
+pass with `selected_scope_complete=true`, `all_invocations_passed=true`, and
+zero failures. Full CTest passed 7/7 in 142.57 seconds. The matrix remains
+incomplete; the first pending cells are still the Re-Provision response
+decoders, whose recipe is unresolved against the approved source contract.
