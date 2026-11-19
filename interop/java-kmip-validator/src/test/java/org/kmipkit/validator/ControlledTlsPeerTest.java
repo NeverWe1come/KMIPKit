@@ -1145,6 +1145,7 @@ class ControlledTlsPeerTest {
             }
             managedObjectTypeRouteEventCount += managedObjectTypeInvocations.size();
             appendGenericEnumerationRouteEvents(events, enumerationFixtures, protocolVersion);
+            appendCredentialRootEnvelopeRouteEvent(events, protocolVersion);
             appendAsyncIndicatorEnumerationTtlvRoutes(events, protocolVersion);
             if ("2.1".equals(protocolVersion)) {
                 List<LocalCatalogRouteChecks.Invocation> rotateNameTypeInvocations = new ArrayList<>();
@@ -2443,6 +2444,7 @@ class ControlledTlsPeerTest {
                 * KMIP_2_0_AND_2_1.size() * 4;
         int credentialEnvelopeEventCount = CREDENTIAL_TYPE_MODEL_CASE_IDS.size()
                 * KMIP_2_0_AND_2_1.size();
+        int credentialRootEnvelopeEventCount = KMIP_2_0_AND_2_1.size();
         int batchErrorContinuationEventCount = enumerationFixtures.stream()
                 .filter(fixture -> "BATCH-ERROR-CONTINUATION-OPTION".equals(fixture.parentName()))
                 .mapToInt(fixture -> fixture.protocolVersions().size()).sum();
@@ -2504,7 +2506,8 @@ class ControlledTlsPeerTest {
                         + normativeMessageFieldGenericRouteEventCount + normativeMessageFieldParserRouteEventCount
                         + normativeBatchItemAccessorRouteEventCount + newAttributePayloadRouteEventCount
                         + localTypedResponseAccessorEventCount
-                        + credentialEnvelopeEventCount + objectGroupLocalRouteEventCount
+                        + credentialEnvelopeEventCount + credentialRootEnvelopeEventCount
+                        + objectGroupLocalRouteEventCount
                         + asynchronousRequestOperationStructureRouteEventCount
                         + operationStructureRouteEventCount
                         + scalarOperationStructureRouteEventCount
@@ -4330,6 +4333,25 @@ class ControlledTlsPeerTest {
         appendRouteEvent(events, caseId, route, targetId,
                 "org.kmipkit.credentials.Credential.fromTtlv", null, null, "construct", protocolVersion,
                 null, treeHash, null);
+    }
+
+    private static void appendCredentialRootEnvelopeRouteEvent(ArrayNode events, String protocolVersion)
+            throws Exception {
+        String caseId = "test-norm-credential-credential-credential";
+        String targetId = "KMIPKIT-ELEM-CREDENTIAL-CREDENTIAL";
+        String modelRoute = "java.typed-protocol.model.org.kmipkit.credentials.usernameandpasswordcredential.fromttlv";
+        String route = "java.typed-protocol.model.org.kmipkit.credentials.credential.fromttlv";
+        byte[] wire = credentialEnvelopeWire(modelRoute, 1);
+        String treeHash = normalizedTreeSha256(wire);
+        try (TtlvStructure structure = credentialEnvelopeStructure(modelRoute, 1);
+                Credential credential = Credential.fromTtlv(structure)) {
+            assertEquals(1L, credential.credentialTypeRaw());
+            assertTrue(Boolean.TRUE.equals(credential.withTtlv(view -> view.itemCount() == 2)),
+                    "Credential.fromTtlv must retain the Credential Type and Credential Value members.");
+        }
+        appendRouteEvent(events, caseId, route, targetId,
+                "org.kmipkit.credentials.Credential.fromTtlv", null, null,
+                "construct", protocolVersion, null, treeHash, null);
     }
 
     private static TtlvStructure credentialEnvelopeStructure(String modelRoute, long credentialTypeRaw)
