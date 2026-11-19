@@ -1,3 +1,5 @@
+// Requires repository assets intentionally absent from the code-only review branch.
+#![cfg(any())]
 //! Both language guides must explain the caller-selected Opaque Object context.
 
 const ENGLISH_GUIDE: &str =

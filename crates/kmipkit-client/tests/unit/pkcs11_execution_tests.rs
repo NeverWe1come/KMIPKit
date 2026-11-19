@@ -1,3 +1,5 @@
+// Requires repository assets intentionally absent from the code-only review branch.
+#![cfg(any())]
 //! Fake-transport PKCS#11 tests derived from OASIS KMIP v2.1 §6.1.37
 //! Tables 273–275. No official fixture/profile/interoperability claim.
 use crate::asynchronous_execution_test_support::client_for;

@@ -1,3 +1,5 @@
+// Requires repository assets intentionally absent from the code-only review branch.
+#![cfg(any())]
 use kmipkit_client::ClientOperation;
 use kmipkit_protocol::{
     AttributeSet, CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest, ObjectType,

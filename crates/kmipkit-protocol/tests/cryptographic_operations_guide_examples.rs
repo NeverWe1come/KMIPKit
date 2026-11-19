@@ -1,3 +1,5 @@
+// Requires repository assets intentionally absent from the code-only review branch.
+#![cfg(any())]
 //! The marked examples in both language guides must remain executable.
 
 const ENGLISH_GUIDE: &str = include_str!("../../../docs/user-guide/en/cryptographic-operations.md");

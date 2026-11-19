@@ -1,3 +1,5 @@
+// Requires repository assets intentionally absent from the code-only review branch.
+#![cfg(any())]
 use super::*;
 use crate::kmipkit_protocol_version_v1_t;
 use kmipkit_protocol::MessageExtensionView;

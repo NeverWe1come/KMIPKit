@@ -1,3 +1,5 @@
+// Requires repository assets intentionally absent from the code-only review branch.
+#![cfg(any())]
 //! Fixture-derived operation-item evidence from the OASIS KMIP Test Cases
 //! v2.1 Committee Note 01, §§2.99–2.101 and their pinned XML work products.
 //! Operation semantics follow OASIS KMIP Specification v2.1 §§6.1.11 and

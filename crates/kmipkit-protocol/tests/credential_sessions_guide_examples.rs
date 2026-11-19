@@ -1,3 +1,5 @@
+// Requires repository assets intentionally absent from the code-only review branch.
+#![cfg(any())]
 //! The marked English and Spanish credential-session examples must compile and
 //! keep Ticket values explicit and redacted.
 

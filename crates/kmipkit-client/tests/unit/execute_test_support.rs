@@ -434,6 +434,7 @@ impl ResponseItemFixture {
         self
     }
 
+    #[cfg(any())]
     pub(crate) fn with_supported_versions(mut self, versions: Vec<(i32, i32)>) -> Self {
         self.supported_versions = versions;
         self

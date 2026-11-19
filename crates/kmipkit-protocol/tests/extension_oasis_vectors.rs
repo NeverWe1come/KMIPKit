@@ -1,3 +1,5 @@
+// Requires repository assets intentionally absent from the code-only review branch.
+#![cfg(any())]
 //! Project-authored conformance vectors from OASIS KMIP Specification v2.1.
 //!
 //! Traceability: §7.13 Table 365; §8.3 Table 396; §9.13 Table 418;

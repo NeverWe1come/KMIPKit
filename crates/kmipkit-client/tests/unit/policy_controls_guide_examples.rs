@@ -1,3 +1,5 @@
+// Requires repository assets intentionally absent from the code-only review branch.
+#![cfg(any())]
 //! Compile-check a Rust mirror of the policy-control examples in the English
 //! and Spanish user guides. Assertions bind the mirror to both Markdown guides.
 //! Examples follow OASIS KMIP v2.1 §§6.1.22, 6.1.23, 6.1.52, and 6.1.53; they

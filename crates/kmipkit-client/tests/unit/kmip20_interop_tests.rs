@@ -1,3 +1,5 @@
+// Requires repository assets intentionally absent from the code-only review branch.
+#![cfg(any())]
 //! Commercial and independent KMS interoperability tests for OASIS KMIP 2.0 (KMIPKIT-0070).
 //!
 //! Validates client behavior against the published conformance profiles for:

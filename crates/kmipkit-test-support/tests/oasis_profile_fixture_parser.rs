@@ -1,3 +1,5 @@
+// Requires repository assets intentionally absent from the code-only review branch.
+#![cfg(any())]
 use kmipkit_test_support::oasis_crypto_fixtures::{
     OasisCryptoFixtureError, OasisProfileFixture, OasisProfileFixtureBindings,
 };

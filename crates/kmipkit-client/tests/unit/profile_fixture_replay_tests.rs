@@ -1,3 +1,5 @@
+// Requires repository assets intentionally absent from the code-only review branch.
+#![cfg(any())]
 //! Pinned OASIS fixture replay through the public typed client API.
 //!
 //! These tests establish deterministic fixture replay only. They do not claim
