@@ -2472,6 +2472,7 @@ class ControlledTlsPeerTest {
         int credentialEnvelopeEventCount = CREDENTIAL_TYPE_MODEL_CASE_IDS.size()
                 * KMIP_2_0_AND_2_1.size();
         int credentialRootEnvelopeEventCount = KMIP_2_0_AND_2_1.size() * 3;
+        int credentialStructureMemberRouteEventCount = KMIP_2_0_AND_2_1.size() * 4;
         int batchErrorContinuationEventCount = enumerationFixtures.stream()
                 .filter(fixture -> "BATCH-ERROR-CONTINUATION-OPTION".equals(fixture.parentName()))
                 .mapToInt(fixture -> fixture.protocolVersions().size()).sum();
@@ -2534,6 +2535,7 @@ class ControlledTlsPeerTest {
                         + normativeBatchItemAccessorRouteEventCount + newAttributePayloadRouteEventCount
                         + localTypedResponseAccessorEventCount
                         + credentialEnvelopeEventCount + credentialRootEnvelopeEventCount
+                        + credentialStructureMemberRouteEventCount
                         + objectGroupLocalRouteEventCount
                         + asynchronousRequestOperationStructureRouteEventCount
                         + operationStructureRouteEventCount
@@ -2673,7 +2675,7 @@ class ControlledTlsPeerTest {
         assertEquals(17 + OPERATION_STRUCTURE_FIXTURES.size() + SCALAR_OPERATION_STRUCTURE_FIXTURES.size()
                         + enumerationFixtures.size() + localEnumerationCaseCount + bitmaskCaseCount
                         + dataTypeCaseCount
-                        + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + 2 // Generic OTP and Ticket Credential cases.
+                        + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + 6 // OTP/Ticket envelopes and member cases.
                         + genericTagCaseIds.size()
                         + 13 // Includes the new Add Attribute operation-route case.
                         + typedTagIdentityCaseIds().size() + referencedEnumCaseCount
@@ -4408,16 +4410,72 @@ class ControlledTlsPeerTest {
                 GENERIC_CREDENTIAL_FROM_TTLV_SYMBOL, null, null,
                 "construct", protocolVersion, null, treeHash, null);
 
+        byte[] otpCredentialValueWire = oneTimePasswordCredentialValueWire();
         try (TtlvStructure credentialValue = oneTimePasswordCredentialValueStructure()) {
             appendCredentialEnvelopeRouteEvent(events,
                     "test-norm-credential-credential-one-time-password",
                     "KMIPKIT-ELEM-CREDENTIAL-ONE-TIME-PASSWORD", 4,
-                    oneTimePasswordCredentialValueWire(), credentialValue, protocolVersion);
+                    otpCredentialValueWire, credentialValue, protocolVersion);
         }
+        try (TtlvStructure credentialValue = oneTimePasswordCredentialValueStructure()) {
+            appendCredentialMemberRouteEvent(events,
+                    "test-norm-structure-member-structure-member-9-11-one-time-password-username",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-ONE-TIME-PASSWORD-USERNAME", 4,
+                    otpCredentialValueWire, credentialValue, 0x420099, TtlvItemType.TextString, protocolVersion);
+        }
+        try (TtlvStructure credentialValue = oneTimePasswordCredentialValueStructure()) {
+            appendCredentialMemberRouteEvent(events,
+                    "test-norm-structure-member-structure-member-9-11-one-time-password-password",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-ONE-TIME-PASSWORD-PASSWORD", 4,
+                    otpCredentialValueWire, credentialValue, 0x4200a1, TtlvItemType.TextString, protocolVersion);
+        }
+        try (TtlvStructure credentialValue = oneTimePasswordCredentialValueStructure()) {
+            appendCredentialMemberRouteEvent(events,
+                    "test-norm-structure-member-structure-member-9-11-one-time-password-one-time-password",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-ONE-TIME-PASSWORD-ONE-TIME-PASSWORD", 4,
+                    otpCredentialValueWire, credentialValue, 0x420156, TtlvItemType.TextString, protocolVersion);
+        }
+        byte[] ticketCredentialValueWire = ticketCredentialValueWire();
         try (TtlvStructure credentialValue = ticketCredentialValueStructure()) {
             appendCredentialEnvelopeRouteEvent(events,
                     "test-norm-credential-credential-ticket", "KMIPKIT-ELEM-CREDENTIAL-TICKET", 6,
-                    ticketCredentialValueWire(), credentialValue, protocolVersion);
+                    ticketCredentialValueWire, credentialValue, protocolVersion);
+        }
+        try (TtlvStructure credentialValue = ticketCredentialValueStructure()) {
+            appendCredentialMemberRouteEvent(events,
+                    "test-norm-structure-member-structure-member-9-11-ticket-ticket",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-TICKET-TICKET", 6,
+                    ticketCredentialValueWire, credentialValue, 0x420149, TtlvItemType.Structure, protocolVersion);
+        }
+    }
+
+    private static void appendCredentialMemberRouteEvent(ArrayNode events, String caseId, String targetId,
+            long credentialTypeRaw, byte[] credentialValueWire, TtlvStructure credentialValue, int memberTag,
+            TtlvItemType expectedMemberType, String protocolVersion) throws Exception {
+        String treeHash = normalizedTreeSha256(credentialEnvelopeWire(credentialTypeRaw, credentialValueWire));
+        try (TtlvStructure envelope = credentialEnvelopeStructure(credentialValue, credentialTypeRaw);
+                Credential credential = Credential.fromTtlv(envelope)) {
+            assertEquals(credentialTypeRaw, credential.credentialTypeRaw());
+            assertTrue(Boolean.TRUE.equals(credential.withTtlv(view -> credentialValueHasMember(
+                    view, memberTag, expectedMemberType))),
+                    "The generic Credential view must preserve the catalogued Credential Value member.");
+        }
+        appendRouteEvent(events, caseId, GENERIC_CREDENTIAL_FROM_TTLV_ROUTE, targetId,
+                GENERIC_CREDENTIAL_FROM_TTLV_SYMBOL, null, null, "construct", protocolVersion,
+                null, treeHash, null);
+    }
+
+    private static boolean credentialValueHasMember(TtlvStructureView envelope, int memberTag,
+            TtlvItemType expectedMemberType) {
+        try (var valueItem = envelope.itemAt(1);
+                var value = valueItem.value();
+                var credentialValue = value.structure()) {
+            for (long index = 0; index < credentialValue.itemCount(); index++) {
+                try (var member = credentialValue.itemAt(index)) {
+                    if (member.tag().raw() == memberTag) return member.itemType() == expectedMemberType;
+                }
+            }
+            return false;
         }
     }
 
@@ -6784,6 +6842,10 @@ class ControlledTlsPeerTest {
         caseIds.add("test-op-add-attribute");
         caseIds.add("test-norm-credential-credential-one-time-password");
         caseIds.add("test-norm-credential-credential-ticket");
+        caseIds.add("test-norm-structure-member-structure-member-9-11-one-time-password-username");
+        caseIds.add("test-norm-structure-member-structure-member-9-11-one-time-password-password");
+        caseIds.add("test-norm-structure-member-structure-member-9-11-one-time-password-one-time-password");
+        caseIds.add("test-norm-structure-member-structure-member-9-11-ticket-ticket");
         genericEnumerationFixtures().forEach(fixture -> caseIds.add(fixture.caseId()));
         genericLocalEnumerationFixtures().stream().map(EnumerationFixture::caseId).distinct()
                 .forEach(caseIds::add);
