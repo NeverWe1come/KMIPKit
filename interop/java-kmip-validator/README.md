@@ -1498,3 +1498,23 @@ field and Query payload shape. The focused controlled-peer test passes;
 selected evidence validates 44,240/44,240 cells: 44,224 invocations, 16
 not-applicable cells, and zero failures. The ledger records 71,583 planned,
 44,240 executed, and 27,343 pending cells; the full matrix remains WIP.
+
+### Java X.509 typed Attribute routes — 2026-11-19
+
+The installed Java consumer now constructs, reads back, and adds typed
+`X509_CERTIFICATE_IDENTIFIER`, `X509_CERTIFICATE_ISSUER`, and
+`X509_CERTIFICATE_SUBJECT` values to an `AttributeSet`. The required issuer and
+subject distinguished names and certificate serial number come from the
+controlled X.509 certificate fixture. Identifier contains its required issuer
+name and serial fields; issuer and subject exercise their required name fields
+while leaving their optional alternative-name fields absent. References:
+OASIS KMIP 2.1 §§4.61–4.63 and §11.56 Table 487.
+
+Red `f1aa52a4b` verifies the missing `TypedAttribute.create` route fails for
+the expected identifier case. Green `f0dab0266` exercises all three typed
+routes and records evidence for KMIP 2.0 and 2.1. The focused controlled TLS
+test passes; selected evidence validates 44,306/44,306 cells (44,290 invoked,
+16 not applicable, zero failed). The complete Java matrix remains incomplete:
+27,277 cells are pending, so #187 and its dependents stay WIP. This increment
+proves local typed TTLV behavior, not server acceptance, attribute mutation,
+or external KMS interoperability.
